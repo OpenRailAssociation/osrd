@@ -1,12 +1,13 @@
 use std::collections::HashMap;
 
+use crate::client::api::Message;
 use crate::model::AsUser;
 use crate::model::Relation;
 use crate::model::Tuple;
 
 use super::super::Client;
 use super::super::Consistency;
-use super::super::RequestFailure;
+use super::super::Error;
 
 use super::tuples::RawTuple;
 
@@ -77,7 +78,7 @@ impl Client {
         checks: &[BatchCheckItem],
         authorization_model_id: Option<&str>,
         consistency: Option<Consistency>,
-    ) -> Result<HashMap<String, BatchCheckSingleResult>, RequestFailure> {
+    ) -> Result<HashMap<String, BatchCheckSingleResult>, Error> {
         assert!(
             checks.len() as u32 <= self.settings.limits.max_checks_per_batch_check,
             "OpenFGA client's checks limit per batch setting is set to {}",
@@ -112,7 +113,7 @@ impl Client {
         struct Response {
             result: HashMap<String, BatchCheckSingleResult>,
         }
-        let Response { result } = response.error_for_status()?.json().await?;
+        let Response { result } = response.json::<Message<_>>().await?.try_success()?;
         Ok(result)
     }
 
@@ -123,7 +124,7 @@ impl Client {
         tuple: RawTuple,
         contextual_tuples: Option<ContextualTuples>,
         authorization_model_id: Option<String>,
-    ) -> Result<bool, RequestFailure> {
+    ) -> Result<bool, Error> {
         #[derive(serde::Serialize)]
         struct Request {
             tuple_key: RawTuple,
@@ -152,7 +153,7 @@ impl Client {
             resolution: String,
         }
 
-        let Response { allowed, .. } = response.error_for_status()?.json::<Response>().await?;
+        let Response { allowed, .. } = response.json::<Message<_>>().await?.try_success()?;
 
         Ok(allowed)
     }
@@ -166,7 +167,7 @@ impl Client {
         user: &str,
         contextual_tuples: Option<ContextualTuples>,
         consistency: Option<Consistency>,
-    ) -> Result<Vec<String>, RequestFailure> {
+    ) -> Result<Vec<String>, Error> {
         #[derive(serde::Serialize)]
         struct Request {
             #[serde(rename = "type")]
@@ -198,7 +199,7 @@ impl Client {
             objects: Vec<String>,
         }
 
-        let Response { objects } = response.error_for_status()?.json::<Response>().await?;
+        let Response { objects } = response.json::<Message<_>>().await?.try_success()?;
 
         tracing::debug!(count = objects.len(), "objects found");
         Ok(objects)
@@ -215,7 +216,7 @@ impl Client {
         contextual_tuples: Option<ContextualTuples>,
         authorization_model_id: Option<&str>,
         consistency: Option<Consistency>,
-    ) -> Result<Vec<RawUser>, RequestFailure> {
+    ) -> Result<Vec<RawUser>, Error> {
         #[derive(serde::Serialize)]
         struct Request<'a> {
             authorization_model_id: Option<String>,
@@ -257,7 +258,7 @@ impl Client {
             users: Vec<RawUser>,
         }
 
-        let Response { users } = response.error_for_status()?.json().await?;
+        let Response { users } = response.json::<Message<_>>().await?.try_success()?;
         Ok(users)
     }
 }

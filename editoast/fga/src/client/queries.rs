@@ -16,9 +16,8 @@ use crate::model::User;
 use crate::model::Wildcard;
 
 use super::Client;
-use super::QueryError;
+use super::Error;
 use super::Request;
-use super::RequestFailure;
 use super::api::queries::BatchCheckItem;
 use super::api::queries::BatchCheckSingleResult;
 use super::api::queries::RawUser;
@@ -26,10 +25,7 @@ use super::api::queries::UserFilter;
 use super::tuples::RawTuple;
 
 impl Client {
-    pub async fn check<R, U>(
-        &self,
-        Check { user, object }: Check<'_, R, U>,
-    ) -> Result<bool, RequestFailure>
+    pub async fn check<R, U>(&self, Check { user, object }: Check<'_, R, U>) -> Result<bool, Error>
     where
         R: Relation,
         U: AsUser<User = R::User>,
@@ -94,10 +90,7 @@ impl Client {
     /// assert!(alice_can_read && alice_can_write && !bob_can_read);
     /// # }
     /// ```
-    pub async fn checks<S: StructuredChecks>(
-        &self,
-        checks: S,
-    ) -> Result<S::Output, RequestFailure> {
+    pub async fn checks<S: StructuredChecks>(&self, checks: S) -> Result<S::Output, Error> {
         let results = checks.prepare(self).execute().await?;
         Ok(S::from_check_results(results))
     }
@@ -124,7 +117,7 @@ impl Client {
     pub async fn list_objects<R: Relation, U: AsUser<User = R::User>>(
         &self,
         QueryObjects(user, _): QueryObjects<R, U>,
-    ) -> Result<Vec<R::Object>, QueryError> {
+    ) -> Result<Vec<R::Object>, Error> {
         let objects = self
             .post_stores_list_objects(
                 &self.store.id,
@@ -143,9 +136,9 @@ impl Client {
                 };
                 R::Object::from_str(id).map_err(|_| {
                     tracing::error!(ident, type = R::Object::NAMESPACE, "failed to parse OpenFGA object");
-                    QueryError::Parsing {
+                    Error::MalformedValue {
                         ident,
-                        expected_type: R::Object::NAMESPACE,
+                        expected_type: R::Object::NAMESPACE.to_owned(),
                     }
                 })
             })
@@ -163,7 +156,7 @@ impl Client {
     pub async fn list_users<R: Relation>(
         &self,
         QueryUsers(object): QueryUsers<'_, R>,
-    ) -> Result<UserList<R::User>, QueryError> {
+    ) -> Result<UserList<R::User>, Error> {
         let raw_users = self
             .post_stores_list_users(
                 &self.store.id,
@@ -186,9 +179,9 @@ impl Client {
                         debug_assert_eq!(r#type.as_str(), R::User::NAMESPACE);
                         let user = R::User::from_str(&id).map_err(|_| {
                             tracing::error!(id, type = R::User::NAMESPACE, "failed to parse OpenFGA user");
-                            QueryError::Parsing {
+                            Error::MalformedValue {
                                 ident: id,
-                                expected_type: R::User::NAMESPACE,
+                                expected_type: R::User::NAMESPACE.to_owned(),
                             }
                         })?;
                         users.push(user);
@@ -239,7 +232,7 @@ impl Client {
     pub async fn list_usersets<R: Relation, S: Relation>(
         &self,
         QueryUsersets(object, _): QueryUsersets<'_, R, S>,
-    ) -> Result<Vec<S::Object>, QueryError> {
+    ) -> Result<Vec<S::Object>, Error> {
         let users = self
             .post_stores_list_users(
                 &self.store.id,
@@ -266,9 +259,9 @@ impl Client {
                     debug_assert_eq!(relation.as_str(), S::NAME);
                     S::Object::from_str(&id).map_err(|_| {
                         tracing::error!(id, type = S::Object::NAMESPACE, "failed to parse OpenFGA userset");
-                        QueryError::Parsing {
+                        Error::MalformedValue {
                             ident: id,
-                            expected_type: S::Object::NAMESPACE,
+                            expected_type: S::Object::NAMESPACE.to_owned(),
                         }
                     })
                 }
@@ -318,7 +311,7 @@ impl PreparedChecks<'_> {
     /// Concurrently send batch-checks requests to OpenFGA in chunks of `n` elements,
     /// with `n` the maximum number of tuple reads configured in the
     /// [super::ConnectionSettings::limits]'s [super::Limits::max_checks_per_batch_check].
-    pub async fn execute(self) -> Result<Vec<bool>, RequestFailure> {
+    pub async fn execute(self) -> Result<Vec<bool>, Error> {
         let count = self.checks.len();
 
         let (check_items, correlation_ids): (Vec<_>, HashMap<_, _>) = self
@@ -415,7 +408,7 @@ impl_structured_checks!((bool, bool, bool, bool, bool, bool, bool, bool), R1 R2 
 impl<R: Relation, U: AsUser<User = R::User>> Request for Check<'_, R, U> {
     type Response = bool;
 
-    type Error = RequestFailure;
+    type Error = Error;
 
     async fn fetch(self, client: &Client) -> Result<Self::Response, Self::Error> {
         client.check(self).await
@@ -429,7 +422,7 @@ where
 {
     type Response = Vec<R::Object>;
 
-    type Error = QueryError;
+    type Error = Error;
 
     async fn fetch(self, client: &Client) -> Result<Self::Response, Self::Error> {
         client.list_objects(self).await
@@ -439,7 +432,7 @@ where
 impl<R: Relation> Request for QueryUsers<'_, R> {
     type Response = UserList<R::User>;
 
-    type Error = QueryError;
+    type Error = Error;
 
     async fn fetch(self, client: &Client) -> Result<Self::Response, Self::Error> {
         client.list_users(self).await
@@ -449,7 +442,7 @@ impl<R: Relation> Request for QueryUsers<'_, R> {
 impl<R: Relation, S: Relation> Request for QueryUsersets<'_, R, S> {
     type Response = Vec<S::Object>;
 
-    type Error = QueryError;
+    type Error = Error;
 
     async fn fetch(self, client: &Client) -> Result<Self::Response, Self::Error> {
         client.list_usersets(self).await
@@ -458,10 +451,10 @@ impl<R: Relation, S: Relation> Request for QueryUsersets<'_, R, S> {
 
 #[cfg(test)]
 mod tests {
-    use reqwest::StatusCode;
-
     use crate::client::Client;
     use crate::client::DEFAULT_OPENFGA_MAX_CHECKS_PER_BATCH_CHECK;
+    use crate::client::Error;
+    use crate::client::ErrorCode;
     use crate::client::Request as _;
     use crate::compile_model;
     use crate::defs::*;
@@ -630,7 +623,13 @@ mod tests {
             checks.push(&Infra::can_read().check(&fga!(User:"bob"), &fga!(Infra:"france")));
         }
         let results = checks.execute().await;
-        assert!(results.is_err_and(|err| err.0.status().unwrap() == StatusCode::BAD_REQUEST));
+        assert!(results.is_err_and(|err| matches!(
+            err,
+            Error::Validation {
+                code: ErrorCode::ValidationError,
+                message,
+            } if message == "batchCheck received 51 checks, the maximum allowed is 50"
+        )));
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]

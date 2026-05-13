@@ -1,5 +1,4 @@
 use futures::stream;
-use itertools::Either;
 use itertools::Itertools as _;
 use tracing::Instrument;
 
@@ -9,9 +8,8 @@ use crate::model::Tuple;
 
 use super::Client;
 use super::Continuation;
+use super::Error;
 use super::Request;
-use super::RequestFailure;
-use super::TooManyTuples;
 
 pub(in crate::client) use super::api::tuples::RawTuple;
 pub use super::api::tuples::UntypedTuple;
@@ -22,7 +20,7 @@ impl Client {
     pub async fn tuple_exists<R: Relation, U: AsUser<User = R::User>>(
         &self,
         tuple: Tuple<'_, R, U>,
-    ) -> Result<bool, RequestFailure> {
+    ) -> Result<bool, Error> {
         let (tuples, _continuation) = self
             .get_stores_read(
                 &self.store.id,
@@ -36,9 +34,7 @@ impl Client {
         Ok(!tuples.is_empty())
     }
 
-    pub fn list_tuples(
-        &self,
-    ) -> impl stream::TryStream<Ok = UntypedTuple, Error = RequestFailure> + '_ {
+    pub fn list_tuples(&self) -> impl stream::TryStream<Ok = UntypedTuple, Error = Error> + '_ {
         Continuation::stream(move |continuation| {
             async move {
                 let (tuples, continuation_str) = self
@@ -61,13 +57,7 @@ impl Client {
     pub async fn write_tuples<R: Relation, U: AsUser<User = R::User>>(
         &self,
         tuples: &[Tuple<'_, R, U>],
-    ) -> Result<(), Either<RequestFailure, TooManyTuples>> {
-        if tuples.len() > self.settings.limits.max_tuples_per_write as usize {
-            return Err(Either::Right(TooManyTuples {
-                max: self.settings.limits.max_tuples_per_write as usize,
-                provided_count: tuples.len(),
-            }));
-        }
+    ) -> Result<(), Error> {
         self.post_stores_write(
             &self.store.id,
             &tuples.iter().map_into().collect::<Vec<_>>(),
@@ -75,7 +65,6 @@ impl Client {
             self.authorization_model_id.clone(),
         )
         .await
-        .map_err(Either::Left)
     }
 
     /// Prepares multiple write requests to OpenFGA
@@ -105,15 +94,9 @@ impl Client {
     pub async fn delete_tuples<R: Relation, U: AsUser<User = R::User>>(
         &self,
         tuples: &[Tuple<'_, R, U>],
-    ) -> Result<(), Either<RequestFailure, TooManyTuples>> {
+    ) -> Result<(), Error> {
         if tuples.is_empty() {
             return Ok(());
-        }
-        if tuples.len() > self.settings.limits.max_tuples_per_write as usize {
-            return Err(Either::Right(TooManyTuples {
-                max: self.settings.limits.max_tuples_per_write as usize,
-                provided_count: tuples.len(),
-            }));
         }
         self.post_stores_write(
             &self.store.id,
@@ -122,7 +105,6 @@ impl Client {
             self.authorization_model_id.clone(),
         )
         .await
-        .map_err(Either::Left)
     }
 
     /// Prepares multiple delete requests to OpenFGA
@@ -175,7 +157,7 @@ impl PreparedWrites<'_> {
     /// the tuples written by other successful requests will remain in OpenFGA.
     /// This function also returns at the first failing request, so OpenFGA may still
     /// write some tuples **after** this function exits.
-    pub async fn execute(self) -> Result<(), RequestFailure> {
+    pub async fn execute(self) -> Result<(), Error> {
         let futs = self
             .writes
             .chunks(self.client.settings.limits.max_tuples_per_write as usize)
@@ -225,7 +207,7 @@ impl PreparedDeletes<'_> {
     /// the tuples deleted by other successful requests will remain deleted in OpenFGA.
     /// This function also returns at the first failing request, so OpenFGA may still
     /// delete some tuples **after** this function exits.
-    pub async fn execute(self) -> Result<(), RequestFailure> {
+    pub async fn execute(self) -> Result<(), Error> {
         let futs = self
             .deletes
             .chunks(self.client.settings.limits.max_tuples_per_write as usize)
@@ -248,7 +230,7 @@ impl PreparedDeletes<'_> {
 impl<R: Relation, U: AsUser<User = R::User>> Request for Tuple<'_, R, U> {
     type Response = bool;
 
-    type Error = RequestFailure;
+    type Error = Error;
 
     async fn fetch(self, client: &Client) -> Result<Self::Response, Self::Error> {
         client.tuple_exists(self).await
@@ -257,9 +239,9 @@ impl<R: Relation, U: AsUser<User = R::User>> Request for Tuple<'_, R, U> {
 
 #[cfg(test)]
 mod tests {
-    use reqwest::StatusCode;
-
     use crate::client::DEFAULT_OPENFGA_MAX_TUPLES_PER_WRITE;
+    use crate::client::Error;
+    use crate::client::ErrorCode;
     use crate::client::setup_tracing;
     use crate::compile_model;
     use crate::defs::*;
@@ -316,7 +298,13 @@ mod tests {
             writes.push(&tuple);
         }
         let response = writes.execute().await;
-        assert!(response.is_err_and(|err| err.0.status().unwrap() == StatusCode::BAD_REQUEST));
+        assert!(response.is_err_and(|err| matches!(
+            err,
+            Error::Validation {
+                code: ErrorCode::ExceededEntityLimit,
+                message,
+            } if message == "The number of write operations exceeds the allowed limit of 100"
+        )));
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]

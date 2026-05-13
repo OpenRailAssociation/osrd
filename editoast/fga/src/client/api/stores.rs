@@ -1,5 +1,6 @@
 use super::super::Client;
-use super::super::RequestFailure;
+use super::super::Error;
+use super::Message;
 
 #[derive(Debug, Default, Clone, serde::Deserialize)]
 pub struct Store {
@@ -16,7 +17,7 @@ impl Client {
         &self,
         page_size: Option<usize>,
         continuation: Option<&str>,
-    ) -> Result<(Vec<Store>, String), RequestFailure> {
+    ) -> Result<(Vec<Store>, String), Error> {
         #[derive(serde::Deserialize)]
         struct Response {
             stores: Vec<Store>,
@@ -38,13 +39,13 @@ impl Client {
         let Response {
             stores,
             continuation_token,
-        } = response.error_for_status()?.json::<Response>().await?;
+        } = response.json::<Message<_>>().await?.try_success()?;
 
         Ok((stores, continuation_token))
     }
 
     #[tracing::instrument(skip(self), err)]
-    pub(in crate::client) async fn post_stores(&self, name: &str) -> Result<Store, RequestFailure> {
+    pub(in crate::client) async fn post_stores(&self, name: &str) -> Result<Store, Error> {
         #[derive(serde::Serialize)]
         struct Request {
             name: String,
@@ -57,20 +58,21 @@ impl Client {
         let url = self.base_url().join("stores").unwrap();
         let response = self.inner.post(url).json(&request).send().await?;
 
-        let store = response.error_for_status()?.json().await?;
+        let store = response.json::<Message<_>>().await?.try_success()?;
         Ok(store)
     }
 
     #[tracing::instrument(skip(self), err)]
-    pub(in crate::client) async fn delete_stores(
-        &self,
-        store_id: &str,
-    ) -> Result<(), RequestFailure> {
+    pub(in crate::client) async fn delete_stores(&self, store_id: &str) -> Result<(), Error> {
         let url = self
             .base_url()
             .join(format!("stores/{store_id}").as_str())
             .unwrap();
-        self.inner.delete(url).send().await?.error_for_status()?;
-        Ok(())
+        let response = self.inner.delete(url).send().await?;
+        if response.status().is_success() {
+            Ok(())
+        } else {
+            Err(response.json::<Error>().await?)
+        }
     }
 }

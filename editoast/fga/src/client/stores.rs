@@ -7,8 +7,8 @@ use tracing::Instrument;
 use super::Client;
 use super::ConnectionSettings;
 use super::Continuation;
+use super::Error;
 use super::InitializationError;
-use super::RequestFailure;
 
 pub use super::api::stores::Store;
 
@@ -55,7 +55,7 @@ impl Client {
         Ok(client)
     }
 
-    pub fn stores(&self) -> impl stream::TryStream<Ok = Store, Error = RequestFailure> + '_ {
+    pub fn stores(&self) -> impl stream::TryStream<Ok = Store, Error = Error> + '_ {
         Continuation::stream(move |continuation| {
             async move {
                 let (stores, continuation_str) =
@@ -67,7 +67,7 @@ impl Client {
     }
 
     #[tracing::instrument(skip(self), err)]
-    pub async fn find_store(&self, store_name: &str) -> Result<Option<Store>, RequestFailure> {
+    pub async fn find_store(&self, store_name: &str) -> Result<Option<Store>, Error> {
         let stream = self
             .stores()
             .try_filter(|Store { name, .. }| future::ready(name == store_name));

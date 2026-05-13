@@ -8,7 +8,8 @@ use crate::model::Type;
 
 use super::super::Client;
 use super::super::Consistency;
-use super::super::RequestFailure;
+use super::super::Error;
+use super::Message;
 
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
 pub(in crate::client) struct RawTuple {
@@ -120,7 +121,7 @@ impl Client {
         authorization_model_id: Option<&str>,
         consistency: Option<Consistency>,
         continuation_token: Option<String>,
-    ) -> Result<(Vec<RawTuple>, String), RequestFailure> {
+    ) -> Result<(Vec<RawTuple>, String), Error> {
         #[derive(serde::Serialize)]
         struct Request<'a> {
             #[serde(skip_serializing_if = "Option::is_none")]
@@ -153,10 +154,7 @@ impl Client {
             .join(format!("stores/{store_id}/read").as_str())
             .unwrap();
 
-        let Response {
-            tuples,
-            continuation_token,
-        } = self
+        let response = self
             .inner
             .post(url)
             .json(&Request {
@@ -167,10 +165,11 @@ impl Client {
                 continuation_token,
             })
             .send()
-            .await?
-            .error_for_status()?
-            .json()
             .await?;
+        let Response {
+            tuples,
+            continuation_token,
+        } = response.json::<Message<_>>().await?.try_success()?;
 
         let tuples = tuples.into_iter().map(|t| t.key).collect_vec();
         Ok((tuples, continuation_token))
@@ -186,7 +185,7 @@ impl Client {
         writes: &[RawTuple],
         deletes: &[RawTuple],
         authorization_model_id: Option<String>,
-    ) -> Result<(), RequestFailure> {
+    ) -> Result<(), Error> {
         #[derive(serde::Serialize)]
         struct Request<'a> {
             #[serde(skip_serializing_if = "Writes::is_empty")]
@@ -230,7 +229,8 @@ impl Client {
             .base_url()
             .join(format!("stores/{store_id}/write").as_str())
             .unwrap();
-        self.inner
+        let response = self
+            .inner
             .post(url)
             .json(&Request {
                 writes: Writes { tuple_keys: writes },
@@ -240,8 +240,11 @@ impl Client {
                 authorization_model_id,
             })
             .send()
-            .await?
-            .error_for_status()?;
-        Ok(())
+            .await?;
+        if response.status().is_success() {
+            Ok(())
+        } else {
+            Err(response.json::<Error>().await?)
+        }
     }
 }
