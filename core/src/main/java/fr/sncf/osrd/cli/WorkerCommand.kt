@@ -27,6 +27,7 @@ import kotlin.system.exitProcess
 import kotlin.use
 import kotlinx.serialization.ExperimentalSerializationApi
 import okhttp3.OkHttpClient
+import okio.IOException
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -176,7 +177,20 @@ class WorkerCommand : CliCommand {
                 TimeUnit.MILLISECONDS,
                 LinkedBlockingQueue(),
             )
-        return consume(executor)
+
+        while (true) {
+            try {
+                val res = consume(executor)
+                if (!ALL_INFRA) return res
+            } catch (e: IOException) {
+                if (!ALL_INFRA) throw e
+                // On ALL_INFRA, the worker may start before the queue exists,
+                // in which case we can wait for it to be created.
+                logger.warn("Couldn't start consumer: ${e.message} ${e.cause}")
+            }
+            logger.info("Restarting consumer in 1s")
+            Thread.sleep(1000)
+        }
     }
 
     /** Load the given infra and timetable this worker is specialized on, if set. */
@@ -336,6 +350,7 @@ class WorkerCommand : CliCommand {
         factory.setSharedExecutor(executor)
         factory.setMaxInboundMessageBodySize(WORKER_MAX_MSG_SIZE)
         val connection = factory.newConnection()
+        var isCancelled = false
 
         connection.use {
             connection.createChannel().use { channel -> reportActivity(channel, "started") }
@@ -376,16 +391,17 @@ class WorkerCommand : CliCommand {
                 },
                 { _ ->
                     logger.error("consumer cancelled")
-                    exitProcess(0)
+                    isCancelled = true
                 },
                 { consumerTag, e ->
                     logger.info("consume shutdown: {}, {}", consumerTag, e.toString())
                 },
             )
 
-            while (true) {
+            logger.info("consume started")
+
+            while (!isCancelled && channel.isOpen) {
                 Thread.sleep(100)
-                if (!channel.isOpen) break
             }
 
             logger.info("consume ended")
