@@ -110,8 +110,8 @@ pub trait Authorizer {
     /// do so concurrently as well. You can use [Access::access_all] for this.
     ///
     /// Also note that you'll have to then deal with each potential rejection
-    /// individually. If they're all the same, the upcoming transformation from
-    /// `Vec<Protected<T>>` to `Protected<Vec<T>>` will serve this purpose. Stay tuned!
+    /// individually. If they're all the same to you, consider using
+    /// [Protected::from_iter] instead.
     async fn authorize_all<'a, T>(
         &'a self,
         data: impl IntoIterator<Item = Protected<T>>,
@@ -229,6 +229,39 @@ impl<T: Default> Default for Protected<T> {
     }
 }
 
+impl<T: Send + 'static> FromIterator<Protected<T>> for Protected<Vec<T>> {
+    /// Concatenates a bunch of protected operations into one
+    ///
+    /// If you need to handle individual rejections, consider using
+    /// [Authorizer::authorize_all] instead.
+    fn from_iter<I: IntoIterator<Item = Protected<T>>>(iter: I) -> Self {
+        let mut guardrails = HashSet::new();
+        let mut sanity_checks = HashSet::new();
+        let mut ops = Vec::new();
+        for Protected {
+            op,
+            guardrails: gd,
+            sanity_checks: sc,
+        } in iter
+        {
+            guardrails.extend(gd);
+            sanity_checks.extend(sc);
+            ops.push(op);
+        }
+        Self {
+            op: Box::new(move |openfga| {
+                async move {
+                    let futs = ops.into_iter().map(|op| op(openfga));
+                    futures::future::try_join_all(futs).await
+                }
+                .boxed()
+            }),
+            guardrails,
+            sanity_checks,
+        }
+    }
+}
+
 impl<'a, T, R> Access<'a, T, R> {
     /// Awaits the authorized operation future if authorized or yields the rejection if not
     ///
@@ -248,8 +281,8 @@ impl<'a, T, R> Access<'a, T, R> {
 
     /// Concurrently awaits all accesses and factorizes OpenFGA errors
     ///
-    /// If you don't need to handle individual rejections, stay tuned for the
-    /// upcoming `Protected<Vec<T>>` transformation.
+    /// If you don't need to handle individual rejections, consider using
+    /// [Protected::from_iter] beforehand.
     pub async fn access_all(
         accesses: impl IntoIterator<Item = Access<'_, T, R>>,
     ) -> Result<Vec<Result<T, R>>, OpenFgaError> {
