@@ -10,7 +10,6 @@ use utoipa::ToSchema;
 
 use crate::prelude::*;
 use crate::project::Project;
-use crate::scenario::Scenario;
 use crate::tags::Tags;
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Model, ToSchema)]
@@ -55,13 +54,17 @@ impl Study {
     }
 
     pub async fn scenarios_count(&self, conn: &mut DbConnection) -> Result<u64, crate::Error> {
-        let study_id = self.id;
-        let count = Scenario::count(
-            conn,
-            SelectionSettings::new().filter(move || Scenario::STUDY_ID.eq(study_id)),
-        )
-        .await?;
-        Ok(count)
+        use database::tables::scenario::dsl;
+        use diesel::dsl::*;
+        use diesel::prelude::*;
+        use diesel_async::RunQueryDsl;
+
+        let count = dsl::scenario
+            .select(count_star())
+            .filter(dsl::study_id.eq(self.id))
+            .get_result::<i64>(&mut conn.write().await)
+            .await?;
+        Ok(count as u64)
     }
 
     /// Opens a transaction, retrieves the [Study] and its [Project] and calls the provided closure with these

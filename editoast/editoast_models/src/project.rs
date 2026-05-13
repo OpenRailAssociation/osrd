@@ -8,7 +8,6 @@ use utoipa::ToSchema;
 
 use crate::document::Document;
 use crate::prelude::*;
-use crate::study::Study;
 use crate::tags::Tags;
 
 #[derive(Clone, Debug, Serialize, Deserialize, Model, ToSchema, PartialEq)]
@@ -81,13 +80,17 @@ impl Project {
     }
 
     pub async fn studies_count(&self, conn: &mut DbConnection) -> Result<u64, crate::Error> {
-        let project_id = self.id;
-        let studies_count = Study::count(
-            conn,
-            SelectionSettings::new().filter(move || Study::PROJECT_ID.eq(project_id)),
-        )
-        .await?;
-        Ok(studies_count)
+        use database::tables::study::dsl;
+        use diesel::dsl::*;
+        use diesel::prelude::*;
+        use diesel_async::RunQueryDsl;
+
+        let studies_count = dsl::study
+            .select(count_star())
+            .filter(dsl::project_id.eq(self.id))
+            .get_result::<i64>(&mut conn.write().await)
+            .await?;
+        Ok(studies_count as u64)
     }
 
     /// Updates a project's image and deletes the old one if it is not used by another project

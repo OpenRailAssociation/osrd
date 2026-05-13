@@ -82,6 +82,10 @@ impl PaginationStats {
     }
 }
 
+#[expect(
+    deprecated,
+    reason = "trait Count is allowed as an implementation detail in prelude"
+)]
 pub trait PaginatedList: ListAndCount + 'static
 where
     <Self as List>::Error: From<<Self as Count>::Error>,
@@ -111,6 +115,10 @@ where
     }
 }
 
+#[expect(
+    deprecated,
+    reason = "trait Count is allowed as an implementation detail in prelude"
+)]
 impl<T> PaginatedList for T
 where
     T: ListAndCount + 'static,
