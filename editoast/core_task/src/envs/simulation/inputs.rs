@@ -146,11 +146,11 @@ where
     ) -> Option<super::SimulationKey> {
         let consist = self.consists.get(train)?;
         let params = self.parameters.get(train)?;
-        let pf_input = pathfinding_inputs.train_input(train)?;
+        let pf_key = pathfinding_inputs.train_input(train)?;
         Some(super::SimulationKey(
             consist.clone(),
             params.clone(),
-            pf_input,
+            pf_key,
         ))
     }
 }
