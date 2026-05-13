@@ -356,8 +356,13 @@ const useTimesStopsTableData = (
           : undefined;
 
         if (matchingPathStepRow) {
+          // Backend data can contain several OPs at the same UIC sharing the
+          // same op.id, all matching the same path step. Append op.position
+          // to the row id so each occurrence stays unique, mirroring what is
+          // done below for OP rows.
           formattedRows.push({
             ...matchingPathStepRow,
+            id: `${matchingPathStepRow.id}-${op.position}`,
             track: trackName,
             opOnPathIndex: opIndex,
           });
