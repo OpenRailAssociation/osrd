@@ -17,7 +17,6 @@ use core_task::PathfindingConsist;
 use core_task::SimulationConsist;
 use core_task::SimulationTrain;
 use core_task::SimulationTrainParameters;
-use core_task::SimulationWaypoint;
 use database::DbConnection;
 use itertools::Itertools;
 use ordered_float::OrderedFloat;
@@ -656,8 +655,8 @@ pub fn build_simulation_train(
         .map(|schedule_item @ ScheduleItem { at, .. }| (at, schedule_item))
         .collect::<HashMap<_, _>>();
     for (track_offsets, PathItem { id, .. }) in track_offsets.iter().zip(path) {
-        let (at, simulation_waypoint) = match schedule_map.get(id) {
-            None => (id, SimulationWaypoint::PathItem),
+        let (at, simulation_schedule_item) = match schedule_map.get(id) {
+            None => (id, core_task::ScheduleItem::PathItem),
             Some(ScheduleItem {
                 at,
                 arrival,
@@ -665,17 +664,17 @@ pub fn build_simulation_train(
                 reception_signal,
             }) => (
                 at,
-                SimulationWaypoint::ScheduleItem {
+                core_task::ScheduleItem::ScheduleItem {
                     arrival_at: arrival.as_ref().map(|a| a.num_milliseconds() as u64),
                     stop_for: stop_for.as_ref().map(|s| s.num_milliseconds() as u64),
                     reception_signal: *reception_signal,
                 },
             ),
         };
-        simulation_train.push_waypoint(
+        simulation_train.push_schedule_item(
             track_offsets.iter().cloned().collect(),
             at.clone(),
-            simulation_waypoint,
+            simulation_schedule_item,
         )
     }
     debug_assert!(

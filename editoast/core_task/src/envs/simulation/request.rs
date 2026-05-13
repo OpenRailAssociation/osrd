@@ -9,8 +9,8 @@ use crate::CoreEnv;
 use crate::Task;
 use crate::envs::pathfinding;
 
+use super::ScheduleItem;
 use super::SimulationKey;
-use super::SimulationWaypoint;
 
 pub(super) fn build_request(
     core_env: &CoreEnv,
@@ -29,7 +29,7 @@ pub(super) fn build_request(
             ?pf_consist,
             sim_params = ?params,
             pf_constraints = ?constraints,
-            waypoint_count = constraints.path_items.len(),
+            schedule_item_count = constraints.path_items.len(),
             computed_path_item_count = path_item_positions.len(),
             "Core path does not respect pathfinding constraints. Please open a bug report."
         );
@@ -70,8 +70,8 @@ pub(super) fn build_request(
     );
 
     let mut schedule = Vec::new();
-    for (i, point) in params.schedule().iter().enumerate() {
-        if let SimulationWaypoint::ScheduleItem {
+    for (i, point) in params.schedule_items().iter().enumerate() {
+        if let ScheduleItem::ScheduleItem {
             arrival_at,
             stop_for,
             reception_signal,
@@ -154,9 +154,9 @@ mod tests {
     use crate::envs::pathfinding;
     use crate::envs::pathfinding::PathItemAlternatives;
     use crate::envs::simulation;
+    use crate::envs::simulation::ScheduleItem;
     use crate::envs::simulation::SimulationTrain;
     use crate::envs::simulation::SimulationTrainParameters;
-    use crate::envs::simulation::SimulationWaypoint;
 
     /// Simple request with only schedule items
     #[test]
@@ -197,15 +197,15 @@ mod tests {
                 Default::default(),
             ),
         );
-        builder.push_waypoint(
+        builder.push_schedule_item(
             path_items[0].clone(),
             NonBlankString::from("a"),
-            SimulationWaypoint::PathItem,
+            ScheduleItem::PathItem,
         );
-        builder.push_waypoint(
+        builder.push_schedule_item(
             path_items[1].clone(),
             NonBlankString::from("b"),
-            SimulationWaypoint::ScheduleItem {
+            ScheduleItem::ScheduleItem {
                 arrival_at: Some(300),
                 stop_for: Some(0),
                 reception_signal: Default::default(),
@@ -296,10 +296,10 @@ mod tests {
             .iter()
             .enumerate()
         {
-            builder.push_waypoint(
+            builder.push_schedule_item(
                 path_items[i].clone(),
                 NonBlankString::from(i.to_string()),
-                SimulationWaypoint::ScheduleItem {
+                ScheduleItem::ScheduleItem {
                     arrival_at: *arrival,
                     stop_for: Some(0),
                     reception_signal: Default::default(),
@@ -430,15 +430,15 @@ mod tests {
                 Default::default(),
             ),
         );
-        builder.push_waypoint(
+        builder.push_schedule_item(
             PathItemAlternatives::from_iter([]),
             NonBlankString::from("a"),
-            SimulationWaypoint::PathItem,
+            ScheduleItem::PathItem,
         );
-        builder.push_waypoint(
+        builder.push_schedule_item(
             PathItemAlternatives::from_iter([]),
             NonBlankString::from("b"),
-            SimulationWaypoint::ScheduleItem {
+            ScheduleItem::ScheduleItem {
                 arrival_at: Some(300),
                 stop_for: Some(0),
                 reception_signal: Default::default(),
