@@ -1,6 +1,7 @@
 package fr.sncf.osrd.sim_infra.utils
 
 import fr.sncf.osrd.sim_infra.api.*
+import fr.sncf.osrd.sim_infra.impl.logger
 import fr.sncf.osrd.utils.indexing.mutableDirStaticIdxArrayListOf
 import fr.sncf.osrd.utils.indexing.mutableStaticIdxArrayListOf
 
@@ -61,7 +62,11 @@ fun BlockInfra.getRouteBlocks(
 ): List<BlockId> {
     val blockPaths =
         recoverBlocks(rawInfra, this, mutableStaticIdxArrayListOf(route), allowedSigSystems)
-    if (blockPaths.isEmpty()) return mutableStaticIdxArrayListOf()
+    if (blockPaths.isEmpty()) {
+        // quite "common" situation
+        logger.debug("Route ${rawInfra.getRouteName(route)} has no block")
+        return mutableStaticIdxArrayListOf()
+    }
     // No signaling system for now, take the first block path possibility.
     // Correct when signalisation is taken into account.
     val blocks = blockPaths[0].toBlockList()
