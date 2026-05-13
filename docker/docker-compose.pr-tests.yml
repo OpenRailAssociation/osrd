@@ -202,7 +202,7 @@ services:
       /bin/sh -c "
         fga_migrations apply &&
         diesel migration run --locked-schema &&
-        editoast user add 'Example User' 'mock/mocked' &&
+        editoast user add --skip-if-exists 'Example User' 'mock/mocked' &&
         editoast roles add 'mock/mocked' Admin &&
         exec editoast runserver"
     healthcheck:
