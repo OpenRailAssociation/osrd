@@ -125,6 +125,7 @@ class TimetableDownloader(
                     return response
                 } else {
                     logger.error("Error when getting ${request.url}: $response")
+                    response.close()
                 }
             } catch (e: IOException) {
                 // This block is especially important for timeout errors, but we can retry after any
@@ -137,7 +138,7 @@ class TimetableDownloader(
             // don't want the next page to immediately take over while this one is waiting.
             Thread.sleep(nextSleepDuration)
         }
-        throw UnexpectedHttpResponse(response)
+        throw RuntimeException("Can't access ${request.url}, retry count exceeded")
     }
 
     private data class PaginatedRequirements(
