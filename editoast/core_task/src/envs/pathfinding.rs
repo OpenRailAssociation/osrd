@@ -78,7 +78,7 @@ where
                    }| {
                 if let Some(tx) = ready_trains_tx.as_ref() {
                     let trains = runner
-                        .input_train_set(&input)
+                        .train_set(&input)
                         .expect("input provided by the Runner should be valid");
                     tx.unbounded_send(trains).ok();
                 }
@@ -112,7 +112,7 @@ where
                       data: path,
                   }| {
                 let trains = runner
-                    .input_train_set(&input)
+                    .train_set(&input)
                     .expect("input provided by the Runner should be valid");
                 Correlated::new(trains, path)
             },
@@ -258,7 +258,7 @@ where
 {
     core_env: CoreEnv,
     pub(in crate::envs) pathfinding_inputs: Arc<PathfindingEnvInputs<Train>>,
-    input_index: DashMap<PathfindingKey, TrainSet<Train>>,
+    rev: DashMap<PathfindingKey, TrainSet<Train>>,
 }
 
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
@@ -272,30 +272,27 @@ where
     Train: TrainKey + 'static,
 {
     pub(in crate::envs) fn new(PathfindingEnv { core_env, inputs }: PathfindingEnv<Train>) -> Self {
-        let input_index = DashMap::<PathfindingKey, TrainSet<Train>>::new();
+        let rev = DashMap::<PathfindingKey, TrainSet<Train>>::new();
         for Correlated {
             correlation_key: train,
             data: input,
         } in inputs.iter()
         {
-            input_index.entry(input).or_default().insert(train);
+            rev.entry(input).or_default().insert(train);
         }
         Self {
             core_env: core_env.clone(),
             pathfinding_inputs: Arc::new(inputs),
-            input_index,
+            rev,
         }
     }
 
-    pub(in crate::envs) fn input_train_set(
-        &self,
-        input: &PathfindingKey,
-    ) -> Option<TrainSet<Train>> {
-        self.input_index.get(input).as_deref().cloned()
+    pub(in crate::envs) fn train_set(&self, input: &PathfindingKey) -> Option<TrainSet<Train>> {
+        self.rev.get(input).as_deref().cloned()
     }
 
     fn iter_keys(&self) -> impl Iterator<Item = PathfindingKey> {
-        self.input_index.iter().map(|set| set.key().clone())
+        self.rev.iter().map(|set| set.key().clone())
     }
 
     pub(in crate::envs) fn stream(
