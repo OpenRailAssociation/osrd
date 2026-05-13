@@ -9,6 +9,7 @@ import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
 import useCategoryColors from 'applications/operationalStudies/hooks/useCategoryColors';
+import useLocalTrackNames from 'applications/operationalStudies/hooks/useLocalTrackNames';
 import { useManageTrainScheduleContext } from 'applications/operationalStudies/hooks/useManageTrainScheduleContext';
 import { useOperationalPointSearch } from 'applications/operationalStudies/hooks/useOperationalPointSearch';
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
@@ -84,7 +85,7 @@ const ItineraryModal = ({
   });
   const storePathSteps = useSelector(getPathSteps);
   const category = useSelector(getCategory);
-  const { workerStatus } = useScenarioContext();
+  const { workerStatus, timetableId } = useScenarioContext();
   const rollingStockId = useSelector(getOperationalStudiesRollingStockID);
   const rollingStockName = useSelector(getRollingStockName);
   const name = useSelector(getName);
@@ -153,6 +154,20 @@ const ItineraryModal = ({
   const { launchPathfinding } = useManageTrainScheduleContext();
 
   const { pathStepsMetadataById } = usePathStepsMetadata(pathSteps, pendingStepIdRef);
+
+  // Build the trainPath to pass to useLocalTrackNames (same format as TrainSchedule['path'])
+  const trainPath = useMemo(
+    () =>
+      pathSteps.reduce<{ id: string; location: PathItemLocation }[]>((acc, step) => {
+        if (step.location) {
+          acc.push({ id: step.id, location: step.location });
+        }
+        return acc;
+      }, []),
+    [pathSteps]
+  );
+
+  const localTrackNamesByStepId = useLocalTrackNames(infraId!, timetableId, trainPath);
   const { launchPathfindingV2, pathProperties, pathfindingError } = usePathfindingV2();
   const { convertFeatureClickToLocation } = useMapTrackSelection(infraId);
 
@@ -664,6 +679,7 @@ const ItineraryModal = ({
                     pathStep={pathStep}
                     setPathSteps={setPathSteps}
                     pathStepMetadata={pathStepMetadata}
+                    extraTrackNames={localTrackNamesByStepId.get(pathStep.id)}
                     index={i + 1}
                     categoryColors={categoryColors}
                     hidePathfindingLine={

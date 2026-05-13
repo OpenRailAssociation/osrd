@@ -33,6 +33,7 @@ type PathStepProps = {
   pathStep: PathStepV2;
   setPathSteps?: React.Dispatch<React.SetStateAction<PathStepV2[]>>;
   pathStepMetadata: PathStepMetadata | undefined;
+  extraTrackNames?: string[];
   index: number;
   hidePathfindingLine: boolean;
   categoryColors: CategoryColors;
@@ -62,6 +63,7 @@ const PathStepItem = ({
   pathStep,
   setPathSteps,
   pathStepMetadata,
+  extraTrackNames,
   index,
   hidePathfindingLine,
   categoryColors,
@@ -145,11 +147,10 @@ const PathStepItem = ({
     const selectedSecondaryCode = selectedSecondaryCodeOption.id;
     if (!selectedSecondaryCode || !isOpRefMetadata(pathStepMetadata)) return [];
 
-    const sortedSuggestions = (pathStepMetadata?.parts || [])
-      .map((part, i) => ({
-        label: part.trackName,
-        id: `${part.trackId}-${i}`,
-      }))
+    // Track name suggestions come from the new endpoint (local track names from all trains in the timetable)
+    const suggestions = (extraTrackNames ?? [])
+      .filter((name) => !!name)
+      .map((name) => ({ label: name, id: `track-${name}` }))
       // Sort with numbers first in ascending order, then alphabetically
       .sort((a, b) => {
         const isANumber = !isNaN(Number(a.label));
@@ -165,8 +166,8 @@ const PathStepItem = ({
           return a.label.localeCompare(b.label);
         }
       });
-    return [{ label: '', id: '' }, ...sortedSuggestions];
-  }, [pathStepMetadata, selectedSecondaryCodeOption.id]);
+    return [{ label: '', id: '' }, ...suggestions];
+  }, [pathStepMetadata, selectedSecondaryCodeOption.id, extraTrackNames]);
 
   const [filteredTrackSuggestions, setFilteredTrackSuggestions] = useState(trackNameSuggestions);
 
