@@ -662,7 +662,7 @@ pub(in crate::views) async fn unlock(
 #[derive(Deserialize, ToSchema)]
 #[cfg_attr(test, derive(Serialize))]
 pub(in crate::views) struct MatchOperationalPointsForm {
-    operational_point_references: Vec<OperationalPointReference>,
+    pub operational_point_references: Vec<OperationalPointReference>,
 }
 
 #[derive(Serialize, ToSchema)]

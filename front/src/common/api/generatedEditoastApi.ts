@@ -1086,6 +1086,20 @@ const injectedRtkApi = api
         }),
         providesTags: ['timetable'],
       }),
+      postTimetableByIdPathStepsLocalTrackNames: build.mutation<
+        PostTimetableByIdPathStepsLocalTrackNamesApiResponse,
+        PostTimetableByIdPathStepsLocalTrackNamesApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/timetable/${queryArg.id}/path_steps/local_track_names`,
+          method: 'POST',
+          body: queryArg.body,
+          params: {
+            infra_id: queryArg.infraId,
+          },
+        }),
+        invalidatesTags: ['timetable'],
+      }),
       getTimetableByIdRequirements: build.query<
         GetTimetableByIdRequirementsApiResponse,
         GetTimetableByIdRequirementsApiArg
@@ -2392,6 +2406,17 @@ export type GetTimetableByIdConflictsApiArg = {
   id: number;
   infraId: number;
   electricalProfileSetId?: number;
+};
+export type PostTimetableByIdPathStepsLocalTrackNamesApiResponse =
+  /** status 200 For each operational point in the input list, returns the set of local track names found in the timetable's train schedules path steps */ string[][];
+export type PostTimetableByIdPathStepsLocalTrackNamesApiArg = {
+  /** A timetable ID */
+  id: number;
+  infraId: number;
+  /** The list of operational point references to match */
+  body: {
+    operational_point_references: OperationalPointReference[];
+  };
 };
 export type GetTimetableByIdRequirementsApiResponse =
   /** status 200 The paginated list of timetable requirements */ PaginationStats & {

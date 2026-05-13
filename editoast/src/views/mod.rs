@@ -250,6 +250,9 @@ fn service_router() -> router::DocumentedRouter {
                             .nests("/train_schedules", |path| {
                                 path.route("/", get!(timetable::get_train_schedules))
                             })
+                            .nests("/path_steps", |path| {
+                                path.route("/local_track_names", post!(timetable::get_local_track_names))
+                            })
                             .nests("/round_trips", |path| {
                                 path.route("/train_schedules", get!(round_trips::list_train_schedules))
                             })

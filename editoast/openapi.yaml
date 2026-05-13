@@ -3290,6 +3290,53 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Conflict'
+  /timetable/{id}/path_steps/local_track_names:
+    post:
+      tags:
+      - timetable
+      summary: |-
+        Retrieve list of local track names for each path step of each train schedule
+        that match the given operational point references list
+      parameters:
+      - name: id
+        in: path
+        description: A timetable ID
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: infra_id
+        in: query
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        description: The list of operational point references to match
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - operational_point_references
+              properties:
+                operational_point_references:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/OperationalPointReference'
+        required: true
+      responses:
+        '200':
+          description: For each operational point in the input list, returns the set of local track names found in the timetable's train schedules path steps
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: array
+                  items:
+                    type: string
+                  uniqueItems: true
   /timetable/{id}/requirements:
     get:
       tags:
