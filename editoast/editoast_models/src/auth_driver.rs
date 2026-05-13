@@ -27,7 +27,7 @@ pub enum AuthDriverError {
     #[error("Subject with id {subject_id} not found")]
     SubjectNotFound { subject_id: i64 },
     #[error(transparent)]
-    OpenFgaRequestFailure(#[from] fga::client::RequestFailure),
+    OpenFgaRequestFailure(#[from] fga::client::Error),
     #[error("The provided identity is already associated to another user: `{owner:?}`")]
     IdentityAlreadyOwned { owner: User },
 }

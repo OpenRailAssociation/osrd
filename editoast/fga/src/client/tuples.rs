@@ -342,6 +342,58 @@ mod tests {
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn write_tuples_limit_fail() {
+        setup_tracing();
+        let model = compile_model(MODEL);
+        let mut client = test_client!();
+        client.update_authorization_model(&model).await.unwrap();
+
+        let mut entities = vec![];
+        for i in 1..=client.settings.limits.max_tuples_per_write + 1 {
+            entities.push((Infra(format!("{i}")), User(format!("{i}"))));
+        }
+        let tuples = entities
+            .iter()
+            .map(|(infra, user)| Infra::reader().tuple(user, infra))
+            .collect::<Vec<_>>();
+
+        let response = client.write_tuples(&tuples).await;
+        assert!(response.is_err_and(|err| matches!(
+            err,
+            Error::Validation {
+                code: ErrorCode::ExceededEntityLimit,
+                message,
+            } if message == "The number of write operations exceeds the allowed limit of 100"
+        )));
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn delete_tuples_limit_fail() {
+        setup_tracing();
+        let model = compile_model(MODEL);
+        let mut client = test_client!();
+        client.update_authorization_model(&model).await.unwrap();
+
+        let mut entities = vec![];
+        for i in 1..=client.settings.limits.max_tuples_per_write + 1 {
+            entities.push((Infra(format!("{i}")), User(format!("{i}"))));
+        }
+        let tuples = entities
+            .iter()
+            .map(|(infra, user)| Infra::reader().tuple(user, infra))
+            .collect::<Vec<_>>();
+
+        let response = client.delete_tuples(&tuples).await;
+        assert!(response.is_err_and(|err| matches!(
+            err,
+            Error::Validation {
+                code: ErrorCode::ExceededEntityLimit,
+                message,
+            } if message == "The number of write operations exceeds the allowed limit of 100"
+        )));
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn prepare_deletes() {
         setup_tracing();
         let model = compile_model(MODEL);

@@ -1,6 +1,5 @@
 use std::collections::HashSet;
 
-use fga::client::QueryError;
 use fga::client::UserList;
 use fga::model::Relation as _;
 use futures::FutureExt as _;
@@ -200,7 +199,6 @@ pub fn infra_granted_subjects(infra: Infra, grant: InfraGrant) -> Protected<Vec<
                     }
                 }
                 .map(|UserList { users, .. }| users)
-                .map_err(QueryError::parsing_ok)
             }
             .boxed()
         })
@@ -225,7 +223,6 @@ pub fn infra_granted_subjects(infra: Infra, grant: InfraGrant) -> Protected<Vec<
                             .await
                     }
                 }
-                .map_err(QueryError::parsing_ok)
             }
             .boxed()
         })

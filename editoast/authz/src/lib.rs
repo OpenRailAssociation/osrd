@@ -29,7 +29,7 @@ pub enum Error<StorageError: std::error::Error> {
     #[error("unknown user {identity}")]
     UnknownUser { identity: String },
     #[error(transparent)]
-    OpenFga(#[from] fga::client::RequestFailure),
+    OpenFga(#[from] fga::client::Error),
     #[error(transparent)]
     Storage(StorageError),
 }
