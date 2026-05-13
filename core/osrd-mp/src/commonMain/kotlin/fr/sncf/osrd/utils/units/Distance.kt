@@ -235,6 +235,11 @@ fun <T> Offset<T>.toDirected(objectLength: Length<T>, direction: Direction): Dir
     }
 }
 
+/** Converts an undirected offset into the opposite undirected offset, using the object length. */
+fun <T> DirOffset<T>.toOpposite(objectLength: Length<T>): DirOffset<T> {
+    return Offset(objectLength.distance - this.distance)
+}
+
 /**
  * Forces the conversion from <T> to <Directed<T>>. A little more type-safe than just .cast().
  * Should generally only be used for Lengths, though as a type alias this isn't type-checked.

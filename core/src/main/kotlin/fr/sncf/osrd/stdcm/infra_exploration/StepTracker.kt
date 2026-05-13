@@ -60,6 +60,7 @@ class StepTracker(
         block: BlockId,
         rangeStart: Offset<Block>,
         rangeEnd: Offset<Block>, // No default value as we need the infra to know the block len
+        isBacktrackingAtEnd: Boolean,
     ): List<LocatedStep> {
         val res = mutableListOf<LocatedStep>()
 
@@ -72,10 +73,16 @@ class StepTracker(
                     .filter { it.offset in currentPathBlockOffset..rangeEnd }
                     .minByOrNull { it.offset } ?: break
             currentPathOffset = currentBlockStart + location.offset.distance
-            val newStep = LocatedStep(currentPathOffset, location, step)
+
+            val isBacktrackingStep =
+                isBacktrackingAtEnd && location.offset == rangeEnd && step.canBacktrack
+
+            val newStep = LocatedStep(currentPathOffset, location, step, true, isBacktrackingStep)
             res.add(newStep)
             seenSteps.add(newStep)
+            if (isBacktrackingStep) break
         }
+        assert(!isBacktrackingAtEnd || res.last().isBacktracking)
         currentPathOffset = currentBlockStart + rangeEnd.distance
         return res
     }
