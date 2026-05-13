@@ -497,6 +497,30 @@
     },
     "toggleTrigramSearch": "Basculer l'affichage de la recherche par trigramme",
     "trainAdded": "Train ajouté",
+    "trainHeader": {
+      "allowances": {
+        "linear": "Marge linéaire",
+        "mareco": "Marge Mareco"
+      },
+      "form": {
+        "comfort": "Confort",
+        "compositionCode": "Code composition",
+        "departureDate": "Date de départ",
+        "electricalProfiles": "Profils électriques",
+        "initialVelocity": "Vitesse initiale",
+        "manageExtraOccurrences": "Gérer les occurrences hors cadence",
+        "recoveryMargin": "Marge de régularité",
+        "rollingStock": "Matériel roulant",
+        "serviceCadence": "Cadence de la mission",
+        "serviceWindow": "Durée de la plage de répétition",
+        "tags": "Étiquettes",
+        "trainCategory": "Catégorie de train",
+        "trainName": "Nom du train"
+      },
+      "itinerary": "Itinéraire",
+      "serviceModelTrain": "Train modèle de mission",
+      "serviceOccurrence": "Occurrence de mission"
+    },
     "trainLabels": "Étiquettes",
     "trainScheduleDepartureTime": "Heure de départ",
     "trainScheduleInitialSpeed": "Vitesse initiale",
