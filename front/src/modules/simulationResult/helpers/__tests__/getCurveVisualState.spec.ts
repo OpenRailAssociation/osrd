@@ -1,19 +1,19 @@
 import { describe, it, expect } from 'vitest';
 
-import type { IndexedOccurrenceId, PacedTrainId } from 'reducers/osrdconf/types';
+import type { IndexedOccurrenceId, TrainScheduleId } from 'reducers/osrdconf/types';
 
 import type { CurveStyleInput } from '../../types';
 import getCurveVisualState from '../getCurveVisualState';
 
-const PACED_1 = 'paced_1' as PacedTrainId;
-const PACED_2 = 'paced_2' as PacedTrainId;
+const TRAIN_SCHEDULE_1 = 'trainSchedule_1' as TrainScheduleId;
+const TRAIN_SCHEDULE_2 = 'trainSchedule_2' as TrainScheduleId;
 const PACED_1_OCC_2 = 'indexedoccurrence_1_2' as IndexedOccurrenceId;
 const PACED_1_OCC_3 = 'indexedoccurrence_1_3' as IndexedOccurrenceId;
 const PACED_2_OCC_1 = 'indexedoccurrence_2_1' as IndexedOccurrenceId;
 
 const buildInput = (overrides: Partial<CurveStyleInput> = {}): CurveStyleInput => ({
   chart: 'std',
-  train: { id: PACED_1 },
+  train: { id: TRAIN_SCHEDULE_1 },
   selection: undefined,
   ...overrides,
 });
@@ -27,8 +27,8 @@ describe('getCurveVisualState', () => {
           getCurveVisualState(
             buildInput({
               chart,
-              train: { id: PACED_1 },
-              selection: { id: PACED_1, by: 'timetable' },
+              train: { id: TRAIN_SCHEDULE_1 },
+              selection: { id: TRAIN_SCHEDULE_1, by: 'timetable' },
             })
           )
         ).toEqual({ state: 'passivePrimary', hovered: false });
@@ -73,7 +73,7 @@ describe('getCurveVisualState', () => {
             buildInput({
               chart,
               train: { id: PACED_1_OCC_2 },
-              selection: { id: PACED_1, by: 'timetable' },
+              selection: { id: TRAIN_SCHEDULE_1, by: 'timetable' },
             })
           )
         ).toEqual({ state: 'passivePrimary', hovered: false });
@@ -88,7 +88,7 @@ describe('getCurveVisualState', () => {
             buildInput({
               chart,
               train: { id: PACED_1_OCC_2, exceptionType: 'start_time' },
-              selection: { id: PACED_1, by: 'timetable' },
+              selection: { id: TRAIN_SCHEDULE_1, by: 'timetable' },
             })
           )
         ).toEqual({ state: 'passiveSecondary', hovered: false });
@@ -102,8 +102,8 @@ describe('getCurveVisualState', () => {
           getCurveVisualState(
             buildInput({
               chart,
-              train: { id: PACED_2 },
-              selection: { id: PACED_1, by: 'timetable' },
+              train: { id: TRAIN_SCHEDULE_2 },
+              selection: { id: TRAIN_SCHEDULE_1, by: 'timetable' },
             })
           )
         ).toEqual({ state: 'none', hovered: false });
@@ -121,8 +121,8 @@ describe('getCurveVisualState', () => {
         getCurveVisualState(
           buildInput({
             chart: 'std',
-            train: { id: PACED_1 },
-            selection: { id: PACED_1, by: 'std' },
+            train: { id: TRAIN_SCHEDULE_1 },
+            selection: { id: TRAIN_SCHEDULE_1, by: 'std' },
           })
         )
       ).toEqual({ state: 'active', hovered: false });
@@ -133,8 +133,8 @@ describe('getCurveVisualState', () => {
         getCurveVisualState(
           buildInput({
             chart: 'tod',
-            train: { id: PACED_1 },
-            selection: { id: PACED_1, by: 'std' },
+            train: { id: TRAIN_SCHEDULE_1 },
+            selection: { id: TRAIN_SCHEDULE_1, by: 'std' },
           })
         )
       ).toEqual({ state: 'passivePrimary', hovered: false });
@@ -146,7 +146,7 @@ describe('getCurveVisualState', () => {
           buildInput({
             chart: 'std',
             train: { id: PACED_1_OCC_2 },
-            selection: { id: PACED_1, by: 'std' },
+            selection: { id: TRAIN_SCHEDULE_1, by: 'std' },
             panelMode: 'compliant',
           })
         )
@@ -159,7 +159,7 @@ describe('getCurveVisualState', () => {
           buildInput({
             chart: 'tod',
             train: { id: PACED_1_OCC_2 },
-            selection: { id: PACED_1, by: 'std' },
+            selection: { id: TRAIN_SCHEDULE_1, by: 'std' },
             panelMode: 'compliant',
           })
         )
@@ -172,7 +172,7 @@ describe('getCurveVisualState', () => {
           buildInput({
             chart: 'std',
             train: { id: PACED_1_OCC_2, exceptionType: 'start_time' },
-            selection: { id: PACED_1, by: 'std' },
+            selection: { id: TRAIN_SCHEDULE_1, by: 'std' },
             panelMode: 'compliant',
           })
         )
@@ -185,7 +185,7 @@ describe('getCurveVisualState', () => {
           buildInput({
             chart: 'tod',
             train: { id: PACED_1_OCC_2, exceptionType: 'start_time' },
-            selection: { id: PACED_1, by: 'std' },
+            selection: { id: TRAIN_SCHEDULE_1, by: 'std' },
             panelMode: 'compliant',
           })
         )
@@ -302,7 +302,7 @@ describe('getCurveVisualState', () => {
           buildInput({
             chart: 'std',
             train: { id: PACED_1_OCC_2 },
-            selection: { id: PACED_1, by: 'std' },
+            selection: { id: TRAIN_SCHEDULE_1, by: 'std' },
             panelMode: 'all',
           })
         )
@@ -315,7 +315,7 @@ describe('getCurveVisualState', () => {
           buildInput({
             chart: 'std',
             train: { id: PACED_1_OCC_2, exceptionType: 'start_time' },
-            selection: { id: PACED_1, by: 'std' },
+            selection: { id: TRAIN_SCHEDULE_1, by: 'std' },
             panelMode: 'all',
           })
         )
@@ -328,7 +328,7 @@ describe('getCurveVisualState', () => {
           buildInput({
             chart: 'tod',
             train: { id: PACED_1_OCC_2 },
-            selection: { id: PACED_1, by: 'std' },
+            selection: { id: TRAIN_SCHEDULE_1, by: 'std' },
             panelMode: 'all',
           })
         )
@@ -341,7 +341,7 @@ describe('getCurveVisualState', () => {
           buildInput({
             chart: 'tod',
             train: { id: PACED_1_OCC_2, exceptionType: 'path_and_schedule' },
-            selection: { id: PACED_1, by: 'std' },
+            selection: { id: TRAIN_SCHEDULE_1, by: 'std' },
             panelMode: 'all',
           })
         )
@@ -357,7 +357,7 @@ describe('getCurveVisualState', () => {
           buildInput({
             chart: 'std',
             train: { id: PACED_1_OCC_2 },
-            selection: { id: PACED_1, by: 'std' },
+            selection: { id: TRAIN_SCHEDULE_1, by: 'std' },
             panelMode: 'single',
           })
         )
@@ -387,8 +387,8 @@ describe('getCurveVisualState', () => {
         getCurveVisualState(
           buildInput({
             chart: 'tod',
-            train: { id: PACED_1 },
-            selection: { id: PACED_1, by: 'tod' },
+            train: { id: TRAIN_SCHEDULE_1 },
+            selection: { id: TRAIN_SCHEDULE_1, by: 'tod' },
           })
         )
       ).toEqual({ state: 'active', hovered: false });
@@ -399,8 +399,8 @@ describe('getCurveVisualState', () => {
         getCurveVisualState(
           buildInput({
             chart: 'std',
-            train: { id: PACED_1 },
-            selection: { id: PACED_1, by: 'tod' },
+            train: { id: TRAIN_SCHEDULE_1 },
+            selection: { id: TRAIN_SCHEDULE_1, by: 'tod' },
           })
         )
       ).toEqual({ state: 'passivePrimary', hovered: false });
@@ -412,7 +412,7 @@ describe('getCurveVisualState', () => {
           buildInput({
             chart: 'tod',
             train: { id: PACED_1_OCC_2 },
-            selection: { id: PACED_1, by: 'tod' },
+            selection: { id: TRAIN_SCHEDULE_1, by: 'tod' },
             panelMode: 'compliant',
           })
         )
@@ -425,7 +425,7 @@ describe('getCurveVisualState', () => {
           buildInput({
             chart: 'std',
             train: { id: PACED_1_OCC_2 },
-            selection: { id: PACED_1, by: 'tod' },
+            selection: { id: TRAIN_SCHEDULE_1, by: 'tod' },
             panelMode: 'compliant',
           })
         )
@@ -438,7 +438,7 @@ describe('getCurveVisualState', () => {
           buildInput({
             chart: 'tod',
             train: { id: PACED_1_OCC_2, exceptionType: 'path_and_schedule' },
-            selection: { id: PACED_1, by: 'tod' },
+            selection: { id: TRAIN_SCHEDULE_1, by: 'tod' },
             panelMode: 'compliant',
           })
         )
@@ -451,7 +451,7 @@ describe('getCurveVisualState', () => {
           buildInput({
             chart: 'std',
             train: { id: PACED_1_OCC_2, exceptionType: 'path_and_schedule' },
-            selection: { id: PACED_1, by: 'tod' },
+            selection: { id: TRAIN_SCHEDULE_1, by: 'tod' },
             panelMode: 'compliant',
           })
         )
@@ -568,7 +568,7 @@ describe('getCurveVisualState', () => {
           buildInput({
             chart: 'tod',
             train: { id: PACED_1_OCC_2 },
-            selection: { id: PACED_1, by: 'tod' },
+            selection: { id: TRAIN_SCHEDULE_1, by: 'tod' },
             panelMode: 'all',
           })
         )
@@ -581,7 +581,7 @@ describe('getCurveVisualState', () => {
           buildInput({
             chart: 'std',
             train: { id: PACED_1_OCC_2 },
-            selection: { id: PACED_1, by: 'tod' },
+            selection: { id: TRAIN_SCHEDULE_1, by: 'tod' },
             panelMode: 'all',
           })
         )
@@ -597,7 +597,7 @@ describe('getCurveVisualState', () => {
           getCurveVisualState(
             buildInput({
               chart,
-              train: { id: PACED_1 },
+              train: { id: TRAIN_SCHEDULE_1 },
               selection: undefined,
             })
           )
@@ -612,8 +612,8 @@ describe('getCurveVisualState', () => {
           getCurveVisualState(
             buildInput({
               chart,
-              train: { id: PACED_1 },
-              hover: { trainId: PACED_1, from: 'timetable' },
+              train: { id: TRAIN_SCHEDULE_1 },
+              hover: { trainId: TRAIN_SCHEDULE_1, from: 'timetable' },
             })
           )
         ).toEqual({ state: 'none', hovered: true });
@@ -627,8 +627,8 @@ describe('getCurveVisualState', () => {
           getCurveVisualState(
             buildInput({
               chart,
-              train: { id: PACED_2 },
-              hover: { trainId: PACED_1, from: 'timetable' },
+              train: { id: TRAIN_SCHEDULE_2 },
+              hover: { trainId: TRAIN_SCHEDULE_1, from: 'timetable' },
             })
           )
         ).toEqual({ state: 'none', hovered: false });
@@ -818,7 +818,7 @@ describe('getCurveVisualState', () => {
           getCurveVisualState(
             buildInput({
               chart,
-              train: { id: PACED_1, isDragging: true },
+              train: { id: TRAIN_SCHEDULE_1, isDragging: true },
             })
           )
         ).toEqual({ state: 'drag', hovered: false });
@@ -830,8 +830,8 @@ describe('getCurveVisualState', () => {
         getCurveVisualState(
           buildInput({
             chart: 'std',
-            train: { id: PACED_1, isDragging: true },
-            selection: { id: PACED_1, by: 'std' },
+            train: { id: TRAIN_SCHEDULE_1, isDragging: true },
+            selection: { id: TRAIN_SCHEDULE_1, by: 'std' },
           })
         )
       ).toEqual({ state: 'drag', hovered: false });
@@ -842,8 +842,8 @@ describe('getCurveVisualState', () => {
         getCurveVisualState(
           buildInput({
             chart: 'std',
-            train: { id: PACED_1, isDragging: true },
-            hover: { trainId: PACED_1, from: 'std' },
+            train: { id: TRAIN_SCHEDULE_1, isDragging: true },
+            hover: { trainId: TRAIN_SCHEDULE_1, from: 'std' },
           })
         )
       ).toEqual({ state: 'drag', hovered: false });

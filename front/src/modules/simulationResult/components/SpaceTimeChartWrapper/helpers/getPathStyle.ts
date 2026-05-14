@@ -1,12 +1,12 @@
 import type { PathLevel, HoveredItem } from '@osrd-project/ui-charts';
 
 import type { CategoryColors } from 'applications/operationalStudies/types';
-import type { PacedTrainId, TrainId } from 'reducers/osrdconf/types';
+import type { TrainScheduleId, TrainId } from 'reducers/osrdconf/types';
 import {
-  extractEditoastIdFromPacedTrainId,
-  extractPacedTrainIdFromOccurrenceId,
+  extractEditoastIdFromTrainScheduleId,
+  extractTrainScheduleIdFromOccurrenceId,
   isOccurrenceId,
-  isPacedTrainId,
+  isTrainScheduleId,
 } from 'utils/trainId';
 
 const getPathStyle = (
@@ -25,14 +25,14 @@ const getPathStyle = (
     backgroundColor?: string;
   };
 } => {
-  let pacedTrainId: PacedTrainId;
+  let trainScheduleId: TrainScheduleId;
   if (isOccurrenceId(train.id)) {
-    pacedTrainId = extractPacedTrainIdFromOccurrenceId(train.id);
+    trainScheduleId = extractTrainScheduleIdFromOccurrenceId(train.id);
   } else {
-    if (!isPacedTrainId(train.id)) throw new Error();
-    pacedTrainId = train.id;
+    if (!isTrainScheduleId(train.id)) throw new Error();
+    trainScheduleId = train.id;
   }
-  const trainScheduleId = extractEditoastIdFromPacedTrainId(pacedTrainId);
+  const editoastId = extractEditoastIdFromTrainScheduleId(trainScheduleId);
   const { colors } = train;
 
   const invalidBorder = {
@@ -49,9 +49,9 @@ const getPathStyle = (
       train.id === hoveredTrainIdFromChart ||
       // if the hovered train is an occurrence from the same paced train, apply the hovered style
       (isOccurrenceId(hoveredTrainIdFromChart) &&
-        trainScheduleId ===
-          extractEditoastIdFromPacedTrainId(
-            extractPacedTrainIdFromOccurrenceId(hoveredTrainIdFromChart)
+        editoastId ===
+          extractEditoastIdFromTrainScheduleId(
+            extractTrainScheduleIdFromOccurrenceId(hoveredTrainIdFromChart)
           ))
     ) {
       return {
@@ -75,7 +75,7 @@ const getPathStyle = (
           ...(train.isSimulated === false && { border: invalidBorder }),
         };
       }
-    } else if (trainScheduleId === extractEditoastIdFromPacedTrainId(hoveredTrainIdFromTimetable)) {
+    } else if (editoastId === extractEditoastIdFromTrainScheduleId(hoveredTrainIdFromTimetable)) {
       return {
         color: colors.strong,
         level: 1,
@@ -110,8 +110,8 @@ const getPathStyle = (
       // Other occurrences from the same paced
       if (
         isOccurrenceId(train.id) &&
-        extractPacedTrainIdFromOccurrenceId(train.id) ===
-          extractPacedTrainIdFromOccurrenceId(selectedTrainId)
+        extractTrainScheduleIdFromOccurrenceId(train.id) ===
+          extractTrainScheduleIdFromOccurrenceId(selectedTrainId)
       ) {
         return {
           color: colors.base,

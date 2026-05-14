@@ -16,9 +16,9 @@ import type {
   SimulatedException,
 } from 'modules/trainSchedule/types';
 import {
-  formatEditoastIdToPacedTrainId,
-  formatPacedTrainIdToExceptionId,
-  formatPacedTrainIdToIndexedOccurrenceId,
+  formatEditoastIdToTrainScheduleId,
+  formatTrainScheduleIdToExceptionId,
+  formatTrainScheduleIdToIndexedOccurrenceId,
 } from 'utils/trainId';
 
 export const returnOccurrenceExceptionRollingStock = ({
@@ -67,11 +67,11 @@ const useOccurrences = (
 
   const occurrences = useMemo(() => {
     const computedOccurrences: Occurrence[] = [];
-    const pacedTrainId = formatEditoastIdToPacedTrainId(id);
+    const trainScheduleId = formatEditoastIdToTrainScheduleId(id);
 
     // Handle indexed occurrences
     for (let i = 0; i < occurrencesCount; i += 1) {
-      const occurrenceId = formatPacedTrainIdToIndexedOccurrenceId(pacedTrainId, i);
+      const occurrenceId = formatTrainScheduleIdToIndexedOccurrenceId(trainScheduleId, i);
 
       const correspondingException = findExceptionWithOccurrenceId(exceptions, occurrenceId);
 
@@ -133,7 +133,7 @@ const useOccurrences = (
 
       computedOccurrences.push({
         // TODO_EXCEPTION: remove `!` when use TrainScheduleException type
-        id: formatPacedTrainIdToExceptionId(pacedTrainId, Number(exception.id!)),
+        id: formatTrainScheduleIdToExceptionId(trainScheduleId, Number(exception.id!)),
         trainName: exception.train_name?.value ?? `${name}/+`,
         rollingStock: occurrenceRollingStock,
         startTime,

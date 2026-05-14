@@ -1,7 +1,7 @@
 import type { Conflict, TrainCategory, TrainScheduleResponse } from 'common/api/osrdEditoastApi';
-import type { PacedTrainId, OccurrenceId } from 'reducers/osrdconf/types';
+import type { TrainScheduleId, OccurrenceId } from 'reducers/osrdconf/types';
 
-export const pacedId = (n: number) => `paced_${n}` as PacedTrainId;
+export const trainScheduleId = (n: number) => `trainSchedule_${n}` as TrainScheduleId;
 export const occurrenceId = (paced: number, index = 0) =>
   `indexedoccurrence_${paced}_${index}` as OccurrenceId;
 

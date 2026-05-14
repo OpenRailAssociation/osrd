@@ -7,9 +7,9 @@ import {
 import type { SimulatedException } from 'modules/trainSchedule/types';
 import type { OccurrenceId, TrainId } from 'reducers/osrdconf/types';
 import {
-  extractEditoastIdFromPacedTrainId,
+  extractEditoastIdFromTrainScheduleId,
   extractOccurrenceIndexFromOccurrenceId,
-  extractPacedTrainIdFromOccurrenceId,
+  extractTrainScheduleIdFromOccurrenceId,
   isIndexedOccurrenceId,
   isOccurrenceId,
 } from 'utils/trainId';
@@ -196,9 +196,9 @@ export default function createHandleTrainDrag({
     panelSelectionMode: PanelSelectionMode;
     originalPacedExceptions?: SimulatedException[];
   }) {
-    const draggedItemId = extractEditoastIdFromPacedTrainId(
+    const draggedItemId = extractEditoastIdFromTrainScheduleId(
       isOccurrenceId(draggedTrainId)
-        ? extractPacedTrainIdFromOccurrenceId(draggedTrainId)
+        ? extractTrainScheduleIdFromOccurrenceId(draggedTrainId)
         : draggedTrainId
     );
     const draggedTrain = trainScheduleProjections.find((train) => train.id === draggedItemId);

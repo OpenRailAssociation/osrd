@@ -21,7 +21,7 @@ import {
 } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
 import { useDateTimeLocale } from 'utils/date';
-import { formatEditoastIdToPacedTrainId } from 'utils/trainId';
+import { formatEditoastIdToTrainScheduleId } from 'utils/trainId';
 
 import { MANAGE_TRAIN_SCHEDULE_TYPES } from '../../consts';
 import PacedTrainItem from './PacedTrain/PacedTrainItem';
@@ -169,7 +169,7 @@ const TrainList = ({
               train={trainSchedule}
               isSelected={
                 workerStatus === 'READY' &&
-                selectedTrainId === formatEditoastIdToPacedTrainId(trainSchedule.id)
+                selectedTrainId === formatEditoastIdToTrainScheduleId(trainSchedule.id)
               }
               isModified={trainSchedule.id === trainScheduleToEditData?.trainScheduleId}
               upsertUniqueTrains={upsertTrainSchedules}
@@ -178,7 +178,7 @@ const TrainList = ({
               setSelectedTrainScheduleIds={setSelectedTrainScheduleIds}
               projectionPathIsUsed={
                 workerStatus === 'READY' &&
-                trainIdUsedForProjection === formatEditoastIdToPacedTrainId(trainSchedule.id)
+                trainIdUsedForProjection === formatEditoastIdToTrainScheduleId(trainSchedule.id)
               }
               subCategories={subCategories}
               isSelectMode={isSelectMode}

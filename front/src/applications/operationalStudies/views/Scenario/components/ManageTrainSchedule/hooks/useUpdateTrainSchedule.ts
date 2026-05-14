@@ -41,7 +41,7 @@ import {
 import { getTrainIdUsedForProjection } from 'reducers/simulationResults/selectors';
 import { useAppDispatch, type AppDispatch } from 'store';
 import { Duration } from 'utils/duration';
-import { formatEditoastIdToPacedTrainId, isOccurrenceId } from 'utils/trainId';
+import { formatEditoastIdToTrainScheduleId, isOccurrenceId } from 'utils/trainId';
 
 import {
   formatOccurrenceException,
@@ -301,7 +301,7 @@ const useUpdateTrainSchedule = (
   const onUpdateSuccess = (editData: TrainScheduleToEditData) => {
     const { trainScheduleId } = editData;
     const editedTrainId =
-      editData.occurrenceId ?? formatEditoastIdToPacedTrainId(editData.trainScheduleId);
+      editData.occurrenceId ?? formatEditoastIdToTrainScheduleId(editData.trainScheduleId);
 
     dispatch(
       setSuccess({
@@ -322,7 +322,7 @@ const useUpdateTrainSchedule = (
       trainIdUsedForProjection.includes(`_${trainScheduleId}_`) &&
       !editData.originalTrainSchedule.paced
     ) {
-      dispatch(updateTrainIdUsedForProjection(formatEditoastIdToPacedTrainId(trainScheduleId)));
+      dispatch(updateTrainIdUsedForProjection(formatEditoastIdToTrainScheduleId(trainScheduleId)));
     }
 
     dispatch(clearAddedExceptionsList());

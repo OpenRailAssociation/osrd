@@ -16,8 +16,8 @@ import type { TrainScheduleWithDetails } from 'modules/trainSchedule/types';
 import type { TrainId } from 'reducers/osrdconf/types';
 import {
   isOccurrenceId,
-  extractPacedTrainIdFromOccurrenceId,
-  extractEditoastIdFromPacedTrainId,
+  extractTrainScheduleIdFromOccurrenceId,
+  extractEditoastIdFromTrainScheduleId,
 } from 'utils/trainId';
 
 export type PathDataWithSimulated = PathData & {
@@ -29,8 +29,8 @@ const getTrainCategory = (
   trainSchedulesWithDetailsById: Map<number, TrainScheduleWithDetails>,
   trainId: TrainId
 ) => {
-  const trainScheduleId = extractEditoastIdFromPacedTrainId(
-    isOccurrenceId(trainId) ? extractPacedTrainIdFromOccurrenceId(trainId) : trainId
+  const trainScheduleId = extractEditoastIdFromTrainScheduleId(
+    isOccurrenceId(trainId) ? extractTrainScheduleIdFromOccurrenceId(trainId) : trainId
   );
 
   const trainSchedule = trainSchedulesWithDetailsById.get(trainScheduleId);

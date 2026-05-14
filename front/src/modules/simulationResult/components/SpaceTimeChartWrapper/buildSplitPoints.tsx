@@ -15,7 +15,7 @@ import { keyBy, sortBy } from 'lodash';
 import type { CategoryColors } from 'applications/operationalStudies/types';
 import { Spinner } from 'common/Loaders';
 import type { TrainId } from 'reducers/osrdconf/types';
-import { extractPacedTrainIdFromOccurrenceId, isOccurrenceId } from 'utils/trainId';
+import { extractTrainScheduleIdFromOccurrenceId, isOccurrenceId } from 'utils/trainId';
 
 import getPathStyle from './helpers/getPathStyle';
 import { parseOccupancyZonePathId, formatOccupancyZonePathId } from './helpers/zones';
@@ -57,12 +57,12 @@ export function buildSplitPoints(
 
   const pathsById = keyBy(paths, ({ id }) => id);
 
-  const countZonesByPacedTrainId = (zones: OccupancyZone[] = []) => {
+  const countZonesByTrainScheduleId = (zones: OccupancyZone[] = []) => {
     const counts = new Map<TrainId, Map<string, number>>();
     for (const zone of zones) {
       const { trainId } = parseOccupancyZonePathId(zone.pathId);
       if (isOccurrenceId(trainId)) {
-        const pacedTrainId = extractPacedTrainIdFromOccurrenceId(trainId);
+        const pacedTrainId = extractTrainScheduleIdFromOccurrenceId(trainId);
         const pacedTrainIdCounts = counts.get(pacedTrainId) ?? new Map();
         pacedTrainIdCounts.set(zone.trackId, (pacedTrainIdCounts.get(zone.trackId) ?? 0) + 1);
         counts.set(pacedTrainId, pacedTrainIdCounts);
@@ -86,14 +86,14 @@ export function buildSplitPoints(
     }) => {
       const occupancyZones = (zones || []).map((zone) => {
         const baseZones = zones ?? [];
-        const zonesCountByPacedTrainId = countZonesByPacedTrainId(baseZones);
+        const zonesCountByPacedTrainId = countZonesByTrainScheduleId(baseZones);
         const { trainId } = parseOccupancyZonePathId(zone.pathId);
 
         const isHovered = hoveredTrainIdForChart === trainId;
         const isSelected = selectedTrainId === trainId;
         let totalOccurrencesOnTrack = 0;
         if (isOccurrenceId(trainId)) {
-          const pacedTrainId = extractPacedTrainIdFromOccurrenceId(trainId);
+          const pacedTrainId = extractTrainScheduleIdFromOccurrenceId(trainId);
           totalOccurrencesOnTrack =
             zonesCountByPacedTrainId.get(pacedTrainId)?.get(zone.trackId) ?? 0;
         }

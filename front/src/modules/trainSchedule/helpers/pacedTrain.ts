@@ -4,16 +4,16 @@ import type {
   PacedTrainException,
   TrainScheduleResponse,
 } from 'common/api/osrdEditoastApi';
-import type { OccurrenceId, PacedTrainId, TrainId } from 'reducers/osrdconf/types';
+import type { OccurrenceId, TrainScheduleId, TrainId } from 'reducers/osrdconf/types';
 import { Duration, addDurationToDate } from 'utils/duration';
 import {
-  extractEditoastIdFromPacedTrainId,
+  extractEditoastIdFromTrainScheduleId,
+  extractEditoastIdFromTrainId,
   extractExceptionIdFromOccurrenceId,
   extractOccurrenceIndexFromOccurrenceId,
-  extractPacedTrainIdFromOccurrenceId,
-  extractEditoastIdFromTrainId,
-  formatPacedTrainIdToExceptionId,
-  formatPacedTrainIdToIndexedOccurrenceId,
+  extractTrainScheduleIdFromOccurrenceId,
+  formatTrainScheduleIdToExceptionId,
+  formatTrainScheduleIdToIndexedOccurrenceId,
   isAddedExceptionId,
   isIndexedOccurrenceId,
   isOccurrenceId,
@@ -227,12 +227,12 @@ export const getExceptionFromOccurrenceId = (
   trainSchedulesById: Map<number, TrainScheduleResponse>,
   occurrenceId: OccurrenceId
 ) => {
-  const pacedTrainId = extractEditoastIdFromPacedTrainId(
-    extractPacedTrainIdFromOccurrenceId(occurrenceId)
+  const trainScheduleId = extractEditoastIdFromTrainScheduleId(
+    extractTrainScheduleIdFromOccurrenceId(occurrenceId)
   );
-  const pacedTrain = trainSchedulesById.get(pacedTrainId);
+  const pacedTrain = trainSchedulesById.get(trainScheduleId);
   if (!pacedTrain) return undefined;
-  if (!isPacedTrain(pacedTrain)) throw new Error(`No paced train found for id ${pacedTrainId}`);
+  if (!isPacedTrain(pacedTrain)) throw new Error(`No paced train found for id ${trainScheduleId}`);
 
   let exception: PacedTrainException | undefined;
   if (isIndexedOccurrenceId(occurrenceId)) {
@@ -298,17 +298,17 @@ export const hasChangeGroups = (exception: SimulatedException): boolean =>
 export const hasExceptions = (exception: SimulatedException): boolean =>
   exception.disabled === true || hasChangeGroups(exception);
 
-export const getOccurrencesIds = (pacedTrain: PacedTrain, pacedTrainId: PacedTrainId) => {
+export const getOccurrencesIds = (pacedTrain: PacedTrain, trainScheduleId: TrainScheduleId) => {
   const occurrencesIds: OccurrenceId[] = pacedTrain.paced.exceptions
     .filter((exception) => exception.occurrence_index === undefined) // Indexed exceptions follow the regular indexed occurrence id pattern
     // TODO_EXCEPTION: remove `!` when using TrainSchedulingException type
-    .map((exception) => formatPacedTrainIdToExceptionId(pacedTrainId, exception.id!));
+    .map((exception) => formatTrainScheduleIdToExceptionId(trainScheduleId, exception.id!));
   const indexedOccurrencesCount = getOccurrencesNb({
     timeWindow: Duration.parse(pacedTrain.paced.time_window),
     interval: Duration.parse(pacedTrain.paced.interval),
   });
   for (let i = 0; i < indexedOccurrencesCount; i += 1) {
-    occurrencesIds.push(formatPacedTrainIdToIndexedOccurrenceId(pacedTrainId, i));
+    occurrencesIds.push(formatTrainScheduleIdToIndexedOccurrenceId(trainScheduleId, i));
   }
   return occurrencesIds;
 };
@@ -320,8 +320,8 @@ export const isOccurrencePresentInPacedTrain = (
   const paced = trainSchedule.paced;
   if (!paced) return false;
 
-  const pacedTrainId = extractPacedTrainIdFromOccurrenceId(occurrenceId);
-  if (extractEditoastIdFromPacedTrainId(pacedTrainId) !== trainSchedule.id) return false;
+  const trainScheduleId = extractTrainScheduleIdFromOccurrenceId(occurrenceId);
+  if (extractEditoastIdFromTrainScheduleId(trainScheduleId) !== trainSchedule.id) return false;
 
   if (isAddedExceptionId(occurrenceId)) {
     const exceptionId = extractExceptionIdFromOccurrenceId(occurrenceId);
@@ -346,7 +346,7 @@ export const isOccurrencePresentInPacedTrain = (
  */
 export const getFirstActiveOccurrenceId = (
   pacedTrain: PacedTrainWithDetails,
-  pacedTrainId: PacedTrainId
+  trainScheduleId: TrainScheduleId
 ): OccurrenceId | undefined => {
   const { paced } = pacedTrain;
   const startTimeMs = pacedTrain.startTime.getTime();
@@ -362,7 +362,7 @@ export const getFirstActiveOccurrenceId = (
     const timeMs = indexedException?.start_time?.value ?? startTimeMs + i * intervalMs;
     if (timeMs < bestTimeMs) {
       bestTimeMs = timeMs;
-      bestId = formatPacedTrainIdToIndexedOccurrenceId(pacedTrainId, i);
+      bestId = formatTrainScheduleIdToIndexedOccurrenceId(trainScheduleId, i);
     }
   }
 
@@ -371,7 +371,7 @@ export const getFirstActiveOccurrenceId = (
       continue;
     if (exception.start_time.value < bestTimeMs) {
       bestTimeMs = exception.start_time.value;
-      bestId = formatPacedTrainIdToExceptionId(pacedTrainId, exception.id);
+      bestId = formatTrainScheduleIdToExceptionId(trainScheduleId, exception.id);
     }
   }
 

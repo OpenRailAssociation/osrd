@@ -2,12 +2,12 @@ import { describe, it, expect } from 'vitest';
 
 import type { PacedTrainException } from 'common/api/osrdEditoastApi';
 import type { IndividualTrainProjection } from 'modules/simulationResult/types';
-import type { OccurrenceId, PacedTrainId, TrainId } from 'reducers/osrdconf/types';
+import type { OccurrenceId, TrainScheduleId, TrainId } from 'reducers/osrdconf/types';
 
 import canDragHoveredTrain from '../canDragHoveredTrain';
 
-const PACED_1 = 'paced_1' as PacedTrainId;
-const PACED_2 = 'paced_2' as PacedTrainId;
+const TRAIN_SCHEDULE_1 = 'trainSchedule_1' as TrainScheduleId;
+const TRAIN_SCHEDULE_2 = 'trainSchedule_2' as TrainScheduleId;
 const OCC_1_0 = 'indexedoccurrence_1_0' as OccurrenceId;
 const OCC_1_1 = 'indexedoccurrence_1_1' as OccurrenceId;
 const OCC_2_0 = 'indexedoccurrence_2_0' as OccurrenceId;
@@ -27,8 +27,8 @@ describe('canDragHoveredTrain', () => {
       expect(
         canDragHoveredTrain({
           panelSelectionMode: 'compliant',
-          hoveredTrain: train(PACED_1),
-          selectedTrainId: PACED_1,
+          hoveredTrain: train(TRAIN_SCHEDULE_1),
+          selectedTrainId: TRAIN_SCHEDULE_1,
         })
       ).toBe(true);
     });
@@ -37,8 +37,8 @@ describe('canDragHoveredTrain', () => {
       expect(
         canDragHoveredTrain({
           panelSelectionMode: 'compliant',
-          hoveredTrain: train(PACED_2),
-          selectedTrainId: PACED_1,
+          hoveredTrain: train(TRAIN_SCHEDULE_2),
+          selectedTrainId: TRAIN_SCHEDULE_1,
         })
       ).toBe(false);
     });
@@ -48,7 +48,7 @@ describe('canDragHoveredTrain', () => {
         canDragHoveredTrain({
           panelSelectionMode: 'compliant',
           hoveredTrain: train(OCC_1_0),
-          selectedTrainId: PACED_1,
+          selectedTrainId: TRAIN_SCHEDULE_1,
         })
       ).toBe(true);
     });
@@ -58,7 +58,7 @@ describe('canDragHoveredTrain', () => {
         canDragHoveredTrain({
           panelSelectionMode: 'compliant',
           hoveredTrain: train(OCC_2_0),
-          selectedTrainId: PACED_1,
+          selectedTrainId: TRAIN_SCHEDULE_1,
         })
       ).toBe(false);
     });
@@ -68,7 +68,7 @@ describe('canDragHoveredTrain', () => {
         canDragHoveredTrain({
           panelSelectionMode: 'compliant',
           hoveredTrain: train(OCC_1_0, { path_and_schedule: { value: 'foo' } as never }),
-          selectedTrainId: PACED_1,
+          selectedTrainId: TRAIN_SCHEDULE_1,
         })
       ).toBe(true);
     });
@@ -78,7 +78,7 @@ describe('canDragHoveredTrain', () => {
         canDragHoveredTrain({
           panelSelectionMode: 'compliant',
           hoveredTrain: train(OCC_1_0, { start_time: { value: 1000 } as never }),
-          selectedTrainId: PACED_1,
+          selectedTrainId: TRAIN_SCHEDULE_1,
         })
       ).toBe(false);
     });
@@ -112,7 +112,7 @@ describe('canDragHoveredTrain', () => {
         canDragHoveredTrain({
           panelSelectionMode: 'all',
           hoveredTrain: train(OCC_1_1),
-          selectedTrainId: PACED_1,
+          selectedTrainId: TRAIN_SCHEDULE_1,
         })
       ).toBe(true);
     });
@@ -132,7 +132,7 @@ describe('canDragHoveredTrain', () => {
         canDragHoveredTrain({
           panelSelectionMode: 'all',
           hoveredTrain: train(OCC_2_0),
-          selectedTrainId: PACED_1,
+          selectedTrainId: TRAIN_SCHEDULE_1,
         })
       ).toBe(false);
     });
@@ -141,8 +141,8 @@ describe('canDragHoveredTrain', () => {
       expect(
         canDragHoveredTrain({
           panelSelectionMode: 'all',
-          hoveredTrain: train(PACED_1),
-          selectedTrainId: PACED_1,
+          hoveredTrain: train(TRAIN_SCHEDULE_1),
+          selectedTrainId: TRAIN_SCHEDULE_1,
         })
       ).toBe(false);
     });

@@ -15,7 +15,7 @@ import useSimulationResults from '../useSimulationResults';
 
 const INFRA_ID = 12;
 const ELECTRICAL_PROFILE_SET_ID = 34;
-const PACED_TRAIN_ID = 'paced_1';
+const TRAIN_SCHEDULE_ID = 'trainSchedule_1';
 const EXCEPTION_KEY = 'exc_1';
 const OCCURRENCE_ID = 'indexedoccurrence_1_1';
 const ADDED_EXCEPTION_ID = 'exception_1_99';
@@ -64,8 +64,8 @@ describe.skip('useSimulationResults', () => {
     train_name: 'Train 1',
   };
 
-  // What the hook produces from baseTrain after formatEditoastIdToPacedTrainId()
-  const expectedTrain = { ...baseTrain, id: PACED_TRAIN_ID };
+  // What the hook produces from baseTrain after formatEditoastIdToTrainScheduleId()
+  const expectedTrain = { ...baseTrain, id: TRAIN_SCHEDULE_ID };
 
   const pacedTrainSchedule = {
     ...baseTrain,
@@ -158,7 +158,7 @@ describe.skip('useSimulationResults', () => {
       infraId: INFRA_ID,
       electricalProfileSetId: ELECTRICAL_PROFILE_SET_ID,
     });
-    mockGetSelectedTrain.mockReturnValue({ id: PACED_TRAIN_ID });
+    mockGetSelectedTrain.mockReturnValue({ id: TRAIN_SCHEDULE_ID });
     mockUseSelectedTrainSchedule.mockReturnValue(baseTrain);
 
     getTrainPath.mockResolvedValue({ data: pathfindingSuccess });
@@ -201,12 +201,12 @@ describe.skip('useSimulationResults', () => {
     await waitFor(() => {
       expect(result.current.results?.isValid).toBe(true);
       expect(getTrainPath).toHaveBeenCalledWith({
-        id: PACED_TRAIN_ID,
+        id: TRAIN_SCHEDULE_ID,
         infraId: INFRA_ID,
         exceptionId: undefined,
       });
       expect(getTrainSimulation).toHaveBeenCalledWith({
-        id: PACED_TRAIN_ID,
+        id: TRAIN_SCHEDULE_ID,
         infraId: INFRA_ID,
         electricalProfileSetId: ELECTRICAL_PROFILE_SET_ID,
         exceptionId: undefined,
@@ -474,16 +474,16 @@ describe.skip('useSimulationResults', () => {
   it('should refetch and update results when the selected train id changes', async () => {
     const { result, rerender } = renderUseSimulationResults();
 
-    await waitFor(() => expect(result.current.results?.train.id).toBe(PACED_TRAIN_ID));
+    await waitFor(() => expect(result.current.results?.train.id).toBe(TRAIN_SCHEDULE_ID));
 
-    mockGetSelectedTrain.mockReturnValue({ id: 'paced_2' });
+    mockGetSelectedTrain.mockReturnValue({ id: 'trainSchedule_2' });
     mockUseSelectedTrainSchedule.mockReturnValue({ ...baseTrain, id: 2 });
     rerender();
 
     await waitFor(() => {
-      expect(result.current.results?.train.id).toBe('paced_2');
+      expect(result.current.results?.train.id).toBe('trainSchedule_2');
       expect(getTrainPath).toHaveBeenLastCalledWith({
-        id: 'paced_2',
+        id: 'trainSchedule_2',
         infraId: INFRA_ID,
         exceptionId: undefined,
       });

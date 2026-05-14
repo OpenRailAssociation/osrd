@@ -34,8 +34,8 @@ import {
 import type { TrainId } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 import {
-  extractEditoastIdFromPacedTrainId,
-  extractPacedTrainIdFromOccurrenceId,
+  extractEditoastIdFromTrainScheduleId,
+  extractTrainScheduleIdFromOccurrenceId,
   isOccurrenceId,
 } from 'utils/trainId';
 import { mapBy } from 'utils/types';
@@ -280,9 +280,9 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
       newDeparture: Date,
       panelSelectionMode?: PanelSelectionMode
     ) => {
-      const editoastId = extractEditoastIdFromPacedTrainId(
+      const editoastId = extractEditoastIdFromTrainScheduleId(
         isOccurrenceId(draggedTrainId)
-          ? extractPacedTrainIdFromOccurrenceId(draggedTrainId)
+          ? extractTrainScheduleIdFromOccurrenceId(draggedTrainId)
           : draggedTrainId
       );
       const trainSchedule = trainSchedules?.find((train) => train.id === editoastId);
@@ -390,9 +390,9 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
       // 'single' only changes one occurrence's exception, not the model departure: nothing to
       // broadcast as a departure-time change (other tabs reconcile via tag invalidation).
       if (panelSelectionMode === 'single') return;
-      const editoastId = extractEditoastIdFromPacedTrainId(
+      const editoastId = extractEditoastIdFromTrainScheduleId(
         isOccurrenceId(draggedTrainId)
-          ? extractPacedTrainIdFromOccurrenceId(draggedTrainId)
+          ? extractTrainScheduleIdFromOccurrenceId(draggedTrainId)
           : draggedTrainId
       );
       broadcastScenarioMessage({

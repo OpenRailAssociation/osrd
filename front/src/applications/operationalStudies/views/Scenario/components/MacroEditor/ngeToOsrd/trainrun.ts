@@ -14,7 +14,7 @@ import {
 import { updateSelectedTrain } from 'reducers/simulationResults';
 import type { AppDispatch } from 'store';
 import { Duration } from 'utils/duration';
-import { formatEditoastIdToPacedTrainId } from 'utils/trainId';
+import { formatEditoastIdToTrainScheduleId } from 'utils/trainId';
 
 import { checkChangeGroups } from '../../ManageTrainSchedule/helpers/buildPacedTrainException';
 import type {
@@ -451,7 +451,7 @@ const handleCreateTrainSchedule = async (
   addUpsertedTrainSchedules(newTrainSchedules);
   dispatch(
     updateSelectedTrain({
-      id: formatEditoastIdToPacedTrainId(newTrainSchedules[0].id),
+      id: formatEditoastIdToTrainScheduleId(newTrainSchedules[0].id),
       by: 'timetable',
     })
   );

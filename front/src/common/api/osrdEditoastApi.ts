@@ -3,8 +3,8 @@ import { isNil, sortBy } from 'lodash';
 
 import type { TrainId } from 'reducers/osrdconf/types';
 import {
-  extractEditoastIdFromPacedTrainId,
-  extractPacedTrainIdFromOccurrenceId,
+  extractEditoastIdFromTrainScheduleId,
+  extractTrainScheduleIdFromOccurrenceId,
   isOccurrenceId,
 } from 'utils/trainId';
 
@@ -100,13 +100,13 @@ const osrdEditoastApi = generatedEditoastApi
         { id: TrainId; infraId: number; exceptionId?: number }
       >({
         queryFn: async ({ id: trainId, infraId, exceptionId }, { dispatch }) => {
-          const pacedTrainId = isOccurrenceId(trainId)
-            ? extractPacedTrainIdFromOccurrenceId(trainId)
+          const trainScheduleId = isOccurrenceId(trainId)
+            ? extractTrainScheduleIdFromOccurrenceId(trainId)
             : trainId;
           const path: PathfindingResult = await dispatch(
             generatedEditoastApi.endpoints.getTrainSchedulesByIdPath.initiate(
               {
-                id: extractEditoastIdFromPacedTrainId(pacedTrainId),
+                id: extractEditoastIdFromTrainScheduleId(trainScheduleId),
                 infraId,
                 exceptionId,
               },
@@ -125,13 +125,13 @@ const osrdEditoastApi = generatedEditoastApi
           { id: trainId, infraId, electricalProfileSetId, exceptionId },
           { dispatch }
         ) => {
-          const pacedTrainId = isOccurrenceId(trainId)
-            ? extractPacedTrainIdFromOccurrenceId(trainId)
+          const trainScheduleId = isOccurrenceId(trainId)
+            ? extractTrainScheduleIdFromOccurrenceId(trainId)
             : trainId;
           const simulation = await dispatch(
             generatedEditoastApi.endpoints.getTrainSchedulesByIdSimulation.initiate(
               {
-                id: extractEditoastIdFromPacedTrainId(pacedTrainId),
+                id: extractEditoastIdFromTrainScheduleId(trainScheduleId),
                 infraId,
                 electricalProfileSetId,
                 exceptionId,
@@ -151,13 +151,13 @@ const osrdEditoastApi = generatedEditoastApi
           { id: trainId, infraId, electricalProfileSetId, exceptionId },
           { dispatch }
         ) => {
-          const pacedTrainId = isOccurrenceId(trainId)
-            ? extractPacedTrainIdFromOccurrenceId(trainId)
+          const trainScheduleId = isOccurrenceId(trainId)
+            ? extractTrainScheduleIdFromOccurrenceId(trainId)
             : trainId;
           const etcsBrakingCurves = await dispatch(
             generatedEditoastApi.endpoints.getTrainSchedulesByIdEtcsBrakingCurves.initiate(
               {
-                id: extractEditoastIdFromPacedTrainId(pacedTrainId),
+                id: extractEditoastIdFromTrainScheduleId(trainScheduleId),
                 infraId,
                 electricalProfileSetId,
                 exceptionId,

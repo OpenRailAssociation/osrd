@@ -13,12 +13,12 @@ import type {
 } from 'modules/simulationResult/types';
 import type { TrainId } from 'reducers/osrdconf/types';
 import type { SelectedTrain } from 'reducers/simulationResults/types';
-import { extractPacedTrainIdFromTrainId, isOccurrenceId } from 'utils/trainId';
+import { extractTrainScheduleIdFromTrainId, isOccurrenceId } from 'utils/trainId';
 
 type TrainInput = CurveStyleInput['train'];
 
 const samePacedTrain = (a: TrainId, b: TrainId) =>
-  extractPacedTrainIdFromTrainId(a) === extractPacedTrainIdFromTrainId(b);
+  extractTrainScheduleIdFromTrainId(a) === extractTrainScheduleIdFromTrainId(b);
 
 const getTimetableSelectionState = (
   train: TrainInput,
