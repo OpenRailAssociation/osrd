@@ -3,7 +3,7 @@ import { useCallback } from 'react';
 import { useSelector } from 'react-redux';
 
 import { updatePacedTrainExceptionsList } from 'applications/operationalStudies/views/Scenario/components/ManageTrainSchedule/helpers/buildPacedTrainException';
-import { formatPacedTrainWithDetailsToTrainSchedule } from 'applications/operationalStudies/views/Scenario/components/ManageTrainSchedule/helpers/formatTrainSchedulePayload';
+import { formatTrainScheduleWithDetailsToTrainSchedule } from 'applications/operationalStudies/views/Scenario/components/ManageTrainSchedule/helpers/formatTrainSchedulePayload';
 import type {
   PacedTrainException,
   TrainSchedule,
@@ -21,7 +21,7 @@ import {
 } from 'modules/trainSchedule/helpers/updateTrainScheduleHelpers';
 import type {
   Occurrence,
-  PacedTrainWithPacedWithDetails,
+  PacedTrainWithDetails,
   SimulatedException,
 } from 'modules/trainSchedule/types';
 import type { OccurrenceId } from 'reducers/osrdconf/types';
@@ -31,11 +31,11 @@ import { useAppDispatch } from 'store';
 import { extractExceptionIdFromOccurrenceId, isIndexedOccurrenceId } from 'utils/trainId';
 
 type OccurrenceActionsParams = {
-  pacedTrain: PacedTrainWithPacedWithDetails;
+  pacedTrain: PacedTrainWithDetails;
   occurrences: Occurrence[];
   selectPacedTrainToEdit: (
-    pacedTrainToEdit: PacedTrainWithPacedWithDetails,
-    originalPacedTrain?: PacedTrainWithPacedWithDetails,
+    pacedTrainToEdit: PacedTrainWithDetails,
+    originalTrainSchedule?: PacedTrainWithDetails,
     occurrenceId?: OccurrenceId
   ) => void;
   upsertTrainSchedules: (trainSchedules: TrainScheduleResponse[]) => void;
@@ -55,7 +55,7 @@ const useOccurrenceActions = ({
 
   const upsertWithNewExceptions = useCallback(
     (newExceptions: SimulatedException[]) => {
-      const formattedPacedTrain = formatPacedTrainWithDetailsToTrainSchedule(pacedTrain);
+      const formattedPacedTrain = formatTrainScheduleWithDetailsToTrainSchedule(pacedTrain);
 
       upsertTrainSchedules([
         {
@@ -90,7 +90,7 @@ const useOccurrenceActions = ({
   // the occurrence start time and all its eventual exceptions
   const editOccurrence = useCallback(
     async (editedOccurrence: Occurrence) => {
-      let occurrenceWithDetails: PacedTrainWithPacedWithDetails = pacedTrain;
+      let occurrenceWithDetails: PacedTrainWithDetails = pacedTrain;
 
       const occurrenceToUpdateException = findExceptionWithOccurrenceId(
         pacedTrain.paced.exceptions,

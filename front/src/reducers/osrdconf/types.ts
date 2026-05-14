@@ -20,7 +20,7 @@ import type {
   ReceptionSignal,
   TrainScheduleResponse,
 } from 'common/api/osrdEditoastApi';
-import type { PacedTrainWithDetails } from 'modules/trainSchedule/types';
+import type { TrainScheduleWithDetails } from 'modules/trainSchedule/types';
 import type { MapSettings } from 'reducers/commonMap/types';
 import type { InfraState } from 'reducers/infra';
 import type { Duration } from 'utils/duration';
@@ -229,7 +229,7 @@ export type PacedTrainId = string & { readonly __type: unique symbol };
 export type TrainId = OccurrenceId | PacedTrainId;
 export type TrainScheduleToEditData = {
   trainScheduleId: number;
-  originalPacedTrain: PacedTrainWithDetails;
+  originalTrainSchedule: TrainScheduleWithDetails;
   occurrenceId?: OccurrenceId;
 };
 

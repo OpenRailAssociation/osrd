@@ -7,7 +7,7 @@ import {
   updatePacedTrainExceptionsList,
 } from 'applications/operationalStudies/views/Scenario/components/ManageTrainSchedule/helpers/buildPacedTrainException';
 import formatMargin from 'applications/operationalStudies/views/Scenario/components/ManageTrainSchedule/helpers/formatMargin';
-import { formatPacedTrainWithDetailsToTrainSchedule } from 'applications/operationalStudies/views/Scenario/components/ManageTrainSchedule/helpers/formatTrainSchedulePayload';
+import { formatTrainScheduleWithDetailsToTrainSchedule } from 'applications/operationalStudies/views/Scenario/components/ManageTrainSchedule/helpers/formatTrainSchedulePayload';
 import {
   osrdEditoastApi,
   type TrainSchedule,
@@ -261,13 +261,13 @@ const useUpdateTimesStopsTable = (
         throw new Error(`Parent PacedTrain not found for occurrence: ${occurrenceId}`);
       }
 
-      const formattedPacedTrain = formatPacedTrainWithDetailsToTrainSchedule(
+      const formattedPacedTrain = formatTrainScheduleWithDetailsToTrainSchedule(
         originalPacedTrainWithDetails
       );
       if (!isPacedTrainBase(formattedPacedTrain)) {
         throw new Error('Formatted PacedTrain is missing paced field');
       }
-      // formatPacedTrainWithDetailsToPacedTrainPayload intentionally strips exceptions
+      // formatTrainScheduleWithDetailsToTrainSchedulePayload intentionally strips exceptions
       // (they have dedicated endpoints). Restore the actual list from trainSchedulesWithDetails
       // so lookups, diff computation, and local state updates see the full current state.
       const originalPacedTrain: PacedTrainWithPaced = {

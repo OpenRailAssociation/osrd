@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 
 import type { TrainSchedule, PacedTrainException } from 'common/api/osrdEditoastApi';
 import type {
-  PacedTrainWithPacedWithDetails,
+  PacedTrainWithDetails,
   SimulatedException,
   SimulationSummary,
 } from 'modules/trainSchedule/types';
@@ -441,7 +441,7 @@ describe('getFirstActiveOccurrenceId', () => {
         interval: new Duration({ minutes: 10 }),
         exceptions,
       },
-    }) as unknown as PacedTrainWithPacedWithDetails;
+    }) as unknown as PacedTrainWithDetails;
 
   it('should return the first slot when there are no exceptions', () => {
     expect(getFirstActiveOccurrenceId(schedule(), PACED_ID)).toBe('indexedoccurrence_1_0');

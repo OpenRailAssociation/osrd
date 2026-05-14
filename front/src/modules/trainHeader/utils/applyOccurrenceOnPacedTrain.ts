@@ -3,7 +3,7 @@ import {
   extractOccurrenceDetailsFromPacedTrain,
   findExceptionWithOccurrenceId,
 } from 'modules/trainSchedule/helpers/pacedTrain';
-import type { PacedTrainWithDetails } from 'modules/trainSchedule/types';
+import type { TrainScheduleWithDetails } from 'modules/trainSchedule/types';
 import type { OccurrenceId, Train } from 'reducers/osrdconf/types';
 
 /**
@@ -16,19 +16,19 @@ import type { OccurrenceId, Train } from 'reducers/osrdconf/types';
  * rely on the store state anymore.
  */
 export function applyOccurrenceOnPacedTrain(
-  originalPacedTrain: PacedTrainWithDetails,
+  originalTrainSchedule: TrainScheduleWithDetails,
   train: Train,
   occurrenceId: OccurrenceId
-): PacedTrainWithDetails {
-  if (!originalPacedTrain.paced) return originalPacedTrain;
+): TrainScheduleWithDetails {
+  if (!originalTrainSchedule.paced) return originalTrainSchedule;
 
   const occurrenceToUpdateException = findExceptionWithOccurrenceId(
-    originalPacedTrain.paced.exceptions,
+    originalTrainSchedule.paced.exceptions,
     occurrenceId
   );
 
   const rawPacedTrain: Omit<TrainSchedule, 'paced'> = {
-    ...originalPacedTrain,
+    ...originalTrainSchedule,
     train_name: train.train_name,
     speed_limit_tag: train.speed_limit_tag,
     rolling_stock_name: train.rolling_stock_name,
@@ -44,7 +44,7 @@ export function applyOccurrenceOnPacedTrain(
   } = extractOccurrenceDetailsFromPacedTrain(rawPacedTrain, occurrenceToUpdateException);
 
   return {
-    ...originalPacedTrain,
+    ...originalTrainSchedule,
     ...occurrenceProps,
     name: train_name,
     startTime: new Date(start_time),

@@ -2,7 +2,7 @@ import { compact } from 'lodash';
 
 import type { PacedTrainException, TrainSchedule } from 'common/api/osrdEditoastApi';
 import { isPacedTrainBase } from 'modules/trainSchedule/helpers/pacedTrain';
-import type { PacedTrainWithDetails } from 'modules/trainSchedule/types';
+import type { PacedTrainWithDetails, TrainScheduleWithDetails } from 'modules/trainSchedule/types';
 import type { OperationalStudiesConfState, OccurrenceId } from 'reducers/osrdconf/types';
 import { kmhToMs } from 'utils/physics';
 import { extractOccurrenceIndexFromOccurrenceId, isIndexedOccurrenceId } from 'utils/trainId';
@@ -47,36 +47,36 @@ export function formatTrainSchedulePayload(osrdconf: OperationalStudiesConfState
   };
 }
 
-// Format a PacedTrainWithDetails to a TrainSchedule payload by keeping only the
+// Format a TrainScheduleWithDetails to a TrainSchedule payload by keeping only the
 // necessary properties and formatting the date fields to ISO strings.
-export function formatPacedTrainWithDetailsToTrainSchedule(
-  pacedTrainWithDetails: PacedTrainWithDetails
+export function formatTrainScheduleWithDetailsToTrainSchedule(
+  trainScheduleWithDetails: TrainScheduleWithDetails
 ): TrainSchedule {
   return {
-    category: pacedTrainWithDetails.category,
-    comfort: pacedTrainWithDetails.comfort,
-    constraint_distribution: pacedTrainWithDetails.constraint_distribution,
-    initial_speed: pacedTrainWithDetails.initial_speed,
-    labels: pacedTrainWithDetails.labels,
-    margins: pacedTrainWithDetails.margins,
-    options: pacedTrainWithDetails.options,
-    paced: pacedTrainWithDetails.paced
+    category: trainScheduleWithDetails.category,
+    comfort: trainScheduleWithDetails.comfort,
+    constraint_distribution: trainScheduleWithDetails.constraint_distribution,
+    initial_speed: trainScheduleWithDetails.initial_speed,
+    labels: trainScheduleWithDetails.labels,
+    margins: trainScheduleWithDetails.margins,
+    options: trainScheduleWithDetails.options,
+    paced: trainScheduleWithDetails.paced
       ? {
-          time_window: pacedTrainWithDetails.paced.timeWindow.toISOString(),
-          interval: pacedTrainWithDetails.paced.interval.toISOString(),
+          time_window: trainScheduleWithDetails.paced.timeWindow.toISOString(),
+          interval: trainScheduleWithDetails.paced.interval.toISOString(),
           // This data is used as payload to create/update train schedule and shouldn't have exceptions inside
           // since exceptions have their own endpoints for that
           exceptions: [],
         }
       : undefined,
-    path: pacedTrainWithDetails.path,
-    power_restrictions: pacedTrainWithDetails.power_restrictions,
+    path: trainScheduleWithDetails.path,
+    power_restrictions: trainScheduleWithDetails.power_restrictions,
     // Rollingstock is missing when just created a train from nge or with import
-    rolling_stock_name: pacedTrainWithDetails.rollingStock?.name ?? '',
-    schedule: pacedTrainWithDetails.schedule,
-    speed_limit_tag: pacedTrainWithDetails.speed_limit_tag,
-    start_time: pacedTrainWithDetails.startTime.getTime(),
-    train_name: pacedTrainWithDetails.name,
+    rolling_stock_name: trainScheduleWithDetails.rollingStock?.name ?? '',
+    schedule: trainScheduleWithDetails.schedule,
+    speed_limit_tag: trainScheduleWithDetails.speed_limit_tag,
+    start_time: trainScheduleWithDetails.startTime.getTime(),
+    train_name: trainScheduleWithDetails.name,
   };
 }
 
@@ -94,7 +94,7 @@ export function formatOccurrenceException(
   generatedException: Omit<PacedTrainException, 'key' | 'occurrence_index'>;
   occurrenceIndex: number | undefined;
 } {
-  const originalTrainSchedule = formatPacedTrainWithDetailsToTrainSchedule(originalPacedTrain);
+  const originalTrainSchedule = formatTrainScheduleWithDetailsToTrainSchedule(originalPacedTrain);
 
   if (!isPacedTrainBase(originalTrainSchedule))
     throw new Error(

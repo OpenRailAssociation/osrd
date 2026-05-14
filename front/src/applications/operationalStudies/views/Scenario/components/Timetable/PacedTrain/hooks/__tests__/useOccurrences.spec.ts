@@ -2,7 +2,7 @@ import { renderHook } from '@testing-library/react';
 import { describe, it, expect } from 'vitest';
 
 import type { LightRollingStockWithLiveries } from 'common/api/osrdEditoastApi';
-import type { PacedTrainWithPacedWithDetails } from 'modules/trainSchedule/types';
+import type { PacedTrainWithDetails } from 'modules/trainSchedule/types';
 import { Duration } from 'utils/duration';
 
 import useOccurrences from '../useOccurrences';
@@ -16,7 +16,7 @@ const rollingStock = {
   effort_curves: { modes: {} },
 } as LightRollingStockWithLiveries;
 
-const pacedTrainSchedule: PacedTrainWithPacedWithDetails = {
+const pacedTrainSchedule: PacedTrainWithDetails = {
   stopsCount: 5,
   category: { main_category: 'HIGH_SPEED_TRAIN' },
   rollingStock,
@@ -82,7 +82,7 @@ describe('useOccurrences', () => {
   it('should return occurrences with exceptions (occurrence modified)', () => {
     const rollingStockList = [rollingStock];
 
-    const pacedTrainWithExceptions: PacedTrainWithPacedWithDetails = {
+    const pacedTrainWithExceptions: PacedTrainWithDetails = {
       ...pacedTrainSchedule,
       paced: {
         ...pacedTrainSchedule.paced,
@@ -118,7 +118,7 @@ describe('useOccurrences', () => {
   it('should return occurrences with exceptions (exception added)', () => {
     const rollingStockList = [rollingStock];
 
-    const pacedTrainWithAddedException: PacedTrainWithPacedWithDetails = {
+    const pacedTrainWithAddedException: PacedTrainWithDetails = {
       ...pacedTrainSchedule,
       paced: {
         ...pacedTrainSchedule.paced,
@@ -168,7 +168,7 @@ describe('useOccurrences', () => {
   it('should update count if an occurrence is disabled', () => {
     const rollingStockList = [rollingStock];
 
-    const pacedTrainWithDisabledOccurrence: PacedTrainWithPacedWithDetails = {
+    const pacedTrainWithDisabledOccurrence: PacedTrainWithDetails = {
       ...pacedTrainSchedule,
       paced: {
         ...pacedTrainSchedule.paced,
@@ -193,7 +193,7 @@ describe('useOccurrences', () => {
   });
 
   it('should return occurrence with peaced train rolling stock if rolling stock list is null', () => {
-    const peacedTrainWithExceptionsRollingStock: PacedTrainWithPacedWithDetails = {
+    const peacedTrainWithExceptionsRollingStock: PacedTrainWithDetails = {
       ...pacedTrainSchedule,
       paced: {
         ...pacedTrainSchedule.paced,

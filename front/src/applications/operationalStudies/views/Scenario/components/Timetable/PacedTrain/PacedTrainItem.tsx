@@ -9,7 +9,7 @@ import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
 import { EditedElementContainerContext } from 'applications/operationalStudies/views/Scenario/components/EditedElementContainerContext';
-import { formatPacedTrainWithDetailsToTrainSchedule } from 'applications/operationalStudies/views/Scenario/components/ManageTrainSchedule/helpers/formatTrainSchedulePayload';
+import { formatTrainScheduleWithDetailsToTrainSchedule } from 'applications/operationalStudies/views/Scenario/components/ManageTrainSchedule/helpers/formatTrainSchedulePayload';
 import {
   osrdEditoastApi,
   type TrainSchedule,
@@ -28,7 +28,7 @@ import {
   deleteExceptions,
   deleteTrainSchedules,
 } from 'modules/trainSchedule/helpers/updateTrainScheduleHelpers';
-import type { PacedTrainWithPacedWithDetails } from 'modules/trainSchedule/types';
+import type { PacedTrainWithDetails } from 'modules/trainSchedule/types';
 import { setFailure, setSuccess } from 'reducers/main';
 import type { TrainId, OccurrenceId } from 'reducers/osrdconf/types';
 import {
@@ -73,12 +73,12 @@ type PacedTrainItemProps = {
   handleSelectPacedTrain: (pacedTrainId: number) => void;
   isOccurrencesListOpen: boolean;
   handleOpenOccurrencesList: (pacedTrainId: number) => void;
-  pacedTrain: PacedTrainWithPacedWithDetails;
+  pacedTrain: PacedTrainWithDetails;
   isOnEdit: boolean;
   selectedTrainId?: TrainId;
   selectPacedTrainToEdit: (
-    pacedTrainToEdit: PacedTrainWithPacedWithDetails,
-    originalPacedTrain?: PacedTrainWithPacedWithDetails,
+    pacedTrainToEdit: PacedTrainWithDetails,
+    originalPacedTrain?: PacedTrainWithDetails,
     occurrenceId?: OccurrenceId
   ) => void;
   upsertTrainSchedules: (trainSchedules: TrainScheduleResponse[]) => void;
@@ -214,7 +214,7 @@ const PacedTrainItem = ({
     }
 
     // Use pacedTrain as the source for train_schedule_set_id and id
-    const updatedPacedTrainPayload = formatPacedTrainWithDetailsToTrainSchedule({
+    const updatedPacedTrainPayload = formatTrainScheduleWithDetailsToTrainSchedule({
       ...pacedTrain,
       paced: { ...pacedTrain.paced, exceptions: [] },
     });

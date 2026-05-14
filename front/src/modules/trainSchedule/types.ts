@@ -66,7 +66,7 @@ export type SimulationSummary =
       };
     };
 
-export type TrainScheduleWithSummaries = Omit<
+type TrainScheduleWithSummaries = Omit<
   TrainScheduleResponse,
   'train_name' | 'rolling_stock_name' | 'start_time' | 'paced'
 > & {
@@ -87,7 +87,7 @@ export type InvalidReason =
 
 export type SimulatedException = PacedTrainException & { summary?: SimulationSummary };
 
-export type PacedTrainWithDetails = TrainScheduleWithSummaries & {
+export type TrainScheduleWithDetails = TrainScheduleWithSummaries & {
   paced?: {
     timeWindow: Duration;
     interval: Duration;
@@ -95,8 +95,7 @@ export type PacedTrainWithDetails = TrainScheduleWithSummaries & {
   };
 };
 
-// tmp type
-export type PacedTrainWithPacedWithDetails = TrainScheduleWithSummaries & {
+export type PacedTrainWithDetails = TrainScheduleWithSummaries & {
   paced: {
     timeWindow: Duration;
     interval: Duration;
@@ -104,9 +103,7 @@ export type PacedTrainWithPacedWithDetails = TrainScheduleWithSummaries & {
   };
 };
 
-export type PacedDetails = PacedTrainWithPacedWithDetails['paced'];
-
-export type TrainScheduleWithDetails = PacedTrainWithDetails;
+export type PacedDetails = PacedTrainWithDetails['paced'];
 
 export type ExceptionChangeGroups = Omit<
   PacedTrainException,

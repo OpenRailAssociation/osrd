@@ -12,7 +12,7 @@ import {
 } from 'modules/trainSchedule/helpers/pacedTrain';
 import type {
   Occurrence,
-  PacedTrainWithPacedWithDetails,
+  PacedTrainWithDetails,
   SimulatedException,
 } from 'modules/trainSchedule/types';
 import {
@@ -49,7 +49,7 @@ export const returnOccurrenceExceptionRollingStock = ({
  * @returns the occurrences of the paced train with their details and the count of occurrences (taking into account the disabled exceptions)
  */
 const useOccurrences = (
-  pacedTrain: PacedTrainWithPacedWithDetails,
+  pacedTrain: PacedTrainWithDetails,
   rollingStockList: LightRollingStockWithLiveries[] | null
 ) => {
   const {
