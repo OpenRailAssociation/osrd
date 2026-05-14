@@ -31,9 +31,9 @@ base64ct = "1.8"
 figment = "0.10.19"
 humantime = "2"
 humantime-serde = "1"
-opentelemetry = "0.31.0"
-opentelemetry-otlp = { version = "0.31.1", features = ["grpc-tonic"] }
-opentelemetry_sdk = { version = "0.31.0", features = [
+opentelemetry = "0.32.0"
+opentelemetry-otlp = { version = "0.32.0", features = ["grpc-tonic"] }
+opentelemetry_sdk = { version = "0.32.0", features = [
   "metrics",
   "rt-tokio-current-thread",
 ] }
