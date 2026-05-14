@@ -12,9 +12,9 @@ import {
 } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
 import {
-  formatEditoastIdToPacedTrainId,
+  formatEditoastIdToTrainScheduleId,
   isOccurrenceId,
-  isPacedTrainId,
+  isTrainScheduleId,
   isTrainIdInTimetable,
 } from 'utils/trainId';
 
@@ -92,13 +92,13 @@ const useAutoSelectTrainIds = (
     const projectionFromUrl = getParamFromUrlOrStorage('projection');
     if (
       selectedTrainFromUrl &&
-      (isOccurrenceId(selectedTrainFromUrl) || isPacedTrainId(selectedTrainFromUrl))
+      (isOccurrenceId(selectedTrainFromUrl) || isTrainScheduleId(selectedTrainFromUrl))
     ) {
       dispatch(updateSelectedTrain({ id: selectedTrainFromUrl, by: 'timetable' }));
     }
     if (
       projectionFromUrl &&
-      (isOccurrenceId(projectionFromUrl) || isPacedTrainId(projectionFromUrl))
+      (isOccurrenceId(projectionFromUrl) || isTrainScheduleId(projectionFromUrl))
     ) {
       dispatch(updateTrainIdUsedForProjection(projectionFromUrl));
     }
@@ -162,9 +162,11 @@ const useAutoSelectTrainIds = (
 
     if (firstTrainCanBeUsedForProjection) {
       initialAutoSelectDoneRef.current = true;
-      const pacedTrainId = formatEditoastIdToPacedTrainId(firstTrainCanBeUsedForProjection.id);
-      dispatch(updateSelectedTrain({ id: pacedTrainId, by: 'timetable' }));
-      if (!isProjectedTrainIdValid) dispatch(updateTrainIdUsedForProjection(pacedTrainId));
+      const trainScheduleId = formatEditoastIdToTrainScheduleId(
+        firstTrainCanBeUsedForProjection.id
+      );
+      dispatch(updateSelectedTrain({ id: trainScheduleId, by: 'timetable' }));
+      if (!isProjectedTrainIdValid) dispatch(updateTrainIdUsedForProjection(trainScheduleId));
     }
   }, [trainSchedulesWithDetails, setIdsFromUrlOrStorage, parametersLoaded]);
 };

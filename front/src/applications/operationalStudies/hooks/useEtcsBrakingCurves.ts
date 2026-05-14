@@ -22,7 +22,7 @@ import {
 } from 'modules/trainSchedule/helpers/pacedTrain';
 import useSelectedTrainSchedule from 'modules/trainSchedule/hooks/useSelectedTrainSchedule';
 import { getSelectedTrain } from 'reducers/simulationResults/selectors';
-import { isOccurrenceId, isPacedTrainId } from 'utils/trainId';
+import { isOccurrenceId, isTrainScheduleId } from 'utils/trainId';
 
 import { useScenarioContext } from './useScenarioContext';
 
@@ -70,7 +70,7 @@ const useEtcsBrakingCurves = (
       !selectedTrainId ||
       !trainSchedule ||
       !isPacedTrain(trainSchedule) ||
-      isPacedTrainId(selectedTrainId)
+      isTrainScheduleId(selectedTrainId)
     )
       return undefined;
     if (!isOccurrenceId(selectedTrainId))

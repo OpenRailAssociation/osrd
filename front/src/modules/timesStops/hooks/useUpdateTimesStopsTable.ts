@@ -24,15 +24,15 @@ import {
 } from 'modules/trainSchedule/helpers/pacedTrain';
 import { syncOccurrenceException } from 'modules/trainSchedule/helpers/updateTrainScheduleHelpers';
 import type { TrainScheduleWithDetails } from 'modules/trainSchedule/types';
-import type { OccurrenceId, PacedTrainId, Train } from 'reducers/osrdconf/types';
+import type { OccurrenceId, TrainScheduleId, Train } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 import { removeElementAtIndex, replaceElementAtIndex } from 'utils/array';
 import { Duration } from 'utils/duration';
 import {
-  extractEditoastIdFromPacedTrainId,
-  extractPacedTrainIdFromOccurrenceId,
+  extractEditoastIdFromTrainScheduleId,
+  extractTrainScheduleIdFromOccurrenceId,
   isOccurrenceId,
-  isPacedTrainId,
+  isTrainScheduleId,
 } from 'utils/trainId';
 
 import { MarginUnit } from '../consts';
@@ -247,11 +247,11 @@ const useUpdateTimesStopsTable = (
    */
   const updateOccurrence = useCallback(
     async (occurrenceId: OccurrenceId, update: CellUpdate): Promise<UpdateCellStatus> => {
-      const pacedTrainId = extractEditoastIdFromPacedTrainId(
-        extractPacedTrainIdFromOccurrenceId(occurrenceId)
+      const trainScheduleId = extractEditoastIdFromTrainScheduleId(
+        extractTrainScheduleIdFromOccurrenceId(occurrenceId)
       );
       const originalPacedTrainWithDetails = trainSchedulesWithDetails.find(
-        (trainSchedule) => trainSchedule.id === pacedTrainId
+        (trainSchedule) => trainSchedule.id === trainScheduleId
       );
 
       if (
@@ -319,7 +319,7 @@ const useUpdateTimesStopsTable = (
         generatedException,
         existingException,
         occurrenceIndex,
-        pacedTrainId,
+        trainScheduleId,
         timetableId
       );
 
@@ -331,7 +331,7 @@ const useUpdateTimesStopsTable = (
 
       return persistTrain({
         ...originalPacedTrain,
-        id: pacedTrainId,
+        id: trainScheduleId,
         train_schedule_set_id: originalPacedTrainWithDetails.train_schedule_set_id,
         paced: { ...originalPacedTrain.paced, exceptions: updatedExceptions },
       });
@@ -343,8 +343,8 @@ const useUpdateTimesStopsTable = (
    * Handle update when the selected train is a TrainSchedule (not an occurrence).
    */
   const handleUpdateTrainSchedule = useCallback(
-    async (trainId: PacedTrainId, update: CellUpdate): Promise<UpdateCellStatus> => {
-      const editoastId = extractEditoastIdFromPacedTrainId(trainId);
+    async (trainId: TrainScheduleId, update: CellUpdate): Promise<UpdateCellStatus> => {
+      const editoastId = extractEditoastIdFromTrainScheduleId(trainId);
 
       if (update.field === 'powerRestriction') {
         const { updatedPath, powerRestrictions } = computePowerRestrictionUpdate(update);
@@ -380,7 +380,7 @@ const useUpdateTimesStopsTable = (
 
       if (isOccurrenceId(trainId)) {
         return updateOccurrence(trainId, update);
-      } else if (isPacedTrainId(trainId)) {
+      } else if (isTrainScheduleId(trainId)) {
         return handleUpdateTrainSchedule(trainId, update);
       } else {
         throw new Error('TrainSchedules are not handled anymore.');

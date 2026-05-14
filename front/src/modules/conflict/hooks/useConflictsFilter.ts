@@ -10,11 +10,11 @@ import {
 } from 'modules/trainSchedule/helpers/pacedTrain';
 import { getSelectedTrain } from 'reducers/simulationResults/selectors';
 import {
-  extractPacedTrainIdFromOccurrenceId,
+  extractTrainScheduleIdFromOccurrenceId,
   isIndexedOccurrenceId,
   extractOccurrenceIndexFromOccurrenceId,
   isOccurrenceId,
-  extractEditoastIdFromPacedTrainId,
+  extractEditoastIdFromTrainScheduleId,
 } from 'utils/trainId';
 
 import type { ConflictWithTrainNames } from '../types';
@@ -44,9 +44,9 @@ const useConflictsFilter = (
   const selectedTrainName = useMemo(() => {
     if (!selectedTrainId) return null;
 
-    const id = extractEditoastIdFromPacedTrainId(
+    const id = extractEditoastIdFromTrainScheduleId(
       isOccurrenceId(selectedTrainId)
-        ? extractPacedTrainIdFromOccurrenceId(selectedTrainId)
+        ? extractTrainScheduleIdFromOccurrenceId(selectedTrainId)
         : selectedTrainId
     );
     const selectedTrain = trainScheduleById.get(id);

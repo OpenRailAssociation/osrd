@@ -1,5 +1,5 @@
 import type { TrainId } from 'reducers/osrdconf/types';
-import { extractPacedTrainIdFromTrainId, isOccurrenceId } from 'utils/trainId';
+import { extractTrainScheduleIdFromTrainId, isOccurrenceId } from 'utils/trainId';
 
 import type { IndividualTrainProjection } from '../../../types';
 import type { PanelSelectionMode } from '../CurveSelectionSidePanel';
@@ -24,8 +24,8 @@ export default function canDragHoveredTrain({
   if (!selectedTrainId) return false;
 
   const belongsToSelectedTrain =
-    extractPacedTrainIdFromTrainId(hoveredTrainId) ===
-    extractPacedTrainIdFromTrainId(selectedTrainId);
+    extractTrainScheduleIdFromTrainId(hoveredTrainId) ===
+    extractTrainScheduleIdFromTrainId(selectedTrainId);
 
   switch (panelSelectionMode) {
     case 'compliant':

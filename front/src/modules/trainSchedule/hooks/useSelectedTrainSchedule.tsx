@@ -6,15 +6,15 @@ import type { TrainScheduleResponse } from 'common/api/osrdEditoastApi';
 import type { TrainId } from 'reducers/osrdconf/types';
 import { getSelectedTrain } from 'reducers/simulationResults/selectors';
 import {
-  extractEditoastIdFromPacedTrainId,
-  extractPacedTrainIdFromOccurrenceId,
+  extractEditoastIdFromTrainScheduleId,
+  extractTrainScheduleIdFromOccurrenceId,
   isOccurrenceId,
 } from 'utils/trainId';
 
 const extractTrainScheduleId = (trainId?: TrainId) => {
   if (!trainId) return undefined;
-  return extractEditoastIdFromPacedTrainId(
-    isOccurrenceId(trainId) ? extractPacedTrainIdFromOccurrenceId(trainId) : trainId
+  return extractEditoastIdFromTrainScheduleId(
+    isOccurrenceId(trainId) ? extractTrainScheduleIdFromOccurrenceId(trainId) : trainId
   );
 };
 

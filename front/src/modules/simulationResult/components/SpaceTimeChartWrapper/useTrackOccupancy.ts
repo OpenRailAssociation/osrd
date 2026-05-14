@@ -14,11 +14,11 @@ import type { SimulatedException } from 'modules/trainSchedule/types';
 import type { TrainId } from 'reducers/osrdconf/types';
 import { getIsSimulationEnabled } from 'reducers/simulationResults/selectors';
 import {
-  extractEditoastIdFromPacedTrainId,
-  extractPacedTrainIdFromOccurrenceId,
-  formatEditoastIdToPacedTrainId,
-  formatPacedTrainIdToExceptionId,
-  formatPacedTrainIdToIndexedOccurrenceId,
+  extractEditoastIdFromTrainScheduleId,
+  extractTrainScheduleIdFromOccurrenceId,
+  formatEditoastIdToTrainScheduleId,
+  formatTrainScheduleIdToExceptionId,
+  formatTrainScheduleIdToIndexedOccurrenceId,
   isOccurrenceId,
 } from 'utils/trainId';
 import { mapBy } from 'utils/types';
@@ -173,8 +173,8 @@ const useTrackOccupancy = ({
   );
 
   const toOwnerTrainScheduleId = (id: TrainId): number =>
-    extractEditoastIdFromPacedTrainId(
-      !isOccurrenceId(id) ? id : extractPacedTrainIdFromOccurrenceId(id)
+    extractEditoastIdFromTrainScheduleId(
+      !isOccurrenceId(id) ? id : extractTrainScheduleIdFromOccurrenceId(id)
     );
 
   const fetchTrackOccupancy = useCallback(
@@ -187,7 +187,7 @@ const useTrackOccupancy = ({
 
       const trainScheduleIds = Object.values(trainsCollection).map((train) => train.id);
 
-      const bodyForPaced =
+      const trackOccupancyPayload =
         trainScheduleIds.length > 0
           ? {
               operational_point_reference: opRef,
@@ -198,14 +198,14 @@ const useTrackOccupancy = ({
             }
           : null;
 
-      const pacedResp = await (bodyForPaced
-        ? postTrainSchedulesTrackOccupancy({ body: bodyForPaced })
+      const trackOccupancyResponse = await (trackOccupancyPayload
+        ? postTrainSchedulesTrackOccupancy({ body: trackOccupancyPayload })
         : Promise.resolve(undefined));
 
       const zones: MovableOccupancyZone[] = [];
 
-      if (pacedResp?.data) {
-        for (const trackItem of pacedResp.data) {
+      if (trackOccupancyResponse?.data) {
+        for (const trackItem of trackOccupancyResponse.data) {
           const { local_track_name: localTrackName, trains } = trackItem;
           let trackId: string;
           if (!localTrackName) {
@@ -219,7 +219,7 @@ const useTrackOccupancy = ({
           }
           for (const occupation of trains) {
             const itemId = occupation.train_schedule_id;
-            const pacedTrainId = formatEditoastIdToPacedTrainId(itemId);
+            const trainScheduleId = formatEditoastIdToTrainScheduleId(itemId);
             const train = trainsCollection[itemId];
 
             if (!train) throw new Error(`No train found for id ${itemId}`);
@@ -234,7 +234,7 @@ const useTrackOccupancy = ({
                 getMovableOccupancyZone(
                   waypointId,
                   trackId,
-                  pacedTrainId,
+                  trainScheduleId,
                   occupation,
                   train.spaceTimeCurves,
                   train.name,
@@ -262,11 +262,17 @@ const useTrackOccupancy = ({
               if (!exception?.start_time)
                 throw new Error(`Created exceptions should always be a start time exception`);
 
-              trainId = formatPacedTrainIdToExceptionId(pacedTrainId, occupation.exception_id);
+              trainId = formatTrainScheduleIdToExceptionId(
+                trainScheduleId,
+                occupation.exception_id
+              );
               trainName = exception.train_name?.value ?? `${train.name}/+`;
               startTime = new Date(exception.start_time.value);
             } else {
-              trainId = formatPacedTrainIdToIndexedOccurrenceId(pacedTrainId, occupation.index);
+              trainId = formatTrainScheduleIdToIndexedOccurrenceId(
+                trainScheduleId,
+                occupation.index
+              );
               trainName =
                 exception?.train_name?.value ?? computeOccurrenceName(train.name, occupation.index);
 
@@ -319,7 +325,7 @@ const useTrackOccupancy = ({
         // (IDs still not found in infra after remapping).
         const resolvedZones = opState.zones.data?.map((zone) => {
           // Paced-train occurrences have OccurrenceId zone IDs, but labels are stored under
-          // the parent PacedTrainId — use toOwnerTrainScheduleId to resolve both cases.
+          // the parent TrainScheduleId — use toOwnerTrainScheduleId to resolve both cases.
           const trainStationLabels =
             trainsStationLabelsRef.current[toOwnerTrainScheduleId(zone.trainId)];
           const withLabels = {
@@ -466,12 +472,12 @@ const useTrackOccupancy = ({
       newTrainData: TrainSpaceTimeData;
       stopPanning: boolean;
     }) => {
-      const draggedTrainScheduleId = toOwnerTrainScheduleId(draggedTrainId);
-      if (stopPanning) draggedTrainScheduleIds.current.delete(draggedTrainScheduleId);
-      else draggedTrainScheduleIds.current.add(draggedTrainScheduleId);
+      const draggedEditoastId = toOwnerTrainScheduleId(draggedTrainId);
+      if (stopPanning) draggedTrainScheduleIds.current.delete(draggedEditoastId);
+      else draggedTrainScheduleIds.current.add(draggedEditoastId);
 
       // Update actual state:
-      const draggedPacedTrainId = formatEditoastIdToPacedTrainId(draggedTrainScheduleId);
+      const draggedTrainScheduleId = formatEditoastIdToTrainScheduleId(draggedEditoastId);
       const impactedPathOperationalPointIDs = new Set<string>();
       const newState = { ...pathOperationalPointsState };
       forEach(newState, (opState, waypointId) => {
@@ -479,7 +485,7 @@ const useTrackOccupancy = ({
           forEach(opState.zones.data, (zone) => {
             if (
               isOccurrenceId(zone.trainId) &&
-              extractPacedTrainIdFromOccurrenceId(zone.trainId) === draggedPacedTrainId &&
+              extractTrainScheduleIdFromOccurrenceId(zone.trainId) === draggedTrainScheduleId &&
               !zone.isStartTimeException
             ) {
               impactedPathOperationalPointIDs.add(waypointId);

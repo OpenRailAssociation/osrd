@@ -12,8 +12,8 @@ import { updateSelectedTrain } from 'reducers/simulationResults';
 import type { SelectionSource } from 'reducers/simulationResults/types';
 import type { AppDispatch } from 'store';
 import {
-  extractEditoastIdFromPacedTrainId,
-  extractPacedTrainIdFromOccurrenceId,
+  extractEditoastIdFromTrainScheduleId,
+  extractTrainScheduleIdFromOccurrenceId,
   isOccurrenceId,
   isTrainId,
 } from 'utils/trainId';
@@ -180,8 +180,8 @@ export function configureHandlePan({
         let originalPacedExceptions: SimulatedException[] | undefined;
         let pacedGrid: { startTimeMs: number; intervalMs: number } | undefined;
         if (isOccurrenceId(hoveredTrainId)) {
-          const editoastId = extractEditoastIdFromPacedTrainId(
-            extractPacedTrainIdFromOccurrenceId(hoveredTrainId)
+          const editoastId = extractEditoastIdFromTrainScheduleId(
+            extractTrainScheduleIdFromOccurrenceId(hoveredTrainId)
           );
           const modelTrain = trainScheduleProjections.find((t) => t.id === editoastId);
           if (modelTrain) {

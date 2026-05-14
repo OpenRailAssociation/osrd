@@ -8,9 +8,9 @@ import {
   getOccurrencesNb,
 } from 'modules/trainSchedule/helpers/pacedTrain';
 import {
-  formatPacedTrainIdToIndexedOccurrenceId,
+  formatTrainScheduleIdToIndexedOccurrenceId,
   formatEditoastIdToExceptionId,
-  formatEditoastIdToPacedTrainId,
+  formatEditoastIdToTrainScheduleId,
 } from 'utils/trainId';
 
 const EXCEPTION_SUFFIX = '≠';
@@ -21,9 +21,9 @@ const EXCEPTION_SUFFIX = '≠';
  */
 const makeProjectedTrains = (trainScheduleProjections: TrainSpaceTimeData[]) =>
   trainScheduleProjections.flatMap<IndividualTrainProjection>((projectedTrain) => {
-    const pacedTrainId = formatEditoastIdToPacedTrainId(projectedTrain.id);
+    const trainScheduleId = formatEditoastIdToTrainScheduleId(projectedTrain.id);
     if (!projectedTrain.paced) {
-      return { ...projectedTrain, id: pacedTrainId, type: 'trainSchedule' };
+      return { ...projectedTrain, id: trainScheduleId, type: 'trainSchedule' };
     }
 
     const occurrences: IndividualTrainProjection[] = [];
@@ -36,7 +36,7 @@ const makeProjectedTrains = (trainScheduleProjections: TrainSpaceTimeData[]) =>
     // =========== indexed occurrences ===========
     const occurrencesCount = getOccurrencesNb(projectedTrain.paced);
     for (let i = 0; i < occurrencesCount; i += 1) {
-      const occurrenceId = formatPacedTrainIdToIndexedOccurrenceId(pacedTrainId, i);
+      const occurrenceId = formatTrainScheduleIdToIndexedOccurrenceId(trainScheduleId, i);
       const correspondingException = findExceptionWithOccurrenceId(
         projectedTrain.paced.exceptions,
         occurrenceId
@@ -99,7 +99,7 @@ const makeProjectedTrains = (trainScheduleProjections: TrainSpaceTimeData[]) =>
       if (!exception.start_time) throw new Error('added exception should have a start time');
 
       const id = formatEditoastIdToExceptionId({
-        pacedTrainId: projectedTrain.id,
+        trainScheduleId: projectedTrain.id,
         exceptionId: exception.id!, // TODO_EXCEPTION: remove `!` when using TrainSchedulingException type
       });
       const name = exception.train_name

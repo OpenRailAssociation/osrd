@@ -55,16 +55,16 @@ import {
 } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
 import {
-  isTrainId,
-  isPacedTrainId,
-  formatPacedTrainIdToIndexedOccurrenceId,
-  isOccurrenceId,
-  extractPacedTrainIdFromOccurrenceId,
-  extractPacedTrainIdFromTrainId,
-  extractOccurrenceIndexFromOccurrenceId,
+  extractEditoastIdFromTrainScheduleId,
   extractExceptionIdFromOccurrenceId,
+  extractOccurrenceIndexFromOccurrenceId,
+  extractTrainScheduleIdFromOccurrenceId,
+  extractTrainScheduleIdFromTrainId,
+  formatTrainScheduleIdToIndexedOccurrenceId,
   isAddedExceptionId,
-  extractEditoastIdFromPacedTrainId,
+  isOccurrenceId,
+  isTrainScheduleId,
+  isTrainId,
 } from 'utils/trainId';
 import { mapBy } from 'utils/types';
 
@@ -229,9 +229,9 @@ const SpaceTimeChartWrapper = ({
   const translations = { linearMode: t('main.linearMode') };
 
   const isTrainScheduleValid = useMemo(() => {
-    const selectedTrainScheduleId = extractEditoastIdFromPacedTrainId(
+    const selectedTrainScheduleId = extractEditoastIdFromTrainScheduleId(
       isOccurrenceId(selectedProjectionId)
-        ? extractPacedTrainIdFromOccurrenceId(selectedProjectionId)
+        ? extractTrainScheduleIdFromOccurrenceId(selectedProjectionId)
         : selectedProjectionId
     );
 
@@ -330,10 +330,10 @@ const SpaceTimeChartWrapper = ({
     }
     const { trainId } = draggingOccupancyZoneRef;
     const { exception } = findTrainScheduleAndException(trainSchedulesWithDetails ?? [], trainId);
-    if (isPacedTrainId(trainId) || exception?.path_and_schedule) {
+    if (isTrainScheduleId(trainId) || exception?.path_and_schedule) {
       return trainId;
     } else {
-      return extractPacedTrainIdFromOccurrenceId(trainId);
+      return extractTrainScheduleIdFromOccurrenceId(trainId);
     }
   }, [draggingOccupancyZoneRef]);
 
@@ -356,7 +356,7 @@ const SpaceTimeChartWrapper = ({
       // being dragged
       if (
         isOccurrenceId(trainId) &&
-        extractPacedTrainIdFromOccurrenceId(trainId) !== draggingOccupancyZoneBaseTrainId
+        extractTrainScheduleIdFromOccurrenceId(trainId) !== draggingOccupancyZoneBaseTrainId
       ) {
         return false;
       }
@@ -426,8 +426,8 @@ const SpaceTimeChartWrapper = ({
   });
 
   useEffect(() => {
-    const trainId = isPacedTrainId(selectedProjectionId)
-      ? formatPacedTrainIdToIndexedOccurrenceId(selectedProjectionId, 0)
+    const trainId = isTrainScheduleId(selectedProjectionId)
+      ? formatTrainScheduleIdToIndexedOccurrenceId(selectedProjectionId, 0)
       : selectedProjectionId;
     const trainUsedForProjection = projectedTrains.find((train) => train.id === trainId);
     if (trainUsedForProjection) {
@@ -544,12 +544,14 @@ const SpaceTimeChartWrapper = ({
     [setHoveredItem]
   );
 
-  const selectedPacedTrainId = selectedTrainId
-    ? extractPacedTrainIdFromTrainId(selectedTrainId)
+  const selectedTrainScheduleId = selectedTrainId
+    ? extractTrainScheduleIdFromTrainId(selectedTrainId)
     : undefined;
 
-  const selectedTrain = selectedPacedTrainId
-    ? trainSchedulesWithDetailsById.get(extractEditoastIdFromPacedTrainId(selectedPacedTrainId))
+  const selectedTrain = selectedTrainScheduleId
+    ? trainSchedulesWithDetailsById.get(
+        extractEditoastIdFromTrainScheduleId(selectedTrainScheduleId)
+      )
     : undefined;
 
   const panelExceptionType: CurveStyleExceptionType =
@@ -566,16 +568,16 @@ const SpaceTimeChartWrapper = ({
     if (mode === 'single') {
       const singleId =
         lastClickedOccurrenceId ??
-        (selectedTrain && isPacedTrainWithDetails(selectedTrain) && selectedPacedTrainId
-          ? getFirstActiveOccurrenceId(selectedTrain, selectedPacedTrainId)
+        (selectedTrain && isPacedTrainWithDetails(selectedTrain) && selectedTrainScheduleId
+          ? getFirstActiveOccurrenceId(selectedTrain, selectedTrainScheduleId)
           : undefined);
       if (singleId) {
         dispatch(updateSelectedTrain({ id: singleId, by: 'std' }));
       }
       return;
     }
-    if (selectedPacedTrainId) {
-      dispatch(updateSelectedTrain({ id: selectedPacedTrainId, by: 'std' }));
+    if (selectedTrainScheduleId) {
+      dispatch(updateSelectedTrain({ id: selectedTrainScheduleId, by: 'std' }));
     }
   };
 
@@ -607,7 +609,7 @@ const SpaceTimeChartWrapper = ({
         // clicking a start_time exception) isolates the single occurrence.
         const idToDispatch =
           !event.altKey && !isStartTimeException
-            ? extractPacedTrainIdFromTrainId(clickedTrainId)
+            ? extractTrainScheduleIdFromTrainId(clickedTrainId)
             : clickedTrainId;
 
         setLastClickedOccurrenceId(isOccurrenceId(clickedTrainId) ? clickedTrainId : undefined);
@@ -624,7 +626,7 @@ const SpaceTimeChartWrapper = ({
 
   const handleKeyDown: React.KeyboardEventHandler<HTMLDivElement> = (e) => {
     if (e.code === 'KeyS') {
-      if (!selectedPacedTrainId || selectedTrainBy !== 'std') return;
+      if (!selectedTrainScheduleId || selectedTrainBy !== 'std') return;
       e.preventDefault();
       const currentIndex = PANEL_SELECTION_MODES.indexOf(panelSelectionMode);
       const nextMode = PANEL_SELECTION_MODES[(currentIndex + 1) % PANEL_SELECTION_MODES.length];

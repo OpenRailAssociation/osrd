@@ -19,7 +19,7 @@ import type { TrainScheduleWithDetails } from 'modules/trainSchedule/types';
 import type {
   IndexedOccurrenceId,
   OccurrenceId,
-  PacedTrainId,
+  TrainScheduleId,
   TrainId,
 } from 'reducers/osrdconf/types';
 import type { SelectedTrain, SelectionSource } from 'reducers/simulationResults/types';
@@ -69,7 +69,7 @@ export type IndividualTrainProjection = {
   departureTime: Date;
 } & BaseTrainProjection &
   (
-    | { id: PacedTrainId; type: 'trainSchedule' }
+    | { id: TrainScheduleId; type: 'trainSchedule' }
     | {
         id: IndexedOccurrenceId;
         type: 'occurrence';

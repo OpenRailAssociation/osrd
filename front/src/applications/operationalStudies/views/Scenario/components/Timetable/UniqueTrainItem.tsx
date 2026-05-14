@@ -33,7 +33,7 @@ import { useAppDispatch } from 'store';
 import { timeToLocaleStringRounded, useDateTimeLocale } from 'utils/date';
 import { addDurationToDate, Duration } from 'utils/duration';
 import { castErrorToFailure } from 'utils/error';
-import { formatEditoastIdToPacedTrainId } from 'utils/trainId';
+import { formatEditoastIdToTrainScheduleId } from 'utils/trainId';
 
 import { TRAIN_SCHEDULE_DELTA } from './consts';
 import TrainScheduleActions from './TrainScheduleActions';
@@ -80,7 +80,7 @@ const UniqueTrainItem = ({
 
   const { summary } = train;
 
-  const formattedTrainId = formatEditoastIdToPacedTrainId(train.id);
+  const formattedTrainId = formatEditoastIdToTrainScheduleId(train.id);
 
   const toggleUniqueTrainSelection = (trainId: TrainId) => {
     dispatch(updateSelectedTrain(isSelected ? undefined : { id: trainId, by: 'timetable' }));
@@ -132,7 +132,7 @@ const UniqueTrainItem = ({
       )[0];
       dispatch(
         updateSelectedTrain({
-          id: formatEditoastIdToPacedTrainId(newUniqueTrain.id),
+          id: formatEditoastIdToTrainScheduleId(newUniqueTrain.id),
           by: 'timetable',
         })
       );

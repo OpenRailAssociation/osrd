@@ -17,7 +17,7 @@ import {
 import { updateSelectedTrain } from 'reducers/simulationResults';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
-import { formatEditoastIdToPacedTrainId } from 'utils/trainId';
+import { formatEditoastIdToTrainScheduleId } from 'utils/trainId';
 
 import { formatTrainSchedulePayload } from './helpers/formatTrainSchedulePayload';
 import { validateTrainSchedule } from './helpers/validateTrainSchedule';
@@ -71,7 +71,7 @@ const CreateTrainScheduleButton = ({
       )[0];
       dispatch(
         updateSelectedTrain({
-          id: formatEditoastIdToPacedTrainId(formattedNewTrainSchedule.id),
+          id: formatEditoastIdToTrainScheduleId(formattedNewTrainSchedule.id),
           by: 'timetable',
         })
       );

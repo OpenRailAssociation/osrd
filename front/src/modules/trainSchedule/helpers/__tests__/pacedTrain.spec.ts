@@ -6,12 +6,12 @@ import type {
   SimulatedException,
   SimulationSummary,
 } from 'modules/trainSchedule/types';
-import type { PacedTrainId } from 'reducers/osrdconf/types';
+import type { TrainScheduleId } from 'reducers/osrdconf/types';
 import { Duration } from 'utils/duration';
 import {
-  formatEditoastIdToPacedTrainId,
-  formatPacedTrainIdToExceptionId,
-  formatPacedTrainIdToIndexedOccurrenceId,
+  formatEditoastIdToTrainScheduleId,
+  formatTrainScheduleIdToExceptionId,
+  formatTrainScheduleIdToIndexedOccurrenceId,
 } from 'utils/trainId';
 
 import {
@@ -333,8 +333,8 @@ describe('getOccurrencesWorstStatus', () => {
 });
 
 describe('isOccurrencePresentInPacedTrain', () => {
-  const trainScheduleId = 123;
-  const pacedTrainId = formatEditoastIdToPacedTrainId(trainScheduleId);
+  const trainScheduleEditoastId = 123;
+  const trainScheduleId = formatEditoastIdToTrainScheduleId(trainScheduleEditoastId);
 
   const paced = {
     timeWindow: Duration.parse('PT2H'),
@@ -346,21 +346,24 @@ describe('isOccurrencePresentInPacedTrain', () => {
       { id: 2, key: '2', occurrence_index: 2, disabled: false },
     ],
   };
-  const trainSchedule = { paced, id: trainScheduleId };
+  const trainSchedule = { paced, id: trainScheduleEditoastId };
 
   it('should return false if the train schedule is not paced', () => {
     expect(
-      isOccurrencePresentInPacedTrain(formatPacedTrainIdToIndexedOccurrenceId(pacedTrainId, 0), {
-        paced: undefined,
-        id: trainScheduleId,
-      })
+      isOccurrencePresentInPacedTrain(
+        formatTrainScheduleIdToIndexedOccurrenceId(trainScheduleId, 0),
+        {
+          paced: undefined,
+          id: trainScheduleEditoastId,
+        }
+      )
     ).toEqual(false);
   });
 
-  it('should return false if the occurrence does not belong to the paced train id', () => {
+  it('should return false if the occurrence does not belong to the TrainScheduleId', () => {
     expect(
       isOccurrencePresentInPacedTrain(
-        formatPacedTrainIdToIndexedOccurrenceId(formatEditoastIdToPacedTrainId(999), 0),
+        formatTrainScheduleIdToIndexedOccurrenceId(formatEditoastIdToTrainScheduleId(999), 0),
         trainSchedule
       )
     ).toEqual(false);
@@ -369,13 +372,13 @@ describe('isOccurrencePresentInPacedTrain', () => {
   it('should return true if the indexed occurrence is in range and not disabled', () => {
     expect(
       isOccurrencePresentInPacedTrain(
-        formatPacedTrainIdToIndexedOccurrenceId(pacedTrainId, 0), // regular occurrence
+        formatTrainScheduleIdToIndexedOccurrenceId(trainScheduleId, 0), // regular occurrence
         trainSchedule
       )
     ).toEqual(true);
     expect(
       isOccurrencePresentInPacedTrain(
-        formatPacedTrainIdToIndexedOccurrenceId(pacedTrainId, 2), // modified exception
+        formatTrainScheduleIdToIndexedOccurrenceId(trainScheduleId, 2), // modified exception
         trainSchedule
       )
     ).toEqual(true);
@@ -384,13 +387,13 @@ describe('isOccurrencePresentInPacedTrain', () => {
   it('should return false if the indexed occurrence is out of range', () => {
     expect(
       isOccurrencePresentInPacedTrain(
-        formatPacedTrainIdToIndexedOccurrenceId(pacedTrainId, -1),
+        formatTrainScheduleIdToIndexedOccurrenceId(trainScheduleId, -1),
         trainSchedule
       )
     ).toEqual(false);
     expect(
       isOccurrencePresentInPacedTrain(
-        formatPacedTrainIdToIndexedOccurrenceId(pacedTrainId, 4),
+        formatTrainScheduleIdToIndexedOccurrenceId(trainScheduleId, 4),
         trainSchedule
       )
     ).toEqual(false);
@@ -399,7 +402,7 @@ describe('isOccurrencePresentInPacedTrain', () => {
   it('should return false if the indexed occurrence is a disabled exception', () => {
     expect(
       isOccurrencePresentInPacedTrain(
-        formatPacedTrainIdToIndexedOccurrenceId(pacedTrainId, 1),
+        formatTrainScheduleIdToIndexedOccurrenceId(trainScheduleId, 1),
         trainSchedule
       )
     ).toEqual(false);
@@ -408,7 +411,7 @@ describe('isOccurrencePresentInPacedTrain', () => {
   it('should return true if the occurrence is an added exception present in the paced train', () => {
     expect(
       isOccurrencePresentInPacedTrain(
-        formatPacedTrainIdToExceptionId(pacedTrainId, 0),
+        formatTrainScheduleIdToExceptionId(trainScheduleId, 0),
         trainSchedule
       )
     ).toEqual(true);
@@ -417,7 +420,7 @@ describe('isOccurrencePresentInPacedTrain', () => {
   it('should return false if the occurrence is an added exception not present in the paced train', () => {
     expect(
       isOccurrencePresentInPacedTrain(
-        formatPacedTrainIdToExceptionId(pacedTrainId, 999),
+        formatTrainScheduleIdToExceptionId(trainScheduleId, 999),
         trainSchedule
       )
     ).toEqual(false);
@@ -425,7 +428,7 @@ describe('isOccurrencePresentInPacedTrain', () => {
 });
 
 describe('getFirstActiveOccurrenceId', () => {
-  const PACED_ID = 'paced_1' as PacedTrainId;
+  const TRAIN_SCHEDULE_ID = 'trainSchedule_1' as TrainScheduleId;
   const PACED_START_MS = new Date('2026-01-01T08:00:00Z').getTime();
   const INTERVAL_MS = 10 * 60 * 1000;
 
@@ -444,13 +447,13 @@ describe('getFirstActiveOccurrenceId', () => {
     }) as unknown as PacedTrainWithDetails;
 
   it('should return the first slot when there are no exceptions', () => {
-    expect(getFirstActiveOccurrenceId(schedule(), PACED_ID)).toBe('indexedoccurrence_1_0');
+    expect(getFirstActiveOccurrenceId(schedule(), TRAIN_SCHEDULE_ID)).toBe('indexedoccurrence_1_0');
   });
 
   it('should skip a disabled slot and return the next one', () => {
     const result = getFirstActiveOccurrenceId(
       schedule([exception({ key: 'e1', occurrence_index: 0, disabled: true })]),
-      PACED_ID
+      TRAIN_SCHEDULE_ID
     );
     expect(result).toBe('indexedoccurrence_1_1');
   });
@@ -462,7 +465,7 @@ describe('getFirstActiveOccurrenceId', () => {
         exception({ key: 'e2', occurrence_index: 1, disabled: true }),
         exception({ key: 'e3', occurrence_index: 2, disabled: true }),
       ]),
-      PACED_ID
+      TRAIN_SCHEDULE_ID
     );
     expect(result).toBe('indexedoccurrence_1_3');
   });
@@ -477,7 +480,7 @@ describe('getFirstActiveOccurrenceId', () => {
           start_time: { value: PACED_START_MS - INTERVAL_MS },
         }),
       ]),
-      PACED_ID
+      TRAIN_SCHEDULE_ID
     );
     expect(result).toBe('indexedoccurrence_1_2');
   });
@@ -491,7 +494,7 @@ describe('getFirstActiveOccurrenceId', () => {
           start_time: { value: PACED_START_MS - INTERVAL_MS },
         }),
       ]),
-      PACED_ID
+      TRAIN_SCHEDULE_ID
     );
     expect(result).toBe('exception_1_42');
   });
@@ -505,7 +508,7 @@ describe('getFirstActiveOccurrenceId', () => {
           start_time: { value: PACED_START_MS + 5 * INTERVAL_MS },
         }),
       ]),
-      PACED_ID
+      TRAIN_SCHEDULE_ID
     );
     expect(result).toBe('indexedoccurrence_1_0');
   });
@@ -515,6 +518,6 @@ describe('getFirstActiveOccurrenceId', () => {
     for (let i = 0; i < 6; i += 1) {
       exceptions.push(exception({ key: `e${i}`, occurrence_index: i, disabled: true }));
     }
-    expect(getFirstActiveOccurrenceId(schedule(exceptions), PACED_ID)).toBeUndefined();
+    expect(getFirstActiveOccurrenceId(schedule(exceptions), TRAIN_SCHEDULE_ID)).toBeUndefined();
   });
 });

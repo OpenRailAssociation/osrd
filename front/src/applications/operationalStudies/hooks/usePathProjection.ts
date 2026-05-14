@@ -20,10 +20,10 @@ import {
 } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
 import {
-  extractEditoastIdFromPacedTrainId,
-  extractPacedTrainIdFromOccurrenceId,
+  extractEditoastIdFromTrainScheduleId,
+  extractTrainScheduleIdFromOccurrenceId,
   isOccurrenceId,
-  isPacedTrainId,
+  isTrainScheduleId,
 } from 'utils/trainId';
 
 import type { PathProjectionResult, PathProjectionResultOperationalPoint } from '../types';
@@ -99,28 +99,28 @@ const usePathProjection = (
   const projectionType = useSelector(getProjectionType);
   const dispatch = useAppDispatch();
 
-  let rawPacedTrainId: number | undefined;
+  let rawTrainScheduleId: number | undefined;
   let exceptionId: number | undefined | null;
   if (trainIdUsedForProjection) {
-    if (isPacedTrainId(trainIdUsedForProjection)) {
-      rawPacedTrainId = extractEditoastIdFromPacedTrainId(trainIdUsedForProjection);
+    if (isTrainScheduleId(trainIdUsedForProjection)) {
+      rawTrainScheduleId = extractEditoastIdFromTrainScheduleId(trainIdUsedForProjection);
     } else {
-      const pacedTrainId = extractPacedTrainIdFromOccurrenceId(trainIdUsedForProjection);
-      rawPacedTrainId = extractEditoastIdFromPacedTrainId(pacedTrainId);
+      const trainScheduleId = extractTrainScheduleIdFromOccurrenceId(trainIdUsedForProjection);
+      rawTrainScheduleId = extractEditoastIdFromTrainScheduleId(trainScheduleId);
       exceptionId = getExceptionFromOccurrenceId(trainSchedulesById, trainIdUsedForProjection)?.id;
     }
   }
 
   // TODO_EXCEPTION: remove `!` when using TrainSchedulingException type
-  const pacedArg = rawPacedTrainId
-    ? { id: rawPacedTrainId, infraId, exceptionId: exceptionId! }
+  const trainScheduleArg = rawTrainScheduleId
+    ? { id: rawTrainScheduleId, infraId, exceptionId: exceptionId! }
     : skipToken;
-  const basePacedArg = exceptionId ? { id: rawPacedTrainId!, infraId } : skipToken;
+  const baseTrainScheduleArg = exceptionId ? { id: rawTrainScheduleId!, infraId } : skipToken;
 
   const { data: pathfinding } =
-    osrdEditoastApi.endpoints.getTrainSchedulesByIdPath.useQuery(pacedArg);
-  const { currentData: basePacedPath } =
-    osrdEditoastApi.endpoints.getTrainSchedulesByIdPath.useQuery(basePacedArg);
+    osrdEditoastApi.endpoints.getTrainSchedulesByIdPath.useQuery(trainScheduleArg);
+  const { currentData: baseTrainSchedulePath } =
+    osrdEditoastApi.endpoints.getTrainSchedulesByIdPath.useQuery(baseTrainScheduleArg);
 
   const { data: pathProperties } =
     osrdEditoastApi.endpoints.postInfraByInfraIdPathProperties.useQuery(
@@ -132,21 +132,24 @@ const usePathProjection = (
         : skipToken
     );
 
-  const projectingOnSimulatedPathException = pathfindingResultsDiffer(basePacedPath, pathfinding);
+  const projectingOnSimulatedPathException = pathfindingResultsDiffer(
+    baseTrainSchedulePath,
+    pathfinding
+  );
 
   const pathUsedForProjection = useMemo(() => {
     if (!trainIdUsedForProjection) return undefined;
     if (!isOccurrenceId(trainIdUsedForProjection)) {
-      return trainSchedulesById.get(extractEditoastIdFromPacedTrainId(trainIdUsedForProjection))
+      return trainSchedulesById.get(extractEditoastIdFromTrainScheduleId(trainIdUsedForProjection))
         ?.path;
     }
-    const pacedTrain = trainSchedulesById.get(
-      extractEditoastIdFromPacedTrainId(
-        extractPacedTrainIdFromOccurrenceId(trainIdUsedForProjection)
+    const trainSchedule = trainSchedulesById.get(
+      extractEditoastIdFromTrainScheduleId(
+        extractTrainScheduleIdFromOccurrenceId(trainIdUsedForProjection)
       )
     );
     const exception = getExceptionFromOccurrenceId(trainSchedulesById, trainIdUsedForProjection);
-    return exception?.path_and_schedule?.path ?? pacedTrain?.path;
+    return exception?.path_and_schedule?.path ?? trainSchedule?.path;
   }, [trainIdUsedForProjection, trainSchedulesById]);
 
   const opRefs = useMemo(() => {

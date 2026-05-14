@@ -33,8 +33,8 @@ import {
 } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
 import {
-  extractEditoastIdFromPacedTrainId,
-  extractPacedTrainIdFromOccurrenceId,
+  extractEditoastIdFromTrainScheduleId,
+  extractTrainScheduleIdFromOccurrenceId,
   isOccurrenceId,
 } from 'utils/trainId';
 
@@ -166,14 +166,14 @@ const SimulationResults = ({
     if (!selectedTrainId) return undefined;
 
     if (!isOccurrenceId(selectedTrainId)) {
-      const selectedTrainScheduleId = extractEditoastIdFromPacedTrainId(selectedTrainId);
+      const selectedTrainScheduleId = extractEditoastIdFromTrainScheduleId(selectedTrainId);
       return trainSchedulesWithDetails.find(
         (trainSchedule) => trainSchedule.id === selectedTrainScheduleId
       )?.summary;
     }
 
-    const selectedTrainScheduleId = extractEditoastIdFromPacedTrainId(
-      extractPacedTrainIdFromOccurrenceId(selectedTrainId)
+    const selectedTrainScheduleId = extractEditoastIdFromTrainScheduleId(
+      extractTrainScheduleIdFromOccurrenceId(selectedTrainId)
     );
     const pacedTrain = trainSchedulesWithDetails.find(
       (trainSchedule) => trainSchedule.id === selectedTrainScheduleId

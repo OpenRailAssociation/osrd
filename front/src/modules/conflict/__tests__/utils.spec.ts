@@ -4,7 +4,7 @@ import type { TrainScheduleResponse } from 'common/api/osrdEditoastApi';
 
 import type { ConflictWithTrainNames } from '../types';
 import addTrainNamesToConflicts, { filterAndReorderConflict } from '../utils';
-import { pacedId, occurrenceId, conflictBase } from './sampleData';
+import { trainScheduleId, occurrenceId, conflictBase } from './sampleData';
 
 describe('addTrainNamesToConflicts', () => {
   it('combines schedule and occurrence names', () => {
@@ -47,7 +47,7 @@ describe('filterAndReorderConflict - filtering', () => {
       ],
     };
 
-    const kept = filterAndReorderConflict(conflict, pacedId(1), '1234');
+    const kept = filterAndReorderConflict(conflict, trainScheduleId(1), '1234');
     expect(kept).not.toBeNull();
     expect(kept?.trainsData[0].name).toBe('1234');
   });
@@ -61,7 +61,7 @@ describe('filterAndReorderConflict - filtering', () => {
       ],
     };
 
-    const dropped = filterAndReorderConflict(conflict, pacedId(1), '5555');
+    const dropped = filterAndReorderConflict(conflict, trainScheduleId(1), '5555');
     expect(dropped).toBeNull();
   });
 

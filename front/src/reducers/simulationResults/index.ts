@@ -1,13 +1,13 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import type { Draft } from 'immer';
 
-import type { OccurrenceId, PacedTrainId, TrainId } from 'reducers/osrdconf/types';
+import type { OccurrenceId, TrainScheduleId, TrainId } from 'reducers/osrdconf/types';
 import type {
   ProjectionType,
   SelectedTrain,
   SimulationResultsState,
 } from 'reducers/simulationResults/types';
-import { extractPacedTrainIdFromOccurrenceId, isOccurrenceId } from 'utils/trainId';
+import { extractTrainScheduleIdFromOccurrenceId, isOccurrenceId } from 'utils/trainId';
 
 export const simulationResultsInitialState: SimulationResultsState = {
   chart: undefined,
@@ -73,7 +73,7 @@ export const simulationResultsSlice = createSlice({
       const idToUnset = action.payload;
 
       const isIdMatchingOccurrence = (id: TrainId | undefined) =>
-        id && isOccurrenceId(id) && extractPacedTrainIdFromOccurrenceId(id) === idToUnset;
+        id && isOccurrenceId(id) && extractTrainScheduleIdFromOccurrenceId(id) === idToUnset;
 
       if (
         state.trainIdUsedForProjection === idToUnset ||
@@ -93,14 +93,17 @@ export const simulationResultsSlice = createSlice({
     },
     unsetTrainIdsMatchingMissingOccurrencesOf(
       state: Draft<SimulationResultsState>,
-      action: PayloadAction<{ pacedTrainId: PacedTrainId; occurrencesPresent: OccurrenceId[] }>
+      action: PayloadAction<{
+        trainScheduleId: TrainScheduleId;
+        occurrencesPresent: OccurrenceId[];
+      }>
     ) {
-      const { pacedTrainId, occurrencesPresent } = action.payload;
+      const { trainScheduleId, occurrencesPresent } = action.payload;
 
       const isIdMatchingMissingOccurrence = (id: TrainId | undefined) =>
         id &&
         isOccurrenceId(id) &&
-        extractPacedTrainIdFromOccurrenceId(id) === pacedTrainId &&
+        extractTrainScheduleIdFromOccurrenceId(id) === trainScheduleId &&
         !occurrencesPresent.includes(id);
 
       if (isIdMatchingMissingOccurrence(state.trainIdUsedForProjection)) {

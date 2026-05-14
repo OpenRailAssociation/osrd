@@ -7,11 +7,12 @@ import type {
   AddedExceptionId,
   IndexedOccurrenceId,
   OccurrenceId,
-  PacedTrainId,
+  TrainScheduleId,
   TrainId,
 } from 'reducers/osrdconf/types';
 
-export const isPacedTrainId = (id: string): id is PacedTrainId => id.startsWith('paced_');
+export const isTrainScheduleId = (id: string): id is TrainScheduleId =>
+  id.startsWith('trainSchedule_');
 
 export const isIndexedOccurrenceId = (id: string): id is IndexedOccurrenceId =>
   id.startsWith('indexedoccurrence_');
@@ -22,7 +23,7 @@ export const isAddedExceptionId = (id: string): id is AddedExceptionId =>
 export const isOccurrenceId = (id: string): id is OccurrenceId =>
   isIndexedOccurrenceId(id) || isAddedExceptionId(id);
 
-export const isTrainId = (id: string): id is TrainId => isOccurrenceId(id) || isPacedTrainId(id);
+export const isTrainId = (id: string): id is TrainId => isOccurrenceId(id) || isTrainScheduleId(id);
 
 /**
  * Given an occurrence id, return the type of the exception.
@@ -62,121 +63,123 @@ export const isExceptionFromPathOrSimulation = ({ exception }: Occurrence) => {
 
 /**
  * Given a train id in the Editoast format (used for api),
- * returns the paced train id with a PacedTrainId format (used across the front).
+ * returns the train schedule id with a TrainScheduleId format (used across the front).
  */
-export const formatEditoastIdToPacedTrainId = (trainId: number): PacedTrainId =>
-  `paced_${trainId}` as PacedTrainId;
+export const formatEditoastIdToTrainScheduleId = (trainId: number): TrainScheduleId =>
+  `trainSchedule_${trainId}` as TrainScheduleId;
 
 /**
- * Given a paced train id in the Editoast format (used for api),
+ * Given a train schedule id in the Editoast format (used for api),
  * returns the occurrence id with an IndexedOccurrenceId format (used across the front).
  */
 export const formatEditoastIdToIndexedOccurrenceId = ({
-  pacedTrainId,
+  trainScheduleId,
   occurrenceIndex,
 }: {
-  pacedTrainId: number;
+  trainScheduleId: number;
   occurrenceIndex: number;
 }): IndexedOccurrenceId =>
-  `indexedoccurrence_${pacedTrainId}_${occurrenceIndex}` as IndexedOccurrenceId;
+  `indexedoccurrence_${trainScheduleId}_${occurrenceIndex}` as IndexedOccurrenceId;
 
 /**
- * Given a paced train id in the Editoast format (used for api) and an exception id,
+ * Given a train schedule id in the Editoast format (used for api) and an exception id,
  * returns the added exception id with an AddedExceptionId format (used across the front).
  */
 export const formatEditoastIdToExceptionId = ({
-  pacedTrainId,
+  trainScheduleId,
   exceptionId,
 }: {
-  pacedTrainId: number;
+  trainScheduleId: number;
   exceptionId: number;
-}): AddedExceptionId => `exception_${pacedTrainId}_${exceptionId}` as AddedExceptionId;
+}): AddedExceptionId => `exception_${trainScheduleId}_${exceptionId}` as AddedExceptionId;
 
 /**
- * Given a paced train id with a PacedTrainId format (used across the front),
+ * Given a train schedule id with a TrainScheduleId format (used across the front),
  * returns the train id in the Editoast format (used for api).
  */
-export const extractEditoastIdFromPacedTrainId = (pacedTrainId: PacedTrainId): number => {
-  if (!isPacedTrainId(pacedTrainId)) {
-    throw new Error('The paced train id should start with "paced_"');
+export const extractEditoastIdFromTrainScheduleId = (trainScheduleId: TrainScheduleId): number => {
+  if (!isTrainScheduleId(trainScheduleId)) {
+    throw new Error('The train schedule id should start with "trainSchedule_"');
   }
-  const formattedPacedTrainId = Number(pacedTrainId.split('_')[1]);
+  const formattedTrainScheduleId = Number(trainScheduleId.split('_')[1]);
 
-  if (Number.isNaN(formattedPacedTrainId)) {
-    throw new Error(`Invalid paced train ID: ${pacedTrainId}`);
+  if (Number.isNaN(formattedTrainScheduleId)) {
+    throw new Error(`Invalid train schedule ID: ${trainScheduleId}`);
   }
 
-  return formattedPacedTrainId;
+  return formattedTrainScheduleId;
 };
 
 /**
- * Given a paced train id with a PacedTrainId format (used across the front),
+ * Given a train schedule id with a TrainScheduleId format (used across the front),
  * returns the occurrence id with an OccurrenceId format (used across the front).
  */
-export const formatPacedTrainIdToIndexedOccurrenceId = (
-  pacedTrainId: PacedTrainId,
+export const formatTrainScheduleIdToIndexedOccurrenceId = (
+  trainScheduleId: TrainScheduleId,
   occurrenceIndex: number
 ): IndexedOccurrenceId => {
-  const editoastTrainId = extractEditoastIdFromPacedTrainId(pacedTrainId);
+  const editoastTrainId = extractEditoastIdFromTrainScheduleId(trainScheduleId);
   return formatEditoastIdToIndexedOccurrenceId({
-    pacedTrainId: editoastTrainId,
+    trainScheduleId: editoastTrainId,
     occurrenceIndex,
   });
 };
 
 /**
- * Given a paced train id with a PacedTrainId format (used across the front),
+ * Given a train schedule id with a TrainScheduleId format (used across the front),
  * returns the exception id with an ExceptionId format (used across the front).
  */
-export const formatPacedTrainIdToExceptionId = (
-  pacedTrainId: PacedTrainId,
+export const formatTrainScheduleIdToExceptionId = (
+  trainScheduleId: TrainScheduleId,
   exceptionId: number
 ): AddedExceptionId => {
-  const editoastTrainId = extractEditoastIdFromPacedTrainId(pacedTrainId);
+  const editoastTrainId = extractEditoastIdFromTrainScheduleId(trainScheduleId);
   return formatEditoastIdToExceptionId({
-    pacedTrainId: editoastTrainId,
+    trainScheduleId: editoastTrainId,
     exceptionId,
   });
 };
 
 /**
- * Given a paced train id with a PacedTrainId format (used across the front),
+ * Given a train schedule id with a TrainScheduleId format (used across the front),
  * returns the occurrence id with an OccurrenceId format (used across the front).
  */
-export const formatPacedTrainIdToOccurrenceId = (
-  pacedTrainId: PacedTrainId,
+export const formatTrainScheduleIdToOccurrenceId = (
+  trainScheduleId: TrainScheduleId,
   exception: PacedTrainException
 ): OccurrenceId =>
   exception.occurrence_index
-    ? formatPacedTrainIdToIndexedOccurrenceId(pacedTrainId, exception.occurrence_index)
+    ? formatTrainScheduleIdToIndexedOccurrenceId(trainScheduleId, exception.occurrence_index)
     : // TODO_EXCEPTION: remove `!` when using TrainSchedulingException type
-      formatPacedTrainIdToExceptionId(pacedTrainId, Number(exception.id!));
+      formatTrainScheduleIdToExceptionId(trainScheduleId, Number(exception.id!));
 
 /**
  * Given a occurrence id with an OccurrenceId format (used across the front),
- * extract its paced train id with a PacedTrainId format (used across the front).
+ * extract its train schedule id with a TrainScheduleId format (used across the front).
  */
-export const extractPacedTrainIdFromOccurrenceId = (occurrenceId: OccurrenceId): PacedTrainId => {
+export const extractTrainScheduleIdFromOccurrenceId = (
+  occurrenceId: OccurrenceId
+): TrainScheduleId => {
   if (!isOccurrenceId(occurrenceId)) {
     throw new Error(
-      'The occurrence id should match the format "indexedoccurrence_{pacedTrainId}_{occurrenceIndex}" or "exception_{pacedTrainId}_{exceptionId}"'
+      'The occurrence id should match the format "indexedoccurrence_{trainScheduleId}_{occurrenceIndex}" or "exception_{trainScheduleId}_{exceptionId}"'
     );
   }
 
-  const editoastPacedTrainId = Number(occurrenceId.split('_')[1]);
-  if (Number.isNaN(editoastPacedTrainId)) {
-    throw new Error(`Invalid paced train ID : ${occurrenceId}`);
+  const trainScheduleId = Number(occurrenceId.split('_')[1]);
+  if (Number.isNaN(trainScheduleId)) {
+    throw new Error(`Invalid train schedule ID : ${occurrenceId}`);
   }
 
-  return formatEditoastIdToPacedTrainId(editoastPacedTrainId);
+  return formatEditoastIdToTrainScheduleId(trainScheduleId);
 };
 
 /**
- * Given a train id (paced or occurrence), returns the paced train id it
- * belongs to. A paced train id is returned as-is.
+ * Given a train id (paced or occurrence), returns the train schedule id it
+ * belongs to. A train schedule id is returned as-is.
  */
-export const extractPacedTrainIdFromTrainId = (trainId: TrainId): PacedTrainId =>
-  isOccurrenceId(trainId) ? extractPacedTrainIdFromOccurrenceId(trainId) : trainId;
+export const extractTrainScheduleIdFromTrainId = (trainId: TrainId): TrainScheduleId =>
+  isOccurrenceId(trainId) ? extractTrainScheduleIdFromOccurrenceId(trainId) : trainId;
 
 /**
  * Given a occurrence id with an OccurrenceId format (used across the front),
@@ -185,7 +188,7 @@ export const extractPacedTrainIdFromTrainId = (trainId: TrainId): PacedTrainId =
 export const extractOccurrenceIndexFromOccurrenceId = (occurrenceId: OccurrenceId): number => {
   if (!isIndexedOccurrenceId(occurrenceId)) {
     throw new Error(
-      'The occurrence id should match the format "indexedoccurrence_{pacedTrainId}_{occurrenceIndex}"'
+      'The occurrence id should match the format "indexedoccurrence_{trainScheduleId}_{occurrenceIndex}"'
     );
   }
 
@@ -205,11 +208,11 @@ export const extractOccurrenceIndexFromOccurrenceId = (occurrenceId: OccurrenceI
 export const extractExceptionIdFromOccurrenceId = (occurrenceId: OccurrenceId): number => {
   if (!isAddedExceptionId(occurrenceId)) {
     throw new Error(
-      'The occurrence id should match the format "exception_{pacedTrainId}_{exceptionId}"'
+      'The occurrence id should match the format "exception_{trainScheduleId}_{exceptionId}"'
     );
   }
 
-  const [_type, _pacedTrainId, ...exceptionId] = occurrenceId.split('_');
+  const [_type, _trainScheduleId, ...exceptionId] = occurrenceId.split('_');
 
   const result = Number(exceptionId.join('_'));
   if (Number.isNaN(result)) {
@@ -226,12 +229,12 @@ export const isTrainIdInTimetable = (
 ): boolean => {
   if (!trainId) return false;
 
-  const pacedTrainId = isOccurrenceId(trainId)
-    ? extractPacedTrainIdFromOccurrenceId(trainId)
+  const trainScheduleId = isOccurrenceId(trainId)
+    ? extractTrainScheduleIdFromOccurrenceId(trainId)
     : trainId;
-  const trainScheduleId = extractEditoastIdFromPacedTrainId(pacedTrainId);
+  const trainScheduleEditoastId = extractEditoastIdFromTrainScheduleId(trainScheduleId);
 
-  const trainSchedule = trainSchedules.find((train) => train.id === trainScheduleId);
+  const trainSchedule = trainSchedules.find((train) => train.id === trainScheduleEditoastId);
   if (!trainSchedule) return false;
 
   if (!isOccurrenceId(trainId)) return true;
@@ -245,7 +248,7 @@ export const isTrainIdInTimetable = (
  * @returns
  */
 export function extractEditoastIdFromTrainId(trainId: TrainId): number {
-  return extractEditoastIdFromPacedTrainId(
-    isOccurrenceId(trainId) ? extractPacedTrainIdFromOccurrenceId(trainId) : trainId
+  return extractEditoastIdFromTrainScheduleId(
+    isOccurrenceId(trainId) ? extractTrainScheduleIdFromOccurrenceId(trainId) : trainId
   );
 }

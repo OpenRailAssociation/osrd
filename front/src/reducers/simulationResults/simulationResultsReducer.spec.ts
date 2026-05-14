@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 
-import type { OccurrenceId, PacedTrainId } from 'reducers/osrdconf/types';
+import type { OccurrenceId, TrainScheduleId } from 'reducers/osrdconf/types';
 import { createStoreWithoutMiddleware } from 'store';
 
 import {
@@ -28,10 +28,12 @@ describe('simulationResultsReducer', () => {
 
   it('should handle updateSelectedTrain with a paced train', () => {
     const store = createStore();
-    store.dispatch(updateSelectedTrain({ id: 'paced_1' as PacedTrainId, by: 'timetable' }));
+    store.dispatch(
+      updateSelectedTrain({ id: 'trainSchedule_1' as TrainScheduleId, by: 'timetable' })
+    );
 
     const state = store.getState()[simulationResultsSlice.name];
-    expect(state.selectedTrain).toEqual({ id: 'paced_1', by: 'timetable' });
+    expect(state.selectedTrain).toEqual({ id: 'trainSchedule_1', by: 'timetable' });
   });
 
   it('should handle updateSelectedTrain with a paced train occurrence on the space time diagram (STD)', () => {
@@ -44,7 +46,7 @@ describe('simulationResultsReducer', () => {
 
   it('should handle updateTrainIdUsedForProjection with a paced train', () => {
     const store = createStore();
-    store.dispatch(updateTrainIdUsedForProjection('paced-1' as PacedTrainId));
+    store.dispatch(updateTrainIdUsedForProjection('paced-1' as TrainScheduleId));
 
     const state = store.getState()[simulationResultsSlice.name];
     expect(state.trainIdUsedForProjection).toBe('paced-1');

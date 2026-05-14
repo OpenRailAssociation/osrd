@@ -18,7 +18,7 @@ import { getSelectedTrain } from 'reducers/simulationResults/selectors';
 import { Duration } from 'utils/duration';
 import {
   extractOccurrenceIndexFromOccurrenceId,
-  formatEditoastIdToPacedTrainId,
+  formatEditoastIdToTrainScheduleId,
   isOccurrenceId,
 } from 'utils/trainId';
 
@@ -46,7 +46,7 @@ const useSimulationResults = (
     if (!selectedTrainId || !trainSchedule) return undefined;
 
     if (!isOccurrenceId(selectedTrainId) || !trainSchedule.paced) {
-      return { ...trainSchedule, id: formatEditoastIdToPacedTrainId(trainSchedule.id) };
+      return { ...trainSchedule, id: formatEditoastIdToTrainScheduleId(trainSchedule.id) };
     }
 
     const exception = findExceptionWithOccurrenceId(

@@ -205,14 +205,14 @@ export type StdcmPathStep = {
 export type StdcmViaPathStep = Extract<StdcmPathStep, { isVia: true }>;
 
 /**
- * Each regular occurrence id should follow this syntax : indexedoccurrence_{pacedTrainId}_{occurrenceIndex}
+ * Each regular occurrence id should follow this syntax : indexedoccurrence_{trainScheduleId}_{occurrenceIndex}
  * A regular occurrence is an occurrence that was originally part of the paced train.
  * It can have been disabled or turned into an exception by being modified (and disabled).
  */
 export type IndexedOccurrenceId = string & { readonly __type: unique symbol };
 
 /**
- * Each added exception id should follow this syntax : exception_{pacedTrainId}_{exceptionId}
+ * Each added exception id should follow this syntax : exception_{trainScheduleId}_{exceptionId}
  */
 export type AddedExceptionId = string & { readonly __type: unique symbol };
 
@@ -222,25 +222,25 @@ export type AddedExceptionId = string & { readonly __type: unique symbol };
 export type OccurrenceId = IndexedOccurrenceId | AddedExceptionId;
 
 /**
- * Each paced train id should follow this syntax : paced_{id}
+ * Each TrainScheduleId should follow this syntax : trainSchedule_{id}
  */
-export type PacedTrainId = string & { readonly __type: unique symbol };
+export type TrainScheduleId = string & { readonly __type: unique symbol };
 
-export type TrainId = OccurrenceId | PacedTrainId;
+export type TrainId = OccurrenceId | TrainScheduleId;
 export type TrainScheduleToEditData = {
   trainScheduleId: number;
   originalTrainSchedule: TrainScheduleWithDetails;
   occurrenceId?: OccurrenceId;
 };
 
-export type TrainBaseWithPacedTrainId = Omit<TrainScheduleResponse, 'id'> & {
-  id: PacedTrainId;
+type TrainBaseWithTrainScheduleId = Omit<TrainScheduleResponse, 'id'> & {
+  id: TrainScheduleId;
 };
-export type TrainBaseWithOccurrenceId = Omit<TrainScheduleResponse, 'id'> & {
+type TrainBaseWithOccurrenceId = Omit<TrainScheduleResponse, 'id'> & {
   id: OccurrenceId;
 };
 
-export type Train = TrainBaseWithPacedTrainId | TrainBaseWithOccurrenceId;
+export type Train = TrainBaseWithTrainScheduleId | TrainBaseWithOccurrenceId;
 
 export type TrainScheduleWithPathOps = TrainScheduleResponse & {
   pathOps: (RelatedOperationalPoint | null)[];

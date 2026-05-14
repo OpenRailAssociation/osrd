@@ -42,11 +42,11 @@ import { useAppDispatch } from 'store';
 import { addDurationToDate, Duration } from 'utils/duration';
 import { castErrorToFailure } from 'utils/error';
 import {
-  extractEditoastIdFromPacedTrainId,
-  extractPacedTrainIdFromOccurrenceId,
-  isPacedTrainId,
-  formatPacedTrainIdToOccurrenceId,
-  formatEditoastIdToPacedTrainId,
+  extractEditoastIdFromTrainScheduleId,
+  extractTrainScheduleIdFromOccurrenceId,
+  isTrainScheduleId,
+  formatTrainScheduleIdToOccurrenceId,
+  formatEditoastIdToTrainScheduleId,
 } from 'utils/trainId';
 
 import { TRAIN_SCHEDULE_DELTA } from '../consts';
@@ -122,7 +122,7 @@ const PacedTrainItem = ({
 
   const trainIdUsedForProjection = useSelector(getTrainIdUsedForProjection);
 
-  const formattedPacedTrainId = formatEditoastIdToPacedTrainId(pacedTrain.id);
+  const formattedTrainScheduleId = formatEditoastIdToTrainScheduleId(pacedTrain.id);
 
   const { showPacedTrainProjectionIcon, pathUsedForProjectionIsException } = useMemo(() => {
     if (!trainIdUsedForProjection)
@@ -130,15 +130,16 @@ const PacedTrainItem = ({
         showPacedTrainProjectionIcon: false,
         pathUsedForProjectionIsException: false,
       };
-    if (isPacedTrainId(trainIdUsedForProjection))
+    if (isTrainScheduleId(trainIdUsedForProjection))
       return {
         showPacedTrainProjectionIcon:
-          pacedTrain.id === extractEditoastIdFromPacedTrainId(trainIdUsedForProjection),
+          pacedTrain.id === extractEditoastIdFromTrainScheduleId(trainIdUsedForProjection),
         pathUsedForProjectionIsException: false,
       };
     const exception = pacedTrain.paced.exceptions.find(
       (ex) =>
-        formatPacedTrainIdToOccurrenceId(formattedPacedTrainId, ex) === trainIdUsedForProjection
+        formatTrainScheduleIdToOccurrenceId(formattedTrainScheduleId, ex) ===
+        trainIdUsedForProjection
     );
     const pacedTrainTrackOffsets = pacedTrain.path.filter(
       (step) => step.location.type === 'track_offset'
@@ -151,8 +152,8 @@ const PacedTrainItem = ({
 
     return {
       showPacedTrainProjectionIcon:
-        extractEditoastIdFromPacedTrainId(
-          extractPacedTrainIdFromOccurrenceId(trainIdUsedForProjection)
+        extractEditoastIdFromTrainScheduleId(
+          extractTrainScheduleIdFromOccurrenceId(trainIdUsedForProjection)
         ) === pacedTrain.id,
       pathUsedForProjectionIsException:
         projectingOnSimulatedPathException || isTrackOffsetsException,
@@ -173,7 +174,7 @@ const PacedTrainItem = ({
   const [getTrainScheduleById] = osrdEditoastApi.endpoints.getTrainSchedulesById.useLazyQuery();
 
   const selectPathProjection = async () => {
-    dispatch(updateTrainIdUsedForProjection(formattedPacedTrainId));
+    dispatch(updateTrainIdUsedForProjection(formattedTrainScheduleId));
     if (!summary?.isValid) dispatch(updateProjectionType('operationalPointProjection'));
   };
 
@@ -196,9 +197,9 @@ const PacedTrainItem = ({
   const togglePacedTrainSelection = () => {
     dispatch(
       updateSelectedTrain(
-        selectedTrainId === formattedPacedTrainId
+        selectedTrainId === formattedTrainScheduleId
           ? undefined
-          : { id: formattedPacedTrainId, by: 'timetable' }
+          : { id: formattedTrainScheduleId, by: 'timetable' }
       )
     );
   };
@@ -267,7 +268,7 @@ const PacedTrainItem = ({
     )[0];
     dispatch(
       updateSelectedTrain({
-        id: formatEditoastIdToPacedTrainId(formattedPacedTrainResponse.id),
+        id: formatEditoastIdToTrainScheduleId(formattedPacedTrainResponse.id),
         by: 'timetable',
       })
     );
@@ -354,9 +355,9 @@ const PacedTrainItem = ({
           invalid: summary && !summary.isValid,
           warning: !!worstCase,
           [`warning-${worstCase}`]: !!worstCase,
-          selected: selectedTrainId === formattedPacedTrainId,
+          selected: selectedTrainId === formattedTrainScheduleId,
         })}
-        onMouseEnter={() => dispatch(updateHoveredTrainId(formattedPacedTrainId))}
+        onMouseEnter={() => dispatch(updateHoveredTrainId(formattedTrainScheduleId))}
         onMouseLeave={() => dispatch(updateHoveredTrainId(undefined))}
       >
         {isSelectMode && (
