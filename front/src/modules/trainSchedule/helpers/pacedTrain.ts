@@ -25,7 +25,6 @@ import {
 import type {
   ExceptionChangeGroups,
   PacedTrainWithDetails,
-  PacedTrainWithPacedWithDetails,
   SimulatedException,
   TrainScheduleWithDetails,
 } from '../types';
@@ -76,12 +75,12 @@ export const isPacedTrain = (
 
 export const isPacedTrainWithDetails = (
   trainSchedule: TrainScheduleWithDetails
-): trainSchedule is PacedTrainWithPacedWithDetails => !!trainSchedule.paced;
+): trainSchedule is PacedTrainWithDetails => !!trainSchedule.paced;
 
 export const getOccurrencesNb = ({
   timeWindow,
   interval,
-}: Pick<NonNullable<PacedTrainWithDetails['paced']>, 'timeWindow' | 'interval'>) => {
+}: Pick<PacedTrainWithDetails['paced'], 'timeWindow' | 'interval'>) => {
   if (interval.ms === 0) {
     throw new Error('Interval cannot be 0');
   }
@@ -203,7 +202,7 @@ export const extractOccurrenceDetailsFromPacedTrain = <
 /** Return the worst status of the model train and its occurrences */
 export const getOccurrencesWorstStatus = (
   summary: PacedTrainWithDetails['summary'],
-  exceptions: NonNullable<PacedTrainWithDetails['paced']>['exceptions']
+  exceptions: PacedTrainWithDetails['paced']['exceptions']
 ): 'invalid' | 'scheduleNotHonored' | 'trainTooFast' | '' => {
   let className: '' | 'scheduleNotHonored' | 'trainTooFast' = '';
 
@@ -349,11 +348,11 @@ export const isOccurrencePresentInPacedTrain = (
  * has been clicked yet but the panel switches to `single` mode.
  */
 export const getFirstActiveOccurrenceId = (
-  trainSchedule: PacedTrainWithPacedWithDetails,
+  pacedTrain: PacedTrainWithDetails,
   pacedTrainId: PacedTrainId
 ): OccurrenceId | undefined => {
-  const { paced } = trainSchedule;
-  const startTimeMs = trainSchedule.startTime.getTime();
+  const { paced } = pacedTrain;
+  const startTimeMs = pacedTrain.startTime.getTime();
   const intervalMs = paced.interval.ms;
 
   let bestId: OccurrenceId | undefined;

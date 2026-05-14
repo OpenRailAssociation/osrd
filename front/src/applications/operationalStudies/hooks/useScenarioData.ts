@@ -17,7 +17,7 @@ import {
 import { useRollingStockContext } from 'common/RollingStockContext';
 import type { PanelSelectionMode } from 'modules/simulationResult/components/SpaceTimeChartWrapper/CurveSelectionSidePanel';
 import useLazyProjectTrains from 'modules/simulationResult/components/SpaceTimeChartWrapper/useLazyProjectTrains';
-import { formatPacedTrainWithDetails } from 'modules/trainSchedule/helpers/formatTrainScheduleWithDetails';
+import { formatTrainScheduleWithDetails } from 'modules/trainSchedule/helpers/formatTrainScheduleWithDetails';
 import { computeHourlyTimetableDuration } from 'modules/trainSchedule/helpers/hourlyTimetable';
 import {
   extractOccurrenceDetailsFromPacedTrain,
@@ -165,7 +165,7 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
       const simulatedTrain = simulatedTrainsById.get(trainSchedule.id);
       if (simulatedTrain) return simulatedTrain;
       const rollingStock = rollingStocksByName.get(trainSchedule.rolling_stock_name);
-      return formatPacedTrainWithDetails(trainSchedule, rollingStock);
+      return formatTrainScheduleWithDetails(trainSchedule, rollingStock);
     });
     return sortBy(trains, ['startTime', 'name', 'id']);
   }, [trainSchedules, rollingStocksByName, simulatedTrainsById]);

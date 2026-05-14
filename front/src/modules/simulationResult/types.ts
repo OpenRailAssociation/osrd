@@ -15,7 +15,7 @@ import type {
   TrainSchedule,
   PathItem,
 } from 'common/api/osrdEditoastApi';
-import type { PacedTrainWithDetails } from 'modules/trainSchedule/types';
+import type { TrainScheduleWithDetails } from 'modules/trainSchedule/types';
 import type {
   IndexedOccurrenceId,
   OccurrenceId,
@@ -58,7 +58,7 @@ export type TrainSpaceTimeData = {
   departureTime: Date;
   originPathItem: PathItem;
   destinationPathItem: PathItem;
-  paced?: PacedTrainWithDetails['paced'] & {
+  paced?: TrainScheduleWithDetails['paced'] & {
     exceptionProjections: Map<number, BaseTrainProjection>;
   };
 } & BaseTrainProjection;

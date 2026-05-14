@@ -12,7 +12,7 @@ import type { CatalogEntry, TrainScheduleResponse } from 'common/api/osrdEditoas
 import { Loader } from 'common/Loaders';
 import { useSubCategoryContext } from 'common/SubCategoryContext';
 import { isPacedTrainWithDetails } from 'modules/trainSchedule/helpers/pacedTrain';
-import type { PacedTrainWithDetails, TrainScheduleWithDetails } from 'modules/trainSchedule/types';
+import type { TrainScheduleWithDetails } from 'modules/trainSchedule/types';
 import { selectTrainToEdit } from 'reducers/osrdconf/operationalStudiesConf';
 import type { OccurrenceId, TrainScheduleToEditData } from 'reducers/osrdconf/types';
 import {
@@ -137,7 +137,7 @@ const TrainList = ({
   const selectTrainScheduleToEdit = useCallback(
     (
       trainScheduleToEdit: TrainScheduleWithDetails,
-      originalPacedTrain?: PacedTrainWithDetails,
+      originalPacedTrain?: TrainScheduleWithDetails,
       occurrenceId?: OccurrenceId
     ) => {
       dispatch(
@@ -146,7 +146,7 @@ const TrainList = ({
       const editData: TrainScheduleToEditData = {
         trainScheduleId: trainScheduleToEdit.id,
         // param originalPacedTrain is defined only when editing an occurrence
-        originalPacedTrain: originalPacedTrain ?? trainScheduleToEdit,
+        originalTrainSchedule: originalPacedTrain ?? trainScheduleToEdit,
         occurrenceId,
       };
       setTrainScheduleToEditData(editData);
@@ -156,7 +156,7 @@ const TrainList = ({
   );
 
   const trainsToItems = useMemo(
-    () => (trainSchedules: PacedTrainWithDetails[]) =>
+    () => (trainSchedules: TrainScheduleWithDetails[]) =>
       trainSchedules.map((trainSchedule, index) => (
         <div key={`timetable-train-card-${trainSchedule.id}`} data-train-id={trainSchedule.id}>
           {timetableMode === 'calendar' && showDepartureDates[index] && (

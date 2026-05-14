@@ -73,13 +73,13 @@ const ManageTrainScheduleLeftPanel = ({
   );
 
   const getEditLabel = (_itemToEdit: TrainScheduleToEditData) => {
-    if (!_itemToEdit.originalPacedTrain.paced && editingTrainType === 'uniqueTrain') {
+    if (!_itemToEdit.originalTrainSchedule.paced && editingTrainType === 'uniqueTrain') {
       return t('updateUniqueTrain');
     }
-    if (_itemToEdit.originalPacedTrain.paced && editingTrainType !== 'uniqueTrain') {
+    if (_itemToEdit.originalTrainSchedule.paced && editingTrainType !== 'uniqueTrain') {
       return editingTrainType === 'pacedTrain' ? t('updatePacedTrain') : t('updateOccurrence');
     }
-    return !_itemToEdit.originalPacedTrain.paced
+    return !_itemToEdit.originalTrainSchedule.paced
       ? t('turnUniqueTrainIntoPacedTrain')
       : t('turnPacedTrainIntoUniqueTrain');
   };
@@ -100,12 +100,12 @@ const ManageTrainScheduleLeftPanel = ({
   const openConfirmModal = useCallback(() => {
     if (
       trainScheduleToEditData &&
-      trainScheduleToEditData.originalPacedTrain.paced &&
-      trainScheduleToEditData.originalPacedTrain.paced.exceptions.length > 0 &&
+      trainScheduleToEditData.originalTrainSchedule.paced &&
+      trainScheduleToEditData.originalTrainSchedule.paced.exceptions.length > 0 &&
       (osrdConf.timeWindow.toISOString() !==
-        trainScheduleToEditData.originalPacedTrain.paced.timeWindow.toISOString() ||
+        trainScheduleToEditData.originalTrainSchedule.paced.timeWindow.toISOString() ||
         osrdConf.interval.toISOString() !==
-          trainScheduleToEditData.originalPacedTrain.paced.interval.toISOString())
+          trainScheduleToEditData.originalTrainSchedule.paced.interval.toISOString())
     ) {
       openModal(
         <ConfirmModal

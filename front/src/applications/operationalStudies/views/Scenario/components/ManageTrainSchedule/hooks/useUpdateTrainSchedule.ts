@@ -12,7 +12,10 @@ import type {
   TrainSchedule,
   TrainScheduleResponse,
 } from 'common/api/osrdEditoastApi';
-import { findExceptionWithOccurrenceId } from 'modules/trainSchedule/helpers/pacedTrain';
+import {
+  findExceptionWithOccurrenceId,
+  isPacedTrainWithDetails,
+} from 'modules/trainSchedule/helpers/pacedTrain';
 import {
   createExceptions,
   deleteExceptions,
@@ -21,7 +24,7 @@ import {
   syncOccurrenceException,
   updateExceptions,
 } from 'modules/trainSchedule/helpers/updateTrainScheduleHelpers';
-import type { PacedTrainWithDetails } from 'modules/trainSchedule/types';
+import type { TrainScheduleWithDetails } from 'modules/trainSchedule/types';
 import { setFailure, setSuccess } from 'reducers/main';
 import { clearAddedExceptionsList } from 'reducers/osrdconf/operationalStudiesConf';
 import {
@@ -42,7 +45,7 @@ import { formatEditoastIdToPacedTrainId, isOccurrenceId } from 'utils/trainId';
 
 import {
   formatOccurrenceException,
-  formatPacedTrainWithDetailsToTrainSchedule,
+  formatTrainScheduleWithDetailsToTrainSchedule,
   formatTrainSchedulePayload,
 } from '../helpers/formatTrainSchedulePayload';
 import {
@@ -53,7 +56,7 @@ import {
 type UpdateTrainScheduleParams = {
   timetableId: number;
   trainScheduleId: number;
-  originalPacedTrain: PacedTrainWithDetails;
+  originalTrainSchedule: TrainScheduleWithDetails;
   updatedTrainSchedule: TrainSchedule;
   occurrenceId?: OccurrenceId;
   addedExceptions: { startTime: Date }[];
@@ -66,7 +69,7 @@ type UpdateTrainScheduleResult =
   | {
       success: true;
       trainScheduleId: number;
-      originalPacedTrain: PacedTrainWithDetails;
+      originalTrainSchedule: TrainScheduleWithDetails;
       occurrenceId?: OccurrenceId;
     }
   | { success: false; errorCodes: TrainScheduleConfErrorCode[] };
@@ -74,7 +77,7 @@ type UpdateTrainScheduleResult =
 export async function updateTrainSchedule({
   timetableId,
   trainScheduleId,
-  originalPacedTrain,
+  originalTrainSchedule,
   updatedTrainSchedule,
   occurrenceId,
   addedExceptions,
@@ -89,14 +92,17 @@ export async function updateTrainSchedule({
 
   // ========== user is editing an occurrence ==========
   if (occurrenceId) {
+    if (!isPacedTrainWithDetails(originalTrainSchedule)) {
+      throw new Error('Original train schedule should have a paced when editing an occurrence.');
+    }
     const { generatedException, occurrenceIndex } = formatOccurrenceException(
       updatedTrainSchedule,
-      originalPacedTrain,
+      originalTrainSchedule,
       occurrenceId
     );
 
     const existingException = findExceptionWithOccurrenceId(
-      originalPacedTrain.paced?.exceptions ?? [],
+      originalTrainSchedule.paced?.exceptions ?? [],
       occurrenceId
     );
 
@@ -110,28 +116,29 @@ export async function updateTrainSchedule({
     );
 
     const updatedExceptions = updatePacedTrainExceptionsList(
-      originalPacedTrain.paced?.exceptions ?? [],
+      originalTrainSchedule.paced?.exceptions ?? [],
       finalException,
       occurrenceId
     );
-    const formattedPacedTrain = formatPacedTrainWithDetailsToTrainSchedule(originalPacedTrain);
+    const formattedPacedTrain =
+      formatTrainScheduleWithDetailsToTrainSchedule(originalTrainSchedule);
 
     upsertTrainSchedules([
       {
         ...formattedPacedTrain,
         id: trainScheduleId,
-        train_schedule_set_id: originalPacedTrain.train_schedule_set_id,
+        train_schedule_set_id: originalTrainSchedule.train_schedule_set_id,
         paced: formattedPacedTrain.paced
           ? { ...formattedPacedTrain.paced, exceptions: updatedExceptions }
           : undefined,
       },
     ]);
 
-    return { success: true, trainScheduleId, originalPacedTrain, occurrenceId };
+    return { success: true, trainScheduleId, originalTrainSchedule, occurrenceId };
   }
 
   // ========== user is editing the whole paced train or transforming from an unique train ==========
-  const originalPacedExceptions = originalPacedTrain.paced?.exceptions ?? [];
+  const originalPacedExceptions = originalTrainSchedule.paced?.exceptions ?? [];
 
   const newAddedExceptions: PacedTrainException[] = addedExceptions.map(
     ({ startTime: exStartTime }) => ({
@@ -140,15 +147,18 @@ export async function updateTrainSchedule({
     })
   );
 
-  // Converting a unique train into a paced train:
-  // syncAndUpdatePacedTrain must be called first to make the train a paced train on the backend
-  // before we can create exceptions on it.
-  if (!originalPacedTrain.paced) {
+  // Call syncAndUpdatePacedTrain to either :
+  // 1. Edit a unique train
+  // 2. Convert a unique train into a paced train
+  //    syncAndUpdatePacedTrain must be called first to make the train a paced train on the backend
+  //    before we can create exceptions on it (there is a check in backend to prevent linking exceptions
+  //    to TrainSchedule without a paced filed)
+  if (!originalTrainSchedule.paced) {
     await syncAndUpdatePacedTrain(
       trainScheduleId,
       {
         ...updatedTrainSchedule,
-        train_schedule_set_id: originalPacedTrain.train_schedule_set_id,
+        train_schedule_set_id: originalTrainSchedule.train_schedule_set_id,
       },
       dispatch
     );
@@ -175,26 +185,27 @@ export async function updateTrainSchedule({
     );
   }
 
-  // If we just converted a unique train to a paced train, upsert with created exceptions and return
-  if (!originalPacedTrain.paced) {
+  // Upsert with created exceptions (if we just converted a unique train to a paced train otherwise
+  // we just updated the unique train) and return
+  if (!originalTrainSchedule.paced) {
     upsertTrainSchedules([
       {
         ...updatedTrainSchedule,
         id: trainScheduleId,
-        train_schedule_set_id: originalPacedTrain.train_schedule_set_id,
+        train_schedule_set_id: originalTrainSchedule.train_schedule_set_id,
         ...(updatedTrainSchedule.paced && {
           paced: { ...updatedTrainSchedule.paced, exceptions: createdExceptions },
         }),
       },
     ]);
 
-    return { success: true, trainScheduleId, originalPacedTrain, occurrenceId };
+    return { success: true, trainScheduleId, originalTrainSchedule, occurrenceId };
   }
 
   // ========== user is converting a paced train to a unique train ==========
   if (!updatedTrainSchedule.paced) {
     // TODO_EXCEPTION: remove `!` when using TrainScheduleException type
-    const exceptionsToDelete = (originalPacedTrain.paced?.exceptions ?? []).map((e) => e.id!);
+    const exceptionsToDelete = (originalTrainSchedule.paced?.exceptions ?? []).map((e) => e.id!);
     if (exceptionsToDelete.length > 0) {
       await deleteExceptions(dispatch, exceptionsToDelete);
     }
@@ -202,13 +213,13 @@ export async function updateTrainSchedule({
       trainScheduleId,
       {
         ...updatedTrainSchedule,
-        train_schedule_set_id: originalPacedTrain.train_schedule_set_id,
+        train_schedule_set_id: originalTrainSchedule.train_schedule_set_id,
       },
       dispatch,
       upsertTrainSchedules
     );
 
-    return { success: true, trainScheduleId, originalPacedTrain, occurrenceId };
+    return { success: true, trainScheduleId, originalTrainSchedule, occurrenceId };
   }
 
   // ========== user is editing an existing paced train ==========
@@ -217,9 +228,9 @@ export async function updateTrainSchedule({
   // Note: exceptions are reset by the backend when cadence/interval changes
   const intervalChanged =
     Duration.parse(updatedTrainSchedule.paced.interval).valueOf() !==
-      originalPacedTrain.paced.interval.valueOf() ||
+      originalTrainSchedule.paced.interval.valueOf() ||
     Duration.parse(updatedTrainSchedule.paced.time_window).valueOf() !==
-      originalPacedTrain.paced.timeWindow.valueOf();
+      originalTrainSchedule.paced.timeWindow.valueOf();
 
   // Reconcile remaining exceptions with the new paced train settings and newly added ones
   const {
@@ -255,7 +266,7 @@ export async function updateTrainSchedule({
     trainScheduleId,
     {
       ...updatedTrainSchedule,
-      train_schedule_set_id: originalPacedTrain.train_schedule_set_id,
+      train_schedule_set_id: originalTrainSchedule.train_schedule_set_id,
       ...(updatedTrainSchedule.paced && {
         paced: { ...updatedTrainSchedule.paced, exceptions: finalExceptions },
       }),
@@ -264,7 +275,7 @@ export async function updateTrainSchedule({
     upsertTrainSchedules
   );
 
-  return { success: true, trainScheduleId, originalPacedTrain, occurrenceId };
+  return { success: true, trainScheduleId, originalTrainSchedule, occurrenceId };
 }
 
 const useUpdateTrainSchedule = (
@@ -309,7 +320,7 @@ const useUpdateTrainSchedule = (
       trainIdUsedForProjection &&
       isOccurrenceId(trainIdUsedForProjection) &&
       trainIdUsedForProjection.includes(`_${trainScheduleId}_`) &&
-      !editData.originalPacedTrain.paced
+      !editData.originalTrainSchedule.paced
     ) {
       dispatch(updateTrainIdUsedForProjection(formatEditoastIdToPacedTrainId(trainScheduleId)));
     }
@@ -328,7 +339,7 @@ const useUpdateTrainSchedule = (
       const result = await updateTrainSchedule({
         upsertTrainSchedules,
         trainScheduleId: trainScheduleToEditData.trainScheduleId,
-        originalPacedTrain: trainScheduleToEditData.originalPacedTrain,
+        originalTrainSchedule: trainScheduleToEditData.originalTrainSchedule,
         occurrenceId: trainScheduleToEditData.occurrenceId,
         dispatch,
         timetableId,
@@ -339,7 +350,7 @@ const useUpdateTrainSchedule = (
       if (result.success) {
         onUpdateSuccess({
           trainScheduleId: result.trainScheduleId,
-          originalPacedTrain: result.originalPacedTrain,
+          originalTrainSchedule: result.originalTrainSchedule,
           occurrenceId: result.occurrenceId,
         });
       } else {

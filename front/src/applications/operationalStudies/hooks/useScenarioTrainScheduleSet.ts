@@ -10,7 +10,7 @@ import {
   type TrainScheduleResponse,
 } from 'common/api/osrdEditoastApi';
 import { createPacedTrains } from 'modules/trainSchedule/helpers/updateTrainScheduleHelpers';
-import type { PacedTrainWithDetails, TrainScheduleWithDetails } from 'modules/trainSchedule/types';
+import type { TrainScheduleWithDetails } from 'modules/trainSchedule/types';
 import { useAppDispatch } from 'store';
 
 import type { TrainScheduleSetImportType } from '../views/Scenario/components/ImportTrainScheduleSets/types';
@@ -28,7 +28,7 @@ export type ImportTrainScheduleSetsPayload = Array<{
 
 export type TrainSchedulesByTrainScheduleSet = {
   trainScheduleSet: TrainScheduleSet;
-  trains: PacedTrainWithDetails[];
+  trains: TrainScheduleWithDetails[];
   catalog?: CatalogEntry;
 };
 

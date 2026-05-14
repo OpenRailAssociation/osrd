@@ -1,11 +1,7 @@
 import { describe, it, expect } from 'vitest';
 
 import type { LightRollingStockWithLiveries } from 'common/api/osrdEditoastApi';
-import type {
-  PacedTrainWithDetails,
-  SuggestedOP,
-  TrainScheduleWithSummaries,
-} from 'modules/trainSchedule/types';
+import type { SuggestedOP, TrainScheduleWithDetails } from 'modules/trainSchedule/types';
 import {
   operationalStudiesConfSlice,
   operationalStudiesInitialConf,
@@ -18,7 +14,7 @@ import { Duration } from 'utils/duration';
 
 import testTrainSettingsReducer from './trainSettingsReducer';
 
-const baseTrainScheduleWithSummary: TrainScheduleWithSummaries = {
+const baseTrainScheduleWithSummary: TrainScheduleWithDetails = {
   id: 1,
   name: 'train1',
   train_schedule_set_id: 1000,
@@ -97,7 +93,7 @@ describe('simulationConfReducer', () => {
 
   describe('selectTrainToEdit', () => {
     it('paced train case', () => {
-      const pacedTrain: PacedTrainWithDetails = {
+      const pacedTrain: TrainScheduleWithDetails = {
         ...baseTrainScheduleWithSummary,
         paced: {
           timeWindow: new Duration({ minutes: 60 }),

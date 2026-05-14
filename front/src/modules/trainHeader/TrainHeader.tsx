@@ -6,7 +6,7 @@ import { useScenarioContext } from 'applications/operationalStudies/hooks/useSce
 import { updateTrainSchedule } from 'applications/operationalStudies/views/Scenario/components/ManageTrainSchedule/hooks/useUpdateTrainSchedule';
 import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/views/Scenario/consts';
 import type { PathfindingResult, TrainScheduleResponse } from 'common/api/osrdEditoastApi';
-import type { PacedTrainWithDetails } from 'modules/trainSchedule/types';
+import type { TrainScheduleWithDetails } from 'modules/trainSchedule/types';
 import { setFailure } from 'reducers/main';
 import { selectTrainToEdit } from 'reducers/osrdconf/operationalStudiesConf';
 import type { Train, TrainScheduleToEditData } from 'reducers/osrdconf/types';
@@ -20,7 +20,7 @@ import { applyOccurrenceOnPacedTrain } from './utils/applyOccurrenceOnPacedTrain
 export type TrainHeaderProps = {
   train: Train;
   path?: Omit<PathfindingResult, 'status'>;
-  trainSchedulesWithDetails: PacedTrainWithDetails[];
+  trainSchedulesWithDetails: TrainScheduleWithDetails[];
   upsertTrainSchedules: (trainSchedules: TrainScheduleResponse[]) => void;
   setDisplayTrainScheduleManagement: (type: string) => void;
   setTrainScheduleToEditData: (trainScheduleToEditData?: TrainScheduleToEditData) => void;
@@ -54,7 +54,7 @@ const TrainHeader = ({
 
   // TODO: As soon as we ditch the old train edition modal, we should switch to a TrainSchedule instead
   //       of a TrainScheduleWithDetails as we have no need for the "details" in this form.
-  const originalPacedTrain = useMemo(
+  const originalTrainSchedule = useMemo(
     () => trainSchedulesWithDetails.find((tr) => tr.id === trainScheduleId)!,
     [trainScheduleId, trainSchedulesWithDetails]
   );
@@ -66,7 +66,7 @@ const TrainHeader = ({
     const result = await updateTrainSchedule({
       upsertTrainSchedules,
       trainScheduleId,
-      originalPacedTrain,
+      originalTrainSchedule,
       occurrenceId,
       updatedTrainSchedule: updatedTrain,
       timetableId,
@@ -91,20 +91,20 @@ const TrainHeader = ({
     dispatch(
       selectTrainToEdit({
         trainSchedule: occurrenceId
-          ? applyOccurrenceOnPacedTrain(originalPacedTrain, train, occurrenceId)
-          : originalPacedTrain,
+          ? applyOccurrenceOnPacedTrain(originalTrainSchedule, train, occurrenceId)
+          : originalTrainSchedule,
         isOccurrence: !!occurrenceId,
       })
     );
     setTrainScheduleToEditData({
       trainScheduleId,
-      originalPacedTrain: originalPacedTrain ?? train,
+      originalTrainSchedule: originalTrainSchedule ?? train,
       occurrenceId,
     });
     setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.itinerary);
   }, [
     train,
-    originalPacedTrain,
+    originalTrainSchedule,
     trainScheduleId,
     occurrenceId,
     dispatch,

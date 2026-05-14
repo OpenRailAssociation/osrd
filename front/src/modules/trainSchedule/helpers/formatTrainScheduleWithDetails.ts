@@ -68,10 +68,10 @@ const extractBaseTrainScheduleProps = (trainSchedule: TrainScheduleResponse) => 
   labels: trainSchedule.labels ?? [],
 });
 
-export const formatPacedTrainWithDetails = (
-  pacedTrain: TrainScheduleResponse,
+export const formatTrainScheduleWithDetails = (
+  trainSchedule: TrainScheduleResponse,
   rollingStock?: LightRollingStockWithLiveries,
-  pacedTrainSummary?: TrainScheduleSimulationSummaryResult
+  trainScheduleSummary?: TrainScheduleSimulationSummaryResult
 ): TrainScheduleWithDetails => {
   // we omit the following props since they're not expected in TrainScheduleWithDetails
   const {
@@ -79,23 +79,23 @@ export const formatPacedTrainWithDetails = (
     start_time: __,
     speed_limit_tag: ___,
     paced,
-    ...pacedTrainProps
-  } = pacedTrain;
+    ...trainScheduleProps
+  } = trainSchedule;
 
   if (!paced) {
     return {
-      ...pacedTrainProps,
-      ...extractBaseTrainScheduleProps(pacedTrain),
+      ...trainScheduleProps,
+      ...extractBaseTrainScheduleProps(trainSchedule),
       rollingStock,
-      summary: formatSummary(pacedTrainSummary?.train_schedule),
+      summary: formatSummary(trainScheduleSummary?.train_schedule),
     };
   }
 
   let simulatedExceptions: SimulatedException[] = [];
-  if (pacedTrainSummary) {
+  if (trainScheduleSummary) {
     paced.exceptions.forEach((exception) => {
       // TODO_EXCEPTION: remove `!` when using TrainSchedulingException type
-      const simulationSummary = pacedTrainSummary.exceptions[exception.id!];
+      const simulationSummary = trainScheduleSummary.exceptions[exception.id!];
 
       let summary: SimulationSummary | undefined;
       if (simulationSummary) {
@@ -115,14 +115,14 @@ export const formatPacedTrainWithDetails = (
   }
 
   return {
-    ...pacedTrainProps,
-    ...extractBaseTrainScheduleProps(pacedTrain),
+    ...trainScheduleProps,
+    ...extractBaseTrainScheduleProps(trainSchedule),
     rollingStock,
     paced: {
       timeWindow: Duration.parse(paced.time_window),
       interval: Duration.parse(paced.interval),
       exceptions: simulatedExceptions,
     },
-    summary: formatSummary(pacedTrainSummary?.train_schedule),
+    summary: formatSummary(trainScheduleSummary?.train_schedule),
   };
 };
