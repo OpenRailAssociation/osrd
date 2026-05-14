@@ -1,6 +1,6 @@
 import { isEqual, omit } from 'lodash';
 
-import type { PacedTrainWithPaced } from 'applications/operationalStudies/types';
+import type { PacedTrain } from 'applications/operationalStudies/types';
 import type { TrainSchedule, PacedTrainException } from 'common/api/osrdEditoastApi';
 import computeBasePathStep from 'modules/trainSchedule/helpers/computeBasePathStep';
 import computeOccurrenceName from 'modules/trainSchedule/helpers/computeOccurrenceName';
@@ -26,7 +26,7 @@ import {
  */
 export function generatePacedTrainException(
   updatedOccurrence: Omit<TrainSchedule, 'paced'>,
-  originalPacedTrain: Omit<PacedTrainWithPaced, 'train_schedule_set_id'>,
+  originalPacedTrain: Omit<PacedTrain, 'train_schedule_set_id'>,
   occurrenceIndex: number | null = null
   // TODO_EXCEPTION: remove `key`
 ): Omit<PacedTrainException, 'key' | 'occurrence_index'> {
@@ -178,7 +178,7 @@ export function updatePacedTrainExceptionsList<T extends PacedTrainException>(
  * for a given occurrence update. Pure function — caller handles the API calls.
  */
 export function buildOccurrenceExceptionData(
-  originalPacedTrain: Omit<PacedTrainWithPaced, 'train_schedule_set_id'>,
+  originalPacedTrain: Omit<PacedTrain, 'train_schedule_set_id'>,
   updatedOccurrence: TrainSchedule,
   occurrenceId: OccurrenceId
 ): {

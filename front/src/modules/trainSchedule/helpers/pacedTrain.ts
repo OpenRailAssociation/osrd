@@ -1,7 +1,4 @@
-import type {
-  PacedTrainResponseWithPaced,
-  PacedTrainWithPaced,
-} from 'applications/operationalStudies/types';
+import type { PacedTrainResponse, PacedTrain } from 'applications/operationalStudies/types';
 import type {
   TrainSchedule,
   PacedTrainException,
@@ -30,7 +27,7 @@ import type {
 } from '../types';
 import computeOccurrenceName from './computeOccurrenceName';
 
-export const isPacedTrainBase = (pacedTrain: TrainSchedule): pacedTrain is PacedTrainWithPaced =>
+export const isPacedTrainBase = (pacedTrain: TrainSchedule): pacedTrain is PacedTrain =>
   !!pacedTrain.paced;
 
 export const CHANGE_GROUP_KEYS: (keyof PacedTrainException)[] = [
@@ -71,7 +68,7 @@ export const withPacedExceptions = <
 
 export const isPacedTrain = (
   trainSchedule: TrainScheduleResponse
-): trainSchedule is PacedTrainResponseWithPaced => !!trainSchedule.paced;
+): trainSchedule is PacedTrainResponse => !!trainSchedule.paced;
 
 export const isPacedTrainWithDetails = (
   trainSchedule: TrainScheduleWithDetails
@@ -255,7 +252,7 @@ export const getExceptionFromOccurrenceId = (
  * - For added exceptions, use `baseName/+`.
  */
 export const getOccurrenceTrainName = (
-  pacedTrain: Pick<PacedTrainWithPaced, 'train_name' | 'paced'>,
+  pacedTrain: Pick<PacedTrain, 'train_name' | 'paced'>,
   occurrenceId: OccurrenceId
 ): string => {
   const existingException = findExceptionWithOccurrenceId(
@@ -301,7 +298,7 @@ export const hasChangeGroups = (exception: SimulatedException): boolean =>
 export const hasExceptions = (exception: SimulatedException): boolean =>
   exception.disabled === true || hasChangeGroups(exception);
 
-export const getOccurrencesIds = (pacedTrain: PacedTrainWithPaced, pacedTrainId: PacedTrainId) => {
+export const getOccurrencesIds = (pacedTrain: PacedTrain, pacedTrainId: PacedTrainId) => {
   const occurrencesIds: OccurrenceId[] = pacedTrain.paced.exceptions
     .filter((exception) => exception.occurrence_index === undefined) // Indexed exceptions follow the regular indexed occurrence id pattern
     // TODO_EXCEPTION: remove `!` when using TrainSchedulingException type

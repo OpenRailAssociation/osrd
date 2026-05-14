@@ -3,7 +3,7 @@ import { v4 as uuidV4 } from 'uuid';
 
 import type {
   CichDictValue,
-  PacedTrainWithPaced,
+  PacedTrain,
   TimetableJsonPayload,
 } from 'applications/operationalStudies/types';
 import type { TrainSchedule, PacedTrainException } from 'common/api/osrdEditoastApi';
@@ -23,7 +23,7 @@ const uniqueTrainToPacedTrain = (
   pacedTrainId: string,
   intervalDuration: Duration,
   timeWindowDuration: Duration
-): Omit<PacedTrainWithPaced, 'train_schedule_set_id'> => ({
+): Omit<PacedTrain, 'train_schedule_set_id'> => ({
   ...uniqueTrain,
   train_name: pacedTrainId,
   paced: {

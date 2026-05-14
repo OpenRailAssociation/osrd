@@ -2,7 +2,7 @@ import { Button } from '@osrd-project/ui-core';
 import { ChevronDown } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
 
-import type { PacedTrainWithPaced } from 'applications/operationalStudies/types';
+import type { PacedTrain } from 'applications/operationalStudies/types';
 import type { Train } from 'reducers/osrdconf/types';
 import { useDateTimeLocale } from 'utils/date';
 import { findExceptionInPacedTrainByOccurrenceId } from 'utils/trainExceptions';
@@ -32,7 +32,7 @@ const CollapsedTrainOverview = ({
   const { t } = useTranslation(['operational-studies', 'translation']);
   const dateTimeLocale = useDateTimeLocale();
 
-  const pacedTrain = train.paced ? (train as PacedTrainWithPaced) : null;
+  const pacedTrain = train.paced ? (train as PacedTrain) : null;
   const occurrenceId = isOccurrenceId(train.id) ? train.id : null;
   const exception =
     occurrenceId && pacedTrain
