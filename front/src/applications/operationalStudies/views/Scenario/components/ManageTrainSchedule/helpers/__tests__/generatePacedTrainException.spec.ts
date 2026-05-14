@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import type { PacedTrainWithPaced } from 'applications/operationalStudies/types';
+import type { PacedTrain } from 'applications/operationalStudies/types';
 import type { PathItem, TrainSchedule } from 'common/api/osrdEditoastApi';
 
 import { generatePacedTrainException } from '../buildPacedTrainException';
@@ -36,7 +36,7 @@ describe('generatePacedTrainException', () => {
    *       index 1 → 'test 3' @ 13:45
    *       index 2 → 'test 5' @ 14:45
    */
-  const originalPacedTrain: Omit<PacedTrainWithPaced, 'train_schedule_set_id'> = {
+  const originalPacedTrain: Omit<PacedTrain, 'train_schedule_set_id'> = {
     train_name: 'test',
     start_time: new Date('2025-06-02T12:45:00.000Z').getTime(),
     category: { main_category: 'FREIGHT_TRAIN' },

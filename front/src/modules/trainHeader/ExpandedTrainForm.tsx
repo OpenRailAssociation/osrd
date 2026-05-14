@@ -16,7 +16,7 @@ import { ChevronUp } from '@osrd-project/ui-icons';
 import { isEqual } from 'lodash';
 import { useTranslation } from 'react-i18next';
 
-import type { PacedTrainWithPaced } from 'applications/operationalStudies/types';
+import type { PacedTrain } from 'applications/operationalStudies/types';
 import type {
   LightRollingStockWithLiveries,
   PathfindingResult,
@@ -227,7 +227,7 @@ const ExpandedTrainForm = ({
     resetSuggestions: resetRollingStockSuggestions,
   } = useDefaultComboBox(rollingStocks, getRollingStockLabel);
 
-  const pacedTrain = train.paced ? (train as PacedTrainWithPaced) : null;
+  const pacedTrain = train.paced ? (train as PacedTrain) : null;
   const occurrenceId = isOccurrenceId(train.id) ? train.id : null;
   const exception =
     occurrenceId && pacedTrain

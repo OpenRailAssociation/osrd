@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
-import type { PacedTrainWithPaced } from 'applications/operationalStudies/types';
+import type { PacedTrain } from 'applications/operationalStudies/types';
 import {
   buildOccurrenceExceptionData,
   updatePacedTrainExceptionsList,
@@ -270,7 +270,7 @@ const useUpdateTimesStopsTable = (
       // formatTrainScheduleWithDetailsToTrainSchedulePayload intentionally strips exceptions
       // (they have dedicated endpoints). Restore the actual list from trainSchedulesWithDetails
       // so lookups, diff computation, and local state updates see the full current state.
-      const originalPacedTrain: PacedTrainWithPaced = {
+      const originalPacedTrain: PacedTrain = {
         ...formattedPacedTrain,
         paced: {
           ...formattedPacedTrain.paced,

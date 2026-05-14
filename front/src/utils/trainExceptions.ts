@@ -1,4 +1,4 @@
-import type { PacedTrainWithPaced } from 'applications/operationalStudies/types';
+import type { PacedTrain } from 'applications/operationalStudies/types';
 import type { OccurrenceId } from 'reducers/osrdconf/types';
 
 import {
@@ -12,7 +12,7 @@ import {
  */
 export const findExceptionInPacedTrainByOccurrenceId = (
   occurrenceId: OccurrenceId,
-  pacedTrain: PacedTrainWithPaced
+  pacedTrain: PacedTrain
 ) =>
   pacedTrain.paced.exceptions.find((exception) =>
     isAddedExceptionId(occurrenceId)

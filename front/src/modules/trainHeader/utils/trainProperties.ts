@@ -1,6 +1,6 @@
 import type { TFunction } from 'i18next';
 
-import type { PacedTrainWithPaced } from 'applications/operationalStudies/types';
+import type { PacedTrain } from 'applications/operationalStudies/types';
 import type { Train } from 'reducers/osrdconf/types';
 import { Duration } from 'utils/duration';
 
@@ -26,8 +26,8 @@ export const getCategoryName = (train: Train, t: TFunction<'translation'>): stri
 export const getComfortType = (train: Train, t: TFunction<'translation'>): string | null =>
   train.comfort ? t(`translation:rollingStock.comfortTypes.${train.comfort}`) : '';
 
-export const getServiceInterval = (train: PacedTrainWithPaced): number =>
+export const getServiceInterval = (train: PacedTrain): number =>
   Duration.parse(train.paced.interval).total('minute');
 
-export const getServiceWindow = (train: PacedTrainWithPaced): number =>
+export const getServiceWindow = (train: PacedTrain): number =>
   Duration.parse(train.paced.time_window).total('minute');

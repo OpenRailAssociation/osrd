@@ -37,11 +37,11 @@ export type Board =
   | 'conflicts'
   | 'chronogram';
 
-export type PacedTrainWithPaced = Omit<TrainScheduleResponse, 'id' | 'paced'> & {
+export type PacedTrain = Omit<TrainScheduleResponse, 'id' | 'paced'> & {
   paced: NonNullable<TrainScheduleResponse['paced']>;
 };
 
-export type PacedTrainResponseWithPaced = PacedTrainWithPaced & {
+export type PacedTrainResponse = PacedTrain & {
   id: number;
 };
 

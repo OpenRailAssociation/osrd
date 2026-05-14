@@ -6,7 +6,7 @@ import type { ScenarioForm } from '../components/AddOrEditScenarioModal';
 
 /**
  * Retrieves the datetime window of a scenario based on the provided train details.
- * @param trainsDetails - An array of PacedTrainResponse objects containing train details.
+ * @param trainsDetails - An array of TrainScheduleResponse objects containing train details.
  * @returns An object representing the datetime window of the scenario, with `begin` and `end` properties.
  */
 export const getScenarioDatetimeWindow = (trainsDetails: TrainScheduleResponse[]) => {
