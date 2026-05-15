@@ -67,7 +67,7 @@
     "html2canvas": "^1.4.1",
     "i18next": "^26.0.10",
     "i18next-browser-languagedetector": "^8.2.1",
-    "i18next-http-backend": "^3.0.6",
+    "i18next-http-backend": "^4.0.0",
     "immer": "^11.1.8",
     "ion-rangeslider": "^2.2.0",
     "js-file-download": "^0.4.12",
