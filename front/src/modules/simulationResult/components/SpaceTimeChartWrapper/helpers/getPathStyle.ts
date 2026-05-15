@@ -1,4 +1,4 @@
-import type { PathLevel, HoveredItem } from '@osrd-project/ui-charts';
+import type { PathLevel, HoveredItem, LabelStyle } from '@osrd-project/ui-charts';
 
 import type { CategoryColors } from 'applications/operationalStudies/types';
 import type { PacedTrainId, TrainId } from 'reducers/osrdconf/types';
@@ -24,6 +24,7 @@ const getPathStyle = (
     width?: number;
     backgroundColor?: string;
   };
+  label?: LabelStyle;
 } => {
   let pacedTrainId: PacedTrainId;
   if (isOccurrenceId(train.id)) {
@@ -35,10 +36,27 @@ const getPathStyle = (
   const trainScheduleId = extractEditoastIdFromPacedTrainId(pacedTrainId);
   const { colors } = train;
 
+  const hoveredLabelStyle: LabelStyle = {
+    fontWeight: 400,
+    backgroundColor: colors.background,
+  };
+  const selectedLabelStyle: LabelStyle = {
+    fontWeight: 600,
+    backgroundColor: colors.background,
+    textColor: colors.hovered,
+  };
+
   const invalidBorder = {
     offset: 16,
     color: 'transparent',
     backgroundColor: 'rgba(0, 0, 0, 0.05)',
+  };
+
+  const hoveredStyle = {
+    color: colors.hovered,
+    level: 1 as PathLevel,
+    ...(train.isSimulated === false && { border: invalidBorder }),
+    label: hoveredLabelStyle,
   };
 
   // Check hover from chart
@@ -54,11 +72,7 @@ const getPathStyle = (
             extractPacedTrainIdFromOccurrenceId(hoveredTrainIdFromChart)
           ))
     ) {
-      return {
-        color: colors.hovered,
-        level: 1,
-        ...(train.isSimulated === false && { border: invalidBorder }),
-      };
+      return hoveredStyle;
     }
   }
 
@@ -69,18 +83,10 @@ const getPathStyle = (
     // - if we hover a paced train (collapsed or expanded header), we highlight all its occurrences
     if (isOccurrenceId(hoveredTrainIdFromTimetable)) {
       if (train.id === hoveredTrainIdFromTimetable) {
-        return {
-          color: colors.hovered,
-          level: 1,
-          ...(train.isSimulated === false && { border: invalidBorder }),
-        };
+        return hoveredStyle;
       }
     } else if (trainScheduleId === extractEditoastIdFromPacedTrainId(hoveredTrainIdFromTimetable)) {
-      return {
-        color: colors.hovered,
-        level: 1,
-        ...(train.isSimulated === false && { border: invalidBorder }),
-      };
+      return hoveredStyle;
     }
   }
 
@@ -105,6 +111,7 @@ const getPathStyle = (
                   color: colors.normal,
                   backgroundColor: colors.background,
                 },
+          label: selectedLabelStyle,
         };
       }
       // Other occurrences from the same paced
@@ -131,6 +138,7 @@ const getPathStyle = (
         color: colors.normal,
         level: 1,
         ...(train.isSimulated === false && { border: invalidBorder }),
+        label: selectedLabelStyle,
       };
     }
   }
