@@ -21,11 +21,13 @@ export const drawTracks = (
     tracks,
     drawBorders,
     topPadding = 0,
+    highlightedTrackId,
   }: {
     position: number;
     tracks: Track[];
     drawBorders: boolean;
     topPadding: number;
+    highlightedTrackId?: string;
   }
 ) => {
   const {
@@ -60,7 +62,7 @@ export const drawTracks = (
   // Draw actual tracks:
   ctx.save();
   ctx.translate(0, yStart + topPadding);
-  tracks?.forEach((_, index) => {
+  tracks?.forEach((track, index) => {
     const trackTranslate = index === 0 ? CANVAS_PADDING : TRACK_HEIGHT_CONTAINER;
     ctx.translate(0, trackTranslate);
     drawTrack({
@@ -68,6 +70,7 @@ export const drawTracks = (
       width,
       getTimePixel,
       labelMarks,
+      highlighted: highlightedTrackId === track.id,
     });
   });
   ctx.restore();

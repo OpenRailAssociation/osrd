@@ -23,6 +23,8 @@ export const COLORS = {
   SELECTION_20: 'rgb(255, 242, 179)',
   WHITE_50: 'rgba(255, 255, 255, 0.5)',
   WHITE_100: 'rgb(255, 255, 255)',
+  PRIMARY_5: 'rgb(227, 237, 252)',
+  PRIMARY_30: 'rgb(114, 168, 247)',
   PRIMARY_50: 'rgb(37, 106, 250)',
   PRIMARY_80: 'rgb(31, 15, 150)',
 };
