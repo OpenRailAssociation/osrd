@@ -68,8 +68,8 @@ kaml = { module = 'com.charleskorn.kaml:kaml', version = '0.104.0' } # Apache 2.
 
 amqp-client = { module = 'com.rabbitmq:amqp-client', version = '5.30.0' }
 lettuce = { module = 'io.lettuce:lettuce-core', version = '7.5.1.RELEASE' } # MIT
-s3 = { module = 'software.amazon.awssdk:s3', version = '2.44.0' } # Apache 2.0
-sts = { module = 'software.amazon.awssdk:sts', version = '2.44.0' } # Apache 2.0
+s3 = { module = 'software.amazon.awssdk:s3', version = '2.44.4' } # Apache 2.0
+sts = { module = 'software.amazon.awssdk:sts', version = '2.44.4' } # Apache 2.0
 
 [plugins]
 # kotlin
