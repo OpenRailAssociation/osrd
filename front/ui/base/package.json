@@ -7,7 +7,7 @@
   },
   "type": "module",
   "devDependencies": {
-    "@eslint/js": "^9.39.2",
+    "@eslint/js": "^10.0.1",
     "@rollup/plugin-eslint": "^9.2.0",
     "@rollup/plugin-node-resolve": "^16.0.3",
     "@rollup/plugin-typescript": "^12.3.0",
@@ -15,7 +15,7 @@
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "autoprefixer": "^10.5.0",
-    "eslint": "^9.39.2",
+    "eslint": "^10.3.0",
     "eslint-import-resolver-typescript": "^4.4.4",
     "eslint-plugin-import": "^2.29.1",
     "eslint-plugin-react": "^7.35.0",
