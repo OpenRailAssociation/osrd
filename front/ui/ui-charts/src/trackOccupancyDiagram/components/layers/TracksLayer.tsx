@@ -14,17 +14,25 @@ const TracksLayer = ({
   position,
   topPadding,
   drawBorders,
+  highlightedTrackId,
 }: {
   tracks: Track[];
   position: number;
   topPadding: number;
   drawBorders: boolean;
+  highlightedTrackId?: string;
 }) => {
   const drawingFunction = useCallback<DrawingFunction<SpaceTimeChartContextType>>(
     (ctx, stcContext) => {
-      drawTracks(ctx, stcContext, { position, topPadding, tracks, drawBorders });
+      drawTracks(ctx, stcContext, {
+        position,
+        topPadding,
+        tracks,
+        drawBorders,
+        highlightedTrackId,
+      });
     },
-    [drawBorders, position, topPadding, tracks]
+    [drawBorders, position, topPadding, tracks, highlightedTrackId]
   );
 
   useDraw(SpaceTimeChartCanvasContext, 'background', drawingFunction);
