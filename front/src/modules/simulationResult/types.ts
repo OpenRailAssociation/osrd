@@ -16,7 +16,8 @@ import type {
   PathItem,
 } from 'common/api/osrdEditoastApi';
 import type { PacedTrainWithDetails } from 'modules/trainSchedule/types';
-import type { OccurrenceId, PacedTrainId } from 'reducers/osrdconf/types';
+import type { OccurrenceId, PacedTrainId, TrainId } from 'reducers/osrdconf/types';
+import type { SelectedTrain } from 'reducers/simulationResults/types';
 import type { ArrayElement } from 'utils/types';
 
 // This alias refers to an operational point, in the context of a given path, from Edistoast:
@@ -125,4 +126,37 @@ export type AspectLabel =
 export type DraggingState = {
   draggedTrain: IndividualTrainProjection;
   initialDepartureTime: Date;
+};
+
+/**
+ * The six visual states a curve can take in STD/TOD charts.
+ * - 1 none, 2 hover, 3 active, 4 passivePrimary, 5 passiveSecondary, 6 drag.
+ */
+export type CurveVisualState =
+  | 'none'
+  | 'hover'
+  | 'active'
+  | 'passivePrimary'
+  | 'passiveSecondary'
+  | 'drag';
+
+/**
+ * Exception types that influence the curve visual state. The values match
+ * the keys of `PacedTrainException` so callers can pass them directly.
+ */
+export type CurveStyleExceptionType = keyof Pick<
+  PacedTrainException,
+  'start_time' | 'path_and_schedule'
+>;
+
+/**
+ * Input of the shared curve-style helper.
+ */
+export type CurveStyleInput = {
+  chart: 'std' | 'tod';
+  train: {
+    id: TrainId;
+    exceptionType?: CurveStyleExceptionType;
+  };
+  selection: SelectedTrain | undefined;
 };

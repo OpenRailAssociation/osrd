@@ -172,6 +172,13 @@ export const extractPacedTrainIdFromOccurrenceId = (occurrenceId: OccurrenceId):
 };
 
 /**
+ * Given a train id (paced or occurrence), returns the paced train id it
+ * belongs to. A paced train id is returned as-is.
+ */
+export const extractPacedTrainIdFromTrainId = (trainId: TrainId): PacedTrainId =>
+  isOccurrenceId(trainId) ? extractPacedTrainIdFromOccurrenceId(trainId) : trainId;
+
+/**
  * Given a occurrence id with an OccurrenceId format (used across the front),
  * returns the occurrence index.
  */
