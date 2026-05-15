@@ -80,6 +80,13 @@ const STYLES: Record<PathLevel, PathStyle> = {
 } as const;
 export const DEFAULT_LEVEL: PathLevel = 2;
 
+export type LabelStyle = {
+  border?: { color: string };
+  fontWeight?: number;
+  backgroundColor?: string;
+  textColor?: string;
+};
+
 export type PathLayerProps = {
   path: PathData;
   // Style:
@@ -92,6 +99,7 @@ export type PathLayerProps = {
     width?: number;
     backgroundColor?: string;
   };
+  label?: LabelStyle;
 };
 
 /**
@@ -106,6 +114,7 @@ export const PathLayer = ({
   level = DEFAULT_LEVEL,
   pickingTolerance = DEFAULT_PICKING_TOLERANCE,
   border,
+  label,
 }: PathLayerProps) => {
   /**
    * This function returns the list of points to join to draw the path. As it can be discontinuous,
@@ -284,6 +293,9 @@ export const PathLayer = ({
         fontFamily,
         padding = TEXT_PADDING,
         alpha = 0.75,
+        fontWeight,
+        borderColor,
+        labelBorderColor,
       }: {
         textColor: string;
         background: string;
@@ -291,11 +303,14 @@ export const PathLayer = ({
         fontFamily?: string;
         padding?: number;
         alpha?: number;
+        fontWeight?: number;
+        borderColor?: string;
+        labelBorderColor?: string;
       }
     ) => {
       ctx.save();
 
-      ctx.font = `${fontSize}px ${fontFamily}`;
+      ctx.font = `${fontWeight ?? 400} ${fontSize}px ${fontFamily}`;
 
       const measure = ctx.measureText(text);
       const left = measure.actualBoundingBoxLeft;
@@ -311,8 +326,34 @@ export const PathLayer = ({
 
       // BACKGROUND
       ctx.globalAlpha = alpha;
-      ctx.fillStyle = background;
-      ctx.fillRect(rx, ry, w, h);
+      ctx.fillStyle = borderColor ?? background;
+      if (borderColor) {
+        const r = Math.min(3, w / 2, h / 2);
+        ctx.beginPath();
+        ctx.moveTo(rx + r, ry);
+        ctx.lineTo(rx + w - r, ry);
+        ctx.arcTo(rx + w, ry, rx + w, ry + r, r);
+        ctx.lineTo(rx + w, ry + h - r);
+        ctx.arcTo(rx + w, ry + h, rx + w - r, ry + h, r);
+        ctx.lineTo(rx + r, ry + h);
+        ctx.arcTo(rx, ry + h, rx, ry + h - r, r);
+        ctx.lineTo(rx, ry + r);
+        ctx.arcTo(rx, ry, rx + r, ry, r);
+        ctx.closePath();
+        ctx.fill();
+        if (labelBorderColor) {
+          ctx.strokeStyle = labelBorderColor;
+          ctx.lineWidth = 1;
+          ctx.stroke();
+        }
+      } else {
+        ctx.fillRect(rx, ry, w, h);
+        if (labelBorderColor) {
+          ctx.strokeStyle = labelBorderColor;
+          ctx.lineWidth = 1;
+          ctx.strokeRect(rx, ry, w, h);
+        }
+      }
 
       // TEXT
       ctx.globalAlpha = 1;
@@ -340,12 +381,13 @@ export const PathLayer = ({
           pathsStyles: { fontSize, fontFamily },
         },
       }: SpaceTimeChartContextType,
-      label: string,
+      labelText: string,
       labelColor: string,
       points: Point[],
-      pathLength: number
+      pathLength: number,
+      labelStyle?: LabelStyle
     ) => {
-      if (!label) return;
+      if (!labelText) return;
 
       const firstPointOnScreenIndex = points.findIndex(({ x, y }) =>
         !swapAxis
@@ -390,23 +432,30 @@ export const PathLayer = ({
       ctx.rotate(angle);
       ctx.textAlign = 'start';
 
-      const padding = 2;
-      const measure = ctx.measureText(label);
+      const padding = TEXT_PADDING;
+      ctx.font = `${labelStyle?.fontWeight ?? 400} ${fontSize}px ${fontFamily}`;
+      const measure = ctx.measureText(labelText);
       const w = measure.width + 2 * padding;
+      const halfStroke = STYLES[level].width + 2;
+      const dx = w < pathLength ? 5 : (pathLength - w) / 2;
+      const dy =
+        angle >= 0
+          ? -(measure.actualBoundingBoxDescent + padding + halfStroke)
+          : measure.actualBoundingBoxAscent + padding + halfStroke;
 
-      const dx = w < pathLength ? 5 : (pathLength - w) / 2; // Progressively center the label if the path is shorter than the label
-      const dy = angle >= 0 ? -5 : 15;
-
-      drawLabelWithBackground(ctx, label, dx, dy, {
+      drawLabelWithBackground(ctx, labelText, dx, dy, {
         fontSize,
         fontFamily,
-        textColor: labelColor,
+        textColor: labelStyle?.textColor ?? labelColor,
         background,
         padding,
+        fontWeight: labelStyle?.fontWeight,
+        borderColor: labelStyle?.backgroundColor,
+        labelBorderColor: labelStyle?.border?.color,
       });
       ctx.restore();
     },
-    [drawLabelWithBackground]
+    [drawLabelWithBackground, level]
   );
 
   /**
@@ -545,14 +594,17 @@ export const PathLayer = ({
         drawLabelWithBackground(ctx, path.label, x, labelY, {
           fontFamily,
           fontSize,
-          textColor: color,
+          textColor: label?.textColor ?? color,
           background,
+          fontWeight: label?.fontWeight,
+          borderColor: label?.backgroundColor,
+          labelBorderColor: label?.border?.color,
         });
       }
 
       ctx.restore();
     },
-    [level, color, drawLabelWithBackground, path.label]
+    [level, color, drawLabelWithBackground, path.label, label]
   );
 
   const drawAll = useCallback<DrawingFunction<SpaceTimeChartContextType>>(
@@ -600,10 +652,7 @@ export const PathLayer = ({
       // Draw label:
       if (!stcContext.hidePathsLabels) {
         const pathLength = computePathLength(stcContext.operationalPoints, lines);
-        // TODO:
-        // We should improve how the labels are drawn, and handle discontinuous lines (instead of
-        // flattening the points)
-        drawLabel(ctx, stcContext, path.label, color, flatten(lines), pathLength);
+        drawLabel(ctx, stcContext, path.label, color, flatten(lines), pathLength, label);
       }
     },
     [
@@ -618,6 +667,7 @@ export const PathLayer = ({
       drawSinglePoint,
       computePathLength,
       drawLabel,
+      label,
     ]
   );
   useDraw(SpaceTimeChartCanvasContext, 'paths', drawAll);
