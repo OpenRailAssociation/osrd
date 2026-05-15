@@ -132,7 +132,7 @@ describe('makeProjectedTrains', () => {
       });
       expect(result[1]).toEqual({
         id: 'indexedoccurrence_2562_1',
-        name: exception.train_name!.value,
+        name: `${exception.train_name!.value}≠`,
         departureTime: new Date('2025-07-09T06:30:00.000Z'),
         exception,
         ...exceptionProjection,
@@ -268,7 +268,7 @@ describe('makeProjectedTrains', () => {
       });
       expect(result[3]).toEqual({
         id: 'exception_2564_2',
-        name: exception.train_name!.value,
+        name: `${exception.train_name!.value}≠`,
         departureTime: new Date(exception.start_time!.value),
         exception,
         ...exceptionProjection,
