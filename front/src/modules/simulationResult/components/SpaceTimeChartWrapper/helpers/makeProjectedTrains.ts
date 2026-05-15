@@ -13,6 +13,8 @@ import {
   formatEditoastIdToPacedTrainId,
 } from 'utils/trainId';
 
+const EXCEPTION_SUFFIX = '≠';
+
 /**
  * Turns trainSpaceTimeData (unique trains + pacedTrains) into individual train projection.
  * Extracts everything into one flat array.
@@ -71,8 +73,8 @@ const makeProjectedTrains = (trainScheduleProjections: TrainSpaceTimeData[]) =>
           );
 
       const name = correspondingException?.train_name
-        ? correspondingException.train_name.value
-        : computeOccurrenceName(projectedTrain.name, i);
+        ? `${correspondingException.train_name.value}${EXCEPTION_SUFFIX}`
+        : `${computeOccurrenceName(projectedTrain.name, i)}${EXCEPTION_SUFFIX}`;
 
       occurrences.push({
         ...(exceptionProjection ?? pacedTrainCurves),
@@ -100,7 +102,9 @@ const makeProjectedTrains = (trainScheduleProjections: TrainSpaceTimeData[]) =>
         pacedTrainId: projectedTrain.id,
         exceptionId: exception.id!, // TODO_EXCEPTION: remove `!` when using TrainSchedulingException type
       });
-      const name = exception.train_name ? exception.train_name.value : `${projectedTrain.name}/+`;
+      const name = exception.train_name
+        ? `${exception.train_name.value}${EXCEPTION_SUFFIX}`
+        : `${projectedTrain.name}/+${EXCEPTION_SUFFIX}`;
 
       occurrences.push({
         ...(projectedTrain.paced.exceptionProjections.get(exception.id!) ?? pacedTrainCurves), // TODO_EXCEPTION: remove `!` when using TrainSchedulingException type
