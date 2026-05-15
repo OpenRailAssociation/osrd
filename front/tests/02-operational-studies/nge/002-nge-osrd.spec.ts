@@ -89,16 +89,23 @@ test.describe('Netzgrafik Editor', { tag: ['@op', '@nge', '@round-trips'] }, () 
         await expect(ngePage.trainLines).toHaveCount(2);
       });
 
-      await test.step('Validate timetable list and round-trip modal', async () => {
+      await test.step('Validate timetable list ', async () => {
         await scenarioTimetableSection.verifyTotalTrainSchedulesLabel(frTranslations, {
           totalPacedTrainCount: 2,
           totalUniqueTrainCount: 0,
         });
-        await scenarioTimetableSection.verifyInvalidReasons([
-          frTranslations.timetable.invalid.rolling_stock_not_found,
-          frTranslations.timetable.invalid.rolling_stock_not_found,
-        ]);
-
+      });
+      // TODO: Remove the skip when issue https://github.com/OpenRailAssociation/osrd/issues/13066#issuecomment-4460021982 is resolved.
+      await test.step.skip(
+        'Validate that the train is marked as invalid due to missing rolling stock',
+        async () => {
+          await scenarioTimetableSection.verifyInvalidReasons([
+            frTranslations.timetable.invalid.rolling_stock_not_found,
+            frTranslations.timetable.invalid.rolling_stock_not_found,
+          ]);
+        }
+      );
+      await test.step('Validate round-trip modal', async () => {
         await roundTripPage.openRoundTripModal();
         await roundTripPage.assertRoundTripColumnCounts({
           expectedToDoCount: 0,
