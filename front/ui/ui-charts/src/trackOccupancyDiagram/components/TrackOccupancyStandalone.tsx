@@ -15,12 +15,14 @@ import TrackOccupancyManchette from './TrackOccupancyManchette';
 const TrackOccupancyStandalone = ({
   tracks,
   occupancyZones,
+  draggingOccupancyZones,
   selectedTrainId,
   onSelectedTrainIdChange,
   height = TRACK_HEIGHT_CONTAINER * tracks.length + DEFAULT_THEME.timeCaptionsSize,
 }: {
   tracks: Track[];
   occupancyZones: OccupancyZone[];
+  draggingOccupancyZones?: OccupancyZone[];
   selectedTrainId?: string;
   onSelectedTrainIdChange?: (selectedTrainId?: string) => void;
   height?: number;
@@ -60,6 +62,7 @@ const TrackOccupancyStandalone = ({
             tracks={tracks}
             topPadding={BASE_WAYPOINT_HEIGHT * 1.5}
             occupancyZones={occupancyZones}
+            draggingOccupancyZones={draggingOccupancyZones}
             selectedTrainId={selectedTrainId}
             hideBorders
           />
@@ -67,7 +70,7 @@ const TrackOccupancyStandalone = ({
         manchetteNode: <TrackOccupancyManchette tracks={tracks} />,
       },
     ],
-    [height, tracks, occupancyZones, selectedTrainId]
+    [height, tracks, occupancyZones, draggingOccupancyZones, selectedTrainId]
   );
 
   /**

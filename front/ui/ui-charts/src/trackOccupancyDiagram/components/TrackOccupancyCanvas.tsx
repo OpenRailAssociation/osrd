@@ -4,6 +4,7 @@ import { X } from '@osrd-project/ui-icons';
 
 import { SpaceTimeChartContext } from '../../spaceTimeChart';
 import type { OccupancyZone, Track } from '../lib/types';
+import DraggingOccupancyZonesLayer from './layers/DraggingOccupancyZonesLayer';
 import OccupancyZonesLayer from './layers/OccupancyZonesLayer';
 import TracksLayer from './layers/TracksLayer';
 
@@ -30,6 +31,7 @@ const TrackOccupancyCanvas = ({
   position,
   tracks,
   occupancyZones,
+  draggingOccupancyZones,
   selectedTrainId,
   onClose,
   topPadding = 0,
@@ -38,6 +40,7 @@ const TrackOccupancyCanvas = ({
   position: number;
   tracks: Track[];
   occupancyZones: OccupancyZone[];
+  draggingOccupancyZones?: OccupancyZone[];
   selectedTrainId?: string;
   onClose?: () => void;
   topPadding?: number;
@@ -57,6 +60,9 @@ const TrackOccupancyCanvas = ({
       occupancyZones={occupancyZones}
       selectedTrainId={selectedTrainId}
     />
+    {draggingOccupancyZones && (
+      <DraggingOccupancyZonesLayer occupancyZones={draggingOccupancyZones} />
+    )}
     {onClose && <CloseButton position={position} onClose={onClose} />}
   </>
 );
