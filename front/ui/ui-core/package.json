@@ -49,7 +49,7 @@
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "jsdom": "^28.1.0",
-    "tailwindcss": "^4.2.2",
+    "tailwindcss": "^4.3.0",
     "vitest": "^4.1.5"
   }
 }

@@ -39,7 +39,7 @@
     "classnames": ">=2.5",
     "react": "^18.0.0 || ^19.1.0",
     "react-dom": "^18.0.0 || ^19.1.0",
-    "tailwindcss": ">=4.1"
+    "tailwindcss": "^4.3.0"
   },
   "dependencies": {
     "@osrd-project/ui-core": "0.0.1-dev",
