@@ -16,7 +16,7 @@
   "importTrainScheduleSet": {
     "cancel": "Annuler",
     "cartEmpty": "Aucune sélection",
-    "import": "Import",
+    "import": "Importer",
     "importType": {
       "copy": "Import par copie",
       "reference": "Import par référence"
