@@ -47,6 +47,7 @@ export default function useLazySimulateTrains({
   const [simulatedTrainsById, setSimulatedTrainsById] = useState<
     Map<number, TrainScheduleWithDetails>
   >(new Map());
+  const [isTrainSimulationLoading, setIsTrainSimulationLoading] = useState(false);
 
   const onProgressRef = useRef<UseLazySimulateTrainsOptions['onProgress']>(null);
   onProgressRef.current = onProgress;
@@ -67,6 +68,7 @@ export default function useLazySimulateTrains({
         );
         setSimulatedTrainsById((prev) => new Map([...prev.entries(), ...summaries.entries()]));
         if (onProgressRef.current) onProgressRef.current(summaries);
+        setIsTrainSimulationLoading(loader.pending.length !== 0);
       },
     });
 
@@ -84,7 +86,10 @@ export default function useLazySimulateTrains({
       trainSchedulesByIdRef.current.set(trainSchedule.id, trainSchedule);
     }
 
-    loaderRef.current?.simulateTrainSchedules(trainSchedules.map(({ id }) => id));
+    if (trainSchedules.length > 0) {
+      setIsTrainSimulationLoading(true);
+      loaderRef.current?.simulateTrainSchedules(trainSchedules.map(({ id }) => id));
+    }
   }, []);
 
   const removeSimulatedTrainSchedules = useCallback((ids: number[]) => {
@@ -124,6 +129,6 @@ export default function useLazySimulateTrains({
     simulateTrainSchedules,
     removeSimulatedTrainSchedules,
     updateSimulatedTrainScheduleDepartureTime,
-    isTrainSimulationLoading: !(loaderRef.current && loaderRef.current.pending.length === 0),
+    isTrainSimulationLoading,
   };
 }
