@@ -282,7 +282,7 @@ services:
     # additionalProperties: true
     # @schema
       annotations: {}
-      tls: []
+      tls: true
     # -- (object) gateway authentication configuration see https://github.com/OpenRailAssociation/osrd/blob/dev/gateway/README.md
     config:
       # @schema
@@ -320,6 +320,12 @@ services:
         upstream: ""
       # secret_key: "NOT+A+SECRET++NOT+A+SECRET++NOT+A+SECRET++NOT+A+SECRET++NOT+A+SECRET++NOT+A+SECRET++NOT+A+SECRET"
       # See https://github.com/OpenRailAssociation/osrd/blob/dev/gateway/README.md#config
+      # @schema
+      # type: [string,null]
+      # required: false
+      # @schema
+      # -- (string, null) A secret key if not provided throug environment variable
+      secret_key: null
       tracing:
         enabled: false
         type: ""
