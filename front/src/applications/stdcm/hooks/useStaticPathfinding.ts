@@ -11,7 +11,6 @@ import {
   type Infra,
   type WorkerStatus,
 } from 'common/api/osrdEditoastApi';
-import { getPathfindingQuery } from 'modules/pathfinding/utils';
 import {
   getStdcmPathSteps,
   getLoadingGauge,
@@ -19,6 +18,11 @@ import {
 } from 'reducers/osrdconf/stdcmConf/selectors';
 import type { StdcmPathStep } from 'reducers/osrdconf/types';
 
+import {
+  getConsistChanges,
+  getPathSegmentsIndexes,
+  launchSegmentedPathfinding,
+} from '../utils/getConsistChangesConstraints';
 import useStdcmLightRollingStock from './useStdcmLightRollingStock';
 
 /**
@@ -45,6 +49,10 @@ const useStaticPathfinding = (workerStatus: WorkerStatus, infra: Infra | undefin
     osrdEditoastApi.endpoints.postInfraByInfraIdPathfindingBlocks.useLazyQuery();
 
   const { t } = useTranslation('stdcm');
+  const [getLightRollingStockById] =
+    osrdEditoastApi.endpoints.getLightRollingStockByRollingStockId.useLazyQuery();
+
+  const consistChanges = useMemo(() => getConsistChanges(pathSteps), [pathSteps]);
 
   // When pathSteps changed
   // => update the pathStepsLocations (if needed by doing a deep comparison).
@@ -66,7 +74,10 @@ const useStaticPathfinding = (workerStatus: WorkerStatus, infra: Infra | undefin
       // Don't run the pathfinding if the origin and destination are the same:
       const origin = pathSteps.at(0)!;
       const destination = pathSteps.at(-1)!;
-      if (origin.operationalPoint!.id === destination.operationalPoint!.id) {
+      if (!origin.operationalPoint || !destination.operationalPoint) {
+        return;
+      }
+      if (origin.operationalPoint.id === destination.operationalPoint.id) {
         return;
       }
 
@@ -74,31 +85,39 @@ const useStaticPathfinding = (workerStatus: WorkerStatus, infra: Infra | undefin
         stdcmPathStepToPathItemLocation(step)
       );
 
-      const payload = getPathfindingQuery({
+      const pathSegmentsIndexes = getPathSegmentsIndexes(consistChanges, pathStepsLocations.length);
+
+      setShowPathfindingStatusMessage(true);
+
+      const pathfindingResult = await launchSegmentedPathfinding({
+        pathSegmentsIndexes,
+        stdcmPathSteps,
+        consistChanges,
+        getLightRollingStockById,
+        postPathfindingBlocks,
         infraId: infra.id,
         rollingStock,
-        pathSteps: stdcmPathSteps,
         loadingGauge,
         speedLimitByTag,
       });
 
-      if (payload === null) {
-        return;
-      }
-
-      setShowPathfindingStatusMessage(true);
-
-      const pathfindingResult = await postPathfindingBlocks(payload).unwrap();
-
       setPathfinding(pathfindingResult);
 
-      if (pathfindingResult.status === 'failure') {
+      if (pathfindingResult?.status === 'failure') {
         setShowPathfindingStatusMessage(false);
       }
     };
 
     launchPathfinding();
-  }, [pathStepsLocations, rollingStock, speedLimitByTag, loadingGauge, infra, workerStatus]);
+  }, [
+    pathStepsLocations,
+    rollingStock,
+    speedLimitByTag,
+    loadingGauge,
+    infra,
+    workerStatus,
+    consistChanges,
+  ]);
 
   const pathfindingStatusMessage = useMemo(() => {
     if (isFetching) {
