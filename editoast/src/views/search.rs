@@ -424,7 +424,8 @@ pub(super) struct SearchResultItemTrack {
     line_code: i64,
 }
 
-#[derive(Search, Serialize, ToSchema)]
+#[derive(Search, Serialize, ToSchema, Debug)]
+#[cfg_attr(test, derive(serde::Deserialize))]
 #[search(
     table = "search_operational_point",
     distinct_on = "(infra_id, obj_id)",
@@ -500,7 +501,8 @@ pub(super) struct SearchResultItemOperationalPoint {
     #[search(sql = "OP.data->'parts'")]
     track_sections: Vec<SearchResultItemOperationalPointTrackSections>,
 }
-#[derive(Serialize, ToSchema)]
+#[derive(Serialize, ToSchema, Debug)]
+#[cfg_attr(test, derive(serde::Deserialize))]
 pub(super) struct SearchResultItemOperationalPointTrackSections {
     track: String,
     position: f64,
@@ -794,14 +796,23 @@ pub struct SearchConfigFinder;
 
 #[cfg(test)]
 pub mod tests {
+    use editoast_models::infra_objects::SchemaModel as _;
+    use editoast_models::prelude::CreateBatch;
     use pretty_assertions::assert_eq;
 
+    use schemas::infra::OperationalPoint;
+    use schemas::primitives::Identifier;
+    use schemas::primitives::NonBlankString;
     use serde_json::json;
 
     use super::*;
     use crate::fixtures::create_simple_paced_train;
+    use crate::fixtures::create_small_infra;
     use crate::fixtures::create_train_schedule_set;
+    use crate::generated_data::InfraGeneratedData;
+    use crate::infra_cache::InfraCache;
     use crate::views::test_app;
+    use crate::views::test_app::TestRequestExt as _;
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn search_trainschedule_post_found() {
@@ -856,5 +867,165 @@ pub mod tests {
             .json();
 
         assert_eq!(response.len(), 0);
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn search_operational_point_found_all() {
+        let app = test_app!().build();
+        let pool = app.db_pool();
+        let mut infra = create_small_infra(&mut pool.get_ok()).await;
+        let cache = InfraCache::load(&mut pool.get_ok(), &infra).await.unwrap();
+        let user = app
+            .user("test", "Test")
+            .with_roles([Role::OperationalStudies])
+            .with_infra_grant(infra.id, authz::InfraGrant::Reader)
+            .create()
+            .await;
+
+        assert!(infra.refresh(pool, false, &cache).await.unwrap());
+        // The body
+        let response: Vec<SearchResultItemOperationalPoint> = app
+            .post("/search")
+            .by_user(user.as_ref())
+            .json(&json!({
+                "object": "operationalpoint",
+                "query": ["and", ["ilike", ["main_code"], "%s%"],
+                                 ["=", ["infra_id"], infra.id]]
+            }))
+            .await
+            .assert_status_ok()
+            .json();
+
+        assert_eq!(response.len(), 8);
+        assert!(
+            response
+                .iter()
+                .all(|operational_point| operational_point.geographic.is_some())
+        );
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn search_operational_point_found_some() {
+        let app = test_app!().build();
+        let pool = app.db_pool();
+        let mut infra = create_small_infra(&mut pool.get_ok()).await;
+        let cache = InfraCache::load(&mut pool.get_ok(), &infra).await.unwrap();
+        let user = app
+            .user("test", "Test")
+            .with_roles([Role::OperationalStudies])
+            .with_infra_grant(infra.id, authz::InfraGrant::Reader)
+            .create()
+            .await;
+
+        assert!(infra.refresh(pool, false, &cache).await.unwrap());
+        // The body
+        let response: Vec<SearchResultItemOperationalPoint> = app
+            .post("/search")
+            .by_user(user.as_ref())
+            .json(&json!({
+                "object": "operationalpoint",
+                "query": ["and", ["ilike", ["main_code"], "%w%"],
+                                 ["=", ["infra_id"], infra.id]],
+            }))
+            .await
+            .assert_status_ok()
+            .json();
+
+        for item in response.iter() {
+            dbg!(item);
+        }
+        assert_eq!(response.len(), 3);
+        assert!(
+            response
+                .iter()
+                .all(|operational_point| operational_point.geographic.is_some())
+        );
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn search_operational_point_not_found() {
+        let app = test_app!().build();
+        let pool = app.db_pool();
+        let mut infra = create_small_infra(&mut pool.get_ok()).await;
+        let cache = InfraCache::load(&mut pool.get_ok(), &infra).await.unwrap();
+        let user = app
+            .user("test", "Test")
+            .with_roles([Role::OperationalStudies])
+            .with_infra_grant(infra.id, authz::InfraGrant::Reader)
+            .create()
+            .await;
+
+        assert!(infra.refresh(pool, false, &cache).await.unwrap());
+        let response: Vec<SearchResultItemOperationalPoint> = app
+            .post("/search")
+            .by_user(user.as_ref())
+            .json(&json!({
+                "object": "operationalpoint",
+                "query": ["and", ["like", ["main_code"], "ml"],
+                                 ["=", ["infra_id"], infra.id]],
+            }))
+            .await
+            .assert_status_ok()
+            .json();
+
+        assert_eq!(response.len(), 0);
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn search_operational_point_without_geographic() {
+        let app = test_app!().build();
+        let pool = app.db_pool();
+        let mut infra = create_small_infra(&mut pool.get_ok()).await;
+        let cache = InfraCache::load(&mut pool.get_ok(), &infra).await.unwrap();
+        let user = app
+            .user("test", "Test")
+            .with_roles([Role::OperationalStudies])
+            .with_infra_grant(infra.id, authz::InfraGrant::Reader)
+            .create()
+            .await;
+
+        // Create an operational point without any part and so without geographic
+        let op_without_geo = OperationalPoint {
+            id: Identifier("Lost_station".to_string()),
+            parts: vec![],
+            weight: None,
+            name: NonBlankString("Lost_station".to_string()),
+            uic: None,
+            plc: None,
+            country_code: NonBlankString("FR".to_string()),
+            main_code: NonBlankString("LS".to_string()),
+            secondary_code: Some(NonBlankString("BV".to_string())),
+            is_passenger_station: true,
+            secondary_name: Some(NonBlankString("0".to_string())),
+        };
+
+        // clone to use it in the search request below
+        let op_main_code = op_without_geo.main_code.clone();
+        // Add the previous operational point to the infra
+        editoast_models::OperationalPointModel::create_batch::<_, Vec<_>>(
+            &mut pool.get_ok(),
+            [
+                editoast_models::OperationalPointModel::new_from_schema(op_without_geo)
+                    .infra_id(infra.id),
+            ],
+        )
+        .await
+        .unwrap();
+
+        assert!(infra.refresh(pool, false, &cache).await.unwrap());
+        let response: Vec<SearchResultItemOperationalPoint> = app
+            .post("/search")
+            .by_user(user.as_ref())
+            .json(&json!({
+                "object": "operationalpoint",
+                "query": ["and", ["=", ["main_code"], op_main_code],
+                                 ["=", ["infra_id"], infra.id]],
+            }))
+            .await
+            .assert_status_ok()
+            .json();
+
+        assert_eq!(response.len(), 1);
+        assert_eq!(response[0].geographic, None);
     }
 }
