@@ -14,6 +14,8 @@ import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
 import { STDCM_REQUEST_STATUS } from 'applications/stdcm/consts';
+import useStdcmLightRollingStock from 'applications/stdcm/hooks/useStdcmLightRollingStock';
+import useStdcmTowedRollingStock from 'applications/stdcm/hooks/useStdcmTowedRollingStock';
 import { extractMarkersInfo } from 'applications/stdcm/utils';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import DefaultBaseMap from 'common/Map/DefaultBaseMap';
@@ -141,9 +143,14 @@ const StdcmConfig = ({
   const trackSectionIdsByLoadingGauge = useSelector(getTrackSectionIdsByLoadingGauge);
   const loadingGaugeType = useSelector(getLoadingGauge);
 
+  const rollingStock = useStdcmLightRollingStock();
+  const towedRollingStock = useStdcmTowedRollingStock();
+
   const initialConsist: ConsistData = {
     rollingStockID,
+    rollingStockName: rollingStock?.name,
     towedRollingStockID,
+    towedRollingStockName: towedRollingStock?.name,
     totalMass,
     totalLength,
     maxSpeed,
