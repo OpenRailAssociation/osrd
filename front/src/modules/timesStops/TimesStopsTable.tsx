@@ -638,8 +638,9 @@ const TimesStopsTable = ({
 
   const getRowDayOffset = (row: Row<TimesStopsRowNew>): number | null => {
     if (!row.original.pathStepId) return null;
-    if (!row.original.requestedArrival) return null;
-    return calculateTimeDifferenceInDays(startTime, row.original.requestedArrival);
+    const arrival = row.original.computedArrival ?? row.original.requestedArrival;
+    if (!arrival) return null;
+    return calculateTimeDifferenceInDays(startTime, arrival);
   };
 
   const tableRows = table.getRowModel().rows;
@@ -731,7 +732,7 @@ const TimesStopsTable = ({
             const rowIndex = virtualRow.index;
             const row = tableRows[rowIndex];
 
-            const rowArrivalDate = row.original.requestedArrival ?? row.original.computedArrival;
+            const rowArrivalDate = row.original.computedArrival ?? row.original.requestedArrival;
             const dayOffset = effectiveDayOffsets[rowIndex];
             const prevDayOffset = rowIndex > 0 ? effectiveDayOffsets[rowIndex - 1] : 0;
             const hasDayChanged = dayOffset > prevDayOffset;
