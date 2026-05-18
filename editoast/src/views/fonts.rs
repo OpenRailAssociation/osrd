@@ -45,6 +45,13 @@ pub(in crate::views) async fn fonts(
         return Err(FontErrors::FileNotFound { file: file_name }.into());
     }
 
+    // Avoid path traversal attack by ensuring the path is within the dynamic assets directory
+    let canonical_path = path.canonicalize().unwrap();
+    let canonical_assets_path = config.dynamic_assets_path.canonicalize().unwrap();
+    if !canonical_path.starts_with(&canonical_assets_path) {
+        return Err(FontErrors::FileNotFound { file: file_name }.into());
+    }
+
     Ok(ServeFile::new(&path).oneshot(request).await)
 }
 
