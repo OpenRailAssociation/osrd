@@ -159,4 +159,5 @@ export type CurveStyleInput = {
     exceptionType?: CurveStyleExceptionType;
   };
   selection: SelectedTrain | undefined;
+  panelMode?: 'compliant' | 'all' | 'single';
 };
