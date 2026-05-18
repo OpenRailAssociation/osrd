@@ -93,7 +93,7 @@ const osrdEditoastApi = generatedEditoastApi
           }
           return { data: result };
         },
-        providesTags: ['timetable'],
+        providesTags: ['timetable', 'train_schedule', 'train_schedule_exceptions'],
       }),
       getTrainPath: builder.query<
         PathfindingResult,
@@ -286,6 +286,9 @@ const osrdEditoastApi = generatedEditoastApi
       },
       postTrainScheduleSetsByIdTrainSchedules: {
         invalidatesTags: ['train_schedule_set', 'scenarios', 'timetable'],
+      },
+      getTimetableByIdTrainSchedules: {
+        providesTags: ['timetable', 'train_schedule', 'train_schedule_exceptions'],
       },
       postTimetableByIdTrainScheduleException: {
         invalidatesTags: ['train_schedule_exceptions', 'train_schedule'],
