@@ -67,12 +67,13 @@ const ItineraryModalFormHeader = ({
     return secondPart ? `${rs.name} - ${secondPart}` : rs.name;
   };
 
-  const { filteredRollingStockList } = useFilterRollingStock();
+  const { filteredRollingStockList: fullRollingStockList } = useFilterRollingStock();
 
-  const rollingStockComboBoxDefaultProps = useDefaultComboBox(
-    filteredRollingStockList,
-    getRollingStockLabel
-  );
+  const {
+    suggestions: rollingStockSuggestions,
+    onChange: onRollingStockQueryChange,
+    resetSuggestions: resetRollingStockSuggestions,
+  } = useDefaultComboBox(fullRollingStockList, getRollingStockLabel);
 
   // Rolling stock value for ComboBox
   const rollingStockValue = rollingStock
@@ -81,7 +82,7 @@ const ItineraryModalFormHeader = ({
 
   // When user types or clears input
   const handleRollingStockInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    rollingStockComboBoxDefaultProps.onChange(e);
+    onRollingStockQueryChange(e);
     onModalFormStateChange({
       ...modalFormState,
       rollingStockId: undefined,
@@ -91,7 +92,7 @@ const ItineraryModalFormHeader = ({
 
   // When user selects a suggestion
   const handleRollingStockSelect = (label?: string) => {
-    const rs = filteredRollingStockList.find((r) => getRollingStockLabel(r) === label);
+    const rs = fullRollingStockList.find((r) => getRollingStockLabel(r) === label);
     if (rs) {
       onModalFormStateChange({
         ...modalFormState,
@@ -142,11 +143,11 @@ const ItineraryModalFormHeader = ({
     if (!rollingStockValue) {
       return t('noRollingStock');
     }
-    const isValid = filteredRollingStockList.some(
+    const isValid = fullRollingStockList.some(
       (rs) => getRollingStockLabel(rs) === rollingStockValue
     );
     return isValid ? undefined : t('unknownRollingStock');
-  }, [rollingStockValue, filteredRollingStockList, t]);
+  }, [rollingStockValue, fullRollingStockList, t]);
 
   useEffect(() => {
     onCategoryWarningChange(categoryWarningMessage);
@@ -189,10 +190,10 @@ const ItineraryModalFormHeader = ({
             small
             autoComplete="off"
             value={rollingStockValue || undefined}
-            suggestions={filteredRollingStockList.map(getRollingStockLabel)}
+            suggestions={rollingStockSuggestions.map(getRollingStockLabel)}
             getSuggestionLabel={(s) => s}
             onSelectSuggestion={handleRollingStockSelect}
-            resetSuggestions={rollingStockComboBoxDefaultProps.resetSuggestions}
+            resetSuggestions={resetRollingStockSuggestions}
             onChange={handleRollingStockInputChange}
           />
         </div>
