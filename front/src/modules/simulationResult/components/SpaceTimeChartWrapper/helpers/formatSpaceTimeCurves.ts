@@ -23,6 +23,7 @@ import {
 export type PathDataWithSimulated = PathData & {
   colors: CategoryColors;
   isSimulated?: boolean;
+  isStartTimeException?: boolean;
 };
 
 const getTrainCategory = (
@@ -70,9 +71,13 @@ const formatSpaceTimeCurves = (
 
     const departureTime = train.departureTime.getTime();
 
+    const isStartTimeException =
+      ('exception' in train && !!train.exception?.start_time) || undefined;
+
     return train.spaceTimeCurves.map((curve) => ({
       id: train.id,
       isSimulated: train.isSimulated,
+      isStartTimeException,
       label: train.name,
       colors,
       points: curve.positions.map((position, i) => ({

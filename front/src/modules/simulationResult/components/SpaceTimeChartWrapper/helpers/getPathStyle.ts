@@ -11,7 +11,12 @@ import {
 
 const getPathStyle = (
   hovered: HoveredItem | null,
-  train: { colors: CategoryColors; id: string; isSimulated?: boolean },
+  train: {
+    colors: CategoryColors;
+    id: string;
+    isSimulated?: boolean;
+    isStartTimeException?: boolean;
+  },
   dragging: boolean,
   selectedTrainId?: TrainId,
   hoveredTrainIdFromTimetable?: TrainId
@@ -132,6 +137,13 @@ const getPathStyle = (
                   color: 'transparent',
                   backgroundColor: colors.background,
                 },
+          label: train.isStartTimeException
+            ? {
+                backgroundColor: colors.background,
+                border: { color: colors.normal },
+                textColor: colors.hovered,
+              }
+            : selectedLabelStyle,
         };
       }
     } else if (train.id === selectedTrainId) {
