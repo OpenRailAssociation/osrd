@@ -70,21 +70,22 @@ pub(super) fn build_request(
     );
 
     let mut schedule = Vec::new();
-    for (i, point) in params.schedule_items().iter().enumerate() {
-        if let ScheduleItem::ScheduleItem {
+    for (
+        i,
+        ScheduleItem {
             arrival_at,
             stop_for,
             reception_signal,
-        } = point
-        {
-            let position = path_item_positions[i];
-            schedule.push(core_client::simulation::SimulationScheduleItem {
-                path_offset: position,
-                arrival: *arrival_at,
-                stop_for: *stop_for,
-                reception_signal: *reception_signal,
-            });
-        }
+        },
+    ) in params.schedule_items().iter().enumerate()
+    {
+        let position = path_item_positions[i];
+        schedule.push(core_client::simulation::SimulationScheduleItem {
+            path_offset: position,
+            arrival: *arrival_at,
+            stop_for: *stop_for,
+            reception_signal: *reception_signal,
+        });
     }
 
     let margin_boundaries_len = margin_boundaries.len();
@@ -200,12 +201,12 @@ mod tests {
         builder.push_schedule_item(
             path_items[0].clone(),
             NonBlankString::from("a"),
-            ScheduleItem::PathItem,
+            ScheduleItem::pass_by(),
         );
         builder.push_schedule_item(
             path_items[1].clone(),
             NonBlankString::from("b"),
-            ScheduleItem::ScheduleItem {
+            ScheduleItem {
                 arrival_at: Some(300),
                 stop_for: Some(0),
                 reception_signal: Default::default(),
@@ -224,12 +225,20 @@ mod tests {
             infra: 1,
             expected_version: 1,
             electrical_profile_set_id: None,
-            schedule: vec![core_client::simulation::SimulationScheduleItem {
-                path_offset: 10,
-                arrival: Some(300),
-                stop_for: Some(0),
-                reception_signal: Default::default(),
-            }],
+            schedule: vec![
+                core_client::simulation::SimulationScheduleItem {
+                    path_offset: 0,
+                    arrival: None,
+                    stop_for: None,
+                    reception_signal: Default::default(),
+                },
+                core_client::simulation::SimulationScheduleItem {
+                    path_offset: 10,
+                    arrival: Some(300),
+                    stop_for: Some(0),
+                    reception_signal: Default::default(),
+                },
+            ],
             margins: core_client::simulation::SimulationMargins {
                 // Core also accepts this form
                 boundaries: vec![],
@@ -299,7 +308,7 @@ mod tests {
             builder.push_schedule_item(
                 path_items[i].clone(),
                 NonBlankString::from(i.to_string()),
-                ScheduleItem::ScheduleItem {
+                ScheduleItem {
                     arrival_at: *arrival,
                     stop_for: Some(0),
                     reception_signal: Default::default(),
@@ -433,12 +442,12 @@ mod tests {
         builder.push_schedule_item(
             PathItemAlternatives::from_iter([]),
             NonBlankString::from("a"),
-            ScheduleItem::PathItem,
+            ScheduleItem::pass_by(),
         );
         builder.push_schedule_item(
             PathItemAlternatives::from_iter([]),
             NonBlankString::from("b"),
-            ScheduleItem::ScheduleItem {
+            ScheduleItem {
                 arrival_at: Some(300),
                 stop_for: Some(0),
                 reception_signal: Default::default(),

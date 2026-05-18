@@ -56,16 +56,18 @@ pub struct SimulationTrainParameters {
 }
 
 /// Schedule information attached to a path item
-#[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum ScheduleItem {
-    /// No specific requirement
-    PathItem,
-    /// The train must stop at this item
-    ScheduleItem {
-        stop_for: Option<u64>,
-        arrival_at: Option<u64>,
-        reception_signal: ReceptionSignal,
-    },
+#[derive(Debug, Clone, Default, Hash, PartialEq, Eq)]
+pub struct ScheduleItem {
+    pub stop_for: Option<u64>,
+    pub arrival_at: Option<u64>,
+    pub reception_signal: ReceptionSignal,
+}
+
+impl ScheduleItem {
+    /// Just a passing point without any particular scheduling requirements
+    pub fn pass_by() -> Self {
+        Self::default()
+    }
 }
 
 impl SimulationTrainParameters {
