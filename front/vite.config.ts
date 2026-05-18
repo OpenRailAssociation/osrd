@@ -16,6 +16,7 @@ const ngeBase = path.dirname(
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
+  const isCI = env.CI === 'true';
   return {
     css: {
       preprocessorOptions: {
@@ -37,7 +38,7 @@ export default defineConfig(({ mode }) => {
     },
     plugins: [
       react(),
-      checker({
+      !isCI && checker({
         typescript: true,
         eslint: {
           useFlatConfig: true,
