@@ -30,10 +30,48 @@ const getTimetableSelectionState = (
   return train.exceptionType === 'start_time' ? 'passiveSecondary' : 'passivePrimary';
 };
 
-const getCurveVisualState = ({ train, selection }: CurveStyleInput): CurveVisualState => {
+const getStdSelectionState = (
+  chart: CurveStyleInput['chart'],
+  train: TrainInput,
+  selection: SelectedTrain,
+  panelMode: CurveStyleInput['panelMode']
+): CurveVisualState => {
+  // Self gets active on its own chart, passivePrimary on the other one
+  // (B.1, B.1 bis, B.4, B.4 bis, and B.3 / B.6 last clicked).
+  if (train.id === selection.id) return chart === 'std' ? 'active' : 'passivePrimary';
+
+  if (!samePacedTrain(train.id, selection.id)) return 'none';
+
+  // 'all' (B.5, B.5 bis): every occurrence of the selected paced gets the same as self.
+  if (panelMode === 'all') return chart === 'std' ? 'active' : 'passivePrimary';
+
+  // 'single' (B.3 ter/quater, B.4 ter/quater, B.6 ter/quater): sibling occurrences
+  // get passiveSecondary on std and none on tod.
+  if (panelMode === 'single') return chart === 'std' ? 'passiveSecondary' : 'none';
+
+  // 'compliant' (B.2 *): occurrences with a start_time exception get passiveSecondary
+  // on std and none on tod, the rest gets the same as self.
+  if (panelMode === 'compliant') {
+    if (train.exceptionType === 'start_time') {
+      return chart === 'std' ? 'passiveSecondary' : 'none';
+    }
+    return chart === 'std' ? 'active' : 'passivePrimary';
+  }
+
+  return 'none';
+};
+
+const getCurveVisualState = ({
+  chart,
+  train,
+  selection,
+  panelMode,
+}: CurveStyleInput): CurveVisualState => {
   if (!selection) return 'none';
 
   if (selection.by === 'timetable') return getTimetableSelectionState(train, selection);
+
+  if (selection.by === 'std') return getStdSelectionState(chart, train, selection, panelMode);
 
   return 'none';
 };
