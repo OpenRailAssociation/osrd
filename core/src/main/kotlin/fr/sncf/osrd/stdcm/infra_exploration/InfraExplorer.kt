@@ -222,11 +222,11 @@ private class InfraExplorerImpl(
     private var blockRoutes: AppendOnlyMap<BlockId, RouteId>,
     private var lastTrack: TrackSectionId?,
     private var trainPathCache: MutableMap<BlockId, TrainPath>,
-    private var currentIndex: Int = 0,
+    private var currentIndex: Int = 0, // /!\ currentBlockRange should be updated simultaneously /!\
+    private var currentBlockRange: BlockRange? = null,
     private var stepTracker: StepTracker,
     private var constraints: List<PathfindingConstraint>?,
     override var isPathComplete: Boolean = false,
-    private var currentBlockRange: BlockRange? = null,
 ) : InfraExplorer {
     override fun getCurrentEdgePathProperties(offset: Offset<Block>, length: Distance?): TrainPath {
         // We re-compute the routes of the current path since the cache may be incorrect
@@ -371,10 +371,10 @@ private class InfraExplorerImpl(
             this.lastTrack,
             this.trainPathCache,
             this.currentIndex,
+            this.currentBlockRange,
             this.stepTracker.clone(),
             this.constraints,
             this.isPathComplete,
-            this.currentBlockRange,
         )
     }
 
