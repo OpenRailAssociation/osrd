@@ -65,10 +65,12 @@ class OperationalStudiesPage extends ScenarioTimetableSection {
     this.trainScheduleTagsInput = page.getByTestId('chips-input');
     this.categorySelector = page.getByTestId('category-selector-select');
   }
-
+  // TODO: This function must be modified after we drop the old itinerary interface
   // Click on the button to add a scenario train schedule.
   async openTrainScheduleForm() {
     await this.addTrainScheduleButton.click();
+    await expect(this.itineraryModal).toBeVisible();
+    await this.closeItineraryModalButton.click();
     await expect(this.manageTrainSchedulePage).toBeVisible();
   }
 

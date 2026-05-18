@@ -50,7 +50,7 @@ const ManageTrainScheduleLeftPanel = ({
   const { openModal, closeModal } = useModal();
 
   const [isWorking, setIsWorking] = useState(false);
-  const [itineraryModalIsOpen, setItineraryModalIsOpen] = useState(false);
+  const [itineraryModalIsOpen, setItineraryModalIsOpen] = useState(true);
 
   const leaveManageTrainSchedule = () => {
     setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.none);

@@ -49,6 +49,8 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
   private readonly unselectTrainSchedulesButton: Locator;
   readonly exportTrainScheduleButton: Locator;
   private readonly trainName: Locator;
+  readonly itineraryModal: Locator;
+  readonly closeItineraryModalButton: Locator;
 
   constructor(page: Page) {
     super(page);
@@ -93,6 +95,8 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
     this.exportTrainScheduleButton = page.getByTestId('export-selection-button');
     this.unselectTrainSchedulesButton = page.getByTestId('scenarios-unselect-all-button');
     this.trainName = page.getByTestId('train-name');
+    this.itineraryModal = page.getByTestId('itinerary-modal');
+    this.closeItineraryModalButton = page.getByTestId('close-itinerary-modal');
   }
 
   private static getUniqueTrainButton(UniqueTrainSelector: Locator): Locator {
@@ -156,15 +160,21 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
   }
 
   private async selectTrainValidityFilter(filterTranslation: string): Promise<void> {
-    await this.timetableValidityFilterSelect.selectOption({ label: filterTranslation });
+    await this.timetableValidityFilterSelect.selectOption({
+      label: filterTranslation,
+    });
   }
 
   private async selectTrainPunctualityFilter(filterTranslation: string): Promise<void> {
-    await this.timetablePunctualityFilterSelect.selectOption({ label: filterTranslation });
+    await this.timetablePunctualityFilterSelect.selectOption({
+      label: filterTranslation,
+    });
   }
 
   private async selectTrainTypeFilter(filterTranslation: string): Promise<void> {
-    await this.timetableTrainTypeFilterSelect.selectOption({ label: filterTranslation });
+    await this.timetableTrainTypeFilterSelect.selectOption({
+      label: filterTranslation,
+    });
   }
 
   async verifyTrainSchedulesCount(trainSchedulesCount: number): Promise<void> {
@@ -324,10 +334,13 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
     }
   }
 
+  // TODO: This function must be modified after we drop the old itinerary interface
   async editTrainSchedule(index = 0) {
     await expect(this.trainSchedules.nth(index)).toBeVisible();
     await this.trainSchedules.nth(index).click();
     await this.editTrainButton.nth(index).click();
+    await expect(this.itineraryModal).toBeVisible();
+    await this.closeItineraryModalButton.click();
   }
 
   async deleteTrainSchedule(index = 0) {

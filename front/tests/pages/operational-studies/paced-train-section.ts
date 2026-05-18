@@ -34,6 +34,7 @@ class PacedTrainSection extends CommonPage {
     project: Locator;
     delete: Locator;
   };
+  readonly closeItineraryModalButton: Locator;
 
   constructor(page: Page) {
     super(page);
@@ -61,6 +62,7 @@ class PacedTrainSection extends CommonPage {
       project: page.getByTestId('occurrence-project-button'),
       delete: page.getByTestId('occurrence-delete-button'),
     };
+    this.closeItineraryModalButton = page.getByTestId('close-itinerary-modal');
   }
 
   private getNthOccurrence(index: number) {
@@ -296,6 +298,8 @@ class PacedTrainSection extends CommonPage {
     });
     await expect(actionButtons.editTrain).toBeVisible();
     await actionButtons.editTrain.click();
+    // TODO: This function must be modified after we drop the old itinerary interface
+    await this.closeItineraryModalButton.click();
     await expect(this.manageTrainSchedulePage).toBeVisible();
   }
 
@@ -395,6 +399,12 @@ class PacedTrainSection extends CommonPage {
     const portalOccurrenceMenu = this.portalOccurrenceMenu[buttonToClick];
     await expect(portalOccurrenceMenu).toBeVisible();
     await portalOccurrenceMenu.click();
+    // TODO: This function must be modified after we drop the old itinerary interface
+    if (buttonToClick === 'edit') {
+      if (await this.closeItineraryModalButton.isVisible()) {
+        await this.closeItineraryModalButton.click(); // Close the itinerary modal if open
+      }
+    }
   }
 
   async resetAllPacedTrainExceptions(pacedTrainIndex: number) {
