@@ -638,6 +638,7 @@ mod tests {
     use rstest::rstest;
     use schemas::fixtures::simple_rolling_stock;
     use schemas::fixtures::towed_rolling_stock;
+    use schemas::rolling_stock::LoadingGaugeType;
     use schemas::rolling_stock::RollingResistance;
     use schemas::train_schedule::Comfort;
     use schemas::train_schedule::OperationalPointPartReference;
@@ -648,6 +649,8 @@ mod tests {
     use uom::si::length::meter;
     use uom::si::mass::kilogram;
     use uom::si::quantities::Mass;
+    use uom::si::velocity::Velocity;
+    use uom::si::velocity::kilometer_per_hour;
     use uuid::Uuid;
 
     use crate::error::InternalError;
@@ -724,15 +727,17 @@ mod tests {
         rolling_stock_id: i64,
         total_mass: Option<f64>,
         total_length: Option<f64>,
+        max_speed: Option<f64>,
+        loading_gauge_type: Option<LoadingGaugeType>,
     ) -> request::ConsistConfiguration {
         request::ConsistConfiguration {
             rolling_stock_id,
             towed_rolling_stock_id: None,
             total_mass: total_mass.map(Mass::new::<kilogram>),
             total_length: total_length.map(Length::new::<meter>),
-            max_speed: None,
+            max_speed: max_speed.map(Velocity::new::<kilometer_per_hour>),
             speed_limit_tag: Some("AR120".to_string()),
-            loading_gauge_type: None,
+            loading_gauge_type,
         }
     }
 
@@ -985,8 +990,13 @@ mod tests {
         let timetable = create_timetable(&mut db_pool.get_ok()).await;
         let rolling_stock =
             create_fast_rolling_stock(&mut db_pool.get_ok(), &Uuid::new_v4().to_string()).await;
-        let consist_schedule =
-            build_single_consist(build_consist_config(rolling_stock.id, None, None));
+        let consist_schedule = build_single_consist(build_consist_config(
+            rolling_stock.id,
+            None,
+            Some(400.0),
+            None,
+            None,
+        ));
 
         let request = app
             .post(format!("/timetable/{}/stdcm?infra={}", timetable.id, small_infra.id).as_str())
@@ -1033,8 +1043,13 @@ mod tests {
         let timetable = create_timetable(&mut db_pool.get_ok()).await;
         let rolling_stock =
             create_fast_rolling_stock(&mut db_pool.get_ok(), &Uuid::new_v4().to_string()).await;
-        let consist_schedule =
-            build_single_consist(build_consist_config(rolling_stock.id, Some(80_000.0), None));
+        let consist_schedule = build_single_consist(build_consist_config(
+            rolling_stock.id,
+            Some(80_000.0),
+            None,
+            None,
+            None,
+        ));
 
         let request = app
             .post(format!("/timetable/{}/stdcm?infra={}", timetable.id, small_infra.id).as_str())
@@ -1076,8 +1091,13 @@ mod tests {
         let total_length = Some(300.0);
         let rolling_stock =
             create_fast_rolling_stock(&mut db_pool.get_ok(), &Uuid::new_v4().to_string()).await;
-        let consist_schedule =
-            build_single_consist(build_consist_config(rolling_stock.id, None, total_length));
+        let consist_schedule = build_single_consist(build_consist_config(
+            rolling_stock.id,
+            None,
+            total_length,
+            None,
+            None,
+        ));
 
         let request = app
             .post(format!("/timetable/{}/stdcm?infra={}", timetable.id, small_infra.id).as_str())
@@ -1123,6 +1143,8 @@ mod tests {
             rolling_stock.id,
             total_mass,
             total_length,
+            None,
+            None,
         ));
 
         let request = app
@@ -1167,8 +1189,13 @@ mod tests {
         let timetable = create_timetable(&mut db_pool.get_ok()).await;
         let rolling_stock =
             create_fast_rolling_stock(&mut db_pool.get_ok(), &Uuid::new_v4().to_string()).await;
-        let consist_schedule =
-            build_single_consist(build_consist_config(rolling_stock.id, None, None));
+        let consist_schedule = build_single_consist(build_consist_config(
+            rolling_stock.id,
+            None,
+            None,
+            None,
+            None,
+        ));
 
         let request = app
             .post(format!("/timetable/{}/stdcm?infra={}", timetable.id, small_infra.id).as_str())
@@ -1215,8 +1242,13 @@ mod tests {
         let timetable = create_timetable(&mut db_pool.get_ok()).await;
         let rolling_stock =
             create_fast_rolling_stock(&mut db_pool.get_ok(), &Uuid::new_v4().to_string()).await;
-        let consist_schedule =
-            build_single_consist(build_consist_config(rolling_stock.id, None, None));
+        let consist_schedule = build_single_consist(build_consist_config(
+            rolling_stock.id,
+            None,
+            None,
+            None,
+            None,
+        ));
 
         let request = app
             .post(format!("/timetable/{}/stdcm?infra={}", timetable.id, small_infra.id).as_str())
@@ -1283,8 +1315,13 @@ mod tests {
         let timetable = create_timetable(&mut db_pool.get_ok()).await;
         let rolling_stock =
             create_fast_rolling_stock(&mut db_pool.get_ok(), &Uuid::new_v4().to_string()).await;
-        let consist_schedule =
-            build_single_consist(build_consist_config(rolling_stock.id, None, None));
+        let consist_schedule = build_single_consist(build_consist_config(
+            rolling_stock.id,
+            None,
+            None,
+            None,
+            None,
+        ));
 
         let request = app
             .post(format!("/timetable/{}/stdcm?infra={}", timetable.id, small_infra.id).as_str())
@@ -1370,8 +1407,8 @@ mod tests {
             ConsistSchedule {
                 boundaries: vec![1, 2],
                 values: vec![
-                    build_consist_config(1, None, None),
-                    build_consist_config(2, None, None),
+                    build_consist_config(1, None, None, None, None),
+                    build_consist_config(2, None, None, None, None),
                 ],
             },
         );
@@ -1388,8 +1425,8 @@ mod tests {
             ConsistSchedule {
                 boundaries: vec![0],
                 values: vec![
-                    build_consist_config(1, None, None),
-                    build_consist_config(2, None, None),
+                    build_consist_config(1, None, None, None, None),
+                    build_consist_config(2, None, None, None, None),
                 ],
             },
         );
@@ -1406,8 +1443,8 @@ mod tests {
             ConsistSchedule {
                 boundaries: vec![2],
                 values: vec![
-                    build_consist_config(1, None, None),
-                    build_consist_config(2, None, None),
+                    build_consist_config(1, None, None, None, None),
+                    build_consist_config(2, None, None, None, None),
                 ],
             },
         );
@@ -1424,9 +1461,9 @@ mod tests {
             ConsistSchedule {
                 boundaries: vec![5, 3],
                 values: vec![
-                    build_consist_config(1, None, None),
-                    build_consist_config(2, None, None),
-                    build_consist_config(3, None, None),
+                    build_consist_config(1, None, None, None, None),
+                    build_consist_config(2, None, None, None, None),
+                    build_consist_config(3, None, None, None, None),
                 ],
             },
         );
@@ -1484,10 +1521,14 @@ mod tests {
                         first_rolling_stock.id,
                         total_mass_first_rolling_stock,
                         None,
+                        None,
+                        None,
                     ),
                     build_consist_config(
                         second_rolling_stock.id,
                         total_mass_second_rolling_stock,
+                        None,
+                        None,
                         None,
                     ),
                 ],
@@ -1571,9 +1612,9 @@ mod tests {
             ConsistSchedule {
                 boundaries: vec![1, 2],
                 values: vec![
-                    build_consist_config(first_rolling_stock.id, None, None),
-                    build_consist_config(second_rolling_stock.id, None, None),
-                    build_consist_config(third_rolling_stock.id, None, None),
+                    build_consist_config(first_rolling_stock.id, None, None, None, None),
+                    build_consist_config(second_rolling_stock.id, None, None, None, None),
+                    build_consist_config(third_rolling_stock.id, None, None, None, None),
                 ],
             },
         );
