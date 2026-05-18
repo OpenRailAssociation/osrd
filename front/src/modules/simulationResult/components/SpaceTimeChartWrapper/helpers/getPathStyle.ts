@@ -17,6 +17,7 @@ const getPathStyle = (
   hoveredTrainIdFromTimetable?: TrainId
 ): {
   color: string;
+  opacity?: number;
   level?: PathLevel;
   border?: {
     offset: number;
@@ -146,6 +147,7 @@ const getPathStyle = (
   return {
     color: colors.normal,
     ...(train.isSimulated === false && { border: invalidBorder }),
+    ...(selectedTrainId && { opacity: 0.3 }),
   };
 };
 

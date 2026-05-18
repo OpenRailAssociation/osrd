@@ -91,6 +91,7 @@ export type PathLayerProps = {
   path: PathData;
   // Style:
   color: string;
+  opacity?: number;
   pickingTolerance?: number;
   level?: PathLevel;
   border?: {
@@ -111,6 +112,7 @@ export type PathLayerProps = {
 export const PathLayer = ({
   path,
   color,
+  opacity,
   level = DEFAULT_LEVEL,
   pickingTolerance = DEFAULT_PICKING_TOLERANCE,
   border,
@@ -325,7 +327,7 @@ export const PathLayer = ({
       const ry = y - ascent - padding;
 
       // BACKGROUND
-      ctx.globalAlpha = alpha;
+      ctx.globalAlpha = (opacity ?? 1) * alpha;
       ctx.fillStyle = borderColor ?? background;
       if (borderColor) {
         const r = Math.min(3, w / 2, h / 2);
@@ -356,13 +358,13 @@ export const PathLayer = ({
       }
 
       // TEXT
-      ctx.globalAlpha = 1;
+      ctx.globalAlpha = opacity ?? 1;
       ctx.fillStyle = textColor;
       ctx.fillText(text, x, y);
 
       ctx.restore();
     },
-    []
+    [opacity]
   );
 
   /**
@@ -619,7 +621,7 @@ export const PathLayer = ({
       // Draw stops:
       ctx.strokeStyle = color;
       ctx.lineWidth = PAUSE_THICKNESS;
-      ctx.globalAlpha = PAUSE_OPACITY;
+      ctx.globalAlpha = (opacity ?? 1) * PAUSE_OPACITY;
       ctx.lineCap = 'round';
       drawPauses(ctx, stcContext);
 
@@ -629,7 +631,7 @@ export const PathLayer = ({
       ctx.strokeStyle = color;
       ctx.lineWidth = style.width;
       ctx.setLineDash(style.dashArray || []);
-      ctx.globalAlpha = style.opacity || 1;
+      ctx.globalAlpha = (opacity ?? 1) * (style.opacity || 1);
       ctx.lineCap = style.lineCap || 'square';
       const lines = getPathLines(stcContext);
       lines.forEach((points) => {
@@ -667,6 +669,7 @@ export const PathLayer = ({
       drawSinglePoint,
       computePathLength,
       drawLabel,
+      opacity,
       label,
     ]
   );
