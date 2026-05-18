@@ -5,7 +5,11 @@
  * acceptance criteria matrix in issue #16585:
  * https://github.com/OpenRailAssociation/osrd/issues/16585
  */
-import type { CurveStyleInput, CurveVisualState } from 'modules/simulationResult/types';
+import type {
+  CurveStyleExceptionType,
+  CurveStyleInput,
+  CurveVisualState,
+} from 'modules/simulationResult/types';
 import type { TrainId } from 'reducers/osrdconf/types';
 import type { SelectedTrain } from 'reducers/simulationResults/types';
 import { extractPacedTrainIdFromTrainId, isOccurrenceId } from 'utils/trainId';
@@ -30,32 +34,39 @@ const getTimetableSelectionState = (
   return train.exceptionType === 'start_time' ? 'passiveSecondary' : 'passivePrimary';
 };
 
-const getStdSelectionState = (
+const getChartSelectionState = (
   chart: CurveStyleInput['chart'],
   train: TrainInput,
   selection: SelectedTrain,
   panelMode: CurveStyleInput['panelMode']
 ): CurveVisualState => {
+  // The chart where the selection was made (= the "primary" chart for this state).
+  const primaryChart = selection.by;
+
   // Self gets active on its own chart, passivePrimary on the other one
-  // (B.1, B.1 bis, B.4, B.4 bis, and B.3 / B.6 last clicked).
-  if (train.id === selection.id) return chart === 'std' ? 'active' : 'passivePrimary';
+  // (B.1, B.1 bis, B.4, B.4 bis, and B.3 / B.6 last clicked, plus C mirrors).
+  if (train.id === selection.id) return chart === primaryChart ? 'active' : 'passivePrimary';
 
   if (!samePacedTrain(train.id, selection.id)) return 'none';
 
-  // 'all' (B.5, B.5 bis): every occurrence of the selected paced gets the same as self.
-  if (panelMode === 'all') return chart === 'std' ? 'active' : 'passivePrimary';
+  // 'all' (B.5, C.5): every occurrence of the selected paced gets the same as self.
+  if (panelMode === 'all') return chart === primaryChart ? 'active' : 'passivePrimary';
 
-  // 'single' (B.3 ter/quater, B.4 ter/quater, B.6 ter/quater): sibling occurrences
-  // get passiveSecondary on std and none on tod.
-  if (panelMode === 'single') return chart === 'std' ? 'passiveSecondary' : 'none';
+  // 'single' (B.3/B.4/B.6 ter/quater, C mirrors): sibling occurrences get
+  // passiveSecondary on the primary chart and none on the other one.
+  if (panelMode === 'single') return chart === primaryChart ? 'passiveSecondary' : 'none';
 
-  // 'compliant' (B.2 *): occurrences with a start_time exception get passiveSecondary
-  // on std and none on tod, the rest gets the same as self.
+  // 'compliant' (B.2, C.2): occurrences with the relevant exception get
+  // passiveSecondary on the primary chart and none on the other one, the rest
+  // gets the same as self.
   if (panelMode === 'compliant') {
-    if (train.exceptionType === 'start_time') {
-      return chart === 'std' ? 'passiveSecondary' : 'none';
+    // The exception type relevant for this mode, derived from the selection source.
+    const relevantException: CurveStyleExceptionType =
+      selection.by === 'std' ? 'start_time' : 'path_and_schedule';
+    if (train.exceptionType === relevantException) {
+      return chart === primaryChart ? 'passiveSecondary' : 'none';
     }
-    return chart === 'std' ? 'active' : 'passivePrimary';
+    return chart === primaryChart ? 'active' : 'passivePrimary';
   }
 
   return 'none';
@@ -71,9 +82,7 @@ const getCurveVisualState = ({
 
   if (selection.by === 'timetable') return getTimetableSelectionState(train, selection);
 
-  if (selection.by === 'std') return getStdSelectionState(chart, train, selection, panelMode);
-
-  return 'none';
+  return getChartSelectionState(chart, train, selection, panelMode);
 };
 
 export default getCurveVisualState;
