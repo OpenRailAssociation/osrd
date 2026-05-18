@@ -22,7 +22,7 @@ kube = { version = "3.1", default-features = false, features = [
   "derive",
   "rustls-tls",
 ] }
-lapin = { version = "4.7.2", default-features = false, features = [
+lapin = { version = "4.7.4", default-features = false, features = [
   "default-runtime",
   "rustls--ring",
 ] }
