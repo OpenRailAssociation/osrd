@@ -1,0 +1,277 @@
+nameOverride: "osrd"
+fullnameOverride: "osrd"
+
+nodeSelector:
+  all_instances_types: "true"
+
+tolerations:
+  - key: "all_instances_types"
+    value: "true"
+
+endpoints:
+  public: "https://sqfsqfsq"
+  amqp:
+    url:
+      valueFrom:
+        secretKeyRef:
+          name: osrd-secrets
+          key: amqpUrl
+    management:
+      valueFrom:
+        secretKeyRef:
+          name: osrd-secrets
+          key: amqpManagement
+    managementWithVhost:
+      valueFrom:
+        secretKeyRef:
+          name: osrd-secrets
+          key: amqpManagementWithVhost
+  postgresql:
+    valueFrom:
+      secretKeyRef:
+        name: osrd-secrets
+        key: postgresql
+  postgresqlOpenFGA:
+    valueFrom:
+      secretKeyRef:
+        name: osrd-secrets
+        key: postgresqlOpenFGA
+  redis:
+    valueFrom:
+      secretKeyRef:
+        name: osrd-secrets
+        key: redis
+
+pullPolicy: Always
+imagePullSecrets:
+  - name: regcred
+images:
+  editoast: "docker_registry/osrd/editoast:version"
+  gateway: "docker_registry/osrd/gateway:version-front"
+  core: "docker_registry/osrd/core:version"
+  osrdyne: "docker_registry/osrd/osrdyne:version"
+  openfga: "docker_registry/openfga:v1.8.6"
+
+services:
+  openfga:
+    enabled: true
+    resources:
+      requests:
+        memory: "1Gi"
+        cpu: "0.5"
+      limits:
+        memory: "6Gi"
+        cpu: "2"
+    labels:
+      company/podname: openfga
+      company/zone: traitement
+    annotations:
+      downscaler/uptime: "uptime"
+
+  osrdyne:
+    enabled: true
+    service:
+      type: ClusterIP
+      port: 80
+      targetPort: 80
+    annotations:
+      downscaler/uptime: "uptime"
+    labels:
+      company/podname: osrdyne
+      company/zone: traitement
+    affinity: {}
+    env:
+      - name: NO_COLOR
+        value: "1"
+    resources:
+      requests:
+        memory: "50Mi"
+        cpu: "50m"
+      limits:
+        memory: "100Mi"
+        cpu: "100m"
+    config:
+      pool_id: "core"
+
+  core:
+    resources:
+      requests:
+        memory: "6Gi"
+        cpu: "2.0"
+      limits:
+        memory: "12Gi"
+        cpu: "4.0"
+    service_account_name: "core_service_account.name"
+    config:
+      telemetry: opentelemetry
+    annotations:
+      downscaler/uptime: "uptime"
+    autoscaling:
+      type: "Keda"
+      polling_interval: 10
+      cooldown_period: 300
+      min_replicas: 1
+      max_replicas: 10
+      mode: QueueLength
+      value: "10"
+      activation_value: "10"
+      use_cached_metrics: false
+      metric_type: "AverageValue"
+    labels:
+      company/podname: core
+      company/zone: traitement
+    env:
+      - name: JAVA_OPTS
+        value: "-XX:InitialRAMPercentage=75.0 -XX:MaxRAMPercentage=95.0"
+      - name: DD_AGENT_HOST
+        valueFrom:
+          fieldRef:
+            fieldPath: status.hostIP
+
+  editoast:
+    enabled: true
+    replicaCount: 2
+    resources:
+      requests:
+        memory: "3Gi"
+        cpu: "0.8"
+      limits:
+        memory: "6Gi"
+        cpu: "1.6"
+    service:
+      type: ClusterIP
+      port: 80
+      targetPort: 80
+    permanent_storage_size: "editoast_storage_size"
+    permanent_storage_class: "editoast_storage_class"
+    labels:
+      company/podname: editoast
+      company/zone: traitement
+    init:
+      labels:
+        company/podname: editoast
+        company/zone: traitement
+      enabled: true
+      extend: |
+        # Additional PostgreSQL extensions
+        psql $DATABASE_URL  -c 'CREATE EXTENSION IF NOT EXISTS unaccent schema public'
+        psql $DATABASE_URL  -c 'CREATE EXTENSION IF NOT EXISTS pg_trgm schema public'
+    cronjob:
+      schedule: "30 5 * * mon-fri"
+    annotations:
+      log/thing: "value"
+      downscaler/uptime: "uptime"
+    env:
+      - name: TELEMETRY_KIND
+        value: "opentelemetry"
+      - name: AGENT_IP
+        valueFrom:
+          fieldRef:
+            fieldPath: status.hostIP
+    hpa:
+      enabled: true
+      minReplicas: 2
+      maxReplicas: 10
+      targetCPUUtilizationPercentage: 60
+  gateway:
+    enabled: true
+    labels:
+      company/podname: gateway
+      company/zone: presentation
+    replicaCount: 2
+    resources:
+      requests:
+        memory: "50Mi"
+        cpu: "50m"
+      limits:
+        memory: "100Mi"
+        cpu: "100m"
+    service:
+      type: ClusterIP
+      port: 80
+      targetPort: 80
+    ingress:
+      enabled: true
+      className: "alb"
+      domains:
+        - "app_dns"
+        - "app_dns2"
+      secretName: osrd-gateway-tls
+      annotations:
+        alb.ingress.kubernetes.io/listen-port: '[{"HTTPS": 443}]'
+        alb.ingress.kubernetes.io/certificate-arn: "certificate_arn"
+    annotations:
+      downscaler/uptime: "uptime"
+    env:
+      - name: GATEWAY__SECRET_KEY
+        valueFrom:
+          secretKeyRef:
+            name: osrd-secrets
+            key: gatewaySecret
+      - name: NO_COLOR
+        value: "1"
+    volumeMounts:
+      - name: certificates
+        mountPath: /usr/local/share/ca-certificates
+    volumes:
+      - name: certificates
+        configMap:
+          name: company-cert
+    config:
+      trusted_proxies:
+        - "10.0.0.0/8"
+        - "172.16.0.0/12"
+        - "192.168.0.0/16"
+      tracing:
+        enabled: true
+        type: "Otlp"
+        config:
+          service_name: "osrd-gateway"
+      auth:
+        default_provider: default_oidc_provider
+        session_namespace: auth
+        providers:
+          - type: Oidc
+            client_id: "item.client_id"
+            client_secret: "item.client_secret"
+            provider_id: "item.id"
+            post_login_url: "https://app_dns2"
+            callback_url: "https://app_dns2/auth/provider/item.id/callback"
+            issuer_url: "item.issuer_url"
+            username_whitelist: [toto, titi]
+            identity_claim_field: item.identity_claim_field
+            profile_scope_override: my_value
+            acr: item.acr
+
+  statefulEditoast:
+    enabled: true
+    labels:
+      company/zone: traitement
+      company/podname: statefulEditoast
+    replicaCount: 1
+    resources:
+      requests:
+        memory: "1Gi"
+        cpu: "0.5"
+      limits:
+        memory: "2Gi"
+        cpu: "1"
+    annotations:
+      downscaler/uptime: "uptime"
+    service:
+      type: ClusterIP
+      port: 80
+      targetPort: 80
+
+  images:
+    enabled: true
+    replicaCount: 1
+    labels:
+      company/zone: traitement
+      company/podname: images
+    service:
+      type: ClusterIP
+      port: 80
+      targetPort: 80
+    annotations:
+      downscaler/uptime: "uptime"

@@ -66,7 +66,10 @@ jobs:
           sed -i "s/IMAGES_VERSION_REPLACE_ME/$CHART_IMAGES_VERSION/" ./chart/values.yaml
 
       - name: Lint Helm Chart
-        run: helm lint ./chart
+        run: |
+          helm lint ./chart
+          helm lint -f chart/test-values/values-demo.yaml chart
+          helm lint -f chart/test-values/values-refs.yaml chart
 
       - name: Save and Push Helm Chart to GHCR
         run: |

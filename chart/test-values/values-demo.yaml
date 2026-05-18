@@ -1,0 +1,65 @@
+endpoints:
+  public: https://demo.osrd.fr
+  postgresql: postgres://osrd:password@postgres-postgresql:5432/osrd
+  postgresqlOpenFGA: postgres://osrd:password@postgres-postgresql:5432/osrd?search_path=openfga
+  redis: redis://username:pwd@valkey:6379/0
+services:
+  openfga:
+    enabled: true
+  core:
+    autoscaling:
+      type: "Keda"
+      polling_interval: 10
+      cooldown_period: 300
+      min_replicas: 1
+      max_replicas: 10
+      mode: QueueLength
+      value: "10"
+      activation_value: "10"
+      use_cached_metrics: false
+      metric_type: "AverageValue"
+    config:
+      telemetry: "opentelemetry"
+    env:
+      - name: OTEL_EXPORTER_OTLP_TRACES_PROTOCOL
+        value: "grpc"
+      - name: OTEL_EXPORTER_OTLP_TRACES_ENDPOINT
+        value: "http://openobserve-openobserve-standalone.openobserve:5081"
+      - name: OTEL_EXPORTER_OTLP_METRICS_PROTOCOL
+        value: "grpc"
+      - name: OTEL_EXPORTER_OTLP_METRICS_ENDPOINT
+        value: "http://openobserve-openobserve-standalone.openobserve:5081"
+      - name: OTEL_EXPORTER_OTLP_LOGS_PROTOCOL
+        value: "grpc"
+      - name: OTEL_EXPORTER_OTLP_LOGS_ENDPOINT
+        value: "http://openobserve-openobserve-standalone.openobserve:5081"
+  editoast:
+    env:
+      - name: TELEMETRY_KIND
+        value: "opentelemetry"
+      - name: TELEMETRY_ENDPOINT
+        value: "http://openobserve-openobserve-standalone.openobserve:5081"
+  osrdyne:
+    env:
+      - name: OSRDYNE__OPENTELEMETRY__ENDPOINT
+        value: "http://openobserve-openobserve-standalone.openobserve:5081"
+  gateway:
+    ingress:
+      annotations:
+        traefik.ingress.kubernetes.io/router.entrypoints: websecure
+        traefik.ingress.kubernetes.io/router.tls.certresolver: default
+      enabled: true
+      domains:
+        - demo.osrd.fr
+        - osrd.openrailassociation.org
+      tls: true
+      secretName: null
+    config:
+      auth:
+        default_provider: mock
+        providers:
+          - type: "Mocked"
+            provider_id: "mock"
+            username: "Demo User"
+            require_login: true
+      secret_key: "1234567891ABCDEFGH"

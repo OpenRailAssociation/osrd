@@ -685,9 +685,18 @@
                   "title": "railway_manager_interface",
                   "type": "object"
                 },
+                "secret_key": {
+                  "default": "null",
+                  "description": "A secret key if not provided throug environment variable",
+                  "required": [],
+                  "title": "secret_key",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
                 "tracing": {
                   "additionalProperties": false,
-                  "description": " See https://github.com/OpenRailAssociation/osrd/blob/dev/gateway/README.md#config",
                   "properties": {
                     "config": {
                       "additionalProperties": true,
@@ -710,7 +719,8 @@
                     "enabled",
                     "type"
                   ],
-                  "title": "tracing"
+                  "title": "tracing",
+                  "type": "object"
                 },
                 "trusted_proxies": {
                   "items": {
@@ -733,6 +743,7 @@
               },
               "required": [
                 "railway_manager_interface",
+                "tracing",
                 "trusted_proxies"
               ],
               "title": "config",
@@ -790,11 +801,9 @@
                   "type": "string"
                 },
                 "tls": {
-                  "items": {
-                    "required": []
-                  },
+                  "default": true,
                   "title": "tls",
-                  "type": "array"
+                  "type": "boolean"
                 }
               },
               "required": [
