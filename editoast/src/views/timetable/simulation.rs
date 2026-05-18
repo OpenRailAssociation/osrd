@@ -656,7 +656,7 @@ pub fn build_simulation_train(
         .collect::<HashMap<_, _>>();
     for (track_offsets, PathItem { id, .. }) in track_offsets.iter().zip(path) {
         let (at, simulation_schedule_item) = match schedule_map.get(id) {
-            None => (id, core_task::ScheduleItem::PathItem),
+            None => (id, core_task::ScheduleItem::pass_by()),
             Some(ScheduleItem {
                 at,
                 arrival,
@@ -664,7 +664,7 @@ pub fn build_simulation_train(
                 reception_signal,
             }) => (
                 at,
-                core_task::ScheduleItem::ScheduleItem {
+                core_task::ScheduleItem {
                     arrival_at: arrival.as_ref().map(|a| a.num_milliseconds() as u64),
                     stop_for: stop_for.as_ref().map(|s| s.num_milliseconds() as u64),
                     reception_signal: *reception_signal,

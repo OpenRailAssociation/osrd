@@ -432,12 +432,12 @@ pub(crate) mod test_data {
         builder.push_schedule_item(
             pathfinding::PathItemAlternatives::from_iter([TrackOffset::new("id", id as u64)]),
             NonBlankString::from("start"),
-            ScheduleItem::PathItem,
+            ScheduleItem::pass_by(),
         );
         builder.push_schedule_item(
             pathfinding::PathItemAlternatives::from_iter([TrackOffset::new("a", 42)]),
             NonBlankString::from("a"),
-            ScheduleItem::ScheduleItem {
+            ScheduleItem {
                 arrival_at: Some(1200),
                 stop_for: Some(60),
                 reception_signal: Default::default(),
@@ -449,7 +449,7 @@ pub(crate) mod test_data {
                 TrackOffset::new("bis", 34),
             ]),
             NonBlankString::from("b"),
-            ScheduleItem::ScheduleItem {
+            ScheduleItem {
                 arrival_at: None,
                 stop_for: Some(120),
                 reception_signal: Default::default(),
@@ -458,7 +458,7 @@ pub(crate) mod test_data {
         builder.push_schedule_item(
             pathfinding::PathItemAlternatives::from_iter([TrackOffset::new("finish", 44)]),
             NonBlankString::from("finish"),
-            ScheduleItem::ScheduleItem {
+            ScheduleItem {
                 arrival_at: Some(2400),
                 stop_for: Some(0),
                 reception_signal: Default::default(),
