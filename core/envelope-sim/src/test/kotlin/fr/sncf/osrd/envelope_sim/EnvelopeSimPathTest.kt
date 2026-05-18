@@ -82,7 +82,7 @@ class EnvelopeSimPathTest {
 
         Assertions.assertTrue(modeAndProfileMap.fullyCovers(path.length.meters))
 
-        Assertions.assertEquals(9, modeAndProfileMap.asList().size)
+        Assertions.assertEquals(9, modeAndProfileMap.toList().size)
 
         Assertions.assertEquals(modeAndProfileMap.get(2.0.meters), Electrified("1500V", null, null))
         Assertions.assertEquals(modeAndProfileMap.get(3.5.meters), Electrified("1500V", "A", null))
@@ -108,7 +108,7 @@ class EnvelopeSimPathTest {
 
         Assertions.assertTrue(modeAndProfileMap.fullyCovers(path.length.meters))
 
-        Assertions.assertEquals(10, modeAndProfileMap.asList().size)
+        Assertions.assertEquals(10, modeAndProfileMap.toList().size)
 
         Assertions.assertEquals(modeAndProfileMap.get(0.5.meters), NonElectrified())
         Assertions.assertEquals(
@@ -150,7 +150,7 @@ class EnvelopeSimPathTest {
         val modeAndProfileMap =
             path.getElectrificationMap("1", powerRestrictionMap, mapOf("Restrict2" to "2"), true)
 
-        Assertions.assertEquals(6, modeAndProfileMap.asList().size)
+        Assertions.assertEquals(6, modeAndProfileMap.toList().size)
 
         Assertions.assertEquals(modeAndProfileMap.get(2.0.meters), Electrified("1500V", null, null))
         Assertions.assertEquals(
