@@ -543,7 +543,7 @@ const ItineraryModal = ({
   }, [pathStepsMetadataById, hasInvalidPathStep]);
 
   return (
-    <dialog ref={modalRef} className="itinerary-modal">
+    <dialog ref={modalRef} className="itinerary-modal" data-testid="itinerary-modal">
       <div className="itinerary-modal-form" onClick={handleOutsideMapClick} role="presentation">
         {mapSelectionStepId && <div className="map-selection-form-overlay" />}
         <div className="itinerary-modal-form-header">
@@ -755,7 +755,13 @@ const ItineraryModal = ({
           </div>
         </div>
         <div className="itinerary-modal-form-footer">
-          <Button label={t('cancel')} variant="Cancel" size="medium" onClick={closeModal} />
+          <Button
+            label={t('cancel')}
+            variant="Cancel"
+            size="medium"
+            onClick={closeModal}
+            dataTestID="close-itinerary-modal"
+          />
           <Button label={t('next')} variant="Primary" size="medium" onClick={submitItinerary} />
         </div>
       </div>
