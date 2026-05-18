@@ -264,7 +264,8 @@ pub(in crate::views) async fn users_info(
         let roles = regulator.user_roles(&authz::User(user_id)).await?;
         let groups = groups_by_user[&user_id]
             .iter()
-            .map(|group_id| group_by_id[&group_id.0].clone())
+            // Skip group if it does not exist
+            .filter_map(|group_id| group_by_id.get(&group_id.0).cloned())
             .collect();
         results.push(UserInfo {
             id: user_id,
