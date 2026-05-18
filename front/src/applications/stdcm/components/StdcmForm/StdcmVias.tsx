@@ -148,8 +148,8 @@ const StdcmVias = ({
         return { ...intermediatePoints[i].consistChange };
       }
     }
-
-    return initialConsist;
+    const { maxSpeed: _maxSpeed, ...initialConsistChange } = initialConsist;
+    return initialConsistChange;
   };
 
   const addConsistChange = (viaPathStep: StdcmViaPathStep, index: number) => {
