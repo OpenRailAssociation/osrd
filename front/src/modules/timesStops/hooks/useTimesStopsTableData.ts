@@ -403,7 +403,6 @@ const useTimesStopsTableData = (
                   uic: op.extensions!.identifier!.uic,
                   secondary_code: op.extensions?.sncf?.ch ?? null,
                 },
-                local_track_name: op.part.local_track_name,
               },
             }),
           });
