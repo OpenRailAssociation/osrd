@@ -108,7 +108,7 @@ const TrackOccupancyStandalone = ({
           ref={manchetteWithSpaceTimeChartRef}
           className="manchette flex h-100"
           onScroll={handleScroll}
-          style={{ height }}
+          style={{ height, cursor: draggingOccupancyZones?.length ? 'ns-resize' : undefined }}
         >
           <Manchette {...manchetteProps} />
           <div className="space-time-chart-container w-full sticky" ref={spaceTimeChartRef}>
