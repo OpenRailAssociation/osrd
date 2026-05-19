@@ -120,5 +120,3 @@ fun RoutingInfra.getRouteEntry(route: RouteId): DirDetectorId {
 fun RoutingInfra.getRouteExit(route: RouteId): DirDetectorId {
     return getZonePathExit(getRoutePath(route).last())
 }
-
-typealias InterlockingInfra = RoutingInfra
