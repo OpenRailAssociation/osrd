@@ -1,3 +1,4 @@
+use std::collections::BTreeSet;
 use std::collections::HashSet;
 
 use chrono::DateTime;
@@ -120,13 +121,11 @@ pub struct UndirectedTrackRange {
 }
 
 /// Represents a physics consist.
-#[derive(Serialize, Deserialize, Clone, Debug, ToSchema, educe::Educe, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Clone, Debug, ToSchema, Hash, PartialEq, Eq)]
 #[schema(as = CoreConsistConfiguration)]
-#[educe(Hash)]
 pub struct ConsistConfiguration {
     /// List of supported signaling systems
-    #[educe(Hash(method(common::hashing_hash_set_string)))]
-    pub supported_signaling_systems: HashSet<String>,
+    pub supported_signaling_systems: BTreeSet<String>,
     pub speed_limit_tag: Option<String>,
     /// The loading gauge of the rolling stock
     pub loading_gauge_type: LoadingGaugeType,

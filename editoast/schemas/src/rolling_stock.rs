@@ -55,6 +55,7 @@ use serde::Deserialize;
 use serde::Deserializer;
 use serde::Serialize;
 use serde::Serializer;
+use std::collections::BTreeSet;
 use std::collections::HashMap;
 use std::collections::HashSet;
 use utoipa::ToSchema;
@@ -120,7 +121,7 @@ pub struct RollingStock {
 }
 
 impl RollingStock {
-    pub fn supported_signaling_systems(&self) -> HashSet<String> {
+    pub fn supported_signaling_systems(&self) -> BTreeSet<String> {
         self.supported_signaling_systems
             .iter()
             .map(|s| s.to_string())
