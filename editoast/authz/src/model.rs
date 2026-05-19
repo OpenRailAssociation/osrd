@@ -6,7 +6,18 @@ use strum::EnumIter;
 use strum::EnumString;
 use utoipa::ToSchema;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, derive_more::From)]
+#[derive(
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    Hash,
+    derive_more::Display,
+    derive_more::From,
+)]
 pub enum Subject {
     User(User),
     Group(Group),
@@ -54,6 +65,7 @@ impl AsRef<User> for Subject {
         }
     }
 }
+
 #[cfg(test)]
 impl AsRef<Group> for Subject {
     fn as_ref(&self) -> &Group {
@@ -68,6 +80,7 @@ impl AsRef<Group> for Subject {
     fga::Type,
     fga::User,
     fga::Object,
+    derive_more::Display,
     derive_more::From,
     derive_more::FromStr,
     derive_more::Deref,
@@ -86,6 +99,7 @@ pub struct User(pub i64);
     fga::Type,
     fga::User,
     fga::Object,
+    derive_more::Display,
     derive_more::From,
     derive_more::FromStr,
     derive_more::Deref,
@@ -93,28 +107,12 @@ pub struct User(pub i64);
     Clone,
     Copy,
     PartialEq,
+    Eq,
     PartialOrd,
     Ord,
-    Eq,
     Hash,
 )]
 pub struct Group(pub i64);
-
-#[derive(
-    fga::Type,
-    fga::User,
-    fga::Object,
-    derive_more::From,
-    derive_more::FromStr,
-    derive_more::Deref,
-    Debug,
-    Clone,
-    Copy,
-    PartialEq,
-    Eq,
-    Hash,
-)]
-pub struct Infra(pub i64);
 
 #[derive(Debug, Clone, Copy, Display, PartialEq, Eq, Hash, Serialize, Deserialize, ToSchema)]
 #[serde(rename_all = "snake_case")]
@@ -167,6 +165,23 @@ pub enum InfraGrant {
 )]
 #[fga(name = "rolling_stock")]
 pub struct RollingStock(pub i64);
+
+#[derive(
+    fga::Type,
+    fga::User,
+    fga::Object,
+    derive_more::Display,
+    derive_more::From,
+    derive_more::FromStr,
+    derive_more::Deref,
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    Hash,
+)]
+pub struct Infra(pub i64);
 
 #[derive(Debug, Clone, Copy, Display, PartialEq, Eq, Hash, Serialize, Deserialize, ToSchema)]
 #[serde(rename_all = "snake_case")]

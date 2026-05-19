@@ -2,7 +2,6 @@ use std::collections::HashMap;
 use std::collections::HashSet;
 use std::sync::Arc;
 
-use crate::authorizers::Rejection;
 use crate::authorizers::UserAuthorizer;
 use crate::authorizers::impossible;
 use crate::error::Result;
@@ -14,6 +13,7 @@ use ::authz::Role;
 use authz::Authorization;
 use authz::v2;
 use authz::v2::Authorizer;
+use authz::v2::Check;
 use axum::Extension;
 use axum::extract::Path;
 use axum::extract::State;
@@ -342,21 +342,21 @@ pub(in crate::views) async fn user_privileges(
                         privileges,
                     });
                 }
-                Err(Rejection::NoSuchInfra(_)) => {
+                Err(Check::InfraExists(_)) => {
                     // not an error under the target API
                     // (though maybe we should revisit it?)
                 }
-                Err(Rejection::LackingInfraPrivilege(InfraPrivilege::CanRead, _, infra)) => {
+                Err(Check::IssuerHasInfraPrivilege(InfraPrivilege::CanRead, infra)) => {
                     result_infras.push(ResourcePrivileges {
                         resource_id: *infra,
                         privileges: HashSet::new(),
                     });
                 }
-                Err(Rejection::NoSuchUser(_)) => {
+                Err(Check::SubjectExists(authz::Subject::User(_))) => {
                     panic!("race condition: user deleted");
                 }
-                Err(rejection @ Rejection::LackingInfraPrivilege(_, _, _)) | Err(rejection) => {
-                    impossible!(rejection)
+                Err(check @ Check::IssuerHasInfraPrivilege(_, _)) | Err(check) => {
+                    impossible!(check)
                 }
             }
         }
@@ -430,19 +430,19 @@ pub(in crate::views) async fn user_grants(
             let grant = match grant_access.access().await? {
                 Ok(Some(grant)) => grant,
                 Ok(None) => continue,
-                Err(Rejection::NoSuchInfra(infra_id)) => {
-                    tracing::warn!(infra_id, "non-existent infra — skipping");
+                Err(Check::InfraExists(infra)) => {
+                    tracing::warn!(%infra, "non-existent infra — skipping");
                     continue;
                 }
-                Err(Rejection::LackingInfraPrivilege(privilege, ..)) => {
+                Err(Check::IssuerHasInfraPrivilege(privilege, infra)) => {
                     debug_assert_eq!(privilege, InfraPrivilege::CanRead);
-                    tracing::warn!(infra_id, "user cannot read infra — skipping");
+                    tracing::warn!(%infra, "user cannot read infra — skipping");
                     continue;
                 }
-                Err(Rejection::NoSuchUser(user_id)) => {
-                    unreachable!("user {user_id} exists or race condition")
+                Err(Check::SubjectExists(subject)) => {
+                    unreachable!("{subject} exists or race condition")
                 }
-                Err(rejection) => impossible!(rejection),
+                Err(check) => impossible!(check),
             };
             response
                 .entry(ResourceType::Infra)
@@ -520,10 +520,10 @@ pub(in crate::views) async fn my_grants_on_ressource(
                 .access()
                 .await?
                 .map_err(|err| match err {
-                    Rejection::LackingInfraPrivilege(InfraPrivilege::CanRead, ..) => {
+                    Check::IssuerHasInfraPrivilege(InfraPrivilege::CanRead, ..) => {
                         AuthzError::Authz(AuthorizationError::Forbidden)
                     }
-                    Rejection::NoSuchInfra(_) => AuthzError::UnknownResource {
+                    Check::InfraExists(_) => AuthzError::UnknownResource {
                         resource_id: infra.0,
                     },
                     rejection => impossible!(rejection),

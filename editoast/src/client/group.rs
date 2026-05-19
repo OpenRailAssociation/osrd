@@ -3,6 +3,7 @@ use anyhow::bail;
 use authz;
 use authz::Group;
 use authz::v2::Authorizer;
+use authz::v2::Check;
 use clap::Args;
 use clap::Subcommand;
 use database::DbConnectionPoolV2;
@@ -11,7 +12,6 @@ use editoast_models::prelude::*;
 use std::collections::HashSet;
 use std::sync::Arc;
 
-use crate::authorizers::Rejection;
 use crate::authorizers::SystemAuthorizer;
 use crate::authorizers::impossible;
 
@@ -120,8 +120,8 @@ pub async fn group_info(
         .await?
     {
         Ok(user_ids) => user_ids,
-        Err(Rejection::NoSuchGroup(_)) => unreachable!("tested above"),
-        Err(rejection) => impossible!(rejection),
+        Err(Check::SubjectExists(authz::Subject::Group(_))) => unreachable!("tested above"),
+        Err(check) => impossible!(check),
     };
 
     println!("id     : {group_id}");
@@ -175,9 +175,11 @@ pub async fn exclude_group(
     let remove_member = authz::v2::remove_members(authz::Group(group_id), authz_users);
     match system.authorize(remove_member).await?.access().await? {
         Ok(()) => Ok(()),
-        Err(Rejection::NoSuchGroup(_)) => unreachable!("tested above"),
-        Err(Rejection::NoSuchUser(user_id)) => bail!("No such user {user_id}"),
-        Err(rejection) => impossible!(rejection),
+        Err(Check::SubjectExists(authz::Subject::Group(_))) => unreachable!("tested above"),
+        Err(Check::SubjectExists(subject)) => {
+            bail!("No such user {subject}")
+        }
+        Err(check) => impossible!(check),
     }
 }
 
@@ -218,9 +220,11 @@ pub async fn include_group(
     let add_member = authz::v2::add_members(authz::Group(group_id), authz_users);
     match system.authorize(add_member).await?.access().await? {
         Ok(()) => Ok(()),
-        Err(Rejection::NoSuchGroup(_)) => unreachable!("tested above"),
-        Err(Rejection::NoSuchUser(user_id)) => bail!("No such user {user_id}"),
-        Err(rejection) => impossible!(rejection),
+        Err(Check::SubjectExists(authz::Subject::Group(_))) => unreachable!("tested above"),
+        Err(Check::SubjectExists(subject)) => {
+            bail!("No such user {subject}")
+        }
+        Err(check) => impossible!(check),
     }
 }
 
@@ -249,15 +253,15 @@ pub async fn delete_group(
         .await?
     {
         Ok(user_ids) => HashSet::from_iter(user_ids),
-        Err(Rejection::NoSuchGroup(_)) => unreachable!("tested above"),
-        Err(rejection) => impossible!(rejection),
+        Err(Check::SubjectExists(authz::Subject::Group(_))) => unreachable!("tested above"),
+        Err(check) => impossible!(check),
     };
     let remove_member = authz::v2::remove_members(group, users_in_group);
     match system.authorize(remove_member).await?.access().await? {
         Ok(()) => {}
-        Err(Rejection::NoSuchGroup(_)) => unreachable!("tested above"),
-        Err(Rejection::NoSuchUser(_)) => unreachable!("tested above"),
-        Err(rejection) => impossible!(rejection),
+        Err(Check::SubjectExists(authz::Subject::Group(_))) => unreachable!("tested above"),
+        Err(Check::SubjectExists(authz::Subject::User(_))) => unreachable!("tested above"),
+        Err(check) => impossible!(check),
     }
 
     let deleted = editoast_models::Group::delete_static(&mut conn, group_id).await?;

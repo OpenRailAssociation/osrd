@@ -9,6 +9,7 @@ use authz::Role;
 use authz::identity::GroupInfo;
 use authz::identity::UserInfo;
 use authz::v2::Authorizer;
+use authz::v2::Check;
 use clap::Args;
 use clap::Subcommand;
 use database::DbConnection;
@@ -19,7 +20,6 @@ use itertools::Itertools as _;
 use strum::IntoEnumIterator;
 use tracing::info;
 
-use crate::authorizers::Rejection;
 use crate::authorizers::SystemAuthorizer;
 use crate::authorizers::impossible;
 
@@ -202,10 +202,10 @@ pub async fn add_roles(
     let add_roles = authz::v2::add_roles(subject.into_authz(), roles);
     match system.authorize(add_roles).await?.access().await? {
         Ok(()) => Ok(()),
-        Err(Rejection::NoSuchUser(_)) | Err(Rejection::NoSuchGroup(_)) => {
+        Err(Check::SubjectExists(_)) => {
             unreachable!("checked by parse_and_fetch_subject")
         }
-        Err(rejection) => impossible!(rejection),
+        Err(check) => impossible!(check),
     }
 }
 
@@ -237,9 +237,9 @@ pub async fn remove_roles(
     let remove_roles = authz::v2::remove_roles(subject.into_authz(), roles);
     match system.authorize(remove_roles).await?.access().await? {
         Ok(()) => Ok(()),
-        Err(Rejection::NoSuchUser(_)) | Err(Rejection::NoSuchGroup(_)) => {
+        Err(Check::SubjectExists(_)) => {
             unreachable!("checked by parse_and_fetch_subject")
         }
-        Err(rejection) => impossible!(rejection),
+        Err(check) => impossible!(check),
     }
 }
