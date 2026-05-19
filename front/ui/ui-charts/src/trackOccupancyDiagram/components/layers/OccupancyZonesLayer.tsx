@@ -69,7 +69,7 @@ const OccupancyZonesLayer = ({
 
     if (!tracks || !occupancyZones || occupancyZones.length === 0) return instructions;
 
-    const sortedOccupancyZones = occupancyZones.sort((a, b) => a.startTime - b.startTime);
+    const sortedOccupancyZones = occupancyZones.toSorted((a, b) => a.startTime - b.startTime);
 
     tracks.forEach((track, index) => {
       const trackY = topPadding + CANVAS_PADDING + index * TRACK_HEIGHT_CONTAINER;
