@@ -263,8 +263,8 @@ const OccupancyZonesLayer = ({
     [position, instructionsToDraw]
   );
 
-  usePicking(SpaceTimeChartCanvasContext, 'overlay', pickingFunction);
-  useDraw(SpaceTimeChartCanvasContext, 'overlay', drawingFunction);
+  usePicking(SpaceTimeChartCanvasContext, 'paths', pickingFunction);
+  useDraw(SpaceTimeChartCanvasContext, 'paths', drawingFunction);
 
   return null;
 };
