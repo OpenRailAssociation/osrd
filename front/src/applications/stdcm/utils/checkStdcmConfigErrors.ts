@@ -98,12 +98,6 @@ const checkStdcmConfigErrors = ({
     }
   }
 
-  if (pathfindingStatus === 'failure') {
-    return {
-      errorType: StdcmConfigErrorTypes.PATHFINDING_FAILED,
-    };
-  }
-
   if (origin.isVia) {
     throw new Error('First step can not be a via');
   }
@@ -143,18 +137,6 @@ const checkStdcmConfigErrors = ({
     routeErrors = keptErrors;
   }
 
-  if (shouldCheckMandatoryFields) {
-    if (origin.operationalPoint && !origin.operationalPoint.secondaryCode) {
-      missingFields.push('originCh');
-    }
-    if (vias.some((step) => step.operationalPoint && !step.operationalPoint.secondaryCode)) {
-      missingFields.push('viasCh');
-    }
-    if (destination.operationalPoint && !destination.operationalPoint.secondaryCode) {
-      missingFields.push('destinationCh');
-    }
-  }
-
   const finalMissingFields = missingFields.length > 0 ? missingFields : undefined;
   const finalInvalidFields = invalidFields.length > 0 ? invalidFields : undefined;
   const finalRouteErrors = routeErrors.length > 0 ? routeErrors : undefined;
@@ -162,6 +144,9 @@ const checkStdcmConfigErrors = ({
   const stillHasErrors = !!finalMissingFields || !!finalInvalidFields || !!finalRouteErrors;
 
   if (!stillHasErrors) {
+    if (pathfindingStatus === 'failure') {
+      return { errorType: StdcmConfigErrorTypes.PATHFINDING_FAILED };
+    }
     return undefined;
   }
 

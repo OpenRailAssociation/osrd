@@ -20,8 +20,11 @@ const ALL_MISSING_FIELDS: MissingFields[] = [
   'totalLength',
   'maxSpeed',
   'origin',
+  'originCh',
   'vias',
+  'viasCh',
   'destination',
+  'destinationCh',
   'viaConsistTotalMass',
   'viaConsistTotalLength',
 ];
@@ -51,10 +54,16 @@ const filterMissingFields = ({
         return maxSpeed === undefined;
       case 'origin':
         return !origin?.operationalPoint;
+      case 'originCh':
+        return !!origin?.operationalPoint && !origin.operationalPoint.secondaryCode;
       case 'vias':
         return vias?.some((via) => !via.operationalPoint);
+      case 'viasCh':
+        return !!vias?.some((via) => via.operationalPoint && !via.operationalPoint.secondaryCode);
       case 'destination':
         return !destination?.operationalPoint;
+      case 'destinationCh':
+        return !!destination?.operationalPoint && !destination.operationalPoint.secondaryCode;
       case 'viaConsistTotalMass':
         return vias?.some(
           (via) => via.isVia && via.consistChange && via.consistChange?.totalMass === undefined
