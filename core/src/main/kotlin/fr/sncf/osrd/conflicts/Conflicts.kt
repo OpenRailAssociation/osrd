@@ -201,8 +201,7 @@ internal fun <ReqT : ResourceRequirement> detectConflicts(
     val activeRequirements = IntArrayList()
 
     requirements.sortBy { it.beginTime }
-    for (requirementIndex in 0 until requirements.size) {
-        val requirement = requirements[requirementIndex]
+    for ((requirementIndex, requirement) in requirements.withIndex()) {
         // remove inactive requirements
         activeRequirements.removeAll { requirements[it].endTime <= requirement.beginTime }
 
