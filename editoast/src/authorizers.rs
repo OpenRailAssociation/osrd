@@ -1,6 +1,5 @@
 use std::convert::Infallible;
 
-use authz::InfraPrivilege;
 use authz::v2::Access;
 use authz::v2::Authorizer;
 use authz::v2::Check;
@@ -25,20 +24,17 @@ pub struct SystemAuthorizer<'a> {
 
 impl SystemAuthorizer<'_> {
     #[tracing::instrument(target = "SystemAuthorizer::check", skip_all, fields(?check), ret(level = "trace"), err)]
-    async fn check(&self, check: &Check) -> Result<Option<Rejection>, editoast_models::Error> {
+    async fn check(&self, check: &Check) -> Result<Option<Check>, editoast_models::Error> {
         let conn = &mut self.conn.clone();
         Ok(match check {
-            Check::SubjectExists(authz::Subject::User(authz::User(user_id))) => {
-                (!editoast_models::User::exists(conn, *user_id).await?)
-                    .then_some(Rejection::NoSuchUser(*user_id))
+            Check::SubjectExists(authz::Subject::User(user)) => {
+                (!editoast_models::User::exists(conn, **user).await?).then_some(*check)
             }
-            Check::SubjectExists(authz::Subject::Group(authz::Group(group_id))) => {
-                (!editoast_models::Group::exists(conn, *group_id).await?)
-                    .then_some(Rejection::NoSuchGroup(*group_id))
+            Check::SubjectExists(authz::Subject::Group(group)) => {
+                (!editoast_models::Group::exists(conn, **group).await?).then_some(*check)
             }
-            Check::InfraExists(authz::Infra(infra_id)) => {
-                (!editoast_models::Infra::exists(conn, *infra_id).await?)
-                    .then_some(Rejection::NoSuchInfra(*infra_id))
+            Check::InfraExists(infra) => {
+                (!editoast_models::Infra::exists(conn, **infra).await?).then_some(*check)
             }
             // checked by UserAuthorizer
             Check::IssuerHasRole(_) | Check::IssuerHasInfraPrivilege(_, _) => None,
@@ -47,8 +43,8 @@ impl SystemAuthorizer<'_> {
 }
 
 impl Authorizer for SystemAuthorizer<'_> {
+    type Rejection = Check;
     type Error = editoast_models::Error;
-    type Rejection = Rejection;
 
     #[tracing::instrument(skip_all)]
     async fn authorize<'a, T>(
@@ -64,8 +60,8 @@ impl Authorizer for SystemAuthorizer<'_> {
                 .map(|check| self.check(check).in_current_span())
                 .collect::<FuturesUnordered<_>>();
             while let Some(result) = checks.next().await {
-                if let Some(rejection) = result? {
-                    return Ok(Access::Denied { rejection });
+                if let Some(check) = result? {
+                    return Ok(Access::Denied { rejection: check });
                 }
             }
         }
@@ -96,11 +92,9 @@ impl<'c> UserAuthorizer<'c> {
     }
 
     #[tracing::instrument(target = "UserAutorizer::check", skip_all, fields(?check, issuer = ?self.user, roles = ?self.roles), ret(level = "trace"), err)]
-    async fn check(&self, check: &Check) -> Result<Option<Rejection>, authz::v2::OpenFgaError> {
+    async fn check(&self, check: &Check) -> Result<Option<Check>, authz::v2::OpenFgaError> {
         Ok(match check {
-            Check::IssuerHasRole(role) if !self.roles.contains(role) => Some(
-                Rejection::LackingRole(authz::Subject::user(self.user), *role),
-            ),
+            Check::IssuerHasRole(role) if !self.roles.contains(role) => Some(*check),
             Check::IssuerHasRole(_) => None,
 
             Check::IssuerHasInfraPrivilege(privilege, infra) => {
@@ -108,11 +102,7 @@ impl<'c> UserAuthorizer<'c> {
                     .access_authorized::<Infallible>(self.openfga)
                     .access()
                     .await?;
-                (!privileges.contains(privilege)).then_some(Rejection::LackingInfraPrivilege(
-                    *privilege,
-                    authz::Subject::user(self.user),
-                    *infra,
-                ))
+                (!privileges.contains(privilege)).then_some(*check)
             }
             // checked by SystemAuthorizer
             Check::SubjectExists(_) | Check::InfraExists(_) => None,
@@ -121,8 +111,8 @@ impl<'c> UserAuthorizer<'c> {
 }
 
 impl Authorizer for UserAuthorizer<'_> {
+    type Rejection = Check;
     type Error = Error;
-    type Rejection = Rejection;
 
     #[tracing::instrument(skip_all)]
     async fn authorize<'a, T>(
@@ -158,8 +148,8 @@ impl Authorizer for UserAuthorizer<'_> {
                 }
             }
             while let Some(result) = checks.next().await {
-                if let Some(rejection) = result? {
-                    return Ok(Access::Denied { rejection });
+                if let Some(check) = result? {
+                    return Ok(Access::Denied { rejection: check });
                 }
             }
         }
@@ -175,33 +165,11 @@ pub enum Error {
     OpenFga(#[from] authz::v2::OpenFgaError),
 }
 
-#[derive(Debug)]
-#[non_exhaustive]
-pub enum Rejection {
-    // Data consistency rejections
-    // ---------------------------
-    NoSuchUser(i64),
-    NoSuchGroup(#[expect(dead_code)] i64),
-    NoSuchInfra(i64),
-
-    // Permission rejections
-    // ---------------------
-    LackingRole(
-        #[expect(dead_code)] authz::Subject,
-        #[expect(dead_code)] authz::Role,
-    ),
-    LackingInfraPrivilege(
-        InfraPrivilege,
-        #[expect(dead_code)] authz::Subject,
-        authz::Infra,
-    ),
-}
-
-/// Wraps [`unreachable!`] with a message specific to impossible rejections
+/// Wraps [`unreachable!`] with a message specific to impossible checks
 macro_rules! impossible {
-    ($rejection:expr) => {
+    ($check:expr) => {
         unreachable!(
-            "impossible rejection {:?} — if this occurs, some authz::Protected check rejection has been overlooked", $rejection
+            "impossible check {:?} — if this occurs, some authz::Protected check handling has been overlooked", $check
         )
     };
 }

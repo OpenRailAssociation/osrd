@@ -1,6 +1,7 @@
 use anyhow::anyhow;
 use anyhow::bail;
 use authz;
+use authz::v2::Check;
 use clap::Args;
 use clap::Subcommand;
 use database::DbConnectionPoolV2;
@@ -13,7 +14,6 @@ use futures::TryStreamExt as _;
 use std::collections::HashSet;
 use std::sync::Arc;
 
-use crate::authorizers::Rejection;
 use crate::authorizers::SystemAuthorizer;
 use crate::authorizers::impossible;
 
@@ -113,7 +113,7 @@ pub async fn list_user(
         .await?;
         let group_members = match group_member_access.access().await? {
             Ok(users) => users.into_iter().flatten().collect::<HashSet<_>>(),
-            Err(Rejection::NoSuchGroup(_)) => {
+            Err(Check::SubjectExists(authz::Subject::Group(_))) => {
                 unreachable!("groups were listed from the database")
             }
             Err(rejection) => impossible!(rejection),

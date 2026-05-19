@@ -271,8 +271,8 @@ pub mod special_authorizers {
 
     /// Always authorizes without performing any check
     pub struct Authorize<'a>(pub &'a fga::Client);
-    /// Always rejects with the given rejection reason
-    pub struct Reject<Rejection>(Rejection);
+    /// Always rejects with the given check
+    pub struct Reject(pub super::Check);
 
     impl Authorizer for Authorize<'_> {
         type Rejection = Infallible;
@@ -286,17 +286,15 @@ pub mod special_authorizers {
         }
     }
 
-    impl<Rejection: Clone> Authorizer for Reject<Rejection> {
-        type Rejection = Rejection;
+    impl Authorizer for Reject {
+        type Rejection = super::Check;
         type Error = Infallible;
 
         async fn authorize<'a, T>(
             &'a self,
             _data: Protected<T>,
         ) -> Result<Access<'a, T, Self::Rejection>, Self::Error> {
-            Ok(Access::Denied {
-                rejection: self.0.clone(),
-            })
+            Ok(Access::Denied { rejection: self.0 })
         }
     }
 
