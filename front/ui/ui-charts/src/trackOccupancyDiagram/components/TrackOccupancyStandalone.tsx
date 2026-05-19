@@ -6,6 +6,7 @@ import { HOUR } from '../../common/consts';
 import { TimeCaptions } from '../../common/layers/TimeCaptions';
 import { Manchette, useManchetteWithSpaceTimeChart, BASE_WAYPOINT_HEIGHT } from '../../manchette';
 import { DEFAULT_THEME, SpaceTimeChart } from '../../spaceTimeChart';
+import useEdgePan from '../hooks/useEdgePan';
 import { TRACK_HEIGHT_CONTAINER } from '../lib/consts';
 import type { OccupancyZone, Track } from '../lib/types';
 import { isOccupancyPickingElement } from './layers/OccupancyZonesLayer';
@@ -81,23 +82,27 @@ const TrackOccupancyStandalone = ({
    * We now use useManchetteWithSpaceTimeChart, to get proper pan along the time (and space axis if
    * the container is smaller than the contents):
    */
-  const { manchetteProps, spaceTimeChartProps, handleScroll } = useManchetteWithSpaceTimeChart({
-    waypoints,
-    manchetteWithSpaceTimeChartRef,
-    height,
-    spaceTimeChartRef,
-    splitPoints,
-    defaultTimeOrigin,
-    verticalPadding: 0,
-    options: {
-      displayTimeCaptions: true,
-      enableTimePan: true,
-      enableSpacePan: true,
-      enableTimeZoom: false,
-    },
-  });
+  const { manchetteProps, spaceTimeChartProps, handleScroll, pan } = useManchetteWithSpaceTimeChart(
+    {
+      waypoints,
+      manchetteWithSpaceTimeChartRef,
+      height,
+      spaceTimeChartRef,
+      splitPoints,
+      defaultTimeOrigin,
+      verticalPadding: 0,
+      options: {
+        displayTimeCaptions: true,
+        enableTimePan: true,
+        enableSpacePan: true,
+        enableTimeZoom: false,
+      },
+    }
+  );
 
   const isDragging = Boolean(draggingOccupancyZones?.length);
+
+  const { onMouseMove } = useEdgePan({ enableY: isDragging, spaceTimeChartProps, pan });
 
   return (
     <div className="track-occupancy-standalone flex flex-col">
@@ -130,6 +135,7 @@ const TrackOccupancyStandalone = ({
                 })
               }
               onPan={isDragging ? undefined : spaceTimeChartProps.onPan}
+              onMouseMove={onMouseMove}
             >
               <TimeCaptions />
             </SpaceTimeChart>

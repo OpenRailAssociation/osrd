@@ -6,3 +6,4 @@ export { isOccupancyPickingElement } from './components/layers/OccupancyZonesLay
 export { default as TrackOccupancyCanvas } from './components/TrackOccupancyCanvas';
 export { default as TrackOccupancyManchette } from './components/TrackOccupancyManchette';
 export { default as TrackOccupancyStandalone } from './components/TrackOccupancyStandalone';
+export { default as useEdgePan } from './hooks/useEdgePan';
