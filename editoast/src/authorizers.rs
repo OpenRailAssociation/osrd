@@ -6,6 +6,11 @@ use authz::v2::Authorizer;
 use authz::v2::Check;
 use authz::v2::Protected;
 use editoast_models::prelude::*;
+use futures::FutureExt as _;
+use futures::StreamExt as _;
+use futures::TryFutureExt as _;
+use futures::stream::FuturesUnordered;
+use tracing::Instrument as _;
 
 /// An authorizer that represents editoast's authorization decisions
 ///
@@ -50,9 +55,18 @@ impl Authorizer for SystemAuthorizer<'_> {
         &'a self,
         data: Protected<T>,
     ) -> Result<Access<'a, T, Self::Rejection>, Self::Error> {
-        for check in &data.checks {
-            if let Some(rejection) = self.check(check).await? {
-                return Ok(Access::Denied { rejection });
+        {
+            // scoping to tell the borrow checker that checks is consumed before returning
+            // access_authorized which takes ownership of data
+            let mut checks = data
+                .checks
+                .iter()
+                .map(|check| self.check(check).in_current_span())
+                .collect::<FuturesUnordered<_>>();
+            while let Some(result) = checks.next().await {
+                if let Some(rejection) = result? {
+                    return Ok(Access::Denied { rejection });
+                }
             }
         }
         Ok(data.access_authorized(self.openfga))
@@ -119,14 +133,32 @@ impl Authorizer for UserAuthorizer<'_> {
             openfga: self.openfga,
             conn: self.conn.clone(),
         };
-        for check in &data.checks {
-            if let Some(rejection) = system_authorizer.check(check).await? {
-                return Ok(Access::Denied { rejection });
-            }
-        }
-        if !self.roles.contains(&authz::Role::Admin) {
+        {
+            // scoping to tell the borrow checker that checks is consumed before returning
+            // access_authorized which takes ownership of data
+            // same thing for the system_authorizer
+            let mut checks = FuturesUnordered::new();
             for check in &data.checks {
-                if let Some(rejection) = self.check(check).await? {
+                checks.push(
+                    system_authorizer
+                        .check(check)
+                        .map_err(Self::Error::from)
+                        .in_current_span()
+                        .boxed(),
+                );
+            }
+            if !self.roles.contains(&authz::Role::Admin) {
+                for check in &data.checks {
+                    checks.push(
+                        self.check(check)
+                            .map_err(Self::Error::from)
+                            .in_current_span()
+                            .boxed(),
+                    );
+                }
+            }
+            while let Some(result) = checks.next().await {
+                if let Some(rejection) = result? {
                     return Ok(Access::Denied { rejection });
                 }
             }
