@@ -188,12 +188,34 @@ const useSyncManchette = ({
     }
   }, [scrollTo, manchetteWithSpaceTimeChartRef]);
 
+  const panTo = useCallback(
+    ({ x, y }: { y?: number; x?: number }, prev: SyncManchetteState): SyncManchetteState => {
+      const manchette = manchetteWithSpaceTimeChartRef.current;
+
+      let newYOffset = prev.yOffset;
+      if (y !== undefined && y !== newYOffset) {
+        newYOffset = Math.max(y, 0);
+        if (manchette) {
+          newYOffset = Math.min(newYOffset, manchette.scrollHeight - manchette.offsetHeight);
+          manchette.scrollTop = newYOffset;
+        }
+      }
+
+      return {
+        ...prev,
+        xOffset: x ?? prev.xOffset,
+        yOffset: newYOffset,
+      };
+    },
+    [manchetteWithSpaceTimeChartRef]
+  );
+
   // =========== On Pan ===========
   const basicOnPan = useCallback(
     (
       payload: Parameters<NonNullable<SpaceTimeChartProps['onPan']>>[0],
       prev: SyncManchetteState
-    ) => {
+    ): SyncManchetteState => {
       if (!payload.isPanning) {
         return {
           ...prev,
@@ -209,23 +231,11 @@ const useSyncManchette = ({
         };
       }
 
-      const newState = { ...prev };
       const { initialOffset } = prev.panning;
       const diff = getDistance(payload.initialPosition, payload.position);
-      const manchette = manchetteWithSpaceTimeChartRef.current;
-
-      newState.xOffset = initialOffset.x + diff.x;
-      let newYOffset = initialOffset.y - diff.y;
-      newYOffset = Math.max(newYOffset, 0);
-      if (manchette) {
-        newYOffset = Math.min(newYOffset, manchette.scrollHeight - manchette.offsetHeight);
-        manchette.scrollTop = newYOffset;
-      }
-      newState.yOffset = newYOffset;
-
-      return newState;
+      return panTo({ x: initialOffset.x + diff.x, y: initialOffset.y - diff.y }, prev);
     },
-    [manchetteWithSpaceTimeChartRef]
+    [panTo]
   );
 
   return useMemo(
