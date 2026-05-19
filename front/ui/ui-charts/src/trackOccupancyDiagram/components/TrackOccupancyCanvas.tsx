@@ -1,4 +1,4 @@
-import React, { useContext, useMemo } from 'react';
+import React, { useContext, useMemo, useEffect } from 'react';
 
 import { X } from '@osrd-project/ui-icons';
 
@@ -39,6 +39,7 @@ const TrackOccupancyCanvas = ({
   draggingOccupancyZones,
   selectedTrainId,
   onClose,
+  onDragOver,
   topPadding = 0,
   hideBorders = false,
 }: {
@@ -48,6 +49,7 @@ const TrackOccupancyCanvas = ({
   draggingOccupancyZones?: OccupancyZone[];
   selectedTrainId?: string;
   onClose?: () => void;
+  onDragOver?: (trackId: string | undefined) => void;
   topPadding?: number;
   hideBorders?: boolean;
 }) => {
@@ -88,6 +90,10 @@ const TrackOccupancyCanvas = ({
     topPadding,
     getSpacePixel,
   ]);
+
+  useEffect(() => {
+    if (onDragOver) onDragOver(highlightedTrackId);
+  }, [onDragOver, highlightedTrackId]);
 
   return (
     <>
