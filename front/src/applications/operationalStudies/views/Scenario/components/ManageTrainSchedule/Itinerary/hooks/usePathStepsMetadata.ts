@@ -45,8 +45,8 @@ export const usePathStepsMetadata = (
     const fetchAndSetMetadata = async () => {
       // 3. Get all track ids of all matched operational points to get all tracks metadata
       const matchedTrackIds = new Set<string>();
-      [...pathStepsOperationalPoints.values()].flat().forEach((op) => {
-        op.parts.forEach((part) => {
+      [...pathStepsOperationalPoints.values()].forEach((op) => {
+        op?.parts.forEach((part) => {
           matchedTrackIds.add(part.track);
         });
       });
@@ -102,7 +102,7 @@ export const usePathStepsMetadata = (
         }
         // Find the matching operational point for this pathStep to get
         // its valid status and its name
-        const matchedOp = pathStepsOperationalPoints.get(pathStep.id)?.at(0);
+        const matchedOp = pathStepsOperationalPoints.get(pathStep.id);
 
         const { local_track_name } = location;
         const isValidLocalTrackName = local_track_name

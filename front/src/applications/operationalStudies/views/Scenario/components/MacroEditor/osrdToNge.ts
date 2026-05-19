@@ -321,7 +321,9 @@ export const loadAndIndexNge = async (
       }
     });
 
-  const pathOps = trainSchedules.flatMap((trainSchedule) => trainSchedule.pathOps).flat();
+  const pathOps = trainSchedules
+    .flatMap((trainSchedule) => trainSchedule.pathOps)
+    .filter((op) => op !== null);
   for (const op of pathOps) {
     const { trigram, ch } = op.extensions?.sncf ?? {};
     for (const pathKey of MacroEditorState.getPathKeys(op)) {

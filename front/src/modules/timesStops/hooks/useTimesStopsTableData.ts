@@ -254,7 +254,7 @@ const useTimesStopsTableData = (
 
     const pathStepRowsById = new Map(
       selectedTrain.path.map((pathStep, stepIndex) => {
-        const pathStepOp = pathStepOps.get(pathStep.id)?.at(0);
+        const pathStepOp = pathStepOps.get(pathStep.id);
 
         const matchingOp =
           pathStepOp ??

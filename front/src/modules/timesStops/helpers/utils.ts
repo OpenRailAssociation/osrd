@@ -7,7 +7,7 @@ import { round, isEqual, isNil } from 'lodash';
 import type { PathPropertiesFormatted } from 'applications/operationalStudies/types';
 import { getInvalidStepLabel } from 'applications/operationalStudies/utils';
 import type {
-  OperationalPoint,
+  RelatedOperationalPoint,
   PathItemLocation,
   ReceptionSignal,
 } from 'common/api/osrdEditoastApi';
@@ -375,7 +375,7 @@ export function receptionSignalToSignalBooleans(receptionSignal?: ReceptionSigna
 }
 
 export const getOperationalPointName = (
-  op: OperationalPoint | undefined,
+  op: RelatedOperationalPoint | null | undefined,
   step: PathItemLocation,
   stepIndex: number,
   totalStepCount: number,

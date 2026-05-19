@@ -233,5 +233,5 @@ export type TrainBaseWithOccurrenceId = Omit<TrainScheduleResponse, 'id'> & {
 export type Train = TrainBaseWithPacedTrainId | TrainBaseWithOccurrenceId;
 
 export type TrainScheduleWithPathOps = TrainScheduleResponse & {
-  pathOps: RelatedOperationalPoint[][];
+  pathOps: (RelatedOperationalPoint | null)[];
 };

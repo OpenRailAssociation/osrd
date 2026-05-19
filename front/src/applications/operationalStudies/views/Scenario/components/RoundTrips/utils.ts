@@ -4,9 +4,12 @@ import type { TrainScheduleRoundTripGroups } from 'applications/operationalStudi
 import {
   getInvalidStepLabel,
   checkRoundTripCompatible,
-  getStationFromOps,
 } from 'applications/operationalStudies/utils';
-import type { OperationalPoint, TrainSchedule, RoundTrips } from 'common/api/osrdEditoastApi';
+import type {
+  RelatedOperationalPoint,
+  TrainSchedule,
+  RoundTrips,
+} from 'common/api/osrdEditoastApi';
 import { isPacedTrain } from 'modules/trainSchedule/helpers/pacedTrain';
 import type { TrainScheduleWithPathOps } from 'reducers/osrdconf/types';
 import { addDurationToDate, Duration } from 'utils/duration';
@@ -14,20 +17,20 @@ import { addDurationToDate, Duration } from 'utils/duration';
 import type { PairingItem } from './types';
 
 const getStepLabels = (
-  ops: (OperationalPoint[] | null)[],
+  ops: (RelatedOperationalPoint | null)[],
   steps: TrainSchedule['path'],
   schedule: TrainSchedule['schedule'],
   t: TFunction<'operational-studies', 'main'>
 ) =>
   steps.reduce<string[]>((acc, step, index) => {
-    const pathOp = ops.at(index)!;
+    const pathOp = ops.at(index);
     const isExtremity = index === 0 || index === steps.length - 1;
     const isStop = schedule?.some((s) => s.at === step.id && !!s.stop_for);
 
     if (!isExtremity && !isStop) return acc;
 
     // If no matching op has been found for this step, it's either a track offset or an invalid step
-    if (pathOp.length === 0) {
+    if (!pathOp) {
       acc.push(
         step.location.type === 'track_offset'
           ? t('requestedPointUnknown')
@@ -36,17 +39,14 @@ const getStepLabels = (
       return acc;
     }
 
-    const station = getStationFromOps(pathOp);
-
-    // We know we will have a station since we handled the case where pathOp is empty
-    const stationName = station!.extensions?.identifier?.name ?? '';
+    const stationName = pathOp.extensions?.identifier?.name ?? '';
 
     if (!isExtremity) {
       acc.push(stationName);
       return acc;
     }
 
-    acc.push(`${stationName} ${station!.extensions?.sncf?.ch ?? ''}`);
+    acc.push(`${stationName} ${pathOp.extensions?.sncf?.ch ?? ''}`);
     return acc;
   }, []);
 
