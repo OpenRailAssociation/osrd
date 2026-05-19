@@ -15,7 +15,7 @@ import type { Train } from 'reducers/osrdconf/types';
 const usePathOps = (
   infraId: number,
   path?: Train['path']
-): Map<string, RelatedOperationalPoint[]> => {
+): Map<string, RelatedOperationalPoint | null> => {
   const opRefMap: Map<string, OperationalPointReference> = useMemo(
     () =>
       new Map(
@@ -50,7 +50,7 @@ const usePathOps = (
   return useMemo(() => {
     const relatedOps = operationalPoints?.related_operational_points;
     const pathStepIds = [...opRefMap.keys()];
-    return new Map(relatedOps?.map((op, index) => [pathStepIds[index], op ? [op] : []]));
+    return new Map(relatedOps?.map((op, index) => [pathStepIds[index], op]));
   }, [operationalPoints]);
 };
 

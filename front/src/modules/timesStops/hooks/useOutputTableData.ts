@@ -73,7 +73,7 @@ const useOutputTableData = (
 
     const pathStepRowsById = new Map(
       selectedTrain.path.map((pathStep, stepIndex) => {
-        const matchingOperationalPoint = pathStepOps.get(pathStep.id)?.at(0);
+        const matchingOperationalPoint = pathStepOps.get(pathStep.id);
 
         const name = getOperationalPointName(
           matchingOperationalPoint,

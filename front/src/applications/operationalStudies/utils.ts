@@ -251,9 +251,6 @@ export const isTooFast = (
   trainScheduleSummary: Extract<SimulationSummaryResult, { status: 'success' }>
 ): boolean => trainScheduleSummary.path_item_respect_margins.some((respected) => !respected);
 
-export const getStationFromOps = (ops: OperationalPoint[]): OperationalPoint | undefined =>
-  ops.find((op) => ['BV', '00'].includes(op.extensions?.sncf?.ch || '')) || ops.at(0);
-
 /**
  * Get a list of unique OP references from train schedules paths.
  */
@@ -287,10 +284,10 @@ export const addPathOpsToTrainSchedules = (
   }
 
   // Map each operational point reference (path step) to its corresponding operational point
-  const opsByKey = new Map<string, RelatedOperationalPoint[]>();
+  const opsByKey = new Map<string, RelatedOperationalPoint | null>();
   timetableOperationalPoints.forEach((op, i) => {
     const key = JSON.stringify(timetableOpRefs[i]);
-    opsByKey.set(key, op ? [op] : []);
+    opsByKey.set(key, op);
   });
 
   // For each train schedule, fill the pathOps property with
@@ -298,11 +295,11 @@ export const addPathOpsToTrainSchedules = (
   return trainSchedules.map((trainSchedule) => {
     // For each pathStepKeys, find its corresponding operational points :
     // 1. if found, return the operational points
-    // 2. if key exists but no operational points were found, return an empty array
-    // 3. if key does not exist in opsByKey (meaning it's a track offset), return an empty array
+    // 2. if key exists but no operational points were found, return null
+    // 3. if key does not exist in opsByKey (meaning it's a track offset), return null
     const pathOps = trainSchedule.path.map((pathItem) => {
-      if (pathItem.location.type === 'track_offset') return [];
-      return opsByKey.get(JSON.stringify(pathItem.location.operational_point)) ?? [];
+      if (pathItem.location.type === 'track_offset') return null;
+      return opsByKey.get(JSON.stringify(pathItem.location.operational_point)) ?? null;
     });
     return { ...trainSchedule, pathOps };
   });
@@ -335,25 +332,17 @@ export const checkRoundTripCompatible = (
     return false;
   }
 
-  for (const [indexA, opsA] of trainScheduleA.pathOps.entries()) {
+  for (const [indexA, opA] of trainScheduleA.pathOps.entries()) {
     const indexB = trainScheduleA.pathOps.length - indexA - 1;
-    const opsB = trainScheduleB.pathOps[indexB];
+    const opB = trainScheduleB.pathOps[indexB];
 
     const pathItemA = trainScheduleA.path[indexA];
     const pathItemB = trainScheduleB.path[indexB];
 
-    const aExists = opsA.length > 0;
-    const bExists = opsB.length > 0;
-    if (aExists !== bExists) {
+    if (opA?.id !== opB?.id) {
       return false;
     }
-    if (aExists && bExists) {
-      const stationA = getStationFromOps(opsA)!;
-      const stationB = getStationFromOps(opsB)!;
-      if (stationA.id !== stationB.id) {
-        return false;
-      }
-    } else {
+    if (!opA || !opB) {
       // id is specific to each train schedule
       // local_track_name is ignored because we don't want to take tracks into account
       // Only take into account uic/trigram/opId of the path items
