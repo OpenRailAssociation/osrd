@@ -15,8 +15,6 @@ dependencies {
     // PLEASE ADD AND UPDATE DEPENDENCIES USING libs.versions.toml
     api project(':kt-osrd-utils')
 
-    implementation libs.kotlin.stdlib
-
     //moshi
     api libs.moshi
     api libs.moshi.adapters

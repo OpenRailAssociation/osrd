@@ -23,7 +23,6 @@ dependencies {
 
     api libs.kotlinx.coroutines.core
     implementation libs.guava
-    implementation libs.kotlin.stdlib
     testImplementation libs.kotlin.test
 }
 

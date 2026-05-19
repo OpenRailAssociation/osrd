@@ -16,7 +16,6 @@ dependencies {
     api project(':osrd-reporting')
     implementation project(":kt-osrd-path")
 
-    implementation libs.kotlin.stdlib
     testImplementation libs.kotlin.test
     testImplementation project(':osrd-mp')
 }

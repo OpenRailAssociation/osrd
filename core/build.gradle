@@ -31,7 +31,6 @@ dependencies {
 
     // kotlin
     implementation libs.kotlin.logging
-    implementation libs.kotlin.stdlib
     implementation libs.kotlinx.coroutines.core
     implementation libs.kotlinx.serialization.core
     implementation libs.kotlinx.serialization.cbor
@@ -152,6 +151,7 @@ sourceSets {
 
 import com.github.spotbugs.snom.Confidence
 import com.github.spotbugs.snom.Effort
+import com.github.spotbugs.snom.SpotBugsTask
 
 allprojects {
     apply plugin: 'com.github.spotbugs'
@@ -196,7 +196,7 @@ allprojects {
         excludeFilter = rootProject.file('config/spotbugs/exclude.xml')
     }
 
-    tasks.withType(com.github.spotbugs.snom.SpotBugsTask).tap {
+    tasks.withType(SpotBugsTask).tap {
         configureEach {
             if (project.hasProperty("spotbugs_report_xml")) {
                 reports { xml.required = true }
