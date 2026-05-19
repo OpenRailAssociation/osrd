@@ -120,7 +120,7 @@ fun buildFinalEnvelope(
         )
     require(concatenateAndShiftEnvelopes(maxSpeedEnvelopes).continuous)
     val maxIterations = edges.size * 2 // just to avoid infinite loops on bugs or edge cases
-    for (i in 0 until maxIterations) {
+    repeat(maxIterations) {
         try {
             val newEnvelope =
                 concatenateAndShiftEnvelopes(
@@ -183,20 +183,20 @@ fun buildFinalEnvelope(
                 postProcessingLogger.warn(
                     "Can't slow down enough to match the given standard allowance"
                 )
-                break
+                return@repeat
             } else if (e.osrdErrorType == ErrorType.AllowanceConvergenceDiscontinuity) {
                 // May be caused by this bug:
                 // https://github.com/OpenRailAssociation/osrd/issues/9037
                 // It's quite difficult to fix this issue for now, but we can
                 // still fallback on linear allowance to have a result
                 postProcessingLogger.warn("Discontinuity in mareco search space")
-                break
+                return@repeat
             }
             if (e.osrdErrorType == ErrorType.ImpossibleSimulationError) {
                 // Generic simulation errors, they can (very rarely) happen with mareco.
                 // For example when the train stops during/after a coasting.
                 postProcessingLogger.warn("Impossible simulation")
-                break
+                return@repeat
             } else throw e
         }
     }

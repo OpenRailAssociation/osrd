@@ -107,7 +107,7 @@ data class ProgressLogger(
         val lonKey = kotlin.math.round(geo.lon * 10).toInt() + 1800
         val cacheKey = latKey * 3601 + lonKey
 
-        val cacheEntry = geopointFilteringCache.get(cacheKey)
+        val cacheEntry = geopointFilteringCache[cacheKey]
 
         if (
             cacheEntry == null ||

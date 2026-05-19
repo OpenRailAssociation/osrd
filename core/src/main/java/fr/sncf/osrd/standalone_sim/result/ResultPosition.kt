@@ -7,21 +7,12 @@ import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
 
 class ResultPosition
-private constructor(time: Double, pathOffset: Double, trackSection: String?, offset: Double) {
-    val time: Double
-
-    @Json(name = "track_section") val trackSection: String?
-
-    val offset: Double
-
-    @Json(name = "path_offset") val pathOffset: Double
-
-    init {
-        this.time = time
-        this.pathOffset = pathOffset
-        this.trackSection = trackSection
-        this.offset = offset
-    }
+private constructor(
+    val time: Double,
+    @property:Json(name = "path_offset") val pathOffset: Double,
+    @property:Json(name = "track_section") val trackSection: String?,
+    val offset: Double,
+) {
 
     companion object {
         /** Create a ResultPosition */
