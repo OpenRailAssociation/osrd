@@ -21,14 +21,12 @@ pub struct Switch {
     pub group_change_delay: f64,
     pub ports: HashMap<Identifier, TrackEndpoint>,
     #[serde(default)]
-    #[schema(inline)]
     pub extensions: SwitchExtensions,
 }
 
 #[derive(Debug, Default, Clone, Deserialize, Serialize, PartialEq, Eq, ToSchema)]
 #[serde(deny_unknown_fields)]
 pub struct SwitchExtensions {
-    #[schema(inline)]
     sncf: Option<SwitchSncfExtension>,
 }
 

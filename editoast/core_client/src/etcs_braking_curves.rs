@@ -44,24 +44,17 @@ pub struct Response {
 #[derive(Serialize, Deserialize, PartialEq, Clone, Debug, ToSchema)]
 #[schema(as = CoreETCSCurves)]
 pub struct ETCSCurves {
-    #[schema(inline)]
     pub indication: Option<SimpleEnvelope>,
-    #[schema(inline)]
     pub permitted_speed: SimpleEnvelope,
-    #[schema(inline)]
     pub guidance: SimpleEnvelope,
 }
 
 #[derive(Serialize, Deserialize, PartialEq, Clone, Debug, ToSchema)]
 #[schema(as = CoreETCSConflictCurves)]
 pub struct ETCSConflictCurves {
-    #[schema(inline)]
     pub indication: SimpleEnvelope,
-    #[schema(inline)]
     pub permitted_speed: SimpleEnvelope,
-    #[schema(inline)]
     pub guidance: SimpleEnvelope,
-    #[schema(inline)]
     pub conflict_type: ConflictType,
 }
 

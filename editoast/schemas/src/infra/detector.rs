@@ -19,7 +19,6 @@ pub struct Detector {
     pub track: Identifier,
     pub position: f64,
     #[serde(default)]
-    #[schema(inline)]
     pub extensions: DetectorExtension,
 }
 
@@ -38,7 +37,6 @@ impl OSRDIdentified for Detector {
 #[derive(Debug, Default, Clone, Deserialize, Serialize, PartialEq, Eq, ToSchema)]
 #[serde(deny_unknown_fields)]
 pub struct DetectorExtension {
-    #[schema(inline)]
     pub sncf: DetectorSncfExtension,
 }
 

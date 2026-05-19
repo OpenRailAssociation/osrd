@@ -32,7 +32,6 @@ pub struct SpeedSection {
     #[schema(inline)]
     pub on_routes: Option<Vec<Identifier>>,
     #[serde(default)]
-    #[schema(inline)]
     pub extensions: SpeedSectionExtensions,
 }
 
@@ -56,7 +55,6 @@ impl<'de> Deserialize<'de> for Speed {
 #[derive(Debug, Default, Clone, Deserialize, Serialize, PartialEq, ToSchema)]
 #[serde(deny_unknown_fields)]
 pub struct SpeedSectionExtensions {
-    #[schema(inline)]
     pub psl_sncf: Option<SpeedSectionPslSncfExtension>,
 }
 

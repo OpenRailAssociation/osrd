@@ -31,7 +31,6 @@ pub struct Signal {
     #[schema(inline)]
     pub logical_signals: Vec<LogicalSignal>,
     #[serde(default)]
-    #[schema(inline)]
     pub extensions: SignalExtensions,
 }
 
@@ -58,7 +57,6 @@ pub struct ConditionalParameters {
 #[derive(Debug, Default, Clone, Deserialize, Serialize, PartialEq, ToSchema)]
 #[serde(deny_unknown_fields)]
 pub struct SignalExtensions {
-    #[schema(inline)]
     pub sncf: Option<SignalSncfExtension>,
 }
 
