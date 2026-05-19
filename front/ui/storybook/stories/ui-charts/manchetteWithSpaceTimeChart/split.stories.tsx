@@ -12,7 +12,7 @@ import {
   useDraw,
   useManchetteWithSpaceTimeChart,
 } from '@osrd-project/ui-charts';
-import type { Meta } from '@storybook/react-vite';
+import type { Meta, StoryObj } from '@storybook/react-vite';
 import { clamp } from 'lodash';
 
 import '@osrd-project/ui-charts/dist/theme.css';
@@ -150,7 +150,7 @@ const meta: Meta<typeof SplitManchetteWithSpaceTimeChartWrapper> = {
 
 export default meta;
 
-export const Default = {
+export const Default: StoryObj<typeof SplitManchetteWithSpaceTimeChartWrapper> = {
   args: {
     waypoints: SAMPLE_WAYPOINTS,
     paths: SAMPLE_CHART_PATHS,

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 
 import { SpaceTimeChart, PathLayer, type DataPoint, type Point } from '@osrd-project/ui-charts';
-import type { Meta } from '@storybook/react-vite';
+import type { Meta, StoryObj } from '@storybook/react-vite';
 import cx from 'classnames';
 
 import '@osrd-project/ui-core/dist/theme.css';
@@ -109,7 +109,7 @@ const Wrapper = ({ spaceScaleType, enableSnapping }: WrapperProps) => {
   );
 };
 
-export default {
+const meta: Meta<typeof Wrapper> = {
   title: 'SpaceTimeChart/Measuring times and distances',
   component: Wrapper,
   argTypes: {
@@ -125,9 +125,11 @@ export default {
       control: { type: 'boolean' },
     },
   },
-} as Meta<typeof Wrapper>;
+};
 
-export const DefaultArgs = {
+export default meta;
+
+export const DefaultArgs: StoryObj<typeof Wrapper> = {
   name: 'Default arguments',
   args: {
     spaceScaleType: 'linear',

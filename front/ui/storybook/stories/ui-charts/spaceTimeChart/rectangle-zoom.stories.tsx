@@ -12,7 +12,7 @@ import {
   computeRectZoomOffsets,
 } from '@osrd-project/ui-charts';
 import { Button, Slider } from '@osrd-project/ui-core';
-import type { Meta } from '@storybook/react-vite';
+import type { Meta, StoryObj } from '@storybook/react-vite';
 import { clamp } from 'lodash';
 
 import '@osrd-project/ui-core/dist/theme.css';
@@ -419,13 +419,15 @@ const RectangleZoomWrapper = ({
   );
 };
 
-export default {
+const meta: Meta<typeof RectangleZoomWrapper> = {
   title: 'SpaceTimeChart/Zoom rectangle',
   component: RectangleZoomWrapper,
   // tags: ['autodocs'],
-} as Meta<typeof RectangleZoomWrapper>;
+};
 
-export const Default = {
+export default meta;
+
+export const Default: StoryObj<typeof RectangleZoomWrapper> = {
   args: {
     swapAxes: false,
     spaceOrigin: 0,

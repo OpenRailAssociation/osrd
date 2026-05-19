@@ -8,7 +8,7 @@ import {
   PathLayer,
   type ChartPath,
 } from '@osrd-project/ui-charts';
-import type { Meta } from '@storybook/react-vite';
+import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import '@osrd-project/ui-core/dist/theme.css';
 import '@osrd-project/ui-charts/dist/theme.css';
@@ -85,7 +85,7 @@ const meta: Meta<typeof ManchetteWithSpaceTimeWrapper> = {
 
 export default meta;
 
-export const Default = {
+export const Default: StoryObj<typeof ManchetteWithSpaceTimeWrapper> = {
   args: {
     waypoints: SAMPLE_WAYPOINTS,
     paths: SAMPLE_CHART_PATHS,

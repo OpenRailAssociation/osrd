@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 
 import { PathLayer, SpaceTimeChart, type Point } from '@osrd-project/ui-charts';
-import type { Meta } from '@storybook/react-vite';
+import type { Meta, StoryObj } from '@storybook/react-vite';
 import cx from 'classnames';
 
 import '@osrd-project/ui-charts/dist/theme.css';
@@ -208,7 +208,7 @@ const Wrapper = ({ color1, color2, color3, spaceScaleType }: WrapperProps) => {
   );
 };
 
-export default {
+const meta: Meta<typeof Wrapper> = {
   title: 'SpaceTimeChart/Customize theme',
   component: Wrapper,
   argTypes: {
@@ -234,9 +234,11 @@ export default {
       control: { type: 'radio' },
     },
   },
-} as Meta<typeof Wrapper>;
+};
 
-export const DefaultArgs = {
+export default meta;
+
+export const DefaultArgs: StoryObj<typeof Wrapper> = {
   name: 'Default arguments',
   args: {
     color1: DEFAULT_COLOR_1,

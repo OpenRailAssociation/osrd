@@ -9,7 +9,7 @@ import {
   type Point,
   type SpaceTimeChartContextType,
 } from '@osrd-project/ui-charts';
-import type { Meta } from '@storybook/react-vite';
+import type { Meta, StoryObj } from '@storybook/react-vite';
 import { clamp, keyBy } from 'lodash';
 
 import '@osrd-project/ui-core/dist/theme.css';
@@ -175,7 +175,7 @@ const SplitSpaceTimeChartWrapper = ({
   );
 };
 
-export default {
+const meta: Meta<typeof SplitSpaceTimeChartWrapper> = {
   title: 'SpaceTimeChart/Split',
   component: SplitSpaceTimeChartWrapper,
   argTypes: {
@@ -196,9 +196,11 @@ export default {
       control: { type: 'boolean' },
     },
   },
-} as Meta<typeof SplitSpaceTimeChartWrapper>;
+};
 
-export const Default = {
+export default meta;
+
+export const Default: StoryObj<typeof SplitSpaceTimeChartWrapper> = {
   name: 'Default arguments',
   args: {
     splitPoints: 'A,C,E',
