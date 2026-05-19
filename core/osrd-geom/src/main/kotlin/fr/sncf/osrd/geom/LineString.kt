@@ -1,7 +1,6 @@
 package fr.sncf.osrd.geom
 
 import com.carrotsearch.hppc.DoubleArrayList
-import java.lang.String
 import java.util.*
 import kotlin.Double
 import kotlin.DoubleArray
@@ -179,12 +178,16 @@ data class LineString(
         return make(newBufferLat.toArray(), newBufferLon.toArray())
     }
 
-    override fun toString(): kotlin.String {
+    override fun toString(): String {
         // The result can be imported as a WKT linestring
         // (e.g. can be logged to a CSV file and imported in QGIS)
-        return ("LINESTRING(" +
-            String.join(",", this.getPoints().map { "${it.lon} ${it.lat}" }) +
-            ')')
+        return this.getPoints().joinToString(
+            prefix = "LINESTRING(",
+            separator = ",",
+            postfix = ")",
+        ) {
+            "${it.lon} ${it.lat}"
+        }
     }
 
     companion object {
