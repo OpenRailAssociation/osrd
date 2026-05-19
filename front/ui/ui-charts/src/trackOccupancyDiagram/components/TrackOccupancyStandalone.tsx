@@ -97,6 +97,8 @@ const TrackOccupancyStandalone = ({
     },
   });
 
+  const isDragging = Boolean(draggingOccupancyZones?.length);
+
   return (
     <div className="track-occupancy-standalone flex flex-col">
       <div className="bg-ambientB-5 flex flex-col justify-center main-container-header grow-0 shrink-0">
@@ -108,7 +110,7 @@ const TrackOccupancyStandalone = ({
           ref={manchetteWithSpaceTimeChartRef}
           className="manchette flex h-100"
           onScroll={handleScroll}
-          style={{ height, cursor: draggingOccupancyZones?.length ? 'ns-resize' : undefined }}
+          style={{ height, cursor: isDragging ? 'ns-resize' : undefined }}
         >
           <Manchette {...manchetteProps} />
           <div className="space-time-chart-container w-full sticky" ref={spaceTimeChartRef}>
@@ -127,6 +129,7 @@ const TrackOccupancyStandalone = ({
                   }
                 })
               }
+              onPan={isDragging ? undefined : spaceTimeChartProps.onPan}
             >
               <TimeCaptions />
             </SpaceTimeChart>
