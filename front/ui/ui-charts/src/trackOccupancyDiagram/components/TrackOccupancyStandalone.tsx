@@ -1,4 +1,4 @@
-import React, { useMemo, useRef } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 
 import { KebabHorizontal } from '@osrd-project/ui-icons';
 
@@ -36,6 +36,7 @@ const TrackOccupancyStandalone = ({
     // Take first round hour before minTime:
     return Math.floor(minTime / HOUR) * HOUR;
   }, [occupancyZones]);
+  const [highlightedTrackId, setHighlightedTrackId] = useState<string>();
 
   // To make SpaceTimeChart and Manchette work, we have to provide them some dummy data:
   const waypoints = useMemo(
@@ -64,13 +65,16 @@ const TrackOccupancyStandalone = ({
             occupancyZones={occupancyZones}
             draggingOccupancyZones={draggingOccupancyZones}
             selectedTrainId={selectedTrainId}
+            onDragOver={setHighlightedTrackId}
             hideBorders
           />
         ),
-        manchetteNode: <TrackOccupancyManchette tracks={tracks} />,
+        manchetteNode: (
+          <TrackOccupancyManchette tracks={tracks} activeTrackId={highlightedTrackId} />
+        ),
       },
     ],
-    [height, tracks, occupancyZones, draggingOccupancyZones, selectedTrainId]
+    [height, tracks, occupancyZones, draggingOccupancyZones, selectedTrainId, highlightedTrackId]
   );
 
   /**
