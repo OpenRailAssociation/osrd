@@ -27,7 +27,7 @@ const TracksLayer = ({
     [drawBorders, position, topPadding, tracks]
   );
 
-  useDraw(SpaceTimeChartCanvasContext, 'overlay', drawingFunction);
+  useDraw(SpaceTimeChartCanvasContext, 'background', drawingFunction);
 
   return null;
 };
