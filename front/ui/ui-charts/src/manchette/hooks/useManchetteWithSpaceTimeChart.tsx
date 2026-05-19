@@ -105,6 +105,7 @@ const useManchetteWithSpaceTimeChart = ({
     handleXZoomOnWheelEvent,
     yZoomHelpers: { zoomYIn, zoomYOut, resetZoom },
     basicOnPan,
+    panTo,
   } = useSyncManchette({
     manchetteWithSpaceTimeChartRef,
     diagramRef: spaceTimeChartRef,
@@ -429,6 +430,13 @@ const useManchetteWithSpaceTimeChart = ({
     };
   }, [spaceOrigin, spaceScales, height, splitPoints, waypointsToDisplay]);
 
+  const pan = useCallback(
+    ({ dx = 0, dy = 0 }: { dx?: number; dy?: number }) => {
+      setSyncManchetteState((prev) => panTo({ x: prev.xOffset + dx, y: prev.yOffset + dy }, prev));
+    },
+    [setSyncManchetteState, panTo]
+  );
+
   return useMemo<{
     manchetteProps: ManchetteProps;
     spaceTimeChartProps: SpaceTimeChartProps;
@@ -441,6 +449,7 @@ const useManchetteWithSpaceTimeChart = ({
     timeScale: number;
     spaceScale: number;
     setTimeOrigin: (v: number) => void;
+    pan: (args: { dx?: number; dy?: number }) => void;
   }>(
     () => ({
       manchetteProps: {
@@ -538,6 +547,7 @@ const useManchetteWithSpaceTimeChart = ({
       timeScale: zoomValueToTimeScale(xZoom),
       spaceScale: zoomValueToSpaceScale(minZoomMillimeterPerPx, maxZoomMillimeterPerPx, yZoom),
       setTimeOrigin,
+      pan,
     }),
     [
       manchetteContents,
@@ -567,6 +577,7 @@ const useManchetteWithSpaceTimeChart = ({
       minZoomMillimeterPerPx,
       maxZoomMillimeterPerPx,
       setTimeOrigin,
+      pan,
       setSyncManchetteState,
       basicOnPan,
       handleRectZoomEnd,
