@@ -77,10 +77,7 @@ data class StepTimingData(
     @Json(name = "arrival_time_tolerance_after") val arrivalTimeToleranceAfter: Duration,
 )
 
-data class RequestConsistSchedule(
-    @Json(name = "boundaries") val boundaries: List<Int>,
-    @Json(name = "values") val values: List<ConsistConfiguration>,
-)
+data class RequestConsistSchedule(val boundaries: List<Int>, val values: List<ConsistConfiguration>)
 
 data class ConsistConfiguration(
     @Json(name = "supported_signaling_systems") val supportedSignalingSystems: List<String>,

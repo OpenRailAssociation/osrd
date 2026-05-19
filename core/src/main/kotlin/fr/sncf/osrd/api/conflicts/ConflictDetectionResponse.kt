@@ -34,7 +34,7 @@ class ConflictResponse(
     /** One of "Spacing" or "Routing" depending on the kind of conflicting resource. */
     @Json(name = "conflict_type") val conflictType: ConflictType,
     /** List of all conflicting requirements. Can't be empty. */
-    @Json(name = "requirements") val requirements: Collection<ConflictRequirement>,
+    val requirements: Collection<ConflictRequirement>,
 )
 
 /**

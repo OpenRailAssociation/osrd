@@ -54,7 +54,6 @@ public class RJSSignal extends RJSTrackObject implements Identified {
          * The schema for allowed settings is defined by the signaling system. It's a list of
          * key=value entries.
          */
-        @Json(name = "settings")
         public Map<String, String> settings;
 
         /**
@@ -67,7 +66,6 @@ public class RJSSignal extends RJSTrackObject implements Identified {
             @Json(name = "on_route")
             public String onRoute;
 
-            @Json(name = "parameters")
             public Map<String, String> parameters;
         }
 

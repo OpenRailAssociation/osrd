@@ -4,7 +4,6 @@ import fr.sncf.osrd.envelope.EnvelopeTimeInterpolate
 import fr.sncf.osrd.envelope.EnvelopeTimeInterpolate.EnvelopePoint
 import fr.sncf.osrd.stdcm.graph.STDCMGraph
 import fr.sncf.osrd.utils.units.Distance
-import fr.sncf.osrd.utils.units.meters
 import kotlin.math.abs
 import kotlin.math.pow
 import kotlin.math.sqrt

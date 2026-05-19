@@ -122,14 +122,11 @@ data class ProgressLogger(
 }
 
 data class STDCMProgress(
-    @Json(name = "status") val status: STDCMProgressStatus,
-    @Json(name = "point") val point: STDCMProgressSampleCoordinates,
+    val status: STDCMProgressStatus,
+    val point: STDCMProgressSampleCoordinates,
     @Json(name = "best_travel_time") val bestTravelTime: Long,
 ) {
-    data class STDCMProgressSampleCoordinates(
-        @Json(name = "lat") val lat: Double,
-        @Json(name = "lon") val lon: Double,
-    )
+    data class STDCMProgressSampleCoordinates(val lat: Double, val lon: Double)
 
     companion object {
         val adapter: JsonAdapter<STDCMProgress> =
