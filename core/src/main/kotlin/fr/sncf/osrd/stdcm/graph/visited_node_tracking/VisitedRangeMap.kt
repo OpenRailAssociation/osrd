@@ -28,7 +28,7 @@ data class VisitedRangeMap(
         fun putRange(start: Double, end: Double, value: VisitedRange) {
             if (start < end) {
                 val range = Range.closedOpen(start, end)
-                map.merge(range, value) { a, b -> a?.mergeWith(b, range) ?: b }
+                map.merge(range, value) { a, b -> a.mergeWith(b, range) }
             }
         }
 
