@@ -31,46 +31,36 @@ type Operation<T> = dyn for<'c> FnOnce(&'c fga::Client) -> ValueFut<'c, T> + Sen
 
 /// Represents a protected operation yielding a value `T` and the necessary checks required to run it
 ///
-/// Checks are divided into [Guardrail]s and [SanityCheck]s. They are not enforced by the [Protected] itself
-/// but rather by an [Authorizer] implementation, which can choose which checks to enforce or not.
+/// Checks are not enforced by the [Protected] itself but rather by an [Authorizer] implementation,
+/// which can choose which checks to enforce or not.
 /// Running a [Protected] through an [Authorizer] will yield an [Access], which represents either an authorization, a bypass or a denial.
 #[derive(derive_more::Debug)]
 pub struct Protected<T> {
     #[debug(skip)]
     op: Box<Operation<T>>,
-    pub guardrails: HashSet<Guardrail>,
-    pub sanity_checks: HashSet<SanityCheck>,
+    pub checks: HashSet<Check>,
 }
 
-/// A check to ensure the permission workflow of editoast is respected
-///
-/// For example, one cannot share a resource to a level higher that their own.
-///
-/// Not to be confused with [SanityCheck]s, which are checks that ensure the consistency of the data in OpenFGA and PostgreSQL.
+/// A check to ensure data consistency that and the permission workflow is respected
 #[derive(Debug, Clone, Copy, Hash, PartialEq, Eq)]
-pub enum Guardrail {
+pub enum Check {
+    /// The issuer needs a role to perform the operation
     IssuerHasRole(Role),
+    /// The issuer needs an infra privilege to perform the operation
     IssuerHasInfraPrivilege(InfraPrivilege, Infra),
-}
-
-/// A check to ensure the consistency of the data in OpenFGA and PostgreSQL
-///
-/// For example, one cannot add a user to a group if the user doesn't exist in PostgreSQL, even if it doesn't cause any issue in OpenFGA.
-///
-/// Not to be confused with [Guardrail]s, which are checks to ensure the permission workflow of editoast is respected.
-#[derive(Debug, Clone, Copy, Hash, PartialEq, Eq)]
-pub enum SanityCheck {
+    /// The subject must exist in PostgreSQL
     SubjectExists(Subject),
+    /// The infra must exist in PostgreSQL
     InfraExists(Infra),
 }
 
-impl SanityCheck {
+impl Check {
     pub fn user(user: User) -> Self {
-        SanityCheck::SubjectExists(Subject::User(user))
+        Check::SubjectExists(Subject::User(user))
     }
 
     pub fn group(group: Group) -> Self {
-        SanityCheck::SubjectExists(Subject::Group(group))
+        Check::SubjectExists(Subject::Group(group))
     }
 }
 
@@ -88,7 +78,7 @@ pub enum Access<'a, T, R> {
 
 /// An entity capable of authorizing a [Protected] operation, yielding an [Access]
 ///
-/// The authorization logic is up to the implementation, but it should take into account the guardrails and sanity checks of the [Protected] operation.
+/// The authorization logic is up to the implementation, but it should take into account the checks of the [Protected] operation.
 /// Not every check needs to be enforced depending on the purpose of the implementor, but make sure to authorize each protected operation with
 /// an appropriate [Authorizer], otherwise that *will result in security issues*.
 pub trait Authorizer {
@@ -129,8 +119,7 @@ impl<T> Protected<T> {
     ) -> Self {
         Self {
             op: Box::new(f),
-            guardrails: HashSet::new(),
-            sanity_checks: HashSet::new(),
+            checks: HashSet::new(),
         }
     }
 
@@ -149,21 +138,12 @@ impl<T> Protected<T> {
         Access::Authorized((self.op)(openfga))
     }
 
-    fn with_guardrail(self, guardrail: Guardrail) -> Self {
-        self.with_guardrail_iter([guardrail])
+    fn with_check(self, check: Check) -> Self {
+        self.with_check_iter([check])
     }
 
-    fn with_guardrail_iter(mut self, guardrails: impl IntoIterator<Item = Guardrail>) -> Self {
-        self.guardrails.extend(guardrails);
-        self
-    }
-
-    fn with_check(self, sanity_check: SanityCheck) -> Self {
-        self.with_check_iter([sanity_check])
-    }
-
-    fn with_check_iter(mut self, sanity_checks: impl IntoIterator<Item = SanityCheck>) -> Self {
-        self.sanity_checks.extend(sanity_checks);
+    fn with_check_iter(mut self, checks: impl IntoIterator<Item = Check>) -> Self {
+        self.checks.extend(checks);
         self
     }
 }
@@ -180,11 +160,7 @@ impl<T: Send + 'static> Protected<T> {
         + Send
         + 'static,
     ) -> Protected<U> {
-        let Self {
-            op,
-            guardrails,
-            sanity_checks,
-        } = self;
+        let Self { op, checks } = self;
         Protected {
             op: Box::new(move |openfga| {
                 async move {
@@ -193,8 +169,7 @@ impl<T: Send + 'static> Protected<T> {
                 }
                 .boxed()
             }),
-            guardrails,
-            sanity_checks,
+            checks,
         }
     }
 
@@ -202,23 +177,16 @@ impl<T: Send + 'static> Protected<T> {
         self,
         Protected {
             op: other_op,
-            guardrails: other_guardrails,
-            sanity_checks: other_sanity_checks,
+            checks: other_checks,
         }: Protected<U>,
     ) -> Protected<(T, U)> {
-        let Self {
-            op,
-            mut guardrails,
-            mut sanity_checks,
-        } = self;
-        guardrails.extend(other_guardrails);
-        sanity_checks.extend(other_sanity_checks);
+        let Self { op, mut checks } = self;
+        checks.extend(other_checks);
         Protected {
             op: Box::new(move |openfga| {
                 async move { tokio::try_join!(op(openfga), other_op(openfga)) }.boxed()
             }),
-            guardrails,
-            sanity_checks,
+            checks,
         }
     }
 }
@@ -235,17 +203,10 @@ impl<T: Send + 'static> FromIterator<Protected<T>> for Protected<Vec<T>> {
     /// If you need to handle individual rejections, consider using
     /// [Authorizer::authorize_all] instead.
     fn from_iter<I: IntoIterator<Item = Protected<T>>>(iter: I) -> Self {
-        let mut guardrails = HashSet::new();
-        let mut sanity_checks = HashSet::new();
+        let mut checks = HashSet::new();
         let mut ops = Vec::new();
-        for Protected {
-            op,
-            guardrails: gd,
-            sanity_checks: sc,
-        } in iter
-        {
-            guardrails.extend(gd);
-            sanity_checks.extend(sc);
+        for Protected { op, checks: c } in iter {
+            checks.extend(c);
             ops.push(op);
         }
         Self {
@@ -256,8 +217,7 @@ impl<T: Send + 'static> FromIterator<Protected<T>> for Protected<Vec<T>> {
                 }
                 .boxed()
             }),
-            guardrails,
-            sanity_checks,
+            checks,
         }
     }
 }
