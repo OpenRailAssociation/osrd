@@ -9,7 +9,7 @@ import {
   type SpaceTimeChartContextType,
   SpaceTimeChartCanvasContext,
 } from '@osrd-project/ui-charts';
-import type { Meta } from '@storybook/react-vite';
+import type { Meta, StoryObj } from '@storybook/react-vite';
 import cx from 'classnames';
 import { clamp, inRange } from 'lodash';
 
@@ -287,7 +287,7 @@ const Wrapper = ({ swapAxis, spaceScaleType }: WrapperProps) => {
   );
 };
 
-export default {
+const meta: Meta<typeof Wrapper> = {
   title: 'SpaceTimeChart/Additional data',
   component: Wrapper,
   argTypes: {
@@ -303,9 +303,11 @@ export default {
       control: { type: 'radio' },
     },
   },
-} as Meta<typeof Wrapper>;
+};
 
-export const DefaultArgs = {
+export default meta;
+
+export const DefaultArgs: StoryObj<typeof Wrapper> = {
   name: 'Default arguments',
   args: {
     swapAxis: false,

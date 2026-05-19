@@ -17,7 +17,7 @@ import {
   isSegmentPickingElement,
   BASE_WAYPOINT_HEIGHT,
 } from '@osrd-project/ui-charts';
-import type { Meta } from '@storybook/react-vite';
+import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import '@osrd-project/ui-charts/dist/theme.css';
 import '@osrd-project/ui-core/dist/theme.css';
@@ -181,6 +181,6 @@ const meta: Meta<typeof TrackOccupancyDiagramWithinSpaceTimeChartWrapper> = {
 
 export default meta;
 
-export const Default = {
+export const Default: StoryObj<typeof TrackOccupancyDiagramWithinSpaceTimeChartWrapper> = {
   args: {},
 };

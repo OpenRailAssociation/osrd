@@ -9,7 +9,7 @@ import {
   type OperationalPoint,
   type WorkSchedule,
 } from '@osrd-project/ui-charts';
-import type { Meta } from '@storybook/react-vite';
+import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import '@osrd-project/ui-core/dist/theme.css';
 import '@osrd-project/ui-charts/dist/theme.css';
@@ -134,12 +134,14 @@ const WorkSchedulesWrapper = ({
   );
 };
 
-export default {
+const meta: Meta<typeof WorkSchedulesWrapper> = {
   title: 'SpaceTimeChart/Workschedules',
   component: WorkSchedulesWrapper,
-} as Meta<typeof WorkSchedulesWrapper>;
+};
 
-export const Default = {
+export default meta;
+
+export const Default: StoryObj<typeof WorkSchedulesWrapper> = {
   args: {
     operationalPoints: OPERATIONAL_POINTS,
     paths: PATHS.slice(2, 4),

@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { Chronogram, type LevelCrossingData } from '@osrd-project/ui-charts';
-import type { Meta } from '@storybook/react-vite';
+import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import '@osrd-project/ui-charts/dist/theme.css';
 import '@osrd-project/ui-core/dist/theme.css';
@@ -22,7 +22,7 @@ const Wrapper = ({ levelCrossingsData, height }: WrapperProps) => (
   </div>
 );
 
-export default {
+const meta: Meta<typeof Wrapper> = {
   title: 'Chronogram/Rendering',
   component: Wrapper,
   argTypes: {
@@ -33,9 +33,11 @@ export default {
       control: { type: 'range', min: 400, max: 1000, step: 50 },
     },
   },
-} as Meta<typeof Wrapper>;
+};
 
-export const WithFakeData = {
+export default meta;
+
+export const WithFakeData: StoryObj<typeof Wrapper> = {
   name: 'Default rendering with fake data',
   args: {
     levelCrossingsData: levelCrossingData,

@@ -8,7 +8,7 @@ import {
   type OperationalPoint,
 } from '@osrd-project/ui-charts';
 import { Button, Slider } from '@osrd-project/ui-core';
-import type { Meta } from '@storybook/react-vite';
+import type { Meta, StoryObj } from '@storybook/react-vite';
 import { clamp } from 'lodash';
 
 import '@osrd-project/ui-core/dist/theme.css';
@@ -157,12 +157,14 @@ const SpaceTimeHorizontalZoomWrapper = ({
   );
 };
 
-export default {
+const meta: Meta<typeof SpaceTimeHorizontalZoomWrapper> = {
   title: 'SpaceTimeChart/Horizontal Zoom',
   component: SpaceTimeHorizontalZoomWrapper,
-} as Meta<typeof SpaceTimeHorizontalZoomWrapper>;
+};
 
-export const Default = {
+export default meta;
+
+export const Default: StoryObj<typeof SpaceTimeHorizontalZoomWrapper> = {
   args: {
     offset: 0,
     operationalPoints: OPERATIONAL_POINTS,

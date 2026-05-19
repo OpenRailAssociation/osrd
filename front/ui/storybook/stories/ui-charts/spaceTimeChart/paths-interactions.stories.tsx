@@ -8,7 +8,7 @@ import {
   type PathData,
   type Point,
 } from '@osrd-project/ui-charts';
-import type { Meta } from '@storybook/react-vite';
+import type { Meta, StoryObj } from '@storybook/react-vite';
 import cx from 'classnames';
 import { keyBy } from 'lodash';
 
@@ -228,7 +228,7 @@ const Wrapper = ({
   );
 };
 
-export default {
+const meta: Meta<typeof Wrapper> = {
   title: 'SpaceTimeChart/Paths interactions',
   component: Wrapper,
   argTypes: {
@@ -255,9 +255,11 @@ export default {
       control: { type: 'number', step: 1, min: 0, max: 30 },
     },
   },
-} as Meta<typeof Wrapper>;
+};
 
-export const DefaultArgs = {
+export default meta;
+
+export const DefaultArgs: StoryObj<typeof Wrapper> = {
   name: 'Default arguments',
   args: {
     enableDragPaths: true,
