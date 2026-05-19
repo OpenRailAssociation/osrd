@@ -88,7 +88,7 @@ export default meta;
 export const Default = {
   args: {
     waypoints: SAMPLE_WAYPOINTS,
-    path: SAMPLE_CHART_PATHS,
+    paths: SAMPLE_CHART_PATHS,
     selectedTrain: 1,
     hidePositions: false,
   },
