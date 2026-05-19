@@ -101,7 +101,7 @@ sealed class MarginValue {
 
     class Percentage(var percentage: Double) : MarginValue()
 
-    class None() : MarginValue()
+    class None : MarginValue()
 }
 
 class MarginValueAdapter {
