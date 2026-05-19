@@ -63,6 +63,10 @@ const useStaticPathfinding = (workerStatus: WorkerStatus, infra: Infra | undefin
         return;
       }
 
+      if (pathStepsLocations.some((step) => !step.secondaryCode)) {
+        return;
+      }
+
       // Don't run the pathfinding if the origin and destination are the same:
       const origin = pathSteps.at(0)!;
       const destination = pathSteps.at(-1)!;
