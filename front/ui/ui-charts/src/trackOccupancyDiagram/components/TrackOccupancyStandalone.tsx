@@ -3,7 +3,7 @@ import React, { useMemo, useRef } from 'react';
 import { KebabHorizontal } from '@osrd-project/ui-icons';
 
 import { HOUR } from '../../common/consts';
-import { Manchette, useManchetteWithSpaceTimeChart } from '../../manchette';
+import { Manchette, useManchetteWithSpaceTimeChart, BASE_WAYPOINT_HEIGHT } from '../../manchette';
 import { DEFAULT_THEME, SpaceTimeChart } from '../../spaceTimeChart';
 import { TRACK_HEIGHT_CONTAINER } from '../lib/consts';
 import type { OccupancyZone, Track } from '../lib/types';
@@ -57,6 +57,7 @@ const TrackOccupancyStandalone = ({
           <TrackOccupancyCanvas
             position={0}
             tracks={tracks}
+            topPadding={BASE_WAYPOINT_HEIGHT * 1.5}
             occupancyZones={occupancyZones}
             selectedTrainId={selectedTrainId}
             hideBorders
