@@ -19,7 +19,6 @@ dependencies {
     implementation project(':osrd-geom')
     implementation project(':osrd-mp')
     implementation libs.guava
-    implementation libs.kotlin.stdlib
     implementation libs.kotlin.logging
 
     api project(':kt-osrd-sim-infra')

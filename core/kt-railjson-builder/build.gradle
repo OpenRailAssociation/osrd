@@ -16,7 +16,6 @@ dependencies {
     api project(':osrd-railjson')
     api project(':kt-osrd-rjs-parser')
 
-    implementation libs.kotlin.stdlib
     testImplementation libs.kotlin.test
 }
 

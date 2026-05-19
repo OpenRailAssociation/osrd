@@ -25,7 +25,6 @@ dependencies {
 
     implementation libs.guava
     implementation libs.kotlin.logging
-    implementation libs.kotlin.stdlib
     testImplementation libs.kotlin.test
     implementation libs.hppc
 }

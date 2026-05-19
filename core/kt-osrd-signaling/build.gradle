@@ -22,7 +22,6 @@ dependencies {
     implementation project(':osrd-mp')
 
     implementation libs.kotlin.logging
-    implementation libs.kotlin.stdlib
     testImplementation libs.kotlin.test
 }
 
