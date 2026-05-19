@@ -178,9 +178,11 @@ allprojects {
     }
 
     // Remove warning on each @Json annotation
-    kotlin {
-        compilerOptions {
-            freeCompilerArgs.add("-Xannotation-default-target=param-property")
+    plugins.withId('org.jetbrains.kotlin.jvm') {
+        kotlin {
+            compilerOptions {
+                freeCompilerArgs.add("-Xannotation-default-target=param-property")
+            }
         }
     }
 

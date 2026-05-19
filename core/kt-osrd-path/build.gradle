@@ -30,13 +30,13 @@ dependencies {
     implementation libs.hppc
 }
 
-tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
-    kotlinOptions {
-        freeCompilerArgs += [
+kotlin {
+    compilerOptions {
+        freeCompilerArgs.addAll([
                 "-opt-in=kotlin.RequiresOptIn",
                 "-opt-in=kotlin.ExperimentalUnsignedTypes",
                 "-opt-in=kotlin.time.ExperimentalTime",
                 "-opt-in=kotlin.contracts.ExperimentalContracts",
-        ]
+        ])
     }
 }
