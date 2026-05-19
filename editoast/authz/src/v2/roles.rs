@@ -7,9 +7,8 @@ use crate::Group;
 use crate::Role;
 use crate::Subject;
 use crate::User;
-use crate::v2::Guardrail;
+use crate::v2::Check;
 use crate::v2::Protected;
-use crate::v2::SanityCheck;
 
 pub fn subject_roles(subject: Subject) -> Protected<Vec<Role>> {
     Protected::new(move |openfga| {
@@ -21,7 +20,7 @@ pub fn subject_roles(subject: Subject) -> Protected<Vec<Role>> {
         }
         .boxed()
     })
-    .with_check(SanityCheck::SubjectExists(subject))
+    .with_check(Check::SubjectExists(subject))
 }
 
 /// Gives the subject the specified roles
@@ -51,7 +50,7 @@ pub fn add_roles(subject: Subject, roles: HashSet<Role>) -> Protected<()> {
             }
             .boxed()
         })
-        .with_guardrail(Guardrail::IssuerHasRole(Role::Admin))
+        .with_check(Check::IssuerHasRole(Role::Admin))
 }
 
 /// Removes the specified roles from the subject
@@ -81,7 +80,7 @@ pub fn remove_roles(subject: Subject, roles: HashSet<Role>) -> Protected<()> {
             }
             .boxed()
         })
-        .with_guardrail(Guardrail::IssuerHasRole(Role::Admin))
+        .with_check(Check::IssuerHasRole(Role::Admin))
 }
 
 #[cfg(test)]

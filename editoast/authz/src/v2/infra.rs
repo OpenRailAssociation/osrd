@@ -13,9 +13,8 @@ use crate::InfraPrivilege;
 use crate::Role;
 use crate::Subject;
 use crate::User;
-use crate::v2::Guardrail;
+use crate::v2::Check;
 use crate::v2::Protected;
-use crate::v2::SanityCheck;
 
 /// Returns the *direct grant* a subject has on an [Infra], if any
 ///
@@ -68,8 +67,8 @@ pub fn infra_direct_grant(subject: Subject, infra: Infra) -> Protected<Option<In
         }
         .boxed()
     })
-    .with_check(SanityCheck::SubjectExists(subject))
-    .with_check(SanityCheck::InfraExists(infra))
+    .with_check(Check::SubjectExists(subject))
+    .with_check(Check::InfraExists(infra))
 }
 
 /// Returns the effective (maximum) grant a subject has on an [Infra], if any
@@ -132,9 +131,9 @@ pub fn infra_effective_grant(subject: Subject, infra: Infra) -> Protected<Option
         }
         .boxed()
     })
-    .with_check(SanityCheck::SubjectExists(subject))
-    .with_check(SanityCheck::InfraExists(infra))
-    .with_guardrail(Guardrail::IssuerHasInfraPrivilege(InfraPrivilege::CanRead, infra))
+    .with_check(Check::SubjectExists(subject))
+    .with_check(Check::InfraExists(infra))
+    .with_check(Check::IssuerHasInfraPrivilege(InfraPrivilege::CanRead, infra))
 }
 
 pub fn infra_privileges(user: User, infra: Infra) -> Protected<HashSet<InfraPrivilege>> {
@@ -172,9 +171,9 @@ pub fn infra_privileges(user: User, infra: Infra) -> Protected<HashSet<InfraPriv
         }
         .boxed()
     })
-    .with_check(SanityCheck::InfraExists(infra))
-    .with_check(SanityCheck::SubjectExists(Subject::user(user)))
-    .with_guardrail(Guardrail::IssuerHasInfraPrivilege(
+    .with_check(Check::InfraExists(infra))
+    .with_check(Check::SubjectExists(Subject::user(user)))
+    .with_check(Check::IssuerHasInfraPrivilege(
         InfraPrivilege::CanRead,
         infra,
     ))
@@ -243,11 +242,11 @@ pub fn infra_granted_subjects(infra: Infra, grant: InfraGrant) -> Protected<Vec<
             }
             .boxed()
         })
-        .with_guardrail(Guardrail::IssuerHasInfraPrivilege(
+        .with_check(Check::IssuerHasInfraPrivilege(
             InfraPrivilege::CanRead,
             infra,
         ))
-        .with_check(SanityCheck::InfraExists(infra))
+        .with_check(Check::InfraExists(infra))
 }
 
 #[cfg(test)]

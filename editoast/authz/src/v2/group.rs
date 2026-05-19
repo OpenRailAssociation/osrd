@@ -9,9 +9,8 @@ use itertools::Itertools as _;
 use crate::Group;
 use crate::Role;
 use crate::User;
-use crate::v2::Guardrail;
+use crate::v2::Check;
 use crate::v2::Protected;
-use crate::v2::SanityCheck;
 
 pub fn group_members(group: Group) -> Protected<Vec<User>> {
     Protected::new(move |openfga| {
@@ -31,17 +30,14 @@ pub fn group_members(group: Group) -> Protected<Vec<User>> {
         }
         .boxed()
     })
-    .with_check(SanityCheck::group(group))
+    .with_check(Check::group(group))
 }
 
 /// Adds some members to a group
 ///
 /// Idempotent but not atomic due to the lack of transactions in OpenFGA.
 pub fn add_members(group: Group, members: HashSet<User>) -> Protected<()> {
-    let user_exists_checks = members
-        .iter()
-        .map(|user| SanityCheck::user(*user))
-        .collect_vec(); // members is moved in Protected
+    let user_exists_checks = members.iter().map(|user| Check::user(*user)).collect_vec(); // members is moved in Protected
 
     group_members(group)
         .map(move |openfga, existing_members| {
@@ -59,17 +55,14 @@ pub fn add_members(group: Group, members: HashSet<User>) -> Protected<()> {
             .boxed()
         })
         .with_check_iter(user_exists_checks)
-        .with_guardrail(Guardrail::IssuerHasRole(Role::Admin))
+        .with_check(Check::IssuerHasRole(Role::Admin))
 }
 
 /// Removes some members from a group
 ///
 /// Idempotent but not atomic due to the lack of transactions in OpenFGA.
 pub fn remove_members(group: Group, members: HashSet<User>) -> Protected<()> {
-    let user_exists_checks = members
-        .iter()
-        .map(|user| SanityCheck::user(*user))
-        .collect_vec(); // members is moved in Protected
+    let user_exists_checks = members.iter().map(|user| Check::user(*user)).collect_vec(); // members is moved in Protected
 
     group_members(group)
         .map(move |openfga, existing_members| {
@@ -87,7 +80,7 @@ pub fn remove_members(group: Group, members: HashSet<User>) -> Protected<()> {
             .boxed()
         })
         .with_check_iter(user_exists_checks)
-        .with_guardrail(Guardrail::IssuerHasRole(Role::Admin))
+        .with_check(Check::IssuerHasRole(Role::Admin))
 }
 
 #[cfg(test)]
