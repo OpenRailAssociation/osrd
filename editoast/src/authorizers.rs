@@ -18,6 +18,29 @@ pub struct SystemAuthorizer<'a> {
     pub conn: database::DbConnection,
 }
 
+impl SystemAuthorizer<'_> {
+    #[tracing::instrument(target = "SystemAuthorizer::check", skip_all, fields(?check), ret(level = "trace"), err)]
+    async fn check(&self, check: &Check) -> Result<Option<Rejection>, editoast_models::Error> {
+        let conn = &mut self.conn.clone();
+        Ok(match check {
+            Check::SubjectExists(authz::Subject::User(authz::User(user_id))) => {
+                (!editoast_models::User::exists(conn, *user_id).await?)
+                    .then_some(Rejection::NoSuchUser(*user_id))
+            }
+            Check::SubjectExists(authz::Subject::Group(authz::Group(group_id))) => {
+                (!editoast_models::Group::exists(conn, *group_id).await?)
+                    .then_some(Rejection::NoSuchGroup(*group_id))
+            }
+            Check::InfraExists(authz::Infra(infra_id)) => {
+                (!editoast_models::Infra::exists(conn, *infra_id).await?)
+                    .then_some(Rejection::NoSuchInfra(*infra_id))
+            }
+            // checked by UserAuthorizer
+            Check::IssuerHasRole(_) | Check::IssuerHasInfraPrivilege(_, _) => None,
+        })
+    }
+}
+
 impl Authorizer for SystemAuthorizer<'_> {
     type Error = editoast_models::Error;
     type Rejection = Rejection;
@@ -27,9 +50,8 @@ impl Authorizer for SystemAuthorizer<'_> {
         &'a self,
         data: Protected<T>,
     ) -> Result<Access<'a, T, Self::Rejection>, Self::Error> {
-        let conn = &mut self.conn.clone();
         for check in &data.checks {
-            if let Some(rejection) = postgres_check(check, conn).await? {
+            if let Some(rejection) = self.check(check).await? {
                 return Ok(Access::Denied { rejection });
             }
         }
@@ -58,6 +80,30 @@ impl<'c> UserAuthorizer<'c> {
             conn,
         }
     }
+
+    #[tracing::instrument(target = "UserAutorizer::check", skip_all, fields(?check, issuer = ?self.user, roles = ?self.roles), ret(level = "trace"), err)]
+    async fn check(&self, check: &Check) -> Result<Option<Rejection>, authz::v2::OpenFgaError> {
+        Ok(match check {
+            Check::IssuerHasRole(role) if !self.roles.contains(role) => Some(
+                Rejection::LackingRole(authz::Subject::user(self.user), *role),
+            ),
+            Check::IssuerHasRole(_) => None,
+
+            Check::IssuerHasInfraPrivilege(privilege, infra) => {
+                let Ok(privileges) = authz::v2::infra_privileges(self.user, *infra)
+                    .access_authorized::<Infallible>(self.openfga)
+                    .access()
+                    .await?;
+                (!privileges.contains(privilege)).then_some(Rejection::LackingInfraPrivilege(
+                    *privilege,
+                    authz::Subject::user(self.user),
+                    *infra,
+                ))
+            }
+            // checked by SystemAuthorizer
+            Check::SubjectExists(_) | Check::InfraExists(_) => None,
+        })
+    }
 }
 
 impl Authorizer for UserAuthorizer<'_> {
@@ -69,17 +115,18 @@ impl Authorizer for UserAuthorizer<'_> {
         &'a self,
         data: Protected<T>,
     ) -> Result<Access<'a, T, Self::Rejection>, Self::Error> {
-        let conn = &mut self.conn.clone();
+        let system_authorizer = SystemAuthorizer {
+            openfga: self.openfga,
+            conn: self.conn.clone(),
+        };
         for check in &data.checks {
-            if let Some(rejection) = postgres_check(check, conn).await? {
+            if let Some(rejection) = system_authorizer.check(check).await? {
                 return Ok(Access::Denied { rejection });
             }
         }
         if !self.roles.contains(&authz::Role::Admin) {
             for check in &data.checks {
-                if let Some(rejection) =
-                    openfga_check(check, &self.user, &self.roles, self.openfga).await?
-                {
+                if let Some(rejection) = self.check(check).await? {
                     return Ok(Access::Denied { rejection });
                 }
             }
@@ -127,53 +174,3 @@ macro_rules! impossible {
     };
 }
 pub(crate) use impossible;
-
-#[tracing::instrument(skip_all, fields(?check), ret(level = "trace"), err)]
-async fn postgres_check(
-    check: &Check,
-    conn: &mut database::DbConnection,
-) -> Result<Option<Rejection>, editoast_models::Error> {
-    match check {
-        Check::SubjectExists(authz::Subject::User(authz::User(user_id))) => {
-            Ok((!editoast_models::User::exists(conn, *user_id).await?)
-                .then_some(Rejection::NoSuchUser(*user_id)))
-        }
-        Check::SubjectExists(authz::Subject::Group(authz::Group(group_id))) => {
-            Ok((!editoast_models::Group::exists(conn, *group_id).await?)
-                .then_some(Rejection::NoSuchGroup(*group_id)))
-        }
-        Check::InfraExists(authz::Infra(infra_id)) => {
-            Ok((!editoast_models::Infra::exists(conn, *infra_id).await?)
-                .then_some(Rejection::NoSuchInfra(*infra_id)))
-        }
-        Check::IssuerHasRole(_) | Check::IssuerHasInfraPrivilege(_, _) => Ok(None),
-    }
-}
-
-#[tracing::instrument(skip_all, fields(?check, ?issuer, ?roles), ret(level = "trace"), err)]
-async fn openfga_check(
-    check: &Check,
-    issuer: &authz::User,
-    roles: &[authz::Role],
-    openfga: &fga::Client,
-) -> Result<Option<Rejection>, authz::v2::OpenFgaError> {
-    Ok(match check {
-        Check::IssuerHasRole(role) if !roles.contains(role) => {
-            Some(Rejection::LackingRole(authz::Subject::user(*issuer), *role))
-        }
-        Check::IssuerHasRole(_) => None,
-
-        Check::IssuerHasInfraPrivilege(privilege, infra) => {
-            let Ok(privileges) = authz::v2::infra_privileges(*issuer, *infra)
-                .access_authorized::<Infallible>(openfga)
-                .access()
-                .await?;
-            (!privileges.contains(privilege)).then_some(Rejection::LackingInfraPrivilege(
-                *privilege,
-                authz::Subject::user(*issuer),
-                *infra,
-            ))
-        }
-        Check::SubjectExists(_) | Check::InfraExists(_) => None,
-    })
-}
