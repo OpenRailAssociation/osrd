@@ -1,5 +1,5 @@
+use std::collections::BTreeSet;
 use std::collections::HashMap;
-use std::collections::HashSet;
 use std::hash::DefaultHasher;
 use std::hash::Hash;
 use std::hash::Hasher as _;
@@ -152,19 +152,16 @@ where
     }
 }
 
-#[derive(Debug, educe::Educe, PartialEq, Eq)]
-#[educe(Hash)]
+#[derive(Debug, Hash, PartialEq, Eq)]
 #[cfg_attr(test, derive(Clone))]
 pub struct PathfindingConsist {
     pub loading_gauge: LoadingGaugeType,
     /// Can the consist run on non-electrified tracks
     pub thermal: bool,
     /// Supported electrification modes (leave empty for unelectrified consists)
-    #[educe(Hash(method(common::hashing_hash_set_string)))]
-    pub supported_electrifications: HashSet<String>,
+    pub supported_electrifications: BTreeSet<String>,
     /// A list of supported signaling systems
-    #[educe(Hash(method(common::hashing_hash_set_string)))]
-    pub supported_signaling_systems: HashSet<String>,
+    pub supported_signaling_systems: BTreeSet<String>,
     pub maximum_speed: OrderedFloat<f64>,
     /// Consist length in meters
     pub length: OrderedFloat<f64>,
@@ -459,8 +456,8 @@ pub(crate) mod test_data {
         PathfindingConsist {
             loading_gauge: LoadingGaugeType::GB,
             thermal: true,
-            supported_electrifications: HashSet::new(),
-            supported_signaling_systems: HashSet::from(["BAPR".to_owned()]),
+            supported_electrifications: BTreeSet::new(),
+            supported_signaling_systems: BTreeSet::from(["BAPR".to_owned()]),
             maximum_speed: OrderedFloat::from(100.0),
             length: OrderedFloat::from(id as f64),
             speed_limit_tag: Some("MA100".to_owned()),
