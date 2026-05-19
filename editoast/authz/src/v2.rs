@@ -41,7 +41,7 @@ pub struct Protected<T> {
     pub checks: HashSet<Check>,
 }
 
-/// A check to ensure data consistency that and the permission workflow is respected
+/// A check to ensure data consistency and permission workflow consistency
 #[derive(Debug, Clone, Copy, Hash, PartialEq, Eq)]
 pub enum Check {
     /// The issuer needs a role to perform the operation
