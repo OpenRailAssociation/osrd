@@ -47,13 +47,13 @@ sourceSets {
     main.resources.srcDirs += '../../assets/static_resources'
 }
 
-tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
-    kotlinOptions {
-        freeCompilerArgs += [
+kotlin {
+    compilerOptions {
+        freeCompilerArgs.addAll([
                 "-opt-in=kotlin.RequiresOptIn",
                 "-opt-in=kotlin.ExperimentalUnsignedTypes",
                 "-opt-in=kotlin.time.ExperimentalTime",
                 "-opt-in=kotlin.contracts.ExperimentalContracts",
-        ]
+        ])
     }
 }

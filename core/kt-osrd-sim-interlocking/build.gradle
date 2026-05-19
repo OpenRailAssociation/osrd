@@ -31,14 +31,14 @@ dependencies {
     testRuntimeOnly libs.logback.classic
 }
 
-tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
-    kotlinOptions {
-        freeCompilerArgs += [
+kotlin {
+    compilerOptions {
+        freeCompilerArgs.addAll([
                 "-opt-in=kotlin.RequiresOptIn",
                 "-opt-in=kotlin.ExperimentalUnsignedTypes",
                 "-opt-in=kotlin.time.ExperimentalTime",
                 "-opt-in=kotlin.contracts.ExperimentalContracts",
                 "-opt-in=kotlinx.coroutines.ExperimentalCoroutinesApi",
-        ]
+        ])
     }
 }

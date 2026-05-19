@@ -29,11 +29,11 @@ kotlin {
     }
 }
 
-tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
-    kotlinOptions {
-        freeCompilerArgs += [
+kotlin {
+    compilerOptions {
+        freeCompilerArgs.addAll([
                 "-opt-in=kotlin.RequiresOptIn",
                 "-opt-in=kotlin.ExperimentalUnsignedTypes",
-       ]
+        ])
     }
 }
