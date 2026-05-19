@@ -9,6 +9,7 @@ import {
 import { MouseContext } from '../../../spaceTimeChart/lib/context';
 import { COLORS } from '../../lib/consts';
 import type { OccupancyZone } from '../../lib/types';
+import { drawThroughTrain } from '../helpers/drawElements/drawOccupancyZones';
 
 const DraggingOccupancyZonesLayer = ({ occupancyZones }: { occupancyZones: OccupancyZone[] }) => {
   const mouseContext = useContext(MouseContext);
@@ -19,11 +20,15 @@ const DraggingOccupancyZonesLayer = ({ occupancyZones }: { occupancyZones: Occup
         const xStart = getTimePixel(zone.startTime);
         const xEnd = getTimePixel(zone.endTime);
 
-        const height = 5;
-        const radius = 2;
-        const rectY = mouseContext.position.y - height / 2;
-        ctx.beginPath();
-        ctx.roundRect(xStart, rectY, xEnd - xStart, height, radius);
+        if (zone.startTime === zone.endTime) {
+          drawThroughTrain(ctx, xStart, mouseContext.position.y);
+        } else {
+          const height = 5;
+          const radius = 2;
+          const rectY = mouseContext.position.y - height / 2;
+          ctx.beginPath();
+          ctx.roundRect(xStart, rectY, xEnd - xStart, height, radius);
+        }
 
         // Draw zone box
         ctx.save();
@@ -48,7 +53,7 @@ const DraggingOccupancyZonesLayer = ({ occupancyZones }: { occupancyZones: Occup
         ctx.lineCap = 'round';
         ctx.strokeStyle = COLORS.PRIMARY_50;
         ctx.setLineDash([0, 4]);
-        const verticalLineSpacing = 2.5;
+        const verticalLineSpacing = zone.startTime === zone.endTime ? 7 : 2.5;
         ctx.beginPath();
         ctx.moveTo(xStart - verticalLineSpacing, 0);
         ctx.lineTo(xStart - verticalLineSpacing, viewportHeight);
