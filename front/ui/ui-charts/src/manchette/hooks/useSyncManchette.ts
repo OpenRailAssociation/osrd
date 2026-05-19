@@ -247,6 +247,7 @@ const useSyncManchette = ({
       handleXZoomOnWheelEvent,
       yZoomHelpers: { zoomYIn, zoomYOut, resetZoom: resetYZoom },
       basicOnPan,
+      panTo,
     }),
     [
       state,
@@ -257,6 +258,7 @@ const useSyncManchette = ({
       zoomYOut,
       resetYZoom,
       basicOnPan,
+      panTo,
     ]
   );
 };
