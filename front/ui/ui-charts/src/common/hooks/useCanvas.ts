@@ -44,6 +44,7 @@ export function useCanvas<T extends BaseChartContextType>(
   );
   const chartContextRef = useRef(chartContext);
   const scheduledRef = useRef<null | { frameId: number }>(null);
+  const dirtyLayers = useRef<Set<LayerType>>(new Set());
 
   const [hoveredItem, setHoveredItem] = useState<HoveredItem | null>(null);
 
@@ -139,9 +140,11 @@ export function useCanvas<T extends BaseChartContextType>(
   /**
    * This function draws everything that needs to be drawn, and clears the scheduleRef state:
    */
-  const draw = useCallback(() => {
-    drawRendering(chartContextRef.current);
-    drawPicking(chartContextRef.current);
+  const draw = useCallback((layersKind: 'dirty' | 'all') => {
+    const layers = layersKind === 'dirty' ? dirtyLayers.current : new Set(LAYERS);
+    drawRendering(chartContextRef.current, layers);
+    drawPicking(chartContextRef.current, layers);
+    dirtyLayers.current.clear();
 
     if (scheduledRef.current) {
       window.cancelAnimationFrame(scheduledRef.current.frameId);
@@ -151,13 +154,18 @@ export function useCanvas<T extends BaseChartContextType>(
   }, []);
 
   /**
-   * This function schedules a full render for next frame, if no scheduling has been done yet:
+   * This function schedules a render for next frame, if no scheduling has been done yet:
    */
-  const scheduleRendering = useCallback(() => {
+  const scheduleRendering = useCallback((layers?: Set<LayerType>) => {
+    for (const layer of layers ?? LAYERS) {
+      dirtyLayers.current.add(layer);
+    }
+
     if (!scheduledRef.current) {
-      scheduledRef.current = {
-        frameId: window.requestAnimationFrame(draw),
-      };
+      const frameId = window.requestAnimationFrame(() => {
+        draw('dirty');
+      });
+      scheduledRef.current = { frameId };
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -178,7 +186,7 @@ export function useCanvas<T extends BaseChartContextType>(
       set.add(fn);
     }
 
-    scheduleRendering();
+    scheduleRendering(new Set([layer]));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -198,7 +206,7 @@ export function useCanvas<T extends BaseChartContextType>(
       set.delete(fn);
     }
 
-    scheduleRendering();
+    scheduleRendering(new Set([layer]));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -280,7 +288,7 @@ export function useCanvas<T extends BaseChartContextType>(
       }
     }
 
-    draw();
+    draw('all');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [size, devicePixelRatio]);
 
