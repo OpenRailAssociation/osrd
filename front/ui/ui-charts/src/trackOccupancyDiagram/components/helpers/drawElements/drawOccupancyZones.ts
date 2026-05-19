@@ -34,7 +34,7 @@ const ARROW_WIDTH = 4.5;
 const ARROW_TOP_Y = 3.5;
 const ARROW_BOTTOM_Y = 6.5;
 
-const drawThroughTrain = (ctx: CanvasRenderingContext2D, x: number, y: number) => {
+export const drawThroughTrain = (ctx: CanvasRenderingContext2D, x: number, y: number) => {
   // Through trains are materialized by converging arrows like the following ones
   //  ___
   //  \_/

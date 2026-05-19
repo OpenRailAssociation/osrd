@@ -9,7 +9,7 @@ import TRACKS from './assets/tracks';
 import './styles/track-occupancy.css';
 
 const SELECTED_TRAIN_ID = '5';
-const DRAGGING_OCCUPANCY_ZONES = [OCCUPANCY_ZONES[2]];
+const DRAGGING_OCCUPANCY_ZONES = [OCCUPANCY_ZONES[0], OCCUPANCY_ZONES[2]];
 
 const TrackOccupancyDiagramStory = ({
   trainId,
