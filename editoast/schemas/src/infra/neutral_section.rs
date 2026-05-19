@@ -23,14 +23,12 @@ pub struct NeutralSection {
     pub track_ranges: Vec<DirectionalTrackRange>,
     pub lower_pantograph: bool, // Whether the trains need to lower their pantograph to cross this section
     #[serde(default)]
-    #[schema(inline)]
     pub extensions: NeutralSectionExtensions,
 }
 
 #[derive(Debug, Default, Clone, Deserialize, Serialize, PartialEq, ToSchema)]
 #[serde(deny_unknown_fields)]
 pub struct NeutralSectionExtensions {
-    #[schema(inline)]
     pub neutral_sncf: Option<NeutralSectionNeutralSncfExtension>,
 }
 

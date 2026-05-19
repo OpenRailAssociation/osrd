@@ -681,7 +681,6 @@ struct RelatedOperationalPoint {
     id: Identifier,
     parts: Vec<RelatedOperationalPointPart>,
     #[serde(default)]
-    #[schema(inline)]
     extensions: OperationalPointExtensions,
     #[serde(default)]
     weight: Option<u8>,

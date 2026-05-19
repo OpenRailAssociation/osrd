@@ -255,7 +255,6 @@ pub struct Conflict {
     /// Datetime of the end of the conflict
     pub end_time: DateTime<Utc>,
     /// Type of the conflict
-    #[schema(inline)]
     pub conflict_type: ConflictType,
     /// List of requirements causing the conflict
     pub requirements: Vec<ConflictRequirement>,

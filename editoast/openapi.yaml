@@ -4984,19 +4984,7 @@ components:
       - position
       properties:
         extensions:
-          type: object
-          properties:
-            sncf:
-              oneOf:
-              - type: 'null'
-              - type: object
-                required:
-                - kp
-                properties:
-                  kp:
-                    type: string
-                additionalProperties: false
-          additionalProperties: false
+          $ref: '#/components/schemas/BufferStopExtension'
         id:
           type: string
           maxLength: 255
@@ -5008,6 +4996,22 @@ components:
           type: string
           maxLength: 255
           minLength: 1
+      additionalProperties: false
+    BufferStopExtension:
+      type: object
+      properties:
+        sncf:
+          oneOf:
+          - type: 'null'
+          - $ref: '#/components/schemas/BufferStopSncfExtension'
+      additionalProperties: false
+    BufferStopSncfExtension:
+      type: object
+      required:
+      - kp
+      properties:
+        kp:
+          type: string
       additionalProperties: false
     CatalogEntry:
       type: object
@@ -5056,11 +5060,7 @@ components:
       - requirements
       properties:
         conflict_type:
-          oneOf:
-          - type: string
-            enum:
-            - Spacing
-            - Routing
+          $ref: '#/components/schemas/CoreConflictType'
           description: Type of the conflict
         end_time:
           type: string
@@ -5247,6 +5247,11 @@ components:
           format: date-time
         zone:
           type: string
+    CoreConflictType:
+      type: string
+      enum:
+      - Spacing
+      - Routing
     CoreConsistConfiguration:
       type: object
       description: Represents a physics consist.
@@ -5388,97 +5393,13 @@ components:
       - conflict_type
       properties:
         conflict_type:
-          type: string
-          enum:
-          - Spacing
-          - Routing
+          $ref: '#/components/schemas/CoreConflictType'
         guidance:
-          type: object
-          required:
-          - positions
-          - times
-          - speeds
-          properties:
-            positions:
-              type: array
-              items:
-                type: integer
-                format: int64
-                minimum: 0
-              description: |-
-                List of positions of a train
-                Both positions (in mm) and times (in ms) must have the same length
-            speeds:
-              type: array
-              items:
-                type: number
-                format: double
-              description: List of speeds (in m/s) associated to a position
-            times:
-              type: array
-              items:
-                type: integer
-                format: int64
-                minimum: 0
-              description: List of times (in ms) associated to a position
+          $ref: '#/components/schemas/CoreSimpleEnvelope'
         indication:
-          type: object
-          required:
-          - positions
-          - times
-          - speeds
-          properties:
-            positions:
-              type: array
-              items:
-                type: integer
-                format: int64
-                minimum: 0
-              description: |-
-                List of positions of a train
-                Both positions (in mm) and times (in ms) must have the same length
-            speeds:
-              type: array
-              items:
-                type: number
-                format: double
-              description: List of speeds (in m/s) associated to a position
-            times:
-              type: array
-              items:
-                type: integer
-                format: int64
-                minimum: 0
-              description: List of times (in ms) associated to a position
+          $ref: '#/components/schemas/CoreSimpleEnvelope'
         permitted_speed:
-          type: object
-          required:
-          - positions
-          - times
-          - speeds
-          properties:
-            positions:
-              type: array
-              items:
-                type: integer
-                format: int64
-                minimum: 0
-              description: |-
-                List of positions of a train
-                Both positions (in mm) and times (in ms) must have the same length
-            speeds:
-              type: array
-              items:
-                type: number
-                format: double
-              description: List of speeds (in m/s) associated to a position
-            times:
-              type: array
-              items:
-                type: integer
-                format: int64
-                minimum: 0
-              description: List of times (in ms) associated to a position
+          $ref: '#/components/schemas/CoreSimpleEnvelope'
     CoreETCSCurves:
       type: object
       required:
@@ -5486,94 +5407,13 @@ components:
       - guidance
       properties:
         guidance:
-          type: object
-          required:
-          - positions
-          - times
-          - speeds
-          properties:
-            positions:
-              type: array
-              items:
-                type: integer
-                format: int64
-                minimum: 0
-              description: |-
-                List of positions of a train
-                Both positions (in mm) and times (in ms) must have the same length
-            speeds:
-              type: array
-              items:
-                type: number
-                format: double
-              description: List of speeds (in m/s) associated to a position
-            times:
-              type: array
-              items:
-                type: integer
-                format: int64
-                minimum: 0
-              description: List of times (in ms) associated to a position
+          $ref: '#/components/schemas/CoreSimpleEnvelope'
         indication:
           oneOf:
           - type: 'null'
-          - type: object
-            required:
-            - positions
-            - times
-            - speeds
-            properties:
-              positions:
-                type: array
-                items:
-                  type: integer
-                  format: int64
-                  minimum: 0
-                description: |-
-                  List of positions of a train
-                  Both positions (in mm) and times (in ms) must have the same length
-              speeds:
-                type: array
-                items:
-                  type: number
-                  format: double
-                description: List of speeds (in m/s) associated to a position
-              times:
-                type: array
-                items:
-                  type: integer
-                  format: int64
-                  minimum: 0
-                description: List of times (in ms) associated to a position
+          - $ref: '#/components/schemas/CoreSimpleEnvelope'
         permitted_speed:
-          type: object
-          required:
-          - positions
-          - times
-          - speeds
-          properties:
-            positions:
-              type: array
-              items:
-                type: integer
-                format: int64
-                minimum: 0
-              description: |-
-                List of positions of a train
-                Both positions (in mm) and times (in ms) must have the same length
-            speeds:
-              type: array
-              items:
-                type: number
-                format: double
-              description: List of speeds (in m/s) associated to a position
-            times:
-              type: array
-              items:
-                type: integer
-                format: int64
-                minimum: 0
-              description: List of times (in ms) associated to a position
+          $ref: '#/components/schemas/CoreSimpleEnvelope'
     CoreIncompatibleConstraints:
       type: object
       required:
@@ -5999,6 +5839,35 @@ components:
           format: int64
           description: The aspects start being displayed at this time (number of ms since `departure_time`)
           minimum: 0
+    CoreSimpleEnvelope:
+      type: object
+      required:
+      - positions
+      - times
+      - speeds
+      properties:
+        positions:
+          type: array
+          items:
+            type: integer
+            format: int64
+            minimum: 0
+          description: |-
+            List of positions of a train
+            Both positions (in mm) and times (in ms) must have the same length
+        speeds:
+          type: array
+          items:
+            type: number
+            format: double
+          description: List of speeds (in m/s) associated to a position
+        times:
+          type: array
+          items:
+            type: integer
+            format: int64
+            minimum: 0
+          description: List of times (in ms) associated to a position
     CoreSpacingRequirement:
       type: object
       required:
@@ -6331,19 +6200,7 @@ components:
       - position
       properties:
         extensions:
-          type: object
-          required:
-          - sncf
-          properties:
-            sncf:
-              type: object
-              required:
-              - kp
-              properties:
-                kp:
-                  type: string
-              additionalProperties: false
-          additionalProperties: false
+          $ref: '#/components/schemas/DetectorExtension'
         id:
           type: string
           maxLength: 255
@@ -6355,6 +6212,22 @@ components:
           type: string
           maxLength: 255
           minLength: 1
+      additionalProperties: false
+    DetectorExtension:
+      type: object
+      required:
+      - sncf
+      properties:
+        sncf:
+          $ref: '#/components/schemas/DetectorSncfExtension'
+      additionalProperties: false
+    DetectorSncfExtension:
+      type: object
+      required:
+      - kp
+      properties:
+        kp:
+          type: string
       additionalProperties: false
     Direction:
       type: string
@@ -11558,34 +11431,7 @@ components:
           items:
             $ref: '#/components/schemas/DirectionalTrackRange'
         extensions:
-          type: object
-          properties:
-            neutral_sncf:
-              oneOf:
-              - type: 'null'
-              - type: object
-                required:
-                - announcement
-                - exe
-                - end
-                - rev
-                properties:
-                  announcement:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/Sign'
-                  end:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/Sign'
-                  exe:
-                    $ref: '#/components/schemas/Sign'
-                  rev:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/Sign'
-                additionalProperties: false
-          additionalProperties: false
+          $ref: '#/components/schemas/NeutralSectionExtensions'
         id:
           type: string
           maxLength: 255
@@ -11596,6 +11442,37 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/DirectionalTrackRange'
+      additionalProperties: false
+    NeutralSectionExtensions:
+      type: object
+      properties:
+        neutral_sncf:
+          oneOf:
+          - type: 'null'
+          - $ref: '#/components/schemas/NeutralSectionNeutralSncfExtension'
+      additionalProperties: false
+    NeutralSectionNeutralSncfExtension:
+      type: object
+      required:
+      - announcement
+      - exe
+      - end
+      - rev
+      properties:
+        announcement:
+          type: array
+          items:
+            $ref: '#/components/schemas/Sign'
+        end:
+          type: array
+          items:
+            $ref: '#/components/schemas/Sign'
+        exe:
+          $ref: '#/components/schemas/Sign'
+        rev:
+          type: array
+          items:
+            $ref: '#/components/schemas/Sign'
       additionalProperties: false
     NewDocumentResponse:
       type: object
@@ -11749,50 +11626,7 @@ components:
       - parts
       properties:
         extensions:
-          type: object
-          properties:
-            identifier:
-              oneOf:
-              - type: 'null'
-              - type: object
-                required:
-                - name
-                - uic
-                properties:
-                  name:
-                    type: string
-                    minLength: 1
-                  uic:
-                    type: integer
-                    format: int32
-                    minimum: 0
-                additionalProperties: false
-            sncf:
-              oneOf:
-              - type: 'null'
-              - type: object
-                required:
-                - ci
-                - ch
-                - ch_short_label
-                - ch_long_label
-                - trigram
-                properties:
-                  ch:
-                    type: string
-                  ch_long_label:
-                    type: string
-                    minLength: 1
-                  ch_short_label:
-                    type: string
-                    minLength: 1
-                  ci:
-                    type: integer
-                    format: int64
-                  trigram:
-                    type: string
-                additionalProperties: false
-          additionalProperties: false
+          $ref: '#/components/schemas/OperationalPointExtensions'
         id:
           type: string
           maxLength: 255
@@ -11835,28 +11669,7 @@ components:
         sncf:
           oneOf:
           - type: 'null'
-          - type: object
-            required:
-            - ci
-            - ch
-            - ch_short_label
-            - ch_long_label
-            - trigram
-            properties:
-              ch:
-                type: string
-              ch_long_label:
-                type: string
-                minLength: 1
-              ch_short_label:
-                type: string
-                minLength: 1
-              ci:
-                type: integer
-                format: int64
-              trigram:
-                type: string
-            additionalProperties: false
+          - $ref: '#/components/schemas/OperationalPointSncfExtension'
       additionalProperties: false
     OperationalPointPart:
       type: object
@@ -11866,19 +11679,7 @@ components:
       - local_track_name
       properties:
         extensions:
-          type: object
-          properties:
-            sncf:
-              oneOf:
-              - type: 'null'
-              - type: object
-                required:
-                - kp
-                properties:
-                  kp:
-                    type: string
-                additionalProperties: false
-          additionalProperties: false
+          $ref: '#/components/schemas/OperationalPointPartExtension'
         local_track_name:
           $ref: '#/components/schemas/NonBlankString'
         position:
@@ -11889,6 +11690,14 @@ components:
           type: string
           maxLength: 255
           minLength: 1
+      additionalProperties: false
+    OperationalPointPartExtension:
+      type: object
+      properties:
+        sncf:
+          oneOf:
+          - type: 'null'
+          - $ref: '#/components/schemas/OperationalPointPartSncfExtension'
       additionalProperties: false
     OperationalPointPartReference:
       type: object
@@ -11902,6 +11711,14 @@ components:
             minLength: 1
         operational_point:
           $ref: '#/components/schemas/OperationalPointReference'
+    OperationalPointPartSncfExtension:
+      type: object
+      required:
+      - kp
+      properties:
+        kp:
+          type: string
+      additionalProperties: false
     OperationalPointReference:
       oneOf:
       - type: object
@@ -11960,6 +11777,29 @@ components:
             format: int32
             description: The [UIC](https://en.wikipedia.org/wiki/List_of_UIC_country_codes) code of an operational point
             minimum: 0
+    OperationalPointSncfExtension:
+      type: object
+      required:
+      - ci
+      - ch
+      - ch_short_label
+      - ch_long_label
+      - trigram
+      properties:
+        ch:
+          type: string
+        ch_long_label:
+          type: string
+          minLength: 1
+        ch_short_label:
+          type: string
+          minLength: 1
+        ci:
+          type: integer
+          format: int64
+        trigram:
+          type: string
+      additionalProperties: false
     OptionsChangeGroup:
       type: object
       required:
@@ -12969,50 +12809,7 @@ components:
       - parts
       properties:
         extensions:
-          type: object
-          properties:
-            identifier:
-              oneOf:
-              - type: 'null'
-              - type: object
-                required:
-                - name
-                - uic
-                properties:
-                  name:
-                    type: string
-                    minLength: 1
-                  uic:
-                    type: integer
-                    format: int32
-                    minimum: 0
-                additionalProperties: false
-            sncf:
-              oneOf:
-              - type: 'null'
-              - type: object
-                required:
-                - ci
-                - ch
-                - ch_short_label
-                - ch_long_label
-                - trigram
-                properties:
-                  ch:
-                    type: string
-                  ch_long_label:
-                    type: string
-                    minLength: 1
-                  ch_short_label:
-                    type: string
-                    minLength: 1
-                  ci:
-                    type: integer
-                    format: int64
-                  trigram:
-                    type: string
-                additionalProperties: false
-          additionalProperties: false
+          $ref: '#/components/schemas/OperationalPointExtensions'
         geo:
           oneOf:
           - type: 'null'
@@ -14231,24 +14028,7 @@ components:
         direction:
           $ref: '#/components/schemas/Direction'
         extensions:
-          type: object
-          properties:
-            sncf:
-              oneOf:
-              - type: 'null'
-              - type: object
-                required:
-                - label
-                - kp
-                properties:
-                  kp:
-                    type: string
-                  label:
-                    type: string
-                  side:
-                    $ref: '#/components/schemas/Side'
-                additionalProperties: false
-          additionalProperties: false
+          $ref: '#/components/schemas/SignalExtensions'
         id:
           type: string
           maxLength: 255
@@ -14315,6 +14095,27 @@ components:
           type: string
           maxLength: 255
           minLength: 1
+      additionalProperties: false
+    SignalExtensions:
+      type: object
+      properties:
+        sncf:
+          oneOf:
+          - type: 'null'
+          - $ref: '#/components/schemas/SignalSncfExtension'
+      additionalProperties: false
+    SignalSncfExtension:
+      type: object
+      required:
+      - label
+      - kp
+      properties:
+        kp:
+          type: string
+        label:
+          type: string
+        side:
+          $ref: '#/components/schemas/Side'
       additionalProperties: false
     SimilarTrainWaypoint:
       type: object
@@ -14772,29 +14573,7 @@ components:
       - track_ranges
       properties:
         extensions:
-          type: object
-          properties:
-            psl_sncf:
-              oneOf:
-              - type: 'null'
-              - type: object
-                required:
-                - announcement
-                - z
-                - r
-                properties:
-                  announcement:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/Sign'
-                  r:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/Sign'
-                  z:
-                    $ref: '#/components/schemas/Sign'
-                additionalProperties: false
-          additionalProperties: false
+          $ref: '#/components/schemas/SpeedSectionExtensions'
         id:
           type: string
           maxLength: 255
@@ -14824,6 +14603,32 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ApplicableDirectionsTrackRange'
+      additionalProperties: false
+    SpeedSectionExtensions:
+      type: object
+      properties:
+        psl_sncf:
+          oneOf:
+          - type: 'null'
+          - $ref: '#/components/schemas/SpeedSectionPslSncfExtension'
+      additionalProperties: false
+    SpeedSectionPslSncfExtension:
+      type: object
+      required:
+      - announcement
+      - z
+      - r
+      properties:
+        announcement:
+          type: array
+          items:
+            $ref: '#/components/schemas/Sign'
+        r:
+          type: array
+          items:
+            $ref: '#/components/schemas/Sign'
+        z:
+          $ref: '#/components/schemas/Sign'
       additionalProperties: false
     StartTimeChangeGroup:
       type: object
@@ -15446,20 +15251,7 @@ components:
       - ports
       properties:
         extensions:
-          type: object
-          properties:
-            sncf:
-              oneOf:
-              - type: 'null'
-              - type: object
-                required:
-                - label
-                properties:
-                  label:
-                    type: string
-                    minLength: 1
-                additionalProperties: false
-          additionalProperties: false
+          $ref: '#/components/schemas/SwitchExtensions'
         group_change_delay:
           type: number
           format: double
@@ -15480,6 +15272,14 @@ components:
           maxLength: 255
           minLength: 1
       additionalProperties: false
+    SwitchExtensions:
+      type: object
+      properties:
+        sncf:
+          oneOf:
+          - type: 'null'
+          - $ref: '#/components/schemas/SwitchSncfExtension'
+      additionalProperties: false
     SwitchPortConnection:
       type: object
       required:
@@ -15493,6 +15293,15 @@ components:
         src:
           type: string
           maxLength: 255
+          minLength: 1
+      additionalProperties: false
+    SwitchSncfExtension:
+      type: object
+      required:
+      - label
+      properties:
+        label:
+          type: string
           minLength: 1
       additionalProperties: false
     SwitchType:
@@ -15749,47 +15558,7 @@ components:
           items:
             $ref: '#/components/schemas/Curve'
         extensions:
-          type: object
-          properties:
-            sncf:
-              oneOf:
-              - type: 'null'
-              - type: object
-                required:
-                - line_code
-                - line_name
-                - track_number
-                - track_name
-                properties:
-                  line_code:
-                    type: integer
-                    format: int32
-                  line_name:
-                    type: string
-                    minLength: 1
-                  track_name:
-                    type: string
-                    minLength: 1
-                  track_number:
-                    type: integer
-                    format: int32
-                additionalProperties: false
-            source:
-              oneOf:
-              - type: 'null'
-              - type: object
-                required:
-                - name
-                - id
-                properties:
-                  id:
-                    type: string
-                    minLength: 1
-                  name:
-                    type: string
-                    minLength: 1
-                additionalProperties: false
-          additionalProperties: false
+          $ref: '#/components/schemas/TrackSectionExtensions'
         geo:
           $ref: '#/components/schemas/GeoJsonLineString'
         id:
@@ -15807,6 +15576,50 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Slope'
+      additionalProperties: false
+    TrackSectionExtensions:
+      type: object
+      properties:
+        sncf:
+          oneOf:
+          - type: 'null'
+          - $ref: '#/components/schemas/TrackSectionSncfExtension'
+        source:
+          oneOf:
+          - type: 'null'
+          - type: object
+            required:
+            - name
+            - id
+            properties:
+              id:
+                type: string
+                minLength: 1
+              name:
+                type: string
+                minLength: 1
+            additionalProperties: false
+      additionalProperties: false
+    TrackSectionSncfExtension:
+      type: object
+      required:
+      - line_code
+      - line_name
+      - track_number
+      - track_name
+      properties:
+        line_code:
+          type: integer
+          format: int32
+        line_name:
+          type: string
+          minLength: 1
+        track_name:
+          type: string
+          minLength: 1
+        track_number:
+          type: integer
+          format: int32
       additionalProperties: false
     TrainCategory:
       oneOf:

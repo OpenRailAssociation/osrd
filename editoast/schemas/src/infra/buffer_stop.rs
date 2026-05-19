@@ -19,7 +19,6 @@ pub struct BufferStop {
     pub track: Identifier,
     pub position: f64,
     #[serde(default)]
-    #[schema(inline)]
     pub extensions: BufferStopExtension,
 }
 
@@ -38,7 +37,6 @@ impl OSRDIdentified for BufferStop {
 #[derive(Debug, Default, Clone, Deserialize, Serialize, PartialEq, Eq, ToSchema)]
 #[serde(deny_unknown_fields)]
 pub struct BufferStopExtension {
-    #[schema(inline)]
     pub sncf: Option<BufferStopSncfExtension>,
 }
 

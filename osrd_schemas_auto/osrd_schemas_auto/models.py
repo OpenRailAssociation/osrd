@@ -66,28 +66,11 @@ class BoundingBox(BaseModel):
     min_lon: float
 
 
-class Sncf(BaseModel):
+class BufferStopSncfExtension(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
     kp: str
-
-
-class Extensions(BaseModel):
-    model_config = ConfigDict(
-        extra="forbid",
-    )
-    sncf: Sncf | None = None
-
-
-class BufferStop(BaseModel):
-    model_config = ConfigDict(
-        extra="forbid",
-    )
-    extensions: Extensions | None = None
-    id: Annotated[str, Field(max_length=255, min_length=1)]
-    position: float
-    track: Annotated[str, Field(max_length=255, min_length=1)]
 
 
 class CatalogEntry(BaseModel):
@@ -103,15 +86,6 @@ class Comfort(Enum):
     STANDARD = "STANDARD"
     AIR_CONDITIONING = "AIR_CONDITIONING"
     HEATING = "HEATING"
-
-
-class ConflictType(Enum):
-    """
-    Type of the conflict
-    """
-
-    Spacing = "Spacing"
-    Routing = "Routing"
 
 
 class OccurrenceIdBase(BaseModel):
@@ -179,126 +153,9 @@ class CoreConflictRequirement(BaseModel):
     zone: str
 
 
-class ConflictType1(Enum):
+class CoreConflictType(Enum):
     Spacing = "Spacing"
     Routing = "Routing"
-
-
-class Position(RootModel[int]):
-    root: Annotated[int, Field(ge=0)]
-
-
-class Time(RootModel[int]):
-    root: Annotated[int, Field(ge=0)]
-
-
-class Guidance(BaseModel):
-    positions: list[Position]
-    """
-    List of positions of a train
-    Both positions (in mm) and times (in ms) must have the same length
-    """
-    speeds: list[float]
-    """
-    List of speeds (in m/s) associated to a position
-    """
-    times: list[Time]
-    """
-    List of times (in ms) associated to a position
-    """
-
-
-class Indication(BaseModel):
-    positions: list[Position]
-    """
-    List of positions of a train
-    Both positions (in mm) and times (in ms) must have the same length
-    """
-    speeds: list[float]
-    """
-    List of speeds (in m/s) associated to a position
-    """
-    times: list[Time]
-    """
-    List of times (in ms) associated to a position
-    """
-
-
-class PermittedSpeed(BaseModel):
-    positions: list[Position]
-    """
-    List of positions of a train
-    Both positions (in mm) and times (in ms) must have the same length
-    """
-    speeds: list[float]
-    """
-    List of speeds (in m/s) associated to a position
-    """
-    times: list[Time]
-    """
-    List of times (in ms) associated to a position
-    """
-
-
-class CoreETCSConflictCurves(BaseModel):
-    conflict_type: ConflictType1
-    guidance: Guidance
-    indication: Indication
-    permitted_speed: PermittedSpeed
-
-
-class Guidance1(BaseModel):
-    positions: list[Position]
-    """
-    List of positions of a train
-    Both positions (in mm) and times (in ms) must have the same length
-    """
-    speeds: list[float]
-    """
-    List of speeds (in m/s) associated to a position
-    """
-    times: list[Time]
-    """
-    List of times (in ms) associated to a position
-    """
-
-
-class Indication1(BaseModel):
-    positions: list[Position]
-    """
-    List of positions of a train
-    Both positions (in mm) and times (in ms) must have the same length
-    """
-    speeds: list[float]
-    """
-    List of speeds (in m/s) associated to a position
-    """
-    times: list[Time]
-    """
-    List of times (in ms) associated to a position
-    """
-
-
-class PermittedSpeed1(BaseModel):
-    positions: list[Position]
-    """
-    List of positions of a train
-    Both positions (in mm) and times (in ms) must have the same length
-    """
-    speeds: list[float]
-    """
-    List of speeds (in m/s) associated to a position
-    """
-    times: list[Time]
-    """
-    List of times (in ms) associated to a position
-    """
-
-
-class CoreETCSCurves(BaseModel):
-    guidance: Guidance1
-    indication: Indication1 | None = None
-    permitted_speed: PermittedSpeed1
 
 
 class CoreObjectRange(BaseModel):
@@ -351,6 +208,14 @@ class PathItemPosition(RootModel[int]):
 
 
 class PathItemTime(RootModel[int]):
+    root: Annotated[int, Field(ge=0)]
+
+
+class Position(RootModel[int]):
+    root: Annotated[int, Field(ge=0)]
+
+
+class Time(RootModel[int]):
     root: Annotated[int, Field(ge=0)]
 
 
@@ -442,6 +307,22 @@ class CoreSignalUpdate(BaseModel):
     time_start: Annotated[int, Field(ge=0)]
     """
     The aspects start being displayed at this time (number of ms since `departure_time`)
+    """
+
+
+class CoreSimpleEnvelope(BaseModel):
+    positions: list[Position]
+    """
+    List of positions of a train
+    Both positions (in mm) and times (in ms) must have the same length
+    """
+    speeds: list[float]
+    """
+    List of speeds (in m/s) associated to a position
+    """
+    times: list[Time]
+    """
+    List of times (in ms) associated to a position
     """
 
 
@@ -541,21 +422,11 @@ class Curve(BaseModel):
     radius: float
 
 
-class Extensions1(BaseModel):
+class DetectorSncfExtension(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
-    sncf: Sncf
-
-
-class Detector(BaseModel):
-    model_config = ConfigDict(
-        extra="forbid",
-    )
-    extensions: Extensions1 | None = None
-    id: Annotated[str, Field(max_length=255, min_length=1)]
-    position: float
-    track: Annotated[str, Field(max_length=255, min_length=1)]
+    kp: str
 
 
 class Direction(Enum):
@@ -2604,16 +2475,6 @@ class InfraGrant(Enum):
     OWNER = "OWNER"
 
 
-class InfraObjectDetector(BaseModel):
-    obj_type: Literal["Detector"]
-    railjson: Detector
-
-
-class InfraObjectBufferStop(BaseModel):
-    obj_type: Literal["BufferStop"]
-    railjson: BufferStop
-
-
 class InfraObjectElectrification(BaseModel):
     obj_type: Literal["Electrification"]
     railjson: Electrification
@@ -2780,62 +2641,15 @@ class Identifier1(BaseModel):
     uic: Annotated[int, Field(ge=0)]
 
 
-class Sncf2(BaseModel):
-    model_config = ConfigDict(
-        extra="forbid",
-    )
-    ch: str
-    ch_long_label: Annotated[str, Field(min_length=1)]
-    ch_short_label: Annotated[str, Field(min_length=1)]
-    ci: int
-    trigram: str
+class LocalTrackName(RootModel[str]):
+    root: Annotated[str, Field(min_length=1)]
 
 
-class Extensions3(BaseModel):
-    model_config = ConfigDict(
-        extra="forbid",
-    )
-    identifier: Identifier1 | None = None
-    sncf: Sncf2 | None = None
-
-
-class OperationalPointExtensions(BaseModel):
-    model_config = ConfigDict(
-        extra="forbid",
-    )
-    identifier: Identifier1 | None = None
-    sncf: Sncf2 | None = None
-
-
-class Sncf4(BaseModel):
+class OperationalPointPartSncfExtension(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
     kp: str
-
-
-class Extensions4(BaseModel):
-    model_config = ConfigDict(
-        extra="forbid",
-    )
-    sncf: Sncf4 | None = None
-
-
-class OperationalPointPart(BaseModel):
-    model_config = ConfigDict(
-        extra="forbid",
-    )
-    extensions: Extensions4 | None = None
-    local_track_name: Annotated[str, Field(min_length=1)]
-    position: float
-    """
-    Offset on the track section, in m
-    """
-    track: Annotated[str, Field(max_length=255, min_length=1)]
-
-
-class LocalTrackName(RootModel[str]):
-    root: Annotated[str, Field(min_length=1)]
 
 
 class OperationalPointReferenceId(BaseModel):
@@ -2868,6 +2682,17 @@ class OperationalPointReferenceUic(BaseModel):
     """
     The [UIC](https://en.wikipedia.org/wiki/List_of_UIC_country_codes) code of an operational point
     """
+
+
+class OperationalPointSncfExtension(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    ch: str
+    ch_long_label: Annotated[str, Field(min_length=1)]
+    ch_short_label: Annotated[str, Field(min_length=1)]
+    ci: int
+    trigram: str
 
 
 class PaginationStats(BaseModel):
@@ -3011,33 +2836,6 @@ class Electrifications(BaseModel):
     """
 
 
-class OperationalPoint2(BaseModel):
-    """
-    Operational point along a path.
-    """
-
-    extensions: OperationalPointExtensions | None = None
-    """
-    Extensions associated to the operational point
-    """
-    id: str
-    """
-    Id of the operational point
-    """
-    part: OperationalPointPart
-    """
-    The part along the path
-    """
-    position: Annotated[int, Field(ge=0)]
-    """
-    Distance from the beginning of the path in mm
-    """
-    weight: Annotated[int | None, Field(ge=0, le=100)] = None
-    """
-    Importance of the operational point
-    """
-
-
 class Slopes(BaseModel):
     """
     Property f64 values along a path. Each value is associated to a range of the path.
@@ -3174,25 +2972,6 @@ class RefillLaw(BaseModel):
     )
     soc_ref: Annotated[float, Field(ge=0.0, le=1.0)]
     tau: Annotated[float, Field(ge=0.0)]
-
-
-class Sncf5(BaseModel):
-    model_config = ConfigDict(
-        extra="forbid",
-    )
-    ch: str
-    ch_long_label: Annotated[str, Field(min_length=1)]
-    ch_short_label: Annotated[str, Field(min_length=1)]
-    ci: int
-    trigram: str
-
-
-class Extensions5(BaseModel):
-    model_config = ConfigDict(
-        extra="forbid",
-    )
-    identifier: Identifier1 | None = None
-    sncf: Sncf5 | None = None
 
 
 class RemoveOperation(BaseModel):
@@ -3491,22 +3270,6 @@ class Sign(BaseModel):
     value: str
 
 
-class Sncf6(BaseModel):
-    model_config = ConfigDict(
-        extra="forbid",
-    )
-    kp: str
-    label: str
-    side: Side | None = None
-
-
-class Extensions6(BaseModel):
-    model_config = ConfigDict(
-        extra="forbid",
-    )
-    sncf: Sncf6 | None = None
-
-
 class ConditionalParameter(BaseModel):
     on_route: Annotated[str, Field(min_length=1)]
     parameters: dict[str, str]
@@ -3520,17 +3283,13 @@ class LogicalSignal(BaseModel):
     signaling_system: str
 
 
-class Signal(BaseModel):
+class SignalSncfExtension(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
-    direction: Direction
-    extensions: Extensions6 | None = None
-    id: Annotated[str, Field(max_length=255, min_length=1)]
-    logical_signals: list[LogicalSignal] | None = None
-    position: float
-    sight_distance: float
-    track: Annotated[str, Field(max_length=255, min_length=1)]
+    kp: str
+    label: str
+    side: Side | None = None
 
 
 class SimilarTrainWaypoint(BaseModel):
@@ -3769,36 +3528,17 @@ class SpeedLimits(BaseModel):
     speed_limit_tags: dict[str, int]
 
 
-class PslSncf(BaseModel):
+class OnRoute(RootModel[str]):
+    root: Annotated[str, Field(max_length=255, min_length=1)]
+
+
+class SpeedSectionPslSncfExtension(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
     announcement: list[Sign]
     r: list[Sign]
     z: Sign
-
-
-class Extensions7(BaseModel):
-    model_config = ConfigDict(
-        extra="forbid",
-    )
-    psl_sncf: PslSncf | None = None
-
-
-class OnRoute(RootModel[str]):
-    root: Annotated[str, Field(max_length=255, min_length=1)]
-
-
-class SpeedSection(BaseModel):
-    model_config = ConfigDict(
-        extra="forbid",
-    )
-    extensions: Extensions7 | None = None
-    id: Annotated[str, Field(max_length=255, min_length=1)]
-    on_routes: list[OnRoute] | None = None
-    speed_limit: float | None = None
-    speed_limit_by_tag: dict[str, float]
-    track_ranges: list[ApplicableDirectionsTrackRange]
 
 
 class StartTimeChangeGroup(BaseModel):
@@ -3901,26 +3641,19 @@ class SupportedSignalingSystemTVM430(BaseModel):
     type: Literal["TVM430"]
 
 
-class Sncf7(BaseModel):
-    model_config = ConfigDict(
-        extra="forbid",
-    )
-    label: Annotated[str, Field(min_length=1)]
-
-
-class Extensions8(BaseModel):
-    model_config = ConfigDict(
-        extra="forbid",
-    )
-    sncf: Sncf7 | None = None
-
-
 class SwitchPortConnection(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
     dst: Annotated[str, Field(max_length=255, min_length=1)]
     src: Annotated[str, Field(max_length=255, min_length=1)]
+
+
+class SwitchSncfExtension(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    label: Annotated[str, Field(min_length=1)]
 
 
 class Port(RootModel[str]):
@@ -4067,16 +3800,6 @@ class TrackRange(BaseModel):
     track: Annotated[str, Field(examples=["01234567-89ab-cdef-0123-456789abcdef"])]
 
 
-class Sncf8(BaseModel):
-    model_config = ConfigDict(
-        extra="forbid",
-    )
-    line_code: int
-    line_name: Annotated[str, Field(min_length=1)]
-    track_name: Annotated[str, Field(min_length=1)]
-    track_number: int
-
-
 class Source(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
@@ -4085,12 +3808,14 @@ class Source(BaseModel):
     name: Annotated[str, Field(min_length=1)]
 
 
-class Extensions9(BaseModel):
+class TrackSectionSncfExtension(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
-    sncf: Sncf8 | None = None
-    source: Source | None = None
+    line_code: int
+    line_name: Annotated[str, Field(min_length=1)]
+    track_name: Annotated[str, Field(min_length=1)]
+    track_number: int
 
 
 class TrainCategorySub(BaseModel):
@@ -4326,6 +4051,13 @@ class SendLastMinuteRequestPostRequest(BaseModel):
     simulation_report_sheet: bytes
 
 
+class BufferStopExtension(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    sncf: BufferStopSncfExtension | None = None
+
+
 class ConditionalEffortCurve(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
@@ -4335,7 +4067,7 @@ class ConditionalEffortCurve(BaseModel):
 
 
 class Conflict(BaseModel):
-    conflict_type: ConflictType
+    conflict_type: CoreConflictType
     """
     Type of the conflict
     """
@@ -4400,22 +4132,17 @@ class ConstraintDistributionChangeGroup(BaseModel):
     value: Distribution
 
 
-class CoreETCSBrakingCurvesResponse(BaseModel):
-    conflicts: list[CoreETCSConflictCurves]
-    """
-    List of ETCS conflict braking curves associated to the train schedule's ETCS signals.
-    For each non-route delimiter (F) signal, the associated spacing conflict curve is returned.
-    For each route delimiter (Nf) signal, 2 sets of curves are returned, associated to the
-    corresponding potential spacing or routing conflict.
-    """
-    slowdowns: list[CoreETCSCurves]
-    """
-    List of ETCS braking curves associated to the train schedule's ETCS slowdowns
-    """
-    stops: list[CoreETCSCurves]
-    """
-    List of ETCS braking curves associated to the train schedule's ETCS stops
-    """
+class CoreETCSConflictCurves(BaseModel):
+    conflict_type: CoreConflictType
+    guidance: CoreSimpleEnvelope
+    indication: CoreSimpleEnvelope
+    permitted_speed: CoreSimpleEnvelope
+
+
+class CoreETCSCurves(BaseModel):
+    guidance: CoreSimpleEnvelope
+    indication: CoreSimpleEnvelope | None = None
+    permitted_speed: CoreSimpleEnvelope
 
 
 class CoreIncompatibleOffsetRange(BaseModel):
@@ -4512,6 +4239,13 @@ class CoreTrainRequirementsById(BaseModel):
     """
     ID that can be used to find the train in tools other than OSRD. Used in debug traces.
     """
+
+
+class DetectorExtension(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    sncf: DetectorSncfExtension
 
 
 class EditoastError(
@@ -4951,16 +4685,6 @@ class GrantBody(BaseModel):
     subject_id: int
 
 
-class InfraObjectSignal(BaseModel):
-    obj_type: Literal["Signal"]
-    railjson: Signal
-
-
-class InfraObjectSpeedSection(BaseModel):
-    obj_type: Literal["SpeedSection"]
-    railjson: SpeedSection
-
-
 class InfraObjectSwitchType(BaseModel):
     obj_type: Literal["SwitchType"]
     railjson: SwitchType
@@ -5050,7 +4774,7 @@ class ModeEffortCurves(BaseModel):
     is_electric: bool
 
 
-class NeutralSncf(BaseModel):
+class NeutralSectionNeutralSncfExtension(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
@@ -5058,32 +4782,6 @@ class NeutralSncf(BaseModel):
     end: list[Sign]
     exe: Sign
     rev: list[Sign]
-
-
-class Extensions2(BaseModel):
-    model_config = ConfigDict(
-        extra="forbid",
-    )
-    neutral_sncf: NeutralSncf | None = None
-
-
-class NeutralSection(BaseModel):
-    """
-    Neutral sections are portions of track where trains aren't allowed to pull power from electrifications. They have to rely on inertia to cross such sections.
-
-    In practice, neutral sections are delimited by signs. In OSRD, neutral sections are directional to allow accounting for different sign placement depending on the direction.
-
-    For more details see [the documentation](https://osrd.fr/en/docs/explanation/neutral_sections/).
-    """
-
-    model_config = ConfigDict(
-        extra="forbid",
-    )
-    announcement_track_ranges: list[DirectionalTrackRange]
-    extensions: Extensions2 | None = None
-    id: Annotated[str, Field(max_length=255, min_length=1)]
-    lower_pantograph: bool
-    track_ranges: list[DirectionalTrackRange]
 
 
 class ObjectRef(BaseModel):
@@ -5102,15 +4800,19 @@ class OccupancyBlockForm(BaseModel):
     timetable_id: int
 
 
-class OperationalPoint(BaseModel):
+class OperationalPointExtensions(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
-    extensions: Extensions3 | None = None
-    id: Annotated[str, Field(max_length=255, min_length=1)]
-    parts: list[OperationalPointPart]
-    plc: NonBlankString | None = None
-    weight: Annotated[int | None, Field(ge=0)] = None
+    identifier: Identifier1 | None = None
+    sncf: OperationalPointSncfExtension | None = None
+
+
+class OperationalPointPartExtension(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    sncf: OperationalPointPartSncfExtension | None = None
 
 
 class OperationalPointPartReference(BaseModel):
@@ -5304,10 +5006,6 @@ class ProjectWithStudies(Project):
     studies_count: Annotated[int, Field(ge=0)]
 
 
-class RelatedOperationalPointPart(OperationalPointPart):
-    geo: GeoJsonPoint | None = None
-
-
 class Route(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
@@ -5431,6 +5129,13 @@ class SearchResultItemSignal(BaseModel):
     sprite_signaling_system: str | None = None
 
 
+class SignalExtensions(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    sncf: SignalSncfExtension | None = None
+
+
 class FinalOutput(CoreReportTrain):
     """
     Simulation that takes into account the regularity margins and the schedule item times
@@ -5460,6 +5165,13 @@ class SimulationResponseSuccess(BaseModel):
     """
     Simulation that takes into account the regularity margins
     """
+
+
+class SpeedSectionExtensions(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    psl_sncf: SpeedSectionPslSncfExtension | None = None
 
 
 class StdcmProgressionEvent(BaseModel):
@@ -5558,15 +5270,19 @@ class SupportedSignalingSystemEtcsLevel2(BaseModel):
     type: Literal["ETCS_LEVEL2"]
 
 
-class Switch(BaseModel):
+class SwitchExtensions(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
-    extensions: Extensions8 | None = None
-    group_change_delay: float
-    id: Annotated[str, Field(max_length=255, min_length=1)]
-    ports: dict[str, TrackEndpoint]
-    switch_type: Annotated[str, Field(max_length=255, min_length=1)]
+    sncf: SwitchSncfExtension | None = None
+
+
+class TrackSectionExtensions(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    sncf: TrackSectionSncfExtension | None = None
+    source: Source | None = None
 
 
 class TrainCategoryMain(BaseModel):
@@ -5581,6 +5297,34 @@ class WorkSchedule(BaseModel):
     track_ranges: list[TrackRange]
     work_schedule_group_id: int
     work_schedule_type: WorkScheduleType
+
+
+class BufferStop(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    extensions: BufferStopExtension | None = None
+    id: Annotated[str, Field(max_length=255, min_length=1)]
+    position: float
+    track: Annotated[str, Field(max_length=255, min_length=1)]
+
+
+class CoreETCSBrakingCurvesResponse(BaseModel):
+    conflicts: list[CoreETCSConflictCurves]
+    """
+    List of ETCS conflict braking curves associated to the train schedule's ETCS signals.
+    For each non-route delimiter (F) signal, the associated spacing conflict curve is returned.
+    For each route delimiter (Nf) signal, 2 sets of curves are returned, associated to the
+    corresponding potential spacing or routing conflict.
+    """
+    slowdowns: list[CoreETCSCurves]
+    """
+    List of ETCS braking curves associated to the train schedule's ETCS slowdowns
+    """
+    stops: list[CoreETCSCurves]
+    """
+    List of ETCS braking curves associated to the train schedule's ETCS stops
+    """
 
 
 class CoreIncompatibleConstraints(BaseModel):
@@ -5732,6 +5476,16 @@ class CoreStdcmRequest(BaseModel):
     """
 
 
+class Detector(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    extensions: DetectorExtension | None = None
+    id: Annotated[str, Field(max_length=255, min_length=1)]
+    position: float
+    track: Annotated[str, Field(max_length=255, min_length=1)]
+
+
 class EffortCurves(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
@@ -5880,24 +5634,19 @@ class InfraErrorType(
     )
 
 
-class InfraObjectNeutralSection(BaseModel):
-    obj_type: Literal["NeutralSection"]
-    railjson: NeutralSection
+class InfraObjectDetector(BaseModel):
+    obj_type: Literal["Detector"]
+    railjson: Detector
 
 
-class InfraObjectSwitch(BaseModel):
-    obj_type: Literal["Switch"]
-    railjson: Switch
+class InfraObjectBufferStop(BaseModel):
+    obj_type: Literal["BufferStop"]
+    railjson: BufferStop
 
 
 class InfraObjectRoute(BaseModel):
     obj_type: Literal["Route"]
     railjson: Route
-
-
-class InfraObjectOperationalPoint(BaseModel):
-    obj_type: Literal["OperationalPoint"]
-    railjson: OperationalPoint
 
 
 class InfraObjectLevelCrossing(BaseModel):
@@ -5968,6 +5717,13 @@ class MacroNoteListResponse(PaginationStats):
     results: list[MacroNoteResponse]
 
 
+class NeutralSectionExtensions(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    neutral_sncf: NeutralSectionNeutralSncfExtension | None = None
+
+
 class OperationUpdate(BaseModel):
     obj_id: str
     obj_type: ObjectType
@@ -5983,6 +5739,19 @@ class OperationUpdate(BaseModel):
     Representation of JSON Patch (list of patch operations)
     """
     operation_type: Literal["UPDATE"]
+
+
+class OperationalPointPart(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    extensions: OperationalPointPartExtension | None = None
+    local_track_name: Annotated[str, Field(min_length=1)]
+    position: float
+    """
+    Offset on the track section, in m
+    """
+    track: Annotated[str, Field(max_length=255, min_length=1)]
 
 
 class Patch(
@@ -6032,6 +5801,33 @@ class PathItem(BaseModel):
     """
 
 
+class OperationalPoint2(BaseModel):
+    """
+    Operational point along a path.
+    """
+
+    extensions: OperationalPointExtensions | None = None
+    """
+    Extensions associated to the operational point
+    """
+    id: str
+    """
+    Id of the operational point
+    """
+    part: OperationalPointPart
+    """
+    The part along the path
+    """
+    position: Annotated[int, Field(ge=0)]
+    """
+    Distance from the beginning of the path in mm
+    """
+    weight: Annotated[int | None, Field(ge=0, le=100)] = None
+    """
+    Importance of the operational point
+    """
+
+
 class PathProperties(BaseModel):
     """
     Properties along a path. Each property is optional since it depends on what the user requests.
@@ -6071,12 +5867,8 @@ class PathfindingResultSuccess(CorePathfindingResultSuccess):
     status: Literal["success"]
 
 
-class RelatedOperationalPoint(BaseModel):
-    extensions: Extensions5 | None = None
+class RelatedOperationalPointPart(OperationalPointPart):
     geo: GeoJsonPoint | None = None
-    id: Annotated[str, Field(max_length=255, min_length=1)]
-    parts: list[RelatedOperationalPointPart]
-    weight: Annotated[int | None, Field(ge=0)] = None
 
 
 class RollingStock(BaseModel):
@@ -6249,6 +6041,19 @@ class SearchResultItemTrainSchedule(BaseModel):
     train_schedule_set_id: int
 
 
+class Signal(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    direction: Direction
+    extensions: SignalExtensions | None = None
+    id: Annotated[str, Field(max_length=255, min_length=1)]
+    logical_signals: list[LogicalSignal] | None = None
+    position: float
+    sight_distance: float
+    track: Annotated[str, Field(max_length=255, min_length=1)]
+
+
 class ResponseSuccess(SimulationResponseSuccess):
     status: Literal["success"]
 
@@ -6259,6 +6064,18 @@ class SummaryResponsePathfindingInputError(BaseModel):
     """
 
     status: Literal["pathfinding_input_error"]
+
+
+class SpeedSection(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    extensions: SpeedSectionExtensions | None = None
+    id: Annotated[str, Field(max_length=255, min_length=1)]
+    on_routes: list[OnRoute] | None = None
+    speed_limit: float | None = None
+    speed_limit_by_tag: dict[str, float]
+    track_ranges: list[ApplicableDirectionsTrackRange]
 
 
 class StdcmResponseSuccess(BaseModel):
@@ -6280,12 +6097,23 @@ class StdcmResponseInternalError(BaseModel):
     status: Literal["internal_error"]
 
 
+class Switch(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    extensions: SwitchExtensions | None = None
+    group_change_delay: float
+    id: Annotated[str, Field(max_length=255, min_length=1)]
+    ports: dict[str, TrackEndpoint]
+    switch_type: Annotated[str, Field(max_length=255, min_length=1)]
+
+
 class TrackSectionModel(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
     curves: list[Curve]
-    extensions: Extensions9 | None = None
+    extensions: TrackSectionExtensions | None = None
     geo: GeoJsonLineString
     id: Annotated[str, Field(max_length=255, min_length=1)]
     length: float
@@ -6396,44 +6224,49 @@ class InfraObjectTrackSection(BaseModel):
     railjson: TrackSectionModel
 
 
-class InfraObject(
-    RootModel[
-        InfraObjectTrackSection
-        | InfraObjectSignal
-        | InfraObjectNeutralSection
-        | InfraObjectSpeedSection
-        | InfraObjectSwitch
-        | InfraObjectSwitchType
-        | InfraObjectDetector
-        | InfraObjectBufferStop
-        | InfraObjectRoute
-        | InfraObjectOperationalPoint
-        | InfraObjectElectrification
-        | InfraObjectLevelCrossing
-    ]
-):
-    root: (
-        InfraObjectTrackSection
-        | InfraObjectSignal
-        | InfraObjectNeutralSection
-        | InfraObjectSpeedSection
-        | InfraObjectSwitch
-        | InfraObjectSwitchType
-        | InfraObjectDetector
-        | InfraObjectBufferStop
-        | InfraObjectRoute
-        | InfraObjectOperationalPoint
-        | InfraObjectElectrification
-        | InfraObjectLevelCrossing
+class InfraObjectSignal(BaseModel):
+    obj_type: Literal["Signal"]
+    railjson: Signal
+
+
+class InfraObjectSpeedSection(BaseModel):
+    obj_type: Literal["SpeedSection"]
+    railjson: SpeedSection
+
+
+class InfraObjectSwitch(BaseModel):
+    obj_type: Literal["Switch"]
+    railjson: Switch
+
+
+class NeutralSection(BaseModel):
+    """
+    Neutral sections are portions of track where trains aren't allowed to pull power from electrifications. They have to rely on inertia to cross such sections.
+
+    In practice, neutral sections are delimited by signs. In OSRD, neutral sections are directional to allow accounting for different sign placement depending on the direction.
+
+    For more details see [the documentation](https://osrd.fr/en/docs/explanation/neutral_sections/).
+    """
+
+    model_config = ConfigDict(
+        extra="forbid",
     )
+    announcement_track_ranges: list[DirectionalTrackRange]
+    extensions: NeutralSectionExtensions | None = None
+    id: Annotated[str, Field(max_length=255, min_length=1)]
+    lower_pantograph: bool
+    track_ranges: list[DirectionalTrackRange]
 
 
-class OperationCreate(BaseModel):
-    operation_type: Literal["CREATE"]
-
-
-class Operation(RootModel[OperationCreate | OperationUpdate | OperationDelete]):
-    root: OperationCreate | OperationUpdate | OperationDelete
+class OperationalPoint(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    extensions: OperationalPointExtensions | None = None
+    id: Annotated[str, Field(max_length=255, min_length=1)]
+    parts: list[OperationalPointPart]
+    plc: NonBlankString | None = None
+    weight: Annotated[int | None, Field(ge=0)] = None
 
 
 class PathAndScheduleChangeGroup(BaseModel):
@@ -6515,6 +6348,14 @@ class RailJson(BaseModel):
     """
     The version of the RailJSON format. Defaults to the current version.
     """
+
+
+class RelatedOperationalPoint(BaseModel):
+    extensions: OperationalPointExtensions | None = None
+    geo: GeoJsonPoint | None = None
+    id: Annotated[str, Field(max_length=255, min_length=1)]
+    parts: list[RelatedOperationalPointPart]
+    weight: Annotated[int | None, Field(ge=0)] = None
 
 
 class SearchResultItem(
@@ -6617,6 +6458,48 @@ class TrainScheduleSimulationSummaryResult(BaseModel):
     )
 
 
+class InfraObjectNeutralSection(BaseModel):
+    obj_type: Literal["NeutralSection"]
+    railjson: NeutralSection
+
+
+class InfraObjectOperationalPoint(BaseModel):
+    obj_type: Literal["OperationalPoint"]
+    railjson: OperationalPoint
+
+
+class InfraObject(
+    RootModel[
+        InfraObjectTrackSection
+        | InfraObjectSignal
+        | InfraObjectNeutralSection
+        | InfraObjectSpeedSection
+        | InfraObjectSwitch
+        | InfraObjectSwitchType
+        | InfraObjectDetector
+        | InfraObjectBufferStop
+        | InfraObjectRoute
+        | InfraObjectOperationalPoint
+        | InfraObjectElectrification
+        | InfraObjectLevelCrossing
+    ]
+):
+    root: (
+        InfraObjectTrackSection
+        | InfraObjectSignal
+        | InfraObjectNeutralSection
+        | InfraObjectSpeedSection
+        | InfraObjectSwitch
+        | InfraObjectSwitchType
+        | InfraObjectDetector
+        | InfraObjectBufferStop
+        | InfraObjectRoute
+        | InfraObjectOperationalPoint
+        | InfraObjectElectrification
+        | InfraObjectLevelCrossing
+    )
+
+
 class InfraObjectWithGeometry(BaseModel):
     geographic: (
         GeoJsonPoint
@@ -6631,6 +6514,14 @@ class InfraObjectWithGeometry(BaseModel):
     """
     obj_id: str
     railjson: dict[str, Any]
+
+
+class OperationCreate(BaseModel):
+    operation_type: Literal["CREATE"]
+
+
+class Operation(RootModel[OperationCreate | OperationUpdate | OperationDelete]):
+    root: OperationCreate | OperationUpdate | OperationDelete
 
 
 class PacedTrainException(BaseModel):

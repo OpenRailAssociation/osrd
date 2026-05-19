@@ -32,7 +32,6 @@ pub struct TrackSection {
     #[schema(value_type = GeoJsonLineString)]
     pub geo: Geometry,
     #[serde(default)]
-    #[schema(inline)]
     pub extensions: TrackSectionExtensions,
 }
 

@@ -17,7 +17,6 @@ pub struct OperationalPoint {
     pub id: Identifier,
     pub parts: Vec<OperationalPointPart>,
     #[serde(default)]
-    #[schema(inline)]
     pub extensions: OperationalPointExtensions,
     #[serde(default)]
     pub weight: Option<u8>,
@@ -36,14 +35,12 @@ pub struct OperationalPointPart {
     pub position: f64,
     pub local_track_name: NonBlankString,
     #[serde(default)]
-    #[schema(inline)]
     pub extensions: OperationalPointPartExtension,
 }
 
 #[derive(Debug, Default, Clone, Deserialize, Serialize, PartialEq, Eq, ToSchema)]
 #[serde(deny_unknown_fields)]
 pub struct OperationalPointPartExtension {
-    #[schema(inline)]
     pub sncf: Option<OperationalPointPartSncfExtension>,
 }
 
@@ -56,7 +53,6 @@ pub struct OperationalPointPartSncfExtension {
 #[derive(Debug, Default, Clone, Deserialize, Serialize, PartialEq, Eq, ToSchema)]
 #[serde(deny_unknown_fields)]
 pub struct OperationalPointExtensions {
-    #[schema(inline)]
     pub sncf: Option<OperationalPointSncfExtension>,
     #[schema(inline)]
     pub identifier: Option<OperationalPointIdentifierExtension>,

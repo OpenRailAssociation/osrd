@@ -2904,22 +2904,26 @@ export type Infra = {
   railjson_version: string;
   version: number;
 };
+export type BufferStopSncfExtension = {
+  kp: string;
+};
+export type BufferStopExtension = {
+  sncf?: null | BufferStopSncfExtension;
+};
 export type BufferStop = {
-  extensions?: {
-    sncf?: null | {
-      kp: string;
-    };
-  };
+  extensions?: BufferStopExtension;
   id: string;
   position: number;
   track: string;
 };
+export type DetectorSncfExtension = {
+  kp: string;
+};
+export type DetectorExtension = {
+  sncf: DetectorSncfExtension;
+};
 export type Detector = {
-  extensions?: {
-    sncf: {
-      kp: string;
-    };
-  };
+  extensions?: DetectorExtension;
   id: string;
   position: number;
   track: string;
@@ -2979,46 +2983,52 @@ export type Sign = {
   type: string;
   value: string;
 };
+export type NeutralSectionNeutralSncfExtension = {
+  announcement: Sign[];
+  end: Sign[];
+  exe: Sign;
+  rev: Sign[];
+};
+export type NeutralSectionExtensions = {
+  neutral_sncf?: null | NeutralSectionNeutralSncfExtension;
+};
 export type NeutralSection = {
   announcement_track_ranges: DirectionalTrackRange[];
-  extensions?: {
-    neutral_sncf?: null | {
-      announcement: Sign[];
-      end: Sign[];
-      exe: Sign;
-      rev: Sign[];
-    };
-  };
+  extensions?: NeutralSectionExtensions;
   id: string;
   lower_pantograph: boolean;
   track_ranges: DirectionalTrackRange[];
 };
+export type OperationalPointSncfExtension = {
+  ch: string;
+  ch_long_label: string;
+  ch_short_label: string;
+  ci: number;
+  trigram: string;
+};
+export type OperationalPointExtensions = {
+  identifier?: null | {
+    name: string;
+    uic: number;
+  };
+  sncf?: null | OperationalPointSncfExtension;
+};
+export type OperationalPointPartSncfExtension = {
+  kp: string;
+};
+export type OperationalPointPartExtension = {
+  sncf?: null | OperationalPointPartSncfExtension;
+};
 export type NonBlankString = string;
 export type OperationalPointPart = {
-  extensions?: {
-    sncf?: null | {
-      kp: string;
-    };
-  };
+  extensions?: OperationalPointPartExtension;
   local_track_name: NonBlankString;
   /** Offset on the track section, in m */
   position: number;
   track: string;
 };
 export type OperationalPoint = {
-  extensions?: {
-    identifier?: null | {
-      name: string;
-      uic: number;
-    };
-    sncf?: null | {
-      ch: string;
-      ch_long_label: string;
-      ch_short_label: string;
-      ci: number;
-      trigram: string;
-    };
-  };
+  extensions?: OperationalPointExtensions;
   id: string;
   parts: OperationalPointPart[];
   plc?: null | NonBlankString;
@@ -3043,15 +3053,17 @@ export type Route = {
     [key: string]: string;
   };
 };
+export type SignalSncfExtension = {
+  kp: string;
+  label: string;
+  side?: Side;
+};
+export type SignalExtensions = {
+  sncf?: null | SignalSncfExtension;
+};
 export type Signal = {
   direction: Direction;
-  extensions?: {
-    sncf?: null | {
-      kp: string;
-      label: string;
-      side?: Side;
-    };
-  };
+  extensions?: SignalExtensions;
   id: string;
   logical_signals?: {
     conditional_parameters: {
@@ -3073,14 +3085,16 @@ export type Signal = {
   sight_distance: number;
   track: string;
 };
+export type SpeedSectionPslSncfExtension = {
+  announcement: Sign[];
+  r: Sign[];
+  z: Sign;
+};
+export type SpeedSectionExtensions = {
+  psl_sncf?: null | SpeedSectionPslSncfExtension;
+};
 export type SpeedSection = {
-  extensions?: {
-    psl_sncf?: null | {
-      announcement: Sign[];
-      r: Sign[];
-      z: Sign;
-    };
-  };
+  extensions?: SpeedSectionExtensions;
   id: string;
   on_routes?: string[] | null;
   speed_limit?: null | number;
@@ -3089,17 +3103,19 @@ export type SpeedSection = {
   };
   track_ranges: ApplicableDirectionsTrackRange[];
 };
+export type SwitchSncfExtension = {
+  label: string;
+};
+export type SwitchExtensions = {
+  sncf?: null | SwitchSncfExtension;
+};
 export type Endpoint = 'BEGIN' | 'END';
 export type TrackEndpoint = {
   endpoint: Endpoint;
   track: string;
 };
 export type Switch = {
-  extensions?: {
-    sncf?: null | {
-      label: string;
-    };
-  };
+  extensions?: SwitchExtensions;
   group_change_delay: number;
   id: string;
   ports: {
@@ -3111,6 +3127,19 @@ export type Curve = {
   begin: number;
   end: number;
   radius: number;
+};
+export type TrackSectionSncfExtension = {
+  line_code: number;
+  line_name: string;
+  track_name: string;
+  track_number: number;
+};
+export type TrackSectionExtensions = {
+  sncf?: null | TrackSectionSncfExtension;
+  source?: null | {
+    id: string;
+    name: string;
+  };
 };
 export type GeoJsonPointValue = number[];
 export type GeoJsonLineStringValue = GeoJsonPointValue[];
@@ -3140,18 +3169,7 @@ export type Slope = {
 };
 export type TrackSection = {
   curves: Curve[];
-  extensions?: {
-    sncf?: null | {
-      line_code: number;
-      line_name: string;
-      track_name: string;
-      track_number: number;
-    };
-    source?: null | {
-      id: string;
-      name: string;
-    };
-  };
+  extensions?: TrackSectionExtensions;
   geo: GeoJsonLineString;
   id: string;
   length: number;
@@ -3417,19 +3435,7 @@ export type RelatedOperationalPointPart = OperationalPointPart & {
   geo?: null | GeoJsonPoint;
 };
 export type RelatedOperationalPoint = {
-  extensions?: {
-    identifier?: null | {
-      name: string;
-      uic: number;
-    };
-    sncf?: null | {
-      ch: string;
-      ch_long_label: string;
-      ch_short_label: string;
-      ci: number;
-      trigram: string;
-    };
-  };
+  extensions?: OperationalPointExtensions;
   geo?: null | GeoJsonPoint;
   id: string;
   parts: RelatedOperationalPointPart[];
@@ -3486,19 +3492,6 @@ export type InfraObjectWithGeometry = {
   geographic: GeoJson;
   obj_id: string;
   railjson: object;
-};
-export type OperationalPointExtensions = {
-  identifier?: null | {
-    name: string;
-    uic: number;
-  };
-  sncf?: null | {
-    ch: string;
-    ch_long_label: string;
-    ch_short_label: string;
-    ci: number;
-    trigram: string;
-  };
 };
 export type PathProperties = {
   /** Curves along the path */
@@ -4461,6 +4454,7 @@ export type SubCategoryPage = PaginationStats & {
 export type TimetableResult = {
   timetable_id: number;
 };
+export type CoreConflictType = 'Spacing' | 'Routing';
 export type CoreConflictRequirement = {
   end_time: string;
   start_time: string;
@@ -4468,7 +4462,7 @@ export type CoreConflictRequirement = {
 };
 export type Conflict = {
   /** Type of the conflict */
-  conflict_type: 'Spacing' | 'Routing';
+  conflict_type: CoreConflictType;
   /** Datetime of the end of the conflict */
   end_time: string;
   /** List of requirements causing the conflict */
@@ -5075,64 +5069,25 @@ export type TrainScheduleSimulationSummaryResult = {
   };
   train_schedule: SimulationSummaryResult;
 };
+export type CoreSimpleEnvelope = {
+  /** List of positions of a train
+    Both positions (in mm) and times (in ms) must have the same length */
+  positions: number[];
+  /** List of speeds (in m/s) associated to a position */
+  speeds: number[];
+  /** List of times (in ms) associated to a position */
+  times: number[];
+};
 export type CoreEtcsConflictCurves = {
-  conflict_type: 'Spacing' | 'Routing';
-  guidance: {
-    /** List of positions of a train
-        Both positions (in mm) and times (in ms) must have the same length */
-    positions: number[];
-    /** List of speeds (in m/s) associated to a position */
-    speeds: number[];
-    /** List of times (in ms) associated to a position */
-    times: number[];
-  };
-  indication: {
-    /** List of positions of a train
-        Both positions (in mm) and times (in ms) must have the same length */
-    positions: number[];
-    /** List of speeds (in m/s) associated to a position */
-    speeds: number[];
-    /** List of times (in ms) associated to a position */
-    times: number[];
-  };
-  permitted_speed: {
-    /** List of positions of a train
-        Both positions (in mm) and times (in ms) must have the same length */
-    positions: number[];
-    /** List of speeds (in m/s) associated to a position */
-    speeds: number[];
-    /** List of times (in ms) associated to a position */
-    times: number[];
-  };
+  conflict_type: CoreConflictType;
+  guidance: CoreSimpleEnvelope;
+  indication: CoreSimpleEnvelope;
+  permitted_speed: CoreSimpleEnvelope;
 };
 export type CoreEtcsCurves = {
-  guidance: {
-    /** List of positions of a train
-        Both positions (in mm) and times (in ms) must have the same length */
-    positions: number[];
-    /** List of speeds (in m/s) associated to a position */
-    speeds: number[];
-    /** List of times (in ms) associated to a position */
-    times: number[];
-  };
-  indication?: null | {
-    /** List of positions of a train
-        Both positions (in mm) and times (in ms) must have the same length */
-    positions: number[];
-    /** List of speeds (in m/s) associated to a position */
-    speeds: number[];
-    /** List of times (in ms) associated to a position */
-    times: number[];
-  };
-  permitted_speed: {
-    /** List of positions of a train
-        Both positions (in mm) and times (in ms) must have the same length */
-    positions: number[];
-    /** List of speeds (in m/s) associated to a position */
-    speeds: number[];
-    /** List of times (in ms) associated to a position */
-    times: number[];
-  };
+  guidance: CoreSimpleEnvelope;
+  indication?: null | CoreSimpleEnvelope;
+  permitted_speed: CoreSimpleEnvelope;
 };
 export type CoreEtcsBrakingCurvesResponse = {
   /** List of ETCS conflict braking curves associated to the train schedule's ETCS signals.
