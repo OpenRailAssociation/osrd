@@ -3,6 +3,7 @@ import React, { useMemo, useRef } from 'react';
 import { KebabHorizontal } from '@osrd-project/ui-icons';
 
 import { HOUR } from '../../common/consts';
+import { TimeCaptions } from '../../common/layers/TimeCaptions';
 import { Manchette, useManchetteWithSpaceTimeChart, BASE_WAYPOINT_HEIGHT } from '../../manchette';
 import { DEFAULT_THEME, SpaceTimeChart } from '../../spaceTimeChart';
 import { TRACK_HEIGHT_CONTAINER } from '../lib/consts';
@@ -107,6 +108,7 @@ const TrackOccupancyStandalone = ({
             <SpaceTimeChart
               className="inset-0 absolute h-full"
               {...spaceTimeChartProps}
+              hideGrid={true}
               onClick={
                 onSelectedTrainIdChange &&
                 (({ hoveredItem }) => {
@@ -121,7 +123,9 @@ const TrackOccupancyStandalone = ({
                   }
                 })
               }
-            />
+            >
+              <TimeCaptions />
+            </SpaceTimeChart>
           </div>
         </div>
       </div>
