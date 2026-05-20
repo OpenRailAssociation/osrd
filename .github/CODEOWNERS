@@ -51,3 +51,7 @@
 
 # --- RAILWAY MANAGER INTERFACE ---
 /railway_manager_interface                               @openrailassociation/OSRD-Data
+
+# --- OSRD SCHEMAS AUTO ---
+/osrd_schemas_auto										 @openrailassociation/OSRD-Editoast
+/osrd_schemas_auto/osrd_schemas_auto/models.py
