@@ -25,7 +25,7 @@
     }
   },
   "scripts": {
-    "svgo": "svgo icons --config svgo.config.cjs",
+    "svgo": "svgo icons --config svgo.config.js",
     "clean": "rimraf dist",
     "build": "node ./scripts/build.js && rollup -c --failAfterWarnings",
     "prepublishOnly": "npm run clean && npm run build"
