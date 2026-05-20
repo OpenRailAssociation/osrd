@@ -107,6 +107,7 @@ impl Infra {
         &mut self,
         conn: &mut DbConnection,
     ) -> Result<(), database::DatabaseError> {
+        self.generated_version = Some(self.version);
         diesel::update(dsl::infra.filter(dsl::id.eq(self.id)))
             .set((dsl::generated_version.eq(self.generated_version),))
             .execute(conn.write().await.deref_mut())
