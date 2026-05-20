@@ -3997,6 +3997,25 @@ class ErrorResponse(BaseModel):
     """
 
 
+class ConsistChange(BaseModel):
+    """
+    New consist to use from a request step onward.
+    """
+
+    rolling_stock: Annotated[str, Field(title="Rolling Stock")]
+    towed_rolling_stock: Annotated[str | None, Field(title="Towed Rolling Stock")] = (
+        None
+    )
+    total_mass: Annotated[int, Field(title="Total Mass")]
+    """
+    Total mass of the train in kg
+    """
+    total_length: Annotated[int, Field(title="Total Length")]
+    """
+    Total length of the train in m
+    """
+
+
 class LoadingGaugeType1(Enum):
     GA = "GA"
     GB = "GB"
@@ -4042,6 +4061,10 @@ class StepType(Enum):
 
 
 class RequestedStep(BaseModel):
+    consist_change: ConsistChange | None = None
+    """
+    New consist to use from this step onward. Not included for the first step.
+    """
     duration: Annotated[int, Field(title="Duration")]
     """
     Duration in ms
