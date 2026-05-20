@@ -1,7 +1,9 @@
-import type { PathLevel, HoveredItem, LabelStyle } from '@osrd-project/ui-charts';
+import type { PathLayerProps, PathLevel, HoveredItem, LabelStyle } from '@osrd-project/ui-charts';
 
+import { STD_SELECTED_TRAIN_COLORS } from 'applications/operationalStudies/consts';
 import type { CategoryColors } from 'applications/operationalStudies/types';
 import type { PacedTrainId, TrainId } from 'reducers/osrdconf/types';
+import type { SelectedTrain } from 'reducers/simulationResults/types';
 import {
   extractEditoastIdFromPacedTrainId,
   extractPacedTrainIdFromOccurrenceId,
@@ -18,20 +20,9 @@ const getPathStyle = (
     isStartTimeException?: boolean;
   },
   dragging: boolean,
-  selectedTrainId?: TrainId,
+  selectedTrain?: SelectedTrain,
   hoveredTrainIdFromTimetable?: TrainId
-): {
-  color: string;
-  opacity?: number;
-  level?: PathLevel;
-  border?: {
-    offset: number;
-    color: string;
-    width?: number;
-    backgroundColor?: string;
-  };
-  label?: LabelStyle;
-} => {
+): Pick<PathLayerProps, 'color' | 'opacity' | 'level' | 'border' | 'label'> => {
   let pacedTrainId: PacedTrainId;
   if (isOccurrenceId(train.id)) {
     pacedTrainId = extractPacedTrainIdFromOccurrenceId(train.id);
@@ -96,47 +87,56 @@ const getPathStyle = (
     }
   }
 
-  // Apply occurrence style if selectedTrainId is an occurrence from the same paced
-  if (selectedTrainId) {
-    if (isOccurrenceId(selectedTrainId)) {
-      if (train.id === selectedTrainId) {
+  const selectedId = selectedTrain?.id;
+  const isInSelectedGroup =
+    !!selectedId &&
+    (isOccurrenceId(selectedId)
+      ? !train.isStartTimeException &&
+        isOccurrenceId(train.id) &&
+        extractPacedTrainIdFromOccurrenceId(train.id) ===
+          extractPacedTrainIdFromOccurrenceId(selectedId)
+      : train.id === selectedId);
+  const isSameMission =
+    !!selectedId &&
+    isOccurrenceId(selectedId) &&
+    isOccurrenceId(train.id) &&
+    extractPacedTrainIdFromOccurrenceId(train.id) ===
+      extractPacedTrainIdFromOccurrenceId(selectedId);
+  const opacity =
+    selectedTrain?.by === 'std' && !isInSelectedGroup && !(train.isStartTimeException && isSameMission)
+      ? 0.3
+      : 1;
+  const selectedColor =
+    selectedTrain?.by === 'std' ? STD_SELECTED_TRAIN_COLORS.normal : colors.normal;
+  const selectionBorder = {
+    offset: 0,
+    width: 2,
+    color: selectedTrain?.by === 'std' ? STD_SELECTED_TRAIN_COLORS.background : colors.background,
+  };
+
+  if (selectedId) {
+    if (isOccurrenceId(selectedId)) {
+      if (train.id === selectedId) {
         return {
-          color: colors.normal,
+          color: selectedColor,
           level: 1,
-          border:
-            train.isSimulated === false
-              ? {
-                  offset: 3,
-                  width: 13,
-                  color: 'rgba(0, 0, 0, 0.05)',
-                  backgroundColor: colors.background,
-                }
-              : {
-                  offset: 3,
-                  width: 0.5,
-                  color: colors.normal,
-                  backgroundColor: colors.background,
-                },
+          opacity,
+          border: train.isSimulated === false ? invalidBorder : selectionBorder,
           label: selectedLabelStyle,
         };
       }
-      // Other occurrences from the same paced
+      // Other occurrences from the same paced train (excluding start-time exceptions)
       if (
+        !train.isStartTimeException &&
         isOccurrenceId(train.id) &&
         extractPacedTrainIdFromOccurrenceId(train.id) ===
-          extractPacedTrainIdFromOccurrenceId(selectedTrainId)
+          extractPacedTrainIdFromOccurrenceId(selectedId)
       ) {
         return {
-          color: colors.normal,
+          color: selectedColor,
           level: 1,
-          border:
-            train.isSimulated === false
-              ? invalidBorder
-              : {
-                  offset: 3.5,
-                  color: 'transparent',
-                  backgroundColor: colors.background,
-                },
+          opacity,
+          border: train.isSimulated === false ? invalidBorder : selectionBorder,
           label: train.isStartTimeException
             ? {
                 backgroundColor: colors.background,
@@ -146,11 +146,12 @@ const getPathStyle = (
             : selectedLabelStyle,
         };
       }
-    } else if (train.id === selectedTrainId) {
+    } else if (train.id === selectedId) {
       return {
-        color: colors.normal,
+        color: selectedColor,
         level: 1,
-        ...(train.isSimulated === false && { border: invalidBorder }),
+        opacity,
+        border: train.isSimulated === false ? invalidBorder : selectionBorder,
         label: selectedLabelStyle,
       };
     }
@@ -158,8 +159,19 @@ const getPathStyle = (
 
   return {
     color: colors.normal,
-    ...(train.isSimulated === false && { border: invalidBorder }),
-    ...(selectedTrainId && { opacity: 0.3 }),
+    opacity,
+    ...(train.isSimulated === false
+      ? { border: invalidBorder }
+      : train.isStartTimeException &&
+        isSameMission && { border: { offset: 0, width: 2, color: colors.background } }),
+    ...(train.isStartTimeException &&
+      isSameMission && {
+        label: {
+          backgroundColor: colors.background,
+          border: { color: colors.normal },
+          textColor: colors.hovered,
+        },
+      }),
   };
 };
 

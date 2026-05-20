@@ -8,6 +8,7 @@ export const getSimulationResults = (state: RootState) => state.simulation;
 const makeOsrdSimulationSelector = makeSubSelector<SimulationResultsState>(getSimulationResults);
 
 export const getDisplayOnlyPathSteps = makeOsrdSimulationSelector('displayOnlyPathSteps');
+export const getSelectedTrain = makeOsrdSimulationSelector('selectedTrain');
 export const getSelectedTrainId = (state: RootState) => state.simulation.selectedTrain?.id;
 export const getHoveredTrainId = makeOsrdSimulationSelector('hoveredTrainId');
 export const getTrainIdUsedForProjection = makeOsrdSimulationSelector('trainIdUsedForProjection');

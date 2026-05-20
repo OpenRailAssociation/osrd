@@ -39,7 +39,11 @@ import type {
 import { isPacedTrainWithDetails } from 'modules/trainSchedule/helpers/pacedTrain';
 import type { TrainScheduleWithDetails } from 'modules/trainSchedule/types';
 import type { TrainId } from 'reducers/osrdconf/types';
-import { getHoveredTrainId, getIsSimulationEnabled } from 'reducers/simulationResults/selectors';
+import {
+  getHoveredTrainId,
+  getIsSimulationEnabled,
+  getSelectedTrain,
+} from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
 import {
   isTrainId,
@@ -143,6 +147,7 @@ const SpaceTimeChartWrapper = ({
   const dispatch = useAppDispatch();
   const hoveredTrainId = useSelector(getHoveredTrainId);
   const isSimulationEnabled = useSelector(getIsSimulationEnabled);
+  const selectedTrain = useSelector(getSelectedTrain);
 
   const manchetteWithSpaceTimeChartRef = useRef<HTMLDivElement>(null);
   const activeWaypointRef = useRef<HTMLDivElement>(null);
@@ -244,7 +249,7 @@ const SpaceTimeChartWrapper = ({
         hoveredItem,
         !!draggingState,
         activeWaypointRef,
-        selectedTrainId,
+        selectedTrain,
         onCloseOccupancyLayer,
         handleWaypointClick,
         activeWaypointId,
@@ -452,7 +457,7 @@ const SpaceTimeChartWrapper = ({
                   hoveredItem,
                   path,
                   !!draggingState,
-                  selectedTrainId,
+                  selectedTrain,
                   hoveredTrainId
                 )}
               />

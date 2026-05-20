@@ -51,7 +51,6 @@ type PathStyle = {
   width: number;
   endWidth: number;
   dashArray?: number[];
-  opacity?: number;
   lineCap?: CanvasLineCap;
 };
 
@@ -616,6 +615,7 @@ export const PathLayer = ({
         return;
       }
 
+      ctx.globalAlpha = opacity || 1;
       drawBorder(ctx, stcContext);
 
       // Draw stops:
@@ -631,7 +631,7 @@ export const PathLayer = ({
       ctx.strokeStyle = color;
       ctx.lineWidth = style.width;
       ctx.setLineDash(style.dashArray || []);
-      ctx.globalAlpha = (opacity ?? 1) * (style.opacity || 1);
+      ctx.globalAlpha = opacity || 1;
       ctx.lineCap = style.lineCap || 'square';
       const lines = getPathLines(stcContext);
       lines.forEach((points) => {

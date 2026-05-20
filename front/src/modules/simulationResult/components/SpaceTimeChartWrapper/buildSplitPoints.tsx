@@ -15,6 +15,7 @@ import { keyBy, sortBy } from 'lodash';
 import type { CategoryColors } from 'applications/operationalStudies/types';
 import { Spinner } from 'common/Loaders';
 import type { TrainId } from 'reducers/osrdconf/types';
+import type { SelectedTrain } from 'reducers/simulationResults/types';
 import { extractPacedTrainIdFromOccurrenceId, isOccurrenceId } from 'utils/trainId';
 
 import getPathStyle from './helpers/getPathStyle';
@@ -42,7 +43,7 @@ export function buildSplitPoints(
   hoveredItem: HoveredItem | null,
   isDragging: boolean,
   activeWaypointRef?: React.RefObject<HTMLDivElement | null>,
-  selectedTrainId?: TrainId,
+  selectedTrain?: SelectedTrain,
   onCloseOccupancyLayer?: (waypointId: string) => void,
   handleWaypointClick?: (waypointId: string) => void,
   activeWaypointId?: string,
@@ -92,7 +93,7 @@ export function buildSplitPoints(
             const zonesCountByPacedTrainId = countZonesByPacedTrainId(baseZones);
 
             const isHovered = hoveredTrainIdForChart === zone.trainId;
-            const isSelected = selectedTrainId === zone.trainId;
+            const isSelected = selectedTrain?.id === zone.trainId;
             let totalOccurrencesOnTrack = 0;
             if (isOccurrenceId(zone.trainId)) {
               const pacedTrainId = extractPacedTrainIdFromOccurrenceId(zone.trainId);
@@ -105,7 +106,7 @@ export function buildSplitPoints(
               hoveredItem,
               path,
               isDragging,
-              selectedTrainId,
+              selectedTrain,
               hoveredTrainId
             );
             return {
@@ -118,7 +119,7 @@ export function buildSplitPoints(
               size: isSelected || isHovered ? 2 : undefined,
             };
           })}
-          selectedTrainId={selectedTrainId}
+          selectedTrainId={selectedTrain?.id}
           onClose={() => onCloseOccupancyLayer?.(waypointId)}
           topPadding={BASE_WAYPOINT_HEIGHT}
         />
