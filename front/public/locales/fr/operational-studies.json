@@ -593,6 +593,11 @@
     "updatedOn": "Modifié le"
   },
   "simulationResults": {
+    "curveSelection": {
+      "all": "{{count}} Occurrence(s)",
+      "compliant": "{{count}} Occurrence(s) conforme(s)",
+      "single": "Occurrence unique"
+    },
     "departureTime": "Départ",
     "displayWaypoints": "Afficher les points de passage intermédiaires",
     "electricalProfiles": {

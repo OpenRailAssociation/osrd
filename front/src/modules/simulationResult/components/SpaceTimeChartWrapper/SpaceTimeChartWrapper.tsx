@@ -55,6 +55,7 @@ import {
 import { mapBy } from 'utils/types';
 
 import { buildSplitPoints } from './buildSplitPoints';
+import CurveSelectionSidePanel from './CurveSelectionSidePanel';
 import cutSpaceTimeCurves from './helpers/cutSpaceTimeCurves';
 import formatSpaceTimeCurves from './helpers/formatSpaceTimeCurves';
 import getPathStyle from './helpers/getPathStyle';
@@ -478,6 +479,15 @@ const SpaceTimeChartWrapper = ({
               </>
             )}
           </SpaceTimeChart>
+          {/*TODO : update onModeChange and counts when implementing compliant/all/single modes*/}
+          {selectedTrainId && (
+            <CurveSelectionSidePanel
+              position={height / 2}
+              panelSelectionMode="all"
+              onModeChange={() => {}}
+              counts={{ compliant: 3, all: 6 }}
+            />
+          )}
         </div>
       </div>
       <Slider

@@ -593,6 +593,11 @@
     "updatedOn": "Edited on"
   },
   "simulationResults": {
+    "curveSelection": {
+      "all": "{{count}} occurrence(s)",
+      "compliant": "{{count}} compliant occurrence(s)",
+      "single": "Unique occurrence"
+    },
     "departureTime": "Departure",
     "displayWaypoints": "Display intermediate waypoints",
     "electricalProfiles": {
