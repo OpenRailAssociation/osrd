@@ -341,8 +341,97 @@ pub fn rolling_stock_granted(
     ))
 }
 
-pub fn rolling_stock_list(_privilege: RollingStockPrivilege) -> Protected<Vec<RollingStock>> {
-    todo!()
+/// List the rolling stocks on which the issuer has the given rolling stock privilege
+pub fn rolling_stock_list(
+    privilege: RollingStockPrivilege,
+    subject: Subject,
+) -> Protected<Vec<RollingStock>> {
+    Protected::new(move |openfga| {
+        async move {
+            let rolling_stocks_with_grant = match (privilege, subject) {
+                (RollingStockPrivilege::CanRead, Subject::Group(group)) => {
+                    openfga
+                        .list_objects(
+                            RollingStock::can_read().query_objects(Group::member().userset(&group)),
+                        )
+                        .await
+                }
+                (RollingStockPrivilege::CanShareRead, Subject::Group(group)) => {
+                    openfga
+                        .list_objects(
+                            RollingStock::can_share_read()
+                                .query_objects(Group::member().userset(&group)),
+                        )
+                        .await
+                }
+                (RollingStockPrivilege::CanWrite, Subject::Group(group)) => {
+                    openfga
+                        .list_objects(
+                            RollingStock::can_write()
+                                .query_objects(Group::member().userset(&group)),
+                        )
+                        .await
+                }
+                (RollingStockPrivilege::CanShareWrite, Subject::Group(group)) => {
+                    openfga
+                        .list_objects(
+                            RollingStock::can_share_write()
+                                .query_objects(Group::member().userset(&group)),
+                        )
+                        .await
+                }
+                (RollingStockPrivilege::CanDelete, Subject::Group(group)) => {
+                    openfga
+                        .list_objects(
+                            RollingStock::can_delete()
+                                .query_objects(Group::member().userset(&group)),
+                        )
+                        .await
+                }
+                (RollingStockPrivilege::CanShareOwnership, Subject::Group(group)) => {
+                    openfga
+                        .list_objects(
+                            RollingStock::can_share_ownership()
+                                .query_objects(Group::member().userset(&group)),
+                        )
+                        .await
+                }
+                (RollingStockPrivilege::CanRead, Subject::User(user)) => {
+                    openfga
+                        .list_objects(RollingStock::can_read().query_objects(&user))
+                        .await
+                }
+                (RollingStockPrivilege::CanShareRead, Subject::User(user)) => {
+                    openfga
+                        .list_objects(RollingStock::can_share_read().query_objects(&user))
+                        .await
+                }
+                (RollingStockPrivilege::CanWrite, Subject::User(user)) => {
+                    openfga
+                        .list_objects(RollingStock::can_write().query_objects(&user))
+                        .await
+                }
+                (RollingStockPrivilege::CanShareWrite, Subject::User(user)) => {
+                    openfga
+                        .list_objects(RollingStock::can_share_write().query_objects(&user))
+                        .await
+                }
+                (RollingStockPrivilege::CanDelete, Subject::User(user)) => {
+                    openfga
+                        .list_objects(RollingStock::can_delete().query_objects(&user))
+                        .await
+                }
+                (RollingStockPrivilege::CanShareOwnership, Subject::User(user)) => {
+                    openfga
+                        .list_objects(RollingStock::can_share_ownership().query_objects(&user))
+                        .await
+                }
+            }
+            .map_err(QueryError::parsing_ok)?;
+            Ok(rolling_stocks_with_grant)
+        }
+        .boxed()
+    })
 }
 
 #[cfg(test)]
@@ -350,7 +439,8 @@ mod tests {
     use fga::model::Relation as _;
 
     use crate::{
-        RollingStock, RollingStockGrant, Subject, User, v2::special_authorizers::Authorize,
+        Group, RollingStock, RollingStockGrant, RollingStockPrivilege, Subject, User,
+        v2::{Authorizer as _, special_authorizers::Authorize},
     };
 
     #[tokio::test]
@@ -404,5 +494,120 @@ mod tests {
             .unwrap_authorized()
             .await;
         assert_eq!(readers, vec![]);
+    }
+
+    #[tokio::test]
+    async fn rolling_stock_listt() {
+        let openfga = crate::authz_client!();
+        let authorizer = Authorize(&openfga);
+        openfga
+            .prepare_writes()
+            .write(&RollingStock::reader().tuple(&User(1), &RollingStock(1)))
+            .write(&RollingStock::reader().tuple(&User(1), &RollingStock(2)))
+            .write(&RollingStock::writer().tuple(&User(1), &RollingStock(3)))
+            .write(&RollingStock::owner().tuple(&User(1), &RollingStock(4)))
+            .write(&Group::member().tuple(&User(2), &Group(1)))
+            .write(
+                &RollingStock::writer().tuple(Group::member().userset(&Group(1)), &RollingStock(1)),
+            )
+            .execute()
+            .await
+            .unwrap();
+        let mut rs_read_grant = authorizer
+            .authorize(super::rolling_stock_list(
+                RollingStockPrivilege::CanRead,
+                Subject::User(User(1)),
+            ))
+            .await
+            .unwrap()
+            .unwrap_authorized()
+            .await;
+        let mut rs_write_grant = authorizer
+            .authorize(super::rolling_stock_list(
+                RollingStockPrivilege::CanWrite,
+                Subject::User(User(1)),
+            ))
+            .await
+            .unwrap()
+            .unwrap_authorized()
+            .await;
+        let mut rs_can_delete_grant = authorizer
+            .authorize(super::rolling_stock_list(
+                RollingStockPrivilege::CanDelete,
+                Subject::User(User(1)),
+            ))
+            .await
+            .unwrap()
+            .unwrap_authorized()
+            .await;
+        let mut rs_group_can_write_grant = authorizer
+            .authorize(super::rolling_stock_list(
+                RollingStockPrivilege::CanWrite,
+                Subject::Group(Group(1)),
+            ))
+            .await
+            .unwrap()
+            .unwrap_authorized()
+            .await;
+        rs_read_grant.sort();
+        rs_write_grant.sort();
+        rs_can_delete_grant.sort();
+        rs_group_can_write_grant.sort();
+        assert_eq!(
+            rs_read_grant,
+            vec![
+                RollingStock(1),
+                RollingStock(2),
+                RollingStock(3),
+                RollingStock(4)
+            ]
+        );
+        assert_eq!(rs_write_grant, vec![RollingStock(3), RollingStock(4)]);
+        assert_eq!(rs_can_delete_grant, vec![RollingStock(4)]);
+        assert_eq!(rs_group_can_write_grant, vec![RollingStock(1)]);
+    }
+
+    #[tokio::test]
+    async fn rolling_stock_list_no_matching_rolling_stock() {
+        let openfga = crate::authz_client!();
+        let authorizer = Authorize(&openfga);
+        openfga
+            .prepare_writes()
+            .write(&RollingStock::reader().tuple(&User(1), &RollingStock(1)))
+            .execute()
+            .await
+            .unwrap();
+        let rs_write_grants = authorizer
+            .authorize(super::rolling_stock_list(
+                RollingStockPrivilege::CanWrite,
+                Subject::User(User(1)),
+            ))
+            .await
+            .unwrap()
+            .unwrap_authorized()
+            .await;
+        assert_eq!(rs_write_grants, vec![]);
+    }
+
+    #[tokio::test]
+    async fn rolling_stock_list_nonexistent_user() {
+        let openfga = crate::authz_client!();
+        let authorizer = Authorize(&openfga);
+        openfga
+            .prepare_writes()
+            .write(&RollingStock::reader().tuple(&User(1), &RollingStock(1)))
+            .execute()
+            .await
+            .unwrap();
+        let rs_write_grants = authorizer
+            .authorize(super::rolling_stock_list(
+                RollingStockPrivilege::CanWrite,
+                Subject::User(User(2)), // does not exist
+            ))
+            .await
+            .unwrap()
+            .unwrap_authorized()
+            .await;
+        assert_eq!(rs_write_grants, vec![]);
     }
 }
