@@ -122,11 +122,7 @@ const AddPathStepPopup = ({
       let opRef: OperationalPointReference;
       const uic = operationalPoint.extensions?.identifier?.uic;
       if (uic) {
-        opRef = {
-          type: 'uic',
-          uic,
-          secondary_code: operationalPoint.extensions?.sncf?.ch,
-        };
+        opRef = { type: 'uic', uic, secondary_code: operationalPoint.extensions?.sncf?.ch };
       } else {
         opRef = { type: 'id', operational_point: operationalPoint.id };
       }

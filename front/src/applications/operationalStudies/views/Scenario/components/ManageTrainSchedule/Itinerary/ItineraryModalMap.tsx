@@ -21,8 +21,10 @@ import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
 import Itinerary from 'modules/simulationResult/components/SimulationResultsMap/RenderItinerary';
 import { useMapSettings, useMapSettingsActions } from 'reducers/commonMap';
 import type { MapSettings, Viewport } from 'reducers/commonMap/types';
+import { setFailure } from 'reducers/main';
 import type { PathStepMetadata, PathStepV2 } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
+import { castErrorToFailure } from 'utils/error';
 import { getBarycenter, nearestPointOnLine } from 'utils/geometry';
 import { getMapMouseEventNearestFeature } from 'utils/mapHelper';
 
@@ -48,11 +50,7 @@ type ItineraryModalMapProps = {
   isMapSelectionMode?: boolean;
   onMapSelectionClick?: (featureInfoClick: FeatureInfoClick) => void;
   onPathStepDragEnd?: (stepId: string, featureInfoClick: FeatureInfoClick) => void;
-  onOpSelectionConfirm?: (
-    location: PathItemLocation,
-    coordinates: number[],
-    displayName: string
-  ) => void;
+  onOpSelectionConfirm?: (location: PathItemLocation, displayName: string) => void;
   getStepName?: (stepId: string) => string | undefined;
 };
 
@@ -97,7 +95,6 @@ const ItineraryModalMap = ({
     onTrack: boolean;
   } | null>(null);
   const [pendingOpClick, setPendingOpClick] = useState<PendingOpClick | null>(null);
-  const [selectedTrackName, setSelectedTrackName] = useState<string | null>(null);
 
   const [getInfraObjectEntity] =
     osrdEditoastApi.endpoints.postInfraByInfraIdObjectsAndObjectType.useLazyQuery();
@@ -230,9 +227,8 @@ const ItineraryModalMap = ({
           clickedTrackName,
           displayName: buildOpDisplayName(op),
         });
-        setSelectedTrackName(clickedTrackName);
-      } catch {
-        console.error('Failed to fetch operational point for selection');
+      } catch (error) {
+        dispatch(setFailure(castErrorToFailure(error)));
       }
     },
     [infraID, getInfraObjectEntity]
@@ -310,7 +306,7 @@ const ItineraryModalMap = ({
   const interactiveLayerIds = useMemo(() => {
     const result: Array<string> = [];
     result.push('chartis/tracks-geo/main');
-    if (layersSettings.operational_points || isMapSelectionMode) {
+    if (layersSettings.operational_points) {
       result.push('chartis/osrd_operational_point/geo');
     }
     if (layersSettings.track_sections) {
@@ -441,15 +437,9 @@ const ItineraryModalMap = ({
         {pendingOpClick && (
           <OpTrackSelectionPopup
             pendingOpClick={pendingOpClick}
-            selectedTrackName={selectedTrackName}
-            onTrackChange={setSelectedTrackName}
             onCancel={() => setPendingOpClick(null)}
             onConfirm={(location) => {
-              onOpSelectionConfirm?.(
-                location,
-                pendingOpClick.coordinates,
-                pendingOpClick.displayName
-              );
+              onOpSelectionConfirm?.(location, pendingOpClick.displayName);
               setPendingOpClick(null);
             }}
           />
