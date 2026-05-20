@@ -294,7 +294,7 @@ const ItineraryModal = ({
   );
 
   const handleOpSelectionConfirm = useCallback(
-    (location: PathItemLocation, _coordinates: number[], displayName: string) => {
+    (location: PathItemLocation, displayName: string) => {
       if (!mapSelectionStepId) return;
       const stepId = mapSelectionStepId;
       setPathSteps((prev) =>

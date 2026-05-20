@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
 import { Button, Select } from '@osrd-project/ui-core';
 import { useTranslation } from 'react-i18next';
@@ -18,19 +18,18 @@ type TrackOption = { local_track_name: string | null };
 
 type OpTrackSelectionPopupProps = {
   pendingOpClick: PendingOpClick;
-  selectedTrackName: string | null;
-  onTrackChange: (trackName: string | null) => void;
   onCancel: () => void;
   onConfirm: (location: PathItemLocation) => void;
 };
 
 const OpTrackSelectionPopup = ({
   pendingOpClick,
-  selectedTrackName,
-  onTrackChange,
   onCancel,
   onConfirm,
 }: OpTrackSelectionPopupProps) => {
+  const [selectedTrackName, setSelectedTrackName] = useState<string | null>(
+    pendingOpClick.clickedTrackName
+  );
   const { t: tItinerary } = useTranslation('operational-studies', {
     keyPrefix: 'manageTrainSchedule.itineraryModal',
   });
@@ -72,7 +71,7 @@ const OpTrackSelectionPopup = ({
             getOptionValue={(option) => option.local_track_name ?? ''}
             options={trackOptions}
             value={selectedOption}
-            onChange={(option) => onTrackChange(option?.local_track_name ?? null)}
+            onChange={(option) => setSelectedTrackName(option?.local_track_name ?? null)}
           />
         </div>
         <div className="op-track-selection-actions">
