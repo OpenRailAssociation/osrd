@@ -24,17 +24,20 @@ pub struct SystemAuthorizer<'a> {
 
 impl SystemAuthorizer<'_> {
     #[tracing::instrument(target = "SystemAuthorizer::check", skip_all, fields(?check), ret(level = "trace"), err)]
-    async fn check(&self, check: &Check) -> Result<Option<Check>, editoast_models::Error> {
+    async fn check<'ch>(
+        &self,
+        check: &'ch Check,
+    ) -> Result<Option<&'ch Check>, editoast_models::Error> {
         let conn = &mut self.conn.clone();
         Ok(match check {
             Check::SubjectExists(authz::Subject::User(user)) => {
-                (!editoast_models::User::exists(conn, **user).await?).then_some(*check)
+                (!editoast_models::User::exists(conn, **user).await?).then_some(check)
             }
             Check::SubjectExists(authz::Subject::Group(group)) => {
-                (!editoast_models::Group::exists(conn, **group).await?).then_some(*check)
+                (!editoast_models::Group::exists(conn, **group).await?).then_some(check)
             }
             Check::InfraExists(infra) => {
-                (!editoast_models::Infra::exists(conn, **infra).await?).then_some(*check)
+                (!editoast_models::Infra::exists(conn, **infra).await?).then_some(check)
             }
             // checked by UserAuthorizer
             Check::IssuerHasRole(_) | Check::IssuerHasInfraPrivilege(_, _) => None,
@@ -61,7 +64,7 @@ impl Authorizer for SystemAuthorizer<'_> {
                 .collect::<FuturesUnordered<_>>();
             while let Some(result) = checks.next().await {
                 if let Some(check) = result? {
-                    return Ok(Access::Denied { rejection: check });
+                    return Ok(Access::Denied { rejection: *check });
                 }
             }
         }
@@ -92,9 +95,12 @@ impl<'c> UserAuthorizer<'c> {
     }
 
     #[tracing::instrument(target = "UserAutorizer::check", skip_all, fields(?check, issuer = ?self.user, roles = ?self.roles), ret(level = "trace"), err)]
-    async fn check(&self, check: &Check) -> Result<Option<Check>, authz::v2::OpenFgaError> {
+    async fn check<'ch>(
+        &self,
+        check: &'ch Check,
+    ) -> Result<Option<&'ch Check>, authz::v2::OpenFgaError> {
         Ok(match check {
-            Check::IssuerHasRole(role) if !self.roles.contains(role) => Some(*check),
+            Check::IssuerHasRole(role) if !self.roles.contains(role) => Some(check),
             Check::IssuerHasRole(_) => None,
 
             Check::IssuerHasInfraPrivilege(privilege, infra) => {
@@ -102,7 +108,7 @@ impl<'c> UserAuthorizer<'c> {
                     .access_authorized::<Infallible>(self.openfga)
                     .access()
                     .await?;
-                (!privileges.contains(privilege)).then_some(*check)
+                (!privileges.contains(privilege)).then_some(check)
             }
             // checked by SystemAuthorizer
             Check::SubjectExists(_) | Check::InfraExists(_) => None,
@@ -149,7 +155,7 @@ impl Authorizer for UserAuthorizer<'_> {
             }
             while let Some(result) = checks.next().await {
                 if let Some(check) = result? {
-                    return Ok(Access::Denied { rejection: check });
+                    return Ok(Access::Denied { rejection: *check });
                 }
             }
         }
