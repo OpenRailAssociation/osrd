@@ -21,6 +21,7 @@
     width: 100%;
     position: sticky;
   }
+
   .space-time-h-slider-container {
     position: absolute;
     height: 28px;
@@ -29,6 +30,62 @@
     z-index: 10;
     padding: 12px 11px;
     background-color: var(--white100);
+  }
+
+  .curve-selection-side-panel {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    right: 0;
+    z-index: 10;
+    width: 32px;
+    height: 120px;
+    border: 1px solid var(--black10);
+    border-right: none;
+    border-radius: 8px 0 0 8px;
+    background-color: var(--ambientB5);
+    color: var(--primary60);
+    transform: translateY(-50%);
+
+    .numbered-icon {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 28px;
+      outline: none;
+
+      .occurrences-number {
+        font-size: 12px;
+        line-height: 12px;
+        font-family: IBM plex sans;
+        font-weight: 600;
+      }
+    }
+
+    .selected-icon {
+      color: var(--black);
+
+      > svg {
+        fill: var(--black);
+      }
+    }
+
+    .selection-marker {
+      position: absolute;
+      width: 4px;
+      height: 6px;
+      background-color: var(--black);
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      clip-path: polygon(0% 0%, 85% 35%, 95% 50%, 85% 65%, 0% 100%);
+    }
   }
 }
 

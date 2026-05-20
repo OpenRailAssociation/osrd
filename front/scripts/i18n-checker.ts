@@ -43,6 +43,7 @@ const IGNORE_UNUSED: RegExp[] = [
   /operational-studies:simulationResults.departureTime/,
   /operational-studies:simulationResults.electricalProfiles\..*/,
   /operational-studies:simulationResults.powerRestriction\..*/,
+  /operational-studies:simulationResults\.curveSelection\..*/,
 
   // Stdcm help section
   /stdcm-help-section:*/,
