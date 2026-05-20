@@ -5,7 +5,7 @@ set -e
 set -o pipefail
 
 uv run datamodel-codegen \
-    --input openapi.yaml \
+    --input ../railway_manager_interface/openapi.yaml \
     --input-file-type openapi \
     --openapi-scopes schemas paths \
     --use-standard-collections \
