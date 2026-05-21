@@ -15,6 +15,7 @@ use crate::model::RollingStockPrivilege;
 use crate::v2::infra_direct_grant;
 use crate::v2::infra_effective_grant;
 use crate::v2::infra_privileges;
+use crate::v2::rolling_stock_direct_grant;
 use crate::v2::rolling_stock_effective_grant;
 use crate::v2::rolling_stock_privileges;
 use crate::v2::special_authorizers;
@@ -32,6 +33,11 @@ pub trait TestClientExt {
     async fn rolling_stock_effective_grant(
         &self,
         subject: Subject,
+        rolling_stock: RollingStock,
+    ) -> Option<RollingStockGrant>;
+    async fn rolling_stock_direct_grant(
+        &self,
+        subject: impl Into<Subject>,
         rolling_stock: RollingStock,
     ) -> Option<RollingStockGrant>;
     async fn rolling_stock_privileges(
@@ -97,6 +103,18 @@ impl TestClientExt for fga::Client {
         let authorize = special_authorizers::Authorize(self);
         authorize
             .access_value(rolling_stock_effective_grant(subject, rolling_stock))
+            .await
+            .unwrap()
+    }
+
+    async fn rolling_stock_direct_grant(
+        &self,
+        subject: impl Into<Subject>,
+        rolling_stock: RollingStock,
+    ) -> Option<RollingStockGrant> {
+        let authorize = special_authorizers::Authorize(self);
+        authorize
+            .access_value(rolling_stock_direct_grant(subject.into(), rolling_stock))
             .await
             .unwrap()
     }

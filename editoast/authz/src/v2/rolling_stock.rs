@@ -16,6 +16,70 @@ use super::Guardrail;
 use super::Protected;
 use super::SanityCheck;
 
+/// Returns the *direct grant* a subject has on an [RollingStock], if any
+///
+/// A user can have *indirect grants* on a resource through group membership.
+/// For those, use [`rolling_stock_effective_grant`].
+///
+/// A subject can have at most one direct grant on any resource. Should this
+/// invariant be violated, the protected operation will panic.
+pub fn rolling_stock_direct_grant(
+    subject: Subject,
+    rolling_stock: RollingStock,
+) -> Protected<Option<RollingStockGrant>> {
+    Protected::new(move |openfga| {
+        async move {
+            let (is_reader, is_writer, is_owner) = match &subject {
+                Subject::User(user) => tokio::try_join!(
+                    openfga
+                        .tuple_exists(RollingStock::reader().tuple(user, &rolling_stock)),
+                    openfga
+                        .tuple_exists(RollingStock::writer().tuple(user, &rolling_stock)),
+                    openfga.tuple_exists(RollingStock::owner().tuple(user, &rolling_stock)),
+                )?,
+                Subject::Group(group) => tokio::try_join!(
+                    openfga.tuple_exists(
+                        RollingStock::reader()
+                            .tuple(Group::member().userset(group), &rolling_stock)
+                    ),
+                    openfga.tuple_exists(
+                        RollingStock::writer()
+                            .tuple(Group::member().userset(group), &rolling_stock)
+                    ),
+                    openfga.tuple_exists(
+                        RollingStock::owner()
+                            .tuple(Group::member().userset(group), &rolling_stock)
+                    ),
+                )?,
+            };
+
+            match (is_reader, is_writer, is_owner) {
+                (true, false, false) => Ok(Some(RollingStockGrant::Reader)),
+                (false, true, false) => Ok(Some(RollingStockGrant::Writer)),
+                (false, false, true) => Ok(Some(RollingStockGrant::Owner)),
+                (false, false, false) => Ok(None),
+                _ => {
+                    tracing::error!(
+                        is_reader,
+                        is_writer,
+                        is_owner,
+                        ?subject,
+                        resource = ?rolling_stock,
+                        "Subject has multiple direct grants on the same resource"
+                    );
+                    panic!(
+                        "Subject '{subject:?}' has multiple direct grants on the same resource '{rolling_stock:?}', which is not supposed to happen by design. \n\
+                        Detected direct grants: reader: {is_reader}, writer: {is_writer}, owner: {is_owner}"
+                    )
+                }
+            }
+        }
+        .boxed()
+    })
+    .with_check(SanityCheck::SubjectExists(subject))
+    .with_check(SanityCheck::RollingStockExists(rolling_stock))
+}
+
 /// Returns the effective (maximum) grant a subject has on an [RollingStock], if any
 ///
 /// A given user may have multiple grants on the same resource. This can happen
@@ -179,6 +243,144 @@ mod tests {
             .unwrap_authorized()
             .await;
         assert_eq!(grant, Some(RollingStockGrant::Owner));
+    }
+
+    #[tokio::test]
+    async fn user_rolling_stock_direct_grant() {
+        let openfga = crate::authz_client!();
+        let authorize = Authorize(&openfga);
+
+        let rs_grant = async |user_id: i64| {
+            rolling_stock_direct_grant(Subject::user(user_id), RollingStock(1))
+                .authorize(&authorize)
+                .await
+                .unwrap()
+                .unwrap_authorized()
+                .await
+        };
+
+        assert_eq!(rs_grant(1).await, None);
+
+        openfga
+            .prepare_writes()
+            .write(&RollingStock::reader().tuple(&User(1), &RollingStock(1)))
+            .write(&RollingStock::writer().tuple(&User(2), &RollingStock(1)))
+            .write(&RollingStock::owner().tuple(&User(3), &RollingStock(1)))
+            .execute()
+            .await
+            .unwrap();
+
+        assert_eq!(rs_grant(1).await, Some(RollingStockGrant::Reader));
+        assert_eq!(rs_grant(2).await, Some(RollingStockGrant::Writer));
+        assert_eq!(rs_grant(3).await, Some(RollingStockGrant::Owner));
+    }
+
+    #[tokio::test]
+    async fn group_rolling_stock_direct_grant() {
+        let openfga = crate::authz_client!();
+        let authorize = Authorize(&openfga);
+
+        let rs_grant = async |group_id: i64| {
+            rolling_stock_direct_grant(Subject::group(group_id), RollingStock(1))
+                .authorize(&authorize)
+                .await
+                .unwrap()
+                .unwrap_authorized()
+                .await
+        };
+
+        assert_eq!(rs_grant(1).await, None);
+
+        openfga
+            .prepare_writes()
+            .write(
+                &RollingStock::reader().tuple(Group::member().userset(&Group(1)), &RollingStock(1)),
+            )
+            .write(
+                &RollingStock::writer().tuple(Group::member().userset(&Group(2)), &RollingStock(1)),
+            )
+            .write(
+                &RollingStock::owner().tuple(Group::member().userset(&Group(3)), &RollingStock(1)),
+            )
+            .execute()
+            .await
+            .unwrap();
+
+        assert_eq!(rs_grant(1).await, Some(RollingStockGrant::Reader));
+        assert_eq!(rs_grant(2).await, Some(RollingStockGrant::Writer));
+        assert_eq!(rs_grant(3).await, Some(RollingStockGrant::Owner));
+    }
+
+    #[tokio::test]
+    async fn no_inference_rolling_stock_direct_grant() {
+        let openfga = crate::authz_client!();
+        let authorize = Authorize(&openfga);
+
+        openfga
+            .prepare_writes()
+            .write(&Group::member().tuple(&User(1), &Group(1)))
+            .write(&Group::member().tuple(&User(2), &Group(2)))
+            .write(&Group::member().tuple(&User(3), &Group(3)))
+            .write(&RollingStock::reader().tuple(&User(1), &RollingStock(1)))
+            .write(
+                &RollingStock::writer().tuple(Group::member().userset(&Group(2)), &RollingStock(1)),
+            )
+            .write(&RollingStock::owner().tuple(&User(3), &RollingStock(1)))
+            .write(
+                &RollingStock::reader().tuple(Group::member().userset(&Group(3)), &RollingStock(1)),
+            )
+            .execute()
+            .await
+            .unwrap();
+
+        let user_direct_grant = async |user_id: i64| {
+            rolling_stock_direct_grant(Subject::user(user_id), RollingStock(1))
+                .authorize(&authorize)
+                .await
+                .unwrap()
+                .unwrap_authorized()
+                .await
+        };
+
+        let group_direct_grant = async |group_id: i64| {
+            rolling_stock_direct_grant(Subject::group(group_id), RollingStock(1))
+                .authorize(&authorize)
+                .await
+                .unwrap()
+                .unwrap_authorized()
+                .await
+        };
+
+        assert_eq!(user_direct_grant(1).await, Some(RollingStockGrant::Reader));
+        assert_eq!(group_direct_grant(1).await, None);
+
+        assert_eq!(user_direct_grant(2).await, None);
+        assert_eq!(group_direct_grant(2).await, Some(RollingStockGrant::Writer));
+
+        assert_eq!(user_direct_grant(3).await, Some(RollingStockGrant::Owner));
+        assert_eq!(group_direct_grant(3).await, Some(RollingStockGrant::Reader));
+    }
+
+    #[tokio::test]
+    #[should_panic]
+    async fn rolling_stock_direct_grant_inconsistent_state_panics() {
+        let openfga = crate::authz_client!();
+        let authorize = Authorize(&openfga);
+
+        openfga
+            .prepare_writes()
+            .write(&RollingStock::reader().tuple(&User(1), &RollingStock(1)))
+            .write(&RollingStock::writer().tuple(&User(1), &RollingStock(1)))
+            .execute()
+            .await
+            .unwrap();
+
+        rolling_stock_direct_grant(Subject::user(1), RollingStock(1))
+            .authorize(&authorize)
+            .await
+            .unwrap()
+            .unwrap_authorized()
+            .await;
     }
 
     #[tokio::test]
