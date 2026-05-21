@@ -1,0 +1,41 @@
+.ui-duration-input {
+  /* Dimensions */
+
+  --ui-duration-input-height: 2.5rem;
+  --ui-duration-input-padding: 0.5rem 0.75rem;
+
+  &.small {
+    --ui-duration-input-height: 1.75rem;
+    --ui-duration-input-padding: 0.188rem 0.5rem 0.188rem 0.438rem;
+  }
+
+  &:has(:focus-visible) {
+    box-shadow:
+      0px 1px 3px rgba(0, 0, 0, 0.5) inset,
+      0px 0px 0px 1px rgba(31, 27, 23, 1) inset;
+    @apply bg-white-25;
+  }
+
+  width: fit-content;
+  padding: var(--ui-duration-input-padding);
+  border-radius: 0.25rem;
+  box-shadow:
+    0 0 0 0.063rem rgba(148, 145, 142, 1) inset,
+    0 0.063rem 0.188rem rgba(0, 0, 0, 0.5) inset;
+
+  line-height: 1.25rem;
+  font-size: 0.875rem;
+
+  .unit-field {
+    line-height: 20px;
+    letter-spacing: 0;
+    height: var(--ui-duration-input-height);
+    input {
+      text-align: right;
+      outline: none;
+    }
+    span {
+      color: var(--color-grey-50);
+    }
+  }
+}
