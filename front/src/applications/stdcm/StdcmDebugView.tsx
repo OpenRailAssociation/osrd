@@ -5,7 +5,7 @@ import { Search } from '@osrd-project/ui-icons';
 import { skipToken } from '@reduxjs/toolkit/query';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
-import DebugFailureMap from 'applications/stdcm/components/DebugView/DebugFailureMap';
+import DebugMap from 'applications/stdcm/components/DebugView/DebugMap';
 import DebugSpaceTimeChart from 'applications/stdcm/components/DebugView/DebugSpaceTimeChart';
 import DebugSpeedDistanceDiagram from 'applications/stdcm/components/DebugView/DebugSpeedDistanceDiagram';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
@@ -73,7 +73,7 @@ const StdcmDebugView = () => {
           <DebugSpeedDistanceDiagram simData={simulation_data} />
         </>
       )}
-      {failure && <DebugFailureMap failureData={failure} />}
+      {failure && <DebugMap failureData={failure} />}
       {!simulation_data && !failure && <div className="stdcm-debug-view__status">{viewStatus}</div>}
     </div>
   );
