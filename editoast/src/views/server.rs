@@ -1,4 +1,5 @@
 pub mod middlewares;
+pub mod router;
 
 use std::env;
 use std::path::PathBuf;

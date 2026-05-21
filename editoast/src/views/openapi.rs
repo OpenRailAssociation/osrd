@@ -18,7 +18,7 @@ use utoipa::openapi::schema::SchemaType;
 use utoipa::openapi::schema::Type;
 
 use crate::error::ErrorDefinition;
-use crate::views::router::FlattenedPath;
+use crate::views::server::router::FlattenedPath;
 use crate::views::service_router;
 
 fn concat_path<A: AsRef<str>, B: AsRef<str>>(a: A, b: B) -> String {
