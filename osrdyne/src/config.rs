@@ -33,6 +33,10 @@ pub struct OsrdyneConfig {
     pub managed_by_value: String,
     pub extra_lifetime: Option<Duration>,
     pub opentelemetry: Option<OpentelemetryConfig>,
+    #[serde(with = "humantime_serde")]
+    pub queue_unbind_delay: Option<Duration>,
+    #[serde(with = "humantime_serde")]
+    pub queue_delete_delay: Option<Duration>,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -64,6 +68,8 @@ impl Default for OsrdyneConfig {
             managed_by_value: "osrdyne".into(),
             extra_lifetime: None,
             opentelemetry: None,
+            queue_unbind_delay: Some(Duration::from_secs(10 * 60)),
+            queue_delete_delay: Some(Duration::from_secs(10 * 60)),
         }
     }
 }

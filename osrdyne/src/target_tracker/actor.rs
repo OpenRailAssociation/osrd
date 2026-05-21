@@ -6,6 +6,7 @@ use crate::Key;
 
 use super::{GenerationId, QueueStateMap, TargetTracker};
 
+#[derive(Debug)]
 pub struct TargetTrackerConfig {
     pub unbind_delay: Duration,
     pub delete_delay: Duration,
