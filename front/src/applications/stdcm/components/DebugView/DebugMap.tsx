@@ -25,9 +25,9 @@ const toFeatures = (
 
 const fmtSeconds = (seconds: number) => `${Math.round(seconds)}s`;
 
-type DebugFailureMapProps = { failureData: SimDebugFailureReport };
+type DebugMapProps = { failureData: SimDebugFailureReport };
 
-const DebugFailureMap = ({ failureData }: DebugFailureMapProps) => {
+const DebugMap = ({ failureData }: DebugMapProps) => {
   const mapRef = useRef<MapRef | null>(null);
   const mapBlankStyle = useMapBlankStyle();
   const [hovered, setHovered] = useState<{
@@ -76,8 +76,8 @@ const DebugFailureMap = ({ failureData }: DebugFailureMapProps) => {
   }, []);
 
   return (
-    <div className="debug-failure-map">
-      <div className="debug-failure-map__map">
+    <div className="debug-map">
+      <div className="debug-map__map">
         <ReactMapGL
           ref={mapRef}
           initialViewState={initialViewState}
@@ -127,20 +127,20 @@ const DebugFailureMap = ({ failureData }: DebugFailureMapProps) => {
         </ReactMapGL>
       </div>
 
-      <div className="debug-failure-map__legend">
+      <div className="debug-map__legend">
         <span>
-          <span className="debug-failure-map__legend-dot debug-failure-map__legend-dot--largest" />
+          <span className="debug-map__legend-dot debug-map__legend-dot--largest" />
           Largest conflicts
         </span>
         <span>
-          <span className="debug-failure-map__legend-dot debug-failure-map__legend-dot--closest" />
+          <span className="debug-map__legend-dot debug-map__legend-dot--closest" />
           Closest conflicts
         </span>
       </div>
 
       {hovered && (
         <div
-          className="debug-failure-map__tooltip"
+          className="debug-map__tooltip"
           style={{ left: hovered.clientX + 12, top: hovered.clientY + 12 }}
         >
           <div>
@@ -157,4 +157,4 @@ const DebugFailureMap = ({ failureData }: DebugFailureMapProps) => {
   );
 };
 
-export default DebugFailureMap;
+export default DebugMap;
