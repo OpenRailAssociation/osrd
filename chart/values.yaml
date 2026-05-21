@@ -30,34 +30,16 @@ endpoints:
   public: https://my-osrd-instance.org
   # -- (object) amqp configuration
   amqp:
-    # @schema
-    # type: [string, object]
-    # @schema
     # --(string, object) amqp server url text or reference to a secret
     url: "amqp://osrd:password@rabbitmq:5672/%2f"
-    # @schema
-    # type: [string, object]
-    # @schema
     # -- (string, object) amqp management url
     management: "http://osrd:password@rabbitmq:15672"
-    # @schema
-    # type: [string, object]
-    # @schema
     # -- (string, object) amqp management url including vhost
     managementWithVhost: "http://osrd:password@rabbitmq:15672/%2f"
-  # @schema
-  # type: [string, object]
-  # @schema
   # -- (string, object) postgresql url
   postgresql: "postgres://osrd:password@postgres:5432/osrd"
-  # @schema
-  # type: [string, object]
-  # @schema
   # -- (string, object) postgresql url for openFGA
   postgresqlOpenFGA: "postgres://osrd:password@postgres:5432/osrd?search_path=openfga"
-  # @schema
-  # type: [string, object]
-  # @schema
   # -- (string, object) redis/valkey url
   redis: redis://username:pwd@redis:6379/0
 
