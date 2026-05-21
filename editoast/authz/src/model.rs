@@ -7,6 +7,7 @@ use strum::EnumString;
 use utoipa::ToSchema;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, derive_more::From)]
+#[cfg_attr(test, derive(Ord, PartialOrd))]
 pub enum Subject {
     User(User),
     Group(Group),
@@ -78,6 +79,7 @@ impl AsRef<Group> for Subject {
     Eq,
     Hash,
 )]
+#[cfg_attr(test, derive(Ord, PartialOrd))]
 pub struct User(pub i64);
 
 #[derive(
@@ -94,6 +96,7 @@ pub struct User(pub i64);
     Eq,
     Hash,
 )]
+#[cfg_attr(test, derive(Ord, PartialOrd))]
 pub struct Group(pub i64);
 
 #[derive(
@@ -161,6 +164,7 @@ pub enum InfraGrant {
     Eq,
     Hash,
 )]
+#[cfg_attr(test, derive(PartialOrd, Ord))]
 #[fga(name = "rolling_stock")]
 pub struct RollingStock(pub i64);
 

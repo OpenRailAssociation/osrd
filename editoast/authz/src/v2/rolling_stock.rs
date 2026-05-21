@@ -1,7 +1,9 @@
 use std::collections::HashSet;
 
+use fga::client::QueryError;
 use fga::model::Relation as _;
 use futures::FutureExt;
+use itertools::Itertools as _;
 
 use crate::Group;
 use crate::Role;
@@ -294,13 +296,113 @@ pub fn rolling_stock_revoke(
     })
 }
 
+/// List the users with a specific grant on a given rolling stock.
 pub fn rolling_stock_granted(
-    _rolling_stock: RollingStock,
-    _grant: RollingStockGrant,
+    rolling_stock: RollingStock,
+    grant: RollingStockGrant,
 ) -> Protected<Vec<Subject>> {
-    todo!()
+    Protected::new(move |openfga| {
+        async move {
+            let subjects_with_grant = match grant {
+                RollingStockGrant::Reader => {
+                    openfga
+                        .list_users(RollingStock::reader().query_users(&rolling_stock))
+                        .await
+                        .map_err(QueryError::parsing_ok)?
+                        .users
+                }
+                RollingStockGrant::Writer => {
+                    openfga
+                        .list_users(RollingStock::writer().query_users(&rolling_stock))
+                        .await
+                        .map_err(QueryError::parsing_ok)?
+                        .users
+                }
+                RollingStockGrant::Owner => {
+                    openfga
+                        .list_users(RollingStock::owner().query_users(&rolling_stock))
+                        .await
+                        .map_err(QueryError::parsing_ok)?
+                        .users
+                }
+            }
+            .into_iter()
+            .map(Subject::User)
+            .collect_vec();
+            Ok(subjects_with_grant)
+        }
+        .boxed()
+    })
+    // TODO PR: is it the expected behavior ? Or should listing user grants on a resource be reserved
+    // to owners and admins ?
+    .with_guardrail(Guardrail::IssuerHasRollingStockPrivilege(
+        RollingStockPrivilege::CanRead,
+        rolling_stock,
+    ))
 }
 
 pub fn rolling_stock_list(_privilege: RollingStockPrivilege) -> Protected<Vec<RollingStock>> {
     todo!()
+}
+
+#[cfg(test)]
+mod tests {
+    use fga::model::Relation as _;
+
+    use crate::{
+        RollingStock, RollingStockGrant, Subject, User, v2::special_authorizers::Authorize,
+    };
+
+    #[tokio::test]
+    async fn rolling_stock_granted() {
+        let openfga = crate::authz_client!();
+        openfga
+            .prepare_writes()
+            .write(&RollingStock::reader().tuple(&User(1), &RollingStock(1)))
+            .write(&RollingStock::writer().tuple(&User(2), &RollingStock(1)))
+            .write(&RollingStock::owner().tuple(&User(3), &RollingStock(1)))
+            .write(&RollingStock::reader().tuple(&User(4), &RollingStock(1)))
+            .execute()
+            .await
+            .unwrap();
+        let authorize = Authorize(&openfga);
+        let mut readers = super::rolling_stock_granted(RollingStock(1), RollingStockGrant::Reader)
+            .authorize(&authorize)
+            .await
+            .unwrap()
+            .unwrap_authorized()
+            .await;
+        let writers = super::rolling_stock_granted(RollingStock(1), RollingStockGrant::Writer)
+            .authorize(&authorize)
+            .await
+            .unwrap()
+            .unwrap_authorized()
+            .await;
+        let owners = super::rolling_stock_granted(RollingStock(1), RollingStockGrant::Owner)
+            .authorize(&authorize)
+            .await
+            .unwrap()
+            .unwrap_authorized()
+            .await;
+        readers.sort();
+        assert_eq!(
+            readers,
+            vec![Subject::User(User(1)), Subject::User(User(4))]
+        );
+        assert_eq!(writers, vec![Subject::User(User(2))]);
+        assert_eq!(owners, vec![Subject::User(User(3))]);
+    }
+
+    #[tokio::test]
+    async fn rolling_stock_granted_nonexistent_user() {
+        let openfga = crate::authz_client!();
+        let authorize = Authorize(&openfga);
+        let readers = super::rolling_stock_granted(RollingStock(1), RollingStockGrant::Reader)
+            .authorize(&authorize)
+            .await
+            .unwrap()
+            .unwrap_authorized()
+            .await;
+        assert_eq!(readers, vec![]);
+    }
 }
