@@ -13962,6 +13962,8 @@ components:
         lon:
           type: number
           format: double
+        path_geometry:
+          $ref: '#/components/schemas/GeoJsonLineString'
         time_lost:
           type: number
           format: double

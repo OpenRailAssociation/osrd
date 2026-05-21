@@ -4359,6 +4359,7 @@ export type SimDebugConflictReport = {
   lastOPName?: string | null;
   lat: number;
   lon: number;
+  path_geometry?: GeoJsonLineString;
   time_lost: number;
 };
 export type SimDebugFailureReport = {
