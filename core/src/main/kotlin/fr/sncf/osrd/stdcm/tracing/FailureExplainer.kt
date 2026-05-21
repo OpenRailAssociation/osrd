@@ -5,6 +5,7 @@ import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import fr.sncf.osrd.api.S3Context
+import fr.sncf.osrd.railjson.schema.geom.RJSLineString
 import fr.sncf.osrd.sim_infra.api.BlockInfra
 import fr.sncf.osrd.sim_infra.api.RawInfra
 import fr.sncf.osrd.stdcm.graph.STDCMNode
@@ -51,13 +52,19 @@ class FailureExplainer(
             val remainingTime = parentNode.remainingTimeEstimation
             val travelTime = parentNode.timeData.totalRunningTime
             val geoPoint = parentNode.toGeoPoint(rawInfra, blockInfra)
+            val trainPath = parentNode.infraExplorer.buildFullPath(rawInfra, blockInfra)
             val lastOPName =
-                parentNode.infraExplorer
-                    .buildFullPath(rawInfra, blockInfra)
+                trainPath
                     .getOperationalPointParts()
                     .asSequence()
                     .mapNotNull { rawInfra.getOperationalPointPartProps(it.value)["identifier"] }
                     .lastOrNull()
+            val geoLineString = trainPath.getGeo()
+            val pathGeometry =
+                RJSLineString(
+                    "LineString",
+                    geoLineString.getPoints().map { listOf(it.lon, it.lat) },
+                )
             return ConflictReport(
                 originalStartTime.plus(
                     Duration.ofSeconds(parentNode.timeData.earliestReachableTime.toLong())
@@ -69,6 +76,7 @@ class FailureExplainer(
                 geoPoint.lat,
                 geoPoint.lon,
                 lastOPName,
+                pathGeometry,
             )
         }
 
@@ -111,6 +119,7 @@ class FailureExplainer(
         val lat: Double,
         val lon: Double,
         val lastOPName: String?,
+        @Json(name = "path_geometry") val pathGeometry: RJSLineString,
     )
 
     /** Register a new conflict. */

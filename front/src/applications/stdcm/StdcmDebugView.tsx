@@ -73,7 +73,12 @@ const StdcmDebugView = () => {
           <DebugSpeedDistanceDiagram simData={simulation_data} />
         </>
       )}
-      {failure && <DebugMap failureData={failure} />}
+      {(simulation_data || failure) && (
+        <DebugMap
+          simulationData={simulation_data ?? undefined}
+          failureData={failure ?? undefined}
+        />
+      )}
       {!simulation_data && !failure && <div className="stdcm-debug-view__status">{viewStatus}</div>}
     </div>
   );

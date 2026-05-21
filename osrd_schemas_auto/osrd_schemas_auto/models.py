@@ -3346,26 +3346,10 @@ class SignalSncfExtension(BaseModel):
     side: Side | None = None
 
 
-class SimDebugConflictReport(BaseModel):
-    at: AwareDatetime
-    best_remaining_time: float
-    caused_by: str
-    current_travel_time: float
-    lastOPName: str | None = None
-    lat: float
-    lon: float
-    time_lost: float
-
-
 class SimDebugEngineeringAllowanceRange(BaseModel):
     added_duration: float
     from_: Annotated[float, Field(alias="from")]
     to: float
-
-
-class SimDebugFailureReport(BaseModel):
-    closest_conflicts: list[SimDebugConflictReport]
-    largest_conflicts: list[SimDebugConflictReport]
 
 
 class SimDebugTrainZoneRequirement(BaseModel):
@@ -6151,6 +6135,18 @@ class Signal(BaseModel):
     track: Annotated[str, Field(max_length=255, min_length=1)]
 
 
+class SimDebugConflictReport(BaseModel):
+    at: AwareDatetime
+    best_remaining_time: float
+    caused_by: str
+    current_travel_time: float
+    lastOPName: str | None = None
+    lat: float
+    lon: float
+    path_geometry: GeoJsonLineString | None = None
+    time_lost: float
+
+
 class SimDebugData(BaseModel):
     departure_time: AwareDatetime
     engineering_allowances_ranges: list[SimDebugEngineeringAllowanceRange]
@@ -6160,6 +6156,11 @@ class SimDebugData(BaseModel):
     train_positions: list[float]
     train_times: list[float]
     zone_locations: list[SimDebugZoneLocation]
+
+
+class SimDebugFailureReport(BaseModel):
+    closest_conflicts: list[SimDebugConflictReport]
+    largest_conflicts: list[SimDebugConflictReport]
 
 
 class ResponseSuccess(SimulationResponseSuccess):

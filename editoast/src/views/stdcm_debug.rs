@@ -4,7 +4,9 @@ use axum::extract::Path;
 use axum::extract::State;
 use chrono::DateTime;
 use chrono::Utc;
+use common::geometry::GeoJsonLineString;
 use editoast_derive::EditoastError;
+use geos::geojson::Geometry;
 use object_store::GetOptions;
 use object_store::ObjectStore as _;
 use object_store::aws::AmazonS3;
@@ -44,6 +46,9 @@ pub(in crate::views) struct SimDebugConflictReport {
     lon: f64,
     #[serde(rename = "lastOPName")]
     last_op_name: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[schema(value_type = GeoJsonLineString)]
+    path_geometry: Option<Geometry>,
 }
 
 #[derive(Serialize, Deserialize, ToSchema)]
