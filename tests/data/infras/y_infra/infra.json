@@ -1,95 +1,171 @@
 {
-    "version": "3.5.2",
+    "buffer_stops": [
+        {
+            "id": "bf.a",
+            "position": 0.0,
+            "track": "t_a"
+        },
+        {
+            "id": "bf.b",
+            "position": 0.0,
+            "track": "t_b"
+        },
+        {
+            "id": "bf.c",
+            "position": 10000.0,
+            "track": "t_center"
+        }
+    ],
+    "detectors": [
+        {
+            "id": "det.a1",
+            "position": 3000.0,
+            "track": "t_a"
+        },
+        {
+            "id": "det.a2",
+            "position": 6000.0,
+            "track": "t_a"
+        },
+        {
+            "id": "det.a3",
+            "position": 9000.0,
+            "track": "t_a"
+        },
+        {
+            "id": "det.b1",
+            "position": 3000.0,
+            "track": "t_b"
+        },
+        {
+            "id": "det.b2",
+            "position": 6000.0,
+            "track": "t_b"
+        },
+        {
+            "id": "det.b3",
+            "position": 9000.0,
+            "track": "t_b"
+        },
+        {
+            "id": "det.c1",
+            "position": 1000.0,
+            "track": "t_center"
+        },
+        {
+            "id": "det.c2",
+            "position": 3000.0,
+            "track": "t_center"
+        },
+        {
+            "id": "det.c3",
+            "position": 5000.0,
+            "track": "t_center"
+        },
+        {
+            "id": "det.c4",
+            "position": 7000.0,
+            "track": "t_center"
+        },
+        {
+            "id": "det.c5",
+            "position": 9000.0,
+            "track": "t_center"
+        }
+    ],
+    "electrifications": [],
+    "extended_switch_types": [],
+    "level_crossings": [],
+    "neutral_sections": [],
     "operational_points": [
         {
-            "id": "op.a",
-            "parts": [
-                {
-                    "track": "t_a",
-                    "position": 0.0,
-                    "local_track_name": "V1"
-                }
-            ],
-            "weight": null,
-            "plc": null,
             "extensions": {
-                "sncf": {
-                    "ci": 0,
-                    "ch": "BV",
-                    "ch_short_label": "BV",
-                    "ch_long_label": "0",
-                    "trigram": "OP."
-                },
                 "identifier": {
                     "name": "op.a",
                     "uic": 8700
+                },
+                "sncf": {
+                    "ch": "BV",
+                    "ch_long_label": "0",
+                    "ch_short_label": "BV",
+                    "ci": 0,
+                    "trigram": "OP."
                 }
-            }
-        },
-        {
-            "id": "op.b",
+            },
+            "id": "op.a",
             "parts": [
                 {
-                    "track": "t_b",
+                    "local_track_name": "V1",
                     "position": 0.0,
-                    "local_track_name": "V1"
+                    "track": "t_a"
                 }
             ],
-            "weight": null,
             "plc": null,
+            "weight": null
+        },
+        {
             "extensions": {
-                "sncf": {
-                    "ci": 0,
-                    "ch": "BV",
-                    "ch_short_label": "BV",
-                    "ch_long_label": "0",
-                    "trigram": "OP."
-                },
                 "identifier": {
                     "name": "op.b",
                     "uic": 8700
+                },
+                "sncf": {
+                    "ch": "BV",
+                    "ch_long_label": "0",
+                    "ch_short_label": "BV",
+                    "ci": 0,
+                    "trigram": "OP."
                 }
-            }
-        },
-        {
-            "id": "op.c",
+            },
+            "id": "op.b",
             "parts": [
                 {
-                    "track": "t_center",
-                    "position": 10000.0,
-                    "local_track_name": "V1"
+                    "local_track_name": "V1",
+                    "position": 0.0,
+                    "track": "t_b"
                 }
             ],
-            "weight": null,
             "plc": null,
+            "weight": null
+        },
+        {
             "extensions": {
-                "sncf": {
-                    "ci": 0,
-                    "ch": "BV",
-                    "ch_short_label": "BV",
-                    "ch_long_label": "0",
-                    "trigram": "OP."
-                },
                 "identifier": {
                     "name": "op.c",
                     "uic": 8700
+                },
+                "sncf": {
+                    "ch": "BV",
+                    "ch_long_label": "0",
+                    "ch_short_label": "BV",
+                    "ci": 0,
+                    "trigram": "OP."
                 }
-            }
+            },
+            "id": "op.c",
+            "parts": [
+                {
+                    "local_track_name": "V1",
+                    "position": 10000.0,
+                    "track": "t_center"
+                }
+            ],
+            "plc": null,
+            "weight": null
         }
     ],
-    "level_crossings": [],
     "routes": [
         {
-            "id": "rt.bf.a->det.a3",
             "entry_point": {
-                "type": "BufferStop",
-                "id": "bf.a"
+                "id": "bf.a",
+                "type": "BufferStop"
             },
             "entry_point_direction": "START_TO_STOP",
             "exit_point": {
-                "type": "Detector",
-                "id": "det.a3"
+                "id": "det.a3",
+                "type": "Detector"
             },
+            "id": "rt.bf.a->det.a3",
             "release_detectors": [
                 "det.a1",
                 "det.a2"
@@ -97,16 +173,16 @@
             "switches_directions": {}
         },
         {
-            "id": "rt.det.a3->bf.c",
             "entry_point": {
-                "type": "Detector",
-                "id": "det.a3"
+                "id": "det.a3",
+                "type": "Detector"
             },
             "entry_point_direction": "START_TO_STOP",
             "exit_point": {
-                "type": "BufferStop",
-                "id": "bf.c"
+                "id": "bf.c",
+                "type": "BufferStop"
             },
+            "id": "rt.det.a3->bf.c",
             "release_detectors": [
                 "det.c1",
                 "det.c2",
@@ -119,16 +195,16 @@
             }
         },
         {
-            "id": "rt.bf.b->det.b3",
             "entry_point": {
-                "type": "BufferStop",
-                "id": "bf.b"
+                "id": "bf.b",
+                "type": "BufferStop"
             },
             "entry_point_direction": "START_TO_STOP",
             "exit_point": {
-                "type": "Detector",
-                "id": "det.b3"
+                "id": "det.b3",
+                "type": "Detector"
             },
+            "id": "rt.bf.b->det.b3",
             "release_detectors": [
                 "det.b1",
                 "det.b2"
@@ -136,16 +212,16 @@
             "switches_directions": {}
         },
         {
-            "id": "rt.det.b3->bf.c",
             "entry_point": {
-                "type": "Detector",
-                "id": "det.b3"
+                "id": "det.b3",
+                "type": "Detector"
             },
             "entry_point_direction": "START_TO_STOP",
             "exit_point": {
-                "type": "BufferStop",
-                "id": "bf.c"
+                "id": "bf.c",
+                "type": "BufferStop"
             },
+            "id": "rt.det.b3->bf.c",
             "release_detectors": [
                 "det.c1",
                 "det.c2",
@@ -158,16 +234,16 @@
             }
         },
         {
-            "id": "rt.bf.c->det.c1",
             "entry_point": {
-                "type": "BufferStop",
-                "id": "bf.c"
+                "id": "bf.c",
+                "type": "BufferStop"
             },
             "entry_point_direction": "STOP_TO_START",
             "exit_point": {
-                "type": "Detector",
-                "id": "det.c1"
+                "id": "det.c1",
+                "type": "Detector"
             },
+            "id": "rt.bf.c->det.c1",
             "release_detectors": [
                 "det.c5",
                 "det.c4",
@@ -177,16 +253,16 @@
             "switches_directions": {}
         },
         {
-            "id": "rt.det.c1->bf.a",
             "entry_point": {
-                "type": "Detector",
-                "id": "det.c1"
+                "id": "det.c1",
+                "type": "Detector"
             },
             "entry_point_direction": "STOP_TO_START",
             "exit_point": {
-                "type": "BufferStop",
-                "id": "bf.a"
+                "id": "bf.a",
+                "type": "BufferStop"
             },
+            "id": "rt.det.c1->bf.a",
             "release_detectors": [
                 "det.a3",
                 "det.a2",
@@ -197,16 +273,16 @@
             }
         },
         {
-            "id": "rt.det.c1->bf.b",
             "entry_point": {
-                "type": "Detector",
-                "id": "det.c1"
+                "id": "det.c1",
+                "type": "Detector"
             },
             "entry_point_direction": "STOP_TO_START",
             "exit_point": {
-                "type": "BufferStop",
-                "id": "bf.b"
+                "id": "bf.b",
+                "type": "BufferStop"
             },
+            "id": "rt.det.c1->bf.b",
             "release_detectors": [
                 "det.b3",
                 "det.b2",
@@ -217,12 +293,423 @@
             }
         }
     ],
-    "extended_switch_types": [],
+    "signals": [
+        {
+            "direction": "STOP_TO_START",
+            "extensions": {
+                "sncf": {
+                    "kp": "",
+                    "label": "s.left.a1",
+                    "side": "LEFT"
+                }
+            },
+            "id": "s.left.a1",
+            "logical_signals": [
+                {
+                    "conditional_parameters": [],
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
+                    "next_signaling_systems": [],
+                    "settings": {
+                        "Nf": "false"
+                    },
+                    "signaling_system": "BAL"
+                }
+            ],
+            "position": 3000.0,
+            "sight_distance": 400.0,
+            "track": "t_a"
+        },
+        {
+            "direction": "START_TO_STOP",
+            "extensions": {
+                "sncf": {
+                    "kp": "",
+                    "label": "s.right.a1",
+                    "side": "LEFT"
+                }
+            },
+            "id": "s.right.a1",
+            "logical_signals": [
+                {
+                    "conditional_parameters": [],
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
+                    "next_signaling_systems": [],
+                    "settings": {
+                        "Nf": "false"
+                    },
+                    "signaling_system": "BAL"
+                }
+            ],
+            "position": 3000.0,
+            "sight_distance": 400.0,
+            "track": "t_a"
+        },
+        {
+            "direction": "STOP_TO_START",
+            "extensions": {
+                "sncf": {
+                    "kp": "",
+                    "label": "s.left.a2",
+                    "side": "LEFT"
+                }
+            },
+            "id": "s.left.a2",
+            "logical_signals": [
+                {
+                    "conditional_parameters": [],
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
+                    "next_signaling_systems": [],
+                    "settings": {
+                        "Nf": "false"
+                    },
+                    "signaling_system": "BAL"
+                }
+            ],
+            "position": 6000.0,
+            "sight_distance": 400.0,
+            "track": "t_a"
+        },
+        {
+            "direction": "START_TO_STOP",
+            "extensions": {
+                "sncf": {
+                    "kp": "",
+                    "label": "s.right.a2",
+                    "side": "LEFT"
+                }
+            },
+            "id": "s.right.a2",
+            "logical_signals": [
+                {
+                    "conditional_parameters": [],
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
+                    "next_signaling_systems": [],
+                    "settings": {
+                        "Nf": "false"
+                    },
+                    "signaling_system": "BAL"
+                }
+            ],
+            "position": 6000.0,
+            "sight_distance": 400.0,
+            "track": "t_a"
+        },
+        {
+            "direction": "START_TO_STOP",
+            "extensions": {
+                "sncf": {
+                    "kp": "",
+                    "label": "s.right.a3",
+                    "side": "LEFT"
+                }
+            },
+            "id": "s.right.a3",
+            "logical_signals": [
+                {
+                    "conditional_parameters": [],
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
+                    "next_signaling_systems": [],
+                    "settings": {
+                        "Nf": "true"
+                    },
+                    "signaling_system": "BAL"
+                }
+            ],
+            "position": 9000.0,
+            "sight_distance": 400.0,
+            "track": "t_a"
+        },
+        {
+            "direction": "STOP_TO_START",
+            "extensions": {
+                "sncf": {
+                    "kp": "",
+                    "label": "s.left.b1",
+                    "side": "LEFT"
+                }
+            },
+            "id": "s.left.b1",
+            "logical_signals": [
+                {
+                    "conditional_parameters": [],
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
+                    "next_signaling_systems": [],
+                    "settings": {
+                        "Nf": "false"
+                    },
+                    "signaling_system": "BAL"
+                }
+            ],
+            "position": 3000.0,
+            "sight_distance": 400.0,
+            "track": "t_b"
+        },
+        {
+            "direction": "START_TO_STOP",
+            "extensions": {
+                "sncf": {
+                    "kp": "",
+                    "label": "s.right.b1",
+                    "side": "LEFT"
+                }
+            },
+            "id": "s.right.b1",
+            "logical_signals": [
+                {
+                    "conditional_parameters": [],
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
+                    "next_signaling_systems": [],
+                    "settings": {
+                        "Nf": "false"
+                    },
+                    "signaling_system": "BAL"
+                }
+            ],
+            "position": 3000.0,
+            "sight_distance": 400.0,
+            "track": "t_b"
+        },
+        {
+            "direction": "STOP_TO_START",
+            "extensions": {
+                "sncf": {
+                    "kp": "",
+                    "label": "s.left.b2",
+                    "side": "LEFT"
+                }
+            },
+            "id": "s.left.b2",
+            "logical_signals": [
+                {
+                    "conditional_parameters": [],
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
+                    "next_signaling_systems": [],
+                    "settings": {
+                        "Nf": "false"
+                    },
+                    "signaling_system": "BAL"
+                }
+            ],
+            "position": 6000.0,
+            "sight_distance": 400.0,
+            "track": "t_b"
+        },
+        {
+            "direction": "START_TO_STOP",
+            "extensions": {
+                "sncf": {
+                    "kp": "",
+                    "label": "s.right.b2",
+                    "side": "LEFT"
+                }
+            },
+            "id": "s.right.b2",
+            "logical_signals": [
+                {
+                    "conditional_parameters": [],
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
+                    "next_signaling_systems": [],
+                    "settings": {
+                        "Nf": "false"
+                    },
+                    "signaling_system": "BAL"
+                }
+            ],
+            "position": 6000.0,
+            "sight_distance": 400.0,
+            "track": "t_b"
+        },
+        {
+            "direction": "START_TO_STOP",
+            "extensions": {
+                "sncf": {
+                    "kp": "",
+                    "label": "s.right.b3",
+                    "side": "LEFT"
+                }
+            },
+            "id": "s.right.b3",
+            "logical_signals": [
+                {
+                    "conditional_parameters": [],
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
+                    "next_signaling_systems": [],
+                    "settings": {
+                        "Nf": "true"
+                    },
+                    "signaling_system": "BAL"
+                }
+            ],
+            "position": 9000.0,
+            "sight_distance": 400.0,
+            "track": "t_b"
+        },
+        {
+            "direction": "STOP_TO_START",
+            "extensions": {
+                "sncf": {
+                    "kp": "",
+                    "label": "s.left.c1",
+                    "side": "LEFT"
+                }
+            },
+            "id": "s.left.c1",
+            "logical_signals": [
+                {
+                    "conditional_parameters": [],
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
+                    "next_signaling_systems": [],
+                    "settings": {
+                        "Nf": "true"
+                    },
+                    "signaling_system": "BAL"
+                }
+            ],
+            "position": 1000.0,
+            "sight_distance": 400.0,
+            "track": "t_center"
+        },
+        {
+            "direction": "START_TO_STOP",
+            "extensions": {
+                "sncf": {
+                    "kp": "",
+                    "label": "s.right.c2",
+                    "side": "LEFT"
+                }
+            },
+            "id": "s.right.c2",
+            "logical_signals": [
+                {
+                    "conditional_parameters": [],
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
+                    "next_signaling_systems": [],
+                    "settings": {
+                        "Nf": "false"
+                    },
+                    "signaling_system": "BAL"
+                }
+            ],
+            "position": 3000.0,
+            "sight_distance": 400.0,
+            "track": "t_center"
+        },
+        {
+            "direction": "STOP_TO_START",
+            "extensions": {
+                "sncf": {
+                    "kp": "",
+                    "label": "s.left.c3",
+                    "side": "LEFT"
+                }
+            },
+            "id": "s.left.c3",
+            "logical_signals": [
+                {
+                    "conditional_parameters": [],
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
+                    "next_signaling_systems": [],
+                    "settings": {
+                        "Nf": "false"
+                    },
+                    "signaling_system": "BAL"
+                }
+            ],
+            "position": 5000.0,
+            "sight_distance": 400.0,
+            "track": "t_center"
+        },
+        {
+            "direction": "START_TO_STOP",
+            "extensions": {
+                "sncf": {
+                    "kp": "",
+                    "label": "s.right.c4",
+                    "side": "LEFT"
+                }
+            },
+            "id": "s.right.c4",
+            "logical_signals": [
+                {
+                    "conditional_parameters": [],
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
+                    "next_signaling_systems": [],
+                    "settings": {
+                        "Nf": "false"
+                    },
+                    "signaling_system": "BAL"
+                }
+            ],
+            "position": 7000.0,
+            "sight_distance": 400.0,
+            "track": "t_center"
+        },
+        {
+            "direction": "STOP_TO_START",
+            "extensions": {
+                "sncf": {
+                    "kp": "",
+                    "label": "s.left.c5",
+                    "side": "LEFT"
+                }
+            },
+            "id": "s.left.c5",
+            "logical_signals": [
+                {
+                    "conditional_parameters": [],
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
+                    "next_signaling_systems": [],
+                    "settings": {
+                        "Nf": "false"
+                    },
+                    "signaling_system": "BAL"
+                }
+            ],
+            "position": 9000.0,
+            "sight_distance": 400.0,
+            "track": "t_center"
+        }
+    ],
+    "speed_sections": [],
     "switches": [
         {
-            "id": "switch",
-            "switch_type": "point_switch",
+            "extensions": {
+                "sncf": {
+                    "label": "switch"
+                }
+            },
             "group_change_delay": 0.0,
+            "id": "switch",
             "ports": {
                 "A": {
                     "endpoint": "BEGIN",
@@ -237,17 +724,21 @@
                     "track": "t_b"
                 }
             },
-            "extensions": {
-                "sncf": {
-                    "label": "switch"
-                }
-            }
+            "switch_type": "point_switch"
         }
     ],
     "track_sections": [
         {
+            "curves": [],
+            "extensions": {
+                "sncf": {
+                    "line_code": 0,
+                    "line_name": "placeholder_line",
+                    "track_name": "placeholder_track",
+                    "track_number": 0
+                }
+            },
             "geo": {
-                "type": "LineString",
                 "coordinates": [
                     [
                         -0.3,
@@ -257,25 +748,25 @@
                         -0.1,
                         49.98
                     ]
-                ]
+                ],
+                "type": "LineString"
             },
             "id": "t_a",
             "length": 10000.0,
-            "slopes": [],
-            "curves": [],
             "loading_gauge_limits": [],
+            "slopes": []
+        },
+        {
+            "curves": [],
             "extensions": {
                 "sncf": {
                     "line_code": 0,
                     "line_name": "placeholder_line",
-                    "track_number": 0,
-                    "track_name": "placeholder_track"
+                    "track_name": "placeholder_track",
+                    "track_number": 0
                 }
-            }
-        },
-        {
+            },
             "geo": {
-                "type": "LineString",
                 "coordinates": [
                     [
                         -0.3,
@@ -285,25 +776,25 @@
                         -0.1,
                         49.98
                     ]
-                ]
+                ],
+                "type": "LineString"
             },
             "id": "t_b",
             "length": 10000.0,
-            "slopes": [],
-            "curves": [],
             "loading_gauge_limits": [],
+            "slopes": []
+        },
+        {
+            "curves": [],
             "extensions": {
                 "sncf": {
                     "line_code": 0,
                     "line_name": "placeholder_line",
-                    "track_number": 0,
-                    "track_name": "placeholder_track"
+                    "track_name": "placeholder_track",
+                    "track_number": 0
                 }
-            }
-        },
-        {
+            },
             "geo": {
-                "type": "LineString",
                 "coordinates": [
                     [
                         -0.1,
@@ -313,505 +804,14 @@
                         0.1,
                         49.98
                     ]
-                ]
+                ],
+                "type": "LineString"
             },
             "id": "t_center",
             "length": 10000.0,
-            "slopes": [],
-            "curves": [],
             "loading_gauge_limits": [],
-            "extensions": {
-                "sncf": {
-                    "line_code": 0,
-                    "line_name": "placeholder_line",
-                    "track_number": 0,
-                    "track_name": "placeholder_track"
-                }
-            }
+            "slopes": []
         }
     ],
-    "speed_sections": [],
-    "electrifications": [],
-    "signals": [
-        {
-            "track": "t_a",
-            "position": 3000.0,
-            "id": "s.left.a1",
-            "direction": "STOP_TO_START",
-            "sight_distance": 400.0,
-            "logical_signals": [
-                {
-                    "signaling_system": "BAL",
-                    "next_signaling_systems": [],
-                    "settings": {
-                        "Nf": "false"
-                    },
-                    "default_parameters": {
-                        "jaune_cli": "false"
-                    },
-                    "conditional_parameters": []
-                }
-            ],
-            "extensions": {
-                "sncf": {
-                    "label": "s.left.a1",
-                    "side": "LEFT",
-                    "kp": ""
-                }
-            }
-        },
-        {
-            "track": "t_a",
-            "position": 3000.0,
-            "id": "s.right.a1",
-            "direction": "START_TO_STOP",
-            "sight_distance": 400.0,
-            "logical_signals": [
-                {
-                    "signaling_system": "BAL",
-                    "next_signaling_systems": [],
-                    "settings": {
-                        "Nf": "false"
-                    },
-                    "default_parameters": {
-                        "jaune_cli": "false"
-                    },
-                    "conditional_parameters": []
-                }
-            ],
-            "extensions": {
-                "sncf": {
-                    "label": "s.right.a1",
-                    "side": "LEFT",
-                    "kp": ""
-                }
-            }
-        },
-        {
-            "track": "t_a",
-            "position": 6000.0,
-            "id": "s.left.a2",
-            "direction": "STOP_TO_START",
-            "sight_distance": 400.0,
-            "logical_signals": [
-                {
-                    "signaling_system": "BAL",
-                    "next_signaling_systems": [],
-                    "settings": {
-                        "Nf": "false"
-                    },
-                    "default_parameters": {
-                        "jaune_cli": "false"
-                    },
-                    "conditional_parameters": []
-                }
-            ],
-            "extensions": {
-                "sncf": {
-                    "label": "s.left.a2",
-                    "side": "LEFT",
-                    "kp": ""
-                }
-            }
-        },
-        {
-            "track": "t_a",
-            "position": 6000.0,
-            "id": "s.right.a2",
-            "direction": "START_TO_STOP",
-            "sight_distance": 400.0,
-            "logical_signals": [
-                {
-                    "signaling_system": "BAL",
-                    "next_signaling_systems": [],
-                    "settings": {
-                        "Nf": "false"
-                    },
-                    "default_parameters": {
-                        "jaune_cli": "false"
-                    },
-                    "conditional_parameters": []
-                }
-            ],
-            "extensions": {
-                "sncf": {
-                    "label": "s.right.a2",
-                    "side": "LEFT",
-                    "kp": ""
-                }
-            }
-        },
-        {
-            "track": "t_a",
-            "position": 9000.0,
-            "id": "s.right.a3",
-            "direction": "START_TO_STOP",
-            "sight_distance": 400.0,
-            "logical_signals": [
-                {
-                    "signaling_system": "BAL",
-                    "next_signaling_systems": [],
-                    "settings": {
-                        "Nf": "true"
-                    },
-                    "default_parameters": {
-                        "jaune_cli": "false"
-                    },
-                    "conditional_parameters": []
-                }
-            ],
-            "extensions": {
-                "sncf": {
-                    "label": "s.right.a3",
-                    "side": "LEFT",
-                    "kp": ""
-                }
-            }
-        },
-        {
-            "track": "t_b",
-            "position": 3000.0,
-            "id": "s.left.b1",
-            "direction": "STOP_TO_START",
-            "sight_distance": 400.0,
-            "logical_signals": [
-                {
-                    "signaling_system": "BAL",
-                    "next_signaling_systems": [],
-                    "settings": {
-                        "Nf": "false"
-                    },
-                    "default_parameters": {
-                        "jaune_cli": "false"
-                    },
-                    "conditional_parameters": []
-                }
-            ],
-            "extensions": {
-                "sncf": {
-                    "label": "s.left.b1",
-                    "side": "LEFT",
-                    "kp": ""
-                }
-            }
-        },
-        {
-            "track": "t_b",
-            "position": 3000.0,
-            "id": "s.right.b1",
-            "direction": "START_TO_STOP",
-            "sight_distance": 400.0,
-            "logical_signals": [
-                {
-                    "signaling_system": "BAL",
-                    "next_signaling_systems": [],
-                    "settings": {
-                        "Nf": "false"
-                    },
-                    "default_parameters": {
-                        "jaune_cli": "false"
-                    },
-                    "conditional_parameters": []
-                }
-            ],
-            "extensions": {
-                "sncf": {
-                    "label": "s.right.b1",
-                    "side": "LEFT",
-                    "kp": ""
-                }
-            }
-        },
-        {
-            "track": "t_b",
-            "position": 6000.0,
-            "id": "s.left.b2",
-            "direction": "STOP_TO_START",
-            "sight_distance": 400.0,
-            "logical_signals": [
-                {
-                    "signaling_system": "BAL",
-                    "next_signaling_systems": [],
-                    "settings": {
-                        "Nf": "false"
-                    },
-                    "default_parameters": {
-                        "jaune_cli": "false"
-                    },
-                    "conditional_parameters": []
-                }
-            ],
-            "extensions": {
-                "sncf": {
-                    "label": "s.left.b2",
-                    "side": "LEFT",
-                    "kp": ""
-                }
-            }
-        },
-        {
-            "track": "t_b",
-            "position": 6000.0,
-            "id": "s.right.b2",
-            "direction": "START_TO_STOP",
-            "sight_distance": 400.0,
-            "logical_signals": [
-                {
-                    "signaling_system": "BAL",
-                    "next_signaling_systems": [],
-                    "settings": {
-                        "Nf": "false"
-                    },
-                    "default_parameters": {
-                        "jaune_cli": "false"
-                    },
-                    "conditional_parameters": []
-                }
-            ],
-            "extensions": {
-                "sncf": {
-                    "label": "s.right.b2",
-                    "side": "LEFT",
-                    "kp": ""
-                }
-            }
-        },
-        {
-            "track": "t_b",
-            "position": 9000.0,
-            "id": "s.right.b3",
-            "direction": "START_TO_STOP",
-            "sight_distance": 400.0,
-            "logical_signals": [
-                {
-                    "signaling_system": "BAL",
-                    "next_signaling_systems": [],
-                    "settings": {
-                        "Nf": "true"
-                    },
-                    "default_parameters": {
-                        "jaune_cli": "false"
-                    },
-                    "conditional_parameters": []
-                }
-            ],
-            "extensions": {
-                "sncf": {
-                    "label": "s.right.b3",
-                    "side": "LEFT",
-                    "kp": ""
-                }
-            }
-        },
-        {
-            "track": "t_center",
-            "position": 1000.0,
-            "id": "s.left.c1",
-            "direction": "STOP_TO_START",
-            "sight_distance": 400.0,
-            "logical_signals": [
-                {
-                    "signaling_system": "BAL",
-                    "next_signaling_systems": [],
-                    "settings": {
-                        "Nf": "true"
-                    },
-                    "default_parameters": {
-                        "jaune_cli": "false"
-                    },
-                    "conditional_parameters": []
-                }
-            ],
-            "extensions": {
-                "sncf": {
-                    "label": "s.left.c1",
-                    "side": "LEFT",
-                    "kp": ""
-                }
-            }
-        },
-        {
-            "track": "t_center",
-            "position": 3000.0,
-            "id": "s.right.c2",
-            "direction": "START_TO_STOP",
-            "sight_distance": 400.0,
-            "logical_signals": [
-                {
-                    "signaling_system": "BAL",
-                    "next_signaling_systems": [],
-                    "settings": {
-                        "Nf": "false"
-                    },
-                    "default_parameters": {
-                        "jaune_cli": "false"
-                    },
-                    "conditional_parameters": []
-                }
-            ],
-            "extensions": {
-                "sncf": {
-                    "label": "s.right.c2",
-                    "side": "LEFT",
-                    "kp": ""
-                }
-            }
-        },
-        {
-            "track": "t_center",
-            "position": 5000.0,
-            "id": "s.left.c3",
-            "direction": "STOP_TO_START",
-            "sight_distance": 400.0,
-            "logical_signals": [
-                {
-                    "signaling_system": "BAL",
-                    "next_signaling_systems": [],
-                    "settings": {
-                        "Nf": "false"
-                    },
-                    "default_parameters": {
-                        "jaune_cli": "false"
-                    },
-                    "conditional_parameters": []
-                }
-            ],
-            "extensions": {
-                "sncf": {
-                    "label": "s.left.c3",
-                    "side": "LEFT",
-                    "kp": ""
-                }
-            }
-        },
-        {
-            "track": "t_center",
-            "position": 7000.0,
-            "id": "s.right.c4",
-            "direction": "START_TO_STOP",
-            "sight_distance": 400.0,
-            "logical_signals": [
-                {
-                    "signaling_system": "BAL",
-                    "next_signaling_systems": [],
-                    "settings": {
-                        "Nf": "false"
-                    },
-                    "default_parameters": {
-                        "jaune_cli": "false"
-                    },
-                    "conditional_parameters": []
-                }
-            ],
-            "extensions": {
-                "sncf": {
-                    "label": "s.right.c4",
-                    "side": "LEFT",
-                    "kp": ""
-                }
-            }
-        },
-        {
-            "track": "t_center",
-            "position": 9000.0,
-            "id": "s.left.c5",
-            "direction": "STOP_TO_START",
-            "sight_distance": 400.0,
-            "logical_signals": [
-                {
-                    "signaling_system": "BAL",
-                    "next_signaling_systems": [],
-                    "settings": {
-                        "Nf": "false"
-                    },
-                    "default_parameters": {
-                        "jaune_cli": "false"
-                    },
-                    "conditional_parameters": []
-                }
-            ],
-            "extensions": {
-                "sncf": {
-                    "label": "s.left.c5",
-                    "side": "LEFT",
-                    "kp": ""
-                }
-            }
-        }
-    ],
-    "buffer_stops": [
-        {
-            "track": "t_a",
-            "position": 0.0,
-            "id": "bf.a"
-        },
-        {
-            "track": "t_b",
-            "position": 0.0,
-            "id": "bf.b"
-        },
-        {
-            "track": "t_center",
-            "position": 10000.0,
-            "id": "bf.c"
-        }
-    ],
-    "detectors": [
-        {
-            "track": "t_a",
-            "position": 3000.0,
-            "id": "det.a1"
-        },
-        {
-            "track": "t_a",
-            "position": 6000.0,
-            "id": "det.a2"
-        },
-        {
-            "track": "t_a",
-            "position": 9000.0,
-            "id": "det.a3"
-        },
-        {
-            "track": "t_b",
-            "position": 3000.0,
-            "id": "det.b1"
-        },
-        {
-            "track": "t_b",
-            "position": 6000.0,
-            "id": "det.b2"
-        },
-        {
-            "track": "t_b",
-            "position": 9000.0,
-            "id": "det.b3"
-        },
-        {
-            "track": "t_center",
-            "position": 1000.0,
-            "id": "det.c1"
-        },
-        {
-            "track": "t_center",
-            "position": 3000.0,
-            "id": "det.c2"
-        },
-        {
-            "track": "t_center",
-            "position": 5000.0,
-            "id": "det.c3"
-        },
-        {
-            "track": "t_center",
-            "position": 7000.0,
-            "id": "det.c4"
-        },
-        {
-            "track": "t_center",
-            "position": 9000.0,
-            "id": "det.c5"
-        }
-    ],
-    "neutral_sections": []
+    "version": "3.5.2"
 }

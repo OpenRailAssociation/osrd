@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 from typing import Dict, List
 
-from osrd_schemas import infra
+from osrd_schemas_auto import models
 
 from railjson_generator.schema.infra.direction import Direction
 
@@ -18,7 +18,7 @@ class SignalConditionalParameters:
     parameters: Dict[str, str]
 
     def to_rjs(self):
-        return infra.ConditionalParameter(
+        return models.ConditionalParameter(
             on_route=self.on_route,
             parameters=self.parameters,
         )
@@ -42,7 +42,7 @@ class LogicalSignal:
                 else self.default_parameters
             )
 
-        return infra.LogicalSignal(
+        return models.LogicalSignal(
             signaling_system=self.signaling_system,
             next_signaling_systems=self.next_signaling_systems,
             settings=self.settings,
@@ -65,7 +65,7 @@ class Signal:
 
     label: str = field(default_factory=_signal_id)
     installation_type: str = "CARRE"
-    side: infra.Side = infra.Side.LEFT
+    side: models.Side = models.Side.LEFT
 
     _index = 0
 
@@ -79,18 +79,18 @@ class Signal:
         return signal
 
     def to_rjs(self, track):
-        return infra.Signal(
+        return models.Signal(
             id=self.label,
             track=track.id,
             position=self.position,
-            direction=infra.Direction[self.direction.name],
+            direction=models.Direction[self.direction.name],
             sight_distance=self.sight_distance,
             logical_signals=[sig.to_rjs() for sig in self.logical_signals],
-            extensions={  # pyright: ignore[reportCallIssue] - 'extensions' exists but is registered through 'register_extension'
-                "sncf": {
-                    "label": self.label,
-                    "side": self.side,
-                    "kp": "",
-                }
-            },
+            extensions=models.SignalExtensions(
+                sncf=models.SignalSncfExtension(
+                    label=self.label,
+                    side=self.side,
+                    kp="",
+                )
+            ),
         )

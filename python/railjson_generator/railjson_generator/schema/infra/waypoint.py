@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 from typing import Union
 
-from osrd_schemas import infra
+from osrd_schemas_auto import models
 
 from railjson_generator.schema.infra.direction import Direction
 
@@ -30,10 +30,10 @@ class BufferStop:
         return self.label
 
     def get_waypoint_ref(self):
-        return infra.BufferStopReference(id=self.label, type="BufferStop")
+        return models.WaypointBufferStop(id=self.label, type="BufferStop")
 
     def to_rjs(self, track):
-        return infra.BufferStop(
+        return models.BufferStop(
             id=self.label,
             track=track.id,
             position=self.position,
@@ -67,10 +67,10 @@ class Detector:
         return self.label
 
     def get_waypoint_ref(self):
-        return infra.DetectorReference(id=self.label, type="Detector")
+        return models.WaypointDetector(id=self.label, type="Detector")
 
     def to_rjs(self, track):
-        return infra.Detector(
+        return models.Detector(
             id=self.label,
             track=track.id,
             position=self.position,

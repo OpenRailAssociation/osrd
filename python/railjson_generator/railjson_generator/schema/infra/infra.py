@@ -2,7 +2,7 @@ from collections import defaultdict
 from dataclasses import dataclass, field
 from typing import List
 
-from osrd_schemas import infra
+from osrd_schemas_auto import models
 
 from railjson_generator.schema.infra.electrification import Electrification
 from railjson_generator.schema.infra.neutral_section import NeutralSection
@@ -32,8 +32,8 @@ class Infra:
         self.routes.append(Route(*args, **kwargs))
         return self.routes[-1]
 
-    def to_rjs(self) -> infra.RailJsonInfra:
-        return infra.RailJsonInfra(
+    def to_rjs(self) -> models.RailJson:
+        return models.RailJson(
             version=self.VERSION,
             track_sections=[track.to_rjs() for track in self.track_sections],
             switches=[switch.to_rjs() for switch in self.switches],
@@ -83,24 +83,24 @@ class Infra:
                 parts_per_op[op_part.operational_point.id].append(op_part.to_rjs(track))
         ops = []
         for op in self.operational_points:
-            new_op = infra.OperationalPoint(
+            new_op = models.OperationalPoint(
                 id=op.id,
                 parts=parts_per_op[op.id],
-                extensions={  # pyright: ignore[reportCallIssue] - 'extensions' exists but is registered through 'register_extension'
-                    "sncf": infra.OperationalPointSncfExtension(
+                extensions=models.OperationalPointExtensions(
+                    sncf=models.OperationalPointSncfExtension(
                         ci=int(str(op.uic)[2:]),  # remove two first digits of UIC code
                         ch_short_label=op.ch,
                         ch=op.ch,
                         ch_long_label="0",
                         trigram=op.trigram,
                     ),
-                    "identifier": infra.OperationalPointIdentifierExtension(
+                    identifier=models.OperationalPointIdentifierExtension(
                         uic=op.uic,
                         name=op.label,
                     ),
-                },
+                ),
                 weight=op.weight,
-                plc=op.plc,
+                plc=models.NonBlankString(op.plc) if op.plc is not None else None,
             )
             ops.append(new_op)
         return ops

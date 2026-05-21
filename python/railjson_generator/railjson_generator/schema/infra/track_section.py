@@ -2,7 +2,7 @@ from dataclasses import dataclass, field
 from typing import List, Optional, Tuple
 
 from geojson_pydantic.types import LineStringCoords
-from osrd_schemas import infra
+from osrd_schemas_auto import models
 from pydantic import ValidationError
 
 from railjson_generator.schema.infra.direction import ApplicableDirection, Direction
@@ -144,7 +144,7 @@ class TrackSection:
             print(f"Track section {self.label} has invalid coordinates:")
             print(self.coordinates)
             raise
-        return infra.TrackSection(
+        return models.TrackSectionModel(
             id=self.label,
             length=self.length,
             slopes=[slope.to_rjs() for slope in self.slopes],
@@ -154,14 +154,14 @@ class TrackSection:
                 for loading_gauge_limit in self.loading_gauge_limits
             ],
             **geo_data,
-            extensions={  # pyright: ignore[reportCallIssue] - 'extensions' exists but is registered through 'register_extension'
-                "sncf": {
-                    "line_code": self.line_code,
-                    "line_name": self.line_name,
-                    "track_number": self.track_number,
-                    "track_name": self.track_name,
-                }
-            },
+            extensions=models.TrackSectionExtensions(
+                sncf=models.TrackSectionSncfExtension(
+                    line_code=self.line_code,
+                    line_name=self.line_name,
+                    track_number=self.track_number,
+                    track_name=self.track_name,
+                )
+            ),
         )
 
     @property
