@@ -1,11 +1,13 @@
 mod group;
 mod infra;
 mod roles;
+mod rolling_stock;
 mod test_client_ext;
 
 pub use group::*;
 pub use infra::*;
 pub use roles::*;
+pub use rolling_stock::*;
 pub use test_client_ext::TestClientExt;
 
 use std::collections::HashSet;
@@ -17,8 +19,10 @@ use crate::Group;
 use crate::Infra;
 use crate::InfraPrivilege;
 use crate::Role;
+use crate::RollingStock;
 use crate::Subject;
 use crate::User;
+use crate::model::RollingStockPrivilege;
 
 pub type OpenFgaError = fga::client::Error;
 type ValueFut<'a, T> = BoxFuture<'a, Result<T, OpenFgaError>>;
@@ -59,10 +63,14 @@ pub enum Check {
     HasRole(Actor, Role),
     /// The actor needs an infra privilege to perform the operation
     HasInfraPrivilege(Actor, InfraPrivilege, Infra),
+    /// The actor needs a rolling stock privilege to perform the operation
+    HasRollingStockPrivilege(Actor, RollingStockPrivilege, RollingStock),
     /// The subject must exist in PostgreSQL
     SubjectExists(Subject),
     /// The infra must exist in PostgreSQL
     InfraExists(Infra),
+    /// The rolling stock must exist in PostgreSQL
+    RollingStockExists(RollingStock),
 }
 
 impl Check {

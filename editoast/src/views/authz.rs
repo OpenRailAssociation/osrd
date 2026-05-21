@@ -14,6 +14,7 @@ use ::authz::InfraGrant;
 use ::authz::InfraPrivilege;
 use ::authz::Role;
 use authz::Authorization;
+use authz::RollingStockPrivilege;
 use authz::v2;
 use authz::v2::Actor;
 use authz::v2::Authorizer;
@@ -28,6 +29,7 @@ use database::DbConnectionPoolV2;
 use editoast_derive::EditoastError;
 use editoast_models::Group;
 use editoast_models::Infra;
+use editoast_models::RollingStock;
 use editoast_models::User;
 use editoast_models::prelude::*;
 use itertools::Itertools;
@@ -335,7 +337,7 @@ pub(in crate::views) async fn user_privileges(
     Extension(user): Extension<Option<authz::User>>,
     Extension(roles): Extension<Vec<Role>>,
     Extension(authn): Extension<crate::authentication::Authentication>,
-    Json(mut resources_ids): Json<HashMap<ResourceType, Vec<i64>>>,
+    Json(resources_ids): Json<HashMap<ResourceType, Vec<i64>>>,
 ) -> Result<Json<HashMap<ResourceType, Vec<ResourcePrivileges>>>> {
     if matches!(
         authn,
@@ -345,45 +347,81 @@ pub(in crate::views) async fn user_privileges(
     }
 
     let mut result = HashMap::<_, Vec<_>>::new();
-    let result_infras = result.entry(ResourceType::Infra).or_default();
-
     let mut conn = db_pool.get().await?;
-    let infra_ids = resources_ids
-        .remove(&ResourceType::Infra) // change when more resources are supported
-        .into_iter()
-        .flatten();
+
+    enum Resource {
+        Infra(authz::Infra),
+        RollingStock(authz::RollingStock),
+    }
     if let Some(user) = user {
-        let infras = infra_ids.map(authz::Infra);
-        let protected_privileges = infras.map(|infra| {
-            v2::infra_privileges(user, infra)
+        let resources = resources_ids.into_iter().flat_map(|(resource_type, ids)| {
+            ids.into_iter().map(move |id| match resource_type {
+                ResourceType::Infra => Resource::Infra(authz::Infra(id)),
+                ResourceType::RollingStock => Resource::RollingStock(authz::RollingStock(id)),
+            })
+        });
+        let protected_privileges = resources.map(|resource| match resource {
+            Resource::Infra(infra) => v2::infra_privileges(user, infra)
                 .collect_into::<HashSet<StandardPrivilege>>()
-                .zip(v2::Protected::value(infra))
+                .zip(v2::Protected::value(Resource::Infra(infra))),
+            Resource::RollingStock(rolling_stock) => {
+                v2::rolling_stock_privileges(user, rolling_stock)
+                    .collect_into::<HashSet<StandardPrivilege>>()
+                    .zip(v2::Protected::value(Resource::RollingStock(rolling_stock)))
+            }
         });
         let authorizer =
             crate::authorizers::UserAuthorizer::new(user, roles, regulator.openfga(), conn);
         let accesses = authorizer.authorize_all(protected_privileges).await?;
         for access in v2::Access::access_all(accesses).await? {
             match access {
-                Ok((privileges, infra)) => {
-                    result_infras.push(ResourcePrivileges {
-                        resource_id: *infra,
-                        privileges,
-                    });
-                }
-                Err(Check::InfraExists(_)) => {
+                Ok((privileges, resource)) => match resource {
+                    Resource::Infra(authz::Infra(infra)) => result
+                        .entry(ResourceType::Infra)
+                        .or_default()
+                        .push(ResourcePrivileges {
+                            resource_id: infra,
+                            privileges,
+                        }),
+                    Resource::RollingStock(authz::RollingStock(rolling_stock)) => result
+                        .entry(ResourceType::RollingStock)
+                        .or_default()
+                        .push(ResourcePrivileges {
+                            resource_id: rolling_stock,
+                            privileges,
+                        }),
+                },
+                Err(Check::InfraExists(_)) | Err(Check::RollingStockExists(_)) => {
                     // not an error under the target API
                     // (though maybe we should revisit it?)
                 }
                 Err(Check::HasInfraPrivilege(Actor::Issuer, InfraPrivilege::CanRead, infra)) => {
-                    result_infras.push(ResourcePrivileges {
-                        resource_id: *infra,
-                        privileges: HashSet::new(),
-                    });
+                    result
+                        .entry(ResourceType::Infra)
+                        .or_default()
+                        .push(ResourcePrivileges {
+                            resource_id: *infra,
+                            privileges: HashSet::new(),
+                        });
+                }
+                Err(Check::HasRollingStockPrivilege(
+                    Actor::Issuer,
+                    RollingStockPrivilege::CanRead,
+                    rolling_stock,
+                )) => {
+                    result.entry(ResourceType::RollingStock).or_default().push(
+                        ResourcePrivileges {
+                            resource_id: *rolling_stock,
+                            privileges: HashSet::new(),
+                        },
+                    );
                 }
                 Err(Check::SubjectExists(authz::Subject::User(_))) => {
                     panic!("race condition: user deleted");
                 }
-                Err(check @ Check::HasInfraPrivilege(_, _, _)) | Err(check) => {
+                Err(check @ Check::HasInfraPrivilege(_, _, _))
+                | Err(check @ Check::HasRollingStockPrivilege(_, _, _))
+                | Err(check) => {
                     impossible!(check)
                 }
             }
@@ -394,18 +432,43 @@ pub(in crate::views) async fn user_privileges(
             authn,
             crate::authentication::Authentication::Skip { .. }
         ));
-        let infras: Vec<_> = Infra::retrieve_batch_unchecked(&mut conn, infra_ids).await?;
-        result_infras.extend(infras.into_iter().map(|infra| ResourcePrivileges {
-            resource_id: infra.id,
-            privileges: HashSet::from([
-                StandardPrivilege::CanRead,
-                StandardPrivilege::CanShareRead,
-                StandardPrivilege::CanWrite,
-                StandardPrivilege::CanShareWrite,
-                StandardPrivilege::CanDelete,
-                StandardPrivilege::CanShareOwnership,
-            ]),
-        }));
+
+        let privileges = HashSet::from([
+            StandardPrivilege::CanRead,
+            StandardPrivilege::CanShareRead,
+            StandardPrivilege::CanWrite,
+            StandardPrivilege::CanShareWrite,
+            StandardPrivilege::CanDelete,
+            StandardPrivilege::CanShareOwnership,
+            StandardPrivilege::CanRevoke,
+        ]);
+        for (resource_type, ids) in resources_ids {
+            let existing_ids: Vec<i64> = match resource_type {
+                ResourceType::Infra => Infra::retrieve_batch_unchecked::<_, Vec<_>>(&mut conn, ids)
+                    .await?
+                    .into_iter()
+                    .map(|i| i.id)
+                    .collect(),
+                ResourceType::RollingStock => {
+                    RollingStock::retrieve_batch_unchecked::<_, Vec<_>>(&mut conn, ids)
+                        .await?
+                        .into_iter()
+                        .map(|rs| rs.id)
+                        .collect()
+                }
+            };
+            result
+                .entry(resource_type)
+                .or_default()
+                .extend(
+                    existing_ids
+                        .into_iter()
+                        .map(|resource_id| ResourcePrivileges {
+                            resource_id,
+                            privileges: privileges.clone(),
+                        }),
+                );
+        }
     }
 
     Ok(Json(result))
@@ -558,7 +621,11 @@ pub(in crate::views) async fn my_grants_on_resource(
                     rejection => impossible!(rejection),
                 })?
         }
-        ResourceType::RollingStock => todo!(),
+        ResourceType::RollingStock => {
+            panic!(
+                "not implemented yet, requires implementing rolling stock grants in OpenFGA and exposing them in the authorizer"
+            )
+        }
     };
 
     // NOTE: the same subject can appear in multiple lists. This can happen
@@ -759,7 +826,11 @@ pub(in crate::views) async fn update_grants(
                         }?
                         .allowed()?;
                     }
-                    ResourceType::RollingStock => todo!(),
+                    ResourceType::RollingStock => {
+                        panic!(
+                            "not implemented yet, requires implementing rolling stock grants in OpenFGA and exposing them in the authorizer"
+                        )
+                    }
                 }
             }
             Ok(StatusCode::CREATED)
@@ -792,7 +863,9 @@ pub(in crate::views) async fn update_grants(
                         }?
                         .allowed()?;
                     }
-                    ResourceType::RollingStock => todo!(),
+                    ResourceType::RollingStock => {
+                        panic!("not implemented yet")
+                    }
                 }
             }
             Ok(StatusCode::NO_CONTENT)
@@ -992,12 +1065,13 @@ mod tests {
         assert_eq!(
             privileges.remove(&infra).unwrap(),
             HashSet::from([
+                StandardPrivilege::CanShareOwnership,
+                StandardPrivilege::CanDelete,
+                StandardPrivilege::CanRevoke,
                 StandardPrivilege::CanRead,
                 StandardPrivilege::CanShareRead,
-                StandardPrivilege::CanWrite,
                 StandardPrivilege::CanShareWrite,
-                StandardPrivilege::CanDelete,
-                StandardPrivilege::CanShareOwnership,
+                StandardPrivilege::CanWrite,
             ])
         );
     }

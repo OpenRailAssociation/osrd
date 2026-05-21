@@ -40,8 +40,14 @@ impl SystemAuthorizer<'_> {
             Check::InfraExists(infra) => {
                 (!editoast_models::Infra::exists(conn, **infra).await?).then_some(check)
             }
+            Check::RollingStockExists(authz::RollingStock(rolling_stock_id)) => {
+                (!editoast_models::RollingStock::exists(conn, *rolling_stock_id).await?)
+                    .then_some(check)
+            }
             // checked by UserAuthorizer
-            Check::HasRole(..) | Check::HasInfraPrivilege(..) => None,
+            Check::HasRole(_, _)
+            | Check::HasInfraPrivilege(_, _, _)
+            | Check::HasRollingStockPrivilege(_, _, _) => None,
         })
     }
 }
@@ -125,8 +131,16 @@ impl<'c> UserAuthorizer<'c> {
                     .await?;
                 (!privileges.contains(privilege)).then_some(check)
             }
+            Check::HasRollingStockPrivilege(actor, privilege, rolling_stock) => {
+                let Ok(privileges) =
+                    authz::v2::rolling_stock_privileges(*self.actor_user(actor), *rolling_stock)
+                        .access_authorized::<Infallible>(self.openfga)
+                        .access()
+                        .await?;
+                (!privileges.contains(privilege)).then_some(check)
+            }
             // checked by SystemAuthorizer
-            Check::SubjectExists(_) | Check::InfraExists(_) => None,
+            Check::SubjectExists(_) | Check::InfraExists(_) | Check::RollingStockExists(_) => None,
         })
     }
 }
