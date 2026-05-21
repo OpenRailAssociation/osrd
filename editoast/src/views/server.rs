@@ -1,5 +1,8 @@
 pub mod middlewares;
+mod openapi;
 pub mod router;
+
+pub use openapi::OpenApiRoot;
 
 use std::env;
 use std::path::PathBuf;
