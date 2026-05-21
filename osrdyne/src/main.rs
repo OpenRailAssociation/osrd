@@ -101,7 +101,16 @@ async fn main() -> Result<(), anyhow::Error> {
     // it is kept running across rabbitmq reconnects.
     let (sender, tracker_inbox) = mpsc::channel(100);
     let target_tracker_client = TargetTrackerClient::new(sender);
-    let target_tracker_config = TargetTrackerConfig::default();
+
+    let mut target_tracker_config = TargetTrackerConfig::default();
+    target_tracker_config.unbind_delay = config
+        .queue_unbind_delay
+        .unwrap_or(target_tracker_config.unbind_delay);
+    target_tracker_config.delete_delay = config
+        .queue_delete_delay
+        .unwrap_or(target_tracker_config.delete_delay);
+    let target_tracker_config = target_tracker_config;
+
     let mut target_tracker = spawn(target_tracker_actor(
         tracker_inbox,
         init_keys,
