@@ -29,7 +29,7 @@ pub async fn healthcheck_cmd(
     .await?;
     let regulator = openfga_config.into_regulator(db_pool.clone()).await?;
 
-    views::check_health(
+    views::health::check_health(
         db_pool,
         valkey.into(),
         core_client.into(),
