@@ -8,7 +8,6 @@ pub mod icons;
 pub mod infra;
 mod layers;
 mod level_crossing_occupancy;
-mod openapi;
 pub mod operational_studies;
 pub mod pagination;
 pub mod params;
@@ -47,7 +46,7 @@ use std::collections::HashSet;
 use ::authz::Authorizer;
 use ::authz::Role;
 
-pub use openapi::OpenApiRoot;
+pub use server::OpenApiRoot;
 
 use core_client::CoreClient;
 use editoast_derive::EditoastError;
