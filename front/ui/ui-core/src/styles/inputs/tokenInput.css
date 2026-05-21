@@ -3,52 +3,56 @@
     font-size: 1rem;
     letter-spacing: 0;
     text-align: left;
-    line-height: 1.5rem;
+    line-height: 24px;
     @apply text-grey-80 font-sans font-semibold;
   }
 
   .tokens-wrapper {
     display: flex;
     flex-wrap: wrap;
-    min-height: 2.5rem;
-    padding: 0.25rem;
-    border-radius: 0.25rem;
+    min-height: 40px;
+    padding: 4px;
+    border-radius: 4px;
     box-shadow:
-      0 0.063rem 0.188rem rgba(0, 0, 0, 0.5) inset,
-      0 0 0 0.063rem rgba(148, 145, 142, 1) inset;
+      0 1px 3px inset var(--color-black-50),
+      0 0 0 1px inset var(--color-grey-40);
     @apply bg-black-1;
 
     .token-item-wrapper {
       display: flex;
-      margin: 0.25rem;
+      margin: 4px;
       align-items: center;
       justify-content: center;
-      border-radius: 0.188rem;
+      border-radius: 3px;
       box-shadow:
-        0 0 0 0.125rem rgba(255, 255, 255, 0.5) inset,
-        0 0 0 0.063rem rgba(196, 218, 245, 1) inset;
-      background-color: rgba(227, 237, 252, 1);
+        0 0 0 1px inset var(--color-primary-20),
+        0 0 0 2px inset var(--color-white-100);
+      background-color: var(--color-primary-5);
 
       .token-label {
-        margin: 0.125rem 0.375rem 0.125rem 0.5rem;
+        margin: 2px 6px 2px 8px;
         font-size: 0.875rem;
         letter-spacing: 0;
         text-align: left;
-        line-height: 1.25rem;
+        line-height: 20px;
+        user-select: none;
         @apply text-black-100;
       }
 
       .token-close-btn {
-        margin: 0.25rem 0.25rem 0.25rem 0;
+        margin: 4px 4px 4px 0;
         @apply text-black-25;
+      }
+
+      &:has(.token-close-btn:active) {
+        box-shadow: 0 0 0 1px inset var(--color-error-30);
+        background-color: var(--color-white-100);
       }
 
       &:hover {
         cursor: pointer;
-        box-shadow:
-          0 0 0 0.125rem rgba(255, 255, 255, 0.5) inset,
-          0 0 0 0.063rem rgb(152, 192, 245) inset;
-        background-color: rgba(255, 255, 255, 0.75);
+        box-shadow: 0 0 0 1px inset var(--color-primary-40);
+        background-color: var(--color-white-100);
 
         .token-close-btn {
           @apply text-black-75;
@@ -56,7 +60,7 @@
       }
 
       &:active {
-        box-shadow: 0 0 0 0.063rem rgb(32, 30, 222) inset;
+        box-shadow: 0 0 0 1px rgb(32, 30, 222) inset;
         @apply text-white-50;
 
         .token-close-btn {
@@ -67,10 +71,40 @@
 
     .token-input {
       outline: none;
-      margin: 0.25rem;
-      min-width: 6.25rem;
+      margin: 4px;
+      min-width: 100px;
       flex: 1;
       @apply bg-transparent;
+    }
+  }
+
+  &.small {
+    .input-label {
+      font-size: 0.875rem;
+      line-height: 20px;
+    }
+
+    .tokens-wrapper {
+      min-height: 27px;
+      padding: 3px;
+      gap: 4px;
+      .token-item-wrapper {
+        margin: 0;
+        .token-label {
+          margin: 0 5.5px 2px 6px;
+          font-size: 12px;
+        }
+
+        .token-close-btn {
+          margin: 0 3px 0 0;
+        }
+      }
+
+      .token-input {
+        margin: 2px;
+        min-width: 80px;
+        font-size: 0.75rem;
+      }
     }
   }
 }

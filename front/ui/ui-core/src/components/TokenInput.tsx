@@ -6,18 +6,36 @@ import cx from 'classnames';
 export type TokenInputProps = {
   label: string;
   tokens: string[];
+  small?: boolean;
 };
 
-const TokenInput = ({ label, tokens: initialTokens }: TokenInputProps) => {
+const TokenInput = ({ label, tokens: initialTokens, small }: TokenInputProps) => {
   const [tokens, setTokens] = useState(initialTokens);
   const [newToken, setNewToken] = useState('');
   const [selectedToken, setSelectedToken] = useState<number | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const addToken = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' && newToken.trim() !== '') {
-      setTokens((oldTokens) => [...oldTokens, newToken]);
-      setNewToken('');
+  const addToken = (token: string) => {
+    setTokens((oldTokens) => [...oldTokens, token]);
+  };
+
+  const removeToken = (index: number) => {
+    setTokens((oldTokens) => oldTokens.toSpliced(index, 1));
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    switch (e.key) {
+      case 'Enter':
+        if (newToken.trim() !== '') {
+          addToken(newToken);
+          setNewToken('');
+        }
+        break;
+      case 'Backspace':
+        if (tokens.length > 0 && newToken === '') removeToken(tokens.length - 1);
+        break;
+      default:
+        break;
     }
   };
 
@@ -28,7 +46,7 @@ const TokenInput = ({ label, tokens: initialTokens }: TokenInputProps) => {
   };
 
   return (
-    <div className="ui-token-input-wrapper">
+    <div className={cx('ui-token-input-wrapper', { small })}>
       <label className="input-label">{label}</label>
       <div className="tokens-wrapper" onClick={focusInput}>
         {tokens.map((token, index) => (
@@ -38,11 +56,8 @@ const TokenInput = ({ label, tokens: initialTokens }: TokenInputProps) => {
             className={cx('token-item-wrapper', { selected: selectedToken === index })}
           >
             <span className="token-label">{token}</span>
-            <span
-              className="token-close-btn"
-              onClick={() => setTokens((oldTokens) => oldTokens.filter((_t, i) => i !== index))}
-            >
-              <X />
+            <span className="token-close-btn" onClick={() => removeToken(index)}>
+              <X size={small ? 'sm' : 'lg'} />
             </span>
           </div>
         ))}
@@ -50,7 +65,7 @@ const TokenInput = ({ label, tokens: initialTokens }: TokenInputProps) => {
           type="text"
           value={newToken}
           onChange={(e) => setNewToken(e.target.value)}
-          onKeyDown={addToken}
+          onKeyDown={handleKeyDown}
           className="token-input"
           ref={inputRef}
         />
