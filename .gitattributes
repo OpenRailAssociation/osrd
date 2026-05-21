@@ -6,3 +6,4 @@
 # https://docs.github.com/en/repositories/working-with-files/managing-files/customizing-how-changed-files-appear-on-github
 editoast/openapi.yaml linguist-generated=true
 front/src/reducers/osrdconf/infra_schema.json linguist-generated=true
+osrd_schemas_auto/osrd_schemas_auto/models.py linguist-generated=true
