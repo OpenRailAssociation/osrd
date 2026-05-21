@@ -161,6 +161,7 @@ pub enum InfraGrant {
     Eq,
     Hash,
 )]
+#[fga(name = "rolling_stock")]
 pub struct RollingStock(pub i64);
 
 #[derive(Debug, Clone, Copy, Display, PartialEq, Eq, Hash, Serialize, Deserialize, ToSchema)]

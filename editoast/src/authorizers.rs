@@ -1,6 +1,7 @@
 use std::convert::Infallible;
 
 use authz::InfraPrivilege;
+use authz::RollingStockPrivilege;
 use authz::v2::Access;
 use authz::v2::Authorizer;
 use authz::v2::Guardrail;
@@ -104,6 +105,7 @@ pub enum Rejection {
     NoSuchUser(i64),
     NoSuchGroup(#[expect(dead_code)] i64),
     NoSuchInfra(i64),
+    NoSuchRollingStock(#[expect(dead_code)] i64),
 
     // Guardrail rejections
     LackingRole(
@@ -114,6 +116,11 @@ pub enum Rejection {
         InfraPrivilege,
         #[expect(dead_code)] authz::Subject,
         authz::Infra,
+    ),
+    LackingRollingStockPrivilege(
+        #[expect(dead_code)] RollingStockPrivilege,
+        #[expect(dead_code)] authz::Subject,
+        #[expect(dead_code)] authz::RollingStock,
     ),
 }
 
@@ -145,6 +152,10 @@ async fn sanity_check(
             Ok((!editoast_models::Infra::exists(conn, *infra_id).await?)
                 .then_some(Rejection::NoSuchInfra(*infra_id)))
         }
+        SanityCheck::RollingStockExists(authz::RollingStock(rolling_stock_id)) => Ok(
+            (!editoast_models::RollingStock::exists(conn, *rolling_stock_id).await?)
+                .then_some(Rejection::NoSuchRollingStock(*rolling_stock_id)),
+        ),
     }
 }
 
@@ -170,6 +181,18 @@ async fn guardrail(
                 *privilege,
                 authz::Subject::user(*issuer),
                 *infra,
+            ))
+        }
+
+        Guardrail::IssuerHasRollingStockPrivilege(privilege, rolling_stock) => {
+            let Ok(privileges) = authz::v2::rolling_stock_privileges(*issuer, *rolling_stock)
+                .access_authorized::<Infallible>(openfga)
+                .access()
+                .await?;
+            (!privileges.contains(privilege)).then_some(Rejection::LackingRollingStockPrivilege(
+                *privilege,
+                authz::Subject::user(*issuer),
+                *rolling_stock,
             ))
         }
     })

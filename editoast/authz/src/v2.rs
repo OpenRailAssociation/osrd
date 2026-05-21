@@ -1,11 +1,13 @@
 mod group;
 mod infra;
 mod roles;
+mod rolling_stock;
 mod test_client_ext;
 
 pub use group::*;
 pub use infra::*;
 pub use roles::*;
+pub use rolling_stock::*;
 pub use test_client_ext::TestClientExt;
 
 use std::collections::HashSet;
@@ -17,8 +19,10 @@ use crate::Group;
 use crate::Infra;
 use crate::InfraPrivilege;
 use crate::Role;
+use crate::RollingStock;
 use crate::Subject;
 use crate::User;
+use crate::model::RollingStockPrivilege;
 
 pub type OpenFgaError = fga::client::RequestFailure;
 type ValueFut<'a, T> = BoxFuture<'a, Result<T, OpenFgaError>>;
@@ -51,6 +55,7 @@ pub struct Protected<T> {
 pub enum Guardrail {
     IssuerHasRole(Role),
     IssuerHasInfraPrivilege(InfraPrivilege, Infra),
+    IssuerHasRollingStockPrivilege(RollingStockPrivilege, RollingStock),
 }
 
 /// A check to ensure the consistency of the data in OpenFGA and PostgreSQL
@@ -62,6 +67,7 @@ pub enum Guardrail {
 pub enum SanityCheck {
     SubjectExists(Subject),
     InfraExists(Infra),
+    RollingStockExists(RollingStock),
 }
 
 impl SanityCheck {
