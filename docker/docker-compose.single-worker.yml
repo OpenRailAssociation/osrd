@@ -5,6 +5,9 @@ services:
 
   osrdyne:
     volumes: !reset []
+    environment:
+      - OSRDYNE__QUEUE_UNBIND_DELAY=30y
+      - OSRDYNE__QUEUE_DELETE_DELAY=30y
 
   core:
     # Launch a single worker handling all infra
