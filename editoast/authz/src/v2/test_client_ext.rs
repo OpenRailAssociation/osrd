@@ -8,12 +8,14 @@ use crate::InfraGrant;
 use crate::InfraPrivilege;
 use crate::Role;
 use crate::RollingStock;
+use crate::RollingStockGrant;
 use crate::Subject;
 use crate::User;
 use crate::model::RollingStockPrivilege;
 use crate::v2::infra_direct_grant;
 use crate::v2::infra_effective_grant;
 use crate::v2::infra_privileges;
+use crate::v2::rolling_stock_effective_grant;
 use crate::v2::rolling_stock_privileges;
 use crate::v2::special_authorizers;
 
@@ -27,6 +29,11 @@ pub trait TestClientExt {
         infra: Infra,
     ) -> Option<InfraGrant>;
     async fn infra_privileges(&self, user: User, infra: Infra) -> HashSet<InfraPrivilege>;
+    async fn rolling_stock_effective_grant(
+        &self,
+        subject: Subject,
+        rolling_stock: RollingStock,
+    ) -> Option<RollingStockGrant>;
     async fn rolling_stock_privileges(
         &self,
         user: User,
@@ -78,6 +85,18 @@ impl TestClientExt for fga::Client {
         let authorize = special_authorizers::Authorize(self);
         authorize
             .access_value(infra_privileges(user, infra))
+            .await
+            .unwrap()
+    }
+
+    async fn rolling_stock_effective_grant(
+        &self,
+        subject: Subject,
+        rolling_stock: RollingStock,
+    ) -> Option<RollingStockGrant> {
+        let authorize = special_authorizers::Authorize(self);
+        authorize
+            .access_value(rolling_stock_effective_grant(subject, rolling_stock))
             .await
             .unwrap()
     }
