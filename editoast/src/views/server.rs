@@ -1,3 +1,5 @@
+pub mod middlewares;
+
 use std::env;
 use std::path::PathBuf;
 use std::sync::Arc;
@@ -35,9 +37,6 @@ use url::Url;
 
 use crate::generated_data::speed_limit_tags_config::SpeedLimitTagIds;
 use crate::infra_cache::InfraCache;
-use crate::views::authentication_extraction_middleware;
-use crate::views::authentication_middleware;
-use crate::views::authentication_validation_middleware;
 use crate::views::service_router;
 use crate::views::timetable;
 
@@ -293,15 +292,15 @@ impl Server {
             .merge(router)
             .route_layer(axum::middleware::from_fn_with_state(
                 app_state.clone(),
-                authentication_middleware,
+                middlewares::authentication_middleware,
             ))
             .route_layer(axum::middleware::from_fn_with_state(
                 app_state.clone(),
-                authentication_validation_middleware,
+                middlewares::authentication_validation_middleware,
             ))
             .route_layer(axum::middleware::from_fn_with_state(
                 app_state.clone(),
-                authentication_extraction_middleware,
+                middlewares::authentication_extraction_middleware,
             ))
             .layer(OtelInResponseLayer)
             .layer(OtelAxumLayer::default())
