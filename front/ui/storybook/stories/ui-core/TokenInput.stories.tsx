@@ -10,6 +10,7 @@ const meta: Meta<typeof TokenInput> = {
   args: {
     label: 'Favorite colors',
     tokens: ['Yellow', 'Orange', 'Red', 'Black'],
+    small: false,
   },
   decorators: [
     (Story) => (
@@ -27,4 +28,11 @@ type Story = StoryObj<typeof TokenInput>;
 
 export const Default: Story = {
   args: {},
+};
+
+export const Small: Story = {
+  args: {
+    small: true,
+    tokens: ['Small', 'Cosy'],
+  },
 };
