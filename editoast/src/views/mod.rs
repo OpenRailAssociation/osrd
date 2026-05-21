@@ -35,25 +35,25 @@ pub use server::*;
 
 #[cfg(test)]
 mod test_app;
-use ::authz::Authorization;
-use ::authz::Infra;
-#[cfg(test)]
-use test_app::test_app;
 
 use ::core::str;
 use std::collections::HashSet;
 
+use ::authz::Authorization;
 use ::authz::Authorizer;
+use ::authz::Infra;
 use ::authz::Role;
+use core_client::CoreClient;
+use editoast_derive::EditoastError;
+use editoast_models::PgAuthDriver;
+use thiserror::Error;
 
 pub use server::OpenApiRoot;
 
-use core_client::CoreClient;
-use editoast_derive::EditoastError;
-use thiserror::Error;
-
 use crate::error::Result;
-use editoast_models::PgAuthDriver;
+
+#[cfg(test)]
+use test_app::test_app;
 
 fn service_router() -> server::router::DocumentedRouter {
     use server::router::delete;
