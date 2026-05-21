@@ -40,8 +40,6 @@ use url::Url;
 use crate::AppState;
 use crate::generated_data::speed_limit_tags_config::SpeedLimitTagIds;
 use crate::infra_cache::InfraCache;
-use crate::views::authentication_extraction_middleware;
-use crate::views::authentication_validation_middleware;
 use crate::views::service_router;
 use crate::views::timetable::similar_trains::trains_traffic::TrainTraffic;
 use crate::views::timetable::similar_trains::trains_traffic::TrainsTrafficPool;
@@ -56,7 +54,6 @@ use super::OsrdyneConfig;
 use super::PostgresConfig;
 use super::Regulator;
 use super::ServerConfig;
-use super::authentication_middleware;
 
 // NoopSpanExporter exists in 'opentelemetry-sdk' but is hidden behind
 // 'testing' feature which brings with it tons of unneeded dependencies
@@ -292,15 +289,15 @@ impl TestAppBuilder {
             .merge(service_router().router)
             .route_layer(axum::middleware::from_fn_with_state(
                 app_state.clone(),
-                authentication_middleware,
+                crate::views::server::middlewares::authentication_middleware,
             ))
             .route_layer(axum::middleware::from_fn_with_state(
                 app_state.clone(),
-                authentication_validation_middleware,
+                crate::views::server::middlewares::authentication_validation_middleware,
             ))
             .route_layer(axum::middleware::from_fn_with_state(
                 app_state.clone(),
-                authentication_extraction_middleware,
+                crate::views::server::middlewares::authentication_extraction_middleware,
             ))
             .layer(OtelAxumLayer::default())
             .layer(TraceLayer::new_for_http())
