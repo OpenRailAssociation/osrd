@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import List
 
-from osrd_schemas import infra
+from osrd_schemas_auto import models
 
 
 @dataclass
@@ -12,7 +12,7 @@ class LevelCrossingPart:
     track: str
 
     def to_rjs(self):
-        return infra.LevelCrossingPart(
+        return models.LevelCrossingPart(
             track=self.track,
             position=self.position,
             pedal_upstream=self.pedal_upstream,
@@ -39,7 +39,7 @@ class LevelCrossing:
         self.parts.append(part)
 
     def to_rjs(self):
-        return infra.LevelCrossing(
+        return models.LevelCrossing(
             id=self.id,
             name=self.name,
             short_zone_length=self.short_zone_length,

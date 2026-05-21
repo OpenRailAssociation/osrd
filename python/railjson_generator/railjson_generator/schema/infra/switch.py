@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 from typing import Optional
 
-from osrd_schemas import infra
+from osrd_schemas_auto import models
 from osrd_schemas.switch_type import (
     CROSSING,
     DOUBLE_SLIP_SWITCH,
@@ -79,7 +79,7 @@ class Switch:
         return track_section.add_detector(*args, position=position, **kwargs)
 
     def to_rjs(self):
-        return infra.Switch(
+        return models.Switch(
             id=self.label,
             switch_type=self.SWITCH_TYPE,
             group_change_delay=self.delay,
@@ -87,7 +87,9 @@ class Switch:
                 port_name: getattr(self, port_name).to_rjs()
                 for port_name in self.PORT_NAMES
             },
-            extensions={"sncf": {"label": self.label}},  # pyright: ignore[reportCallIssue] - 'extensions' exists but is registered through 'register_extension'
+            extensions=models.SwitchExtensions(
+                sncf=models.SwitchSncfExtension(label=self.label)
+            ),
         )
 
 

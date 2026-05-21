@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from enum import IntEnum
 from typing import TYPE_CHECKING, List, Optional, Tuple
 
-from osrd_schemas import infra
+from osrd_schemas_auto import models
 
 if TYPE_CHECKING:
     from .switch import SwitchGroup
@@ -55,6 +55,6 @@ class TrackEndpoint:
             self.track_section.coordinates[-1] = (x, y)
 
     def to_rjs(self):
-        return infra.TrackEndpoint(
-            endpoint=infra.Endpoint[self.endpoint.name], track=self.track_section.id
+        return models.TrackEndpoint(
+            endpoint=models.Endpoint[self.endpoint.name], track=self.track_section.id
         )

@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 from typing import List
 
-from osrd_schemas import infra
+from osrd_schemas_auto import models
 
 from railjson_generator.schema.infra.direction import Direction
 from railjson_generator.schema.infra.range_elements import DirectionalTrackRange
@@ -62,7 +62,7 @@ class NeutralSection:
         )
 
     def to_rjs(self):
-        return infra.NeutralSection(
+        return models.NeutralSection(
             id=self.label,
             announcement_track_ranges=[
                 track.to_rjs() for track in self.announcement_track_ranges

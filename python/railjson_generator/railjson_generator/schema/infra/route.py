@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
-from typing import List, Mapping, Optional
+from typing import List, Optional
 
-from osrd_schemas import infra
+from osrd_schemas_auto import models
 
 from .direction import Direction
 from .waypoint import Waypoint
@@ -12,7 +12,7 @@ class Route:
     waypoints: List[Waypoint]
     release_waypoints: List[Waypoint]
     entry_point_direction: Direction
-    switches_directions: Mapping[str, str] = field(default_factory=dict)
+    switches_directions: dict[str, str] = field(default_factory=dict)
     label: Optional[str] = field(default=None)
 
     def __hash__(self):
@@ -34,11 +34,13 @@ class Route:
             self.label = f"rt.{self.entry_point.label}->{self.exit_point.label}"
 
     def to_rjs(self):
-        return infra.Route(
+        return models.Route(
             id=self.label,  # pyright: ignore[reportArgumentType] - '__post_init__' ensures 'label' always has a value
             entry_point=self.entry_point.get_waypoint_ref(),
-            entry_point_direction=infra.Direction[self.entry_point_direction.name],
+            entry_point_direction=models.Direction[self.entry_point_direction.name],
             exit_point=self.exit_point.get_waypoint_ref(),
-            release_detectors=[w.id for w in self.release_waypoints],
+            release_detectors=[
+                models.ReleaseDetector(w.id) for w in self.release_waypoints
+            ],
             switches_directions=self.switches_directions,
         )

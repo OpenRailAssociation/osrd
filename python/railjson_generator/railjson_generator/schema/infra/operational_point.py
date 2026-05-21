@@ -3,7 +3,7 @@ from typing import Annotated, List, Optional
 
 from pydantic import StringConstraints
 
-from osrd_schemas import infra
+from osrd_schemas_auto import models
 
 NonBlankStr = Annotated[str, StringConstraints(min_length=1)]
 
@@ -51,7 +51,7 @@ class OperationalPointPart:
     local_track_name: str
 
     def to_rjs(self, track):
-        return infra.OperationalPointPart(
+        return models.OperationalPointPart(
             track=track.id,
             position=self.position,
             local_track_name=self.local_track_name,

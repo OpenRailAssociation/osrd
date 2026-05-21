@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 from osrd_schemas import infra
+from osrd_schemas_auto import models
 
 from .direction import ApplicableDirection, Direction
 
@@ -33,7 +34,7 @@ class Slope(RangeElement):
         self.gradient = gradient
 
     def to_rjs(self):
-        return infra.Slope(gradient=self.gradient, begin=self.begin, end=self.end)
+        return models.Slope(gradient=self.gradient, begin=self.begin, end=self.end)
 
 
 class Curve(RangeElement):
@@ -44,18 +45,18 @@ class Curve(RangeElement):
         self.radius = radius
 
     def to_rjs(self):
-        return infra.Curve(radius=self.radius, begin=self.begin, end=self.end)
+        return models.Curve(radius=self.radius, begin=self.begin, end=self.end)
 
 
 class LoadingGaugeLimit(RangeElement):
-    category: infra.LoadingGaugeType
+    category: models.LoadingGaugeType
 
     def __init__(self, begin, end, category):
         super().__init__(begin, end)
         self.category = category
 
     def to_rjs(self):
-        return infra.LoadingGaugeLimit(
+        return models.LoadingGaugeLimit(
             category=self.category, begin=self.begin, end=self.end
         )
 
@@ -72,10 +73,10 @@ class TrackRange(RangeElement):
 class DirectionalTrackRange(TrackRange):
     direction: Direction
 
-    def to_rjs(self):
-        return infra.DirectionalTrackRange(
+    def to_rjs(self):  # pyright: ignore[reportIncompatibleMethodOverride] - base TrackRange stays on osrd_schemas
+        return models.DirectionalTrackRange(
             track=self.track.id,
-            direction=infra.Direction[self.direction.name],
+            direction=models.Direction[self.direction.name],
             begin=self.begin,
             end=self.end,
         )
@@ -85,10 +86,10 @@ class DirectionalTrackRange(TrackRange):
 class ApplicableDirectionsTrackRange(TrackRange):
     applicable_directions: ApplicableDirection
 
-    def to_rjs(self):
-        return infra.ApplicableDirectionsTrackRange(
+    def to_rjs(self):  # pyright: ignore[reportIncompatibleMethodOverride] - base TrackRange stays on osrd_schemas
+        return models.ApplicableDirectionsTrackRange(
             track=self.track.id,
-            applicable_directions=infra.ApplicableDirections[
+            applicable_directions=models.ApplicableDirections[
                 self.applicable_directions.name
             ],
             begin=self.begin,
