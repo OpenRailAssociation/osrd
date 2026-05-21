@@ -142,6 +142,7 @@ services:
       type: ClusterIP
       port: 80
       targetPort: 80
+    service_account_name: "editoast"
     permanent_storage_size: "editoast_storage_size"
     permanent_storage_class: "editoast_storage_class"
     labels:

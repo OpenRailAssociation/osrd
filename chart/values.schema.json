@@ -591,6 +591,16 @@
               "title": "service",
               "type": "object"
             },
+            "service_account_name": {
+              "default": "null",
+              "description": "Service account name associated to editoast pod",
+              "required": [],
+              "title": "service_account_name",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
             "tolerations": {
               "items": {
                 "required": []

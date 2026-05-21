@@ -117,6 +117,10 @@ spec:
           resources:
             {{- toYaml .Values.services.statefulEditoast.resources | nindent 12 }}
 
+      {{- if .Values.services.editoast.service_account_name }}
+          service_account_name: {{ .Values.services.editoast.service_account_name }}
+      {{- end}}
+
       {{- if .Values.services.editoast.permanent_storage_size }}
       volumes:
       - name: editoast-volume

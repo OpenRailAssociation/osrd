@@ -355,6 +355,12 @@ services:
       type: ClusterIP
       port: 80
       targetPort: 80
+    # @schema
+    # required: false
+    # type: [string, null]
+    # @schema
+    # -- (string, null) Service account name associated to editoast pod
+    service_account_name: null
     livenessProbe:
       disabled: false
       initialDelaySeconds: 0
