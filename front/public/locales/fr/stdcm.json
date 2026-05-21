@@ -226,7 +226,6 @@
     "stopCalculation": "Arrêter"
   },
   "simulationSheet": "Fiche de simulation",
-  "spaceTimeGraphic": "Graphique Espace-Temps",
   "stdcmErrors": {
     "incompatibleConstraintsDetails": {
       "incompatibleElectrical_one": "- {{count}} erreur d'électrification",
