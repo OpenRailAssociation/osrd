@@ -28,6 +28,7 @@ pub mod sub_categories;
 pub mod temporary_speed_limits;
 pub mod timetable;
 mod train_schedule_set;
+mod version;
 pub mod work_schedules;
 mod worker_load;
 
@@ -38,7 +39,6 @@ use ::authz::Infra;
 use ::authz::StorageDriver;
 use ::authz::v2::special_authorizers;
 use axum::Extension;
-use common::Version;
 use editoast_models::authn::user::AddIdentitiesError;
 use fga::client::Limits;
 #[cfg(test)]
@@ -71,7 +71,6 @@ use dashmap::DashMap;
 
 pub use openapi::OpenApiRoot;
 
-use axum::extract::Json;
 use axum::extract::State;
 use core_client::CoreClient;
 use core_client::mq_client;
@@ -130,7 +129,7 @@ fn service_router() -> router::DocumentedRouter {
             // random stuff
             //
             .route("/health", get!(health::health))
-            .route("/version", get!(version))
+            .route("/version", get!(version::version))
             .route("/worker_load", post!(worker_load::worker_load))
             //
             // authorization
@@ -929,21 +928,6 @@ pub enum AuthorizationError {
     DbError(#[from] database::db_connection_pool::DatabasePoolError),
 }
 
-#[editoast_derive::route]
-#[utoipa::path(
-    get, path = "",
-    responses(
-        (status = 200, description = "Return the service version", body = Version),
-    ),
-)]
-pub(in crate::views) async fn version(
-    State(AppState { config, .. }): State<AppState>,
-) -> Json<Version> {
-    Json(Version {
-        git_describe: config.app_version.clone(),
-    })
-}
-
 #[derive(Clone)]
 pub struct CoreConfig {
     pub timeout: Duration,
@@ -1257,13 +1241,10 @@ impl OpenfgaConfig {
 
 #[cfg(test)]
 mod tests {
-    use std::collections::HashMap;
-
     use axum::http::StatusCode;
     use core_client::mocking::MockingClient;
     use serde_json::json;
 
-    use super::test_app::TestAppBuilder;
     use crate::views::timetable::simulation_empty_response;
 
     #[cfg(test)]
@@ -1306,13 +1287,5 @@ mod tests {
             }))
             .finish();
         core
-    }
-
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn version() {
-        let app = TestAppBuilder::default_app();
-        let request = app.get("/version");
-        let response: HashMap<String, Option<String>> = app.fetch(request).await.json_into();
-        assert!(response.contains_key("git_describe"));
     }
 }
