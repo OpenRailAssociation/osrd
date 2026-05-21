@@ -3,13 +3,13 @@ use std::collections::VecDeque;
 use axum::Extension;
 use axum::response::IntoResponse as _;
 
-use super::AuthorizationError;
+use crate::views::AuthorizationError;
 
-pub(super) struct RouteDocumentation {
-    pub(super) http_methods: Vec<utoipa::openapi::path::HttpMethod>,
-    pub(super) operation: utoipa::openapi::path::Operation,
-    pub(super) tags: Vec<&'static str>,
-    pub(super) schemas: Vec<(
+pub(in crate::views) struct RouteDocumentation {
+    pub(in crate::views) http_methods: Vec<utoipa::openapi::path::HttpMethod>,
+    pub(in crate::views) operation: utoipa::openapi::path::Operation,
+    pub(in crate::views) tags: Vec<&'static str>,
+    pub(in crate::views) schemas: Vec<(
         String,
         utoipa::openapi::RefOr<utoipa::openapi::schema::Schema>,
     )>,
@@ -32,12 +32,12 @@ pub(in crate::views) type OpenApiRouteSliceItem = fn(&str) -> Option<RouteMetada
 pub(in crate::views) static OPENAPI_ROUTES: [OpenApiRouteSliceItem];
 
 #[derive(Default)]
-pub(super) struct DocumentedRouter {
-    pub(super) router: axum::Router<super::AppState>,
-    pub(super) path_trees: Vec<PathTree>,
+pub(in crate::views) struct DocumentedRouter {
+    pub(in crate::views) router: axum::Router<super::AppState>,
+    pub(in crate::views) path_trees: Vec<PathTree>,
 }
 
-pub(super) enum PathTree {
+pub(in crate::views) enum PathTree {
     Leaf {
         path_segment: &'static str,
         path_item: fn() -> RouteDocumentation,
@@ -48,17 +48,17 @@ pub(super) enum PathTree {
     },
 }
 
-pub(super) struct FlattenedPath {
-    pub(super) path_segments: VecDeque<&'static str>,
-    pub(super) path_item: utoipa::openapi::path::PathItem,
-    pub(super) schemas: Vec<(
+pub(in crate::views) struct FlattenedPath {
+    pub(in crate::views) path_segments: VecDeque<&'static str>,
+    pub(in crate::views) path_item: utoipa::openapi::path::PathItem,
+    pub(in crate::views) schemas: Vec<(
         String,
         utoipa::openapi::RefOr<utoipa::openapi::schema::Schema>,
     )>,
 }
 
 impl PathTree {
-    pub(super) fn flatten(self) -> Vec<FlattenedPath> {
+    pub(in crate::views) fn flatten(self) -> Vec<FlattenedPath> {
         match self {
             PathTree::Leaf {
                 path_segment,
@@ -101,12 +101,12 @@ impl PathTree {
 }
 
 impl DocumentedRouter {
-    pub(super) fn root(f: impl FnOnce(Self) -> Self) -> Self {
+    pub(in crate::views) fn root(f: impl FnOnce(Self) -> Self) -> Self {
         f(Self::default())
     }
 
     #[track_caller] // panic at the right line of the builder to find the faulty route easily
-    pub(super) fn route(
+    pub(in crate::views) fn route(
         mut self,
         path: &'static str,
         (type_name, method_router, expected_method): (
@@ -152,7 +152,11 @@ impl DocumentedRouter {
         }
     }
 
-    pub(super) fn nests(mut self, path: &'static str, f: impl FnOnce(Self) -> Self) -> Self {
+    pub(in crate::views) fn nests(
+        mut self,
+        path: &'static str,
+        f: impl FnOnce(Self) -> Self,
+    ) -> Self {
         let Self { router, path_trees } = f(Self::default());
         self.path_trees.push(PathTree::Branch {
             path_segment: path,
@@ -243,8 +247,8 @@ macro_rules! patch {
     };
 }
 
-pub(super) use delete;
-pub(super) use get;
-pub(super) use patch;
-pub(super) use post;
-pub(super) use put;
+pub(in crate::views) use delete;
+pub(in crate::views) use get;
+pub(in crate::views) use patch;
+pub(in crate::views) use post;
+pub(in crate::views) use put;

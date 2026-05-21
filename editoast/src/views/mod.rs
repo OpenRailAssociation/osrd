@@ -17,7 +17,6 @@ pub mod project;
 pub mod projection;
 pub mod rolling_stock;
 pub mod round_trips;
-mod router;
 pub mod scenario;
 pub mod search;
 mod server;
@@ -57,12 +56,12 @@ use thiserror::Error;
 use crate::error::Result;
 use editoast_models::PgAuthDriver;
 
-fn service_router() -> router::DocumentedRouter {
-    use router::delete;
-    use router::get;
-    use router::patch;
-    use router::post;
-    use router::put;
+fn service_router() -> server::router::DocumentedRouter {
+    use server::router::delete;
+    use server::router::get;
+    use server::router::patch;
+    use server::router::post;
+    use server::router::put;
 
     // This whole expression has been designed to be as compact as possible, keep paths relatively aligned,
     // while also keeping rustfmt happy.
@@ -81,7 +80,7 @@ fn service_router() -> router::DocumentedRouter {
     //
     // Of course, these conventions are to be broken if they get in the way of request path resolution.
 
-    router::DocumentedRouter::root(|path| {
+    server::router::DocumentedRouter::root(|path| {
         path
             //
             // random stuff
