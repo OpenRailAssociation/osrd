@@ -4,6 +4,7 @@ mod documents;
 pub mod electrical_profiles;
 pub mod fonts;
 pub mod icons;
+pub mod health;
 pub mod infra;
 mod layers;
 mod level_crossing_occupancy;
@@ -44,7 +45,6 @@ use fga::client::Limits;
 use test_app::test_app;
 use tracing::Instrument;
 use tracing::Span;
-use tracing::info_span;
 
 use ::core::str;
 use std::collections::HashSet;
@@ -69,7 +69,6 @@ use axum_tracing_opentelemetry::middleware::OtelInResponseLayer;
 use chrono::Duration;
 use dashmap::DashMap;
 
-use futures::TryFutureExt;
 pub use openapi::OpenApiRoot;
 
 use axum::extract::Json;
@@ -77,12 +76,10 @@ use axum::extract::State;
 use core_client::CoreClient;
 use core_client::mq_client;
 use database::DbConnectionPoolV2;
-use database::db_connection_pool::ping_database;
 use editoast_derive::EditoastError;
 use object_store::aws::AmazonS3;
 use object_store::aws::AmazonS3Builder;
 use thiserror::Error;
-use tokio::time::timeout;
 use tower::Layer as _;
 use tower_http::compression::CompressionLayer;
 use tower_http::cors::Any;
@@ -132,7 +129,7 @@ fn service_router() -> router::DocumentedRouter {
             //
             // random stuff
             //
-            .route("/health", get!(health))
+            .route("/health", get!(health::health))
             .route("/version", get!(version))
             .route("/worker_load", post!(worker_load::worker_load))
             //
@@ -932,88 +929,6 @@ pub enum AuthorizationError {
     DbError(#[from] database::db_connection_pool::DatabasePoolError),
 }
 
-#[derive(Debug, Error, EditoastError)]
-#[editoast_error(base_id = "app_health")]
-pub enum AppHealthError {
-    #[error("Timeout error")]
-    Timeout,
-    #[error(transparent)]
-    Database(#[from] database::db_connection_pool::PingError),
-    #[error(transparent)]
-    Valkey(anyhow::Error),
-    #[error(transparent)]
-    Openfga(anyhow::Error),
-    #[error(transparent)]
-    Core(#[from] core_client::Error),
-}
-
-#[editoast_derive::route]
-#[utoipa::path(
-    get, path = "",
-    responses(
-        (status = 200, description = "Check if Editoast is running correctly", body = String)
-    )
-)]
-async fn health(
-    State(AppState {
-        db_pool,
-        valkey_client,
-        health_check_timeout,
-        core_client,
-        regulator,
-        ..
-    }): State<AppState>,
-) -> Result<&'static str> {
-    timeout(
-        health_check_timeout
-            .to_std()
-            .expect("timeout should be valid at this point"),
-        check_health(db_pool, valkey_client, core_client, regulator.openfga()),
-    )
-    .await
-    .map_err(|_| AppHealthError::Timeout)??;
-    Ok("ok")
-}
-
-#[tracing::instrument(skip_all)]
-pub async fn check_health(
-    db_pool: Arc<DbConnectionPoolV2>,
-    valkey_client: Arc<cache::Client>,
-    core_client: Arc<CoreClient>,
-    openfga: &fga::Client,
-) -> Result<()> {
-    let mut db_connection = db_pool.clone().get().await?;
-    let database_ping = ping_database(&mut db_connection).map_err(AppHealthError::Database);
-    let openfga_ping = openfga
-        .is_healthy()
-        .map_err(|err| anyhow::anyhow!("OpenFGA health request failure: {err}"))
-        .and_then(|healthy| {
-            if !healthy {
-                futures::future::err(anyhow::anyhow!("OpenFGA is not healthy"))
-            } else {
-                futures::future::ok(())
-            }
-        })
-        .map_err(AppHealthError::Openfga);
-    let mq_ping = core_client.ping().map_err(AppHealthError::Core);
-    let valkey_ping = valkey_client
-        .get_connection()
-        .map_err(anyhow::Error::from)
-        .and_then(|mut vkconn| async move {
-            deadpool_redis::redis::AsyncCommands::ping::<()>(&mut vkconn)
-                .map_err(anyhow::Error::from)
-                .await
-        })
-        .map_err(AppHealthError::Valkey);
-    tokio::try_join!(
-        database_ping.instrument(info_span!("database ping")),
-        valkey_ping.instrument(info_span!("valkey ping")),
-        mq_ping.instrument(info_span!("mq ping")),
-        openfga_ping.instrument(info_span!("openfga ping"))
-    )?;
-    Ok(())
-}
-
 #[editoast_derive::route]
 #[utoipa::path(
     get, path = "",
@@ -1391,13 +1306,6 @@ mod tests {
             }))
             .finish();
         core
-    }
-
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn health() {
-        let app = TestAppBuilder::default_app();
-        let request = app.get("/health");
-        app.fetch(request).await.assert_status(StatusCode::OK);
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
