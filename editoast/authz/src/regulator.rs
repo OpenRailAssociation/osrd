@@ -39,6 +39,7 @@ pub trait StorageDriver: Clone {
         user_identity: &UserIdentity,
     ) -> impl Future<Output = Result<Option<i64>, Self::Error>> + Send;
 
+    #[deprecated(note = "use editoast_models::User directly")]
     fn get_user_info(
         &self,
         user_id: i64,
@@ -59,6 +60,7 @@ pub trait StorageDriver: Clone {
         let Some(user_id) = self.get_user_id(user_identity).await? else {
             return Ok(None);
         };
+        #[expect(deprecated)]
         Ok(self
             .get_user_info(user_id)
             .await?
@@ -92,6 +94,7 @@ impl<S: StorageDriver> Regulator<S> {
     /// Returns whether a user with some id exists
     #[tracing::instrument(skip_all, fields(user_id = %user_id), ret(level = Level::DEBUG), err)]
     pub async fn user_exists(&self, user_id: i64) -> Result<bool, Error<S::Error>> {
+        #[expect(deprecated)]
         self.driver
             .get_user_info(user_id)
             .await

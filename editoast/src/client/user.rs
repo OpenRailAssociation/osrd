@@ -1,8 +1,6 @@
 use anyhow::anyhow;
 use anyhow::bail;
 use authz;
-use authz::StorageDriver;
-use authz::identity::UserInfo;
 use clap::Args;
 use clap::Subcommand;
 use database::DbConnectionPoolV2;
@@ -186,17 +184,17 @@ pub async fn user_info(
             .id
     };
     let regulator = openfga_config.into_regulator(pool.clone()).await?;
-    let driver = regulator.driver();
-    let Some(UserInfo { identities, name }) = driver.get_user_info(uid).await? else {
+    let Some(user) = editoast_models::User::retrieve(pool.get().await?, uid).await? else {
         tracing::error!(user.id = uid, "User not found");
         return Ok(());
     };
+    let identities = user.get_identities(pool.get().await?).await?;
     let groups = regulator.user_groups(&authz::User(uid)).await?;
     let conn = pool.get().await?;
 
     println!("id      : {uid}");
     println!("identities: {}", identities.join(", "));
-    println!("name    : {name}");
+    println!("name    : {}", user.name);
     println!("groups  :");
     for authz::Group(group_id) in groups {
         let Some(group) = Group::retrieve(conn.clone(), group_id).await? else {
