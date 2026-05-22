@@ -157,6 +157,7 @@ export type CurveStyleInput = {
   train: {
     id: TrainId;
     exceptionType?: CurveStyleExceptionType;
+    isDragging?: boolean;
   };
   selection: SelectedTrain | undefined;
   panelMode?: 'compliant' | 'all' | 'single';

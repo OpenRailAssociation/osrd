@@ -590,17 +590,20 @@ describe('getCurveVisualState', () => {
   });
 
   describe('D.* - rest / hover', () => {
-    it.each(['std', 'tod'] as const)('D.1 - no selection, no hover on %s, it should return none', (chart) => {
-      expect(
-        getCurveVisualState(
-          buildInput({
-            chart,
-            train: { id: PACED_1 },
-            selection: undefined,
-          })
-        )
-      ).toBe('none');
-    });
+    it.each(['std', 'tod'] as const)(
+      'D.1 - no selection, no hover on %s, it should return none',
+      (chart) => {
+        expect(
+          getCurveVisualState(
+            buildInput({
+              chart,
+              train: { id: PACED_1 },
+              selection: undefined,
+            })
+          )
+        ).toBe('none');
+      }
+    );
 
     it.each(['std', 'tod'] as const)(
       'D.2 - hover on a unique train from train list on %s, it should return hover (self only)',
@@ -801,5 +804,49 @@ describe('getCurveVisualState', () => {
         ).toBe('active');
       }
     );
+  });
+
+  describe('E.* - transverse', () => {
+    // E.1 (active selection makes other curves faded) belongs to getCurveStyle
+    // since it is about the 'opacity' primitive, not the visual state.
+    // E.2 and E.3 are rendering tasks (TOD dashed lines and occupation bars).
+
+    it.each(['std', 'tod'] as const)(
+      'E.4 - dragged train on %s, it should return drag',
+      (chart) => {
+        expect(
+          getCurveVisualState(
+            buildInput({
+              chart,
+              train: { id: PACED_1, isDragging: true },
+            })
+          )
+        ).toBe('drag');
+      }
+    );
+
+    it('E.4 - drag should win over an active selection', () => {
+      expect(
+        getCurveVisualState(
+          buildInput({
+            chart: 'std',
+            train: { id: PACED_1, isDragging: true },
+            selection: { id: PACED_1, by: 'std' },
+          })
+        )
+      ).toBe('drag');
+    });
+
+    it('E.4 - drag should win over a hover', () => {
+      expect(
+        getCurveVisualState(
+          buildInput({
+            chart: 'std',
+            train: { id: PACED_1, isDragging: true },
+            hover: { trainId: PACED_1, from: 'std' },
+          })
+        )
+      ).toBe('drag');
+    });
   });
 });

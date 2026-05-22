@@ -114,6 +114,9 @@ const getCurveVisualState = ({
   panelMode,
   hover,
 }: CurveStyleInput): CurveVisualState => {
+  // E.4: a dragged train always gets 'drag', regardless of selection or hover.
+  if (train.isDragging) return 'drag';
+
   let state: CurveVisualState = 'none';
   if (selection) {
     state =
