@@ -1,5 +1,5 @@
 #### Build stage, will be used for testing as well
-FROM gradle:8-jdk21 AS build_env
+FROM gradle:9-jdk21 AS build_env
 
 WORKDIR /home/gradle/src
 COPY --from=test_data . /home/gradle/tests/data
