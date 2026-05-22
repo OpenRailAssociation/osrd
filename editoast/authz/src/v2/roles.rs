@@ -86,8 +86,9 @@ pub fn remove_roles(subject: Subject, roles: HashSet<Role>) -> Protected<()> {
 
 #[cfg(test)]
 mod tests {
+    use crate::v2::TestClientExt as _;
+    use crate::v2::add_members;
     use crate::v2::special_authorizers::Authorize;
-    use crate::v2::{TestClientExt as _, add_members};
 
     use super::*;
 
