@@ -67,7 +67,7 @@ const StdcmOperationalPoint = ({
             (normalized(op.name).includes(normalized(searchTerm)) ||
               op.trigram.includes(searchTerm.toUpperCase())) &&
             // TODO: Replace this temporary implementation with a permanent solution
-            !normalized(op.name).startsWith(normalized('OVERTAKE'))
+            !normalized(op.name).includes(normalized('OVERTAKE'))
         )
         .reduce<StdcmOp[]>((acc, p) => {
           const newObject = stdcmOpFromSearchResult(p);

@@ -268,7 +268,7 @@ export function consolidateOvertakesToSingleSteps(
   const consolidatedSteps: StdcmResultsOperationalPoint[] = [];
   for (let i = 0; i < steps.length - 1; i += 1) {
     const [step, nextStep] = [steps[i], steps[i + 1]];
-    const overtakenStepMatch = step.name?.match(/^OVERTAKE.*;(.*)$/);
+    const overtakenStepMatch = step.name?.match(/OVERTAKE[^;]*;(.*)$/);
     if (overtakenStepMatch) {
       const stopDuration =
         convertHHMMTimeToSeconds(nextStep.time!) - convertHHMMTimeToSeconds(step.time!);
