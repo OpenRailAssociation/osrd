@@ -204,7 +204,7 @@ pub(in crate::views) async fn post_railjson(
         .map_err(RailJsonError::from)?;
     let infra_id = infra.id;
 
-    // Assing OWNER to the user on the infra if authz is enabled
+    // Assign OWNER to the user on the infra if authz is enabled
     // NOTE: we use the regulator here instead of the one in the authorizer to bypass the checks on can_share_ownership
     if let Authentication::Authenticated(authorizer) = auth {
         regulator

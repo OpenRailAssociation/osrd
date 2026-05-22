@@ -450,7 +450,7 @@ pub(in crate::views) async fn simulation_summary(
     /////
     // Prepare the API responses from the core simulation
 
-    // Duplicate simulations for each trai schedule
+    // Duplicate simulations for each train schedule
     let simulations = simulations.into_iter().flat_map(
         |Correlated {
              correlation_key,
@@ -2292,13 +2292,13 @@ mod tests {
         let (app, infra_id, _timetable, train_schedule, exception) =
             app_infra_id_paced_train_id_for_simulation_tests().await;
 
-        let mut change_groupe = exception.change_groups;
-        change_groupe.rolling_stock = Some(RollingStockChangeGroup {
+        let mut change_group = exception.change_groups;
+        change_group.rolling_stock = Some(RollingStockChangeGroup {
             rolling_stock_name: "R2D2".into(),
             comfort: Comfort::AirConditioning,
         });
         let exception = editoast_models::TrainScheduleException::changeset()
-            .change_groups(change_groupe)
+            .change_groups(change_group)
             .update(&mut app.db_pool().get_ok(), train_schedule.id)
             .await
             .expect("Fail to update exception")
@@ -2896,7 +2896,7 @@ mod tests {
         exception
             .delete(&mut db_pool.get_ok())
             .await
-            .expect("Failled to remove exception");
+            .expect("Failed to remove exception");
 
         // Add one exception which will not change the simulation from base
         let _exception1 = create_train_schedule_exception(

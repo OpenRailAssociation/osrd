@@ -424,7 +424,7 @@ async fn retrieve_op_from_uic(
         .map_err(Into::into)
 }
 
-/// Retrieve operational points from operational point trigams
+/// Retrieve operational points from operational point trigrams
 async fn retrieve_op_from_trigrams(
     conn: &mut DbConnection,
     infra_id: i64,

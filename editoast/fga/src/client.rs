@@ -16,8 +16,8 @@ pub use error::UnprocessableContentErrorCode;
 pub use queries::UserList;
 pub use stores::Store;
 pub use tuples::UntypedTuple;
-pub use tuples::UntypedUserSet;
-pub use tuples::UserOrUserSet;
+pub use tuples::UntypedUserset;
+pub use tuples::UserOrUserset;
 
 use url::Url;
 

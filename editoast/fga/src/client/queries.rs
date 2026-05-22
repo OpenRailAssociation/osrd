@@ -190,7 +190,7 @@ impl Client {
                         debug_assert_eq!(r#type.as_str(), R::User::NAMESPACE);
                         public_access = Some(Wildcard(std::marker::PhantomData));
                     }
-                    RawUser::UserSet { .. } => {
+                    RawUser::Userset { .. } => {
                         unreachable!(
                             "OpenFGA cannot return usersets when `user_filter` is configured like above"
                         )
@@ -238,7 +238,7 @@ impl Client {
                 &self.store.id,
                 (R::Object::NAMESPACE, &object.id().to_string()),
                 R::NAME,
-                UserFilter::UserSet {
+                UserFilter::Userset {
                     r#type: S::Object::NAMESPACE,
                     relation: S::NAME,
                 },
@@ -250,7 +250,7 @@ impl Client {
         users
             .into_iter()
             .map(|user| match user {
-                RawUser::UserSet {
+                RawUser::Userset {
                     r#type,
                     id,
                     relation,

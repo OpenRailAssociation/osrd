@@ -399,7 +399,7 @@ pub(in crate::views) async fn list(
         .filter(move || Scenario::STUDY_ID.eq(study_id));
     let (scenarios, stats) = Scenario::list_paginated(conn, settings).await?;
 
-    let futs = scenarios
+    let futures = scenarios
         .into_iter()
         .zip(std::iter::repeat(&db_pool).map(|p| p.get()))
         .map(|(scenario, conn)| async {
@@ -407,7 +407,7 @@ pub(in crate::views) async fn list(
                 .await
                 .map_err(InternalError::from)
         });
-    let results = futures::future::try_join_all(futs).await?;
+    let results = futures::future::try_join_all(futures).await?;
 
     Ok(Json(ListScenariosResponse { stats, results }))
 }

@@ -181,7 +181,7 @@ pub fn expand_search(input: &DeriveInput) -> Result<TokenStream> {
         _ => quote! { None },
     };
 
-    let mut criterias = Punctuated::<TokenStream, Comma>::new();
+    let mut criteria = Punctuated::<TokenStream, Comma>::new();
     for SearchColumn {
         name,
         data_type,
@@ -230,7 +230,7 @@ pub fn expand_search(input: &DeriveInput) -> Result<TokenStream> {
         } else {
             quote! { None }
         };
-        criterias.push(quote! {
+        criteria.push(quote! {
             search::Criteria {
                 name: #name.to_owned(),
                 data_type: #ts,
@@ -297,7 +297,7 @@ pub fn expand_search(input: &DeriveInput) -> Result<TokenStream> {
                     table: #table.to_owned(),
                     distinct_on: #distinct_on,
                     joins: #joins,
-                    criterias: Vec::from([#criterias]),
+                    criteria: Vec::from([#criteria]),
                     properties: Vec::from([#properties]),
                     migration: #migration,
                 }

@@ -392,7 +392,7 @@ async fn update_errors(
         .filter(|e| errors_hash_to_create.contains(&&e.hash))
         .collect();
     if errors_hash_to_create.len() != errors_to_create.len() {
-        // Deduplicate errors with same hahs
+        // Deduplicate errors with same hash
         errors_to_create.sort_by(|e1, e2| e1.hash.cmp(&e2.hash));
         errors_to_create.dedup_by(|e1, e2| e1.hash.eq(&e2.hash));
         warn!("Duplicate errors are generated.");

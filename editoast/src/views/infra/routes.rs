@@ -101,7 +101,7 @@ pub(in crate::views) async fn get_routes_from_waypoint(
 #[derive(Debug, Clone, Serialize, PartialEq, ToSchema)]
 #[serde(deny_unknown_fields, tag = "type")]
 pub(in crate::views) enum RouteTrackRangesResult {
-    /// RoutePath contains N track ranges with the N-1 switches found inbetween, in the order they appear on the route
+    /// RoutePath contains N track ranges with the N-1 switches found in-between, in the order they appear on the route
     Computed(RoutePath),
     NotFound,
     CantComputePath,

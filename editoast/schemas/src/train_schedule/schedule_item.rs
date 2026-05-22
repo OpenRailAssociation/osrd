@@ -87,7 +87,7 @@ mod tests {
     use serde_json::to_string;
 
     #[test]
-    fn desserialize_schedule_item_error() {
+    fn deserialize_schedule_item_error() {
         let schedule_item = ScheduleItem {
             at: "a".into(),
             arrival: None,

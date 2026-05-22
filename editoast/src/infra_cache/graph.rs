@@ -49,8 +49,8 @@ impl<'a> Graph<'a> {
         graph
     }
 
-    /// Check if a track endpoint has neighbours.
-    pub fn has_neighbour(&'a self, track_endpoint: &TrackEndpoint) -> bool {
+    /// Check if a track endpoint has neighbors.
+    pub fn has_neighbor(&'a self, track_endpoint: &TrackEndpoint) -> bool {
         self.links.contains_key(&track_endpoint)
     }
 
@@ -59,8 +59,8 @@ impl<'a> Graph<'a> {
         self.switches.get(&track_endpoint).copied()
     }
 
-    /// Given an endpoint and a group retrieve the neighbour endpoint.
-    pub fn get_neighbour(
+    /// Given an endpoint and a group retrieve the neighbor endpoint.
+    pub fn get_neighbor(
         &'a self,
         track_endpoint: &TrackEndpoint,
         group: &Identifier,
@@ -71,21 +71,18 @@ impl<'a> Graph<'a> {
     }
 
     /// Given an endpoint return a list of groups.
-    /// If the endpoint has no neightbours return an empty `Vec`.
+    /// If the endpoint has no neighbors return an empty `Vec`.
     /// Otherwise returns a `Vec` with all the switch groups.
-    pub fn get_neighbour_groups(
-        &'a self,
-        track_endpoint: &'a TrackEndpoint,
-    ) -> Vec<&'a Identifier> {
+    pub fn get_neighbor_groups(&'a self, track_endpoint: &'a TrackEndpoint) -> Vec<&'a Identifier> {
         self.links
             .get(&track_endpoint)
             .map(|groups| groups.keys().cloned().collect())
             .unwrap_or_default()
     }
 
-    /// Given an endpoint return all its neighbours indiscriminately
+    /// Given an endpoint return all its neighbors indiscriminately
     /// of their group.
-    pub fn get_all_neighbours(&'a self, track_endpoint: &TrackEndpoint) -> Vec<&'a TrackEndpoint> {
+    pub fn get_all_neighbors(&'a self, track_endpoint: &TrackEndpoint) -> Vec<&'a TrackEndpoint> {
         let groups = self.links.get(track_endpoint);
         if let Some(groups) = groups {
             groups.values().copied().collect::<Vec<_>>()
@@ -141,7 +138,7 @@ mod tests {
             for endpoint in [Endpoint::Begin, Endpoint::End] {
                 for group in [&link, &left, &right] {
                     let track_endpoint = create_track_endpoint(endpoint, track.to_string());
-                    let branch = graph.get_neighbour(&track_endpoint, group);
+                    let branch = graph.get_neighbor(&track_endpoint, group);
                     let expected_branch = res.get(&(&track_endpoint, group)).cloned();
                     assert_eq!(expected_branch, branch);
                 }
@@ -167,22 +164,22 @@ mod tests {
     }
 
     #[test]
-    fn get_neighbour_groups() {
+    fn get_neighbor_groups() {
         let infra_cache = create_small_infra_cache();
         let graph = Graph::load(&infra_cache);
 
         let track_b_end = create_track_endpoint(Endpoint::End, "B");
-        let groups = graph.get_neighbour_groups(&track_b_end);
+        let groups = graph.get_neighbor_groups(&track_b_end);
         assert_eq!(groups.len(), 2);
         assert!(groups.contains(&&"A_B1".into()));
         assert!(groups.contains(&&"A_B2".into()));
 
         let track_a_begin = create_track_endpoint(Endpoint::Begin, "A");
-        let groups = graph.get_neighbour_groups(&track_a_begin);
+        let groups = graph.get_neighbor_groups(&track_a_begin);
         assert_eq!(groups.len(), 0);
 
         let track_a_end = create_track_endpoint(Endpoint::End, "A");
-        let groups = graph.get_neighbour_groups(&track_a_end);
+        let groups = graph.get_neighbor_groups(&track_a_end);
         assert_eq!(groups.len(), 1);
         assert!(groups.contains(&&"LINK".into()));
     }

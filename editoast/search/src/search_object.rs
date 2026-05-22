@@ -19,7 +19,7 @@ pub struct Property {
 pub struct SearchConfig {
     pub table: String,
     pub distinct_on: Option<String>,
-    pub criterias: Vec<Criteria>,
+    pub criteria: Vec<Criteria>,
     pub properties: Vec<Property>,
     pub joins: Option<String>,
     pub migration: Option<Migration>,
@@ -83,7 +83,7 @@ impl SearchConfig {
             let mut select_terms = Vec::new();
             let mut set_columns = Vec::new();
             let mut indexes = Vec::new();
-            for criteria in &self.criterias {
+            for criteria in &self.criteria {
                 if let Some(migration) = &criteria.migration {
                     columns.push(criteria.name.clone());
                     create_columns.push(format!("\"{}\" {}", criteria.name, migration.sql_type));
@@ -178,7 +178,7 @@ DROP FUNCTION IF EXISTS {update_trigger_function};
 
     fn select_terms(&self) -> String {
         let mut terms = Vec::new();
-        for criteria in &self.criterias {
+        for criteria in &self.criteria {
             if let Some(migration) = &criteria.migration {
                 let sql = match migration.search_type {
                     SearchType::None => format!("({})", migration.sql),
@@ -212,7 +212,7 @@ DROP FUNCTION IF EXISTS {update_trigger_function};
             .expect("no migration for search config");
         let table = &self.table;
         let cache_columns = self
-            .criterias
+            .criteria
             .iter()
             .map(|c| format!("\"{}\"", c.name))
             .collect_vec()

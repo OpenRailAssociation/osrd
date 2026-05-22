@@ -51,7 +51,7 @@ impl GeneratedData for OperationalPointLayer {
         // Delete elements
         if !involved_objects.is_empty() {
             // We must delete both updated and deleted operational points because we can only insert them and not update
-            let objs = involved_objects
+            let objects = involved_objects
                 .deleted
                 .iter()
                 .chain(involved_objects.updated.iter());
@@ -59,7 +59,7 @@ impl GeneratedData for OperationalPointLayer {
             delete(
                 dsl::infra_layer_operational_point
                     .filter(dsl::infra_id.eq(infra))
-                    .filter(dsl::obj_id.eq_any(objs)),
+                    .filter(dsl::obj_id.eq_any(objects)),
             )
             .execute(conn.write().await.deref_mut())
             .await?;

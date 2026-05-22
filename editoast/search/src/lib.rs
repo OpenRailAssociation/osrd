@@ -44,7 +44,7 @@ impl SearchConfig {
         // Register known columns with their expected type
         for Criteria {
             name, data_type, ..
-        } in self.criterias.iter()
+        } in self.criteria.iter()
         {
             context
                 .columns_type

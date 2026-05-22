@@ -15,7 +15,7 @@ pub const OBJECT_GENERATORS: [ObjectErrorGenerator<Context>; 5] = [
     ObjectErrorGenerator::new(1, check_invalid_ref_ports),
     ObjectErrorGenerator::new(1, check_invalid_ref_switch_type),
     ObjectErrorGenerator::new(2, check_match_ports_type),
-    ObjectErrorGenerator::new(3, check_endpoints_unicity),
+    ObjectErrorGenerator::new(3, check_endpoints_uniqueness),
     ObjectErrorGenerator::new_ctx(4, check_overlapping),
 ];
 
@@ -95,7 +95,11 @@ pub fn check_match_ports_type(
 }
 
 /// Check if node track endpoints are unique
-pub fn check_endpoints_unicity(switch: &ObjectCache, _: &InfraCache, _: &Graph) -> Vec<InfraError> {
+pub fn check_endpoints_uniqueness(
+    switch: &ObjectCache,
+    _: &InfraCache,
+    _: &Graph,
+) -> Vec<InfraError> {
     let switch = switch.unwrap_switch();
     let endpoints: HashSet<_> = switch.ports.values().collect();
     if endpoints.len() != switch.ports.len() {
@@ -139,7 +143,7 @@ mod tests {
     use super::check_match_ports_type;
     use super::check_overlapping;
     use crate::generated_data::error::switches::Context;
-    use crate::generated_data::error::switches::check_endpoints_unicity;
+    use crate::generated_data::error::switches::check_endpoints_uniqueness;
     use crate::infra_cache::tests::create_small_infra_cache;
     use crate::infra_cache::tests::create_switch_cache_point;
     use crate::infra_cache::tests::create_track_endpoint;
@@ -202,7 +206,7 @@ mod tests {
         );
         infra_cache.add(&switch).unwrap();
         let errors =
-            check_endpoints_unicity(&switch.clone().into(), &infra_cache, &Default::default());
+            check_endpoints_uniqueness(&switch.clone().into(), &infra_cache, &Default::default());
         assert_eq!(1, errors.len());
         let infra_error = InfraError::new_node_endpoint_not_unique(switch.get_id());
         assert_eq!(infra_error, errors[0]);

@@ -187,7 +187,7 @@ pub fn double_slip_switch(node: NodeId, branches: &[Branch]) -> Switch {
     }
 }
 
-// Computes the angle betwen the segments [oa] and [ob]
+// Computes the angle between the segments [oa] and [ob]
 pub fn angle(o: Coord, a: Coord, b: Coord) -> f64 {
     ((a.y - o.y).atan2(a.x - o.x).to_degrees() - (b.y - o.y).atan2(b.x - o.x).to_degrees()).abs()
 }

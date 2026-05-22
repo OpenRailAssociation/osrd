@@ -81,10 +81,10 @@ struct Segment {
 pub struct TrainsTrafficPool {
     // Date from which traffic are valid (ie. can be imported)
     traffic_valid_from: DateTime<Utc>,
-    // Trains by speedlimit
-    trains_by_speedlimit: HashMap<String, HashSet<usize>>,
-    // Trains by rollingstock
-    trains_by_rollingstock: HashMap<String, HashSet<usize>>,
+    // Trains by speed limit
+    trains_by_speed_limit: HashMap<String, HashSet<usize>>,
+    // Trains by rolling stock
+    trains_by_rolling_stock: HashMap<String, HashSet<usize>>,
     // Trains by segment
     trains_by_segment: HashMap<Segment, HashSet<usize>>,
     // Train by ID
@@ -111,7 +111,7 @@ impl TrainsTrafficPool {
         self.trains_by_id.len()
     }
 
-    /// Retrierve a train by its id
+    /// Retrieve a train by its id
     pub fn get_by_id(&self, id: usize) -> Option<TrainTraffic> {
         self.trains_by_id.get(&id).cloned()
     }
@@ -120,14 +120,14 @@ impl TrainsTrafficPool {
     pub fn add_train_traffic(&mut self, train_data: TrainTraffic) -> Result<()> {
         // Only import train that have a valid start date
         if train_data.start_time > self.traffic_valid_from {
-            // Index the train by its speedlimit
-            self.trains_by_speedlimit
+            // Index the train by its speed limit
+            self.trains_by_speed_limit
                 .entry(train_data.speed_limit_tag.clone())
                 .or_default()
                 .insert(train_data.id());
 
-            // Index the train by its rollingstock
-            self.trains_by_rollingstock
+            // Index the train by its rolling stock
+            self.trains_by_rolling_stock
                 .entry(train_data.rolling_stock.clone())
                 .or_default()
                 .insert(train_data.id());
@@ -168,23 +168,23 @@ impl TrainsTrafficPool {
         // Getting a list of valid train Ids which match the train's specifications
         let compliant_trains = match (rolling_stock, speed_limit_tag) {
             (Some(rs), None) => self
-                .trains_by_rollingstock
+                .trains_by_rolling_stock
                 .get(&rs)
                 .cloned()
                 .unwrap_or_default(),
             (None, Some(speed)) => self
-                .trains_by_speedlimit
+                .trains_by_speed_limit
                 .get(&speed)
                 .cloned()
                 .unwrap_or_default(),
             (Some(rs), Some(speed)) => {
                 let rs_trains = self
-                    .trains_by_rollingstock
+                    .trains_by_rolling_stock
                     .get(&rs)
                     .cloned()
                     .unwrap_or_default();
                 let speed_trains = self
-                    .trains_by_speedlimit
+                    .trains_by_speed_limit
                     .get(&speed)
                     .cloned()
                     .unwrap_or_default();
@@ -315,14 +315,14 @@ pub mod tests {
 
         // Checking the inner indices
         assert_eq!(
-            traffic.trains_by_rollingstock.get("RS_V1").unwrap().len(),
+            traffic.trains_by_rolling_stock.get("RS_V1").unwrap().len(),
             1
         );
         assert_eq!(
-            traffic.trains_by_rollingstock.get("RS_V2").unwrap().len(),
+            traffic.trains_by_rolling_stock.get("RS_V2").unwrap().len(),
             1
         );
-        assert_eq!(traffic.trains_by_speedlimit.get("MA100").unwrap().len(), 2);
+        assert_eq!(traffic.trains_by_speed_limit.get("MA100").unwrap().len(), 2);
 
         // trains_by_segment index should contains A->C & C->D, but not A->B
         assert_eq!(

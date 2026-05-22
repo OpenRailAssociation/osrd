@@ -30,7 +30,7 @@ impl<'a, R: Relation, U: AsUser<User = R::User>> FromIterator<&'a Tuple<'a, R, U
 #[serde(untagged)]
 pub(in crate::client) enum UserFilter<'a> {
     User { r#type: &'a str },
-    UserSet { r#type: &'a str, relation: &'a str },
+    Userset { r#type: &'a str, relation: &'a str },
 }
 
 #[derive(Debug, serde::Deserialize)]
@@ -40,7 +40,7 @@ pub(in crate::client) enum RawUser {
         r#type: String,
         id: String,
     },
-    UserSet {
+    Userset {
         r#type: String,
         id: String,
         relation: String,

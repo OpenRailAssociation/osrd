@@ -296,12 +296,12 @@ fn impacted_tracks(
     let remaining_distance =
         max_distance - (related_track_ranges[0].end - related_track_ranges[0].begin);
     if 0. < remaining_distance {
-        let neighbours = graph
-            .get_all_neighbours(&first_track_endpoint)
+        let neighbors = graph
+            .get_all_neighbors(&first_track_endpoint)
             .into_iter()
-            .map(|neighbour| (neighbour, remaining_distance))
+            .map(|neighbor| (neighbor, remaining_distance))
             .collect::<Vec<_>>();
-        next_tracks.extend(neighbours);
+        next_tracks.extend(neighbors);
     }
 
     while let Some((curr_track_endpoint, remaining_distance)) = next_tracks.pop() {
@@ -336,10 +336,10 @@ fn impacted_tracks(
             let track_range =
                 track_range_from_endpoint(curr_track_endpoint, remaining_distance, track_length)
                     .expect("Failed to build track range");
-            let neighbours_remaining_distance =
+            let neighbors_remaining_distance =
                 remaining_distance - (track_range.end - track_range.begin);
             related_track_ranges.push(track_range);
-            if 0. < neighbours_remaining_distance {
+            if 0. < neighbors_remaining_distance {
                 let opposite_track_endpoint = TrackEndpoint {
                     endpoint: match curr_track_endpoint.endpoint {
                         Endpoint::Begin => Endpoint::End,
@@ -347,12 +347,12 @@ fn impacted_tracks(
                     },
                     track: curr_track_endpoint.track.clone(),
                 };
-                let neighbours = graph
-                    .get_all_neighbours(&opposite_track_endpoint)
+                let neighbors = graph
+                    .get_all_neighbors(&opposite_track_endpoint)
                     .into_iter()
-                    .map(|neighbour| (neighbour, neighbours_remaining_distance))
+                    .map(|neighbor| (neighbor, neighbors_remaining_distance))
                     .collect::<Vec<_>>();
-                next_tracks.extend(neighbours);
+                next_tracks.extend(neighbors);
             }
         }
     }

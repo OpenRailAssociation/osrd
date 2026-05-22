@@ -4,18 +4,18 @@
 //!
 //! This library mainly provides two things:
 //!
-//! 1. A way to modelize OpenFGA objects and relations in a type-safe way. Types are regular Rust structures
+//! 1. A way to model OpenFGA objects and relations in a type-safe way. Types are regular Rust structures
 //!    and relations are any type implementing the trait [model::Relation]. Are also provided a few macros
 //!    to define and manipulate relations in a declarative way, close to OpenFGA syntax.
 //! 2. A [client::Client] allowing to interact with an OpenFGA server **over HTTP only**. It doesn't cover all the
 //!    OpenFGA API at the moment but the most common operations are implemented. This client supports the setup
 //!    of stores and authorization models, writing tuples, performing queries such as permission checks, and more.
-//!    The high-level API interfaces with the high-level modelization of OpenFGA objects and relations
+//!    The high-level API interfaces with the high-level modeling of OpenFGA objects and relations
 //!    available in this library through the [model] module.
 //!
-//! # High-level modelization of OpenFGA objects
+//! # High-level modeling of OpenFGA objects
 //!
-//! Available in the [model] module, this part of the library provides a way to modelize OpenFGA objects and
+//! Available in the [model] module, this part of the library provides a way to model OpenFGA objects and
 //! relations in a type-safe way.
 //!
 //! OpenFGA types are any Rust type that can store an ID as a string, corresponding to the second part of
@@ -216,7 +216,7 @@
 //! # The HTTP client
 //!
 //! The crate provides an HTTP client to interact with an OpenFGA server. It exposes an high-level API
-//! that interfaces with the high-level type-safe modelization types of the OpenFGA authorization model
+//! that interfaces with the high-level type-safe modeling types of the OpenFGA authorization model
 //! defined in [`mod model`].
 //!
 //! Note that the [`client::Client`] doesn't yet cover the whole OpenFGA API. That may come in the future
@@ -344,7 +344,7 @@ pub fn compile_model(model: &str) -> AuthorizationModel {
 /// let everyone = fga!(Person:*);
 /// assert_eq!(everyone, Person::wildcard());
 ///
-/// // Usersets
+/// // User sets
 /// assert_eq!(
 ///     fga!(Document:"topsecret"#reader),
 ///     Document::reader().userset(&Document("topsecret".to_string()))

@@ -69,7 +69,7 @@ fn service_router() -> server::router::DocumentedRouter {
     //
     // # Ordering
     //
-    // - arbitrary toplevel sections
+    // - arbitrary top-level sections
     // - for sub routers, routes first, nests second
     // - paths ordered by number of segments
     // - equal number of segments in a path => alphabetical order
