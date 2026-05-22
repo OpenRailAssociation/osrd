@@ -336,18 +336,21 @@ class RJSInfraBuilder {
     }
 
     fun build(): RJSInfra {
-        val rjsInfra = RJSInfra()
-        rjsInfra.version = RJSInfra.CURRENT_VERSION
-        rjsInfra.speedSections = listOf()
-        rjsInfra.electrifications = listOf()
-        rjsInfra.neutralSections = listOf()
-        rjsInfra.operationalPoints = listOf()
-        rjsInfra.trackSections = trackSections.map { it.build() }
-        rjsInfra.switches = nodes.map { it.build(defaultSwitchDelay) }
-        rjsInfra.bufferStops = bufferStops.map { it.build() }
-        rjsInfra.detectors = detectors.map { it.build() }
-        rjsInfra.signals = signals.map { it.build(defaultSightDistance) }
-        rjsInfra.routes = routes.map { it.build() }
+        val rjsInfra =
+            RJSInfra(
+                version = RJSInfra.CURRENT_VERSION,
+                speedSections = listOf(),
+                electrifications = listOf(),
+                neutralSections = listOf(),
+                operationalPoints = listOf(),
+                trackSections = trackSections.map { it.build() },
+                switches = nodes.map { it.build(defaultSwitchDelay) },
+                switchTypes = listOf(),
+                bufferStops = bufferStops.map { it.build() },
+                detectors = detectors.map { it.build() },
+                signals = signals.map { it.build(defaultSightDistance) },
+                routes = routes.map { it.build() },
+            )
         return rjsInfra
     }
 }

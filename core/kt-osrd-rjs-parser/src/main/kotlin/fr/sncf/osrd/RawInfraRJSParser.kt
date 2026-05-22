@@ -790,7 +790,7 @@ fun parseRJSInfra(rjsInfra: RJSInfra): RawInfra {
     }
 
     // parse nodes
-    val switchTypes = (rjsInfra.switchTypes ?: listOf()) + RJSSwitchType.BUILTIN_NODE_TYPES_LIST
+    val switchTypes = rjsInfra.switchTypes + RJSSwitchType.BUILTIN_NODE_TYPES_LIST
     val switchTypeMap = switchTypes.associateBy { it.id }
     for (rjsNode in rjsInfra.switches) {
         parseTrackNode(builder, switchTypeMap, rjsNode)

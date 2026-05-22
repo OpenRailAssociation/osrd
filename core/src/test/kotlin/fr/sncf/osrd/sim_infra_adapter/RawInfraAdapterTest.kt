@@ -110,8 +110,12 @@ class RawInfraAdapterTest {
         // in
         // its LEFT config
         val rjsInfra = Helpers.getExampleInfra("small_infra/infra.json")
-        rjsInfra.detectors.add(RJSTrainDetector("det_at_transition", 1950.0, "TA1"))
-        rjsInfra.detectors.add(RJSTrainDetector("det_end_new_route", 20.0, "TA3"))
+        val detectors =
+            listOf(
+                    RJSTrainDetector("det_at_transition", 1950.0, "TA1"),
+                    RJSTrainDetector("det_end_new_route", 20.0, "TA3"),
+                )
+                .plus(rjsInfra.detectors)
         val newRoute =
             RJSRoute(
                 "new_route",
@@ -120,8 +124,7 @@ class RawInfraAdapterTest {
                 RJSWaypointRef("det_end_new_route", RJSWaypointRef.RJSWaypointType.DETECTOR),
             )
         newRoute.switchesDirections["PA0"] = "A_B1"
-        rjsInfra.routes = listOf(newRoute)
-        parseRJSInfra(rjsInfra)
+        parseRJSInfra(rjsInfra.copy(detectors = detectors, routes = listOf(newRoute)))
     }
 
     private fun assertCrossing(rawInfra: RawInfra, nodeIdx: StaticIdx<TrackNode>) {

@@ -99,25 +99,26 @@ class PathPropertiesTests {
               ^             ^
            new_op_1      new_op_2
         */
-        val rjsInfra = Helpers.getExampleInfra("tiny_infra/infra.json")
-        rjsInfra.operationalPoints.add(
-            RJSOperationalPoint(
-                "new_op_1",
-                listOf(RJSOperationalPointPart("ne.micro.foo_a", 200.0, "V1", null)),
-                null,
-                null,
-                null,
+        var rjsInfra = Helpers.getExampleInfra("tiny_infra/infra.json")
+        val operationalPoints =
+            mutableListOf(
+                RJSOperationalPoint(
+                    "new_op_1",
+                    listOf(RJSOperationalPointPart("ne.micro.foo_a", 200.0, "V1", null)),
+                    null,
+                    null,
+                    null,
+                ),
+                RJSOperationalPoint(
+                    "new_op_2",
+                    listOf(RJSOperationalPointPart("ne.micro.bar_a", 0.0, "V1", null)),
+                    null,
+                    null,
+                    null,
+                ),
             )
-        )
-        rjsInfra.operationalPoints.add(
-            RJSOperationalPoint(
-                "new_op_2",
-                listOf(RJSOperationalPointPart("ne.micro.bar_a", 0.0, "V1", null)),
-                null,
-                null,
-                null,
-            )
-        )
+        operationalPoints.addAll(rjsInfra.operationalPoints)
+        rjsInfra = rjsInfra.copy(operationalPoints = operationalPoints)
         val infra = fullInfraFromRJS(rjsInfra, InfraMetadata("modified_small_infra"))
         val path =
             pathFromTracks(
@@ -149,9 +150,9 @@ class PathPropertiesTests {
             |----------------------------->         path forward (.5 to 3.5km)
                  <-----------------------------|    path backward (3.95 to 1km)
          */
-        val rjsInfra = Helpers.getExampleInfra("small_infra/infra.json")
-        rjsInfra.operationalPoints =
-            listOf(
+        var rjsInfra = Helpers.getExampleInfra("small_infra/infra.json")
+        val operationalPoints =
+            mutableListOf(
                 RJSOperationalPoint(
                     "point1",
                     listOf(
@@ -197,6 +198,8 @@ class PathPropertiesTests {
                     null,
                 ),
             )
+
+        rjsInfra = rjsInfra.copy(operationalPoints = operationalPoints)
         val infra = fullInfraFromRJS(rjsInfra, InfraMetadata("modified_small_infra"))
         val path =
             pathFromTracks(
@@ -373,38 +376,41 @@ class PathPropertiesTests {
             |----------------------------->             path forward (.5 to 3.5km)
                  <------------------------|             path backward (3.5 to 1km)
          */
-        val rjsInfra = Helpers.getExampleInfra("small_infra/infra.json")
-        rjsInfra.electrifications =
-            listOf(
-                RJSElectrification(
-                    "1500V",
-                    listOf(
-                        RJSApplicableDirectionsTrackRange(
-                            "TA0",
-                            ApplicableDirection.BOTH,
-                            0.0,
-                            2_000.0,
-                        ),
-                        RJSApplicableDirectionsTrackRange(
-                            "TA1",
-                            ApplicableDirection.BOTH,
-                            0.0,
-                            1_000.0,
-                        ),
-                    ),
-                ),
-                RJSElectrification(
-                    "25000V",
-                    listOf(
-                        RJSApplicableDirectionsTrackRange(
-                            "TA1",
-                            ApplicableDirection.BOTH,
-                            1_000.0,
-                            1_950.0,
+        val rjsInfra =
+            Helpers.getExampleInfra("small_infra/infra.json")
+                .copy(
+                    electrifications =
+                        listOf(
+                            RJSElectrification(
+                                "1500V",
+                                listOf(
+                                    RJSApplicableDirectionsTrackRange(
+                                        "TA0",
+                                        ApplicableDirection.BOTH,
+                                        0.0,
+                                        2_000.0,
+                                    ),
+                                    RJSApplicableDirectionsTrackRange(
+                                        "TA1",
+                                        ApplicableDirection.BOTH,
+                                        0.0,
+                                        1_000.0,
+                                    ),
+                                ),
+                            ),
+                            RJSElectrification(
+                                "25000V",
+                                listOf(
+                                    RJSApplicableDirectionsTrackRange(
+                                        "TA1",
+                                        ApplicableDirection.BOTH,
+                                        1_000.0,
+                                        1_950.0,
+                                    )
+                                ),
+                            ),
                         )
-                    ),
-                ),
-            )
+                )
         val infra = fullInfraFromRJS(rjsInfra, InfraMetadata("modified_small_infra"))
 
         val path =
@@ -490,7 +496,7 @@ class PathPropertiesTests {
 
     @Test
     fun testSmallInfraSpeedLimits() {
-        val rjsInfra = Helpers.getExampleInfra("small_infra/infra.json")
+        var rjsInfra = Helpers.getExampleInfra("small_infra/infra.json")
         val speedSection =
             RJSSpeedSection(
                 "speedSection",
@@ -501,7 +507,7 @@ class PathPropertiesTests {
                 ),
                 null,
             )
-        rjsInfra.speedSections.add(speedSection)
+        rjsInfra = rjsInfra.copy(speedSections = rjsInfra.speedSections.plus(speedSection))
         val infra = fullInfraFromRJS(rjsInfra, InfraMetadata("modified_small_infra"))
         val path =
             buildTrainPathFromBlock(
@@ -530,7 +536,7 @@ class PathPropertiesTests {
 
     @Test
     fun testSmallInfraSpeedLimitTagFallbacks() {
-        val rjsInfra = Helpers.getExampleInfra("small_infra/infra.json")
+        var rjsInfra = Helpers.getExampleInfra("small_infra/infra.json")
         val superLowSpeedSection =
             RJSSpeedSection(
                 "speedSection",
@@ -546,7 +552,7 @@ class PathPropertiesTests {
                 ),
                 null,
             )
-        rjsInfra.speedSections.add(superLowSpeedSection)
+        rjsInfra = rjsInfra.copy(speedSections = rjsInfra.speedSections.plus(superLowSpeedSection))
         val infra = fullInfraFromRJS(rjsInfra, InfraMetadata("modified_small_infra"))
         val routeName = "rt.DH2->buffer_stop.7"
         val blocks = Helpers.getBlocksOnRoutes(infra, listOf(routeName))
