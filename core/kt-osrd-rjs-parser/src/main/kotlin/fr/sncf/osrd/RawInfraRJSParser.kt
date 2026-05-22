@@ -641,7 +641,7 @@ fun parseSignal(builder: RawInfraBuilder, rjsSignal: RJSSignal) {
             ?: throw OSRDError.newInfraError(
                 "Signal ${rjsSignal.id} references unknown track section ${rjsSignal.track}"
             )
-    val direction = rjsSignal.direction!!.toDirection()
+    val direction = rjsSignal.direction.toDirection()
     val undirectedTrackOffset = Offset<TrackSection>(rjsSignal.position.meters)
     builder.physicalSignal(
         rjsSignal.id,
@@ -649,19 +649,10 @@ fun parseSignal(builder: RawInfraBuilder, rjsSignal: RJSSignal) {
         DirTrackSectionId(trackSectionId, direction),
         undirectedTrackOffset,
     ) {
-        if (rjsSignal.logicalSignals == null) {
-            return@physicalSignal
-        }
-
         for (rjsLogicalSignal in rjsSignal.logicalSignals) {
-            assert(
-                rjsLogicalSignal.signalingSystem != null &&
-                    rjsLogicalSignal.signalingSystem.isNotEmpty()
-            )
-            assert(rjsLogicalSignal.nextSignalingSystems != null)
-            assert(rjsLogicalSignal.settings != null)
+            require(rjsLogicalSignal.signalingSystem.isNotEmpty())
             for (sigSystem in rjsLogicalSignal.nextSignalingSystems) {
-                assert(sigSystem.isNotEmpty())
+                require(sigSystem.isNotEmpty())
             }
 
             val signalParameters =
