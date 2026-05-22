@@ -354,12 +354,12 @@ fn service_router() -> server::router::DocumentedRouter {
                     })
             })
             .nests("/macro_nodes", |path| {
-                path.route("/", get!(scenario::macro_nodes::list))
-                    .route("/", post!(scenario::macro_nodes::create))
+                path.route("/", get!(operational_studies::macro_view::macro_nodes::list))
+                    .route("/", post!(operational_studies::macro_view::macro_nodes::create))
                     .nests("/{node_id}", |path| {
-                        path.route("/", get!(scenario::macro_nodes::get))
-                            .route("/", put!(scenario::macro_nodes::update))
-                            .route("/", delete!(scenario::macro_nodes::delete))
+                        path.route("/", get!(operational_studies::macro_view::macro_nodes::get))
+                            .route("/", put!(operational_studies::macro_view::macro_nodes::update))
+                            .route("/", delete!(operational_studies::macro_view::macro_nodes::delete))
                     })
             })
             .nests("/macro_notes", |path| {
