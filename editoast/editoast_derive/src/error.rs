@@ -3,6 +3,7 @@ use darling::FromDeriveInput;
 use darling::FromVariant;
 use darling::Result;
 use proc_macro2::TokenStream;
+use quote::ToTokens as _;
 use quote::quote;
 use syn::DataEnum;
 use syn::DeriveInput;
@@ -294,7 +295,7 @@ fn extract_type(ty: &syn::Type) -> Option<String> {
                 None
             }
         }
-        _ => None,
+        _ => Some(ty.to_token_stream().to_string()),
     }
 }
 
