@@ -16,7 +16,6 @@ pub mod project;
 pub mod projection;
 pub mod rolling_stock;
 pub mod round_trips;
-pub mod scenario;
 pub mod search;
 mod server;
 pub mod sprites;
@@ -345,12 +344,12 @@ fn service_router() -> server::router::DocumentedRouter {
                     })
             })
             .nests("/scenarios", |path| {
-                path.route("/", post!(scenario::create))
-                    .route("/", get!(scenario::list))
+                path.route("/", post!(operational_studies::hierarchy::scenario::create))
+                    .route("/", get!(operational_studies::hierarchy::scenario::list))
                     .nests("/{scenario_id}", |path| {
-                        path.route("/", get!(scenario::get))
-                            .route("/", delete!(scenario::delete))
-                            .route("/", patch!(scenario::patch))
+                        path.route("/", get!(operational_studies::hierarchy::scenario::get))
+                            .route("/", delete!(operational_studies::hierarchy::scenario::delete))
+                            .route("/", patch!(operational_studies::hierarchy::scenario::patch))
                     })
             })
             .nests("/macro_nodes", |path| {

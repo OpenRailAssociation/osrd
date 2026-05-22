@@ -1,3 +1,4 @@
+pub mod hierarchy;
 pub mod macro_view;
 
 use editoast_models::WorkSchedule;
