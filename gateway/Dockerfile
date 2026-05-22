@@ -61,7 +61,7 @@ CMD ["/usr/local/bin/osrd_gateway"]
 #####################
 # Build env : front #
 #####################
-FROM node:24-alpine AS front_build
+FROM node:26-alpine AS front_build
 WORKDIR /app
 
 # Add build argument for skipping failed front
