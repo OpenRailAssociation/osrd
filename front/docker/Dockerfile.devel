@@ -5,7 +5,7 @@ COPY docker/exec-as.c .
 RUN gcc -std=c99 -static -o /exec-as exec-as.c
 
 
-FROM node:24-alpine
+FROM node:26-alpine
 
 RUN apk add --no-cache curl
 
