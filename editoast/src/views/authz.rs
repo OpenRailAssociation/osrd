@@ -483,7 +483,7 @@ pub(in crate::views) struct SubjectGrant {
         (status = 200, description = "Get list of user that have a grant on the resource", body = inline(Vec<SubjectGrant>)),
     ),
 )]
-pub(in crate::views) async fn my_grants_on_ressource(
+pub(in crate::views) async fn my_grants_on_resource(
     Extension(user): Extension<Option<authz::User>>,
     Extension(roles): Extension<Vec<authz::Role>>,
     State(AppState {
