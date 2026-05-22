@@ -10,7 +10,7 @@
     "@storybook/react-vite": "^10.3.6",
     "storybook": "^10.2.10",
     "storybook-addon-run-script": "^0.1.4",
-    "vite": "^8.0.12",
+    "vite": "^8.0.13",
     "vite-plugin-checker": "^0.13.0"
   },
   "scripts": {
