@@ -86,10 +86,13 @@ impl MockingClient {
         req_path: &str,
         req_body: Option<&B>,
     ) -> Result<Option<R::Response>, MockingError> {
-        match (
-            req_body.map(|b| serde_json::to_string(b).expect("could not serialize request body")),
-            stub.body.as_ref().map(|b| b.as_str().to_string()),
-        ) {
+        let actual =
+            req_body.map(|b| serde_json::to_value(b).expect("could not serialize request body"));
+        let expected = stub.body.as_ref().map(|b| {
+            serde_json::from_str::<serde_json::Value>(b)
+                .expect("expected request body should be valid JSON")
+        });
+        match (actual, expected) {
             (Some(actual), Some(expected)) => assert_eq!(actual, expected, "request body mismatch"),
             (None, Some(expected)) => panic!("missing request body: '{expected}'"),
             _ => (),
