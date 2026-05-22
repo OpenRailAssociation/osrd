@@ -24,16 +24,32 @@ class EnvelopeTrainPathTest {
 
     @Test
     fun envelopeFromPathTestAverageGrades() {
-        val rjsInfra = Helpers.getExampleInfra("small_infra/infra.json")
-        for (track in rjsInfra.trackSections) {
-            if (track.id.equals("TA0")) {
-                track.slopes = listOf(RJSSlope(0.0, 1_000.0, 5.0), RJSSlope(1_000.0, 2_000.0, 15.0))
+        var rjsInfra = Helpers.getExampleInfra("small_infra/infra.json")
+        val newTracks =
+            rjsInfra.trackSections.map {
+                when (it.id) {
+                    "TA0" ->
+                        it.copy(
+                            slopes =
+                                listOf(
+                                    RJSSlope(0.0, 1_000.0, 5.0),
+                                    RJSSlope(1_000.0, 2_000.0, 15.0),
+                                )
+                        )
+
+                    "TA1" ->
+                        it.copy(
+                            slopes =
+                                listOf(
+                                    RJSSlope(0.0, 1_000.0, 10.0),
+                                    RJSSlope(1_000.0, 1_950.0, 25.0),
+                                )
+                        )
+
+                    else -> it
+                }
             }
-            if (track.id.equals("TA1")) {
-                track.slopes =
-                    listOf(RJSSlope(0.0, 1_000.0, 10.0), RJSSlope(1_000.0, 1_950.0, 25.0))
-            }
-        }
+        rjsInfra = rjsInfra.copy(trackSections = newTracks)
 
         val infra = Helpers.fullInfraFromRJS(rjsInfra, InfraMetadata("modified_small_infra"))
         val path =

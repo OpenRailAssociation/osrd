@@ -55,19 +55,19 @@ private fun getSlopes(rjsTrackSection: RJSTrackSection): DistanceRangeMap<Double
         distanceRangeMapOf(
             DistanceRangeMap.RangeMapEntry(0.meters, rjsTrackSection.length.meters, 0.0)
         )
-    if (rjsTrackSection.slopes != null) {
-        for (rjsSlope in rjsTrackSection.slopes) {
-            rjsSlope.simplify()
-            if (rjsSlope.begin < 0 || rjsSlope.end > rjsTrackSection.length)
-                throw OSRDError.newInvalidRangeError(
-                    ErrorType.InvalidInfraTrackSlopeWithInvalidRange,
-                    rjsTrackSection.id,
-                )
-            if (rjsSlope.gradient != 0.0) {
-                slopes.put(rjsSlope.begin.meters, rjsSlope.end.meters, rjsSlope.gradient)
-            }
+
+    for (rjsSlope in rjsTrackSection.slopes) {
+        rjsSlope.simplify()
+        if (rjsSlope.begin < 0 || rjsSlope.end > rjsTrackSection.length)
+            throw OSRDError.newInvalidRangeError(
+                ErrorType.InvalidInfraTrackSlopeWithInvalidRange,
+                rjsTrackSection.id,
+            )
+        if (rjsSlope.gradient != 0.0) {
+            slopes.put(rjsSlope.begin.meters, rjsSlope.end.meters, rjsSlope.gradient)
         }
     }
+
     return slopes
 }
 
@@ -77,19 +77,19 @@ private fun getCurves(rjsTrackSection: RJSTrackSection): DistanceRangeMap<Double
         distanceRangeMapOf(
             DistanceRangeMap.RangeMapEntry(0.meters, rjsTrackSection.length.meters, 0.0)
         )
-    if (rjsTrackSection.curves != null) {
-        for (rjsCurve in rjsTrackSection.curves) {
-            rjsCurve.simplify()
-            if (rjsCurve.begin < 0 || rjsCurve.end > rjsTrackSection.length)
-                throw OSRDError.newInvalidRangeError(
-                    ErrorType.InvalidInfraTrackSlopeWithInvalidRange,
-                    rjsTrackSection.id,
-                )
-            if (rjsCurve.radius != 0.0) {
-                curves.put(rjsCurve.begin.meters, rjsCurve.end.meters, rjsCurve.radius)
-            }
+
+    for (rjsCurve in rjsTrackSection.curves) {
+        rjsCurve.simplify()
+        if (rjsCurve.begin < 0 || rjsCurve.end > rjsTrackSection.length)
+            throw OSRDError.newInvalidRangeError(
+                ErrorType.InvalidInfraTrackSlopeWithInvalidRange,
+                rjsTrackSection.id,
+            )
+        if (rjsCurve.radius != 0.0) {
+            curves.put(rjsCurve.begin.meters, rjsCurve.end.meters, rjsCurve.radius)
         }
     }
+
     return curves
 }
 
@@ -171,11 +171,7 @@ private fun getBlockedGauge(
     // but we don't expect more than a few ranges per track-section.
     // TODO: use an interval tree
     val res = distanceRangeMapOf<LoadingGaugeConstraint>()
-    if (
-        (rjsTrackSection.loadingGaugeLimits == null) ||
-            (rjsTrackSection.loadingGaugeLimits.isEmpty())
-    )
-        return res
+    if (rjsTrackSection.loadingGaugeLimits.isEmpty()) return res
 
     // Sorts and removes duplicates
     val transitions = TreeSet<Double>()

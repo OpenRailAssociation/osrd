@@ -373,10 +373,19 @@ class PathfindingTest : ApiTest() {
         val waypointsStart = listOf(TrackLocation("ne.micro.foo_b", Offset(100.meters)))
         val waypointsEnd = listOf(TrackLocation("ne.micro.bar_a", Offset(100.meters)))
 
-        val rjsInfra = Helpers.getExampleInfra("tiny_infra/infra.json")
-        for (track in rjsInfra.trackSections) if (track.id == "ne.micro.foo_to_bar")
-            track.loadingGaugeLimits =
-                listOf(RJSLoadingGaugeLimit(1000.0, 2000.0, RJSLoadingGaugeType.G1))
+        var rjsInfra = Helpers.getExampleInfra("tiny_infra/infra.json")
+        val newTracks =
+            rjsInfra.trackSections.map {
+                if (it.id == "ne.micro.foo_to_bar")
+                    it.copy(
+                        loadingGaugeLimits =
+                            listOf(RJSLoadingGaugeLimit(1000.0, 2000.0, RJSLoadingGaugeType.G1))
+                    )
+                else it
+            }
+
+        rjsInfra = rjsInfra.copy(trackSections = newTracks)
+
         val infra = Helpers.fullInfraFromRJS(rjsInfra, InfraMetadata("modified_tiny_infra"))
 
         // Check that we can go through the infra with a small train
