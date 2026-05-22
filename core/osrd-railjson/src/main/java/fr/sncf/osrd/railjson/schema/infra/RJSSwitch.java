@@ -35,7 +35,7 @@ public class RJSSwitch implements Identified {
     }
 
     @Override
-    public String getID() {
+    public String getId() {
         return id;
     }
 }

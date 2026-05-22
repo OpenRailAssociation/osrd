@@ -90,7 +90,7 @@ public class RJSStandaloneTrainSchedule implements Identified {
     }
 
     @Override
-    public String getID() {
+    public String getId() {
         return id;
     }
 }

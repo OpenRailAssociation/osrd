@@ -15,7 +15,7 @@ public final class ID<T extends Identified> {
     }
 
     public static <T extends Identified> ID<T> from(T obj) {
-        return new ID<>(obj.getID());
+        return new ID<>(obj.getId());
     }
 
     @Override
