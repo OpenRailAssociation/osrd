@@ -1,3 +1,5 @@
+pub mod macro_view;
+
 use editoast_models::WorkSchedule;
 use editoast_models::prelude::*;
 use editoast_models::project::Project;

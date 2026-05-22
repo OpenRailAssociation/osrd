@@ -363,12 +363,12 @@ fn service_router() -> server::router::DocumentedRouter {
                     })
             })
             .nests("/macro_notes", |path| {
-                path.route("/", get!(scenario::macro_notes::list))
-                    .route("/", post!(scenario::macro_notes::create))
+                path.route("/", get!(operational_studies::macro_view::macro_notes::list))
+                    .route("/", post!(operational_studies::macro_view::macro_notes::create))
                     .nests("/{note_id}", |path| {
-                        path.route("/", get!(scenario::macro_notes::get))
-                            .route("/", put!(scenario::macro_notes::update))
-                            .route("/", delete!(scenario::macro_notes::delete))
+                        path.route("/", get!(operational_studies::macro_view::macro_notes::get))
+                            .route("/", put!(operational_studies::macro_view::macro_notes::update))
+                            .route("/", delete!(operational_studies::macro_view::macro_notes::delete))
                     })
             })
             //
