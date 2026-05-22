@@ -213,9 +213,13 @@ class PathfindingElectrificationTest : ApiTest() {
                 }
                 .toList()
         val voltageAllElectrification = RJSElectrification("25000V", voltageAllTrackRanges)
-        rjsInfra.electrifications = ArrayList(listOf(voltageAllElectrification))
+        val rjsInfraWithAllElectrifiedTrack =
+            rjsInfra.copy(electrifications = ArrayList(listOf(voltageAllElectrification)))
         val infraWithAllElectrifiedTrack =
-            Helpers.fullInfraFromRJS(rjsInfra, InfraMetadata("modified_small_infra"))
+            Helpers.fullInfraFromRJS(
+                rjsInfraWithAllElectrifiedTrack,
+                InfraMetadata("modified_small_infra"),
+            )
 
         val normalPathResp =
             runPathfinding(
@@ -235,9 +239,13 @@ class PathfindingElectrificationTest : ApiTest() {
         val voltagePartialTrackRanges =
             voltageAllTrackRanges.filter { it.trackSectionID != trackSectionToBlock }
         val voltagePartialElectrification = RJSElectrification("25000V", voltagePartialTrackRanges)
-        rjsInfra.electrifications = ArrayList(listOf(voltagePartialElectrification))
+        val rjsInfraPartialElectrifiedTrack =
+            rjsInfra.copy(electrifications = ArrayList(listOf(voltagePartialElectrification)))
         val infraPartialElectrifiedTrack =
-            Helpers.fullInfraFromRJS(rjsInfra, InfraMetadata("modified_small_infra"))
+            Helpers.fullInfraFromRJS(
+                rjsInfraPartialElectrifiedTrack,
+                InfraMetadata("modified_small_infra"),
+            )
 
         // Run another pathfinding with an electric train
         val partialElectricPathResp =
@@ -261,9 +269,9 @@ class PathfindingElectrificationTest : ApiTest() {
     fun noElectrificationNoPathForElectricTrain() {
         val waypointsStart = listOf(TrackLocation("TA1", Offset(1550.meters)))
         val waypointsEnd = listOf(TrackLocation("TH0", Offset(103.meters)))
-        val rjsInfra = Helpers.getExampleInfra("small_infra/infra.json")
-        rjsInfra.electrifications = ArrayList()
-        rjsInfra.neutralSections = ArrayList()
+        val rjsInfra =
+            Helpers.getExampleInfra("small_infra/infra.json")
+                .copy(electrifications = listOf(), neutralSections = listOf())
 
         assertThatThrownBy {
                 runPathfinding(

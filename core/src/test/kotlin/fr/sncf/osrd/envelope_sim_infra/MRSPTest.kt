@@ -47,7 +47,7 @@ class MRSPTest {
     private var pathTo4Variation: TestPath? = null
 
     private fun setUpOnSmallInfra() {
-        val rjsInfra = getExampleInfra("small_infra/infra.json")
+        var rjsInfra = getExampleInfra("small_infra/infra.json")
 
         // Speed sections for tag-dependent speed testing
         val speedSection1 =
@@ -143,11 +143,10 @@ class MRSPTest {
                 ),
                 listOf(route2.id),
             )
-        rjsInfra.speedSections = ArrayList()
-        rjsInfra.speedSections.addAll(
-            listOf(speedSection1, speedSection2, speedSection3, speedSection4)
-        )
-        rjsInfra.routes.addAll(listOf(route1, route2))
+        val speedSections =
+            mutableListOf(speedSection1, speedSection2, speedSection3, speedSection4)
+        val routes = rjsInfra.routes.plus(listOf(route1, route2))
+        rjsInfra = rjsInfra.copy(speedSections = speedSections, routes = routes)
 
         // Compute paths
         val infra = fullInfraFromRJS(rjsInfra, InfraMetadata("modified_small_infra"))

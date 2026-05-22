@@ -59,51 +59,54 @@ class EnvelopeTrainPathTest {
         direction: Direction,
         expectedMap: DistanceRangeMap<Electrification>,
     ) {
-        val rjsInfra = Helpers.getExampleInfra("small_infra/infra.json")
-        rjsInfra.electrifications =
-            listOf(
-                RJSElectrification(
-                    "",
-                    listOf(
-                        RJSApplicableDirectionsTrackRange(
-                            "TA0",
-                            ApplicableDirection.BOTH,
-                            0.0,
-                            800.0,
+        val rjsInfra =
+            Helpers.getExampleInfra("small_infra/infra.json")
+                .copy(
+                    electrifications =
+                        listOf(
+                            RJSElectrification(
+                                "",
+                                listOf(
+                                    RJSApplicableDirectionsTrackRange(
+                                        "TA0",
+                                        ApplicableDirection.BOTH,
+                                        0.0,
+                                        800.0,
+                                    )
+                                ),
+                            ),
+                            RJSElectrification(
+                                "1500V",
+                                listOf(
+                                    RJSApplicableDirectionsTrackRange(
+                                        "TA0",
+                                        ApplicableDirection.BOTH,
+                                        800.0,
+                                        2_000.0,
+                                    ),
+                                    RJSApplicableDirectionsTrackRange(
+                                        "TA1",
+                                        ApplicableDirection.BOTH,
+                                        0.0,
+                                        1_000.0,
+                                    ),
+                                ),
+                            ),
+                            RJSElectrification(
+                                "25000V",
+                                listOf(
+                                    RJSApplicableDirectionsTrackRange(
+                                        "TA1",
+                                        ApplicableDirection.BOTH,
+                                        1_100.0,
+                                        1_950.0,
+                                    )
+                                ),
+                            ),
+                            // and there is already a deadSection on TA0 from 1900 to 1950 in the
+                            // Direction.INCREASING
                         )
-                    ),
-                ),
-                RJSElectrification(
-                    "1500V",
-                    listOf(
-                        RJSApplicableDirectionsTrackRange(
-                            "TA0",
-                            ApplicableDirection.BOTH,
-                            800.0,
-                            2_000.0,
-                        ),
-                        RJSApplicableDirectionsTrackRange(
-                            "TA1",
-                            ApplicableDirection.BOTH,
-                            0.0,
-                            1_000.0,
-                        ),
-                    ),
-                ),
-                RJSElectrification(
-                    "25000V",
-                    listOf(
-                        RJSApplicableDirectionsTrackRange(
-                            "TA1",
-                            ApplicableDirection.BOTH,
-                            1_100.0,
-                            1_950.0,
-                        )
-                    ),
-                ),
-                // and there is already a deadSection on TA0 from 1900 to 1950 in the
-                // Direction.INCREASING
-            )
+                )
         val infra = Helpers.fullInfraFromRJS(rjsInfra, InfraMetadata("modified_small_infra"))
         val path = pathFromTracks(infra, tracks, direction, 500.meters, 3_600.meters)
 
@@ -112,52 +115,54 @@ class EnvelopeTrainPathTest {
 
     @Test
     fun envelopeFromPathTestElectrificationMapByPowerClassIncreasingDirection() {
-        val rjsInfra = Helpers.getExampleInfra("small_infra/infra.json")
-        rjsInfra.electrifications =
-            listOf(
-                RJSElectrification(
-                    "",
-                    listOf(
-                        RJSApplicableDirectionsTrackRange(
-                            "TA0",
-                            ApplicableDirection.BOTH,
-                            0.0,
-                            1500.0,
+        val rjsInfra =
+            Helpers.getExampleInfra("small_infra/infra.json")
+                .copy(
+                    electrifications =
+                        listOf(
+                            RJSElectrification(
+                                "",
+                                listOf(
+                                    RJSApplicableDirectionsTrackRange(
+                                        "TA0",
+                                        ApplicableDirection.BOTH,
+                                        0.0,
+                                        1500.0,
+                                    )
+                                ),
+                            ),
+                            RJSElectrification(
+                                "1500V",
+                                listOf(
+                                    RJSApplicableDirectionsTrackRange(
+                                        "TA0",
+                                        ApplicableDirection.BOTH,
+                                        1500.0,
+                                        2_000.0,
+                                    ),
+                                    RJSApplicableDirectionsTrackRange(
+                                        "TA1",
+                                        ApplicableDirection.BOTH,
+                                        0.0,
+                                        500.0,
+                                    ),
+                                ),
+                            ),
+                            RJSElectrification(
+                                "25000V",
+                                listOf(
+                                    RJSApplicableDirectionsTrackRange(
+                                        "TA1",
+                                        ApplicableDirection.BOTH,
+                                        500.0,
+                                        1_950.0,
+                                    )
+                                ),
+                            ),
+                            // and there is already a deadSection on TA0 from 1900 to 1950 in the
+                            // Direction.INCREASING
                         )
-                    ),
-                ),
-                RJSElectrification(
-                    "1500V",
-                    listOf(
-                        RJSApplicableDirectionsTrackRange(
-                            "TA0",
-                            ApplicableDirection.BOTH,
-                            1500.0,
-                            2_000.0,
-                        ),
-                        RJSApplicableDirectionsTrackRange(
-                            "TA1",
-                            ApplicableDirection.BOTH,
-                            0.0,
-                            500.0,
-                        ),
-                    ),
-                ),
-                RJSElectrification(
-                    "25000V",
-                    listOf(
-                        RJSApplicableDirectionsTrackRange(
-                            "TA1",
-                            ApplicableDirection.BOTH,
-                            500.0,
-                            1_950.0,
-                        )
-                    ),
-                ),
-                // and there is already a deadSection on TA0 from 1900 to 1950 in the
-                // Direction.INCREASING
-            )
-
+                )
         val infra = Helpers.fullInfraFromRJS(rjsInfra, InfraMetadata("modified_small_infra"))
         val rjsElectricalProfiles = getRjsElectricalProfileMapping_1()
         val profileMap = ElectricalProfileMapping()
@@ -192,33 +197,36 @@ class EnvelopeTrainPathTest {
 
     @Test
     fun envelopeFromPathTestElectrificationMapByPowerClassDecreasingDirection() {
-        val rjsInfra = Helpers.getExampleInfra("small_infra/infra.json")
-        rjsInfra.electrifications =
-            listOf(
-                RJSElectrification(
-                    "1500V",
-                    listOf(
-                        RJSApplicableDirectionsTrackRange(
-                            "TA0",
-                            ApplicableDirection.BOTH,
-                            0.0,
-                            2_000.0,
-                        ),
-                        RJSApplicableDirectionsTrackRange(
-                            "TA1",
-                            ApplicableDirection.BOTH,
-                            0.0,
-                            1_950.0,
-                        ),
-                        RJSApplicableDirectionsTrackRange(
-                            "TA2",
-                            ApplicableDirection.BOTH,
-                            0.0,
-                            1_950.0,
-                        ),
-                    ),
+        val rjsInfra =
+            Helpers.getExampleInfra("small_infra/infra.json")
+                .copy(
+                    electrifications =
+                        listOf(
+                            RJSElectrification(
+                                "1500V",
+                                listOf(
+                                    RJSApplicableDirectionsTrackRange(
+                                        "TA0",
+                                        ApplicableDirection.BOTH,
+                                        0.0,
+                                        2_000.0,
+                                    ),
+                                    RJSApplicableDirectionsTrackRange(
+                                        "TA1",
+                                        ApplicableDirection.BOTH,
+                                        0.0,
+                                        1_950.0,
+                                    ),
+                                    RJSApplicableDirectionsTrackRange(
+                                        "TA2",
+                                        ApplicableDirection.BOTH,
+                                        0.0,
+                                        1_950.0,
+                                    ),
+                                ),
+                            )
+                        )
                 )
-            )
 
         val infra = Helpers.fullInfraFromRJS(rjsInfra, InfraMetadata("modified_small_infra"))
         val rjsElectricalProfiles = getRjsElectricalProfileMapping_2()
