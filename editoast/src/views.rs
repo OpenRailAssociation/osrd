@@ -12,7 +12,6 @@ pub mod operational_studies;
 pub mod pagination;
 pub mod params;
 pub mod path;
-pub mod project;
 pub mod projection;
 pub mod rolling_stock;
 pub mod round_trips;
@@ -325,12 +324,12 @@ fn service_router() -> server::router::DocumentedRouter {
                     })
             })
             .nests("/projects", |path| {
-                path.route("/", post!(project::create))
-                    .route("/", get!(project::list))
+                path.route("/", post!(operational_studies::hierarchy::project::create))
+                    .route("/", get!(operational_studies::hierarchy::project::list))
                     .nests("/{project_id}", |path| {
-                        path.route("/", get!(project::get))
-                            .route("/", delete!(project::delete))
-                            .route("/", patch!(project::patch))
+                        path.route("/", get!(operational_studies::hierarchy::project::get))
+                            .route("/", delete!(operational_studies::hierarchy::project::delete))
+                            .route("/", patch!(operational_studies::hierarchy::project::patch))
                     })
             })
             .nests("/studies", |path| {

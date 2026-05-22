@@ -18,12 +18,12 @@ use thiserror::Error;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
 
-use super::operational_studies::OperationalStudiesOrderingParam;
-use super::pagination::PaginatedList;
-use super::pagination::PaginationStats;
 use crate::error::InternalError;
 use crate::error::Result;
+use crate::views::operational_studies::OperationalStudiesOrderingParam;
+use crate::views::pagination::PaginatedList;
 use crate::views::pagination::PaginationQueryParams;
+use crate::views::pagination::PaginationStats;
 use editoast_models::Document;
 use editoast_models::project::Project;
 use editoast_models::tags::Tags;
