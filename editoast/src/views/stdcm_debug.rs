@@ -10,7 +10,7 @@ use geos::geojson::Geometry;
 use object_store::GetOptions;
 use object_store::ObjectStore as _;
 use object_store::aws::AmazonS3;
-use object_store::path::Path as ObjStorePath;
+use object_store::path::Path as ObjectStorePath;
 use serde::Deserialize;
 use serde::Serialize;
 use thiserror::Error;
@@ -114,7 +114,7 @@ pub(in crate::views) async fn get_debug_data(
 ) -> Result<Json<StdcmDebugDataResponse>> {
     let s3 = s3_client.as_ref().ok_or(StdcmDebugError::S3NotConfigured)?;
 
-    let prefix = ObjStorePath::from("stdcm/requests/").join(trace_id);
+    let prefix = ObjectStorePath::from("stdcm/requests/").join(trace_id);
     let failure = fetch_optional_json::<SimDebugFailureReport>(
         s3.as_ref(),
         &prefix.clone().join("failure.json"),
@@ -135,7 +135,7 @@ pub(in crate::views) async fn get_debug_data(
 
 async fn fetch_optional_json<T: serde::de::DeserializeOwned>(
     s3: &AmazonS3,
-    path: &ObjStorePath,
+    path: &ObjectStorePath,
 ) -> Result<Option<T>, StdcmDebugError> {
     match s3.get_opts(path, GetOptions::default()).await {
         Ok(result) => {

@@ -966,8 +966,8 @@ impl InfraCache {
 
             // Search for the next track section
             let endpoint = TrackEndpoint::from_track_and_direction(cur_track_id, cur_dir);
-            // No neighbour found
-            if !graph.has_neighbour(&endpoint) {
+            // No neighbor found
+            if !graph.has_neighbor(&endpoint) {
                 return None;
             }
 
@@ -985,7 +985,7 @@ impl InfraCache {
                 switch_id: switch_id.clone().into(),
                 group_id: group.clone(),
             });
-            let next_endpoint = graph.get_neighbour(&endpoint, group)?;
+            let next_endpoint = graph.get_neighbor(&endpoint, group)?;
 
             // Update current track section, offset and direction
             cur_track = self

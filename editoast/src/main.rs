@@ -46,9 +46,9 @@ pub use views::AppState;
 /// The mode editoast is running in
 ///
 /// This is used to determine the logging output. For a CLI command, it's better to
-/// log to stderr in order to redirect/pipe stdout. However, for a webservice,
+/// log to stderr in order to redirect/pipe stdout. However, for a web-service,
 /// the logs should be written to stdout for several reasons:
-/// - stdout is bufferized, stderr is not
+/// - stdout is buffered, stderr is not
 /// - some tools might parse the service logs and expect them to be on stdout
 /// - we *expect* a webserver to output logging information, so since it's an expected
 ///   output (and not extra information), it should be on stdout

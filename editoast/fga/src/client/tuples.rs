@@ -13,8 +13,8 @@ use super::Request;
 
 pub(in crate::client) use super::api::tuples::RawTuple;
 pub use super::api::tuples::UntypedTuple;
-pub use super::api::tuples::UntypedUserSet;
-pub use super::api::tuples::UserOrUserSet;
+pub use super::api::tuples::UntypedUserset;
+pub use super::api::tuples::UserOrUserset;
 
 impl Client {
     pub async fn tuple_exists<R: Relation, U: AsUser<User = R::User>>(

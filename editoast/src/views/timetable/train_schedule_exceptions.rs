@@ -481,24 +481,25 @@ mod tests {
         )
         .await;
 
-        let train_schedule_exeption_form_change_groups = TrainScheduleExceptionChangeGroups {
+        let train_schedule_exception_form_change_groups = TrainScheduleExceptionChangeGroups {
             train_name: Some(TrainNameChangeGroup {
                 value: "Modified".to_string(),
             }),
             ..Default::default()
         };
 
-        let train_schedule_exeption_form: TrainScheduleExceptionForm = TrainScheduleExceptionForm {
-            train_schedule_id: train_schedule.id,
-            occurrence_index: Some(2),
-            disabled: false,
-            change_groups: train_schedule_exeption_form_change_groups.clone(),
-        };
+        let train_schedule_exception_form: TrainScheduleExceptionForm =
+            TrainScheduleExceptionForm {
+                train_schedule_id: train_schedule.id,
+                occurrence_index: Some(2),
+                disabled: false,
+                change_groups: train_schedule_exception_form_change_groups.clone(),
+            };
 
         // Update train schedule exception
         let request = app
             .put(format!("/train_schedule_exception/{}", train_schedule_exception.id).as_str())
-            .json(&json!(&train_schedule_exeption_form));
+            .json(&json!(&train_schedule_exception_form));
 
         app.fetch(request)
             .await
@@ -515,7 +516,7 @@ mod tests {
         assert_eq!(updated_exception.occurrence_index, Some(2));
         assert_eq!(
             &updated_exception.change_groups,
-            &train_schedule_exeption_form_change_groups
+            &train_schedule_exception_form_change_groups
         );
         assert_eq!(updated_exception.train_schedule_id, train_schedule.id);
         assert_eq!(updated_exception.timetable_id, timetable.id);
@@ -539,24 +540,25 @@ mod tests {
         )
         .await;
 
-        let train_schedule_exeption_form_change_groups = TrainScheduleExceptionChangeGroups {
+        let train_schedule_exception_form_change_groups = TrainScheduleExceptionChangeGroups {
             train_name: Some(TrainNameChangeGroup {
                 value: "Modified".to_string(),
             }),
             ..Default::default()
         };
 
-        let train_schedule_exeption_form: TrainScheduleExceptionForm = TrainScheduleExceptionForm {
-            train_schedule_id: train_schedule.id,
-            occurrence_index: Some(-100),
-            disabled: false,
-            change_groups: train_schedule_exeption_form_change_groups.clone(),
-        };
+        let train_schedule_exception_form: TrainScheduleExceptionForm =
+            TrainScheduleExceptionForm {
+                train_schedule_id: train_schedule.id,
+                occurrence_index: Some(-100),
+                disabled: false,
+                change_groups: train_schedule_exception_form_change_groups.clone(),
+            };
 
         // Update train schedule exception
         let request = app
             .put(format!("/train_schedule_exception/{}", train_schedule_exception.id).as_str())
-            .json(&json!(&train_schedule_exeption_form));
+            .json(&json!(&train_schedule_exception_form));
 
         let response: InternalError = app
             .fetch(request)

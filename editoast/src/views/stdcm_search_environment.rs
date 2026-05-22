@@ -262,7 +262,7 @@ pub(in crate::views) async fn delete(
 
 #[derive(Serialize, ToSchema)]
 #[cfg_attr(test, derive(Deserialize))]
-pub(in crate::views) struct SdcmSearchEnvListResponse {
+pub(in crate::views) struct StdcmSearchEnvListResponse {
     #[schema(value_type = Vec<StdcmSearchEnvironmentResponse>)]
     results: Vec<StdcmSearchEnvironmentResponse>,
     #[serde(flatten)]
@@ -275,19 +275,19 @@ pub(in crate::views) struct SdcmSearchEnvListResponse {
     tag = "stdcm_search_environment",
     params(PaginationQueryParams<1000>),
     responses(
-        (status = 200, body = inline(SdcmSearchEnvListResponse), description = "The paginated list of all existing stdcm search environments"),
+        (status = 200, body = inline(StdcmSearchEnvListResponse), description = "The paginated list of all existing stdcm search environments"),
     )
 )]
 pub(in crate::views) async fn list(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Query(page_settings): Query<PaginationQueryParams<1000>>,
-) -> Result<Json<SdcmSearchEnvListResponse>> {
+) -> Result<Json<StdcmSearchEnvListResponse>> {
     let mut conn = db_pool.get().await?;
     let settings = page_settings
         .into_selection_settings()
         .order_by(|| StdcmSearchEnvironment::ID.asc());
     let (listed_envs, stats) = StdcmSearchEnvironment::list_paginated(&mut conn, settings).await?;
-    Ok(Json(SdcmSearchEnvListResponse {
+    Ok(Json(StdcmSearchEnvListResponse {
         results: listed_envs.into_iter().map_into().collect(),
         stats,
     }))
@@ -577,7 +577,7 @@ pub mod tests {
             .fetch(request)
             .await
             .assert_status(StatusCode::OK)
-            .json_into::<SdcmSearchEnvListResponse>();
+            .json_into::<StdcmSearchEnvListResponse>();
 
         // THEN
         let created_ids = HashSet::from([env1.id, env2.id, env3.id]);

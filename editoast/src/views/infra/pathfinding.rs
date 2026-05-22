@@ -309,7 +309,7 @@ fn compute_path(
             return vec![];
         }
 
-        // Find neighbours
+        // Find neighbors
         let mut successors = vec![];
         let endpoint = TrackEndpoint::from_track_and_direction(&step.track, step.direction);
         let switch = graph.get_switch(&endpoint);
@@ -322,21 +322,21 @@ fn compute_path(
             }
         }
 
-        for neighbour_group in graph.get_neighbour_groups(&endpoint) {
-            let neighbour = graph.get_neighbour(&endpoint, neighbour_group).unwrap();
-            if let Some(neighbour_track) = infra_cache.track_sections().get(&neighbour.track.0) {
-                let neighbour_track = neighbour_track.unwrap_track_section();
-                let (pos, dir) = if neighbour.endpoint == Endpoint::Begin {
+        for neighbor_group in graph.get_neighbor_groups(&endpoint) {
+            let neighbor = graph.get_neighbor(&endpoint, neighbor_group).unwrap();
+            if let Some(neighbor_track) = infra_cache.track_sections().get(&neighbor.track.0) {
+                let neighbor_track = neighbor_track.unwrap_track_section();
+                let (pos, dir) = if neighbor.endpoint == Endpoint::Begin {
                     (0.0, Direction::StartToStop)
                 } else {
-                    (neighbour_track.length, Direction::StopToStart)
+                    (neighbor_track.length, Direction::StopToStart)
                 };
                 successors.push((
                     PathfindingStep::new(
-                        neighbour_track.obj_id.clone(),
+                        neighbor_track.obj_id.clone(),
                         pos,
                         dir,
-                        switch.map(|s| (s.obj_id.clone().into(), neighbour_group.clone())),
+                        switch.map(|s| (s.obj_id.clone().into(), neighbor_group.clone())),
                         false,
                         step.clone(),
                         cost,

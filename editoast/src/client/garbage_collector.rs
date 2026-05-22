@@ -10,7 +10,7 @@ use editoast_models::Infra;
 use editoast_models::User;
 use editoast_models::prelude::*;
 use fga::client::UntypedTuple;
-use fga::client::UserOrUserSet;
+use fga::client::UserOrUserset;
 use futures::TryStreamExt as _;
 use std::collections::HashSet;
 
@@ -131,7 +131,7 @@ async fn load_existing_entities(
     })
 }
 
-fn is_userset_orphaned(userset: &fga::client::UntypedUserSet, entities: &ExistingEntities) -> bool {
+fn is_userset_orphaned(userset: &fga::client::UntypedUserset, entities: &ExistingEntities) -> bool {
     if let Some(group) = userset.as_type::<authz::Group>() {
         !entities.groups.contains(&group.0)
     } else if let Some(user) = userset.as_type::<authz::User>() {
@@ -155,8 +155,8 @@ where
         return Some(true);
     }
     Some(match user {
-        UserOrUserSet::User(user) => !entities.users.contains(&user.0),
-        UserOrUserSet::UserSet(userset) => is_userset_orphaned(&userset, entities),
+        UserOrUserset::User(user) => !entities.users.contains(&user.0),
+        UserOrUserset::Userset(userset) => is_userset_orphaned(&userset, entities),
     })
 }
 
@@ -177,8 +177,8 @@ fn is_tuple_orphaned(untyped: &UntypedTuple, entities: &ExistingEntities) -> boo
         .or_else(|| {
             let (group, user) = untyped.as_relation(authz::User::group())?;
             let group_orphaned = match group {
-                UserOrUserSet::User(group) => !entities.groups.contains(&group.0),
-                UserOrUserSet::UserSet(userset) => is_userset_orphaned(&userset, entities),
+                UserOrUserset::User(group) => !entities.groups.contains(&group.0),
+                UserOrUserset::Userset(userset) => is_userset_orphaned(&userset, entities),
             };
             Some(!entities.users.contains(&user.0) || group_orphaned)
         })
@@ -193,8 +193,8 @@ fn is_tuple_orphaned(untyped: &UntypedTuple, entities: &ExistingEntities) -> boo
         .or_else(|| {
             let (member, group) = untyped.as_relation(authz::Group::member())?;
             let member_orphaned = match member {
-                UserOrUserSet::User(user) => !entities.users.contains(&user.0),
-                UserOrUserSet::UserSet(userset) => is_userset_orphaned(&userset, entities),
+                UserOrUserset::User(user) => !entities.users.contains(&user.0),
+                UserOrUserset::Userset(userset) => is_userset_orphaned(&userset, entities),
             };
             Some(!entities.groups.contains(&group.0) || member_orphaned)
         })

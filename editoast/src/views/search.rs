@@ -157,11 +157,11 @@
 //! the columns defined in the `search.yml` configuration file are added to
 //! that context.
 //!
-//! If the query typechecks in that particular context, it can be evaluated.
+//! If the query type-checks in that particular context, it can be evaluated.
 //!
 //! # Evaluation
 //!
-//! In order to turn the ✨typechecked✨ query into an SQL statement, it is "evaluated"
+//! In order to turn the ✨type-checked✨ query into an SQL statement, it is "evaluated"
 //! within a [search::QueryContext] ; which contains several things:
 //!
 //! - The list of expected columns and their type. That data is extracted from `search.yml`.

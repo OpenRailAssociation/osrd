@@ -14,7 +14,7 @@ use syn::parse_macro_input;
 ///
 /// ### Usage
 /// You must provide a `base_id` which will prefix each variant.
-/// For a variant named `MyError`, this will generate error ids like `"editoast:myview:MyError"`.
+/// For a variant named `MyError`, this will generate error ids like `"editoast:my_view:MyError"`.
 /// You can provide a `default_status` that will apply to all variants (400 by default).
 ///
 /// If your variant has named fields. They will be automatically added to the error context.
@@ -32,7 +32,7 @@ use syn::parse_macro_input;
 ///
 /// ```ignore
 /// #[derive(Debug, EditoastError)]
-/// #[editoast_error(base_id = "myview", default_status = 404)]
+/// #[editoast_error(base_id = "my_view", default_status = 404)]
 /// enum MyError {
 ///   #[editoast_error(status = 400)]
 ///   MyFirstError,
@@ -194,7 +194,7 @@ pub fn search_config_store(input: proc_macro::TokenStream) -> proc_macro::TokenS
 /// ## Options
 /// ### Struct-level options
 ///
-/// * `#[model(table = crate::table::osrd_yourtable")]` (**REQUIRED**): the path to the diesel table
+/// * `#[model(table = crate::table::osrd_your_table")]` (**REQUIRED**): the path to the diesel table
 /// * `#[model(row(type_name = "YourRowType"))]`: the name of the row struct (defaults to `ModelRow`)
 /// * `#[model(row(derive(ADDITIONAL_DERIVES*,)))]`: additional derives for the row struct (always implicitly derives `Queryable, Selectable`)
 /// * `#[model(row(public))]`: make the row struct fields `pub` (private by default)
@@ -239,7 +239,7 @@ pub fn search_config_store(input: proc_macro::TokenStream) -> proc_macro::TokenS
 ///   and be the `diesel_table::PrimaryKey`
 /// * There can only be one `preferred` field
 /// * If no `preferred` field is provided, the `primary` field will be used
-/// * There can be as many `identifier` fields as you want (as long as it makes sense ofc)
+/// * There can be as many `identifier` fields as you want (as long as it makes sense of course)
 #[proc_macro_derive(Model, attributes(model))]
 pub fn model(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let input = parse_macro_input!(input as DeriveInput);

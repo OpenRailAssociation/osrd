@@ -1,4 +1,4 @@
-//! # High-level modelization of OpenFGA authorization models definitions
+//! # High-level modeling of OpenFGA authorization models definitions
 //!
 //! This module exposes a bunch of types and traits that represents everything
 //! defined in an OpenFGA authorization model and needed to interact with it.
@@ -11,10 +11,10 @@ use std::str::FromStr;
 
 /// Representation of an OpenFGA `type`
 ///
-/// In order to be used with the [`trait Relation`], the implementor type
+/// In order to be used with the [`trait Relation`], the implementer type
 /// must also implement either or both of the [`trait User`] and [`trait Object`].
 ///
-/// The implementor type must also implement [std::str::FromStr] in order to be constructed
+/// The implementer type must also implement [std::str::FromStr] in order to be constructed
 /// from values received in OpenFGA responses.
 ///
 /// # Example
@@ -56,7 +56,7 @@ pub trait Type: FromStr + Sized {
 
 /// Representation of an OpenFGA type that can be used as an OpenFGA user (tuple position)
 ///
-/// The implementor type must also implement [std::str::FromStr] in order to be constructed
+/// The implementer type must also implement [std::str::FromStr] in order to be constructed
 /// from values received in OpenFGA responses.
 ///
 /// # Example
@@ -127,7 +127,7 @@ pub trait User: Type + fmt::Debug + Sized {
     /// let object = Document("confidential".to_string());
     /// let tuple = Document::can_read().tuple(&user, &object);
     /// // write the tuple
-    /// // now the topsecret document is public and the world burns
+    /// // now the top-secret document is public and the world burns
     /// # }
     /// ```
     ///
@@ -203,8 +203,8 @@ pub trait Relation: fmt::Debug + Sized {
     /// Builds a userset object
     ///
     /// Can be used in the USER part of a tuple in [`Relation::tuple`] or [`Relation::query_objects`].
-    fn userset<'a>(&self, object: &'a Self::Object) -> UserSet<'a, Self> {
-        UserSet(object)
+    fn userset<'a>(&self, object: &'a Self::Object) -> Userset<'a, Self> {
+        Userset(object)
     }
 
     // ----- Queries
@@ -266,7 +266,7 @@ pub trait Relation: fmt::Debug + Sized {
 
 /// Representation of an OpenFGA type that can be used as an OpenFGA object (tuple position)
 ///
-/// The implementor type must also implement [std::str::FromStr] in order to be constructed
+/// The implementer type must also implement [std::str::FromStr] in order to be constructed
 /// from values received in OpenFGA responses.
 ///
 /// # Example
@@ -324,12 +324,12 @@ pub trait Object: Type + fmt::Debug {
     }
 }
 
-/// Indicates that the implementor can be used in the USER position of a tuple
+/// Indicates that the implementer can be used in the USER position of a tuple
 ///
 /// According to <https://openfga.dev/docs/concepts#what-is-a-user>, a user can be one of:
 ///
 /// 1. A regular user `user:identifier` — represented by the [`trait User`]
-/// 2. A userset `object:identifier#relation` — represented by the [`struct UserSet`]
+/// 2. A userset `object:identifier#relation` — represented by the [`struct Userset`]
 /// 3. A type-bound public access `user:*` — represented by the [`struct Wildcard`]
 ///
 /// All these values can be used in the USER position of a tuple, and therefore must be accepted
@@ -337,7 +337,7 @@ pub trait Object: Type + fmt::Debug {
 ///
 /// Auto-implemented for types that implement [`trait User`].
 pub trait AsUser {
-    /// The USER type that the implementor can be used as
+    /// The USER type that the implementer can be used as
     type User: User;
 
     /// Builds the OpenFGA USER string from an [`AsUser`] instance
@@ -429,15 +429,17 @@ where
     }
 }
 
-/// User set: `group:my-team#member`, `infra:france#can_read`, etc.
+/// [Userset]: `group:my-team#member`, `infra:france#can_read`, etc.
 ///
 /// # OpenFGA concept
 ///
 /// <https://openfga.dev/docs/concepts#what-is-a-user>
+///
+/// [Userset]: https://openfga.dev/docs/modeling/building-blocks/usersets
 #[derive(Debug, Clone, Copy)]
-pub struct UserSet<'a, R: Relation + 'static>(&'a R::Object);
+pub struct Userset<'a, R: Relation + 'static>(&'a R::Object);
 
-impl<R: Relation> AsUser for UserSet<'_, R> {
+impl<R: Relation> AsUser for Userset<'_, R> {
     type User = R::User;
 
     fn fga_user(&self) -> String {
@@ -450,7 +452,7 @@ impl<R: Relation> AsUser for UserSet<'_, R> {
     }
 }
 
-impl<R: Relation> PartialEq for UserSet<'_, R>
+impl<R: Relation> PartialEq for Userset<'_, R>
 where
     R::Object: PartialEq,
 {
@@ -459,7 +461,7 @@ where
     }
 }
 
-impl<R: Relation> Eq for UserSet<'_, R> where R::Object: Eq {}
+impl<R: Relation> Eq for Userset<'_, R> where R::Object: Eq {}
 
 /// Type-bound public access: `user:*`, `document:*`, etc.
 ///
@@ -491,7 +493,7 @@ mod tests {
 
     #[test]
     #[should_panic]
-    fn public_access_injection_protection_user_asuser() {
+    fn public_access_injection_protection_user_as_user() {
         let _ = AsUser::fga_user(&&defs::User("*".to_owned()));
     }
 

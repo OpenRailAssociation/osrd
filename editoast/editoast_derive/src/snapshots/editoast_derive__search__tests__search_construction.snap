@@ -28,7 +28,7 @@ impl search::SearchObject for Track {
             table: "search_track".to_owned(),
             distinct_on: None,
             joins: None,
-            criterias: Vec::from([
+            criteria: Vec::from([
                 search::Criteria {
                     name: "infra_id".to_owned(),
                     data_type: search::TypeSpec::Type(search::AstType::Integer),

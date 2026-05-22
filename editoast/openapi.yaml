@@ -1487,7 +1487,7 @@ paths:
                   oneOf:
                   - allOf:
                     - $ref: '#/components/schemas/RoutePath'
-                      description: RoutePath contains N track ranges with the N-1 switches found inbetween, in the order they appear on the route
+                      description: RoutePath contains N track ranges with the N-1 switches found in-between, in the order they appear on the route
                     - type: object
                       required:
                       - type
@@ -1496,7 +1496,7 @@ paths:
                           type: string
                           enum:
                           - Computed
-                    description: RoutePath contains N track ranges with the N-1 switches found inbetween, in the order they appear on the route
+                    description: RoutePath contains N track ranges with the N-1 switches found in-between, in the order they appear on the route
                   - type: object
                     required:
                     - type

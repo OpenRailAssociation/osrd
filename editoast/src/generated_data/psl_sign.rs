@@ -48,14 +48,14 @@ impl GeneratedData for PSLSignLayer {
         // Delete elements
         if !involved_objects.is_empty() {
             // We must delete both updated and deleted lpv panels because we can only insert them and not update
-            let objs = involved_objects
+            let objects = involved_objects
                 .deleted
                 .iter()
                 .chain(involved_objects.updated.iter());
             delete(
                 dsl::infra_layer_psl_sign
                     .filter(dsl::infra_id.eq(infra))
-                    .filter(dsl::obj_id.eq_any(objs)),
+                    .filter(dsl::obj_id.eq_any(objects)),
             )
             .execute(conn.write().await.deref_mut())
             .await?;

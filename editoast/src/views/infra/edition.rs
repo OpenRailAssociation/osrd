@@ -398,20 +398,20 @@ fn get_split_operations_for_impacted(
 ) -> Vec<Operation> {
     let mut operations: Vec<Operation> = Vec::<Operation>::new();
     let impacted = infra_cache.track_sections_refs.get(tracksection.get_id());
-    let Some(objs) = impacted else {
+    let Some(objects) = impacted else {
         return vec![];
     };
-    for obj in objs {
+    for obj in objects {
         match obj.obj_type {
             ObjectType::Signal => {
-                let ponctual_item = infra_cache.get_signal(&obj.obj_id).unwrap();
+                let punctual_item = infra_cache.get_signal(&obj.obj_id).unwrap();
                 operations.push(Operation::Update(UpdateOperation {
                     obj_type: obj.obj_type,
                     obj_id: obj.obj_id.to_string(),
                     railjson_patch: Patch(vec![
                         PatchOperation::Replace(ReplaceOperation {
                             path: "/track".to_string().parse().unwrap(),
-                            value: if ponctual_item.position <= distance {
+                            value: if punctual_item.position <= distance {
                                 json!(Identifier::from(left_tracksection_id))
                             } else {
                                 json!(Identifier::from(right_tracksection_id))
@@ -419,24 +419,24 @@ fn get_split_operations_for_impacted(
                         }),
                         PatchOperation::Replace(ReplaceOperation {
                             path: "/position".to_string().parse().unwrap(),
-                            value: if ponctual_item.position <= distance {
-                                json!(ponctual_item.position)
+                            value: if punctual_item.position <= distance {
+                                json!(punctual_item.position)
                             } else {
-                                json!(ponctual_item.position - distance)
+                                json!(punctual_item.position - distance)
                             },
                         }),
                     ]),
                 }));
             }
             ObjectType::BufferStop => {
-                let ponctual_item = infra_cache.get_buffer_stop(&obj.obj_id).unwrap();
+                let punctual_item = infra_cache.get_buffer_stop(&obj.obj_id).unwrap();
                 operations.push(Operation::Update(UpdateOperation {
                     obj_type: obj.obj_type,
                     obj_id: obj.obj_id.to_string(),
                     railjson_patch: Patch(vec![
                         PatchOperation::Replace(ReplaceOperation {
                             path: "/track".to_string().parse().unwrap(),
-                            value: if ponctual_item.position <= distance {
+                            value: if punctual_item.position <= distance {
                                 json!(Identifier::from(left_tracksection_id))
                             } else {
                                 json!(Identifier::from(right_tracksection_id))
@@ -444,24 +444,24 @@ fn get_split_operations_for_impacted(
                         }),
                         PatchOperation::Replace(ReplaceOperation {
                             path: "/position".to_string().parse().unwrap(),
-                            value: if ponctual_item.position <= distance {
-                                json!(ponctual_item.position)
+                            value: if punctual_item.position <= distance {
+                                json!(punctual_item.position)
                             } else {
-                                json!(ponctual_item.position - distance)
+                                json!(punctual_item.position - distance)
                             },
                         }),
                     ]),
                 }));
             }
             ObjectType::Detector => {
-                let ponctual_item = infra_cache.get_detector(&obj.obj_id).unwrap();
+                let punctual_item = infra_cache.get_detector(&obj.obj_id).unwrap();
                 operations.push(Operation::Update(UpdateOperation {
                     obj_type: obj.obj_type,
                     obj_id: obj.obj_id.to_string(),
                     railjson_patch: Patch(vec![
                         PatchOperation::Replace(ReplaceOperation {
                             path: "/track".to_string().parse().unwrap(),
-                            value: if ponctual_item.position <= distance {
+                            value: if punctual_item.position <= distance {
                                 json!(Identifier::from(left_tracksection_id))
                             } else {
                                 json!(Identifier::from(right_tracksection_id))
@@ -469,10 +469,10 @@ fn get_split_operations_for_impacted(
                         }),
                         PatchOperation::Replace(ReplaceOperation {
                             path: "/position".to_string().parse().unwrap(),
-                            value: if ponctual_item.position <= distance {
-                                json!(ponctual_item.position)
+                            value: if punctual_item.position <= distance {
+                                json!(punctual_item.position)
                             } else {
-                                json!(ponctual_item.position - distance)
+                                json!(punctual_item.position - distance)
                             },
                         }),
                     ]),

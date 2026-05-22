@@ -79,8 +79,8 @@ fn check_odd_location(
 ) -> Vec<InfraError> {
     let buffer_stop = buffer_stop.unwrap_buffer_stop();
     let track_id = &buffer_stop.track;
-    let is_linked_start = graph.has_neighbour(&TrackEndpoint::new(track_id, Endpoint::Begin));
-    let is_linked_end = graph.has_neighbour(&TrackEndpoint::new(track_id, Endpoint::End));
+    let is_linked_start = graph.has_neighbor(&TrackEndpoint::new(track_id, Endpoint::Begin));
+    let is_linked_end = graph.has_neighbor(&TrackEndpoint::new(track_id, Endpoint::End));
 
     // The track is not at the end of the infra
     if is_linked_end && is_linked_start {
@@ -125,8 +125,8 @@ fn check_missing(infra_cache: &InfraCache, graph: &Graph) -> Vec<InfraError> {
 
     for track in infra_cache.track_sections().values() {
         let track = track.unwrap_track_section();
-        let is_linked_start = graph.has_neighbour(&track.get_begin());
-        let is_linked_end = graph.has_neighbour(&track.get_end());
+        let is_linked_start = graph.has_neighbor(&track.get_begin());
+        let is_linked_end = graph.has_neighbor(&track.get_end());
         if is_linked_start && is_linked_end {
             continue;
         }

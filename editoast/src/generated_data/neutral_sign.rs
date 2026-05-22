@@ -46,14 +46,14 @@ impl GeneratedData for NeutralSignLayer {
             InvolvedObjects::from_operations(operations, infra_cache, ObjectType::NeutralSection);
 
         if !involved_objects.is_empty() {
-            let objs = involved_objects
+            let objects = involved_objects
                 .deleted
                 .iter()
                 .chain(involved_objects.updated.iter());
             delete(
                 dsl::infra_layer_neutral_sign
                     .filter(dsl::infra_id.eq(infra))
-                    .filter(dsl::obj_id.eq_any(objs)),
+                    .filter(dsl::obj_id.eq_any(objects)),
             )
             .execute(conn.write().await.deref_mut())
             .await?;

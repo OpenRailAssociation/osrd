@@ -212,8 +212,8 @@ impl<T: Send + 'static> FromIterator<Protected<T>> for Protected<Vec<T>> {
         Self {
             op: Box::new(move |openfga| {
                 async move {
-                    let futs = ops.into_iter().map(|op| op(openfga));
-                    futures::future::try_join_all(futs).await
+                    let futures = ops.into_iter().map(|op| op(openfga));
+                    futures::future::try_join_all(futures).await
                 }
                 .boxed()
             }),

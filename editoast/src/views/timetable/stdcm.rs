@@ -1564,9 +1564,9 @@ mod tests {
         payload.steps.push(build_step("SES"));
 
         // Four Stations [ "WS", "MWS", "MES", "SES" ]
-        // WS -> WMS
+        // WS -> MWS
         // Consist change
-        // WNS -> MES
+        // MWS -> MES
         // Consist change
         // MES -> SES
 

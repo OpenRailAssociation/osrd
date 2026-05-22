@@ -27,21 +27,25 @@ pub struct UntypedTuple {
 }
 
 #[derive(Debug, Clone)]
-pub enum UserOrUserSet<R: Relation> {
+pub enum UserOrUserset<R: Relation> {
     /// Direct user
     User(R::User),
-    /// Userset `"type:id#relation"`
-    UserSet(UntypedUserSet),
+    /// [Userset] `"type:id#relation"`
+    ///
+    /// [Userset]: https://openfga.dev/docs/modeling/building-blocks/usersets
+    Userset(UntypedUserset),
 }
 
-/// A userset reference extracted from an untyped tuple
+/// A [userset] reference extracted from an untyped tuple
+///
+/// [userset]: https://openfga.dev/docs/modeling/building-blocks/usersets
 #[derive(Debug, Clone)]
-pub struct UntypedUserSet {
+pub struct UntypedUserset {
     type_name: String,
     id: String,
 }
 
-impl UntypedUserSet {
+impl UntypedUserset {
     /// Tries to parse the userset's object as a specific type `T`
     pub fn as_type<T: Type>(&self) -> Option<T> {
         if self.type_name != T::NAMESPACE {
@@ -53,7 +57,7 @@ impl UntypedUserSet {
 
 impl UntypedTuple {
     /// Casts the untyped tuple to a typed relation.
-    pub fn as_relation<R: Relation>(&self, _relation: R) -> Option<(UserOrUserSet<R>, R::Object)> {
+    pub fn as_relation<R: Relation>(&self, _relation: R) -> Option<(UserOrUserset<R>, R::Object)> {
         if self.relation != R::NAME {
             return None;
         }
@@ -66,7 +70,7 @@ impl UntypedTuple {
 
         let user = if let Some((object_part, _relation)) = self.user.split_once('#') {
             let (type_name, id) = object_part.split_once(':')?;
-            UserOrUserSet::UserSet(UntypedUserSet {
+            UserOrUserset::Userset(UntypedUserset {
                 type_name: type_name.to_string(),
                 id: id.to_string(),
             })
@@ -74,7 +78,7 @@ impl UntypedTuple {
             let id_str = self
                 .user
                 .strip_prefix(&format!("{}:", R::User::NAMESPACE))?;
-            UserOrUserSet::User(id_str.parse().ok()?)
+            UserOrUserset::User(id_str.parse().ok()?)
         };
 
         Some((user, object))
