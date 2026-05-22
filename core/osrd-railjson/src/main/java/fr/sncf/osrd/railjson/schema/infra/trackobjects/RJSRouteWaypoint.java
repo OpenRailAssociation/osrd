@@ -20,7 +20,7 @@ public class RJSRouteWaypoint extends RJSTrackObject implements Identified {
     public String id;
 
     @Override
-    public String getID() {
+    public String getId() {
         return id;
     }
 }

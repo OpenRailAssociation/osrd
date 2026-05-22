@@ -46,7 +46,7 @@ public class RJSSpeedSection implements Identified {
     }
 
     @Override
-    public String getID() {
+    public String getId() {
         return id;
     }
 }
