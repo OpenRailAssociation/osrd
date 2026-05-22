@@ -151,10 +151,14 @@ class RouteBuilder(
     }
 
     fun build(): RJSRoute {
-        val res = RJSRoute(name, entry.waypointRef, entryDir, exit.waypointRef)
-        res.releaseDetectors = releaseDetectors.map { it.name }
-        res.switchesDirections = switchesDirections.mapKeys { it.key.name }
-        return res
+        return RJSRoute(
+            name,
+            entry.waypointRef,
+            entryDir,
+            exit.waypointRef,
+            releaseDetectors.map { it.name },
+            switchesDirections.mapKeys { it.key.name }.mapValues { it.value },
+        )
     }
 }
 

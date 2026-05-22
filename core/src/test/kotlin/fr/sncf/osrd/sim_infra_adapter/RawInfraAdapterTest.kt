@@ -122,8 +122,8 @@ class RawInfraAdapterTest {
                 RJSWaypointRef("det_at_transition", RJSWaypointRef.RJSWaypointType.DETECTOR),
                 START_TO_STOP,
                 RJSWaypointRef("det_end_new_route", RJSWaypointRef.RJSWaypointType.DETECTOR),
+                mapOf("PA0" to "A_B1"),
             )
-        newRoute.switchesDirections["PA0"] = "A_B1"
         parseRJSInfra(rjsInfra.copy(detectors = detectors, routes = listOf(newRoute)))
     }
 

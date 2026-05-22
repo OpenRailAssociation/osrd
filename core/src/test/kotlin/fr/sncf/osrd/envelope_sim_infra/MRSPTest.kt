@@ -88,16 +88,16 @@ class MRSPTest {
                 RJSWaypointRef("DA5", RJSWaypointRef.RJSWaypointType.DETECTOR),
                 EdgeDirection.START_TO_STOP,
                 RJSWaypointRef("DC0", RJSWaypointRef.RJSWaypointType.DETECTOR),
+                mapOf("PC0" to "A_B1"),
             )
-        route1.switchesDirections["PC0"] = "A_B1"
         val route2 =
             RJSRoute(
                 "DA5->DC1",
                 RJSWaypointRef("DA5", RJSWaypointRef.RJSWaypointType.DETECTOR),
                 EdgeDirection.START_TO_STOP,
                 RJSWaypointRef("DC1", RJSWaypointRef.RJSWaypointType.DETECTOR),
+                mapOf("PC0" to "A_B2"),
             )
-        route2.switchesDirections["PC0"] = "A_B2"
         val da5 = rjsInfra.detectors.first { d -> d.id == "DA5" }
         val dc0 = rjsInfra.detectors.first { d -> d.id == "DC0" }
         val dc1 = rjsInfra.detectors.first { d -> d.id == "DC1" }
