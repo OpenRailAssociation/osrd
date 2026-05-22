@@ -1,0 +1,2 @@
+-- Irreversible data correction migration.
+-- It normalizes malformed JSON values in-place.
