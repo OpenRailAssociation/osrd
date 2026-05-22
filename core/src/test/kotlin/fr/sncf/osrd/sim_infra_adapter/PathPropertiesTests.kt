@@ -45,13 +45,26 @@ class PathPropertiesTests {
             |----------------------------->         path forward (.5 to 3.5km)
                  <-------------------|              path backward (3 to 1km)
          */
-        val rjsInfra = Helpers.getExampleInfra("small_infra/infra.json")
-        for (track in rjsInfra.trackSections) {
-            if (track.id.equals("TA0")) // 2km long
-             track.slopes = listOf(RJSSlope(0.0, 1_000.0, 10.0), RJSSlope(1_000.0, 2_000.0, 15.0))
-            if (track.id.equals("TA1")) // 1.950km long
-             track.slopes = listOf(RJSSlope(1_000.0, 1_950.0, -5.0))
-        }
+        var rjsInfra = Helpers.getExampleInfra("small_infra/infra.json")
+        val newTracks =
+            rjsInfra.trackSections.map {
+                when (it.id) {
+                    "TA0" -> // 2km long
+                    it.copy(
+                            slopes =
+                                listOf(
+                                    RJSSlope(0.0, 1_000.0, 10.0),
+                                    RJSSlope(1_000.0, 2_000.0, 15.0),
+                                )
+                        )
+
+                    "TA1" -> // 1.950km long
+                    it.copy(slopes = listOf(RJSSlope(1_000.0, 1_950.0, -5.0)))
+
+                    else -> it
+                }
+            }
+        rjsInfra = rjsInfra.copy(trackSections = newTracks)
         val infra = fullInfraFromRJS(rjsInfra, InfraMetadata("modified_small_infra"))
 
         val path =
@@ -259,10 +272,20 @@ class PathPropertiesTests {
 
             <--------|         path backward (1.5 to .5km)
          */
-        val rjsInfra = Helpers.getExampleInfra("small_infra/infra.json")
-        for (track in rjsInfra.trackSections) if (track.id.equals("TA0"))
-            track.curves =
-                listOf(RJSCurve(0.0, 1_000.0, 5_000.0), RJSCurve(1_000.0, 2_000.0, 10_000.0))
+        var rjsInfra = Helpers.getExampleInfra("small_infra/infra.json")
+        val newTracks =
+            rjsInfra.trackSections.map {
+                if (it.id == "TA0")
+                    it.copy(
+                        curves =
+                            listOf(
+                                RJSCurve(0.0, 1_000.0, 5_000.0),
+                                RJSCurve(1_000.0, 2_000.0, 10_000.0),
+                            )
+                    )
+                else it
+            }
+        rjsInfra = rjsInfra.copy(trackSections = newTracks)
         val infra = fullInfraFromRJS(rjsInfra, InfraMetadata("modified_small_infra"))
         val pathBackward =
             pathFromTracks(infra, listOf("TA0"), Direction.DECREASING, 500.meters, 1_500.meters)
@@ -291,11 +314,18 @@ class PathPropertiesTests {
 
             <--------|         path backward (1.5 to .5km)
          */
-        val rjsInfra = Helpers.getExampleInfra("small_infra/infra.json")
-        for (track in rjsInfra.trackSections) if (track.id.equals("TA0")) {
-            track.slopes = listOf(RJSSlope(0.0, 1_000.0, 5.0), RJSSlope(1_000.0, 2_000.0, 15.0))
-            track.curves = listOf(RJSCurve(0.0, 1_000.0, 5_000.0))
-        }
+        var rjsInfra = Helpers.getExampleInfra("small_infra/infra.json")
+        val newTracks =
+            rjsInfra.trackSections.map {
+                if (it.id == "TA0")
+                    it.copy(
+                        slopes =
+                            listOf(RJSSlope(0.0, 1_000.0, 5.0), RJSSlope(1_000.0, 2_000.0, 15.0)),
+                        curves = listOf(RJSCurve(0.0, 1_000.0, 5_000.0)),
+                    )
+                else it
+            }
+        rjsInfra = rjsInfra.copy(trackSections = newTracks)
         val infra = fullInfraFromRJS(rjsInfra, InfraMetadata("modified_small_infra"))
         val pathBackward =
             pathFromTracks(infra, listOf("TA0"), Direction.DECREASING, 500.meters, 1_500.meters)
@@ -321,13 +351,24 @@ class PathPropertiesTests {
                |----------------------------->             path forward (.5 to 3.5km)
                     <-------------------|                  path backward (3 to 1km)
             */
-        val rjsInfra = Helpers.getExampleInfra("small_infra/infra.json")
-        for (track in rjsInfra.trackSections) {
-            if (track.id.equals("TA0"))
-                track.geo = RJSLineString.make(listOf(0.0, 1.0, 1.0), listOf(0.0, 0.0, 1.0))
-            if (track.id.equals("TA1"))
-                track.geo = RJSLineString.make(listOf(1.0, 2.0, 2.0), listOf(1.0, 1.0, 1.95))
-        }
+        var rjsInfra = Helpers.getExampleInfra("small_infra/infra.json")
+        val newTracks =
+            rjsInfra.trackSections.map {
+                when (it.id) {
+                    "TA0" ->
+                        it.copy(
+                            geo = RJSLineString.make(listOf(0.0, 1.0, 1.0), listOf(0.0, 0.0, 1.0))
+                        )
+
+                    "TA1" ->
+                        it.copy(
+                            geo = RJSLineString.make(listOf(1.0, 2.0, 2.0), listOf(1.0, 1.0, 1.95))
+                        )
+
+                    else -> it
+                }
+            }
+        rjsInfra = rjsInfra.copy(trackSections = newTracks)
         val infra = fullInfraFromRJS(rjsInfra, InfraMetadata("modified_small_infra"))
 
         val path =
@@ -459,18 +500,29 @@ class PathPropertiesTests {
 
                  <------------------------|             path backward (3.5 to 1km)
          */
-        val rjsInfra = Helpers.getExampleInfra("small_infra/infra.json")
-        for (track in rjsInfra.trackSections) {
-            if (track.id.equals("TA0"))
-                track.loadingGaugeLimits =
-                    listOf(RJSLoadingGaugeLimit(0.0, 2_000.0, RJSLoadingGaugeType.GA))
-            if (track.id.equals("TA1"))
-                track.loadingGaugeLimits =
-                    listOf(
-                        RJSLoadingGaugeLimit(0.0, 1_000.0, RJSLoadingGaugeType.GA),
-                        RJSLoadingGaugeLimit(1_000.0, 1_950.0, RJSLoadingGaugeType.GC),
-                    )
-        }
+        var rjsInfra = Helpers.getExampleInfra("small_infra/infra.json")
+        val newTracksForLoadingGauge =
+            rjsInfra.trackSections.map {
+                when (it.id) {
+                    "TA0" ->
+                        it.copy(
+                            loadingGaugeLimits =
+                                listOf(RJSLoadingGaugeLimit(0.0, 2_000.0, RJSLoadingGaugeType.GA))
+                        )
+
+                    "TA1" ->
+                        it.copy(
+                            loadingGaugeLimits =
+                                listOf(
+                                    RJSLoadingGaugeLimit(0.0, 1_000.0, RJSLoadingGaugeType.GA),
+                                    RJSLoadingGaugeLimit(1_000.0, 1_950.0, RJSLoadingGaugeType.GC),
+                                )
+                        )
+
+                    else -> it
+                }
+            }
+        rjsInfra = rjsInfra.copy(trackSections = newTracksForLoadingGauge)
         val infra = fullInfraFromRJS(rjsInfra, InfraMetadata("modified_small_infra"))
 
         val pathBackward =

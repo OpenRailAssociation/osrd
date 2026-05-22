@@ -51,8 +51,7 @@ class TrackSectionBuilder(val name: String, val length: Double) {
     }
 
     fun build(): RJSTrackSection {
-        val res = RJSTrackSection(name, length)
-        res.geo = geo
+        val res = RJSTrackSection(name, length, geo)
         return res
     }
 }
