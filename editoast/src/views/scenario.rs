@@ -1,5 +1,4 @@
 pub mod macro_nodes;
-pub mod macro_notes;
 
 use authz::Role;
 use axum::extract::Json;
