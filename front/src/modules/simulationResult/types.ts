@@ -17,7 +17,7 @@ import type {
 } from 'common/api/osrdEditoastApi';
 import type { PacedTrainWithDetails } from 'modules/trainSchedule/types';
 import type { OccurrenceId, PacedTrainId, TrainId } from 'reducers/osrdconf/types';
-import type { SelectedTrain } from 'reducers/simulationResults/types';
+import type { SelectedTrain, SelectionSource } from 'reducers/simulationResults/types';
 import type { ArrayElement } from 'utils/types';
 
 // This alias refers to an operational point, in the context of a given path, from Edistoast:
@@ -160,4 +160,9 @@ export type CurveStyleInput = {
   };
   selection: SelectedTrain | undefined;
   panelMode?: 'compliant' | 'all' | 'single';
+  hover?: {
+    trainId: TrainId;
+    from: SelectionSource;
+    exceptionType?: CurveStyleExceptionType;
+  };
 };
