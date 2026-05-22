@@ -13,7 +13,7 @@ java {
 
 dependencies {
     // PLEASE ADD AND UPDATE DEPENDENCIES USING libs.versions.toml
-    
+
     implementation project(':osrd-mp')
 
     // fast primitive collections
@@ -22,6 +22,7 @@ dependencies {
     // JSON parsing
     api libs.moshi
     api libs.moshi.adapters
+    api libs.moshi.kotlin
 
     implementation libs.guava
 

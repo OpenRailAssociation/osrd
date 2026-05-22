@@ -187,19 +187,15 @@ class LogicalSignalBuilder(val signalingSystem: String) {
     }
 
     fun build(): RJSSignal.LogicalSignal {
-        val res = RJSSignal.LogicalSignal()
-        res.signalingSystem = signalingSystem
-        res.nextSignalingSystems = nextSignalingSystems
-        res.settings = settings
-        res.defaultParameters = defaultParameters
-        res.conditionalParameters =
+        return RJSSignal.LogicalSignal(
+            signalingSystem,
+            settings,
+            defaultParameters,
             conditionalParameters.map {
-                val cond = RJSSignal.LogicalSignal.ConditionalParameter()
-                cond.onRoute = it.onRoute.name
-                cond.parameters = it.parameters
-                cond
-            }
-        return res
+                RJSSignal.LogicalSignal.ConditionalParameter(it.onRoute.name, it.parameters)
+            },
+            nextSignalingSystems,
+        )
     }
 }
 
@@ -227,9 +223,14 @@ class PhysicalSignalBuilder(
 
     fun build(defaultSightDistance: Double?): RJSSignal {
         val distance = sightDistance ?: defaultSightDistance!!
-        val res = RJSSignal(location.track.name, location.offset, name, direction, distance, null)
-        res.logicalSignals = logicalSignals.map { it.build() }
-        return res
+        return RJSSignal(
+            location.track.name,
+            location.offset,
+            name,
+            direction,
+            distance,
+            logicalSignals.map { it.build() },
+        )
     }
 }
 

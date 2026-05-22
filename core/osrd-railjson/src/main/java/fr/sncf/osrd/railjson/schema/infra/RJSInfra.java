@@ -3,6 +3,7 @@ package fr.sncf.osrd.railjson.schema.infra;
 import com.squareup.moshi.Json;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
+import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory;
 import fr.sncf.osrd.railjson.schema.common.ID;
 import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSBufferStop;
 import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSSignal;
@@ -15,8 +16,11 @@ import java.util.List;
 
 public class RJSInfra {
     /** Moshi adapter used to serialize and deserialize RJSInfra */
-    public static final JsonAdapter<RJSInfra> adapter =
-            new Moshi.Builder().add(ID.Adapter.FACTORY).build().adapter(RJSInfra.class);
+    public static final JsonAdapter<RJSInfra> adapter = new Moshi.Builder()
+            .add(ID.Adapter.FACTORY)
+            .addLast(new KotlinJsonAdapterFactory())
+            .build()
+            .adapter(RJSInfra.class);
 
     public static final transient String CURRENT_VERSION = "3.5.2";
 
