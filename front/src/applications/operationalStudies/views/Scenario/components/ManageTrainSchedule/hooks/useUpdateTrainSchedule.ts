@@ -95,11 +95,8 @@ const useUpdateTrainSchedule = (
   };
 
   return async function submitConfUpdateTrainSchedules() {
-    if (
-      !trainScheduleToEditData ||
-      !checkCurrentConfig(simulationConf, t, dispatch, rollingStock?.name)
-    )
-      return;
+    if (!trainScheduleToEditData || !checkCurrentConfig(simulationConf, t, dispatch)) return;
+    const rollingStockName = rollingStock?.name || '';
 
     setIsWorking(true);
 
@@ -109,7 +106,7 @@ const useUpdateTrainSchedule = (
     if (occurrenceId) {
       const { generatedException, occurrenceIndex } = formatOccurrenceException(
         simulationConf,
-        rollingStock!.name,
+        rollingStockName,
         trainScheduleToEditData as TrainScheduleToEditData & {
           occurrenceId: NonNullable<TrainScheduleToEditData['occurrenceId']>;
         }
@@ -152,7 +149,7 @@ const useUpdateTrainSchedule = (
     }
 
     // ========== user is editing the whole paced train or transforming from an unique train ==========
-    const trainSchedule = formatPacedTrainPayload(simulationConf, rollingStock!.name);
+    const trainSchedule = formatPacedTrainPayload(simulationConf, rollingStockName);
 
     const originalPacedExceptions = originalPacedTrain.paced?.exceptions ?? [];
 
