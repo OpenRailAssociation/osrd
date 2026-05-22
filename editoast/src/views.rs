@@ -21,7 +21,6 @@ mod server;
 pub mod sprites;
 pub mod stdcm_debug;
 pub mod stdcm_search_environment;
-pub mod study;
 pub mod sub_categories;
 pub mod temporary_speed_limits;
 pub mod timetable;
@@ -335,12 +334,12 @@ fn service_router() -> server::router::DocumentedRouter {
                     })
             })
             .nests("/studies", |path| {
-                path.route("/", post!(study::create))
-                    .route("/", get!(study::list))
+                path.route("/", post!(operational_studies::hierarchy::study::create))
+                    .route("/", get!(operational_studies::hierarchy::study::list))
                     .nests("/{study_id}", |path| {
-                        path.route("/", get!(study::get))
-                            .route("/", delete!(study::delete))
-                            .route("/", patch!(study::patch))
+                        path.route("/", get!(operational_studies::hierarchy::study::get))
+                            .route("/", delete!(operational_studies::hierarchy::study::delete))
+                            .route("/", patch!(operational_studies::hierarchy::study::patch))
                     })
             })
             .nests("/scenarios", |path| {
