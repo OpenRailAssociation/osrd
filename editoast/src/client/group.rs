@@ -96,19 +96,20 @@ pub async fn group_info(
     pool: Arc<DbConnectionPoolV2>,
 ) -> anyhow::Result<()> {
     let openfga = openfga_config.into_client().await?;
+    let conn = pool.get().await?;
     let system = SystemAuthorizer {
         openfga: &openfga,
-        conn: pool.get().await?,
+        conn: conn.clone(),
     };
     let Some(editoast_models::Group {
         id: group_id,
         name: _,
-    }) = editoast_models::Group::retrieve(pool.get().await?, name.clone()).await?
+    }) = editoast_models::Group::retrieve(conn.clone(), name.clone()).await?
     else {
         tracing::error!(name, "No such group");
         return Ok(());
     };
-    let Some(group) = editoast_models::Group::retrieve(pool.get().await?, group_id).await? else {
+    let Some(group) = editoast_models::Group::retrieve(conn.clone(), group_id).await? else {
         tracing::error!(group.id = group_id, "No such group");
         return Ok(());
     };
@@ -127,11 +128,11 @@ pub async fn group_info(
     println!("name   : {}", group.name);
     println!("members:");
     for authz::User(user_id) in user_ids {
-        let Some(user) = editoast_models::User::retrieve(pool.get().await?, user_id).await? else {
+        let Some(user) = editoast_models::User::retrieve(conn.clone(), user_id).await? else {
             tracing::error!(user.id = user_id, "user not found, skipping it!");
             continue;
         };
-        let identities = user.get_identities(pool.get().await?).await?;
+        let identities = user.get_identities(conn.clone()).await?;
         println!("- [{user_id}] {} ({})", user.name, identities.join(", "));
     }
     Ok(())
