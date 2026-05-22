@@ -93,17 +93,17 @@ linkme = "0.3.36"
 mvt = "0.13.0"
 object_store = { version = "0.13.2", features = ["aws"] }
 openssl = "0.10.80"
-opentelemetry = { version = "0.31.0", default-features = false, features = [
+opentelemetry = { version = "0.32.0", default-features = false, features = [
   "trace",
 ] }
-opentelemetry-otlp = { version = "0.31.1", default-features = false, features = [
+opentelemetry-otlp = { version = "0.32.0", default-features = false, features = [
   "grpc-tonic",
   "trace",
 ] }
-opentelemetry-semantic-conventions = { version = "0.31", features = [
+opentelemetry-semantic-conventions = { version = "0.32", features = [
   "semconv_experimental",
 ] }
-opentelemetry_sdk = { version = "0.31.0", default-features = false, features = [
+opentelemetry_sdk = { version = "0.32.0", default-features = false, features = [
   "internal-logs",
   "rt-tokio",
   "trace",
