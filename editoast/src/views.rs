@@ -91,7 +91,7 @@ fn service_router() -> server::router::DocumentedRouter {
                 path.route("/grants", post!(authz::update_grants))
                     .route(
                         "/{resource_type}/{resource_id}",
-                        get!(authz::my_grants_on_ressource),
+                        get!(authz::my_grants_on_resource),
                     )
                     .nests("/me", |path| {
                         path.route("/", get!(authz::whoami))
