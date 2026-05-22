@@ -135,7 +135,6 @@ const ManageTrainSchedule = () => {
         <span className="rolling-stock-name">{t('tabs.rollingStock')}</span>
       </div>
     ),
-    withWarning: rollingStockId === undefined,
     label: t('tabs.rollingStock'),
     content: (
       <div className="rolling-stock-tab">
@@ -171,7 +170,8 @@ const ManageTrainSchedule = () => {
         </span>
       </div>
     ),
-    withWarning: !origin || !destination || !pathProperties || pathfindingState.error,
+    withWarning:
+      !origin || !destination || (rollingStock && (!pathProperties || pathfindingState.error)),
     label: t('tabs.pathFinding'),
     content: (
       <div className="osrd-config-item-container-map" data-testid="map">
