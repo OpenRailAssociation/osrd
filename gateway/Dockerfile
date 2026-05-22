@@ -47,7 +47,7 @@ COPY . .
 #######################
 # Running env : build #
 #######################
-FROM alpine:3.23 AS running_env
+FROM alpine:3.23.4 AS running_env
 RUN apk add --no-cache curl ca-certificates bind-tools jq
 WORKDIR /srv
 COPY --from=run_builder /cargo_gateway/bin/osrd_gateway /usr/local/bin/osrd_gateway
