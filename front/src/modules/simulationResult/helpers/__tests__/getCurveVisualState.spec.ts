@@ -111,7 +111,7 @@ describe('getCurveVisualState', () => {
     );
   });
 
-  describe('B.* - selection from STD', () => {
+  describe('B.* - selection from std', () => {
     // B.6 is covered by the B.3 tests: the helper sees the same inputs in both cases.
     // B.7 is not tested here: the dispatch resets `by` to 'timetable', so the helper
     // falls back to the A.* rules.
@@ -378,7 +378,7 @@ describe('getCurveVisualState', () => {
     });
   });
 
-  describe('C.* - selection from TOD', () => {
+  describe('C.* - selection from tod', () => {
     // C.6 is covered by the C.3 tests: the helper sees the same inputs in both cases.
     // C.7 does not exist in the matrix.
 
@@ -587,5 +587,219 @@ describe('getCurveVisualState', () => {
         )
       ).toBe('passivePrimary');
     });
+  });
+
+  describe('D.* - rest / hover', () => {
+    it.each(['std', 'tod'] as const)('D.1 - no selection, no hover on %s, it should return none', (chart) => {
+      expect(
+        getCurveVisualState(
+          buildInput({
+            chart,
+            train: { id: PACED_1 },
+            selection: undefined,
+          })
+        )
+      ).toBe('none');
+    });
+
+    it.each(['std', 'tod'] as const)(
+      'D.2 - hover on a unique train from train list on %s, it should return hover (self only)',
+      (chart) => {
+        expect(
+          getCurveVisualState(
+            buildInput({
+              chart,
+              train: { id: PACED_1 },
+              hover: { trainId: PACED_1, from: 'timetable' },
+            })
+          )
+        ).toBe('hover');
+      }
+    );
+
+    it.each(['std', 'tod'] as const)(
+      'D.2 - other paced is not affected by the hover on %s, it should return none',
+      (chart) => {
+        expect(
+          getCurveVisualState(
+            buildInput({
+              chart,
+              train: { id: PACED_2 },
+              hover: { trainId: PACED_1, from: 'timetable' },
+            })
+          )
+        ).toBe('none');
+      }
+    );
+
+    it.each(['std', 'tod'] as const)(
+      'D.3 - hover on an occurrence from train list propagates to siblings on %s, it should return hover',
+      (chart) => {
+        expect(
+          getCurveVisualState(
+            buildInput({
+              chart,
+              train: { id: PACED_1_OCC_3 },
+              hover: { trainId: PACED_1_OCC_2, from: 'timetable' },
+            })
+          )
+        ).toBe('hover');
+      }
+    );
+
+    it.each(['std', 'tod'] as const)(
+      'D.4 - hover from std on no-exception train propagates to siblings without start_time exception on %s, it should return hover',
+      (chart) => {
+        expect(
+          getCurveVisualState(
+            buildInput({
+              chart,
+              train: { id: PACED_1_OCC_3 },
+              hover: { trainId: PACED_1_OCC_2, from: 'std' },
+            })
+          )
+        ).toBe('hover');
+      }
+    );
+
+    it.each(['std', 'tod'] as const)(
+      'D.4 - hover from std on no-exception train does not propagate to siblings with start_time exception on %s, it should return none',
+      (chart) => {
+        expect(
+          getCurveVisualState(
+            buildInput({
+              chart,
+              train: { id: PACED_1_OCC_3, exceptionType: 'start_time' },
+              hover: { trainId: PACED_1_OCC_2, from: 'std' },
+            })
+          )
+        ).toBe('none');
+      }
+    );
+
+    it.each(['std', 'tod'] as const)(
+      'D.5 - hover from std on a start_time exception on %s, it should return hover (self only)',
+      (chart) => {
+        expect(
+          getCurveVisualState(
+            buildInput({
+              chart,
+              train: { id: PACED_1_OCC_2, exceptionType: 'start_time' },
+              hover: {
+                trainId: PACED_1_OCC_2,
+                from: 'std',
+                exceptionType: 'start_time',
+              },
+            })
+          )
+        ).toBe('hover');
+      }
+    );
+
+    it.each(['std', 'tod'] as const)(
+      'D.5 - hover from std on a start_time exception does not propagate to siblings on %s, it should return none',
+      (chart) => {
+        expect(
+          getCurveVisualState(
+            buildInput({
+              chart,
+              train: { id: PACED_1_OCC_3 },
+              hover: {
+                trainId: PACED_1_OCC_2,
+                from: 'std',
+                exceptionType: 'start_time',
+              },
+            })
+          )
+        ).toBe('none');
+      }
+    );
+
+    it.each(['std', 'tod'] as const)(
+      'D.6 - hover from tod on no-exception train propagates to siblings without path_and_schedule exception on %s, it should return hover',
+      (chart) => {
+        expect(
+          getCurveVisualState(
+            buildInput({
+              chart,
+              train: { id: PACED_1_OCC_3 },
+              hover: { trainId: PACED_1_OCC_2, from: 'tod' },
+            })
+          )
+        ).toBe('hover');
+      }
+    );
+
+    it.each(['std', 'tod'] as const)(
+      'D.6 - hover from tod on no-exception train does not propagate to siblings with path_and_schedule exception on %s, it should return none',
+      (chart) => {
+        expect(
+          getCurveVisualState(
+            buildInput({
+              chart,
+              train: { id: PACED_1_OCC_3, exceptionType: 'path_and_schedule' },
+              hover: { trainId: PACED_1_OCC_2, from: 'tod' },
+            })
+          )
+        ).toBe('none');
+      }
+    );
+
+    it.each(['std', 'tod'] as const)(
+      'D.7 - hover from tod on a path_and_schedule exception on %s, it should return hover (self only)',
+      (chart) => {
+        expect(
+          getCurveVisualState(
+            buildInput({
+              chart,
+              train: { id: PACED_1_OCC_2, exceptionType: 'path_and_schedule' },
+              hover: {
+                trainId: PACED_1_OCC_2,
+                from: 'tod',
+                exceptionType: 'path_and_schedule',
+              },
+            })
+          )
+        ).toBe('hover');
+      }
+    );
+
+    it.each(['std', 'tod'] as const)(
+      'D.7 - hover from tod on a path_and_schedule exception does not propagate to siblings on %s, it should return none',
+      (chart) => {
+        expect(
+          getCurveVisualState(
+            buildInput({
+              chart,
+              train: { id: PACED_1_OCC_3 },
+              hover: {
+                trainId: PACED_1_OCC_2,
+                from: 'tod',
+                exceptionType: 'path_and_schedule',
+              },
+            })
+          )
+        ).toBe('none');
+      }
+    );
+
+    it.each([
+      { chart: 'std', by: 'std' },
+      { chart: 'tod', by: 'tod' },
+    ] as const)(
+      'D.8 - hover on an already active curve on $chart, it should stay active',
+      ({ chart, by }) => {
+        expect(
+          getCurveVisualState(
+            buildInput({
+              chart,
+              train: { id: PACED_1_OCC_2 },
+              selection: { id: PACED_1_OCC_2, by },
+              hover: { trainId: PACED_1_OCC_2, from: by },
+            })
+          )
+        ).toBe('active');
+      }
+    );
   });
 });
