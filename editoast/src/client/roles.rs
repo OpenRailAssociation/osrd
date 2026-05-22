@@ -6,7 +6,6 @@ use anyhow::anyhow;
 use anyhow::bail;
 use authz;
 use authz::Role;
-use authz::StorageDriver;
 use authz::identity::GroupInfo;
 use authz::identity::UserInfo;
 use authz::v2::Authorizer;
@@ -19,8 +18,6 @@ use editoast_models::prelude::*;
 use itertools::Itertools as _;
 use strum::IntoEnumIterator;
 use tracing::info;
-
-use editoast_models::PgAuthDriver;
 
 use crate::authorizers::Rejection;
 use crate::authorizers::SystemAuthorizer;
@@ -114,11 +111,7 @@ impl Display for Subject {
     }
 }
 
-async fn parse_and_fetch_subject(
-    subject: &String,
-    driver: &PgAuthDriver,
-    conn: DbConnection,
-) -> anyhow::Result<Subject> {
+async fn parse_and_fetch_subject(subject: &String, conn: DbConnection) -> anyhow::Result<Subject> {
     let id = if let Ok(id) = subject.parse::<i64>() {
         id
     } else {
@@ -127,8 +120,15 @@ async fn parse_and_fetch_subject(
             .ok_or_else(|| anyhow!("No user with identity '{subject}' found"))?
             .id
     };
-    let subject = if let Some(info) = driver.get_user_info(id).await? {
-        Subject::new_user(id, info)
+    let subject = if let Some(user) = editoast_models::User::retrieve(conn.clone(), id).await? {
+        let identities = user.get_identities(conn.clone()).await?;
+        Subject::new_user(
+            id,
+            UserInfo {
+                name: user.name,
+                identities,
+            },
+        )
     } else if let Some(group) = Group::retrieve(conn, id).await? {
         Subject::new_group(id, GroupInfo { name: group.name })
     } else {
@@ -144,17 +144,16 @@ pub async fn list_subject_roles(
     openfga_config: OpenfgaConfig,
 ) -> anyhow::Result<()> {
     let regulator = openfga_config.into_regulator(pool.clone()).await?;
-    let roles =
-        match parse_and_fetch_subject(&subject, regulator.driver(), pool.get().await?).await? {
-            Subject {
-                id,
-                info: SubjectInfo::User(_),
-            } => regulator.user_roles(&authz::User(id)).await?,
-            Subject {
-                id,
-                info: SubjectInfo::Group(_),
-            } => regulator.group_roles(&authz::Group(id)).await?,
-        };
+    let roles = match parse_and_fetch_subject(&subject, pool.get().await?).await? {
+        Subject {
+            id,
+            info: SubjectInfo::User(_),
+        } => regulator.user_roles(&authz::User(id)).await?,
+        Subject {
+            id,
+            info: SubjectInfo::Group(_),
+        } => regulator.group_roles(&authz::Group(id)).await?,
+    };
     if roles.is_empty() {
         info!("{subject} has no roles assigned");
         return Ok(());
@@ -180,7 +179,6 @@ pub async fn add_roles(
     pool: Arc<DbConnectionPoolV2>,
     openfga_config: OpenfgaConfig,
 ) -> anyhow::Result<()> {
-    let driver = PgAuthDriver::new(pool.clone());
     let openfga = &openfga_config.into_client().await?;
     let system = SystemAuthorizer {
         openfga,
@@ -200,7 +198,7 @@ pub async fn add_roles(
             .collect_vec()
             .join(", "),
     );
-    let subject = parse_and_fetch_subject(&subject, &driver, pool.get().await?).await?;
+    let subject = parse_and_fetch_subject(&subject, pool.get().await?).await?;
     let add_roles = authz::v2::add_roles(subject.into_authz(), roles);
     match system.authorize(add_roles).await?.access().await? {
         Ok(()) => Ok(()),
@@ -216,7 +214,6 @@ pub async fn remove_roles(
     pool: Arc<DbConnectionPoolV2>,
     openfga_config: OpenfgaConfig,
 ) -> anyhow::Result<()> {
-    let driver = PgAuthDriver::new(pool.clone());
     let openfga = &openfga_config.into_client().await?;
     let system = SystemAuthorizer {
         openfga,
@@ -236,7 +233,7 @@ pub async fn remove_roles(
             .collect_vec()
             .join(", "),
     );
-    let subject = parse_and_fetch_subject(&subject, &driver, pool.get().await?).await?;
+    let subject = parse_and_fetch_subject(&subject, pool.get().await?).await?;
     let remove_roles = authz::v2::remove_roles(subject.into_authz(), roles);
     match system.authorize(remove_roles).await?.access().await? {
         Ok(()) => Ok(()),
