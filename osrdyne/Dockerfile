@@ -3,7 +3,7 @@
 ##############
 # Cargo chef #
 ##############
-FROM lukemathwalker/cargo-chef:0.1.77-rust-1.94-alpine3.23 AS chef
+FROM lukemathwalker/cargo-chef:0.1.77-rust-1.95-alpine3.23 AS chef
 WORKDIR /osrdyne
 ENV CARGO_HOME=/cargo_osrdyne
 ENV PATH="/cargo_editoast/bin:$PATH"
