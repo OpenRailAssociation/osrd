@@ -18,11 +18,11 @@ use thiserror::Error;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
 
+use super::OperationalStudiesOrderingParam;
 use super::project::ProjectError;
 use super::study::StudyError;
 use crate::error::InternalError;
 use crate::error::Result;
-use crate::views::operational_studies::OperationalStudiesOrderingParam;
 use crate::views::pagination::PaginatedList as _;
 use crate::views::pagination::PaginationQueryParams;
 use crate::views::pagination::PaginationStats;

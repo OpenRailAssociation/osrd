@@ -1,6 +1,6 @@
 use super::pagination::PaginatedList;
 use crate::error::Result;
-use crate::views::operational_studies::Ordering;
+use crate::views::operational_studies::hierarchy::Ordering;
 use crate::views::pagination::PaginationQueryParams;
 use crate::views::pagination::PaginationStats;
 use crate::views::path::projection::Intersection;
@@ -396,7 +396,7 @@ pub(in crate::views) struct GroupContentResponse {
 pub struct WorkScheduleOrderingParam {
     #[serde(default)]
     #[param(inline)]
-    pub ordering: Ordering,
+    pub ordering: Ordering, // FIXME: use a dedicated enum, that one is for projects/studies/scenarios and has superfluous variants
 }
 
 #[editoast_derive::route]
