@@ -172,6 +172,16 @@ If you run the stack with docker:
 EDITOAST_NO_CACHE=true ./osrd-compose up -d
 ```
 
+> [!TIP]
+>
+> One can drop the cache to trigger complete reprocessing or to start from a fresh state.
+> Especially locally, the cache can be out of sync (internal model) and still be used (the local osrd's version is not updated).
+>
+> ```sh
+> # flush when using dockerized valkey
+> $ docker exec osrd-valkey valkey-cli flushdb
+> ```
+
 ## Authorization
 
 ### How to disable authorizations
