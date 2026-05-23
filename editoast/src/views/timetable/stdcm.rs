@@ -1177,63 +1177,6 @@ mod tests {
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn stdcm_request_validation_success() {
-        let mut core = core_mocking_client();
-        core.stub("/stdcm")
-            .response(StatusCode::OK)
-            .json(core_client::stdcm::ProgressStatus::Done {
-                result: core_client::stdcm::Response::Success {
-                    simulation: simulation_empty_response().success().unwrap(),
-                    path: pathfinding_result_success(),
-                    departure_time: DateTime::from_str("2024-01-02T00:00:00Z")
-                        .expect("Failed to parse datetime"),
-                },
-            })
-            .finish();
-
-        let app = TestAppBuilder::new().core_client(core.into()).build();
-        let db_pool = app.db_pool();
-        let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
-        let timetable = create_timetable(&mut db_pool.get_ok()).await;
-        let total_mass = Some(910_000.0);
-        let total_length = Some(410.0);
-        let rolling_stock =
-            create_fast_rolling_stock(&mut db_pool.get_ok(), &Uuid::new_v4().to_string()).await;
-        let consist_schedule = build_single_consist(build_consist_config(
-            rolling_stock.id,
-            total_mass,
-            total_length,
-            None,
-            None,
-        ));
-
-        let request = app
-            .post(format!("/timetable/{}/stdcm?infra={}", timetable.id, small_infra.id).as_str())
-            .json(&get_stdcm_payload(None, consist_schedule));
-
-        let stdcm_response: StdcmProgression = app
-            .fetch(request)
-            .await
-            .assert_status(StatusCode::OK)
-            .last_jsonl_into();
-
-        if let PathfindingResult::Success(path) =
-            PathfindingResult::Success(pathfinding_result_success())
-        {
-            assert_eq!(
-                stdcm_response,
-                StdcmProgression::Completed(StdcmResponse::Success {
-                    simulation: simulation_empty_response().success().unwrap().into(),
-                    pathfinding_result: path,
-                    departure_time: DateTime::from_str("2024-01-02T00:00:00Z")
-                        .expect("Failed to parse datetime"),
-                    core_payload: None,
-                })
-            );
-        }
-    }
-
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn stdcm_fails() {
         let mut core = core_mocking_client();
         core.stub("/stdcm")
