@@ -8,14 +8,15 @@ COPY --chown=gradle:gradle . .
 # Remove broken symlink (to prevent kaniko from crashing)
 RUN --mount=type=cache,target=/home/gradle/.gradle \
     --mount=type=cache,target=/home/gradle/src/build \
-    gradle shadowJar --no-daemon && \
+    gradle --no-daemon shadowJar copyOtelAgent && \
     cp build/libs/osrd-all.jar / && \
+    cp build/libs/agent/opentelemetry-javaagent.jar / && \
     rm  -rf /root/.kotlin/daemon/kotlin-daemon.* /tmp/hsperfdata_root/ /tmp/kotlin-daemon.*
 
 #### Running stage
 FROM eclipse-temurin:25 AS running_env
 
-ADD 'https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/latest/download/opentelemetry-javaagent.jar' /app/opentelemetry-javaagent.jar
+COPY --from=build_env /opentelemetry-javaagent.jar /app/opentelemetry-javaagent.jar
 COPY --from=build_env /osrd-all.jar /app/osrd_core.jar
 
 ARG OSRD_GIT_DESCRIBE
