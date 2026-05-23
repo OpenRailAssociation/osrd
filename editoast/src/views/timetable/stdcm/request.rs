@@ -398,8 +398,8 @@ impl ConsistConfiguration {
         let consist_max_speed = consist_max_speed.floor::<meter_per_second>();
 
         if let Some(request_max_speed) = self.max_speed
-            && request_max_speed < quantities::Velocity::new::<meter_per_second>(0.0)
-            && request_max_speed > consist_max_speed
+            && (request_max_speed < quantities::Velocity::new::<meter_per_second>(0.0)
+                || request_max_speed > consist_max_speed)
         {
             return Err(StdcmError::InvalidConsistMaxSpeed {
                 provided_consist_max_speed: request_max_speed.value,
