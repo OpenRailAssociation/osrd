@@ -1024,8 +1024,32 @@ mod tests {
         }
     }
 
+    #[rstest::rstest]
+    #[case::incorrect_mass(
+        Some(80_000.0),
+        None,
+        None,
+        "editoast:stdcm:InvalidConsistMass",
+        "expected_min",
+        900_000.0
+    )]
+    #[case::incorrect_length(
+        None,
+        Some(300.0),
+        None,
+        "editoast:stdcm:InvalidConsistLength",
+        "expected_min",
+        400.0
+    )]
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn stdcm_request_mass_validation() {
+    async fn stdcm_request_validation(
+        #[case] total_mass: Option<f64>,
+        #[case] total_length: Option<f64>,
+        #[case] max_speed: Option<f64>,
+        #[case] expected_error_type: &str,
+        #[case] expected_context_key: &str,
+        #[case] expected_context_value: f64,
+    ) {
         let mut core = core_mocking_client();
         core.stub("/stdcm")
             .response(StatusCode::OK)
@@ -1045,57 +1069,9 @@ mod tests {
             create_fast_rolling_stock(&mut db_pool.get_ok(), &Uuid::new_v4().to_string()).await;
         let consist_schedule = build_single_consist(build_consist_config(
             rolling_stock.id,
-            Some(80_000.0),
-            None,
-            None,
-            None,
-        ));
-
-        let request = app
-            .post(format!("/timetable/{}/stdcm?infra={}", timetable.id, small_infra.id).as_str())
-            .json(&get_stdcm_payload(None, consist_schedule));
-
-        let stdcm_response: InternalError = app
-            .fetch(request)
-            .await
-            .assert_status(StatusCode::BAD_REQUEST)
-            .json_into();
-
-        assert_eq!(
-            stdcm_response.error_type,
-            "editoast:stdcm:InvalidConsistMass".to_string()
-        );
-        assert_eq!(
-            stdcm_response.context["expected_min"].as_f64(),
-            Some(900000.0)
-        );
-    }
-
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn stdcm_request_length_validation() {
-        let mut core = core_mocking_client();
-        core.stub("/stdcm")
-            .response(StatusCode::OK)
-            .json(core_client::stdcm::Response::Success {
-                simulation: simulation_empty_response().success().unwrap(),
-                path: pathfinding_result_success(),
-                departure_time: DateTime::from_str("2024-01-02T00:00:00Z")
-                    .expect("Failed to parse datetime"),
-            })
-            .finish();
-
-        let app = TestAppBuilder::new().core_client(core.into()).build();
-        let db_pool = app.db_pool();
-        let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
-        let timetable = create_timetable(&mut db_pool.get_ok()).await;
-        let total_length = Some(300.0);
-        let rolling_stock =
-            create_fast_rolling_stock(&mut db_pool.get_ok(), &Uuid::new_v4().to_string()).await;
-        let consist_schedule = build_single_consist(build_consist_config(
-            rolling_stock.id,
-            None,
+            total_mass,
             total_length,
-            None,
+            max_speed,
             None,
         ));
 
@@ -1109,11 +1085,13 @@ mod tests {
             .assert_status(StatusCode::BAD_REQUEST)
             .json_into();
 
+        assert_eq!(stdcm_response.error_type, expected_error_type.to_string());
         assert_eq!(
-            stdcm_response.error_type,
-            "editoast:stdcm:InvalidConsistLength".to_string()
+            stdcm_response.context[expected_context_key]
+                .as_f64()
+                .unwrap(),
+            expected_context_value
         );
-        assert_eq!(stdcm_response.context["expected_min"].as_f64(), Some(400.0));
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
