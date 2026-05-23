@@ -1041,6 +1041,14 @@ mod tests {
         "expected_min",
         400.0
     )]
+    #[case::incorrect_max_speed(
+        None,
+        None,
+        Some(-1_337.0),
+        "editoast:stdcm:InvalidConsistMaxSpeed",
+        "expected_max",
+        80.0
+    )]
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn stdcm_request_validation(
         #[case] total_mass: Option<f64>,
