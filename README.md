@@ -101,7 +101,6 @@ environment. If you are a user of `nix` package manager, you can `nix shell` to
 enter a shell where all the necessary components to develop are available.
 First, you need to set up 2 things:
 - `export OSRD_PATH="$(pwd)"`
-- download [`opentelemetry-javaagent.jar`](https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/latest/download/opentelemetry-javaagent.jar) in `core/`
 
 Then, you can start the stack with the two following commands.
 
