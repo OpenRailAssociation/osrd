@@ -128,6 +128,10 @@ base.archivesName = "osrd"
 
 run {
     enableAssertions = true
+    doFirst {
+        def agentJar = configurations.otelAgent.files.find { it.name.contains("opentelemetry-javaagent") }
+        jvmArgs=["-javaagent:${agentJar.absolutePath}"]
+    }
 }
 
 // endregion

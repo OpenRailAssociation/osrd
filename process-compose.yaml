@@ -15,7 +15,6 @@ processes:
     environment:
       - "ALL_INFRA=true"
       - "CORE_EDITOAST_URL=http://localhost:8090"
-      - "JAVA_TOOL_OPTIONS=-ea -javaagent:${OSRD_PATH}/core/opentelemetry-javaagent.jar"
       - "CORE_MONITOR_TYPE=opentelemetry"
       - "OTEL_SERVICE_NAME=osrd-core"
       - "VALKEY_URL=redis://localhost"
