@@ -86,12 +86,19 @@ impl MockingClient {
         req_path: &str,
         req_body: Option<&B>,
     ) -> Result<Option<R::Response>, MockingError> {
+        let req_body_str =
+            req_body.map(|b| serde_json::to_string(b).expect("could not serialize request body"));
         match (
-            req_body.map(|b| serde_json::to_string(b).expect("could not serialize request body")),
+            req_body_str.clone(),
             stub.body.as_ref().map(|b| b.as_str().to_string()),
         ) {
             (Some(actual), Some(expected)) => assert_eq!(actual, expected, "request body mismatch"),
             (None, Some(expected)) => panic!("missing request body: '{expected}'"),
+            _ => (),
+        }
+        match (req_body_str, stub.on_body.as_ref()) {
+            (Some(actual), Some(on_body)) => on_body(actual.as_str()),
+            (None, Some(_)) => panic!("missing request body"),
             _ => (),
         }
         let response = stub
@@ -121,9 +128,14 @@ impl MockingClient {
 }
 
 /// A stub request used to assert the validity of an incoming request to mock
-#[derive(Debug, Clone)]
+#[derive(Clone, educe::Educe)]
+#[educe(Debug)]
 pub struct StubRequest {
     body: Option<Arc<String>>,
+    #[educe(Debug(ignore))]
+    #[allow(clippy::type_complexity)]
+    // ALLOW: for tests, it’s probably fine
+    on_body: Option<Arc<dyn Fn(&str)>>,
     response: Option<StubResponse>,
 }
 
@@ -138,10 +150,15 @@ pub struct StubResponse {
     body: Option<Arc<String>>,
 }
 
-#[derive(Debug)]
+#[derive(educe::Educe)]
+#[educe(Debug)]
 pub struct StubRequestBuilder<'a> {
     path: String,
     body: Option<Arc<String>>,
+    #[educe(Debug(ignore))]
+    #[allow(clippy::type_complexity)]
+    // ALLOW: for tests, it’s probably fine
+    on_body: Option<Arc<dyn Fn(&str)>>,
     client: &'a mut MockingClient,
 }
 
@@ -157,6 +174,7 @@ impl<'a> StubRequestBuilder<'a> {
         Self {
             path,
             body: None,
+            on_body: None,
             client,
         }
     }
@@ -168,6 +186,18 @@ impl<'a> StubRequestBuilder<'a> {
     #[must_use = "call .finish() to register the stub request"]
     pub fn body<B: AsRef<str>>(mut self, body: B) -> Self {
         self.body = Some(Arc::new(body.as_ref().to_string()));
+        self
+    }
+
+    /// Assert on the expected body of the expected outgoing request
+    ///
+    /// Fine-grained version of [StubRequestBuilder::body] where you are
+    /// given the outgoing request and can do whatever you want on it (like
+    /// assertions).
+    #[allow(unused)]
+    #[must_use = "call .finish() to register the stub request"]
+    pub fn on_body<C: for<'c> Fn(&'c str) + 'static>(mut self, closure: C) -> Self {
+        self.on_body = Some(Arc::new(closure));
         self
     }
 
@@ -193,6 +223,7 @@ impl<'a> StubRequestBuilder<'a> {
             .unwrap()
             .push_back(StubRequest {
                 body: self.body,
+                on_body: self.on_body,
                 response: None,
             })
     }
@@ -204,6 +235,7 @@ impl<'a> StubRequestBuilder<'a> {
             .map(Some)
             .map(|response| StubRequest {
                 body: self.body.clone(),
+                on_body: self.on_body.clone(),
                 response,
             })
             .for_each(|stub| stubs.deref().lock().unwrap().push_back(stub));
