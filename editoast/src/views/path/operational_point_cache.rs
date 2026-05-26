@@ -8,6 +8,7 @@ use schemas::primitives::NonBlankString;
 use schemas::train_schedule::OperationalPointPartReference;
 use schemas::train_schedule::OperationalPointReference;
 use schemas::train_schedule::PathItemLocation;
+use std::borrow::Borrow;
 use std::collections::HashMap;
 use std::collections::HashSet;
 
@@ -44,10 +45,10 @@ impl OperationalPointCache {
     /// an operational point can be retrieved using any of its identifiers,
     /// not just the one used to build the cache.
     #[tracing::instrument(skip(conn), err)]
-    pub async fn load_path_items(
+    pub async fn load_path_items<L: Borrow<PathItemLocation> + std::fmt::Debug + Sync>(
         mut conn: DbConnection,
         infra_id: i64,
-        path_items: &[PathItemLocation],
+        path_items: &[L],
     ) -> Result<OperationalPointCache> {
         if path_items.is_empty() {
             return Ok(OperationalPointCache::default());
@@ -58,7 +59,7 @@ impl OperationalPointCache {
             infra_id,
             &path_items
                 .iter()
-                .filter_map(|e| match e {
+                .filter_map(|e| match e.borrow() {
                     PathItemLocation::OperationalPointPartReference(op_ref) => {
                         Some(op_ref.operational_point.clone())
                     }
@@ -75,7 +76,7 @@ impl OperationalPointCache {
             .flat_map(|op| &op.parts)
             .map(|part| (infra_id, part.track.0.clone()));
 
-        let path_item_tracks = path_items.iter().filter_map(|item| match item {
+        let path_item_tracks = path_items.iter().filter_map(|item| match item.borrow() {
             PathItemLocation::TrackOffset(TrackOffset { track, .. }) => {
                 Some((infra_id, track.0.clone()))
             }
@@ -229,13 +230,14 @@ impl OperationalPointCache {
     }
 
     /// Extract locations from path items
-    pub fn extract_location_from_path_items(
+    pub fn extract_location_from_path_items<L: Borrow<PathItemLocation>>(
         &self,
-        path_items: &[PathItemLocation],
+        path_items: &[L],
     ) -> TrackOffsetResult {
         let mut result: Vec<Vec<_>> = Vec::default();
         let mut invalid_path_items = Vec::new();
         for (index, path_item) in path_items.iter().enumerate() {
+            let path_item = path_item.borrow();
             let track_offsets = match path_item {
                 PathItemLocation::TrackOffset(track_offset) => {
                     vec![track_offset.clone()]

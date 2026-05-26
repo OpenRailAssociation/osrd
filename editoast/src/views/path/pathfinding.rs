@@ -315,7 +315,6 @@ async fn pathfinding_blocks_batch(
         .iter()
         .filter(|(_, res)| res.is_none())
         .flat_map(|(hash, _)| &path_request_map[*hash].path_items)
-        .cloned()
         .collect();
     let op_cache = OperationalPointCache::load_path_items(conn, infra.id, &path_items).await?;
 
