@@ -1,3 +1,4 @@
+use itertools::Itertools;
 use std::collections::BTreeSet;
 use std::collections::HashMap;
 use std::collections::hash_map::DefaultHasher;
@@ -428,11 +429,11 @@ fn build_pathfinding_request(
 /// Compute a path given a train schedule and an infrastructure.
 pub async fn pathfinding_from_train<T: TrainScheduleLike>(
     conn: DbConnection,
-    valkey: &mut cache::Connection,
+    valkey: cache::Connection,
     core: Arc<CoreClient>,
     infra: &Infra,
     train_schedule: T,
-    app_version: Option<&str>,
+    _app_version: Option<&str>,
 ) -> Result<PathfindingResult> {
     let Some(consist) =
         RollingStock::retrieve(conn.clone(), train_schedule.rolling_stock_name().to_owned())
@@ -449,22 +450,30 @@ pub async fn pathfinding_from_train<T: TrainScheduleLike>(
         ));
     };
 
-    Ok(Arc::unwrap_or_clone(
-        pathfinding_from_train_batch(
-            conn,
-            valkey,
-            core,
-            infra,
-            &[TrainScheduleWithConsist {
-                train_schedule,
-                consist,
-            }],
-            app_version,
-        )
-        .await?
-        .pop()
-        .unwrap(),
-    ))
+    use core_task::Task as _;
+    let path_items = train_schedule
+        .path()
+        .iter()
+        .map(|item| &item.location)
+        .collect_vec();
+    let op_cache =
+        OperationalPointCache::load_path_items(conn, infra.id, path_items.as_slice()).await?;
+
+    let pathfinding_input = PathfindingInput::from(&consist, &train_schedule);
+
+    let result = match build_pathfinding_request(&pathfinding_input, infra, &op_cache) {
+        Ok(request) => match request
+            .run(Arc::new(tokio::sync::Mutex::new(valkey)), core)
+            .await
+        {
+            Ok(path) => path.into(),
+            Err(core_error) => PathfindingResult::Failure(PathfindingFailure::InternalError {
+                core_error: core_error.into(),
+            }),
+        },
+        Err(err) => *err,
+    };
+    Ok(result)
 }
 
 #[derive(Debug, Clone)]

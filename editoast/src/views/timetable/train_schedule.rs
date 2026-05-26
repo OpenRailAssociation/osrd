@@ -625,7 +625,6 @@ pub(in crate::views) async fn get_path(
     Query(ExceptionQueryParam { exception_id }): Query<ExceptionQueryParam>,
 ) -> Result<Json<PathfindingResult>> {
     let conn = db_pool.get().await?;
-    let mut valkey_conn = valkey_client.get_connection().await?;
 
     let infra = Infra::retrieve_or_fail(conn.clone(), infra_id, || {
         TrainScheduleError::InfraNotFound { infra_id }
@@ -658,10 +657,11 @@ pub(in crate::views) async fn get_path(
         None => train_schedule.into_train_occurrence(),
     };
 
+    let valkey_conn = valkey_client.get_connection().await?;
     Ok(Json(
         pathfinding_from_train(
             conn,
-            &mut valkey_conn,
+            valkey_conn,
             core_client,
             &infra,
             train_schedule,
