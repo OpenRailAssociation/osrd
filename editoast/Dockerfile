@@ -35,16 +35,6 @@ RUN set -eux; \
     fi
 COPY --from=static_assets . /assets
 
-# install `fga` binary used when authorization is enabled (production) and in `crate fga` unit tests
-ADD --checksum=sha256:f5fc6a8e38260c8858f8724d268e4ccbd792a57436b2a6c56dd9ac06b91aa7f4 \
-    https://github.com/openfga/cli/releases/download/v0.6.5/fga_0.6.5_linux_amd64.tar.gz install/
-RUN cd install \
-    && tar xf fga_0.6.5_linux_amd64.tar.gz \
-    && mv fga /usr/local/bin \
-    && cd .. \
-    && rm -rf install
-
-
 #######################
 # Build assets        #
 #######################
@@ -69,6 +59,7 @@ RUN rustup component add llvm-tools && \
 COPY --from=planner /editoast/recipe.json recipe.json
 COPY --from=planner /editoast/editoast_derive/ editoast_derive
 COPY --from=test_data . /tests/data
+COPY --from=openfga/cli:v0.6.5 /fga /usr/local/bin/fga
 ENV RUSTFLAGS="-C target-feature=-crt-static -C link-arg=-fuse-ld=mold"
 ENV RUSTDOCFLAGS="-C target-feature=-crt-static -C link-arg=-fuse-ld=mold"
 ENV LLVM_PROFILE_FILE="editoast-%p-%m.profraw"
@@ -103,7 +94,7 @@ COPY --from=run_builder /cargo_editoast/bin/editoast /usr/local/bin/editoast
 COPY --from=run_builder /cargo_editoast/bin/fga_migrations /usr/local/bin/fga_migrations
 COPY --from=run_builder /editoast/migrations /migrations
 COPY --from=base_builder /cargo_editoast/bin/diesel /usr/local/bin/diesel
-COPY --from=base_builder /usr/local/bin/fga /usr/local/bin/fga
+COPY --from=openfga/cli:v0.6.5 /fga /usr/local/bin/fga
 COPY --from=editoast_assets /assets /assets
 
 ARG OSRD_GIT_DESCRIBE
