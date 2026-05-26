@@ -35,7 +35,7 @@ export const userInitialState: UserState = {
   impersonatedUser: undefined,
   loginError: undefined,
   username: '',
-  userPreferences: { safeWord: '', useNewTimesStopsTable: false },
+  userPreferences: { safeWord: '', useNewTimesStopsTable: true },
   userId: -1,
   userRoles: [],
   account: {},
