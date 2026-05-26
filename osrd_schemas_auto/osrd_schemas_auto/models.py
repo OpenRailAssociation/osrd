@@ -2939,6 +2939,11 @@ class ReplaceOperation(BaseModel):
     """
 
 
+class RequirementType(Enum):
+    TRAIN = "TRAIN"
+    WORK_SCHEDULE = "WORK_SCHEDULE"
+
+
 class RevokeBody(BaseModel):
     resource_id: int
     resource_type: Literal["infra"]
@@ -3233,13 +3238,6 @@ class SimDebugEngineeringAllowanceRange(BaseModel):
     added_duration: float
     from_: Annotated[float, Field(alias="from")]
     to: float
-
-
-class SimDebugTrainZoneRequirement(BaseModel):
-    begin_time: float
-    end_time: float
-    train_name: str | None = None
-    zone_name: str
 
 
 class SimDebugZoneLocation(BaseModel):
@@ -5003,6 +5001,11 @@ class ProjectWithStudies(Project):
     studies_count: Annotated[int, Field(ge=0)]
 
 
+class RequirementId(BaseModel):
+    id: str
+    type: RequirementType
+
+
 class Route(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
@@ -5131,6 +5134,13 @@ class SignalExtensions(BaseModel):
         extra="forbid",
     )
     sncf: SignalSncfExtension | None = None
+
+
+class SimDebugTrainZoneRequirement(BaseModel):
+    begin_time: float
+    end_time: float
+    source: RequirementId | None = None
+    zone_name: str
 
 
 class FinalOutput(CoreReportTrain):
@@ -5920,12 +5930,12 @@ class Signal(BaseModel):
 class SimDebugConflictReport(BaseModel):
     at: AwareDatetime
     best_remaining_time: float
-    caused_by: str
     current_travel_time: float
     lastOPName: str | None = None
     lat: float
     lon: float
     path_geometry: GeoJsonLineString | None = None
+    source: RequirementId | None = None
     time_lost: float
 
 

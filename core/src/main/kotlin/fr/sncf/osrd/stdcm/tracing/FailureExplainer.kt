@@ -5,6 +5,7 @@ import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import fr.sncf.osrd.api.S3Context
+import fr.sncf.osrd.conflicts.RequirementId
 import fr.sncf.osrd.railjson.schema.geom.RJSLineString
 import fr.sncf.osrd.sim_infra.api.BlockInfra
 import fr.sncf.osrd.sim_infra.api.RawInfra
@@ -39,7 +40,7 @@ class FailureExplainer(
     data class PendingConflict(
         val parentNode: STDCMNode,
         val timeLost: Double,
-        val cause: String,
+        val cause: RequirementId,
         val bestRemainingTime: Double,
     ) {
         private val nodeStr = parentNode.toString()
@@ -115,7 +116,7 @@ class FailureExplainer(
         @Json(name = "time_lost") val timeLost: Double,
         @Json(name = "best_remaining_time") val bestRemainingTime: Double,
         @Json(name = "current_travel_time") val currentTravelTime: Double,
-        @Json(name = "caused_by") val causedBy: String,
+        val source: RequirementId,
         val lat: Double,
         val lon: Double,
         val lastOPName: String?,
@@ -123,7 +124,7 @@ class FailureExplainer(
     )
 
     /** Register a new conflict. */
-    fun conflictCallback(parentNode: STDCMNode, timeLost: Double, cause: String) {
+    fun conflictCallback(parentNode: STDCMNode, timeLost: Double, cause: RequirementId) {
         val pendingConflict =
             PendingConflict(parentNode, timeLost, cause, parentNode.remainingTimeEstimation)
         largestConflicts.register(pendingConflict)

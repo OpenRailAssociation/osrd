@@ -36,12 +36,26 @@ enum StdcmDebugError {
 }
 
 #[derive(Serialize, Deserialize, ToSchema)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub(in crate::views) enum RequirementType {
+    Train,
+    WorkSchedule,
+}
+
+#[derive(Serialize, Deserialize, ToSchema)]
+pub(in crate::views) struct RequirementId {
+    id: String,
+    #[serde(rename = "type")]
+    requirement_type: RequirementType,
+}
+
+#[derive(Serialize, Deserialize, ToSchema)]
 pub(in crate::views) struct SimDebugConflictReport {
     at: DateTime<Utc>,
     time_lost: f64,
     best_remaining_time: f64,
     current_travel_time: f64,
-    caused_by: String,
+    source: Option<RequirementId>,
     lat: f64,
     lon: f64,
     #[serde(rename = "lastOPName")]
@@ -62,7 +76,7 @@ pub(in crate::views) struct SimDebugTrainZoneRequirement {
     zone_name: String,
     begin_time: f64,
     end_time: f64,
-    train_name: Option<String>,
+    source: Option<RequirementId>,
 }
 
 #[derive(Serialize, Deserialize, ToSchema)]

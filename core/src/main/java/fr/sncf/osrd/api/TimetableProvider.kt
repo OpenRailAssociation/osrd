@@ -8,6 +8,8 @@ import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import fr.sncf.osrd.api.conflicts.TrainRequirementsById
+import fr.sncf.osrd.conflicts.RequirementId
+import fr.sncf.osrd.conflicts.RequirementType
 import fr.sncf.osrd.conflicts.SpacingRequirement
 import fr.sncf.osrd.sim_infra.api.RawInfra
 import fr.sncf.osrd.sim_infra.api.ZoneId
@@ -181,7 +183,9 @@ class TimetableDownloader(
                             STDCMTimetableData.DetailedRequirement(
                                 requirement.beginTime,
                                 requirement.endTime,
-                                trainRequirementById.trainName,
+                                trainRequirementById.trainName?.let {
+                                    RequirementId(it, RequirementType.TRAIN)
+                                },
                             )
                         )
                 }

@@ -18,6 +18,8 @@ import fr.sncf.osrd.api.standalone_sim.SimulationRequest
 import fr.sncf.osrd.api.stdcm.STDCMEndpoint
 import fr.sncf.osrd.api.stdcm.stdcmRequestAdapter
 import fr.sncf.osrd.cli.ValidateInfra.parseRailJSONFromFile
+import fr.sncf.osrd.conflicts.RequirementId
+import fr.sncf.osrd.conflicts.RequirementType
 import fr.sncf.osrd.conflicts.SpacingRequirement
 import fr.sncf.osrd.sim_infra.api.RawInfra
 import fr.sncf.osrd.sim_infra.api.ZoneId
@@ -211,7 +213,7 @@ class JSONTimetableReader(val jsonTimetablePath: String) : TimetableProvider {
                         STDCMTimetableData.DetailedRequirement(
                             spacingReq.beginTime,
                             spacingReq.endTime,
-                            train.trainName,
+                            train.trainName?.let { RequirementId(it, RequirementType.TRAIN) },
                         )
                     )
             }

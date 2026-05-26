@@ -13,6 +13,7 @@ import fr.sncf.osrd.api.standalone_sim.SimulationSuccess
 import fr.sncf.osrd.api.standalone_sim.polymorphicElectricalProfileAdapter
 import fr.sncf.osrd.api.standalone_sim.polymorphicSimulationResponseAdapter
 import fr.sncf.osrd.api.standalone_sim.polymorphicSpeedLimitSourceAdapter
+import fr.sncf.osrd.conflicts.RequirementId
 import fr.sncf.osrd.path.interfaces.PhysicsPath
 import fr.sncf.osrd.path.interfaces.TrainPath
 import fr.sncf.osrd.sim_infra.api.BlockInfra
@@ -70,7 +71,7 @@ data class TrainZoneRequirement(
     @Json(name = "zone_name") val zoneName: String,
     @Json(name = "begin_time") val beginTime: TimeDelta,
     @Json(name = "end_time") val endTime: TimeDelta,
-    @Json(name = "train_name") val trainName: String?,
+    val source: RequirementId?,
 )
 
 data class ZoneLocation(
@@ -173,7 +174,7 @@ fun makeOtherRequirements(
                     zoneName = rawInfra.getZoneName(zoneRange.value),
                     beginTime = beginTime.seconds,
                     endTime = endTime.seconds,
-                    trainName = metadata.trainName,
+                    source = metadata.source,
                 )
             )
         }

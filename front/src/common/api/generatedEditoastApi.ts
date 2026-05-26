@@ -4354,15 +4354,20 @@ export type SimilarTrainWaypoint = {
   id: string;
   stop: boolean;
 };
+export type RequirementType = 'TRAIN' | 'WORK_SCHEDULE';
+export type RequirementId = {
+  id: string;
+  type: RequirementType;
+};
 export type SimDebugConflictReport = {
   at: string;
   best_remaining_time: number;
-  caused_by: string;
   current_travel_time: number;
   lastOPName?: string | null;
   lat: number;
   lon: number;
   path_geometry?: GeoJsonLineString;
+  source?: null | RequirementId;
   time_lost: number;
 };
 export type SimDebugFailureReport = {
@@ -4377,7 +4382,7 @@ export type SimDebugEngineeringAllowanceRange = {
 export type SimDebugTrainZoneRequirement = {
   begin_time: number;
   end_time: number;
-  train_name?: string | null;
+  source?: null | RequirementId;
   zone_name: string;
 };
 export type CoreReportTrain = {

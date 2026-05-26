@@ -533,7 +533,7 @@ fun getRequirements(
                     STDCMTimetableData.DetailedRequirement(
                         spacingReq.beginTime,
                         spacingReq.endTime,
-                        convertedWorkSchedule.id.id,
+                        convertedWorkSchedule.id,
                     )
                 )
         }
@@ -577,7 +577,7 @@ fun getRequirements(
                     STDCMTimetableData.DetailedRequirement(
                         metadata.from - searchWindowBeginEpoch,
                         metadata.to - searchWindowBeginEpoch,
-                        metadata.trainName,
+                        metadata.source,
                     )
                 )
             }

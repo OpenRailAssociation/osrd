@@ -21,8 +21,8 @@ type DebugBlock = {
   spaceStart: number;
   spaceEnd: number;
   zoneName: string;
-  trainName: string;
-  kind: 'other' | 'zone_update' | 'spacing_req';
+  sourceName: string;
+  kind: 'other' | 'work_schedule' | 'zone_update' | 'spacing_req';
 };
 
 type BlockLayerStyle = { fill: string; stroke: string };
@@ -31,6 +31,7 @@ const CHART_HEIGHT = 600;
 
 const KIND_LABEL: Record<DebugBlock['kind'], string> = {
   other: 'Other train',
+  work_schedule: 'Work schedule',
   zone_update: 'Zone update',
   spacing_req: 'Spacing requirement',
 };
@@ -58,6 +59,7 @@ function DebugBlocksLayer({ blocks, style }: { blocks: DebugBlock[]; style: Bloc
 
 const LAYER_STYLES: Record<DebugBlock['kind'], BlockLayerStyle> = {
   other: { fill: 'rgba(240, 128, 128, 0.5)', stroke: 'rgba(200, 60, 60, 0.9)' },
+  work_schedule: { fill: 'rgba(0, 0, 139, 0.3)', stroke: 'rgba(0, 0, 139, 0.9)' },
   zone_update: { fill: 'rgba(135, 206, 250, 0.5)', stroke: 'rgba(65, 105, 225, 0.9)' },
   spacing_req: { fill: 'rgba(244, 164, 96, 0.5)', stroke: 'rgba(210, 105, 30, 0.9)' },
 };
@@ -77,21 +79,22 @@ const DebugSpaceTimeChart = ({ simData }: DebugSpaceTimeChartProps) => {
     );
     const departureMs = Date.parse(simData.departure_time);
 
-    const otherBlocks: DebugBlock[] = simData.other_requirements.flatMap((req) => {
+    const otherBlocks: DebugBlock[] = [];
+    const workScheduleBlocks: DebugBlock[] = [];
+    for (const req of simData.other_requirements) {
       const pos = zoneMap.get(req.zone_name);
-      if (!pos) return [];
-      return [
-        {
-          timeStart: departureMs + req.begin_time,
-          timeEnd: departureMs + req.end_time,
-          spaceStart: pos.spaceStart,
-          spaceEnd: pos.spaceEnd,
-          zoneName: req.zone_name,
-          trainName: req.train_name ?? '',
-          kind: 'other',
-        },
-      ];
-    });
+      if (!pos) continue;
+      const isWorkSchedule = req.source?.type === 'WORK_SCHEDULE';
+      (isWorkSchedule ? workScheduleBlocks : otherBlocks).push({
+        timeStart: departureMs + req.begin_time,
+        timeEnd: departureMs + req.end_time,
+        spaceStart: pos.spaceStart,
+        spaceEnd: pos.spaceEnd,
+        zoneName: req.zone_name,
+        sourceName: req.source?.id ?? '(unknown)',
+        kind: isWorkSchedule ? 'work_schedule' : 'other',
+      });
+    }
 
     const finalOutput = simData.sim_output?.final_output;
 
@@ -113,7 +116,7 @@ const DebugSpaceTimeChart = ({ simData }: DebugSpaceTimeChartProps) => {
           spaceStart: pos.spaceStart,
           spaceEnd: pos.spaceEnd,
           zoneName: zone,
-          trainName: '',
+          sourceName: '',
           kind: 'zone_update',
         });
       }
@@ -130,7 +133,7 @@ const DebugSpaceTimeChart = ({ simData }: DebugSpaceTimeChartProps) => {
           spaceStart: pos.spaceStart,
           spaceEnd: pos.spaceEnd,
           zoneName: req.zone,
-          trainName: '',
+          sourceName: '',
           kind: 'spacing_req',
         });
       }
@@ -156,11 +159,17 @@ const DebugSpaceTimeChart = ({ simData }: DebugSpaceTimeChartProps) => {
           }
         : null;
 
-    const allBlocks = [...otherBlocks, ...zoneUpdateBlocks, ...spacingReqBlocks];
+    const allBlocks = [
+      ...otherBlocks,
+      ...workScheduleBlocks,
+      ...zoneUpdateBlocks,
+      ...spacingReqBlocks,
+    ];
 
     return {
       departureMs,
       otherBlocks,
+      workScheduleBlocks,
       zoneUpdateBlocks,
       spacingReqBlocks,
       allBlocks,
@@ -246,6 +255,10 @@ const DebugSpaceTimeChart = ({ simData }: DebugSpaceTimeChartProps) => {
             >
               <DebugBlocksLayer blocks={chartData.otherBlocks} style={LAYER_STYLES.other} />
               <DebugBlocksLayer
+                blocks={chartData.workScheduleBlocks}
+                style={LAYER_STYLES.work_schedule}
+              />
+              <DebugBlocksLayer
                 blocks={chartData.zoneUpdateBlocks}
                 style={LAYER_STYLES.zone_update}
               />
@@ -266,7 +279,7 @@ const DebugSpaceTimeChart = ({ simData }: DebugSpaceTimeChartProps) => {
         >
           <div>
             <strong>{KIND_LABEL[hoveredBlock.kind]}</strong>
-            {hoveredBlock.trainName && <span> — {hoveredBlock.trainName}</span>}
+            {hoveredBlock.sourceName && <span> — {hoveredBlock.sourceName}</span>}
           </div>
           <div className="debug-space-time-chart__tooltip-zone">{hoveredBlock.zoneName}</div>
         </div>

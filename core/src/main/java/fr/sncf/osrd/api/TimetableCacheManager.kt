@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableRangeSet
 import com.google.common.collect.Range
 import com.google.common.collect.RangeSet
 import com.google.common.collect.TreeRangeSet
+import fr.sncf.osrd.conflicts.RequirementId
 import fr.sncf.osrd.sim_infra.api.ZoneId
 import fr.sncf.osrd.utils.compress
 import fr.sncf.osrd.utils.decompress
@@ -43,7 +44,7 @@ data class STDCMTimetableData(
     val detailedRequirements: Map<ZoneId, List<DetailedRequirement>>,
 ) {
     @Serializable
-    data class DetailedRequirement(val from: Double, val to: Double, val trainName: String?)
+    data class DetailedRequirement(val from: Double, val to: Double, val source: RequirementId?)
 
     fun toSerializable(): SerializableMap {
         return SerializableMap(detailedRequirements.mapKeys { it.key.index })
