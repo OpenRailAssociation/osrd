@@ -237,7 +237,6 @@ const SimulationResults = ({
                 <SpaceTimeChartWrapper
                   operationalPoints={projectedOperationalPoints}
                   trainScheduleProjections={enrichedProjections}
-                  selectedTrainId={selectedTrainId}
                   trainSchedulesWithDetails={trainSchedulesWithDetails}
                   waypointsPanelData={{
                     filteredWaypoints: filteredOperationalPoints,
