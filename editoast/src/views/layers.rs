@@ -262,14 +262,11 @@ mod tests {
     }
 
     #[rstest]
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     #[case("http://localhost:8090", "http://localhost:8090/")]
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     #[case("http://localhost:8090/", "http://localhost:8090/")]
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     #[case("http://localhost:8090/test", "http://localhost:8090/test/")]
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     #[case("http://localhost:8090/test/", "http://localhost:8090/test/")]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn layer_success(#[case] root_url: &str, #[case] expected_root_url: &str) {
         let root_url = Url::parse(root_url).unwrap();
         let expected_root_url = Url::parse(expected_root_url).unwrap();

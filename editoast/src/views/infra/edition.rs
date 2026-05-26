@@ -1068,10 +1068,9 @@ pub mod tests {
     }
 
     #[rstest::rstest]
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     #[case("TA0", 1000000)]
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     #[case("TD1", 15500000)]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn split_track_section_should_work(#[case] track: &str, #[case] offset: u64) {
         let (app, small_infra) = setup_split_track_test().await;
         let db_pool = app.db_pool();
@@ -1252,10 +1251,9 @@ pub mod tests {
     }
 
     #[rstest::rstest]
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     #[case(15_000_000, 14000.0, 0)] // op at 14000m on TD0, split at 15000m -> stays on left at 14000m
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     #[case(10_000_000, 4000.0, 1)] // op at 14000m on TD0, split at 10000m -> goes to right at 4000m
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn split_track_section_with_operational_point(
         #[case] offset: u64,
         #[case] expected_position: f64,
@@ -1296,10 +1294,9 @@ pub mod tests {
     }
 
     #[rstest::rstest]
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     #[case("DD0_5", 7887.5, 0)] // detector at 7887.5m on TD0, split at 15000m -> stays on left at 7887.5m
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     #[case("DD0_10", 575.0, 1)] // detector at 15575m on TD0, split at 15000m -> goes to right at 575m
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn split_track_section_with_detectors(
         #[case] detector_id: &str,
         #[case] expected_position: f64,
@@ -1332,10 +1329,9 @@ pub mod tests {
     }
 
     #[rstest::rstest]
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     #[case("TH1", 2_000_000, "buffer_stop.7", 3000.0, 1)] // buffer stop at 5000m on TH1, split at 2000m -> goes to right at 3000m
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     #[case("TA2", 1_000_000, "buffer_stop.2", 0.0, 0)] // buffer stop at 0m on TA2, split at 1000m -> stays on left at 0m
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn split_track_section_with_buffer_stops(
         #[case] track: &str,
         #[case] offset: u64,
@@ -1370,10 +1366,9 @@ pub mod tests {
     }
 
     #[rstest::rstest]
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     #[case("SA6_1", 1780.0, 0)] // signal at 1780m on TA6, split at 2000m -> stays on left at 1780m
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     #[case("SA6_2", 1380.0, 1)] // signal at 3380m on TA6, split at 2000m -> goes to right at 1380m
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn split_track_section_with_signals(
         #[case] signal_id: &str,
         #[case] expected_position: f64,
@@ -1406,10 +1401,9 @@ pub mod tests {
     }
 
     #[rstest::rstest]
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     #[case("TC0", 500_000, 125.0, 0)] // part at 125m on TC0, split at 500m -> stays on left at 125m
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     #[case("TC1", 100_000, 20.0, 1)] // part at 120m on TC1, split at 100m -> goes to right at 20m
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn split_track_section_with_level_crossings(
         #[case] track: &str,
         #[case] offset: u64,

@@ -627,10 +627,9 @@ mod tests {
     }
 
     #[rstest]
-    #[tokio::test]
     #[case::created(TrainScheduleException::fixture_created("key_1", None))]
-    #[tokio::test]
     #[case::modified(TrainScheduleException::fixture_created("key_2", Some(0)))]
+    #[tokio::test]
     async fn paced_train_apply_exception(#[case] exception: TrainScheduleException) {
         let exception: schemas::TrainScheduleException = exception.into();
         let paced_train = create_paced_train();
