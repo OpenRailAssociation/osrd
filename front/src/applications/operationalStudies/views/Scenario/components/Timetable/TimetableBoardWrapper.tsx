@@ -14,7 +14,7 @@ import type { TrainScheduleWithDetails } from 'modules/trainSchedule/types';
 import { setFailure, setSuccess } from 'reducers/main';
 import type { TrainScheduleToEditData, TrainId } from 'reducers/osrdconf/types';
 import { updateSelectedTrain } from 'reducers/simulationResults';
-import { getSelectedTrainId } from 'reducers/simulationResults/selectors';
+import { getSelectedTrain } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 import { mapBy } from 'utils/types';
@@ -55,7 +55,7 @@ const TimetableBoardWrapper = ({
 
   const { scenario, sandboxId } = useScenarioContext();
 
-  const selectedTrainId = useSelector(getSelectedTrainId);
+  const { id: selectedTrainId } = useSelector(getSelectedTrain) || {};
 
   const { t } = useTranslation('operational-studies');
 
@@ -259,7 +259,7 @@ const TimetableBoardWrapper = ({
         })
       );
     },
-    [selectedTrainScheduleIds, trainSchedules]
+    [selectedTrainScheduleIds, trainSchedules, selectedTrainId]
   );
 
   const handleDeleteTrainSchedules = () => {
