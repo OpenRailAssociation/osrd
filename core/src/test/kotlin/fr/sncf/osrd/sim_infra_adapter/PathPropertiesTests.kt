@@ -7,6 +7,9 @@ import fr.sncf.osrd.path.implementations.buildTrainPathFromBlock
 import fr.sncf.osrd.railjson.schema.common.graph.ApplicableDirection
 import fr.sncf.osrd.railjson.schema.geom.RJSLineString
 import fr.sncf.osrd.railjson.schema.infra.RJSOperationalPoint
+import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSOperationalPointPart
+import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSOperationalPointPartExtensions
+import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSOperationalPointPartSncfExtension
 import fr.sncf.osrd.railjson.schema.infra.trackranges.*
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType
 import fr.sncf.osrd.sim_infra.api.BlockId
