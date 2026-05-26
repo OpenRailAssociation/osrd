@@ -1,17 +1,22 @@
-import type { TFunction } from 'i18next';
-import type { Dispatch } from 'redux';
-
-import { setFailure } from 'reducers/main';
 import type { OperationalStudiesConfState } from 'reducers/osrdconf/types';
 import { isInvalidFloatNumber } from 'utils/numbers';
 
 import { MAX_TIMEWINDOW_MINUTES } from '../consts';
 
+export type TrainScheduleConfErrorCode =
+  | 'noOrigin'
+  | 'noDepartureTime'
+  | 'noDestination'
+  | 'noRollingStock'
+  | 'noName'
+  | 'invalidInitialSpeed'
+  | 'intervalTooLow'
+  | 'timeWindowTooLow'
+  | 'timeWindowTooHigh';
+
 const checkCurrentConfig = (
-  osrdconf: OperationalStudiesConfState,
-  t: TFunction<'operational-studies', 'manageTrainSchedule'>,
-  dispatch: Dispatch
-): boolean => {
+  osrdconf: OperationalStudiesConfState
+): TrainScheduleConfErrorCode[] => {
   const {
     pathSteps,
     name: trainName,
@@ -21,93 +26,38 @@ const checkCurrentConfig = (
     timeWindow,
     editingTrainType: editingItemType,
   } = osrdconf;
-  let error = false;
+  const errors: TrainScheduleConfErrorCode[] = [];
+
   if (pathSteps[0] === null) {
-    error = true;
-    dispatch(
-      setFailure({
-        name: t('errorMessages.trainScheduleTitle'),
-        message: t('errorMessages.noOrigin'),
-      })
-    );
+    errors.push('noOrigin');
   }
   if (!startTime) {
-    error = true;
-    dispatch(
-      setFailure({
-        name: t('errorMessages.trainScheduleTitle'),
-        message: t('errorMessages.noDepartureTime'),
-      })
-    );
+    errors.push('noDepartureTime');
   }
   if (pathSteps[pathSteps.length - 1] === null) {
-    error = true;
-    dispatch(
-      setFailure({
-        name: t('errorMessages.trainScheduleTitle'),
-        message: t('errorMessages.noDestination'),
-      })
-    );
+    errors.push('noDestination');
   }
-
   if (!trainName) {
-    error = true;
-    dispatch(
-      setFailure({
-        name: t('errorMessages.trainScheduleTitle'),
-        message: t('errorMessages.noName'),
-      })
-    );
+    errors.push('noName');
   }
-
   if (isInvalidFloatNumber(initialSpeed!, 1)) {
-    error = true;
-    dispatch(
-      setFailure({
-        name: t('errorMessages.trainScheduleTitle'),
-        message: t('errorMessages.invalidInitialSpeed'),
-      })
-    );
+    errors.push('invalidInitialSpeed');
   }
 
-  // Prevent to block the train creation if a paced train field is invalid but we want to add a unique train
+  // Only check interval and timeWindow for paced trains
   if (editingItemType === 'pacedTrain') {
     if (interval.total('minute') < 1) {
-      error = true;
-      dispatch(
-        setFailure({
-          name: t('errorMessages.trainScheduleTitle'),
-          message: t('errorMessages.tooLowValue', {
-            value: t('pacedTrains.interval').toLowerCase(),
-          }),
-        })
-      );
+      errors.push('intervalTooLow');
     }
     if (timeWindow.total('minute') < 1) {
-      error = true;
-      dispatch(
-        setFailure({
-          name: t('errorMessages.trainScheduleTitle'),
-          message: t('errorMessages.tooLowValue', {
-            value: t('pacedTrains.timeWindow').toLowerCase(),
-          }),
-        })
-      );
+      errors.push('timeWindowTooLow');
     }
     if (timeWindow.total('minute') >= MAX_TIMEWINDOW_MINUTES) {
-      error = true;
-      dispatch(
-        setFailure({
-          name: t('errorMessages.trainScheduleTitle'),
-          message: t('errorMessages.tooHighValue', {
-            value: t('pacedTrains.timeWindow').toLowerCase(),
-          }),
-        })
-      );
+      errors.push('timeWindowTooHigh');
     }
   }
 
-  return !error;
+  return errors;
 };
 
 export default checkCurrentConfig;

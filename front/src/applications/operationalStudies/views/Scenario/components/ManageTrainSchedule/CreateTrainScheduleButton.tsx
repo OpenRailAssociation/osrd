@@ -55,7 +55,19 @@ const CreateTrainScheduleButton = ({
 
   const createTrainSchedules = async () => {
     const rollingStockName = rollingStock?.name || '';
-    if (!checkCurrentConfig(simulationConf, t, dispatch)) return;
+    const validationErrors = checkCurrentConfig(simulationConf);
+    if (validationErrors.length) {
+      validationErrors.forEach((errorCode) => {
+        dispatch(
+          setFailure({
+            name: t('errorMessages.trainScheduleTitle'),
+            message: t(`errorMessages.${errorCode}`),
+          })
+        );
+      });
+
+      return;
+    }
 
     setIsWorking(true);
 

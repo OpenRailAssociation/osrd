@@ -18,7 +18,7 @@ import {
   syncOccurrenceException,
   updateExceptions,
 } from 'modules/trainSchedule/helpers/updateTrainScheduleHelpers';
-import { setSuccess } from 'reducers/main';
+import { setFailure, setSuccess } from 'reducers/main';
 import { clearAddedExceptionsList } from 'reducers/osrdconf/operationalStudiesConf';
 import {
   getName,
@@ -32,7 +32,7 @@ import { getTrainIdUsedForProjection } from 'reducers/simulationResults/selector
 import { useAppDispatch } from 'store';
 import { formatEditoastIdToPacedTrainId, isOccurrenceId } from 'utils/trainId';
 
-import checkCurrentConfig from '../helpers/checkCurrentConfig';
+import checkCurrentConfig, { type TrainScheduleConfErrorCode } from '../helpers/checkCurrentConfig';
 import {
   formatOccurrenceException,
   formatPacedTrainPayload,
@@ -61,6 +61,15 @@ const useUpdateTrainSchedule = (
   const { rollingStock } = useStoreDataForRollingStockSelector({
     rollingStockId: simulationConf.rollingStockID,
   });
+
+  const onValidationError = (errorCode: TrainScheduleConfErrorCode) => {
+    dispatch(
+      setFailure({
+        name: t('errorMessages.trainScheduleTitle'),
+        message: t(`errorMessages.${errorCode}`),
+      })
+    );
+  };
 
   // Shared post-submit logic: dispatches success, updates selected train id, closes modal
   const handleUpdateSuccess = (trainScheduleId: number, editData: TrainScheduleToEditData) => {
@@ -95,7 +104,13 @@ const useUpdateTrainSchedule = (
   };
 
   return async function submitConfUpdateTrainSchedules() {
-    if (!trainScheduleToEditData || !checkCurrentConfig(simulationConf, t, dispatch)) return;
+    if (!trainScheduleToEditData) return;
+
+    const validationErrors = checkCurrentConfig(simulationConf);
+    if (validationErrors.length) {
+      validationErrors.forEach(onValidationError);
+      return;
+    }
     const rollingStockName = rollingStock?.name || '';
 
     setIsWorking(true);
