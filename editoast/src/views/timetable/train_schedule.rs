@@ -19,6 +19,7 @@ use core_client::pathfinding::PathfindingResultSuccess;
 use core_client::signal_projection::SignalUpdate;
 use core_client::simulation::PhysicsConsist;
 use core_task::Correlated;
+use core_task::SimulationOutput;
 use database::DbConnection;
 use database::DbConnectionPoolV2;
 use editoast_derive::EditoastError;
@@ -719,7 +720,6 @@ pub struct ElectricalProfileSetIdQueryParam {
 )]
 pub(in crate::views) async fn simulation(
     State(AppState {
-        config,
         valkey_client,
         core_client,
         db_pool,
@@ -770,21 +770,77 @@ pub(in crate::views) async fn simulation(
         None => train_schedule.into_train_occurrence(),
     };
 
-    // Compute simulation of a train schedule
-    let (simulation, _) = train_simulation_ordered_batch(
-        &mut db_pool.get().await?,
-        valkey_client,
-        core_client,
-        &[train_schedule],
-        &infra,
-        electrical_profile_set_id,
-        config.app_version.as_deref(),
-    )
-    .await?
-    .pop()
-    .unwrap();
+    let rolling_stock_name = train_schedule.rolling_stock_name().to_owned();
+    let Some(consist) = RollingStock::retrieve(db_pool.get().await?, rolling_stock_name.clone())
+        .await?
+        .map(|rs| PhysicsConsistParameters::from_traction_engine(rs.into()))
+    else {
+        return Ok(Json(simulation::Response::PathfindingFailed {
+            pathfinding_failed: PathfindingFailure::PathfindingInputError(
+                PathfindingInputError::RollingStockNotFound { rolling_stock_name },
+            ),
+        }));
+    };
 
-    Ok(Json(Arc::unwrap_or_clone(simulation)))
+    let path_item_locations = train_schedule
+        .path
+        .iter()
+        .map(|p| &p.location)
+        .collect_vec();
+    let op_cache = OperationalPointCache::load_path_items(
+        db_pool.get().await?,
+        infra.id,
+        &path_item_locations,
+    )
+    .await?;
+    let simulation_train =
+        match simulation::build_simulation_train(&train_schedule, &consist, &op_cache) {
+            Ok(simulation_train) => simulation_train,
+            Err(pathfinding_failed) => {
+                return Ok(Json(simulation::Response::PathfindingFailed {
+                    pathfinding_failed,
+                }));
+            }
+        };
+
+    let core_env = core_task::CoreEnv {
+        infra_id: infra.id as u64,
+        infra_version: infra.version,
+        client: core_client.clone(),
+    };
+    let mut simulation_env = match electrical_profile_set_id {
+        Some(electrical_profile_set_id) => {
+            core_task::SimulationEnv::new_with_electrical_profile_set(
+                core_env,
+                electrical_profile_set_id as u64,
+            )
+        }
+        None => core_task::SimulationEnv::new(core_env),
+    };
+    // We only have one element, so we use Unit as correlation key
+    simulation_env.extend([((), simulation_train)]);
+
+    let result = match simulation_env.into_stream(valkey_client).next().await {
+        Some(simulation) => simulation.data,
+        None => Err(core_client::Error::BrokenPipe),
+    };
+
+    let result = match result {
+        Ok(SimulationOutput::Success(success)) => simulation::Response::Success(success.into()),
+        Ok(SimulationOutput::PathfindingFailure(pathfinding_failed)) => {
+            match PathfindingResult::from(pathfinding_failed) {
+                PathfindingResult::Failure(pathfinding_failed) => {
+                    simulation::Response::PathfindingFailed { pathfinding_failed }
+                }
+                _ => unreachable!("simulation only returns errors of pathfinding in this field"),
+            }
+        }
+        Err(err) => simulation::Response::SimulationFailed {
+            core_error: err.into(),
+        },
+    };
+
+    Ok(Json(result))
 }
 
 /// Retrieve the etcs braking curves of an etcs train on etcs portions of the path
