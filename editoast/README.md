@@ -14,6 +14,9 @@ For both tests or run:
 - [openssl](https://www.openssl.org)
 - [libgeos](https://libgeos.org/usage/install/) (may be packaged as `libgeos-dev`)
 - [fga CLI](https://github.com/openfga/cli)
+- a C toolchain
+- [zlib](https://www.zlib.net/) (may be packaged as `zlib1g-dev`)
+- [pkg-config](https://www.freedesktop.org/wiki/Software/pkg-config/)
 
 Additionally, editoast requires the following services to be running:
 
