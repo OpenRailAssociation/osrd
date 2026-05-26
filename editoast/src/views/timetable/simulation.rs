@@ -687,6 +687,7 @@ pub fn build_simulation_train(
     let path_item_locations = path
         .iter()
         .map(|path_item| &path_item.location)
+        .cloned()
         .collect_vec();
     let track_offsets =
         operational_point_cache.extract_location_from_path_items(&path_item_locations)?;

@@ -418,6 +418,7 @@ pub(in crate::views) async fn simulation_summary(
         .values()
         .flat_map(|(train_occurrence, _physics_consist)| &train_occurrence.path)
         .map(|path_item| &path_item.location)
+        .cloned()
         .collect_vec();
     let path_item_cache =
         OperationalPointCache::load_path_items(conn.clone(), infra.id, &path_items).await?;
@@ -1125,11 +1126,12 @@ pub(in crate::views) async fn project_path_op(
         })
         .collect::<Vec<_>>();
 
-    let path_item_locations: Vec<&PathItemLocation> = train_schedules
+    let path_item_locations = train_schedules
         .iter()
         .flat_map(|ts| ts.path.iter().map(|p| &p.location))
-        .chain(&path_item_locations_projection)
-        .collect();
+        .cloned()
+        .chain(path_item_locations_projection)
+        .collect_vec();
 
     let op_cache = OperationalPointCache::load_path_items(
         db_pool.get().await?,
@@ -1456,7 +1458,7 @@ pub(in crate::views) async fn track_occupancy(
         .flat_map(|train_schedule| {
             train_schedule
                 .iter_occurrences(&exceptions.remove(&train_schedule.id).unwrap_or_default())
-                .collect::<Vec<_>>()
+                .collect_vec()
         })
         .unzip();
 
@@ -1470,7 +1472,8 @@ pub(in crate::views) async fn track_occupancy(
         .iter()
         .flat_map(|ts| &ts.path)
         .map(|p| &p.location)
-        .chain(std::iter::once(&op_location))
+        .cloned()
+        .chain(std::iter::once(op_location))
         .collect_vec();
 
     let op_cache =

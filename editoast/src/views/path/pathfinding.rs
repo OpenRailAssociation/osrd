@@ -243,8 +243,8 @@ pub(in crate::views) async fn post(
 
     use core_task::Task as _;
     let valkey_conn = valkey_client.get_connection().await?;
-    let path_items = path_input.path_items.iter().collect::<Vec<_>>();
-    let op_cache = OperationalPointCache::load_path_items(conn, infra.id, &path_items).await?;
+    let op_cache =
+        OperationalPointCache::load_path_items(conn, infra.id, &path_input.path_items).await?;
     let request = match build_pathfinding_request(&path_input, &infra, &op_cache) {
         Ok(request) => request,
         Err(result) => return Ok(Json(*result)),
@@ -315,6 +315,7 @@ async fn pathfinding_blocks_batch(
         .iter()
         .filter(|(_, res)| res.is_none())
         .flat_map(|(hash, _)| &path_request_map[*hash].path_items)
+        .cloned()
         .collect();
     let op_cache = OperationalPointCache::load_path_items(conn, infra.id, &path_items).await?;
 
@@ -390,14 +391,13 @@ fn build_pathfinding_request(
     infra: &Infra,
     op_cache: &OperationalPointCache,
 ) -> std::result::Result<PathfindingRequest, Box<PathfindingResult>> {
-    let path_items: Vec<_> = pathfinding_input.path_items.iter().collect();
-    if path_items.len() <= 1 {
+    if pathfinding_input.path_items.len() <= 1 {
         return Err(Box::from(PathfindingResult::Failure(
             PathfindingFailure::PathfindingInputError(PathfindingInputError::NotEnoughPathItems),
         )));
     }
     let track_offsets = op_cache
-        .extract_location_from_path_items(&path_items)
+        .extract_location_from_path_items(&pathfinding_input.path_items)
         .map_err(PathfindingResult::Failure)?;
 
     // Create the pathfinding request

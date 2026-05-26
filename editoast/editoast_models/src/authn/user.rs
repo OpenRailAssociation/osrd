@@ -121,7 +121,7 @@ impl User {
 
     /// Return the list of [User] associated with the input list of identities.
     pub async fn get_batch_users_by_identity(
-        identities: &[&UserIdentity],
+        identities: &[UserIdentity],
         conn: &mut DbConnection,
     ) -> Result<Vec<User>, diesel::result::Error> {
         Ok(authn_user::table
