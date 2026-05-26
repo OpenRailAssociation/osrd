@@ -3470,14 +3470,6 @@ paths:
         schema:
           type: integer
           format: int64
-      - name: return_debug_payloads
-        in: query
-        description: If true, extra payloads are returned to help with debugging
-        required: false
-        schema:
-          type:
-          - boolean
-          - 'null'
       requestBody:
         content:
           application/json:
@@ -5299,112 +5291,6 @@ components:
       enum:
       - Spacing
       - Routing
-    CoreConsistConfiguration:
-      type: object
-      description: Represents a physics consist.
-      required:
-      - supported_signaling_systems
-      - loading_gauge_type
-      - physics_consist
-      properties:
-        loading_gauge_type:
-          $ref: '#/components/schemas/LoadingGaugeType'
-          description: The loading gauge of the rolling stock
-        physics_consist:
-          type: object
-          required:
-          - effort_curves
-          - length
-          - max_speed
-          - startup_time
-          - startup_acceleration
-          - comfort_acceleration
-          - const_gamma
-          - inertia_coefficient
-          - mass
-          - rolling_resistance
-          properties:
-            base_power_class:
-              type:
-              - string
-              - 'null'
-            comfort_acceleration:
-              type: number
-              format: double
-              description: Acceleration in m·s⁻²
-            const_gamma:
-              type: number
-              format: double
-              description: |2-
-                 The constant gamma braking coefficient used when NOT circulating
-                 under ETCS/ERTMS signaling system
-                Acceleration in m·s⁻²
-            effort_curves:
-              $ref: '#/components/schemas/EffortCurves'
-            electrical_power_startup_time:
-              type:
-              - integer
-              - 'null'
-              format: int64
-              description: |-
-                The time the train takes before actually using electrical power.
-                Is null if the train is not electric or the value not specified.
-              minimum: 0
-            etcs_brake_params:
-              oneOf:
-              - type: 'null'
-              - $ref: '#/components/schemas/EtcsBrakeParams'
-            inertia_coefficient:
-              type: number
-              format: double
-            length:
-              type: integer
-              format: int64
-              minimum: 0
-            mass:
-              type: integer
-              format: int64
-              minimum: 0
-            max_speed:
-              type: number
-              format: double
-              description: Velocity in m·s⁻¹
-            power_restrictions:
-              type: object
-              description: Mapping of power restriction code to power class
-              additionalProperties:
-                type: string
-              propertyNames:
-                type: string
-            raise_pantograph_time:
-              type:
-              - integer
-              - 'null'
-              format: int64
-              description: |-
-                The time it takes to raise this train's pantograph.
-                Is null if the train is not electric or the value not specified.
-              minimum: 0
-            rolling_resistance:
-              $ref: '#/components/schemas/RollingResistance'
-            startup_acceleration:
-              type: number
-              format: double
-              description: Acceleration in m·s⁻²
-            startup_time:
-              type: integer
-              format: int64
-              minimum: 0
-        speed_limit_tag:
-          type:
-          - string
-          - 'null'
-        supported_signaling_systems:
-          type: array
-          items:
-            type: string
-          description: List of supported signaling systems
-          uniqueItems: true
     CoreETCSBrakingCurvesResponse:
       type: object
       required:
@@ -5535,21 +5421,6 @@ components:
           type: integer
           format: int64
           minimum: 0
-    CorePathItem:
-      type: object
-      required:
-      - locations
-      properties:
-        can_backtrack:
-          type:
-          - boolean
-          - 'null'
-          description: If true, the train can backtrack at these track offsets.
-        locations:
-          type: array
-          items:
-            $ref: '#/components/schemas/TrackOffset'
-          description: The track offsets of the path item.
     CorePathfindingInputError:
       oneOf:
       - type: object
@@ -5790,26 +5661,6 @@ components:
             type: string
         zone:
           type: string
-    CoreSTDCMPathItem:
-      type: object
-      required:
-      - path_item
-      properties:
-        path_item:
-          $ref: '#/components/schemas/CorePathItem'
-          description: The path item containing its locations and backtrack information.
-        step_timing_data:
-          oneOf:
-          - type: 'null'
-          - $ref: '#/components/schemas/CoreStepTimingData'
-            description: If specified, describes when the train may arrive at the location
-        stop_duration:
-          type:
-          - integer
-          - 'null'
-          format: int64
-          description: Stop duration in milliseconds. None if the train does not stop at this path item.
-          minimum: 0
     CoreSignalCriticalPosition:
       type: object
       description: |-
@@ -5932,150 +5783,6 @@ components:
           minimum: 0
         zone:
           type: string
-    CoreStdcmRequest:
-      type: object
-      required:
-      - infra
-      - expected_version
-      - timetable_id
-      - path_items
-      - comfort
-      - consist_schedule
-      - start_time
-      - maximum_departure_delay
-      - maximum_run_time
-      - time_gap_before
-      - time_gap_after
-      - work_schedules
-      - temporary_speed_limits
-      properties:
-        allowed_track_sections:
-          type:
-          - array
-          - 'null'
-          items:
-            type: string
-          description: Set of authorized track section ids for the current request
-          uniqueItems: true
-        comfort:
-          $ref: '#/components/schemas/Comfort'
-          description: The comfort of the train
-        consist_schedule:
-          $ref: '#/components/schemas/ConsistSchedule'
-        expected_version:
-          type: integer
-          format: int64
-          description: Infrastructure expected version
-        infra:
-          type: integer
-          format: int64
-          description: Infrastructure id
-        margin:
-          oneOf:
-          - type: 'null'
-          - oneOf:
-            - type: object
-              title: MarginValuePercentage
-              required:
-              - Percentage
-              properties:
-                Percentage:
-                  type: number
-                  format: double
-            - type: object
-              title: MarginValueMinPer100Km
-              required:
-              - MinPer100Km
-              properties:
-                MinPer100Km:
-                  type: number
-                  format: double
-          description: Margin to apply to the whole train
-        maximum_departure_delay:
-          type: integer
-          format: int64
-          description: Maximum departure delay in milliseconds.
-          minimum: 0
-        maximum_run_time:
-          type: integer
-          format: int64
-          description: Maximum run time of the simulation in milliseconds
-          minimum: 0
-        path_items:
-          type: array
-          items:
-            $ref: '#/components/schemas/CoreSTDCMPathItem'
-          description: List of waypoints. Each waypoint is a list of track offset.
-        start_time:
-          type: string
-          format: date-time
-        temporary_speed_limits:
-          type: array
-          items:
-            type: object
-            description: Lighter description of a work schedule with only the relevant information for core
-            required:
-            - speed_limit
-            - track_ranges
-            properties:
-              speed_limit:
-                type: number
-                format: double
-                description: Speed limitation in m/s
-              track_ranges:
-                type: array
-                items:
-                  $ref: '#/components/schemas/CoreTrackRange'
-                description: Track ranges on which the speed limitation applies
-          description: List of applicable temporary speed limits between the train departure and arrival
-        time_gap_after:
-          type: integer
-          format: int64
-          description: Gap between the created train and following trains in milliseconds
-          minimum: 0
-        time_gap_before:
-          type: integer
-          format: int64
-          description: Gap between the created train and previous trains in milliseconds
-          minimum: 0
-        time_step:
-          type:
-          - integer
-          - 'null'
-          format: int64
-          description: Numerical integration time step in milliseconds. Use default value if not specified.
-          minimum: 0
-        timetable_id:
-          type: integer
-          format: int64
-          description: Timetable id
-        work_schedules:
-          type: array
-          items:
-            $ref: '#/components/schemas/CoreWorkSchedule'
-          description: List of planned work schedules
-    CoreStepTimingData:
-      type: object
-      description: Contains the data of a step timing, when it is specified
-      required:
-      - arrival_time
-      - arrival_time_tolerance_before
-      - arrival_time_tolerance_after
-      properties:
-        arrival_time:
-          type: string
-          format: date-time
-          description: Time the train should arrive at this point
-        arrival_time_tolerance_after:
-          type: integer
-          format: int64
-          description: Tolerance for the arrival time, when it arrives after the expected time, in ms
-          minimum: 0
-        arrival_time_tolerance_before:
-          type: integer
-          format: int64
-          description: Tolerance for the arrival time, when it arrives before the expected time, in ms
-          minimum: 0
     CoreTrackRange:
       type: object
       description: |-
@@ -6156,52 +5863,6 @@ components:
         train_name:
           type: string
           description: ID that can be used to find the train in tools other than OSRD. Used in debug traces.
-    CoreUndirectedTrackRange:
-      type: object
-      description: |-
-        A range on a track section.
-        `begin` is always less than `end`.
-      required:
-      - track_section
-      - begin
-      - end
-      properties:
-        begin:
-          type: integer
-          format: int64
-          description: The beginning of the range in mm.
-          minimum: 0
-        end:
-          type: integer
-          format: int64
-          description: The end of the range in mm.
-          minimum: 0
-        track_section:
-          type: string
-          description: The track section identifier.
-    CoreWorkSchedule:
-      type: object
-      description: Lighter description of a work schedule, with only the relevant information for core
-      required:
-      - start_time
-      - end_time
-      - track_ranges
-      properties:
-        end_time:
-          type: integer
-          format: int64
-          description: End time as a time delta from the stdcm start time in ms
-          minimum: 0
-        start_time:
-          type: integer
-          format: int64
-          description: Start time as a time delta from the stdcm start time in ms
-          minimum: 0
-        track_ranges:
-          type: array
-          items:
-            $ref: '#/components/schemas/CoreUndirectedTrackRange'
-          description: List of unavailable track ranges
     CoreZoneUpdate:
       type: object
       required:
@@ -14953,10 +14614,6 @@ components:
         - departure_time
         - status
         properties:
-          core_payload:
-            oneOf:
-            - type: 'null'
-            - $ref: '#/components/schemas/CoreStdcmRequest'
           departure_time:
             type: string
             format: date-time
@@ -14973,10 +14630,6 @@ components:
         required:
         - status
         properties:
-          core_payload:
-            oneOf:
-            - type: 'null'
-            - $ref: '#/components/schemas/CoreStdcmRequest'
           status:
             type: string
             enum:
@@ -14987,10 +14640,6 @@ components:
         - error
         - status
         properties:
-          core_payload:
-            oneOf:
-            - type: 'null'
-            - $ref: '#/components/schemas/CoreStdcmRequest'
           error:
             $ref: '#/components/schemas/SimulationResponse'
           status:
@@ -15003,10 +14652,6 @@ components:
         - error
         - status
         properties:
-          core_payload:
-            oneOf:
-            - type: 'null'
-            - $ref: '#/components/schemas/CoreStdcmRequest'
           error:
             $ref: '#/components/schemas/InternalError'
           status:
