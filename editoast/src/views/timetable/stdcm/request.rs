@@ -252,12 +252,7 @@ impl Request {
         conn: DbConnection,
         infra_id: i64,
     ) -> Result<Vec<core_client::stdcm::STDCMPathItem>> {
-        let locations: Vec<_> = self
-            .steps
-            .iter()
-            .map(|item| &item.location)
-            .cloned()
-            .collect();
+        let locations: Vec<_> = self.steps.iter().map(|item| &item.location).collect();
 
         let op_cache = OperationalPointCache::load_path_items(conn, infra_id, &locations).await?;
         let track_offsets = op_cache
