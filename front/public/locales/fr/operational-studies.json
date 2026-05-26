@@ -363,6 +363,7 @@
     "errorMessages": {
       "error": "Une erreur est survenue",
       "hardErrorInfra": "L'infrastructure comporte des erreurs et ne peut être utilisée sans être corrigée au préalable.",
+      "intervalTooLow": "La cadence de la mission doit être supérieure d'au moins une minute",
       "invalidInitialSpeed": "La vitesse initiale doit être arrondie au dixième",
       "mandatoryField": "Champ obligatoire",
       "nameLengthLimit": "Le nom ne doit pas dépasser 128 caractères",
@@ -380,10 +381,10 @@
       "noTrainStep": "Le pas d'incrément du nom du train doit être supérieur à zéro",
       "originTimeOutsideWindow": "La date de départ doit être comprise entre le {{low}} et le {{high}}",
       "requiredField": "Champ obligatoire.",
+      "timeWindowTooHigh": "La durée de la plage de répétition doit être inférieure à 730 heures (un mois)",
+      "timeWindowTooLow": "La durée de la plage de répétition doit être d'au moins une minute",
       "tooHighInput": "Doit être < 43800",
-      "tooHighValue": "La {{value}} doit être inférieure à 43800 (un mois)",
       "tooLowInput": "Doit être > 0",
-      "tooLowValue": "La {{value}} doit être supérieure à 0",
       "trainScheduleTitle": "Une erreur est survenue",
       "unableToRetrieveTags": "Impossible de récupérer les étiquettes"
     },

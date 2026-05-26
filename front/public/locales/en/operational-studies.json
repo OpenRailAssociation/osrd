@@ -363,6 +363,7 @@
     "errorMessages": {
       "error": "An error has occurred",
       "hardErrorInfra": "The infrastructure contains errors and cannot be used without first being corrected.",
+      "intervalTooLow": "The cadence of the service has to be at least one minute",
       "invalidInitialSpeed": "The initial speed must be rounded to the nearest tenth",
       "mandatoryField": "Required field",
       "nameLengthLimit": "The name must not exceed 128 characters",
@@ -380,10 +381,10 @@
       "noTrainStep": "The increment step of the train must be greater than zero",
       "originTimeOutsideWindow": "Departure date must be between {{low}} and {{high}}",
       "requiredField": "Required field.",
+      "timeWindowTooHigh": "The duration of the repetition time range must be less than 730 hours (one month)",
+      "timeWindowTooLow": "The duration of the repetition time range has to be at least one minute",
       "tooHighInput": "Must be < 43800",
-      "tooHighValue": "The {{value}} must be less than 43800 (one month)",
       "tooLowInput": "Must be > 0",
-      "tooLowValue": "The {{value}} must be greater than 0",
       "trainScheduleTitle": "An error has occurred",
       "unableToRetrieveTags": "Impossible to get tags"
     },
