@@ -635,7 +635,7 @@ pub(in crate::views) struct LocalTrackNamesForm {
 #[editoast_derive::route]
 #[utoipa::path(
     post, path = "",
-    tag = "timetable",  
+    tag = "timetable",
     params(TimetableIdParam),
     request_body(
         content = inline(LocalTrackNamesForm),
@@ -702,39 +702,40 @@ pub(in crate::views) async fn get_local_track_names(
         });
 
         // Collect local_track_names and deduplicated path locations from train occurrences.
-        let mut local_track_names: HashMap<OperationalPointReference, HashSet<NonBlankString>> =
-            HashMap::new();
-        let mut unique_locations: HashSet<PathItemLocation> = HashSet::new();
-
-        train_occurrences
-            .flat_map(|(_, occurrence)| occurrence.path)
-            .filter_map(|path_item| match path_item.location {
-                PathItemLocation::OperationalPointPartReference(op_ref) => Some(op_ref),
-                // We ignore track offsets as they don't have local track names assiociated
-                PathItemLocation::TrackOffset(_) => None,
+        let local_track_names: HashMap<OperationalPointReference, HashSet<NonBlankString>> =
+            train_occurrences
+                .flat_map(|(_, occurrence)| occurrence.path)
+                .filter_map(|path_item| match path_item.location {
+                    PathItemLocation::OperationalPointPartReference(op_ref) => Some(op_ref),
+                    // We ignore track offsets as they don't have local track names assiociated
+                    PathItemLocation::TrackOffset(_) => None,
+                })
+                .filter_map(|op_ref| Some((op_ref.operational_point, op_ref.local_track_name?)))
+                .into_grouping_map()
+                .collect::<HashSet<_>>();
+        let path_items: HashSet<PathItemLocation> = local_track_names
+            .keys()
+            .chain(
+                // Also include the requested op_refs so the cache resolves them even if no train uses them.
+                operational_point_references.values(),
+            )
+            .cloned()
+            .map(|operational_point| {
+                PathItemLocation::OperationalPointPartReference(
+                    schemas::train_schedule::OperationalPointPartReference {
+                        operational_point,
+                        local_track_name: None,
+                    },
+                )
             })
-            .for_each(|op_ref| {
-                if let Some(name) = &op_ref.local_track_name {
-                    local_track_names
-                        .entry(op_ref.operational_point.clone())
-                        .or_default()
-                        .insert(name.clone());
-                }
+            .collect();
 
-                unique_locations.insert(PathItemLocation::OperationalPointPartReference(op_ref));
-            });
-        // Also include the requested op_refs so the cache resolves them even if no train uses them.
-        unique_locations.extend(operational_point_references.values().map(|op_ref| {
-            PathItemLocation::OperationalPointPartReference(OperationalPointPartReference {
-                operational_point: op_ref.clone(),
-                local_track_name: None,
-            })
-        }));
-
-        let path_items: Vec<&PathItemLocation> = unique_locations.iter().collect();
-        let op_cache =
-            OperationalPointCache::load_path_items(db_pool.get().await?, infra_id, &path_items)
-                .await?;
+        let op_cache = OperationalPointCache::load_path_items(
+            db_pool.get().await?,
+            infra_id,
+            &path_items.iter().collect_vec(),
+        )
+        .await?;
 
         // Resolve op_ref to op id, merging sets when multiple refs point to the same OP.
         let op_id_to_local_track_names: HashMap<NonBlankString, HashSet<NonBlankString>> =
@@ -742,13 +743,12 @@ pub(in crate::views) async fn get_local_track_names(
                 .iter()
                 .filter_map(|(op_ref, names)| {
                     let op = op_cache.get_reference(op_ref.clone())?;
-                    Some((op.id.0.clone(), names))
+                    Some((NonBlankString::from(&op.id.0), names.clone()))
                 })
-                .fold(HashMap::new(), |mut map, (id, names)| {
-                    map.entry(id.into())
-                        .or_default()
-                        .extend(names.iter().cloned());
-                    map
+                .into_grouping_map()
+                .reduce(|mut acc, _key, names| {
+                    acc.extend(names);
+                    acc
                 });
 
         let result: HashMap<NonBlankString, HashSet<NonBlankString>> = operational_point_references
