@@ -1,6 +1,7 @@
 use core_client::pathfinding::InvalidPathItem;
 use core_client::pathfinding::PathfindingInputError;
 use database::DbConnection;
+use itertools::Itertools;
 use schemas::infra::OperationalPoint;
 use schemas::infra::TrackOffset;
 use schemas::primitives::NonBlankString;
@@ -46,7 +47,7 @@ impl OperationalPointCache {
     pub async fn load_path_items(
         mut conn: DbConnection,
         infra_id: i64,
-        path_items: &[&PathItemLocation],
+        path_items: &[PathItemLocation],
     ) -> Result<OperationalPointCache> {
         if path_items.is_empty() {
             return Ok(OperationalPointCache::default());
@@ -59,11 +60,11 @@ impl OperationalPointCache {
                 .iter()
                 .filter_map(|e| match e {
                     PathItemLocation::OperationalPointPartReference(op_ref) => {
-                        Some(&op_ref.operational_point)
+                        Some(op_ref.operational_point.clone())
                     }
                     _ => None,
                 })
-                .collect::<Vec<&OperationalPointReference>>(),
+                .collect_vec(),
         )
         .await?;
 
@@ -106,7 +107,7 @@ impl OperationalPointCache {
     pub async fn load_from_operational_points(
         conn: DbConnection,
         infra_id: i64,
-        operational_points: &[&OperationalPointReference],
+        operational_points: &[OperationalPointReference],
     ) -> Result<OperationalPointCache> {
         if operational_points.is_empty() {
             return Ok(OperationalPointCache::default());
@@ -230,11 +231,11 @@ impl OperationalPointCache {
     /// Extract locations from path items
     pub fn extract_location_from_path_items(
         &self,
-        path_items: &[&PathItemLocation],
+        path_items: &[PathItemLocation],
     ) -> TrackOffsetResult {
         let mut result: Vec<Vec<_>> = Vec::default();
         let mut invalid_path_items = Vec::new();
-        for (index, &path_item) in path_items.iter().enumerate() {
+        for (index, path_item) in path_items.iter().enumerate() {
             let track_offsets = match path_item {
                 PathItemLocation::TrackOffset(track_offset) => {
                     vec![track_offset.clone()]
@@ -386,7 +387,7 @@ impl OperationalPointCache {
 
 /// Collect the ids of the operational points from the path items
 fn collect_path_item_ids(
-    operational_points: &[&OperationalPointReference],
+    operational_points: &[OperationalPointReference],
 ) -> (Vec<String>, Vec<u32>, Vec<String>) {
     let mut trigrams: Vec<String> = Vec::new();
     let mut ops_uic: Vec<u32> = Vec::new();
@@ -534,10 +535,8 @@ mod tests {
             }),
         ];
 
-        let path_item_refs: Vec<&PathItemLocation> = path_items.iter().collect();
-
         // Load the cache using the real load() method
-        let cache = OperationalPointCache::load_path_items(conn, infra.id, &path_item_refs)
+        let cache = OperationalPointCache::load_path_items(conn, infra.id, &path_items)
             .await
             .expect("Failed to load cache");
 

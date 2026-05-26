@@ -722,10 +722,12 @@ pub(in crate::views) async fn match_operational_points(
     })
     .await?;
     let mut conn = db_pool.get().await?;
-    let op_refs: Vec<&OperationalPointReference> = operational_point_references.iter().collect();
-    let op_cache =
-        OperationalPointCache::load_from_operational_points(conn.clone(), infra_id, &op_refs)
-            .await?;
+    let op_cache = OperationalPointCache::load_from_operational_points(
+        conn.clone(),
+        infra_id,
+        &operational_point_references,
+    )
+    .await?;
 
     let operational_points: Vec<Option<&OperationalPoint>> = operational_point_references
         .into_iter()

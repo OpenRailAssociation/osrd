@@ -209,11 +209,8 @@ pub(in crate::views) async fn users_info(
         .await?;
 
     // Retrieve users by identities
-    let users_2 = User::get_batch_users_by_identity(
-        body.identities.iter().collect_vec().as_slice(),
-        &mut db_pool.get().await?,
-    )
-    .await?;
+    let users_2 =
+        User::get_batch_users_by_identity(&body.identities, &mut db_pool.get().await?).await?;
 
     // Merge both user lists
     let users: HashMap<_, _> = users_1
