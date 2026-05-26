@@ -270,7 +270,7 @@ class BlockAvailability(
                     requirementsWithMetadata
                         ?.metadata[conflictProperties.conflictingZone]
                         ?.firstOrNull { it.from <= endTime && it.to >= startTime }
-                        ?.trainName
+                        ?.source
                         ?.let {
                             listOf(
                                 BlockAvailabilityInterface.ConflictCause(

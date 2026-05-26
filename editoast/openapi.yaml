@@ -12663,6 +12663,21 @@ components:
             within the target document where the operation is performed.
         value:
           description: Value to replace with.
+    RequirementId:
+      type: object
+      required:
+      - id
+      - type
+      properties:
+        id:
+          type: string
+        type:
+          $ref: '#/components/schemas/RequirementType'
+    RequirementType:
+      type: string
+      enum:
+      - TRAIN
+      - WORK_SCHEDULE
     ResourceType:
       type: string
       enum:
@@ -13927,7 +13942,6 @@ components:
       - time_lost
       - best_remaining_time
       - current_travel_time
-      - caused_by
       - lat
       - lon
       properties:
@@ -13937,8 +13951,6 @@ components:
         best_remaining_time:
           type: number
           format: double
-        caused_by:
-          type: string
         current_travel_time:
           type: number
           format: double
@@ -13954,6 +13966,10 @@ components:
           format: double
         path_geometry:
           $ref: '#/components/schemas/GeoJsonLineString'
+        source:
+          oneOf:
+          - type: 'null'
+          - $ref: '#/components/schemas/RequirementId'
         time_lost:
           type: number
           format: double
@@ -14042,10 +14058,10 @@ components:
         end_time:
           type: number
           format: double
-        train_name:
-          type:
-          - string
-          - 'null'
+        source:
+          oneOf:
+          - type: 'null'
+          - $ref: '#/components/schemas/RequirementId'
         zone_name:
           type: string
     SimDebugZoneLocation:

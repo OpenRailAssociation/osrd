@@ -1,5 +1,6 @@
 package fr.sncf.osrd.stdcm.preprocessing.interfaces
 
+import fr.sncf.osrd.conflicts.RequirementId
 import fr.sncf.osrd.path.interfaces.PhysicsPath
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorerWithEnvelope
 import fr.sncf.osrd.utils.units.Offset
@@ -81,11 +82,8 @@ interface BlockAvailabilityInterface {
     ) : Availability()
 
     data class ConflictCause(
-        /**
-         * Describes the actual conflicting object: the work schedule obj_id, or train names for
-         * other trains. TODO: use a RequirementId instead.
-         */
-        val cause: String,
+        /** Describes the actual conflicting object. */
+        val cause: RequirementId,
         /** How much delay we needed to add to avoid this specific conflict. */
         val duration: Double,
     )

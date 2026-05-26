@@ -24,7 +24,11 @@ const toFeatures = (
   points.map(({ path_geometry: _, ...point }, i) => ({
     type: 'Feature',
     id: i,
-    properties: { ...point, category },
+    properties: {
+      ...point,
+      category,
+      source: point.source ? `${point.source.type} ${point.source.id}` : `(unknown)`,
+    },
     geometry: { type: 'Point', coordinates: [point.lon, point.lat] },
   }));
 
@@ -95,7 +99,11 @@ const DebugMap = ({ failureData, simulationData }: DebugMapProps) => {
         setHovered(null);
         return;
       }
-      setHovered({ point: { ...point, category }, clientX: event.point.x, clientY: event.point.y });
+      setHovered({
+        point: { ...point, category, source: feature.properties?.source },
+        clientX: event.point.x,
+        clientY: event.point.y,
+      });
     },
     [failureData]
   );
@@ -204,7 +212,7 @@ const DebugMap = ({ failureData, simulationData }: DebugMapProps) => {
             <strong>{hovered.point.lastOPName}</strong>
           </div>
           <div>at: {hovered.point.at}</div>
-          <div>caused by: {hovered.point.caused_by}</div>
+          <div>caused by: {hovered.point.source?.toString()}</div>
           <div>time lost: {fmtSeconds(hovered.point.time_lost)}</div>
           <div>best remaining: {fmtSeconds(hovered.point.best_remaining_time)}</div>
           <div>travel time: {fmtSeconds(hovered.point.current_travel_time)}</div>

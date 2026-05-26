@@ -5,6 +5,7 @@ import com.squareup.moshi.Json
 import fr.sncf.osrd.sim_infra.api.DirDetectorId
 import fr.sncf.osrd.sim_infra.api.RouteId
 import fr.sncf.osrd.sim_infra.api.ZoneId
+import kotlinx.serialization.Serializable
 
 class Conflict(
     val startTime: Double,
@@ -33,6 +34,7 @@ class Requirements(
     val routingRequirements: Collection<RoutingRequirement>,
 )
 
+@Serializable
 data class RequirementId(
     // Either a train db id or a work schedule db id
     val id: String,
