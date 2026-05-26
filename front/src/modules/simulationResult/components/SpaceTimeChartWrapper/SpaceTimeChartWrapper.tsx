@@ -39,7 +39,11 @@ import type {
 import { isPacedTrainWithDetails } from 'modules/trainSchedule/helpers/pacedTrain';
 import type { TrainScheduleWithDetails } from 'modules/trainSchedule/types';
 import type { TrainId } from 'reducers/osrdconf/types';
-import { getHoveredTrainId, getIsSimulationEnabled } from 'reducers/simulationResults/selectors';
+import {
+  getHoveredTrainId,
+  getIsSimulationEnabled,
+  getSelectedTrain,
+} from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
 import {
   isTrainId,
@@ -70,7 +74,6 @@ import WaypointsPanel from './WaypointsPanel';
 type SpaceTimeChartWrapperBaseProps = {
   operationalPoints: PathOperationalPoint[];
   trainScheduleProjections: TrainSpaceTimeData[];
-  selectedTrainId?: TrainId;
   conflicts?: Conflict[];
   workSchedules?: PostWorkSchedulesProjectPathApiResponse;
   trackOccupancyDiagramsData?: {
@@ -134,7 +137,6 @@ const SpaceTimeChartWrapper = ({
   handleTrainDrag,
   onTrainClick,
   selectedProjectionId,
-  selectedTrainId,
   trainSchedulesWithDetails,
   waypointsPanelIsOpen,
   setWaypointsPanelIsOpen,
@@ -144,6 +146,7 @@ const SpaceTimeChartWrapper = ({
   const dispatch = useAppDispatch();
   const hoveredTrainId = useSelector(getHoveredTrainId);
   const isSimulationEnabled = useSelector(getIsSimulationEnabled);
+  const { id: selectedTrainId, by: selectedTrainBy } = useSelector(getSelectedTrain) || {};
 
   const manchetteWithSpaceTimeChartRef = useRef<HTMLDivElement>(null);
   const activeWaypointRef = useRef<HTMLDivElement>(null);
@@ -371,7 +374,10 @@ const SpaceTimeChartWrapper = ({
         isOccupancyPickingElement(hoveredItem.element))
     ) {
       const clickedTrainId = hoveredItem.element.pathId;
-      if (isTrainId(clickedTrainId) && selectedTrainId !== clickedTrainId) {
+      if (
+        isTrainId(clickedTrainId) &&
+        (selectedTrainId !== clickedTrainId || selectedTrainBy !== 'std')
+      ) {
         onTrainClick(clickedTrainId);
       }
     }
@@ -480,7 +486,7 @@ const SpaceTimeChartWrapper = ({
             )}
           </SpaceTimeChart>
           {/*TODO : update onModeChange and counts when implementing compliant/all/single modes*/}
-          {selectedTrainId && (
+          {selectedTrainBy && selectedTrainBy !== 'timetable' && (
             <CurveSelectionSidePanel
               position={height / 2}
               panelSelectionMode="all"
