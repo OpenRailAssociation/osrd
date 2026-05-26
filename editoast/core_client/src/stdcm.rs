@@ -89,6 +89,8 @@ pub struct StepTimingData {
 #[derive(Debug, Clone, Serialize, PartialEq, Deserialize, ToSchema)]
 #[schema(as = CoreWorkSchedule)]
 pub struct WorkSchedule {
+    /// Unique identifier for the work schedule
+    pub obj_id: String,
     /// Start time as a time delta from the stdcm start time in ms
     pub start_time: u64,
     /// End time as a time delta from the stdcm start time in ms

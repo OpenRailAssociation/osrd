@@ -522,9 +522,9 @@ fun getRequirements(
 ): RequirementsWithMetadata {
     val requirements = mutableMapOf<ZoneId, TreeRangeSet<Double>>()
     val metadata = mutableMapOf<ZoneId, MutableList<STDCMTimetableData.DetailedRequirement>>()
-    convertWorkScheduleCollection(infra.rawInfra, request.workSchedules)
-        .spacingRequirements
-        .forEach { spacingReq ->
+    for (convertedWorkSchedule in
+        convertWorkScheduleCollection(infra.rawInfra, request.workSchedules)) {
+        for (spacingReq in convertedWorkSchedule.spacingRequirements) {
             val set = requirements.computeIfAbsent(spacingReq.zone) { TreeRangeSet.create() }
             set.add(Range.closedOpen(spacingReq.beginTime, spacingReq.endTime))
             metadata
@@ -533,10 +533,11 @@ fun getRequirements(
                     STDCMTimetableData.DetailedRequirement(
                         spacingReq.beginTime,
                         spacingReq.endTime,
-                        "work schedule",
+                        convertedWorkSchedule.id.id,
                     )
                 )
         }
+    }
 
     val trainRequirements = runBlocking { timetableCacheManager.get(infra, request.timetableId) }
     // Cached requirements are relative to EPOCH. Add time diff with request start time

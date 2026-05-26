@@ -82,8 +82,8 @@ interface BlockAvailabilityInterface {
 
     data class ConflictCause(
         /**
-         * Describes the actual conflicting object: either "work schedule" for work schedules, or
-         * train names for other trains. TODO: import work schedule IDs as well.
+         * Describes the actual conflicting object: the work schedule obj_id, or train names for
+         * other trains. TODO: use a RequirementId instead.
          */
         val cause: String,
         /** How much delay we needed to add to avoid this specific conflict. */

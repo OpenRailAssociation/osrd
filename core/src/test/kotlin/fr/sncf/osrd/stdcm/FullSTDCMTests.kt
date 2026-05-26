@@ -176,13 +176,14 @@ class FullSTDCMTests {
                         smallInfra.rawInfra,
                         listOf(
                             WorkSchedule(
+                                "test_work_schedule",
                                 listOf(TrackRange("TB0", Offset(0.meters), Offset(2000.meters))),
                                 0.seconds,
                                 3600.seconds,
                             )
                         ),
                     )
-                    .spacingRequirements
+                    .flatMap { it.spacingRequirements }
             )
         val start = convertRouteLocation(smallInfra, "rt.buffer_stop.3->DB0", Offset(0.meters))
         val end = convertRouteLocation(smallInfra, "rt.DH2->buffer_stop.7", Offset(0.meters))

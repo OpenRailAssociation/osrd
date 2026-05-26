@@ -551,6 +551,7 @@ pub fn as_core_work_schedule(
     }
 
     Some(core_client::stdcm::WorkSchedule {
+        obj_id: work_schedule.obj_id.clone(),
         start_time,
         end_time,
         track_ranges: work_schedule
