@@ -2536,22 +2536,6 @@ class LoadingGaugeType(Enum):
     GLOTT = "GLOTT"
 
 
-class Boundary1(RootModel[str]):
-    root: Annotated[str, Field(min_length=1)]
-
-
-class Margins(BaseModel):
-    model_config = ConfigDict(
-        extra="forbid",
-    )
-    boundaries: list[Boundary1]
-    values: Annotated[list[str], Field(examples=[["5%", "2min/100km"]])]
-    """
-    The values of the margins. Must contains one more element than the boundaries
-    Can be a percentage `X%` or a time in minutes per 100 kilometer `Xmin/100km`
-    """
-
-
 class MoveOperation(BaseModel):
     """
     JSON Patch 'move' operation representation
@@ -2613,7 +2597,7 @@ class OperationDelete(BaseModel):
     operation_type: Literal["DELETE"]
 
 
-class Identifier1(BaseModel):
+class OperationalPointIdentifierExtension(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
@@ -2750,16 +2734,12 @@ class PatchOperationCopyOperation(CopyOperation):
     op: Literal["copy"]
 
 
-class Boundary2(RootModel[int]):
-    root: Annotated[int, Field(ge=0)]
-
-
 class Curves(BaseModel):
     """
     Property f64 values along a path. Each value is associated to a range of the path.
     """
 
-    boundaries: list[Boundary2]
+    boundaries: list[Boundary]
     """
     List of `n` boundaries of the ranges.
     A boundary is a distance from the beginning of the path in mm.
@@ -2801,7 +2781,7 @@ class Electrifications(BaseModel):
     Electrification property along a path. Each value is associated to a range of the path.
     """
 
-    boundaries: list[Boundary2]
+    boundaries: list[Boundary]
     """
     List of `n` boundaries of the ranges.
     A boundary is a distance from the beginning of the path in mm.
@@ -2821,7 +2801,7 @@ class Slopes(BaseModel):
     Property f64 values along a path. Each value is associated to a range of the path.
     """
 
-    boundaries: list[Boundary2]
+    boundaries: list[Boundary]
     """
     List of `n` boundaries of the ranges.
     A boundary is a distance from the beginning of the path in mm.
@@ -2837,7 +2817,7 @@ class Zones(BaseModel):
     Zones along a path. Each value is associated to a range of the path.
     """
 
-    boundaries: list[Boundary2]
+    boundaries: list[Boundary]
     """
     List of `n` boundaries of the ranges.
     A boundary is a distance from the beginning of the path in mm.
@@ -2853,31 +2833,8 @@ class PathfindingFailureInternalError(BaseModel):
     failed_status: Literal["internal_error"]
 
 
-class TimingData(BaseModel):
-    """
-    Time at which the train should arrive at the location, if specified
-    """
-
-    arrival_time: AwareDatetime
-    """
-    Time at which the train should arrive at the location
-    """
-    arrival_time_tolerance_after: Annotated[int, Field(ge=0)]
-    """
-    The train may arrive up to this duration after the expected arrival time
-    """
-    arrival_time_tolerance_before: Annotated[int, Field(ge=0)]
-    """
-    The train may arrive up to this duration before the expected arrival time
-    """
-
-
-class Detector1(RootModel[str]):
-    root: Annotated[str, Field(max_length=255, min_length=1)]
-
-
 class PathfindingOutput(BaseModel):
-    detectors: list[Detector1]
+    detectors: list[Identifier]
     switches_directions: dict[str, str]
     track_ranges: list[DirectionalTrackRange]
 
@@ -3157,7 +3114,7 @@ class ScheduleItem(BaseModel):
     stop_for: timedelta | None = None
 
 
-class TrackSection2(BaseModel):
+class SearchResultItemOperationalPointTrackSections(BaseModel):
     position: float
     track: str
 
@@ -3312,7 +3269,7 @@ class ElectricalProfileValueProfile(BaseModel):
 
 
 class ElectricalProfiles(BaseModel):
-    boundaries: list[Boundary2]
+    boundaries: list[Boundary]
     """
     List of `n` boundaries of the ranges (block path).
     A boundary is a distance from the beginning of the path in mm.
@@ -3370,7 +3327,7 @@ class Mrsp(BaseModel):
     A MRSP computation result (Most Restrictive Speed Profile)
     """
 
-    boundaries: list[Boundary2]
+    boundaries: list[Boundary]
     """
     List of `n` boundaries of the ranges (block path).
     A boundary is a distance from the beginning of the path in mm.
@@ -3626,6 +3583,21 @@ class StdcmSearchEnvironmentResponse(BaseModel):
     temporary_speed_limit_group_id: int | None = None
     timetable_id: int
     work_schedule_group_id: int | None = None
+
+
+class StepTimingData(BaseModel):
+    arrival_time: AwareDatetime
+    """
+    Time at which the train should arrive at the location
+    """
+    arrival_time_tolerance_after: Annotated[int, Field(ge=0)]
+    """
+    The train may arrive up to this duration after the expected arrival time
+    """
+    arrival_time_tolerance_before: Annotated[int, Field(ge=0)]
+    """
+    The train may arrive up to this duration before the expected arrival time
+    """
 
 
 class SubjectType(Enum):
@@ -3935,7 +3907,7 @@ class ConsistChange(BaseModel):
     """
 
 
-class LoadingGaugeType1(Enum):
+class RmiLoadingGaugeType(Enum):
     GA = "GA"
     GB = "GB"
 
@@ -3949,7 +3921,7 @@ class Location(BaseModel):
     secondary_code: Annotated[str, Field(title="Secondary Code")]
 
 
-class TimingData1(BaseModel):
+class TimingData(BaseModel):
     """
     Indicates the departure or arrival time as well as the tolerances.
     """
@@ -3989,7 +3961,7 @@ class RequestedStep(BaseModel):
     Duration in ms
     """
     location: Location
-    timing_data: TimingData1 | None = None
+    timing_data: TimingData | None = None
     type: StepType | None = None
 
 
@@ -4022,7 +3994,7 @@ class SimulationReport(BaseModel):
     towed_rolling_stock: Annotated[str | None, Field(title="Towed Rolling Stock")] = (
         None
     )
-    loading_gauge_type: LoadingGaugeType1
+    loading_gauge_type: RmiLoadingGaugeType
     speed_limit_tags: Annotated[str, Field(title="Speed Limit Tags")]
     total_mass: Annotated[int, Field(title="Total Mass")]
     """
@@ -4685,13 +4657,13 @@ class EtcsBrakeParams(BaseModel):
     """
 
 
-class GeoJsonPoint1(BaseModel):
+class PointGeometry(BaseModel):
     coordinates: list[float]
     type: Literal["Point"]
 
 
-class GeoJsonPoint(RootModel[GeoJsonPoint1]):
-    root: GeoJsonPoint1
+class GeoJsonPoint(RootModel[PointGeometry]):
+    root: PointGeometry
 
 
 class GrantBody(BaseModel):
@@ -4781,6 +4753,18 @@ class MacroNoteResponse(BaseModel):
     y: int
 
 
+class Margins(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    boundaries: list[NonBlankString]
+    values: Annotated[list[str], Field(examples=[["5%", "2min/100km"]])]
+    """
+    The values of the margins. Must contains one more element than the boundaries
+    Can be a percentage `X%` or a time in minutes per 100 kilometer `Xmin/100km`
+    """
+
+
 class ModeEffortCurves(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
@@ -4820,7 +4804,7 @@ class OperationalPointExtensions(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
-    identifier: Identifier1 | None = None
+    identifier: OperationalPointIdentifierExtension | None = None
     sncf: OperationalPointSncfExtension | None = None
 
 
@@ -4950,10 +4934,7 @@ class PathfindingItem(BaseModel):
     """
     The associated location
     """
-    timing_data: TimingData | None = None
-    """
-    Time at which the train should arrive at the location, if specified
-    """
+    timing_data: StepTimingData | None = None
 
 
 class Project(BaseModel):
@@ -5122,7 +5103,7 @@ class SearchResultItemOperationalPoint(BaseModel):
     infra_id: int
     name: str
     obj_id: str
-    track_sections: list[TrackSection2]
+    track_sections: list[SearchResultItemOperationalPointTrackSections]
     trigram: str
     uic: int
 
@@ -5464,40 +5445,40 @@ class EnergySourceBattery(BaseModel):
     max_output_power: SpeedDependantPower
 
 
-class GeoJsonLineString1(BaseModel):
+class LineStringGeometry(BaseModel):
     coordinates: list[list[float]]
     type: Literal["LineString"]
 
 
-class GeoJsonLineString(RootModel[GeoJsonLineString1]):
-    root: GeoJsonLineString1
+class GeoJsonLineString(RootModel[LineStringGeometry]):
+    root: LineStringGeometry
 
 
-class GeoJsonMultiLineString1(BaseModel):
+class MultiLineStringGeometry(BaseModel):
     coordinates: list[list[list[float]]]
     type: Literal["MultiLineString"]
 
 
-class GeoJsonMultiLineString(RootModel[GeoJsonMultiLineString1]):
-    root: GeoJsonMultiLineString1
+class GeoJsonMultiLineString(RootModel[MultiLineStringGeometry]):
+    root: MultiLineStringGeometry
 
 
-class GeoJsonMultiPoint1(BaseModel):
+class MultiPointGeometry(BaseModel):
     coordinates: list[list[float]]
     type: Literal["MultiPoint"]
 
 
-class GeoJsonMultiPoint(RootModel[GeoJsonMultiPoint1]):
-    root: GeoJsonMultiPoint1
+class GeoJsonMultiPoint(RootModel[MultiPointGeometry]):
+    root: MultiPointGeometry
 
 
-class GeoJsonPolygon1(BaseModel):
+class PolygonGeometry(BaseModel):
     coordinates: list[list[list[float]]]
     type: Literal["Polygon"]
 
 
-class GeoJsonPolygon(RootModel[GeoJsonPolygon1]):
-    root: GeoJsonPolygon1
+class GeoJsonPolygon(RootModel[PolygonGeometry]):
+    root: PolygonGeometry
 
 
 class InfraErrorTypeInvalidReference(BaseModel):
@@ -5741,64 +5722,6 @@ class PathItem(BaseModel):
     """
 
 
-class OperationalPoint2(BaseModel):
-    """
-    Operational point along a path.
-    """
-
-    extensions: OperationalPointExtensions | None = None
-    """
-    Extensions associated to the operational point
-    """
-    id: str
-    """
-    Id of the operational point
-    """
-    part: OperationalPointPart
-    """
-    The part along the path
-    """
-    position: Annotated[int, Field(ge=0)]
-    """
-    Distance from the beginning of the path in mm
-    """
-    weight: Annotated[int | None, Field(ge=0, le=100)] = None
-    """
-    Importance of the operational point
-    """
-
-
-class PathProperties(BaseModel):
-    """
-    Properties along a path. Each property is optional since it depends on what the user requests.
-    """
-
-    curves: Curves
-    """
-    Curves along the path
-    """
-    electrifications: Electrifications
-    """
-    Electrification modes and neutral section along the path
-    """
-    geometry: GeoJsonLineString
-    """
-    Geometry of the path
-    """
-    operational_points: list[OperationalPoint2]
-    """
-    Operational points along the path
-    """
-    slopes: Slopes
-    """
-    Slopes along the path
-    """
-    zones: Zones
-    """
-    Zones along the path
-    """
-
-
 class PathfindingFailurePathfindingInputError(BaseModel):
     failed_status: Literal["pathfinding_input_error"]
 
@@ -6006,17 +5929,6 @@ class SimDebugConflictReport(BaseModel):
     time_lost: float
 
 
-class SimDebugData(BaseModel):
-    departure_time: AwareDatetime
-    engineering_allowances_ranges: list[SimDebugEngineeringAllowanceRange]
-    other_requirements: list[SimDebugTrainZoneRequirement]
-    path_properties: PathProperties
-    sim_output: SimulationResponseSuccess | None = None
-    train_positions: list[float]
-    train_times: list[float]
-    zone_locations: list[SimDebugZoneLocation]
-
-
 class SimDebugFailureReport(BaseModel):
     closest_conflicts: list[SimDebugConflictReport]
     largest_conflicts: list[SimDebugConflictReport]
@@ -6077,6 +5989,33 @@ class TrackSectionModel(BaseModel):
     slopes: list[Slope]
 
 
+class CoreOperationalPointOnPath(BaseModel):
+    """
+    Operational point along a path.
+    """
+
+    extensions: OperationalPointExtensions | None = None
+    """
+    Extensions associated to the operational point
+    """
+    id: str
+    """
+    Id of the operational point
+    """
+    part: OperationalPointPart
+    """
+    The part along the path
+    """
+    position: Annotated[int, Field(ge=0)]
+    """
+    Distance from the beginning of the path in mm
+    """
+    weight: Annotated[int | None, Field(ge=0, le=100)] = None
+    """
+    Importance of the operational point
+    """
+
+
 class PathfindingNotFoundIncompatibleConstraints(BaseModel):
     error_type: Literal["incompatible_constraints"]
     incompatible_constraints: CoreIncompatibleConstraints
@@ -6099,13 +6038,13 @@ class CorePathfindingNotFound(
     )
 
 
-class GeoJsonMultiPolygon1(BaseModel):
+class MultiPolygonGeometry(BaseModel):
     coordinates: list[list[list[list[float]]]]
     type: Literal["MultiPolygon"]
 
 
-class GeoJsonMultiPolygon(RootModel[GeoJsonMultiPolygon1]):
-    root: GeoJsonMultiPolygon1
+class GeoJsonMultiPolygon(RootModel[MultiPolygonGeometry]):
+    root: MultiPolygonGeometry
 
 
 class InfraError(BaseModel):
@@ -6170,6 +6109,37 @@ class PathAndScheduleChangeGroup(BaseModel):
     path: list[PathItem]
     power_restrictions: list[PowerRestrictionItem]
     schedule: list[ScheduleItem]
+
+
+class PathProperties(BaseModel):
+    """
+    Properties along a path. Each property is optional since it depends on what the user requests.
+    """
+
+    curves: Curves
+    """
+    Curves along the path
+    """
+    electrifications: Electrifications
+    """
+    Electrification modes and neutral section along the path
+    """
+    geometry: GeoJsonLineString
+    """
+    Geometry of the path
+    """
+    operational_points: list[CoreOperationalPointOnPath]
+    """
+    Operational points along the path
+    """
+    slopes: Slopes
+    """
+    Slopes along the path
+    """
+    zones: Zones
+    """
+    Zones along the path
+    """
 
 
 class PathfindingFailurePathfindingNotFound(BaseModel):
@@ -6279,6 +6249,17 @@ class SearchResultItem(
     """
     A search result item that depends on the query's `object`
     """
+
+
+class SimDebugData(BaseModel):
+    departure_time: AwareDatetime
+    engineering_allowances_ranges: list[SimDebugEngineeringAllowanceRange]
+    other_requirements: list[SimDebugTrainZoneRequirement]
+    path_properties: PathProperties
+    sim_output: SimulationResponseSuccess | None = None
+    train_positions: list[float]
+    train_times: list[float]
+    zone_locations: list[SimDebugZoneLocation]
 
 
 class ResponsePathfindingFailed(BaseModel):

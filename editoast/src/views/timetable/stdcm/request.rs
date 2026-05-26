@@ -40,7 +40,6 @@ pub(crate) struct PathfindingItem {
     /// The associated location
     pub(crate) location: PathItemLocation,
     /// Time at which the train should arrive at the location, if specified
-    #[schema(inline)]
     pub(crate) timing_data: Option<StepTimingData>,
 }
 

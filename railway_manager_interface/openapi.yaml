@@ -139,12 +139,12 @@ components:
       - total_length
       title: ConsistChange
       description: New consist to use from a request step onward.
-    LoadingGaugeType:
+    RmiLoadingGaugeType:
       type: string
       enum:
       - GA
       - GB
-      title: LoadingGaugeType
+      title: RmiLoadingGaugeType
     Location:
       properties:
         uic:
@@ -253,7 +253,7 @@ components:
           - 'null'
           title: Towed Rolling Stock
         loading_gauge_type:
-          $ref: '#/components/schemas/LoadingGaugeType'
+          $ref: '#/components/schemas/RmiLoadingGaugeType'
         speed_limit_tags:
           type: string
           title: Speed Limit Tags

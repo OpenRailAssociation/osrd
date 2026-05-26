@@ -491,7 +491,6 @@ pub(super) struct SearchResultItemOperationalPoint {
     #[schema(value_type = GeoJsonPoint)]
     geographic: Geometry,
     #[search(sql = "OP.data->'parts'")]
-    #[schema(inline)]
     track_sections: Vec<SearchResultItemOperationalPointTrackSections>,
 }
 #[derive(Serialize, ToSchema)]

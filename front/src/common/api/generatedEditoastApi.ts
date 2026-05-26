@@ -3029,6 +3029,10 @@ export type NeutralSection = {
   lower_pantograph: boolean;
   track_ranges: DirectionalTrackRange[];
 };
+export type OperationalPointIdentifierExtension = {
+  name: string;
+  uic: number;
+};
 export type OperationalPointSncfExtension = {
   ch: string;
   ch_long_label: string;
@@ -3037,10 +3041,7 @@ export type OperationalPointSncfExtension = {
   trigram: string;
 };
 export type OperationalPointExtensions = {
-  identifier?: null | {
-    name: string;
-    uic: number;
-  };
+  identifier?: null | OperationalPointIdentifierExtension;
   sncf?: null | OperationalPointSncfExtension;
 };
 export type OperationalPointPartSncfExtension = {
@@ -3523,6 +3524,18 @@ export type InfraObjectWithGeometry = {
   obj_id: string;
   railjson: object;
 };
+export type CoreOperationalPointOnPath = {
+  /** Extensions associated to the operational point */
+  extensions?: OperationalPointExtensions;
+  /** Id of the operational point */
+  id: string;
+  /** The part along the path */
+  part: OperationalPointPart;
+  /** Distance from the beginning of the path in mm */
+  position: number;
+  /** Importance of the operational point */
+  weight: number | null;
+};
 export type PathProperties = {
   /** Curves along the path */
   curves: {
@@ -3555,18 +3568,7 @@ export type PathProperties = {
   /** Geometry of the path */
   geometry: GeoJsonLineString;
   /** Operational points along the path */
-  operational_points: {
-    /** Extensions associated to the operational point */
-    extensions?: OperationalPointExtensions;
-    /** Id of the operational point */
-    id: string;
-    /** The part along the path */
-    part: OperationalPointPart;
-    /** Distance from the beginning of the path in mm */
-    position: number;
-    /** Importance of the operational point */
-    weight: number | null;
-  }[];
+  operational_points: CoreOperationalPointOnPath[];
   /** Slopes along the path */
   slopes: {
     /** List of `n` boundaries of the ranges.
@@ -3598,8 +3600,9 @@ export type PathPropertiesInput = {
   /** List of track sections */
   track_section_ranges: CoreTrackRange[];
 };
+export type Identifier = string;
 export type PathfindingOutput = {
-  detectors: string[];
+  detectors: Identifier[];
   switches_directions: {
     [key: string]: string;
   };
@@ -3765,7 +3768,6 @@ export type RoutePath = {
   }[];
   track_ranges: DirectionalTrackRange[];
 };
-export type Identifier = string;
 export type LightModeEffortCurves = {
   is_electric: boolean;
 };
@@ -4215,6 +4217,10 @@ export type SearchResultItemTrack = {
   line_code: number;
   line_name: string;
 };
+export type SearchResultItemOperationalPointTrackSections = {
+  position: number;
+  track: string;
+};
 export type SearchResultItemOperationalPoint = {
   ch: string;
   ci: number;
@@ -4222,10 +4228,7 @@ export type SearchResultItemOperationalPoint = {
   infra_id: number;
   name: string;
   obj_id: string;
-  track_sections: {
-    position: number;
-    track: string;
-  }[];
+  track_sections: SearchResultItemOperationalPointTrackSections[];
   trigram: string;
   uic: number;
 };
@@ -4276,7 +4279,7 @@ export type SearchResultItemScenario = {
   train_schedules_count: number;
 };
 export type Margins = {
-  boundaries: string[];
+  boundaries: NonBlankString[];
   /** The values of the margins. Must contains one more element than the boundaries
     Can be a percentage `X%` or a time in minutes per 100 kilometer `Xmin/100km` */
   values: string[];
@@ -4729,20 +4732,20 @@ export type ConsistSchedule = {
     It should contain one more element than boundaries */
   values: ConsistConfiguration[];
 };
+export type StepTimingData = {
+  /** Time at which the train should arrive at the location */
+  arrival_time: string;
+  /** The train may arrive up to this duration after the expected arrival time */
+  arrival_time_tolerance_after: number;
+  /** The train may arrive up to this duration before the expected arrival time */
+  arrival_time_tolerance_before: number;
+};
 export type PathfindingItem = {
   /** The stop duration in milliseconds, None if the train does not stop. */
   duration?: number | null;
   /** The associated location */
   location: PathItemLocation;
-  /** Time at which the train should arrive at the location, if specified */
-  timing_data?: null | {
-    /** Time at which the train should arrive at the location */
-    arrival_time: string;
-    /** The train may arrive up to this duration after the expected arrival time */
-    arrival_time_tolerance_after: number;
-    /** The train may arrive up to this duration before the expected arrival time */
-    arrival_time_tolerance_before: number;
-  };
+  timing_data?: null | StepTimingData;
 };
 export type Distribution = 'STANDARD' | 'MARECO';
 export type ConstraintDistributionChangeGroup = {

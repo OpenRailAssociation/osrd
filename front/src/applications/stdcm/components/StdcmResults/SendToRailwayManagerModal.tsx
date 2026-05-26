@@ -13,7 +13,7 @@ import {
 } from 'applications/stdcm/types';
 import {
   osrdRailwayManagerApi,
-  type LoadingGaugeType,
+  type RmiLoadingGaugeType,
   type PostSendLastMinuteRequestApiArg,
   type SimulationReport,
   type SendLastMinuteRequestResponse,
@@ -257,7 +257,7 @@ const SendToRailwayManagerModal = ({
     const simulationReport: SimulationReport = {
       rolling_stock: consist.tractionEngine.name,
       towed_rolling_stock: consist.towedRollingStock?.name,
-      loading_gauge_type: consist.loadingGauge as LoadingGaugeType,
+      loading_gauge_type: consist.loadingGauge as RmiLoadingGaugeType,
       speed_limit_tags: consist.speedLimitByTag,
       total_mass: tToKg(consist.totalMass),
       max_speed: kmhToMs(consist.maxSpeed),

@@ -5421,6 +5421,40 @@ components:
           type: integer
           format: int64
           minimum: 0
+    CoreOperationalPointOnPath:
+      type: object
+      description: Operational point along a path.
+      required:
+      - id
+      - part
+      - position
+      - weight
+      properties:
+        extensions:
+          $ref: '#/components/schemas/OperationalPointExtensions'
+          description: Extensions associated to the operational point
+        id:
+          oneOf:
+          - type: string
+            maxLength: 255
+            minLength: 1
+          description: Id of the operational point
+        part:
+          $ref: '#/components/schemas/OperationalPointPart'
+          description: The part along the path
+        position:
+          type: integer
+          format: int64
+          description: Distance from the beginning of the path in mm
+          minimum: 0
+        weight:
+          type:
+          - integer
+          - 'null'
+          format: int32
+          description: Importance of the operational point
+          maximum: 100
+          minimum: 0
     CorePathfindingInputError:
       oneOf:
       - type: object
@@ -10177,6 +10211,7 @@ components:
     GeoJsonLineString:
       oneOf:
       - type: object
+        title: LineStringGeometry
         required:
         - coordinates
         - type
@@ -10194,6 +10229,7 @@ components:
     GeoJsonMultiLineString:
       oneOf:
       - type: object
+        title: MultiLineStringGeometry
         required:
         - coordinates
         - type
@@ -10211,6 +10247,7 @@ components:
     GeoJsonMultiPoint:
       oneOf:
       - type: object
+        title: MultiPointGeometry
         required:
         - coordinates
         - type
@@ -10228,6 +10265,7 @@ components:
     GeoJsonMultiPolygon:
       oneOf:
       - type: object
+        title: MultiPolygonGeometry
         required:
         - coordinates
         - type
@@ -10245,6 +10283,7 @@ components:
     GeoJsonPoint:
       oneOf:
       - type: object
+        title: PointGeometry
         required:
         - coordinates
         - type
@@ -10263,6 +10302,7 @@ components:
     GeoJsonPolygon:
       oneOf:
       - type: object
+        title: PolygonGeometry
         required:
         - coordinates
         - type
@@ -11179,8 +11219,7 @@ components:
         boundaries:
           type: array
           items:
-            type: string
-            minLength: 1
+            $ref: '#/components/schemas/NonBlankString'
         values:
           type: array
           items:
@@ -11466,23 +11505,25 @@ components:
         identifier:
           oneOf:
           - type: 'null'
-          - type: object
-            required:
-            - name
-            - uic
-            properties:
-              name:
-                type: string
-                minLength: 1
-              uic:
-                type: integer
-                format: int32
-                minimum: 0
-            additionalProperties: false
+          - $ref: '#/components/schemas/OperationalPointIdentifierExtension'
         sncf:
           oneOf:
           - type: 'null'
           - $ref: '#/components/schemas/OperationalPointSncfExtension'
+      additionalProperties: false
+    OperationalPointIdentifierExtension:
+      type: object
+      required:
+      - name
+      - uic
+      properties:
+        name:
+          type: string
+          minLength: 1
+        uic:
+          type: integer
+          format: int32
+          minimum: 0
       additionalProperties: false
     OperationalPointPart:
       type: object
@@ -11986,39 +12027,7 @@ components:
         operational_points:
           type: array
           items:
-            type: object
-            description: Operational point along a path.
-            required:
-            - id
-            - part
-            - position
-            - weight
-            properties:
-              extensions:
-                $ref: '#/components/schemas/OperationalPointExtensions'
-                description: Extensions associated to the operational point
-              id:
-                oneOf:
-                - type: string
-                  maxLength: 255
-                  minLength: 1
-                description: Id of the operational point
-              part:
-                $ref: '#/components/schemas/OperationalPointPart'
-                description: The part along the path
-              position:
-                type: integer
-                format: int64
-                description: Distance from the beginning of the path in mm
-                minimum: 0
-              weight:
-                type:
-                - integer
-                - 'null'
-                format: int32
-                description: Importance of the operational point
-                maximum: 100
-                minimum: 0
+            $ref: '#/components/schemas/CoreOperationalPointOnPath'
           description: Operational points along the path
         slopes:
           oneOf:
@@ -12190,27 +12199,8 @@ components:
         timing_data:
           oneOf:
           - type: 'null'
-          - type: object
-            required:
-            - arrival_time
-            - arrival_time_tolerance_before
-            - arrival_time_tolerance_after
-            properties:
-              arrival_time:
-                type: string
-                format: date-time
-                description: Time at which the train should arrive at the location
-              arrival_time_tolerance_after:
-                type: integer
-                format: int64
-                description: The train may arrive up to this duration after the expected arrival time
-                minimum: 0
-              arrival_time_tolerance_before:
-                type: integer
-                format: int64
-                description: The train may arrive up to this duration before the expected arrival time
-                minimum: 0
-          description: Time at which the train should arrive at the location, if specified
+          - $ref: '#/components/schemas/StepTimingData'
+            description: Time at which the train should arrive at the location, if specified
     PathfindingOutput:
       type: object
       required:
@@ -12221,9 +12211,7 @@ components:
         detectors:
           type: array
           items:
-            type: string
-            maxLength: 255
-            minLength: 1
+            $ref: '#/components/schemas/Identifier'
         switches_directions:
           type: object
           additionalProperties:
@@ -13489,21 +13477,23 @@ components:
         track_sections:
           type: array
           items:
-            type: object
-            required:
-            - track
-            - position
-            properties:
-              position:
-                type: number
-                format: double
-              track:
-                type: string
+            $ref: '#/components/schemas/SearchResultItemOperationalPointTrackSections'
         trigram:
           type: string
         uic:
           type: integer
           format: int64
+    SearchResultItemOperationalPointTrackSections:
+      type: object
+      required:
+      - track
+      - position
+      properties:
+        position:
+          type: number
+          format: double
+        track:
+          type: string
     SearchResultItemProject:
       type: object
       description: A search result item for a query with `object = "project"`
@@ -14896,6 +14886,27 @@ components:
           - integer
           - 'null'
           format: int64
+    StepTimingData:
+      type: object
+      required:
+      - arrival_time
+      - arrival_time_tolerance_before
+      - arrival_time_tolerance_after
+      properties:
+        arrival_time:
+          type: string
+          format: date-time
+          description: Time at which the train should arrive at the location
+        arrival_time_tolerance_after:
+          type: integer
+          format: int64
+          description: The train may arrive up to this duration after the expected arrival time
+          minimum: 0
+        arrival_time_tolerance_before:
+          type: integer
+          format: int64
+          description: The train may arrive up to this duration before the expected arrival time
+          minimum: 0
     Study:
       type: object
       required:

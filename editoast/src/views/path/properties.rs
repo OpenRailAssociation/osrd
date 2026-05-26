@@ -51,7 +51,6 @@ pub(in crate::views) struct PathProperties {
     #[schema(value_type = GeoJsonLineString)]
     geometry: Geometry,
     /// Operational points along the path
-    #[schema(inline)]
     operational_points: Vec<OperationalPointOnPath>,
     /// Zones along the path
     #[schema(inline)]
