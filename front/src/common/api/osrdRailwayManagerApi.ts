@@ -307,7 +307,7 @@ export type SendLastMinuteRequestResponse = {
   request_identifier: string;
   created_request_url: string | null;
 };
-export type LoadingGaugeType = 'GA' | 'GB';
+export type RmiLoadingGaugeType = 'GA' | 'GB';
 export type ConsistChange = {
   rolling_stock: string;
   towed_rolling_stock?: string | null;
@@ -351,7 +351,7 @@ export type CourseType = string;
 export type SimulationReport = {
   rolling_stock: string;
   towed_rolling_stock?: string | null;
-  loading_gauge_type: LoadingGaugeType;
+  loading_gauge_type: RmiLoadingGaugeType;
   speed_limit_tags: string;
   /** Total mass of the train in kg */
   total_mass: number;

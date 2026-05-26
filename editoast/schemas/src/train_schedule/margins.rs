@@ -11,7 +11,6 @@ use utoipa::ToSchema;
 #[educe(Default)]
 #[serde(remote = "Self")]
 pub struct Margins {
-    #[schema(inline)]
     pub boundaries: Vec<NonBlankString>,
     #[educe(Default = vec![MarginValue::default()])]
     /// The values of the margins. Must contains one more element than the boundaries

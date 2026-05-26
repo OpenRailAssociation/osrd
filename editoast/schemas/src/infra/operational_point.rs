@@ -54,7 +54,6 @@ pub struct OperationalPointPartSncfExtension {
 #[serde(deny_unknown_fields)]
 pub struct OperationalPointExtensions {
     pub sncf: Option<OperationalPointSncfExtension>,
-    #[schema(inline)]
     pub identifier: Option<OperationalPointIdentifierExtension>,
 }
 

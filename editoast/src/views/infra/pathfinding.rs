@@ -62,7 +62,6 @@ pub(in crate::views) struct InfraPathfindingInput {
 #[derive(Debug, Default, Clone, Serialize, ToSchema)]
 pub(in crate::views) struct PathfindingOutput {
     track_ranges: Vec<DirectionalTrackRange>,
-    #[schema(inline)]
     detectors: Vec<Identifier>,
     #[schema(inline)]
     switches_directions: HashMap<Identifier, Identifier>,

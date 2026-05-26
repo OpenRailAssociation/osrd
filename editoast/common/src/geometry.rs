@@ -60,36 +60,42 @@ mod serde_remotes {
     #[derive(Serialize, ToSchema)]
     #[serde(tag = "type", content = "coordinates")]
     pub(super) enum GeoJsonPoint {
+        #[schema(title = "PointGeometry")]
         Point(GeoJsonPointValue),
     }
 
     #[derive(Serialize, ToSchema)]
     #[serde(tag = "type", content = "coordinates")]
     pub(super) enum GeoJsonMultiPoint {
+        #[schema(title = "MultiPointGeometry")]
         MultiPoint(GeoJsonMultiPointValue),
     }
 
     #[derive(Serialize, ToSchema)]
     #[serde(tag = "type", content = "coordinates")]
     pub(super) enum GeoJsonLineString {
+        #[schema(title = "LineStringGeometry")]
         LineString(GeoJsonLineStringValue),
     }
 
     #[derive(Serialize, ToSchema)]
     #[serde(tag = "type", content = "coordinates")]
     pub(super) enum GeoJsonMultiLineString {
+        #[schema(title = "MultiLineStringGeometry")]
         MultiLineString(GeoJsonMultiLineStringValue),
     }
 
     #[derive(Serialize, ToSchema)]
     #[serde(tag = "type", content = "coordinates")]
     pub(super) enum GeoJsonPolygon {
+        #[schema(title = "PolygonGeometry")]
         Polygon(GeoJsonPolygonValue),
     }
 
     #[derive(Serialize, ToSchema)]
     #[serde(tag = "type", content = "coordinates")]
     pub(super) enum GeoJsonMultiPolygon {
+        #[schema(title = "MultiPolygonGeometry")]
         MultiPolygon(GeoJsonMultiPolygonValue),
     }
 
