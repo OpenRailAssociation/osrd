@@ -26,7 +26,7 @@ import type {
 } from 'modules/trainSchedule/types';
 import type { OccurrenceId } from 'reducers/osrdconf/types';
 import { updateSelectedTrain, updateTrainIdUsedForProjection } from 'reducers/simulationResults';
-import { getSelectedTrainId } from 'reducers/simulationResults/selectors';
+import { getSelectedTrain } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
 import { extractExceptionIdFromOccurrenceId, isIndexedOccurrenceId } from 'utils/trainId';
 
@@ -51,7 +51,7 @@ const useOccurrenceActions = ({
 }: OccurrenceActionsParams) => {
   const dispatch = useAppDispatch();
 
-  const selectedTrainId = useSelector(getSelectedTrainId);
+  const { id: selectedTrainId } = useSelector(getSelectedTrain) || {};
 
   const upsertWithNewExceptions = useCallback(
     (newExceptions: SimulatedException[]) => {

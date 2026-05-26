@@ -8,7 +8,7 @@ import {
   findExceptionWithOccurrenceId,
   isPacedTrain,
 } from 'modules/trainSchedule/helpers/pacedTrain';
-import { getSelectedTrainId } from 'reducers/simulationResults/selectors';
+import { getSelectedTrain } from 'reducers/simulationResults/selectors';
 import {
   extractPacedTrainIdFromOccurrenceId,
   isIndexedOccurrenceId,
@@ -28,7 +28,7 @@ const useConflictsFilter = (
   conflicts: Conflict[],
   isConflictsLoading: boolean
 ) => {
-  const selectedTrainId = useSelector(getSelectedTrainId);
+  const { id: selectedTrainId } = useSelector(getSelectedTrain) || {};
   const [showOnlySelectedTrain, setShowOnlySelectedTrain] = useState(false);
   const [enrichedConflicts, setEnrichedConflicts] = useState<ConflictWithTrainNames[]>([]);
 

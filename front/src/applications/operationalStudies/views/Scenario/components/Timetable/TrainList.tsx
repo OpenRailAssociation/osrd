@@ -16,7 +16,7 @@ import type { PacedTrainWithDetails, TrainScheduleWithDetails } from 'modules/tr
 import { selectTrainToEdit } from 'reducers/osrdconf/operationalStudiesConf';
 import type { OccurrenceId, TrainScheduleToEditData } from 'reducers/osrdconf/types';
 import {
-  getSelectedTrainId,
+  getSelectedTrain,
   getTrainIdUsedForProjection,
 } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
@@ -83,7 +83,7 @@ const TrainList = ({
 
   const [expandedTrainScheduleIds, setExpandedTrainScheduleIds] = useState<Set<number>>(new Set());
 
-  const selectedTrainId = useSelector(getSelectedTrainId);
+  const { id: selectedTrainId } = useSelector(getSelectedTrain) || {};
   const trainIdUsedForProjection = useSelector(getTrainIdUsedForProjection);
   const dispatch = useAppDispatch();
 

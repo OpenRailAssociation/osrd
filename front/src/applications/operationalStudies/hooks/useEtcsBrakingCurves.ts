@@ -21,7 +21,7 @@ import {
   isPacedTrain,
 } from 'modules/trainSchedule/helpers/pacedTrain';
 import useSelectedTrainSchedule from 'modules/trainSchedule/hooks/useSelectedTrainSchedule';
-import { getSelectedTrainId } from 'reducers/simulationResults/selectors';
+import { getSelectedTrain } from 'reducers/simulationResults/selectors';
 import { isOccurrenceId, isPacedTrainId } from 'utils/trainId';
 
 import { useScenarioContext } from './useScenarioContext';
@@ -63,7 +63,7 @@ const useEtcsBrakingCurves = (
   const [etcsBrakingCurves, setEtcsBrakingCurves] = useState<EtcsBrakingCurves>();
 
   const { infraId, electricalProfileSetId } = useScenarioContext();
-  const selectedTrainId = useSelector(getSelectedTrainId);
+  const { id: selectedTrainId } = useSelector(getSelectedTrain) || {};
   const trainSchedule = useSelectedTrainSchedule(trainSchedules);
   const exception = useMemo(() => {
     if (

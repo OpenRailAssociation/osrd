@@ -14,7 +14,7 @@ import {
 } from 'modules/trainSchedule/helpers/pacedTrain';
 import useSelectedTrainSchedule from 'modules/trainSchedule/hooks/useSelectedTrainSchedule';
 import type { Train } from 'reducers/osrdconf/types';
-import { getSelectedTrainId } from 'reducers/simulationResults/selectors';
+import { getSelectedTrain } from 'reducers/simulationResults/selectors';
 import { Duration } from 'utils/duration';
 import {
   extractOccurrenceIndexFromOccurrenceId,
@@ -38,12 +38,13 @@ const useSimulationResults = (
   const { t } = useTranslation('operational-studies');
 
   const { infraId, electricalProfileSetId } = useScenarioContext();
-  const selectedTrainId = useSelector(getSelectedTrainId);
+  const { id: selectedTrainId } = useSelector(getSelectedTrain) || {};
 
   const trainSchedule = useSelectedTrainSchedule(trainSchedules);
 
   const train: Train | undefined = useMemo(() => {
     if (!selectedTrainId || !trainSchedule) return undefined;
+
     if (!isOccurrenceId(selectedTrainId) || !trainSchedule.paced) {
       return { ...trainSchedule, id: formatEditoastIdToPacedTrainId(trainSchedule.id) };
     }

@@ -4,7 +4,7 @@ import { useSelector } from 'react-redux';
 
 import type { TrainScheduleResponse } from 'common/api/osrdEditoastApi';
 import type { TrainId } from 'reducers/osrdconf/types';
-import { getSelectedTrainId } from 'reducers/simulationResults/selectors';
+import { getSelectedTrain } from 'reducers/simulationResults/selectors';
 import {
   extractEditoastIdFromPacedTrainId,
   extractPacedTrainIdFromOccurrenceId,
@@ -21,7 +21,7 @@ const extractTrainScheduleId = (trainId?: TrainId) => {
 const useSelectedTrainSchedule = (
   trainSchedules: TrainScheduleResponse[] | undefined
 ): TrainScheduleResponse | undefined => {
-  const trainId = useSelector(getSelectedTrainId);
+  const { id: trainId } = useSelector(getSelectedTrain) || {};
 
   const trainScheduleId = extractTrainScheduleId(trainId);
 

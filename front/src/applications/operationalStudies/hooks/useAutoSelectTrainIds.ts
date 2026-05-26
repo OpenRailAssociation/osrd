@@ -7,7 +7,7 @@ import { isValidPathfinding } from 'applications/operationalStudies/views/Scenar
 import type { TrainScheduleWithDetails } from 'modules/trainSchedule/types';
 import { updateSelectedTrain, updateTrainIdUsedForProjection } from 'reducers/simulationResults';
 import {
-  getSelectedTrainId,
+  getSelectedTrain,
   getTrainIdUsedForProjection,
 } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
@@ -38,7 +38,7 @@ const useAutoSelectTrainIds = (
 ) => {
   const dispatch = useAppDispatch();
   const currentTrainIdForProjection = useSelector(getTrainIdUsedForProjection);
-  const selectedTrainId = useSelector(getSelectedTrainId);
+  const { id: selectedTrainId } = useSelector(getSelectedTrain) || {};
 
   const location = useLocation();
   const navigate = useNavigate();
