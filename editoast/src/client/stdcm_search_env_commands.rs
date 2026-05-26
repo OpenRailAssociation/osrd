@@ -335,34 +335,31 @@ mod tests {
     }
 
     #[rstest]
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     #[case::both_none(
         None,
         None,
         make_datetime("2000-01-01 11:59:59Z"),
         make_datetime("2000-02-03 00:00:01Z")
     )]
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     #[case::begin_none(
         None,
         Some(make_datetime("2000-02-01 00:00:00Z")),
         make_datetime("2000-01-01 11:59:59Z"),
         make_datetime("2000-02-01 00:00:00Z")
     )]
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     #[case::end_none(
         Some(make_datetime("2000-02-01 08:00:00Z")),
         None,
         make_datetime("2000-02-01 08:00:00Z"),
         make_datetime("2000-02-03 00:00:01Z")
     )]
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     #[case::both_some(
         Some(make_datetime("2000-02-01 08:00:00Z")),
         Some(make_datetime("2000-05-22 09:00:50Z")),
         make_datetime("2000-02-01 08:00:00Z"),
         make_datetime("2000-05-22 09:00:50Z")
     )]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn test_resolve_search_window(
         #[case] search_window_begin: Option<DateTime<Utc>>,
         #[case] search_window_end: Option<DateTime<Utc>>,
@@ -409,15 +406,13 @@ mod tests {
     }
 
     #[rstest]
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     #[case::both_some(
         Some(make_datetime("2000-02-01 08:00:00Z")),
         Some(make_datetime("2000-02-01 00:00:00Z"))
     )]
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     #[case::end_none(Some(make_datetime("2000-03-01 00:00:00Z")), None)]
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     #[case::begin_none(None, Some(make_datetime("2000-01-01 08:00:00Z")))]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn test_resolve_search_window_incompatible_dates(
         #[case] search_window_begin: Option<DateTime<Utc>>,
         #[case] search_window_end: Option<DateTime<Utc>>,

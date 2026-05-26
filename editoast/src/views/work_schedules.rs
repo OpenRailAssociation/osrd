@@ -539,7 +539,6 @@ pub mod tests {
     }
 
     #[rstest]
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     #[case::one_work_schedule_with_two_track_ranges(
         vec![
             vec![
@@ -551,7 +550,6 @@ pub mod tests {
             vec![(0, 150000)],
         ]
     )]
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     #[case::one_work_schedule_with_two_disjoint_track_ranges(
         vec![
             vec![
@@ -563,7 +561,6 @@ pub mod tests {
             vec![(0, 100000), (300000, 400000)],
         ]
     )]
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     #[case::one_work_schedule_but_no_intersection(
         vec![
             vec![
@@ -572,7 +569,6 @@ pub mod tests {
         ],
         vec![]
     )]
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     #[case::two_work_schedules(
         vec![
             vec![
@@ -586,6 +582,7 @@ pub mod tests {
             vec![(350000, 400000)]
         ],
     )]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn work_schedule_project_path_on_ws_group(
         #[case] work_schedule_track_ranges: Vec<Vec<TrackRange>>,
         #[case] expected_path_position_ranges: Vec<Vec<(u64, u64)>>,
