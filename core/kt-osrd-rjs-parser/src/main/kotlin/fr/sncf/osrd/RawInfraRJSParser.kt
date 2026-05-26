@@ -7,11 +7,11 @@ import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeEndpoint
 import fr.sncf.osrd.railjson.schema.geom.RJSLineString
 import fr.sncf.osrd.railjson.schema.infra.*
+import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSOperationalPointPart
 import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSRouteWaypoint
 import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSSignal
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSElectrification
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSNeutralSection
-import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSOperationalPointPart
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSSpeedSection
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType
 import fr.sncf.osrd.reporting.exceptions.ErrorType
