@@ -332,80 +332,6 @@ class CoreSpacingRequirement(BaseModel):
     zone: str
 
 
-class MarginValuePercentage(BaseModel):
-    """
-    Margin to apply to the whole train
-    """
-
-    Percentage: float
-
-
-class MarginValueMinPer100Km(BaseModel):
-    """
-    Margin to apply to the whole train
-    """
-
-    MinPer100Km: float
-
-
-class CoreStepTimingData(BaseModel):
-    """
-    Contains the data of a step timing, when it is specified
-    """
-
-    arrival_time: AwareDatetime
-    """
-    Time the train should arrive at this point
-    """
-    arrival_time_tolerance_after: Annotated[int, Field(ge=0)]
-    """
-    Tolerance for the arrival time, when it arrives after the expected time, in ms
-    """
-    arrival_time_tolerance_before: Annotated[int, Field(ge=0)]
-    """
-    Tolerance for the arrival time, when it arrives before the expected time, in ms
-    """
-
-
-class CoreUndirectedTrackRange(BaseModel):
-    """
-    A range on a track section.
-    `begin` is always less than `end`.
-    """
-
-    begin: Annotated[int, Field(ge=0)]
-    """
-    The beginning of the range in mm.
-    """
-    end: Annotated[int, Field(ge=0)]
-    """
-    The end of the range in mm.
-    """
-    track_section: str
-    """
-    The track section identifier.
-    """
-
-
-class CoreWorkSchedule(BaseModel):
-    """
-    Lighter description of a work schedule, with only the relevant information for core
-    """
-
-    end_time: Annotated[int, Field(ge=0)]
-    """
-    End time as a time delta from the stdcm start time in ms
-    """
-    start_time: Annotated[int, Field(ge=0)]
-    """
-    Start time as a time delta from the stdcm start time in ms
-    """
-    track_ranges: list[CoreUndirectedTrackRange]
-    """
-    List of unavailable track ranges
-    """
-
-
 class CoreZoneUpdate(BaseModel):
     is_entry: bool
     position: Annotated[int, Field(ge=0)]
@@ -3634,6 +3560,15 @@ class StartTimeChangeGroup(BaseModel):
     value: AwareDatetime
 
 
+class StdcmResponsePathNotFound(BaseModel):
+    status: Literal["path_not_found"]
+
+
+class StdcmResponseInternalError(BaseModel):
+    error: InternalError
+    status: Literal["internal_error"]
+
+
 class StdcmSearchEnvironment(BaseModel):
     allowed_tracks: dict[str, Any] | None = None
     """
@@ -4266,17 +4201,6 @@ class CoreIncompatibleOffsetRangeWithValue(BaseModel):
     value: str
 
 
-class CorePathItem(BaseModel):
-    can_backtrack: bool | None = None
-    """
-    If true, the train can backtrack at these track offsets.
-    """
-    locations: list[TrackOffset]
-    """
-    The track offsets of the path item.
-    """
-
-
 class CoreRoutingRequirement(BaseModel):
     begin_time: Annotated[int, Field(ge=0)]
     """
@@ -4284,18 +4208,6 @@ class CoreRoutingRequirement(BaseModel):
     """
     route: str
     zones: list[CoreRoutingZoneRequirement]
-
-
-class CoreSTDCMPathItem(BaseModel):
-    path_item: CorePathItem
-    """
-    The path item containing its locations and backtrack information.
-    """
-    step_timing_data: CoreStepTimingData | None = None
-    stop_duration: Annotated[int | None, Field(ge=0)] = None
-    """
-    Stop duration in milliseconds. None if the train does not stop at this path item.
-    """
 
 
 class CoreTrackRange(BaseModel):
@@ -5520,82 +5432,6 @@ class CorePathfindingResultSuccess(BaseModel):
     """
 
 
-class TemporarySpeedLimit(BaseModel):
-    """
-    Lighter description of a work schedule with only the relevant information for core
-    """
-
-    speed_limit: float
-    """
-    Speed limitation in m/s
-    """
-    track_ranges: list[CoreTrackRange]
-    """
-    Track ranges on which the speed limitation applies
-    """
-
-
-class CoreStdcmRequest(BaseModel):
-    allowed_track_sections: list[str] | None = None
-    """
-    Set of authorized track section ids for the current request
-    """
-    comfort: Comfort
-    """
-    The comfort of the train
-    """
-    consist_schedule: ConsistSchedule
-    expected_version: int
-    """
-    Infrastructure expected version
-    """
-    infra: int
-    """
-    Infrastructure id
-    """
-    margin: MarginValuePercentage | MarginValueMinPer100Km | None = None
-    """
-    Margin to apply to the whole train
-    """
-    maximum_departure_delay: Annotated[int, Field(ge=0)]
-    """
-    Maximum departure delay in milliseconds.
-    """
-    maximum_run_time: Annotated[int, Field(ge=0)]
-    """
-    Maximum run time of the simulation in milliseconds
-    """
-    path_items: list[CoreSTDCMPathItem]
-    """
-    List of waypoints. Each waypoint is a list of track offset.
-    """
-    start_time: AwareDatetime
-    temporary_speed_limits: list[TemporarySpeedLimit]
-    """
-    List of applicable temporary speed limits between the train departure and arrival
-    """
-    time_gap_after: Annotated[int, Field(ge=0)]
-    """
-    Gap between the created train and following trains in milliseconds
-    """
-    time_gap_before: Annotated[int, Field(ge=0)]
-    """
-    Gap between the created train and previous trains in milliseconds
-    """
-    time_step: Annotated[int | None, Field(ge=0)] = None
-    """
-    Numerical integration time step in milliseconds. Use default value if not specified.
-    """
-    timetable_id: int
-    """
-    Timetable id
-    """
-    work_schedules: list[CoreWorkSchedule]
-    """
-    List of planned work schedules
-    """
-
-
 class Detector(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
@@ -6210,22 +6046,10 @@ class SpeedSection(BaseModel):
 
 
 class StdcmResponseSuccess(BaseModel):
-    core_payload: CoreStdcmRequest | None = None
     departure_time: AwareDatetime
     pathfinding_result: CorePathfindingResultSuccess
     simulation: SimulationResponseSuccess
     status: Literal["success"]
-
-
-class StdcmResponsePathNotFound(BaseModel):
-    core_payload: CoreStdcmRequest | None = None
-    status: Literal["path_not_found"]
-
-
-class StdcmResponseInternalError(BaseModel):
-    core_payload: CoreStdcmRequest | None = None
-    error: InternalError
-    status: Literal["internal_error"]
 
 
 class Switch(BaseModel):
@@ -6250,66 +6074,6 @@ class TrackSectionModel(BaseModel):
     length: float
     loading_gauge_limits: list[LoadingGaugeLimit] | None = None
     slopes: list[Slope]
-
-
-class PhysicsConsist(BaseModel):
-    base_power_class: str | None = None
-    comfort_acceleration: float
-    """
-    Acceleration in m·s⁻²
-    """
-    const_gamma: float
-    """
-     The constant gamma braking coefficient used when NOT circulating
-     under ETCS/ERTMS signaling system
-    Acceleration in m·s⁻²
-    """
-    effort_curves: EffortCurves
-    electrical_power_startup_time: Annotated[int | None, Field(ge=0)] = None
-    """
-    The time the train takes before actually using electrical power.
-    Is null if the train is not electric or the value not specified.
-    """
-    etcs_brake_params: EtcsBrakeParams | None = None
-    inertia_coefficient: float
-    length: Annotated[int, Field(ge=0)]
-    mass: Annotated[int, Field(ge=0)]
-    max_speed: float
-    """
-    Velocity in m·s⁻¹
-    """
-    power_restrictions: dict[str, str] | None = None
-    """
-    Mapping of power restriction code to power class
-    """
-    raise_pantograph_time: Annotated[int | None, Field(ge=0)] = None
-    """
-    The time it takes to raise this train's pantograph.
-    Is null if the train is not electric or the value not specified.
-    """
-    rolling_resistance: RollingResistance
-    startup_acceleration: float
-    """
-    Acceleration in m·s⁻²
-    """
-    startup_time: Annotated[int, Field(ge=0)]
-
-
-class CoreConsistConfiguration(BaseModel):
-    """
-    Represents a physics consist.
-    """
-
-    loading_gauge_type: LoadingGaugeType
-    """
-    The loading gauge of the rolling stock
-    """
-    physics_consist: PhysicsConsist
-    speed_limit_tag: str | None = None
-    supported_signaling_systems: list[str]
-    """
-    List of supported signaling systems
-    """
 
 
 class PathfindingNotFoundIncompatibleConstraints(BaseModel):
@@ -6534,7 +6298,6 @@ class SummaryResponsePathfindingNotFound(BaseModel):
 
 
 class StdcmResponsePreprocessingSimulationError(BaseModel):
-    core_payload: CoreStdcmRequest | None = None
     error: ResponseSuccess | ResponsePathfindingFailed | ResponseSimulationFailed
     status: Literal["preprocessing_simulation_error"]
 

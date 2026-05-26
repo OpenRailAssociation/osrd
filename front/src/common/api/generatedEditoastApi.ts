@@ -1141,7 +1141,6 @@ const injectedRtkApi = api
           body: queryArg.body,
           params: {
             infra: queryArg.infra,
-            return_debug_payloads: queryArg.returnDebugPayloads,
           },
         }),
         invalidatesTags: ['stdcm'],
@@ -2463,8 +2462,6 @@ export type PostTimetableByIdStdcmApiArg = {
   id: number;
   /** The infra id */
   infra: number;
-  /** If true, extra payloads are returned to help with debugging */
-  returnDebugPayloads?: boolean | null;
   body: {
     /** Set of authorized track section ids for the current loading gauge,
         None value means no zone restriction. */
@@ -4680,6 +4677,36 @@ export type StdcmProgressionEvent = {
   best_travel_time: number;
   point: GeoJsonPoint;
 };
+export type SimulationResponse =
+  | (SimulationResponseSuccess & {
+      status: 'success';
+    })
+  | {
+      pathfinding_failed: PathfindingFailure;
+      status: 'pathfinding_failed';
+    }
+  | {
+      core_error: InternalError;
+      status: 'simulation_failed';
+    };
+export type StdcmResponse =
+  | {
+      departure_time: string;
+      pathfinding_result: CorePathfindingResultSuccess;
+      simulation: SimulationResponseSuccess;
+      status: 'success';
+    }
+  | {
+      status: 'path_not_found';
+    }
+  | {
+      error: SimulationResponse;
+      status: 'preprocessing_simulation_error';
+    }
+  | {
+      error: InternalError;
+      status: 'internal_error';
+    };
 export type ConsistConfiguration = {
   loading_gauge_type?: null | LoadingGaugeType;
   /** Velocity in m·s⁻¹ */
@@ -4701,123 +4728,6 @@ export type ConsistSchedule = {
     It should contain one more element than boundaries */
   values: ConsistConfiguration[];
 };
-export type CorePathItem = {
-  /** If true, the train can backtrack at these track offsets. */
-  can_backtrack?: boolean | null;
-  /** The track offsets of the path item. */
-  locations: TrackOffset[];
-};
-export type CoreStepTimingData = {
-  /** Time the train should arrive at this point */
-  arrival_time: string;
-  /** Tolerance for the arrival time, when it arrives after the expected time, in ms */
-  arrival_time_tolerance_after: number;
-  /** Tolerance for the arrival time, when it arrives before the expected time, in ms */
-  arrival_time_tolerance_before: number;
-};
-export type CoreStdcmPathItem = {
-  /** The path item containing its locations and backtrack information. */
-  path_item: CorePathItem;
-  step_timing_data?: null | CoreStepTimingData;
-  /** Stop duration in milliseconds. None if the train does not stop at this path item. */
-  stop_duration?: number | null;
-};
-export type CoreUndirectedTrackRange = {
-  /** The beginning of the range in mm. */
-  begin: number;
-  /** The end of the range in mm. */
-  end: number;
-  /** The track section identifier. */
-  track_section: string;
-};
-export type CoreWorkSchedule = {
-  /** End time as a time delta from the stdcm start time in ms */
-  end_time: number;
-  /** Start time as a time delta from the stdcm start time in ms */
-  start_time: number;
-  /** List of unavailable track ranges */
-  track_ranges: CoreUndirectedTrackRange[];
-};
-export type CoreStdcmRequest = {
-  /** Set of authorized track section ids for the current request */
-  allowed_track_sections?: string[] | null;
-  /** The comfort of the train */
-  comfort: Comfort;
-  consist_schedule: ConsistSchedule;
-  /** Infrastructure expected version */
-  expected_version: number;
-  /** Infrastructure id */
-  infra: number;
-  /** Margin to apply to the whole train */
-  margin?:
-    | null
-    | (
-        | {
-            Percentage: number;
-          }
-        | {
-            MinPer100Km: number;
-          }
-      );
-  /** Maximum departure delay in milliseconds. */
-  maximum_departure_delay: number;
-  /** Maximum run time of the simulation in milliseconds */
-  maximum_run_time: number;
-  /** List of waypoints. Each waypoint is a list of track offset. */
-  path_items: CoreStdcmPathItem[];
-  start_time: string;
-  /** List of applicable temporary speed limits between the train departure and arrival */
-  temporary_speed_limits: {
-    /** Speed limitation in m/s */
-    speed_limit: number;
-    /** Track ranges on which the speed limitation applies */
-    track_ranges: CoreTrackRange[];
-  }[];
-  /** Gap between the created train and following trains in milliseconds */
-  time_gap_after: number;
-  /** Gap between the created train and previous trains in milliseconds */
-  time_gap_before: number;
-  /** Numerical integration time step in milliseconds. Use default value if not specified. */
-  time_step?: number | null;
-  /** Timetable id */
-  timetable_id: number;
-  /** List of planned work schedules */
-  work_schedules: CoreWorkSchedule[];
-};
-export type SimulationResponse =
-  | (SimulationResponseSuccess & {
-      status: 'success';
-    })
-  | {
-      pathfinding_failed: PathfindingFailure;
-      status: 'pathfinding_failed';
-    }
-  | {
-      core_error: InternalError;
-      status: 'simulation_failed';
-    };
-export type StdcmResponse =
-  | {
-      core_payload?: null | CoreStdcmRequest;
-      departure_time: string;
-      pathfinding_result: CorePathfindingResultSuccess;
-      simulation: SimulationResponseSuccess;
-      status: 'success';
-    }
-  | {
-      core_payload?: null | CoreStdcmRequest;
-      status: 'path_not_found';
-    }
-  | {
-      core_payload?: null | CoreStdcmRequest;
-      error: SimulationResponse;
-      status: 'preprocessing_simulation_error';
-    }
-  | {
-      core_payload?: null | CoreStdcmRequest;
-      error: InternalError;
-      status: 'internal_error';
-    };
 export type PathfindingItem = {
   /** The stop duration in milliseconds, None if the train does not stop. */
   duration?: number | null;

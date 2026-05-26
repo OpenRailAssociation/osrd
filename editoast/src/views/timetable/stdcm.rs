@@ -76,22 +76,13 @@ pub(in crate::views) enum StdcmResponse {
         simulation: SimulationResponseSuccess,
         pathfinding_result: PathfindingResultSuccess,
         departure_time: DateTime<Utc>,
-        #[serde(skip_serializing_if = "Option::is_none")]
-        core_payload: Option<StdcmRequest>,
     },
-    PathNotFound {
-        #[serde(skip_serializing_if = "Option::is_none")]
-        core_payload: Option<StdcmRequest>,
-    },
+    PathNotFound,
     PreprocessingSimulationError {
         error: simulation::Response,
-        #[serde(skip_serializing_if = "Option::is_none")]
-        core_payload: Option<StdcmRequest>,
     },
     InternalError {
         error: InternalError,
-        #[serde(skip_serializing_if = "Option::is_none")]
-        core_payload: Option<StdcmRequest>,
     },
 }
 
@@ -160,11 +151,6 @@ pub(in crate::views) struct StdcmQueryParams {
     /// The infra id
     #[param(required = true)]
     infra: i64,
-    /// If true, extra payloads are returned to help with debugging
-    #[schema(required = false)]
-    #[serde(default)]
-    #[param(nullable)]
-    return_debug_payloads: bool,
 }
 
 /// This function computes a STDCM and returns the result.
@@ -182,7 +168,6 @@ pub(in crate::views) struct StdcmQueryParams {
     skip_all,
     err,
     fields(
-        request,
         timetable_id = id,
         infra_id = query.infra,
         path_found,
@@ -202,39 +187,6 @@ pub(in crate::views) struct StdcmQueryParams {
     )
 )]
 pub(in crate::views) async fn stdcm(
-    state: State<AppState>,
-    extension: AuthenticationExt,
-    Path(id): Path<i64>,
-    Query(query): Query<StdcmQueryParams>,
-    Json(request): Json<Request>,
-) -> Result<impl IntoResponse> {
-    // Add serialized request to trace attributes, skipping allowed track sections
-    // (as it would make the payload too large to be saved). TODO: include search env ID
-    let mut request_copy = request.clone();
-    request_copy.allowed_track_sections = None;
-    Span::current().record("request", serde_json::to_string(&request_copy)?);
-    let mut returned_request: Option<core_client::stdcm::Request> = None;
-    stdcm_handler(
-        state,
-        extension,
-        Path(id),
-        Query(query),
-        Json(request),
-        &mut returned_request,
-    )
-    .await
-    .map_err(|mut err| {
-        if let Some(request) = returned_request {
-            err.context.insert(
-                String::from("core_payload"),
-                serde_json::to_value(request).unwrap_or(serde_json::Value::Null),
-            );
-        }
-        err
-    })
-}
-
-pub(in crate::views) async fn stdcm_handler(
     State(AppState {
         config,
         db_pool,
@@ -246,7 +198,6 @@ pub(in crate::views) async fn stdcm_handler(
     Path(id): Path<i64>,
     Query(query): Query<StdcmQueryParams>,
     Json(request): Json<Request>,
-    returned_request: &mut Option<core_client::stdcm::Request>,
 ) -> Result<Response> {
     let mut conn = db_pool.get().await?;
 
@@ -349,7 +300,6 @@ pub(in crate::views) async fn stdcm_handler(
     if let Some(failure) = pathfinding_failures.pop() {
         let payload = StdcmResponse::PreprocessingSimulationError {
             error: failure.simulation,
-            core_payload: None,
         };
         return Ok(StreamBodyAs::json_nl(stream::once(async { payload })).into_response());
     }
@@ -406,10 +356,8 @@ pub(in crate::views) async fn stdcm_handler(
             })
             .collect(),
     };
-    *returned_request = query.return_debug_payloads.then_some(stdcm_request.clone());
 
     let (tx, rx) = mpsc::unbounded_channel();
-    let core_payload = returned_request.clone();
 
     let stream_result_lambda = async move {
         let stream_stdcm_response = stdcm_request
@@ -423,7 +371,6 @@ pub(in crate::views) async fn stdcm_handler(
             Err(e) => {
                 let _ = tx.send(StdcmProgression::Completed(StdcmResponse::InternalError {
                     error: e,
-                    core_payload: core_payload.clone(),
                 }));
                 return;
             }
@@ -455,21 +402,15 @@ pub(in crate::views) async fn stdcm_handler(
                                 simulation: simulation.into(),
                                 pathfinding_result: path,
                                 departure_time,
-                                core_payload: core_payload.clone(),
                             })
                         }
                         core_client::stdcm::Response::PathNotFound => {
                             span.record("path_found", false);
-                            StdcmProgression::Completed(StdcmResponse::PathNotFound {
-                                core_payload: core_payload.clone(),
-                            })
+                            StdcmProgression::Completed(StdcmResponse::PathNotFound {})
                         }
                     },
                 },
-                Err(e) => StdcmProgression::Completed(StdcmResponse::InternalError {
-                    error: e,
-                    core_payload: core_payload.clone(),
-                }),
+                Err(e) => StdcmProgression::Completed(StdcmResponse::InternalError { error: e }),
             }
         });
 
@@ -1078,7 +1019,6 @@ mod tests {
                     pathfinding_result: path,
                     departure_time: DateTime::from_str("2024-01-02T00:00:00Z")
                         .expect("Failed to parse datetime"),
-                    core_payload: None,
                 })
             );
         }
@@ -1212,7 +1152,7 @@ mod tests {
 
         assert_eq!(
             stdcm_response,
-            StdcmProgression::Completed(StdcmResponse::PathNotFound { core_payload: None })
+            StdcmProgression::Completed(StdcmResponse::PathNotFound {})
         );
     }
 
@@ -1288,7 +1228,6 @@ mod tests {
                     pathfinding_result: path,
                     departure_time: DateTime::from_str("2024-01-02T00:00:00Z")
                         .expect("Failed to parse datetime"),
-                    core_payload: None,
                 })
             );
         }
@@ -1353,7 +1292,7 @@ mod tests {
         );
         assert_eq!(
             stdcm_response[2].clone(),
-            StdcmProgression::Completed(StdcmResponse::PathNotFound { core_payload: None })
+            StdcmProgression::Completed(StdcmResponse::PathNotFound {})
         );
     }
 
@@ -1562,7 +1501,6 @@ mod tests {
                 pathfinding_result: pathfinding_result_success(),
                 departure_time: DateTime::from_str("2024-01-02T00:00:00Z")
                     .expect("Failed to parse datetime"),
-                core_payload: None,
             })
         );
     }
@@ -1649,7 +1587,6 @@ mod tests {
                 pathfinding_result: pathfinding_result_success(),
                 departure_time: DateTime::from_str("2024-01-02T00:00:00Z")
                     .expect("Failed to parse datetime"),
-                core_payload: None,
             })
         );
     }
