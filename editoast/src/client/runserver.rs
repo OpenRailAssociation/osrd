@@ -141,10 +141,10 @@ pub async fn runserver(
 
 fn build_s3_config(s3: S3Args) -> Option<views::S3Config> {
     Some(views::S3Config {
-        endpoint: s3.endpoint?,
+        endpoint: s3.endpoint,
         bucket_name: s3.bucket_name?,
-        access_key_id: s3.access_key_id?,
-        secret_access_key: s3.secret_access_key?,
+        access_key_id: s3.access_key_id,
+        secret_access_key: s3.secret_access_key,
         region: s3.region,
     })
 }

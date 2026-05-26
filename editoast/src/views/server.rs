@@ -72,10 +72,10 @@ pub struct PostgresConfig {
 }
 
 pub struct S3Config {
-    pub endpoint: Url,
     pub bucket_name: String,
-    pub access_key_id: String,
-    pub secret_access_key: String,
+    pub endpoint: Option<Url>,
+    pub access_key_id: Option<String>,
+    pub secret_access_key: Option<String>,
     pub region: Option<String>,
 }
 
@@ -241,15 +241,20 @@ impl AppState {
 fn build_s3_client(optional_config: &Option<S3Config>) -> Option<Arc<AmazonS3>> {
     let config = optional_config.as_ref()?;
     let bucket = config.bucket_name.clone();
-    let mut builder = AmazonS3Builder::new()
-        .with_bucket_name(bucket)
-        .with_virtual_hosted_style_request(false)
-        .with_allow_http(true)
-        .with_endpoint(config.endpoint.as_str())
-        .with_access_key_id(config.access_key_id.clone())
-        .with_secret_access_key(config.secret_access_key.clone());
+    let mut builder = AmazonS3Builder::from_env().with_bucket_name(bucket);
     if let Some(region) = &config.region {
-        builder = builder.with_region(region)
+        builder = builder.with_region(region);
+    }
+    if let Some(access_key) = &config.access_key_id {
+        builder = builder.with_access_key_id(access_key);
+    }
+    if let Some(secret_access_key) = &config.secret_access_key {
+        builder = builder.with_secret_access_key(secret_access_key);
+    }
+    if let Some(endpoint) = &config.endpoint {
+        builder = builder
+            .with_endpoint(endpoint.as_str())
+            .with_allow_http(true);
     }
     match builder.build() {
         Ok(client) => Some(Arc::new(client)),
