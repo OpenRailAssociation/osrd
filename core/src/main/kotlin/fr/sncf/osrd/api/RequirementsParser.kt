@@ -128,28 +128,29 @@ fun convertWorkScheduleMap(
     return res
 }
 
-/**
- * Convert work schedules into timetable spacing requirements, without taking work schedule id into
- * account.
- */
+/** Convert work schedules into timetable spacing requirements. */
 @WithSpan(value = "Parsing work schedules", kind = SpanKind.SERVER)
 fun convertWorkScheduleCollection(
     rawInfra: RawSignalingInfra,
     workSchedules: Collection<WorkSchedule>,
     timeToAdd: TimeDelta = 0.seconds,
-): Requirements {
+): List<Requirements> {
     val logAggregator = LogAggregator({ requirementsParserLogger.warn(it) })
-    val workSchedulesRequirements = mutableListOf<RJSSpacingRequirement>()
+    val res = mutableListOf<Requirements>()
     for (workSchedule in workSchedules) {
-        workSchedulesRequirements.addAll(
-            convertWorkSchedule(rawInfra, workSchedule, timeToAdd, logAggregator)
+        val workSchedulesRequirements =
+            convertWorkSchedule(rawInfra, workSchedule, timeToAdd, logAggregator).map {
+                SpacingRequirement.fromRJS(it, rawInfra)
+            }
+        res.add(
+            Requirements(
+                RequirementId(workSchedule.objId, RequirementType.WORK_SCHEDULE),
+                workSchedulesRequirements,
+                listOf(),
+            )
         )
     }
-    return Requirements(
-        RequirementId(DEFAULT_WORK_SCHEDULE_ID, RequirementType.WORK_SCHEDULE),
-        workSchedulesRequirements.map { SpacingRequirement.fromRJS(it, rawInfra) },
-        listOf(),
-    )
+    return res
 }
 
 private fun convertWorkSchedule(

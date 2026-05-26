@@ -112,6 +112,8 @@ class RJSSpacingRequirement(
 )
 
 data class WorkSchedule(
+    /** Work schedule unique identifier, may contain some metadata */
+    @Json(name = "obj_id") val objId: String,
     /** List of affected track ranges */
     @Json(name = "track_ranges") val trackRanges: Collection<TrackRange> = listOf(),
     @Json(name = "start_time") val startTime: TimeDelta,
