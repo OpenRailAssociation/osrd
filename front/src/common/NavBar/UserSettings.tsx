@@ -120,6 +120,7 @@ const UserSettings = () => {
               )
             }
             checked={userPreferences.useNewTimesStopsTable}
+            data-testid="use-new-times-stops-table-switch"
           />
         </div>
         {isSuperUser && !impersonatedUser && (

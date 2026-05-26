@@ -60,39 +60,35 @@ test.describe('Simulation settings tab', { tag: ['@op', '@simulation-settings-ta
       await deleteApiRequest(`/api/electrical_profile_set/${electricalProfileSet.id}/`);
   });
 
-  test.beforeEach(
-    async ({ page, homePage, operationalStudiesPage, rollingStockSelector, routeTab }) => {
-      await test.step('Create then navigate to scenario page', async () => {
-        ({ project, study, scenario } = await createScenario(
-          undefined,
-          null,
-          null,
-          null,
-          electricalProfileSet.id
-        ));
-        await page.goto(
-          `/operational-studies/projects/${project.id}/studies/${study.id}/scenarios/${scenario.id}`
-        );
-        // TODO: remove when the new times-stops table is displayed by default in simulation results
-        await homePage.activateNewTimesStopsTable();
-        await waitForInfraStateToBeCached(infra.id);
+  test.beforeEach(async ({ page, operationalStudiesPage, rollingStockSelector, routeTab }) => {
+    await test.step('Create then navigate to scenario page', async () => {
+      ({ project, study, scenario } = await createScenario(
+        undefined,
+        null,
+        null,
+        null,
+        electricalProfileSet.id
+      ));
+      await page.goto(
+        `/operational-studies/projects/${project.id}/studies/${study.id}/scenarios/${scenario.id}`
+      );
+      await waitForInfraStateToBeCached(infra.id);
+    });
+    await test.step('Add a new unique train, set its properties and perform pathfinding', async () => {
+      await operationalStudiesPage.openTrainScheduleForm();
+      await operationalStudiesPage.setTrainScheduleName(TRAIN_NAME);
+      await rollingStockSelector.selectRollingStock(improbableRollingStockName);
+      await operationalStudiesPage.setTrainScheduleStartTime(TRAIN_START_TIME);
+      await operationalStudiesPage.selectCategory(FREIGHT_TRAIN.category);
+      await operationalStudiesPage.openRouteTab();
+      await routeTab.performPathfindingByTrigram({
+        originTrigram: 'WS',
+        destinationTrigram: 'SES',
+        viaTrigram: 'MWS',
       });
-      await test.step('Add a new unique train, set its properties and perform pathfinding', async () => {
-        await operationalStudiesPage.openTrainScheduleForm();
-        await operationalStudiesPage.setTrainScheduleName(TRAIN_NAME);
-        await rollingStockSelector.selectRollingStock(improbableRollingStockName);
-        await operationalStudiesPage.setTrainScheduleStartTime(TRAIN_START_TIME);
-        await operationalStudiesPage.selectCategory(FREIGHT_TRAIN.category);
-        await operationalStudiesPage.openRouteTab();
-        await routeTab.performPathfindingByTrigram({
-          originTrigram: 'WS',
-          destinationTrigram: 'SES',
-          viaTrigram: 'MWS',
-        });
-        await operationalStudiesPage.openTimesAndStopsTab();
-      });
-    }
-  );
+      await operationalStudiesPage.openTimesAndStopsTab();
+    });
+  });
 
   test.afterEach('Delete the created scenario', async () => {
     await deleteScenario(study.id, scenario.name);

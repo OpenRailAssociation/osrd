@@ -79,13 +79,11 @@ test.describe('Paced train management', { tag: ['@op', '@paced-trains'] }, () =>
 
   test.beforeEach(
     'Navigate to scenario page and wait for infrastructure to be loaded',
-    async ({ homePage, page }) => {
+    async ({ page }) => {
       ({ project, study, scenario, trainScheduleSet } = await createScenario());
       await page.goto(
         `/operational-studies/projects/${project.id}/studies/${study.id}/scenarios/${scenario.id}`
       );
-      // TODO: remove when the new times-stops table is displayed by default in simulation results
-      await homePage.activateNewTimesStopsTable();
       await waitForInfraStateToBeCached(infra.id);
     }
   );

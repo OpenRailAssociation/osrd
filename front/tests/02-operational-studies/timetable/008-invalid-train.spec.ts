@@ -31,7 +31,7 @@ test.describe(
       infra = await getInfra();
     });
 
-    test.beforeEach('Setup scenario with invalid trains', async ({ homePage, page }) => {
+    test.beforeEach('Setup scenario with invalid trains', async ({ page }) => {
       scenarioItems = (
         await createScenario(
           generateUniqueName('invalid-train-scenario'),
@@ -47,8 +47,6 @@ test.describe(
       await page.goto(
         `/operational-studies/projects/${project.id}/studies/${study.id}/scenarios/${scenarioItems.id}`
       );
-      // TODO: remove when the new times-stops table is displayed by default in simulation results
-      await homePage.activateNewTimesStopsTable();
       await waitForInfraStateToBeCached(infra.id);
     });
 
