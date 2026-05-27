@@ -38,14 +38,17 @@ export const drawOccupancyZonesTexts = ({
   isThroughTrain: boolean;
   isSelected?: boolean;
 }) => {
+  const labelStyle = zone.curveStyle?.label;
+  const labelFontWeight = labelStyle?.fontWeight ?? 400;
+
   const zoneOccupancyLength = departureTimePixel - arrivalTimePixel - STROKE_WIDTH;
 
   const isBelowBreakpoint = (breakpoint: keyof typeof BREAKPOINTS) =>
     zoneOccupancyLength < BREAKPOINTS[breakpoint];
 
-  ctx.font = '400 10px IBM Plex Mono';
+  ctx.font = MONO;
   const originTextLength = ctx.measureText(zone.originStation || '--').width;
-  ctx.font = '400 12px IBM Plex Mono';
+  ctx.font = `${labelFontWeight} 12px IBM Plex Mono`;
   const nameTextLength = ctx.measureText(zone.trainName).width;
 
   const { xOriginTrainName, yOriginTrainName } = isBelowBreakpoint('medium')
@@ -87,7 +90,7 @@ export const drawOccupancyZonesTexts = ({
     ctx.save();
     ctx.translate(xSelectedTrainNameBackground, ySelectedTrainNameBackground);
     ctx.rotate(ROTATE_VALUE);
-    ctx.fillStyle = SELECTION_20;
+    ctx.fillStyle = labelStyle?.background?.color || SELECTION_20;
     ctx.beginPath();
     ctx.roundRect(
       -X_BACKGROUND_PADDING,
@@ -104,7 +107,8 @@ export const drawOccupancyZonesTexts = ({
     text: zone.trainName,
     x: xOriginTrainName,
     y: yOriginTrainName,
-    color: GREY_50,
+    color: labelStyle?.color || GREY_50,
+    font: `${labelFontWeight} 12px IBM Plex Mono`,
     rotateAngle: ROTATE_VALUE,
     stroke: {
       color: WHITE_100,

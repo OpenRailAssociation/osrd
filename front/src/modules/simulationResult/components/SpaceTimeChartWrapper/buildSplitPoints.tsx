@@ -114,8 +114,12 @@ export function buildSplitPoints(
                 isHovered && totalOccurrencesOnTrack > 1
                   ? `+${Math.max(0, totalOccurrencesOnTrack - 1)}`
                   : undefined,
-              color: style.color,
-              size: isSelected || isHovered ? 2 : undefined,
+              curveStyle: {
+                ...zone.curveStyle,
+                color: style.color,
+                width: isSelected || isHovered ? 2 : undefined,
+                opacity: 1,
+              },
             };
           })}
           selectedTrainId={selectedTrainId}
