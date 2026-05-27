@@ -9,7 +9,7 @@ import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
 import { EditedElementContainerContext } from 'applications/operationalStudies/views/Scenario/components/EditedElementContainerContext';
-import { formatPacedTrainWithDetailsToPacedTrainPayload } from 'applications/operationalStudies/views/Scenario/components/ManageTrainSchedule/helpers/formatTrainSchedulePayload';
+import { formatPacedTrainWithDetailsToTrainSchedule } from 'applications/operationalStudies/views/Scenario/components/ManageTrainSchedule/helpers/formatTrainSchedulePayload';
 import {
   osrdEditoastApi,
   type TrainSchedule,
@@ -196,7 +196,7 @@ const PacedTrainItem = ({
     }
 
     // Use pacedTrain as the source for train_schedule_set_id and id
-    const updatedPacedTrainPayload = formatPacedTrainWithDetailsToPacedTrainPayload({
+    const updatedPacedTrainPayload = formatPacedTrainWithDetailsToTrainSchedule({
       ...pacedTrain,
       paced: { ...pacedTrain.paced, exceptions: [] },
     });

@@ -35,7 +35,7 @@ import checkCurrentConfig, { type TrainScheduleConfErrorCode } from '../helpers/
 import {
   formatOccurrenceException,
   formatPacedTrainPayload,
-  formatPacedTrainWithDetailsToPacedTrainPayload,
+  formatPacedTrainWithDetailsToTrainSchedule,
 } from '../helpers/formatTrainSchedulePayload';
 
 const useUpdateTrainSchedule = (
@@ -140,8 +140,7 @@ const useUpdateTrainSchedule = (
         finalException,
         occurrenceId
       );
-      const formattedPacedTrain =
-        formatPacedTrainWithDetailsToPacedTrainPayload(originalPacedTrain);
+      const formattedPacedTrain = formatPacedTrainWithDetailsToTrainSchedule(originalPacedTrain);
 
       upsertTrainSchedules([
         {
