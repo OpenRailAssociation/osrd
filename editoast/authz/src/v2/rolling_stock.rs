@@ -1,18 +1,18 @@
+use futures::FutureExt;
 use std::collections::HashSet;
 
 use fga::model::Relation as _;
-use futures::FutureExt;
-
-use crate::Role;
-use crate::RollingStock;
-use crate::Subject;
-
-use crate::User;
-use crate::model::RollingStockPrivilege;
-use crate::v2::Actor;
 
 use super::Check;
 use super::Protected;
+use crate::Group;
+use crate::Role;
+use crate::RollingStock;
+use crate::RollingStockGrant;
+use crate::Subject;
+use crate::User;
+use crate::model::RollingStockPrivilege;
+use crate::v2::Actor;
 
 pub fn rolling_stock_privileges(
     user: User,
@@ -66,9 +66,83 @@ pub fn rolling_stock_privileges(
     ))
 }
 
+/// Returns the effective (maximum) grant a subject has on an [RollingStock], if any
+///
+/// A given user may have multiple grants on the same resource. This can happen
+/// if a user inherits a grant from one of its groups and also has a direct grant.
+/// Inherited grants are not the same thing as privileges: they do not have the same semantic,
+/// are not represented by the same enum, do no work on the same scale nor in the same way.
+///
+/// Groups only have direct grants. If multiple direct grants are found, this protected operation will panic.
+pub fn rolling_stock_effective_grant(
+    subject: Subject,
+    rolling_stock: RollingStock,
+) -> Protected<Option<RollingStockGrant>> {
+    Protected::new(move |openfga| {
+        async move {
+            let (is_reader, is_writer, is_owner) = match &subject {
+                Subject::User(user) => {
+                    openfga
+                        .checks((
+                            RollingStock::reader().check(user, &rolling_stock),
+                            RollingStock::writer().check(user, &rolling_stock),
+                            RollingStock::owner().check(user, &rolling_stock),
+                        ))
+                        .await?
+                }
+                Subject::Group(group) => {
+                    let (is_reader, is_writer, is_owner) = openfga
+                        .checks((
+                            RollingStock::reader()
+                                .check(Group::member().userset(group), &rolling_stock),
+                            RollingStock::writer()
+                                .check(Group::member().userset(group), &rolling_stock),
+                            RollingStock::owner()
+                                .check(Group::member().userset(group), &rolling_stock),
+                        ))
+                        .await?;
+                    if matches!(
+                        (is_reader, is_writer, is_owner),
+                        (true, true, _) | (true, _, true) | (_, true, true)
+                    ) {
+                        tracing::error!(
+                            is_reader,
+                            is_writer,
+                            is_owner,
+                            ?subject,
+                            resource = ?rolling_stock,
+                            "Group has multiple direct grants on the same resource"
+                        );
+                        panic!(
+                            "Group {subject:?} has multiple direct grants on the same resource {rolling_stock:?}, which is not supposed to happen by design. \n\
+                            While a user may have inherited grants from one of their groups, groups do not have inherited grants. \n\
+                            Detected direct grants: reader: {is_reader}, writer: {is_writer}, owner: {is_owner}"
+                        );
+                    }
+                    (is_reader, is_writer, is_owner)
+                }
+            };
+            Ok(is_owner
+                .then_some(RollingStockGrant::Owner)
+                .or_else(|| is_writer.then_some(RollingStockGrant::Writer))
+                .or_else(|| is_reader.then_some(RollingStockGrant::Reader)))
+        }
+        .boxed()
+    })
+    .with_check(Check::SubjectExists(subject))
+    .with_check(Check::RollingStockExists(rolling_stock))
+    .with_check(Check::HasRollingStockPrivilege(
+        Actor::Issuer,
+        RollingStockPrivilege::CanRead,
+        rolling_stock,
+    ))
+}
+
 #[cfg(test)]
 mod tests {
+    use crate::User;
     use crate::v2::TestClientExt as _;
+    use crate::v2::special_authorizers::Authorize;
 
     use super::*;
 
@@ -120,6 +194,43 @@ mod tests {
                 RollingStockPrivilege::CanRevoke,
             ])
         );
+    }
+
+    #[tokio::test]
+    async fn rolling_stock_effective_grant_direct_and_inherited() {
+        let openfga = crate::authz_client!();
+        let authorize = Authorize(&openfga);
+
+        openfga
+            .write_tuples(&[RollingStock::reader().tuple(&User(1), &RollingStock(1))])
+            .await
+            .unwrap();
+
+        let grant = rolling_stock_effective_grant(Subject::user(1), RollingStock(1))
+            .authorize(&authorize)
+            .await
+            .unwrap()
+            .unwrap_authorized()
+            .await;
+        assert_eq!(grant, Some(RollingStockGrant::Reader));
+
+        openfga
+            .prepare_writes()
+            .write(&Group::member().tuple(&User(1), &Group(1)))
+            .write(
+                &RollingStock::owner().tuple(Group::member().userset(&Group(1)), &RollingStock(1)),
+            )
+            .execute()
+            .await
+            .unwrap();
+
+        let grant = rolling_stock_effective_grant(Subject::user(1), RollingStock(1))
+            .authorize(&authorize)
+            .await
+            .unwrap()
+            .unwrap_authorized()
+            .await;
+        assert_eq!(grant, Some(RollingStockGrant::Owner));
     }
 
     #[tokio::test]
