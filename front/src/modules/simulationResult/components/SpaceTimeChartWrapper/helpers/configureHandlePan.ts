@@ -84,7 +84,7 @@ export function configureHandlePan({
       // if the dragged train is an occurrence, we need to update the first occurrence because the others are based on it
       if (
         isIndividualOccurrenceProjection(draggedTrain) &&
-        (!draggedTrain.exception || !draggedTrain.exception.start_time)
+        (draggedTrain.type !== 'exception' || !draggedTrain.exception.start_time)
       ) {
         const occurrencesIndex = extractOccurrenceIndexFromOccurrenceId(draggedTrain.id);
         const pacedTrainId = extractEditoastIdFromPacedTrainId(
@@ -134,8 +134,7 @@ export function configureHandlePan({
       }
 
       // disable start time exception for now
-      const isStartTimeException =
-        isIndividualOccurrenceProjection(train) && !!train.exception?.start_time;
+      const isStartTimeException = train.type === 'exception' && !!train.exception.start_time;
       if (isStartTimeException) return;
 
       setDraggingState({

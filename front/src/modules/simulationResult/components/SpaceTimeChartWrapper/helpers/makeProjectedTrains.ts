@@ -21,7 +21,7 @@ const makeProjectedTrains = (trainScheduleProjections: TrainSpaceTimeData[]) =>
   trainScheduleProjections.flatMap<IndividualTrainProjection>((projectedTrain) => {
     const pacedTrainId = formatEditoastIdToPacedTrainId(projectedTrain.id);
     if (!projectedTrain.paced) {
-      return { ...projectedTrain, id: pacedTrainId };
+      return { ...projectedTrain, id: pacedTrainId, type: 'trainSchedule' };
     }
 
     const occurrences: IndividualTrainProjection[] = [];
@@ -47,6 +47,7 @@ const makeProjectedTrains = (trainScheduleProjections: TrainSpaceTimeData[]) =>
         occurrences.push({
           ...pacedTrainCurves,
           id: occurrenceId,
+          type: 'occurrence',
           name: computeOccurrenceName(projectedTrain.name, i),
           departureTime: computeIndexedOccurrenceStartTime(
             projectedTrain.departureTime,
@@ -76,6 +77,7 @@ const makeProjectedTrains = (trainScheduleProjections: TrainSpaceTimeData[]) =>
       occurrences.push({
         ...(exceptionProjection ?? pacedTrainCurves),
         id: occurrenceId,
+        type: 'exception',
         name,
         departureTime,
         exception: correspondingException,
@@ -103,6 +105,7 @@ const makeProjectedTrains = (trainScheduleProjections: TrainSpaceTimeData[]) =>
       occurrences.push({
         ...(projectedTrain.paced.exceptionProjections.get(exception.id!) ?? pacedTrainCurves), // TODO_EXCEPTION: remove `!` when using TrainSchedulingException type
         id,
+        type: 'exception',
         name,
         departureTime: new Date(exception.start_time.value),
         exception,

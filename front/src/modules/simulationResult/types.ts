@@ -16,7 +16,12 @@ import type {
   PathItem,
 } from 'common/api/osrdEditoastApi';
 import type { PacedTrainWithDetails } from 'modules/trainSchedule/types';
-import type { OccurrenceId, PacedTrainId, TrainId } from 'reducers/osrdconf/types';
+import type {
+  IndexedOccurrenceId,
+  OccurrenceId,
+  PacedTrainId,
+  TrainId,
+} from 'reducers/osrdconf/types';
 import type { SelectedTrain, SelectionSource } from 'reducers/simulationResults/types';
 import type { ArrayElement } from 'utils/types';
 
@@ -64,10 +69,15 @@ export type IndividualTrainProjection = {
   departureTime: Date;
 } & BaseTrainProjection &
   (
-    | { id: PacedTrainId }
+    | { id: PacedTrainId; type: 'trainSchedule' }
+    | {
+        id: IndexedOccurrenceId;
+        type: 'occurrence';
+      }
     | {
         id: OccurrenceId;
-        exception?: PacedTrainException;
+        type: 'exception';
+        exception: PacedTrainException;
       }
   );
 
