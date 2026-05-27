@@ -444,6 +444,48 @@ pub(in crate::views) async fn retrieve_trains(
     Ok(trains)
 }
 
+pub(in crate::views) async fn retrieve_train_occurrences(
+    conn: &mut DbConnection,
+    timetable_id: i64,
+) -> Result<Vec<(OccurrenceId, schemas::train_schedule::TrainOccurrence)>> {
+    let timetable_exists = Timetable::exists(conn, timetable_id).await?;
+    if !timetable_exists {
+        return Err(TimetableError::NotFound { timetable_id }.into());
+    }
+
+    let train_schedule_set_ids =
+        Timetable::get_train_schedule_set_ids_from_timetable(timetable_id, conn).await?;
+
+    let settings = SelectionSettings::new().filter(move || {
+        editoast_models::TrainSchedule::TRAIN_SCHEDULE_SET_ID.eq_any(train_schedule_set_ids.clone())
+    });
+    let train_schedules = editoast_models::TrainSchedule::list(conn, settings).await?;
+
+    let mut exceptions =
+        editoast_models::TrainScheduleException::retrieve_exceptions_by_train_schedules(
+            conn,
+            timetable_id,
+            &train_schedules
+                .iter()
+                .map(|train_schedule| train_schedule.id)
+                .collect_vec(),
+        )
+        .await?
+        .into_iter()
+        .map_into::<schemas::TrainScheduleException>()
+        .into_group_map_by(|e| e.train_schedule_id);
+
+    let occurrences = train_schedules
+        .iter()
+        .flat_map(|ts| {
+            let ts_exceptions = exceptions.remove(&ts.id).unwrap_or_default();
+            ts.iter_occurrences(&ts_exceptions).collect_vec()
+        })
+        .collect();
+
+    Ok(occurrences)
+}
+
 /// Build the core conflict detection request
 fn build_conflict_core_request(
     infra: Infra,

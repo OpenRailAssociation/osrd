@@ -9,6 +9,7 @@ use chrono::Utc;
 use editoast_derive::EditoastError;
 use editoast_models::Infra;
 use editoast_models::prelude::*;
+use editoast_models::train_schedule::OccurrenceId;
 use itertools::Itertools;
 use profile_connection_scan::Connection;
 use schemas::primitives::ObjectType;
@@ -25,7 +26,7 @@ use crate::error::InternalError;
 use crate::error::Result;
 use crate::views::AuthenticationExt;
 use crate::views::path::operational_point_cache::OperationalPointCache;
-use crate::views::timetable::retrieve_trains;
+use crate::views::timetable::retrieve_train_occurrences;
 
 #[derive(Debug, thiserror::Error, EditoastError)]
 #[editoast_error(base_id = "search_journeys")]
@@ -74,7 +75,7 @@ struct TrainSchedulePartBound {
 /// A part of a train schedule, from one location to another.
 #[derive(Debug, Clone, Serialize, ToSchema)]
 struct TrainSchedulePart {
-    train_schedule_id: i64,
+    train_schedule_id: OccurrenceId,
     from: TrainSchedulePartBound,
     to: TrainSchedulePartBound,
 }
@@ -126,8 +127,8 @@ pub(in crate::views) async fn search_journeys(
         let db_pool = db_pool.clone();
 
         train_schedule_futs.spawn(async move {
-            let conn = db_pool.get().await?;
-            let train_schedules = retrieve_trains(conn, timetable_id).await?;
+            let mut conn = db_pool.get().await?;
+            let train_schedules = retrieve_train_occurrences(&mut conn, timetable_id).await?;
 
             Ok::<_, InternalError>(train_schedules)
         });
@@ -197,20 +198,16 @@ pub(in crate::views) async fn search_journeys(
 
         let index_offset = train_schedule_ids.len();
 
-        train_schedule_ids.extend(
-            train_schedules
-                .iter()
-                .map(|train_schedule| train_schedule.id),
-        );
+        train_schedule_ids.extend(train_schedules.iter().map(|(id, _occurrence)| id.clone()));
 
         train_schedule_start_times.extend(
-            train_schedules
-                .iter()
-                .map(|train_schedule| datetime_millis_from_midnight(train_schedule.start_time)),
+            train_schedules.iter().map(|(_id, train_schedule)| {
+                datetime_millis_from_midnight(train_schedule.start_time)
+            }),
         );
 
         train_schedule_parts.extend(train_schedules.into_iter().zip(index_offset..).flat_map(
-            |(train_schedule, train_schedule_index)| {
+            |((_id, train_schedule), train_schedule_index)| {
                 // TODO this handles badly train schedules that span longer than a day
                 let offset_ms = datetime_millis_from_midnight(train_schedule.start_time);
 
@@ -306,7 +303,7 @@ pub(in crate::views) async fn search_journeys(
         .map(|journey| {
             dedup_connections(journey.into_iter())
                 .map(|connection| TrainSchedulePart {
-                    train_schedule_id: train_schedule_ids[connection.trip],
+                    train_schedule_id: train_schedule_ids[connection.trip].clone(),
                     from: TrainSchedulePartBound {
                         location: path_item_id(&operational_point_ids[connection.departure]),
                         time_ms: connection.departure_ms
