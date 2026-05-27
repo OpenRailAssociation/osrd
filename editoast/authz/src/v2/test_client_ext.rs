@@ -18,6 +18,7 @@ use crate::v2::infra_effective_grant;
 use crate::v2::infra_granted_subjects;
 use crate::v2::infra_privileges;
 use crate::v2::infra_revoke_grant;
+use crate::v2::rolling_stock_effective_grant;
 use crate::v2::rolling_stock_privileges;
 use crate::v2::special_authorizers;
 
@@ -41,6 +42,11 @@ pub trait TestClientExt {
         user: User,
         rolling_stock: RollingStock,
     ) -> HashSet<RollingStockPrivilege>;
+    async fn rolling_stock_effective_grant(
+        &self,
+        subject: Subject,
+        rolling_stock: RollingStock,
+    ) -> Option<RollingStockGrant>;
     // TODO use the protected operation once authz::v2 has a proper way to give grants on rolling stocks
     async fn give_rolling_stock_grant(
         &self,
@@ -148,6 +154,17 @@ impl TestClientExt for fga::Client {
         let authorize = special_authorizers::Authorize(self);
         authorize
             .access_value(rolling_stock_privileges(user, rolling_stock))
+            .await
+            .unwrap()
+    }
+    async fn rolling_stock_effective_grant(
+        &self,
+        subject: Subject,
+        rolling_stock: RollingStock,
+    ) -> Option<RollingStockGrant> {
+        let authorize = special_authorizers::Authorize(self);
+        authorize
+            .access_value(rolling_stock_effective_grant(subject, rolling_stock))
             .await
             .unwrap()
     }
