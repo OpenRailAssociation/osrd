@@ -14,15 +14,12 @@ export default function postTimetableByIdStdcm(args: PostTimetableByIdStdcmApiAr
     ) => void
   ) => {
     try {
-      const response = await fetch(
-        `/api/timetable/${args.id}/stdcm?infra=${args.infra}${args.returnDebugPayloads === true ? '&return_debug_payloads' : ''}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(args.body),
-          signal: signal,
-        }
-      );
+      const response = await fetch(`/api/timetable/${args.id}/stdcm?infra=${args.infra}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(args.body),
+        signal: signal,
+      });
       if (!response.ok) {
         throw new Error(
           `Bad response from stdcm stream endpoint: ${response.status} ${response.statusText}`
