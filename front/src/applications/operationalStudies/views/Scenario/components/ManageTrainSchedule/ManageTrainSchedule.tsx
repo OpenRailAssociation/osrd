@@ -10,7 +10,7 @@ import allowancesPic from 'assets/pictures/components/allowances.svg';
 import pahtFindingPic from 'assets/pictures/components/pathfinding.svg';
 import simulationSettings from 'assets/pictures/components/simulationSettings.svg';
 import rollingStockPic from 'assets/pictures/components/train.svg';
-import { type Comfort } from 'common/api/osrdEditoastApi';
+import { type Comfort, type LightRollingStockWithLiveries } from 'common/api/osrdEditoastApi';
 import { type MarkerInformation, MARKER_TYPE } from 'common/Map/components/ItineraryMarkers';
 import { useOsrdConfActions } from 'common/osrdContext';
 import useSpeedLimitTags from 'common/SpeedLimitTagSelector/useSpeedLimitTags';
@@ -27,6 +27,7 @@ import TimesStopsInput from 'modules/timesStops/TimesStopsInput';
 import {
   resetUsingSpeedLimits,
   updateRollingStockComfort,
+  updateRollingStockName,
 } from 'reducers/osrdconf/operationalStudiesConf';
 import {
   getCategory,
@@ -99,10 +100,11 @@ const ManageTrainSchedule = () => {
   });
 
   const onSelectRollingStock = useCallback(
-    (_rollingStockId: number, comfort: Comfort) => {
-      dispatch(updateRollingStockID(_rollingStockId));
+    (selectedRollingStock: LightRollingStockWithLiveries, comfort: Comfort) => {
+      dispatch(updateRollingStockID(selectedRollingStock.id));
+      dispatch(updateRollingStockName(selectedRollingStock.name));
       dispatch(updateRollingStockComfort(comfort));
-      launchPathfinding(pathSteps, _rollingStockId);
+      launchPathfinding(pathSteps, selectedRollingStock.id);
     },
     [pathSteps]
   );

@@ -27,7 +27,7 @@ type RollingStockProps = {
   rollingStockSelected?: RollingStockWithLiveries;
   rollingStockComfort: Comfort;
   image?: React.JSX.Element;
-  onSelectRollingStock: (rollingStockId: number, comfort: Comfort) => void;
+  onSelectRollingStock: (rollingStock: LightRollingStockWithLiveries, comfort: Comfort) => void;
 };
 
 const RollingStockSelector = ({
@@ -53,7 +53,7 @@ const RollingStockSelector = ({
         );
       }
 
-      onSelectRollingStock(newRollingStock.id, comfort);
+      onSelectRollingStock(newRollingStock, comfort);
       closeModal();
     },
     [onSelectRollingStock, currentCategory]

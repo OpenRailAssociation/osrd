@@ -8,7 +8,6 @@ import {
 } from 'applications/operationalStudies/views/Scenario/components/ManageTrainSchedule/helpers/buildPacedTrainException';
 import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/views/Scenario/consts';
 import type { PacedTrainException, TrainScheduleResponse } from 'common/api/osrdEditoastApi';
-import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector';
 import { findExceptionWithOccurrenceId } from 'modules/trainSchedule/helpers/pacedTrain';
 import {
   createExceptions,
@@ -58,9 +57,6 @@ const useUpdateTrainSchedule = (
   const trainIdUsedForProjection = useSelector(getTrainIdUsedForProjection);
   const startTime = useSelector(getStartTime);
   const addedExceptions = useSelector(getAddedExceptions);
-  const { rollingStock } = useStoreDataForRollingStockSelector({
-    rollingStockId: simulationConf.rollingStockID,
-  });
 
   const onValidationError = (errorCode: TrainScheduleConfErrorCode) => {
     dispatch(
@@ -111,7 +107,6 @@ const useUpdateTrainSchedule = (
       validationErrors.forEach(onValidationError);
       return;
     }
-    const rollingStockName = rollingStock?.name || '';
 
     setIsWorking(true);
 
@@ -121,7 +116,6 @@ const useUpdateTrainSchedule = (
     if (occurrenceId) {
       const { generatedException, occurrenceIndex } = formatOccurrenceException(
         simulationConf,
-        rollingStockName,
         trainScheduleToEditData as TrainScheduleToEditData & {
           occurrenceId: NonNullable<TrainScheduleToEditData['occurrenceId']>;
         }
@@ -164,7 +158,7 @@ const useUpdateTrainSchedule = (
     }
 
     // ========== user is editing the whole paced train or transforming from an unique train ==========
-    const trainSchedule = formatPacedTrainPayload(simulationConf, rollingStockName);
+    const trainSchedule = formatPacedTrainPayload(simulationConf);
 
     const originalPacedExceptions = originalPacedTrain.paced?.exceptions ?? [];
 
