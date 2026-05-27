@@ -588,13 +588,13 @@ mod tests {
     use schemas::train_schedule::OperationalPointPartReference;
     use schemas::train_schedule::OperationalPointReference;
     use schemas::train_schedule::PathItemLocation;
-    use serde_json::json;
     use std::str::FromStr;
     use uom::si::SI;
     use uom::si::length::Length;
     use uom::si::length::meter;
+    use uom::si::length::millimeter;
+    use uom::si::mass::Mass;
     use uom::si::mass::kilogram;
-    use uom::si::quantities::Mass;
     use uom::si::velocity::Velocity;
     use uom::si::velocity::kilometer_per_hour;
     use uom::si::velocity::meter_per_second;
@@ -918,60 +918,45 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn stdcm_return_success() {
+        let mass = Mass::<SI<_>, f64>::new::<kilogram>(1000000.0);
+        let length = Length::<SI<_>, f64>::new::<meter>(400.0);
+        let maximum_speed = Velocity::<SI<_>, f64>::new::<kilometer_per_hour>(30.0);
         let core = {
             let mut core = MockingClient::new();
             core.stub("/pathfinding/blocks")
-                .body(
-                    json!({
-                        "infra": 1,
-                        "expected_version": 0,
-                        "path_items": [
-                            {
-                                "locations": [
-                                    { "track": "TA0", "offset": 700000 },
-                                    { "track": "TA1", "offset": 500000 },
-                                    { "track": "TA2", "offset": 500000 }
-                                ],
-                                "can_backtrack": false,
-                            },
-                            {
-                                "locations": [
-                                    { "track": "TC0", "offset": 550000 },
-                                    { "track": "TC1", "offset": 550000 },
-                                    { "track": "TC2", "offset": 450000 },
-                                    { "track": "TC3", "offset": 450000 }
-                                ],
-                                "can_backtrack": false,
-                            },
-                        ],
-                        // We check the value of the consist is present, instead of the value of the traction engine
-                        "rolling_stock_loading_gauge": "GLOTT",
-                        "rolling_stock_is_thermal": true,
-                        "rolling_stock_supported_electrifications": ["25000V"],
-                        "rolling_stock_supported_signaling_systems": ["BAL", "BAPR", "TVM300", "TVM430"],
-                        // We check the value of the consist is present, instead of the value of the traction engine
-                        "rolling_stock_maximum_speed": Velocity::<SI<_>, f64>::new::<kilometer_per_hour>(30.0)
-                .get::<meter_per_second>(),
-                        // We check the value of the consist is present, instead of the value of the traction engine
-                        "rolling_stock_length": Length::<SI<_>, f64>::new::<meter>(400.0)
-                .get::<meter>(),
-                        "speed_limit_tag": "AR120",
-                        "stops_at_end_of_block": false
-                    })
-                    .to_string(),
+                .on_body("/rolling_stock_loading_gauge", "GLOTT")
+                .on_body(
+                    "/rolling_stock_maximum_speed",
+                    maximum_speed.get::<meter_per_second>(),
                 )
+                .on_body("/rolling_stock_length", length.get::<meter>())
                 .response(StatusCode::OK)
                 .json(PathfindingResult::Success(pathfinding_result_success()))
                 .finish();
             core.stub("/standalone_simulation")
-                // TODO: it would be nice to assert on the input request value
-                // but the current `MockingClient` framework impose the entire payload which is noisy
+                .on_body("/physics_consist/length", length.get::<millimeter>() as u64)
+                .on_body(
+                    "/physics_consist/max_speed",
+                    maximum_speed.get::<meter_per_second>(),
+                )
+                .on_body("/physics_consist/mass", mass.get::<kilogram>() as u64)
                 .response(StatusCode::OK)
                 .json(simulation_empty_response())
                 .finish();
             core.stub("/stdcm")
-                // TODO: it would be nice to assert on the input request value
-                // but the current `MockingClient` framework impose the entire payload which is noisy
+                .on_body("/consist_schedule/values/0/loading_gauge_type", "GLOTT")
+                .on_body(
+                    "/consist_schedule/values/0/physics_consist/length",
+                    length.get::<millimeter>() as u64,
+                )
+                .on_body(
+                    "/consist_schedule/values/0/physics_consist/max_speed",
+                    maximum_speed.get::<meter_per_second>(),
+                )
+                .on_body(
+                    "/consist_schedule/values/0/physics_consist/mass",
+                    mass.get::<kilogram>() as u64,
+                )
                 .response(StatusCode::OK)
                 .json(core_client::stdcm::ProgressStatus::Done {
                     result: core_client::stdcm::Response::Success {
@@ -993,9 +978,9 @@ mod tests {
             create_fast_rolling_stock(&mut db_pool.get_ok(), &Uuid::new_v4().to_string()).await;
         let consist_schedule = build_single_consist(build_consist_config(
             rolling_stock.id,
-            Some(1000000.0),
-            Some(400.0),
-            Some(30.0),
+            Some(mass.get::<kilogram>()),
+            Some(length.get::<meter>()),
+            Some(maximum_speed.get::<kilometer_per_hour>()),
             Some(LoadingGaugeType::Glott),
         ));
 
