@@ -176,8 +176,8 @@ pub async fn exclude_group(
     match system.authorize(remove_member).await?.access().await? {
         Ok(()) => Ok(()),
         Err(Check::SubjectExists(authz::Subject::Group(_))) => unreachable!("tested above"),
-        Err(Check::SubjectExists(subject)) => {
-            bail!("No such user {subject}")
+        Err(Check::SubjectExists(authz::Subject::User(user))) => {
+            bail!("No such user {user}")
         }
         Err(check) => impossible!(check),
     }
@@ -221,8 +221,8 @@ pub async fn include_group(
     match system.authorize(add_member).await?.access().await? {
         Ok(()) => Ok(()),
         Err(Check::SubjectExists(authz::Subject::Group(_))) => unreachable!("tested above"),
-        Err(Check::SubjectExists(subject)) => {
-            bail!("No such user {subject}")
+        Err(Check::SubjectExists(authz::Subject::User(user))) => {
+            bail!("No such user {user}")
         }
         Err(check) => impossible!(check),
     }
