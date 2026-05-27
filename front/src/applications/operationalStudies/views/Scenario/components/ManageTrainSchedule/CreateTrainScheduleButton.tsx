@@ -54,14 +54,15 @@ const CreateTrainScheduleButton = ({
   });
 
   const createTrainSchedules = async () => {
-    if (!checkCurrentConfig(simulationConf, t, dispatch, rollingStock?.name)) return;
+    if (!checkCurrentConfig(simulationConf, t, dispatch)) return;
 
     setIsWorking(true);
 
     try {
+      const rsName = rollingStock?.name ?? '';
       const newTrainSchedulePayload = isPacedTrainMode
-        ? formatPacedTrainPayload(simulationConf, rollingStock!.name)
-        : formatTrainSchedulePayload(simulationConf, rollingStock!.name);
+        ? formatPacedTrainPayload(simulationConf, rsName)
+        : formatTrainSchedulePayload(simulationConf, rsName);
 
       const formattedNewTrainSchedule: TrainScheduleResponse = (
         await createPacedTrains(dispatch, sandboxId, [newTrainSchedulePayload])

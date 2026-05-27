@@ -10,9 +10,7 @@ import { MAX_TIMEWINDOW_MINUTES } from '../consts';
 const checkCurrentConfig = (
   osrdconf: OperationalStudiesConfState,
   t: TFunction<'operational-studies', 'manageTrainSchedule'>,
-  dispatch: Dispatch,
-  // TODO TS2 : remove this when rollingStockName will replace rollingStockId in the store
-  rollingStockName?: string
+  dispatch: Dispatch
 ): boolean => {
   const {
     pathSteps,
@@ -48,15 +46,6 @@ const checkCurrentConfig = (
       setFailure({
         name: t('errorMessages.trainScheduleTitle'),
         message: t('errorMessages.noDestination'),
-      })
-    );
-  }
-  if (!rollingStockName) {
-    error = true;
-    dispatch(
-      setFailure({
-        name: t('errorMessages.trainScheduleTitle'),
-        message: t('errorMessages.noRollingStock'),
       })
     );
   }

@@ -86,15 +86,13 @@ class OperationalStudiesPage extends ScenarioTimetableSection {
     await this.simulationSettingsTab.click();
   }
 
-  // Verify that the Rolling Stock and Route tabs have warning classes.
+  // Verify that the Route tab has a warning class (rolling stock tab no longer shows warning).
   async verifyTabWarningPresence() {
-    await expect(this.rollingStockTab).toHaveClass(/warning/);
     await expect(this.routeTab).toHaveClass(/warning/);
   }
 
-  // Verify that the Rolling Stock and Route tabs do not have warning classes.
+  // Verify that the Route tab does not have a warning class.
   async verifyTabWarningAbsence() {
-    await expect(this.rollingStockTab).not.toHaveClass(/warning/);
     await expect(this.routeTab).not.toHaveClass(/warning/);
   }
 

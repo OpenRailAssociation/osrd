@@ -135,7 +135,6 @@ const ManageTrainSchedule = () => {
         <span className="rolling-stock-name">{t('tabs.rollingStock')}</span>
       </div>
     ),
-    withWarning: rollingStockId === undefined,
     label: t('tabs.rollingStock'),
     content: (
       <div className="rolling-stock-tab">
