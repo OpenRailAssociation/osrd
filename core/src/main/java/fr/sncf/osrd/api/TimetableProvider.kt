@@ -99,22 +99,25 @@ class TimetableDownloader(
         val endpointPath = "timetable/$timetableId/requirements/"
         val request =
             buildRequest(endpointPath, "infra_id=$infraId&page=$page&page_size=$PAGE_SIZE")
-        val response = getWithRetries(request)
+        return getWithRetries(request).use { response ->
+            // Do not log more than once in 5s
+            val muteDuration = 5
+            val now = Instant.now().epochSecond
+            val lastLog = lastLogSecond.getAndUpdate { if (it + muteDuration < now) now else it }
+            if (lastLog + muteDuration < now) {
+                logger.info(
+                    "Fetching train requirements for infra $infraId and timetable $timetableId: obtained page $page, HTTP status ${response.code} [muting this log for the next $muteDuration s]."
+                )
+            }
 
-        // Do not log more than once in 5s
-        val muteDuration = 5
-        val now = Instant.now().epochSecond
-        val lastLog = lastLogSecond.getAndUpdate { if (it + muteDuration < now) now else it }
-        if (lastLog + muteDuration < now) {
-            logger.info(
-                "Fetching train requirements for infra $infraId and timetable $timetableId: obtained page $page, HTTP status ${response.code} [muting this log for the next $muteDuration s]."
-            )
+            paginatedRequirementsAdapter.fromJson(response.body.source())!!
         }
-
-        return paginatedRequirementsAdapter.fromJson(response.body.source())!!
     }
 
-    /** Try to access a request, retries on error with increasing delay */
+    /**
+     * Try to access a request, retries on error with increasing delay. The resulting Response needs
+     * to be closed (for example by calling `.use` on it).
+     */
     private fun getWithRetries(request: Request, nRetries: Int = N_RETRIES): Response {
         var response: Response? = null
         for (tryCount in 1..<nRetries) {
