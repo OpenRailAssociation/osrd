@@ -1,6 +1,7 @@
 use std::convert::Infallible;
 
 use authz::v2::Access;
+use authz::v2::Actor;
 use authz::v2::Authorizer;
 use authz::v2::Check;
 use authz::v2::Protected;
@@ -40,7 +41,7 @@ impl SystemAuthorizer<'_> {
                 (!editoast_models::Infra::exists(conn, **infra).await?).then_some(check)
             }
             // checked by UserAuthorizer
-            Check::IssuerHasRole(_) | Check::IssuerHasInfraPrivilege(_, _) => None,
+            Check::HasRole(..) | Check::HasInfraPrivilege(..) => None,
         })
     }
 }
@@ -94,17 +95,31 @@ impl<'c> UserAuthorizer<'c> {
         }
     }
 
+    fn actor_user<'a>(&'a self, actor: &'a Actor) -> &'a authz::User {
+        match actor {
+            Actor::Issuer => &self.user,
+            Actor::User(user) => user,
+        }
+    }
+
     #[tracing::instrument(target = "UserAutorizer::check", skip_all, fields(?check, issuer = ?self.user, roles = ?self.roles), ret(level = "trace"), err)]
     async fn check<'ch>(
         &self,
         check: &'ch Check,
     ) -> Result<Option<&'ch Check>, authz::v2::OpenFgaError> {
         Ok(match check {
-            Check::IssuerHasRole(role) if !self.roles.contains(role) => Some(check),
-            Check::IssuerHasRole(_) => None,
+            Check::HasRole(Actor::Issuer, role) if !self.roles.contains(role) => Some(check),
+            Check::HasRole(Actor::Issuer, _) => None,
+            Check::HasRole(Actor::User(user), role) => {
+                let Ok(roles) = authz::v2::subject_roles(authz::Subject::User(*user))
+                    .access_authorized::<Infallible>(self.openfga)
+                    .access()
+                    .await?;
+                (!roles.contains(role)).then_some(check)
+            }
 
-            Check::IssuerHasInfraPrivilege(privilege, infra) => {
-                let Ok(privileges) = authz::v2::infra_privileges(self.user, *infra)
+            Check::HasInfraPrivilege(actor, privilege, infra) => {
+                let Ok(privileges) = authz::v2::infra_privileges(*self.actor_user(actor), *infra)
                     .access_authorized::<Infallible>(self.openfga)
                     .access()
                     .await?;

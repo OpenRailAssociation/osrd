@@ -8,6 +8,7 @@ use itertools::Itertools as _;
 use crate::Group;
 use crate::Role;
 use crate::User;
+use crate::v2::Actor;
 use crate::v2::Check;
 use crate::v2::Protected;
 
@@ -53,7 +54,7 @@ pub fn add_members(group: Group, members: HashSet<User>) -> Protected<()> {
             .boxed()
         })
         .with_check_iter(user_exists_checks)
-        .with_check(Check::IssuerHasRole(Role::Admin))
+        .with_check(Check::HasRole(Actor::Issuer, Role::Admin))
 }
 
 /// Removes some members from a group
@@ -78,7 +79,7 @@ pub fn remove_members(group: Group, members: HashSet<User>) -> Protected<()> {
             .boxed()
         })
         .with_check_iter(user_exists_checks)
-        .with_check(Check::IssuerHasRole(Role::Admin))
+        .with_check(Check::HasRole(Actor::Issuer, Role::Admin))
 }
 
 #[cfg(test)]

@@ -12,6 +12,7 @@ use ::authz::InfraPrivilege;
 use ::authz::Role;
 use authz::Authorization;
 use authz::v2;
+use authz::v2::Actor;
 use authz::v2::Authorizer;
 use authz::v2::Check;
 use axum::Extension;
@@ -343,7 +344,7 @@ pub(in crate::views) async fn user_privileges(
                     // not an error under the target API
                     // (though maybe we should revisit it?)
                 }
-                Err(Check::IssuerHasInfraPrivilege(InfraPrivilege::CanRead, infra)) => {
+                Err(Check::HasInfraPrivilege(Actor::Issuer, InfraPrivilege::CanRead, infra)) => {
                     result_infras.push(ResourcePrivileges {
                         resource_id: *infra,
                         privileges: HashSet::new(),
@@ -352,7 +353,7 @@ pub(in crate::views) async fn user_privileges(
                 Err(Check::SubjectExists(authz::Subject::User(_))) => {
                     panic!("race condition: user deleted");
                 }
-                Err(check @ Check::IssuerHasInfraPrivilege(_, _)) | Err(check) => {
+                Err(check @ Check::HasInfraPrivilege(_, _, _)) | Err(check) => {
                     impossible!(check)
                 }
             }
@@ -431,7 +432,7 @@ pub(in crate::views) async fn user_grants(
                     tracing::warn!(%infra, "non-existent infra — skipping");
                     continue;
                 }
-                Err(Check::IssuerHasInfraPrivilege(privilege, infra)) => {
+                Err(Check::HasInfraPrivilege(Actor::Issuer, privilege, infra)) => {
                     debug_assert_eq!(privilege, InfraPrivilege::CanRead);
                     tracing::warn!(%infra, "user cannot read infra — skipping");
                     continue;
@@ -517,7 +518,7 @@ pub(in crate::views) async fn my_grants_on_resource(
                 .access()
                 .await?
                 .map_err(|err| match err {
-                    Check::IssuerHasInfraPrivilege(InfraPrivilege::CanRead, ..) => {
+                    Check::HasInfraPrivilege(Actor::Issuer, InfraPrivilege::CanRead, ..) => {
                         AuthzError::Authz(AuthorizationError::Forbidden)
                     }
                     Check::InfraExists(_) => AuthzError::UnknownResource {
