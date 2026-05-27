@@ -96,7 +96,6 @@ const ItineraryModalFormHeader = ({
     if (rs) {
       onModalFormStateChange({
         ...modalFormState,
-        category: rs.primary_category ? { main_category: rs.primary_category } : undefined,
         rollingStockId: rs.id,
         rollingStockName: getRollingStockLabel(rs),
       });
@@ -106,7 +105,6 @@ const ItineraryModalFormHeader = ({
         ...modalFormState,
         rollingStockId: undefined,
         rollingStockName: label ?? '',
-        category: undefined,
       });
     }
   };
