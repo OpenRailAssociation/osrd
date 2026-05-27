@@ -489,7 +489,7 @@ const SpaceTimeChartWrapper = ({
           {selectedTrainBy && selectedTrainBy !== 'timetable' && (
             <CurveSelectionSidePanel
               position={height / 2}
-              panelSelectionMode="all"
+              panelSelectionMode="compliant"
               onModeChange={() => {}}
               counts={{ compliant: 3, all: 6 }}
             />
