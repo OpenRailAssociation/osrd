@@ -19,16 +19,12 @@ import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 import { formatEditoastIdToPacedTrainId } from 'utils/trainId';
 
-import checkCurrentConfig from './helpers/checkCurrentConfig';
-import {
-  formatPacedTrainPayload,
-  formatTrainSchedulePayload,
-} from './helpers/formatTrainSchedulePayload';
+import { formatTrainSchedulePayload } from './helpers/formatTrainSchedulePayload';
+import { validateTrainSchedule } from './helpers/validateTrainSchedule';
 
 type CreateTrainScheduleButtonProps = {
   setIsWorking: (isWorking: boolean) => void;
   upsertTrainSchedules: (trainSchedules: TrainScheduleResponse[]) => void;
-  isPacedTrainMode: boolean;
 };
 
 /**
@@ -37,7 +33,6 @@ type CreateTrainScheduleButtonProps = {
 const CreateTrainScheduleButton = ({
   setIsWorking,
   upsertTrainSchedules,
-  isPacedTrainMode,
 }: CreateTrainScheduleButtonProps) => {
   const dispatch = useAppDispatch();
   const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTrainSchedule' });
@@ -47,27 +42,27 @@ const CreateTrainScheduleButton = ({
   const simulationConf = useSelector(getOperationalStudiesConf);
   const addedExceptions = useSelector(getAddedExceptions);
 
+  const isPacedTrainMode = simulationConf.editingTrainType === 'pacedTrain';
+
   const createTrainSchedules = async () => {
-    const validationErrors = checkCurrentConfig(simulationConf);
-    if (validationErrors.length) {
-      validationErrors.forEach((errorCode) => {
-        dispatch(
-          setFailure({
-            name: t('errorMessages.trainScheduleTitle'),
-            message: t(`errorMessages.${errorCode}`),
-          })
-        );
-      });
-
-      return;
-    }
-
     setIsWorking(true);
 
     try {
-      const newTrainSchedulePayload = isPacedTrainMode
-        ? formatPacedTrainPayload(simulationConf)
-        : formatTrainSchedulePayload(simulationConf);
+      const newTrainSchedulePayload = formatTrainSchedulePayload(simulationConf);
+
+      const validationErrors = validateTrainSchedule(newTrainSchedulePayload);
+      if (validationErrors.length) {
+        validationErrors.forEach((errorCode) => {
+          dispatch(
+            setFailure({
+              name: t('errorMessages.trainScheduleTitle'),
+              message: t(`errorMessages.${errorCode}`),
+            })
+          );
+        });
+
+        return;
+      }
 
       const formattedNewTrainSchedule: TrainScheduleResponse = (
         await createPacedTrains(dispatch, sandboxId, [newTrainSchedulePayload])

@@ -159,7 +159,6 @@ const ManageTrainScheduleLeftPanel = ({
               <CreateTrainScheduleButton
                 setIsWorking={setIsWorking}
                 upsertTrainSchedules={upsertTrainSchedules}
-                isPacedTrainMode={editingTrainType === 'pacedTrain'}
               />
             )}
             <div className="osrd-config-item-container paced-trains-container">

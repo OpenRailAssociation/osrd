@@ -25,7 +25,7 @@ import {
  * the caller is responsible for generating the exception key and occurrence index.
  */
 export function generatePacedTrainException(
-  updatedOccurrence: TrainSchedule,
+  updatedOccurrence: Omit<TrainSchedule, 'paced'>,
   originalPacedTrain: Omit<PacedTrainWithPaced, 'train_schedule_set_id'>,
   occurrenceIndex: number | null = null
   // TODO_EXCEPTION: remove `key`

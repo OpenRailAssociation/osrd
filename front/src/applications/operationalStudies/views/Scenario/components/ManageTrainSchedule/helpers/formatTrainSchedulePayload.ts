@@ -1,13 +1,11 @@
 import { compact } from 'lodash';
 
-import type { PacedTrainWithPaced } from 'applications/operationalStudies/types';
 import type { PacedTrainException, TrainSchedule } from 'common/api/osrdEditoastApi';
 import { isPacedTrainBase } from 'modules/trainSchedule/helpers/pacedTrain';
 import type { PacedTrainWithDetails } from 'modules/trainSchedule/types';
-import type { TrainScheduleToEditData, OperationalStudiesConfState } from 'reducers/osrdconf/types';
+import type { OperationalStudiesConfState, OccurrenceId } from 'reducers/osrdconf/types';
 import { kmhToMs } from 'utils/physics';
 import { extractOccurrenceIndexFromOccurrenceId, isIndexedOccurrenceId } from 'utils/trainId';
-import type { NonNullableObject } from 'utils/types';
 
 import { generatePacedTrainException } from './buildPacedTrainException';
 import formatMargin from './formatMargin';
@@ -30,6 +28,16 @@ export function formatTrainSchedulePayload(osrdconf: OperationalStudiesConfState
       id: step.id,
       location: step.location,
     })),
+    paced:
+      osrdconf.editingTrainType !== 'uniqueTrain'
+        ? {
+            time_window: osrdconf.timeWindow.toISOString(),
+            interval: osrdconf.interval.toISOString(),
+            // This data is used as payload to create/update train schedule and shouldn't have exceptions inside
+            // since exceptions have their own endpoints for that
+            exceptions: [],
+          }
+        : undefined,
     power_restrictions: osrdconf.powerRestriction,
     rolling_stock_name: osrdconf.rollingStockName,
     schedule: formatSchedule(compact(osrdconf.pathSteps)),
@@ -79,66 +87,29 @@ export function formatPacedTrainWithDetailsToTrainSchedule(
  * The caller is responsible for creating/updating the exception and updating the list.
  */
 export function formatOccurrenceException(
-  osrdconf: OperationalStudiesConfState,
-  trainScheduleToEditData: NonNullableObject<TrainScheduleToEditData, 'occurrenceId'>
+  train: TrainSchedule,
+  originalPacedTrain: PacedTrainWithDetails,
+  occurrenceId: OccurrenceId
 ): {
   generatedException: Omit<PacedTrainException, 'key' | 'occurrence_index'>;
   occurrenceIndex: number | undefined;
 } {
-  const baseTrain = formatTrainSchedulePayload(osrdconf);
+  const originalTrainSchedule = formatPacedTrainWithDetailsToTrainSchedule(originalPacedTrain);
 
-  const newPacedTrain: Omit<PacedTrainWithPaced, 'train_schedule_set_id'> = {
-    ...baseTrain,
-    paced: {
-      time_window: osrdconf.timeWindow.toISOString(),
-      interval: osrdconf.interval.toISOString(),
-      exceptions: [],
-    },
-  };
-
-  const originalPacedTrain = formatPacedTrainWithDetailsToTrainSchedule(
-    trainScheduleToEditData.originalPacedTrain
-  );
-
-  if (!isPacedTrainBase(originalPacedTrain))
+  if (!isPacedTrainBase(originalTrainSchedule))
     throw new Error(
-      `PacedTrain payload (built from train ${trainScheduleToEditData.originalPacedTrain.id}) should have a paced field.`
+      `TrainSchedule payload (built from train ${originalPacedTrain.id}) should have a paced field.`
     );
-
-  const { occurrenceId } = trainScheduleToEditData;
 
   const occurrenceIndex = isIndexedOccurrenceId(occurrenceId)
     ? extractOccurrenceIndexFromOccurrenceId(occurrenceId)
     : undefined;
 
   const generatedException = generatePacedTrainException(
-    newPacedTrain,
-    originalPacedTrain,
+    train,
+    originalTrainSchedule,
     occurrenceIndex
   );
 
   return { generatedException, occurrenceIndex };
-}
-
-/**
- * Used when creating and editing a paced train (not an occurrence).
- * @param osrdconf paced train fields that were modified by user
- */
-export function formatPacedTrainPayload(osrdconf: OperationalStudiesConfState): TrainSchedule {
-  const baseTrain = formatTrainSchedulePayload(osrdconf);
-
-  if (osrdconf.editingTrainType === 'uniqueTrain') return baseTrain;
-
-  const newPacedTrain: Omit<PacedTrainWithPaced, 'train_schedule_set_id'> = {
-    ...baseTrain,
-    paced: {
-      time_window: osrdconf.timeWindow.toISOString(),
-      interval: osrdconf.interval.toISOString(),
-      // This data is used as payload to create/update train schedule and shouldn't have exceptions inside
-      // since exceptions have their own endpoints for that
-      exceptions: [],
-    },
-  };
-
-  return newPacedTrain;
 }
