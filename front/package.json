@@ -140,7 +140,6 @@
     "vitest": "^4.1.6"
   },
   "scripts": {
-    "compile": "tsc",
     "start": "vite",
     "start-container": "vite --host",
     "build": "npm run build --workspaces --if-present && vite build",
