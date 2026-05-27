@@ -2,6 +2,8 @@ import type { TrainMainCategory } from 'common/api/osrdEditoastApi';
 
 import type { CategoryColors } from './types';
 
+export const REST_BACKGROUND_COLOR = '#FFFFFF';
+
 export const DEFAULT_TRAIN_PATH_COLORS: CategoryColors = {
   normal: '#797671',
   hovered: '#494641',
