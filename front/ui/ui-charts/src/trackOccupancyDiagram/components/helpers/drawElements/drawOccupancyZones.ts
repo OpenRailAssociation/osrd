@@ -5,7 +5,7 @@ import { OCCUPANCY_ZONE_Y_START, OCCUPANCY_ZONE_HEIGHT, FONTS, COLORS } from '..
 import type { OccupancyZone } from '../../../lib/types';
 import { drawOccupancyZonesTexts } from './drawOccupancyZonesTexts';
 
-const { SANS } = FONTS;
+const { SANS, MONO } = FONTS;
 const { REMAINING_TRAINS_BACKGROUND, WHITE_100, SELECTION_20 } = COLORS;
 const REMAINING_TRAINS_WIDTH = 70;
 const REMAINING_TRAINS_HEIGHT = 24;
@@ -103,15 +103,19 @@ export const drawOccupationZone = (
     isSelected?: boolean;
   }
 ) => {
-  const size = zone.size || PATH_SIZE_DEFAULT;
-  const color = zone.color || PATH_COLOR_DEFAULT;
+  const { color: curveColor = PATH_COLOR_DEFAULT, outline = { color: WHITE_100, width: 0.5 } } =
+    zone.curveStyle || {};
+
+  const curveWidth = zone.connectorStyle?.width ?? PATH_SIZE_DEFAULT;
+
   const isThroughTrain = zone.startTime === zone.endTime;
 
-  ctx.fillStyle = color;
-  ctx.strokeStyle = WHITE_100;
+  ctx.fillStyle = curveColor;
+  ctx.strokeStyle = outline.color;
+  ctx.lineWidth = outline.width ?? 0.5;
   ctx.lineJoin = 'round';
   ctx.lineCap = 'round';
-  ctx.font = '400 10px IBM Plex Mono';
+  ctx.font = MONO;
 
   const { getTimePixel, getSpacePixel } = stcContext;
   const yStart = getCrispLineCoordinate(getSpacePixel(position), BACKGROUND_HEIGHT);
@@ -141,7 +145,9 @@ export const drawOccupationZone = (
     ctx.fill();
   }
 
-  ctx.fillStyle = color;
+  ctx.fillStyle = curveColor;
+  ctx.strokeStyle = outline.color;
+  ctx.lineWidth = outline.width ?? 0.5;
   if (isThroughTrain) {
     drawThroughTrain(ctx, arrivalTimePixel, y);
   } else {
@@ -153,8 +159,8 @@ export const drawOccupationZone = (
   }
 
   // Draw dashed lines linking trains tracks occupancy to their paths on the SpaceTimeChart (when relevant):
-  ctx.strokeStyle = color;
-  ctx.lineWidth = size;
+  ctx.strokeStyle = curveColor;
+  ctx.lineWidth = curveWidth;
   ctx.setLineDash([1, 4]);
   if (zone.startDirection) {
     ctx.beginPath();
