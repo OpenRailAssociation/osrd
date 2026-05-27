@@ -17,7 +17,7 @@
     "clean": "rimraf storybook-static",
     "start": "storybook dev -p 6006",
     "build": "storybook build",
-    "lint": "oxlint . --max-warnings 0 && oxfmt . --check",
+    "lint": "tsc && oxlint . --max-warnings 0 && oxfmt . --check",
     "lint:fix": "oxlint . --fix && oxfmt . --write"
   },
   "dependencies": {
