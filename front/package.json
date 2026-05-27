@@ -140,12 +140,12 @@
     "vitest": "^4.1.6"
   },
   "scripts": {
-    "compile": "tsc -b",
+    "compile": "tsc",
     "start": "vite",
     "start-container": "vite --host",
     "build": "npm run build --workspaces --if-present && vite build",
     "test": "npm run test --workspaces --if-present && vitest",
-    "lint": "npm run lint --workspaces --if-present && oxlint . --max-warnings 0 --ignore-pattern 'ui/**' && oxfmt . --check",
+    "lint": "npm run lint --workspaces --if-present && tsc && oxlint . --max-warnings 0 --ignore-pattern 'ui/**' && oxfmt . --check",
     "lint-fix": "npm run lint:fix --workspaces --if-present && oxlint . --fix --ignore-pattern 'ui/**' && oxfmt . --write",
     "generate-types": "exec scripts/generate-types.sh",
     "e2e-tests": "playwright test",
