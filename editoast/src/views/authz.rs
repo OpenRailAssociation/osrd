@@ -620,11 +620,7 @@ pub(in crate::views) async fn my_grants_on_resource(
                     rejection => impossible!(rejection),
                 })?
         }
-        ResourceType::RollingStock => {
-            panic!(
-                "not implemented yet, requires implementing rolling stock grants in OpenFGA and exposing them in the authorizer"
-            )
-        }
+        ResourceType::RollingStock => todo!(),
     };
 
     // NOTE: the same subject can appear in multiple lists. This can happen
