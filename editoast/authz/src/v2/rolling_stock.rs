@@ -1,7 +1,8 @@
-use futures::FutureExt;
-use std::collections::HashSet;
-
+use fga::client::UserList;
 use fga::model::Relation as _;
+use futures::FutureExt;
+use itertools::Itertools as _;
+use std::collections::HashSet;
 
 use super::Check;
 use super::Protected;
@@ -9,9 +10,9 @@ use crate::Group;
 use crate::Role;
 use crate::RollingStock;
 use crate::RollingStockGrant;
+use crate::RollingStockPrivilege;
 use crate::Subject;
 use crate::User;
-use crate::model::RollingStockPrivilege;
 use crate::v2::Actor;
 
 pub fn rolling_stock_privileges(
@@ -138,6 +139,96 @@ pub fn rolling_stock_effective_grant(
     ))
 }
 
+/// Return an operation that checks the list of subjects which have the given grant on a rolling
+/// stock.
+pub fn rolling_stock_granted_subjects(
+    rolling_stock: RollingStock,
+    grant: RollingStockGrant,
+) -> Protected<Vec<Subject>> {
+    fn get_granted_users(
+        rolling_stock: RollingStock,
+        grant: RollingStockGrant,
+    ) -> Protected<Vec<User>> {
+        Protected::new(move |openfga| {
+            async move {
+                match grant {
+                    RollingStockGrant::Reader => {
+                        openfga
+                            .list_users(RollingStock::reader().query_users(&rolling_stock))
+                            .await
+                    }
+                    RollingStockGrant::Writer => {
+                        openfga
+                            .list_users(RollingStock::writer().query_users(&rolling_stock))
+                            .await
+                    }
+                    RollingStockGrant::Owner => {
+                        openfga
+                            .list_users(RollingStock::owner().query_users(&rolling_stock))
+                            .await
+                    }
+                }
+                .map(|UserList { users, .. }| users)
+            }
+            .boxed()
+        })
+    }
+    fn get_granted_groups(
+        rolling_stock: RollingStock,
+        grant: RollingStockGrant,
+    ) -> Protected<Vec<Group>> {
+        Protected::new(move |openfga| {
+            async move {
+                match grant {
+                    RollingStockGrant::Reader => {
+                        openfga
+                            .list_usersets(
+                                RollingStock::reader()
+                                    .query_usersets(Group::member(), &rolling_stock),
+                            )
+                            .await
+                    }
+                    RollingStockGrant::Writer => {
+                        openfga
+                            .list_usersets(
+                                RollingStock::writer()
+                                    .query_usersets(Group::member(), &rolling_stock),
+                            )
+                            .await
+                    }
+                    RollingStockGrant::Owner => {
+                        openfga
+                            .list_usersets(
+                                RollingStock::owner()
+                                    .query_usersets(Group::member(), &rolling_stock),
+                            )
+                            .await
+                    }
+                }
+            }
+            .boxed()
+        })
+    }
+    get_granted_users(rolling_stock, grant)
+        .zip(get_granted_groups(rolling_stock, grant))
+        .map(move |_, (users, groups)| {
+            async move {
+                Ok(users
+                    .into_iter()
+                    .map(Subject::User)
+                    .chain(groups.into_iter().map(Subject::Group))
+                    .collect_vec())
+            }
+            .boxed()
+        })
+        .with_check(Check::HasRollingStockPrivilege(
+            Actor::Issuer,
+            RollingStockPrivilege::CanRead,
+            rolling_stock,
+        ))
+        .with_check(Check::RollingStockExists(rolling_stock))
+}
+
 #[cfg(test)]
 mod tests {
     use crate::User;
@@ -248,5 +339,38 @@ mod tests {
                 .await,
             HashSet::new(),
         );
+    }
+
+    #[tokio::test]
+    async fn rolling_stock_granted_subjects() {
+        let openfga = crate::authz_client!();
+        openfga
+            .prepare_writes()
+            .write(&RollingStock::reader().tuple(&User(1), &RollingStock(1)))
+            .write(&RollingStock::writer().tuple(&User(2), &RollingStock(1)))
+            .write(&Group::member().tuple(&User(3), &Group(1)))
+            .write(
+                &RollingStock::writer().tuple(Group::member().userset(&Group(1)), &RollingStock(1)),
+            )
+            .execute()
+            .await
+            .unwrap();
+        assert_eq!(
+            openfga
+                .rolling_stock_granted_subjects(RollingStock(1), RollingStockGrant::Reader)
+                .await,
+            vec![Subject::User(User(1))]
+        );
+        let mut response = openfga
+            .rolling_stock_granted_subjects(RollingStock(1), RollingStockGrant::Writer)
+            .await;
+        let mut expected = vec![
+            Subject::user(2),  // Direct relationship
+            Subject::user(3),  // Indirect relationship
+            Subject::group(1), // Direct relationship
+        ];
+        expected.sort();
+        response.sort();
+        assert_eq!(response, expected);
     }
 }
