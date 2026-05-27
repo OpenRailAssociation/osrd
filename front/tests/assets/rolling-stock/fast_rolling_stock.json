@@ -114,7 +114,14 @@
   "electrical_power_startup_time": null,
   "raise_pantograph_time": null,
   "version": 1,
-  "supported_signaling_systems": [{ "type": "BAL" }, { "type": "BAPR" }],
+  "supported_signaling_systems": [
+    {
+      "type": "BAL"
+    },
+    {
+      "type": "BAPR"
+    }
+  ],
   "liveries": [],
   "primary_category": "FREIGHT_TRAIN",
   "other_categories": []

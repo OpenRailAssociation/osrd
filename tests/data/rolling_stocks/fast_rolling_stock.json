@@ -16,11 +16,30 @@
     "B": 200,
     "C": 12
   },
+  "base_power_class": "1",
+  "power_restrictions": { },
+  "energy_sources": [ ],
+  "primary_category": "WORK_TRAIN",
+  "other_categories": [ ],
+  "supported_signaling_systems": [
+    {
+      "type": "BAL"
+    },
+    {
+      "type": "BAPR"
+    },
+    {
+      "type": "TVM300"
+    },
+    {
+      "type": "TVM430"
+    }
+  ],
   "effort_curves": {
     "default_mode": "thermal",
     "modes": {
       "thermal": {
-        "curves": [],
+        "curves": [ ],
         "default_curve": {
           "speeds": [
             0,
@@ -64,16 +83,5 @@
         "is_electric": false
       }
     }
-  },
-  "base_power_class": "1",
-  "power_restrictions": {},
-  "energy_sources": [],
-  "supported_signaling_systems": [
-    {"type": "BAL"},
-    {"type": "BAPR"},
-    {"type": "TVM300"},
-    {"type": "TVM430"}
-  ],
-  "primary_category": "WORK_TRAIN",
-  "other_categories": []
+  }
 }
