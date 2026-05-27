@@ -7,6 +7,7 @@ use crate::Group;
 use crate::Role;
 use crate::Subject;
 use crate::User;
+use crate::v2::Actor;
 use crate::v2::Check;
 use crate::v2::Protected;
 
@@ -50,7 +51,7 @@ pub fn add_roles(subject: Subject, roles: HashSet<Role>) -> Protected<()> {
             }
             .boxed()
         })
-        .with_check(Check::IssuerHasRole(Role::Admin))
+        .with_check(Check::HasRole(Actor::Issuer, Role::Admin))
 }
 
 /// Removes the specified roles from the subject
@@ -80,7 +81,7 @@ pub fn remove_roles(subject: Subject, roles: HashSet<Role>) -> Protected<()> {
             }
             .boxed()
         })
-        .with_check(Check::IssuerHasRole(Role::Admin))
+        .with_check(Check::HasRole(Actor::Issuer, Role::Admin))
 }
 
 #[cfg(test)]

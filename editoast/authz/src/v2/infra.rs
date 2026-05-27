@@ -12,6 +12,7 @@ use crate::InfraPrivilege;
 use crate::Role;
 use crate::Subject;
 use crate::User;
+use crate::v2::Actor;
 use crate::v2::Check;
 use crate::v2::Protected;
 
@@ -132,7 +133,11 @@ pub fn infra_effective_grant(subject: Subject, infra: Infra) -> Protected<Option
     })
     .with_check(Check::SubjectExists(subject))
     .with_check(Check::InfraExists(infra))
-    .with_check(Check::IssuerHasInfraPrivilege(InfraPrivilege::CanRead, infra))
+    .with_check(Check::HasInfraPrivilege(
+        Actor::Issuer,
+        InfraPrivilege::CanRead,
+        infra,
+    ))
 }
 
 pub fn infra_privileges(user: User, infra: Infra) -> Protected<HashSet<InfraPrivilege>> {
@@ -172,7 +177,8 @@ pub fn infra_privileges(user: User, infra: Infra) -> Protected<HashSet<InfraPriv
     })
     .with_check(Check::InfraExists(infra))
     .with_check(Check::SubjectExists(Subject::user(user)))
-    .with_check(Check::IssuerHasInfraPrivilege(
+    .with_check(Check::HasInfraPrivilege(
+        Actor::Issuer,
         InfraPrivilege::CanRead,
         infra,
     ))
@@ -239,7 +245,8 @@ pub fn infra_granted_subjects(infra: Infra, grant: InfraGrant) -> Protected<Vec<
             }
             .boxed()
         })
-        .with_check(Check::IssuerHasInfraPrivilege(
+        .with_check(Check::HasInfraPrivilege(
+            Actor::Issuer,
             InfraPrivilege::CanRead,
             infra,
         ))

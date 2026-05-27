@@ -41,13 +41,24 @@ pub struct Protected<T> {
     pub checks: HashSet<Check>,
 }
 
+/// The actor to which some [Check]s applies
+#[derive(Debug, Clone, Copy, Hash, PartialEq, Eq)]
+pub enum Actor {
+    /// The user from which the protected operation originates
+    ///
+    /// Such user is provided by the [Authorizer] authorizing the operation.
+    Issuer,
+    /// A specific user
+    User(User),
+}
+
 /// A check to ensure data consistency and permission workflow consistency
 #[derive(Debug, Clone, Copy, Hash, PartialEq, Eq)]
 pub enum Check {
-    /// The issuer needs a role to perform the operation
-    IssuerHasRole(Role),
-    /// The issuer needs an infra privilege to perform the operation
-    IssuerHasInfraPrivilege(InfraPrivilege, Infra),
+    /// The actor needs a role to perform the operation
+    HasRole(Actor, Role),
+    /// The actor needs an infra privilege to perform the operation
+    HasInfraPrivilege(Actor, InfraPrivilege, Infra),
     /// The subject must exist in PostgreSQL
     SubjectExists(Subject),
     /// The infra must exist in PostgreSQL
