@@ -52,6 +52,7 @@ enum SubjectType {
 #[cfg_attr(test, derive(Debug))]
 pub(in crate::views) enum ResourceType {
     Infra,
+    RollingStock,
 }
 
 #[derive(Debug, thiserror::Error, EditoastError)]
@@ -526,7 +527,8 @@ pub(in crate::views) async fn my_grants_on_resource(
                     },
                     rejection => impossible!(rejection),
                 })?
-        }
+        },
+        ResourceType::RollingStock => todo!(),
     };
 
     // NOTE: the same subject can appear in multiple lists. This can happen
@@ -722,6 +724,7 @@ pub(in crate::views) async fn update_grants(
                         }?
                         .allowed()?;
                     }
+                    ResourceType::RollingStock => todo!(),
                 }
             }
             Ok(StatusCode::CREATED)
@@ -754,6 +757,7 @@ pub(in crate::views) async fn update_grants(
                         }?
                         .allowed()?;
                     }
+                    ResourceType::RollingStock => todo!(),
                 }
             }
             Ok(StatusCode::NO_CONTENT)

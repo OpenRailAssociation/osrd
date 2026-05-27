@@ -2944,9 +2944,14 @@ class RequirementType(Enum):
     WORK_SCHEDULE = "WORK_SCHEDULE"
 
 
+class ResourceType(Enum):
+    infra = "infra"
+    rolling_stock = "rolling_stock"
+
+
 class RevokeBody(BaseModel):
     resource_id: int
-    resource_type: Literal["infra"]
+    resource_type: ResourceType
     subject_id: int
 
 
@@ -4667,7 +4672,7 @@ class GeoJsonPoint(RootModel[PointGeometry]):
 class GrantBody(BaseModel):
     grant: InfraGrant
     resource_id: int
-    resource_type: Literal["infra"]
+    resource_type: ResourceType
     subject_id: int
 
 

@@ -2853,7 +2853,7 @@ export type PostWorkerLoadApiArg = {
   };
 };
 export type InfraGrant = 'READER' | 'WRITER' | 'OWNER';
-export type ResourceType = 'infra';
+export type ResourceType = 'infra' | 'rolling_stock';
 export type GrantBody = {
   grant: InfraGrant;
   resource_id: number;

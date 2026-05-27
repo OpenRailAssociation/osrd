@@ -106,6 +106,7 @@ paths:
                 type: string
                 enum:
                 - infra
+                - rolling_stock
         required: true
       responses:
         '200':
@@ -131,6 +132,7 @@ paths:
                   type: string
                   enum:
                   - infra
+                  - rolling_stock
   /authz/me/groups:
     get:
       tags:
@@ -172,6 +174,7 @@ paths:
                 type: string
                 enum:
                 - infra
+                - rolling_stock
         required: true
       responses:
         '200':
@@ -200,6 +203,7 @@ paths:
                   type: string
                   enum:
                   - infra
+                  - rolling_stock
   /authz/user/info:
     post:
       tags:
@@ -12682,6 +12686,7 @@ components:
       type: string
       enum:
       - infra
+      - rolling_stock
     RevokeBody:
       type: object
       required:
