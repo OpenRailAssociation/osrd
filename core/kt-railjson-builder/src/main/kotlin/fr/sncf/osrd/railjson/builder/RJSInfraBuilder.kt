@@ -106,14 +106,14 @@ class PointSwitchBuilder(
 sealed interface WaypointBuilder {
     val name: String
     val location: TrackSectionLocation
-    val waypointRef: RJSWaypointRef<RJSTrainDetector>
+    val waypointRef: RJSWaypointRef<RJSRouteWaypoint>
 
     fun build(): RJSRouteWaypoint
 }
 
 class BufferStopBuilder(override val name: String, override val location: TrackSectionLocation) :
     WaypointBuilder {
-    override val waypointRef: RJSWaypointRef<RJSTrainDetector>
+    override val waypointRef: RJSWaypointRef<RJSRouteWaypoint>
         get() = RJSWaypointRef(ID(name), RJSWaypointRef.RJSWaypointType.BUFFER_STOP)
 
     override fun build(): RJSBufferStop {
@@ -123,7 +123,7 @@ class BufferStopBuilder(override val name: String, override val location: TrackS
 
 class TrainDetectorBuilder(override val name: String, override val location: TrackSectionLocation) :
     WaypointBuilder {
-    override val waypointRef: RJSWaypointRef<RJSTrainDetector>
+    override val waypointRef: RJSWaypointRef<RJSRouteWaypoint>
         get() = RJSWaypointRef(ID(name), RJSWaypointRef.RJSWaypointType.DETECTOR)
 
     override fun build(): RJSTrainDetector {
