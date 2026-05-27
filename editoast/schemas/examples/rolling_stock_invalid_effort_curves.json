@@ -1,70 +1,70 @@
 {
-    "railjson_version": "3.3",
-    "version": 0,
-    "length": 200.0,
-    "max_speed": 40.0,
-    "startup_time": 5.0,
-    "startup_acceleration": 0.25,
-    "comfort_acceleration": 0.12,
-    "inertia_coefficient": 1.02,
-    "name": "other_rolling_stock",
-    "mass": 50000.0,
-    "loading_gauge": "G2",
-    "const_gamma": 0.6,
-    "rolling_resistance": {
-        "type": "davis",
-        "A": 200,
-        "B": 12,
-        "C": 5000
-    },
-    "effort_curves": {
-        "default_mode": "25000V",
-        "modes": {
-            "25000V": {
-                "curves": [],
-                "default_curve": {
-                    "speeds": [
-                        0,
-                        5,
-                        10,
-                        15,
-                        20,
-                        22,
-                        27,
-                        32,
-                        37,
-                        42,
-                        47,
-                        52,
-                        57,
-                        62,
-                        67,
-                        72,
-                        77
-                    ],
-                    "max_efforts": []
-                },
-                "is_electric": true
-            }
-        }
-    },
-    "base_power_class": "4",
-    "metadata": {
-        "detail": "detail updated",
-        "number": "2",
-        "reference": "reference updated",
-        "family": "LOCOMOTIVES",
-        "type": "Locomotives électriques",
-        "grouping": "Locomotives électriques monophasé",
-        "series": "",
-        "subseries": "US",
-        "unit": "1"
-    },
-    "energy_sources": [],
-    "power_restrictions": {},
-    "electrical_power_startup_time": 4.0,
-    "raise_pantograph_time": 14.0,
-    "supported_signaling_systems": [{"type": "BAL"}, {"type": "BAPR"}, {"type": "TVM300"}, {"type": "TVM430"}],
-    "primary_category": "COMMUTER_TRAIN",
-    "other_categories": []
+  "railjson_version": "3.3",
+  "version": 0,
+  "length": 200.0,
+  "max_speed": 40.0,
+  "startup_time": 5.0,
+  "startup_acceleration": 0.25,
+  "comfort_acceleration": 0.12,
+  "inertia_coefficient": 1.02,
+  "name": "other_rolling_stock",
+  "mass": 50000.0,
+  "loading_gauge": "G2",
+  "const_gamma": 0.6,
+  "rolling_resistance": {
+    "type": "davis",
+    "A": 200,
+    "B": 12,
+    "C": 5000
+  },
+  "effort_curves": {
+    "default_mode": "25000V",
+    "modes": {
+      "25000V": {
+        "curves": [ ],
+        "default_curve": {
+          "speeds": [
+            0,
+            5,
+            10,
+            15,
+            20,
+            22,
+            27,
+            32,
+            37,
+            42,
+            47,
+            52,
+            57,
+            62,
+            67,
+            72,
+            77
+          ],
+          "max_efforts": [ ]
+        },
+        "is_electric": true
+      }
+    }
+  },
+  "base_power_class": "4",
+  "metadata": {
+    "detail": "detail updated",
+    "number": "2",
+    "reference": "reference updated",
+    "family": "LOCOMOTIVES",
+    "type": "Locomotives électriques",
+    "grouping": "Locomotives électriques monophasé",
+    "series": "",
+    "subseries": "US",
+    "unit": "1"
+  },
+  "energy_sources": [ ],
+  "power_restrictions": { },
+  "electrical_power_startup_time": 4.0,
+  "raise_pantograph_time": 14.0,
+  "supported_signaling_systems": [ { "type": "BAL" }, { "type": "BAPR" }, { "type": "TVM300" }, { "type": "TVM430" } ],
+  "primary_category": "COMMUTER_TRAIN",
+  "other_categories": [ ]
 }
