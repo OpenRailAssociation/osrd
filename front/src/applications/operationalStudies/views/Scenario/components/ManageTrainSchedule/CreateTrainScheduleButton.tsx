@@ -4,7 +4,6 @@ import { useSelector } from 'react-redux';
 
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import type { TrainScheduleResponse } from 'common/api/osrdEditoastApi';
-import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector';
 import {
   createExceptions,
   createPacedTrains,
@@ -48,13 +47,7 @@ const CreateTrainScheduleButton = ({
   const simulationConf = useSelector(getOperationalStudiesConf);
   const addedExceptions = useSelector(getAddedExceptions);
 
-  // TODO TS2 : remove this when rollingStockName will replace rollingStockId in the store
-  const { rollingStock } = useStoreDataForRollingStockSelector({
-    rollingStockId: simulationConf.rollingStockID,
-  });
-
   const createTrainSchedules = async () => {
-    const rollingStockName = rollingStock?.name || '';
     const validationErrors = checkCurrentConfig(simulationConf);
     if (validationErrors.length) {
       validationErrors.forEach((errorCode) => {
@@ -73,8 +66,8 @@ const CreateTrainScheduleButton = ({
 
     try {
       const newTrainSchedulePayload = isPacedTrainMode
-        ? formatPacedTrainPayload(simulationConf, rollingStockName)
-        : formatTrainSchedulePayload(simulationConf, rollingStockName);
+        ? formatPacedTrainPayload(simulationConf)
+        : formatTrainSchedulePayload(simulationConf);
 
       const formattedNewTrainSchedule: TrainScheduleResponse = (
         await createPacedTrains(dispatch, sandboxId, [newTrainSchedulePayload])

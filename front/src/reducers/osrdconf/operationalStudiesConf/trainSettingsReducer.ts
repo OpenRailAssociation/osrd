@@ -43,6 +43,12 @@ const trainSettingsReducer = {
   ) {
     state.startTime = action.payload;
   },
+  updateRollingStockName(
+    state: Draft<OperationalStudiesConfState>,
+    action: PayloadAction<OperationalStudiesConfState['rollingStockName']>
+  ) {
+    state.rollingStockName = action.payload;
+  },
   updateRollingStockComfort(
     state: Draft<OperationalStudiesConfState>,
     action: PayloadAction<OperationalStudiesConfState['rollingStockComfort']>

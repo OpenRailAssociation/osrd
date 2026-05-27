@@ -4,6 +4,7 @@ import type { Distribution, TrainCategory, TrainSchedule } from 'common/api/osrd
 import {
   operationalStudiesConfSlice,
   operationalStudiesInitialConf,
+  updateRollingStockName,
 } from 'reducers/osrdconf/operationalStudiesConf';
 import type { OperationalStudiesConfState } from 'reducers/osrdconf/types';
 import { createStoreWithoutMiddleware } from 'store';
@@ -86,6 +87,13 @@ const testTrainSettingsReducer = () => {
     defaultStore.dispatch(updateCategory(newCategory));
     const state = getState();
     expect(state.category).toBe(newCategory);
+  });
+
+  it('should handle updateRollingStockName', () => {
+    const newRollingStockName = 'rollingStock1';
+    defaultStore.dispatch(updateRollingStockName(newRollingStockName));
+    const state = getState();
+    expect(state.rollingStockName).toBe(newRollingStockName);
   });
 
   it('should handle updateRollingStockComfort', () => {

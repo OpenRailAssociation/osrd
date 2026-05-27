@@ -62,10 +62,10 @@ describe('formatTrainSchedulePayload', () => {
     editingTrainType: 'pacedTrain',
     addedExceptions: [],
   };
-  const rollingStockName = 'DUAL-MODE_RS_E2Ee';
+
   describe('User creates a paced train', () => {
     it('should return a TrainSchedule payload with paced fields and empty exceptions', () => {
-      const newTrainSchedulePayload = formatPacedTrainPayload(rawOsrdconf, rollingStockName);
+      const newTrainSchedulePayload = formatPacedTrainPayload(rawOsrdconf);
       expect(newTrainSchedulePayload).toEqual({
         category: {
           main_category: 'FREIGHT_TRAIN',
@@ -107,7 +107,7 @@ describe('formatTrainSchedulePayload', () => {
           },
         ],
         power_restrictions: [],
-        rolling_stock_name: 'DUAL-MODE_RS_E2Ee',
+        rolling_stock_name: 'rollingStock1',
         schedule: [],
         speed_limit_tag: undefined,
         start_time: new Date('2025-06-02T12:45:00.000Z').getTime(),
@@ -127,13 +127,10 @@ describe('formatTrainSchedulePayload', () => {
         ...rawOsrdconf,
         editingTrainType: 'uniqueTrain',
       };
-      const newTrainSchedulePayload = formatPacedTrainPayload(
-        osrdconfUniqueTrain,
-        rollingStockName
-      );
+      const newTrainSchedulePayload = formatPacedTrainPayload(osrdconfUniqueTrain);
       expect(newTrainSchedulePayload.paced).toBeUndefined();
       expect(newTrainSchedulePayload.train_name).toBe('test');
-      expect(newTrainSchedulePayload.rolling_stock_name).toBe('DUAL-MODE_RS_E2Ee');
+      expect(newTrainSchedulePayload.rolling_stock_name).toBe('rollingStock1');
     });
   });
 });

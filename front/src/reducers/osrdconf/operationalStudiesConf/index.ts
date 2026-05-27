@@ -142,6 +142,7 @@ export const {
   updateStartTime,
   updateInitialSpeed,
   updateLabels,
+  updateRollingStockName,
   updateRollingStockComfort,
   updateConstraintDistribution,
   toggleUsingElectricalProfiles,

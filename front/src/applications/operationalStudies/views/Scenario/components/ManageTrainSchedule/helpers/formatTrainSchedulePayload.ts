@@ -13,11 +13,7 @@ import { generatePacedTrainException } from './buildPacedTrainException';
 import formatMargin from './formatMargin';
 import formatSchedule from './formatSchedule';
 
-export function formatTrainSchedulePayload(
-  osrdconf: OperationalStudiesConfState,
-  // TODO TS2 : remove this when rollingStockName will replace rollingStockId in the store
-  rollingStockName: string
-): TrainSchedule {
+export function formatTrainSchedulePayload(osrdconf: OperationalStudiesConfState): TrainSchedule {
   return {
     category: osrdconf.category,
     comfort: osrdconf.rollingStockComfort,
@@ -35,7 +31,7 @@ export function formatTrainSchedulePayload(
       location: step.location,
     })),
     power_restrictions: osrdconf.powerRestriction,
-    rolling_stock_name: rollingStockName,
+    rolling_stock_name: osrdconf.rollingStockName,
     schedule: formatSchedule(compact(osrdconf.pathSteps)),
     speed_limit_tag: osrdconf.speedLimitByTag,
     start_time: osrdconf.startTime.getTime(),
@@ -84,13 +80,12 @@ export function formatPacedTrainWithDetailsToPacedTrainPayload(
  */
 export function formatOccurrenceException(
   osrdconf: OperationalStudiesConfState,
-  rollingStockName: string,
   trainScheduleToEditData: NonNullableObject<TrainScheduleToEditData, 'occurrenceId'>
 ): {
   generatedException: Omit<PacedTrainException, 'key' | 'occurrence_index'>;
   occurrenceIndex: number | undefined;
 } {
-  const baseTrain = formatTrainSchedulePayload(osrdconf, rollingStockName);
+  const baseTrain = formatTrainSchedulePayload(osrdconf);
 
   const newPacedTrain: Omit<PacedTrainWithPaced, 'train_schedule_set_id'> = {
     ...baseTrain,
@@ -129,12 +124,8 @@ export function formatOccurrenceException(
  * Used when creating and editing a paced train (not an occurrence).
  * @param osrdconf paced train fields that were modified by user
  */
-export function formatPacedTrainPayload(
-  osrdconf: OperationalStudiesConfState,
-  // TODO TS2 : remove this when rollingStockName will replace rollingStockId in the store
-  rollingStockName: string
-): TrainSchedule {
-  const baseTrain = formatTrainSchedulePayload(osrdconf, rollingStockName);
+export function formatPacedTrainPayload(osrdconf: OperationalStudiesConfState): TrainSchedule {
+  const baseTrain = formatTrainSchedulePayload(osrdconf);
 
   if (osrdconf.editingTrainType === 'uniqueTrain') return baseTrain;
 
