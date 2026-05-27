@@ -127,6 +127,7 @@ describe('makeProjectedTrains', () => {
         id: 'indexedoccurrence_2562_0',
         name: `${pacedTrain.name} 1`,
         departureTime: pacedTrain.departureTime,
+        type: 'occurrence',
         spaceTimeCurves: pacedTrain.spaceTimeCurves,
         signalUpdates: pacedTrain.signalUpdates,
       });
@@ -134,6 +135,7 @@ describe('makeProjectedTrains', () => {
         id: 'indexedoccurrence_2562_1',
         name: exception.train_name!.value,
         departureTime: new Date('2025-07-09T06:30:00.000Z'),
+        type: 'exception',
         exception,
         ...exceptionProjection,
       });
@@ -249,6 +251,7 @@ describe('makeProjectedTrains', () => {
         id: 'indexedoccurrence_2564_0',
         name: 'auie 1',
         departureTime: pacedTrain.departureTime,
+        type: 'occurrence',
         spaceTimeCurves: pacedTrain.spaceTimeCurves,
         signalUpdates: pacedTrain.signalUpdates,
       });
@@ -256,6 +259,7 @@ describe('makeProjectedTrains', () => {
         id: 'indexedoccurrence_2564_1',
         name: `${pacedTrain.name} 3`,
         departureTime: dayjs(pacedTrain.departureTime).add(1, 'hour').toDate(),
+        type: 'occurrence',
         spaceTimeCurves: pacedTrain.spaceTimeCurves,
         signalUpdates: pacedTrain.signalUpdates,
       });
@@ -263,6 +267,7 @@ describe('makeProjectedTrains', () => {
         id: 'indexedoccurrence_2564_2',
         name: `${pacedTrain.name} 5`,
         departureTime: dayjs(pacedTrain.departureTime).add(2, 'hour').toDate(),
+        type: 'occurrence',
         spaceTimeCurves: pacedTrain.spaceTimeCurves,
         signalUpdates: pacedTrain.signalUpdates,
       });
@@ -270,6 +275,7 @@ describe('makeProjectedTrains', () => {
         id: 'exception_2564_2',
         name: exception.train_name!.value,
         departureTime: new Date(exception.start_time!.value),
+        type: 'exception',
         exception,
         ...exceptionProjection,
       });
