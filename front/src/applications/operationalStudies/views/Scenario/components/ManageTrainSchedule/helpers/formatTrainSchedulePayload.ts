@@ -39,9 +39,9 @@ export function formatTrainSchedulePayload(osrdconf: OperationalStudiesConfState
   };
 }
 
-// Format a PacedTrainWithDetails to a PacedTrain payload by keeping only the
+// Format a PacedTrainWithDetails to a TrainSchedule payload by keeping only the
 // necessary properties and formatting the date fields to ISO strings.
-export function formatPacedTrainWithDetailsToPacedTrainPayload(
+export function formatPacedTrainWithDetailsToTrainSchedule(
   pacedTrainWithDetails: PacedTrainWithDetails
 ): TrainSchedule {
   return {
@@ -96,7 +96,7 @@ export function formatOccurrenceException(
     },
   };
 
-  const originalPacedTrain = formatPacedTrainWithDetailsToPacedTrainPayload(
+  const originalPacedTrain = formatPacedTrainWithDetailsToTrainSchedule(
     trainScheduleToEditData.originalPacedTrain
   );
 

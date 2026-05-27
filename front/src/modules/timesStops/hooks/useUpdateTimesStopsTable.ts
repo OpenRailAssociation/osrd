@@ -7,7 +7,7 @@ import {
   updatePacedTrainExceptionsList,
 } from 'applications/operationalStudies/views/Scenario/components/ManageTrainSchedule/helpers/buildPacedTrainException';
 import formatMargin from 'applications/operationalStudies/views/Scenario/components/ManageTrainSchedule/helpers/formatMargin';
-import { formatPacedTrainWithDetailsToPacedTrainPayload } from 'applications/operationalStudies/views/Scenario/components/ManageTrainSchedule/helpers/formatTrainSchedulePayload';
+import { formatPacedTrainWithDetailsToTrainSchedule } from 'applications/operationalStudies/views/Scenario/components/ManageTrainSchedule/helpers/formatTrainSchedulePayload';
 import {
   osrdEditoastApi,
   type TrainSchedule,
@@ -261,7 +261,7 @@ const useUpdateTimesStopsTable = (
         throw new Error(`Parent PacedTrain not found for occurrence: ${occurrenceId}`);
       }
 
-      const formattedPacedTrain = formatPacedTrainWithDetailsToPacedTrainPayload(
+      const formattedPacedTrain = formatPacedTrainWithDetailsToTrainSchedule(
         originalPacedTrainWithDetails
       );
       if (!isPacedTrainBase(formattedPacedTrain)) {

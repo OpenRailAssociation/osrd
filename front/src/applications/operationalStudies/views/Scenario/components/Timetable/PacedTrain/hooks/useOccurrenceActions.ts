@@ -3,7 +3,7 @@ import { useCallback } from 'react';
 import { useSelector } from 'react-redux';
 
 import { updatePacedTrainExceptionsList } from 'applications/operationalStudies/views/Scenario/components/ManageTrainSchedule/helpers/buildPacedTrainException';
-import { formatPacedTrainWithDetailsToPacedTrainPayload } from 'applications/operationalStudies/views/Scenario/components/ManageTrainSchedule/helpers/formatTrainSchedulePayload';
+import { formatPacedTrainWithDetailsToTrainSchedule } from 'applications/operationalStudies/views/Scenario/components/ManageTrainSchedule/helpers/formatTrainSchedulePayload';
 import type {
   PacedTrainException,
   TrainSchedule,
@@ -55,7 +55,7 @@ const useOccurrenceActions = ({
 
   const upsertWithNewExceptions = useCallback(
     (newExceptions: SimulatedException[]) => {
-      const formattedPacedTrain = formatPacedTrainWithDetailsToPacedTrainPayload(pacedTrain);
+      const formattedPacedTrain = formatPacedTrainWithDetailsToTrainSchedule(pacedTrain);
 
       upsertTrainSchedules([
         {
