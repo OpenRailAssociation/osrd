@@ -1,4 +1,4 @@
-import type { PickingElement } from '../../common/types';
+import type { CurveStyle, PickingElement } from '../../common/types';
 import { type TICKS_PATTERN } from './consts';
 
 export type Track = {
@@ -10,8 +10,6 @@ export type Track = {
 export type OccupancyZone = {
   trainId: string;
   trackId: string;
-  color?: string;
-  size?: number;
   trainName: string;
   originStation?: string;
   destinationStation?: string;
@@ -20,6 +18,8 @@ export type OccupancyZone = {
   startDirection?: 'up' | 'down';
   endDirection?: 'up' | 'down';
   trailingText?: string;
+  curveStyle?: CurveStyle;
+  connectorStyle?: { width?: number; color?: string };
 };
 
 export type OccupancyZonePickingElement = PickingElement & {

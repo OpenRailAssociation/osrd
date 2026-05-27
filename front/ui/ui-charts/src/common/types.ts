@@ -47,6 +47,8 @@ export type CurveStyle = {
   label?: {
     border?: { color: string; width: number };
     fontWeight?: number;
+    background: { color: string; opacity?: number };
+    color: string;
   };
 };
 
