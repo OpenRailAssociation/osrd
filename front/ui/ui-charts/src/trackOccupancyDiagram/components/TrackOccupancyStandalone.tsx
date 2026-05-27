@@ -112,10 +112,7 @@ const TrackOccupancyStandalone = ({
               onClick={
                 onSelectedTrainIdChange &&
                 (({ hoveredItem }) => {
-                  if (
-                    hoveredItem?.layer === 'overlay' &&
-                    isOccupancyPickingElement(hoveredItem.element)
-                  ) {
+                  if (hoveredItem?.layer && isOccupancyPickingElement(hoveredItem.element)) {
                     const newId = hoveredItem.element.pathId;
                     onSelectedTrainIdChange(newId === selectedTrainId ? undefined : newId);
                   } else {
