@@ -4,7 +4,7 @@ import { defaultMapSettings } from 'reducers/commonMap';
 import type { OperationalStudiesConfState } from 'reducers/osrdconf/types';
 import { Duration } from 'utils/duration';
 
-import { formatPacedTrainPayload } from '../formatTrainSchedulePayload';
+import { formatTrainSchedulePayload } from '../formatTrainSchedulePayload';
 
 describe('formatTrainSchedulePayload', () => {
   const rawOsrdconf: OperationalStudiesConfState = {
@@ -65,7 +65,7 @@ describe('formatTrainSchedulePayload', () => {
 
   describe('User creates a paced train', () => {
     it('should return a TrainSchedule payload with paced fields and empty exceptions', () => {
-      const newTrainSchedulePayload = formatPacedTrainPayload(rawOsrdconf);
+      const newTrainSchedulePayload = formatTrainSchedulePayload(rawOsrdconf);
       expect(newTrainSchedulePayload).toEqual({
         category: {
           main_category: 'FREIGHT_TRAIN',
@@ -127,7 +127,7 @@ describe('formatTrainSchedulePayload', () => {
         ...rawOsrdconf,
         editingTrainType: 'uniqueTrain',
       };
-      const newTrainSchedulePayload = formatPacedTrainPayload(osrdconfUniqueTrain);
+      const newTrainSchedulePayload = formatTrainSchedulePayload(osrdconfUniqueTrain);
       expect(newTrainSchedulePayload.paced).toBeUndefined();
       expect(newTrainSchedulePayload.train_name).toBe('test');
       expect(newTrainSchedulePayload.rolling_stock_name).toBe('rollingStock1');
