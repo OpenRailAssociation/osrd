@@ -6,6 +6,7 @@ use std::sync::Mutex;
 
 use http::StatusCode;
 use serde::Serialize;
+use serde_json::Value;
 
 use super::CoreClient;
 use super::CoreResponse;
@@ -92,10 +93,27 @@ impl MockingClient {
             serde_json::from_str::<serde_json::Value>(b)
                 .expect("expected request body should be valid JSON")
         });
-        match (actual, expected) {
-            (Some(actual), Some(expected)) => assert_eq!(actual, expected, "request body mismatch"),
-            (None, Some(expected)) => panic!("missing request body: '{expected}'"),
-            _ => (),
+        if let Some(actual) = actual {
+            // Assert the entire body at once
+            if let Some(expected) = expected {
+                assert_eq!(actual, expected, "request body mismatch");
+            }
+
+            // Assert some specific fields of the body
+            for (pointer, expected) in &stub.on_body {
+                assert_eq!(
+                    actual
+                        .pointer(pointer)
+                        .unwrap_or_else(|| panic!(
+                            "failed to look up the value with pointer '{pointer}'"
+                        ))
+                        .to_string(),
+                    expected.to_string(),
+                    "the value at pointer ‘{pointer}’ is different from the expected value"
+                );
+            }
+        } else if let Some(expected) = expected {
+            panic!("missing request body: '{expected}'");
         }
         let response = stub
             .response
@@ -127,6 +145,7 @@ impl MockingClient {
 #[derive(Debug, Clone)]
 pub struct StubRequest {
     body: Option<Arc<String>>,
+    on_body: HashMap<&'static str, Value>,
     response: Option<StubResponse>,
 }
 
@@ -145,6 +164,7 @@ pub struct StubResponse {
 pub struct StubRequestBuilder<'a> {
     path: String,
     body: Option<Arc<String>>,
+    on_body: HashMap<&'static str, Value>,
     client: &'a mut MockingClient,
 }
 
@@ -160,6 +180,7 @@ impl<'a> StubRequestBuilder<'a> {
         Self {
             path,
             body: None,
+            on_body: HashMap::new(),
             client,
         }
     }
@@ -171,6 +192,25 @@ impl<'a> StubRequestBuilder<'a> {
     #[must_use = "call .finish() to register the stub request"]
     pub fn body<B: AsRef<str>>(mut self, body: B) -> Self {
         self.body = Some(Arc::new(body.as_ref().to_string()));
+        self
+    }
+
+    /// Assert some fields on the expected outgoing request
+    ///
+    /// The field is targeted with a JSON pointer ([RFC6901]), and the expected
+    /// value is a `serde_json::Value`.
+    ///
+    /// This function can be called multiple times: if multiple times on the
+    /// same pointer, the last one win.
+    ///
+    /// [RFC6901]: https://tools.ietf.org/html/rfc6901
+    #[allow(unused)]
+    #[must_use = "call .finish() to register the stub request"]
+    pub fn on_body<B: Serialize>(mut self, pointer: &'static str, expected: B) -> Self {
+        self.on_body.insert(
+            pointer,
+            serde_json::to_value(expected).expect("can always be serialized into a `Value`"),
+        );
         self
     }
 
@@ -196,6 +236,7 @@ impl<'a> StubRequestBuilder<'a> {
             .unwrap()
             .push_back(StubRequest {
                 body: self.body,
+                on_body: self.on_body,
                 response: None,
             })
     }
@@ -207,6 +248,7 @@ impl<'a> StubRequestBuilder<'a> {
             .map(Some)
             .map(|response| StubRequest {
                 body: self.body.clone(),
+                on_body: self.on_body.clone(),
                 response,
             })
             .for_each(|stub| stubs.deref().lock().unwrap().push_back(stub));
