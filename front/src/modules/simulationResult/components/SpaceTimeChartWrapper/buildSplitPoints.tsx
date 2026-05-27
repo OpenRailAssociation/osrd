@@ -78,77 +78,75 @@ export function buildSplitPoints(
       zones,
       tracks,
       loading,
-    }) => ({
-      id: operationalPointId,
-      position: operationalPointPosition,
-      size: (tracks?.length || 0) * TRACK_HEIGHT_CONTAINER + DEFAULT_THEME.timeCaptionsSize,
-      spaceTimeChartNode: (
-        <TrackOccupancyCanvas
-          position={operationalPointPosition}
-          tracks={tracks || []}
-          occupancyZones={(zones || []).map((zone) => {
-            const baseZones = zones ?? [];
+    }) => {
+      const occupancyZones = (zones || []).map((zone) => {
+        const baseZones = zones ?? [];
 
-            const zonesCountByPacedTrainId = countZonesByPacedTrainId(baseZones);
+        const zonesCountByPacedTrainId = countZonesByPacedTrainId(baseZones);
 
-            const isHovered = hoveredTrainIdForChart === zone.trainId;
-            const isSelected = selectedTrainId === zone.trainId;
-            let totalOccurrencesOnTrack = 0;
-            if (isOccurrenceId(zone.trainId)) {
-              const pacedTrainId = extractPacedTrainIdFromOccurrenceId(zone.trainId);
-              totalOccurrencesOnTrack =
-                zonesCountByPacedTrainId.get(pacedTrainId)?.get(zone.trackId) ?? 0;
-            }
-            const path = pathsById[zone.trainId];
-            if (!path) return zone;
-            const style = getPathStyle(
-              hoveredItem,
-              path,
-              isDragging,
-              selectedTrainId,
-              hoveredTrainId
-            );
-            return {
-              ...zone,
-              trailingText:
-                isHovered && totalOccurrencesOnTrack > 1
-                  ? `+${Math.max(0, totalOccurrencesOnTrack - 1)}`
-                  : undefined,
-              curveStyle: {
-                ...zone.curveStyle,
-                color: style.color,
-                width: isSelected || isHovered ? 2 : undefined,
-                opacity: 1,
-              },
-            };
-          })}
-          selectedTrainId={selectedTrainId}
-          onClose={() => onCloseOccupancyLayer?.(waypointId)}
-          topPadding={BASE_WAYPOINT_HEIGHT}
-        />
-      ),
-      manchetteNode: (
-        <TrackOccupancyManchette tracks={tracks || []}>
-          <WaypointComponent
-            waypoint={{
-              id: waypointId,
-              name: (
-                <div className="d-flex flex-row align-items-center">
-                  {operationalPointName || operationalPointId}
-                  {loading && (
-                    <Spinner className="ml-2 small" spinnerClassName="spinner-border-sm" />
-                  )}
-                </div>
-              ),
-              position: operationalPointPosition,
-              onClick: handleWaypointClick,
-            }}
-            waypointRef={waypointId === activeWaypointId ? activeWaypointRef : undefined}
-            isActive={waypointId === activeWaypointId}
-            isMenuActive={false}
+        const isHovered = hoveredTrainIdForChart === zone.trainId;
+        const isSelected = selectedTrainId === zone.trainId;
+        let totalOccurrencesOnTrack = 0;
+        if (isOccurrenceId(zone.trainId)) {
+          const pacedTrainId = extractPacedTrainIdFromOccurrenceId(zone.trainId);
+          totalOccurrencesOnTrack =
+            zonesCountByPacedTrainId.get(pacedTrainId)?.get(zone.trackId) ?? 0;
+        }
+        const path = pathsById[zone.trainId];
+        if (!path) return zone;
+        const style = getPathStyle(hoveredItem, path, isDragging, selectedTrainId, hoveredTrainId);
+        return {
+          ...zone,
+          trailingText:
+            isHovered && totalOccurrencesOnTrack > 1
+              ? `+${Math.max(0, totalOccurrencesOnTrack - 1)}`
+              : undefined,
+          curveStyle: {
+            ...zone.curveStyle,
+            color: style.color,
+            width: isSelected || isHovered ? 2 : undefined,
+            opacity: 1,
+          },
+        };
+      });
+
+      const waypoint = {
+        id: waypointId,
+        name: (
+          <div className="d-flex flex-row align-items-center">
+            {operationalPointName || operationalPointId}
+            {loading && <Spinner className="ml-2 small" spinnerClassName="spinner-border-sm" />}
+          </div>
+        ),
+        position: operationalPointPosition,
+        onClick: handleWaypointClick,
+      };
+
+      return {
+        id: operationalPointId,
+        position: operationalPointPosition,
+        size: (tracks?.length || 0) * TRACK_HEIGHT_CONTAINER + DEFAULT_THEME.timeCaptionsSize,
+        spaceTimeChartNode: (
+          <TrackOccupancyCanvas
+            position={operationalPointPosition}
+            tracks={tracks || []}
+            occupancyZones={occupancyZones}
+            selectedTrainId={selectedTrainId}
+            onClose={() => onCloseOccupancyLayer?.(waypointId)}
+            topPadding={BASE_WAYPOINT_HEIGHT}
           />
-        </TrackOccupancyManchette>
-      ),
-    })
+        ),
+        manchetteNode: (
+          <TrackOccupancyManchette tracks={tracks || []}>
+            <WaypointComponent
+              waypoint={waypoint}
+              waypointRef={waypointId === activeWaypointId ? activeWaypointRef : undefined}
+              isActive={waypointId === activeWaypointId}
+              isMenuActive={false}
+            />
+          </TrackOccupancyManchette>
+        ),
+      };
+    }
   );
 }
