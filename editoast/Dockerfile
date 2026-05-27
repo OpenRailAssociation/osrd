@@ -18,21 +18,21 @@ RUN cargo chef prepare --recipe-path recipe.json
 # Cargo chef : build #
 ######################
 FROM chef AS base_builder
-RUN apk add --no-cache build-base curl openssl openssl-dev openssl-libs-static mold libpq-dev geos-dev zstd-dev
+RUN apk add --no-cache build-base openssl openssl-dev openssl-libs-static mold libpq-dev geos-dev zstd-dev
 ENV RUSTFLAGS="-C target-feature=-crt-static -C link-arg=-fuse-ld=mold"
 ENV ZSTD_SYS_USE_PKG_CONFIG=1
+
+ADD --checksum=sha256:6c1f2d6c9791bc11c905fb7b4f013a5f9c761ba048467265754b1e87827e7154 https://github.com/osrd-project/diesel_cli_bin/releases/download/diesel-cli-v2.3.9/diesel_cli-2.3.9-x86_64-unknown-linux-musl.tar.gz /tmp/diesel_cli.tar.gz
 RUN set -eux; \
     arch="$(uname -m)"; \
     mkdir -p /cargo_editoast/bin; \
     if [ "$arch" = "x86_64" ]; then \
-        curl -L \
-          https://github.com/osrd-project/diesel_cli_bin/releases/download/diesel-cli-v2.3.6/diesel_cli-2.3.6-x86_64-unknown-linux-musl.tar.gz \
-          -o /tmp/diesel_cli.tar.gz; \
         tar -xzf /tmp/diesel_cli.tar.gz -C /cargo_editoast/bin; \
-        rm /tmp/diesel_cli.tar.gz; \
     else \
         cargo install diesel_cli --no-default-features --features postgres; \
     fi
+RUN rm /tmp/diesel_cli.tar.gz
+
 COPY --from=static_assets . /assets
 
 #######################
