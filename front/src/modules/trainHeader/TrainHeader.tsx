@@ -1,12 +1,24 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
+import { useTranslation } from 'react-i18next';
+
+import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
+import { updateTrainSchedule } from 'applications/operationalStudies/views/Scenario/components/ManageTrainSchedule/hooks/useUpdateTrainSchedule';
+import type { TrainScheduleResponse } from 'common/api/osrdEditoastApi';
+import type { PacedTrainWithDetails } from 'modules/trainSchedule/types';
+import { setFailure } from 'reducers/main';
 import type { Train } from 'reducers/osrdconf/types';
+import { updateSelectedTrain } from 'reducers/simulationResults';
+import { useAppDispatch } from 'store';
+import { extractEditoastIdFromTrainId, isOccurrenceId } from 'utils/trainId';
 
 import CollapsedTrainOverview from './CollapsedTrainOverview';
 import ExpandedTrainForm from './ExpandedTrainForm';
 
 export type TrainHeaderProps = {
   train: Train;
+  trainSchedulesWithDetails: PacedTrainWithDetails[];
+  upsertTrainSchedules: (trainSchedules: TrainScheduleResponse[]) => void;
 };
 
 /**
@@ -14,16 +26,69 @@ export type TrainHeaderProps = {
  * or an expanded form that allow the user to edit every data about the train outside of the train
  * stops themselves or its itinerary.
  */
-const TrainHeader = ({ train }: TrainHeaderProps) => {
+const TrainHeader = ({
+  train,
+  trainSchedulesWithDetails,
+  upsertTrainSchedules,
+}: TrainHeaderProps) => {
   const [expanded, setExpanded] = useState(false);
+  const { t } = useTranslation(['operational-studies']);
+
+  const dispatch = useAppDispatch();
+  const { timetableId } = useScenarioContext();
+  const occurrenceId = isOccurrenceId(train.id) ? train.id : undefined;
+  const trainScheduleId = extractEditoastIdFromTrainId(train.id);
+
+  // TODO: As soon as we ditch the old train edition modal, we should switch to a TrainSchedule instead
+  //       of a TrainScheduleWithDetails as we have no need for the "details" in this form.
+  const originalPacedTrain = useMemo(
+    () => trainSchedulesWithDetails.find((tr) => tr.id === trainScheduleId)!,
+    [trainScheduleId, trainSchedulesWithDetails]
+  );
+
+  const onPersistTrain = async (
+    updatedTrain: Train,
+    addedExceptions: { startTime: Date }[] = []
+  ) => {
+    const result = await updateTrainSchedule({
+      upsertTrainSchedules,
+      trainScheduleId,
+      originalPacedTrain,
+      occurrenceId,
+      updatedTrainSchedule: updatedTrain,
+      timetableId,
+      addedExceptions,
+      dispatch,
+    });
+
+    if (result.success) {
+      dispatch(
+        updateSelectedTrain({
+          id: result.occurrenceId ?? formatEditoastIdToPacedTrainId(result.trainScheduleId),
+          by: 'timetable',
+        })
+      );
+    } else {
+      for (const errorCode of result.errorCodes) {
+        dispatch(
+          setFailure({
+            name: t('manageTrainSchedule.errorMessages.trainScheduleTitle'),
+            message: t(`manageTrainSchedule.errorMessages.${errorCode}`),
+          })
+        );
+      }
+    }
+  };
 
   if (expanded) {
     return (
       <ExpandedTrainForm
+        key={`form-${train.id}` /* Invalidate the form's state if we select another train */}
         train={train}
         onCollapse={() => {
           setExpanded(false);
         }}
+        onPersistTrain={onPersistTrain}
       />
     );
   }

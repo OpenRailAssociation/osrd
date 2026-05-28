@@ -1,3 +1,5 @@
+import { useCallback, useMemo, useState } from 'react';
+
 import { Button, Checkbox, Input } from '@osrd-project/ui-core';
 import { ChevronUp } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
@@ -5,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import type { PacedTrainWithPaced } from 'applications/operationalStudies/types';
 import type { Train } from 'reducers/osrdconf/types';
 import { useDateTimeLocale } from 'utils/date';
+import { usePrevious } from 'utils/hooks/state';
 import { findExceptionInPacedTrainByOccurenceId } from 'utils/trainExceptions';
 import { isOccurrenceId } from 'utils/trainId';
 
@@ -19,12 +22,44 @@ import {
 export type ExpandedTrainFormProps = {
   train: Train;
   onCollapse: () => void;
+  onPersistTrain: (updatedTrain: Train, addedExceptions?: { startTime: Date }[]) => Promise<void>;
 };
+
+type TrainFieldsState = {
+  train_name: string;
+};
+
+function getFieldsFromTrain(train: Train): TrainFieldsState {
+  return {
+    train_name: train.train_name,
+  };
+}
+
+function applyFieldsToTrain(fields: TrainFieldsState, train: Train): Train {
+  return { ...train, ...fields };
+}
+
+function extractChangesInFields(
+  before: TrainFieldsState,
+  after: TrainFieldsState,
+  current?: TrainFieldsState
+): Partial<TrainFieldsState> {
+  const changedValues: Partial<TrainFieldsState> = {};
+  for (const fieldName of Object.keys(before) as (keyof TrainFieldsState)[]) {
+    if (
+      after[fieldName] !== before[fieldName] &&
+      (!current || after[fieldName] !== current[fieldName])
+    ) {
+      changedValues[fieldName] = after[fieldName];
+    }
+  }
+  return changedValues;
+}
 
 /**
  * A header-shaped form that allow users to set most of the properties of a train, beside the itinerary itself.
  */
-const ExpandedTrainForm = ({ train, onCollapse }: ExpandedTrainFormProps) => {
+const ExpandedTrainForm = ({ train, onCollapse, onPersistTrain }: ExpandedTrainFormProps) => {
   const { t } = useTranslation(['operational-studies', 'translation']);
   const dateTimeLocale = useDateTimeLocale();
 
@@ -34,6 +69,41 @@ const ExpandedTrainForm = ({ train, onCollapse }: ExpandedTrainFormProps) => {
     occurenceId && pacedTrain
       ? findExceptionInPacedTrainByOccurenceId(occurenceId, pacedTrain)
       : null;
+
+  const fieldsFromTrain = useMemo(() => getFieldsFromTrain(train), [train]);
+  const [fields, setFields] = useState<TrainFieldsState>(fieldsFromTrain);
+
+  // Reset fields values if they changed outside of the form (e.g., because it was an
+  // exception and the user reverted it back to an occurence through the train list)
+  // NOTE: The setter is called outside a useEffect purposefully, as suggested in React's
+  // documentation: https://react.dev/reference/react/useState#storing-information-from-previous-renders
+  const originalFields = usePrevious(fieldsFromTrain);
+  if (originalFields) {
+    const changes = extractChangesInFields(originalFields, fieldsFromTrain, fields);
+
+    if (Object.keys(changes).length) {
+      setFields({ ...fields, ...changes });
+    }
+  }
+
+  const onFieldChange = useCallback(
+    (fieldName: keyof TrainFieldsState, newValue: TrainFieldsState[typeof fieldName]) => {
+      setFields({ ...fields, [fieldName]: newValue });
+    },
+    [fields]
+  );
+
+  const onFieldBlur = useCallback(
+    async (_fieldName: keyof TrainFieldsState) => {
+      const changes = extractChangesInFields(fieldsFromTrain, fields);
+
+      if (Object.keys(changes).length) {
+        const updatedTrain = applyFieldsToTrain(fields, train);
+        onPersistTrain(updatedTrain);
+      }
+    },
+    [fields]
+  );
 
   const toggleBand = (
     <div className="toggle-band">
@@ -100,8 +170,9 @@ const ExpandedTrainForm = ({ train, onCollapse }: ExpandedTrainFormProps) => {
             id="train-header-name-input"
             small
             label={t('manageTrainSchedule.trainHeader.form.trainName')}
-            value={train.train_name ?? ''}
-            disabled
+            value={fields.train_name}
+            onChange={(event) => onFieldChange('train_name', event.target.value)}
+            onBlur={() => onFieldBlur('train_name')}
           />
         </div>
         <div className="train-departure-date">
