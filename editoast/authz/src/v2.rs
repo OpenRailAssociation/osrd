@@ -149,11 +149,11 @@ impl<T> Protected<T> {
         Access::Authorized((self.op)(openfga))
     }
 
-    fn with_check(self, check: Check) -> Self {
+    pub fn with_check(self, check: Check) -> Self {
         self.with_check_iter([check])
     }
 
-    fn with_check_iter(mut self, checks: impl IntoIterator<Item = Check>) -> Self {
+    pub fn with_check_iter(mut self, checks: impl IntoIterator<Item = Check>) -> Self {
         self.checks.extend(checks);
         self
     }
