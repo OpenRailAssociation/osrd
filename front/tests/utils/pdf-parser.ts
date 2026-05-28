@@ -102,6 +102,9 @@ export function verifySimulationContent(pdfText: string, expectedSimulation: Pdf
     expectedSimulation.simulationDetails.disclaimer,
   ];
   textChecks.forEach((check) => expect(pdfText).toContain(check));
+
+  // Verify that a trace ID (32-char hex from the traceparent header) was included in the PDF
+  expect(pdfText, 'missing trace ID in the PDF').toMatch(/[0-9a-f]{32}/);
 }
 
 /**
