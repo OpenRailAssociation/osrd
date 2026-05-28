@@ -44,16 +44,6 @@
         flex-grow: 0;
         flex-shrink: 0;
       }
-      &.main {
-        .trigram {
-          color: inherit;
-        }
-        .name {
-          font-size: 1.1rem;
-          padding-left: 0;
-          font-weight: 500;
-        }
-      }
       &:hover {
         background-color: var(--coolgray1);
       }
