@@ -325,6 +325,7 @@ dependencies = [
  "futures 0.3.32",
  "itertools",
  "pretty_assertions",
+ "rstest",
  "serde",
  "stdext",
  "strum",

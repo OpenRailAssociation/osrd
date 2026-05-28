@@ -280,7 +280,10 @@ impl<S: StorageDriver> Regulator<S> {
         }
 
         // Remove existing grants before adding the new one
-        self.revoke_infra_grants_unchecked(subject, infra).await?;
+        let authorize = v2::special_authorizers::Authorize(&self.openfga);
+        authorize
+            .access_value(v2::infra_revoke_grant(*subject, *infra))
+            .await?;
 
         // Grant the new one
         let mut writes = self.openfga.prepare_writes();
@@ -391,124 +394,6 @@ impl<S: StorageDriver> Regulator<S> {
                 Ok(Authorization::Granted(()))
             })
             .await
-    }
-
-    #[tracing::instrument(skip(self), ret(level = Level::DEBUG), err)]
-    pub async fn revoke_infra_grants(
-        &self,
-        issuer: &User,
-        subject: &Subject,
-        infra: &Infra,
-    ) -> Result<Authorization<()>, Error<S::Error>> {
-        // Revoking rules:
-        // 1. Only owners (and admins) can fully revoke grants
-        // 2. The last owner of a resource cannot be revoked, even by admins
-        // 3. An owner cannot revoke another owner
-
-        let authz_revoke = self
-            .authorize_infra(issuer, infra, InfraPrivilege::CanRevoke)
-            .await?;
-        authz_revoke
-            .allowed_then_try(async || {
-                let is_subject_owner = match subject {
-                    Subject::User(user) => {
-                        self.openfga
-                            .check(Infra::owner().check(user, infra))
-                            .await?
-                    }
-                    Subject::Group(group) => {
-                        self.openfga
-                            .check(Infra::owner().check(Group::member().userset(group), infra))
-                            .await?
-                    }
-                };
-
-                if is_subject_owner {
-                    let authorize = crate::v2::special_authorizers::Authorize(&self.openfga);
-                    let current_owners = authorize
-                        .access_value(crate::v2::infra_granted_subjects(*infra, InfraGrant::Owner))
-                        .await?;
-                    // Rule 2: The last owner of a resource cannot be revoked, even by admins
-                    if current_owners.len() == 1 && current_owners.contains(subject) {
-                        return Ok(Authorization::Denied {
-                            reason: "cannot remove the last owner from infrastructure",
-                        });
-                    }
-                    // Rule 3: An owner cannot revoke another owner (only admins can)
-                    if !self.is_admin(issuer).await? {
-                        return Ok(Authorization::Denied {
-                            reason: "owner cannot revoke another owner",
-                        });
-                    }
-                }
-
-                self.revoke_infra_grants_unchecked(subject, infra).await?;
-                Ok(Authorization::Granted(()))
-            })
-            .await
-    }
-
-    #[tracing::instrument(skip(self), ret(level = Level::DEBUG), err)]
-    pub async fn revoke_infra_grants_unchecked(
-        &self,
-        subject: &Subject,
-        infra: &Infra,
-    ) -> Result<(), Error<S::Error>> {
-        // No need to check if the infra exists. If it doesn't, there won't be any tuples in OpenFGA.
-        // And even if there is, we're about to remove them anyway.
-        // Likewise about both users.
-
-        let mut delete = self.openfga.prepare_deletes();
-
-        if subject
-            .fetch(
-                &self.openfga,
-                |user| Infra::reader().tuple(user, infra),
-                |group| Infra::reader().tuple(Group::member().userset(group), infra),
-            )
-            .await?
-        {
-            match subject {
-                Subject::User(user) => delete.push(&Infra::reader().tuple(user, infra)),
-                Subject::Group(group) => {
-                    delete.push(&Infra::reader().tuple(Group::member().userset(group), infra))
-                }
-            }
-        }
-
-        if subject
-            .fetch(
-                &self.openfga,
-                |user| Infra::writer().tuple(user, infra),
-                |group| Infra::writer().tuple(Group::member().userset(group), infra),
-            )
-            .await?
-        {
-            match subject {
-                Subject::User(user) => delete.push(&Infra::writer().tuple(user, infra)),
-                Subject::Group(group) => {
-                    delete.push(&Infra::writer().tuple(Group::member().userset(group), infra))
-                }
-            }
-        }
-
-        if subject
-            .fetch(
-                &self.openfga,
-                |user| Infra::owner().tuple(user, infra),
-                |group| Infra::owner().tuple(Group::member().userset(group), infra),
-            )
-            .await?
-        {
-            match subject {
-                Subject::User(user) => delete.push(&Infra::owner().tuple(user, infra)),
-                Subject::Group(group) => {
-                    delete.push(&Infra::owner().tuple(Group::member().userset(group), infra))
-                }
-            }
-        }
-        delete.execute().await?;
-        Ok(())
     }
 }
 
@@ -728,100 +613,6 @@ mod tests {
 
         regulator
             .assert_infra_grant_eq(bob, infra, Some(InfraGrant::Reader))
-            .await;
-    }
-
-    // REVOKING TESTS
-
-    #[tokio::test(flavor = "multi_thread")]
-    async fn only_owners_can_revoke() {
-        let regulator = Regulator::new(crate::authz_client!(), MockAuthDriver::default());
-        let infra = Infra(1);
-        let alice = regulator.alice().await;
-        let bob = regulator.bob().await;
-
-        regulator
-            .set_infra_grant(alice, infra, InfraGrant::Writer)
-            .await;
-        regulator
-            .set_infra_grant(bob, infra, InfraGrant::Reader)
-            .await;
-
-        regulator
-            .revoke_infra_grants(&alice, &bob.into(), &infra)
-            .await
-            .expect("revoke operation should complete")
-            .expect_denied("only owners can revoke grants");
-
-        regulator
-            .assert_infra_grant_eq(bob, infra, Some(InfraGrant::Reader))
-            .await;
-    }
-
-    #[tokio::test(flavor = "multi_thread")]
-    async fn admins_can_revoke() {
-        let regulator = Regulator::new(crate::authz_client!(), MockAuthDriver::default());
-        let infra = Infra(1);
-        let alice = regulator.alice().await;
-        let walter = regulator.walter().await;
-
-        regulator
-            .set_infra_grant(alice, infra, InfraGrant::Reader)
-            .await;
-
-        regulator
-            .revoke_infra_grants(&walter, &alice.into(), &infra)
-            .await
-            .expect("revoke operation should complete")
-            .expect_allowed("admin can revoke grants");
-
-        regulator.assert_infra_grant_eq(alice, infra, None).await;
-    }
-
-    #[tokio::test(flavor = "multi_thread")]
-    async fn last_owner_cannot_be_revoked_by_admin() {
-        let regulator = Regulator::new(crate::authz_client!(), MockAuthDriver::default());
-        let infra = Infra(1);
-        let alice = regulator.alice().await;
-        let walter = regulator.walter().await;
-
-        regulator
-            .set_infra_grant(alice, infra, InfraGrant::Owner)
-            .await;
-
-        regulator
-            .revoke_infra_grants(&walter, &alice.into(), &infra)
-            .await
-            .expect("revoke operation should complete")
-            .expect_denied("last owner cannot be revoked");
-
-        regulator
-            .assert_infra_grant_eq(alice, infra, Some(InfraGrant::Owner))
-            .await;
-    }
-
-    #[tokio::test(flavor = "multi_thread")]
-    async fn owner_cannot_revoke_another_owner() {
-        let regulator = Regulator::new(crate::authz_client!(), MockAuthDriver::default());
-        let infra = Infra(1);
-        let alice = regulator.alice().await;
-        let bob = regulator.bob().await;
-
-        regulator
-            .set_infra_grant(alice, infra, InfraGrant::Owner)
-            .await;
-        regulator
-            .set_infra_grant(bob, infra, InfraGrant::Owner)
-            .await;
-
-        regulator
-            .revoke_infra_grants(&alice, &bob.into(), &infra)
-            .await
-            .expect("revoke operation should complete")
-            .expect_denied("owner cannot revoke another owner");
-
-        regulator
-            .assert_infra_grant_eq(bob, infra, Some(InfraGrant::Owner))
             .await;
     }
 }

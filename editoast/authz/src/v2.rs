@@ -17,6 +17,7 @@ use futures::future::BoxFuture;
 
 use crate::Group;
 use crate::Infra;
+use crate::InfraGrant;
 use crate::InfraPrivilege;
 use crate::Role;
 use crate::RollingStock;
@@ -65,6 +66,11 @@ pub enum Check {
     HasInfraPrivilege(Actor, InfraPrivilege, Infra),
     /// The actor needs a rolling stock privilege to perform the operation
     HasRollingStockPrivilege(Actor, RollingStockPrivilege, RollingStock),
+    /// The subject must not have the specified effective infra grant
+    SubjectEffectiveInfraGrantIsNot(InfraGrant, Subject, Infra),
+    /// The subject must not be the last direct owner of the infra
+    IsNotLastInfraOwner(Subject, Infra),
+
     /// The subject must exist in PostgreSQL
     SubjectExists(Subject),
     /// The infra must exist in PostgreSQL

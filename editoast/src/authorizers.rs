@@ -41,9 +41,11 @@ impl SystemAuthorizer<'_> {
                     .then_some(check)
             }
             // checked by UserAuthorizer
-            Check::HasRole(_, _)
-            | Check::HasInfraPrivilege(_, _, _)
-            | Check::HasRollingStockPrivilege(_, _, _) => None,
+            Check::HasRole(..)
+            | Check::HasInfraPrivilege(..)
+            | Check::HasRollingStockPrivilege(..)
+            | Check::SubjectEffectiveInfraGrantIsNot(..)
+            | Check::IsNotLastInfraOwner(..) => None,
         })
     }
 }
@@ -132,6 +134,21 @@ impl<'c> UserAuthorizer<'c> {
                         .await?;
                 (!privileges.contains(privilege)).then_some(check)
             }
+            Check::SubjectEffectiveInfraGrantIsNot(grant, subject, infra) => {
+                let Ok(subject_grant) = authz::v2::infra_effective_grant(*subject, *infra)
+                    .access_authorized::<Infallible>(self.openfga)
+                    .access()
+                    .await?;
+                (subject_grant == Some(*grant)).then_some(check)
+            }
+            Check::IsNotLastInfraOwner(subject, infra) => {
+                let Ok(owners) =
+                    authz::v2::infra_granted_subjects(*infra, authz::InfraGrant::Owner)
+                        .access_authorized::<Infallible>(self.openfga)
+                        .access()
+                        .await?;
+                (owners.len() == 1 && owners.contains(subject)).then_some(check)
+            }
             // checked by SystemAuthorizer
             Check::SubjectExists(_) | Check::InfraExists(_) | Check::RollingStockExists(_) => None,
         })
@@ -194,6 +211,7 @@ pub(crate) use impossible;
 
 #[cfg(test)]
 mod tests {
+    use authz::InfraGrant;
     use authz::InfraPrivilege;
     use authz::Role;
     use authz::v2::Actor;
@@ -358,6 +376,15 @@ mod tests {
         InfraPrivilege::CanDelete,
         authz::Infra(i64::MAX)
     ))]
+    #[case::subject_effective_infra_grant_is_not(Check::SubjectEffectiveInfraGrantIsNot(
+        InfraGrant::Owner,
+        authz::Subject::User(authz::User(i64::MAX)),
+        authz::Infra(i64::MAX)
+    ))]
+    #[case::is_not_last_infra_owner(Check::IsNotLastInfraOwner(
+        authz::Subject::User(authz::User(i64::MAX)),
+        authz::Infra(i64::MAX)
+    ))]
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn system_authorizer_ignores_non_sanity_checks(#[case] check: Check) {
         let openfga = openfga().await;
@@ -449,11 +476,121 @@ mod tests {
         assert_eq!(authorize(&user_authorizer, check).await, Err(check));
     }
 
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn user_authorizer_subject_effective_infra_grant_is_not() {
+        let openfga = openfga().await;
+        let pool = DbConnectionPoolV2::for_tests();
+        let issuer = create_user(&pool, "issuer").await;
+        let target = create_user(&pool, "target").await;
+        let infra = authz::Infra(create_empty_infra(&mut pool.get_ok()).await.id);
+        openfga
+            .write_tuples(&[authz::Infra::owner().tuple(&target, &infra)])
+            .await
+            .unwrap();
+        let user_authorizer = UserAuthorizer::new(issuer, vec![], &openfga, pool.get_ok());
+
+        let check = Check::SubjectEffectiveInfraGrantIsNot(
+            InfraGrant::Owner,
+            authz::Subject::User(target),
+            infra,
+        );
+        assert_eq!(authorize(&user_authorizer, check).await, Err(check));
+
+        let check = Check::SubjectEffectiveInfraGrantIsNot(
+            InfraGrant::Writer,
+            authz::Subject::User(target),
+            infra,
+        );
+        assert_eq!(authorize(&user_authorizer, check).await, Ok(()));
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn user_authorizer_subject_effective_infra_grant_is_not_checks_inherited_grant() {
+        let openfga = openfga().await;
+        let pool = DbConnectionPoolV2::for_tests();
+        let issuer = create_user(&pool, "issuer").await;
+        let target = create_user(&pool, "target").await;
+        let group = create_group(&pool, "owners").await;
+        let infra = authz::Infra(create_empty_infra(&mut pool.get_ok()).await.id);
+        openfga
+            .prepare_writes()
+            .write(&authz::Group::member().tuple(&target, &group))
+            .write(&authz::Infra::owner().tuple(authz::Group::member().userset(&group), &infra))
+            .execute()
+            .await
+            .unwrap();
+        let user_authorizer = UserAuthorizer::new(issuer, vec![], &openfga, pool.get_ok());
+
+        let check = Check::SubjectEffectiveInfraGrantIsNot(
+            InfraGrant::Owner,
+            authz::Subject::User(target),
+            infra,
+        );
+        assert_eq!(authorize(&user_authorizer, check).await, Err(check));
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn user_authorizer_is_not_last_infra_owner_user() {
+        let openfga = openfga().await;
+        let pool = DbConnectionPoolV2::for_tests();
+        let issuer = create_user(&pool, "issuer").await;
+        let owner = create_user(&pool, "owner").await;
+        let other_owner = create_user(&pool, "other-owner").await;
+        let no_grant = create_user(&pool, "no-grant").await;
+        let infra = authz::Infra(create_empty_infra(&mut pool.get_ok()).await.id);
+        openfga
+            .write_tuples(&[authz::Infra::owner().tuple(&owner, &infra)])
+            .await
+            .unwrap();
+        let user_authorizer = UserAuthorizer::new(issuer, vec![], &openfga, pool.get_ok());
+
+        let check = Check::IsNotLastInfraOwner(authz::Subject::User(owner), infra);
+        assert_eq!(authorize(&user_authorizer, check).await, Err(check));
+
+        let check = Check::IsNotLastInfraOwner(authz::Subject::User(no_grant), infra);
+        assert_eq!(authorize(&user_authorizer, check).await, Ok(()));
+
+        openfga
+            .write_tuples(&[authz::Infra::owner().tuple(&other_owner, &infra)])
+            .await
+            .unwrap();
+        let check = Check::IsNotLastInfraOwner(authz::Subject::User(owner), infra);
+        assert_eq!(authorize(&user_authorizer, check).await, Ok(()));
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn user_authorizer_is_not_last_infra_owner_group() {
+        let openfga = openfga().await;
+        let pool = DbConnectionPoolV2::for_tests();
+        let issuer = create_user(&pool, "issuer").await;
+        let group = create_group(&pool, "group").await;
+        let infra = authz::Infra(create_empty_infra(&mut pool.get_ok()).await.id);
+        openfga
+            .write_tuples(&[
+                authz::Infra::owner().tuple(authz::Group::member().userset(&group), &infra)
+            ])
+            .await
+            .unwrap();
+        let user_authorizer = UserAuthorizer::new(issuer, vec![], &openfga, pool.get_ok());
+
+        let check = Check::IsNotLastInfraOwner(authz::Subject::Group(group), infra);
+        assert_eq!(authorize(&user_authorizer, check).await, Err(check));
+    }
+
     #[rstest]
     #[case::has_role(Check::HasRole(Actor::Issuer, Role::Admin))]
     #[case::has_infra_privilege(Check::HasInfraPrivilege(
         Actor::Issuer,
         InfraPrivilege::CanWrite,
+        authz::Infra(i64::MAX)
+    ))]
+    #[case::subject_effective_infra_grant_is_not(Check::SubjectEffectiveInfraGrantIsNot(
+        InfraGrant::Owner,
+        authz::Subject::user(i64::MAX),
+        authz::Infra(i64::MAX)
+    ))]
+    #[case::is_not_last_infra_owner(Check::IsNotLastInfraOwner(
+        authz::Subject::user(i64::MAX),
         authz::Infra(i64::MAX)
     ))]
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
