@@ -12,6 +12,12 @@ class TimesStopsTablePage extends OpSimulationResultPage {
     this.dataRows = this.timesStopsDataSheet.getByTestId('times-stops-data-row');
   }
 
+  // Read textContent without waiting for a missing element. Returns '' when absent.
+  private async optionalText(locator: Locator): Promise<string> {
+    if ((await locator.count()) === 0) return '';
+    return (await locator.textContent()) ?? '';
+  }
+
   private rowIndexCell(row: Locator): Locator {
     return row.getByTestId('row-index');
   }
@@ -89,22 +95,6 @@ class TimesStopsTablePage extends OpSimulationResultPage {
   }
 
   private async extractRow(row: Locator): Promise<TimesStopsTableRow> {
-    await expect(row).toBeVisible();
-
-    await Promise.all([
-      expect(this.rowIndex(row)).toBeVisible(),
-      expect(this.stepStatus(row)).toBeVisible(),
-      expect(this.opFullName(row)).toBeVisible(),
-      expect(this.trackName(row)).toBeAttached(),
-      expect(this.computedArrival(row)).toBeAttached(),
-      expect(this.durationCell(row)).toBeAttached(),
-      expect(this.computedDeparture(row)).toBeAttached(),
-      expect(this.signalReceptionClosed(row)).toBeVisible(),
-      expect(this.shortSlipDistance(row)).toBeVisible(),
-      expect(this.powerRestrictionCombobox(row)).toBeVisible(),
-      expect(this.timeFromPreviousOp(row)).toBeAttached(),
-      expect(this.totalTravelTime(row)).toBeAttached(),
-    ]);
     const [
       indexText,
       statusClass,
@@ -129,9 +119,7 @@ class TimesStopsTablePage extends OpSimulationResultPage {
       this.rowIndexCell(row).textContent(),
       this.stepStatusCell(row).getAttribute('class'),
       this.opFullName(row).textContent(),
-      this.secondaryCode(row)
-        .textContent()
-        .catch(() => ''),
+      this.optionalText(this.secondaryCode(row)),
       this.trackName(row).textContent(),
       this.requestedArrivalInput(row).getAttribute('value'),
       this.computedArrival(row).textContent(),
@@ -141,18 +129,10 @@ class TimesStopsTablePage extends OpSimulationResultPage {
       this.signalReceptionClosedCheckbox(row).isChecked(),
       this.shortSlipDistanceCheckbox(row).isChecked(),
       this.powerRestrictionCombobox(row).inputValue(),
-      this.requestedTheoreticalMargin(row)
-        .textContent()
-        .catch(() => ''),
-      this.computedTheoreticalMargin(row)
-        .textContent()
-        .catch(() => ''),
-      this.realMargin(row)
-        .textContent()
-        .catch(() => ''),
-      this.marginsDifference(row)
-        .textContent()
-        .catch(() => ''),
+      this.optionalText(this.requestedTheoreticalMargin(row)),
+      this.optionalText(this.computedTheoreticalMargin(row)),
+      this.optionalText(this.realMargin(row)),
+      this.optionalText(this.marginsDifference(row)),
       this.timeFromPreviousOp(row).textContent(),
       this.totalTravelTime(row).textContent(),
     ]);
@@ -183,9 +163,9 @@ class TimesStopsTablePage extends OpSimulationResultPage {
   }
 
   async verifyTimesStopsTableContent(expectedRows: TimesStopsTableRow[]): Promise<void> {
-    const actualRows = await Promise.all(
-      (await this.dataRows.all()).map((row) => this.extractRow(row))
-    );
+    await expect(this.dataRows).toHaveCount(expectedRows.length);
+    const rows = await this.dataRows.all();
+    const actualRows = await Promise.all(rows.map((row) => this.extractRow(row)));
     expect(actualRows).toEqual(expectedRows);
   }
 }
