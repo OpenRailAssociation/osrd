@@ -101,7 +101,7 @@ data class SpacingResourceGenerator(
     private val blockRanges = ArrayDeque<BlockRange>()
     private val routeRanges = ArrayDeque<RouteRange>()
     private val zoneRanges = ArrayDeque<ZonePathRange>()
-    private val stops = ArrayDeque<PathStop>()
+    private val closedSignalStops = ArrayDeque<PathStop>()
     private val pendingSignals = ArrayDeque<PendingSignalData>()
     // It's tempting to use zone id instead of zone path ids here,
     // but data for the same zone in different directions can't be merged
@@ -156,7 +156,7 @@ data class SpacingResourceGenerator(
         blockRanges.addLinearObjects(newBlockRanges)
         routeRanges.addLinearObjects(newRouteRanges)
         zoneRanges.addLinearObjects(newZoneRanges)
-        stops.addAll(newStops.filter { it.receptionSignal.isStopOnClosedSignal })
+        closedSignalStops.addAll(newStops.filter { it.receptionSignal.isStopOnClosedSignal })
         for ((signal, pathOffset) in signals) {
             if (pendingSignals.lastOrNull()?.signal == signal)
                 continue // block transition signals are listed on either block
@@ -226,7 +226,7 @@ data class SpacingResourceGenerator(
         res.blockRanges.addAll(blockRanges)
         res.routeRanges.addAll(routeRanges)
         res.zoneRanges.addAll(zoneRanges)
-        res.stops.addAll(stops)
+        res.closedSignalStops.addAll(closedSignalStops)
         res.pendingSignals.addAll(pendingSignals)
         res.isPathComplete = isPathComplete
         res.reachedFirstSignal = reachedFirstSignal
@@ -317,7 +317,8 @@ data class SpacingResourceGenerator(
         val zonePathsToRemove = mutableListOf<ZonePathId>()
         for ((zonePath, ongoingRequirementData) in ongoingZoneRequirements) {
             val zoneId = rawInfra.getZonePathZone(zonePath)
-            val requirement = ongoingRequirementData.generateRequirement(zoneId, callbacks, stops)
+            val requirement =
+                ongoingRequirementData.generateRequirement(zoneId, callbacks, closedSignalStops)
             if (requirement != null) {
                 res.add(requirement)
                 if (requirement.isComplete) zonePathsToRemove.add(zonePath)
@@ -326,7 +327,10 @@ data class SpacingResourceGenerator(
         for (zonePath in zonePathsToRemove) { // Avoid modifying while iterating
             ongoingZoneRequirements.remove(zonePath)
         }
-        stops.removeWhile { it.pathOffset < callbacks.currentPathOffset }
+        // `currentPathOffset` is at least some blocks before the end of the path to be explored.
+        // And so signals (and protected zones) after `currentPathOffset` that could be impacted by
+        // a simulated closed-signal stop are already taken care of.
+        closedSignalStops.removeWhile { it.pathOffset < callbacks.currentPathOffset }
         return res
     }
 
@@ -529,18 +533,18 @@ data class SpacingResourceGenerator(
         fun generateRequirement(
             zoneId: ZoneId,
             callbacks: IncrementalRequirementCallbacks,
-            stops: List<PathStop>,
+            closedSignalStops: List<PathStop>,
         ): SpacingRequirement? {
             if (minRequiredOffset > callbacks.currentPathOffset) return null
             var beginTime = callbacks.arrivalTimeInRange(minRequiredOffset, Offset(Distance.MAX))
             val simCurrentTime = callbacks.currentTime
             require(beginTime <= simCurrentTime)
 
-            val lastPreviousStopOffset =
-                stops.lastOrNull { it.pathOffset < zoneEntryOffset }?.pathOffset
-            if (lastPreviousStopOffset != null) {
-                val departureTime = callbacks.departureFromStop(lastPreviousStopOffset)
-                val minRequirementTime = departureTime - CLOSED_SIGNAL_RESERVATION_MARGIN
+            val lastClosedStopBeforeEntryOffset =
+                closedSignalStops.lastOrNull { it.pathOffset < zoneEntryOffset }?.pathOffset
+            if (lastClosedStopBeforeEntryOffset != null) {
+                val stopDepartureTime = callbacks.departureFromStop(lastClosedStopBeforeEntryOffset)
+                val minRequirementTime = stopDepartureTime - CLOSED_SIGNAL_RESERVATION_MARGIN
                 beginTime = max(minRequirementTime, beginTime)
                 if (beginTime > simCurrentTime) return null // after a stop not departed from yet
             }
