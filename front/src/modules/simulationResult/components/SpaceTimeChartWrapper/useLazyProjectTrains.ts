@@ -139,9 +139,13 @@ const useLazyProjectTrains = ({
       // This is necessary to keep the reference up-to-date for future projections
       // and to ensure that the projected trains are correctly updated
       // when the projection type changes
-      const trainSchedule = trainSchedulesByIdRef.current.get(id);
+      let trainSchedule = trainSchedulesByIdRef.current.get(id);
       if (trainSchedule) {
-        trainSchedule.start_time = newDeparture.getTime();
+        trainSchedule = {
+          ...trainSchedule,
+          start_time: newDeparture.getTime(),
+        };
+        trainSchedulesByIdRef.current.set(id, trainSchedule);
       }
     },
     []
