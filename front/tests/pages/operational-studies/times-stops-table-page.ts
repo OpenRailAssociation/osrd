@@ -1,6 +1,12 @@
 import { type Locator, type Page, expect } from '@playwright/test';
 
-import { cleanTimeInput, cleanWhitespace, removeWhitespace } from '../../utils/data-normalizer';
+import { EMPTY_TIME_PLACEHOLDER } from '../../assets/operation-studies/simulation-result/times-stops-table-const';
+import {
+  cleanTimeInput,
+  cleanWhitespace,
+  removeWhitespace,
+  stripTimeColons,
+} from '../../utils/data-normalizer';
 import type { TimesStopsTableRow } from '../../utils/times-stops-table-types';
 import OpSimulationResultPage from './simulation-results-page';
 
@@ -8,12 +14,14 @@ class TimesStopsTablePage extends OpSimulationResultPage {
   readonly dataRows: Locator;
   readonly dateSeparatorRows: Locator;
   private readonly newTimesStopsTable: Locator;
+  private readonly durationCellClearButton: Locator;
 
   constructor(page: Page) {
     super(page);
     this.dataRows = this.timesStopsDataSheet.getByTestId('times-stops-data-row');
     this.dateSeparatorRows = this.timesStopsDataSheet.getByTestId('day-change-banner');
     this.newTimesStopsTable = this.timesStopsDataSheet.getByTestId('times-stops-table-new');
+    this.durationCellClearButton = this.page.getByTestId('duration-cell-clear-btn');
   }
 
   getRow(index: number): Locator {
@@ -102,12 +110,28 @@ class TimesStopsTablePage extends OpSimulationResultPage {
     return row.getByTestId('total-travel-time');
   }
 
+  private opNameDot(row: Locator): Locator {
+    return row.getByTestId('op-name-dot');
+  }
+
+  private marginUnitBtnPercent(row: Locator): Locator {
+    return this.requestedTheoreticalMargin(row).getByTestId('margin-unit-btn-percent');
+  }
+
+  private marginUnitBtnMinPer100km(row: Locator): Locator {
+    return this.requestedTheoreticalMargin(row).getByTestId('margin-unit-btn-min-per-100km');
+  }
+
   private marginCellPlaceholder(row: Locator): Locator {
     return this.requestedTheoreticalMargin(row).getByTestId('input-cell-placeholder');
   }
 
-  private opNameDot(row: Locator): Locator {
-    return row.getByTestId('op-name-dot');
+  private marginCellEditable(row: Locator): Locator {
+    return this.requestedTheoreticalMargin(row).getByTestId('margin-cell-editable');
+  }
+
+  private marginCellInput(row: Locator): Locator {
+    return this.requestedTheoreticalMargin(row).getByTestId('margin-cell-input');
   }
 
   async verifyOpFullNameNotEmpty(row: Locator): Promise<void> {
@@ -126,6 +150,10 @@ class TimesStopsTablePage extends OpSimulationResultPage {
     await expect(this.signalReceptionClosedCheckbox(row)).toBeChecked({ checked: expectedChecked });
   }
 
+  async verifySignalReceptionEnabled(row: Locator, enabled: boolean): Promise<void> {
+    await expect(this.signalReceptionClosedCheckbox(row)).toBeEnabled({ enabled });
+  }
+
   async verifyShortSlipDistance(row: Locator, expectedChecked: boolean): Promise<void> {
     await expect(this.shortSlipDistanceCheckbox(row)).toBeChecked({ checked: expectedChecked });
   }
@@ -139,11 +167,25 @@ class TimesStopsTablePage extends OpSimulationResultPage {
     await expect(this.powerRestrictionCombobox(row)).toHaveValue(expectedValue);
   }
 
+  async verifyPowerRestrictionHasOption(row: Locator, value: string, count: number): Promise<void> {
+    const testId =
+      value === '' ? 'power-restriction-option-empty' : `power-restriction-option-${value}`;
+    await expect(this.powerRestrictionCombobox(row).getByTestId(testId)).toHaveCount(count);
+  }
+
   async verifyRequestedTheoreticalMarginText(row: Locator, marginText: string): Promise<void> {
     await expect(this.requestedTheoreticalMargin(row)).toHaveText(marginText);
     if (marginText === '') {
       await expect(this.marginCellPlaceholder(row)).toBeVisible();
     }
+  }
+
+  async verifyMarginPlaceholderVisible(row: Locator): Promise<void> {
+    await expect(this.marginCellPlaceholder(row)).toBeVisible();
+  }
+
+  async verifyMarginPlaceholderHidden(row: Locator): Promise<void> {
+    await expect(this.marginCellPlaceholder(row)).toBeHidden();
   }
 
   async verifyComputedTheoreticalMarginText(row: Locator, text: string): Promise<void> {
@@ -174,12 +216,126 @@ class TimesStopsTablePage extends OpSimulationResultPage {
     await expect(this.stepStatusCell(row)).toContainClass(expectedStatus);
   }
 
+  async verifyRequestedArrivalValue(row: Locator, value: string): Promise<void> {
+    await expect(this.requestedArrivalInput(row)).toHaveValue(value);
+  }
+
+  async verifyRequestedDepartureValue(row: Locator, value: string): Promise<void> {
+    await expect(this.requestedDepartureInput(row)).toHaveValue(value);
+  }
+
   async verifyDataRowCount(count: number): Promise<void> {
     await expect(this.dataRows).toHaveCount(count);
   }
 
   async verifyDateSeparatorVisible(): Promise<void> {
     await expect(this.dateSeparatorRows).toBeVisible();
+  }
+
+  async verifyComputedArrivalChanged(row: Locator, previousText: string): Promise<void> {
+    expect(await this.getComputedArrivalText(row)).not.toBe(previousText);
+  }
+
+  async verifyComputedDepartureChanged(row: Locator, previousText: string): Promise<void> {
+    expect(await this.getComputedDepartureText(row)).not.toBe(previousText);
+  }
+
+  async verifyComputedArrivalNotEmpty(row: Locator): Promise<void> {
+    await expect(this.computedArrival(row)).not.toBeEmpty();
+  }
+
+  async verifyComputedArrivalAttached(row: Locator): Promise<void> {
+    await expect(this.computedArrival(row)).toBeAttached();
+  }
+
+  async verifyComputedDepartureNotEmpty(row: Locator): Promise<void> {
+    await expect(this.computedDeparture(row)).not.toBeEmpty();
+  }
+
+  async getComputedArrivalText(row: Locator): Promise<string> {
+    return (await this.computedArrival(row).textContent()) ?? '';
+  }
+
+  async getComputedDepartureText(row: Locator): Promise<string> {
+    return (await this.computedDeparture(row).textContent()) ?? '';
+  }
+
+  async getRealMarginText(row: Locator): Promise<string> {
+    return (
+      (await this.realMargin(row)
+        .textContent()
+        .catch(() => '')) ?? ''
+    );
+  }
+
+  async clickSignalReceptionClosed(row: Locator): Promise<void> {
+    await this.signalReceptionClosedCheckbox(row).click();
+  }
+
+  async clickShortSlipDistance(row: Locator): Promise<void> {
+    await this.shortSlipDistanceCheckbox(row).click();
+  }
+
+  async editRequestedArrival(row: Locator, timeValue: string): Promise<void> {
+    const input = this.requestedArrivalInput(row);
+    const isEmpty = (await input.inputValue()) === EMPTY_TIME_PLACEHOLDER;
+    if (isEmpty) {
+      // Focus directly to avoid triggering FOCUSED_WITH_PREFILL via placeholder click
+      await input.focus();
+    } else {
+      await input.click();
+      // Move the cursor from the seconds section back to the hours
+      await input.press('ArrowLeft');
+      await input.press('ArrowLeft');
+    }
+    await input.pressSequentially(stripTimeColons(timeValue));
+    await input.press('Enter');
+  }
+
+  async editRequestedDeparture(row: Locator, timeValue: string): Promise<void> {
+    const input = this.requestedDepartureInput(row);
+    const isEmpty = (await input.inputValue()) === EMPTY_TIME_PLACEHOLDER;
+    if (isEmpty) {
+      await input.focus();
+    } else {
+      await input.click();
+      await input.press('ArrowLeft');
+      await input.press('ArrowLeft');
+    }
+    await input.pressSequentially(stripTimeColons(timeValue));
+    await input.press('Enter');
+  }
+
+  async clearRequestedArrival(row: Locator): Promise<void> {
+    await this.requestedArrivalInput(row).click();
+    await this.durationCellClearButton.click();
+  }
+
+  async editStopDuration(row: Locator, digits: string): Promise<void> {
+    await this.durationCell(row).click();
+    await this.durationCell(row).pressSequentially(digits);
+    await this.durationCell(row).press('Enter');
+  }
+
+  async editRequestedMargin(row: Locator, value: string): Promise<void> {
+    const placeholder = this.marginCellPlaceholder(row);
+    if (await placeholder.isVisible()) {
+      await placeholder.click();
+    } else {
+      await this.marginCellEditable(row).click();
+    }
+    await this.marginCellInput(row).fill(value);
+    await this.marginCellInput(row).press('Enter');
+  }
+
+  async clearRequestedMargin(row: Locator): Promise<void> {
+    await this.marginCellEditable(row).click();
+    await this.marginCellInput(row).fill('');
+    await this.marginCellInput(row).press('Enter');
+  }
+
+  async selectPowerRestriction(row: Locator, value: string): Promise<void> {
+    await this.powerRestrictionCombobox(row).selectOption({ value });
   }
 
   async verifyColumnCount(row: Locator, expectedCount: number): Promise<void> {
@@ -216,6 +372,38 @@ class TimesStopsTablePage extends OpSimulationResultPage {
     await expect(this.realMargin(row)).toBeVisible();
   }
 
+  async verifyInheritedMarginStyle(row: Locator): Promise<void> {
+    await expect(this.marginCellEditable(row)).toHaveClass(/inherited/);
+  }
+
+  async verifyActiveMarginUnit(row: Locator, unit: 'percent' | 'minPer100km'): Promise<void> {
+    const btn =
+      unit === 'percent' ? this.marginUnitBtnPercent(row) : this.marginUnitBtnMinPer100km(row);
+    await expect(btn).toHaveClass(/unit-active/);
+  }
+
+  async switchMarginUnit(row: Locator, unit: 'percent' | 'minPer100km'): Promise<void> {
+    const btn =
+      unit === 'percent' ? this.marginUnitBtnPercent(row) : this.marginUnitBtnMinPer100km(row);
+    await btn.click();
+  }
+
+  async editRequestedMarginWithUnit(
+    row: Locator,
+    value: string,
+    unit: 'percent' | 'minPer100km'
+  ): Promise<void> {
+    const placeholder = this.marginCellPlaceholder(row);
+    if (await placeholder.isVisible()) {
+      await placeholder.click();
+    } else {
+      await this.marginCellEditable(row).click();
+    }
+    await this.switchMarginUnit(row, unit);
+    await this.marginCellInput(row).fill(value);
+    await this.marginCellInput(row).press('Enter');
+  }
+
   // Wait for simulation triggered by a previous edit to complete.
   async waitForSimulation(): Promise<void> {
     await expect(this.newTimesStopsTable).not.toHaveClass(/computed-data-pending/, {
@@ -250,11 +438,11 @@ class TimesStopsTablePage extends OpSimulationResultPage {
       this.opFullName(row).textContent(),
       this.optionalText(this.secondaryCode(row)),
       this.trackName(row).textContent(),
-      this.requestedArrivalInput(row).getAttribute('value'),
-      this.computedArrival(row).textContent(),
+      this.requestedArrivalInput(row).inputValue(),
+      this.getComputedArrivalText(row),
       this.durationCell(row).textContent(),
-      this.requestedDepartureInput(row).getAttribute('value'),
-      this.computedDeparture(row).textContent(),
+      this.requestedDepartureInput(row).inputValue(),
+      this.getComputedDepartureText(row),
       this.signalReceptionClosedCheckbox(row).isChecked(),
       this.shortSlipDistanceCheckbox(row).isChecked(),
       this.powerRestrictionCombobox(row).inputValue(),

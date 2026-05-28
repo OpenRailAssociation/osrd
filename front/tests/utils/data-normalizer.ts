@@ -45,3 +45,11 @@ export function cleanTimeInput(value: string | null | undefined): string {
   if (!value || value === 'hh:mm:ss') return '';
   return value.trim();
 }
+
+/**
+ * Strip colon separators from a time string so it can be typed digit-by-digit into a time input.
+ * e.g. '08:30:00' → '083000'
+ */
+export function stripTimeColons(time: string): string {
+  return time.replaceAll(':', '');
+}
