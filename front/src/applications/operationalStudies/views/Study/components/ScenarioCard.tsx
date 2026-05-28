@@ -56,9 +56,9 @@ export default function ScenarioCard({
       </div>
       <div className="scenario-card-description">{scenario.description}</div>
 
-      <div className="scenario-card-tags" data-testid="scenario-card-tags">
-        {scenario.tags &&
-          scenario.tags.map((tag) => (
+      {scenario.tags.length > 0 && (
+        <div className="scenario-card-tags" data-testid="scenario-card-tags">
+          {scenario.tags.map((tag) => (
             <div
               className="scenario-card-tags-tag"
               key={tag}
@@ -70,7 +70,8 @@ export default function ScenarioCard({
               {tag}
             </div>
           ))}
-      </div>
+        </div>
+      )}
       <div className="scenario-card-footer">
         <div className="scenario-card-infra">
           <img src={infraLogo} alt="infra logo" className="infra-logo" />
