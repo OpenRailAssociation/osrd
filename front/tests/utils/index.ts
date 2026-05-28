@@ -135,15 +135,23 @@ export const waitForInfraStateToBeCached = async (infraId: number): Promise<void
   const startTime = Date.now(); // Record start time
 
   for (let attempt = 0; attempt < maxRetries; attempt += 1) {
-    const status = await getWorkerStatus(infraId);
-    if (status === 'READY') {
-      const totalTime = Date.now() - startTime;
+    try {
+      const status = await getWorkerStatus(infraId);
+      if (status === 'READY') {
+        const totalTime = Date.now() - startTime;
+        logger.info(
+          `Infrastructure state is 'CACHED'. Total time taken: ${totalTime / 1000} seconds.`
+        );
+        return;
+      }
       logger.info(
-        `Infrastructure state is 'CACHED'. Total time taken: ${totalTime / 1000} seconds.`
+        `Attempt ${attempt + 1}: Infrastructure current state is '${status}', waiting...`
       );
-      return;
+    } catch (error) {
+      logger.info(
+        `Attempt ${attempt + 1}: worker_load request failed (${(error as Error).message}), retrying...`
+      );
     }
-    logger.info(`Attempt ${attempt + 1}: Infrastructure current state is '${status}', waiting...`);
     await new Promise((resolve) => {
       setTimeout(resolve, delay);
     });
