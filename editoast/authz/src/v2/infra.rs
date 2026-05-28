@@ -140,6 +140,61 @@ pub fn infra_effective_grant(subject: Subject, infra: Infra) -> Protected<Option
     ))
 }
 
+/// Revokes the (direct) grant a subject has on an [Infra], if any
+///
+/// Returns `true` if a grant was revoked, `false` otherwise, making the operation idempotent.
+/// No transaction is setup as OpenFGA does not support them.
+pub fn infra_revoke_grant(subject: Subject, infra: Infra) -> Protected<bool> {
+    let prot = infra_direct_grant(subject, infra).map(move |openfga, grant| {
+        async move {
+            let Some(grant) = grant else {
+                return Ok(false);
+            };
+
+            let mut delete = openfga.prepare_deletes();
+            match (subject, grant) {
+                (Subject::User(user), InfraGrant::Reader) => {
+                    delete.push(&Infra::reader().tuple(&user, &infra))
+                }
+                (Subject::User(user), InfraGrant::Writer) => {
+                    delete.push(&Infra::writer().tuple(&user, &infra))
+                }
+                (Subject::User(user), InfraGrant::Owner) => {
+                    delete.push(&Infra::owner().tuple(&user, &infra))
+                }
+                (Subject::Group(group), InfraGrant::Reader) => {
+                    delete.push(&Infra::reader().tuple(Group::member().userset(&group), &infra))
+                }
+                (Subject::Group(group), InfraGrant::Writer) => {
+                    delete.push(&Infra::writer().tuple(Group::member().userset(&group), &infra))
+                }
+                (Subject::Group(group), InfraGrant::Owner) => {
+                    delete.push(&Infra::owner().tuple(Group::member().userset(&group), &infra))
+                }
+            };
+            delete.execute().await?;
+            Ok(true)
+        }
+        .boxed()
+    });
+
+    // Revoking rules:
+    // 1. Only owners (and admins) can fully revoke grants
+    // 2. The last owner of a resource cannot be revoked (admins can)
+    // 3. An owner cannot revoke another owner
+    prot.with_check(Check::HasInfraPrivilege(
+        Actor::Issuer,
+        InfraPrivilege::CanRevoke,
+        infra,
+    ))
+    .with_check(Check::SubjectEffectiveInfraGrantIsNot(
+        InfraGrant::Owner,
+        subject,
+        infra,
+    ))
+    .with_check(Check::IsNotLastInfraOwner(subject, infra))
+}
+
 pub fn infra_privileges(user: User, infra: Infra) -> Protected<HashSet<InfraPrivilege>> {
     Protected::new(move |openfga| {
         async move {
@@ -424,6 +479,66 @@ mod tests {
             .unwrap()
             .unwrap_authorized()
             .await;
+    }
+
+    #[rstest::rstest]
+    #[case::user_reader(Subject::user(1), InfraGrant::Reader)]
+    #[case::user_writer(Subject::user(1), InfraGrant::Writer)]
+    #[case::user_owner(Subject::user(1), InfraGrant::Owner)]
+    #[case::group_reader(Subject::group(1), InfraGrant::Reader)]
+    #[case::group_writer(Subject::group(1), InfraGrant::Writer)]
+    #[case::group_owner(Subject::group(1), InfraGrant::Owner)]
+    #[tokio::test]
+    async fn revoke_infra_grant_ok(#[case] subject: Subject, #[case] grant: InfraGrant) {
+        let openfga = crate::authz_client!();
+        openfga.infra_set_grant(subject, Infra(1), grant).await;
+        assert_eq!(
+            openfga.infra_direct_grant(subject, Infra(1)).await,
+            Some(grant)
+        );
+        assert!(openfga.infra_revoke_grant(subject, Infra(1)).await);
+        assert_eq!(openfga.infra_direct_grant(subject, Infra(1)).await, None);
+    }
+
+    #[tokio::test]
+    async fn revoke_infra_grant_noop() {
+        let openfga = crate::authz_client!();
+        assert!(!openfga.infra_revoke_grant(Subject::user(1), Infra(1)).await);
+    }
+
+    #[tokio::test]
+    async fn revoke_infra_grant_with_inherited() {
+        let openfga = crate::authz_client!();
+
+        openfga
+            .prepare_writes()
+            .write(&Group::member().tuple(&User(1), &Group(10)))
+            .write(&Infra::writer().tuple(Group::member().userset(&Group(10)), &Infra(1))) // inherited
+            .write(&Infra::reader().tuple(&User(1), &Infra(1))) // direct
+            .write(&Infra::owner().tuple(&User(1), &Infra(2))) // unrelated
+            .execute()
+            .await
+            .unwrap();
+
+        assert_eq!(
+            openfga.infra_direct_grant(Subject::user(1), Infra(1)).await,
+            Some(InfraGrant::Reader)
+        );
+        assert!(openfga.infra_revoke_grant(Subject::user(1), Infra(1)).await);
+        assert_eq!(
+            openfga.infra_direct_grant(Subject::user(1), Infra(1)).await,
+            None
+        );
+        assert_eq!(
+            openfga
+                .infra_effective_grant(Subject::user(1), Infra(1))
+                .await,
+            Some(InfraGrant::Writer)
+        );
+        assert_eq!(
+            openfga.infra_direct_grant(Subject::user(1), Infra(2)).await,
+            Some(InfraGrant::Owner)
+        );
     }
 
     #[tokio::test]

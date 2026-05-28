@@ -33,6 +33,7 @@ use editoast_models::Infra;
 use editoast_models::RollingStock;
 use editoast_models::User;
 use editoast_models::prelude::*;
+use itertools::Either;
 use itertools::Itertools;
 use serde::Deserialize;
 use serde::Serialize;
@@ -745,6 +746,9 @@ pub(in crate::views) async fn update_grants(
         db_pool, regulator, ..
     }): State<AppState>,
     Extension(auth): AuthenticationExt,
+    Extension(user): Extension<Option<authz::User>>,
+    Extension(roles): Extension<Vec<Role>>,
+    Extension(authn): Extension<crate::authentication::Authentication>,
     Json(body): Json<BodyUpdateGrants>,
 ) -> Result<impl IntoResponse> {
     // Fetch subjects from the database and determine whether they're a user or a group.
@@ -825,41 +829,80 @@ pub(in crate::views) async fn update_grants(
             }
             Ok(StatusCode::CREATED)
         }
-        BodyUpdateGrants::Revoke(revoke) => {
-            for RevokeBody {
-                resource_type,
-                resource_id,
-                subject_id,
-            } in revoke
-            {
-                let subject = subjects
-                    .get(&subject_id)
-                    .ok_or_else(|| AuthzError::UnknownSubject { subject_id })?;
-                match resource_type {
-                    ResourceType::Infra => {
-                        match &auth {
-                            Authentication::Authenticated(authorizer) => {
-                                authorizer
-                                    .revoke_infra_grants(subject, &authz::Infra(resource_id))
-                                    .await
-                            }
-                            Authentication::SkipAuthorization { .. } => regulator
-                                .revoke_infra_grants_unchecked(subject, &authz::Infra(resource_id))
-                                .await
-                                .map(Authorization::Granted),
-                            Authentication::Unauthenticated => {
-                                return Err(AuthorizationError::Unauthorized.into());
-                            }
-                        }?
-                        .allowed()?;
-                    }
-                    ResourceType::RollingStock => {
-                        panic!("not implemented yet")
-                    }
+        BodyUpdateGrants::Revoke(revokes) => {
+            let prot = revokes
+                .into_iter()
+                .map(|r| r.into_protected(&subjects))
+                .process_results(|iter| authz::v2::Protected::from_iter(iter))?;
+
+            // TODO: make an Extension to simplify this logic
+            let authorizer = match (authn, user) {
+                (
+                    crate::authentication::Authentication::Authenticated { .. }
+                    | crate::authentication::Authentication::Impersonating { .. },
+                    Some(user),
+                ) => Either::Left(UserAuthorizer::new(
+                    user,
+                    roles.clone(),
+                    regulator.openfga(),
+                    db_pool.get().await?,
+                )),
+                (crate::authentication::Authentication::Skip { .. }, _) => {
+                    Either::Right(SystemAuthorizer {
+                        openfga: regulator.openfga(),
+                        conn: db_pool.get().await?,
+                    })
                 }
+                (crate::authentication::Authentication::Unauthenticated, None) => {
+                    return Err(AuthorizationError::Unauthorized.into());
+                }
+                _ => {
+                    unreachable!(
+                        "Authenticated | Impersonating implies Some(user) and Unauthenticated implies None"
+                    );
+                }
+            };
+
+            match prot.authorize(&authorizer).await?.access().await? {
+                Ok(_) => Ok(StatusCode::NO_CONTENT),
+                Err(Check::InfraExists(infra)) => Err(AuthzError::UnknownResource {
+                    resource_id: *infra,
+                }
+                .into()),
+                Err(Check::SubjectExists(subject)) => Err(AuthzError::UnknownSubject {
+                    subject_id: subject.id(),
+                }
+                .into()),
+                Err(
+                    Check::HasInfraPrivilege(Actor::Issuer, InfraPrivilege::CanRevoke, _)
+                    | Check::SubjectEffectiveInfraGrantIsNot(..)
+                    | Check::IsNotLastInfraOwner(..),
+                ) => Err(AuthorizationError::Forbidden.into()),
+                Err(check) => impossible!(check),
             }
-            Ok(StatusCode::NO_CONTENT)
         }
+    }
+}
+
+impl RevokeBody {
+    fn into_protected(
+        self,
+        subjects: &HashMap<i64, authz::Subject>,
+    ) -> Result<authz::v2::Protected<bool>, AuthzError> {
+        let Self {
+            resource_type,
+            resource_id,
+            subject_id,
+        } = self;
+        let subject = subjects
+            .get(&subject_id)
+            .ok_or_else(|| AuthzError::UnknownSubject { subject_id })?;
+        Ok(match resource_type {
+            ResourceType::Infra => authz::v2::infra_revoke_grant(*subject, resource_id.into()),
+            ResourceType::RollingStock => {
+                panic!("not implemented yet")
+            }
+        })
     }
 }
 

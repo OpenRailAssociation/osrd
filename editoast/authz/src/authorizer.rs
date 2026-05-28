@@ -89,16 +89,6 @@ impl<S: StorageDriver> Authorizer<S> {
             .give_infra_grant(&User(self.user_id), subject, infra, grant)
             .await
     }
-
-    pub async fn revoke_infra_grants(
-        &self,
-        subject: &Subject,
-        infra: &Infra,
-    ) -> Result<Authorization<()>, Error<S::Error>> {
-        self.regulator
-            .revoke_infra_grants(&User(self.user_id), subject, infra)
-            .await
-    }
 }
 
 impl<S: StorageDriver> std::fmt::Debug for Authorizer<S> {

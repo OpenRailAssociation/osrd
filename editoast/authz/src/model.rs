@@ -38,22 +38,6 @@ impl Subject {
             Subject::Group(group) => group.0,
         }
     }
-
-    pub(crate) async fn fetch<'a, T, E, Ureq, Greq>(
-        &'a self,
-        client: &fga::Client,
-        u: impl FnOnce(&'a User) -> Ureq,
-        g: impl FnOnce(&'a Group) -> Greq,
-    ) -> Result<T, E>
-    where
-        Ureq: fga::client::Request<Response = T, Error = E>,
-        Greq: fga::client::Request<Response = T, Error = E>,
-    {
-        match self {
-            Subject::User(user) => u(user).fetch(client).await,
-            Subject::Group(group) => g(group).fetch(client).await,
-        }
-    }
 }
 
 #[cfg(test)]
