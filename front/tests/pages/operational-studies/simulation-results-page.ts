@@ -131,6 +131,14 @@ class OpSimulationResultPage extends ScenarioPage {
     await this.setMacroVisible();
     await this.waitForLoaderToDisappear({ timeout: 15_000 });
   }
+
+  async enableOnlyTimesStopsTable(): Promise<void> {
+    await this.setStdVisible();
+    await this.setMapVisible();
+    await this.setSddVisible();
+    await this.setChronogramVisible();
+    await this.setTrainListVisible();
+  }
 }
 
 export default OpSimulationResultPage;
