@@ -92,16 +92,16 @@ export default function useKeyboardShortcuts(shortcuts?: Shortcut[]): {
     [registery]
   );
 
+  const eventFunction = (event: KeyboardEvent) => handleKeyboardEvents(event, registery);
+
   useEffect(() => {
     // register shortcuts given at initialization
     shortcuts?.forEach((s) => register(s));
 
-    document.body.addEventListener('keydown', (event) => handleKeyboardEvents(event, registery));
+    document.body.addEventListener('keydown', eventFunction);
     return () => {
       registery.current = {};
-      document.body.removeEventListener('keydown', (event) =>
-        handleKeyboardEvents(event, registery)
-      );
+      document.body.removeEventListener('keydown', eventFunction);
     };
   }, []);
 
