@@ -34,12 +34,10 @@ pub use server::*;
 mod test_app;
 
 use ::core::str;
-use std::collections::HashSet;
 
 use ::authz::Authorization;
 use ::authz::Authorizer;
 use ::authz::Infra;
-use ::authz::Role;
 use core_client::CoreClient;
 use editoast_derive::EditoastError;
 use editoast_models::PgAuthDriver;
@@ -463,40 +461,12 @@ pub enum Authentication {
     SkipAuthorization {
         #[expect(unused)]
         identity: Option<String>,
+        #[expect(unused)]
         name: Option<String>,
     },
 }
 
 impl Authentication {
-    fn user_id(&self) -> Result<Option<i64>, AuthorizationError> {
-        match self {
-            Authentication::SkipAuthorization { .. } => Ok(None),
-            Authentication::Unauthenticated => Err(AuthorizationError::Unauthorized),
-            Authentication::Authenticated(authorizer) => Ok(Some(authorizer.user_id())),
-        }
-    }
-
-    fn user_name(&self) -> Result<Option<String>, AuthorizationError> {
-        match self {
-            Authentication::SkipAuthorization { name, .. } => Ok(name.clone()),
-            Authentication::Unauthenticated => Err(AuthorizationError::Unauthorized),
-            Authentication::Authenticated(authorizer) => {
-                Ok(Some(authorizer.user_name().to_owned()))
-            }
-        }
-    }
-
-    async fn user_roles(&self) -> Result<HashSet<Role>, AuthorizationError> {
-        match self {
-            Authentication::SkipAuthorization { .. } => Ok(HashSet::from([Role::Admin])),
-            Authentication::Unauthenticated => Err(AuthorizationError::Unauthorized),
-            Authentication::Authenticated(authorizer) => authorizer
-                .user_roles()
-                .await
-                .map_err(AuthorizationError::from),
-        }
-    }
-
     /// Function wrapper that allows you to check if the issuer of the request has the good privilege, grant, role....
     /// If the request is unauthenticated, it will return an Unauthorized error, and for the SkipAuthorization.
     /// The provided function will be called with the authorizer and its result will be checked by the allowed() method.

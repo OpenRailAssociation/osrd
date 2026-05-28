@@ -55,10 +55,6 @@ impl<S: StorageDriver> Authorizer<S> {
         &self.user.name
     }
 
-    pub async fn user_roles(&self) -> Result<HashSet<Role>, Error<S::Error>> {
-        self.regulator.user_roles(&User(self.user_id)).await
-    }
-
     /// Check that the user has any of the required roles
     #[tracing::instrument(skip_all, fields(user = %self.user, ?roles), ret(level = Level::DEBUG))]
     pub async fn check_roles(&self, roles: HashSet<Role>) -> Result<bool, Error<S::Error>> {
