@@ -13,15 +13,15 @@
   "const_gamma": 0.6,
   "rolling_resistance": {
     "type": "davis",
-    "A": 200,
-    "B": 12,
-    "C": 5000
+    "A": 0.00400,
+    "B": 0.000240,
+    "C": 0.100
   },
   "effort_curves": {
     "default_mode": "25000V",
     "modes": {
       "25000V": {
-        "curves": [ ],
+        "curves": [],
         "default_curve": {
           "speeds": [
             0,
@@ -42,7 +42,7 @@
             72,
             77
           ],
-          "max_efforts": [ ]
+          "max_efforts": []
         },
         "is_electric": true
       }
@@ -60,11 +60,24 @@
     "subseries": "US",
     "unit": "1"
   },
-  "energy_sources": [ ],
-  "power_restrictions": { },
+  "energy_sources": [],
+  "power_restrictions": {},
   "electrical_power_startup_time": 4.0,
   "raise_pantograph_time": 14.0,
-  "supported_signaling_systems": [ { "type": "BAL" }, { "type": "BAPR" }, { "type": "TVM300" }, { "type": "TVM430" } ],
+  "supported_signaling_systems": [
+    {
+      "type": "BAL"
+    },
+    {
+      "type": "BAPR"
+    },
+    {
+      "type": "TVM300"
+    },
+    {
+      "type": "TVM430"
+    }
+  ],
   "primary_category": "COMMUTER_TRAIN",
-  "other_categories": [ ]
+  "other_categories": []
 }

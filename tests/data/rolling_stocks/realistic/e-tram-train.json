@@ -12,13 +12,13 @@
   "const_gamma": 0.7,
   "rolling_resistance": {
     "type": "davis",
-    "A": 1499.5999999999997,
-    "B": 109.296,
-    "C": 1.5500160000000005
+    "A": 0.0163,
+    "B": 0.001188,
+    "C": 0.000016848
   },
   "base_power_class": "1",
-  "power_restrictions": { },
-  "energy_sources": [ ],
+  "power_restrictions": {},
+  "energy_sources": [],
   "electrical_power_startup_time": 5.0,
   "raise_pantograph_time": 25.0,
   "version": 0,
@@ -31,8 +31,8 @@
     }
   ],
   "primary_category": "TRAM_TRAIN",
-  "other_categories": [ ],
-  "liveries": [ ],
+  "other_categories": [],
+  "liveries": [],
   "effort_curves": {
     "modes": {
       "1500V": {

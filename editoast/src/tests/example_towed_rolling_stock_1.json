@@ -1,19 +1,19 @@
 {
-    "name": "towed_rolling_stock",
-    "label": "some towed rolling stock",
-    "railjson_version": "3.3",
-    "mass": 900000.0,
-    "length": 400.0,
-    "comfort_acceleration": 0.25,
-    "startup_acceleration": 0.05,
-    "inertia_coefficient": 1.05,
-    "rolling_resistance": {
-        "type": "davis",
-        "A": 5400,
-        "B": 200,
-        "C": 12
-    },
-    "const_gamma": 0.5,
-    "primary_category": "COMMUTER_TRAIN",
-    "other_categories": []
+  "name": "towed_rolling_stock",
+  "label": "some towed rolling stock",
+  "railjson_version": "3.3",
+  "mass": 900000.0,
+  "length": 400.0,
+  "comfort_acceleration": 0.25,
+  "startup_acceleration": 0.05,
+  "inertia_coefficient": 1.05,
+  "rolling_resistance": {
+    "type": "davis",
+    "A": 5400,
+    "B": 200,
+    "C": 12
+  },
+  "const_gamma": 0.5,
+  "primary_category": "COMMUTER_TRAIN",
+  "other_categories": []
 }

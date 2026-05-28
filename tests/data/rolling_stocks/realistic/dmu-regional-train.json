@@ -12,13 +12,13 @@
   "const_gamma": 0.5,
   "rolling_resistance": {
     "type": "davis",
-    "A": 1596.0,
-    "B": 60.87599999999999,
-    "C": 5.17104
+    "A": 0.00840,
+    "B": 0.0003204,
+    "C": 0.000027216
   },
   "base_power_class": "9",
-  "power_restrictions": { },
-  "energy_sources": [ ],
+  "power_restrictions": {},
+  "energy_sources": [],
   "electrical_power_startup_time": null,
   "raise_pantograph_time": null,
   "version": 0,
@@ -31,8 +31,8 @@
     }
   ],
   "primary_category": "REGIONAL_TRAIN",
-  "other_categories": [ ],
-  "liveries": [ ],
+  "other_categories": [],
+  "liveries": [],
   "effort_curves": {
     "modes": {
       "thermal": {

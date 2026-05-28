@@ -12,13 +12,13 @@
   "const_gamma": 0.3,
   "rolling_resistance": {
     "type": "davis",
-    "A": 888.0,
-    "B": 23.976,
-    "C": 3.83616
+    "A": 0.00120,
+    "B": 0.0000324,
+    "C": 0.000005184
   },
   "base_power_class": "4",
-  "power_restrictions": { },
-  "energy_sources": [ ],
+  "power_restrictions": {},
+  "energy_sources": [],
   "electrical_power_startup_time": 5.0,
   "raise_pantograph_time": 25.0,
   "version": 0,
@@ -31,8 +31,8 @@
     }
   ],
   "primary_category": "NIGHT_TRAIN",
-  "other_categories": [ ],
-  "liveries": [ ],
+  "other_categories": [],
+  "liveries": [],
   "effort_curves": {
     "modes": {
       "1500V": {

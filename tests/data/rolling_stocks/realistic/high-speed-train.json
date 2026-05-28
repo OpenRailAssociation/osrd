@@ -12,13 +12,13 @@
   "const_gamma": 0.5,
   "rolling_resistance": {
     "type": "davis",
-    "A": 3496.0,
-    "B": 125.856,
-    "C": 6.557760000000001
+    "A": 0.00760,
+    "B": 0.0002736,
+    "C": 0.000014256
   },
   "base_power_class": "5",
-  "power_restrictions": { },
-  "energy_sources": [ ],
+  "power_restrictions": {},
+  "energy_sources": [],
   "electrical_power_startup_time": 5.0,
   "raise_pantograph_time": 25.0,
   "version": 0,
@@ -37,8 +37,8 @@
     }
   ],
   "primary_category": "HIGH_SPEED_TRAIN",
-  "other_categories": [ ],
-  "liveries": [ ],
+  "other_categories": [],
+  "liveries": [],
   "effort_curves": {
     "modes": {
       "1500V": {
