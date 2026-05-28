@@ -195,3 +195,278 @@ macro_rules! impossible {
     };
 }
 pub(crate) use impossible;
+
+#[cfg(test)]
+mod tests {
+    use authz::InfraPrivilege;
+    use authz::Role;
+    use authz::v2::Actor;
+    use authz::v2::Check;
+    use authz::v2::Protected;
+    use database::DbConnectionPoolV2;
+    use fga::model::Relation as _;
+    use rstest::rstest;
+
+    use super::*;
+    use crate::fixtures::create_empty_infra;
+
+    async fn openfga() -> fga::Client {
+        let openfga = fga::test_client!("authz@");
+        fga_migrations::run_migrations(
+            openfga.clone(),
+            fga::test_client!("migrations@"),
+            fga_migrations::TargetMigration::Latest,
+        )
+        .await
+        .expect("FGA migrations should succeed");
+        openfga
+    }
+
+    async fn create_user(pool: &DbConnectionPoolV2, name: &str) -> authz::User {
+        authz::User(
+            editoast_models::User::register(pool.get_ok(), vec![name.to_owned()], name.to_owned())
+                .await
+                .expect("user should be created")
+                .id,
+        )
+    }
+
+    async fn create_group(pool: &DbConnectionPoolV2, name: &str) -> authz::Group {
+        authz::Group(
+            editoast_models::Group::upsert(pool.get_ok(), name.to_owned())
+                .await
+                .expect("group should be created")
+                .id,
+        )
+    }
+
+    async fn authorize<A>(authorizer: &A, check: Check) -> Result<(), <A as Authorizer>::Rejection>
+    where
+        A: Authorizer,
+        <A as Authorizer>::Error: std::fmt::Debug,
+    {
+        authorizer
+            .authorize(Protected::value(()).with_check(check))
+            .await
+            .unwrap()
+            .access()
+            .await
+            .unwrap()
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn existing_user() {
+        let openfga = openfga().await;
+        let pool = DbConnectionPoolV2::for_tests();
+        let user = create_user(&pool, "user").await;
+        let system = SystemAuthorizer {
+            openfga: &openfga,
+            conn: pool.get_ok(),
+        };
+        let user_authorizer = UserAuthorizer::new(user, vec![Role::Admin], &openfga, pool.get_ok());
+
+        assert_eq!(authorize(&system, Check::user(user)).await, Ok(()));
+        assert_eq!(authorize(&user_authorizer, Check::user(user)).await, Ok(()));
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn missing_user() {
+        let openfga = openfga().await;
+        let pool = DbConnectionPoolV2::for_tests();
+        let user = create_user(&pool, "user").await;
+        let system = SystemAuthorizer {
+            openfga: &openfga,
+            conn: pool.get_ok(),
+        };
+        let user_authorizer = UserAuthorizer::new(user, vec![Role::Admin], &openfga, pool.get_ok());
+
+        let check = Check::user(authz::User(i64::MAX));
+        assert_eq!(authorize(&system, check).await, Err(check));
+        assert_eq!(authorize(&user_authorizer, check).await, Err(check));
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn existing_group() {
+        let openfga = openfga().await;
+        let pool = DbConnectionPoolV2::for_tests();
+        let user = create_user(&pool, "user").await;
+        let group = create_group(&pool, "group").await;
+        let system = SystemAuthorizer {
+            openfga: &openfga,
+            conn: pool.get_ok(),
+        };
+        let user_authorizer = UserAuthorizer::new(user, vec![Role::Admin], &openfga, pool.get_ok());
+
+        assert_eq!(authorize(&system, Check::group(group)).await, Ok(()));
+        assert_eq!(
+            authorize(&user_authorizer, Check::group(group)).await,
+            Ok(())
+        );
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn missing_group() {
+        let openfga = openfga().await;
+        let pool = DbConnectionPoolV2::for_tests();
+        let user = create_user(&pool, "user").await;
+        let system = SystemAuthorizer {
+            openfga: &openfga,
+            conn: pool.get_ok(),
+        };
+        let user_authorizer = UserAuthorizer::new(user, vec![Role::Admin], &openfga, pool.get_ok());
+
+        let check = Check::group(authz::Group(i64::MAX));
+        assert_eq!(authorize(&system, check).await, Err(check));
+        assert_eq!(authorize(&user_authorizer, check).await, Err(check));
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn existing_infra() {
+        let openfga = openfga().await;
+        let pool = DbConnectionPoolV2::for_tests();
+        let user = create_user(&pool, "user").await;
+        let infra = authz::Infra(create_empty_infra(&mut pool.get_ok()).await.id);
+        let system = SystemAuthorizer {
+            openfga: &openfga,
+            conn: pool.get_ok(),
+        };
+        let user_authorizer = UserAuthorizer::new(user, vec![Role::Admin], &openfga, pool.get_ok());
+
+        assert_eq!(authorize(&system, Check::InfraExists(infra)).await, Ok(()));
+        assert_eq!(
+            authorize(&user_authorizer, Check::InfraExists(infra)).await,
+            Ok(())
+        );
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn missing_infra() {
+        let openfga = openfga().await;
+        let pool = DbConnectionPoolV2::for_tests();
+        let user = create_user(&pool, "user").await;
+        let system = SystemAuthorizer {
+            openfga: &openfga,
+            conn: pool.get_ok(),
+        };
+        let user_authorizer = UserAuthorizer::new(user, vec![Role::Admin], &openfga, pool.get_ok());
+
+        let check = Check::InfraExists(authz::Infra(i64::MAX));
+        assert_eq!(authorize(&system, check).await, Err(check));
+        assert_eq!(authorize(&user_authorizer, check).await, Err(check));
+    }
+
+    #[rstest]
+    #[case::has_role(Check::HasRole(Actor::Issuer, Role::Admin))]
+    #[case::has_infra_privilege(Check::HasInfraPrivilege(
+        Actor::Issuer,
+        InfraPrivilege::CanDelete,
+        authz::Infra(i64::MAX)
+    ))]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn system_authorizer_ignores_non_sanity_checks(#[case] check: Check) {
+        let openfga = openfga().await;
+        let pool = DbConnectionPoolV2::for_tests();
+        let system = SystemAuthorizer {
+            openfga: &openfga,
+            conn: pool.get_ok(),
+        };
+
+        assert_eq!(authorize(&system, check).await, Ok(()));
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn user_authorizer_issuer_role() {
+        let openfga = openfga().await;
+        let pool = DbConnectionPoolV2::for_tests();
+        let user = create_user(&pool, "user").await;
+        let user_authorizer = UserAuthorizer::new(
+            user,
+            vec![Role::OperationalStudies],
+            &openfga,
+            pool.get_ok(),
+        );
+
+        let check = Check::HasRole(Actor::Issuer, Role::OperationalStudies);
+        assert_eq!(authorize(&user_authorizer, check).await, Ok(()));
+
+        let check = Check::HasRole(Actor::Issuer, Role::Stdcm);
+        assert_eq!(authorize(&user_authorizer, check).await, Err(check));
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn user_authorizer_user_role() {
+        let openfga = openfga().await;
+        let pool = DbConnectionPoolV2::for_tests();
+        let issuer = create_user(&pool, "issuer").await;
+        let target = create_user(&pool, "target").await;
+        openfga
+            .write_tuples(&[authz::User::role().tuple(&Role::Stdcm, &target)])
+            .await
+            .unwrap();
+        let user_authorizer = UserAuthorizer::new(issuer, vec![], &openfga, pool.get_ok());
+
+        let check = Check::HasRole(Actor::User(target), Role::Stdcm);
+        assert_eq!(authorize(&user_authorizer, check).await, Ok(()));
+
+        let check = Check::HasRole(Actor::User(target), Role::Admin);
+        assert_eq!(authorize(&user_authorizer, check).await, Err(check));
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn user_authorizer_issuer_infra_privilege() {
+        let openfga = openfga().await;
+        let pool = DbConnectionPoolV2::for_tests();
+        let owner = create_user(&pool, "owner").await;
+        let no_grant = create_user(&pool, "no-grant").await;
+        let infra = authz::Infra(create_empty_infra(&mut pool.get_ok()).await.id);
+        openfga
+            .write_tuples(&[authz::Infra::owner().tuple(&owner, &infra)])
+            .await
+            .unwrap();
+
+        let user_authorizer = UserAuthorizer::new(owner, vec![], &openfga, pool.get_ok());
+        let check = Check::HasInfraPrivilege(Actor::Issuer, InfraPrivilege::CanDelete, infra);
+        assert_eq!(authorize(&user_authorizer, check).await, Ok(()));
+
+        let user_authorizer = UserAuthorizer::new(no_grant, vec![], &openfga, pool.get_ok());
+        let check = Check::HasInfraPrivilege(Actor::Issuer, InfraPrivilege::CanShareRead, infra);
+        assert_eq!(authorize(&user_authorizer, check).await, Err(check));
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn user_authorizer_user_infra_privilege() {
+        let openfga = openfga().await;
+        let pool = DbConnectionPoolV2::for_tests();
+        let issuer = create_user(&pool, "issuer").await;
+        let target = create_user(&pool, "target").await;
+        let infra = authz::Infra(create_empty_infra(&mut pool.get_ok()).await.id);
+        openfga
+            .write_tuples(&[authz::Infra::writer().tuple(&target, &infra)])
+            .await
+            .unwrap();
+        let user_authorizer = UserAuthorizer::new(issuer, vec![], &openfga, pool.get_ok());
+
+        let check = Check::HasInfraPrivilege(Actor::User(target), InfraPrivilege::CanWrite, infra);
+        assert_eq!(authorize(&user_authorizer, check).await, Ok(()));
+
+        let check = Check::HasInfraPrivilege(Actor::User(target), InfraPrivilege::CanDelete, infra);
+        assert_eq!(authorize(&user_authorizer, check).await, Err(check));
+    }
+
+    #[rstest]
+    #[case::has_role(Check::HasRole(Actor::Issuer, Role::Admin))]
+    #[case::has_infra_privilege(Check::HasInfraPrivilege(
+        Actor::Issuer,
+        InfraPrivilege::CanWrite,
+        authz::Infra(i64::MAX)
+    ))]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn user_authorizer_admin_bypass(#[case] check: Check) {
+        let openfga = openfga().await;
+        let pool = DbConnectionPoolV2::for_tests();
+        let user = create_user(&pool, "admin").await;
+        let user_authorizer = UserAuthorizer::new(user, vec![Role::Admin], &openfga, pool.get_ok());
+
+        assert_eq!(authorize(&user_authorizer, check).await, Ok(()));
+    }
+}
