@@ -1,0 +1,101 @@
+[
+  {
+    "category": {
+      "main_category": "FREIGHT_TRAIN"
+    },
+    "comfort": "STANDARD",
+    "constraint_distribution": "MARECO",
+    "initial_speed": 0,
+    "labels": ["NWS-NES"],
+    "margins": {
+      "boundaries": ["dbc7c80b-aee0-4835-8857-63863dae2ff1"],
+      "values": ["2%", "0%"]
+    },
+    "options": {
+      "use_electrical_profiles": false,
+      "use_speed_limits_for_simulation": true,
+      "stops_at_end_of_block": false
+    },
+    "path": [
+      {
+        "id": "b4df37d0-ffe2-4166-b7b6-8c0c5a47e9b0",
+        "location": {
+          "type": "operational_point_part_reference",
+          "operational_point": {
+            "type": "uic",
+            "uic": 8777,
+            "secondary_code": "BV"
+          },
+          "local_track_name": "V1"
+        }
+      },
+      {
+        "id": "id2492",
+        "location": {
+          "type": "track_offset",
+          "track": "TD0",
+          "offset": 11080000
+        }
+      },
+      {
+        "id": "id2570",
+        "location": {
+          "type": "operational_point_part_reference",
+          "operational_point": {
+            "type": "uic",
+            "uic": 8733,
+            "secondary_code": "BV"
+          },
+          "local_track_name": null
+        }
+      },
+      {
+        "id": "dbc7c80b-aee0-4835-8857-63863dae2ff1",
+        "location": {
+          "type": "operational_point_part_reference",
+          "operational_point": {
+            "type": "uic",
+            "uic": 8799,
+            "secondary_code": "BC"
+          },
+          "local_track_name": null
+        }
+      }
+    ],
+    "power_restrictions": [
+      {
+        "from": "id2570",
+        "to": "dbc7c80b-aee0-4835-8857-63863dae2ff1",
+        "value": "C1"
+      }
+    ],
+    "rolling_stock_name": "ELECTRIC_RS_E2E",
+    "schedule": [
+      {
+        "at": "id2492",
+        "reception_signal": "SHORT_SLIP_STOP",
+        "stop_for": "PT2M4S"
+      },
+      {
+        "at": "id2570",
+        "arrival": "PT2H55M54S",
+        "reception_signal": "OPEN",
+        "stop_for": "PT10M"
+      },
+      {
+        "at": "dbc7c80b-aee0-4835-8857-63863dae2ff1",
+        "arrival": "PT3H9M46S",
+        "reception_signal": "OPEN",
+        "stop_for": "P0D"
+      }
+    ],
+    "speed_limit_tag": "MA100",
+    "start_time": 1779908880000,
+    "train_name": "Train",
+    "paced": {
+      "time_window": "PT2H",
+      "interval": "PT35M",
+      "exceptions": []
+    }
+  }
+]
