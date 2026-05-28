@@ -80,12 +80,7 @@ test.describe('Times and Stops tab', { tag: ['@op', '@times-stops-tab'] }, () =>
   test(
     'Set and display times and stops tables',
     { tag: '@smoke' },
-    async ({
-      timesAndStopsTab,
-      operationalStudiesPage,
-      routeTab,
-      timeAndStopSimulationOutputs,
-    }) => {
+    async ({ timesAndStopsTab, operationalStudiesPage, routeTab, timesStopsTablePage }) => {
       await test.step('Verify table headers', async () => {
         const expectedColumnNames = cleanWhitespaceInArray([
           frTranslations.name,
@@ -141,8 +136,8 @@ test.describe('Times and Stops tab', { tag: ['@op', '@times-stops-tab'] }, () =>
         await operationalStudiesPage.closeToastNotification();
         await operationalStudiesPage.returnSimulationResult();
         await operationalStudiesPage.verifyTimesStopsDataSheetVisibility();
-        await timeAndStopSimulationOutputs.setTrainListVisible();
-        await timeAndStopSimulationOutputs.verifyTimesStopsTableContent(expectedOutputsCellsData);
+        await timesStopsTablePage.setTrainListVisible();
+        await timesStopsTablePage.verifyTimesStopsTableContent(expectedOutputsCellsData);
       });
     }
   );

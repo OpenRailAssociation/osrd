@@ -103,7 +103,7 @@ test.describe('Simulation settings tab', { tag: ['@op', '@simulation-settings-ta
     simulationSettingsTab,
     scenarioTimetableSection,
     opSimulationResultPage,
-    timeAndStopSimulationOutputs,
+    timesStopsTablePage,
   }) => {
     const cell: CellData = { stationName: 'Mid_East_station', header: 'stopTime', value: '124' };
     const translatedHeader = cleanWhitespace(frTranslations[cell.header]);
@@ -137,7 +137,7 @@ test.describe('Simulation settings tab', { tag: ['@op', '@simulation-settings-ta
           'SpeedSpaceChart-ElectricalProfileActivated.png'
         );
       }
-      await timeAndStopSimulationOutputs.verifyTimesStopsTableContent(electricalProfileOnData);
+      await timesStopsTablePage.verifyTimesStopsTableContent(electricalProfileOnData);
       await opSimulationResultPage.setTrainListVisible(false);
     });
 
@@ -155,7 +155,7 @@ test.describe('Simulation settings tab', { tag: ['@op', '@simulation-settings-ta
           'SpeedSpaceChart-ElectricalProfileDisabled.png'
         );
       }
-      await timeAndStopSimulationOutputs.verifyTimesStopsTableContent(electricalProfileOffData);
+      await timesStopsTablePage.verifyTimesStopsTableContent(electricalProfileOffData);
       await opSimulationResultPage.setTrainListVisible(false);
       await scenarioTimetableSection.getTrainScheduleArrivalTime('11:48');
     });
@@ -169,7 +169,7 @@ test.describe('Simulation settings tab', { tag: ['@op', '@simulation-settings-ta
     simulationSettingsTab,
     scenarioTimetableSection,
     opSimulationResultPage,
-    timeAndStopSimulationOutputs,
+    timesStopsTablePage,
   }) => {
     const cell: CellData = { stationName: 'Mid_East_station', header: 'stopTime', value: '124' };
     const translatedHeader = cleanWhitespace(frTranslations[cell.header]);
@@ -203,7 +203,7 @@ test.describe('Simulation settings tab', { tag: ['@op', '@simulation-settings-ta
           'SpeedSpaceChart-SpeedLimitTagActivated.png'
         );
       }
-      await timeAndStopSimulationOutputs.verifyTimesStopsTableContent(speedLimitTagOnData);
+      await timesStopsTablePage.verifyTimesStopsTableContent(speedLimitTagOnData);
       await opSimulationResultPage.setTrainListVisible(false);
     });
 
@@ -221,7 +221,7 @@ test.describe('Simulation settings tab', { tag: ['@op', '@simulation-settings-ta
           'SpeedSpaceChart-SpeedLimitTagDisabled.png'
         );
       }
-      await timeAndStopSimulationOutputs.verifyTimesStopsTableContent(speedLimitTagOffData);
+      await timesStopsTablePage.verifyTimesStopsTableContent(speedLimitTagOffData);
       await opSimulationResultPage.setTrainListVisible(false);
       await scenarioTimetableSection.getTrainScheduleArrivalTime('11:48');
     });
@@ -235,7 +235,7 @@ test.describe('Simulation settings tab', { tag: ['@op', '@simulation-settings-ta
     simulationSettingsTab,
     scenarioTimetableSection,
     opSimulationResultPage,
-    timeAndStopSimulationOutputs,
+    timesStopsTablePage,
   }) => {
     const inputTableData: CellData[] = [
       { stationName: 'Mid_East_station', header: 'stopTime', value: '124' },
@@ -279,7 +279,7 @@ test.describe('Simulation settings tab', { tag: ['@op', '@simulation-settings-ta
           'SpeedSpaceChart-LinearMargin.png'
         );
       }
-      await timeAndStopSimulationOutputs.verifyTimesStopsTableContent(linearMarginData);
+      await timesStopsTablePage.verifyTimesStopsTableContent(linearMarginData);
       await opSimulationResultPage.setTrainListVisible(false);
     });
 
@@ -297,7 +297,7 @@ test.describe('Simulation settings tab', { tag: ['@op', '@simulation-settings-ta
           'SpeedSpaceChart-MarecoMargin.png'
         );
       }
-      await timeAndStopSimulationOutputs.verifyTimesStopsTableContent(marecoMarginData);
+      await timesStopsTablePage.verifyTimesStopsTableContent(marecoMarginData);
       await opSimulationResultPage.setTrainListVisible(false);
       await scenarioTimetableSection.getTrainScheduleArrivalTime('11:51');
     });
@@ -314,7 +314,7 @@ test.describe('Simulation settings tab', { tag: ['@op', '@simulation-settings-ta
       simulationSettingsTab,
       scenarioTimetableSection,
       opSimulationResultPage,
-      timeAndStopSimulationOutputs,
+      timesStopsTablePage,
     }) => {
       const inputTableData: CellData[] = [
         { stationName: 'Mid_East_station', header: 'stopTime', value: '124' },
@@ -358,7 +358,7 @@ test.describe('Simulation settings tab', { tag: ['@op', '@simulation-settings-ta
             'SpeedSpaceChart-AllSettingsEnabled.png'
           );
         }
-        await timeAndStopSimulationOutputs.verifyTimesStopsTableContent(allSettingsData);
+        await timesStopsTablePage.verifyTimesStopsTableContent(allSettingsData);
         await opSimulationResultPage.setTrainListVisible(false);
         await scenarioTimetableSection.getTrainScheduleArrivalTime('11:50');
       });
