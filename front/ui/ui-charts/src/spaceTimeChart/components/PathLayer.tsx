@@ -158,10 +158,18 @@ export const PathLayer = ({
               prevTime +
               ((breakPosition - prevPosition) / (position - prevPosition)) * (time - prevTime);
 
-            currentLine.push({
+            const breakPoint = {
               [timeAxis]: getTimePixel(breakTime),
               [spaceAxis]: getSpacePixel(breakPosition, readSpacePixelFromEnd),
-            } as Point);
+            } as Point;
+
+            if (isBeforeFlatStep) {
+              lines.push(currentLine);
+              currentLine = [breakPoint];
+            } else {
+              currentLine.push(breakPoint);
+            }
+
             previousBreakPosition = breakPosition;
           });
 
