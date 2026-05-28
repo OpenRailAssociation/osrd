@@ -110,6 +110,7 @@ export async function selectFirstDropDownItem(
   list: Locator,
   value: string
 ): Promise<void> {
+  await expect(field).toBeEditable();
   await field.fill(value);
   await expect(list).toBeVisible();
   await field.press('ArrowDown');

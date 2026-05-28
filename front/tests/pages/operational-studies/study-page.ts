@@ -137,6 +137,7 @@ class StudyPage extends CommonPage {
     await expect(this.addStudyButton).toBeVisible();
     await this.addStudyButton.click();
     await this.fillStudyDetails(details);
+    await expect(this.createStudyButton).toBeEnabled();
     await this.createStudyButton.click();
     await this.page.waitForURL(STUDY_URLS.detail);
     await expect(this.studyEditionModal).not.toBeVisible();
@@ -145,6 +146,7 @@ class StudyPage extends CommonPage {
   async updateStudy(details: StudyDetails) {
     await this.studyUpdateButton.click();
     await this.fillStudyDetails(details);
+    await expect(this.studyUpdateConfirmButton).toBeEnabled();
     await this.studyUpdateConfirmButton.click();
     await this.page.waitForURL(STUDY_URLS.detail);
     await expect(this.studyEditionModal).not.toBeVisible();
