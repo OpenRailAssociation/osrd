@@ -118,7 +118,10 @@ test.describe('Itinerary Modal, Default ', { tag: ['@op', '@itinerary-modal'] },
       });
       await test.step('Check path step marker presence on map', async () => {
         if (browserName === 'chromium') {
-          await itineraryModalPage.checkMapUpdate(2);
+          await itineraryModalPage.checkPathStepMarkers([
+            { name: NORTH_STATION_BV, index: 1 },
+            { name: SOUTH_STATION_BV, index: 2 },
+          ]);
         }
       });
       await test.step('Check itinerary reverse', async () => {
@@ -171,7 +174,11 @@ test.describe('Itinerary Modal, Default ', { tag: ['@op', '@itinerary-modal'] },
       });
       await test.step('Check valid pathfinding result and itinerary displayed on map', async () => {
         if (browserName === 'chromium') {
-          await itineraryModalPage.checkMapUpdate(3);
+          await itineraryModalPage.checkPathStepMarkers([
+            { name: WEST_STATION_BV, index: 1 },
+            { name: NORTH_STATION_BV, index: 2 },
+            { name: SOUTH_STATION_BV, index: 3 },
+          ]);
         }
       });
       await test.step('Select track and update stop', async () => {
