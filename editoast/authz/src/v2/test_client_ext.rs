@@ -1,5 +1,6 @@
 use std::collections::HashSet;
 
+use fga::fga;
 use fga::model::Relation as _;
 
 use crate::Group;
@@ -8,9 +9,10 @@ use crate::InfraGrant;
 use crate::InfraPrivilege;
 use crate::Role;
 use crate::RollingStock;
+use crate::RollingStockGrant;
+use crate::RollingStockPrivilege;
 use crate::Subject;
 use crate::User;
-use crate::model::RollingStockPrivilege;
 use crate::v2::infra_direct_grant;
 use crate::v2::infra_effective_grant;
 use crate::v2::infra_granted_subjects;
@@ -39,6 +41,13 @@ pub trait TestClientExt {
         user: User,
         rolling_stock: RollingStock,
     ) -> HashSet<RollingStockPrivilege>;
+    // TODO use the protected operation once authz::v2 has a proper way to give grants on rolling stocks
+    async fn give_rolling_stock_grant(
+        &self,
+        rolling_stock: RollingStock,
+        subject: Subject,
+        grant: RollingStockGrant,
+    );
 }
 
 impl TestClientExt for fga::Client {
@@ -141,5 +150,57 @@ impl TestClientExt for fga::Client {
             .access_value(rolling_stock_privileges(user, rolling_stock))
             .await
             .unwrap()
+    }
+    async fn give_rolling_stock_grant(
+        &self,
+        rolling_stock: RollingStock,
+        subject: Subject,
+        grant: RollingStockGrant,
+    ) {
+        match (grant, subject) {
+            (RollingStockGrant::Reader, Subject::User(user)) => {
+                self.write_tuples(&[RollingStock::reader()
+                    .tuple(&fga!(User:user), &fga!(RollingStock:rolling_stock))])
+                    .await
+            }
+            (RollingStockGrant::Writer, Subject::User(user)) => {
+                self.write_tuples(&[RollingStock::writer()
+                    .tuple(&fga!(User:user), &fga!(RollingStock:rolling_stock))])
+                    .await
+            }
+            (RollingStockGrant::Owner, Subject::User(user)) => {
+                self.write_tuples(&[RollingStock::owner()
+                    .tuple(&fga!(User:user), &fga!(RollingStock:rolling_stock))])
+                    .await
+            }
+            (RollingStockGrant::Reader, Subject::Group(group)) => {
+                self.prepare_writes()
+                    .write(
+                        &RollingStock::reader()
+                            .tuple(Group::member().userset(&group), &rolling_stock),
+                    )
+                    .execute()
+                    .await
+            }
+            (RollingStockGrant::Writer, Subject::Group(group)) => {
+                self.prepare_writes()
+                    .write(
+                        &RollingStock::writer()
+                            .tuple(Group::member().userset(&group), &rolling_stock),
+                    )
+                    .execute()
+                    .await
+            }
+            (RollingStockGrant::Owner, Subject::Group(group)) => {
+                self.prepare_writes()
+                    .write(
+                        &RollingStock::owner()
+                            .tuple(Group::member().userset(&group), &rolling_stock),
+                    )
+                    .execute()
+                    .await
+            }
+        }
+        .unwrap()
     }
 }
