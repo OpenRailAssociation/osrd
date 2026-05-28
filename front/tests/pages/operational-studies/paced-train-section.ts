@@ -74,24 +74,27 @@ class PacedTrainSection extends CommonPage {
     };
   }
 
-  private async expandPacedTrainToggleIcon(index: number) {
+  private expandPacedTrainToggleIcon(index: number): Locator {
     return this.pacedTrainItem.nth(index).getByTestId('toggle-icon-open');
   }
 
-  private async collapsePacedTrainToggleIcon(index: number) {
+  private collapsePacedTrainToggleIcon(index: number): Locator {
     return this.pacedTrainItem.nth(index).getByTestId('toggle-icon-close');
   }
 
   async expandPacedTrainOccurrenceList(index: number) {
-    const expandPacedTrainToggleIcon = await this.expandPacedTrainToggleIcon(index);
-    await expect(expandPacedTrainToggleIcon).toBeVisible();
-    await expandPacedTrainToggleIcon.click();
+    await this.expandPacedTrainToggleIcon(index).click();
   }
 
   async collapsePacedTrainOccurrenceList(index: number) {
-    const collapsePacedTrainToggleIcon = await this.collapsePacedTrainToggleIcon(index);
-    await expect(collapsePacedTrainToggleIcon).toBeVisible();
-    await collapsePacedTrainToggleIcon.click();
+    await this.collapsePacedTrainToggleIcon(index).click();
+  }
+
+  async ensurePacedTrainOccurrenceListOpen(index: number) {
+    if ((await this.testedPacedTrainOccurrences.count()) === 0) {
+      await this.expandPacedTrainOccurrenceList(index);
+    }
+    await expect(this.testedPacedTrainOccurrences.first()).toBeVisible();
   }
 
   async verifyPacedTrainItemDetails(
@@ -201,7 +204,8 @@ class PacedTrainSection extends CommonPage {
       ? this.pacedTrainItem.nth(trainIndex)
       : this.testedPacedTrainOccurrences.nth(trainIndex);
     await expect(train).toBeVisible();
-    await train.hover({ position: { x: 5, y: 5 } }); // Hover near the left edge to avoid action buttons
+    await train.scrollIntoViewIfNeeded();
+    await train.hover({ position: { x: 5, y: 5 } });
 
     const actionButtons: Record<string, Locator> = {
       projectTrain: train.getByTestId('project-train'),
@@ -312,7 +316,6 @@ class PacedTrainSection extends CommonPage {
     pacedTrainData?: PacedTrainDetails
   ) {
     const trainScheduleToDelete = this.pacedTrainItem.nth(index);
-    await trainScheduleToDelete.hover({ position: { x: 5, y: 5 } });
     const pacedTrainActionButtons = await this.getActionButtonsLocators({
       trainIndex: index,
       trainType: 'paced-train',
@@ -363,6 +366,13 @@ class PacedTrainSection extends CommonPage {
     await expect(occurrenceItem.menuIcon).toBeVisible();
   }
 
+  async openOccurrenceActionMenu(occurrenceIndex: number, pacedTrainIndex = 0) {
+    await this.page.keyboard.press('Escape');
+    await this.ensurePacedTrainOccurrenceListOpen(pacedTrainIndex);
+    await this.checkOccurrenceMenuIcon(occurrenceIndex);
+    await this.getNthOccurrence(occurrenceIndex).menuIcon.click();
+  }
+
   async clickOnOccurrence(occurrenceIndex: number) {
     const occurrenceItem = this.getNthOccurrence(occurrenceIndex);
     await expect(occurrenceItem.root).toBeVisible();
@@ -373,14 +383,14 @@ class PacedTrainSection extends CommonPage {
     occurrenceIndex,
     expectedButtons,
     translations,
+    pacedTrainIndex = 0,
   }: {
     occurrenceIndex: number;
     expectedButtons: OccurrenceMenuButton[];
     translations: TimetableFilterTranslations;
+    pacedTrainIndex?: number;
   }) {
-    const occurrenceItem = this.getNthOccurrence(occurrenceIndex);
-    await expect(occurrenceItem.menuIcon).toBeVisible();
-    await occurrenceItem.menuIcon.click();
+    await this.openOccurrenceActionMenu(occurrenceIndex, pacedTrainIndex);
     for (const buttonName of expectedButtons) {
       const button = this.portalOccurrenceMenu[buttonName];
       await expect(button).toBeVisible();

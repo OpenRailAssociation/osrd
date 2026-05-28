@@ -257,7 +257,6 @@ test.describe('Paced train exceptions', { tag: ['@op', '@paced-trains', '@except
         frTranslations.timetable.occurrenceChangeGroup.start_time as ChangeGroup
       );
 
-      await pacedTrainSection.checkOccurrenceMenuIcon(4);
       await pacedTrainSection.checkOccurrenceActionMenu({
         occurrenceIndex: 4,
         expectedButtons: ADDED_EXCEPTION_MENU_BUTTONS,
