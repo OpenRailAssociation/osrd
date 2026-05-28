@@ -1,4 +1,4 @@
-import { useContext, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 
 import { ChevronLeft, Pencil } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
@@ -50,7 +50,7 @@ const ManageTrainScheduleLeftPanel = ({
   const { openModal, closeModal } = useModal();
 
   const [isWorking, setIsWorking] = useState(false);
-  const [itineraryModalIsOpen, setItineraryModalIsOpen] = useState(true);
+  const [itineraryModalIsOpen, setItineraryModalIsOpen] = useState(false);
 
   const leaveManageTrainSchedule = () => {
     setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.none);
@@ -76,6 +76,15 @@ const ManageTrainScheduleLeftPanel = ({
       ? t('turnUniqueTrainIntoPacedTrain')
       : t('turnPacedTrainIntoUniqueTrain');
   };
+
+  useEffect(() => {
+    if (
+      displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.add ||
+      displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.edit
+    ) {
+      setItineraryModalIsOpen(true);
+    }
+  }, [displayTrainScheduleManagement]);
 
   return (
     <div className="scenario-timetable-manage-train-schedule left-column">
