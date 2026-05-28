@@ -89,17 +89,8 @@ impl MockingClient {
     ) -> Result<Option<R::Response>, MockingError> {
         let actual =
             req_body.map(|b| serde_json::to_value(b).expect("could not serialize request body"));
-        let expected = stub.body.as_ref().map(|b| {
-            serde_json::from_str::<serde_json::Value>(b)
-                .expect("expected request body should be valid JSON")
-        });
+        // Assertion on the request
         if let Some(actual) = actual {
-            // Assert the entire body at once
-            if let Some(expected) = expected {
-                assert_eq!(actual, expected, "request body mismatch");
-            }
-
-            // Assert some specific fields of the body
             for (pointer, expected) in &stub.on_body {
                 assert_eq!(
                     actual
@@ -112,9 +103,9 @@ impl MockingClient {
                     "the value at pointer ‘{pointer}’ is different from the expected value"
                 );
             }
-        } else if let Some(expected) = expected {
-            panic!("missing request body: '{expected}'");
         }
+
+        // Return the response
         let response = stub
             .response
             .as_ref()
@@ -144,7 +135,6 @@ impl MockingClient {
 /// A stub request used to assert the validity of an incoming request to mock
 #[derive(Debug, Clone)]
 pub struct StubRequest {
-    body: Option<Arc<String>>,
     on_body: HashMap<&'static str, Value>,
     response: Option<StubResponse>,
 }
@@ -163,7 +153,6 @@ pub struct StubResponse {
 #[derive(Debug)]
 pub struct StubRequestBuilder<'a> {
     path: String,
-    body: Option<Arc<String>>,
     on_body: HashMap<&'static str, Value>,
     client: &'a mut MockingClient,
 }
@@ -179,20 +168,9 @@ impl<'a> StubRequestBuilder<'a> {
     fn new(path: String, client: &'a mut MockingClient) -> Self {
         Self {
             path,
-            body: None,
             on_body: HashMap::new(),
             client,
         }
-    }
-
-    /// Sets the expected body of the expected outgoing request
-    ///
-    /// If no expected body is set, the request actual body is ignored
-    #[allow(unused)]
-    #[must_use = "call .finish() to register the stub request"]
-    pub fn body<B: AsRef<str>>(mut self, body: B) -> Self {
-        self.body = Some(Arc::new(body.as_ref().to_string()));
-        self
     }
 
     /// Assert some fields on the expected outgoing request
@@ -235,7 +213,6 @@ impl<'a> StubRequestBuilder<'a> {
             .lock()
             .unwrap()
             .push_back(StubRequest {
-                body: self.body,
                 on_body: self.on_body,
                 response: None,
             })
@@ -247,7 +224,6 @@ impl<'a> StubRequestBuilder<'a> {
             .into_iter()
             .map(Some)
             .map(|response| StubRequest {
-                body: self.body.clone(),
                 on_body: self.on_body.clone(),
                 response,
             })
