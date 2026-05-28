@@ -4,7 +4,7 @@ import { cleanTimeInput, cleanWhitespace, removeWhitespace } from '../../utils/d
 import type { TimesStopsTableRow } from '../../utils/times-stops-table-types';
 import OpSimulationResultPage from './simulation-results-page';
 
-class TimeAndStopSimulationOutputs extends OpSimulationResultPage {
+class TimesStopsTablePage extends OpSimulationResultPage {
   private readonly dataRows: Locator;
 
   constructor(page: Page) {
@@ -12,11 +12,11 @@ class TimeAndStopSimulationOutputs extends OpSimulationResultPage {
     this.dataRows = this.timesStopsDataSheet.getByTestId('times-stops-data-row');
   }
 
-  private rowIndex(row: Locator): Locator {
+  private rowIndexCell(row: Locator): Locator {
     return row.getByTestId('row-index');
   }
 
-  private stepStatus(row: Locator): Locator {
+  private stepStatusCell(row: Locator): Locator {
     return row.getByTestId('step-status');
   }
 
@@ -32,7 +32,7 @@ class TimeAndStopSimulationOutputs extends OpSimulationResultPage {
     return row.getByTestId('track-name');
   }
 
-  private requestedArrival(row: Locator): Locator {
+  private requestedArrivalInput(row: Locator): Locator {
     return row.getByTestId('requested-arrival');
   }
 
@@ -44,7 +44,7 @@ class TimeAndStopSimulationOutputs extends OpSimulationResultPage {
     return row.getByTestId('duration-cell');
   }
 
-  private requestedDeparture(row: Locator): Locator {
+  private requestedDepartureInput(row: Locator): Locator {
     return row.getByTestId('requested-departure');
   }
 
@@ -52,16 +52,16 @@ class TimeAndStopSimulationOutputs extends OpSimulationResultPage {
     return row.getByTestId('computed-departure');
   }
 
-  private signalReceptionClosed(row: Locator): Locator {
+  private signalReceptionClosedCheckbox(row: Locator): Locator {
     return row.getByTestId('signal-reception-closed');
   }
 
-  private shortSlipDistance(row: Locator): Locator {
+  private shortSlipDistanceCheckbox(row: Locator): Locator {
     return row.getByTestId('short-slip-distance');
   }
 
   private powerRestrictionCombobox(row: Locator): Locator {
-    return row.getByRole('combobox');
+    return row.getByTestId('power-restriction-select');
   }
 
   private requestedTheoreticalMargin(row: Locator): Locator {
@@ -105,7 +105,6 @@ class TimeAndStopSimulationOutputs extends OpSimulationResultPage {
       expect(this.timeFromPreviousOp(row)).toBeAttached(),
       expect(this.totalTravelTime(row)).toBeAttached(),
     ]);
-
     const [
       indexText,
       statusClass,
@@ -127,20 +126,20 @@ class TimeAndStopSimulationOutputs extends OpSimulationResultPage {
       timeFromAboveWaypointText,
       totalArrivalTimeText,
     ] = await Promise.all([
-      this.rowIndex(row).textContent(),
-      this.stepStatus(row).getAttribute('class'),
+      this.rowIndexCell(row).textContent(),
+      this.stepStatusCell(row).getAttribute('class'),
       this.opFullName(row).textContent(),
       this.secondaryCode(row)
         .textContent()
         .catch(() => ''),
       this.trackName(row).textContent(),
-      this.requestedArrival(row).getAttribute('value'),
+      this.requestedArrivalInput(row).getAttribute('value'),
       this.computedArrival(row).textContent(),
       this.durationCell(row).textContent(),
-      this.requestedDeparture(row).getAttribute('value'),
+      this.requestedDepartureInput(row).getAttribute('value'),
       this.computedDeparture(row).textContent(),
-      this.signalReceptionClosed(row).isChecked(),
-      this.shortSlipDistance(row).isChecked(),
+      this.signalReceptionClosedCheckbox(row).isChecked(),
+      this.shortSlipDistanceCheckbox(row).isChecked(),
       this.powerRestrictionCombobox(row).inputValue(),
       this.requestedTheoreticalMargin(row)
         .textContent()
@@ -191,4 +190,4 @@ class TimeAndStopSimulationOutputs extends OpSimulationResultPage {
   }
 }
 
-export default TimeAndStopSimulationOutputs;
+export default TimesStopsTablePage;

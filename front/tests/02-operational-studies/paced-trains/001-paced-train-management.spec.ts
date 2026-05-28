@@ -129,7 +129,7 @@ test.describe('Paced train management', { tag: ['@op', '@paced-trains'] }, () =>
       scenarioTimetableSection,
       pacedTrainSection,
       opSimulationResultPage,
-      timeAndStopSimulationOutputs,
+      timesStopsTablePage,
     }) => {
       await test.step('Open train schedule form', async () => {
         await operationalStudiesPage.openTrainScheduleForm();
@@ -183,9 +183,7 @@ test.describe('Paced train management', { tag: ['@op', '@paced-trains'] }, () =>
 
       await test.step('Verify result in output table is paced train result', async () => {
         await opSimulationResultPage.setTrainListVisible();
-        await timeAndStopSimulationOutputs.verifyTimesStopsTableContent(
-          pacedTrainOutputData.pacedTrain
-        );
+        await timesStopsTablePage.verifyTimesStopsTableContent(pacedTrainOutputData.pacedTrain);
       });
 
       await test.step('Verify paced train card and first occurrence details', async () => {
@@ -204,7 +202,7 @@ test.describe('Paced train management', { tag: ['@op', '@paced-trains'] }, () =>
             'SpeedSpaceChart-InitialInputs.png'
           );
         }
-        await timeAndStopSimulationOutputs.verifyTimesStopsTableContent(
+        await timesStopsTablePage.verifyTimesStopsTableContent(
           pacedTrainOutputData.secondOccurrence
         );
       });

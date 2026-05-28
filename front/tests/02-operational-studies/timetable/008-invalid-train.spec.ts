@@ -59,15 +59,13 @@ test.describe(
     test(
       'Verify invalid unique train simulation result',
       { tag: '@smoke' },
-      async ({ scenarioTimetableSection, pacedTrainSection, timeAndStopSimulationOutputs }) => {
+      async ({ scenarioTimetableSection, pacedTrainSection, timesStopsTablePage }) => {
         await test.step('Project paced train and verify invalid simulation outputs', async () => {
           await pacedTrainSection.projectPacedTrain();
           await scenarioTimetableSection.verifyInvalidTrainSimulationResultsVisibility();
         });
         await scenarioTimetableSection.setTrainListVisible();
-        await timeAndStopSimulationOutputs.verifyTimesStopsTableContent(
-          invalidPacedTrainTimetableOutput
-        );
+        await timesStopsTablePage.verifyTimesStopsTableContent(invalidPacedTrainTimetableOutput);
       }
     );
 
@@ -75,14 +73,12 @@ test.describe(
     test(
       'Verify invalid paced train simulation result',
       { tag: '@smoke' },
-      async ({ scenarioTimetableSection, timeAndStopSimulationOutputs }) => {
+      async ({ scenarioTimetableSection, timesStopsTablePage }) => {
         await test.step('Project invalid train and verify invalid simulation outputs', async () => {
           await scenarioTimetableSection.projectTrain(1);
           await scenarioTimetableSection.verifyInvalidTrainSimulationResultsVisibility();
           await scenarioTimetableSection.setTrainListVisible();
-          await timeAndStopSimulationOutputs.verifyTimesStopsTableContent(
-            invalidUniqueTrainTimetableOutput
-          );
+          await timesStopsTablePage.verifyTimesStopsTableContent(invalidUniqueTrainTimetableOutput);
         });
       }
     );
