@@ -359,3 +359,22 @@ pub mod special_authorizers {
         }
     }
 }
+
+impl<L, R, Rejection, Error> Authorizer for itertools::Either<L, R>
+where
+    L: Authorizer<Rejection = Rejection, Error = Error>,
+    R: Authorizer<Rejection = Rejection, Error = Error>,
+{
+    type Rejection = Rejection;
+    type Error = Error;
+
+    async fn authorize<'a, T>(
+        &'a self,
+        data: Protected<T>,
+    ) -> Result<Access<'a, T, Self::Rejection>, Self::Error> {
+        match self {
+            itertools::Either::Left(l) => l.authorize(data).await,
+            itertools::Either::Right(r) => r.authorize(data).await,
+        }
+    }
+}
