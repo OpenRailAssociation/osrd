@@ -8,7 +8,6 @@ use authz::v2::Protected;
 use editoast_models::prelude::*;
 use futures::FutureExt as _;
 use futures::StreamExt as _;
-use futures::TryFutureExt as _;
 use futures::stream::FuturesUnordered;
 use tracing::Instrument as _;
 
@@ -25,10 +24,7 @@ pub struct SystemAuthorizer<'a> {
 
 impl SystemAuthorizer<'_> {
     #[tracing::instrument(target = "SystemAuthorizer::check", skip_all, fields(?check), ret(level = "trace"), err)]
-    async fn check<'ch>(
-        &self,
-        check: &'ch Check,
-    ) -> Result<Option<&'ch Check>, editoast_models::Error> {
+    async fn check<'ch>(&self, check: &'ch Check) -> Result<Option<&'ch Check>, Error> {
         let conn = &mut self.conn.clone();
         Ok(match check {
             Check::SubjectExists(authz::Subject::User(user)) => {
@@ -54,7 +50,7 @@ impl SystemAuthorizer<'_> {
 
 impl Authorizer for SystemAuthorizer<'_> {
     type Rejection = Check;
-    type Error = editoast_models::Error;
+    type Error = Error;
 
     #[tracing::instrument(skip_all)]
     async fn authorize<'a, T>(
@@ -109,10 +105,7 @@ impl<'c> UserAuthorizer<'c> {
     }
 
     #[tracing::instrument(target = "UserAutorizer::check", skip_all, fields(?check, issuer = ?self.user, roles = ?self.roles), ret(level = "trace"), err)]
-    async fn check<'ch>(
-        &self,
-        check: &'ch Check,
-    ) -> Result<Option<&'ch Check>, authz::v2::OpenFgaError> {
+    async fn check<'ch>(&self, check: &'ch Check) -> Result<Option<&'ch Check>, Error> {
         Ok(match check {
             Check::HasRole(Actor::Issuer, role) if !self.roles.contains(role) => Some(check),
             Check::HasRole(Actor::Issuer, _) => None,
@@ -164,22 +157,11 @@ impl Authorizer for UserAuthorizer<'_> {
             // same thing for the system_authorizer
             let mut checks = FuturesUnordered::new();
             for check in &data.checks {
-                checks.push(
-                    system_authorizer
-                        .check(check)
-                        .map_err(Self::Error::from)
-                        .in_current_span()
-                        .boxed(),
-                );
+                checks.push(system_authorizer.check(check).in_current_span().boxed());
             }
             if !self.roles.contains(&authz::Role::Admin) {
                 for check in &data.checks {
-                    checks.push(
-                        self.check(check)
-                            .map_err(Self::Error::from)
-                            .in_current_span()
-                            .boxed(),
-                    );
+                    checks.push(self.check(check).in_current_span().boxed());
                 }
             }
             while let Some(result) = checks.next().await {
