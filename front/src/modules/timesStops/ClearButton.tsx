@@ -39,6 +39,7 @@ const ClearButton = ({ isVisible, containerRef, onClear }: ClearButtonProps) => 
     <button
       type="button"
       className="duration-cell-clear-btn"
+      data-testid="duration-cell-clear-btn"
       tabIndex={-1}
       style={{ top: btnPos.top, left: btnPos.left }}
       onMouseDown={(e) => {

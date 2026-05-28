@@ -57,6 +57,7 @@ const UnitToggle = ({
   <div className="unit-selection">
     <button
       className={cx('unit', { 'unit-active': value === MarginUnit.percent })}
+      data-testid="margin-unit-btn-percent"
       onClick={() => onChange(MarginUnit.percent)}
     >
       %
@@ -65,6 +66,7 @@ const UnitToggle = ({
       className={cx('unit', {
         'unit-active': value === MarginUnit.minPer100km,
       })}
+      data-testid="margin-unit-btn-min-per-100km"
       onClick={() => onChange(MarginUnit.minPer100km)}
     >
       min/
@@ -152,6 +154,7 @@ const MarginCellEditable = ({
         inputMode="numeric"
         ref={inputRef}
         className="input"
+        data-testid="margin-cell-input"
         value={raw ?? ''}
         style={{ pointerEvents: isEmpty ? 'none' : 'auto' }}
         onFocus={() => setIsEditing(true)}
