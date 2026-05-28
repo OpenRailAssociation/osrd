@@ -12,15 +12,15 @@
   "const_gamma": 0.5,
   "rolling_resistance": {
     "type": "davis",
-    "A": 5400,
-    "B": 200,
-    "C": 12
+    "A": 0.00600,
+    "B": 0.0002222222222222,
+    "C": 0.00001333333333333
   },
   "base_power_class": "1",
-  "power_restrictions": { },
-  "energy_sources": [ ],
+  "power_restrictions": {},
+  "energy_sources": [],
   "primary_category": "INTERCITY_TRAIN",
-  "other_categories": [ ],
+  "other_categories": [],
   "supported_signaling_systems": [
     {
       "type": "BAL"
@@ -39,7 +39,7 @@
     "default_mode": "thermal",
     "modes": {
       "thermal": {
-        "curves": [ ],
+        "curves": [],
         "default_curve": {
           "speeds": [
             0,

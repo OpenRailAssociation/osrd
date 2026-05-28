@@ -425,26 +425,34 @@
   "mass": 900000.0,
   "rolling_resistance": {
     "type": "davis",
-    "A": 4400.0,
-    "B": 195.67674,
-    "C": 12.00002688
+    "A": 0.004888888888889,
+    "B": 0.0002174186,
+    "C": 0.00001333336311111
   },
   "loading_gauge": "G1",
   "power_restrictions": {
     "C2": "1",
     "C1": "3"
   },
-  "energy_sources": [],
+  "energy_sources": [ ],
   "electrical_power_startup_time": 6.0,
   "raise_pantograph_time": 16.0,
   "version": 1,
   "supported_signaling_systems": [
-    { "type": "BAL" },
-    { "type": "BAPR" },
-    { "type": "TVM300" },
-    { "type": "TVM430" }
+    {
+      "type": "BAL"
+    },
+    {
+      "type": "BAPR"
+    },
+    {
+      "type": "TVM300"
+    },
+    {
+      "type": "TVM430"
+    }
   ],
-  "liveries": [],
+  "liveries": [ ],
   "primary_category": "FREIGHT_TRAIN",
-  "other_categories": []
+  "other_categories": [ ]
 }

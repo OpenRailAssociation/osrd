@@ -12,13 +12,13 @@
   "const_gamma": 0.5,
   "rolling_resistance": {
     "type": "davis",
-    "A": 3395.0000000000005,
-    "B": 108.36,
-    "C": 9.072
+    "A": 0.00970,
+    "B": 0.0003096,
+    "C": 0.00002592
   },
   "base_power_class": "2",
-  "power_restrictions": { },
-  "energy_sources": [ ],
+  "power_restrictions": {},
+  "energy_sources": [],
   "electrical_power_startup_time": 5.0,
   "raise_pantograph_time": 25.0,
   "version": 0,
@@ -31,8 +31,8 @@
     }
   ],
   "primary_category": "INTERCITY_TRAIN",
-  "other_categories": [ ],
-  "liveries": [ ],
+  "other_categories": [],
+  "liveries": [],
   "effort_curves": {
     "modes": {
       "1500V": {

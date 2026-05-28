@@ -63,9 +63,9 @@
   "mass": 75000.0,
   "rolling_resistance": {
     "type": "davis",
-    "A": 990.0,
-    "B": 27.0,
-    "C": 6.48
+    "A": 0.0132,
+    "B": 0.00036,
+    "C": 0.0000864
   },
   "loading_gauge": "G2",
   "power_restrictions": {},
