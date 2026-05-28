@@ -2,6 +2,7 @@ use std::collections::HashMap;
 use std::collections::HashSet;
 use std::sync::Arc;
 
+use crate::authorizers::SystemAuthorizer;
 use crate::authorizers::UserAuthorizer;
 use crate::authorizers::impossible;
 use crate::error::Result;
@@ -120,14 +121,22 @@ pub(in crate::views) struct WhoamiResponse {
     ))
 )]
 pub(in crate::views) async fn whoami(
-    Extension(auth): AuthenticationExt,
+    Extension(roles): Extension<Vec<authz::Role>>,
+    Extension(user): Extension<Option<editoast_models::User>>,
+    Extension(authn): Extension<crate::authentication::Authentication>,
 ) -> Result<Json<WhoamiResponse>> {
-    Ok(Json(WhoamiResponse {
+    if let Some(editoast_models::User { id, name }) = user {
+        Ok(Json(WhoamiResponse { id, name, roles }))
+    } else if matches!(authn, crate::authentication::Authentication::Skip { .. }) {
         // TODO: don't return -1 and a hardcoded name, return a different schema instead, requires frontend changes
-        id: auth.user_id()?.unwrap_or(-1),
-        name: auth.user_name()?.unwrap_or_else(|| "OSRD user".to_string()),
-        roles: auth.user_roles().await?.into_iter().collect(),
-    }))
+        Ok(Json(WhoamiResponse {
+            id: -1,
+            name: "OSRD user".to_string(),
+            roles: vec![Role::Admin],
+        }))
+    } else {
+        Err(AuthorizationError::Forbidden.into())
+    }
 }
 
 #[editoast_derive::route]
@@ -261,10 +270,23 @@ pub(in crate::views) async fn users_info(
         .map(|g| (g.id, g))
         .collect::<HashMap<_, _>>();
 
+    let system = SystemAuthorizer {
+        openfga: regulator.openfga(),
+        conn: db_pool.get().await?,
+    };
+
     let mut results = Vec::new();
     for (user_id, user) in users {
         // TODO: optimize by batching calls to OpenFGA
-        let roles = regulator.user_roles(&authz::User(user_id)).await?;
+        let subject_roles: v2::Protected<Vec<Role>> =
+            authz::v2::subject_roles(authz::Subject::user(user_id));
+        let roles = match system.authorize(subject_roles).await?.access().await? {
+            Ok(roles) => roles,
+            Err(Check::SubjectExists(_)) => {
+                unreachable!("checked when retrieving users above")
+            }
+            Err(rejection) => impossible!(rejection),
+        };
         let groups = groups_by_user[&user_id]
             .iter()
             // Skip group if it does not exist
@@ -274,7 +296,7 @@ pub(in crate::views) async fn users_info(
             id: user_id,
             name: user.name,
             identities: user_to_identities[&user_id].clone(),
-            roles,
+            roles: roles.into_iter().collect::<HashSet<Role>>(),
             groups,
         });
     }

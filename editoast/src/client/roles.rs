@@ -63,7 +63,7 @@ pub fn list_roles() {
     Role::iter().for_each(|role| println!("{role}"));
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 struct Subject {
     id: i64,
     info: SubjectInfo,
@@ -93,7 +93,7 @@ impl Subject {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 enum SubjectInfo {
     User(UserInfo),
     Group(GroupInfo),
@@ -143,17 +143,20 @@ pub async fn list_subject_roles(
     pool: Arc<DbConnectionPoolV2>,
     openfga_config: OpenfgaConfig,
 ) -> anyhow::Result<()> {
-    let regulator = openfga_config.into_regulator(pool.clone()).await?;
-    let roles = match parse_and_fetch_subject(&subject, pool.get().await?).await? {
-        Subject {
-            id,
-            info: SubjectInfo::User(_),
-        } => regulator.user_roles(&authz::User(id)).await?,
-        Subject {
-            id,
-            info: SubjectInfo::Group(_),
-        } => regulator.group_roles(&authz::Group(id)).await?,
+    let system = SystemAuthorizer {
+        openfga: &openfga_config.into_client().await?,
+        conn: pool.get().await?,
     };
+    let subject = parse_and_fetch_subject(&subject, pool.get().await?).await?;
+    let subject_roles = authz::v2::subject_roles(subject.clone().into_authz());
+    let roles = match system.authorize(subject_roles).await?.access().await? {
+        Ok(roles) => roles,
+        Err(Check::SubjectExists(_)) => {
+            unreachable!("checked by parse_and_fetch_subject")
+        }
+        Err(rejection) => impossible!(rejection),
+    };
+
     if roles.is_empty() {
         info!("{subject} has no roles assigned");
         return Ok(());
