@@ -5,7 +5,13 @@ type CellPlaceholderProps = {
 };
 
 const CellPlaceholder = ({ onClick }: CellPlaceholderProps) => (
-  <div className="input-cell-placeholder" onClick={onClick} role="button" tabIndex={-1}>
+  <div
+    className="input-cell-placeholder"
+    data-testid="input-cell-placeholder"
+    onClick={onClick}
+    role="button"
+    tabIndex={-1}
+  >
     <Plus />
   </div>
 );

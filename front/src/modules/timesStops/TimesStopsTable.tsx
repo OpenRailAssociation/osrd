@@ -236,7 +236,7 @@ const TimesStopsTable = ({
           const { name, secondaryCode, pathStepId } = info.row.original;
           return (
             <>
-              {pathStepId && <span className="requested-point-dot" />}
+              {pathStepId && <span className="requested-point-dot" data-testid="op-name-dot" />}
               <span
                 className="op-full-name"
                 data-testid="op-full-name"
@@ -263,7 +263,9 @@ const TimesStopsTable = ({
           const { pathStepId, hasRequestedTrack } = info.row.original;
           return (
             <>
-              {pathStepId && hasRequestedTrack && <span className="requested-point-dot" />}
+              {pathStepId && hasRequestedTrack && (
+                <span className="requested-point-dot" data-testid="track-name-dot" />
+              )}
               <span data-testid="track-name" title={info.getValue()}>
                 {info.getValue() ?? ''}
               </span>
@@ -462,16 +464,22 @@ const TimesStopsTable = ({
               })}
             >
               <select
+                data-testid="power-restriction-select"
                 value={displayedValue ?? ''}
                 onChange={(e) => {
                   const v = e.target.value;
                   onRestrictionChange(row, v === '' ? null : v);
                 }}
               >
-                <option value=""> </option>
-                <option value={NO_POWER_RESTRICTION}>Ø</option>
+                <option value="" data-testid="power-restriction-option-empty"></option>
+                <option
+                  value={NO_POWER_RESTRICTION}
+                  data-testid={`power-restriction-option-${NO_POWER_RESTRICTION}`}
+                >
+                  Ø
+                </option>
                 {codes.map((c) => (
-                  <option key={c} value={c}>
+                  <option key={c} value={c} data-testid={`power-restriction-option-${c}`}>
                     {c}
                   </option>
                 ))}
@@ -503,6 +511,7 @@ const TimesStopsTable = ({
           return (
             <div data-testid="requested-theoretical-margin">
               <MarginCell
+                data-testid="margin-cell-editable"
                 marginValue={marginValue ?? null}
                 editable={!isLastRow}
                 isInherited={isFirstRow ? false : isInherited}
@@ -692,6 +701,7 @@ const TimesStopsTable = ({
   return (
     <div
       className={cx('times-stops-table-new', { 'computed-data-pending': isComputedDataPending })}
+      data-testid="times-stops-table-new"
       ref={virtualizedWrapperRef}
       style={{ height: `${virtualizer.getTotalSize() + HEADER_HEIGHT}px` }}
     >
@@ -744,6 +754,7 @@ const TimesStopsTable = ({
                 {hasDayChanged && (
                   <tr
                     className="day-change-banner"
+                    data-testid="day-change-banner"
                     style={{
                       transform: `translateY(${translateY}px)`,
                     }}
