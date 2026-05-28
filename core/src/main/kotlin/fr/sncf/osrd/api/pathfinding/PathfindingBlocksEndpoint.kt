@@ -171,7 +171,7 @@ private fun computePaths(
     // Check if pathfinding failed due to incompatible constraints
     pathfindingLogger.info("No path found, identifying issues")
     val elapsedSeconds = Duration.between(start, Instant.now()).toSeconds()
-    throwNoPathFoundException(
+    throw buildNoPathFoundException(
         infra,
         targets,
         constraints,
@@ -195,13 +195,13 @@ fun hasDuplicateTracks(infra: FullInfra, path: TrainPath): Boolean {
 }
 
 @WithSpan(value = "Identifying why no path was found")
-private fun throwNoPathFoundException(
+private fun buildNoPathFoundException(
     infra: FullInfra,
     targets: ArrayList<ExplorerStep>,
     constraints: Collection<PathfindingConstraint>,
     initialRequest: PathfindingBlockRequest,
     timeout: Double,
-): Nothing {
+): NoPathFoundException {
     try {
         val possiblePathWithoutErrorNoConstraints =
             Pathfinding(
@@ -220,7 +220,9 @@ private fun throwNoPathFoundException(
                     constraints,
                     initialRequest,
                 )
-                ?.let { throw NoPathFoundException(it) }
+                ?.let {
+                    return NoPathFoundException(it)
+                }
         }
     } catch (error: OSRDError) {
         if (error.osrdErrorType == ErrorType.PathfindingTimeoutError) {
@@ -229,7 +231,7 @@ private fun throwNoPathFoundException(
         throw error
     }
     // It didn’t fail due to an incompatible constraint, no path exists
-    throw NoPathFoundException(NotFoundInBlocks(listOf(), Length(0.meters)))
+    return NoPathFoundException(NotFoundInBlocks(listOf(), Length(0.meters)))
 }
 
 data class ProcessedPathfindingResponse(
