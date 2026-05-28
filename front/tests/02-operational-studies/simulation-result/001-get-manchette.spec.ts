@@ -188,7 +188,6 @@ test.describe('Space Time Diagram / Manchette', { tag: ['@op', '@manchette', '@s
       await opSimulationResultPage.setTrainListVisible(false);
       await getManchetteComponent.setRangeSliderValue('60'); // Reset slider to show the full diagram
       await pacedTrainSection.clickOnOccurrence(0);
-      await pacedTrainSection.checkOccurrenceMenuIcon(0);
       await pacedTrainSection.checkOccurrenceActionMenu({
         occurrenceIndex: 0,
         expectedButtons: CONFORM_ACTIVE_OCCURRENCE_MENU_BUTTONS,
@@ -205,7 +204,6 @@ test.describe('Space Time Diagram / Manchette', { tag: ['@op', '@manchette', '@s
     await test.step('Project added exception and capture screenshot', async () => {
       await opSimulationResultPage.setTrainListVisible(false);
       await pacedTrainSection.clickOnOccurrence(3);
-      await pacedTrainSection.checkOccurrenceMenuIcon(3);
       await pacedTrainSection.checkOccurrenceActionMenu({
         occurrenceIndex: 3,
         expectedButtons: ADDED_EXCEPTION_MENU_BUTTONS,
@@ -222,7 +220,6 @@ test.describe('Space Time Diagram / Manchette', { tag: ['@op', '@manchette', '@s
     await test.step('Project last occurrence (exception) and capture screenshot', async () => {
       await opSimulationResultPage.setTrainListVisible(false);
       await pacedTrainSection.clickOnOccurrence(4);
-      await pacedTrainSection.checkOccurrenceMenuIcon(4);
       await pacedTrainSection.checkOccurrenceActionMenu({
         occurrenceIndex: 4,
         expectedButtons: EXCEPTION_ACTIVE_OCCURRENCE_MENU_BUTTONS,

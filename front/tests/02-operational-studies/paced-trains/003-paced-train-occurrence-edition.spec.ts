@@ -95,7 +95,6 @@ test.describe(
     test('Edit an indexed occurrence', async ({ pacedTrainSection, operationalStudiesPage }) => {
       await test.step('Open paced train and check initial menu (first occurrence)', async () => {
         await pacedTrainSection.expandPacedTrainOccurrenceList(0);
-        await pacedTrainSection.checkOccurrenceMenuIcon(0);
         await pacedTrainSection.checkOccurrenceActionMenu({
           occurrenceIndex: 0,
           expectedButtons: CONFORM_ACTIVE_OCCURRENCE_MENU_BUTTONS,
@@ -120,7 +119,6 @@ test.describe(
           frTranslations.timetable.occurrenceType.editedOccurrence +
             frTranslations.timetable.occurrenceChangeGroup.train_name
         );
-        await pacedTrainSection.checkOccurrenceMenuIcon(0);
         await pacedTrainSection.checkOccurrenceActionMenu({
           occurrenceIndex: 0,
           expectedButtons: EXCEPTION_ACTIVE_OCCURRENCE_MENU_BUTTONS,
@@ -131,7 +129,6 @@ test.describe(
       await test.step('Disable edited occurrence', async () => {
         await pacedTrainSection.clickOccurrenceMenuButton('disable');
         await pacedTrainSection.verifyOccurrenceName(0, EDITED_OCCURRENCE_NAME);
-        await pacedTrainSection.checkOccurrenceMenuIcon(0);
         await pacedTrainSection.checkOccurrenceActionMenu({
           occurrenceIndex: 0,
           expectedButtons: DISABLED_OCCURRENCE_MENU_BUTTONS,
@@ -142,7 +139,6 @@ test.describe(
       await test.step('Re-enable edited occurrence', async () => {
         await pacedTrainSection.clickOccurrenceMenuButton('enable');
         await pacedTrainSection.verifyOccurrenceName(0, EDITED_OCCURRENCE_NAME);
-        await pacedTrainSection.checkOccurrenceMenuIcon(0);
         await pacedTrainSection.checkOccurrenceActionMenu({
           occurrenceIndex: 0,
           expectedButtons: EXCEPTION_ACTIVE_OCCURRENCE_MENU_BUTTONS,
@@ -171,11 +167,11 @@ test.describe(
 
       await test.step('Open paced train and check initial menu state', async () => {
         await pacedTrainSection.expandPacedTrainOccurrenceList(PACED_TRAIN_NUMBER);
-        await pacedTrainSection.checkOccurrenceMenuIcon(addedOccurrenceIndex);
         await pacedTrainSection.checkOccurrenceActionMenu({
           occurrenceIndex: addedOccurrenceIndex,
           expectedButtons: ADDED_EXCEPTION_MENU_BUTTONS,
           translations: frTranslations,
+          pacedTrainIndex: PACED_TRAIN_NUMBER,
         });
       });
 
@@ -227,11 +223,11 @@ test.describe(
       });
 
       await test.step('Check occurrence menu after modifications', async () => {
-        await pacedTrainSection.checkOccurrenceMenuIcon(addedOccurrenceIndex);
         await pacedTrainSection.checkOccurrenceActionMenu({
           occurrenceIndex: addedOccurrenceIndex,
           expectedButtons: ADDED_AND_MODIFIED_EXCEPTION_MENU_BUTTONS,
           translations: frTranslations,
+          pacedTrainIndex: PACED_TRAIN_NUMBER,
         });
       });
 
@@ -250,10 +246,12 @@ test.describe(
           occurrenceIndex: addedOccurrenceIndex,
           expectedButtons: ADDED_EXCEPTION_MENU_BUTTONS,
           translations: frTranslations,
+          pacedTrainIndex: PACED_TRAIN_NUMBER,
         });
       });
 
       await test.step('Delete occurrence and check remaining ones', async () => {
+        await pacedTrainSection.openOccurrenceActionMenu(addedOccurrenceIndex, PACED_TRAIN_NUMBER);
         await pacedTrainSection.clickOccurrenceMenuButton('delete');
 
         await pacedTrainSection.expectOccurrencesListLength(2);
