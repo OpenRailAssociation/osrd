@@ -13,9 +13,9 @@ dependencies = [
 
 [[package]]
 name = "amq-protocol"
-version = "10.2.0"
+version = "10.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "95442d3faf08b9bed7491ceda36b0e0268126cb20d44e6e7573cf930d9aa5073"
+checksum = "2eab68e8836c5812a01b34c5364d28db50bf686b442e902d9d93e4472318d86e"
 dependencies = [
  "amq-protocol-tcp",
  "amq-protocol-types",
@@ -27,9 +27,9 @@ dependencies = [
 
 [[package]]
 name = "amq-protocol-tcp"
-version = "10.2.0"
+version = "10.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cc754c77e62e58ea7323c3f257a97f747ac57f0ff3f7a91185f484dc1cb25bd2"
+checksum = "8689f976dbd9864922f4f53e01ad2b43700ed3eb1bb5667b260522f291434dae"
 dependencies = [
  "amq-protocol-uri",
  "async-rs",
@@ -40,9 +40,9 @@ dependencies = [
 
 [[package]]
 name = "amq-protocol-types"
-version = "10.2.0"
+version = "10.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7d8cb8fa210da5ec52799abf7ce45e2275b5a3f82ec4efafcd3e8161b7dbc9a8"
+checksum = "27894e9e57d07f701251aeee3d2ab3d7d114bc830bf722d6626027eb55f3b222"
 dependencies = [
  "cookie-factory",
  "nom",
@@ -52,9 +52,9 @@ dependencies = [
 
 [[package]]
 name = "amq-protocol-uri"
-version = "10.2.0"
+version = "10.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a0bc3e8b145641e20b57777a17b3bd7ba6bbdbb2b2ae2f26f6224be35e42c330"
+checksum = "64fd5ca63f1b8cba2309aaec8595483c36f3a671225d5ab9fe8265adb9213514"
 dependencies = [
  "amq-protocol-types",
  "percent-encoding",
@@ -1493,9 +1493,9 @@ dependencies = [
 
 [[package]]
 name = "lapin"
-version = "4.7.4"
+version = "4.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f296d806dbacc044135c9686a0d3e78b5122907d4d6604c72a825316139e9f2d"
+checksum = "01db668de710f19cca0088b36a572afa1b41090edbaa4d34b68e7bc8468b8e2b"
 dependencies = [
  "amq-protocol",
  "async-rs",
