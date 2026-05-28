@@ -280,8 +280,8 @@ const useUpdateTrainSchedule = (
       setSuccess({
         title:
           simulationConf.editingTrainType === 'uniqueTrain'
-            ? t('pacedTrainUpdated')
-            : t('uniqueTrainUpdated'),
+            ? t('uniqueTrainUpdated')
+            : t('pacedTrainUpdated'),
         text: `${confName}: ${startTime.toLocaleString()}`,
       })
     );
