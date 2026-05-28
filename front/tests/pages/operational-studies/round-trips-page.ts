@@ -94,8 +94,11 @@ class RoundTripPage {
   }
 
   async openRoundTripModal() {
-    await this.manageRoundTripsButton.click();
-    await expect(this.roundTripsModalPage).toBeVisible();
+    await expect(this.manageRoundTripsButton).toBeEnabled();
+    await expect(async () => {
+      await this.manageRoundTripsButton.click();
+      await expect(this.roundTripsModalPage).toBeVisible();
+    }).toPass();
   }
 
   async cancelRoundTripModal() {
