@@ -21,7 +21,6 @@ Flags (optional, can be combined):
   sw           Enable single worker mode (docker/docker-compose.single-worker.yml)
   host         Use host networking mode (docker/docker-compose.host.yml)
   playwright   Start playwright container with the stack (docker/docker-compose.playwright.yml)
-  telemetry    Activate telemetry on the webservices and start Jaeger (docker/docker-compose.telemetry.yml)
   default      Reset to base configuration only and clear saved state
 
 Examples:
@@ -62,7 +61,7 @@ while [[ $# -gt 0 ]]; do
             DEFAULT_FLAG=true
             shift
             ;;
-        dev-front|ext-front|sw|host|playwright|telemetry)
+        dev-front|ext-front|sw|host|playwright)
             flags+=("$1")
             shift
             ;;
@@ -152,11 +151,6 @@ if has_flag "playwright"; then
     export PLAYWRIGHT_VERSION=$PLAYWRIGHT_VERSION
 
     compose_files+=("$OVERRIDE_DIR/docker-compose.playwright.yml")
-fi
-
-if has_flag "telemetry"; then
-    compose_files+=("$OVERRIDE_DIR/docker-compose.telemetry.yml")
-    export COMPOSE_PROFILES=telemetry
 fi
 
 
