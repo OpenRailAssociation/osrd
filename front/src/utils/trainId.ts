@@ -237,3 +237,15 @@ export const isTrainIdInTimetable = (
   if (!isOccurrenceId(trainId)) return true;
   return isOccurrencePresentInPacedTrain(trainId, trainSchedule);
 };
+
+/**
+ * Given a train ID (either an occurrence or a paced/unique train), get the editoast ID,
+ * returns the train id in the Editoast format (used for api).
+ * @param trainId
+ * @returns
+ */
+export function extractEditoastIdFromTrainId(trainId: TrainId): number {
+  return extractEditoastIdFromPacedTrainId(
+    isOccurrenceId(trainId) ? extractPacedTrainIdFromOccurrenceId(trainId) : trainId
+  );
+}

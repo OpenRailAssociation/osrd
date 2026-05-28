@@ -351,7 +351,13 @@ const SimulationResults = ({
                 },
               },
             ]}
-            customHeader={<TrainHeader train={simulationResults.train} />}
+            customHeader={
+              <TrainHeader
+                train={simulationResults.train}
+                trainSchedulesWithDetails={trainSchedulesWithDetails}
+                upsertTrainSchedules={upsertTrainSchedules}
+              />
+            }
             customFooter={
               simulationResults?.isValid && (
                 <div className="time-stop-outputs">
