@@ -364,7 +364,7 @@ const StdcmResults = ({
                     <div className="get-simulation">
                       <div className="download-simulation" data-testid="download-simulation">
                         <Button
-                          data-testid="download-simulation-button"
+                          dataTestID="download-simulation-button"
                           label={t('downloadSimulationSheet')}
                           onClick={downloadPdf}
                           isDisabled={areSegmentsLoading || pdfInstance.loading}
