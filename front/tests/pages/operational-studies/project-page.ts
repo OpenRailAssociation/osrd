@@ -99,7 +99,10 @@ class ProjectPage extends HomePage {
   }
 
   async openProjectByName(projectName: string) {
-    await this.getProjectByName(projectName).hover();
+    const project = this.getProjectByName(projectName);
+    await expect(project).toBeVisible();
+    await project.scrollIntoViewIfNeeded();
+    await project.hover();
     await this.openProjectButton(projectName).click();
   }
 
