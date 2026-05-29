@@ -41,7 +41,7 @@ class SimulationResultPage {
     this.simulationTableRows = this.simulationResultTable.locator('tbody tr');
     this.allViasButton = page.getByTestId('all-vias-button');
     this.retainSimulationButton = page.getByTestId('retain-simulation-button');
-    this.downloadSimulationButton = page.getByTestId('download-simulation');
+    this.downloadSimulationButton = page.getByTestId('download-simulation-button');
     this.startNewQueryButton = page.getByTestId('start-new-query-button');
     this.startNewQueryWithDataButton = page.getByTestId('start-new-query-with-data-button');
     this.feedbackCardContainer = page.getByTestId('feedback-card');
@@ -154,6 +154,7 @@ class SimulationResultPage {
 
   async downloadSimulation(downloadDir: string): Promise<void> {
     await expect(this.downloadSimulationButton).toBeVisible();
+    await expect(this.downloadSimulationButton).toBeEnabled();
 
     const download = await triggerFileDownload(this.page, this.downloadSimulationButton);
 

@@ -120,14 +120,28 @@ class STDCMPage {
   }
 
   private async launchSimulation(): Promise<void> {
-    await expect(this.pathfindingStatusMessage).toBeHidden();
     await expect(this.launchSimulationButton).toBeVisible();
     await expect(this.launchSimulationButton).toBeEnabled();
-    await this.launchSimulationButton.click({ force: true });
+    await this.launchSimulationButton.click();
   }
 
   async verifyValidSimulationLaunch(expectedCompletedStatus: string): Promise<void> {
-    await this.launchSimulation();
+    // Playwright's retrying assertion to wait for a stable
+    // terminal state: either the banner has finished animating out, or it
+    // is currently showing the success class. Both indicate pathfinding is
+    // no longer in flight and the launch click will be accepted.
+    await expect(async () => {
+      if (!(await this.pathfindingStatusMessage.isVisible())) return;
+      await expect(this.pathfindingStatusMessage).toHaveClass(/pathfinding-status-success/);
+    }).toPass();
+    // The launch button can briefly re-disable while consist-change recomputes
+    // so a single click may be swallowed. Retry the click until
+    // the simulation actually starts.
+    await expect(async () => {
+      await expect(this.launchSimulationButton).toBeEnabled();
+      await this.launchSimulationButton.click();
+      await expect(this.simulationStatus).toBeVisible();
+    }).toPass();
     await expect(this.simulationStatus).toHaveText(expectedCompletedStatus);
   }
 

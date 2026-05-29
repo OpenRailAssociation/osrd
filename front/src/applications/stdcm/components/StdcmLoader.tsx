@@ -104,7 +104,7 @@ const StdcmLoader = ({
         <h2>{t(loadingStatusLabelKey)}</h2>
         <div className="stdcm-loader__cancel-btn">
           <Button
-            data-testid="cancel-simulation-button"
+            dataTestID="cancel-simulation-button"
             variant="Cancel"
             label={t('simulation.stopCalculation')}
             size="small"
