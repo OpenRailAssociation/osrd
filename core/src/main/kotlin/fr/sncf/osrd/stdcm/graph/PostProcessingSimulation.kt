@@ -334,17 +334,12 @@ private fun makeFixedPoint(
     offset = Offset.min(offset, pathLength)
     var time = getTimeOnEdges(edges, offset, updatedTimeData)
 
-    // Points located on engineering allowances are tricky to get right: we know we need to add some
-    // time compared to the reference time, but we don't know how much. The standalone sim can't
-    // take "valid intervals", just scheduled points.
-    // This is a "best effort" guess, were we assume that the allowance is mostly distributed
-    // linearly. TODO: find a more robust algorithm.
-    val currentAllowances = allowanceRanges.filter { conflictOffset in it.from..<it.to }
-    for (currentAllowance in currentAllowances) {
-        val relativeAllowancePosition =
-            (offset - currentAllowance.from) / (currentAllowance.to - currentAllowance.from)
-        val extraAllowanceTime = currentAllowance.addedDuration * relativeAllowancePosition
-        time += extraAllowanceTime
+    // getTimeOnEdges returns the "un-slowed" time inside an allowance range (the added delay only
+    // appears at the carrier edge's start). We can't sum each containing range's contribution:
+    // overlapping/nested ranges would double-count and produce non-monotonic times. Instead we
+    // interpolate between the reliable cumulative times known at each range boundary.
+    if (allowanceRanges.any { offset in it.from..it.to }) {
+        time = interpolateAllowanceTime(edges, offset, updatedTimeData, allowanceRanges)
     }
 
     val nextConflictTime =
@@ -358,6 +353,43 @@ private fun makeFixedPoint(
     time = min(nextConflictTime, time)
 
     return FixedTimePoint(time, offset, if (stopDuration > 0) stopDuration else null)
+}
+
+/**
+ * Estimates the time at an offset located inside one or more engineering allowance ranges.
+ *
+ * Each range ends at its carrier edge's start, whose exploration time already includes the absorbed
+ * delay; those per-boundary times are monotonic in offset. We collect all range boundaries, attach
+ * each one's exploration time (forced non-decreasing as a safety net), then linearly interpolate
+ * the requested offset between its bracketing boundaries. This replaces summing each containing
+ * range's linear ramp, which double-counted delay on overlapping/nested ranges.
+ */
+private fun interpolateAllowanceTime(
+    edges: List<STDCMEdge>,
+    offset: Offset<PhysicsPath>,
+    updatedTimeData: TimeData,
+    allowanceRanges: List<EngineeringAllowanceRange>,
+): Double {
+    val boundaries = sortedSetOf<Offset<PhysicsPath>>()
+    for (range in allowanceRanges) {
+        boundaries.add(range.from)
+        boundaries.add(range.to)
+    }
+    val anchors = mutableListOf<Pair<Offset<PhysicsPath>, Double>>()
+    var prevTime = Double.NEGATIVE_INFINITY
+    for (b in boundaries) {
+        val t = max(prevTime, getTimeOnEdges(edges, b, updatedTimeData))
+        anchors.add(b to t)
+        prevTime = t
+    }
+    val hiIndex = anchors.indexOfFirst { it.first >= offset }
+    if (hiIndex < 0) return anchors.last().second
+    if (hiIndex == 0) return anchors.first().second
+    val (loOffset, loTime) = anchors[hiIndex - 1]
+    val (hiOffset, hiTime) = anchors[hiIndex]
+    if (hiOffset == loOffset) return hiTime
+    val ratio = (offset - loOffset) / (hiOffset - loOffset)
+    return loTime + (hiTime - loTime) * ratio
 }
 
 /**
