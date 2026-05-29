@@ -127,6 +127,7 @@ pub enum InfraGrant {
     fga::Type,
     fga::User,
     fga::Object,
+    derive_more::Display,
     derive_more::From,
     derive_more::FromStr,
     derive_more::Deref,

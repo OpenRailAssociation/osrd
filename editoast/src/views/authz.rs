@@ -509,39 +509,57 @@ pub(in crate::views) async fn user_grants(
     let authorizer = UserAuthorizer::new(user, roles, regulator.openfga(), db_pool.get().await?);
 
     let mut response = HashMap::<_, Vec<UserResourceGrant>>::new();
-    if let Some(infra_ids) = body.get(&ResourceType::Infra) {
-        for infra_id in infra_ids {
-            let grant_access = authz::v2::infra_effective_grant(
-                authz::Subject::user(user),
-                authz::Infra(*infra_id),
-            )
-            .map_some_into::<StandardGrant>()
+    // TODO build all protected at once, zip them and batch send them with `authorize_all`
+    for (resource_type, ids) in &body {
+        for id in ids {
+            let grant_access = match resource_type {
+                ResourceType::Infra => {
+                    authz::v2::infra_effective_grant(authz::Subject::user(user), authz::Infra(*id))
+                        .map_some_into::<StandardGrant>()
+                }
+
+                ResourceType::RollingStock => authz::v2::rolling_stock_effective_grant(
+                    authz::Subject::user(user),
+                    authz::RollingStock(*id),
+                )
+                .map_some_into::<StandardGrant>(),
+            }
             .authorize(&authorizer)
+            .await?
+            .access()
             .await?;
-            let grant = match grant_access.access().await? {
+            let grant = match grant_access {
                 Ok(Some(grant)) => grant,
                 Ok(None) => continue,
                 Err(Check::InfraExists(infra)) => {
                     tracing::warn!(%infra, "non-existent infra — skipping");
                     continue;
                 }
-                Err(Check::HasInfraPrivilege(Actor::Issuer, privilege, infra)) => {
-                    debug_assert_eq!(privilege, InfraPrivilege::CanRead);
+                Err(Check::HasInfraPrivilege(Actor::Issuer, InfraPrivilege::CanRead, infra)) => {
                     tracing::warn!(%infra, "user cannot read infra — skipping");
+                    continue;
+                }
+                Err(Check::HasRollingStockPrivilege(
+                    Actor::Issuer,
+                    RollingStockPrivilege::CanRead,
+                    rolling_stock,
+                )) => {
+                    tracing::warn!(%rolling_stock, "user cannot read rolling stock — skipping");
                     continue;
                 }
                 Err(Check::SubjectExists(subject)) => {
                     unreachable!("{subject} exists or race condition")
                 }
+                Err(Check::RollingStockExists(rolling_stock)) => {
+                    tracing::warn!(%rolling_stock, "non-existent rolling stock — skipping");
+                    continue;
+                }
                 Err(check) => impossible!(check),
             };
             response
-                .entry(ResourceType::Infra)
+                .entry(*resource_type)
                 .or_default()
-                .push(UserResourceGrant {
-                    id: *infra_id,
-                    grant,
-                });
+                .push(UserResourceGrant { id: *id, grant });
         }
     }
 
@@ -933,20 +951,20 @@ pub(in crate::views) async fn list_groups(
 
 #[cfg(test)]
 mod tests {
+    use authz::RollingStockGrant;
+    use axum::http::StatusCode;
+    use pretty_assertions::assert_eq;
+    use serde_json::json;
     use std::collections::HashSet;
 
     use authz::v2::TestClientExt as _;
-    use axum::http::StatusCode;
-
-    use crate::fixtures::create_empty_infra;
-    use crate::views::test_app::test_app;
 
     use super::*;
+    use crate::fixtures::create_empty_infra;
+    use crate::fixtures::create_fast_rolling_stock;
     use crate::fixtures::create_small_infra;
     use crate::views::test_app::TestRequestExt;
-    use pretty_assertions::assert_eq;
-
-    use serde_json::json;
+    use crate::views::test_app::test_app;
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn me_privileges() {
@@ -1118,26 +1136,31 @@ mod tests {
         let app = test_app!().build();
         let db_pool = app.db_pool();
         let infra = create_small_infra(&mut db_pool.get_ok()).await;
+        let rs_with_grant = create_fast_rolling_stock(&mut db_pool.get_ok(), "rs_with_grant").await;
+        let rs_no_grant = create_fast_rolling_stock(&mut db_pool.get_ok(), "rs_no_grant").await;
         let infra_no_grant = create_small_infra(&mut db_pool.get_ok()).await;
+
         let user = app
             .user("test", "Test")
             .with_roles([Role::OperationalStudies])
             .with_infra_grant(infra.id, InfraGrant::Reader)
+            .with_rolling_stock_grant(rs_with_grant.id, RollingStockGrant::Reader)
             .create()
             .await;
 
-        // Ask the grant of the user for the infra
+        // Ask the grant of the user for the resources
         let response: HashMap<ResourceType, Vec<UserResourceGrant>> = app
             .post("/authz/me/grants")
             .by_user(user.as_ref())
             .json(&json!({
                 "infra": [infra.id],
+                "rolling_stock": [rs_with_grant.id],
             }))
             .await
             .assert_status_ok()
             .json();
 
-        // Check the direct grant is there
+        // Check the direct grants are there
         assert_eq!(
             response.get(&ResourceType::Infra).unwrap(),
             &[UserResourceGrant {
@@ -1145,31 +1168,46 @@ mod tests {
                 grant: StandardGrant::Reader
             }]
         );
+        assert_eq!(
+            response.get(&ResourceType::RollingStock).unwrap(),
+            &[UserResourceGrant {
+                id: rs_with_grant.id,
+                grant: StandardGrant::Reader
+            }]
+        );
 
-        let _group = app
-            .group("Group")
+        app.group("Group")
             .with_members([&user])
             .with_infra_grant(infra.id, InfraGrant::Writer)
+            .with_rolling_stock_grant(rs_with_grant.id, RollingStockGrant::Writer)
             .create()
             .await;
 
-        // Ask the grant of the user for the infra again
+        // Ask the grant of the user for the resources again
         let response: HashMap<ResourceType, Vec<UserResourceGrant>> = app
             .post("/authz/me/grants")
             .by_user(user.as_ref())
             .json(&json!({
                 "infra": [infra.id, infra_no_grant.id, infra_no_grant.id + 1000],
+                "rolling_stock": [rs_with_grant.id, rs_no_grant.id, rs_no_grant.id + 1000],
             }))
             .await
             .assert_status_ok()
             .json();
 
         // Check the inherited grant from the group has overridden by the user's direct grant
-        // Unreadable and non-existent infras are filtered out
+        // Unreadable and non-existent resources are filtered out
         assert_eq!(
             response.get(&ResourceType::Infra).unwrap(),
             &[UserResourceGrant {
                 id: infra.id,
+                grant: StandardGrant::Writer
+            }]
+        );
+        assert_eq!(
+            response.get(&ResourceType::RollingStock).unwrap(),
+            &[UserResourceGrant {
+                id: rs_with_grant.id,
                 grant: StandardGrant::Writer
             }]
         );
