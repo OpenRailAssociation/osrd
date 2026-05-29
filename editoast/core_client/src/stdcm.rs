@@ -1,9 +1,10 @@
-use std::collections::BTreeSet;
 use std::collections::HashSet;
 
 use chrono::DateTime;
 use chrono::Utc;
 use schemas::rolling_stock::LoadingGaugeType;
+use schemas::rolling_stock::SupportedSignalingSystem;
+use schemas::rolling_stock::hashing_supported_signaling_systems;
 use schemas::train_schedule::Comfort;
 use schemas::train_schedule::MarginValue;
 use serde::Deserialize;
@@ -126,11 +127,13 @@ pub struct UndirectedTrackRange {
 }
 
 /// Represents a physics consist.
-#[derive(Serialize, Deserialize, Clone, Debug, ToSchema, Hash, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Clone, Debug, ToSchema, educe::Educe, PartialEq, Eq)]
+#[educe(Hash)]
 #[schema(as = CoreConsistConfiguration)]
 pub struct ConsistConfiguration {
     /// List of supported signaling systems
-    pub supported_signaling_systems: BTreeSet<String>,
+    #[educe(Hash(method(hashing_supported_signaling_systems)))]
+    pub supported_signaling_systems: HashSet<SupportedSignalingSystem>,
     pub speed_limit_tag: Option<String>,
     /// The loading gauge of the rolling stock
     pub loading_gauge_type: LoadingGaugeType,

@@ -3817,6 +3817,7 @@ export type PathfindingResult =
   | (PathfindingFailure & {
       status: 'failure';
     });
+export type SupportedSignalingSystemVariant = 'BAL' | 'BAPR' | 'TVM300' | 'TVM430' | 'ETCS_LEVEL2';
 export type PathfindingInput = {
   /** Set of authorized track section ids, empty means no restriction */
   allowed_track_sections?: string[];
@@ -3834,7 +3835,7 @@ export type PathfindingInput = {
     Empty if does not support any electrification */
   rolling_stock_supported_electrifications: string[];
   /** List of supported signaling systems */
-  rolling_stock_supported_signaling_systems: string[];
+  rolling_stock_supported_signaling_systems: SupportedSignalingSystemVariant[];
   /** Speed limit tag, used to estimate the travel time */
   speed_limit_tag?: string | null;
   /** Stop the train at the next block-delimiting signal,

@@ -745,11 +745,14 @@ pub mod tests {
             rolling_stock.startup_time
         );
         let rolling_stock: RollingStockForm = rolling_stock.into();
-        assert_eq!(
+        assert!(
             rolling_stock
                 .supported_signaling_systems()
-                .contains("ETCS_LEVEL2"),
-            false
+                .iter()
+                .all(|sss| !matches!(
+                    sss,
+                    schemas::rolling_stock::SupportedSignalingSystem::EtcsLevel2 { .. }
+                ))
         );
     }
 
@@ -998,11 +1001,14 @@ pub mod tests {
         let rolling_stock: RollingStockForm = rolling_stock.into();
 
         // THEN
-        assert_eq!(
+        assert!(
             rolling_stock
                 .supported_signaling_systems()
-                .contains("ETCS_LEVEL2"),
-            true
+                .iter()
+                .any(|sss| matches!(
+                    sss,
+                    schemas::rolling_stock::SupportedSignalingSystem::EtcsLevel2 { .. }
+                ))
         );
 
         assert_eq!(rolling_stock.name, rolling_stock_form.name);

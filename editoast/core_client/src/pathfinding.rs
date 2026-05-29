@@ -1,10 +1,13 @@
 use std::collections::BTreeSet;
+use std::collections::HashSet;
 
 use ordered_float::OrderedFloat;
 use schemas::infra::Direction;
 use schemas::infra::TrackOffset;
 use schemas::primitives::Identifier;
 use schemas::rolling_stock::LoadingGaugeType;
+use schemas::rolling_stock::SupportedSignalingSystemVariant;
+use schemas::rolling_stock::hashing_supported_signaling_systems_variant;
 use schemas::train_schedule::PathItemLocation;
 use serde::Deserialize;
 use serde::Serialize;
@@ -14,7 +17,8 @@ use crate::AsCoreRequest;
 use crate::Json;
 use crate::WorkerKey;
 
-#[derive(Debug, Hash, Serialize)]
+#[derive(Debug, educe::Educe, Serialize)]
+#[educe(Hash)]
 pub struct PathfindingRequest {
     /// Infrastructure id
     pub infra: i64,
@@ -30,7 +34,8 @@ pub struct PathfindingRequest {
     /// Empty if does not support any electrification
     pub rolling_stock_supported_electrifications: BTreeSet<String>,
     /// List of supported signaling systems
-    pub rolling_stock_supported_signaling_systems: BTreeSet<String>,
+    #[educe(Hash(method(hashing_supported_signaling_systems_variant)))]
+    pub rolling_stock_supported_signaling_systems: HashSet<SupportedSignalingSystemVariant>,
     /// Maximum speed of the rolling stock
     pub rolling_stock_maximum_speed: OrderedFloat<f64>,
     /// Rolling stock length in millimeters

@@ -21,6 +21,9 @@ pub use etcs_brake_params::EtcsBrakeParams;
 
 mod supported_signaling_system;
 pub use supported_signaling_system::SupportedSignalingSystem;
+pub use supported_signaling_system::SupportedSignalingSystemVariant;
+pub use supported_signaling_system::hashing_supported_signaling_systems;
+pub use supported_signaling_system::hashing_supported_signaling_systems_variant;
 
 mod rolling_stock_metadata;
 pub use rolling_stock_metadata::RollingStockMetadata;
@@ -56,7 +59,6 @@ use serde::Deserialize;
 use serde::Deserializer;
 use serde::Serialize;
 use serde::Serializer;
-use std::collections::BTreeSet;
 use std::collections::HashMap;
 use std::collections::HashSet;
 use utoipa::ToSchema;
@@ -122,11 +124,8 @@ pub struct RollingStock<RR: RollingResistance> {
 }
 
 impl<RR: RollingResistance> RollingStock<RR> {
-    pub fn supported_signaling_systems(&self) -> BTreeSet<String> {
-        self.supported_signaling_systems
-            .iter()
-            .map(|s| s.to_string())
-            .collect()
+    pub fn supported_signaling_systems(&self) -> HashSet<SupportedSignalingSystem> {
+        self.supported_signaling_systems.clone()
     }
 
     pub fn get_etcs_brake_params(&self) -> Option<&EtcsBrakeParams> {
