@@ -353,6 +353,8 @@
   width: 100%;
   font-size: 0.875rem;
   overflow-wrap: break-word;
+  max-height: 224px;
+  overflow-y: auto;
 
   .scenario-description {
     display: inline;
