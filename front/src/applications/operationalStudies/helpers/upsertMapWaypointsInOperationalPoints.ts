@@ -1,11 +1,7 @@
 import type { TFunction } from 'i18next';
 
-import type {
-  CorePathfindingResultSuccess,
-  PathProperties,
-  TrainSchedule,
-} from 'common/api/osrdEditoastApi';
-import type { ProjectionWaypoint } from 'modules/simulationResult/types';
+import type { CorePathfindingResultSuccess, TrainSchedule } from 'common/api/osrdEditoastApi';
+import type { PathWaypoint, ProjectionWaypoint } from 'modules/simulationResult/types';
 
 const HIGHEST_PRIORITY_WEIGHT = 100;
 
@@ -13,26 +9,26 @@ const HIGHEST_PRIORITY_WEIGHT = 100;
  * Check if the train path used waypoints added by map click and add them to the operational points
  */
 export function upsertMapWaypointsInOperationalPoints(
-  type: 'ProjectionWaypoint',
+  type: 'projection',
   path: TrainSchedule['path'],
   pathItemsPositions: CorePathfindingResultSuccess['path_item_positions'],
   operationalPoints: ProjectionWaypoint[],
   t: TFunction<'operational-studies'>
 ): ProjectionWaypoint[];
 export function upsertMapWaypointsInOperationalPoints(
-  type: 'EditoastPathOperationalPoint',
+  type: 'path',
   path: TrainSchedule['path'],
   pathItemsPositions: CorePathfindingResultSuccess['path_item_positions'],
-  operationalPoints: PathProperties['operational_points'][number][],
+  operationalPoints: PathWaypoint[],
   t: TFunction<'operational-studies'>
-): PathProperties['operational_points'][number][];
+): PathWaypoint[];
 export function upsertMapWaypointsInOperationalPoints(
-  type: 'ProjectionWaypoint' | 'EditoastPathOperationalPoint',
+  type: 'projection' | 'path',
   path: TrainSchedule['path'],
   pathItemsPositions: CorePathfindingResultSuccess['path_item_positions'],
-  operationalPoints: (ProjectionWaypoint | PathProperties['operational_points'][number])[],
+  operationalPoints: (ProjectionWaypoint | PathWaypoint)[],
   t: TFunction<'operational-studies'>
-): (ProjectionWaypoint | PathProperties['operational_points'][number])[] {
+): (ProjectionWaypoint | PathWaypoint)[] {
   return path.reduce(
     (operationalPointsWithAllWaypoints, step, stepIndex) => {
       const location = step.location;
@@ -49,6 +45,9 @@ export function upsertMapWaypointsInOperationalPoints(
         }
 
         const baseFormattedStep = {
+          waypointId: `pathitem-${step.id}`,
+          opId: null,
+          pathItemId: step.id,
           name: stepName,
           uic: 0,
           country_code: '??',
@@ -56,20 +55,16 @@ export function upsertMapWaypointsInOperationalPoints(
           main_code: '',
           position: positionOnPath,
           weight: HIGHEST_PRIORITY_WEIGHT,
+          location,
         };
         const formattedStep =
-          type === 'ProjectionWaypoint'
+          type === 'projection'
             ? {
                 ...baseFormattedStep,
-                waypointId: step.id,
-                opId: null,
-                pathItemId: step.id,
-                location,
               }
             : {
                 ...baseFormattedStep,
                 part: { track: location.track, position: location.offset, local_track_name: 'V1' },
-                id: step.id,
               };
 
         // If we can't find any op position greater than the current step position, we add it at the end
@@ -82,23 +77,16 @@ export function upsertMapWaypointsInOperationalPoints(
         return operationalPointsWithAllWaypoints;
       }
 
-      if (location.operational_point.type === 'uic') {
-        const matchedIndex = operationalPointsWithAllWaypoints.findIndex(
-          (op) =>
-            location.operational_point.type === 'uic' &&
-            location.operational_point.uic === op.uic &&
-            location.operational_point.secondary_code === op.secondary_code
-        );
+      const matchedIndex = operationalPointsWithAllWaypoints.findIndex(
+        (op) => step.id === op.pathItemId
+      );
 
-        if (matchedIndex !== -1) {
-          // Replace the operational point at its original index with updated weight
-          operationalPointsWithAllWaypoints[matchedIndex] = {
-            ...operationalPointsWithAllWaypoints[matchedIndex],
-            weight: HIGHEST_PRIORITY_WEIGHT,
-          };
-        }
-
-        return operationalPointsWithAllWaypoints;
+      if (matchedIndex !== -1) {
+        // Replace the operational point at its original index with updated weight
+        operationalPointsWithAllWaypoints[matchedIndex] = {
+          ...operationalPointsWithAllWaypoints[matchedIndex],
+          weight: HIGHEST_PRIORITY_WEIGHT,
+        };
       }
 
       return operationalPointsWithAllWaypoints;

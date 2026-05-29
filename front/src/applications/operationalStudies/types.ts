@@ -21,7 +21,7 @@ import type {
   PathfindingResult,
 } from 'common/api/osrdEditoastApi';
 import type { RangedValue } from 'common/types';
-import type { ProjectionWaypoint } from 'modules/simulationResult/types';
+import type { ProjectionWaypoint, PathWaypoint } from 'modules/simulationResult/types';
 import type { SuggestedOP } from 'modules/trainSchedule/types';
 import type { Train, TrainScheduleWithPathOps } from 'reducers/osrdconf/types';
 import type { Duration } from 'utils/duration';
@@ -113,7 +113,7 @@ export type PathPropertiesFormatted = {
   electrifications: ElectrificationRange[];
   curves: PositionData<'radius'>[];
   slopes: PositionData<'gradient'>[];
-  operationalPoints: PathProperties['operational_points'];
+  operationalPoints: PathWaypoint[];
   geometry: PathProperties['geometry'];
   voltages: RangedValue[];
 };

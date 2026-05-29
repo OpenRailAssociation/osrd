@@ -28,7 +28,7 @@ import {
 } from 'utils/trainId';
 
 import type { SimulationResults } from '../types';
-import { matchOpRefAndOp, preparePathPropertiesData } from '../utils';
+import { matchOpRefAndWaypoint, preparePathPropertiesData } from '../utils';
 import { useScenarioContext } from './useScenarioContext';
 
 /**
@@ -45,8 +45,8 @@ export const sortPathOperationalPoints = (
 ): CoreOperationalPointOnPath[] =>
   ops.toSorted((a, b) => {
     if (a.position !== b.position) return a.position - b.position;
-    const aPathIndex = path.findIndex((pathItem) => matchOpRefAndOp(pathItem.location, a));
-    const bPathIndex = path.findIndex((pathItem) => matchOpRefAndOp(pathItem.location, b));
+    const aPathIndex = path.findIndex((pathItem) => matchOpRefAndWaypoint(pathItem.location, a));
+    const bPathIndex = path.findIndex((pathItem) => matchOpRefAndWaypoint(pathItem.location, b));
     const lastIndex = path.length - 1;
     const aIsOrigin = aPathIndex === 0;
     const bIsOrigin = bPathIndex === 0;

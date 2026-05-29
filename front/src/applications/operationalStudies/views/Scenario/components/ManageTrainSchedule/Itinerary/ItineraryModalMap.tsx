@@ -4,7 +4,7 @@ import type { Feature, Position } from 'geojson';
 import { useTranslation } from 'react-i18next';
 import type { MapLayerMouseEvent, MapRef } from 'react-map-gl/maplibre';
 
-import { matchOpRefAndOp } from 'applications/operationalStudies/utils';
+import { matchOpRefAndWaypoint } from 'applications/operationalStudies/utils';
 import {
   osrdEditoastApi,
   type OperationalPoint,
@@ -362,7 +362,7 @@ const ItineraryModalMap = ({
                 coordinates = pathStepMetadata.coordinates;
               } else {
                 const matchedOp = pathProperties.operational_points.find((op) =>
-                  matchOpRefAndOp(pathStepLocation, op)
+                  matchOpRefAndWaypoint(pathStepLocation, op)
                 );
                 const trackMetadata = pathStepMetadata.parts.find(
                   (part) => part.type === 'valid' && part.trackId === matchedOp?.part.track

@@ -10,7 +10,7 @@ import type {
 import type { PathPropertiesFormatted, PositionData } from 'applications/operationalStudies/types';
 import type { CoreReportTrain, SimulationResponseSuccess } from 'common/api/osrdEditoastApi';
 import { TAG_COLORS } from 'modules/simulationResult/consts';
-import type { SpeedLimitTagValue } from 'modules/simulationResult/types';
+import type { PathWaypoint, SpeedLimitTagValue } from 'modules/simulationResult/types';
 import { mmToKm, msToKmh, mToKm } from 'utils/physics';
 
 import { electricalProfilesDesignValues } from './consts';
@@ -98,7 +98,7 @@ const formatMrsp = (mrsp: SimulationResponseSuccess['mrsp']) => ({
   values: mrsp.values.map((speed) => ({ speed: msToKmh(speed.speed), isTemporary: false })),
 });
 
-export const formatStops = (operationalPoints: PathPropertiesFormatted['operationalPoints']) =>
+export const formatStops = (operationalPoints: PathWaypoint[]) =>
   operationalPoints.map(({ position, weight, name, secondary_code }) => ({
     position: {
       start: mmToKm(position),

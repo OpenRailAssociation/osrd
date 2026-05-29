@@ -1,8 +1,7 @@
 import type { TFunction } from 'i18next';
-import { type Dictionary, isEqual } from 'lodash';
+import { type Dictionary, isEqual, omit } from 'lodash';
 
 import type {
-  OperationalPoint,
   OperationalPointReference,
   CorePathfindingResultSuccess,
   PathItemLocation,
@@ -15,8 +14,10 @@ import type {
   ScheduleItem,
   PathItem,
   TrainScheduleResponse,
+  CoreOperationalPointOnPath,
 } from 'common/api/osrdEditoastApi';
 import getPathVoltages from 'modules/pathfinding/helpers/getPathVoltages';
+import type { PathWaypoint } from 'modules/simulationResult/types';
 import { isPacedTrain } from 'modules/trainSchedule/helpers/pacedTrain';
 import type { SimulationSummary } from 'modules/trainSchedule/types';
 import type { TrainScheduleWithPathOps } from 'reducers/osrdconf/types';
@@ -167,6 +168,27 @@ export const transformElectricalBoundariesToRanges = (
   return formattedData;
 };
 
+export const matchOpRefAndWaypoint = (
+  location: PathItemLocation,
+  waypoint: CoreOperationalPointOnPath
+) => {
+  if (location.type === 'track_offset') return false;
+
+  if (location.operational_point.type === 'id') {
+    return location.operational_point.operational_point === waypoint.id;
+  }
+  if (location.operational_point.type === 'uic') {
+    return (
+      location.operational_point.uic === waypoint.uic &&
+      location.operational_point.secondary_code === waypoint.secondary_code
+    );
+  }
+  return (
+    location.operational_point.trigram === waypoint.main_code &&
+    location.operational_point.secondary_code === waypoint.secondary_code
+  );
+};
+
 /**
  * Format path properties data to be used in simulation results charts
  */
@@ -191,11 +213,29 @@ export const preparePathPropertiesData = (
 
   const voltageRanges = electricalProfiles ? getPathVoltages(electrifications, length) : [];
 
+  const formattedOperationalPoints: PathWaypoint[] = operational_points.map((op) => {
+    const matchedPathItem = trainSchedulePath.find((step) =>
+      matchOpRefAndWaypoint(step.location, op)
+    );
+    return {
+      ...omit(op, 'id'),
+      waypointId: `op-${op.id}-${op.position}`,
+      opId: op.id,
+      pathItemId: matchedPathItem?.id ?? null,
+      location: matchedPathItem
+        ? matchedPathItem.location
+        : {
+            type: 'operational_point_part_reference',
+            operational_point: { type: 'id', operational_point: op.id },
+          },
+    };
+  });
+
   const operationalPointsWithAllWaypoints = upsertMapWaypointsInOperationalPoints(
-    'EditoastPathOperationalPoint',
+    'path',
     trainSchedulePath,
     path_item_positions,
-    operational_points,
+    formattedOperationalPoints,
     t
   );
 
@@ -402,25 +442,4 @@ export const getInvalidStepLabel = (opRef: OperationalPointReference) => {
   if (opRef.type === 'uic') return opRef.uic.toString();
   if (opRef.type === 'trigram') return opRef.trigram;
   return opRef.operational_point;
-};
-
-export const matchOpRefAndOp = (
-  location: PathItemLocation,
-  op: PathProperties['operational_points'][number] | OperationalPoint
-) => {
-  if (location.type === 'track_offset') return false;
-
-  if (location.operational_point.type === 'id') {
-    return location.operational_point.operational_point === op.id;
-  }
-  if (location.operational_point.type === 'uic') {
-    return (
-      location.operational_point.uic === op.uic &&
-      location.operational_point.secondary_code === op.secondary_code
-    );
-  }
-  return (
-    location.operational_point.trigram === op.main_code &&
-    location.operational_point.secondary_code === op.secondary_code
-  );
 };

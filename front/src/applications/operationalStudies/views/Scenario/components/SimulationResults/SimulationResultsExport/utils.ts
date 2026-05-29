@@ -95,7 +95,10 @@ export const formatOperationalPoints = (
     let stepDuration: Duration | undefined;
     const correspondingStep = trainSchedule.path.find((step) =>
       matchPathStepAndOp(step.location, {
-        opId: op.id,
+        // opId won't be defined for "trackoffset" ops but matchPathStepAndOp will match them
+        // with their track as their location is of type "track_offset"
+        // TODO: find a better way to handle this
+        opId: op.opId ?? '',
         uic: op.uic,
         secondaryCode: op.secondary_code,
         mainCode: op.main_code,
@@ -120,7 +123,7 @@ export const formatOperationalPoints = (
     }
 
     const opCommonProp = {
-      id: op.id,
+      id: op.waypointId,
       name: op.name,
       duration: stepDuration,
       position: mmToM(op.position),

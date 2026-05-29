@@ -1,7 +1,8 @@
 import type { TFunction } from 'i18next';
 import { describe, it, expect } from 'vitest';
 
-import type { PathItem, PathProperties } from 'common/api/osrdEditoastApi';
+import type { PathItem } from 'common/api/osrdEditoastApi';
+import type { PathWaypoint } from 'modules/simulationResult/types';
 
 import { upsertMapWaypointsInOperationalPoints } from '../helpers/upsertMapWaypointsInOperationalPoints';
 
@@ -19,9 +20,11 @@ type Op = {
   positionOnPath: number;
 };
 
-const getOperationalPoints = (inputs: Op[]): NonNullable<PathProperties['operational_points']> =>
+const getOperationalPoints = (inputs: Op[]): PathWaypoint[] =>
   inputs.map((op) => ({
-    id: op.name,
+    waypointId: op.name,
+    opId: null,
+    pathItemId: null,
     name: op.name,
     uic: op.uic,
     country_code: '??',
@@ -34,6 +37,13 @@ const getOperationalPoints = (inputs: Op[]): NonNullable<PathProperties['operati
     },
     position: op.positionOnPath,
     weight: null,
+    location: {
+      type: 'operational_point_part_reference',
+      operational_point: {
+        type: 'uic',
+        uic: op.uic,
+      },
+    },
   }));
 
 const OPERATIONAL_POINTS = getOperationalPoints([
@@ -97,16 +107,18 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
     const pathItemPositions = [0, 9246000, 26500000];
 
     const operationalPointsWithAllWaypoints = upsertMapWaypointsInOperationalPoints(
-      'EditoastPathOperationalPoint',
+      'path',
       pathSteps,
       pathItemPositions,
       OPERATIONAL_POINTS,
       tMock
     );
 
-    expect(operationalPointsWithAllWaypoints).toEqual([
+    const expectedOps: PathWaypoint[] = [
       {
-        id: 'West_station',
+        opId: null,
+        waypointId: 'West_station',
+        pathItemId: null,
         name: 'West_station',
         uic: 2,
         country_code: '??',
@@ -119,9 +131,18 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
         },
         position: 0,
         weight: null,
+        location: {
+          type: 'operational_point_part_reference',
+          operational_point: {
+            type: 'uic',
+            uic: 2,
+          },
+        },
       },
       {
-        id: '2',
+        opId: null,
+        waypointId: 'pathitem-2',
+        pathItemId: '2',
         name: 't_requestedPoint',
         uic: 0,
         country_code: '??',
@@ -134,9 +155,16 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
         },
         position: 9246000,
         weight: 100,
+        location: {
+          type: 'track_offset',
+          track: 'TA6',
+          offset: 7746000,
+        },
       },
       {
-        id: 'Mid_West_station',
+        opId: null,
+        waypointId: 'Mid_West_station',
+        pathItemId: null,
         name: 'Mid_West_station',
         uic: 3,
         country_code: '??',
@@ -149,9 +177,18 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
         },
         position: 12050000,
         weight: null,
+        location: {
+          type: 'operational_point_part_reference',
+          operational_point: {
+            type: 'uic',
+            uic: 3,
+          },
+        },
       },
       {
-        id: 'Mid_East_station',
+        opId: null,
+        waypointId: 'Mid_East_station',
+        pathItemId: null,
         name: 'Mid_East_station',
         uic: 4,
         country_code: '??',
@@ -164,8 +201,17 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
         },
         position: 26500000,
         weight: null,
+        location: {
+          type: 'operational_point_part_reference',
+          operational_point: {
+            type: 'uic',
+            uic: 4,
+          },
+        },
       },
-    ]);
+    ];
+
+    expect(operationalPointsWithAllWaypoints).toEqual(expectedOps);
   });
 
   it('should add waypoints properly even when the last two come from map clicks', () => {
@@ -198,7 +244,7 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
     const pathItemPositions = [0, 4198000, 4402000];
 
     const operationalPointsWithAllWaypoints = upsertMapWaypointsInOperationalPoints(
-      'EditoastPathOperationalPoint',
+      'path',
       pathSteps,
       pathItemPositions,
       getOperationalPoints([
@@ -213,9 +259,11 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
       tMock
     );
 
-    expect(operationalPointsWithAllWaypoints).toEqual([
+    const expectedOps: PathWaypoint[] = [
       {
-        id: '1',
+        opId: null,
+        waypointId: 'pathitem-1',
+        pathItemId: '1',
         name: 't_requestedOrigin',
         uic: 0,
         country_code: '??',
@@ -228,9 +276,16 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
         },
         position: 0,
         weight: 100,
+        location: {
+          type: 'track_offset',
+          track: 'TA6',
+          offset: 6481000,
+        },
       },
       {
-        id: 'Mid_West_station',
+        opId: null,
+        waypointId: 'Mid_West_station',
+        pathItemId: null,
         name: 'Mid_West_station',
         uic: 3,
         country_code: '??',
@@ -243,9 +298,18 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
         },
         position: 4069000,
         weight: null,
+        location: {
+          type: 'operational_point_part_reference',
+          operational_point: {
+            type: 'uic',
+            uic: 3,
+          },
+        },
       },
       {
-        id: '2',
+        opId: null,
+        waypointId: 'pathitem-2',
+        pathItemId: '2',
         name: 't_requestedPoint',
         uic: 0,
         country_code: '??',
@@ -258,9 +322,16 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
         },
         position: 4198000,
         weight: 100,
+        location: {
+          type: 'track_offset',
+          track: 'TC0',
+          offset: 679000,
+        },
       },
       {
-        id: '3',
+        opId: null,
+        waypointId: 'pathitem-3',
+        pathItemId: '3',
         name: 't_requestedDestination',
         uic: 0,
         country_code: '??',
@@ -273,8 +344,15 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
         },
         position: 4402000,
         weight: 100,
+        location: {
+          type: 'track_offset',
+          track: 'TC0',
+          offset: 883000,
+        },
       },
-    ]);
+    ];
+
+    expect(operationalPointsWithAllWaypoints).toEqual(expectedOps);
   });
 
   it('should add waypoints properly when there is no op on path', () => {
@@ -299,16 +377,18 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
     const pathItemPositions = [0, 1748000];
 
     const operationalPointsWithAllWaypoints = upsertMapWaypointsInOperationalPoints(
-      'EditoastPathOperationalPoint',
+      'path',
       pathSteps,
       pathItemPositions,
       [],
       tMock
     );
 
-    expect(operationalPointsWithAllWaypoints).toEqual([
+    const expectedOps: PathWaypoint[] = [
       {
-        id: '1',
+        opId: null,
+        waypointId: 'pathitem-1',
+        pathItemId: '1',
         name: 't_requestedOrigin',
         uic: 0,
         country_code: '??',
@@ -321,9 +401,16 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
         },
         position: 0,
         weight: 100,
+        location: {
+          type: 'track_offset',
+          track: 'TA6',
+          offset: 6481000,
+        },
       },
       {
-        id: '2',
+        opId: null,
+        waypointId: 'pathitem-2',
+        pathItemId: '2',
         name: 't_requestedDestination',
         uic: 0,
         country_code: '??',
@@ -336,8 +423,15 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
         },
         position: 1748000,
         weight: 100,
+        location: {
+          type: 'track_offset',
+          track: 'TA6',
+          offset: 4733000,
+        },
       },
-    ]);
+    ];
+
+    expect(operationalPointsWithAllWaypoints).toEqual(expectedOps);
   });
 
   it('should return the same array if there is no waypoints added by map click', () => {
@@ -379,16 +473,18 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
     const pathItemPositions = [0, 12050000, 26500000];
 
     const operationalPointsWithAllWaypoints = upsertMapWaypointsInOperationalPoints(
-      'EditoastPathOperationalPoint',
+      'path',
       pathSteps,
       pathItemPositions,
       OPERATIONAL_POINTS,
       tMock
     );
 
-    expect(operationalPointsWithAllWaypoints).toEqual([
+    const expectedOps: PathWaypoint[] = [
       {
-        id: 'West_station',
+        opId: null,
+        waypointId: 'West_station',
+        pathItemId: null,
         name: 'West_station',
         uic: 2,
         country_code: '??',
@@ -401,9 +497,18 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
         },
         position: 0,
         weight: null,
+        location: {
+          type: 'operational_point_part_reference',
+          operational_point: {
+            type: 'uic',
+            uic: 2,
+          },
+        },
       },
       {
-        id: 'Mid_West_station',
+        opId: null,
+        waypointId: 'Mid_West_station',
+        pathItemId: null,
         name: 'Mid_West_station',
         uic: 3,
         country_code: '??',
@@ -416,9 +521,18 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
         },
         position: 12050000,
         weight: null,
+        location: {
+          type: 'operational_point_part_reference',
+          operational_point: {
+            type: 'uic',
+            uic: 3,
+          },
+        },
       },
       {
-        id: 'Mid_East_station',
+        opId: null,
+        waypointId: 'Mid_East_station',
+        pathItemId: null,
         name: 'Mid_East_station',
         uic: 4,
         country_code: '??',
@@ -431,7 +545,16 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
         },
         position: 26500000,
         weight: null,
+        location: {
+          type: 'operational_point_part_reference',
+          operational_point: {
+            type: 'uic',
+            uic: 4,
+          },
+        },
       },
-    ]);
+    ];
+
+    expect(operationalPointsWithAllWaypoints).toEqual(expectedOps);
   });
 });
