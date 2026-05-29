@@ -511,14 +511,18 @@ version = "0.1.0"
 source = { editable = "../osrd_schemas_auto" }
 dependencies = [
     { name = "datamodel-code-generator" },
+    { name = "geojson-pydantic" },
     { name = "openapi-pydantic" },
+    { name = "pydantic" },
     { name = "pyyaml" },
 ]
 
 [package.metadata]
 requires-dist = [
     { name = "datamodel-code-generator", specifier = "==0.35.0" },
+    { name = "geojson-pydantic", specifier = "~=1.0.0" },
     { name = "openapi-pydantic", specifier = "==0.5.1" },
+    { name = "pydantic", specifier = ">=2.12.2" },
     { name = "pyyaml", specifier = "==6.0.3" },
 ]
 

@@ -109,6 +109,18 @@ wheels = [
 ]
 
 [[package]]
+name = "geojson-pydantic"
+version = "1.0.2"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "pydantic" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/ee/a5/e1cbfaef7cef4c8fb95b9ba46faedc6dca3b115f44bb95ef4e89c4683756/geojson_pydantic-1.0.2.tar.gz", hash = "sha256:3179d665ad8763670681b73aded2228df20a1164951e9d7075be8f370eb681f4", size = 9180, upload-time = "2024-01-16T18:13:07.259Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/b1/d5/75118ba2f51bb5110066d5f8cc50c13b222f6ff6e75b0fc2ec1ee3bd6d48/geojson_pydantic-1.0.2-py3-none-any.whl", hash = "sha256:d7a7f8ff4ca27298f62d1af182f69ec85f9990b9db80fa7e0161be1de2a9ae0f", size = 8588, upload-time = "2024-01-16T18:13:04.026Z" },
+]
+
+[[package]]
 name = "inflect"
 version = "7.5.0"
 source = { registry = "https://pypi.org/simple" }
@@ -261,7 +273,9 @@ version = "0.1.0"
 source = { editable = "." }
 dependencies = [
     { name = "datamodel-code-generator" },
+    { name = "geojson-pydantic" },
     { name = "openapi-pydantic" },
+    { name = "pydantic" },
     { name = "pyyaml" },
 ]
 
@@ -274,7 +288,9 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "datamodel-code-generator", specifier = "==0.35.0" },
+    { name = "geojson-pydantic", specifier = "~=1.0.0" },
     { name = "openapi-pydantic", specifier = "==0.5.1" },
+    { name = "pydantic", specifier = ">=2.12.2" },
     { name = "pyyaml", specifier = "==6.0.3" },
 ]
 

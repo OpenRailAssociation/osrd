@@ -2,7 +2,7 @@ from dataclasses import dataclass, field
 from os import PathLike
 from typing import List
 
-from osrd_schemas import external_generated_inputs
+from osrd_schemas_auto import external_generated_inputs
 
 from railjson_generator.schema.infra.range_elements import TrackRange
 from railjson_generator.schema.infra.track_section import TrackSection
