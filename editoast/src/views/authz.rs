@@ -6,6 +6,8 @@ use crate::authorizers::UserAuthorizer;
 use crate::authorizers::impossible;
 use crate::error::Result;
 use crate::views::Authentication;
+use crate::views::authz::resources::StandardGrant;
+use crate::views::authz::resources::StandardPrivilege;
 use ::authz;
 use ::authz::InfraGrant;
 use ::authz::InfraPrivilege;
@@ -39,6 +41,8 @@ use super::AuthenticationExt;
 use super::AuthorizationError;
 use super::AuthorizerError;
 
+mod resources;
+
 #[derive(Serialize, Deserialize, ToSchema)]
 #[cfg_attr(test, derive(Debug))]
 enum SubjectType {
@@ -52,6 +56,7 @@ enum SubjectType {
 #[cfg_attr(test, derive(Debug))]
 pub(in crate::views) enum ResourceType {
     Infra,
+    RollingStock,
 }
 
 #[derive(Debug, thiserror::Error, EditoastError)]
@@ -281,7 +286,7 @@ pub(in crate::views) async fn users_info(
 #[cfg_attr(test, derive(Deserialize, PartialEq, Eq))]
 pub(in crate::views) struct ResourcePrivileges {
     resource_id: i64,
-    privileges: HashSet<InfraPrivilege>,
+    privileges: HashSet<StandardPrivilege>,
 }
 
 #[editoast_derive::route]
@@ -327,8 +332,11 @@ pub(in crate::views) async fn user_privileges(
         .flatten();
     if let Some(user) = user {
         let infras = infra_ids.map(authz::Infra);
-        let protected_privileges =
-            infras.map(|infra| v2::infra_privileges(user, infra).zip(v2::Protected::value(infra)));
+        let protected_privileges = infras.map(|infra| {
+            v2::infra_privileges(user, infra)
+                .collect_into::<HashSet<StandardPrivilege>>()
+                .zip(v2::Protected::value(infra))
+        });
         let authorizer =
             crate::authorizers::UserAuthorizer::new(user, roles, regulator.openfga(), conn);
         let accesses = authorizer.authorize_all(protected_privileges).await?;
@@ -368,12 +376,12 @@ pub(in crate::views) async fn user_privileges(
         result_infras.extend(infras.into_iter().map(|infra| ResourcePrivileges {
             resource_id: infra.id,
             privileges: HashSet::from([
-                InfraPrivilege::CanRead,
-                InfraPrivilege::CanShareRead,
-                InfraPrivilege::CanWrite,
-                InfraPrivilege::CanShareWrite,
-                InfraPrivilege::CanDelete,
-                InfraPrivilege::CanShareOwnership,
+                StandardPrivilege::CanRead,
+                StandardPrivilege::CanShareRead,
+                StandardPrivilege::CanWrite,
+                StandardPrivilege::CanShareWrite,
+                StandardPrivilege::CanDelete,
+                StandardPrivilege::CanShareOwnership,
             ]),
         }));
     }
@@ -385,7 +393,7 @@ pub(in crate::views) async fn user_privileges(
 #[cfg_attr(test, derive(Debug, Deserialize, PartialEq))]
 pub(in crate::views) struct UserResourceGrant {
     id: i64,
-    grant: InfraGrant,
+    grant: StandardGrant,
 }
 
 #[editoast_derive::route]
@@ -423,6 +431,7 @@ pub(in crate::views) async fn user_grants(
                 authz::Subject::user(user),
                 authz::Infra(*infra_id),
             )
+            .map_some_into::<StandardGrant>()
             .authorize(&authorizer)
             .await?;
             let grant = match grant_access.access().await? {
@@ -471,7 +480,7 @@ pub(in crate::views) struct SubjectGrant {
     id: i64,
     name: String,
     r#type: SubjectType,
-    grant: InfraGrant,
+    grant: StandardGrant,
 }
 
 #[editoast_derive::route]
@@ -527,6 +536,7 @@ pub(in crate::views) async fn my_grants_on_resource(
                     rejection => impossible!(rejection),
                 })?
         }
+        ResourceType::RollingStock => todo!(),
     };
 
     // NOTE: the same subject can appear in multiple lists. This can happen
@@ -600,7 +610,8 @@ pub(in crate::views) async fn my_grants_on_resource(
             };
             let grant = subjects_grant
                 .remove(&id)
-                .expect("subjects_id is a subset of subjects_grant keys by construction");
+                .expect("subjects_id is a subset of subjects_grant keys by construction")
+                .into();
             Some(SubjectGrant {
                 id,
                 name,
@@ -618,7 +629,7 @@ pub(in crate::views) struct GrantBody {
     resource_type: ResourceType,
     resource_id: i64,
     subject_id: i64,
-    grant: InfraGrant,
+    grant: StandardGrant,
 }
 
 #[derive(Deserialize, ToSchema)]
@@ -705,14 +716,18 @@ pub(in crate::views) async fn update_grants(
                         match &auth {
                             Authentication::Authenticated(authorizer) => {
                                 authorizer
-                                    .give_infra_grant(subject, &authz::Infra(resource_id), grant)
+                                    .give_infra_grant(
+                                        subject,
+                                        &authz::Infra(resource_id),
+                                        grant.into(),
+                                    )
                                     .await
                             }
                             Authentication::SkipAuthorization { .. } => regulator
                                 .give_infra_grant_unchecked(
                                     subject,
                                     &authz::Infra(resource_id),
-                                    grant,
+                                    grant.into(),
                                 )
                                 .await
                                 .map(Authorization::Granted),
@@ -722,6 +737,7 @@ pub(in crate::views) async fn update_grants(
                         }?
                         .allowed()?;
                     }
+                    ResourceType::RollingStock => todo!(),
                 }
             }
             Ok(StatusCode::CREATED)
@@ -754,6 +770,7 @@ pub(in crate::views) async fn update_grants(
                         }?
                         .allowed()?;
                     }
+                    ResourceType::RollingStock => todo!(),
                 }
             }
             Ok(StatusCode::NO_CONTENT)
@@ -841,26 +858,26 @@ mod tests {
         assert_eq!(
             privileges.remove(&infra1).unwrap(),
             HashSet::from([
-                InfraPrivilege::CanRead,
-                InfraPrivilege::CanShareRead,
-                InfraPrivilege::CanWrite,
-                InfraPrivilege::CanShareWrite,
-                InfraPrivilege::CanDelete,
-                InfraPrivilege::CanShareOwnership,
+                StandardPrivilege::CanRead,
+                StandardPrivilege::CanShareRead,
+                StandardPrivilege::CanWrite,
+                StandardPrivilege::CanShareWrite,
+                StandardPrivilege::CanDelete,
+                StandardPrivilege::CanShareOwnership,
             ])
         );
         assert_eq!(
             privileges.remove(&infra2).unwrap(),
             HashSet::from([
-                InfraPrivilege::CanRead,
-                InfraPrivilege::CanShareRead,
-                InfraPrivilege::CanWrite,
-                InfraPrivilege::CanShareWrite,
+                StandardPrivilege::CanRead,
+                StandardPrivilege::CanShareRead,
+                StandardPrivilege::CanWrite,
+                StandardPrivilege::CanShareWrite,
             ])
         );
         assert_eq!(
             privileges.remove(&infra3).unwrap(),
-            HashSet::from([InfraPrivilege::CanRead, InfraPrivilege::CanShareRead])
+            HashSet::from([StandardPrivilege::CanRead, StandardPrivilege::CanShareRead])
         );
         assert_eq!(privileges.remove(&infra4).unwrap(), HashSet::from([]));
         assert!(!privileges.contains_key(&infra_unused));
@@ -908,22 +925,22 @@ mod tests {
             .collect::<HashMap<_, _>>();
         assert_eq!(
             privileges.remove(&infra1).unwrap(),
-            HashSet::from([InfraPrivilege::CanRead, InfraPrivilege::CanShareRead])
+            HashSet::from([StandardPrivilege::CanRead, StandardPrivilege::CanShareRead])
         );
         assert_eq!(privileges.remove(&infra2).unwrap(), HashSet::from([]));
         assert_eq!(
             privileges.remove(&infra3).unwrap(),
-            HashSet::from([InfraPrivilege::CanRead, InfraPrivilege::CanShareRead,])
+            HashSet::from([StandardPrivilege::CanRead, StandardPrivilege::CanShareRead,])
         );
         assert_eq!(
             privileges.remove(&infra4).unwrap(),
             HashSet::from([
-                InfraPrivilege::CanRead,
-                InfraPrivilege::CanShareRead,
-                InfraPrivilege::CanWrite,
-                InfraPrivilege::CanShareWrite,
-                InfraPrivilege::CanDelete,
-                InfraPrivilege::CanShareOwnership
+                StandardPrivilege::CanRead,
+                StandardPrivilege::CanShareRead,
+                StandardPrivilege::CanWrite,
+                StandardPrivilege::CanShareWrite,
+                StandardPrivilege::CanDelete,
+                StandardPrivilege::CanShareOwnership
             ])
         );
         assert!(!privileges.contains_key(&infra_unused));
@@ -953,12 +970,12 @@ mod tests {
         assert_eq!(
             privileges.remove(&infra).unwrap(),
             HashSet::from([
-                InfraPrivilege::CanRead,
-                InfraPrivilege::CanShareRead,
-                InfraPrivilege::CanWrite,
-                InfraPrivilege::CanShareWrite,
-                InfraPrivilege::CanDelete,
-                InfraPrivilege::CanShareOwnership,
+                StandardPrivilege::CanRead,
+                StandardPrivilege::CanShareRead,
+                StandardPrivilege::CanWrite,
+                StandardPrivilege::CanShareWrite,
+                StandardPrivilege::CanDelete,
+                StandardPrivilege::CanShareOwnership,
             ])
         );
     }
@@ -991,7 +1008,7 @@ mod tests {
             response.get(&ResourceType::Infra).unwrap(),
             &[UserResourceGrant {
                 id: infra.id,
-                grant: InfraGrant::Reader
+                grant: StandardGrant::Reader
             }]
         );
 
@@ -1018,7 +1035,7 @@ mod tests {
             response.get(&ResourceType::Infra).unwrap(),
             &[UserResourceGrant {
                 id: infra.id,
-                grant: InfraGrant::Writer
+                grant: StandardGrant::Writer
             }]
         );
     }
@@ -1106,11 +1123,11 @@ mod tests {
             .map(|SubjectGrant { id, grant, .. }| (id, grant))
             .collect::<HashMap<_, _>>();
 
-        assert_eq!(grants.get(&alice.id), Some(&InfraGrant::Writer)); // group grants can supersede direct user grants
-        assert_eq!(grants.get(&bob.id), Some(&InfraGrant::Owner)); // but do not override them
-        assert_eq!(grants.get(&tom.id), Some(&InfraGrant::Owner)); // direct user grant
-        assert_eq!(grants.get(&jerry.id), Some(&InfraGrant::Reader)); // likewise
-        assert_eq!(grants.get(&alice_and_bob.id), Some(&InfraGrant::Writer)); // group direct grant
+        assert_eq!(grants.get(&alice.id), Some(&StandardGrant::Writer)); // group grants can supersede direct user grants
+        assert_eq!(grants.get(&bob.id), Some(&StandardGrant::Owner)); // but do not override them
+        assert_eq!(grants.get(&tom.id), Some(&StandardGrant::Owner)); // direct user grant
+        assert_eq!(grants.get(&jerry.id), Some(&StandardGrant::Reader)); // likewise
+        assert_eq!(grants.get(&alice_and_bob.id), Some(&StandardGrant::Writer)); // group direct grant
         assert_eq!(grants.get(&tom_and_jerry.id), None); // no group grant (not even there in the response)
     }
 

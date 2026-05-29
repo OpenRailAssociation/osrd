@@ -106,6 +106,7 @@ paths:
                 type: string
                 enum:
                 - infra
+                - rolling_stock
         required: true
       responses:
         '200':
@@ -123,7 +124,7 @@ paths:
                     - grant
                     properties:
                       grant:
-                        $ref: '#/components/schemas/InfraGrant'
+                        $ref: '#/components/schemas/StandardGrant'
                       id:
                         type: integer
                         format: int64
@@ -131,6 +132,7 @@ paths:
                   type: string
                   enum:
                   - infra
+                  - rolling_stock
   /authz/me/groups:
     get:
       tags:
@@ -172,6 +174,7 @@ paths:
                 type: string
                 enum:
                 - infra
+                - rolling_stock
         required: true
       responses:
         '200':
@@ -191,7 +194,7 @@ paths:
                       privileges:
                         type: array
                         items:
-                          $ref: '#/components/schemas/InfraPrivilege'
+                          $ref: '#/components/schemas/StandardPrivilege'
                         uniqueItems: true
                       resource_id:
                         type: integer
@@ -200,6 +203,7 @@ paths:
                   type: string
                   enum:
                   - infra
+                  - rolling_stock
   /authz/user/info:
     post:
       tags:
@@ -297,7 +301,7 @@ paths:
                   - grant
                   properties:
                     grant:
-                      $ref: '#/components/schemas/InfraGrant'
+                      $ref: '#/components/schemas/StandardGrant'
                     id:
                       type: integer
                       format: int64
@@ -10404,7 +10408,7 @@ components:
       - grant
       properties:
         grant:
-          $ref: '#/components/schemas/InfraGrant'
+          $ref: '#/components/schemas/StandardGrant'
         resource_id:
           type: integer
           format: int64
@@ -10673,12 +10677,6 @@ components:
             - unused_port
           port_name:
             type: string
-    InfraGrant:
-      type: string
-      enum:
-      - READER
-      - WRITER
-      - OWNER
     InfraObject:
       oneOf:
       - type: object
@@ -10848,16 +10846,6 @@ components:
           $ref: '#/components/schemas/PathfindingTrackLocationInput'
         starting:
           $ref: '#/components/schemas/PathfindingTrackLocationInput'
-    InfraPrivilege:
-      type: string
-      enum:
-      - can_read
-      - can_share_read
-      - can_write
-      - can_share_write
-      - can_delete
-      - can_share_ownership
-      - can_revoke
     InitialSpeedChangeGroup:
       type: object
       required:
@@ -12761,6 +12749,7 @@ components:
       type: string
       enum:
       - infra
+      - rolling_stock
     RevokeBody:
       type: object
       required:
@@ -14674,6 +14663,22 @@ components:
         z:
           $ref: '#/components/schemas/Sign'
       additionalProperties: false
+    StandardGrant:
+      type: string
+      enum:
+      - READER
+      - WRITER
+      - OWNER
+    StandardPrivilege:
+      type: string
+      enum:
+      - can_read
+      - can_share_read
+      - can_write
+      - can_share_write
+      - can_delete
+      - can_share_ownership
+      - can_revoke
     StartTimeChangeGroup:
       type: object
       required:
