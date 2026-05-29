@@ -18,7 +18,7 @@ check = [
 [tool.pyright]
 include = ["railjson_generator"]
 exclude = ["**/__pycache__"]
-extraPaths = ["../../osrd_schemas_auto", "../osrd_schemas"]
+extraPaths = ["../../osrd_schemas_auto"]
 
 [tool.uv.sources]
 osrd-schemas = { path = "../osrd_schemas", editable = true }

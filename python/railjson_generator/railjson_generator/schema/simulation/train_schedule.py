@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 from typing import Union
 
-from osrd_schemas.train_schedule import (
+from osrd_schemas_auto.train_schedule import (
     AllowanceDistribution,
     AllowancePercentValue,
     AllowanceTimePerDistanceValue,
