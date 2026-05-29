@@ -4638,6 +4638,7 @@ dependencies = [
  "enum-map",
  "geos",
  "iso8601",
+ "itertools 0.15.0",
  "proptest",
  "rand 0.10.2",
  "regex",

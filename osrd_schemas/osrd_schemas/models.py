@@ -4306,6 +4306,18 @@ class SupportedSignalingSystemTVM430(BaseModel):
     type: Literal["TVM430"] = "TVM430"
 
 
+class SupportedSignalingSystemVariant(Enum):
+    """
+    Auto-generated discriminant enum variants
+    """
+
+    BAL = "BAL"
+    BAPR = "BAPR"
+    TVM300 = "TVM300"
+    TVM430 = "TVM430"
+    ETCS_LEVEL2 = "ETCS_LEVEL2"
+
+
 class SwitchPortConnection(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
@@ -6753,7 +6765,7 @@ class PathfindingInput(BaseModel):
     List of supported electrification modes.
     Empty if does not support any electrification
     """
-    rolling_stock_supported_signaling_systems: list[str]
+    rolling_stock_supported_signaling_systems: list[SupportedSignalingSystemVariant]
     """
     List of supported signaling systems
     """
