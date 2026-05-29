@@ -47,7 +47,7 @@ test.describe('Route tab', { tag: ['@op', '@route-tab'] }, () => {
         await routeTab.verifyNoSelectedRoute();
       });
 
-      await test.step('Perform pathfinding by trigrams (WS → NES via MES)', async () => {
+      await test.step('Perform pathfinding by main codes (WS → NES via MES)', async () => {
         await routeTab.performPathfindingByMainCode({
           originMainCode: 'WS',
           destinationMainCode: 'NES',
@@ -78,7 +78,7 @@ test.describe('Route tab', { tag: ['@op', '@route-tab'] }, () => {
     routeTab,
     operationalStudiesPage,
   }) => {
-    await test.step('Perform pathfinding by trigrams (WS → NES)', async () => {
+    await test.step('Perform pathfinding by main codes (WS → NES)', async () => {
       await routeTab.performPathfindingByMainCode({
         originMainCode: 'WS',
         destinationMainCode: 'NES',

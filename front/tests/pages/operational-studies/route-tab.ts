@@ -11,10 +11,10 @@ class RouteTab {
   readonly page: Page;
   private readonly noOriginChosen: Locator;
   private readonly noDestinationChosen: Locator;
-  private readonly searchByTrigramButton: Locator;
-  private readonly searchByTrigramContainer: Locator;
-  private readonly searchByTrigramInput: Locator;
-  private readonly searchByTrigramSubmit: Locator;
+  private readonly searchByMainCodeButton: Locator;
+  private readonly searchByMainCodeContainer: Locator;
+  private readonly searchByMainCodeInput: Locator;
+  private readonly searchByMainCodeSubmit: Locator;
   private readonly resultPathfindingDone: Locator;
   private readonly originInfo: Locator;
   private readonly destinationInfo: Locator;
@@ -36,10 +36,10 @@ class RouteTab {
     this.page = page;
     this.noOriginChosen = page.getByTestId('no-origin-chosen-text');
     this.noDestinationChosen = page.getByTestId('no-destination-chosen-text');
-    this.searchByTrigramButton = page.getByTestId('rocket-button');
-    this.searchByTrigramContainer = page.getByTestId('type-and-path-container');
-    this.searchByTrigramInput = page.getByTestId('type-and-path-input');
-    this.searchByTrigramSubmit = page.getByTestId('submit-search-by-main-code');
+    this.searchByMainCodeButton = page.getByTestId('rocket-button');
+    this.searchByMainCodeContainer = page.getByTestId('type-and-path-container');
+    this.searchByMainCodeInput = page.getByTestId('type-and-path-input');
+    this.searchByMainCodeSubmit = page.getByTestId('submit-search-by-main-code');
     this.resultPathfindingDone = page.getByTestId('result-pathfinding-done');
     this.originInfo = page.getByTestId('origin-op-info');
     this.destinationInfo = page.getByTestId('destination-op-info');
@@ -65,7 +65,7 @@ class RouteTab {
 
   // Get the CH locator of a waypoint suggestion.
   private static getWaypointSuggestionChLocator(waypointSuggestion: Locator): Locator {
-    return waypointSuggestion.getByTestId('suggested-via-ch');
+    return waypointSuggestion.getByTestId('suggested-via-secondary-code');
   }
 
   // Get the UIC locator of a waypoint suggestion.
@@ -123,8 +123,8 @@ class RouteTab {
     return this.page.locator('#map-container').getByText(markerName, { exact: true });
   }
 
-  private async submitSearchByTrigram() {
-    await this.searchByTrigramSubmit.click();
+  private async submitSearchByMainCode() {
+    await this.searchByMainCodeSubmit.click();
   }
 
   async deleteItinerary() {
@@ -145,7 +145,7 @@ class RouteTab {
   }
 
   // Perform pathfinding by entering origin, destination, and optionally via mainCodes.
-  async performPathfindingByTrigram({
+  async performPathfindingByMainCode({
     originMainCode,
     destinationMainCode,
     viaMainCode,
@@ -154,14 +154,14 @@ class RouteTab {
     destinationMainCode: string;
     viaMainCode?: string;
   }): Promise<void> {
-    await this.searchByTrigramButton.click();
-    await expect(this.searchByTrigramContainer).toBeVisible();
+    await this.searchByMainCodeButton.click();
+    await expect(this.searchByMainCodeContainer).toBeVisible();
 
-    const inputTrigramText = viaMainCode
+    const inputMainCodeText = viaMainCode
       ? `${originMainCode} ${viaMainCode} ${destinationMainCode}`
       : `${originMainCode} ${destinationMainCode}`;
 
-    await this.searchByTrigramInput.fill(inputTrigramText);
+    await this.searchByMainCodeInput.fill(inputMainCodeText);
 
     const originLocator = this.getOriginLocatorByMainCode(originMainCode);
     const destinationLocator = this.getDestinationLocatorByMainCode(destinationMainCode);
@@ -174,16 +174,16 @@ class RouteTab {
       await expect(viaLocator).toBeVisible();
     }
 
-    const expectedOriginTrigram = await originLocator.innerText();
-    const expectedDestinationTrigram = await destinationLocator.innerText();
+    const expectedOriginMainCode = await originLocator.innerText();
+    const expectedDestinationMainCode = await destinationLocator.innerText();
 
-    await this.submitSearchByTrigram();
+    await this.submitSearchByMainCode();
     await expect(this.pathfindingLoader).toBeHidden();
-    await expect(this.searchByTrigramContainer).not.toBeVisible();
+    await expect(this.searchByMainCodeContainer).not.toBeVisible();
     await expect(this.resultPathfindingDone).toBeVisible();
 
-    await expect(this.originInfo).toHaveText(expectedOriginTrigram);
-    await expect(this.destinationInfo).toHaveText(expectedDestinationTrigram);
+    await expect(this.originInfo).toHaveText(expectedOriginMainCode);
+    await expect(this.destinationInfo).toHaveText(expectedDestinationMainCode);
   }
 
   async reverseItinerary() {
