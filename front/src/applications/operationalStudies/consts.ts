@@ -2,6 +2,8 @@ import type { TrainMainCategory } from 'common/api/osrdEditoastApi';
 
 import type { CategoryColors } from './types';
 
+export const SELECTED_CURVE_COLOR = '#1844EF';
+export const SELECTED_CURVE_OUTLINE_COLOR = 'rgba(24, 68, 239, 0.1)';
 export const REST_BACKGROUND_COLOR = '#FFFFFF';
 
 export const DEFAULT_TRAIN_PATH_COLORS: CategoryColors = {
