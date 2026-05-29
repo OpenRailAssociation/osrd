@@ -1648,6 +1648,40 @@ mod tests {
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn whoami_impersonation() {
+        let app = test_app!().enable_authorization(true).build();
+        let impersonator = app
+            .user("impersonator", "Impersonator")
+            .with_roles([Role::Admin])
+            .create()
+            .await;
+        let impersonated = app
+            .user("impersonated", "Impersonated")
+            .with_roles([Role::Stdcm])
+            .create()
+            .await;
+
+        let request = app
+            .get("/authz/me")
+            .by_user(&impersonator)
+            .impersonate(&impersonated);
+        let user_data = app
+            .fetch(request)
+            .await
+            .assert_status(StatusCode::OK)
+            .json_into::<WhoamiResponse>();
+
+        assert_eq!(
+            user_data,
+            WhoamiResponse {
+                id: impersonated.id,
+                name: "Impersonated".to_string(),
+                roles: vec![Role::Stdcm],
+            }
+        );
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn whoami_authorization_disabled() {
         let app = test_app!()
             .enable_authorization(false)

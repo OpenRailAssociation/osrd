@@ -75,16 +75,4 @@ impl Authentication {
         };
         Ok(authn)
     }
-
-    pub fn origin(&self) -> Option<(&str, &str)> {
-        match self {
-            Authentication::Authenticated { identity, name }
-            | Authentication::Impersonating {
-                impersonator_identity: identity,
-                impersonator_name: name,
-                impersonated_identity: _,
-            } => Some((identity.as_str(), name.as_str())),
-            Authentication::Unauthenticated | Authentication::Skip { .. } => None,
-        }
-    }
 }
