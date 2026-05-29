@@ -24,6 +24,17 @@ export type RGBAColor = [number, number, number, number];
 export type PickingLayerType = (typeof PICKING_LAYERS)[number];
 export type LayerType = (typeof LAYERS)[number];
 
+export type CurveOutline = {
+  /** Offset compared to the curve */
+  offset: number;
+  /** Color of the outline */
+  color: string;
+  /** Thickness of the outline */
+  width?: number;
+  /** Won't be used most of the time, color will be used */
+  backgroundColor?: string;
+};
+
 /**
  * Visual style of a curve, computed by the shared curve-style helper
  * and used by STD (PathLayer) and TOD (OccupancyBlockLayer).
@@ -34,16 +45,7 @@ export type CurveStyle = {
   color: string;
   opacity: number;
   level?: PathLevel;
-  outline?: {
-    /** Offset compared to the curve */
-    offset: number;
-    /** Color of the outline */
-    color: string;
-    /** Thickness of the outline */
-    width?: number;
-    /** Won't be used most of the time, color will be used */
-    backgroundColor?: string;
-  };
+  outline?: CurveOutline;
   label?: {
     border?: { color: string; width: number };
     fontWeight?: number;
