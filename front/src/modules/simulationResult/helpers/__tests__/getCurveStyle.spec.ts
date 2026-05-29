@@ -67,4 +67,31 @@ describe('getCurveStyle', () => {
       expect(style.outline).toEqual(INVALID_OUTLINE);
     });
   });
+
+  describe('passiveSecondary', () => {
+    it('should return the normal color with a thin background-colored outline', () => {
+      const style = getCurveStyle('passiveSecondary', { colors, isSimulated: true });
+      expect(style.color).toBe(colors.normal);
+      expect(style.opacity).toBe(1);
+      expect(style.outline).toEqual({
+        offset: 0,
+        width: 2,
+        color: colors.background,
+      });
+    });
+
+    it('should label with the hovered color and a normal-colored border on the background', () => {
+      const style = getCurveStyle('passiveSecondary', { colors, isSimulated: true });
+      expect(style.label).toEqual({
+        color: colors.hovered,
+        background: { color: colors.background, border: colors.normal },
+        fontWeight: 400,
+      });
+    });
+
+    it('should replace the outline with the invalid one when the train is not simulated', () => {
+      const style = getCurveStyle('passiveSecondary', { colors, isSimulated: false });
+      expect(style.outline).toEqual(INVALID_OUTLINE);
+    });
+  });
 });

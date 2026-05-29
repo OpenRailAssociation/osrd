@@ -55,11 +55,25 @@ const getCurveStyle = (state: CurveVisualState, train: TrainForStyle): CurveStyl
     },
   };
 
+  const passiveSecondaryStyle: CurveStyle = {
+    color: colors.normal,
+    opacity: 1,
+    outline:
+      isSimulated === true ? { offset: 0, width: 2, color: colors.background } : INVALID_OUTLINE,
+    label: {
+      color: colors.hovered,
+      background: { color: colors.background, border: colors.normal },
+      fontWeight: FONT_WEIGHT_REGULAR,
+    },
+  };
+
   switch (state) {
     case 'none':
       return noneStyle;
     case 'active':
       return activeStyle;
+    case 'passiveSecondary':
+      return passiveSecondaryStyle;
     default:
       // Other states are implemented in following commits.
       return { color: colors.normal, opacity: 1 };
