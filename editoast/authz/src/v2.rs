@@ -202,6 +202,40 @@ impl<T: Send + 'static> Protected<T> {
     }
 }
 
+impl<T: Send + 'static> Protected<Option<T>> {
+    pub fn map_some_into<E>(self) -> Protected<Option<E>>
+    where
+        E: Send + 'static,
+        T: Into<E>,
+    {
+        self.map(move |_, val| async move { Ok(val.map(T::into)) }.boxed())
+    }
+}
+
+impl<T> Protected<T>
+where
+    T: IntoIterator + Send + 'static,
+    <T as IntoIterator>::Item: Send + 'static,
+{
+    pub fn collect_into<C>(self) -> Protected<C>
+    where
+        C: Send + 'static,
+        C: IntoIterator,
+        C: FromIterator<<C as IntoIterator>::Item>,
+        <T as IntoIterator>::Item: Into<<C as IntoIterator>::Item>,
+    {
+        self.map(move |_, val| {
+            async move {
+                Ok(val
+                    .into_iter()
+                    .map(<T as IntoIterator>::Item::into)
+                    .collect::<C>())
+            }
+            .boxed()
+        })
+    }
+}
+
 impl<T: Default> Default for Protected<T> {
     fn default() -> Self {
         Self::new(|_| async { Ok(T::default()) }.boxed())

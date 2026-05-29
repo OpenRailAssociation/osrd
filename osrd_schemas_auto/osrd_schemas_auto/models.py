@@ -2458,25 +2458,9 @@ class InfraErrorTypeUnusedPort(BaseModel):
     port_name: str
 
 
-class InfraGrant(Enum):
-    READER = "READER"
-    WRITER = "WRITER"
-    OWNER = "OWNER"
-
-
 class InfraObjectElectrification(BaseModel):
     obj_type: Literal["Electrification"]
     railjson: Electrification
-
-
-class InfraPrivilege(Enum):
-    can_read = "can_read"
-    can_share_read = "can_share_read"
-    can_write = "can_write"
-    can_share_write = "can_share_write"
-    can_delete = "can_delete"
-    can_share_ownership = "can_share_ownership"
-    can_revoke = "can_revoke"
 
 
 class InitialSpeedChangeGroup(BaseModel):
@@ -2954,9 +2938,14 @@ class RequirementType(Enum):
     WORK_SCHEDULE = "WORK_SCHEDULE"
 
 
+class ResourceType(Enum):
+    infra = "infra"
+    rolling_stock = "rolling_stock"
+
+
 class RevokeBody(BaseModel):
     resource_id: int
-    resource_type: Literal["infra"]
+    resource_type: ResourceType
     subject_id: int
 
 
@@ -3503,6 +3492,22 @@ class SpeedSectionPslSncfExtension(BaseModel):
     announcement: list[Sign]
     r: list[Sign]
     z: Sign
+
+
+class StandardGrant(Enum):
+    READER = "READER"
+    WRITER = "WRITER"
+    OWNER = "OWNER"
+
+
+class StandardPrivilege(Enum):
+    can_read = "can_read"
+    can_share_read = "can_share_read"
+    can_write = "can_write"
+    can_share_write = "can_share_write"
+    can_delete = "can_delete"
+    can_share_ownership = "can_share_ownership"
+    can_revoke = "can_revoke"
 
 
 class StartTimeChangeGroup(BaseModel):
@@ -4699,9 +4704,9 @@ class GeoJsonPoint(RootModel[PointGeometry]):
 
 
 class GrantBody(BaseModel):
-    grant: InfraGrant
+    grant: StandardGrant
     resource_id: int
-    resource_type: Literal["infra"]
+    resource_type: ResourceType
     subject_id: int
 
 
