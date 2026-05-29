@@ -102,9 +102,10 @@
   .study-card-description {
     font-size: 0.9rem;
     padding: 0 8px;
-    overflow: auto;
+    overflow-y: auto;
     height: 80px;
     white-space: break-spaces;
+    overflow-wrap: anywhere;
   }
   .study-card-financials {
     display: flex;

@@ -128,9 +128,10 @@
   .project-card-description {
     padding: 0 8px;
     height: 62.4px;
-    overflow: auto;
+    overflow-y: auto;
     font-size: 0.8rem;
     white-space: break-spaces;
+    overflow-wrap: anywhere;
     &::first-letter {
       text-transform: capitalize;
     }
