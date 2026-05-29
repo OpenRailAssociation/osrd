@@ -28,7 +28,11 @@ mod version;
 pub mod work_schedules;
 mod worker_load;
 
+use serde::Deserialize;
+use serde::Serialize;
 pub use server::*;
+use strum::Display;
+use utoipa::ToSchema;
 
 #[cfg(test)]
 mod test_app;
@@ -462,6 +466,112 @@ pub enum Authentication {
         identity: Option<String>,
         name: Option<String>,
     },
+}
+
+#[derive(
+    Debug,
+    Display,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    Hash,
+    Serialize,
+    Deserialize,
+    ToSchema,
+)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+#[strum(serialize_all = "SCREAMING_SNAKE_CASE")]
+enum StandardGrant {
+    Reader,
+    Writer,
+    Owner,
+}
+
+#[derive(Debug, Clone, Copy, Display, PartialEq, Eq, Hash, Serialize, Deserialize, ToSchema)]
+#[serde(rename_all = "snake_case")]
+#[strum(serialize_all = "snake_case")]
+#[allow(clippy::enum_variant_names)]
+enum StandardPrivilege {
+    CanRead,
+    CanShareRead,
+    CanWrite,
+    CanShareWrite,
+    CanDelete,
+    CanShareOwnership,
+}
+
+impl From<::authz::InfraGrant> for StandardGrant {
+    fn from(value: ::authz::InfraGrant) -> Self {
+        match value {
+            ::authz::InfraGrant::Reader => StandardGrant::Reader,
+            ::authz::InfraGrant::Writer => StandardGrant::Writer,
+            ::authz::InfraGrant::Owner => StandardGrant::Owner,
+        }
+    }
+}
+
+impl From<::authz::RollingStockGrant> for StandardGrant {
+    fn from(value: ::authz::RollingStockGrant) -> Self {
+        match value {
+            ::authz::RollingStockGrant::Reader => StandardGrant::Reader,
+            ::authz::RollingStockGrant::Writer => StandardGrant::Writer,
+            ::authz::RollingStockGrant::Owner => StandardGrant::Owner,
+        }
+    }
+}
+
+impl From<::authz::InfraPrivilege> for StandardPrivilege {
+    fn from(value: ::authz::InfraPrivilege) -> Self {
+        match value {
+            ::authz::InfraPrivilege::CanRead => StandardPrivilege::CanRead,
+            ::authz::InfraPrivilege::CanShareRead => StandardPrivilege::CanShareRead,
+            ::authz::InfraPrivilege::CanWrite => StandardPrivilege::CanWrite,
+            ::authz::InfraPrivilege::CanShareWrite => StandardPrivilege::CanShareWrite,
+            ::authz::InfraPrivilege::CanDelete => StandardPrivilege::CanDelete,
+            ::authz::InfraPrivilege::CanShareOwnership => StandardPrivilege::CanShareOwnership,
+        }
+    }
+}
+
+impl From<StandardGrant> for ::authz::InfraGrant {
+    fn from(value: StandardGrant) -> Self {
+        match value {
+            StandardGrant::Reader => ::authz::InfraGrant::Reader,
+            StandardGrant::Writer => ::authz::InfraGrant::Writer,
+            StandardGrant::Owner => ::authz::InfraGrant::Owner,
+        }
+    }
+}
+
+impl From<StandardPrivilege> for ::authz::InfraPrivilege {
+    fn from(value: StandardPrivilege) -> Self {
+        match value {
+            StandardPrivilege::CanRead => ::authz::InfraPrivilege::CanRead,
+            StandardPrivilege::CanShareRead => ::authz::InfraPrivilege::CanShareRead,
+            StandardPrivilege::CanWrite => ::authz::InfraPrivilege::CanWrite,
+            StandardPrivilege::CanShareWrite => ::authz::InfraPrivilege::CanShareWrite,
+            StandardPrivilege::CanDelete => ::authz::InfraPrivilege::CanDelete,
+            StandardPrivilege::CanShareOwnership => ::authz::InfraPrivilege::CanShareOwnership,
+        }
+    }
+}
+
+impl From<::authz::RollingStockPrivilege> for StandardPrivilege {
+    fn from(value: ::authz::RollingStockPrivilege) -> Self {
+        match value {
+            ::authz::RollingStockPrivilege::CanRead => StandardPrivilege::CanRead,
+            ::authz::RollingStockPrivilege::CanShareRead => StandardPrivilege::CanShareRead,
+            ::authz::RollingStockPrivilege::CanWrite => StandardPrivilege::CanWrite,
+            ::authz::RollingStockPrivilege::CanShareWrite => StandardPrivilege::CanShareWrite,
+            ::authz::RollingStockPrivilege::CanDelete => StandardPrivilege::CanDelete,
+            ::authz::RollingStockPrivilege::CanShareOwnership => {
+                StandardPrivilege::CanShareOwnership
+            }
+        }
+    }
 }
 
 impl Authentication {

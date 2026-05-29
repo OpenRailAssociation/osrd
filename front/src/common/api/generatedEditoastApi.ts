@@ -1592,7 +1592,7 @@ export type GetAuthzMeApiArg = void;
 export type PostAuthzMeGrantsApiResponse =
   /** status 200 Get grants info of the current user for the given resources in body */ {
     [key: string]: {
-      grant: InfraGrant;
+      grant: StandardGrant;
       id: number;
     }[];
   };
@@ -1611,7 +1611,7 @@ export type GetAuthzMeGroupsApiArg = void;
 export type PostAuthzMePrivilegesApiResponse =
   /** status 200 The privileges of the user sending the request over each requested resource. The resource is omitted if it does not exist. An empty privileges list is returned if the user has no privileges over it. */ {
     [key: string]: {
-      privileges: InfraPrivilege[];
+      privileges: StandardPrivilege[];
       resource_id: number;
     }[];
   };
@@ -1641,9 +1641,10 @@ export type PostAuthzUserInfoApiArg = {
 };
 export type GetAuthzByResourceTypeAndResourceIdApiResponse =
   /** status 200 Get list of user that have a grant on the resource */ {
-    grant: InfraGrant;
+    grant: StandardGrant;
     id: number;
     name: string;
+    resource_type: ResourceType;
     type: SubjectType;
   }[];
 export type GetAuthzByResourceTypeAndResourceIdApiArg = {
@@ -2852,10 +2853,10 @@ export type PostWorkerLoadApiArg = {
     timetable_id?: number | null;
   };
 };
-export type InfraGrant = 'READER' | 'WRITER' | 'OWNER';
+export type StandardGrant = 'READER' | 'WRITER' | 'OWNER';
 export type ResourceType = 'infra' | 'rolling_stock';
 export type GrantBody = {
-  grant: InfraGrant;
+  grant: StandardGrant;
   resource_id: number;
   resource_type: ResourceType;
   subject_id: number;
@@ -2866,7 +2867,7 @@ export type RevokeBody = {
   subject_id: number;
 };
 export type Role = 'Admin' | 'Stdcm' | 'OperationalStudies';
-export type InfraPrivilege =
+export type StandardPrivilege =
   | 'can_read'
   | 'can_share_read'
   | 'can_write'
