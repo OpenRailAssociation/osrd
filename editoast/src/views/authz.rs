@@ -10,6 +10,8 @@ use ::authz;
 use ::authz::InfraGrant;
 use ::authz::InfraPrivilege;
 use ::authz::Role;
+use ::authz::RollingStockGrant;
+use ::authz::RollingStockPrivilege;
 use authz::Authorization;
 use authz::v2;
 use authz::v2::Actor;
@@ -277,11 +279,50 @@ pub(in crate::views) async fn users_info(
     Ok(Json(results))
 }
 
+#[derive(Debug, Clone, Copy, Display, PartialEq, Eq, Hash, Serialize, Deserialize, ToSchema)]
+#[serde(rename_all = "snake_case")]
+#[strum(serialize_all = "snake_case")]
+#[allow(clippy::enum_variant_names)] // needed due to "Can" prefix
+pub enum StandardPrivilege {
+    CanRead,
+    CanShareRead,
+    CanWrite,
+    CanShareWrite,
+    CanDelete,
+    CanShareOwnership,
+}
+
+impl From<InfraPrivilege> for StandardPrivilege {
+    fn from(privilege: InfraPrivilege) -> Self {
+        match privilege {
+            InfraPrivilege::CanRead => Self::CanRead,
+            InfraPrivilege::CanShareRead => Self::CanShareRead,
+            InfraPrivilege::CanWrite => Self::CanWrite,
+            InfraPrivilege::CanShareWrite => Self::CanShareWrite,
+            InfraPrivilege::CanDelete => Self::CanDelete,
+            InfraPrivilege::CanShareOwnership => Self::CanShareOwnership,
+        }
+    }
+}
+
+impl From<RollingStockPrivilege> for StandardPrivilege {
+    fn from(privilege: RollingStockPrivilege) -> Self {
+        match privilege {
+            RollingStockPrivilege::CanRead => Self::CanRead,
+            RollingStockPrivilege::CanShareRead => Self::CanShareRead,
+            RollingStockPrivilege::CanWrite => Self::CanWrite,
+            RollingStockPrivilege::CanShareWrite => Self::CanShareWrite,
+            RollingStockPrivilege::CanDelete => Self::CanDelete,
+            RollingStockPrivilege::CanShareOwnership => Self::CanShareOwnership,
+        }
+    }
+}
+
 #[derive(Debug, Serialize, ToSchema)]
 #[cfg_attr(test, derive(Deserialize, PartialEq, Eq))]
 pub(in crate::views) struct ResourcePrivileges {
     resource_id: i64,
-    privileges: HashSet<InfraPrivilege>,
+    privileges: HashSet<StandardPrivilege>,
 }
 
 #[editoast_derive::route]
@@ -327,8 +368,16 @@ pub(in crate::views) async fn user_privileges(
         .flatten();
     if let Some(user) = user {
         let infras = infra_ids.map(authz::Infra);
-        let protected_privileges =
-            infras.map(|infra| v2::infra_privileges(user, infra).zip(v2::Protected::value(infra)));
+        let protected_privileges = infras.map(|infra| {
+            v2::infra_privileges(user, infra)
+                .map_into(|privileges| {
+                    privileges
+                        .into_iter()
+                        .map(StandardPrivilege::from)
+                        .collect::<HashSet<_>>()
+                })
+                .zip(v2::Protected::value(infra))
+        });
         let authorizer =
             crate::authorizers::UserAuthorizer::new(user, roles, regulator.openfga(), conn);
         let accesses = authorizer.authorize_all(protected_privileges).await?;
@@ -368,12 +417,12 @@ pub(in crate::views) async fn user_privileges(
         result_infras.extend(infras.into_iter().map(|infra| ResourcePrivileges {
             resource_id: infra.id,
             privileges: HashSet::from([
-                InfraPrivilege::CanRead,
-                InfraPrivilege::CanShareRead,
-                InfraPrivilege::CanWrite,
-                InfraPrivilege::CanShareWrite,
-                InfraPrivilege::CanDelete,
-                InfraPrivilege::CanShareOwnership,
+                StandardPrivilege::CanRead,
+                StandardPrivilege::CanShareRead,
+                StandardPrivilege::CanWrite,
+                StandardPrivilege::CanShareWrite,
+                StandardPrivilege::CanDelete,
+                StandardPrivilege::CanShareOwnership,
             ]),
         }));
     }
@@ -382,10 +431,39 @@ pub(in crate::views) async fn user_privileges(
 }
 
 #[derive(Serialize, ToSchema)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+#[cfg_attr(test, derive(Debug, Deserialize, PartialEq))]
+enum StandardGrant {
+    Reader,
+    Writer,
+    Owner,
+}
+
+impl From<InfraGrant> for StandardGrant {
+    fn from(grant: InfraGrant) -> Self {
+        match grant {
+            InfraGrant::Reader => Self::Reader,
+            InfraGrant::Writer => Self::Writer,
+            InfraGrant::Owner => Self::Owner,
+        }
+    }
+}
+
+impl From<RollingStockGrant> for StandardGrant {
+    fn from(grant: RollingStockGrant) -> Self {
+        match grant {
+            RollingStockGrant::Reader => Self::Reader,
+            RollingStockGrant::Writer => Self::Writer,
+            RollingStockGrant::Owner => Self::Owner,
+        }
+    }
+}
+
+#[derive(Serialize, ToSchema)]
 #[cfg_attr(test, derive(Debug, Deserialize, PartialEq))]
 pub(in crate::views) struct UserResourceGrant {
     id: i64,
-    grant: InfraGrant,
+    grant: StandardGrant,
 }
 
 #[editoast_derive::route]
@@ -423,6 +501,7 @@ pub(in crate::views) async fn user_grants(
                 authz::Subject::user(user),
                 authz::Infra(*infra_id),
             )
+            .map_into(|grant| grant.map(StandardGrant::from))
             .authorize(&authorizer)
             .await?;
             let grant = match grant_access.access().await? {
@@ -841,26 +920,26 @@ mod tests {
         assert_eq!(
             privileges.remove(&infra1).unwrap(),
             HashSet::from([
-                InfraPrivilege::CanRead,
-                InfraPrivilege::CanShareRead,
-                InfraPrivilege::CanWrite,
-                InfraPrivilege::CanShareWrite,
-                InfraPrivilege::CanDelete,
-                InfraPrivilege::CanShareOwnership,
+                StandardPrivilege::CanRead,
+                StandardPrivilege::CanShareRead,
+                StandardPrivilege::CanWrite,
+                StandardPrivilege::CanShareWrite,
+                StandardPrivilege::CanDelete,
+                StandardPrivilege::CanShareOwnership,
             ])
         );
         assert_eq!(
             privileges.remove(&infra2).unwrap(),
             HashSet::from([
-                InfraPrivilege::CanRead,
-                InfraPrivilege::CanShareRead,
-                InfraPrivilege::CanWrite,
-                InfraPrivilege::CanShareWrite,
+                StandardPrivilege::CanRead,
+                StandardPrivilege::CanShareRead,
+                StandardPrivilege::CanWrite,
+                StandardPrivilege::CanShareWrite,
             ])
         );
         assert_eq!(
             privileges.remove(&infra3).unwrap(),
-            HashSet::from([InfraPrivilege::CanRead, InfraPrivilege::CanShareRead])
+            HashSet::from([StandardPrivilege::CanRead, StandardPrivilege::CanShareRead])
         );
         assert_eq!(privileges.remove(&infra4).unwrap(), HashSet::from([]));
         assert!(!privileges.contains_key(&infra_unused));
@@ -908,22 +987,22 @@ mod tests {
             .collect::<HashMap<_, _>>();
         assert_eq!(
             privileges.remove(&infra1).unwrap(),
-            HashSet::from([InfraPrivilege::CanRead, InfraPrivilege::CanShareRead])
+            HashSet::from([StandardPrivilege::CanRead, StandardPrivilege::CanShareRead])
         );
         assert_eq!(privileges.remove(&infra2).unwrap(), HashSet::from([]));
         assert_eq!(
             privileges.remove(&infra3).unwrap(),
-            HashSet::from([InfraPrivilege::CanRead, InfraPrivilege::CanShareRead,])
+            HashSet::from([StandardPrivilege::CanRead, StandardPrivilege::CanShareRead,])
         );
         assert_eq!(
             privileges.remove(&infra4).unwrap(),
             HashSet::from([
-                InfraPrivilege::CanRead,
-                InfraPrivilege::CanShareRead,
-                InfraPrivilege::CanWrite,
-                InfraPrivilege::CanShareWrite,
-                InfraPrivilege::CanDelete,
-                InfraPrivilege::CanShareOwnership
+                StandardPrivilege::CanRead,
+                StandardPrivilege::CanShareRead,
+                StandardPrivilege::CanWrite,
+                StandardPrivilege::CanShareWrite,
+                StandardPrivilege::CanDelete,
+                StandardPrivilege::CanShareOwnership
             ])
         );
         assert!(!privileges.contains_key(&infra_unused));
@@ -953,12 +1032,12 @@ mod tests {
         assert_eq!(
             privileges.remove(&infra).unwrap(),
             HashSet::from([
-                InfraPrivilege::CanRead,
-                InfraPrivilege::CanShareRead,
-                InfraPrivilege::CanWrite,
-                InfraPrivilege::CanShareWrite,
-                InfraPrivilege::CanDelete,
-                InfraPrivilege::CanShareOwnership,
+                StandardPrivilege::CanRead,
+                StandardPrivilege::CanShareRead,
+                StandardPrivilege::CanWrite,
+                StandardPrivilege::CanShareWrite,
+                StandardPrivilege::CanDelete,
+                StandardPrivilege::CanShareOwnership,
             ])
         );
     }
@@ -991,7 +1070,7 @@ mod tests {
             response.get(&ResourceType::Infra).unwrap(),
             &[UserResourceGrant {
                 id: infra.id,
-                grant: InfraGrant::Reader
+                grant: StandardGrant::Reader
             }]
         );
 
@@ -1018,7 +1097,7 @@ mod tests {
             response.get(&ResourceType::Infra).unwrap(),
             &[UserResourceGrant {
                 id: infra.id,
-                grant: InfraGrant::Writer
+                grant: StandardGrant::Writer
             }]
         );
     }

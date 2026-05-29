@@ -2460,15 +2460,6 @@ class InfraObjectElectrification(BaseModel):
     railjson: Electrification
 
 
-class InfraPrivilege(Enum):
-    can_read = "can_read"
-    can_share_read = "can_share_read"
-    can_write = "can_write"
-    can_share_write = "can_share_write"
-    can_delete = "can_delete"
-    can_share_ownership = "can_share_ownership"
-
-
 class InitialSpeedChangeGroup(BaseModel):
     value: float
 
@@ -3493,6 +3484,21 @@ class SpeedSectionPslSncfExtension(BaseModel):
     announcement: list[Sign]
     r: list[Sign]
     z: Sign
+
+
+class StandardGrant(Enum):
+    READER = "READER"
+    WRITER = "WRITER"
+    OWNER = "OWNER"
+
+
+class StandardPrivilege(Enum):
+    can_read = "can_read"
+    can_share_read = "can_share_read"
+    can_write = "can_write"
+    can_share_write = "can_share_write"
+    can_delete = "can_delete"
+    can_share_ownership = "can_share_ownership"
 
 
 class StartTimeChangeGroup(BaseModel):

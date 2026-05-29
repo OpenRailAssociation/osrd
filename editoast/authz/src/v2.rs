@@ -200,6 +200,13 @@ impl<T: Send + 'static> Protected<T> {
             checks,
         }
     }
+
+    pub fn map_into<U: Send + 'static>(
+        self,
+        f: impl FnOnce(T) -> U + Send + 'static,
+    ) -> Protected<U> {
+        self.map(move |_, t| async move { Ok(f(t)) }.boxed())
+    }
 }
 
 impl<T: Default> Default for Protected<T> {

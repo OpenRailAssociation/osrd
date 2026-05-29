@@ -123,7 +123,7 @@ paths:
                     - grant
                     properties:
                       grant:
-                        $ref: '#/components/schemas/InfraGrant'
+                        $ref: '#/components/schemas/StandardGrant'
                       id:
                         type: integer
                         format: int64
@@ -191,7 +191,7 @@ paths:
                       privileges:
                         type: array
                         items:
-                          $ref: '#/components/schemas/InfraPrivilege'
+                          $ref: '#/components/schemas/StandardPrivilege'
                         uniqueItems: true
                       resource_id:
                         type: integer
@@ -10770,15 +10770,6 @@ components:
           $ref: '#/components/schemas/PathfindingTrackLocationInput'
         starting:
           $ref: '#/components/schemas/PathfindingTrackLocationInput'
-    InfraPrivilege:
-      type: string
-      enum:
-      - can_read
-      - can_share_read
-      - can_write
-      - can_share_write
-      - can_delete
-      - can_share_ownership
     InitialSpeedChangeGroup:
       type: object
       required:
@@ -14592,6 +14583,21 @@ components:
         z:
           $ref: '#/components/schemas/Sign'
       additionalProperties: false
+    StandardGrant:
+      type: string
+      enum:
+      - READER
+      - WRITER
+      - OWNER
+    StandardPrivilege:
+      type: string
+      enum:
+      - can_read
+      - can_share_read
+      - can_write
+      - can_share_write
+      - can_delete
+      - can_share_ownership
     StartTimeChangeGroup:
       type: object
       required:
