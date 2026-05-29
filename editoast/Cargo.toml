@@ -116,6 +116,7 @@ phf = { version = "0.14.0", features = ["macros", "serde"] }
 postgis_diesel = { version = "3.1.0", features = ["serde"] }
 pretty_assertions = "1.4.1"
 proc-macro2 = "1.0"
+proptest = "1.11.0"
 quote = "1.0"
 rand = "0.10.1"
 rangemap = "1.7.1"
