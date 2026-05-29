@@ -113,8 +113,8 @@ export type PathPropertiesFormatted = {
   electrifications: ElectrificationRange[];
   curves: PositionData<'radius'>[];
   slopes: PositionData<'gradient'>[];
-  operationalPoints: NonNullable<PathProperties['operational_points']>;
-  geometry: NonNullable<PathProperties['geometry']>;
+  operationalPoints: PathProperties['operational_points'];
+  geometry: PathProperties['geometry'];
   voltages: RangedValue[];
 };
 
