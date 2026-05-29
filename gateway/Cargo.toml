@@ -53,7 +53,7 @@ regex = "1.12.3"
 # actix_auth
 actix-web-httpauth = "0.8"
 
-openidconnect = "4.0.1"
+openidconnect = { git = "https://github.com/osrd-project/openidconnect-rs.git", branch = "disable-profile" }
 reqwest = { version = "0.12", default-features = false, features = [
   "rustls-tls-native-roots",
 ] }
