@@ -57,7 +57,7 @@ const InfraSelectorModalBodyStandard = ({
 
   // Get the user privileges for infras
   const userPrivilegesByInfraId = useAsyncMemo(async () => {
-    const data = await getUserPrivileges({ infra: infraIdsList });
+    const data = await getUserPrivileges({ rolling_stock: [], infra: infraIdsList });
     return data.infra || {};
     // redraw is in the deps to force the reload of the privileges when the user changes his own grant
   }, [getUserPrivileges, infraIdsList, redraw]);

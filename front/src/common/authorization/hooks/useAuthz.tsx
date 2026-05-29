@@ -99,7 +99,19 @@ export default function useAuthz() {
    */
   const checkUserPrivileges = useCallback(
     async (resourceType: ResourceType, resourceId: number, privileges: Privilege[]) => {
-      const result = await getUserPrivileges({ [resourceType]: [resourceId] });
+      let infras: number[];
+      let rolling_stocks: number[];
+      switch (resourceType) {
+        case 'rolling_stock':
+          infras = [];
+          rolling_stocks = [resourceId];
+          break;
+        case 'infra':
+          infras = [resourceId];
+          rolling_stocks = [];
+          break;
+      }
+      const result = await getUserPrivileges({ infra: infras, rolling_stock: rolling_stocks });
       const userPrivileges = result[resourceType] ? result[resourceType][resourceId] : new Set();
       return privileges.every((privilege) => userPrivileges.has(privilege));
     },
