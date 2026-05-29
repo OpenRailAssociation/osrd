@@ -21,6 +21,7 @@ import type {
   PathfindingResult,
 } from 'common/api/osrdEditoastApi';
 import type { RangedValue } from 'common/types';
+import type { ProjectionWaypoint } from 'modules/simulationResult/types';
 import type { SuggestedOP } from 'modules/trainSchedule/types';
 import type { Train, TrainScheduleWithPathOps } from 'reducers/osrdconf/types';
 import type { Duration } from 'utils/duration';
@@ -180,18 +181,9 @@ export type ItineraryPathProperties = PathProperties & {
   pathItemPositions?: number[];
 };
 
-export type PathProjectionResultOperationalPoint = Omit<
-  PathProperties['operational_points'][number],
-  'part'
-> & {
-  opRef: OperationalPointReference;
-};
-
 export type PathProjectionResult = {
   path: PathItem[];
-  // Remove the part field as it won't be used anywhere in the app.
-  // This avoid us to have to add hardcoded data in it.
-  operationalPoints: PathProjectionResultOperationalPoint[];
+  operationalPoints: ProjectionWaypoint[];
   operationalPointDistances: number[];
   operationalPointReferences: OperationalPointReference[];
 } & (

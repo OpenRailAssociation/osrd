@@ -2,7 +2,7 @@ import { useEffect, useMemo } from 'react';
 
 import { skipToken } from '@reduxjs/toolkit/query/react';
 import type { TFunction } from 'i18next';
-import { isEqual } from 'lodash';
+import { isEqual, omit } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
@@ -12,6 +12,7 @@ import {
   type OperationalPointReference,
   type TrainScheduleResponse,
 } from 'common/api/osrdEditoastApi';
+import type { ProjectionWaypoint } from 'modules/simulationResult/types';
 import { getExceptionFromOccurrenceId } from 'modules/trainSchedule/helpers/pacedTrain';
 import { updateProjectionType } from 'reducers/simulationResults';
 import {
@@ -26,7 +27,8 @@ import {
   isTrainScheduleId,
 } from 'utils/trainId';
 
-import type { PathProjectionResult, PathProjectionResultOperationalPoint } from '../types';
+import type { PathProjectionResult } from '../types';
+import { matchOpRefAndOp } from '../utils';
 
 /**
  * Generates a display name for a virtual operational point based on available reference data.
@@ -54,17 +56,20 @@ const FALLBACK_DISTANCE_MM = 100_000_000;
  */
 const createVirtualOp = (
   opRef: OperationalPointReference,
+  pathItemId: string,
   index: number,
   totalCount: number,
   position: number,
   weight: number,
   t: TFunction<'operational-studies'>
-): PathProjectionResultOperationalPoint => {
+): ProjectionWaypoint => {
   const virtualName = getVirtualOpName(opRef, index, totalCount, t);
   const virtualId = `virtual_op_${virtualName}`;
 
   return {
-    id: virtualId,
+    waypointId: virtualId,
+    opId: null,
+    pathItemId,
     name: virtualName,
     uic: opRef.type === 'uic' ? opRef.uic : 0,
     secondary_code: (opRef.type !== 'id' && opRef.secondary_code) || null,
@@ -73,7 +78,10 @@ const createVirtualOp = (
     weight,
     country_code: '??',
     is_passenger_station: false,
-    opRef,
+    location: {
+      type: 'operational_point_part_reference',
+      operational_point: opRef,
+    },
   };
 };
 
@@ -153,14 +161,16 @@ const usePathProjection = (
     return exception?.path_and_schedule?.path ?? trainSchedule?.path;
   }, [trainIdUsedForProjection, trainSchedulesById]);
 
-  const opRefs = useMemo(() => {
+  const { opRefs, opRefPathItemIds } = useMemo(() => {
     const refs: OperationalPointReference[] = [];
+    const refPathItemIds: string[] = [];
     pathUsedForProjection?.forEach((step) => {
       if (step.location.type === 'operational_point_part_reference') {
         refs.push(step.location.operational_point);
+        refPathItemIds.push(step.id);
       }
     });
-    return refs;
+    return { opRefs: refs, opRefPathItemIds: refPathItemIds };
   }, [pathUsedForProjection]);
 
   const { data: matchedOperationalPoints } =
@@ -196,7 +206,24 @@ const usePathProjection = (
       const { operational_points: operationalPoints } = pathProperties;
 
       const pathfindingOpRefs: OperationalPointReference[] = [];
+      const formattedOperationalPoints: ProjectionWaypoint[] = [];
       operationalPoints.forEach((op, index) => {
+        const matchedPathItem = pathUsedForProjection.find((step) =>
+          matchOpRefAndOp(step.location, op)
+        );
+        const formattedOp: ProjectionWaypoint = {
+          ...omit(op, ['id', 'part']),
+          waypointId: `op-${op.id}-${op.position}`,
+          opId: op.id,
+          pathItemId: matchedPathItem?.id ?? null,
+          location: matchedPathItem
+            ? matchedPathItem.location
+            : {
+                type: 'operational_point_part_reference',
+                operational_point: { type: 'id', operational_point: op.id },
+              },
+        };
+        formattedOperationalPoints.push(formattedOp);
         pathfindingOpRefs.push({ operational_point: op.id, type: 'id' });
         if (index > 0) {
           operationalPointDistances.push(op.position - operationalPoints[index - 1].position);
@@ -208,10 +235,7 @@ const usePathProjection = (
         pathfinding,
         path: pathUsedForProjection,
         geometry: pathProperties.geometry,
-        operationalPoints: operationalPoints.map((op, index) => ({
-          ...op,
-          opRef: pathfindingOpRefs[index],
-        })),
+        operationalPoints: formattedOperationalPoints,
         operationalPointReferences: pathfindingOpRefs,
         projectingOnSimulatedPathException,
         operationalPointDistances,
@@ -227,7 +251,7 @@ const usePathProjection = (
     // 1. For each point in the path, try to match with infrastructure data
     // 2. If a point is matched → use matched data with full extensions
     // 3. If a point is not matched (e.g., NGE) → create a virtual point from the reference
-    const normalizedOps: PathProjectionResultOperationalPoint[] = [];
+    const normalizedOps: ProjectionWaypoint[] = [];
 
     opRefs.forEach((opRef, index) => {
       const matchedOp = matchedOperationalPoints?.related_operational_points[index];
@@ -237,11 +261,19 @@ const usePathProjection = (
         operationalPointDistances.push(FALLBACK_DISTANCE_MM); // Add distance for fallback positioning
       }
 
+      const pathItemId = opRefPathItemIds.at(index);
+      if (!pathItemId) {
+        // We know there are as many opRefPathItemIds as opRefs, so this should never happens
+        throw new Error(`Path item ID not found for index ${index}`);
+      }
+
       if (matchedOp) {
         // MATCHED: Point exists in infrastructure
         normalizedOps.push({
           country_code: matchedOp.country_code,
-          id: matchedOp.id,
+          waypointId: `op-${matchedOp.id}-${position}`,
+          opId: matchedOp.id,
+          pathItemId,
           is_passenger_station: matchedOp.is_passenger_station,
           main_code: matchedOp.main_code,
           name: matchedOp.name,
@@ -249,13 +281,18 @@ const usePathProjection = (
           secondary_code: matchedOp.secondary_code,
           uic: matchedOp.uic,
           weight,
-          opRef,
+          location: {
+            type: 'operational_point_part_reference',
+            operational_point: opRef,
+          },
         });
       } else {
         // NOT MATCHED: Point doesn't exist in infrastructure (e.g., NGE point)
         // Create virtual point from the reference
         // TODO : change this logic when implementing the non computation creation feature with the new opRef format
-        normalizedOps.push(createVirtualOp(opRef, index, opRefs.length, position, weight, t));
+        normalizedOps.push(
+          createVirtualOp(opRef, pathItemId, index, opRefs.length, position, weight, t)
+        );
       }
     });
 
