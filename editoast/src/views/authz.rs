@@ -1319,6 +1319,126 @@ mod tests {
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn only_owners_can_revoke_infra_grants() {
+        let app = test_app!().enable_authorization(true).build();
+        let infra = create_small_infra(&mut app.db_pool().get_ok()).await;
+        let writer = app
+            .user("writer", "Writer")
+            .with_infra_grant(infra.id, InfraGrant::Writer)
+            .create()
+            .await;
+        let reader = app
+            .user("reader", "Reader")
+            .with_infra_grant(infra.id, InfraGrant::Reader)
+            .create()
+            .await;
+
+        app.fetch(app.post("/authz/grants").by_user(&writer).json(&json!({
+            "revoke": [
+                {
+                    "subject_id": reader.id,
+                    "resource_type": ResourceType::Infra,
+                    "resource_id": infra.id
+                }
+            ]
+        })))
+        .await
+        .assert_status(StatusCode::FORBIDDEN);
+
+        app.assert_infra_grant(infra.id, reader.id, Some(InfraGrant::Reader));
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn admins_can_revoke_infra_grants() {
+        let app = test_app!().enable_authorization(true).build();
+        let infra = create_small_infra(&mut app.db_pool().get_ok()).await;
+        let admin = app
+            .user("admin", "Admin")
+            .with_roles([Role::Admin])
+            .create()
+            .await;
+        let reader = app
+            .user("reader", "Reader")
+            .with_infra_grant(infra.id, InfraGrant::Reader)
+            .create()
+            .await;
+
+        app.fetch(app.post("/authz/grants").by_user(&admin).json(&json!({
+            "revoke": [
+                {
+                    "subject_id": reader.id,
+                    "resource_type": ResourceType::Infra,
+                    "resource_id": infra.id
+                }
+            ]
+        })))
+        .await
+        .assert_status(StatusCode::NO_CONTENT);
+
+        app.assert_infra_grant(infra.id, reader.id, None);
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn last_infra_owner_can_be_revoked_by_admin() {
+        let app = test_app!().enable_authorization(true).build();
+        let infra = create_small_infra(&mut app.db_pool().get_ok()).await;
+        let admin = app
+            .user("admin", "Admin")
+            .with_roles([Role::Admin])
+            .create()
+            .await;
+        let owner = app
+            .user("owner", "Owner")
+            .with_infra_grant(infra.id, InfraGrant::Owner)
+            .create()
+            .await;
+
+        app.fetch(app.post("/authz/grants").by_user(&admin).json(&json!({
+            "revoke": [
+                {
+                    "subject_id": owner.id,
+                    "resource_type": ResourceType::Infra,
+                    "resource_id": infra.id
+                }
+            ]
+        })))
+        .await
+        .assert_status(StatusCode::NO_CONTENT);
+
+        app.assert_infra_grant(infra.id, owner.id, None);
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn owner_cannot_revoke_another_infra_owner() {
+        let app = test_app!().enable_authorization(true).build();
+        let infra = create_small_infra(&mut app.db_pool().get_ok()).await;
+        let alice = app
+            .user("alice", "Alice")
+            .with_infra_grant(infra.id, InfraGrant::Owner)
+            .create()
+            .await;
+        let bob = app
+            .user("bob", "Bob")
+            .with_infra_grant(infra.id, InfraGrant::Owner)
+            .create()
+            .await;
+
+        app.fetch(app.post("/authz/grants").by_user(&alice).json(&json!({
+            "revoke": [
+                {
+                    "subject_id": bob.id,
+                    "resource_type": ResourceType::Infra,
+                    "resource_id": infra.id
+                }
+            ]
+        })))
+        .await
+        .assert_status(StatusCode::FORBIDDEN);
+
+        app.assert_infra_grant(infra.id, bob.id, Some(InfraGrant::Owner));
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn give_grant_to_groups() {
         let app = test_app!().enable_authorization(true).build();
         let openfga = app.openfga();
