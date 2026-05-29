@@ -10,7 +10,6 @@ import captureMap from 'applications/operationalStudies/helpers/captureMap';
 import usePathOps from 'applications/operationalStudies/hooks/usePathOps';
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import type { PathPropertiesFormatted } from 'applications/operationalStudies/types';
-import { matchOpRefAndOp } from 'applications/operationalStudies/utils';
 import type {
   CorePathfindingResultSuccess,
   RelatedOperationalPoint,
@@ -96,7 +95,7 @@ const SimulationResultMap = ({
           acc.push(step.location.track);
         }
         // Get the track ids from the computed ops
-        const matchedOp = pathPropertiesOps?.find((op) => matchOpRefAndOp(step.location, op));
+        const matchedOp = pathPropertiesOps?.find((op) => step.id === op.pathItemId);
         if (matchedOp) {
           acc.push(matchedOp.part.track);
         }
@@ -154,7 +153,7 @@ const SimulationResultMap = ({
         }
 
         if (pathPropertiesOps) {
-          const matchedOp = pathPropertiesOps.find((op) => matchOpRefAndOp(location, op));
+          const matchedOp = pathPropertiesOps.find((op) => step.id === op.pathItemId);
 
           if (!matchedOp) return null;
 

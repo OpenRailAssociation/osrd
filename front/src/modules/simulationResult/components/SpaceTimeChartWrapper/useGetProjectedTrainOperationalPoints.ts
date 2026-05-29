@@ -37,7 +37,7 @@ const useGetProjectedTrainOperationalPoints = ({
       let operationalPointsWithUniqueIds =
         projectionType === 'trackProjection' && path && pathfinding
           ? upsertMapWaypointsInOperationalPoints(
-              'ProjectionWaypoint',
+              'projection',
               path,
               pathfinding.path_item_positions,
               projectedOperationalPoints || [],

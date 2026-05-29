@@ -1,5 +1,7 @@
 import { useState } from 'react';
 
+import { omit } from 'lodash';
+
 import type {
   ElectricalBoundariesData,
   ElectrificationUsage,
@@ -29,7 +31,16 @@ const DebugSpeedDistanceDiagram = ({ simData }: { simData: SimDebugData }) => {
       simData.path_properties.electrifications as ElectricalBoundariesData<ElectrificationUsage>,
       pathLength
     ),
-    operationalPoints: simData.path_properties.operational_points,
+    operationalPoints: simData.path_properties.operational_points.map((op) => ({
+      ...omit(op, 'id'),
+      opId: op.id,
+      waypointId: `${op.id}-${op.position}`,
+      pathItemId: null,
+      location: {
+        type: 'operational_point_part_reference',
+        operational_point: { type: 'id', operational_point: op.id },
+      },
+    })),
     curves: [],
     voltages: [],
     geometry: { type: 'LineString', coordinates: [] },

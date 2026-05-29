@@ -1,4 +1,4 @@
-import { matchOpRefAndOp } from 'applications/operationalStudies/utils';
+import { matchOpRefAndWaypoint } from 'applications/operationalStudies/utils';
 import type {
   CoreOperationalPointOnPath,
   OperationalPointReference,
@@ -92,7 +92,7 @@ export function groupOperationalPoints(
 
     // Reach a step by identity:
     const matchedIndex = collapsedSteps.findIndex(({ step }, index) => {
-      if (index <= currentGroupIndex || !matchOpRefAndOp(step.location, op)) return false;
+      if (index <= currentGroupIndex || !matchOpRefAndWaypoint(step.location, op)) return false;
       // An OP crossed twice matches both steps by identity. Pick the right
       // crossing: by position if known, else by pinned track.
       const position = positionByStepId?.get(step.id);

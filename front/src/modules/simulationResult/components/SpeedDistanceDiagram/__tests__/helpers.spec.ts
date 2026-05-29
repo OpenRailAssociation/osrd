@@ -3,6 +3,7 @@ import { describe, it, expect } from 'vitest';
 
 import type { PathPropertiesFormatted, PositionData } from 'applications/operationalStudies/types';
 import type { SimulationResponseSuccess } from 'common/api/osrdEditoastApi';
+import type { PathWaypoint } from 'modules/simulationResult/types';
 
 import {
   formatSpeeds,
@@ -34,10 +35,12 @@ describe('formatSpeeds', () => {
 
 describe('formatStops', () => {
   it('should format stops', () => {
-    const operationalPoints: PathPropertiesFormatted['operationalPoints'] = [
+    const operationalPoints: PathWaypoint[] = [
       {
         country_code: 'country_code',
-        id: 'id',
+        opId: null,
+        waypointId: 'id',
+        pathItemId: null,
         is_passenger_station: false,
         main_code: 'main_code',
         name: 'name',
@@ -50,6 +53,10 @@ describe('formatStops', () => {
         secondary_code: 'secondary_code',
         uic: 0,
         weight: null,
+        location: {
+          type: 'operational_point_part_reference',
+          operational_point: { type: 'uic', uic: 0 },
+        },
       },
     ];
     const expected = [

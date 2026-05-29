@@ -257,7 +257,10 @@ const useTimesStopsTableData = (
         const matchingOp =
           pathStepOp ??
           ('operational_point' in pathStep.location && stableOPs
-            ? stableOPs.find((op) => matchPathStepAndOp(pathStep.location, buildOpMatchParams(op)))
+            ? stableOPs.find((op) => {
+                const builtOp = buildOpMatchParams(op);
+                return builtOp && matchPathStepAndOp(pathStep.location, builtOp);
+              })
             : undefined);
 
         const name =
@@ -345,9 +348,16 @@ const useTimesStopsTableData = (
       stableOPs.forEach((op, opIndex) => {
         const trackName = op.part.local_track_name;
 
-        const matchingPathStep = selectedTrain.path.find((pathStep) =>
-          matchPathStepAndOp(pathStep.location, buildOpMatchParams(op))
-        );
+        const matchingPathStep = selectedTrain.path.find((pathStep) => {
+          // Track-offset waypoints (opId is null) are matched by pathItemId
+          if (!op.opId) {
+            return op.pathItemId ? pathStep.id === op.pathItemId : false;
+          }
+          // TODO: now that we can match with pathItemId, we no longer need to call matchPathStepAndOp
+          // We could probably remove this function after the drop of the old interfaces is done
+          const builtOp = buildOpMatchParams(op);
+          return builtOp && matchPathStepAndOp(pathStep.location, builtOp);
+        });
 
         const matchingPathStepRow = matchingPathStep
           ? pathStepRowsById.get(matchingPathStep.id)
@@ -375,7 +385,9 @@ const useTimesStopsTableData = (
                 : undefined;
           }
 
-          const receptionSignal = scheduleByAt[op.id]?.reception_signal;
+          // TODO : the correspondance is weird. We rely on an opId to match the schedule but the db opId
+          // won't be the same as the generated one from the path steps.
+          const receptionSignal = scheduleByAt[op.opId ?? op.waypointId]?.reception_signal;
 
           const { shortSlipDistance, onStopSignal } =
             receptionSignalToSignalBooleans(receptionSignal);
@@ -387,7 +399,7 @@ const useTimesStopsTableData = (
 
           formattedRows.push({
             ...buildTableRow({
-              id: `op-${op.id}-${op.position}`,
+              id: op.waypointId,
               pathStepId: null,
               opOnPathIndex: opIndex,
               name: op.name,

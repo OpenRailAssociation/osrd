@@ -23,7 +23,6 @@ import {
   secToHoursString,
   time2sec,
 } from 'utils/timeManipulation';
-import type { ArrayElement } from 'utils/types';
 
 import { marginRegExValidation, MarginUnit } from '../consts';
 import { TableType, type TimeExtraDays, type TimesStopsInputRow } from '../types';
@@ -400,13 +399,14 @@ export const getOperationalPointName = (
 };
 
 /** Build matching parameters from an operational point for PathStep matching. */
-export const buildOpMatchParams = (
-  op: ArrayElement<PathPropertiesFormatted['operationalPoints']>
-) => ({
-  opId: op.id,
-  uic: op.uic,
-  secondaryCode: op.secondary_code,
-  mainCode: op.main_code,
-  track: op.part.track,
-  offsetOnTrack: op.part.position,
-});
+export const buildOpMatchParams = (op: PathPropertiesFormatted['operationalPoints'][number]) =>
+  op.opId
+    ? {
+        opId: op.opId,
+        uic: op.uic,
+        secondaryCode: op.secondary_code,
+        mainCode: op.main_code,
+        track: op.part.track,
+        offsetOnTrack: op.part.position,
+      }
+    : null;
