@@ -1493,16 +1493,16 @@ dependencies = [
 
 [[package]]
 name = "lapin"
-version = "4.8.0"
+version = "4.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "01db668de710f19cca0088b36a572afa1b41090edbaa4d34b68e7bc8468b8e2b"
+checksum = "0fd20e01fd92597ca352ca7ceed3c589851ebad279dfcada48aa4d24fd3a7caa"
 dependencies = [
  "amq-protocol",
  "async-rs",
  "async-trait",
- "atomic-waker",
  "backon",
  "cfg-if",
+ "event-listener",
  "flume",
  "futures-core",
  "futures-io",
