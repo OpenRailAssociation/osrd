@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 
-import { omit } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
@@ -35,28 +34,16 @@ const useGetProjectedTrainOperationalPoints = ({
 
   useEffect(() => {
     const getOperationalPoints = async () => {
-      let operationalPointsWithUniqueIds: ProjectionWaypoint[] =
-        projectedOperationalPoints?.map((op, i) => ({
-          ...omit(op, ['id', 'opRef']),
-          waypointId: `${op.id}-${op.position}-${i}`,
-          opId: op.id,
-          pathItemId: null,
-          location: {
-            type: 'operational_point_part_reference' as const,
-            operational_point: op.opRef,
-          },
-        })) || [];
-
-      operationalPointsWithUniqueIds =
+      let operationalPointsWithUniqueIds =
         projectionType === 'trackProjection' && path && pathfinding
           ? upsertMapWaypointsInOperationalPoints(
               'ProjectionWaypoint',
               path,
               pathfinding.path_item_positions,
-              operationalPointsWithUniqueIds,
+              projectedOperationalPoints || [],
               t
             )
-          : operationalPointsWithUniqueIds;
+          : projectedOperationalPoints || [];
 
       setOperationalPoints(operationalPointsWithUniqueIds);
 
