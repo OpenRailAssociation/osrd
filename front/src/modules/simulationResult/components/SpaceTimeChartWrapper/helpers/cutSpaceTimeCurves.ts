@@ -3,7 +3,7 @@ import { compact } from 'lodash';
 
 import type {
   IndividualTrainProjection,
-  PathOperationalPoint,
+  ProjectionWaypoint,
   WaypointsPanelData,
   LayerRangeData,
 } from 'modules/simulationResult/types';
@@ -42,7 +42,7 @@ export const cutSpaceTimeRect = (
 const cutSpaceTimeCurves = (
   projectedTrains: IndividualTrainProjection[],
   conflicts: Conflict[],
-  operationalPoints: PathOperationalPoint[],
+  operationalPoints: ProjectionWaypoint[],
   waypointsPanelData?: WaypointsPanelData
 ) => {
   let cutProjectedTrains = projectedTrains;

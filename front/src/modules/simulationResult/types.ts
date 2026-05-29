@@ -26,18 +26,25 @@ import type {
 import type { SelectedTrain, SelectionSource } from 'reducers/simulationResults/types';
 import type { ArrayElement } from 'utils/types';
 
-// 1. This type refers to an operational point, modified to carry its own unique ID (waypointId), and
-// optionally an actual opId, which can be repeated along a path when a train crosses multiple time
-// the same operational point
-// 2. Remove the part field as it won't be used anywhere in the app. This avoid us to have to add hardcoded data in it.
-export type PathOperationalPoint = Omit<
-  PathProperties['operational_points'][number],
-  'id' | 'part'
-> & {
+/**
+ * This type refers to a waypoint, modified to carry its own unique ID (waypointId), and
+ * optionally an actual opId and pathStepId (for its corresponding path item), which can be repeated along a path when a train crosses multiple time
+ * the same operational point.
+ * Can hold an OP found in infra, or a track-offset
+ */
+export type PathWaypoint = Omit<PathProperties['operational_points'][number], 'id'> & {
   waypointId: string;
   opId: string | null;
+  pathItemId: string | null;
   location: PathItemLocation;
 };
+
+// TODO: adapt all params using these types to use the term waypoint instead of operational point
+//       since they can contain trackoffset waypoints and "op" refers to an infra object
+
+// Same as above, and can also hold a virtual OP
+// TODO: refactor this type to remove all the unnecessary fields
+export type ProjectionWaypoint = Omit<PathWaypoint, 'part'>;
 
 // Space Time Chart
 /**
@@ -104,8 +111,8 @@ export type ProjectionData = Omit<
 
 export type WaypointsPanelData = {
   timetableId: number | undefined;
-  filteredWaypoints: PathOperationalPoint[];
-  setFilteredWaypoints: Dispatch<SetStateAction<PathOperationalPoint[]>>;
+  filteredWaypoints: ProjectionWaypoint[];
+  setFilteredWaypoints: Dispatch<SetStateAction<ProjectionWaypoint[]>>;
   deployedWaypoints: Set<string>;
   toggleDeployedWaypoint: (waypointId: string, deployed?: boolean) => void;
   projectionPath: TrainSchedule['path'];

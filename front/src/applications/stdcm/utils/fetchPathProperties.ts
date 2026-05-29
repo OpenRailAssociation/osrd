@@ -9,7 +9,7 @@ import type {
 } from 'common/api/osrdEditoastApi';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { formatSuggestedOperationalPoints } from 'modules/pathfinding/utils';
-import type { PathOperationalPoint } from 'modules/simulationResult/types';
+import type { PathWaypoint } from 'modules/simulationResult/types';
 import type { SuggestedOP } from 'modules/trainSchedule/types';
 import type { AppDispatch } from 'store';
 
@@ -56,17 +56,16 @@ const fetchPathProperties = async (
       return { ...op, metadata };
     });
 
-    const operationalPointsWithUniqueIds: PathOperationalPoint[] = result.operational_points.map(
-      (op, index) => ({
-        ...omit(op, 'id'),
-        waypointId: `${op.id}-${op.position}-${index}`,
-        opId: op.id,
-        location: {
-          type: 'operational_point_part_reference' as const,
-          operational_point: { type: 'id' as const, operational_point: op.id },
-        },
-      })
-    );
+    const operationalPointsWithUniqueIds: PathWaypoint[] = result.operational_points.map((op) => ({
+      ...omit(op, 'id'),
+      waypointId: `op-${op.id}-${op.position}`,
+      opId: op.id,
+      pathItemId: null,
+      location: {
+        type: 'operational_point_part_reference' as const,
+        operational_point: { type: 'id' as const, operational_point: op.id },
+      },
+    }));
 
     const suggestedOperationalPoints: SuggestedOP[] = formatSuggestedOperationalPoints(
       operationalPointsWithMetadata,

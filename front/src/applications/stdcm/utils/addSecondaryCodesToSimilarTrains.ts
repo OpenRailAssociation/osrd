@@ -1,13 +1,13 @@
 import type { PostSimilarTrainsApiResponse } from 'common/api/osrdEditoastApi';
-import type { PathOperationalPoint } from 'modules/simulationResult/types';
+import type { PathWaypoint } from 'modules/simulationResult/types';
 
 import type { SimilarTrainWithSecondaryCode } from '../types';
 
 export const addSecondaryCodesToSimilarTrains = (
   similarTrains: PostSimilarTrainsApiResponse['similar_trains'],
-  pathOP?: PathOperationalPoint[]
+  pathOP?: PathWaypoint[]
 ): SimilarTrainWithSecondaryCode[] => {
-  const opById = new Map<string, PathOperationalPoint>();
+  const opById = new Map<string, PathWaypoint>();
   pathOP?.forEach((op) => {
     if (op.opId) {
       opById.set(op.opId, op);

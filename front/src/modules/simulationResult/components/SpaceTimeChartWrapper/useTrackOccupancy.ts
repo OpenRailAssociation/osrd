@@ -24,7 +24,7 @@ import {
 import { mapBy } from 'utils/types';
 
 import { usePrevious } from '../../../../utils/hooks/state';
-import type { BaseTrainProjection, PathOperationalPoint, TrainSpaceTimeData } from '../../types';
+import type { BaseTrainProjection, ProjectionWaypoint, TrainSpaceTimeData } from '../../types';
 import { EXCEPTION_SUFFIX } from './helpers/makeProjectedTrains';
 import { NO_TRACK_SPECIFIED_SYMBOL, sortTracks } from './helpers/sortTracks';
 import { batchFetchTrackOccupancy } from './helpers/utils';
@@ -56,7 +56,7 @@ function extractStationLabel(
 }
 
 function getTrackOccupancyOperationalPointReference(
-  op: PathOperationalPoint | undefined
+  op: ProjectionWaypoint | undefined
 ): OperationalPointReference | undefined {
   return op && op.location.type !== 'track_offset' ? op.location.operational_point : undefined;
 }
@@ -68,7 +68,7 @@ function getTrackOccupancyOperationalPointReference(
  * - infraId
  * - trains: An array with all visible TrainSpaceTimeData items in the SpaceTimeChart.
  * - pathOperationalPoints:
- *   An array with all PathOperationalPoint items along the current path
+ *   An array with all ProjectionWaypoint items along the current path
  *
  * It outputs:
  * - deployedWaypoints:
@@ -89,7 +89,7 @@ const useTrackOccupancy = ({
   infraId: number;
   timetableId: number;
   trainScheduleProjections: TrainSpaceTimeData[];
-  pathOperationalPoints: PathOperationalPoint[];
+  pathOperationalPoints: ProjectionWaypoint[];
 }): {
   deployedWaypoints: DeployedWaypoint[];
   toggleWaypoint: (waypointId: string, selectedState?: boolean) => void;

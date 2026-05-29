@@ -9,7 +9,7 @@ import type {
   CorePathfindingResultSuccess,
   TrainScheduleResponse,
 } from 'common/api/osrdEditoastApi';
-import type { PathOperationalPoint, ProjectionData } from 'modules/simulationResult/types';
+import type { ProjectionWaypoint, ProjectionData } from 'modules/simulationResult/types';
 import { getProjectionType } from 'reducers/simulationResults/selectors';
 
 import { getWaypointsLocalStorageKey } from './helpers/utils';
@@ -29,17 +29,18 @@ const useGetProjectedTrainOperationalPoints = ({
   const { t } = useTranslation('operational-studies');
   const projectionType = useSelector(getProjectionType);
 
-  const [operationalPoints, setOperationalPoints] = useState<PathOperationalPoint[]>([]);
+  const [operationalPoints, setOperationalPoints] = useState<ProjectionWaypoint[]>([]);
   const [filteredOperationalPoints, setFilteredOperationalPoints] =
-    useState<PathOperationalPoint[]>(operationalPoints);
+    useState<ProjectionWaypoint[]>(operationalPoints);
 
   useEffect(() => {
     const getOperationalPoints = async () => {
-      let operationalPointsWithUniqueIds: PathOperationalPoint[] =
+      let operationalPointsWithUniqueIds: ProjectionWaypoint[] =
         projectedOperationalPoints?.map((op, i) => ({
           ...omit(op, ['id', 'opRef']),
           waypointId: `${op.id}-${op.position}-${i}`,
           opId: op.id,
+          pathItemId: null,
           location: {
             type: 'operational_point_part_reference' as const,
             operational_point: op.opRef,
@@ -49,7 +50,7 @@ const useGetProjectedTrainOperationalPoints = ({
       operationalPointsWithUniqueIds =
         projectionType === 'trackProjection' && path && pathfinding
           ? upsertMapWaypointsInOperationalPoints(
-              'PathOperationalPoint',
+              'ProjectionWaypoint',
               path,
               pathfinding.path_item_positions,
               operationalPointsWithUniqueIds,
@@ -66,7 +67,7 @@ const useGetProjectedTrainOperationalPoints = ({
       if (stringifiedSavedWaypoints) {
         operationalPointsWithUniqueIds = JSON.parse(
           stringifiedSavedWaypoints
-        ) as PathOperationalPoint[];
+        ) as ProjectionWaypoint[];
       } else {
         // If the manchette hasn't been saved, we want to display by default only
         // the waypoints with CH BV/00/'' and the path steps (origin, destination, vias)
