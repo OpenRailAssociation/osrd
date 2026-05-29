@@ -86,7 +86,9 @@
     .study-details-description {
       margin-bottom: 8px;
       white-space: break-spaces;
-      overflow: auto;
+      overflow-y: auto;
+      max-height: 232px;
+      overflow-wrap: anywhere;
     }
     .study-details-state {
       padding: 80px 0 16px;

@@ -101,11 +101,12 @@
           margin-bottom: 4px;
         }
         .project-details-title-description {
-          overflow: auto;
+          overflow-y: auto;
           max-height: 20vh;
           margin-bottom: 16px;
           font-size: 1.25rem;
           white-space: break-spaces;
+          overflow-wrap: anywhere;
         }
         .project-details-title-objectives {
           overflow: auto;
