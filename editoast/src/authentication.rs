@@ -18,9 +18,7 @@ pub enum Authentication {
         impersonated_identity: String,
     },
     Skip {
-        #[expect(unused)]
         identity: Option<String>,
-        #[expect(unused)]
         name: Option<String>,
     },
 }

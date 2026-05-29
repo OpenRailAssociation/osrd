@@ -125,13 +125,19 @@ pub(in crate::views) struct WhoamiResponse {
     ))
 )]
 pub(in crate::views) async fn whoami(
-    Extension(roles): Extension<Vec<authz::Role>>,
+    Extension(mut roles): Extension<Vec<authz::Role>>,
     Extension(user): Extension<Option<editoast_models::User>>,
     Extension(authn): Extension<crate::authentication::Authentication>,
 ) -> Result<Json<WhoamiResponse>> {
+    let skip = matches!(authn, crate::authentication::Authentication::Skip { .. });
     if let Some(editoast_models::User { id, name }) = user {
+        // authorization is disabled (by CLI or header x-osrd-skip-authz) but identity headers are
+        // provided so we could fetch the user's roles, but Admin is lacking
+        if skip && !roles.contains(&Role::Admin) {
+            roles.push(Role::Admin);
+        }
         Ok(Json(WhoamiResponse { id, name, roles }))
-    } else if matches!(authn, crate::authentication::Authentication::Skip { .. }) {
+    } else if skip {
         // TODO: don't return -1 and a hardcoded name, return a different schema instead, requires frontend changes
         Ok(Json(WhoamiResponse {
             id: -1,
@@ -1677,6 +1683,32 @@ mod tests {
                 id: impersonated.id,
                 name: "Impersonated".to_string(),
                 roles: vec![Role::Stdcm],
+            }
+        );
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn whoami_skip_with_user_info() {
+        let app = test_app!().enable_authorization(true).build();
+        let user = app
+            .user("bob", "Bob")
+            .with_roles([Role::Admin])
+            .create()
+            .await;
+
+        let request = app.get("/authz/me").by_user(&user).skip_authz();
+        let user_data = app
+            .fetch(request)
+            .await
+            .assert_status(StatusCode::OK)
+            .json_into::<WhoamiResponse>();
+
+        assert_eq!(
+            user_data,
+            WhoamiResponse {
+                id: user.id,
+                name: "Bob".to_string(),
+                roles: vec![Role::Admin],
             }
         );
     }

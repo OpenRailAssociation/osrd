@@ -161,7 +161,11 @@ pub(in crate::views) async fn authentication_validation_middleware(
     }
 
     let (user, roles_prot) = match &authn {
-        crate::authentication::Authentication::Authenticated { identity, name } => {
+        crate::authentication::Authentication::Authenticated { identity, name }
+        | crate::authentication::Authentication::Skip {
+            identity: Some(identity),
+            name: Some(name),
+        } => {
             let conn = db_pool.get().await?;
             conn.transaction(async |conn| {
                 let user =
