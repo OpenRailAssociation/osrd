@@ -134,8 +134,9 @@ fun buildFinalEnvelope(
                         comfort,
                     )
                 )
+            val conflict = findConflict(newEnvelope, blockAvailability, edges, updatedTimeData)
             val conflictOffset =
-                findConflictOffsets(newEnvelope, blockAvailability, edges, updatedTimeData)
+                conflict?.firstConflictOffset
                     ?: return FinalEnvelopeResult(newEnvelope, allowanceRanges)
             if (fixedPoints.any { it.offset == conflictOffset }) {
                 // Error case: a conflict prevents us from finding a solution,
@@ -160,6 +161,7 @@ fun buildFinalEnvelope(
                     isMareco,
                     allowanceRanges,
                     attempt,
+                    conflict.causes,
                 )
             }
             val newPoint =
@@ -440,14 +442,15 @@ private fun getTimeOnEdges(
 
 /**
  * Looks for the first detected conflict that would happen on the given envelope. If a conflict is
- * found, returns its offset. Otherwise, returns null.
+ * found, returns an Unavailable instance, containing an offset and some metadata. Otherwise,
+ * returns null.
  */
-private fun findConflictOffsets(
+private fun findConflict(
     envelope: Envelope,
     blockAvailability: BlockAvailabilityInterface,
     edges: List<STDCMEdge>,
     updatedTimeData: TimeData,
-): Offset<PhysicsPath>? {
+): BlockAvailabilityInterface.Unavailable? {
     val explorer = getUpdatedExplorer(edges, envelope, updatedTimeData)
     val availability =
         blockAvailability.getAvailability(
@@ -456,10 +459,7 @@ private fun findConflictOffsets(
             explorer.getSimulatedLength(),
             updatedTimeData.departureTime,
         )
-    val offsetDistance =
-        (availability as? BlockAvailabilityInterface.Unavailable)?.firstConflictOffset
-            ?: return null
-    return offsetDistance
+    return availability as? BlockAvailabilityInterface.Unavailable
 }
 
 /** Returns an infra explorer with envelope, with the given new envelope and updated time data */
@@ -576,6 +576,7 @@ private fun handlePostProcessingConflict(
     isMareco: Boolean,
     allowanceRanges: List<EngineeringAllowanceRange>,
     attempt: Int,
+    conflictCauses: List<BlockAvailabilityInterface.ConflictCause>,
 ): FinalEnvelopeResult {
     if (graph.searchMetadata != null) {
         val stringDebugData by lazy {
@@ -604,11 +605,34 @@ private fun handlePostProcessingConflict(
     postProcessingLogger.error(
         "NOTE: look through the logs for allowance issues, they may cause mismatches."
     )
+    postProcessingLogger.error(
+        "NOTE: set STDCM_DEBUG_DATA_FILENAME or look at the s3 files to get search data, " +
+            "which can be handled by core/script/generate-debug-space-chart.py " +
+            "even with no successful simulation."
+    )
+
+    fun formatTime(timeSinceDeparture: Double): String? {
+        val originalTime = graph.searchMetadata?.originalStartTime ?: return null
+        // Convert to Europe/Paris to match generate-debug-space-chart.py
+        val absoluteTime =
+            originalTime
+                .plusSeconds((timeSinceDeparture + updatedTimeData.departureTime).toLong())
+                .withZoneSameInstant(java.time.ZoneId.of("Europe/Paris"))
+        return "%02d:%02d:%02d".format(absoluteTime.hour, absoluteTime.minute, absoluteTime.second)
+    }
+
     val conflictTime = fixedPoints.first { it.offset == conflictOffset }.time
     postProcessingLogger.info(
         "    conflict happened at offset=$conflictOffset/${maxSpeedEnvelope.endPos.toInt()} " +
             "and t=${conflictTime.toInt()}/${updatedTimeData.timeSinceDeparture.toInt()}"
     )
+    postProcessingLogger.info("    absolute conflict time: ${formatTime(conflictTime)}")
+    postProcessingLogger.info("    conflict causes:")
+    for (cause in conflictCauses) {
+        postProcessingLogger.info(
+            "        id \"${cause.cause}\", would need to arrive ${cause.duration}s later (or leave earlier)"
+        )
+    }
 
     var remainingDistance = conflictOffset.distance
     for ((i, edge) in edges.withIndex()) {
