@@ -5,7 +5,7 @@ import type {
   PathProperties,
   TrainSchedule,
 } from 'common/api/osrdEditoastApi';
-import type { PathOperationalPoint } from 'modules/simulationResult/types';
+import type { ProjectionWaypoint } from 'modules/simulationResult/types';
 
 const HIGHEST_PRIORITY_WEIGHT = 100;
 
@@ -13,12 +13,12 @@ const HIGHEST_PRIORITY_WEIGHT = 100;
  * Check if the train path used waypoints added by map click and add them to the operational points
  */
 export function upsertMapWaypointsInOperationalPoints(
-  type: 'PathOperationalPoint',
+  type: 'ProjectionWaypoint',
   path: TrainSchedule['path'],
   pathItemsPositions: CorePathfindingResultSuccess['path_item_positions'],
-  operationalPoints: PathOperationalPoint[],
+  operationalPoints: ProjectionWaypoint[],
   t: TFunction<'operational-studies'>
-): PathOperationalPoint[];
+): ProjectionWaypoint[];
 export function upsertMapWaypointsInOperationalPoints(
   type: 'EditoastPathOperationalPoint',
   path: TrainSchedule['path'],
@@ -27,12 +27,12 @@ export function upsertMapWaypointsInOperationalPoints(
   t: TFunction<'operational-studies'>
 ): PathProperties['operational_points'][number][];
 export function upsertMapWaypointsInOperationalPoints(
-  type: 'PathOperationalPoint' | 'EditoastPathOperationalPoint',
+  type: 'ProjectionWaypoint' | 'EditoastPathOperationalPoint',
   path: TrainSchedule['path'],
   pathItemsPositions: CorePathfindingResultSuccess['path_item_positions'],
-  operationalPoints: (PathOperationalPoint | PathProperties['operational_points'][number])[],
+  operationalPoints: (ProjectionWaypoint | PathProperties['operational_points'][number])[],
   t: TFunction<'operational-studies'>
-): (PathOperationalPoint | PathProperties['operational_points'][number])[] {
+): (ProjectionWaypoint | PathProperties['operational_points'][number])[] {
   return path.reduce(
     (operationalPointsWithAllWaypoints, step, stepIndex) => {
       const location = step.location;
@@ -54,20 +54,21 @@ export function upsertMapWaypointsInOperationalPoints(
           country_code: '??',
           is_passenger_station: false,
           main_code: '',
-          part: { track: location.track, position: location.offset, local_track_name: 'V1' },
           position: positionOnPath,
           weight: HIGHEST_PRIORITY_WEIGHT,
         };
         const formattedStep =
-          type === 'PathOperationalPoint'
+          type === 'ProjectionWaypoint'
             ? {
                 ...baseFormattedStep,
                 waypointId: step.id,
                 opId: null,
+                pathItemId: step.id,
                 location,
               }
             : {
                 ...baseFormattedStep,
+                part: { track: location.track, position: location.offset, local_track_name: 'V1' },
                 id: step.id,
               };
 

@@ -34,7 +34,7 @@ import getPathStyleV2 from 'modules/simulationResult/helpers/getPathStyleV2';
 import type {
   CurveStyleExceptionType,
   CurveStyleInput,
-  PathOperationalPoint,
+  ProjectionWaypoint,
   TrainSpaceTimeData,
   WaypointsPanelData,
   DraggingState,
@@ -91,7 +91,7 @@ import useWaypointMenu from './useWaypointMenu';
 import WaypointsPanel from './WaypointsPanel';
 
 type SpaceTimeChartWrapperBaseProps = {
-  operationalPoints: PathOperationalPoint[];
+  operationalPoints: ProjectionWaypoint[];
   trainScheduleProjections: TrainSpaceTimeData[];
   conflicts?: Conflict[];
   workSchedules?: PostWorkSchedulesProjectPathApiResponse;

@@ -10,7 +10,7 @@ import type {
   StdcmResponseWithTraceId,
 } from 'common/api/osrdEditoastApi';
 import type {
-  PathOperationalPoint,
+  PathWaypoint,
   SpeedDistanceDiagramData,
   TrainSpaceTimeData,
 } from 'modules/simulationResult/types';
@@ -34,7 +34,7 @@ export type StdcmPathNotFound = Extract<StdcmResponseWithTraceId, { status: 'pat
 export type StdcmResponse = StdcmPathNotFound | StdcmSuccessResponse;
 
 export type StdcmPathProperties = PathProperties & {
-  manchetteOperationalPoints?: PathOperationalPoint[];
+  manchetteOperationalPoints?: PathWaypoint[];
   suggestedOperationalPoints: SuggestedOP[];
 };
 

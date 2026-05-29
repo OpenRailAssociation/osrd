@@ -5,7 +5,7 @@ import { Alert } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 
-import type { PathOperationalPoint, WaypointsPanelData } from 'modules/simulationResult/types';
+import type { ProjectionWaypoint, WaypointsPanelData } from 'modules/simulationResult/types';
 import useModalFocusTrap from 'utils/hooks/useModalFocusTrap';
 import { mmToKm } from 'utils/physics';
 
@@ -14,7 +14,7 @@ import { getWaypointsLocalStorageKey } from './helpers/utils';
 type WaypointsPanelProps = {
   waypointsPanelIsOpen: boolean;
   setWaypointsPanelIsOpen: (open: boolean) => void;
-  waypoints: PathOperationalPoint[];
+  waypoints: ProjectionWaypoint[];
   waypointsPanelData: WaypointsPanelData;
   hideOffsets?: boolean;
 };

@@ -13,7 +13,7 @@ import {
 import { matchPathStepAndOp } from 'modules/pathfinding/utils';
 import type { MovableOccupancyZone } from 'modules/simulationResult/components/SpaceTimeChartWrapper/helpers/zones';
 import type { DeployedWaypoint } from 'modules/simulationResult/components/SpaceTimeChartWrapper/useTrackOccupancy';
-import type { PathOperationalPoint } from 'modules/simulationResult/types';
+import type { ProjectionWaypoint } from 'modules/simulationResult/types';
 import { findTrainScheduleAndException } from 'modules/trainSchedule/helpers/pacedTrain';
 import { storeTrainSchedule } from 'modules/trainSchedule/helpers/updateTrainScheduleHelpers';
 import type {
@@ -31,13 +31,13 @@ import { Duration, startTimeToDate } from 'utils/duration';
 function upsertPathStepTrack(
   path: PathItem[],
   simulationSummary: SimulationSummary | undefined,
-  op: PathOperationalPoint,
+  op: ProjectionWaypoint,
   occupancyZoneStartOffset: Duration,
   trackName: string
 ): PathItem[] {
   // First check if the OP is already an explicit path step, if so update it
   // TODO: better matching, e.g. by making the backend return the path step ID
-  // for each PathOperationalPoint
+  // for each ProjectionWaypoint
   const pathStepIndex = path.findIndex((step) =>
     matchPathStepAndOp(step.location, {
       // If the OP is not found in the infrastructure, OP ID may be null
@@ -110,7 +110,7 @@ export default function useOccupancyZoneDrop({
 }: {
   trainSchedules: TrainScheduleResponse[];
   trainSchedulesWithDetails: TrainScheduleWithDetails[];
-  pathOperationalPoints: PathOperationalPoint[];
+  pathOperationalPoints: ProjectionWaypoint[];
   deployedWaypoints: DeployedWaypoint[];
   upsertTrainSchedules: (trainSchedules: TrainScheduleResponse[]) => void;
 }) {

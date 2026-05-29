@@ -21,7 +21,7 @@ import type {
   PathfindingResult,
 } from 'common/api/osrdEditoastApi';
 import type { RangedValue } from 'common/types';
-import type { PathOperationalPoint } from 'modules/simulationResult/types';
+import type { ProjectionWaypoint } from 'modules/simulationResult/types';
 import type { SuggestedOP } from 'modules/trainSchedule/types';
 import type { Train, TrainScheduleWithPathOps } from 'reducers/osrdconf/types';
 import type { Duration } from 'utils/duration';
@@ -61,7 +61,8 @@ export type TimetableJsonPayload = {
 
 // Extraction of some required and non nullable properties from osrdEditoastApi's PathProperties type
 export type ManageTrainSchedulePathProperties = {
-  manchetteOperationalPoints?: PathOperationalPoint[];
+  // TODO : remove this field that seems to be unused
+  manchetteOperationalPoints?: ProjectionWaypoint[];
   electrifications: NonNullable<PathProperties['electrifications']>;
   geometry: NonNullable<PathProperties['geometry']>;
   suggestedOperationalPoints: SuggestedOP[];
