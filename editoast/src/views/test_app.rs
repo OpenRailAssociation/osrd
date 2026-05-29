@@ -487,7 +487,6 @@ impl<'a> UserBuilder<'a> {
         self
     }
 
-    #[expect(unused)]
     pub fn with_rolling_stock_grant(
         mut self,
         rolling_stock_id: i64,
@@ -581,7 +580,6 @@ impl<'a> GroupBuilder<'a> {
         self
     }
 
-    #[expect(unused)]
     pub fn with_rolling_stock_grant(
         mut self,
         rolling_stock_id: i64,
