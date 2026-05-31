@@ -1,6 +1,8 @@
 import type { CurveOutline, CurveStyle } from '@osrd-project/ui-charts';
 
 import {
+  DRAGGED_CURVE_COLOR,
+  DRAGGED_CURVE_OUTLINE_COLOR,
   REST_BACKGROUND_COLOR,
   SELECTED_CURVE_COLOR,
   SELECTED_CURVE_OUTLINE_COLOR,
@@ -67,6 +69,18 @@ const getCurveStyle = (state: CurveVisualState, train: TrainForStyle): CurveStyl
     },
   };
 
+  const dragStyle: CurveStyle = {
+    color: DRAGGED_CURVE_COLOR,
+    opacity: 1,
+    level: 1,
+    outline: { offset: 0, width: 1.5, color: DRAGGED_CURVE_OUTLINE_COLOR },
+    label: {
+      color: colors.normal,
+      background: { color: colors.background },
+      fontWeight: FONT_WEIGHT_BOLD,
+    },
+  };
+
   switch (state) {
     case 'none':
       return noneStyle;
@@ -74,6 +88,8 @@ const getCurveStyle = (state: CurveVisualState, train: TrainForStyle): CurveStyl
       return activeStyle;
     case 'passiveSecondary':
       return passiveSecondaryStyle;
+    case 'drag':
+      return dragStyle;
     default:
       // Other states are implemented in following commits.
       return { color: colors.normal, opacity: 1 };

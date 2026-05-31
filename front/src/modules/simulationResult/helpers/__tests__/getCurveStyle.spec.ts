@@ -2,6 +2,8 @@ import { describe, it, expect } from 'vitest';
 
 import {
   DEFAULT_TRAIN_PATH_COLORS,
+  DRAGGED_CURVE_COLOR,
+  DRAGGED_CURVE_OUTLINE_COLOR,
   REST_BACKGROUND_COLOR,
   SELECTED_CURVE_COLOR,
   SELECTED_CURVE_OUTLINE_COLOR,
@@ -92,6 +94,29 @@ describe('getCurveStyle', () => {
     it('should replace the outline with the invalid one when the train is not simulated', () => {
       const style = getCurveStyle('passiveSecondary', { colors, isSimulated: false });
       expect(style.outline).toEqual(INVALID_OUTLINE);
+    });
+  });
+
+  describe('drag', () => {
+    it('should return the dark navy color at level 1 with the yellow halo outline', () => {
+      const style = getCurveStyle('drag', { colors, isSimulated: true });
+      expect(style.color).toBe(DRAGGED_CURVE_COLOR);
+      expect(style.level).toBe(1);
+      expect(style.opacity).toBe(1);
+      expect(style.outline).toEqual({
+        offset: 0,
+        width: 1.5,
+        color: DRAGGED_CURVE_OUTLINE_COLOR,
+      });
+    });
+
+    it('should keep the active selection label', () => {
+      const style = getCurveStyle('drag', { colors, isSimulated: true });
+      expect(style.label).toEqual({
+        color: colors.normal,
+        background: { color: colors.background },
+        fontWeight: 600,
+      });
     });
   });
 });
