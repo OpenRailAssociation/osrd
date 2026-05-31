@@ -4,6 +4,8 @@ import type { CategoryColors } from './types';
 
 export const SELECTED_CURVE_COLOR = '#1844EF';
 export const SELECTED_CURVE_OUTLINE_COLOR = 'rgba(24, 68, 239, 0.1)';
+export const DRAGGED_CURVE_COLOR = '#180F47';
+export const DRAGGED_CURVE_OUTLINE_COLOR = 'rgba(255, 247, 0, 0.4)';
 export const REST_BACKGROUND_COLOR = '#FFFFFF';
 
 export const DEFAULT_TRAIN_PATH_COLORS: CategoryColors = {
