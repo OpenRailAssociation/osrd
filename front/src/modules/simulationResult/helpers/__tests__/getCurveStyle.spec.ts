@@ -119,4 +119,45 @@ describe('getCurveStyle', () => {
       });
     });
   });
+
+  describe('out of selection', () => {
+    it('should use the background tint for the curve and the label', () => {
+      const style = getCurveStyle('none', { colors, isSimulated: true }, { outOfSelection: true });
+      expect(style.color).toBe(colors.background);
+      expect(style.label).toEqual({
+        color: colors.background,
+        fontWeight: 400,
+        background: { color: REST_BACKGROUND_COLOR, opacity: 0.9 },
+      });
+    });
+
+    it('should have no outline', () => {
+      const style = getCurveStyle('none', { colors, isSimulated: false }, { outOfSelection: true });
+      expect(style.outline).toBeUndefined();
+    });
+
+    it('should ignore the state when out of selection', () => {
+      const fromActive = getCurveStyle(
+        'active',
+        { colors, isSimulated: true },
+        { outOfSelection: true }
+      );
+      const fromNone = getCurveStyle(
+        'none',
+        { colors, isSimulated: true },
+        { outOfSelection: true }
+      );
+      expect(fromActive).toEqual(fromNone);
+    });
+
+    it('should leave the base style untouched when not out of selection', () => {
+      const style = getCurveStyle('none', { colors, isSimulated: true }, { outOfSelection: false });
+      expect(style.color).toBe(colors.normal);
+      expect(style.label).toEqual({
+        color: colors.normal,
+        fontWeight: 400,
+        background: { color: REST_BACKGROUND_COLOR, opacity: 0.9 },
+      });
+    });
+  });
 });

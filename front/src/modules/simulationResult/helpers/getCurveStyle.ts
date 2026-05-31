@@ -28,7 +28,15 @@ type TrainForStyle = {
   isSimulated?: boolean;
 };
 
-const getCurveStyle = (state: CurveVisualState, train: TrainForStyle): CurveStyle => {
+type StyleOptions = {
+  /**
+   * Active selection is open and the train is not part of it. The curve and
+   * its label fade out so the selection stands out.
+   */
+  outOfSelection?: boolean;
+};
+
+const getBaseStyle = (state: CurveVisualState, train: TrainForStyle): CurveStyle => {
   const { colors, isSimulated } = train;
 
   const noneStyle: CurveStyle = {
@@ -94,6 +102,31 @@ const getCurveStyle = (state: CurveVisualState, train: TrainForStyle): CurveStyl
       // Other states are implemented in following commits.
       return { color: colors.normal, opacity: 1 };
   }
+};
+
+/**
+ * Maps a curve visual state to its style primitives.
+ *
+ * `outOfSelection` is a transverse modifier applied on top of the state.
+ */
+const getCurveStyle = (
+  state: CurveVisualState,
+  train: TrainForStyle,
+  { outOfSelection = false }: StyleOptions = {}
+): CurveStyle => {
+  if (outOfSelection) {
+    const { colors } = train;
+    return {
+      color: colors.background,
+      opacity: 1,
+      label: {
+        color: colors.background,
+        fontWeight: FONT_WEIGHT_REGULAR,
+        background: RESTING_LABEL_BACKGROUND,
+      },
+    };
+  }
+  return getBaseStyle(state, train);
 };
 
 export default getCurveStyle;
