@@ -2,19 +2,13 @@ use std::collections::HashMap;
 use std::error::Error;
 use std::path::PathBuf;
 
-use schemas::infra::TrackSectionExtensions;
-use schemas::infra::TrackSectionSncfExtension;
-use schemas::infra::TrackSectionSourceExtension;
-use schemas::primitives::NonBlankString;
 use tracing::debug;
-use tracing::error;
 use tracing::info;
 
 use super::utils::*;
 use crate::generate_routes;
 use crate::generate_signals;
 use schemas::infra::RailJson;
-use schemas::infra::TrackSection;
 
 use itertools::Itertools as _;
 
@@ -31,6 +25,27 @@ pub fn osm_to_railjson(
         railjson_out.display()
     );
     let railjson = parse_osm(osm_pbf_in, generate_signals)?;
+
+    info!("Writing RailJson to {} with:", railjson_out.display());
+    info!(
+        "  - {} operational points",
+        railjson.operational_points.len()
+    );
+    info!("  - {} routes", railjson.routes.len());
+    info!(
+        "  - {} extended switch types",
+        railjson.extended_switch_types.len()
+    );
+    info!("  - {} switches", railjson.switches.len());
+    info!("  - {} track sections", railjson.track_sections.len());
+    info!("  - {} speed sections", railjson.speed_sections.len());
+    info!("  - {} neutral sections", railjson.neutral_sections.len());
+    info!("  - {} electrifications", railjson.electrifications.len());
+    info!("  - {} signals", railjson.signals.len());
+    info!("  - {} buffer stops", railjson.buffer_stops.len());
+    info!("  - {} detectors", railjson.detectors.len());
+    info!("  - {} level crossings", railjson.level_crossings.len());
+
     let file = std::fs::File::create(railjson_out)?;
     serde_json::to_writer(file, &railjson)?;
     Ok(())
@@ -62,124 +77,47 @@ pub fn parse_osm(
         .read(&osm_pbf_in)?;
     info!("🗺️ We have {} nodes and {} edges", nodes.len(), edges.len());
 
-    let rail_edges = edges
-        .iter()
+    let edges = edges
+        .into_iter()
         .filter(|e| e.properties.train == osm4routing::TrainAccessibility::Allowed)
         .filter(|e| e.source != e.target)
         .collect_vec();
 
     let mut adjacencies = HashMap::<osm4routing::NodeId, NodeAdjacencies>::new();
-    for edge in rail_edges.clone() {
+    for edge in &edges {
         adjacencies.entry(edge.source).or_default().edges.push(edge);
         adjacencies.entry(edge.target).or_default().edges.push(edge);
     }
-
-    let track_sections: Vec<TrackSection> = rail_edges
-        .iter()
-        .map(|e| {
-            let geo = geos::geojson::Geometry::new(geos::geojson::Value::LineString(
-                e.geometry.iter().map(|c| vec![c.x, c.y]).collect(),
-            ));
-            TrackSection {
-                id: e.id.as_str().into(),
-                length: e.length(),
-                geo: geo.clone(),
-                extensions: TrackSectionExtensions {
-                    sncf: Some(TrackSectionSncfExtension {
-                        line_code: 0,
-                        line_name: e
-                            .tags
-                            .get("name")
-                            .map(NonBlankString::from)
-                            .unwrap_or(NonBlankString::from("??")),
-                        track_name: e
-                            .tags
-                            .get("railway:track_ref")
-                            .map(NonBlankString::from)
-                            .unwrap_or(NonBlankString::from("??")),
-                        track_number: 0,
-                    }),
-                    source: Some(TrackSectionSourceExtension {
-                        name: "OpenStreetMap".into(),
-                        id: "osm".into(),
-                    }),
-                },
-                ..Default::default()
-            }
-        })
-        .collect();
-
     let nodes_tracks = NodeToTrack::from_edges(&edges);
+
+    let track_sections = track_sections(&edges);
+    let (switches, buffer_stops) = switches_and_buffer_stops(&mut adjacencies);
+    let speed_sections = edges.iter().clone().flat_map(speed_sections).collect_vec();
+    let electrifications = edges.iter().clone().flat_map(electrifications).collect();
+    let operational_points = operational_points(&osm_pbf_in, &nodes_tracks, &track_sections);
     let signals = if generate_signals {
-        vec![]
+        generate_signals::generate_signals(&track_sections, &switches, &speed_sections)
     } else {
         signals(&osm_pbf_in, &nodes_tracks, &adjacencies)
     };
-    let mut railjson = RailJson {
-        extended_switch_types: vec![],
-        detectors: signals.iter().map(detector).collect(),
-        signals,
-        speed_sections: rail_edges
-            .iter()
-            .copied()
-            .flat_map(speed_sections)
-            .collect(),
-        electrifications: rail_edges
-            .iter()
-            .copied()
-            .flat_map(electrifications)
-            .collect(),
-        operational_points: operational_points(&osm_pbf_in, &nodes_tracks, &track_sections),
-        track_sections,
-        ..Default::default()
-    };
+    let detectors = signals.iter().map(detector).collect_vec();
 
-    for (node, mut adj) in adjacencies {
-        for e1 in &adj.edges {
-            for e2 in &adj.edges {
-                if e1.id < e2.id
-                    && let Some(branch) = try_into_branch(node, e1, e2)
-                {
-                    adj.branches.push(branch);
-                }
-            }
-        }
-
-        let id = node.0;
-        let edges_count = adj.edges.len();
-        let branches_count = adj.branches.len();
-        match (edges_count, branches_count) {
-            (0, _) => error!("node {id} without edge"),
-            (1, 0) => railjson
-                .buffer_stops
-                .push(edge_to_buffer(&node, adj.edges[0], 0)),
-            (2, 0) => {
-                // This can happens when data is truncated (e.g. cropped to a region, or the output track is a service track)
-                railjson
-                    .buffer_stops
-                    .push(edge_to_buffer(&node, adj.edges[0], 0));
-                railjson
-                    .buffer_stops
-                    .push(edge_to_buffer(&node, adj.edges[1], 1));
-            }
-            (2, 1) => railjson.switches.push(link_switch(node, &adj.branches)),
-            (3, 2) => railjson.switches.push(point_switch(node, &adj.branches)),
-            (4, 2) => railjson.switches.push(cross_switch(node, &adj.branches)),
-            (4, 4) => railjson
-                .switches
-                .push(double_slip_switch(node, &adj.branches)),
-            _ => debug!("node {id} with {edges_count} edges and {branches_count} branches"),
-        }
-    }
-    if generate_signals {
-        debug!("Start generating signals");
-        generate_signals::generate_signals(&mut railjson);
-        debug!("Done, got {} signals", railjson.signals.len());
-    }
     debug!("Start generating routes");
-    railjson.routes = generate_routes::routes(&railjson);
-    debug!("Done, got {} routes", railjson.routes.len());
-    Ok(railjson)
+    let routes = generate_routes::routes(&track_sections, &detectors, &buffer_stops, &switches);
+    debug!("Done, got {} routes", routes.len());
+
+    Ok(RailJson {
+        detectors,
+        signals,
+        speed_sections,
+        electrifications,
+        operational_points,
+        track_sections,
+        switches,
+        buffer_stops,
+        routes,
+        ..Default::default()
+    })
 }
 
 #[cfg(test)]
