@@ -424,6 +424,16 @@
       "cancelMapSelection": "Cancel",
       "focusLocationOnMap": "Focus the map on this operational point",
       "frameAll": "Center on all path steps on map",
+      "intermediateWaypointsPanel": {
+        "collapseGroup": "Collapse intermediate points",
+        "expandGroup": "Expand intermediate points",
+        "hide": "Hide",
+        "hideLabel": "Hide intermediate OPs",
+        "idleMessage": "Complete the itinerary to display its intermediate OPs.",
+        "noWaypoint": "No intermediate OPs to display, the itinerary isn't valid.",
+        "panelTitle": "Intermediate points",
+        "showLabel": "Display all intermediate OPs"
+      },
       "invalidOP": "Non recognized point: ",
       "moveLocationOnMap": "Move location on the map",
       "movePointOnMap": "Move this waypoint using the map",

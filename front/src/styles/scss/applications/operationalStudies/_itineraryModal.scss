@@ -162,8 +162,8 @@
         border-radius: 8px;
         margin-top: 12px;
         margin-inline: 8px;
-        padding-top: 16px;
-        padding-bottom: 46px;
+        padding-top: 8px;
+        padding-bottom: 8px;
 
         &.with-invalid-step {
           border: 8px solid var(--black10);
@@ -224,20 +224,21 @@
             display: block !important;
           }
         }
-        .reverse-itinerary-button {
-          position: absolute;
-          padding: 8px;
-          transform: rotate(90deg);
-          top: 0;
-          left: 8px;
-          color: var(--grey30);
-        }
-
         .itinerary-icons {
           display: flex;
-          justify-content: end;
+          justify-content: space-between;
           align-items: center;
-          padding-inline: 16px;
+          padding-inline: 8px 16px;
+
+          .reverse-itinerary-button {
+            padding: 8px;
+            color: var(--grey30);
+            transform: rotate(90deg);
+
+            span {
+              display: flex;
+            }
+          }
 
           .frame-all span {
             display: flex;
@@ -247,6 +248,41 @@
             &:hover {
               color: var(--black100);
             }
+          }
+        }
+
+        .show-intermediate-waypoints-button {
+          margin-left: 8px;
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          padding: 5px 8px;
+          border-radius: 8px;
+          color: var(--grey30);
+
+          &:disabled {
+            cursor: not-allowed;
+            opacity: 0.4;
+          }
+
+          &__label {
+            color: var(--grey80);
+            font-size: 0.875rem;
+            display: none;
+          }
+
+          &[aria-expanded='true'],
+          &:hover:not(:disabled) {
+            padding-right: 12px;
+
+            .show-intermediate-waypoints-button__label {
+              display: inline;
+            }
+          }
+
+          &:hover:not(:disabled) {
+            background-color: var(--black5);
+            color: var(--primary70);
           }
         }
 
@@ -512,6 +548,156 @@
       padding-inline: 34px;
       margin-top: var(--footer-box-shadow-height);
       box-shadow: 0 calc(-1 * var(--footer-box-shadow-height)) 0 0 var(--black10);
+    }
+  }
+
+  .itinerary-modal-waypoints-panel-wrapper {
+    width: 420px;
+    flex-shrink: 0;
+    border-left: 1px solid var(--grey30);
+  }
+
+  .intermediate-waypoints-panel {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    background: var(--ambientB5);
+    font-size: 1rem;
+
+    $groupHeaderPaddingLeft: 8px;
+    $groupHeaderGap: 16px;
+    $groupToggleWidth: 20px;
+    $rowGap: 23px;
+    $emptyStateGap: 27px;
+
+    &__loader,
+    &__empty {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      text-align: center;
+      gap: $emptyStateGap;
+    }
+
+    &__empty-message {
+      max-width: 240px;
+      color: var(--info60);
+      margin: 0;
+    }
+
+    &__empty-hide {
+      margin: 0;
+      border: none;
+      background: none;
+      color: var(--primary60);
+
+      &:hover {
+        color: var(--primary80);
+      }
+    }
+
+    &__list {
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+    }
+
+    &__group-header {
+      display: flex;
+      align-items: center;
+      gap: $groupHeaderGap;
+      padding-left: $groupHeaderPaddingLeft;
+      margin-top: 1px;
+      background: var(--ambientB15);
+      border-bottom: 1px solid var(--grey20);
+    }
+
+    &__group-toggle {
+      flex-shrink: 0;
+      width: $groupToggleWidth;
+      height: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      border: none;
+      background: none;
+      color: var(--grey80);
+    }
+
+    &__group-body {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+
+      // Texts from rows inside the group body should align on the left exactly
+      // with the group header text:
+      li {
+        margin-left: calc(
+          #{$groupHeaderPaddingLeft} + #{$groupToggleWidth} + #{$groupHeaderGap} / 2
+        );
+        padding-left: calc(#{$groupHeaderGap} / 2);
+        border-bottom: 1px solid var(--grey20);
+      }
+    }
+
+    &__row {
+      flex-grow: 1;
+      display: flex;
+      align-items: center;
+      min-width: 0;
+      height: 36px;
+      padding-right: 10px;
+      color: var(--grey80);
+      gap: $rowGap;
+
+      &--requested {
+        font-weight: 600;
+      }
+    }
+
+    &__row-name {
+      flex-grow: 1;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+
+      & + * {
+        flex-grow: 0;
+        flex-shrink: 0;
+      }
+    }
+
+    &__row-station-icon,
+    &__row-status,
+    &__row-add {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    &__row-station-icon {
+      width: 16px;
+      color: var(--grey40);
+    }
+
+    &__row-ch {
+      min-width: 20px;
+      text-align: right;
+    }
+
+    &__row-status {
+      color: var(--grey20);
+    }
+
+    &__row-add {
+      color: var(--grey20);
+      // TODO:
+      // Restore visible style for that button
+      // color: var(--primary60);
     }
   }
 
