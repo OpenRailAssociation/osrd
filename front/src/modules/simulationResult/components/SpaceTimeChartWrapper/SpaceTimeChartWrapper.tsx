@@ -18,7 +18,6 @@ import {
   isInteractiveWaypoint,
   type Track,
   type OccupancyZone,
-  isOccupancyPickingElement,
 } from '@osrd-project/ui-charts';
 import { Slider } from '@osrd-project/ui-core';
 import cx from 'classnames';
@@ -369,9 +368,7 @@ const SpaceTimeChartWrapper = ({
       onTrainClick &&
       !draggingState &&
       hoveredItem &&
-      (isSegmentPickingElement(hoveredItem.element) ||
-        isPointPickingElement(hoveredItem.element) ||
-        isOccupancyPickingElement(hoveredItem.element))
+      (isSegmentPickingElement(hoveredItem.element) || isPointPickingElement(hoveredItem.element))
     ) {
       const clickedTrainId = hoveredItem.element.pathId;
       if (
