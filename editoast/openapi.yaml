@@ -12849,35 +12849,6 @@ components:
       - Admin
       - Stdcm
       - OperationalStudies
-    RollingResistance:
-      type: object
-      required:
-      - type
-      - A
-      - B
-      - C
-      properties:
-        A:
-          type: number
-          format: double
-          description: |2-
-             Solid friction
-            Solid Friction in N
-        B:
-          type: number
-          format: double
-          description: |2-
-             Viscosity friction in N·(m/s)⁻¹; N = kg⋅m⋅s⁻²
-            Viscosity friction in kg·s⁻¹
-        C:
-          type: number
-          format: double
-          description: |2-
-             Aerodynamic drag in N·(m/s)⁻²; N = kg⋅m⋅s⁻²
-            Aerodynamic drag in kg·m⁻¹
-        type:
-          type: string
-      additionalProperties: false
     RollingResistancePerWeight:
       type: object
       required:
@@ -13009,7 +12980,7 @@ components:
           format: double
           description: Duration in s
         rolling_resistance:
-          $ref: '#/components/schemas/RollingResistance'
+          $ref: '#/components/schemas/RollingResistancePerWeight'
         startup_acceleration:
           type: number
           format: double
@@ -13146,7 +13117,7 @@ components:
             Duration in s
           example: 15.0
         rolling_resistance:
-          $ref: '#/components/schemas/RollingResistance'
+          $ref: '#/components/schemas/RollingResistancePerWeight'
         startup_acceleration:
           type: number
           format: double

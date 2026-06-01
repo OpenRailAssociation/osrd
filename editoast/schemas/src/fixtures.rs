@@ -9,14 +9,14 @@ use common::units;
 use crate::RollingStock;
 use crate::rolling_stock::EffortCurves;
 use crate::rolling_stock::LoadingGaugeType;
-use crate::rolling_stock::RollingResistance;
 use crate::rolling_stock::RollingResistancePerWeight;
+use crate::rolling_stock::RollingResistanceRaw;
 use crate::rolling_stock::TowedRollingStock;
 use crate::rolling_stock::TrainMainCategory;
 use crate::rolling_stock::default_rolling_stock_railjson_version;
 
-pub fn simple_rolling_stock() -> RollingStock {
-    RollingStock {
+pub fn simple_rolling_stock() -> RollingStock<RollingResistanceRaw> {
+    RollingStock::<RollingResistanceRaw> {
         name: "SIMPLE_ROLLING_STOCK".to_string(),
         loading_gauge: LoadingGaugeType::G1,
         supported_signaling_systems: HashSet::new(),
@@ -33,8 +33,10 @@ pub fn simple_rolling_stock() -> RollingStock {
         metadata: None,
         power_restrictions: HashMap::new(),
         railjson_version: "12".to_string(),
-        rolling_resistance: RollingResistance {
+        rolling_resistance: RollingResistanceRaw {
             rolling_resistance_type: "davis".to_string(),
+            // TODO those values are wrong, they correspond to daN/T, (daN/T)/(km/h), and (daN/T)/(km/h)²
+            // We should use more realistic values and fix the tests
             A: units::newton::new(1000.0),
             B: units::kilogram_per_second::new(40.0),
             C: units::kilogram_per_meter::new(2.0),
@@ -68,13 +70,15 @@ pub fn towed_rolling_stock() -> TowedRollingStock {
     }
 }
 
-pub fn fast_rolling_stock() -> RollingStock {
-    serde_json::from_str::<crate::RollingStock>(include_str!("../examples/fast_rolling_stock.json"))
-        .expect("Unable to parse example rolling stock")
+pub fn fast_rolling_stock() -> RollingStock<RollingResistancePerWeight> {
+    serde_json::from_str::<crate::RollingStock<RollingResistancePerWeight>>(include_str!(
+        "../examples/fast_rolling_stock.json"
+    ))
+    .expect("Unable to parse example rolling stock")
 }
 
-pub fn rolling_stock_with_energy_sources() -> RollingStock {
-    serde_json::from_str::<crate::RollingStock>(include_str!(
+pub fn rolling_stock_with_energy_sources() -> RollingStock<RollingResistancePerWeight> {
+    serde_json::from_str::<crate::RollingStock<RollingResistancePerWeight>>(include_str!(
         "../examples/fast_rolling_stock_with_energy_sources.json"
     ))
     .expect("Unable to parse rolling stock with energy sources")

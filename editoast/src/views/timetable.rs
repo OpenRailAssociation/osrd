@@ -43,11 +43,11 @@ use editoast_models::timetable::Timetable;
 use editoast_models::timetable::TimetableWithTrains;
 use itertools::Itertools;
 use itertools::izip;
+use schemas::RollingStock;
 use schemas::primitives::NonBlankString;
 use schemas::rolling_stock::EtcsBrakeParams;
 use schemas::rolling_stock::LoadingGaugeType;
-use schemas::rolling_stock::RollingResistance;
-use schemas::rolling_stock::RollingStock;
+use schemas::rolling_stock::RollingResistanceRaw;
 use schemas::rolling_stock::TowedRollingStock;
 use schemas::timetable_type::TimetableType;
 use schemas::train_schedule::OperationalPointReference;
@@ -827,11 +827,11 @@ pub struct PhysicsConsistParameters {
     pub speed_limit_tag: Option<String>,
     pub loading_gauge_type: Option<LoadingGaugeType>,
     pub towed_rolling_stock: Option<TowedRollingStock>,
-    pub traction_engine: RollingStock,
+    pub traction_engine: RollingStock<RollingResistanceRaw>,
 }
 
 impl PhysicsConsistParameters {
-    pub fn from_traction_engine(traction_engine: RollingStock) -> Self {
+    pub fn from_traction_engine(traction_engine: RollingStock<RollingResistanceRaw>) -> Self {
         PhysicsConsistParameters {
             max_speed: None,
             total_length: None,
@@ -916,7 +916,7 @@ impl PhysicsConsistParameters {
             .unwrap_or(traction_engine_mass + towed_rolling_stock_mass)
     }
 
-    pub fn compute_rolling_resistance(&self) -> RollingResistance {
+    pub fn compute_rolling_resistance(&self) -> RollingResistanceRaw {
         if let Some(towed_rolling_stock) = self.towed_rolling_stock.as_ref() {
             let traction_engine_rr = &self.traction_engine.rolling_resistance;
             let towed_rs_rr = &towed_rolling_stock.rolling_resistance;
@@ -940,7 +940,7 @@ impl PhysicsConsistParameters {
                 traction_engine_viscosity_friction_b + towed_viscosity_friction_b; // N/(m/s)
             let aerodynamic_drag_c = traction_engine_aerodynamic_drag_c + towed_aerodynamic_drag_c; // N/(m/s)²
 
-            RollingResistance {
+            RollingResistanceRaw {
                 rolling_resistance_type: traction_engine_rr.rolling_resistance_type.clone(),
                 A: solid_friction_a,
                 B: viscosity_friction_b,
@@ -1143,13 +1143,12 @@ mod tests {
     use core_client::simulation::RoutingRequirement;
     use core_client::simulation::RoutingZoneRequirement;
     use core_client::simulation::SpacingRequirement;
+    use editoast_models::train_schedule::TrainScheduleChangeset;
     use pretty_assertions::assert_eq;
     use schemas::fixtures::ms_since_epoch;
     use schemas::fixtures::simple_rolling_stock;
     use schemas::fixtures::towed_rolling_stock;
-
-    use editoast_models::train_schedule::TrainScheduleChangeset;
-    use schemas::rolling_stock::RollingResistance;
+    use schemas::rolling_stock::RollingResistanceRaw;
     use schemas::train_schedule::OperationalPointPartReference;
     use schemas::train_schedule::PathItem;
     use schemas::train_schedule::ScheduleItem;
@@ -1628,7 +1627,7 @@ mod tests {
 
         assert_eq!(
             physics_consist.compute_rolling_resistance(),
-            RollingResistance {
+            RollingResistanceRaw {
                 rolling_resistance_type: "davis".to_string(),
                 A: units::newton::new(1350.0),
                 B: units::kilogram_per_second::new(47.0),

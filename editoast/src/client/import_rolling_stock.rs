@@ -29,8 +29,9 @@ pub async fn import_rolling_stock(
     for rolling_stock_path in args.rolling_stock_path {
         let mut conn = db_pool.get().await?;
         let rolling_stock_file = File::open(rolling_stock_path)?;
-        let rolling_stock: schemas::RollingStock =
-            serde_json::from_reader(BufReader::new(rolling_stock_file))?;
+        let rolling_stock: schemas::RollingStock<
+            schemas::rolling_stock::RollingResistancePerWeight,
+        > = serde_json::from_reader(BufReader::new(rolling_stock_file))?;
         let rolling_stock_name = rolling_stock.name.clone();
         let rolling_stock: Changeset<RollingStock> = rolling_stock.into();
 
@@ -125,7 +126,9 @@ mod tests {
         use common::units;
         use database::DbConnectionPoolV2;
 
-        fn get_fast_rolling_stock_schema(name: &str) -> schemas::RollingStock {
+        fn get_fast_rolling_stock_schema(
+            name: &str,
+        ) -> schemas::RollingStock<schemas::rolling_stock::RollingResistancePerWeight> {
             let mut rolling_stock_form = schemas::fixtures::fast_rolling_stock();
             rolling_stock_form.name = name.to_string();
             rolling_stock_form

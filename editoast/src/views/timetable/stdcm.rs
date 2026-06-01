@@ -32,6 +32,8 @@ use itertools::Itertools as _;
 use request::Request;
 use request::convert_steps;
 use schemas::primitives::PositiveDuration;
+use schemas::rolling_stock::RollingResistancePerWeight;
+use schemas::rolling_stock::RollingResistanceRaw;
 use schemas::train_schedule::MarginValue;
 use schemas::train_schedule::Margins;
 use schemas::train_schedule::ReceptionSignal;
@@ -252,8 +254,12 @@ pub(in crate::views) async fn stdcm(
         })
         .collect();
 
-    let rolling_stocks: Vec<schemas::RollingStock> =
+    let rolling_stocks: Vec<schemas::RollingStock<RollingResistancePerWeight>> =
         rolling_stocks_models.into_iter().map(Into::into).collect();
+    let rolling_stocks: Vec<_> = rolling_stocks
+        .into_iter()
+        .map(schemas::RollingStock::<RollingResistanceRaw>::from)
+        .collect();
 
     let mut physics_consists_parameters = vec![];
     for (consist, rolling_stock) in
@@ -582,7 +588,7 @@ mod tests {
     use schemas::fixtures::simple_rolling_stock;
     use schemas::fixtures::towed_rolling_stock;
     use schemas::rolling_stock::LoadingGaugeType;
-    use schemas::rolling_stock::RollingResistance;
+    use schemas::rolling_stock::RollingResistanceRaw;
     use schemas::train_schedule::Comfort;
     use schemas::train_schedule::OperationalPointPartReference;
     use schemas::train_schedule::OperationalPointReference;
@@ -748,7 +754,7 @@ mod tests {
         rolling_stock.inertia_coefficient = 1.10;
         rolling_stock.comfort_acceleration = units::meter_per_second_squared::new(0.1);
         rolling_stock.startup_acceleration = units::meter_per_second_squared::new(0.04);
-        rolling_stock.rolling_resistance = RollingResistance {
+        rolling_stock.rolling_resistance = RollingResistanceRaw {
             rolling_resistance_type: "davis".to_string(),
             A: units::newton::new(1000.0),
             B: units::kilogram_per_second::new(40.0),
@@ -777,7 +783,7 @@ mod tests {
 
         assert_eq!(
             physics_consist.rolling_resistance,
-            RollingResistance {
+            RollingResistanceRaw {
                 rolling_resistance_type: "davis".to_string(),
                 A: units::newton::new(2000.0),
                 B: units::kilogram_per_second::new(60.0),
@@ -1560,13 +1566,6 @@ mod tests {
         let length = Length::<SI<_>, f64>::new::<meter>(430.0);
         // Minimum of both the rolling stock and the towed rolling stock maximum speeds
         let maximum_speed = Velocity::<SI<_>, f64>::new::<meter_per_second>(35.0);
-        // Sum of both the rolling stock and the towed rolling stock resistances
-        let rolling_resistance = RollingResistance {
-            rolling_resistance_type: "davis".to_string(),
-            A: units::newton::new(5900.0),
-            B: units::kilogram_per_second::new(210.0),
-            C: units::kilogram_per_meter::new(13.0),
-        };
         // The maximum startup acceleration of both the rolling stock and the towed rolling stock
         let startup_acceleration = units::meter_per_second_squared::new(0.06);
         // The minimum comfort acceleration of both the rolling stock and the towed rolling stock
@@ -1588,7 +1587,6 @@ mod tests {
                 maximum_speed.get::<meter_per_second>(),
             )
             .on_body("/physics_consist/mass", mass.get::<kilogram>() as u64)
-            .on_body("/physics_consist/rolling_resistance", &rolling_resistance)
             .on_body(
                 "/physics_consist/startup_acceleration",
                 startup_acceleration.get::<meter_per_second_squared>(),
@@ -1612,10 +1610,6 @@ mod tests {
             .on_body(
                 "/consist_schedule/values/0/physics_consist/mass",
                 mass.get::<kilogram>() as u64,
-            )
-            .on_body(
-                "/consist_schedule/values/0/physics_consist/rolling_resistance",
-                &rolling_resistance,
             )
             .on_body(
                 "/consist_schedule/values/0/physics_consist/startup_acceleration",

@@ -4071,15 +4071,15 @@ export type EnergySource =
       max_input_power: SpeedDependantPower;
       max_output_power: SpeedDependantPower;
     };
-export type RollingResistance = {
-  /**  Solid friction
-    Solid Friction in N */
+export type RollingResistancePerWeight = {
+  /**  Solid friction in N·kg⁻¹; N = kg⋅m⋅s⁻²
+    Acceleration in m·s⁻² */
   A: number;
-  /**  Viscosity friction in N·(m/s)⁻¹; N = kg⋅m⋅s⁻²
-    Viscosity friction in kg·s⁻¹ */
+  /**  Viscosity friction in (N·kg⁻¹)·(m/s)⁻¹; N = kg⋅m⋅s⁻²
+    Viscosity friction per weight in s⁻¹ */
   B: number;
-  /**  Aerodynamic drag in N·(m/s)⁻²; N = kg⋅m⋅s⁻²
-    Aerodynamic drag in kg·m⁻¹ */
+  /**  Aerodynamic drag per kg in (N·kg⁻¹)·(m/s)⁻²; N = kg⋅m⋅s⁻²
+    Aerodynamic drag per kg in m⁻¹ */
   C: number;
   type: string;
 };
@@ -4113,7 +4113,7 @@ export type RollingStock = {
   railjson_version: string;
   /** Duration in s */
   raise_pantograph_time: number | null;
-  rolling_resistance: RollingResistance;
+  rolling_resistance: RollingResistancePerWeight;
   /** Acceleration in m·s⁻² */
   startup_acceleration: number;
   /** Duration in s */
@@ -4156,7 +4156,7 @@ export type RollingStockForm = {
      Is null if the train is not electric.
     Duration in s */
   raise_pantograph_time?: number | null;
-  rolling_resistance: RollingResistance;
+  rolling_resistance: RollingResistancePerWeight;
   /** Acceleration in m·s⁻² */
   startup_acceleration: number;
   /** Duration in s */
@@ -4942,18 +4942,6 @@ export type TrainSchedule = {
 export type TrainScheduleResponse = TrainSchedule & {
   id: number;
   train_schedule_set_id: number;
-};
-export type RollingResistancePerWeight = {
-  /**  Solid friction in N·kg⁻¹; N = kg⋅m⋅s⁻²
-    Acceleration in m·s⁻² */
-  A: number;
-  /**  Viscosity friction in (N·kg⁻¹)·(m/s)⁻¹; N = kg⋅m⋅s⁻²
-    Viscosity friction per weight in s⁻¹ */
-  B: number;
-  /**  Aerodynamic drag per kg in (N·kg⁻¹)·(m/s)⁻²; N = kg⋅m⋅s⁻²
-    Aerodynamic drag per kg in m⁻¹ */
-  C: number;
-  type: string;
 };
 export type TowedRollingStock = {
   /** Acceleration in m·s⁻² */

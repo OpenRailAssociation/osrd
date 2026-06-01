@@ -931,9 +931,6 @@ pub mod tests {
             .assert_status_ok()
             .json();
 
-        for item in response.iter() {
-            dbg!(item);
-        }
         assert_eq!(response.len(), 3);
         assert!(
             response
