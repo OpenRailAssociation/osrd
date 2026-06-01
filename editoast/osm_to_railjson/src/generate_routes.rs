@@ -6,11 +6,15 @@
 
 use std::collections::HashMap;
 
+use itertools::Itertools;
+use schemas::infra::BufferStop;
+use schemas::infra::Detector;
 use schemas::infra::Direction;
 use schemas::infra::Endpoint;
-use schemas::infra::RailJson;
 use schemas::infra::Route;
+use schemas::infra::Switch;
 use schemas::infra::TrackEndpoint;
+use schemas::infra::TrackSection;
 use schemas::infra::Waypoint;
 use schemas::infra::builtin_node_types_list;
 use schemas::primitives::Identifier;
@@ -58,23 +62,30 @@ struct Graph {
 
 impl Graph {
     /* Part 2: build the graph from track sections, switches, buffers and detectors */
-    fn load(&mut self, railjson: &RailJson) {
-        self.edges_from_track_sections(railjson);
-        self.edges_from_switches(railjson);
+    fn load(
+        &mut self,
+        track_sections: &[TrackSection],
+        detectors: &[Detector],
+        buffer_stops: &[BufferStop],
+        switches: &[Switch],
+    ) {
+        self.edges_from_track_sections(track_sections, detectors, buffer_stops);
+        self.edges_from_switches(switches);
     }
 
-    fn edges_from_track_sections(&mut self, railjson: &RailJson) {
+    fn edges_from_track_sections(
+        &mut self,
+        track_sections: &[TrackSection],
+        detectors: &[Detector],
+        buffer_stops: &[BufferStop],
+    ) {
         // We need to split handle separately the signals that are forward
-        let mut detectors = HashMap::<_, Vec<_>>::new();
+        let detectors_by_track = detectors
+            .iter()
+            .map(|detector| (&detector.track, detector))
+            .into_group_map();
 
-        for detector in &railjson.detectors {
-            detectors
-                .entry(detector.track.clone())
-                .or_default()
-                .push(detector.clone());
-        }
-
-        for (track, detectors) in &detectors {
+        for (track, detectors) in &detectors_by_track {
             // When going from start to end
             // We only consider the last detector (closest to end) that is on the same track
             // All the other can be considered as block defining
@@ -103,7 +114,7 @@ impl Graph {
             self.add_directed_edge(d.clone(), v, EdgeType::FromDetector(Direction::StopToStart));
         }
 
-        for buffer in &railjson.buffer_stops {
+        for buffer in buffer_stops {
             let b = Node::BufferStop(buffer.id.clone());
             if buffer.position < 0.1 {
                 let u = Node::from_track_endpoint(&buffer.track, Endpoint::Begin);
@@ -114,18 +125,18 @@ impl Graph {
             }
         }
 
-        for track in &railjson.track_sections {
+        for track in track_sections {
             // We only consider tracks that have no detector for the given direction on them as we split them
             let u = Node::from_track_endpoint(&track.id, Endpoint::Begin);
             let v = Node::from_track_endpoint(&track.id, Endpoint::End);
-            if !detectors.contains_key(&track.id) {
+            if !detectors_by_track.contains_key(&track.id) {
                 self.add_symmetrical_edge(v.clone(), u.clone(), EdgeType::Track);
             }
         }
     }
 
-    fn edges_from_switches(&mut self, railjson: &RailJson) {
-        for switch in &railjson.switches {
+    fn edges_from_switches(&mut self, switches: &[Switch]) {
+        for switch in switches {
             let builtin_node_types = builtin_node_types_list();
             let switch_type = builtin_node_types
                 .iter()
@@ -281,17 +292,20 @@ impl Graph {
     }
 }
 
-pub fn routes(railjson: &RailJson) -> Vec<Route> {
+pub fn routes(
+    track_sections: &[TrackSection],
+    detectors: &[Detector],
+    buffer_stops: &[BufferStop],
+    switches: &[Switch],
+) -> Vec<Route> {
     let mut graph = Graph::default();
-    graph.load(railjson);
+    graph.load(track_sections, detectors, buffer_stops, switches);
 
-    let from_buffers = railjson
-        .buffer_stops
+    let from_buffers = buffer_stops
         .iter()
         .flat_map(|b| graph.one_to_all_routes(Node::BufferStop(b.id.clone())));
 
-    let from_detectors = railjson
-        .detectors
+    let from_detectors = detectors
         .iter()
         .flat_map(|d| graph.one_to_all_routes(Node::Detector(d.id.clone())));
 
@@ -303,6 +317,7 @@ mod tests {
     use super::*;
     use schemas::infra::BufferStop;
     use schemas::infra::Detector;
+    use schemas::infra::RailJson;
     use schemas::infra::TrackSection;
 
     fn min_infra() -> RailJson {
@@ -341,7 +356,13 @@ mod tests {
     #[test]
     fn build_graph() {
         let mut g = super::Graph::default();
-        g.load(&min_infra());
+        let railjson = min_infra();
+        g.load(
+            &railjson.track_sections,
+            &railjson.detectors,
+            &railjson.buffer_stops,
+            &railjson.switches,
+        );
         let begin = super::Node::BufferStop("buffer_begin".into());
         let end = super::Node::BufferStop("buffer_end".into());
         let detector = super::Node::Detector("detector".into());
@@ -387,7 +408,13 @@ mod tests {
     #[test]
     /* --s-- one track, one detector, two buffers */
     fn minimal_routes() {
-        let routes = super::routes(&min_infra());
+        let railjson = min_infra();
+        let routes = super::routes(
+            &railjson.track_sections,
+            &railjson.detectors,
+            &railjson.buffer_stops,
+            &railjson.switches,
+        );
         assert_eq!(4, routes.len());
     }
 
@@ -399,7 +426,12 @@ mod tests {
     fn generate_routes() {
         let railjson =
             crate::osm_to_railjson::parse_osm("src/tests/routes.osm.pbf".into(), false).unwrap();
-        let routes = super::routes(&railjson);
+        let routes = super::routes(
+            &railjson.track_sections,
+            &railjson.detectors,
+            &railjson.buffer_stops,
+            &railjson.switches,
+        );
         assert_eq!(6, routes.len());
         let routes_with_switches_count = routes
             .iter()

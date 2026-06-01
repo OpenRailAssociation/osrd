@@ -26,12 +26,16 @@ use schemas::infra::SpeedSection;
 use schemas::infra::Switch;
 use schemas::infra::TrackEndpoint;
 use schemas::infra::TrackSection;
+use schemas::infra::TrackSectionExtensions;
+use schemas::infra::TrackSectionSncfExtension;
+use schemas::infra::TrackSectionSourceExtension;
 use schemas::primitives::Identifier;
 use schemas::primitives::NonBlankString;
 use std::collections::HashMap;
 use std::str::FromStr;
 use std::sync::atomic::AtomicU32;
 use std::sync::atomic::Ordering;
+use tracing::debug;
 use tracing::error;
 use tracing::warn;
 use uuid::Uuid;
@@ -72,7 +76,7 @@ type Branch = (TrackEndpoint, TrackEndpoint);
 
 /// Tries to convert two edges into a branch
 /// Will return None if the angle between the two edges isn’t right
-pub fn try_into_branch(center: osm4routing::NodeId, e1: &Edge, e2: &Edge) -> Option<Branch> {
+fn try_into_branch(center: osm4routing::NodeId, e1: &Edge, e2: &Edge) -> Option<Branch> {
     let center_coord = if e1.source == center {
         e1.geometry[0]
     } else {
@@ -104,12 +108,12 @@ fn track_section(n: NodeId, edge: &Edge) -> TrackEndpoint {
 // That’s where buffer stops, and switches happen
 // To do that, we count how many edges are adjacent to that node and how many branches go through that node
 #[derive(Default)]
-pub struct NodeAdjacencies<'a> {
+pub(crate) struct NodeAdjacencies<'a> {
     pub edges: Vec<&'a Edge>,
     pub branches: Vec<Branch>,
 }
 
-pub fn link_switch(node: NodeId, branches: &[Branch]) -> Switch {
+fn link_switch(node: NodeId, branches: &[Branch]) -> Switch {
     let mut ports = HashMap::new();
     ports.insert("A".into(), branches[0].0.clone());
     ports.insert("B".into(), branches[0].1.clone());
@@ -122,7 +126,7 @@ pub fn link_switch(node: NodeId, branches: &[Branch]) -> Switch {
     }
 }
 
-pub fn point_switch(node: NodeId, branches: &[Branch]) -> Switch {
+fn point_switch(node: NodeId, branches: &[Branch]) -> Switch {
     let mut endpoint_count = HashMap::<&TrackEndpoint, u64>::new();
     for (src, dst) in branches {
         *endpoint_count.entry(src).or_default() += 1;
@@ -145,7 +149,7 @@ pub fn point_switch(node: NodeId, branches: &[Branch]) -> Switch {
     }
 }
 
-pub fn cross_switch(node: NodeId, branches: &[Branch]) -> Switch {
+fn cross_switch(node: NodeId, branches: &[Branch]) -> Switch {
     let mut ports = HashMap::new();
     ports.insert("A1".into(), branches[0].0.clone());
     ports.insert("B1".into(), branches[0].1.clone());
@@ -165,7 +169,7 @@ fn different_branches(a: &Branch, b: &Branch) -> bool {
     a.0 != b.0 && a.0 != b.1 && a.1 != b.0 && a.1 != b.1
 }
 
-pub fn double_slip_switch(node: NodeId, branches: &[Branch]) -> Switch {
+fn double_slip_switch(node: NodeId, branches: &[Branch]) -> Switch {
     let (north1, south1) = &branches[0];
     let (north2, south2) = branches
         .iter()
@@ -188,7 +192,7 @@ pub fn double_slip_switch(node: NodeId, branches: &[Branch]) -> Switch {
 }
 
 // Computes the angle between the segments [oa] and [ob]
-pub fn angle(o: Coord, a: Coord, b: Coord) -> f64 {
+fn angle(o: Coord, a: Coord, b: Coord) -> f64 {
     ((a.y - o.y).atan2(a.x - o.x).to_degrees() - (b.y - o.y).atan2(b.x - o.x).to_degrees()).abs()
 }
 
@@ -212,12 +216,12 @@ fn main_signal(node: &osm4routing::osmpbfreader::OsmObj) -> bool {
 
 /// When reading OpenStreetMap data, we sometimes need to match a Node to a Track and position
 /// This struct maps the nodes to the Edges (a Way from OpenStreetMap that might have been split)
-pub struct NodeToTrack<'a> {
+pub(crate) struct NodeToTrack<'a> {
     nodes_edges: HashMap<NodeId, Vec<&'a Edge>>,
 }
 
 impl<'a> NodeToTrack<'a> {
-    pub fn from_edges(edges: &'a Vec<Edge>) -> Self {
+    pub fn from_edges(edges: &'a [Edge]) -> Self {
         let mut nodes_edges = HashMap::<NodeId, Vec<&Edge>>::new();
         for edge in edges {
             for node in &edge.nodes {
@@ -251,7 +255,7 @@ impl<'a> NodeToTrack<'a> {
     }
 }
 
-pub fn signals(
+pub(crate) fn signals(
     osm_pbf_in: &std::path::PathBuf,
     nodes_to_tracks: &NodeToTrack,
     adjacencies: &HashMap<osm4routing::NodeId, NodeAdjacencies>,
@@ -298,7 +302,7 @@ pub fn signals(
         .collect()
 }
 
-pub fn speed_sections(edge: &Edge) -> Vec<SpeedSection> {
+pub(crate) fn speed_sections(edge: &Edge) -> Vec<SpeedSection> {
     let speeds = match (
         edge.tags.get("maxspeed"),
         edge.tags.get("maxspeed:forward"),
@@ -400,7 +404,7 @@ fn sncf_extensions(node: &Node) -> SignalSncfExtension {
 }
 
 /// Builds a detector that is located on the same position as the signal
-pub fn detector(signal: &Signal) -> Detector {
+pub(crate) fn detector(signal: &Signal) -> Detector {
     Detector {
         id: signal.id.clone(),
         track: signal.track.clone(),
@@ -409,7 +413,7 @@ pub fn detector(signal: &Signal) -> Detector {
     }
 }
 
-pub fn edge_to_buffer(node: &NodeId, edge: &Edge, count: i64) -> BufferStop {
+fn edge_to_buffer(node: &NodeId, edge: &Edge, count: i64) -> BufferStop {
     BufferStop {
         id: format!("buffer-{}-{count}", node.0).into(),
         track: edge.id.clone().into(),
@@ -422,7 +426,7 @@ pub fn edge_to_buffer(node: &NodeId, edge: &Edge, count: i64) -> BufferStop {
     }
 }
 
-pub fn electrifications(edge: &Edge) -> Option<Electrification> {
+pub(crate) fn electrifications(edge: &Edge) -> Option<Electrification> {
     // TODO: handle multiple overlapping electrifications
     // Specific infrastructures can support multiple electrifications (e.g. "voltage"="600;1500;3000;15000;25000").
     // Short term solution : pick the first one, i.g. "600;1500;3000;15000;25000" -> "600V"
@@ -486,7 +490,7 @@ fn local_track_name_fallback(
         .unwrap_or(NonBlankString::from(Uuid::new_v4().to_string()))
 }
 
-pub fn operational_points(
+pub(crate) fn operational_points(
     osm_pbf_in: &std::path::PathBuf,
     nodes_to_tracks: &NodeToTrack,
     track_sections: &[TrackSection],
@@ -596,6 +600,80 @@ fn identifier(
             name: format!("op_{}", uic).into(),
             uic,
         }))
+}
+
+pub(crate) fn track_sections(edges: &[Edge]) -> Vec<TrackSection> {
+    edges
+        .iter()
+        .map(|e| {
+            let geo = geos::geojson::Geometry::new(geos::geojson::Value::LineString(
+                e.geometry.iter().map(|c| vec![c.x, c.y]).collect(),
+            ));
+            TrackSection {
+                id: e.id.as_str().into(),
+                length: e.length(),
+                geo: geo.clone(),
+                extensions: TrackSectionExtensions {
+                    sncf: Some(TrackSectionSncfExtension {
+                        line_code: 0,
+                        line_name: e
+                            .tags
+                            .get("name")
+                            .map(NonBlankString::from)
+                            .unwrap_or(NonBlankString::from("??")),
+                        track_name: e
+                            .tags
+                            .get("railway:track_ref")
+                            .map(NonBlankString::from)
+                            .unwrap_or(NonBlankString::from("??")),
+                        track_number: 0,
+                    }),
+                    source: Some(TrackSectionSourceExtension {
+                        name: "OpenStreetMap".into(),
+                        id: "osm".into(),
+                    }),
+                },
+                ..Default::default()
+            }
+        })
+        .collect()
+}
+
+pub(crate) fn switches_and_buffer_stops(
+    adjacencies: &mut HashMap<osm4routing::NodeId, NodeAdjacencies<'_>>,
+) -> (Vec<Switch>, Vec<BufferStop>) {
+    let mut switches = Vec::new();
+    let mut buffer_stops = Vec::new();
+    for (node, adj) in adjacencies {
+        for e1 in &adj.edges {
+            for e2 in &adj.edges {
+                if e1.id < e2.id
+                    && let Some(branch) = try_into_branch(*node, e1, e2)
+                {
+                    adj.branches.push(branch);
+                }
+            }
+        }
+
+        let id = node.0;
+        let edges_count = adj.edges.len();
+        let branches_count = adj.branches.len();
+        match (edges_count, branches_count) {
+            (0, _) => error!("node {id} without edge"),
+            (1, 0) => buffer_stops.push(edge_to_buffer(node, adj.edges[0], 0)),
+            (2, 0) => {
+                // This can happens when data is truncated (e.g. cropped to a region, or the output track is a service track)
+                buffer_stops.push(edge_to_buffer(node, adj.edges[0], 0));
+                buffer_stops.push(edge_to_buffer(node, adj.edges[1], 1));
+            }
+            (2, 1) => switches.push(link_switch(*node, &adj.branches)),
+            (3, 2) => switches.push(point_switch(*node, &adj.branches)),
+            (4, 2) => switches.push(cross_switch(*node, &adj.branches)),
+            (4, 4) => switches.push(double_slip_switch(*node, &adj.branches)),
+            _ => debug!("node {id} with {edges_count} edges and {branches_count} branches"),
+        }
+    }
+    (switches, buffer_stops)
 }
 
 #[cfg(test)]

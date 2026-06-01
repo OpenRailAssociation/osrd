@@ -18,12 +18,13 @@ use std::collections::HashSet;
 use schemas::infra::Direction;
 use schemas::infra::Endpoint;
 use schemas::infra::LogicalSignal;
-use schemas::infra::RailJson;
 use schemas::infra::Side;
 use schemas::infra::Signal;
 use schemas::infra::SignalExtensions;
 use schemas::infra::SignalSncfExtension;
 use schemas::infra::Speed;
+use schemas::infra::SpeedSection;
+use schemas::infra::Switch;
 use schemas::infra::TrackEndpoint;
 use schemas::infra::TrackSection;
 use schemas::primitives::Identifier;
@@ -103,11 +104,10 @@ impl<'a> Track<'a> {
     /// Returns the new `track_endpoint` at the end of the track.
     fn push_track_section(
         &mut self,
-        railjson: &'a RailJson,
+        track_sections: &'a [TrackSection],
         track_endpoint: &TrackEndpoint,
     ) -> TrackEndpoint {
-        let track_section = railjson
-            .track_sections
+        let track_section = track_sections
             .iter()
             .find(|ts| ts.id == track_endpoint.track)
             .unwrap();
@@ -306,13 +306,17 @@ impl<'a> Track<'a> {
     }
 }
 
-fn create_tracks<'a>(railjson: &'a RailJson) -> Vec<Track<'a>> {
+fn create_tracks<'a>(
+    track_sections: &'a [TrackSection],
+    switches: &'a [Switch],
+    speed_sections: &'a [SpeedSection],
+) -> Vec<Track<'a>> {
     // Map of track endpoints connected by link switches.
     let mut link_switches: HashMap<&TrackEndpoint, &TrackEndpoint> = HashMap::new();
     // Set of track endpoints that are connected to intersection.
     let mut endpoints_linked_to_intersection: HashSet<&TrackEndpoint> = HashSet::new();
 
-    for switch in &railjson.switches {
+    for switch in switches {
         if switch.switch_type == Identifier::from("link") {
             let (endpoint_0, endpoint_1) = switch
                 .ports
@@ -329,7 +333,7 @@ fn create_tracks<'a>(railjson: &'a RailJson) -> Vec<Track<'a>> {
     // List of track endpoints not linked to a link switch.
     // Meaning they are the boundary of a track.
     let mut track_boundaries = Vec::new();
-    for track_section in &railjson.track_sections {
+    for track_section in track_sections {
         for endpoint in [Endpoint::Begin, Endpoint::End] {
             let track_endpoint = TrackEndpoint {
                 endpoint,
@@ -353,10 +357,10 @@ fn create_tracks<'a>(railjson: &'a RailJson) -> Vec<Track<'a>> {
             highest_speed_limit: None,
         };
 
-        endpoint = track.push_track_section(railjson, &endpoint);
+        endpoint = track.push_track_section(track_sections, &endpoint);
         // Follow the track sections and link switches until there are no more link switches.
         while let Some(linked_endpoint) = link_switches.get(&endpoint) {
-            endpoint = track.push_track_section(railjson, linked_endpoint);
+            endpoint = track.push_track_section(track_sections, linked_endpoint);
         }
 
         // Remove the endpoint from the track boundaries, so that we don't start a track from it.
@@ -368,7 +372,7 @@ fn create_tracks<'a>(railjson: &'a RailJson) -> Vec<Track<'a>> {
             .track_sections
             .iter()
             .filter_map(|(track_section, _)| {
-                railjson.speed_sections.iter().find(|speed_section| {
+                speed_sections.iter().find(|speed_section| {
                     speed_section
                         .track_ranges
                         .iter()
@@ -447,14 +451,15 @@ fn new_signal(
     }
 }
 
-/// Override the signals and detectors and generate them from the track sections and switches.
-pub fn generate_signals(railjson: &mut RailJson) {
-    let tracks = create_tracks(railjson);
+/// Generate signals from the track sections, switches and speed sections.
+pub fn generate_signals(
+    track_sections: &[TrackSection],
+    switches: &[Switch],
+    speed_sections: &[SpeedSection],
+) -> Vec<Signal> {
+    let tracks = create_tracks(track_sections, switches, speed_sections);
 
-    let signals = create_signals(&tracks);
-
-    railjson.detectors = signals.iter().map(crate::utils::detector).collect();
-    railjson.signals = signals;
+    create_signals(&tracks)
 }
 
 #[cfg(test)]
@@ -468,9 +473,9 @@ mod tests {
 
     #[test]
     fn generate_signals_switches() {
-        let mut railjson =
+        let railjson =
             crate::osm_to_railjson::parse_osm("src/tests/switches.osm.pbf".into(), true).unwrap();
-        super::generate_signals(&mut railjson);
+
         assert_eq!(railjson.signals.len(), 382);
         assert_eq!(railjson.detectors.len(), 382);
     }
@@ -503,10 +508,9 @@ mod tests {
         #[case] expected_position: f64,
         #[case] expected_direction: Direction,
     ) {
-        let mut railjson =
+        let railjson =
             crate::osm_to_railjson::parse_osm("src/tests/intersection.osm.pbf".into(), true)
                 .unwrap();
-        super::generate_signals(&mut railjson);
 
         assert!(signal_exists(
             &railjson,
@@ -518,10 +522,10 @@ mod tests {
 
     #[test]
     fn generate_signals_intersection_nf() {
-        let mut railjson =
+        let railjson =
             crate::osm_to_railjson::parse_osm("src/tests/intersection.osm.pbf".into(), true)
                 .unwrap();
-        super::generate_signals(&mut railjson);
+
         assert_eq!(railjson.signals.len(), 8);
 
         assert!(railjson.signals.iter().all(|signal| {
@@ -549,9 +553,8 @@ mod tests {
         #[case] expected_position: f64,
         #[case] expected_direction: Direction,
     ) {
-        let mut railjson =
+        let railjson =
             crate::osm_to_railjson::parse_osm("src/tests/tvm_signal.osm.pbf".into(), true).unwrap();
-        super::generate_signals(&mut railjson);
 
         assert!(signal_exists(
             &railjson,
