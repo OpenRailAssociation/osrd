@@ -370,12 +370,7 @@ pub(in crate::views) async fn user_privileges(
         let infras = infra_ids.map(authz::Infra);
         let protected_privileges = infras.map(|infra| {
             v2::infra_privileges(user, infra)
-                .map_into(|privileges| {
-                    privileges
-                        .into_iter()
-                        .map(StandardPrivilege::from)
-                        .collect::<HashSet<_>>()
-                })
+                .map_into::<StandardPrivilege, HashSet<_>>()
                 .zip(v2::Protected::value(infra))
         });
         let authorizer =
@@ -501,7 +496,7 @@ pub(in crate::views) async fn user_grants(
                 authz::Subject::user(user),
                 authz::Infra(*infra_id),
             )
-            .map_into(|grant| grant.map(StandardGrant::from))
+            .mappp::<StandardGrant>()
             .authorize(&authorizer)
             .await?;
             let grant = match grant_access.access().await? {

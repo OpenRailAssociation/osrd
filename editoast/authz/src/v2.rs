@@ -201,11 +201,39 @@ impl<T: Send + 'static> Protected<T> {
         }
     }
 
-    pub fn map_into<U: Send + 'static>(
+    pub fn map_into_no_options<U: Send + 'static>(self) -> Protected<U>
+    where
+        U: From<T>,
+    {
+        self.map(move |_, t| async move { Ok(U::from(t)) }.boxed())
+    }
+
+    pub fn map_intoo<U: Send + 'static>(
         self,
         f: impl FnOnce(T) -> U + Send + 'static,
     ) -> Protected<U> {
         self.map(move |_, t| async move { Ok(f(t)) }.boxed())
+    }
+}
+
+impl<T: Send + 'static> Protected<Option<T>> {
+    pub fn mappp<E>(self) -> Protected<Option<E>>
+    where
+        E: Send + 'static + From<T>,
+    {
+        self.map(move |_, val| async move { Ok(val.map(E::from)) }.boxed())
+    }
+}
+
+impl<T: IntoIterator<Item = E> + Send + 'static, E: Send + 'static> Protected<T> {
+    pub fn map_into<U, C>(self) -> Protected<C>
+    where
+        U: Send + 'static + From<E>,
+        C: Send + 'static + FromIterator<U>,
+    {
+        self.map(move |_, val| {
+            async move { Ok(val.into_iter().map(U::from).collect::<C>()) }.boxed()
+        })
     }
 }
 
