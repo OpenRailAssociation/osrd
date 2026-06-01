@@ -25,6 +25,7 @@ import { validateTrainSchedule } from './helpers/validateTrainSchedule';
 type CreateTrainScheduleButtonProps = {
   setIsWorking: (isWorking: boolean) => void;
   upsertTrainSchedules: (trainSchedules: TrainScheduleResponse[]) => void;
+  closeManageTrainScheduleAndOpenTableBoard: () => void;
 };
 
 /**
@@ -33,6 +34,7 @@ type CreateTrainScheduleButtonProps = {
 const CreateTrainScheduleButton = ({
   setIsWorking,
   upsertTrainSchedules,
+  closeManageTrainScheduleAndOpenTableBoard,
 }: CreateTrainScheduleButtonProps) => {
   const dispatch = useAppDispatch();
   const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTrainSchedule' });
@@ -127,6 +129,7 @@ const CreateTrainScheduleButton = ({
         dispatch(clearAddedExceptionsList());
       }
       upsertTrainSchedules([trainScheduleToUpsert]);
+      closeManageTrainScheduleAndOpenTableBoard();
     } catch (e) {
       dispatch(setFailure(castErrorToFailure(e)));
     } finally {

@@ -29,6 +29,7 @@ export type ManageTrainScheduleLeftPanelProps = {
   setDisplayTrainScheduleManagement: (type: string) => void;
   upsertTrainSchedules: (trainSchedules: TrainScheduleResponse[]) => void;
   setTrainScheduleToEditData: (trainScheduleToEditData?: TrainScheduleToEditData) => void;
+  closeViewAndOpenTableBoard: (closeView: () => void) => void;
 };
 
 /**
@@ -40,6 +41,7 @@ const ManageTrainScheduleLeftPanel = ({
   upsertTrainSchedules,
   trainScheduleToEditData,
   setTrainScheduleToEditData,
+  closeViewAndOpenTableBoard,
 }: ManageTrainScheduleLeftPanelProps) => {
   const { setEditedElementContainer } = useContext(EditedElementContainerContext);
   const dispatch = useAppDispatch();
@@ -168,6 +170,9 @@ const ManageTrainScheduleLeftPanel = ({
               <CreateTrainScheduleButton
                 setIsWorking={setIsWorking}
                 upsertTrainSchedules={upsertTrainSchedules}
+                closeManageTrainScheduleAndOpenTableBoard={() =>
+                  closeViewAndOpenTableBoard(leaveManageTrainSchedule)
+                }
               />
             )}
             <div className="osrd-config-item-container paced-trains-container">

@@ -24,6 +24,7 @@ type BoardWrapperProps = {
   footerClass?: string;
   dataTestId?: string;
   resizable?: ResizableProps;
+  ref?: React.Ref<HTMLDivElement>;
 };
 
 const BoardWrapper = ({
@@ -38,13 +39,14 @@ const BoardWrapper = ({
   customHeader,
   customFooter,
   resizable,
+  ref,
 }: BoardWrapperProps) => {
   if (hidden) {
     return null;
   }
 
   const boardContent = (
-    <div className="board-wrapper" data-testid={dataTestId}>
+    <div className="board-wrapper" data-testid={dataTestId} ref={ref}>
       <div className="board-header">
         <span className="board-header-name" data-testid="board-header-name" title={fullName}>
           {name}

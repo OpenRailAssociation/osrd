@@ -20,6 +20,7 @@ type ManageTrainScheduleModalProps = ManageTrainScheduleLeftPanelProps & {
   importTrainScheduleSets: ReturnType<
     typeof useScenarioTrainScheduleSet
   >['importTrainScheduleSets'];
+  closeViewAndOpenTableBoard: (closeView: () => void) => void;
 };
 
 const ManageTrainScheduleModal = ({
@@ -31,6 +32,7 @@ const ManageTrainScheduleModal = ({
   setCollapsedTimetableEdit,
   collapsedTimetableEdit,
   importTrainScheduleSets,
+  closeViewAndOpenTableBoard,
 }: ManageTrainScheduleModalProps) => {
   const dispatch = useDispatch();
 
@@ -52,6 +54,7 @@ const ManageTrainScheduleModal = ({
           upsertTrainSchedules={upsertTrainSchedules}
           trainScheduleToEditData={trainScheduleToEditData}
           setTrainScheduleToEditData={setTrainScheduleToEditData}
+          closeViewAndOpenTableBoard={closeViewAndOpenTableBoard}
         />
 
         {(displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.add ||

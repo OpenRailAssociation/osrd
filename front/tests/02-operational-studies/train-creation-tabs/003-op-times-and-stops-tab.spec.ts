@@ -134,7 +134,6 @@ test.describe('Times and Stops tab', { tag: ['@op', '@times-stops-tab'] }, () =>
       await test.step('Create train schedule, open results and verify outputs', async () => {
         await operationalStudiesPage.createTrainSchedule();
         await operationalStudiesPage.closeToastNotification();
-        await operationalStudiesPage.returnSimulationResult();
         await operationalStudiesPage.verifyTimesStopsDataSheetVisibility();
         await timesStopsTablePage.setTrainListVisible();
         await timesStopsTablePage.verifyTimesStopsTableContent(expectedOutputsCellsData);

@@ -116,10 +116,6 @@ class OperationalStudiesPage extends ScenarioTimetableSection {
     await expect(this.categorySelector).toHaveValue(categoryName);
   }
 
-  async returnSimulationResult() {
-    await this.returnSimulationResultButton.click();
-  }
-
   async submitTrainScheduleEdit() {
     await this.editTrainScheduleButton.click();
     await expect(this.returnSimulationResultButton).not.toBeVisible();
