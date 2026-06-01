@@ -394,7 +394,7 @@ impl ConsistConfiguration {
                 .and_then(|t| t.max_speed)
                 .unwrap_or(quantities::Velocity::new::<meter_per_second>(f64::INFINITY)),
         );
-        let consist_max_speed = consist_max_speed.floor::<meter_per_second>();
+        let consist_max_speed = consist_max_speed.ceil::<meter_per_second>();
 
         if let Some(request_max_speed) = self.max_speed
             && (request_max_speed < quantities::Velocity::new::<meter_per_second>(0.0)
