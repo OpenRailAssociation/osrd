@@ -40,6 +40,7 @@ use schemas::primitives::TimeWindow;
 use schemas::train_schedule::OperationalPointPartReference;
 use schemas::train_schedule::OperationalPointReference;
 use schemas::train_schedule::PathItemLocation;
+use schemas::train_schedule::TrainScheduleLike as _;
 use serde::Deserialize;
 use serde::Serialize;
 use thiserror::Error;
@@ -53,8 +54,8 @@ use crate::error::EditoastError as _;
 use crate::error::Result;
 use crate::views::infra::InfraIdQueryParam;
 use crate::views::path::operational_point_cache::OperationalPointCache;
+use crate::views::path::pathfinding::PathfindingFailure;
 use crate::views::path::pathfinding::PathfindingResult;
-use crate::views::path::pathfinding::pathfinding_from_train;
 use crate::views::projection::OperationalPointProjection;
 use crate::views::projection::ProjectPathForm;
 use crate::views::projection::ProjectPathOperationalPointForm;
@@ -614,7 +615,6 @@ pub(in crate::views) async fn get_path(
         db_pool,
         valkey_client,
         core_client,
-        config,
         ..
     }): State<AppState>,
     Extension(auth): AuthenticationExt,
@@ -657,18 +657,70 @@ pub(in crate::views) async fn get_path(
         None => train_schedule.into_train_occurrence(),
     };
 
+    let rolling_stock_name = train_occurence.rolling_stock_name().to_owned();
+    let Some(consist) = RollingStock::retrieve(conn.clone(), rolling_stock_name.clone())
+        .await?
+        .map(schemas::RollingStock::from)
+        .map(PhysicsConsistParameters::from_traction_engine)
+    else {
+        let failure = PathfindingFailure::PathfindingInputError(
+            PathfindingInputError::RollingStockNotFound { rolling_stock_name },
+        );
+        return Ok(Json(PathfindingResult::Failure(failure)));
+    };
+
+    let path_items = train_occurence
+        .path()
+        .iter()
+        .map(|item| &item.location)
+        .collect_vec();
+
+    let pathfinding_input = PathfindingInput::from(&consist, &train_schedule);
     let valkey_conn = valkey_client.get_connection().await?;
-    Ok(Json(
-        pathfinding_from_train(
-            conn,
-            valkey_conn,
-            core_client,
-            &infra,
-            train_schedule,
-            config.app_version.as_deref(),
-        )
-        .await?,
-    ))
+    let result = match build_pathfinding_request(&pathfinding_input, &infra, &op_cache) {
+        Ok(request) => match request
+            .run(Arc::new(tokio::sync::Mutex::new(valkey_conn)), core_client)
+            .await
+        {
+            Ok(track_offsets) => track_offsets,
+            Err(err) => return Ok(Json(PathfindingResult::Failure(err))),
+        };
+
+    let constraints = core_task::PathfindingConstraints {
+        path_items: track_offsets
+            .into_iter()
+            .map(core_task::PathItemAlternatives::from_iter)
+            .collect(),
+    };
+
+    let mut pathfinding_env = core_task::PathfindingEnv::new(core_task::CoreEnv {
+        infra_id: infra.id as u64,
+        infra_version: infra.version,
+        client: core_client,
+    });
+    let pathfinding_train = core_task::PathfindingTrain {
+        consist: build_pathfinding_consist(&consist, train_occurence.speed_limit_tag().cloned()),
+        constraints,
+    };
+    pathfinding_env.extend([((), pathfinding_train)]);
+
+    let valkey_conn = Arc::new(Mutex::new(valkey_client.get_connection().await?));
+    let result = match pathfinding_env
+        .into_stream(valkey_conn)
+        .collect::<Vec<_>>()
+        .await
+        .as_slice()
+    {
+        [path] => path.data.clone(),
+        _ => Err(core_client::Error::BrokenPipe),
+    };
+    let result = match result {
+        Ok(path) => path.into(),
+        Err(core_error) => PathfindingResult::Failure(PathfindingFailure::InternalError {
+            core_error: core_error.into(),
+        }),
+    };
+    Ok(Json(result))
 }
 
 #[derive(Debug, Default, Clone, Serialize, Deserialize, IntoParams, ToSchema)]
