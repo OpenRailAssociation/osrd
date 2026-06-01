@@ -1,7 +1,7 @@
 pub(in crate::views) mod light;
 pub(in crate::views) mod towed;
 
-use schemas::RollingStock as RollingStockForm;
+type RollingStockForm = schemas::RollingStock<schemas::rolling_stock::RollingResistancePerWeight>;
 
 use std::io::Cursor;
 use std::sync::Arc;
@@ -306,7 +306,7 @@ pub(in crate::views) async fn update(
 
             if rolling_stock_form != previous_rolling_stock.clone().into() {
                 let mut rolling_stock_changeset: Changeset<RollingStock> =
-                    rolling_stock_form.clone().into();
+                    rolling_stock_form.into();
                 rolling_stock_changeset.version = Some(&previous_rolling_stock.version + 1);
                 let new_rolling_stock = rolling_stock_changeset
                     .update(&mut conn.clone(), rolling_stock_id)
@@ -744,7 +744,7 @@ pub mod tests {
             fast_rolling_stock_form.startup_time,
             rolling_stock.startup_time
         );
-        let rolling_stock: schemas::RollingStock = rolling_stock.into();
+        let rolling_stock: RollingStockForm = rolling_stock.into();
         assert_eq!(
             rolling_stock
                 .supported_signaling_systems()
@@ -995,7 +995,7 @@ pub mod tests {
             .expect("Failed to retrieve rolling stock")
             .expect("Rolling stock not found");
 
-        let rolling_stock: schemas::RollingStock = rolling_stock.into();
+        let rolling_stock: RollingStockForm = rolling_stock.into();
 
         // THEN
         assert_eq!(

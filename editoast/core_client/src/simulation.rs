@@ -12,7 +12,7 @@ use common::units::quantities::Velocity;
 use educe::Educe;
 use schemas::rolling_stock::EffortCurves;
 use schemas::rolling_stock::EtcsBrakeParams;
-use schemas::rolling_stock::RollingResistance;
+use schemas::rolling_stock::RollingResistanceRaw;
 use schemas::train_schedule::Comfort;
 use schemas::train_schedule::Distribution;
 use schemas::train_schedule::MarginValue;
@@ -79,7 +79,7 @@ pub struct PhysicsConsist {
     #[schema(value_type = u64)]
     pub mass: Mass,
 
-    pub rolling_resistance: RollingResistance,
+    pub rolling_resistance: RollingResistanceRaw,
 
     /// Mapping of power restriction code to power class
     #[serde(default)]

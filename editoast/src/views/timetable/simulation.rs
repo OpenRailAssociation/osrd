@@ -391,7 +391,7 @@ pub async fn train_simulation_ordered_batch<T: TrainScheduleLike + Clone>(
                     TrainScheduleWithConsist {
                         train_schedule: train_schedule.clone(),
                         consist: PhysicsConsistParameters::from_traction_engine(
-                            schemas::RollingStock::from(traction_engine.clone()),
+                            traction_engine.clone().into(),
                         ),
                     },
                 )),

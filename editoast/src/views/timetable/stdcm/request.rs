@@ -7,8 +7,9 @@ use common::units;
 use core_client::pathfinding::PathfindingInputError;
 use database::DbConnection;
 
+use schemas::RollingStock;
 use schemas::rolling_stock::LoadingGaugeType;
-use schemas::rolling_stock::RollingStock;
+use schemas::rolling_stock::RollingResistance;
 use schemas::train_schedule::Comfort;
 use schemas::train_schedule::MarginValue;
 use schemas::train_schedule::PathItem;
@@ -325,9 +326,9 @@ impl ConsistConfiguration {
         Ok(Some(towed_rolling_stock))
     }
 
-    pub(super) fn validate_consist(
+    pub(super) fn validate_consist<RR: RollingResistance>(
         &self,
-        traction_engine: &RollingStock,
+        traction_engine: &RollingStock<RR>,
         towed_rolling_stock: Option<&schemas::TowedRollingStock>,
     ) -> Result<()> {
         self.validate_consist_mass(traction_engine, towed_rolling_stock)?;
@@ -336,9 +337,9 @@ impl ConsistConfiguration {
         Ok(())
     }
 
-    fn validate_consist_mass(
+    fn validate_consist_mass<RR: RollingResistance>(
         &self,
-        traction_engine: &RollingStock,
+        traction_engine: &RollingStock<RR>,
         towed_rolling_stock: Option<&schemas::TowedRollingStock>,
     ) -> Result<()> {
         let consist_mass = traction_engine.mass
@@ -361,9 +362,9 @@ impl ConsistConfiguration {
         Ok(())
     }
 
-    fn validate_consist_length(
+    fn validate_consist_length<RR: RollingResistance>(
         &self,
-        traction_engine: &RollingStock,
+        traction_engine: &RollingStock<RR>,
         towed_rolling_stock: Option<&schemas::TowedRollingStock>,
     ) -> Result<()> {
         let consist_length =
@@ -383,9 +384,9 @@ impl ConsistConfiguration {
         Ok(())
     }
 
-    fn validate_consist_max_speed(
+    fn validate_consist_max_speed<RR: RollingResistance>(
         &self,
-        traction_engine: &RollingStock,
+        traction_engine: &RollingStock<RR>,
         towed_rolling_stock: Option<&schemas::TowedRollingStock>,
     ) -> Result<()> {
         let consist_max_speed = quantities::Velocity::min(

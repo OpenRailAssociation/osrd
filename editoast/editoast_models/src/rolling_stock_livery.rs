@@ -61,6 +61,7 @@ pub mod tests {
     use super::*;
 
     use database::DbConnectionPoolV2;
+    use schemas::RollingStock;
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn create_delete_rolling_stock_livery() {
@@ -73,9 +74,9 @@ pub mod tests {
             .await
             .expect("Failed to create document");
 
-        let rs = Changeset::<crate::rolling_stock::RollingStock>::from(
+        let rs = Changeset::<crate::rolling_stock::RollingStock>::from(RollingStock::from(
             schemas::fixtures::simple_rolling_stock(),
-        )
+        ))
         .name("test_create_delete_rolling_stock_livery".into())
         .locked(false)
         .version(0)

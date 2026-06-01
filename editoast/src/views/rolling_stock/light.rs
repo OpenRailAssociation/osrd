@@ -275,6 +275,7 @@ mod tests {
     use std::collections::HashSet;
 
     use editoast_models::prelude::*;
+    use schemas::RollingStock;
 
     use super::LightRollingStockWithLiveries;
     use super::LightRollingStockWithLiveriesCountList;
@@ -357,7 +358,7 @@ mod tests {
             .map(|(rs_id, conn)| async move {
                 let mut conn = conn.await?;
                 let rs = Changeset::<editoast_models::rolling_stock::RollingStock>::from(
-                    schemas::fixtures::simple_rolling_stock(),
+                    RollingStock::from(schemas::fixtures::simple_rolling_stock()),
                 )
                 .name(format!(
                     "test_list_light_rolling_stock_increasing_ids_{rs_id}"

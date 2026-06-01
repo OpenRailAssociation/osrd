@@ -8,6 +8,7 @@ pub use effort_curves::ModeEffortCurves;
 mod rolling_resistance;
 pub use rolling_resistance::RollingResistance;
 pub use rolling_resistance::RollingResistancePerWeight;
+pub use rolling_resistance::RollingResistanceRaw;
 
 mod energy_source;
 pub use energy_source::EnergySource;
@@ -67,10 +68,10 @@ pub fn default_rolling_stock_railjson_version() -> String {
 }
 
 #[editoast_derive::annotate_units]
-#[derive(Debug, Clone, PartialEq, Deserialize, Serialize, ToSchema)]
-#[serde(remote = "Self")]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
+#[serde(remote = "Self", bound = "RR: RollingResistance")]
 #[schema(as = RollingStockForm)]
-pub struct RollingStock {
+pub struct RollingStock<RR: RollingResistance> {
     pub name: String,
     pub effort_curves: EffortCurves,
     #[schema(example = "5", required)]
@@ -92,7 +93,7 @@ pub struct RollingStock {
     pub inertia_coefficient: f64,
     #[serde(with = "units::kilogram")]
     pub mass: Mass,
-    pub rolling_resistance: RollingResistance,
+    pub rolling_resistance: RR,
     pub loading_gauge: LoadingGaugeType,
     /// Mapping of power restriction code to power class
     #[schema(required)]
@@ -120,7 +121,7 @@ pub struct RollingStock {
     pub other_categories: Vec<TrainMainCategory>,
 }
 
-impl RollingStock {
+impl<RR: RollingResistance> RollingStock<RR> {
     pub fn supported_signaling_systems(&self) -> BTreeSet<String> {
         self.supported_signaling_systems
             .iter()
@@ -139,7 +140,77 @@ impl RollingStock {
     }
 }
 
-impl<'de> Deserialize<'de> for RollingStock {
+impl From<RollingStock<RollingResistancePerWeight>> for RollingStock<RollingResistanceRaw> {
+    fn from(value: RollingStock<RollingResistancePerWeight>) -> Self {
+        let rr_per_weight = value.rolling_resistance;
+        RollingStock::<RollingResistanceRaw> {
+            name: value.name,
+            effort_curves: value.effort_curves,
+            base_power_class: value.base_power_class,
+            length: value.length,
+            max_speed: value.max_speed,
+            startup_time: value.startup_time,
+            startup_acceleration: value.startup_acceleration,
+            comfort_acceleration: value.comfort_acceleration,
+            const_gamma: value.const_gamma,
+            inertia_coefficient: value.inertia_coefficient,
+            mass: value.mass,
+            rolling_resistance: RollingResistanceRaw {
+                rolling_resistance_type: rr_per_weight.rolling_resistance_type,
+                A: rr_per_weight.A * value.mass,
+                B: rr_per_weight.B * value.mass,
+                C: rr_per_weight.C * value.mass,
+            },
+            loading_gauge: value.loading_gauge,
+            power_restrictions: value.power_restrictions,
+            energy_sources: value.energy_sources,
+            electrical_power_startup_time: value.electrical_power_startup_time,
+            raise_pantograph_time: value.raise_pantograph_time,
+            supported_signaling_systems: value.supported_signaling_systems,
+            railjson_version: value.railjson_version,
+            metadata: value.metadata,
+            primary_category: value.primary_category,
+            other_categories: value.other_categories,
+        }
+    }
+}
+
+impl From<RollingStock<RollingResistanceRaw>> for RollingStock<RollingResistancePerWeight> {
+    fn from(value: RollingStock<RollingResistanceRaw>) -> Self {
+        let rr = value.rolling_resistance;
+        RollingStock::<RollingResistancePerWeight> {
+            name: value.name,
+            effort_curves: value.effort_curves,
+            base_power_class: value.base_power_class,
+            length: value.length,
+            max_speed: value.max_speed,
+            startup_time: value.startup_time,
+            startup_acceleration: value.startup_acceleration,
+            comfort_acceleration: value.comfort_acceleration,
+            const_gamma: value.const_gamma,
+            inertia_coefficient: value.inertia_coefficient,
+            mass: value.mass,
+            rolling_resistance: RollingResistancePerWeight {
+                rolling_resistance_type: rr.rolling_resistance_type,
+                A: rr.A / value.mass,
+                B: rr.B / value.mass,
+                C: (rr.C / value.mass).into(),
+            },
+            loading_gauge: value.loading_gauge,
+            power_restrictions: value.power_restrictions,
+            energy_sources: value.energy_sources,
+            electrical_power_startup_time: value.electrical_power_startup_time,
+            raise_pantograph_time: value.raise_pantograph_time,
+            supported_signaling_systems: value.supported_signaling_systems,
+            railjson_version: value.railjson_version,
+            metadata: value.metadata,
+            primary_category: value.primary_category,
+            other_categories: value.other_categories,
+        }
+    }
+}
+
+impl<'de, RR: RollingResistance> Deserialize<'de> for RollingStock<RR> {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
         D: Deserializer<'de>,
@@ -173,11 +244,11 @@ impl<'de> Deserialize<'de> for RollingStock {
     }
 }
 
-impl Serialize for RollingStock {
+impl<RR: RollingResistance> Serialize for RollingStock<RR> {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
     {
-        RollingStock::serialize(self, serializer)
+        RollingStock::<RR>::serialize(self, serializer)
     }
 }

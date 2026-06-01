@@ -14,7 +14,8 @@ use editoast_derive::Model;
 use schemas::rolling_stock::EffortCurves;
 use schemas::rolling_stock::EnergySource;
 use schemas::rolling_stock::LoadingGaugeType;
-use schemas::rolling_stock::RollingResistance;
+use schemas::rolling_stock::RollingResistancePerWeight;
+use schemas::rolling_stock::RollingResistanceRaw;
 use schemas::rolling_stock::RollingStockMetadata;
 use schemas::rolling_stock::SupportedSignalingSystem;
 use serde::Deserialize;
@@ -71,7 +72,7 @@ pub struct RollingStock {
     #[model(uom_unit = "units::kilogram")]
     pub mass: Mass,
     #[model(json)]
-    pub rolling_resistance: RollingResistance,
+    pub rolling_resistance: RollingResistancePerWeight,
     #[model(to_enum)]
     pub loading_gauge: LoadingGaugeType,
     #[model(json)]
@@ -126,7 +127,7 @@ impl From<crate::Error> for Error {
     }
 }
 
-impl From<RollingStock> for schemas::RollingStock {
+impl From<RollingStock> for schemas::RollingStock<RollingResistancePerWeight> {
     fn from(rolling_stock: RollingStock) -> Self {
         Self {
             railjson_version: rolling_stock.railjson_version,
@@ -159,8 +160,16 @@ impl From<RollingStock> for schemas::RollingStock {
     }
 }
 
-impl From<schemas::RollingStock> for RollingStockChangeset {
-    fn from(rolling_stock: schemas::RollingStock) -> Self {
+impl From<RollingStock> for schemas::RollingStock<RollingResistanceRaw> {
+    fn from(rolling_stock: RollingStock) -> Self {
+        schemas::RollingStock::<RollingResistanceRaw>::from(schemas::RollingStock::<
+            RollingResistancePerWeight,
+        >::from(rolling_stock))
+    }
+}
+
+impl From<schemas::RollingStock<RollingResistancePerWeight>> for RollingStockChangeset {
+    fn from(rolling_stock: schemas::RollingStock<RollingResistancePerWeight>) -> Self {
         RollingStock::changeset()
             .railjson_version(rolling_stock.railjson_version)
             .metadata(rolling_stock.metadata)

@@ -2978,28 +2978,6 @@ class Role(Enum):
     OperationalStudies = "OperationalStudies"
 
 
-class RollingResistance(BaseModel):
-    model_config = ConfigDict(
-        extra="forbid",
-    )
-    A: float
-    """
-     Solid friction
-    Solid Friction in N
-    """
-    B: float
-    """
-     Viscosity friction in N·(m/s)⁻¹; N = kg⋅m⋅s⁻²
-    Viscosity friction in kg·s⁻¹
-    """
-    C: float
-    """
-     Aerodynamic drag in N·(m/s)⁻²; N = kg⋅m⋅s⁻²
-    Aerodynamic drag in kg·m⁻¹
-    """
-    type: str
-
-
 class RollingResistancePerWeight(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
@@ -5866,7 +5844,7 @@ class RollingStock(BaseModel):
     """
     Duration in s
     """
-    rolling_resistance: RollingResistance
+    rolling_resistance: RollingResistancePerWeight
     startup_acceleration: float
     """
     Acceleration in m·s⁻²
@@ -5941,7 +5919,7 @@ class RollingStockForm(BaseModel):
      Is null if the train is not electric.
     Duration in s
     """
-    rolling_resistance: RollingResistance
+    rolling_resistance: RollingResistancePerWeight
     startup_acceleration: float
     """
     Acceleration in m·s⁻²

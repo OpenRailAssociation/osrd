@@ -10,12 +10,14 @@ use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
 
+pub trait RollingResistance: Serialize + for<'de> Deserialize<'de> {}
+
 #[editoast_derive::annotate_units]
 #[derive(Clone, Debug, Default, PartialEq, Deserialize, Serialize, ToSchema, Educe)]
 #[educe(Hash)]
 #[serde(deny_unknown_fields)]
 #[allow(non_snake_case)]
-pub struct RollingResistance {
+pub struct RollingResistanceRaw {
     #[serde(rename = "type")]
     pub rolling_resistance_type: String,
     /// Solid friction
@@ -31,6 +33,8 @@ pub struct RollingResistance {
     #[serde(with = "units::kilogram_per_meter")]
     pub C: AerodynamicDrag,
 }
+
+impl RollingResistance for RollingResistanceRaw {}
 
 #[editoast_derive::annotate_units]
 #[derive(Clone, Debug, Default, PartialEq, Deserialize, Serialize, ToSchema, Educe)]
@@ -53,3 +57,5 @@ pub struct RollingResistancePerWeight {
     #[serde(with = "units::per_meter")]
     pub C: AerodynamicDragPerWeight,
 }
+
+impl RollingResistance for RollingResistancePerWeight {}
