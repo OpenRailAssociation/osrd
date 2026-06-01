@@ -26,7 +26,7 @@ const Scenario = () => {
       <ScenarioHeader activeBoards={activeBoards} toggleBoard={toggleBoard} />
       <RollingStockContextProvider>
         <SubCategoryContextProvider>
-          <ScenarioContent activeBoards={activeBoards} />
+          <ScenarioContent activeBoards={activeBoards} toggleBoard={toggleBoard} />
         </SubCategoryContextProvider>
       </RollingStockContextProvider>
     </ScenarioContextProvider>

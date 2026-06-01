@@ -32,12 +32,13 @@ import TimetableBoardWrapper from './Timetable/TimetableBoardWrapper';
 
 type ScenarioContentProps = {
   activeBoards: Set<Board>;
+  toggleBoard: (board: Board) => void;
 };
 
 const MACRO_EDITOR_HEIGHT = 776; // px
 const MACRO_MIN_HEIGHT = 500;
 
-const ScenarioContent = ({ activeBoards }: ScenarioContentProps) => {
+const ScenarioContent = ({ activeBoards, toggleBoard }: ScenarioContentProps) => {
   const { t, i18n } = useTranslation('operational-studies');
   const dispatch = useAppDispatch();
   const { scenario, sandboxId } = useScenarioContext();
@@ -81,6 +82,18 @@ const ScenarioContent = ({ activeBoards }: ScenarioContentProps) => {
   const lastNgeOperationPromise = useRef(Promise.resolve());
   const [ngeDto, setNgeDto] = useState<NetzgrafikDto>();
   const [ngeIsLoading, setNGEIsLoading] = useState(true);
+  const [isScrollingToTimeStopsTable, setIsScrollingToTimeStopsTable] = useState(false);
+
+  const closeViewAndOpenTableBoard = useCallback(
+    (closeView: () => void) => {
+      closeView();
+      if (!activeBoards.has('tables')) {
+        toggleBoard('tables');
+      }
+      setIsScrollingToTimeStopsTable(true);
+    },
+    [activeBoards, toggleBoard]
+  );
 
   const refreshNge = useCallback(async () => {
     if (!activeBoards.has('macro')) return;
@@ -172,6 +185,7 @@ const ScenarioContent = ({ activeBoards }: ScenarioContentProps) => {
             setCollapsedTimetableEdit={() => setCollapsedTimetableEdit(!collapsedTimetableEdit)}
             collapsedTimetableEdit={collapsedTimetableEdit}
             importTrainScheduleSets={importTrainScheduleSets}
+            closeViewAndOpenTableBoard={closeViewAndOpenTableBoard}
           />
         )}
         <div
@@ -216,6 +230,8 @@ const ScenarioContent = ({ activeBoards }: ScenarioContentProps) => {
                 upsertTrainSchedules={upsertTrainSchedulesWithNge}
                 setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
                 setTrainScheduleToEditData={setTrainScheduleToEditData}
+                isScrollingToTimeStopsTable={isScrollingToTimeStopsTable}
+                setIsScrollingToTimeStopsTable={setIsScrollingToTimeStopsTable}
               />
             )}
             {activeBoards.has('macro') && (

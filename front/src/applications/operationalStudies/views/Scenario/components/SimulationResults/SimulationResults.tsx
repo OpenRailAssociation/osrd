@@ -59,6 +59,8 @@ type SimulationResultsProps = {
   upsertTrainSchedules: (trainSchedules: TrainScheduleResponse[]) => void;
   setDisplayTrainScheduleManagement: (type: string) => void;
   setTrainScheduleToEditData: (trainScheduleToEditData?: TrainScheduleToEditData) => void;
+  isScrollingToTimeStopsTable: boolean;
+  setIsScrollingToTimeStopsTable: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 const SimulationResults = ({
@@ -72,6 +74,8 @@ const SimulationResults = ({
   upsertTrainSchedules,
   setTrainScheduleToEditData,
   setDisplayTrainScheduleManagement,
+  isScrollingToTimeStopsTable,
+  setIsScrollingToTimeStopsTable,
 }: SimulationResultsProps) => {
   const { t } = useTranslation('operational-studies');
   const dispatch = useAppDispatch();
@@ -80,6 +84,8 @@ const SimulationResults = ({
   const { results: simulationResults, isSimulationDataLoading } =
     useSimulationResults(trainSchedules);
   const selectedTrainId = simulationResults?.train.id;
+
+  const timeStopsTableRef = useRef<HTMLDivElement>(null);
 
   const displayOnlyPathSteps = useSelector(getDisplayOnlyPathSteps);
   const trainIdUsedForProjection = useSelector(getTrainIdUsedForProjection);
@@ -114,6 +120,13 @@ const SimulationResults = ({
   useEffect(() => {
     setTrainScheduleProjections(projectionData?.projectedTrains || []);
   }, [projectionData]);
+
+  useEffect(() => {
+    if (simulationResults?.pathProperties && isScrollingToTimeStopsTable) {
+      timeStopsTableRef.current?.scrollIntoView();
+      setIsScrollingToTimeStopsTable(false);
+    }
+  }, [simulationResults?.pathProperties, isScrollingToTimeStopsTable]);
 
   const enrichedProjections = useHandleInvalidProjections({
     trainSchedulesWithDetails,
@@ -356,6 +369,7 @@ const SimulationResults = ({
 
           {/* TIME STOPS TABLE */}
           <BoardWrapper
+            ref={timeStopsTableRef}
             hidden={!activeBoards.has('tables')}
             name={simulationResults.train.train_name}
             items={[

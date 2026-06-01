@@ -125,7 +125,6 @@ test.describe('Simulation settings tab', { tag: ['@op', '@simulation-settings-ta
     await test.step('Create unique train and verify (electrical profile ON)', async () => {
       await operationalStudiesPage.createTrainSchedule();
       await operationalStudiesPage.closeToastNotification();
-      await operationalStudiesPage.returnSimulationResult();
       await scenarioTimetableSection.getTrainScheduleArrivalTime('11:48');
       await scenarioTimetableSection.verifyTrainColor(FREIGHT_TRAIN.color);
       await opSimulationResultPage.setTrainListVisible();
@@ -192,7 +191,6 @@ test.describe('Simulation settings tab', { tag: ['@op', '@simulation-settings-ta
     await test.step('Create unique train and verify (speed limit tag ON)', async () => {
       await operationalStudiesPage.createTrainSchedule();
       await operationalStudiesPage.closeToastNotification();
-      await operationalStudiesPage.returnSimulationResult();
       await scenarioTimetableSection.getTrainScheduleArrivalTime('11:49');
       await opSimulationResultPage.setTrainListVisible();
 
@@ -268,7 +266,6 @@ test.describe('Simulation settings tab', { tag: ['@op', '@simulation-settings-ta
     await test.step('Create unique train and verify (Linear)', async () => {
       await operationalStudiesPage.createTrainSchedule();
       await operationalStudiesPage.closeToastNotification();
-      await operationalStudiesPage.returnSimulationResult();
       await scenarioTimetableSection.getTrainScheduleArrivalTime('11:51');
       await opSimulationResultPage.setTrainListVisible();
 
@@ -348,7 +345,6 @@ test.describe('Simulation settings tab', { tag: ['@op', '@simulation-settings-ta
       await test.step('Create unique train and verify outputs (all settings ON)', async () => {
         await operationalStudiesPage.createTrainSchedule();
         await operationalStudiesPage.closeToastNotification();
-        await operationalStudiesPage.returnSimulationResult();
         await opSimulationResultPage.setTrainListVisible();
 
         await operationalStudiesPage.verifyTimesStopsDataSheetVisibility();
