@@ -415,7 +415,7 @@
     "inverseOD": "Inverser l'itinéraire",
     "itineraryModal": {
       "addLocationOnMap": "Ajouter un point remarquable sur la carte",
-      "addPoint": "Ajouter le point",
+      "addPoint": "Ajouter",
       "addPointOnMap": "Ajoutez ce point en utilisant la carte",
       "alertInvalidOP": "Au moins un des points de passage n'a pas été reconnu",
       "alertMissingDestination": "La destination n'est pas définie",
