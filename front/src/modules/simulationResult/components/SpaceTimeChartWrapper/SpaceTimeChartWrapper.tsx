@@ -38,6 +38,7 @@ import type {
 import { isPacedTrainWithDetails } from 'modules/trainSchedule/helpers/pacedTrain';
 import type { TrainScheduleWithDetails } from 'modules/trainSchedule/types';
 import type { TrainId } from 'reducers/osrdconf/types';
+import { updateSelectedTrain } from 'reducers/simulationResults';
 import {
   getHoveredTrainId,
   getIsSimulationEnabled,
@@ -364,6 +365,16 @@ const SpaceTimeChartWrapper = ({
   );
 
   const handleClick: SpaceTimeChartProps['onClick'] = () => {
+    if (
+      !draggingState &&
+      selectedTrainId &&
+      (!hoveredItem ||
+        (!isSegmentPickingElement(hoveredItem.element) &&
+          !isPointPickingElement(hoveredItem.element)))
+    ) {
+      dispatch(updateSelectedTrain({ id: selectedTrainId, by: 'timetable' }));
+      return;
+    }
     if (
       onTrainClick &&
       !draggingState &&
