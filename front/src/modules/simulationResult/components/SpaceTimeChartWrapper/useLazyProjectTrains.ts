@@ -44,11 +44,13 @@ const useLazyProjectTrains = ({
   );
   const projectionType = useSelector(getProjectionType);
   const isSimulationEnabled = useSelector(getIsSimulationEnabled);
+  const [allTrainsProjected, setAllTrainsProjected] = useState(false);
 
   const onProgress = useCallback((results: Map<number, ProjectionResult>) => {
     setProjectedTrainsById((prev) =>
       upsertNewProjectedTrains(prev, results, trainSchedulesByIdRef.current)
     );
+    setAllTrainsProjected(loaderRef.current === null || loaderRef.current.pending.length === 0);
   }, []);
 
   useEffect(() => {
@@ -99,7 +101,10 @@ const useLazyProjectTrains = ({
       trainSchedulesByIdRef.current.set(trainSchedule.id, trainSchedule);
     }
 
-    loaderRef.current?.projectTrainSchedules(trainSchedules.map(({ id }) => id));
+    if (trainSchedules.length > 0) {
+      setAllTrainsProjected(false);
+      loaderRef.current?.projectTrainSchedules(trainSchedules.map(({ id }) => id));
+    }
   }, []);
 
   const removeProjectedTrainSchedules = useCallback((ids: number[]) => {
@@ -147,7 +152,7 @@ const useLazyProjectTrains = ({
     projectTrainSchedules,
     removeProjectedTrainSchedules,
     updateProjectedTrainScheduleDepartureTime,
-    allTrainsProjected: Boolean(loaderRef.current && loaderRef.current.pending.length === 0),
+    allTrainsProjected,
   };
 };
 
