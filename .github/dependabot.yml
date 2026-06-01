@@ -95,7 +95,9 @@ updates:
       # Updates for NGE don't follow SemVer and are handled manually
       - dependency-name: "@osrd-project/netzgrafik-frontend"
   - package-ecosystem: "uv"
-    directory: "/python/"
+    directories:
+      - "python/osrd_schemas"
+      - "python/railjson_generator"
     schedule:
       interval: "daily"
     cooldown:
