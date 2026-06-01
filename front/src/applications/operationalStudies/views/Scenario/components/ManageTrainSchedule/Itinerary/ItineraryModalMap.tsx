@@ -102,8 +102,7 @@ const ItineraryModalMap = ({
   const lastStepHasLocation = !!pathSteps?.at(-1)?.location;
   const lastRealStepIndex = pathSteps ? pathSteps.length - (lastStepHasLocation ? 1 : 2) : -1;
 
-  const selectedStep = pathSteps?.find((s) => s.id === selectedStepId);
-  const isNewPlacement = isMapSelectionMode && !selectedStep?.location;
+  const isNewPlacement = isMapSelectionMode;
 
   useEffect(() => {
     if (!isMapSelectionMode) {

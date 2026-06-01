@@ -277,9 +277,6 @@ const ItineraryModal = ({
     async (featureInfoClick: FeatureInfoClick) => {
       if (!mapSelectionStepId) return;
 
-      const selectedStep = pathSteps.find((s) => s.id === mapSelectionStepId);
-      if (selectedStep?.location) return;
-
       const location = await convertFeatureClickToLocation(featureInfoClick);
       if (!location) return;
 

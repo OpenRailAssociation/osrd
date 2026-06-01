@@ -67,6 +67,7 @@ const OpTrackSelectionPopup = ({
           <Select
             id="op-track-select"
             label={tItinerary('track')}
+            small
             getOptionLabel={(option) => option.local_track_name ?? tManage('anyTrack')}
             getOptionValue={(option) => option.local_track_name ?? ''}
             options={trackOptions}
