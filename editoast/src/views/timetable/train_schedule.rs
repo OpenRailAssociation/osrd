@@ -72,6 +72,7 @@ use crate::views::timetable::simulation;
 use crate::views::timetable::simulation::SimulationResponseSuccess;
 use crate::views::timetable::simulation::SummaryResponse;
 use crate::views::timetable::simulation::build_path_items_to_position;
+use crate::views::timetable::simulation::build_pathfinding_consist;
 use crate::views::timetable::simulation::build_sim_power_restriction_items;
 use crate::views::timetable::simulation::build_sim_schedule_items;
 use crate::views::timetable::simulation::train_simulation_ordered_batch;
@@ -645,7 +646,7 @@ pub(in crate::views) async fn get_path(
         })
         .await?;
 
-    let train_schedule = match exception_id {
+    let train_occurence = match exception_id {
         Some(exception_id) => {
             let exception =
                 TrainScheduleException::retrieve_or_fail(conn.clone(), exception_id, || {
@@ -675,12 +676,10 @@ pub(in crate::views) async fn get_path(
         .map(|item| &item.location)
         .collect_vec();
 
-    let pathfinding_input = PathfindingInput::from(&consist, &train_schedule);
-    let valkey_conn = valkey_client.get_connection().await?;
-    let result = match build_pathfinding_request(&pathfinding_input, &infra, &op_cache) {
-        Ok(request) => match request
-            .run(Arc::new(tokio::sync::Mutex::new(valkey_conn)), core_client)
-            .await
+    let track_offsets =
+        match OperationalPointCache::load_path_items(conn, infra.id, path_items.as_slice())
+            .await?
+            .extract_location_from_path_items(&path_items)
         {
             Ok(track_offsets) => track_offsets,
             Err(err) => return Ok(Json(PathfindingResult::Failure(err))),

@@ -610,7 +610,7 @@ pub async fn consist_train_simulation_batch<T: TrainScheduleLike>(
         .collect())
 }
 
-fn build_pathfinding_consist(
+pub fn build_pathfinding_consist(
     physics_consist_parameters: &PhysicsConsistParameters,
     speed_limit_tag: Option<String>,
 ) -> PathfindingConsist {
