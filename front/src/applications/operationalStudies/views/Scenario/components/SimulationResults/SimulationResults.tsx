@@ -26,7 +26,7 @@ import TrainHeader from 'modules/trainHeader/TrainHeader';
 import { findExceptionWithOccurrenceId } from 'modules/trainSchedule/helpers/pacedTrain';
 import type { TrainScheduleWithDetails } from 'modules/trainSchedule/types';
 import type { TrainId, TrainScheduleToEditData } from 'reducers/osrdconf/types';
-import { toggleDisplayOnlyPathSteps, updateSelectedTrain } from 'reducers/simulationResults';
+import { toggleDisplayOnlyPathSteps } from 'reducers/simulationResults';
 import {
   getDisplayOnlyPathSteps,
   getTrainIdUsedForProjection,
@@ -299,9 +299,6 @@ const SimulationResults = ({
                   projectionLoaderData={projectionData.projectionLoaderData}
                   height={manchetteWithSpaceTimeChartHeight - HIDDEN_CHART_TOP_HEIGHT}
                   handleTrainDrag={handleTrainDrag}
-                  onTrainClick={(trainId) => {
-                    dispatch(updateSelectedTrain({ id: trainId, by: 'std' }));
-                  }}
                   onOccupancyZoneDrop={handleOccupancyZoneDrop}
                   selectedProjectionId={trainIdUsedForProjection}
                   waypointsPanelIsOpen={waypointsPanelIsOpen}
