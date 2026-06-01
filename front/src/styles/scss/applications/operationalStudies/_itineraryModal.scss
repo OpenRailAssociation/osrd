@@ -761,6 +761,7 @@
 
 .op-track-selection-popup {
   .maplibregl-popup-content {
+    width: 223px;
     padding: 0;
     border-radius: 8px;
     overflow: hidden;
@@ -770,13 +771,18 @@
   .op-track-selection-popup-content {
     display: flex;
     flex-direction: column;
+    font-family: 'IBM Plex Sans', sans-serif;
 
     .op-track-selection-body {
       display: flex;
       flex-direction: column;
-      gap: 12px;
-      padding: 8px;
+      padding: 17px 24px 24px 24px;
       background-color: var(--ambientB10);
+
+      //TODO bootstrap sncf, remove when we no longer use the lib
+      * > .ui-label-wrapper {
+        margin-bottom: -5px;
+      }
     }
 
     .op-track-selection-actions {
