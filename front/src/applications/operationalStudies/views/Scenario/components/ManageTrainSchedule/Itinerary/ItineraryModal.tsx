@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useEffectEvent, useMemo, useRef, useState } from 'react';
 
 import { Button } from '@osrd-project/ui-core';
-import { ArrowSwitch, FrameAll, Plus } from '@osrd-project/ui-icons';
+import { ArrowSwitch, Fold, FrameAll, Plus, Unfold } from '@osrd-project/ui-icons';
 import bbox from '@turf/bbox';
 import cx from 'classnames';
 import type { Position } from 'geojson';
@@ -52,6 +52,7 @@ import useMapTrackSelection from '../hooks/useMapTrackSelection';
 import type { FeatureInfoClick } from '../types';
 import type { OperationalPointSuggestion } from './ComboBoxCustomList/ListElementComponent';
 import { usePathStepsMetadata } from './hooks/usePathStepsMetadata';
+import IntermediateWaypointsPanel from './IntermediateWaypointsPanel/IntermediateWaypointsPanel';
 import ItineraryModalFormHeader from './ItineraryModalFormHeader';
 import ItineraryModalMap from './ItineraryModalMap';
 import PathStepItem from './PathStepItem';
@@ -117,6 +118,12 @@ const ItineraryModal = ({
   const [customTracksByOpKey, setCustomTracksByOpKey] = useState<
     Map<string, { trackId: string; trackName: string }[]>
   >(new Map());
+  const [waypointsPanelOpen, setWaypointsPanelOpen] = useState(false);
+  const toggleWaypointsPanelLabel = t(
+    waypointsPanelOpen
+      ? 'intermediateWaypointsPanel.hideLabel'
+      : 'intermediateWaypointsPanel.showLabel'
+  );
 
   const closeModal = () => {
     modalRef.current?.close();
@@ -269,6 +276,31 @@ const ItineraryModal = ({
     workerStatus === 'READY' && locatedStepsCount >= 2 && !hasInvalidPathStep
       ? pathProperties
       : undefined;
+
+  const waypointsPanelStatus = useMemo<'idle' | 'loading' | 'error' | 'success'>(() => {
+    if (pathfindingError) return 'error';
+    if (displayedPathProperties) return 'success';
+
+    // No path properties yet: distinguish "pathfinding is on its way" (loading)
+    // from "the itinerary isn't set up enough to trigger it" (idle).
+    const isPathfindingPending =
+      workerStatus === 'READY' &&
+      locatedStepsCount >= 2 &&
+      !hasInvalidPathStep &&
+      !!modalFormState.rollingStockId;
+    return isPathfindingPending ? 'loading' : 'idle';
+  }, [
+    workerStatus,
+    locatedStepsCount,
+    hasInvalidPathStep,
+    modalFormState.rollingStockId,
+    pathfindingError,
+    displayedPathProperties,
+  ]);
+
+  const canOpenWaypointsPanel =
+    waypointsPanelStatus === 'success' || waypointsPanelStatus === 'loading';
+  const waypointsPanelButtonDisabled = !waypointsPanelOpen && !canOpenWaypointsPanel;
 
   const markEditing = (stepId: string) => {
     editingStepIdRef.current = stepId;
@@ -627,15 +659,15 @@ const ItineraryModal = ({
               'with-invalid-step': hasInvalidPathStepDisplay || invalidTrackSteps.length > 0,
             })}
           >
-            <button
-              data-testid="reverse-itinerary-button"
-              className="reverse-itinerary-button"
-              type="button"
-              onClick={reverseItinerary}
-            >
-              <ArrowSwitch />
-            </button>
             <div className="itinerary-icons">
+              <button
+                data-testid="reverse-itinerary-button"
+                className="reverse-itinerary-button"
+                type="button"
+                onClick={reverseItinerary}
+              >
+                <ArrowSwitch />
+              </button>
               <button className="frame-all" onClick={frameAllPathSteps}>
                 <FrameAll title={t('frameAll')} aria-label={t('frameAll')} />
               </button>
@@ -803,6 +835,20 @@ const ItineraryModal = ({
                 </>
               );
             })}
+            <button
+              data-testid="show-intermediate-waypoints-button"
+              className="show-intermediate-waypoints-button"
+              type="button"
+              onClick={() => setWaypointsPanelOpen((v) => !v)}
+              disabled={waypointsPanelButtonDisabled}
+              aria-expanded={waypointsPanelOpen}
+              aria-label={toggleWaypointsPanelLabel}
+            >
+              {waypointsPanelOpen ? <Fold /> : <Unfold />}
+              <span className="show-intermediate-waypoints-button__label" aria-hidden>
+                {toggleWaypointsPanelLabel}
+              </span>
+            </button>
           </div>
         </div>
         <div className="itinerary-modal-form-footer">
@@ -816,6 +862,16 @@ const ItineraryModal = ({
           <Button label={t('next')} variant="Primary" size="medium" onClick={submitItinerary} />
         </div>
       </div>
+      {waypointsPanelOpen && (
+        <div className="itinerary-modal-waypoints-panel-wrapper">
+          <IntermediateWaypointsPanel
+            pathSteps={pathSteps}
+            pathProperties={displayedPathProperties}
+            status={waypointsPanelStatus}
+            onHide={() => setWaypointsPanelOpen(false)}
+          />
+        </div>
+      )}
       <div
         className={cx('itinerary-modal-map', {
           'map-selection-active': mapSelectionStepId !== null,

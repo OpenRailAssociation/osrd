@@ -424,6 +424,16 @@
       "cancelMapSelection": "Annuler",
       "focusLocationOnMap": "Centrer la carte sur ce point remarquable",
       "frameAll": "Centrer sur tous les points de passage sur la carte",
+      "intermediateWaypointsPanel": {
+        "collapseGroup": "Replier les points intermédiaires",
+        "expandGroup": "Déplier les points intermédiaires",
+        "hide": "Masquer",
+        "hideLabel": "Masquer les PR intermédiaires",
+        "idleMessage": "Complétez l'itinéraire pour afficher ses PR intermédiaires.",
+        "noWaypoint": "Aucun point intermédiaire à afficher, le chemin n'est pas valide.",
+        "panelTitle": "Points intermédiaires",
+        "showLabel": "Afficher tous les PR intermédiaires"
+      },
       "invalidOP": "Point non reconnu : ",
       "moveLocationOnMap": "Déplacer le point remarquable sur la carte",
       "movePointOnMap": "Déplacez ce point en utilisant la carte",
