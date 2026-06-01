@@ -14,7 +14,7 @@ bollard = "0.21"
 figment = { version = "0.10.19", features = ["env", "yaml"] }
 futures-lite = "2.6.1"
 hex = "0.4.3"
-http = "1.4.0"
+http = "1.4.1"
 humantime-serde = "1.1.1"
 im = "15.1.0"
 k8s-openapi = { version = "0.27", features = ["v1_35"] }
