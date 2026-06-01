@@ -41,7 +41,6 @@ import type {
   DraggingState,
 } from 'modules/simulationResult/types';
 import {
-  findExceptionWithOccurrenceId,
   findTrainScheduleAndException,
   getFirstActiveOccurrenceId,
   isPacedTrainWithDetails,
@@ -124,7 +123,6 @@ type SpaceTimeChartWrapperBaseProps = {
     panelSelectionMode: PanelSelectionMode;
   }) => Promise<void>;
   height?: number;
-  onTrainClick?: (trainId: TrainId) => void;
   onOccupancyZoneDrop?: (
     waypointId: string,
     trainId: TrainId,
@@ -191,7 +189,6 @@ const SpaceTimeChartWrapper = ({
   projectionLoaderData: { totalTrains, allTrainsProjected },
   height = MANCHETTE_WITH_SPACE_TIME_CHART_DEFAULT_HEIGHT,
   handleTrainDrag,
-  onTrainClick,
   onOccupancyZoneDrop,
   selectedProjectionId,
   trainSchedulesWithDetails,
@@ -572,7 +569,7 @@ const SpaceTimeChartWrapper = ({
     }
   };
 
-  const handleClick: SpaceTimeChartProps['onClick'] = () => {
+  const handleClick: SpaceTimeChartProps['onClick'] = ({ event }) => {
     if (
       !draggingState &&
       selectedTrainId &&
@@ -584,29 +581,35 @@ const SpaceTimeChartWrapper = ({
       return;
     }
     if (
-      onTrainClick &&
       !draggingState &&
       hoveredItem &&
       (isSegmentPickingElement(hoveredItem.element) || isPointPickingElement(hoveredItem.element))
     ) {
       const clickedTrainId = hoveredItem.element.pathId;
-      if (
-        isTrainId(clickedTrainId) &&
-        (selectedTrainId !== clickedTrainId || selectedTrainBy !== 'std')
-      ) {
-        if (isOccurrenceId(clickedTrainId)) {
-          setLastClickedOccurrenceId(clickedTrainId);
-          const trainScheduleId = extractEditoastIdFromPacedTrainId(
-            extractPacedTrainIdFromOccurrenceId(clickedTrainId)
-          );
-          const trainSchedule = trainSchedulesWithDetailsById.get(trainScheduleId);
-          const exception =
-            trainSchedule && isPacedTrainWithDetails(trainSchedule)
-              ? findExceptionWithOccurrenceId(trainSchedule.paced.exceptions, clickedTrainId)
-              : undefined;
-          setPanelSelectionMode(exception?.start_time ? 'single' : 'compliant');
+      if (isTrainId(clickedTrainId)) {
+        const { exception: clickedException } = findTrainScheduleAndException(
+          trainSchedulesWithDetails ?? [],
+          clickedTrainId
+        );
+        const isStartTimeException = !!clickedException?.start_time;
+
+        // By default selecting an occurrence selects its whole paced train; alt-click (or
+        // clicking a start_time exception) isolates the single occurrence.
+        const idToDispatch =
+          !event.altKey && !isStartTimeException
+            ? extractPacedTrainIdFromTrainId(clickedTrainId)
+            : clickedTrainId;
+        if (selectedTrainId !== idToDispatch || selectedTrainBy !== 'std') {
+          if (isOccurrenceId(idToDispatch)) {
+            // idToDispatch is an occurrence only on alt-click or a start_time exception:
+            // isolate it in the panel.
+            setLastClickedOccurrenceId(idToDispatch);
+            setPanelSelectionMode('single');
+          } else {
+            setPanelSelectionMode('compliant');
+          }
+          dispatch(updateSelectedTrain({ id: idToDispatch, by: 'std' }));
         }
-        onTrainClick(clickedTrainId);
       }
     }
   };
