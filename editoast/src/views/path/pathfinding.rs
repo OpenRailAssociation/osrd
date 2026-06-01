@@ -1,4 +1,3 @@
-use itertools::Itertools;
 use std::collections::BTreeSet;
 use std::collections::HashMap;
 use std::collections::hash_map::DefaultHasher;
@@ -40,7 +39,6 @@ use crate::views::path::operational_point_cache::OperationalPointCache;
 use crate::views::timetable::PhysicsConsistParameters;
 use editoast_models::Infra;
 use editoast_models::prelude::*;
-use editoast_models::rolling_stock::RollingStock;
 
 /// Path input is described by some rolling stock information
 /// and a list of path waypoints
@@ -424,56 +422,6 @@ fn build_pathfinding_request(
         speed_limit_tag: pathfinding_input.speed_limit_tag.clone(),
         stops_at_end_of_block: pathfinding_input.stops_at_end_of_block,
     })
-}
-
-/// Compute a path given a train schedule and an infrastructure.
-pub async fn pathfinding_from_train<T: TrainScheduleLike>(
-    conn: DbConnection,
-    valkey: cache::Connection,
-    core: Arc<CoreClient>,
-    infra: &Infra,
-    train_schedule: T,
-    _app_version: Option<&str>,
-) -> Result<PathfindingResult> {
-    let Some(consist) =
-        RollingStock::retrieve(conn.clone(), train_schedule.rolling_stock_name().to_owned())
-            .await?
-            .map(schemas::RollingStock::from)
-            .map(PhysicsConsistParameters::from_traction_engine)
-    else {
-        return Ok(PathfindingResult::Failure(
-            PathfindingFailure::PathfindingInputError(
-                PathfindingInputError::RollingStockNotFound {
-                    rolling_stock_name: train_schedule.rolling_stock_name().to_owned(),
-                },
-            ),
-        ));
-    };
-
-    use core_task::Task as _;
-    let path_items = train_schedule
-        .path()
-        .iter()
-        .map(|item| &item.location)
-        .collect_vec();
-    let op_cache =
-        OperationalPointCache::load_path_items(conn, infra.id, path_items.as_slice()).await?;
-
-    let pathfinding_input = PathfindingInput::from(&consist, &train_schedule);
-
-    let result = match build_pathfinding_request(&pathfinding_input, infra, &op_cache) {
-        Ok(request) => match request
-            .run(Arc::new(tokio::sync::Mutex::new(valkey)), core)
-            .await
-        {
-            Ok(path) => path.into(),
-            Err(core_error) => PathfindingResult::Failure(PathfindingFailure::InternalError {
-                core_error: core_error.into(),
-            }),
-        },
-        Err(err) => *err,
-    };
-    Ok(result)
 }
 
 #[derive(Debug, Clone)]
