@@ -16,7 +16,7 @@ export default defineConfig({
   retries: 1,
   use: {
     navigationTimeout: isCI ? 30_000 : 60_000,
-    actionTimeout: 10_000,
+    actionTimeout: isCI ? 10_000 : 20_000,
     baseURL: process.env.BASE_URL || 'http://localhost:4000',
     locale: 'fr',
     timezoneId: 'Europe/Paris',
