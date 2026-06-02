@@ -28,7 +28,7 @@ export const Spinner = ({ displayDelay, spinnerClassName, ...props }: SpinnerPro
   if (!display) return null;
   return (
     <div {...props}>
-      <div className={cx('spinner-border', spinnerClassName)} role="status">
+      <div className={cx('spinner-border', spinnerClassName)} role="status" data-testid="spinner">
         <span className="sr-only">Loading...</span>
       </div>
     </div>

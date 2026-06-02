@@ -76,6 +76,7 @@ class ScenarioPage extends CommonPage {
   }
 
   async createScenario(details: ScenarioDetails) {
+    await this.waitForSpinnerToDisappear();
     await expect(this.addScenarioButton).toBeVisible();
     await this.addScenarioButton.click();
     await this.fillScenarioDetails(details);

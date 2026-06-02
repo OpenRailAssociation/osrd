@@ -11,6 +11,7 @@ class CommonPage {
   private readonly navigationToHomeButton: Locator;
   private readonly navigationBackButton: Locator;
   private readonly loader: Locator;
+  private readonly spinner: Locator;
 
   constructor(page: Page) {
     this.page = page;
@@ -21,6 +22,7 @@ class CommonPage {
     this.navigationToHomeButton = page.getByTestId('navigation-to-home-button');
     this.navigationBackButton = page.getByTestId('navigation-back-button');
     this.loader = page.getByTestId('loader');
+    this.spinner = page.getByTestId('spinner');
   }
 
   // Set the tag of project, study or scenario
@@ -75,6 +77,17 @@ class CommonPage {
     if (count > 0) {
       await expect(this.loader).not.toBeVisible({ timeout });
     }
+  }
+
+  async waitForSpinnerToDisappear(): Promise<void> {
+    try {
+      // The list spinner has a 500ms display delay; give it a moment to appear on slow loads.
+      await this.spinner.first().waitFor({ state: 'visible', timeout: 1_000 });
+    } catch {
+      // Spinner never appeared - the view loaded fast, nothing to wait for.
+      return;
+    }
+    await expect(this.spinner).toHaveCount(0);
   }
 
   async validateNumericBudget(locator: Locator, expectedBudget: string): Promise<void> {
