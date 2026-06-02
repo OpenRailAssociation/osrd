@@ -5,7 +5,7 @@ import { DEFAULT_THEME, type SpaceTimeChartProps } from '../../spaceTimeChart';
 /** How close to the edge we should start panning */
 const PAN_EDGE_DISTANCE = 50;
 /** How much time to wait between each pan */
-const PAN_INTERVAL_MS = 50;
+export const PAN_INTERVAL_MS = 50;
 /** How many pixels to pan each interval */
 const PAN_STEP = 5;
 
