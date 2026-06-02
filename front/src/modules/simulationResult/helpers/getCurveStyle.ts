@@ -65,6 +65,21 @@ const getBaseStyle = (state: CurveVisualState, train: TrainForStyle): CurveStyle
     },
   };
 
+  // Passive primary: the curve belongs to the active selection but the click
+  // happened elsewhere (mirror chart, or timetable). It keeps the category
+  // color so it doesn't take the spotlight away from the actual click target.
+  const passivePrimaryStyle: CurveStyle = {
+    color: colors.normal,
+    opacity: 1,
+    outline:
+      isSimulated === true ? { offset: 0, width: 3, color: colors.background } : INVALID_OUTLINE,
+    label: {
+      color: colors.hovered,
+      background: { color: colors.background, border: colors.normal },
+      fontWeight: FONT_WEIGHT_BOLD,
+    },
+  };
+
   const passiveSecondaryStyle: CurveStyle = {
     color: colors.normal,
     opacity: 1,
@@ -94,13 +109,19 @@ const getBaseStyle = (state: CurveVisualState, train: TrainForStyle): CurveStyle
       return noneStyle;
     case 'active':
       return activeStyle;
+    case 'passivePrimary':
+      return passivePrimaryStyle;
     case 'passiveSecondary':
       return passiveSecondaryStyle;
     case 'drag':
       return dragStyle;
-    default:
-      // Other states are implemented in following commits.
-      return { color: colors.normal, opacity: 1 };
+    default: {
+      // Exhaustiveness check: TS fails to compile if a state is added to the
+      // union without a case here.
+      // https://www.typescriptlang.org/docs/handbook/2/narrowing.html#exhaustiveness-checking
+      const _exhaustive: never = state;
+      throw new Error(`Unhandled curve visual state: ${_exhaustive}`);
+    }
   }
 };
 
