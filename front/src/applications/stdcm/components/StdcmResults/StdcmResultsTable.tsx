@@ -111,19 +111,13 @@ const StdcmResultsTable = ({
                       {isLastStep || step.duration !== null ? step.time : ''}
                     </td>
                     <td className="stop">
-                      <div
-                        className={
-                          step.duration !== null && !isLastStep
-                            ? 'stop-with-duration ml-n2'
-                            : 'stop'
-                        }
-                      >
-                        {isNotExtremity || !isRequestedPathStep
-                          ? step.duration !== null
-                            ? getStopDurationTime(step.duration)
-                            : step.time
-                          : ''}
-                      </div>
+                      {isNotExtremity && (
+                        <div
+                          className={step.duration !== null ? 'stop-with-duration ml-n2' : 'stop'}
+                        >
+                          {step.duration !== null ? getStopDurationTime(step.duration) : step.time}
+                        </div>
+                      )}
                     </td>
                     <td className="stop">
                       {isFirstStep || step.duration !== null ? step.stopEndTime : ''}
