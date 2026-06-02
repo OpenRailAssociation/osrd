@@ -57,15 +57,13 @@ const getChartSelectionState = (
   if (panelMode === 'single') return chart === primaryChart ? 'passiveSecondary' : 'none';
 
   // 'compliant' (B.2, C.2): occurrences with the relevant exception get
-  // passiveSecondary on the primary chart and none on the other one, the rest
-  // gets the same as self.
+  // passiveSecondary on both charts (they stay visible as family context on
+  // the mirror, per the design planches), the rest gets the same as self.
   if (panelMode === 'compliant') {
     // The exception type relevant for this mode, derived from the selection source.
     const relevantException: CurveStyleExceptionType =
       selection.by === 'std' ? 'start_time' : 'path_and_schedule';
-    if (train.exceptionType === relevantException) {
-      return chart === primaryChart ? 'passiveSecondary' : 'none';
-    }
+    if (train.exceptionType === relevantException) return 'passiveSecondary';
     return chart === primaryChart ? 'active' : 'passivePrimary';
   }
 
