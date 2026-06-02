@@ -188,4 +188,43 @@ describe('getCurveStyle', () => {
       });
     });
   });
+
+  describe('hover modifier', () => {
+    it('should switch a none-state curve to the hovered tint at level 3', () => {
+      const style = getCurveStyle('none', { colors, isSimulated: true }, { hovered: true });
+      expect(style.color).toBe(colors.hovered);
+      expect(style.level).toBe(3);
+      expect(style.opacity).toBe(1);
+      expect(style.outline).toBeUndefined();
+      expect(style.label).toEqual({
+        color: colors.hovered,
+        background: { color: colors.background },
+        fontWeight: 400,
+      });
+    });
+
+    it('should add the invalid outline when a hovered none-state train is not simulated', () => {
+      const style = getCurveStyle('none', { colors, isSimulated: false }, { hovered: true });
+      expect(style.outline).toEqual(INVALID_OUTLINE);
+    });
+
+    it.each(['active', 'passivePrimary', 'passiveSecondary', 'drag'] as const)(
+      'should not change anything when hovering a %s curve',
+      (state) => {
+        const base = getCurveStyle(state, { colors, isSimulated: true });
+        const hovered = getCurveStyle(state, { colors, isSimulated: true }, { hovered: true });
+        expect(hovered).toEqual(base);
+      }
+    );
+
+    it('should win over outOfSelection on a none-state curve', () => {
+      const fromHover = getCurveStyle(
+        'none',
+        { colors, isSimulated: true },
+        { hovered: true, outOfSelection: true }
+      );
+      const onlyHover = getCurveStyle('none', { colors, isSimulated: true }, { hovered: true });
+      expect(fromHover).toEqual(onlyHover);
+    });
+  });
 });
