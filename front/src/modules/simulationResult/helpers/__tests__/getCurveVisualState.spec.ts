@@ -31,7 +31,7 @@ describe('getCurveVisualState', () => {
               selection: { id: PACED_1, by: 'timetable' },
             })
           )
-        ).toBe('passivePrimary');
+        ).toEqual({ state: 'passivePrimary', hovered: false });
       }
     );
 
@@ -46,7 +46,7 @@ describe('getCurveVisualState', () => {
               selection: { id: PACED_1_OCC_2, by: 'timetable' },
             })
           )
-        ).toBe('passivePrimary');
+        ).toEqual({ state: 'passivePrimary', hovered: false });
       }
     );
 
@@ -61,7 +61,7 @@ describe('getCurveVisualState', () => {
               selection: { id: PACED_1_OCC_2, by: 'timetable' },
             })
           )
-        ).toBe('passiveSecondary');
+        ).toEqual({ state: 'passiveSecondary', hovered: false });
       }
     );
 
@@ -76,7 +76,7 @@ describe('getCurveVisualState', () => {
               selection: { id: PACED_1, by: 'timetable' },
             })
           )
-        ).toBe('passivePrimary');
+        ).toEqual({ state: 'passivePrimary', hovered: false });
       }
     );
 
@@ -91,7 +91,7 @@ describe('getCurveVisualState', () => {
               selection: { id: PACED_1, by: 'timetable' },
             })
           )
-        ).toBe('passiveSecondary');
+        ).toEqual({ state: 'passiveSecondary', hovered: false });
       }
     );
 
@@ -106,7 +106,7 @@ describe('getCurveVisualState', () => {
               selection: { id: PACED_1, by: 'timetable' },
             })
           )
-        ).toBe('none');
+        ).toEqual({ state: 'none', hovered: false });
       }
     );
   });
@@ -125,7 +125,7 @@ describe('getCurveVisualState', () => {
             selection: { id: PACED_1, by: 'std' },
           })
         )
-      ).toBe('active');
+      ).toEqual({ state: 'active', hovered: false });
     });
 
     it('B.1 bis - unique train, train is the selected one on tod, it should return passivePrimary', () => {
@@ -137,7 +137,7 @@ describe('getCurveVisualState', () => {
             selection: { id: PACED_1, by: 'std' },
           })
         )
-      ).toBe('passivePrimary');
+      ).toEqual({ state: 'passivePrimary', hovered: false });
     });
 
     it('B.2 - compliant, train without start_time exception on std, it should return active', () => {
@@ -150,7 +150,7 @@ describe('getCurveVisualState', () => {
             panelMode: 'compliant',
           })
         )
-      ).toBe('active');
+      ).toEqual({ state: 'active', hovered: false });
     });
 
     it('B.2 bis - compliant, train without start_time exception on tod, it should return passivePrimary', () => {
@@ -163,7 +163,7 @@ describe('getCurveVisualState', () => {
             panelMode: 'compliant',
           })
         )
-      ).toBe('passivePrimary');
+      ).toEqual({ state: 'passivePrimary', hovered: false });
     });
 
     it('B.2 ter - compliant, train with start_time exception on std, it should return passiveSecondary', () => {
@@ -176,7 +176,7 @@ describe('getCurveVisualState', () => {
             panelMode: 'compliant',
           })
         )
-      ).toBe('passiveSecondary');
+      ).toEqual({ state: 'passiveSecondary', hovered: false });
     });
 
     it('B.2 quater - compliant, train with start_time exception on tod, it should return passiveSecondary', () => {
@@ -189,7 +189,7 @@ describe('getCurveVisualState', () => {
             panelMode: 'compliant',
           })
         )
-      ).toBe('passiveSecondary');
+      ).toEqual({ state: 'passiveSecondary', hovered: false });
     });
 
     it('B.3 - single, last clicked occurrence on std, it should return active', () => {
@@ -202,7 +202,7 @@ describe('getCurveVisualState', () => {
             panelMode: 'single',
           })
         )
-      ).toBe('active');
+      ).toEqual({ state: 'active', hovered: false });
     });
 
     it('B.3 bis - single, last clicked occurrence on tod, it should return passivePrimary', () => {
@@ -215,7 +215,7 @@ describe('getCurveVisualState', () => {
             panelMode: 'single',
           })
         )
-      ).toBe('passivePrimary');
+      ).toEqual({ state: 'passivePrimary', hovered: false });
     });
 
     it('B.3 ter - single, other occurrence of same paced on std, it should return passiveSecondary', () => {
@@ -228,7 +228,7 @@ describe('getCurveVisualState', () => {
             panelMode: 'single',
           })
         )
-      ).toBe('passiveSecondary');
+      ).toEqual({ state: 'passiveSecondary', hovered: false });
     });
 
     it('B.3 quater - single, other occurrence of same paced on tod, it should return none', () => {
@@ -241,7 +241,7 @@ describe('getCurveVisualState', () => {
             panelMode: 'single',
           })
         )
-      ).toBe('none');
+      ).toEqual({ state: 'none', hovered: false });
     });
 
     it('B.4 - single, self with start_time exception on std, it should return active', () => {
@@ -254,7 +254,7 @@ describe('getCurveVisualState', () => {
             panelMode: 'single',
           })
         )
-      ).toBe('active');
+      ).toEqual({ state: 'active', hovered: false });
     });
 
     it('B.4 bis - single, self with start_time exception on tod, it should return passivePrimary', () => {
@@ -267,7 +267,7 @@ describe('getCurveVisualState', () => {
             panelMode: 'single',
           })
         )
-      ).toBe('passivePrimary');
+      ).toEqual({ state: 'passivePrimary', hovered: false });
     });
 
     it('B.4 ter - single, other occurrence of same paced on std, it should return passiveSecondary', () => {
@@ -280,7 +280,7 @@ describe('getCurveVisualState', () => {
             panelMode: 'single',
           })
         )
-      ).toBe('passiveSecondary');
+      ).toEqual({ state: 'passiveSecondary', hovered: false });
     });
 
     it('B.4 quater - single, other occurrence of same paced on tod, it should return none', () => {
@@ -293,7 +293,7 @@ describe('getCurveVisualState', () => {
             panelMode: 'single',
           })
         )
-      ).toBe('none');
+      ).toEqual({ state: 'none', hovered: false });
     });
 
     it('B.5 - all, any occurrence of same paced on std, it should return active', () => {
@@ -306,7 +306,7 @@ describe('getCurveVisualState', () => {
             panelMode: 'all',
           })
         )
-      ).toBe('active');
+      ).toEqual({ state: 'active', hovered: false });
     });
 
     it('B.5 - all also applies to an occurrence with a start_time exception on std, it should return active', () => {
@@ -319,7 +319,7 @@ describe('getCurveVisualState', () => {
             panelMode: 'all',
           })
         )
-      ).toBe('active');
+      ).toEqual({ state: 'active', hovered: false });
     });
 
     it('B.5 bis - all, any occurrence of same paced on tod, it should return passivePrimary', () => {
@@ -332,7 +332,7 @@ describe('getCurveVisualState', () => {
             panelMode: 'all',
           })
         )
-      ).toBe('passivePrimary');
+      ).toEqual({ state: 'passivePrimary', hovered: false });
     });
 
     it('B.5 bis - all also applies to an occurrence with a path_and_schedule exception on tod, it should return passivePrimary', () => {
@@ -345,7 +345,7 @@ describe('getCurveVisualState', () => {
             panelMode: 'all',
           })
         )
-      ).toBe('passivePrimary');
+      ).toEqual({ state: 'passivePrimary', hovered: false });
     });
 
     // Defensive cases for single mode (not produced by the current dispatch,
@@ -361,7 +361,7 @@ describe('getCurveVisualState', () => {
             panelMode: 'single',
           })
         )
-      ).toBe('passiveSecondary');
+      ).toEqual({ state: 'passiveSecondary', hovered: false });
     });
 
     it('single mode with a selection from another paced train, it should return none', () => {
@@ -374,7 +374,7 @@ describe('getCurveVisualState', () => {
             panelMode: 'single',
           })
         )
-      ).toBe('none');
+      ).toEqual({ state: 'none', hovered: false });
     });
   });
 
@@ -391,7 +391,7 @@ describe('getCurveVisualState', () => {
             selection: { id: PACED_1, by: 'tod' },
           })
         )
-      ).toBe('active');
+      ).toEqual({ state: 'active', hovered: false });
     });
 
     it('C.1 bis - unique train, train is the selected one on std, it should return passivePrimary', () => {
@@ -403,7 +403,7 @@ describe('getCurveVisualState', () => {
             selection: { id: PACED_1, by: 'tod' },
           })
         )
-      ).toBe('passivePrimary');
+      ).toEqual({ state: 'passivePrimary', hovered: false });
     });
 
     it('C.2 - compliant, train without path_and_schedule exception on tod, it should return active', () => {
@@ -416,7 +416,7 @@ describe('getCurveVisualState', () => {
             panelMode: 'compliant',
           })
         )
-      ).toBe('active');
+      ).toEqual({ state: 'active', hovered: false });
     });
 
     it('C.2 bis - compliant, train without path_and_schedule exception on std, it should return passivePrimary', () => {
@@ -429,7 +429,7 @@ describe('getCurveVisualState', () => {
             panelMode: 'compliant',
           })
         )
-      ).toBe('passivePrimary');
+      ).toEqual({ state: 'passivePrimary', hovered: false });
     });
 
     it('C.2 ter - compliant, train with path_and_schedule exception on tod, it should return passiveSecondary', () => {
@@ -442,7 +442,7 @@ describe('getCurveVisualState', () => {
             panelMode: 'compliant',
           })
         )
-      ).toBe('passiveSecondary');
+      ).toEqual({ state: 'passiveSecondary', hovered: false });
     });
 
     it('C.2 quater - compliant, train with path_and_schedule exception on std, it should return passiveSecondary', () => {
@@ -455,7 +455,7 @@ describe('getCurveVisualState', () => {
             panelMode: 'compliant',
           })
         )
-      ).toBe('passiveSecondary');
+      ).toEqual({ state: 'passiveSecondary', hovered: false });
     });
 
     it('C.3 - single, last clicked occurrence on tod, it should return active', () => {
@@ -468,7 +468,7 @@ describe('getCurveVisualState', () => {
             panelMode: 'single',
           })
         )
-      ).toBe('active');
+      ).toEqual({ state: 'active', hovered: false });
     });
 
     it('C.3 bis - single, last clicked occurrence on std, it should return passivePrimary', () => {
@@ -481,7 +481,7 @@ describe('getCurveVisualState', () => {
             panelMode: 'single',
           })
         )
-      ).toBe('passivePrimary');
+      ).toEqual({ state: 'passivePrimary', hovered: false });
     });
 
     it('C.3 ter - single, other occurrence of same paced on tod, it should return passiveSecondary', () => {
@@ -494,7 +494,7 @@ describe('getCurveVisualState', () => {
             panelMode: 'single',
           })
         )
-      ).toBe('passiveSecondary');
+      ).toEqual({ state: 'passiveSecondary', hovered: false });
     });
 
     it('C.3 quater - single, other occurrence of same paced on std, it should return none', () => {
@@ -507,7 +507,7 @@ describe('getCurveVisualState', () => {
             panelMode: 'single',
           })
         )
-      ).toBe('none');
+      ).toEqual({ state: 'none', hovered: false });
     });
 
     it('C.4 - single, self with path_and_schedule exception on tod, it should return active', () => {
@@ -520,7 +520,7 @@ describe('getCurveVisualState', () => {
             panelMode: 'single',
           })
         )
-      ).toBe('active');
+      ).toEqual({ state: 'active', hovered: false });
     });
 
     it('C.4 bis - single, self with path_and_schedule exception on std, it should return passivePrimary', () => {
@@ -533,7 +533,7 @@ describe('getCurveVisualState', () => {
             panelMode: 'single',
           })
         )
-      ).toBe('passivePrimary');
+      ).toEqual({ state: 'passivePrimary', hovered: false });
     });
 
     it('C.4 ter - single, other occurrence of same paced on tod, it should return passiveSecondary', () => {
@@ -546,7 +546,7 @@ describe('getCurveVisualState', () => {
             panelMode: 'single',
           })
         )
-      ).toBe('passiveSecondary');
+      ).toEqual({ state: 'passiveSecondary', hovered: false });
     });
 
     it('C.4 quater - single, other occurrence of same paced on std, it should return none', () => {
@@ -559,7 +559,7 @@ describe('getCurveVisualState', () => {
             panelMode: 'single',
           })
         )
-      ).toBe('none');
+      ).toEqual({ state: 'none', hovered: false });
     });
 
     it('C.5 - all, any occurrence of same paced on tod, it should return active', () => {
@@ -572,7 +572,7 @@ describe('getCurveVisualState', () => {
             panelMode: 'all',
           })
         )
-      ).toBe('active');
+      ).toEqual({ state: 'active', hovered: false });
     });
 
     it('C.5 bis - all, any occurrence of same paced on std, it should return passivePrimary', () => {
@@ -585,7 +585,7 @@ describe('getCurveVisualState', () => {
             panelMode: 'all',
           })
         )
-      ).toBe('passivePrimary');
+      ).toEqual({ state: 'passivePrimary', hovered: false });
     });
   });
 
@@ -601,7 +601,7 @@ describe('getCurveVisualState', () => {
               selection: undefined,
             })
           )
-        ).toBe('none');
+        ).toEqual({ state: 'none', hovered: false });
       }
     );
 
@@ -616,7 +616,7 @@ describe('getCurveVisualState', () => {
               hover: { trainId: PACED_1, from: 'timetable' },
             })
           )
-        ).toBe('hover');
+        ).toEqual({ state: 'none', hovered: true });
       }
     );
 
@@ -631,12 +631,12 @@ describe('getCurveVisualState', () => {
               hover: { trainId: PACED_1, from: 'timetable' },
             })
           )
-        ).toBe('none');
+        ).toEqual({ state: 'none', hovered: false });
       }
     );
 
     it.each(['std', 'tod'] as const)(
-      'D.3 - hover on an occurrence from train list propagates to siblings on %s, it should return hover',
+      'D.3 - hover on an occurrence from train list, sibling on %s does not receive the hover',
       (chart) => {
         expect(
           getCurveVisualState(
@@ -646,12 +646,12 @@ describe('getCurveVisualState', () => {
               hover: { trainId: PACED_1_OCC_2, from: 'timetable' },
             })
           )
-        ).toBe('hover');
+        ).toEqual({ state: 'none', hovered: false });
       }
     );
 
     it.each(['std', 'tod'] as const)(
-      'D.4 - hover from std on no-exception train propagates to siblings without start_time exception on %s, it should return hover',
+      'D.4 - hover from std on no-exception train, sibling without start_time exception on %s does not receive the hover',
       (chart) => {
         expect(
           getCurveVisualState(
@@ -661,7 +661,7 @@ describe('getCurveVisualState', () => {
               hover: { trainId: PACED_1_OCC_2, from: 'std' },
             })
           )
-        ).toBe('hover');
+        ).toEqual({ state: 'none', hovered: false });
       }
     );
 
@@ -676,7 +676,7 @@ describe('getCurveVisualState', () => {
               hover: { trainId: PACED_1_OCC_2, from: 'std' },
             })
           )
-        ).toBe('none');
+        ).toEqual({ state: 'none', hovered: false });
       }
     );
 
@@ -695,7 +695,7 @@ describe('getCurveVisualState', () => {
               },
             })
           )
-        ).toBe('hover');
+        ).toEqual({ state: 'none', hovered: true });
       }
     );
 
@@ -714,12 +714,12 @@ describe('getCurveVisualState', () => {
               },
             })
           )
-        ).toBe('none');
+        ).toEqual({ state: 'none', hovered: false });
       }
     );
 
     it.each(['std', 'tod'] as const)(
-      'D.6 - hover from tod on no-exception train propagates to siblings without path_and_schedule exception on %s, it should return hover',
+      'D.6 - hover from tod on no-exception train, sibling without path_and_schedule exception on %s does not receive the hover',
       (chart) => {
         expect(
           getCurveVisualState(
@@ -729,7 +729,7 @@ describe('getCurveVisualState', () => {
               hover: { trainId: PACED_1_OCC_2, from: 'tod' },
             })
           )
-        ).toBe('hover');
+        ).toEqual({ state: 'none', hovered: false });
       }
     );
 
@@ -744,7 +744,7 @@ describe('getCurveVisualState', () => {
               hover: { trainId: PACED_1_OCC_2, from: 'tod' },
             })
           )
-        ).toBe('none');
+        ).toEqual({ state: 'none', hovered: false });
       }
     );
 
@@ -763,7 +763,7 @@ describe('getCurveVisualState', () => {
               },
             })
           )
-        ).toBe('hover');
+        ).toEqual({ state: 'none', hovered: true });
       }
     );
 
@@ -782,7 +782,7 @@ describe('getCurveVisualState', () => {
               },
             })
           )
-        ).toBe('none');
+        ).toEqual({ state: 'none', hovered: false });
       }
     );
 
@@ -790,7 +790,7 @@ describe('getCurveVisualState', () => {
       { chart: 'std', by: 'std' },
       { chart: 'tod', by: 'tod' },
     ] as const)(
-      'D.8 - hover on an already active curve on $chart, it should stay active',
+      'D.8 - hover on an already active curve on $chart, it should stay active with hovered true',
       ({ chart, by }) => {
         expect(
           getCurveVisualState(
@@ -801,7 +801,7 @@ describe('getCurveVisualState', () => {
               hover: { trainId: PACED_1_OCC_2, from: by },
             })
           )
-        ).toBe('active');
+        ).toEqual({ state: 'active', hovered: true });
       }
     );
   });
@@ -821,7 +821,7 @@ describe('getCurveVisualState', () => {
               train: { id: PACED_1, isDragging: true },
             })
           )
-        ).toBe('drag');
+        ).toEqual({ state: 'drag', hovered: false });
       }
     );
 
@@ -834,7 +834,7 @@ describe('getCurveVisualState', () => {
             selection: { id: PACED_1, by: 'std' },
           })
         )
-      ).toBe('drag');
+      ).toEqual({ state: 'drag', hovered: false });
     });
 
     it('E.4 - drag should win over a hover', () => {
@@ -846,7 +846,7 @@ describe('getCurveVisualState', () => {
             hover: { trainId: PACED_1, from: 'std' },
           })
         )
-      ).toBe('drag');
+      ).toEqual({ state: 'drag', hovered: false });
     });
   });
 });
