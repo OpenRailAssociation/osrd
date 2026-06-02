@@ -97,7 +97,7 @@ const ItineraryModalFormHeader = ({
       onModalFormStateChange({
         ...modalFormState,
         rollingStockId: rs.id,
-        rollingStockName: getRollingStockLabel(rs),
+        rollingStockName: rs.name,
       });
     } else {
       // Custom value or empty
