@@ -1,6 +1,6 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["typescript", "import", "react", "vitest", "jsx-a11y"],
+  "plugins": ["eslint", "import", "jsx-a11y", "react", "typescript", "vitest"],
   "categories": {
     "correctness": "error",
     "suspicious": "error",
