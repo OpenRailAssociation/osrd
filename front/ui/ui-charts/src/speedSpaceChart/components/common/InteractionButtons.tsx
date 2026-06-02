@@ -22,7 +22,7 @@ const InteractionButtons = ({
     <button
       type="button"
       className={cx('reset-button', {
-        'reset-button-disabled': store.ratioX == 1 && store.leftOffset == 0,
+        'reset-button-disabled': store.ratioX === 1 && store.leftOffset === 0,
       })}
       onClick={reset}
       data-testid={testIdPrefix ? `${testIdPrefix}-reset` : undefined}

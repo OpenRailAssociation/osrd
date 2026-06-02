@@ -43,10 +43,10 @@ const formatEtcsCurves = (etcsBrakingCurves: CoreEtcsBrakingCurvesResponse): Etc
     [EtcsBrakingType.STOP]: stops.map(toBrakingCurve),
     [EtcsBrakingType.SLOWDOWN]: slowdowns.map(toBrakingCurve),
     [EtcsBrakingType.SPACING]: conflicts
-      .filter((conflict) => conflict.conflict_type == 'Spacing')
+      .filter((conflict) => conflict.conflict_type === 'Spacing')
       .map(toBrakingCurve),
     [EtcsBrakingType.ROUTING]: conflicts
-      .filter((conflict) => conflict.conflict_type == 'Routing')
+      .filter((conflict) => conflict.conflict_type === 'Routing')
       .map(toBrakingCurve),
   };
 };

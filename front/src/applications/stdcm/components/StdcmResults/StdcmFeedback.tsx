@@ -15,9 +15,9 @@ const StdcmFeedback = () => {
   if (
     !consist ||
     !consist.tractionEngine ||
-    consist.totalLength == null ||
-    consist.totalMass == null ||
-    consist.maxSpeed == null
+    typeof consist.totalLength !== 'number' ||
+    typeof consist.totalMass !== 'number' ||
+    typeof consist.maxSpeed !== 'number'
   )
     return null;
 

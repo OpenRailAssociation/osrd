@@ -70,7 +70,7 @@ const TimeGraduations = () => {
         ctx.stroke();
       });
 
-      if (!swapAxis && isHover && mouseX != null && !isNaN(mouseX)) {
+      if (!swapAxis && isHover && !isNaN(mouseX)) {
         const crispX = getCrispLineCoordinate(mouseX, 1);
         const timeValue = getTime(crispX);
         const timeLabel = new Date(timeValue).toLocaleTimeString();

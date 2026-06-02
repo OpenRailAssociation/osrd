@@ -30,7 +30,7 @@ export const computePathStepCoordinates = (pathStepMetadata: PathStepMetadata) =
 export const buildOpRef = (op: OperationalPoint): OperationalPointReference => {
   const ch = op.extensions?.sncf?.ch;
   const uic = op.extensions?.identifier?.uic;
-  if (uic != null)
+  if (uic !== undefined)
     return {
       type: 'uic',
       uic,

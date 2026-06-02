@@ -133,7 +133,7 @@ const IntervalEditorComponent = (
     closeModal();
     setData(fixedData);
     setSelected((old) => (old !== null && fixedData[old] ? old : null));
-    setHovered((old) => (old != null && fixedData[old.index] ? old : null));
+    setHovered((old) => (old !== null && fixedData[old.index] ? old : null));
   }, [fixedData]);
 
   /**

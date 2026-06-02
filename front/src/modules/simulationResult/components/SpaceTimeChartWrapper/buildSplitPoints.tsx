@@ -139,8 +139,8 @@ export function buildSplitPoints(
               position: operationalPointPosition,
               onClick: handleWaypointClick,
             }}
-            waypointRef={waypointId == activeWaypointId ? activeWaypointRef : undefined}
-            isActive={waypointId == activeWaypointId}
+            waypointRef={waypointId === activeWaypointId ? activeWaypointRef : undefined}
+            isActive={waypointId === activeWaypointId}
             isMenuActive={false}
           />
         </TrackOccupancyManchette>

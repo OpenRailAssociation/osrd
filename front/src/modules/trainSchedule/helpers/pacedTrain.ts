@@ -228,16 +228,18 @@ export const getOccurrenceTrainName = (
  * Return true if the exception has at least one change group defined (excluding disabled).
  */
 export const hasChangeGroups = (exception: SimulatedException): boolean =>
-  exception.constraint_distribution != null ||
-  exception.initial_speed != null ||
-  exception.labels != null ||
-  exception.options != null ||
-  exception.path_and_schedule != null ||
-  exception.rolling_stock != null ||
-  exception.rolling_stock_category != null ||
-  exception.speed_limit_tag != null ||
-  exception.start_time != null ||
-  exception.train_name != null;
+  Boolean(
+    exception.constraint_distribution ||
+    exception.initial_speed ||
+    exception.labels ||
+    exception.options ||
+    exception.path_and_schedule ||
+    exception.rolling_stock ||
+    exception.rolling_stock_category ||
+    exception.speed_limit_tag ||
+    exception.start_time ||
+    exception.train_name
+  );
 
 /**
  * Return true if the exception has at least one change group defined OR is disabled.

@@ -94,7 +94,7 @@ const MarginCellEditable = ({
 
   const inputRef = useRef<HTMLInputElement>(null);
   const skipCommitOnBlurRef = useRef(false);
-  const isEmpty: boolean = raw == null;
+  const isEmpty: boolean = raw === null;
 
   useEffect(() => {
     setUnit(initialValue?.unit ?? MarginUnit.percent);
