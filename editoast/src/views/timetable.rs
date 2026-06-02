@@ -2,6 +2,7 @@ mod occupancy_blocks;
 pub mod similar_trains;
 pub mod simulation;
 pub mod stdcm;
+pub mod tsi;
 mod track_occupancy;
 pub mod train_schedule;
 pub mod train_schedule_exceptions;
