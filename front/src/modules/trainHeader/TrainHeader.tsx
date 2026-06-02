@@ -8,7 +8,6 @@ import type { TrainScheduleResponse } from 'common/api/osrdEditoastApi';
 import type { PacedTrainWithDetails } from 'modules/trainSchedule/types';
 import { setFailure } from 'reducers/main';
 import type { Train } from 'reducers/osrdconf/types';
-import { updateSelectedTrain } from 'reducers/simulationResults';
 import { useAppDispatch } from 'store';
 import { extractEditoastIdFromTrainId, isOccurrenceId } from 'utils/trainId';
 
@@ -61,14 +60,7 @@ const TrainHeader = ({
       dispatch,
     });
 
-    if (result.success) {
-      dispatch(
-        updateSelectedTrain({
-          id: result.occurrenceId ?? formatEditoastIdToPacedTrainId(result.trainScheduleId),
-          by: 'timetable',
-        })
-      );
-    } else {
+    if (!result.success) {
       for (const errorCode of result.errorCodes) {
         dispatch(
           setFailure({

@@ -32,6 +32,18 @@ export const simulationResultsSlice = createSlice({
     ) {
       state.selectedTrain = action.payload;
     },
+    updateAlreadySelectedTrainId(
+      state: Draft<SimulationResultsState>,
+      action: PayloadAction<TrainId | undefined>
+    ) {
+      if (state.selectedTrain) {
+        if (action.payload !== undefined) {
+          state.selectedTrain.id = action.payload;
+        } else {
+          state.selectedTrain = undefined;
+        }
+      }
+    },
     updateHoveredTrainId(
       state: Draft<SimulationResultsState>,
       action: PayloadAction<TrainId | undefined>
@@ -108,6 +120,7 @@ export const {
   toggleDisplayOnlyPathSteps,
   toggleSimulationEnabled,
   updateSelectedTrain,
+  updateAlreadySelectedTrainId,
   updateHoveredTrainId,
   updateTrainIdUsedForProjection,
   updateProjectionType,
