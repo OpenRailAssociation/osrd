@@ -2,7 +2,6 @@ import { type ReactNode } from 'react';
 
 import { clamp } from 'lodash';
 
-import { calcTotalDistance, getHeightWithoutLastWaypoint } from '.';
 import {
   BASE_WAYPOINT_HEIGHT,
   MAX_ZOOM_MS_PER_PX,
@@ -72,20 +71,14 @@ export const zoomX = (
   };
 };
 
-type WaypointsOptions = {
-  isProportional: boolean;
-  yZoom: number;
-  height: number;
-};
-
 export const filterVisibleElements = (
   elements: Waypoint[],
-  totalDistance: number,
-  heightWithoutFinalWaypoint: number,
-  minSpace: number
+  spaceScale: number,
+  minScreenGap: number
 ): Waypoint[] => {
-  const getPosition = (waypoint: Waypoint) =>
-    (waypoint.position / totalDistance) * heightWithoutFinalWaypoint;
+  // On-screen pixel position of a waypoint (spaceScale is mm/px). A constant origin offset
+  // would cancel out in the comparison below, so we don't need it.
+  const getScreenPosition = (waypoint: Waypoint) => waypoint.position / spaceScale;
 
   const firstElement = elements.at(0);
   const lastElement = elements.at(-1);
@@ -96,7 +89,8 @@ export const filterVisibleElements = (
 
   for (const element of sortedElements) {
     const hasSpace = !displayedElements.some(
-      (displayed) => Math.abs(getPosition(element) - getPosition(displayed)) < minSpace
+      (displayed) =>
+        Math.abs(getScreenPosition(element) - getScreenPosition(displayed)) < minScreenGap
     );
 
     if (hasSpace) {
@@ -109,20 +103,14 @@ export const filterVisibleElements = (
 
 export const selectWaypointsToDisplay = (
   waypoints: Waypoint[],
-  { height, isProportional, yZoom }: WaypointsOptions
+  { isProportional, spaceScale }: { isProportional: boolean; spaceScale: number }
 ): Waypoint[] => {
   if (waypoints.length < 2) return [];
 
   // display all waypoints in linear mode
   if (!isProportional) return waypoints;
 
-  const totalDistance = calcTotalDistance(waypoints);
-  const manchetteHeight = getHeightWithoutLastWaypoint(height);
-
-  // in proportional mode, hide some waypoints to avoid collisions
-  const minSpace = BASE_WAYPOINT_HEIGHT / yZoom;
-
-  return filterVisibleElements(waypoints, totalDistance, manchetteHeight, minSpace);
+  return filterVisibleElements(waypoints, spaceScale, BASE_WAYPOINT_HEIGHT);
 };
 
 /**
@@ -132,7 +120,7 @@ export const selectWaypointsToDisplay = (
  */
 export const getScales = (
   waypoints: Waypoint[],
-  { isProportional, yZoom, height }: WaypointsOptions,
+  { isProportional, yZoom, height }: { isProportional: boolean; yZoom: number; height: number },
   minZoomMillimeterPerPx: number,
   maxZoomMillimeterPerPx: number
 ) => {

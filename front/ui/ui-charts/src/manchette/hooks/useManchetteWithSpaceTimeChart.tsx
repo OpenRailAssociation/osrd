@@ -137,6 +137,8 @@ const useManchetteWithSpaceTimeChart = ({
     totalDistance
   );
 
+  const spaceScale = zoomValueToSpaceScale(minZoomMillimeterPerPx, maxZoomMillimeterPerPx, yZoom);
+
   const handleRectZoomEnd = useCallback(
     (prev: SyncManchetteState) => {
       if (!prev.rect || !spaceTimeChartRef?.current) {
@@ -334,11 +336,10 @@ const useManchetteWithSpaceTimeChart = ({
   const waypointsToDisplay = useMemo(
     () =>
       selectWaypointsToDisplay(waypoints, {
-        height,
         isProportional,
-        yZoom,
+        spaceScale,
       }),
-    [waypoints, height, isProportional, yZoom]
+    [waypoints, isProportional, spaceScale]
   );
 
   const { manchetteContents, manchetteHeight } = useMemo(() => {
@@ -545,7 +546,7 @@ const useManchetteWithSpaceTimeChart = ({
       zoomMode,
       rect,
       timeScale: zoomValueToTimeScale(xZoom),
-      spaceScale: zoomValueToSpaceScale(minZoomMillimeterPerPx, maxZoomMillimeterPerPx, yZoom),
+      spaceScale,
       setTimeOrigin,
       pan,
     }),
@@ -574,8 +575,7 @@ const useManchetteWithSpaceTimeChart = ({
       toggleZoomMode,
       zoomMode,
       rect,
-      minZoomMillimeterPerPx,
-      maxZoomMillimeterPerPx,
+      spaceScale,
       setTimeOrigin,
       pan,
       setSyncManchetteState,
