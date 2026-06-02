@@ -21,14 +21,16 @@ const Scenario = () => {
   if (!scenario || !sandboxId) return null;
 
   return (
-    <ScenarioContextProvider scenario={scenario} sandboxId={sandboxId}>
-      <ScenarioHeader activeBoards={activeBoards} toggleBoard={toggleBoard} />
-      <RollingStockContextProvider>
-        <SubCategoryContextProvider>
-          <ScenarioContent activeBoards={activeBoards} toggleBoard={toggleBoard} />
-        </SubCategoryContextProvider>
-      </RollingStockContextProvider>
-    </ScenarioContextProvider>
+    <div id="scenario">
+      <ScenarioContextProvider scenario={scenario} sandboxId={sandboxId}>
+        <ScenarioHeader activeBoards={activeBoards} toggleBoard={toggleBoard} />
+        <RollingStockContextProvider>
+          <SubCategoryContextProvider>
+            <ScenarioContent activeBoards={activeBoards} toggleBoard={toggleBoard} />
+          </SubCategoryContextProvider>
+        </RollingStockContextProvider>
+      </ScenarioContextProvider>
+    </div>
   );
 };
 

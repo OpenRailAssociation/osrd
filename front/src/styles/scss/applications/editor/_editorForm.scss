@@ -51,19 +51,41 @@ form.rjsf {
   }
 
   // Better style for arrays
-  .array-item-list,
-  fieldset.field-array > .row {
-    margin: 0 1em;
+  .rjsf-field-array {
+    .array-item-list,
+    fieldset.field-array > .row {
+      margin: 1em;
 
-    .array-item {
-      width: 100%;
-      display: flex;
-      flex-direction: row;
-      .col-xs-9 {
-        width: 75%;
-      }
-      .col-xs-3 {
-        width: 25%;
+      .rjsf-array-item {
+        width: 100%;
+        display: flex;
+        flex-direction: row;
+        position: relative;
+
+        .col-xs-9.col-md-10.col-xl-11 {
+          width: 100%;
+        }
+
+        .array-item-toolbox {
+          position: absolute;
+          top: 0;
+          right: 0;
+          max-width: fit-content;
+          width: fit-content;
+
+          .btn-group {
+            margin-top: 0 !important;
+
+            .btn {
+              padding: 8px 16px;
+              line-height: 16px;
+
+              &:disabled {
+                opacity: 0.6;
+              }
+            }
+          }
+        }
       }
     }
   }
