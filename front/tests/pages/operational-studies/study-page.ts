@@ -134,6 +134,7 @@ class StudyPage extends CommonPage {
   }
 
   async createStudy(details: StudyDetails) {
+    await this.waitForSpinnerToDisappear();
     await expect(this.addStudyButton).toBeVisible();
     await this.addStudyButton.click();
     await this.fillStudyDetails(details);
@@ -144,6 +145,8 @@ class StudyPage extends CommonPage {
   }
 
   async updateStudy(details: StudyDetails) {
+    await this.waitForSpinnerToDisappear();
+    await expect(this.studyUpdateButton).toBeVisible();
     await this.studyUpdateButton.click();
     await this.fillStudyDetails(details);
     await expect(this.studyUpdateConfirmButton).toBeEnabled();
@@ -186,6 +189,7 @@ class StudyPage extends CommonPage {
   }
 
   async deleteStudy(name: string) {
+    await this.waitForSpinnerToDisappear();
     await this.openStudyByName(name);
     await this.studyUpdateButton.click();
     await this.studyDeleteButton.click();

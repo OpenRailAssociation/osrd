@@ -73,6 +73,7 @@ class ProjectPage extends HomePage {
   }
 
   async createProject(details: ProjectDetails) {
+    await this.waitForSpinnerToDisappear();
     await expect(this.addProjectButton).toBeVisible();
     await this.addProjectButton.click();
     await this.fillProjectDetails(details);
@@ -81,6 +82,8 @@ class ProjectPage extends HomePage {
   }
 
   async updateProject(details: ProjectDetails) {
+    await this.waitForSpinnerToDisappear();
+    await expect(this.updateProjectButton).toBeVisible();
     await this.updateProjectButton.click();
     await this.fillProjectDetails(details);
     await this.updateConfirmButton.click();
@@ -107,6 +110,8 @@ class ProjectPage extends HomePage {
   }
 
   async deleteProject(name: string) {
+    await this.waitForSpinnerToDisappear();
+    await expect(this.updateProjectButton).toBeVisible();
     await this.updateProjectButton.click();
     await expect(this.projectDeleteButton).toBeVisible();
     await this.projectDeleteButton.click();
