@@ -117,7 +117,6 @@
     "@vitejs/plugin-react": "^6.0.2",
     "ansi-to-html": "^0.7.2",
     "eslint-plugin-import": "^2.31.0",
-    "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^7.1.1",
     "glob": "^13.0.6",
     "happy-dom": "^20.9.0",
