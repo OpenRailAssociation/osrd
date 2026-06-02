@@ -13,6 +13,7 @@ class ScenarioPage extends CommonPage {
   private readonly scenarioNameInput: Locator;
   private readonly scenarioDescriptionInput: Locator;
   private readonly scenarioInfraList: Locator;
+  private readonly selectedInfraName: Locator;
   private readonly scenarioElectricProfileSelect: Locator;
   private readonly scenarioName: Locator;
   private readonly scenarioNameContainer: Locator;
@@ -40,6 +41,7 @@ class ScenarioPage extends CommonPage {
     this.scenarioNameInput = page.getByTestId('scenarioInputName-input');
     this.scenarioDescriptionInput = page.getByTestId('scenarioDescription-input');
     this.scenarioInfraList = page.getByTestId('infra-list');
+    this.selectedInfraName = page.getByTestId('selected-infra-name');
     this.scenarioElectricProfileSelect = page.getByTestId('select-toggle');
     this.scenarioName = page.getByTestId('scenario-name-label');
     this.scenarioNameContainer = page.getByTestId('scenario-name-container');
@@ -103,7 +105,7 @@ class ScenarioPage extends CommonPage {
     await this.scenarioNameInput.fill(name);
     await this.scenarioDescriptionInput.fill(description);
     if (electricProfileName) await this.setScenarioElectricProfileByName(electricProfileName);
-    if (infraName) await this.scenarioInfraList.getByText(infraName).first().click();
+    if (infraName) await this.selectInfraByName(infraName);
     for (const tag of tags ?? []) await this.setTag(tag);
   }
 
@@ -147,6 +149,11 @@ class ScenarioPage extends CommonPage {
     await this.scenarioConfirmDeleteButton.click();
     await expect(this.scenarioConfirmDeleteButton).not.toBeVisible();
     await this.page.waitForURL(STUDY_URLS.detail);
+  }
+
+  private async selectInfraByName(infraName: string) {
+    await this.scenarioInfraList.getByText(infraName).first().click();
+    await expect(this.selectedInfraName).toHaveText(infraName);
   }
 
   private async setScenarioElectricProfileByName(electricProfileName: string) {

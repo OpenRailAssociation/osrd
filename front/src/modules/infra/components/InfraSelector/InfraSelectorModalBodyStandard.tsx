@@ -110,7 +110,12 @@ const InfraSelectorModalBodyStandard = ({
               role="button"
             >
               <div className="infraslist-item-info-header">
-                <span className="infraslist-item-choice-name">{infra.name}</span>
+                <span
+                  className="infraslist-item-choice-name"
+                  data-testid={infra.id === infraID ? 'selected-infra-name' : undefined}
+                >
+                  {infra.name}
+                </span>
                 {infra.locked && (
                   <span className="infra-lock">
                     <small>{t('infraManagement.locked')}</small>
