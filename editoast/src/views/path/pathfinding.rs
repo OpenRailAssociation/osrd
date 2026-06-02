@@ -20,12 +20,14 @@ use core_client::pathfinding::PathfindingRequest;
 use core_client::pathfinding::PathfindingResultSuccess;
 use database::DbConnection;
 use educe::Educe;
+use futures::StreamExt;
 use ordered_float::OrderedFloat;
 use schemas::rolling_stock::LoadingGaugeType;
 use schemas::train_schedule::PathItemLocation;
 use schemas::train_schedule::TrainScheduleLike;
 use serde::Deserialize;
 use serde::Serialize;
+use tokio::sync::Mutex;
 use tracing::debug;
 use tracing::info;
 use utoipa::ToSchema;
@@ -115,6 +117,26 @@ impl PathfindingInput {
         self.hash(&mut hasher);
         let hash_path_input = hasher.finish();
         format!("pathfinding_{osrd_version}.{infra}.{infra_version}.{hash_path_input}")
+    }
+}
+
+impl From<&PathfindingInput> for core_task::PathfindingConsist {
+    fn from(val: &PathfindingInput) -> Self {
+        core_task::PathfindingConsist {
+            loading_gauge: val.rolling_stock_loading_gauge,
+            thermal: val.rolling_stock_is_thermal,
+            supported_electrifications: val.rolling_stock_supported_electrifications.clone(),
+            supported_signaling_systems: val.rolling_stock_supported_signaling_systems.clone(),
+            maximum_speed: val.rolling_stock_maximum_speed,
+            length: val.rolling_stock_length,
+            speed_limit_tag: val.speed_limit_tag.clone(),
+        }
+    }
+}
+
+impl From<PathfindingInput> for core_task::PathfindingConsist {
+    fn from(val: PathfindingInput) -> Self {
+        (&val).into()
     }
 }
 
@@ -240,25 +262,15 @@ pub(in crate::views) async fn post(
     })
     .await?;
 
-    use core_task::Task as _;
-    let valkey_conn = valkey_client.get_connection().await?;
     let op_cache =
         OperationalPointCache::load_path_items(conn, infra.id, &path_input.path_items).await?;
-    let request = match build_pathfinding_request(&path_input, &infra, &op_cache) {
-        Ok(request) => request,
+    let pathfinding_train = match build_pathfinding_train(&path_input, &op_cache) {
+        Ok(pathfinding_train) => pathfinding_train,
         Err(result) => return Ok(Json(*result)),
     };
-    Ok(Json(
-        match request
-            .run(Arc::new(tokio::sync::Mutex::new(valkey_conn)), core_client)
-            .await
-        {
-            Ok(path) => path.into(),
-            Err(core_error) => PathfindingResult::Failure(PathfindingFailure::InternalError {
-                core_error: core_error.into(),
-            }),
-        },
-    ))
+    let result =
+        single_pathfinding_request(pathfinding_train, &infra, valkey_client, core_client).await?;
+    Ok(Json(result))
 }
 
 /// Pathfinding batch computation given a list of path inputs
@@ -422,6 +434,64 @@ fn build_pathfinding_request(
         speed_limit_tag: pathfinding_input.speed_limit_tag.clone(),
         stops_at_end_of_block: pathfinding_input.stops_at_end_of_block,
     })
+}
+
+fn build_pathfinding_train(
+    pathfinding_input: &PathfindingInput,
+    op_cache: &OperationalPointCache,
+) -> std::result::Result<core_task::PathfindingTrain, Box<PathfindingResult>> {
+    if pathfinding_input.path_items.len() <= 1 {
+        return Err(Box::from(PathfindingResult::Failure(
+            PathfindingFailure::PathfindingInputError(PathfindingInputError::NotEnoughPathItems),
+        )));
+    }
+    let track_offsets: Vec<Vec<schemas::infra::TrackOffset>> = op_cache
+        .extract_location_from_path_items(&pathfinding_input.path_items)
+        .map_err(PathfindingResult::Failure)?;
+
+    let constraints = core_task::PathfindingConstraints {
+        path_items: track_offsets
+            .into_iter()
+            .map(core_task::PathItemAlternatives::from_iter)
+            .collect(),
+    };
+
+    Ok(core_task::PathfindingTrain {
+        consist: pathfinding_input.into(),
+        constraints,
+    })
+}
+
+pub(in crate::views) async fn single_pathfinding_request(
+    pathfinding_train: core_task::PathfindingTrain,
+    infra: &Infra,
+    valkey_client: Arc<cache::Client>,
+    core_client: Arc<CoreClient>,
+) -> Result<PathfindingResult> {
+    let mut pathfinding_env = core_task::PathfindingEnv::new(core_task::CoreEnv {
+        infra_id: infra.id as u64,
+        infra_version: infra.version,
+        client: core_client,
+    });
+    pathfinding_env.extend([((), pathfinding_train)]);
+
+    let valkey_conn = Arc::new(Mutex::new(valkey_client.get_connection().await?));
+    let result = match pathfinding_env
+        .into_stream(valkey_conn)
+        .collect::<Vec<_>>()
+        .await
+        .as_slice()
+    {
+        [path] => path.data.clone(),
+        _ => Err(core_client::Error::BrokenPipe),
+    };
+    let result = match result {
+        Ok(path) => path.into(),
+        Err(core_error) => PathfindingResult::Failure(PathfindingFailure::InternalError {
+            core_error: core_error.into(),
+        }),
+    };
+    Ok(result)
 }
 
 #[derive(Debug, Clone)]
