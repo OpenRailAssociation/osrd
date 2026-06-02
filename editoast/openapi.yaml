@@ -1926,8 +1926,8 @@ paths:
                           type: string
                           example: PT5M
                         time_begin:
-                          type: string
-                          format: date-time
+                          type: integer
+                          format: int64
                     - type: object
                       required:
                       - direction
@@ -4517,8 +4517,8 @@ paths:
                               type: string
                               example: PT5M
                             time_begin:
-                              type: string
-                              format: date-time
+                              type: integer
+                              format: int64
   /train_schedules/{id}:
     get:
       tags:

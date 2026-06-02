@@ -16,10 +16,9 @@ use editoast_models::train_schedule::OccurrenceId;
 use axum::Extension;
 use axum::extract::Json;
 use axum::extract::State;
-use chrono::DateTime;
 use chrono::Duration;
-use chrono::Utc;
 use common::units::millisecond;
+use common::units::quantities::Offset;
 use core_client::pathfinding::TrackRange;
 use core_client::simulation::ReportTrain;
 use database::DbConnection;
@@ -208,10 +207,7 @@ pub(in crate::views) async fn occupancy(
                 occurrence_id,
                 simulation,
                 pathfinding,
-                DateTime::<Utc>::from_timestamp_millis(millisecond::i64::from(
-                    train_schedule.start_time,
-                ))
-                .unwrap(),
+                train_schedule.start_time,
                 rolling_stock_length,
             ) {
                 level_crossing_occupancies.push(occupancy);
@@ -248,7 +244,7 @@ fn find_level_crossing_occupancy(
     occurrence_id: &OccurrenceId,
     simulation: &simulation::Response,
     pathfinding: &PathfindingResult,
-    start_time: DateTime<Utc>,
+    start_time: Offset,
     rolling_stock_length: &u64,
 ) -> Option<LevelCrossingOccupancy> {
     // Check simulation results
@@ -313,7 +309,7 @@ fn find_occupancy_time_window(
     level_crossing: &LevelCrossing,
     lc_position: &u64,
     matched_track_offset: &TrackOffset,
-    start_time: DateTime<Utc>,
+    start_time: Offset,
     rolling_stock_length: &u64,
 ) -> Option<TimeWindow> {
     let pedal_position =
@@ -332,7 +328,7 @@ fn find_occupancy_time_window(
     let leaving_time = interpolate_arrival_time(lc_end_position, report_train);
 
     Some(TimeWindow {
-        time_begin: start_time + Duration::milliseconds(arrival_time),
+        time_begin: start_time + millisecond::i64::new(arrival_time),
         duration: Duration::milliseconds(leaving_time - arrival_time)
             .try_into()
             .expect("leaving_time should be greater than arrival_time"),
@@ -620,9 +616,7 @@ mod tests {
         assert_eq!(occupancy.direction, Direction::StartToStop);
         assert_eq!(
             occupancy.time_window.time_begin,
-            DateTime::<Utc>::from_timestamp_millis(millisecond::i64::from(train.start_time))
-                .unwrap()
-                + Duration::milliseconds(10)
+            train.start_time + millisecond::i64::new(10)
         );
         assert_eq!(occupancy.time_window.duration.num_milliseconds(), 55);
     }
