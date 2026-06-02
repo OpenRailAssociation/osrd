@@ -56,6 +56,7 @@ use crate::views::infra::InfraIdQueryParam;
 use crate::views::path::operational_point_cache::OperationalPointCache;
 use crate::views::path::pathfinding::PathfindingFailure;
 use crate::views::path::pathfinding::PathfindingResult;
+use crate::views::path::pathfinding::single_pathfinding_request;
 use crate::views::projection::OperationalPointProjection;
 use crate::views::projection::ProjectPathForm;
 use crate::views::projection::ProjectPathOperationalPointForm;
@@ -692,33 +693,12 @@ pub(in crate::views) async fn get_path(
             .collect(),
     };
 
-    let mut pathfinding_env = core_task::PathfindingEnv::new(core_task::CoreEnv {
-        infra_id: infra.id as u64,
-        infra_version: infra.version,
-        client: core_client,
-    });
     let pathfinding_train = core_task::PathfindingTrain {
         consist: build_pathfinding_consist(&consist, train_occurence.speed_limit_tag().cloned()),
         constraints,
     };
-    pathfinding_env.extend([((), pathfinding_train)]);
-
-    let valkey_conn = Arc::new(Mutex::new(valkey_client.get_connection().await?));
-    let result = match pathfinding_env
-        .into_stream(valkey_conn)
-        .collect::<Vec<_>>()
-        .await
-        .as_slice()
-    {
-        [path] => path.data.clone(),
-        _ => Err(core_client::Error::BrokenPipe),
-    };
-    let result = match result {
-        Ok(path) => path.into(),
-        Err(core_error) => PathfindingResult::Failure(PathfindingFailure::InternalError {
-            core_error: core_error.into(),
-        }),
-    };
+    let result =
+        single_pathfinding_request(pathfinding_train, &infra, valkey_client, core_client).await?;
     Ok(Json(result))
 }
 
