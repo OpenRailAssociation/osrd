@@ -129,7 +129,7 @@ const StdcmResultsTable = ({
                       {displayedRollingStock ?? '='}
                     </td>
                   </tr>
-                  {consistChanges && (
+                  {consistChanges && step.duration !== null && (
                     <tr>
                       <td className="index">
                         <Container />
