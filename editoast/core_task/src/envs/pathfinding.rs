@@ -489,11 +489,13 @@ mod tests {
     use deadpool_redis::redis;
     use http::StatusCode;
 
+    use crate::compress_json;
     use crate::mock_mget;
 
     use super::test_data::*;
     use super::*;
 
+    // TODO: Adapt this test so we mock `json_get_bulk` instead of `MGET` and avoid dealing with compressed values in the test.
     #[tokio::test]
     async fn pathfinding_env() {
         common::setup_tracing_for_test();
@@ -509,9 +511,14 @@ mod tests {
 
         let vk = cache::Client::new_mock(
             vec![
-                mock_mget(vec![(pfenv.key(1), Some(path(1))), (pfenv.key(2), None)]),
+                mock_mget(vec![
+                    (pfenv.key(1), Some(compress_json(&path(1)))),
+                    (pfenv.key(2), None),
+                ]),
                 cache::MockCmd::new(
-                    redis::cmd("SET").arg(pfenv.key(2)).arg(path(2).to_string()),
+                    redis::cmd("MSET")
+                        .arg(pfenv.key(2))
+                        .arg(compress_json(&path(2))),
                     Ok(redis::Value::Nil),
                 ),
             ],

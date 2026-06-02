@@ -548,7 +548,7 @@ pub async fn consist_train_simulation_batch<T: TrainScheduleLike>(
     );
     let cached_simulation_hash = to_sim.keys().collect::<Vec<_>>();
     let cached_results: Vec<Option<Arc<simulation::Response>>> = valkey_conn
-        .compressed_get_bulk(&cached_simulation_hash)
+        .json_get_bulk(&cached_simulation_hash)
         .await?
         .map(|simulation| simulation.map(Arc::new))
         .collect();
@@ -600,7 +600,7 @@ pub async fn consist_train_simulation_batch<T: TrainScheduleLike>(
     }
 
     // Cache the simulation response
-    valkey_conn.compressed_set_bulk(&to_cache).await?;
+    valkey_conn.json_set_bulk(&to_cache).await?;
 
     // Return the response
     Ok(simulation_results

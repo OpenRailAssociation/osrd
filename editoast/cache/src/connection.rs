@@ -154,47 +154,7 @@ impl Connection {
         &mut self,
         key: K,
     ) -> Result<Option<T>, RedisError> {
-        let value: Option<String> = self.get(key).await?;
-        match value {
-            Some(v) => match serde_json::from_str(&v) {
-                Ok(value) => Ok(value),
-                Err(e) => {
-                    tracing::warn!(
-                        "the cached value is not a valid JSON for type '{}': {e}",
-                        std::any::type_name::<T>()
-                    );
-                    Ok(None)
-                }
-            },
-            None => Ok(None),
-        }
-    }
-
-    /// Get a list of deserializable value from valkey
-    #[tracing::instrument(name = "cache:json_get_bulk", skip(self), err)]
-    pub async fn json_get_bulk<T: DeserializeOwned, K: Debug + ToRedisArgs + Send + Sync>(
-        &mut self,
-        keys: &[K],
-    ) -> Result<impl Iterator<Item = Option<T>>, RedisError> {
-        let values: Vec<Option<String>> = if !keys.is_empty() {
-            self.mget(keys).await?
-        } else {
-            // Avoid mget to fail if keys is empty
-            vec![]
-        };
-        let cached_values = values.into_iter().map(|value| {
-            value.and_then(|v| match serde_json::from_str(&v) {
-                Ok(value) => Some(value),
-                Err(e) => {
-                    tracing::warn!(
-                        "the cached value is not a valid JSON for type '{}': {e}",
-                        std::any::type_name::<T>()
-                    );
-                    None
-                }
-            })
-        });
-        Ok(cached_values)
+        Ok(self.json_get_bulk(&[key]).await?.next().unwrap())
     }
 
     /// Set a serializable value to valkey with expiry time
@@ -204,18 +164,7 @@ impl Connection {
         key: K,
         value: &T,
     ) -> Result<(), RedisError> {
-        let str_value = match serde_json::to_string(value) {
-            Ok(value) => value,
-            Err(e) => {
-                tracing::warn!(
-                    "failed to serialize value to JSON for type '{}': {e}",
-                    std::any::type_name::<T>()
-                );
-                return Ok(());
-            }
-        };
-        self.set::<_, _, ()>(key, str_value).await?;
-        Ok(())
+        self.json_set_bulk(&[(key, value)]).await
     }
 
     /// Set a list of serializable values to valkey
@@ -228,43 +177,12 @@ impl Connection {
         if items.is_empty() {
             return Ok(());
         }
-        let serialized_items = items
-            .iter()
-            .filter_map(|(key, value)| match serde_json::to_string(value) {
-                Ok(str_value) => Some((key, str_value)),
-                Err(e) => {
-                    tracing::warn!(
-                        "failed to serialize value to JSON for type '{}': {e}",
-                        std::any::type_name::<T>()
-                    );
-                    None
-                }
-            })
-            .collect::<Vec<_>>();
-
-        if !serialized_items.is_empty() {
-            self.mset::<_, _, ()>(&serialized_items).await?;
-        }
-        Ok(())
-    }
-
-    /// Set a list of compressed serializable values to valkey
-    #[tracing::instrument(name = "cache:compressed_set_bulk", skip(self, items), err)]
-    pub async fn compressed_set_bulk<K: Debug + ToRedisArgs + Send + Sync, T: Serialize>(
-        &mut self,
-        items: &[(K, T)],
-    ) -> Result<(), RedisError> {
-        // Avoid mset to fail if keys is empty
-        if items.is_empty() {
-            return Ok(());
-        }
 
         let compressed_items = span!(Level::INFO, "Compressing data").in_scope(|| {
             items
                 .iter()
                 .filter_map(|(key, value)| {
-                    // Create a LZ4 encoder.
-                    let mut encoder = lz4_flex::frame::FrameEncoder::new(Vec::new());
+                    let mut encoder = zstd::Encoder::new(Vec::new(), 0).unwrap();
                     // Serialize the `value` into JSON format and write it to the encoder (which compresses it).
                     if let Err(e) = serde_json::to_writer(&mut encoder, value) {
                         tracing::warn!(
@@ -297,9 +215,9 @@ impl Connection {
         Ok(())
     }
 
-    /// Retrieves a list of compressed serialized values from Valkey, decompresses them, and deserializes the result.
-    #[tracing::instrument(name = "cache:compressed_get_bulk", skip(self), err)]
-    pub async fn compressed_get_bulk<K: Debug + ToRedisArgs + Send + Sync, T: DeserializeOwned>(
+    /// Get a list of deserializable value from valkey
+    #[tracing::instrument(name = "cache:json_get_bulk", skip(self), err)]
+    pub async fn json_get_bulk<T: DeserializeOwned, K: Debug + ToRedisArgs + Send + Sync>(
         &mut self,
         keys: &[K],
     ) -> Result<impl Iterator<Item = Option<T>>, RedisError> {
@@ -321,7 +239,8 @@ impl Connection {
                 .into_iter()
                 .map(|value| {
                     value.and_then(|compressed_data| {
-                        let mut decoder = lz4_flex::frame::FrameDecoder::new(&compressed_data[..]);
+                        let mut decoder = zstd::Decoder::new(&compressed_data[..]).unwrap();
+
                         match serde_json::from_reader(&mut decoder) {
                             Ok(deserialized) => Some(deserialized),
                             Err(e) => {
