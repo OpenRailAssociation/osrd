@@ -4676,19 +4676,33 @@ export type TimetableResult = {
 };
 export type CoreConflictType = 'Spacing' | 'Routing';
 export type CoreConflictRequirement = {
-  end_time: string;
-  start_time: string;
+  /** Duration of the time range in ms (difference between the latest end time and the earliest start_time for any zone use in this conflict). */
+  duration: number;
+  /** Start of the time range during which the zone is contested: elapsed ms since the implicit
+    'request base time'. Earliest start time for any zone use.
+    
+    The implicit 'request base time' is the same over the whole request
+    (`trains_requirements` and `work_schedules`) and response.
+    Example: `1970-01-01T00:00:00Z` for calendar timetables; the timetable start for hourly
+    timetables. */
+  start_time: number;
   zone: string;
 };
 export type Conflict = {
   /** Type of the conflict */
   conflict_type: CoreConflictType;
-  /** Datetime of the end of the conflict */
-  end_time: string;
+  /** Duration of the conflict in ms. */
+  duration: number;
   /** List of requirements causing the conflict */
   requirements: CoreConflictRequirement[];
-  /** Datetime of the start of the conflict */
-  start_time: string;
+  /** Start of the conflict time range: elapsed ms since an implicit 'request base time'.
+    This is the *union* of all the conflicting time ranges.
+    
+    The implicit 'request base time' is the same as the train schedules' `start_time`
+    frame in this timetable.
+    Example: `1970-01-01T00:00:00Z` for calendar timetables; the timetable start for hourly
+    timetables. */
+  start_time: number;
   /** List of trains involved in the conflict. */
   train_ids: (
     | {
@@ -4714,7 +4728,15 @@ export type Conflict = {
 export type CoreTrainRequirementsById = {
   routing_requirements: CoreRoutingRequirement[];
   spacing_requirements: CoreSpacingRequirement[];
-  start_time: string;
+  /** Start time for the given train: elapsed ms since an implicit 'request base time'.
+    `start_time` acts as a reference point for all time values in the spacing and routing
+    requirements for this train (values expressed as an offset).
+    
+    The implicit 'request base time' is the same over the whole request
+    (`trains_requirements` and `work_schedules`) and response.
+    Example: `1970-01-01T00:00:00Z` for calendar timetables; the timetable start for hourly
+    timetables. */
+  start_time: number;
   train_id: string;
   /** ID that can be used to find the train in tools other than OSRD. Used in debug traces. */
   train_name: string;

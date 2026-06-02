@@ -144,12 +144,24 @@ class CoreConflictRequirement(BaseModel):
     """
     Unmet requirement causing a conflict.
 
-    The start and end time describe the conflicting time span (not the full
+    The start time and duration describe the conflicting time span (not the full
     requirement's time span).
     """
 
-    end_time: AwareDatetime
-    start_time: AwareDatetime
+    duration: Annotated[int, Field(ge=0)]
+    """
+    Duration of the time range in ms (difference between the latest end time and the earliest start_time for any zone use in this conflict).
+    """
+    start_time: int
+    """
+    Start of the time range during which the zone is contested: elapsed ms since the implicit
+    'request base time'. Earliest start time for any zone use.
+
+    The implicit 'request base time' is the same over the whole request
+    (`trains_requirements` and `work_schedules`) and response.
+    Example: `1970-01-01T00:00:00Z` for calendar timetables; the timetable start for hourly
+    timetables.
+    """
     zone: str
 
 
@@ -4120,17 +4132,23 @@ class Conflict(BaseModel):
     """
     Type of the conflict
     """
-    end_time: AwareDatetime
+    duration: Annotated[int, Field(ge=0)]
     """
-    Datetime of the end of the conflict
+    Duration of the conflict in ms.
     """
     requirements: list[CoreConflictRequirement]
     """
     List of requirements causing the conflict
     """
-    start_time: AwareDatetime
+    start_time: int
     """
-    Datetime of the start of the conflict
+    Start of the conflict time range: elapsed ms since an implicit 'request base time'.
+    This is the *union* of all the conflicting time ranges.
+
+    The implicit 'request base time' is the same as the train schedules' `start_time`
+    frame in this timetable.
+    Example: `1970-01-01T00:00:00Z` for calendar timetables; the timetable start for hourly
+    timetables.
     """
     train_ids: list[OccurrenceIdBase | OccurrenceIdModified | OccurrenceIdCreated]
     """
@@ -4259,7 +4277,17 @@ class CoreTrainPath(BaseModel):
 class CoreTrainRequirementsById(BaseModel):
     routing_requirements: list[CoreRoutingRequirement]
     spacing_requirements: list[CoreSpacingRequirement]
-    start_time: AwareDatetime
+    start_time: int
+    """
+    Start time for the given train: elapsed ms since an implicit 'request base time'.
+    `start_time` acts as a reference point for all time values in the spacing and routing
+    requirements for this train (values expressed as an offset).
+
+    The implicit 'request base time' is the same over the whole request
+    (`trains_requirements` and `work_schedules`) and response.
+    Example: `1970-01-01T00:00:00Z` for calendar timetables; the timetable start for hourly
+    timetables.
+    """
     train_id: str
     train_name: str
     """

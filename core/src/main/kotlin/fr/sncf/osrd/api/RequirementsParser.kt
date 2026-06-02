@@ -11,8 +11,6 @@ import fr.sncf.osrd.utils.units.TimeDelta
 import fr.sncf.osrd.utils.units.seconds
 import io.opentelemetry.api.trace.SpanKind
 import io.opentelemetry.instrumentation.annotations.WithSpan
-import java.time.Duration.between
-import java.time.ZonedDateTime
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -22,11 +20,11 @@ val requirementsParserLogger: Logger = LoggerFactory.getLogger("RequirementsPars
 fun parseTrainsRequirements(
     infra: RawInfra,
     trainsRequirements: Map<String, TrainRequirementsRequest>,
-    startTime: ZonedDateTime,
+    referenceTime: TimeDelta,
 ): List<Requirements> {
     val res = mutableListOf<Requirements>()
     for ((id, trainRequirements) in trainsRequirements) {
-        val delta = TimeDelta(between(startTime, trainRequirements.startTime).toMillis())
+        val delta = trainRequirements.startTime - referenceTime
         val spacingRequirements =
             parseSpacingRequirements(infra, trainRequirements.spacingRequirements, delta)
         val routingRequirements =
@@ -95,9 +93,9 @@ fun parseRoutingRequirements(
 fun parseWorkSchedulesRequest(
     infra: RawSignalingInfra,
     workSchedulesRequest: WorkSchedulesRequest,
-    startTime: ZonedDateTime,
+    referenceTime: TimeDelta,
 ): Collection<Requirements> {
-    val delta = TimeDelta(between(startTime, workSchedulesRequest.startTime).toMillis())
+    val delta = workSchedulesRequest.startTime - referenceTime
     return convertWorkScheduleMap(infra, workSchedulesRequest.workScheduleRequirements, delta)
 }
 

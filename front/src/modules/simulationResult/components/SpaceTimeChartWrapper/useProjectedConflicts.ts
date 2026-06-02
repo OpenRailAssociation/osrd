@@ -62,8 +62,8 @@ const useProjectedConflicts = (
       }
 
       return reqs.map((req) => ({
-        timeStart: +new Date(req.start_time),
-        timeEnd: +new Date(req.end_time),
+        timeStart: req.start_time,
+        timeEnd: req.start_time + req.duration,
         spaceStart: boundaries[index],
         spaceEnd: boundaries[index + 1],
       }));

@@ -173,7 +173,7 @@ class TimetableDownloader(
                         SpacingRequirement.fromRJSWithAddedTime(
                             rjsRequirement,
                             infra,
-                            trainRequirementById.startTime.durationSinceEpoch(),
+                            trainRequirementById.startTime.seconds,
                         )
                     val set = zoneUses.computeIfAbsent(requirement.zone) { TreeRangeSet.create() }
                     set.add(Range.closedOpen(requirement.beginTime, requirement.endTime))

@@ -15,8 +15,8 @@ import fr.sncf.osrd.conflicts.Conflict
 import fr.sncf.osrd.conflicts.Requirements
 import fr.sncf.osrd.conflicts.detectConflicts
 import fr.sncf.osrd.sim_infra.api.RawSignalingInfra
-import java.time.Duration
-import java.time.ZonedDateTime
+import fr.sncf.osrd.utils.units.TimeDelta
+import fr.sncf.osrd.utils.units.seconds
 
 class ConflictDetectionEndpoint(private val infraManager: InfraProvider) : Take {
     override fun act(req: Request, ctx: Take.QueueContext?): Response {
@@ -58,21 +58,21 @@ class ConflictDetectionEndpoint(private val infraManager: InfraProvider) : Take 
 private fun makeConflictDetectionResponse(
     infra: RawSignalingInfra,
     conflicts: Collection<Conflict>,
-    startTime: ZonedDateTime,
+    referenceTime: TimeDelta,
 ): ConflictDetectionResponse {
     return ConflictDetectionResponse(
         conflicts.map {
             ConflictResponse(
                 it.trainIds,
                 it.workScheduleIds,
-                startTime.plus(Duration.ofMillis((it.startTime * 1000).toLong())),
-                startTime.plus(Duration.ofMillis((it.endTime * 1000).toLong())),
+                referenceTime + it.startTime.seconds,
+                (it.endTime - it.startTime).seconds,
                 it.conflictType,
                 it.requirements.map { requirement ->
                     ConflictRequirement(
                         infra.getZoneName(requirement.zone),
-                        startTime.plus(Duration.ofMillis((requirement.startTime * 1000).toLong())),
-                        startTime.plus(Duration.ofMillis((requirement.endTime * 1000).toLong())),
+                        referenceTime + requirement.startTime.seconds,
+                        (requirement.endTime - requirement.startTime).seconds,
                     )
                 },
             )

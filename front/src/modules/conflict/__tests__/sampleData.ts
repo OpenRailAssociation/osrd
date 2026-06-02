@@ -40,8 +40,8 @@ export const pacedTrain = ({
 
 export const conflictBase = (partial: Partial<Conflict> = {}): Conflict => ({
   conflict_type: 'Spacing',
-  end_time: '',
-  start_time: '',
+  duration: 0,
+  start_time: 0,
   requirements: [],
   train_ids: [],
   work_schedule_ids: [],

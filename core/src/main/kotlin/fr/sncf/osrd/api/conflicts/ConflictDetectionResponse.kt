@@ -6,7 +6,8 @@ import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import fr.sncf.osrd.conflicts.ConflictType
 import fr.sncf.osrd.utils.json.UnitAdapterFactory
-import java.time.ZonedDateTime
+import fr.sncf.osrd.utils.units.Duration
+import fr.sncf.osrd.utils.units.TimeDelta
 
 class ConflictDetectionResponse(
     /**
@@ -27,10 +28,18 @@ class ConflictResponse(
     @Json(name = "train_ids") val trainIds: Collection<String>,
     /** List of work schedule IDs for this given conflict, if any. */
     @Json(name = "work_schedule_ids") val workScheduleIds: Collection<String>,
-    /** Start of the conflict time range. This is the *union* of all the conflicting time ranges. */
-    @Json(name = "start_time") val startTime: ZonedDateTime,
-    /** End of the conflict time range. See `start_time`. */
-    @Json(name = "end_time") val endTime: ZonedDateTime,
+    /**
+     * Start of the conflict time range: elapsed ms since the implicit 'request base time'.
+     *
+     * This is the *union* of all the conflicting time ranges.
+     *
+     * The implicit 'request base time' is the same over the whole request (`trains_requirements`
+     * and `work_schedules`) and response. Example: `1970-01-01T00:00:00Z` for calendar timetables;
+     * the timetable start for hourly timetables.
+     */
+    @Json(name = "start_time") val startTime: TimeDelta,
+    /** Duration of the conflict. */
+    @Json(name = "duration") val duration: Duration,
     /** One of "Spacing" or "Routing" depending on the kind of conflicting resource. */
     @Json(name = "conflict_type") val conflictType: ConflictType,
     /** List of all conflicting requirements. Can't be empty. */
@@ -47,10 +56,20 @@ class ConflictResponse(
 class ConflictRequirement(
     /** Zone name, as returned from `ZoneInfra.getZoneName` */
     @Json(name = "zone") val zone: String,
-    /** Start of the time range (earliest start time for any zone use) */
-    @Json(name = "start_time") val startTime: ZonedDateTime,
-    /** End of the time range (latest end time for any zone use) */
-    @Json(name = "end_time") val endTime: ZonedDateTime,
+    /**
+     * Start of the time range (earliest start time for any zone use in this conflict): elapsed ms
+     * since the implicit 'request base time'.
+     *
+     * The implicit 'request base time' is the same over the whole request (`trains_requirements`
+     * and `work_schedules`) and response. Example: `1970-01-01T00:00:00Z` for calendar timetables;
+     * the timetable start for hourly timetables.
+     */
+    @Json(name = "start_time") val startTime: TimeDelta,
+    /**
+     * Duration of the time range (difference between the latest end time and the earliest
+     * start_time for any zone use in this conflict).
+     */
+    @Json(name = "duration") val duration: Duration,
 )
 
 val conflictResponseAdapter: JsonAdapter<ConflictDetectionResponse> =

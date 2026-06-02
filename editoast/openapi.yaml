@@ -5153,26 +5153,34 @@ components:
       - train_ids
       - work_schedule_ids
       - start_time
-      - end_time
+      - duration
       - conflict_type
       - requirements
       properties:
         conflict_type:
           $ref: '#/components/schemas/CoreConflictType'
           description: Type of the conflict
-        end_time:
-          type: string
-          format: date-time
-          description: Datetime of the end of the conflict
+        duration:
+          type: integer
+          format: int64
+          description: Duration of the conflict in ms.
+          minimum: 0
         requirements:
           type: array
           items:
             $ref: '#/components/schemas/CoreConflictRequirement'
           description: List of requirements causing the conflict
         start_time:
-          type: string
-          format: date-time
-          description: Datetime of the start of the conflict
+          type: integer
+          format: int64
+          description: |-
+            Start of the conflict time range: elapsed ms since an implicit 'request base time'.
+            This is the *union* of all the conflicting time ranges.
+
+            The implicit 'request base time' is the same as the train schedules' `start_time`
+            frame in this timetable.
+            Example: `1970-01-01T00:00:00Z` for calendar timetables; the timetable start for hourly
+            timetables.
         train_ids:
           type: array
           items:
@@ -5330,19 +5338,29 @@ components:
       description: |-
         Unmet requirement causing a conflict.
 
-        The start and end time describe the conflicting time span (not the full
+        The start time and duration describe the conflicting time span (not the full
         requirement's time span).
       required:
       - zone
       - start_time
-      - end_time
+      - duration
       properties:
-        end_time:
-          type: string
-          format: date-time
+        duration:
+          type: integer
+          format: int64
+          description: Duration of the time range in ms (difference between the latest end time and the earliest start_time for any zone use in this conflict).
+          minimum: 0
         start_time:
-          type: string
-          format: date-time
+          type: integer
+          format: int64
+          description: |-
+            Start of the time range during which the zone is contested: elapsed ms since the implicit
+            'request base time'. Earliest start time for any zone use.
+
+            The implicit 'request base time' is the same over the whole request
+            (`trains_requirements` and `work_schedules`) and response.
+            Example: `1970-01-01T00:00:00Z` for calendar timetables; the timetable start for hourly
+            timetables.
         zone:
           type: string
     CoreConflictType:
@@ -5982,8 +6000,17 @@ components:
           items:
             $ref: '#/components/schemas/CoreSpacingRequirement'
         start_time:
-          type: string
-          format: date-time
+          type: integer
+          format: int64
+          description: |-
+            Start time for the given train: elapsed ms since an implicit 'request base time'.
+            `start_time` acts as a reference point for all time values in the spacing and routing
+            requirements for this train (values expressed as an offset).
+
+            The implicit 'request base time' is the same over the whole request
+            (`trains_requirements` and `work_schedules`) and response.
+            Example: `1970-01-01T00:00:00Z` for calendar timetables; the timetable start for hourly
+            timetables.
         train_id:
           type: string
         train_name:

@@ -1,5 +1,4 @@
-use chrono::DateTime;
-use chrono::Utc;
+use common::units::quantities::Offset;
 use serde::Deserialize;
 use serde::Serialize;
 use std::collections::HashMap;
@@ -27,7 +26,16 @@ pub struct ConflictDetectionRequest {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TrainRequirements {
-    pub start_time: DateTime<Utc>,
+    /// Start time for the given train: elapsed ms since an implicit 'request base time'.
+    /// `start_time` acts as a reference point for all time values in the spacing and routing
+    /// requirements for this train (values expressed as time delta).
+    ///
+    /// The implicit 'request base time' is the same over the whole request
+    /// (`trains_requirements` and `work_schedules`) and response.
+    /// Example: `1970-01-01T00:00:00Z` for calendar timetables; the timetable start for hourly
+    /// timetables.
+    #[serde(with = "common::units::millisecond::i64")]
+    pub start_time: Offset,
     pub spacing_requirements: Vec<SpacingRequirement>,
     pub routing_requirements: Vec<RoutingRequirement>,
 }
@@ -39,14 +47,33 @@ pub struct TrainRequirementsById {
     pub train_id: String,
     /// ID that can be used to find the train in tools other than OSRD. Used in debug traces.
     pub train_name: String,
-    pub start_time: DateTime<Utc>,
+    /// Start time for the given train: elapsed ms since an implicit 'request base time'.
+    /// `start_time` acts as a reference point for all time values in the spacing and routing
+    /// requirements for this train (values expressed as an offset).
+    ///
+    /// The implicit 'request base time' is the same over the whole request
+    /// (`trains_requirements` and `work_schedules`) and response.
+    /// Example: `1970-01-01T00:00:00Z` for calendar timetables; the timetable start for hourly
+    /// timetables.
+    #[serde(with = "common::units::millisecond::i64")]
+    #[schema(value_type = i64)]
+    pub start_time: Offset,
     pub spacing_requirements: Vec<SpacingRequirement>,
     pub routing_requirements: Vec<RoutingRequirement>,
 }
 
 #[derive(Debug, Serialize)]
 pub struct WorkSchedulesRequest {
-    pub start_time: DateTime<Utc>,
+    /// Start time for the work schedules: elapsed ms since the implicit 'request base time'.
+    /// `start_time` acts as a reference point for all time values in the work schedule
+    /// requirements (values expressed as an offset).
+    ///
+    /// The implicit 'request base time' is the same over the whole request
+    /// (`trains_requirements` and `work_schedules`) and response.
+    /// Example: `1970-01-01T00:00:00Z` for calendar timetables; the timetable start for hourly
+    /// timetables.
+    #[serde(with = "common::units::millisecond::i64")]
+    pub start_time: Offset,
     pub work_schedule_requirements: HashMap<String, WorkSchedule>,
 }
 
@@ -62,10 +89,17 @@ pub struct Conflict {
     pub train_ids: Vec<Uuid>,
     /// List of work schedule ids involved in the conflict
     pub work_schedule_ids: Vec<String>,
-    /// Datetime of the start of the conflict
-    pub start_time: DateTime<Utc>,
-    /// Datetime of the end of the conflict
-    pub end_time: DateTime<Utc>,
+    /// Start of the conflict time range: elapsed ms since the implicit 'request base time'.
+    /// This is the *union* of all the conflicting time ranges.
+    ///
+    /// The implicit 'request base time' is the same over the whole request
+    /// (`trains_requirements` and `work_schedules`) and response.
+    /// Example: `1970-01-01T00:00:00Z` for calendar timetables; the timetable start for hourly
+    /// timetables.
+    #[serde(with = "common::units::millisecond::i64")]
+    pub start_time: Offset,
+    /// Duration of the conflict in ms.
+    pub duration: u64,
     /// Type of the conflict
     pub conflict_type: ConflictType,
     /// List of requirements causing the conflict
@@ -74,14 +108,24 @@ pub struct Conflict {
 
 /// Unmet requirement causing a conflict.
 ///
-/// The start and end time describe the conflicting time span (not the full
+/// The start time and duration describe the conflicting time span (not the full
 /// requirement's time span).
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize, ToSchema)]
 #[schema(as = CoreConflictRequirement)]
 pub struct ConflictRequirement {
     pub zone: String,
-    pub start_time: DateTime<Utc>,
-    pub end_time: DateTime<Utc>,
+    /// Start of the time range during which the zone is contested: elapsed ms since the implicit
+    /// 'request base time'. Earliest start time for any zone use.
+    ///
+    /// The implicit 'request base time' is the same over the whole request
+    /// (`trains_requirements` and `work_schedules`) and response.
+    /// Example: `1970-01-01T00:00:00Z` for calendar timetables; the timetable start for hourly
+    /// timetables.
+    #[serde(with = "common::units::millisecond::i64")]
+    #[schema(value_type = i64)]
+    pub start_time: Offset,
+    /// Duration of the time range in ms (difference between the latest end time and the earliest start_time for any zone use in this conflict).
+    pub duration: u64,
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, ToSchema, PartialEq)]

@@ -43,7 +43,9 @@ const ConflictCard = ({ conflict }: { conflict: ConflictWithTrainNames }) => {
   const { t } = useTranslation('operational-studies', { keyPrefix: 'main' });
   const dateTimeLocale = useDateTimeLocale();
   const start_time = new Date(conflict.start_time).toLocaleTimeString(dateTimeLocale);
-  const end_time = new Date(conflict.end_time).toLocaleTimeString(dateTimeLocale);
+  const end_time = new Date(conflict.start_time + conflict.duration).toLocaleTimeString(
+    dateTimeLocale
+  );
   const start_date = new Date(conflict.start_time).toLocaleDateString(dateTimeLocale);
   const totalTrains = conflict.trainsData.length;
 
