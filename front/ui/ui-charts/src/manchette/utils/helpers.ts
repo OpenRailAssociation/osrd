@@ -71,36 +71,6 @@ export const zoomX = (
   };
 };
 
-export const filterVisibleElements = (
-  elements: Waypoint[],
-  spaceScale: number,
-  minScreenGap: number
-): Waypoint[] => {
-  // On-screen pixel position of a waypoint (spaceScale is mm/px). A constant origin offset
-  // would cancel out in the comparison below, so we don't need it.
-  const getScreenPosition = (waypoint: Waypoint) => waypoint.position / spaceScale;
-
-  const firstElement = elements.at(0);
-  const lastElement = elements.at(-1);
-  if (!firstElement || !lastElement) return elements;
-
-  const sortedElements = [...elements].sort((a, b) => (b.weight ?? 0) - (a.weight ?? 0));
-  const displayedElements: Waypoint[] = [firstElement, lastElement];
-
-  for (const element of sortedElements) {
-    const hasSpace = !displayedElements.some(
-      (displayed) =>
-        Math.abs(getScreenPosition(element) - getScreenPosition(displayed)) < minScreenGap
-    );
-
-    if (hasSpace) {
-      displayedElements.push(element);
-    }
-  }
-
-  return displayedElements.sort((a, b) => a.position - b.position);
-};
-
 export const selectWaypointsToDisplay = (
   waypoints: Waypoint[],
   { isProportional, spaceScale }: { isProportional: boolean; spaceScale: number }
@@ -110,7 +80,30 @@ export const selectWaypointsToDisplay = (
   // display all waypoints in linear mode
   if (!isProportional) return waypoints;
 
-  return filterVisibleElements(waypoints, spaceScale, BASE_WAYPOINT_HEIGHT);
+  // In proportional mode, hide waypoints whose labels (BASE_WAYPOINT_HEIGHT px tall) would
+  // overlap at the current zoom. spaceScale is mm/px, so a waypoint's on-screen position is
+  // position / spaceScale (a because both scales start at zero).
+  const getScreenPosition = (waypoint: Waypoint) => waypoint.position / spaceScale;
+
+  // always keep the first and last waypoints, then greedily keep the highest-weight ones
+  // that still have room
+  const [firstWaypoint] = waypoints;
+  const lastWaypoint = waypoints.at(-1)!;
+  const displayedWaypoints: Waypoint[] = [firstWaypoint, lastWaypoint];
+
+  const waypointsByWeight = [...waypoints].sort((a, b) => (b.weight ?? 0) - (a.weight ?? 0));
+  for (const waypoint of waypointsByWeight) {
+    const hasSpace = !displayedWaypoints.some(
+      (displayed) =>
+        Math.abs(getScreenPosition(waypoint) - getScreenPosition(displayed)) < BASE_WAYPOINT_HEIGHT
+    );
+
+    if (hasSpace) {
+      displayedWaypoints.push(waypoint);
+    }
+  }
+
+  return displayedWaypoints.sort((a, b) => a.position - b.position);
 };
 
 /**
