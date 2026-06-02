@@ -5,7 +5,7 @@ import type {
   LevelCrossing,
   PostLevelCrossingOccupancyApiResponse,
 } from 'common/api/osrdEditoastApi';
-import { addDurationToDate, Duration } from 'utils/duration';
+import { Duration } from 'utils/duration';
 
 const MIN_GAP_BETWEEN_OCCUPANCIES_MS = 15_000; // 15 seconds
 
@@ -20,11 +20,8 @@ function computeOccupanciesBlocks(
 ): LevelCrossingOccupancies {
   const sortedOccupancies = occupancies
     .map((occupancy) => ({
-      startTime: new Date(occupancy.time_begin).getTime(),
-      endTime: addDurationToDate(
-        new Date(occupancy.time_begin),
-        Duration.parse(occupancy.duration)
-      ).getTime(),
+      startTime: occupancy.time_begin,
+      endTime: occupancy.time_begin + Duration.parse(occupancy.duration).ms,
       trainNames: [trainNameById.get(occupancy.train_schedule_id) ?? ''],
     }))
     .sort((a, b) => a.startTime - b.startTime);

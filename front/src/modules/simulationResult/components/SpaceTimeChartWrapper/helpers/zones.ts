@@ -61,7 +61,7 @@ export function getMovableOccupancyZone(
   exception?: PacedTrainException
 ): MovableOccupancyZone {
   const trainStartTime = departureTime.getTime();
-  const occupationStartTime = +new Date(occupation.time_begin);
+  const occupationStartTime = occupation.time_begin;
   const occupationEndTime = occupationStartTime + Duration.parse(occupation.duration).ms;
   const timeToPosition = getTimeToPosition(spaceTimeCurves);
 

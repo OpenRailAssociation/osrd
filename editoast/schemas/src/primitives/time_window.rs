@@ -1,13 +1,14 @@
 use super::PositiveDuration;
-use chrono::DateTime;
-use chrono::Utc;
+use common::units::quantities::Offset;
 use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ToSchema)]
 pub struct TimeWindow {
-    pub time_begin: DateTime<Utc>,
+    #[serde(with = "common::units::millisecond::i64")]
+    #[schema(value_type = i64)]
+    pub time_begin: Offset,
     #[schema(value_type = chrono::Duration, example = "PT5M")]
     pub duration: PositiveDuration,
 }

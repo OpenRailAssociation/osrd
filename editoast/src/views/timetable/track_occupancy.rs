@@ -1,6 +1,3 @@
-use chrono::DateTime;
-use chrono::Duration;
-use chrono::Utc;
 use common::units::millisecond;
 use core_client::pathfinding::PathfindingResultSuccess;
 use core_client::simulation::ReportTrain;
@@ -238,11 +235,7 @@ fn find_track_occupancy_for_operational_point_with_context<'a>(
             train_schedule,
         ),
         time_window: TimeWindow {
-            time_begin: DateTime::<Utc>::from_timestamp_millis(millisecond::i64::from(
-                train_schedule.start_time,
-            ))
-            .unwrap()
-                + Duration::milliseconds(arrival_time),
+            time_begin: train_schedule.start_time + millisecond::i64::new(arrival_time),
             duration: stop_duration,
         },
     }]
@@ -253,6 +246,7 @@ pub mod tests {
     use crate::error::InternalError;
     use crate::views::path::pathfinding::PathfindingFailure;
     use crate::views::timetable::simulation::SimulationResponseSuccess;
+    use chrono::Duration;
     use common::units::millisecond;
     use core_client::pathfinding::PathfindingNotFound;
     use core_client::pathfinding::TrackRange;
@@ -466,8 +460,7 @@ pub mod tests {
 
             assert_eq!(
                 *time_begin,
-                DateTime::<Utc>::from_timestamp_millis(millisecond::i64::from(start_time)).unwrap()
-                    + Duration::milliseconds(expected_time as i64)
+                start_time + millisecond::i64::new(expected_time as i64)
             );
             assert_eq!(
                 *duration,
@@ -577,8 +570,7 @@ pub mod tests {
         );
         assert_eq!(
             results[0].time_window.time_begin,
-            DateTime::<Utc>::from_timestamp_millis(millisecond::i64::from(start_time)).unwrap()
-                + Duration::minutes(5)
+            start_time + millisecond::i64::new(300_000)
         );
     }
 }

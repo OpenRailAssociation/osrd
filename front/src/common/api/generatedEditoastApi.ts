@@ -2075,7 +2075,7 @@ export type PostLevelCrossingOccupancyApiResponse =
         }
     ) & {
       duration: string;
-      time_begin: string;
+      time_begin: number;
     } & {
       direction: Direction;
     })[];
@@ -2753,7 +2753,7 @@ export type PostTrainSchedulesTrackOccupancyApiResponse =
         }
     ) & {
       duration: string;
-      time_begin: string;
+      time_begin: number;
     })[];
   }[];
 export type PostTrainSchedulesTrackOccupancyApiArg = {

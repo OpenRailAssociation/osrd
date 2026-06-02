@@ -10,9 +10,6 @@ use axum::extract::Path;
 use axum::extract::Query;
 use axum::extract::State;
 use axum::response::IntoResponse;
-use chrono::DateTime;
-use chrono::Duration;
-use chrono::Utc;
 use common::units::millisecond;
 use core_client::AsCoreRequest;
 use core_client::CoreClient;
@@ -1699,11 +1696,8 @@ fn find_track_occupancy_unknown_operational_point(
                             } else {
                                 schedule_item.arrival?.num_milliseconds()
                             };
-                            let time_begin = DateTime::<Utc>::from_timestamp_millis(
-                                millisecond::i64::from(train_schedule.start_time),
-                            )
-                            .unwrap()
-                                + Duration::milliseconds(arrival_time);
+                            let time_begin =
+                                train_schedule.start_time + millisecond::i64::new(arrival_time);
                             Some(TimeWindow {
                                 time_begin,
                                 duration,
@@ -1712,10 +1706,7 @@ fn find_track_occupancy_unknown_operational_point(
                         // No schedule item for the first path item: use start_time directly.
                         .or_else(|| {
                             is_first_path_item.then_some(TimeWindow {
-                                time_begin: DateTime::<Utc>::from_timestamp_millis(
-                                    millisecond::i64::from(train_schedule.start_time),
-                                )
-                                .unwrap(),
+                                time_begin: train_schedule.start_time,
                                 duration: Default::default(),
                             })
                         })?;
@@ -1821,10 +1812,8 @@ mod tests {
     use std::collections::HashMap;
 
     use axum::http::StatusCode;
-    use chrono::DateTime;
     use chrono::Duration;
     use chrono::TimeDelta;
-    use chrono::Utc;
     use core_client::mocking::MockingClient;
     use core_client::pathfinding::InvalidPathItem;
     use core_client::pathfinding::PathfindingInputError;
@@ -3427,10 +3416,7 @@ mod tests {
         );
 
         assert_eq!(result.len(), 1);
-        assert_eq!(
-            result[0].1.time_window.time_begin,
-            DateTime::<Utc>::from_timestamp_millis(millisecond::i64::from(start_time)).unwrap()
-        );
+        assert_eq!(result[0].1.time_window.time_begin, start_time);
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
