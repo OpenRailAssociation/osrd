@@ -130,7 +130,7 @@ const RollingStockEditorForm = ({
     }
   };
 
-  const submit = (e: React.FormEvent<HTMLFormElement>, data: RollingStockParametersValues) => {
+  const submit = (e: React.SubmitEvent<HTMLFormElement>, data: RollingStockParametersValues) => {
     e.preventDefault();
     let error: undefined | { name: string; message: string };
     if (!data.name) {

@@ -18,7 +18,7 @@ type RollingStockCardProps = {
   isOpen: boolean;
   isOnEditMode?: boolean;
   noCardSelected: boolean;
-  ref2scroll?: React.MutableRefObject<HTMLDivElement | null>;
+  ref2scroll?: React.RefObject<HTMLDivElement | null>;
   rollingStock: LightRollingStockWithLiveries;
   setOpenedRollingStockCardId: (openCardId: number | undefined) => void;
   onSelectRollingStock?: (rollingStock: LightRollingStockWithLiveries, comfort: Comfort) => void;

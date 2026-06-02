@@ -44,7 +44,7 @@ export type InputSNCFProps = {
   condensed?: boolean;
   textRight?: boolean;
   disabled?: boolean;
-  ref?: React.MutableRefObject<HTMLInputElement>;
+  ref?: React.RefObject<HTMLInputElement>;
 };
 
 const InputSNCF = ({

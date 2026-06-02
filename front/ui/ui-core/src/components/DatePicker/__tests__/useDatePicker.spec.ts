@@ -206,7 +206,7 @@ describe('useDatePicker', () => {
         });
 
         expect(result.current.inputValue).toBe('01/01/24 - ');
-        expect(onDayChange).not.toBeCalled();
+        expect(onDayChange).not.toHaveBeenCalled();
       });
     });
   });

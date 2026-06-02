@@ -614,7 +614,7 @@ export function cropForDatavizViewbox(
 export function cropOperationPointsForDatavizViewbox(
   operationalPoints: Array<OperationalPoint>,
   currentViewBox: [number, number] | null,
-  wrapper: React.MutableRefObject<HTMLDivElement | null>,
+  wrapper: React.RefObject<HTMLDivElement | null>,
   fullLength: number
 ): Array<OperationalPoint & { positionInPx: number }> {
   if (wrapper.current !== null && fullLength > 0) {

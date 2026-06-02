@@ -2,7 +2,7 @@ import { Eye, EyeClosed } from '@osrd-project/ui-icons';
 
 type EyeToggleProps = {
   checked: boolean;
-  onClick: React.FormEventHandler<HTMLDivElement>;
+  onClick: React.MouseEventHandler<HTMLDivElement>;
 };
 
 function EyeToggle({ checked, onClick }: EyeToggleProps) {

@@ -120,7 +120,6 @@
     "no-confusing-void-expression": "off",
     "no-constructor-return": "off",
     "no-continue": "off",
-    "no-deprecated": "off",
     "no-did-mount-set-state": "off",
     "no-did-update-set-state": "off",
     "no-duplicate-hooks": "off",
@@ -434,7 +433,6 @@
       }
     ],
     "react-js/no-deprecated": "error",
-    "react-js/prop-types": "error",
     "react-hooks-js/component-hook-factories": "error",
     "react-hooks-js/config": "error",
     "react-hooks-js/error-boundaries": "error",

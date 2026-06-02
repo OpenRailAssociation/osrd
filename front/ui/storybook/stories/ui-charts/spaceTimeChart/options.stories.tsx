@@ -38,6 +38,7 @@ const ScreenshotButton = () => {
     >
       <button
         onClick={() =>
+          // oxlint-disable-next-line typescript/no-deprecated -- False flag, as only the last argument is deprecated
           captureCanvases().then((blob) => FileSaver.saveAs(blob, 'space-time-chart.png'))
         }
       >

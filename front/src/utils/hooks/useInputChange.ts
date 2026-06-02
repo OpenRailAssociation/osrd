@@ -2,7 +2,7 @@ import { isEqual } from 'lodash';
 
 const useInputChange =
   <T>(
-    initialValuesRef: React.MutableRefObject<T | null>,
+    initialValuesRef: React.RefObject<T | null>,
     setCurrent: React.Dispatch<React.SetStateAction<T>>,
     setHasChanges: React.Dispatch<React.SetStateAction<boolean>>
   ) =>
