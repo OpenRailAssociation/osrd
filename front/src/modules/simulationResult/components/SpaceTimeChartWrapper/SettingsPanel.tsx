@@ -60,12 +60,12 @@ const SettingsPanel = ({
           disabled={!isTrainScheduleValid || !isSimulationEnabled}
           options={[
             {
-              label: t('timeSpaceChartSettings.trackProjection'),
-              value: 'trackProjection',
-            },
-            {
               label: t('timeSpaceChartSettings.operationalPointProjection'),
               value: 'operationalPointProjection',
+            },
+            {
+              label: t('timeSpaceChartSettings.trackProjection'),
+              value: 'trackProjection',
             },
           ]}
         />

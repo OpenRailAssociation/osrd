@@ -14,7 +14,7 @@ export const simulationResultsInitialState: SimulationResultsState = {
   selectedTrain: undefined,
   hoveredTrainId: undefined,
   trainIdUsedForProjection: undefined,
-  projectionType: 'trackProjection',
+  projectionType: 'operationalPointProjection',
   displayOnlyPathSteps: false,
   isSimulationEnabled: true,
 };
