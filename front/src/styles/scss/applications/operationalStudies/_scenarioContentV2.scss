@@ -1,75 +1,74 @@
-#root {
+#scenario {
   display: flex;
   flex-direction: column;
   height: 100vh;
-}
 
-.scenario-content-v2 {
-  display: flex;
-  flex: 1;
-  min-height: 0;
-
-  .right-column,
-  .left-column {
-    width: 488px;
-    min-width: 488px;
-  }
-
-  @media screen and (max-width: 2400px) {
+  .scenario-content-v2 {
+    display: flex;
+    flex: 1;
+    min-height: 0;
     .right-column,
     .left-column {
-      width: 424px;
-      min-width: 424px;
+      width: 488px;
+      min-width: 488px;
     }
-  }
-  @media screen and (max-width: 1920px) {
+
+    @media screen and (max-width: 2400px) {
+      .right-column,
+      .left-column {
+        width: 424px;
+        min-width: 424px;
+      }
+    }
+    @media screen and (max-width: 1920px) {
+      .right-column,
+      .left-column {
+        width: 392px;
+        min-width: 392px;
+      }
+    }
+    @media screen and (max-width: 1249px) {
+      .right-column,
+      .left-column {
+        width: 360px;
+        min-width: 360px;
+      }
+    }
+
     .right-column,
+    .left-column,
+    .center-column {
+      padding: var(--board-vertical-gap) 12px;
+    }
+
     .left-column {
-      width: 392px;
-      min-width: 392px;
-    }
-  }
-  @media screen and (max-width: 1249px) {
-    .right-column,
-    .left-column {
-      width: 360px;
-      min-width: 360px;
-    }
-  }
+      padding-right: 4px;
 
-  .right-column,
-  .left-column,
-  .center-column {
-    padding: var(--board-vertical-gap) 12px;
-  }
-
-  .left-column {
-    padding-right: 4px;
-
-    .board-wrapper {
-      height: 100%;
-    }
-  }
-
-  .center-column {
-    position: relative;
-    width: 100%;
-    overflow: auto;
-  }
-
-  .right-column {
-    padding-left: 4px;
-
-    .board-wrapper {
-      height: 100%;
-
-      .conflicts-wrapper {
-        display: block;
-        position: relative;
+      .board-wrapper {
         height: 100%;
-        width: 100%;
-        transition: 0.2s;
-        overflow-y: auto;
+      }
+    }
+
+    .center-column {
+      position: relative;
+      width: 100%;
+      overflow: auto;
+    }
+
+    .right-column {
+      padding-left: 4px;
+
+      .board-wrapper {
+        height: 100%;
+
+        .conflicts-wrapper {
+          display: block;
+          position: relative;
+          height: 100%;
+          width: 100%;
+          transition: 0.2s;
+          overflow-y: auto;
+        }
       }
     }
   }
