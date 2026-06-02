@@ -103,6 +103,7 @@ const TrackOccupancyCanvas = ({
         topPadding={topPadding}
         drawBorders={!hideBorders}
         highlightedTrackId={highlightedTrackId}
+        showTicks={!draggingOccupancyZones?.length}
       />
       <OccupancyZonesLayer
         tracks={tracks}

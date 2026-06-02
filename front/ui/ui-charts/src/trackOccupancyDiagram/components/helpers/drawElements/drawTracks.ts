@@ -22,12 +22,14 @@ export const drawTracks = (
     drawBorders,
     topPadding = 0,
     highlightedTrackId,
+    showTicks = true,
   }: {
     position: number;
     tracks: Track[];
     drawBorders: boolean;
     topPadding: number;
     highlightedTrackId?: string;
+    showTicks?: boolean;
   }
 ) => {
   const {
@@ -45,7 +47,9 @@ export const drawTracks = (
   const timeEnd = getTime(width);
   const pixelsPerMinute = (1 / timeScale) * MINUTE;
 
-  const labelLevels = getLabelLevels(breakpoints, pixelsPerMinute, TICKS_PRIORITIES);
+  const labelLevels = showTicks
+    ? getLabelLevels(breakpoints, pixelsPerMinute, TICKS_PRIORITIES)
+    : [];
   const labelMarks = getLabelMarks(timeRanges, timeStart, timeEnd, labelLevels);
 
   // Draw backgrounds:
