@@ -741,7 +741,7 @@ export const loadNgeDto = async (
   const pacedTrainsPromise = dispatch(
     osrdEditoastApi.endpoints.getAllTimetableByIdTrainSchedules.initiate(
       { timetableId },
-      { subscribe: false }
+      { subscribe: false, forceRefetch: true }
     )
   );
   const pacedTrains = (await pacedTrainsPromise.unwrap()).filter(
@@ -757,7 +757,7 @@ export const loadNgeDto = async (
   const pacedTrainRoundTripsPromise = dispatch(
     osrdEditoastApi.endpoints.getTimetableByIdRoundTripsTrainSchedules.initiate(
       { id: timetableId },
-      { subscribe: false }
+      { subscribe: false, forceRefetch: true }
     )
   );
   const { results: pacedTrainRoundTrips } = await pacedTrainRoundTripsPromise.unwrap();
