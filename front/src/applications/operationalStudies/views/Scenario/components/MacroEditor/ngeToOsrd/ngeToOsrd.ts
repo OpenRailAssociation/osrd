@@ -175,7 +175,7 @@ export const relabelDuplicateTrigrams = (nodes: NodeDto[]): NodeDto[] => {
 
   return nodes.map((node) => {
     const trigramIds = trigramsToIds.get(node.betriebspunktName)!;
-    if (trigramIds.length == 1) return node;
+    if (trigramIds.length === 1) return node;
     const idIndex = trigramIds.findIndex((id) => id === node.id);
     const newTrigram = `${node.betriebspunktName}-${idIndex + 1}`;
     return {

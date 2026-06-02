@@ -236,7 +236,7 @@ export function drawAliasedQuadrilateral(
 
         // Invert the equation: x(y) = (y - c) / m
         // Look only for points that are on the left of the line, so for a given y, x < (y - c) / m
-        if (pointA.y > y != pointB.y > y && x < (y - c) / m) {
+        if (pointA.y > y !== pointB.y > y && x < (y - c) / m) {
           isInside = !isInside;
         }
       }

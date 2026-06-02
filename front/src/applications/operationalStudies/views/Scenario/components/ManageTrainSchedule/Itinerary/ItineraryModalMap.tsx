@@ -359,7 +359,7 @@ const ItineraryModalMap = ({
             let coordinates: Position | undefined;
             if (pathProperties?.operational_points) {
               // If there is a pathfinding, we use it to get the simulated coordinates
-              if (pathStepMetadata.type == 'trackOffset') {
+              if (pathStepMetadata.type === 'trackOffset') {
                 coordinates = pathStepMetadata.coordinates;
               } else {
                 const matchedOp = pathProperties.operational_points.find((op) =>

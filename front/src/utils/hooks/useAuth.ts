@@ -50,7 +50,7 @@ function useAuth() {
     let impersonated = userToImpersonate
       ? (await fetchFullUser({ body: { ids: [userToImpersonate.id], identities: [] } })).data?.[0]
       : undefined;
-    if (impersonated && impersonated.identities.length == 0) {
+    if (impersonated && impersonated.identities.length === 0) {
       impersonated = undefined;
     }
     dispatch(setImpersonatedUser(impersonated));

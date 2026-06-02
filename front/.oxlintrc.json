@@ -64,7 +64,6 @@
     "default-case-last": "off",
     "default-param-last": "off",
     "dot-notation": "off",
-    "eqeqeq": "off",
     "eslint/require-await": "off",
     "exhaustive-deps": "off",
     "exports-last": "off",

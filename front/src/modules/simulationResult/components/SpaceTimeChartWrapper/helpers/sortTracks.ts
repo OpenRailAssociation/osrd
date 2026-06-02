@@ -12,8 +12,8 @@ export function extractFirstNumber(s: string): number | null {
 // then alphabetically), followed by named tracks without numbers,
 // unnamed tracks, and finally '[ ]'.
 export function compareTracksByName(a: Track, b: Track): number {
-  const na = a.name != null ? extractFirstNumber(a.name) : null;
-  const nb = b.name != null ? extractFirstNumber(b.name) : null;
+  const na = a.name ? extractFirstNumber(a.name) : null;
+  const nb = b.name ? extractFirstNumber(b.name) : null;
   if (na !== null && nb !== null) return na - nb || a.name!.localeCompare(b.name!);
   if (na !== null) return -1;
   if (nb !== null) return 1;

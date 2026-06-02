@@ -180,4 +180,4 @@ export const getScales = (
 export const isInteractiveWaypoint = (
   item: InteractiveWaypoint | ReactNode
 ): item is InteractiveWaypoint =>
-  item != null && typeof item === 'object' && 'id' in item && 'position' in item;
+  item !== null && typeof item === 'object' && 'id' in item && 'position' in item;

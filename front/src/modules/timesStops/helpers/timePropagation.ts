@@ -169,7 +169,7 @@ export const adjustFollowingWaypointsForMidnight = (
       item,
       pathIndex: selectedTrain.path.findIndex((step) => step.id === item.at),
     }))
-    .filter(({ item, pathIndex }) => item.arrival != null && pathIndex > editedPathIndex)
+    .filter(({ item, pathIndex }) => item.arrival && pathIndex > editedPathIndex)
     .toArray();
 
   let lastOffset = Duration.subtractDate(newValue, startTime);

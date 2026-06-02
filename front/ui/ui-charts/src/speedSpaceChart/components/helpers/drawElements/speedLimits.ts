@@ -33,7 +33,7 @@ export const drawSpeedLimits = ({ ctx, width, height, store }: DrawFunctionParam
   for (let i = 0; i < mrsp.values.length; i++) {
     const { speed, isTemporary } = mrsp.values[i];
 
-    const isLastValue = i == mrsp.values.length - 1;
+    const isLastValue = i === mrsp.values.length - 1;
     const currentBoundary = isLastValue ? maxPosition : mrsp.boundaries[i];
     const currentBoundaryX = positionToPosX(currentBoundary, maxPosition, width, ratioX);
 

@@ -198,11 +198,11 @@ const SendToRailwayManagerModal = ({
       },
       {
         label: t('modal.maxSpeed'),
-        value: consist.maxSpeed != null ? `${consist.maxSpeed} km/h` : '-',
+        value: typeof consist.maxSpeed === 'number' ? `${consist.maxSpeed} km/h` : '-',
       },
       {
         label: t('modal.totalLength'),
-        value: consist.totalLength != null ? `${consist.totalLength} m` : '-',
+        value: typeof consist.totalLength === 'number' ? `${consist.totalLength} m` : '-',
       },
       { label: t('modal.gauge'), value: consist.loadingGauge ?? '-' },
     ],
