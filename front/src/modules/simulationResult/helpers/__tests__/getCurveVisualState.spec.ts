@@ -179,7 +179,7 @@ describe('getCurveVisualState', () => {
       ).toBe('passiveSecondary');
     });
 
-    it('B.2 quater - compliant, train with start_time exception on tod, it should return none', () => {
+    it('B.2 quater - compliant, train with start_time exception on tod, it should return passiveSecondary', () => {
       expect(
         getCurveVisualState(
           buildInput({
@@ -189,7 +189,7 @@ describe('getCurveVisualState', () => {
             panelMode: 'compliant',
           })
         )
-      ).toBe('none');
+      ).toBe('passiveSecondary');
     });
 
     it('B.3 - single, last clicked occurrence on std, it should return active', () => {
@@ -445,7 +445,7 @@ describe('getCurveVisualState', () => {
       ).toBe('passiveSecondary');
     });
 
-    it('C.2 quater - compliant, train with path_and_schedule exception on std, it should return none', () => {
+    it('C.2 quater - compliant, train with path_and_schedule exception on std, it should return passiveSecondary', () => {
       expect(
         getCurveVisualState(
           buildInput({
@@ -455,7 +455,7 @@ describe('getCurveVisualState', () => {
             panelMode: 'compliant',
           })
         )
-      ).toBe('none');
+      ).toBe('passiveSecondary');
     });
 
     it('C.3 - single, last clicked occurrence on tod, it should return active', () => {
