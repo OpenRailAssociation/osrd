@@ -18,6 +18,7 @@ use openidconnect::{
 };
 use openidconnect::{EndpointMaybeSet, EndpointNotSet, EndpointSet, HttpClientError};
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
 use thiserror::Error;
 
 use super::{
@@ -38,7 +39,7 @@ pub struct OidcConfig {
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
-pub struct AllAdditionalClaims(HashMap<String, String>);
+pub struct AllAdditionalClaims(HashMap<String, Value>);
 
 impl AdditionalClaims for AllAdditionalClaims {}
 
@@ -289,9 +290,12 @@ impl SessionProvider for OidcProvider {
                     .0
                     .get(identity_claim_field)
                     .cloned()
-                    .ok_or_else(|| {
-                        CallbackError::IdentityFieldNotFoundInClaims(identity_claim_field.clone())
-                    })?
+                    .ok_or(CallbackError::IdentityFieldNotFoundInClaims(
+                        identity_claim_field.clone(),
+                    ))?
+                    .as_str()
+                    .ok_or(CallbackError::IdentityFieldIsNotString)?
+                    .to_string()
             } else {
                 claims.subject().to_string()
             };
@@ -416,6 +420,8 @@ pub enum CallbackError {
     InvalidAmr,
     #[error("identity_claim_field not found: '{0}'")]
     IdentityFieldNotFoundInClaims(String),
+    #[error("identity_claim_field is not a string")]
+    IdentityFieldIsNotString,
 }
 
 impl actix_web::ResponseError for CallbackError {
@@ -431,6 +437,24 @@ impl actix_web::ResponseError for CallbackError {
             CallbackError::InvalidAcr => StatusCode::BAD_REQUEST,
             CallbackError::InvalidAmr => StatusCode::BAD_REQUEST,
             CallbackError::IdentityFieldNotFoundInClaims(_) => StatusCode::INTERNAL_SERVER_ERROR,
+            CallbackError::IdentityFieldIsNotString => StatusCode::INTERNAL_SERVER_ERROR,
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::FullTokenResponse;
+    #[test]
+    fn oidc_token_response_fails() {
+        // Mocked jwt generated with a random private key
+        let jwt = "eyJ0eXAiOiJKV1QiLCJraWQiOiJlU1g5UDdnYzgxSUlqQWsvbW5YZFJPYkVsblE9IiwiYWxnIjoiUlMyNTYifQ.eyJzdWIiOiJtb2NrZWQiLCJhbXIiOlsicGFzc3dvcmQiXSwiaXNzIjoiaHR0cHM6Ly9tb2NrZWQ6NDQzL29wZW5hbS9vYXV0aDIvcmVhbG1zL3Jvb3QvcmVhbG1zL1NTTzIiLCJ0b2tlbk5hbWUiOiJpZF90b2tlbiIsInR5cGUiOiJJIiwibG9naW4iOiJtb2NrZWQiLCJ1aWRfdW5pZmllIjoibW9ja2VkIiwiYWNyIjoiZGVmYXVsdCIsInVpZCI6IlhYMDAwMCIsInVwZGF0ZWRfYXQiOjAsImF6cCI6Ik9TUkQiLCJhdXRoX3RpbWUiOjE3ODAzOTI4NzksImV4cCI6MTc4MDQwNzI3OSwiaWF0IjoxNzgwMzkyODc5LCJlbWFpbCI6Im1vY2tlZEBvc3JkLmZyIiwicHJvZmlsIjpbIk9TUkQtMSIsIk9TUi0yIl0sImdpdmVuX25hbWUiOiJTbWl0aCIsIm5vbmNlIjoiSm9JaWVuMVp3bWNhcDBfX1hCR3RUQSIsImF1ZCI6Ik9TUkQiLCJjX2hhc2giOiJXXzg5QktmLXNoNFV1Y0p0bkFiTm5nIiwibmFtZSI6IlNtaXRoIENob28iLCJyZWFsbSI6Ii9TU08yIiwidG9rZW5UeXBlIjoiSldUVG9rZW4iLCJmYW1pbHlfbmFtZSI6IkNob28iLCJlbnRpdHkiOiJYWDAwWFgifQ.mEhiJvXNmQdxJwrcisSDWH66aBBwHuQFgbEDAORrwG1jtxKZxc_lsVWh8DihAsOFFJcp4p0pfiedlC_eRi60q-FsBIxxqOWT6e3H8sFGCVmKbd3Tu3OxEE7aWEWLaHaA3x7wtnlmu-eF_0mCwrH_1DaghUJ9NbAM2RyHK5o2NPRUK7FXWS7vMF-jqLz3G0_7M3Gb1-_e3I4E1QwUiVGBClZvF64RQNr5pjq7pl6cpfUE2A2H64l21_rxgzvF4WIUXbpE1d3LIgi7eDDpwXroGIH3-w97H_ExQF3YJHAErMdCf72Il0VugANSmtVPdLQfEaA3VXiIsotLsU-m9bMVLQ";
+
+        let raw_token_response = format!(
+            r#"{{"access_token":"dummy-access-token","token_type":"Bearer","id_token":"{jwt}"}}"#
+        );
+
+        serde_json::from_str::<FullTokenResponse>(&raw_token_response)
+            .expect("should be able to parse");
     }
 }
