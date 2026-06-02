@@ -1,11 +1,11 @@
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useMemo, useRef, useState, useCallback } from 'react';
 
 import { KebabHorizontal } from '@osrd-project/ui-icons';
 
 import { HOUR } from '../../common/consts';
 import { TimeCaptions } from '../../common/layers/TimeCaptions';
 import { Manchette, useManchetteWithSpaceTimeChart, BASE_WAYPOINT_HEIGHT } from '../../manchette';
-import { DEFAULT_THEME, SpaceTimeChart } from '../../spaceTimeChart';
+import { DEFAULT_THEME, SpaceTimeChart, type SpaceTimeChartProps } from '../../spaceTimeChart';
 import useEdgePan from '../hooks/useEdgePan';
 import { TRACK_HEIGHT_CONTAINER } from '../lib/consts';
 import type { OccupancyZone, Track } from '../lib/types';
@@ -19,6 +19,8 @@ const TrackOccupancyStandalone = ({
   draggingOccupancyZones,
   selectedTrainId,
   onSelectedTrainIdChange,
+  onHoveredChildUpdate,
+  onDragOver,
   height = TRACK_HEIGHT_CONTAINER * tracks.length + DEFAULT_THEME.timeCaptionsSize,
 }: {
   tracks: Track[];
@@ -26,6 +28,8 @@ const TrackOccupancyStandalone = ({
   draggingOccupancyZones?: OccupancyZone[];
   selectedTrainId?: string;
   onSelectedTrainIdChange?: (selectedTrainId?: string) => void;
+  onHoveredChildUpdate?: SpaceTimeChartProps['onHoveredChildUpdate'];
+  onDragOver?: (trackId: string | undefined) => void;
   height?: number;
 }) => {
   const manchetteWithSpaceTimeChartRef = useRef<HTMLDivElement>(null);
@@ -38,6 +42,14 @@ const TrackOccupancyStandalone = ({
     return Math.floor(minTime / HOUR) * HOUR;
   }, [occupancyZones]);
   const [highlightedTrackId, setHighlightedTrackId] = useState<string>();
+
+  const handleDragOver = useCallback(
+    (trackId: string | undefined) => {
+      setHighlightedTrackId(trackId);
+      onDragOver?.(trackId);
+    },
+    [onDragOver]
+  );
 
   // To make SpaceTimeChart and Manchette work, we have to provide them some dummy data:
   const waypoints = useMemo(
@@ -66,7 +78,7 @@ const TrackOccupancyStandalone = ({
             occupancyZones={occupancyZones}
             draggingOccupancyZones={draggingOccupancyZones}
             selectedTrainId={selectedTrainId}
-            onDragOver={setHighlightedTrackId}
+            onDragOver={handleDragOver}
             hideBorders
           />
         ),
@@ -75,7 +87,15 @@ const TrackOccupancyStandalone = ({
         ),
       },
     ],
-    [height, tracks, occupancyZones, draggingOccupancyZones, selectedTrainId, highlightedTrackId]
+    [
+      height,
+      tracks,
+      occupancyZones,
+      draggingOccupancyZones,
+      selectedTrainId,
+      highlightedTrackId,
+      handleDragOver,
+    ]
   );
 
   /**
@@ -136,6 +156,7 @@ const TrackOccupancyStandalone = ({
               }
               onPan={isDragging ? undefined : spaceTimeChartProps.onPan}
               onMouseMove={onMouseMove}
+              onHoveredChildUpdate={onHoveredChildUpdate}
             >
               <TimeCaptions />
             </SpaceTimeChart>
