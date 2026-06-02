@@ -203,7 +203,7 @@ class JSONTimetableReader(val jsonTimetablePath: String) : TimetableProvider {
                     SpacingRequirement.fromRJSWithAddedTime(
                         rjsSpacingReq,
                         infra,
-                        train.startTime.durationSinceEpoch(),
+                        train.startTime.seconds,
                     )
                 val set = zoneUses.computeIfAbsent(spacingReq.zone) { TreeRangeSet.create() }
                 set.add(Range.closedOpen(spacingReq.beginTime, spacingReq.endTime))

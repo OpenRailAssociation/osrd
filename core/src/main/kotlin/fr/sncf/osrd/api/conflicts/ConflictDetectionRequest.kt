@@ -8,7 +8,7 @@ import fr.sncf.osrd.api.RJSRoutingRequirement
 import fr.sncf.osrd.api.RJSSpacingRequirement
 import fr.sncf.osrd.api.WorkSchedule
 import fr.sncf.osrd.utils.json.UnitAdapterFactory
-import java.time.ZonedDateTime
+import fr.sncf.osrd.utils.units.TimeDelta
 
 class ConflictDetectionRequest(
     /** Infra ID. */
@@ -28,10 +28,15 @@ class ConflictDetectionRequest(
 /** Describes the requirements needed for a given train to run without any delay. */
 open class TrainRequirementsRequest(
     /**
-     * Start time for the given train. Acts as a reference point for all time values in the spacing
-     * and routing requirements for this train (values expressed as time delta).
+     * Start time for the given train: elapsed ms since an implicit 'request base time'.
+     * `start_time` acts as a reference point for all time values in the spacing and routing
+     * requirements for this train (values expressed as time delta).
+     *
+     * The implicit 'request base time' is the same over the whole request (`trains_requirements`
+     * and `work_schedules`) and response. Example: `1970-01-01T00:00:00Z` for calendar timetables;
+     * the timetable start for hourly timetables.
      */
-    @Json(name = "start_time") val startTime: ZonedDateTime,
+    @Json(name = "start_time") val startTime: TimeDelta,
     /**
      * Spacing requirements for the given train (i.e. which zones need to be free in which time
      * ranges).
@@ -49,7 +54,16 @@ open class TrainRequirementsRequest(
 class TrainRequirementsById(
     @Json(name = "train_id") val trainId: String,
     @Json(name = "train_name") val trainName: String?,
-    @Json(name = "start_time") startTime: ZonedDateTime,
+    /**
+     * Start time for the given train: elapsed ms since an implicit 'request base time'.
+     * `start_time` acts as a reference point for all time values in the spacing and routing
+     * requirements for this train (values expressed as time delta).
+     *
+     * The implicit 'request base time' is the same over the whole request (`trains_requirements`
+     * and `work_schedules`) and response. Example: `1970-01-01T00:00:00Z` for calendar timetables;
+     * the timetable start for hourly timetables.
+     */
+    @Json(name = "start_time") startTime: TimeDelta,
     @Json(name = "spacing_requirements") spacingRequirements: Collection<RJSSpacingRequirement>,
     @Json(name = "routing_requirements") routingRequirements: Collection<RJSRoutingRequirement>,
 ) : TrainRequirementsRequest(startTime, spacingRequirements, routingRequirements)
@@ -57,10 +71,15 @@ class TrainRequirementsById(
 /** Describes the set of work schedules in the given timetable. */
 class WorkSchedulesRequest(
     /**
-     * Reference time for other time values in the work schedule requirements (expressed as time
-     * deltas).
+     * Start time for the work schedules: elapsed ms since the implicit 'request base time'.
+     * `start_time` acts as a reference point for all time values in the work schedule requirements
+     * (values expressed as time delta).
+     *
+     * The implicit 'request base time' is the same over the whole request (`trains_requirements`
+     * and `work_schedules`) and response. Example: `1970-01-01T00:00:00Z` for calendar timetables;
+     * the timetable start for hourly timetables.
      */
-    @Json(name = "start_time") val startTime: ZonedDateTime,
+    @Json(name = "start_time") val startTime: TimeDelta,
     /** Map of work schedule id -> work schedule data. */
     @Json(name = "work_schedule_requirements")
     val workScheduleRequirements: Map<String, WorkSchedule>,

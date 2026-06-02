@@ -20,12 +20,10 @@ use axum::extract::Query;
 use axum::extract::State;
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
-use chrono::DateTime;
-use chrono::Utc;
-use common::units::millisecond;
 use common::units::quantities::Acceleration;
 use common::units::quantities::Length;
 use common::units::quantities::Mass;
+use common::units::quantities::Offset;
 use common::units::quantities::Velocity;
 use core_client::AsCoreRequest;
 use core_client::conflict_detection::Conflict as CoreConflict;
@@ -262,10 +260,18 @@ pub struct Conflict {
     train_ids: Vec<OccurrenceId>,
     /// List of work schedule ids involved in the conflict
     pub work_schedule_ids: Vec<i64>,
-    /// Datetime of the start of the conflict
-    pub start_time: DateTime<Utc>,
-    /// Datetime of the end of the conflict
-    pub end_time: DateTime<Utc>,
+    /// Start of the conflict time range: elapsed ms since an implicit 'request base time'.
+    /// This is the *union* of all the conflicting time ranges.
+    ///
+    /// The implicit 'request base time' is the same as the train schedules' `start_time`
+    /// frame in this timetable.
+    /// Example: `1970-01-01T00:00:00Z` for calendar timetables; the timetable start for hourly
+    /// timetables.
+    #[serde(with = "common::units::millisecond::i64")]
+    #[schema(value_type = i64)]
+    pub start_time: Offset,
+    /// Duration of the conflict in ms.
+    pub duration: u64,
     /// Type of the conflict
     pub conflict_type: ConflictType,
     /// List of requirements causing the conflict
@@ -304,7 +310,7 @@ impl Conflict {
             train_ids,
             work_schedule_ids,
             start_time: conflict.start_time,
-            end_time: conflict.end_time,
+            duration: conflict.duration,
             conflict_type: conflict.conflict_type,
             requirements: conflict.requirements,
         })
@@ -417,10 +423,7 @@ pub(in crate::views) async fn conflicts(
             Some((
                 train_id,
                 TrainRequirements {
-                    start_time: DateTime::<Utc>::from_timestamp_millis(millisecond::i64::from(
-                        train_schedule.start_time(),
-                    ))
-                    .unwrap(),
+                    start_time: train_schedule.start_time(),
                     spacing_requirements: simulation.final_output.spacing_requirements.clone(),
                     routing_requirements: simulation.final_output.routing_requirements.clone(),
                 },
@@ -582,9 +585,7 @@ pub(in crate::views) async fn requirements(
     .into_iter()
     .map(|(sim, _)| Arc::unwrap_or_clone(sim));
 
-    let start_times = occurrences.iter().map(|ts| {
-        DateTime::<Utc>::from_timestamp_millis(millisecond::i64::from(ts.start_time())).unwrap()
-    });
+    let start_times = occurrences.iter().map(|ts| ts.start_time());
     let train_names = occurrences.iter().map(|ts| ts.train_name.clone());
     let results = build_trains_requirements(
         occurrence_ids.into_iter(),
@@ -599,7 +600,7 @@ pub(in crate::views) async fn requirements(
 
 fn build_trains_requirements(
     train_ids: impl Iterator<Item = OccurrenceId>,
-    start_times: impl Iterator<Item = DateTime<Utc>>,
+    start_times: impl Iterator<Item = Offset>,
     simulations: impl Iterator<Item = simulation::Response>,
     train_names: impl Iterator<Item = String>,
 ) -> impl Iterator<Item = TrainRequirementsById> {
@@ -1120,12 +1121,12 @@ mod tests {
 
     use axum::http::StatusCode;
     use chrono::Duration;
-    use chrono::NaiveDate;
     use common::units;
     use core_client::simulation::RoutingRequirement;
     use core_client::simulation::RoutingZoneRequirement;
     use core_client::simulation::SpacingRequirement;
     use pretty_assertions::assert_eq;
+    use schemas::fixtures::ms_since_epoch;
     use schemas::fixtures::simple_rolling_stock;
     use schemas::fixtures::towed_rolling_stock;
 
@@ -1209,7 +1210,7 @@ mod tests {
 
         let train_schedule_t1_1 = simple_paced_train_base();
         let mut train_schedule_t1_2 = simple_paced_train_base();
-        train_schedule_t1_2.train_occurrence.start_time += millisecond::i64::new(12_000_000);
+        train_schedule_t1_2.train_occurrence.start_time += units::millisecond::i64::new(12_000_000);
         train_schedule_t1_2.paced.as_mut().unwrap().time_window =
             Duration::minutes(120).try_into().unwrap();
         train_schedule_t1_2.paced.as_mut().unwrap().interval =
@@ -1251,7 +1252,7 @@ mod tests {
         let (timetable2, train_schedule_set2) =
             create_timetable_with_train_schedule_set(&mut pool.get_ok()).await;
         let mut train_schedule_t2_1 = simple_paced_train_base();
-        train_schedule_t2_1.train_occurrence.start_time += millisecond::i64::new(12_000_000);
+        train_schedule_t2_1.train_occurrence.start_time += units::millisecond::i64::new(12_000_000);
         train_schedule_t2_1.paced.as_mut().unwrap().time_window =
             Duration::minutes(120).try_into().unwrap();
         train_schedule_t2_1.paced.as_mut().unwrap().interval =
@@ -1326,11 +1327,7 @@ mod tests {
         // Given
         let infra = Infra::default();
         let ts_id = 13;
-        let ts_start_time = NaiveDate::from_ymd_opt(2025, 1, 1)
-            .unwrap()
-            .and_hms_opt(8, 0, 0)
-            .unwrap()
-            .and_utc();
+        let ts_start_time = ms_since_epoch("2025-01-01T08:00:00Z");
 
         let spacing_requirement = SpacingRequirement {
             zone: "ZONE_1".to_string(),
@@ -1353,12 +1350,8 @@ mod tests {
             }],
         };
         let paced_train_id = 42;
-        let paced_start_time = NaiveDate::from_ymd_opt(2025, 1, 1)
-            .unwrap()
-            .and_hms_opt(9, 0, 0)
-            .unwrap()
-            .and_utc();
-        let paced_interval = Duration::try_hours(1).unwrap();
+        let paced_start_time = ms_since_epoch("2025-01-01T09:00:00Z");
+        let paced_interval = units::second::new(3600.0);
 
         let train_ids = vec![
             OccurrenceId::new_base(paced_train_id, 0),
