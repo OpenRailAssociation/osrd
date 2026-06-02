@@ -8,6 +8,7 @@
 import type {
   CurveStyleExceptionType,
   CurveStyleInput,
+  CurveVisualClassification,
   CurveVisualState,
 } from 'modules/simulationResult/types';
 import type { TrainId } from 'reducers/osrdconf/types';
@@ -70,50 +71,15 @@ const getChartSelectionState = (
   return 'none';
 };
 
-/**
- * Returns the hover state for this train, or `undefined` when the hover
- * does not apply to this train. The caller function uses hover as a layer
- * on top of the selection state: `undefined` means "keep the selection
- * state", a returned state means "override it".
- */
-const getHoverState = (
-  train: TrainInput,
-  hover: NonNullable<CurveStyleInput['hover']>
-): CurveVisualState | undefined => {
-  // Self always gets hover (D.2, D.5, D.7, plus the hovered itself in D.3/D.4/D.6).
-  if (train.id === hover.trainId) return 'hover';
-
-  // Trains outside the hovered's paced family never get hover.
-  if (!samePacedTrain(train.id, hover.trainId)) return undefined;
-
-  // Hover from the train list (D.2, D.3):
-  // - hovered is a unique train (PacedTrainId): only self gets hover (D.2, handled above).
-  // - hovered is an occurrence (OccurrenceId): every occurrence of the paced gets hover (D.3).
-  if (hover.from === 'timetable') {
-    return isOccurrenceId(hover.trainId) ? 'hover' : undefined;
-  }
-
-  // Hover from a chart (STD or TOD): the relevant exception type follows the source.
-  const relevantException: CurveStyleExceptionType =
-    hover.from === 'std' ? 'start_time' : 'path_and_schedule';
-
-  // Hovered itself has the relevant exception (D.5, D.7): only self gets hover.
-  if (hover.exceptionType === relevantException) return undefined;
-
-  // Hovered has no relevant exception (D.4, D.6): propagate to paced siblings that
-  // also have no relevant exception.
-  return train.exceptionType === relevantException ? undefined : 'hover';
-};
-
 const getCurveVisualState = ({
   chart,
   train,
   selection,
   panelMode,
   hover,
-}: CurveStyleInput): CurveVisualState => {
+}: CurveStyleInput): CurveVisualClassification => {
   // E.4: a dragged train always gets 'drag', regardless of selection or hover.
-  if (train.isDragging) return 'drag';
+  if (train.isDragging) return { state: 'drag', hovered: false };
 
   let state: CurveVisualState = 'none';
   if (selection) {
@@ -123,13 +89,12 @@ const getCurveVisualState = ({
         : getChartSelectionState(chart, train, selection, panelMode);
   }
 
-  // D.8: an already active curve stays active even when hovered.
-  if (hover && state !== 'active') {
-    const hoverState = getHoverState(train, hover);
-    if (hoverState) return hoverState;
-  }
+  // The hover effect is only applied to the train directly under the cursor.
+  // The matrix used to propagate it to paced siblings (D.3/D.4/D.6), but the
+  // design planches show that only the directly hovered train changes visually.
+  const hovered = !!hover && train.id === hover.trainId;
 
-  return state;
+  return { state, hovered };
 };
 
 export default getCurveVisualState;

@@ -130,16 +130,20 @@ export type DraggingState = {
 };
 
 /**
- * The six visual states a curve can take in STD/TOD charts.
- * - 1 none, 2 hover, 3 active, 4 passivePrimary, 5 passiveSecondary, 6 drag.
+ * The five visual states a curve can take in STD/TOD charts. Hover is not
+ * part of this union: it is a transverse modifier carried alongside the
+ * state (see [[CurveVisualClassification]]).
  */
-export type CurveVisualState =
-  | 'none'
-  | 'hover'
-  | 'active'
-  | 'passivePrimary'
-  | 'passiveSecondary'
-  | 'drag';
+export type CurveVisualState = 'none' | 'active' | 'passivePrimary' | 'passiveSecondary' | 'drag';
+
+/**
+ * Output of the curve visual state classifier: the base state and a
+ * transverse `hovered` flag set only for the train directly under the cursor.
+ */
+export type CurveVisualClassification = {
+  state: CurveVisualState;
+  hovered: boolean;
+};
 
 /**
  * Exception types that influence the curve visual state. The values match
