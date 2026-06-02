@@ -29,8 +29,10 @@ import upward from 'assets/pictures/workSchedules/ScheduledMaintenanceUp.svg';
 import { type PostWorkSchedulesProjectPathApiResponse } from 'common/api/osrdEditoastApi';
 import { useSubCategoryContext } from 'common/SubCategoryContext';
 import { configureHandlePan } from 'modules/simulationResult/components/SpaceTimeChartWrapper/helpers/configureHandlePan';
+import getPathStyleV2 from 'modules/simulationResult/helpers/getPathStyleV2';
 import type {
   CurveStyleExceptionType,
+  CurveStyleInput,
   PathOperationalPoint,
   TrainSpaceTimeData,
   WaypointsPanelData,
@@ -72,7 +74,7 @@ import CurveSelectionSidePanel, {
 import cutSpaceTimeCurves from './helpers/cutSpaceTimeCurves';
 import formatSpaceTimeCurves from './helpers/formatSpaceTimeCurves';
 import getPanelOccurrenceCounts from './helpers/getPanelOccurrenceCounts';
-import getPathStyle from './helpers/getPathStyle';
+import getStdExceptionType from './helpers/getStdExceptionType';
 import makeProjectedTrains from './helpers/makeProjectedTrains';
 import { getOccupancyBlocks } from './helpers/utils';
 import ProjectionLoadingMessage from './ProjectionLoadingMessage';
@@ -134,6 +136,29 @@ type SpaceTimeChartWrapperProps = SpaceTimeChartWrapperBaseProps &
 
 export const MANCHETTE_WITH_SPACE_TIME_CHART_DEFAULT_HEIGHT = 561;
 
+/**
+ * Builds the hover input for the curve-style helper. Chart hover wins over
+ * timetable hover: when the user is over a curve in the STD, the train list
+ * hover is ignored.
+ *
+ * TODO: add the TOD source (`from: 'tod'`) once the TOD emits hover events.
+ */
+const buildCurveHover = (
+  hoveredItem: HoveredItem | null,
+  hoveredTrainIdFromTimetable: TrainId | undefined
+): CurveStyleInput['hover'] => {
+  if (
+    hoveredItem &&
+    (isSegmentPickingElement(hoveredItem.element) || isPointPickingElement(hoveredItem.element))
+  ) {
+    return { trainId: hoveredItem.element.pathId as TrainId, from: 'std' };
+  }
+  if (hoveredTrainIdFromTimetable) {
+    return { trainId: hoveredTrainIdFromTimetable, from: 'timetable' };
+  }
+  return undefined;
+};
+
 const SpaceTimeChartWrapper = ({
   operationalPoints,
   trainScheduleProjections,
@@ -156,7 +181,8 @@ const SpaceTimeChartWrapper = ({
   const dispatch = useAppDispatch();
   const hoveredTrainId = useSelector(getHoveredTrainId);
   const isSimulationEnabled = useSelector(getIsSimulationEnabled);
-  const { id: selectedTrainId, by: selectedTrainBy } = useSelector(getSelectedTrain) || {};
+  const selection = useSelector(getSelectedTrain);
+  const { id: selectedTrainId, by: selectedTrainBy } = selection ?? {};
 
   const wrapperRef = useRef<HTMLDivElement>(null);
   const manchetteWithSpaceTimeChartRef = useRef<HTMLDivElement>(null);
@@ -556,22 +582,33 @@ const SpaceTimeChartWrapper = ({
               (waypointsPanelData?.filteredWaypoints ?? operationalPoints).at(0)?.position || 0
             }
           >
-            {paths.map((path) => (
-              <PathLayer
-                key={`${path.id}-${path.points[0]?.position}`}
-                path={path}
-                // TODO: forward `panelSelectionMode` to getPathStyle when the
-                // curve-style mapping ticket needs it to pick which occurrences
-                // are highlighted in blue.
-                {...getPathStyle(
-                  hoveredItem,
-                  path,
-                  !!draggingState,
-                  selectedTrainId,
-                  hoveredTrainId
-                )}
-              />
-            ))}
+            {paths.map((path) => {
+              const hover = buildCurveHover(hoveredItem, hoveredTrainId);
+              const trainId = path.id as TrainId;
+              const style = getPathStyleV2(
+                {
+                  chart: 'std',
+                  train: {
+                    id: trainId,
+                    isDragging: draggingState?.draggedTrain.id === trainId,
+                    exceptionType: getStdExceptionType(trainSchedulesWithDetailsById, trainId),
+                  },
+                  selection,
+                  panelMode: panelSelectionMode,
+                  hover,
+                },
+                { colors: path.colors, isSimulated: path.isSimulated }
+              );
+              return (
+                <PathLayer
+                  key={`${path.id}-${path.points[0]?.position}`}
+                  path={path}
+                  color={style.color}
+                  level={style.level}
+                  border={style.outline}
+                />
+              );
+            })}
             {rect && <ZoomRect {...rect} />}
             {workSchedules && (
               <WorkScheduleLayer
