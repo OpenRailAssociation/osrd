@@ -1,4 +1,4 @@
-import type { APIRequestContext, APIResponse } from '@playwright/test';
+import type { APIRequestContext } from '@playwright/test';
 
 import type {
   PacedTrainException,
@@ -8,7 +8,7 @@ import type {
   TrainScheduleResponse,
 } from 'common/api/osrdEditoastApi';
 
-import { getApiContext, handleErrorResponse, postApiRequest } from './api-utils';
+import { getApiContext, handleErrorResponse } from './api-utils';
 import type { ExceptionFormat } from './types';
 
 const CHANGE_GROUP_KEYS: ReadonlyArray<keyof TrainScheduleExceptionChangeGroups> = [
@@ -72,7 +72,7 @@ const extractChangeGroups = (exception: ExceptionFormat): TrainScheduleException
  *    each exception separately. If timetableId is absent, exceptions are ignored.
  *
  * @param trainScheduleSetId - The ID of the train_schedule_set.
- * @param body               - The request payload containing train data.
+ * @param trains             - The train schedules to create.
  * @param timetableId        - Optional. The ID of the timetable (used for the exception endpoint).
  *                             If not provided, exceptions are not created.
  * @returns {Promise<TrainScheduleResponse[]>} - The API response containing the train schedule response.
@@ -87,87 +87,82 @@ async function sendTrains(
 
   const exceptionsToCreate: {
     trainIndex: number;
+    trainName?: string;
     exceptions: ExceptionFormat[];
   }[] = [];
 
   if (timetableId !== undefined) {
     trains.forEach((train, index) => {
-      if (train.paced?.exceptions) {
+      if (train.paced?.exceptions?.length) {
         exceptionsToCreate.push({
           trainIndex: index,
+          trainName: train.train_name,
           exceptions: train.paced.exceptions,
         });
       }
     });
   }
 
-  if (trains.some((train) => train.paced?.exceptions)) {
-    // Strip exceptions from the payload before sending trains
-    trains.forEach((train) => {
-      if (train.paced?.exceptions) {
-        train.paced.exceptions = [];
-      }
-    });
-  }
-
-  // 1. Send trains first to get their IDs
-  const apiContext: APIRequestContext = await getApiContext();
-  const pacedTrainsResponse: APIResponse = await apiContext.post(
-    `/api/train_schedule_sets/${trainScheduleSetId}/train_schedules/`,
-    {
-      data: JSON.stringify(trains),
-      headers: { 'Content-Type': 'application/json' },
-    }
+  // Clone trains with exceptions stripped before sending them
+  const trainsPayload: TrainSchedule[] = trains.map((train) =>
+    train.paced?.exceptions ? { ...train, paced: { ...train.paced, exceptions: [] } } : train
   );
-  handleErrorResponse(pacedTrainsResponse, 'Failed to send paced train');
-  const responseData = (await pacedTrainsResponse.json()) as TrainScheduleResponse[];
 
-  // 2. Create exceptions using the train_schedule_id returned for each train
-  if (exceptionsToCreate.length > 0) {
-    const createdExceptions = await Promise.all(
-      exceptionsToCreate.flatMap(({ trainIndex, exceptions }) => {
-        const trainScheduleId = responseData[trainIndex]?.id;
-        if (trainScheduleId === undefined) {
-          throw new Error(
-            `No train_schedule_id found in response for train at index ${trainIndex}`
-          );
-        }
+  // Reuse a single request context for every call and dispose it at the end
+  const apiContext: APIRequestContext = await getApiContext();
+  try {
+    // 1. Send trains first to get their IDs.
+    const pacedTrainsResponse = await apiContext.post(
+      `/api/train_schedule_sets/${trainScheduleSetId}/train_schedules/`,
+      { data: trainsPayload }
+    );
+    handleErrorResponse(pacedTrainsResponse, 'Failed to send paced train');
+    const responseData = (await pacedTrainsResponse.json()) as TrainScheduleResponse[];
 
-        return exceptions.map(async (exception) => {
-          const changeGroups = extractChangeGroups(exception);
+    // 2. Create exceptions using the train_schedule_id returned for each train.
+    // firing every exception of every train at once produces a burst of concurrent requests
+    // that can exhaust the DB connection pool / time out under CI load, which was a source of flakiness
+    for (const { trainIndex, trainName, exceptions } of exceptionsToCreate) {
+      const trainResponse = responseData[trainIndex];
+      const trainScheduleId = trainResponse?.id;
+      if (trainScheduleId === undefined) {
+        throw new Error(
+          `No train_schedule_id found in response for train "${trainName}" (index ${trainIndex})`
+        );
+      }
 
-          const createdExceptionResponse: TrainScheduleException = await postApiRequest(
-            `/api/timetable/${timetableId}/train_schedule_exception`,
-            {
+      for (const exception of exceptions) {
+        const exceptionResponse = await apiContext.post(
+          `/api/timetable/${timetableId}/train_schedule_exception`,
+          {
+            data: {
               train_schedule_id: trainScheduleId,
               disabled: exception.disabled ?? false,
               occurrence_index: exception.occurrence_index ?? null,
-              change_groups: changeGroups,
+              change_groups: extractChangeGroups(exception),
             },
-            undefined,
-            `Failed to create exception for train_schedule_id ${trainScheduleId}`
-          );
+          }
+        );
+        handleErrorResponse(
+          exceptionResponse,
+          `Failed to create exception for train "${trainName}" (train_schedule_id ${trainScheduleId})`
+        );
 
-          // Convert API format (TrainScheduleException with nested change_groups)
-          // to frontend format (PacedTrainException with flat change groups)
-          const createdException = convertToPacedTrainException(createdExceptionResponse);
-
-          return { trainIndex, exception: createdException };
-        });
-      })
-    );
-
-    // Integrate created exceptions back into responseData
-    createdExceptions.forEach(({ trainIndex, exception }) => {
-      const paced = responseData[trainIndex].paced;
-      if (paced) {
-        paced.exceptions ??= [];
-        paced.exceptions.push(exception);
+        // Convert API format (TrainScheduleException with nested change_groups)
+        // to frontend format (PacedTrainException with flat change groups) and integrate it back into responseData.
+        const createdException = convertToPacedTrainException(await exceptionResponse.json());
+        const { paced } = trainResponse;
+        if (paced) {
+          paced.exceptions ??= [];
+          paced.exceptions.push(createdException);
+        }
       }
-    });
-  }
+    }
 
-  return responseData;
+    return responseData;
+  } finally {
+    await apiContext.dispose();
+  }
 }
 
 export default sendTrains;
