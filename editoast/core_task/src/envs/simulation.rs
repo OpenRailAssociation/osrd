@@ -502,11 +502,13 @@ mod tests {
     use http::StatusCode;
     use pretty_assertions::assert_eq;
 
+    use crate::compress_json;
     use crate::mock_mget;
 
     use super::test_data::*;
     use super::*;
 
+    // TODO: Adapt this test so we mock `json_get_bulk` instead of `MGET` and avoid dealing with compressed values in the test.
     #[tokio::test]
     async fn simulation_env_into_stream() {
         common::setup_tracing_for_test();
@@ -527,17 +529,26 @@ mod tests {
         let vk = cache::Client::new_mock(
             vec![
                 mock_mget(vec![
-                    (simenv.pathfinding_env.key(1), Some(path(1, 4))),
-                    (simenv.pathfinding_env.key(2), Some(path(2, 4))),
+                    (
+                        simenv.pathfinding_env.key(1),
+                        Some(compress_json(&path(1, 4))),
+                    ),
+                    (
+                        simenv.pathfinding_env.key(2),
+                        Some(compress_json(&path(2, 4))),
+                    ),
                 ]),
                 mock_mget(vec![
-                    (simenv.cache_key(1), Some(simulation_success(1))),
+                    (
+                        simenv.cache_key(1),
+                        Some(compress_json(&simulation_success(1))),
+                    ),
                     (simenv.cache_key(2), None),
                 ]),
                 cache::MockCmd::new(
-                    redis::cmd("SET")
+                    redis::cmd("MSET")
                         .arg(simenv.cache_key(2))
-                        .arg(simulation_success(2).to_string()),
+                        .arg(compress_json(&simulation_success(2))),
                     Ok(redis::Value::Nil),
                 ),
             ],

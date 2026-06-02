@@ -151,6 +151,7 @@ utoipa = { git = "https://github.com/leovalais/utoipa.git", branch = "enum-varia
   "uuid",
 ] }
 uuid = { version = "1.23.1", features = ["serde", "v4"] }
+zstd = "0.13.3"
 
 [dependencies]
 anyhow = "1.0"

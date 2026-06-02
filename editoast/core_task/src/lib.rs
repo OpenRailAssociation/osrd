@@ -214,20 +214,14 @@ where
          */
 
         let (cache_write_tx, mut cache_write_rx) =
-            tokio::sync::mpsc::unbounded_channel::<(String, String)>();
+            tokio::sync::mpsc::unbounded_channel::<(String, serde_json::Value)>();
         {
             let vkconn = vkconn.clone();
             // 'write_cache' task, writes input key-value pairs to cache, logging errors
             tokio::spawn(
                 async move {
-                    use deadpool_redis::redis::AsyncCommands as _;
-                    while let Some((key, serialized_value)) = cache_write_rx.recv().await {
-                        if let Err(e) = vkconn
-                            .lock()
-                            .await
-                            .set::<_, _, ()>(key.clone(), serialized_value)
-                            .await
-                        {
+                    while let Some((key, value)) = cache_write_rx.recv().await {
+                        if let Err(e) = vkconn.lock().await.json_set(key.clone(), &value).await {
                             tracing::error!(?e, key, "task stream: cache write failure")
                         }
                     }
@@ -325,12 +319,12 @@ where
                             match input.compute(ctx.clone()).await {
                                 Ok(value) => {
                                     #[cfg(not(test))]
-                                    let serialized = serde_json::to_string(&value).unwrap();
+                                    let serialized = serde_json::to_value(&value).unwrap();
                                     #[cfg(test)]
                                     let serialized = {
                                         let mut serialized = serde_json::to_value(&value).unwrap();
                                         serialized.sort_all_objects();
-                                        serialized.to_string()
+                                        serialized
                                     };
                                     cache_write_tx.send((cache_key, serialized)).ok();
                                     results_tx
@@ -356,8 +350,15 @@ where
 }
 
 #[cfg(test)]
+fn compress_json<T: Serialize>(value: &T) -> Vec<u8> {
+    let mut encoder = zstd::Encoder::new(Vec::new(), 0).unwrap();
+    serde_json::to_writer(&mut encoder, value).unwrap();
+    encoder.finish().unwrap()
+}
+
+#[cfg(test)]
 /// Builds an `MGET` mocked command with sorted keys and ordered JSON keys for determinism
-fn mock_mget(mut values: Vec<(String, Option<serde_json::Value>)>) -> cache::MockCmd {
+fn mock_mget(mut values: Vec<(String, Option<Vec<u8>>)>) -> cache::MockCmd {
     values.sort_by_key(|(k, _)| k.clone());
     let (keys, values): (Vec<_>, Vec<_>) = values.into_iter().unzip();
     cache::MockCmd::new(
@@ -366,10 +367,7 @@ fn mock_mget(mut values: Vec<(String, Option<serde_json::Value>)>) -> cache::Moc
             values
                 .into_iter()
                 .map(|v| match v {
-                    Some(mut v) => {
-                        v.sort_all_objects();
-                        deadpool_redis::redis::Value::SimpleString(v.to_string())
-                    }
+                    Some(v) => deadpool_redis::redis::Value::BulkString(v),
                     None => deadpool_redis::redis::Value::Nil,
                 })
                 .collect(),
