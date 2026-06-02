@@ -80,7 +80,9 @@ const ExpandedTrainForm = ({ train, onCollapse }: ExpandedTrainFormProps) => {
               </div>
               <div className="actions">
                 <Button
-                  label={t('manageTrainSchedule.trainHeader.form.manageExtraOccurrences')}
+                  label={t('manageTrainSchedule.trainHeader.form.extraOccurrences', {
+                    count: 0 /* TODO: properly compute the number of extra occurrences */,
+                  })}
                   variant="Quiet"
                   onClick={() => {}}
                   size="small"
