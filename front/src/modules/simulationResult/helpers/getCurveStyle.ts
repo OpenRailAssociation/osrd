@@ -34,7 +34,18 @@ type StyleOptions = {
    * its label fade out so the selection stands out.
    */
   outOfSelection?: boolean;
+  /**
+   * The train is directly under the cursor. Hover takes priority over
+   * `outOfSelection` (the curve "comes back" while hovered).
+   */
+  hovered?: boolean;
 };
+
+const hoveredLabel = (colors: CategoryColors): NonNullable<CurveStyle['label']> => ({
+  color: colors.hovered,
+  background: { color: colors.background },
+  fontWeight: FONT_WEIGHT_REGULAR,
+});
 
 const getBaseStyle = (state: CurveVisualState, train: TrainForStyle): CurveStyle => {
   const { colors, isSimulated } = train;
@@ -125,16 +136,35 @@ const getBaseStyle = (state: CurveVisualState, train: TrainForStyle): CurveStyle
   }
 };
 
+const getHoveredStyle = (state: CurveVisualState, train: TrainForStyle): CurveStyle => {
+  const { colors, isSimulated } = train;
+  // 'none' hovered is a full visual switch to the category hovered tint.
+  if (state === 'none') {
+    return {
+      color: colors.hovered,
+      opacity: 1,
+      level: 3,
+      label: hoveredLabel(colors),
+      ...(isSimulated === false && { outline: INVALID_OUTLINE }),
+    };
+  }
+  // 'active', 'passivePrimary', 'passiveSecondary' and 'drag' do not change on
+  // hover: the user is already focused on (or interacting with) this curve.
+  return getBaseStyle(state, train);
+};
+
 /**
  * Maps a curve visual state to its style primitives.
  *
- * `outOfSelection` is a transverse modifier applied on top of the state.
+ * `outOfSelection` and `hovered` are transverse modifiers applied on top of
+ * the state. When `hovered` is set it wins over `outOfSelection`.
  */
 const getCurveStyle = (
   state: CurveVisualState,
   train: TrainForStyle,
-  { outOfSelection = false }: StyleOptions = {}
+  { outOfSelection = false, hovered = false }: StyleOptions = {}
 ): CurveStyle => {
+  if (hovered) return getHoveredStyle(state, train);
   if (outOfSelection) {
     const { colors } = train;
     return {
