@@ -3661,8 +3661,8 @@ export type CoreTrainPath = {
   track_section_ranges: CoreTrackRange[];
 };
 export type CorePathfindingResultSuccess = {
-  /** The path offset in mm of each position where the train backtracks */
-  backtrack_positions?: number[] | null;
+  /** The indexes of the path items where the train backtracks */
+  backtrack_path_items?: number[] | null;
   /** Length of the path in mm */
   length: number;
   /** Full description of the path data */

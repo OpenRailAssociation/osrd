@@ -280,10 +280,11 @@ pub struct Request {
     pub options: TrainScheduleOptions,
     pub physics_consist: PhysicsConsist,
     pub electrical_profile_set_id: Option<i64>,
-    /// The path offset in mm of each path item given as input of the pathfinding
+    /// The path offsets in mm of each path item given as input of the pathfinding
     pub path_item_positions: Vec<u64>,
-    /// The path offset in mm of each position where the train backtracks
-    pub backtrack_positions: Option<Vec<u64>>,
+    /// The indexes of the path items where the train backtracks
+    // TODO: Remove Option once front is fully connected
+    pub backtrack_path_items: Option<Vec<usize>>,
 }
 
 #[derive(Serialize, Deserialize, PartialEq, Clone, Debug)]

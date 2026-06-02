@@ -154,7 +154,7 @@ _EXPECTED_WEST_TO_SOUTH_EAST_PATH = Path(
         },
         "length": 45548966,
         "path_item_positions": [0, 45548966],
-        "backtrack_positions": [],
+        "backtrack_path_items": [],
     }
 )
 

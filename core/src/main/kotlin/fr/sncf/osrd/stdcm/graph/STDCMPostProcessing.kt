@@ -90,7 +90,9 @@ class STDCMPostProcessing(private val graph: STDCMGraph) {
                 // after the redesign of simulation data models
                 makePathStops(stops, trainPath),
                 seenSteps.map { it.travelledPathOffset },
-                seenSteps.filter { it.isBacktracking }.map { it.travelledPathOffset },
+                seenSteps.mapIndexedNotNull { index, step ->
+                    if (step.isBacktracking) index else null
+                },
                 withAllowance.engineeringAllowanceRanges,
             )
         return if (res.envelope.totalTime > maxRunTime) {
