@@ -207,7 +207,7 @@ class STDCMEndpoint(
                     infra,
                     path.trainPath,
                     path.waypointOffsets,
-                    path.backtrackingOffsets,
+                    path.backtrackIndexes,
                 )
 
             val simulationResponse =

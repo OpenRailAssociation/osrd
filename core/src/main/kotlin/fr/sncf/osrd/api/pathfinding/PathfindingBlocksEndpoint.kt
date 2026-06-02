@@ -236,8 +236,8 @@ private fun buildNoPathFoundException(
 
 data class ProcessedPathfindingResponse(
     val path: TrainPath,
-    val targetOffsets: List<Offset<PhysicsPath>>,
-    val backtrackingOffsets: List<Offset<PhysicsPath>>,
+    val waypointOffsets: List<Offset<PhysicsPath>>,
+    val backtrackIndexes: List<Int>,
 )
 
 private fun processPathfindingResponse(
@@ -247,8 +247,9 @@ private fun processPathfindingResponse(
     val trainPath = explorer.buildFullPath(infra.rawInfra, infra.blockInfra)
     val seenSteps = explorer.getStepTracker().getSeenSteps().toList()
     val stepOffsets = seenSteps.map { it.travelledPathOffset }
-    val backtrackingOffsets = seenSteps.filter { it.isBacktracking }.map { it.travelledPathOffset }
-    return ProcessedPathfindingResponse(trainPath, stepOffsets, backtrackingOffsets)
+    val backtrackIndexes =
+        seenSteps.mapIndexedNotNull { index, step -> if (step.isBacktracking) index else null }
+    return ProcessedPathfindingResponse(trainPath, stepOffsets, backtrackIndexes)
 }
 
 /**

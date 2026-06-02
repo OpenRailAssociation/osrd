@@ -443,7 +443,7 @@ mod tests {
             },
             length: 14450000,
             path_item_positions: vec![0, 14450000],
-            backtrack_positions: Some(vec![]),
+            backtrack_path_items: Some(vec![]),
         }
     }
 

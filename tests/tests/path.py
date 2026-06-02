@@ -11,4 +11,4 @@ class Path:
     path: Dict[str, List]
     length: int
     path_item_positions: Iterable[Any]
-    backtrack_positions: Iterable[Any]
+    backtrack_path_items: Iterable[int]

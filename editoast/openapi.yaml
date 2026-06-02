@@ -5643,15 +5643,14 @@ components:
       - length
       - path_item_positions
       properties:
-        backtrack_positions:
+        backtrack_path_items:
           type:
           - array
           - 'null'
           items:
             type: integer
-            format: int64
             minimum: 0
-          description: The path offset in mm of each position where the train backtracks
+          description: The indexes of the path items where the train backtracks
         length:
           type: integer
           format: int64

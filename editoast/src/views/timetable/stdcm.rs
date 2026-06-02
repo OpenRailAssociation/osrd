@@ -722,7 +722,7 @@ mod tests {
             },
             length: 1,
             path_item_positions: vec![0, 10],
-            backtrack_positions: Some(vec![]),
+            backtrack_path_items: Some(vec![]),
         }
     }
 

@@ -199,7 +199,7 @@ class PathfindingNotFoundNotFoundInTracks(BaseModel):
     error_type: Literal["not_found_in_tracks"]
 
 
-class BacktrackPosition(RootModel[int]):
+class BacktrackPathItem(RootModel[int]):
     root: Annotated[int, Field(ge=0)]
 
 
@@ -5427,9 +5427,9 @@ class CorePathfindingResultSuccess(BaseModel):
     A successful pathfinding result. This is also used for STDCM response.
     """
 
-    backtrack_positions: list[BacktrackPosition] | None = None
+    backtrack_path_items: list[BacktrackPathItem] | None = None
     """
-    The path offset in mm of each position where the train backtracks
+    The indexes of the path items where the train backtracks
     """
     length: Annotated[int, Field(ge=0)]
     """

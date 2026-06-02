@@ -33,12 +33,14 @@ class SimulationRequest(
     @Json(name = "physics_consist") val physicsConsist: PhysicsConsistModel,
     @Json(name = "electrical_profile_set_id") val electricalProfileSetId: String?,
     @Json(name = "path_item_positions") val pathItemPositions: List<Offset<PhysicsPath>>,
-    @Json(name = "backtrack_positions") val backtrackPositions: List<Offset<PhysicsPath>>,
+    @Json(name = "backtrack_path_items") val backtrackPathItems: List<Int>,
 ) {
     init {
-        backtrackPositions.forEach { position ->
-            require(pathItemPositions.contains(position))
-            require(schedule.first { it.pathOffset == position }.stopFor != null)
+        backtrackPathItems.forEach { pathItemIndex ->
+            require(pathItemIndex > 0 && pathItemIndex < pathItemPositions.size - 1)
+            require(
+                schedule.first { it.pathOffset == pathItemPositions[pathItemIndex] }.stopFor != null
+            )
         }
     }
 

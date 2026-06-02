@@ -311,7 +311,7 @@ pub mod tests {
             },
             length: 100,
             path_item_positions,
-            backtrack_positions: Some(vec![]),
+            backtrack_path_items: Some(vec![]),
         })
     }
 

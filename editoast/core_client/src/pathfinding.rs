@@ -128,8 +128,9 @@ pub struct PathfindingResultSuccess {
     /// The path offset in mm of each path item given as input of the pathfinding
     /// The first value is always `0` (beginning of the path) and the last one is always equal to the `length` of the path in mm
     pub path_item_positions: Vec<u64>,
-    /// The path offset in mm of each position where the train backtracks
-    pub backtrack_positions: Option<Vec<u64>>,
+    /// The indexes of the path items where the train backtracks
+    // TODO: Remove Option once front is fully connected
+    pub backtrack_path_items: Option<Vec<usize>>,
 }
 
 // Enum for input-related errors

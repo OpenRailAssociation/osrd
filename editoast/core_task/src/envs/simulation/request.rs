@@ -19,7 +19,7 @@ pub(super) fn build_request(
     core_client::pathfinding::PathfindingResultSuccess {
         path,
         path_item_positions,
-        backtrack_positions,
+        backtrack_path_items,
         ..
     }: core_client::pathfinding::PathfindingResultSuccess,
 ) -> Result<core_client::simulation::Request, ()> {
@@ -117,7 +117,7 @@ pub(super) fn build_request(
         physics_consist: sim_consist.0.clone(),
         path,
         path_item_positions,
-        backtrack_positions,
+        backtrack_path_items,
     })
 }
 
@@ -172,7 +172,7 @@ mod tests {
             path: path.clone(),
             length: 100,
             path_item_positions: path_item_positions.clone(),
-            backtrack_positions: Some(vec![]),
+            backtrack_path_items: Some(vec![]),
         };
 
         let core_env = CoreEnv::new_mock(MockingClient::new());
@@ -253,7 +253,7 @@ mod tests {
             physics_consist: sim_consist.0,
             path,
             path_item_positions,
-            backtrack_positions: Some(vec![]),
+            backtrack_path_items: Some(vec![]),
         };
 
         assert_eq!(request, expected);
@@ -272,7 +272,7 @@ mod tests {
             path: path.clone(),
             length: 100,
             path_item_positions: path_item_positions.clone(),
-            backtrack_positions: Some(vec![]),
+            backtrack_path_items: Some(vec![]),
         };
 
         let core_env = CoreEnv::new_mock(MockingClient::new());
@@ -399,7 +399,7 @@ mod tests {
             physics_consist: sim_consist.0,
             path,
             path_item_positions,
-            backtrack_positions: Some(vec![]),
+            backtrack_path_items: Some(vec![]),
         };
 
         assert_eq!(request, expected);
@@ -419,7 +419,7 @@ mod tests {
             path,
             length: 100,
             path_item_positions: path_positions,
-            backtrack_positions: Some(vec![]),
+            backtrack_path_items: Some(vec![]),
         };
 
         let core_env = CoreEnv::new_mock(MockingClient::new());
