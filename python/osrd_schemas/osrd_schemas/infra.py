@@ -630,6 +630,33 @@ class RailJsonInfra(BaseModel):
         description="Neutral sections of the infra"
     )
 
+    @staticmethod
+    def empty() -> "RailJsonInfra":
+        return RailJsonInfra(
+            operational_points=[],
+            level_crossings=[],
+            routes=[],
+            switches=[],
+            track_sections=[],
+            speed_sections=[],
+            electrifications=[],
+            signals=[],
+            buffer_stops=[],
+            detectors=[],
+            neutral_sections=[],
+        )
+
+    def __repr__(self):
+        return (
+            f"RailJsonInfra(operational_points={len(self.operational_points)}, "
+            f"level_crossings={len(self.level_crossings)}, "
+            f"routes={len(self.routes)}, switches={len(self.switches)}, "
+            f"track_sections={len(self.track_sections)}, speed_sections={len(self.speed_sections)}, "
+            f"electrifications={len(self.electrifications)}, signals={len(self.signals)}, "
+            f"buffer_stops={len(self.buffer_stops)}, detectors={len(self.detectors)}, "
+            f"neutral_sections={len(self.neutral_sections)})"
+        )
+
 
 for t in BaseObjectTrait.__subclasses__():
     ALL_OBJECT_TYPES.append(t)
@@ -662,7 +689,7 @@ def register_extension(object: Type[BaseModel], name):
             default=None,
         )
 
-    def register_extension(extension):
+    def register_extension(extension: Type[BaseModel]):
         extensions_field = object.model_fields["extensions"]
         assert extensions_field.annotation is not None and issubclass(
             extensions_field.annotation, BaseModel
