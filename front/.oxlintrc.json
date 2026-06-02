@@ -17,10 +17,6 @@
       "specifier": "eslint-plugin-react-hooks"
     },
     {
-      "name": "react-js",
-      "specifier": "eslint-plugin-react"
-    },
-    {
       "name": "import-js",
       "specifier": "eslint-plugin-import"
     }
@@ -432,7 +428,6 @@
         ]
       }
     ],
-    "react-js/no-deprecated": "error",
     "react-hooks-js/component-hook-factories": "error",
     "react-hooks-js/config": "error",
     "react-hooks-js/error-boundaries": "error",
