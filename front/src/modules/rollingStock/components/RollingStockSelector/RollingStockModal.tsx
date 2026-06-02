@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext, useMemo, type MutableRefObject } from 'react';
+import React, { useState, useEffect, useContext, useMemo, type RefObject } from 'react';
 
 import { useTranslation } from 'react-i18next';
 
@@ -13,7 +13,7 @@ import { RollingStockCard } from '../RollingStockCard';
 
 type RollingStockModal = {
   rollingStockId: number | undefined;
-  ref2scroll: MutableRefObject<HTMLDivElement | null>;
+  ref2scroll: RefObject<HTMLDivElement | null>;
   onSelectRollingStock: (rollingStock: LightRollingStockWithLiveries, comfort: Comfort) => void;
 };
 

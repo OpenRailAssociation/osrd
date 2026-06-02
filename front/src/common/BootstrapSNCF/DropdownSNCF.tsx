@@ -1,4 +1,4 @@
-import { type LegacyRef, type ReactNode, useEffect, useRef, useState } from 'react';
+import { type ReactNode, type RefAttributes, useEffect, useRef, useState } from 'react';
 
 import TetherComponent from 'react-tether';
 
@@ -55,7 +55,7 @@ const DropdownSNCF = ({
         className="over-modal dropdown"
         attachment="top right"
         targetAttachment="bottom right"
-        renderTarget={(ref: LegacyRef<HTMLButtonElement>) => (
+        renderTarget={(ref: RefAttributes<HTMLButtonElement>['ref']) => (
           <button
             data-testid="dropdown-sncf"
             ref={ref}
@@ -72,7 +72,7 @@ const DropdownSNCF = ({
             )}
           </button>
         )}
-        renderElement={(ref: LegacyRef<HTMLDivElement>) =>
+        renderElement={(ref: RefAttributes<HTMLDivElement>['ref']) =>
           isDropdownShown && (
             <div ref={ref}>
               <div

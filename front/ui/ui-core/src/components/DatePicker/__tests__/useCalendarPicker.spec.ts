@@ -58,7 +58,7 @@ describe('useCalendarPicker', () => {
             selectedSlot: { start: new Date(2024, february, 2), end: new Date(2024, february, 1) },
           })
         )
-      ).toThrowError();
+      ).toThrow();
     });
 
     it('should throw an error if selectableSlot is not valid', () => {
@@ -67,7 +67,7 @@ describe('useCalendarPicker', () => {
         end: new Date(2024, february, 1),
       };
 
-      expect(() => renderHook(() => useCalendarPicker({ selectableSlot }))).toThrowError();
+      expect(() => renderHook(() => useCalendarPicker({ selectableSlot }))).toThrow();
     });
 
     it('should throw an error if selectedSlot is not within selectableSlot', () => {
@@ -77,9 +77,7 @@ describe('useCalendarPicker', () => {
         end: new Date(2024, february, 4),
       };
 
-      expect(() =>
-        renderHook(() => useCalendarPicker({ selectedSlot, selectableSlot }))
-      ).toThrowError();
+      expect(() => renderHook(() => useCalendarPicker({ selectedSlot, selectableSlot }))).toThrow();
     });
 
     it('should throw an error when initialDate is not a valid date', () => {
@@ -89,9 +87,7 @@ describe('useCalendarPicker', () => {
         end: new Date(2024, february, 4),
       };
 
-      expect(() =>
-        renderHook(() => useCalendarPicker({ initialDate, selectableSlot }))
-      ).toThrowError();
+      expect(() => renderHook(() => useCalendarPicker({ initialDate, selectableSlot }))).toThrow();
     });
   });
 

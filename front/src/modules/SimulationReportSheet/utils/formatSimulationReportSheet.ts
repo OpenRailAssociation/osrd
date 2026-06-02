@@ -34,7 +34,7 @@ function generateRandomString(length: number): string {
  */
 export function generateCodeNumber(): string {
   const currentDate = new Date();
-  const year = currentDate.getFullYear().toString().substr(-2);
+  const year = currentDate.getFullYear().toString().slice(-2);
   const month = (currentDate.getMonth() + 1).toString().padStart(2, '0');
   const randomPart1 = generateRandomString(3);
   const randomPart2 = generateRandomString(3);

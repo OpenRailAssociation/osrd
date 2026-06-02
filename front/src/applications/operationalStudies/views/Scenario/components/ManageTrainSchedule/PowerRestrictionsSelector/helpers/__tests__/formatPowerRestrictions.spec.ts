@@ -90,7 +90,7 @@ describe('formatPowerRestrictions', () => {
   it('should throw an error if a pathStep is not found', () => {
     expect(() =>
       formatPowerRestrictions(powerRestrictions, [], customRanges, changePoints, pathLength)
-    ).toThrowError('Impossible to locate the path step a while formatting the power restrictions');
+    ).toThrow('Impossible to locate the path step a while formatting the power restrictions');
   });
 
   it('should throw an error if a pathStep has no positionOnPath', () => {
@@ -102,6 +102,6 @@ describe('formatPowerRestrictions', () => {
         changePoints,
         pathLength
       )
-    ).toThrowError('Impossible to locate a path step while formatting the power restrictions');
+    ).toThrow('Impossible to locate a path step while formatting the power restrictions');
   });
 });
