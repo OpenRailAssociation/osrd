@@ -138,7 +138,7 @@ export const formatStdcmDataForSimulationTable = (
       startTime,
       ...(isFirst
         ? {
-            weight: `${Math.floor(consist.mass)} t`,
+            weight: `${consist.mass} t`,
             length: `${consist.length} m`,
             referenceEngine: consist.rollingStockName,
           }
