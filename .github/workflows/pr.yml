@@ -10,7 +10,7 @@ jobs:
     name: "Label PR"
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v6.0.2
       - name: Label PR
         uses: actions/labeler@v6
         with:
