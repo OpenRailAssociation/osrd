@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 
-import { flatten, inRange, last } from 'lodash';
+import { flatten, inRange } from 'lodash';
 
 import { hexToRgb, indexToColor } from '../../common/helpers/colors';
 import { getCrispLineCoordinate } from '../../common/helpers/time';
@@ -14,12 +14,11 @@ import type {
 import { SpaceTimeChartCanvasContext } from '../lib/context';
 import {
   type DataPoint,
-  DEFAULT_PATH_END,
   type OperationalPoint,
   type PathData,
   type SpaceTimeChartContextType,
 } from '../lib/types';
-import { drawAliasedDisc, drawAliasedLine, drawPathExtremity } from '../utils/canvas';
+import { drawAliasedDisc, drawAliasedLine } from '../utils/canvas';
 import { getPathDirection, getSpacePixels } from '../utils/paths';
 import { getSpaceBreakpoints } from '../utils/scales';
 
@@ -417,40 +416,6 @@ export const PathLayer = ({
     [drawLabelWithBackground]
   );
 
-  /**
-   * This function draws the extremities of the path.
-   */
-  const drawExtremities = useCallback<DrawingFunction<SpaceTimeChartContextType>>(
-    (ctx, { getTimePixel, getSpacePixel, swapAxis = false }) => {
-      if (!path.points.length) return;
-
-      const from = path.points[0];
-      const fromEnd = path.fromEnd || DEFAULT_PATH_END;
-      const to = last(path.points) as DataPoint;
-      const toEnd = path.toEnd || DEFAULT_PATH_END;
-
-      drawPathExtremity(
-        ctx,
-        getTimePixel(from.time),
-        getSpacePixel(from.position),
-        swapAxis,
-        'from',
-        getPathDirection(path, 0),
-        fromEnd
-      );
-      drawPathExtremity(
-        ctx,
-        getTimePixel(to.time),
-        getSpacePixel(to.position),
-        swapAxis,
-        'to',
-        getPathDirection(path, path.points.length - 1, true),
-        toEnd
-      );
-    },
-    [path]
-  );
-
   const computePathLength = useCallback(
     (operationalPoints: OperationalPoint[], lines: Point[][]) => {
       let totalLength = 0;
@@ -600,11 +565,6 @@ export const PathLayer = ({
         ctx.stroke();
       });
 
-      // Draw extremities:
-      ctx.setLineDash([]);
-      ctx.lineWidth = style.endWidth;
-      drawExtremities(ctx, stcContext);
-
       // Draw label:
       if (!stcContext.hidePathsLabels) {
         const pathLength = computePathLength(stcContext.operationalPoints, lines);
@@ -622,7 +582,6 @@ export const PathLayer = ({
       drawPauses,
       level,
       getPathLines,
-      drawExtremities,
       drawSinglePoint,
       computePathLength,
       drawLabel,

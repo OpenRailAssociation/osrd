@@ -1,7 +1,7 @@
 import { clamp } from 'lodash';
 
 import type { Point, RGBAColor } from '../../common/types';
-import type { SpaceTimeChartContextType, Direction, PathEnd, RGBColor } from '../lib/types';
+import type { SpaceTimeChartContextType, RGBColor } from '../lib/types';
 
 /**
  * This function draws a thick lines from "from" to "to" on the given ImageData, with no
@@ -279,86 +279,6 @@ export function drawAliasedRect(
       imageData.data[index + 2] = b;
       imageData.data[index + 3] = 255;
     }
-  }
-}
-
-/**
- * This function draws a "stop" path extremity.
- * That handles a path that stops or starts exactly in an operational points included in the line
- * represented in the chart.
- */
-const STOP_END_SIZE = 6;
-export function drawPathStopExtremity(
-  ctx: CanvasRenderingContext2D,
-  timePixel: number,
-  spacePixel: number,
-  swapAxis: boolean
-): void {
-  ctx.beginPath();
-  if (!swapAxis) {
-    ctx.moveTo(timePixel, spacePixel - STOP_END_SIZE / 2);
-    ctx.lineTo(timePixel, spacePixel + STOP_END_SIZE / 2);
-  } else {
-    ctx.moveTo(spacePixel - STOP_END_SIZE / 2, timePixel);
-    ctx.lineTo(spacePixel + STOP_END_SIZE / 2, timePixel);
-  }
-  ctx.stroke();
-}
-
-/**
- * This function draws an "out" path extremity.
- * That handles a path that leaves or joins the line represented in the chart.
- */
-const OUT_END_SIZE = 12;
-export function drawPathOutExtremity(
-  ctx: CanvasRenderingContext2D,
-  timePixel: number,
-  spacePixel: number,
-  swapAxis: boolean,
-  extremityType: 'from' | 'to',
-  pathDirection: Direction
-): void {
-  let horizontalSign = extremityType === 'from' ? -1 : 1;
-  let verticalSign = (pathDirection === 'backward' ? -1 : 1) * horizontalSign;
-  let controlX = timePixel + 4 * horizontalSign;
-  let controlY = spacePixel + (OUT_END_SIZE - 2) * verticalSign;
-  let x = timePixel;
-  let y = spacePixel;
-  if (swapAxis) {
-    [horizontalSign, verticalSign] = [verticalSign, horizontalSign];
-    [controlX, controlY] = [controlY, controlX];
-    [x, y] = [y, x];
-  }
-
-  ctx.beginPath();
-  ctx.moveTo(x, y);
-  ctx.bezierCurveTo(
-    controlX,
-    controlY,
-    controlX,
-    controlY,
-    x + OUT_END_SIZE * horizontalSign,
-    y + OUT_END_SIZE * verticalSign
-  );
-  ctx.stroke();
-}
-
-/**
- * This function draws a path extremity.
- */
-export function drawPathExtremity(
-  ctx: CanvasRenderingContext2D,
-  timePixel: number,
-  spacePixel: number,
-  swapAxis: boolean,
-  extremityType: 'from' | 'to',
-  pathDirection: Direction,
-  pathEnd: PathEnd
-): void {
-  if (pathEnd === 'out') {
-    drawPathOutExtremity(ctx, timePixel, spacePixel, swapAxis, extremityType, pathDirection);
-  } else {
-    drawPathStopExtremity(ctx, timePixel, spacePixel, swapAxis);
   }
 }
 
