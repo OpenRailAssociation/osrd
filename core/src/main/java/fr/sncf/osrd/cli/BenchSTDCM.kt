@@ -225,7 +225,6 @@ class BenchSTDCM : CliCommand {
                             parseMarginValue(request.margin),
                             Pathfinding.TIMEOUT,
                             temporarySpeedLimitManager,
-                            allowedTrackSections,
                             STDCMGraph.SearchMetadata(
                                 request.startTime,
                                 requirements.metadata,

@@ -191,7 +191,6 @@ class STDCMEndpoint(
                     parseMarginValue(request.margin),
                     Pathfinding.TIMEOUT,
                     temporarySpeedLimitManager,
-                    allowedTrackSections,
                     STDCMGraph.SearchMetadata(request.startTime, requirements.metadata, s3Context),
                     failureExplainer = failureExplainer,
                     callback,
@@ -364,25 +363,6 @@ class STDCMEndpoint(
                 )
             }
         }
-    }
-
-    /** Build the electrical profiles from the path */
-    private fun buildSTDCMElectricalProfiles(
-        path: STDCMResult,
-        rollingStock: RollingStock,
-        comfort: Comfort,
-    ): RangeValues<ElectricalProfileValue> {
-        val electrificationMap =
-            path.trainPath.getElectrificationMap(
-                rollingStock.basePowerClass,
-                offsetRangeMapOf(),
-                rollingStock.powerRestrictions,
-                false,
-            )
-        val curvesAndConditions = rollingStock.mapTractiveEffortCurves(electrificationMap, comfort)
-        val electrificationRanges =
-            ElectrificationRange.from(curvesAndConditions.conditions, electrificationMap)
-        return makeElectricalProfiles(electrificationRanges)
     }
 }
 

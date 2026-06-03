@@ -7,7 +7,6 @@ import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue
 import fr.sncf.osrd.pathfinding.Pathfinding
 import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
-import fr.sncf.osrd.sim_infra.api.TrackSectionId
 import fr.sncf.osrd.sim_infra.impl.TemporarySpeedLimitManager
 import fr.sncf.osrd.stdcm.STDCMResult
 import fr.sncf.osrd.stdcm.infra_exploration.ExplorerStep
@@ -59,7 +58,6 @@ fun findPath(
     standardAllowance: AllowanceValue?,
     pathfindingTimeout: Double,
     temporarySpeedLimitManager: TemporarySpeedLimitManager,
-    allowedTrackSections: Set<TrackSectionId>? = null,
     searchMetadata: STDCMGraph.SearchMetadata? = null,
     failureExplainer: FailureExplainer? = null,
     progressCallback: ProgressCallback? = null,
@@ -78,7 +76,6 @@ fun findPath(
             standardAllowance,
             pathfindingTimeout,
             temporarySpeedLimitManager,
-            allowedTrackSections,
             searchMetadata,
             failureExplainer,
             progressCallback,
@@ -99,10 +96,9 @@ class STDCMPathfinding(
     tag: String?,
     standardAllowance: AllowanceValue?,
     private val pathfindingTimeout: Double = Pathfinding.TIMEOUT,
-    private val temporarySpeedLimitManager: TemporarySpeedLimitManager,
-    private val allowedTrackSections: Set<TrackSectionId>?,
-    private val searchMetadata: STDCMGraph.SearchMetadata?,
-    private val failureExplainer: FailureExplainer?,
+    temporarySpeedLimitManager: TemporarySpeedLimitManager,
+    searchMetadata: STDCMGraph.SearchMetadata?,
+    failureExplainer: FailureExplainer?,
     private val progressCallback: ProgressCallback? = null,
 ) {
 
@@ -150,8 +146,6 @@ class STDCMPathfinding(
                     comfort,
                     maxRunTime,
                     blockAvailability,
-                    graph.tag,
-                    temporarySpeedLimitManager,
                 ) ?: return null
         val travelTime = res.envelope.totalTime
         val stopTime = res.stopResults.sumOf { it.duration }
