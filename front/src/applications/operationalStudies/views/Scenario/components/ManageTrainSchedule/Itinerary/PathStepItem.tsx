@@ -27,6 +27,8 @@ import {
 } from './ComboBoxCustomList/ListElementComponent';
 import { computePathStepCoordinates, isOpRefMetadata } from './utils';
 
+type SegmentedControlOption = { value: string; label: string; icon: React.ReactNode };
+
 type PathStepProps = {
   pathStep: PathStepV2;
   setPathSteps?: React.Dispatch<React.SetStateAction<PathStepV2[]>>;
@@ -216,8 +218,6 @@ const PathStepItem = ({
     if (viewport) dispatch(updateViewport(viewport));
   };
 
-  type SegmentedControlOption = { value: string; label: string; icon: React.ReactNode };
-
   const segmentedControlOptions: SegmentedControlOption[] = [
     { value: 'pass', label: t('pass'), icon: <ArrowRight size="sm" /> },
     { value: 'stop', label: t('stop'), icon: <Square size="sm" variant="fill" /> },
@@ -227,7 +227,9 @@ const PathStepItem = ({
     if (!pathStep || !setPathSteps || index === undefined) return;
     const newPathStep = { ...pathStep };
     if (option.value === 'stop') {
-      newPathStep.stopFor = new Duration({ minutes: 0 });
+      newPathStep.stopFor = isDestination
+        ? new Duration({ seconds: 0 })
+        : new Duration({ seconds: 60 });
     } else {
       newPathStep.stopFor = null;
     }
