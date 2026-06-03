@@ -35,11 +35,9 @@ pub fn simple_rolling_stock() -> RollingStock {
         railjson_version: "12".to_string(),
         rolling_resistance: RollingResistance {
             rolling_resistance_type: "davis".to_string(),
-            // TODO those values are wrong, they correspond to daN/T, (daN/T)/(km/h), and (daN/T)/(km/h)²
-            // We should use more realistic values and fix the tests
-            A: units::newton::new(1.0),
-            B: units::kilogram_per_second::new(0.01),
-            C: units::kilogram_per_meter::new(0.0005),
+            A: units::newton::new(1000.0),
+            B: units::kilogram_per_second::new(40.0),
+            C: units::kilogram_per_meter::new(2.0),
         },
         length: units::meter::new(140.0),
         mass: units::kilogram::new(15000.0),
@@ -60,11 +58,9 @@ pub fn towed_rolling_stock() -> TowedRollingStock {
         inertia_coefficient: 1.05,
         rolling_resistance: RollingResistancePerWeight {
             rolling_resistance_type: "davis".to_string(),
-            // TODO those values are wrong, they correspond to daN/T, (daN/T)/(km/h), and (daN/T)/(km/h)²
-            // We should use more realistic values and fix the tests
-            A: units::meter_per_second_squared::new(1.0),
-            B: units::hertz::new(0.01),
-            C: units::per_meter::new(0.0002),
+            A: units::meter_per_second_squared::new(0.01),
+            B: units::hertz::new(0.0002),
+            C: units::per_meter::new(2e-5),
         },
         const_gamma: units::meter_per_second_squared::new(0.5),
         max_speed: Some(units::meter_per_second::new(35.0)),
