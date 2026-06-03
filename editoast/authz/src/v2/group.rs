@@ -32,6 +32,24 @@ pub fn group_members(group: Group) -> Protected<Vec<User>> {
     .with_check(Check::group(group))
 }
 
+pub fn user_groups(user: User) -> Protected<Vec<Group>> {
+    Protected::new(move |openfga| {
+        async move {
+            let UserList {
+                users,
+                public_access,
+            } = openfga.list_users(User::group().query_users(&user)).await?;
+            debug_assert!(
+                public_access.is_none(),
+                "we don't write public accesses for user groups"
+            );
+            Ok(users)
+        }
+        .boxed()
+    })
+    .with_check(Check::user(user))
+}
+
 /// Adds some members to a group
 ///
 /// Idempotent but not atomic due to the lack of transactions in OpenFGA.
@@ -220,6 +238,36 @@ mod tests {
         assert_eq!(
             openfga.group_members(&Group(1)).await,
             HashSet::from_iter([])
+        );
+    }
+
+    #[tokio::test]
+    async fn user_groups_empty() {
+        let openfga = crate::authz_client!();
+        assert_eq!(openfga.user_groups(User(1)).await, HashSet::new());
+    }
+
+    #[tokio::test]
+    async fn user_groups_some() {
+        let openfga = crate::authz_client!();
+        let authorize = Authorize(&openfga);
+
+        add_members(Group(1), HashSet::from_iter([User(1), User(2)]))
+            .authorize(&authorize)
+            .await
+            .unwrap()
+            .unwrap_authorized()
+            .await;
+        add_members(Group(2), HashSet::from_iter([User(1)]))
+            .authorize(&authorize)
+            .await
+            .unwrap()
+            .unwrap_authorized()
+            .await;
+
+        assert_eq!(
+            openfga.user_groups(User(1)).await,
+            HashSet::from([Group(1), Group(2)])
         );
     }
 }

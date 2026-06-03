@@ -23,10 +23,12 @@ use crate::v2::rolling_stock_effective_grant;
 use crate::v2::rolling_stock_granted_subjects;
 use crate::v2::rolling_stock_privileges;
 use crate::v2::special_authorizers;
+use crate::v2::user_groups;
 
 pub trait TestClientExt {
     async fn subject_roles(&self, subject: &Subject) -> HashSet<Role>;
     async fn group_members(&self, group: &Group) -> HashSet<User>;
+    async fn user_groups(&self, user: User) -> HashSet<Group>;
 
     async fn infra_effective_grant(&self, subject: Subject, infra: Infra) -> Option<InfraGrant>;
     async fn infra_direct_grant(
@@ -79,6 +81,16 @@ impl TestClientExt for fga::Client {
             .await
             .unwrap()
             .users
+            .into_iter()
+            .collect()
+    }
+
+    async fn user_groups(&self, user: User) -> HashSet<Group> {
+        let authorize = special_authorizers::Authorize(self);
+        authorize
+            .access_value(user_groups(user))
+            .await
+            .unwrap()
             .into_iter()
             .collect()
     }
