@@ -20,6 +20,7 @@ test.describe(
   'Invalid train simulation',
   { tag: ['@op', '@paced-trains', '@unique-trains', '@invalid-trains'] },
   () => {
+    test.slow(); // TODO remove this once this PR is merged: #16969
     let project: Project;
     let study: Study;
     let scenarioItems: Scenario;

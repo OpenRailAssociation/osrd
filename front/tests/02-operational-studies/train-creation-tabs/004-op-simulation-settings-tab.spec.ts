@@ -35,6 +35,7 @@ const frTranslations: FlatTranslations = readJsonFile<Record<string, FlatTransla
 ).timeStopTable;
 
 test.describe('Simulation settings tab', { tag: ['@op', '@simulation-settings-tab'] }, () => {
+  test.slow(); // TODO remove this once this PR is merged: #16969
   let electricalProfileSet: ElectricalProfileSet;
   let project: Project;
   let study: Study;

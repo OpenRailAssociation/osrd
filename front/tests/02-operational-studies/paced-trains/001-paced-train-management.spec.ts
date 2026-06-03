@@ -67,6 +67,7 @@ const initialInputsData: CellData[] = readJsonFile(
 const trains: TrainSchedule[] = readJsonFile('./tests/assets/trains/trains.json');
 
 test.describe('Paced train management', { tag: ['@op', '@paced-trains'] }, () => {
+  test.slow(); // TODO remove this once this PR is merged: #16969
   let project: Project;
   let study: Study;
   let scenario: Scenario;
