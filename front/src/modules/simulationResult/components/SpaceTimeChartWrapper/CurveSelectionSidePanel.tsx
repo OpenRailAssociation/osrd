@@ -2,7 +2,7 @@ import { OccurrenceAll, OccurrenceCompliant, OccurrenceSingle } from '@osrd-proj
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 
-type PanelSelectionMode = 'compliant' | 'all' | 'single';
+export type PanelSelectionMode = 'compliant' | 'all' | 'single';
 
 type CurveSelectionSidePanelProps = {
   position: number;

@@ -286,3 +286,44 @@ export const isOccurrencePresentInPacedTrain = (
 
   return occurrenceIndex >= 0 && occurrenceIndex < getOccurrencesNb(paced);
 };
+
+/**
+ * Returns the id of the earliest active occurrence of the paced train. An
+ * occurrence is considered active when it is not disabled by an exception.
+ * Both indexed slots (with or without `start_time` override) and added
+ * exceptions are taken into account. Used as a fallback when no occurrence
+ * has been clicked yet but the panel switches to `single` mode.
+ */
+export const getFirstActiveOccurrenceId = (
+  trainSchedule: PacedTrainWithPacedWithDetails,
+  pacedTrainId: PacedTrainId
+): OccurrenceId | undefined => {
+  const { paced } = trainSchedule;
+  const startTimeMs = trainSchedule.startTime.getTime();
+  const intervalMs = paced.interval.ms;
+
+  let bestId: OccurrenceId | undefined;
+  let bestTimeMs = Infinity;
+
+  const slotCount = getOccurrencesNb(paced);
+  for (let i = 0; i < slotCount; i += 1) {
+    const indexedException = paced.exceptions.find((e) => e.occurrence_index === i);
+    if (indexedException?.disabled) continue;
+    const timeMs = indexedException?.start_time?.value ?? startTimeMs + i * intervalMs;
+    if (timeMs < bestTimeMs) {
+      bestTimeMs = timeMs;
+      bestId = formatPacedTrainIdToIndexedOccurrenceId(pacedTrainId, i);
+    }
+  }
+
+  for (const exception of paced.exceptions) {
+    if (exception.occurrence_index !== undefined || !exception.start_time || !exception.id)
+      continue;
+    if (exception.start_time.value < bestTimeMs) {
+      bestTimeMs = exception.start_time.value;
+      bestId = formatPacedTrainIdToExceptionId(pacedTrainId, exception.id);
+    }
+  }
+
+  return bestId;
+};
