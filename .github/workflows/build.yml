@@ -720,35 +720,14 @@ jobs:
       - build-osrdyne
       # Note: we don't need the front-tests image for integration tests, as they only run backend tests.
     steps:
-      # TODO: check if we can deduplicate the base steps from integration_tests_quality
-      # https://www.jameskerr.blog/posts/sharing-steps-in-github-action-workflows/
       - name: Checkout
         uses: actions/checkout@v6
-      - name: Download built editoast image
-        if: needs.build-editoast.outputs.output_method == 'artifact'
-        uses: actions/download-artifact@v8
+      - name: Download and load built images
+        uses: ./.github/actions/load-built-images
         with:
-          name: images-editoast
-          path: .
-      - name: Download built core image
-        if: needs.build-core.outputs.output_method == 'artifact'
-        uses: actions/download-artifact@v8
-        with:
-          name: images-core
-          path: .
-      - name: Download built osrdyne image
-        if: needs.build-osrdyne.outputs.output_method == 'artifact'
-        uses: actions/download-artifact@v8
-        with:
-          name: images-osrdyne
-          path: .
-      - name: Load built images
-        if: needs.build-core.outputs.output_method == 'artifact' || needs.build-editoast.outputs.output_method == 'artifact' || needs.build-osrdyne.outputs.output_method == 'artifact'
-        run: |
-
-          docker load --input ./osrd-core.tar
-          docker load --input ./osrd-editoast.tar
-          docker load --input ./osrd-osrdyne.tar
+          output-method: ${{ needs.build-core.outputs.output_method }}
+          artifact-pattern: images-{core,editoast,osrdyne}
+          tarballs: osrd-core.tar osrd-editoast.tar osrd-osrdyne.tar
       - name: Set up 'uv'
         uses: astral-sh/setup-uv@v8.1.0
         with:
@@ -802,31 +781,12 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
-      - name: Download built editoast image
-        if: needs.build-editoast.outputs.output_method == 'artifact'
-        uses: actions/download-artifact@v8
+      - name: Download and load built images
+        uses: ./.github/actions/load-built-images
         with:
-          name: images-editoast
-          path: .
-      - name: Download built core image
-        if: needs.build-core.outputs.output_method == 'artifact'
-        uses: actions/download-artifact@v8
-        with:
-          name: images-core
-          path: .
-      - name: Download built osrdyne image
-        if: needs.build-osrdyne.outputs.output_method == 'artifact'
-        uses: actions/download-artifact@v8
-        with:
-          name: images-osrdyne
-          path: .
-      - name: Load built images
-        if: needs.build-core.outputs.output_method == 'artifact' || needs.build-editoast.outputs.output_method == 'artifact' || needs.build-osrdyne.outputs.output_method == 'artifact'
-        run: |
-          set +e
-          docker load --input ./osrd-core.tar
-          docker load --input ./osrd-editoast.tar
-          docker load --input ./osrd-osrdyne.tar
+          output-method: ${{ needs.build-core.outputs.output_method }}
+          artifact-pattern: images-{core,editoast,osrdyne}
+          tarballs: osrd-core.tar osrd-editoast.tar osrd-osrdyne.tar
       - name: Start the stack
         run: |
           export TAG='${{ needs.build-core.outputs.stable_version }}'
@@ -852,48 +812,14 @@ jobs:
       matrix:
         shard: [1, 2, 3, 4]
     steps:
-      # TODO: check if we can deduplicate the base steps from integration_tests_quality
-      # https://www.jameskerr.blog/posts/sharing-steps-in-github-action-workflows/
       - name: Checkout
         uses: actions/checkout@v6
-      - name: Download built front-tests image
-        if: needs.build-front.outputs.output_method == 'artifact'
-        uses: actions/download-artifact@v8
+      - name: Download and load built images
+        uses: ./.github/actions/load-built-images
         with:
-          name: images-front
-          path: .
-      - name: Download built editoast image
-        if: needs.build-editoast.outputs.output_method == 'artifact'
-        uses: actions/download-artifact@v8
-        with:
-          name: images-editoast
-          path: .
-      - name: Download built core image
-        if: needs.build-core.outputs.output_method == 'artifact'
-        uses: actions/download-artifact@v8
-        with:
-          name: images-core
-          path: .
-      - name: Download built gateway-front image
-        if: needs.build-gateway.outputs.output_method == 'artifact'
-        uses: actions/download-artifact@v8
-        with:
-          name: images-gateway
-          path: .
-      - name: Download built osrdyne image
-        if: needs.build-osrdyne.outputs.output_method == 'artifact'
-        uses: actions/download-artifact@v8
-        with:
-          name: images-osrdyne
-          path: .
-      - name: Load built images
-        if: needs.build-front.outputs.output_method == 'artifact' || needs.build-editoast.outputs.output_method == 'artifact' || needs.build-core.outputs.output_method == 'artifact' || needs.build-gateway.outputs.output_method == 'artifact' || needs.build-osrdyne.outputs.output_method == 'artifact'
-        run: |
-          docker load --input ./osrd-front-tests.tar
-          docker load --input ./osrd-editoast.tar
-          docker load --input ./osrd-core.tar
-          docker load --input ./osrd-gateway-front.tar
-          docker load --input ./osrd-osrdyne.tar
+          output-method: ${{ needs.build-core.outputs.output_method }}
+          artifact-pattern: images-{front,editoast,core,gateway,osrdyne}
+          tarballs: osrd-front-tests.tar osrd-editoast.tar osrd-core.tar osrd-gateway-front.tar osrd-osrdyne.tar
 
       - name: Detect Playwright version
         id: detect_playwright_version
@@ -1006,17 +932,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
-      - name: Download built front-tests image
-        if: needs.build-front.outputs.output_method == 'artifact'
-        uses: actions/download-artifact@v8
+      - name: Download and load built images
+        uses: ./.github/actions/load-built-images
         with:
-          name: images-front
-          path: .
-
-      - name: Load built images
-        if: needs.build-front.outputs.output_method == 'artifact'
-        run: |
-          docker load --input ./osrd-front-tests.tar
+          output-method: ${{ needs.build-front.outputs.output_method }}
+          artifact-pattern: images-front
+          tarballs: osrd-front-tests.tar
 
       - name: Detect Playwright version
         id: detect_playwright_version
