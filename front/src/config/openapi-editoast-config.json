@@ -23,7 +23,8 @@
         "postTrainSchedulesProjectPathOp",
         "postTrainSchedulesOccupancyBlocks",
         "postWorkSchedulesProjectPath",
-        "postSearch"
+        "postSearch",
+        "postTimetableByIdPathStepsLocalTrackNames"
       ],
       "type": "query"
     }

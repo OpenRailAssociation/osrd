@@ -166,9 +166,14 @@ export type PathStepMetadata =
        */
       isValidLocalTrackName?: boolean;
       /**
-       * Data of all parts (tracks) of the path step (name + ch)
+       * Data of all parts (tracks) of the path step (name + ch).
+       * - `valid`: comes from the infra (has trackId and coordinates)
+       * - `custom`: track name only (timetable other-trains track names or user-entered names)
        */
-      parts: { trackId: string; trackName: string; coordinates: Position }[];
+      parts: (
+        | { type: 'valid'; trackId: string; trackName: string; coordinates: Position }
+        | { type: 'custom'; trackName: string }
+      )[];
     };
 
 export type StdcmPathStep = {

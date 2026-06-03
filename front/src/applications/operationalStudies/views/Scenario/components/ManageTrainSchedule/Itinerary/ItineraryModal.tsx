@@ -163,6 +163,7 @@ const ItineraryModal = ({
   const { launchPathfindingV2, pathProperties, pathfindingError } = usePathfindingV2();
   const { convertFeatureClickToLocation } = useMapTrackSelection(infraId);
 
+  // Fetch local track names from timetable train schedules is now handled inside usePathStepsMetadata
   const invalidTrackSteps = useMemo(
     () =>
       pathSteps.flatMap((step) => {
@@ -193,10 +194,11 @@ const ItineraryModal = ({
     pendingStepIdRef.current = stepId;
     confirmedStepIdRef.current = stepId;
     let opRef: OperationalPointReference;
-    if (suggestion.mainCode) {
-      opRef = { type: 'trigram', trigram: suggestion.mainCode, secondary_code: chosenCh };
-    } else if (suggestion.uic) {
+
+    if (suggestion.uic) {
       opRef = { type: 'uic', uic: suggestion.uic, secondary_code: chosenCh };
+    } else if (suggestion.mainCode) {
+      opRef = { type: 'trigram', trigram: suggestion.mainCode, secondary_code: chosenCh };
     } else {
       const chosenOpId = suggestion.secondaryCodeList.find((c) => c.code === chosenCh)?.opId;
       opRef = { type: 'id', operational_point: chosenOpId! };
@@ -520,7 +522,9 @@ const ItineraryModal = ({
           uic: metadata.type === 'opRef' ? metadata.uic : undefined,
           secondary_code: metadata.type === 'opRef' ? metadata.secondaryCode : undefined,
           coordinates:
-            metadata.type === 'trackOffset' ? metadata.coordinates : metadata.parts[0]?.coordinates,
+            metadata.type === 'trackOffset'
+              ? metadata.coordinates
+              : metadata.parts.find((p) => p.type === 'valid')?.coordinates,
         };
       });
 
