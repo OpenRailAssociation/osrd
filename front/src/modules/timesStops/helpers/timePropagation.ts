@@ -28,6 +28,12 @@ const computeDelta = (oldValue: Date | null, newValue: Date | null): Duration | 
   return toHmsDuration(newValue).sub(toHmsDuration(oldValue));
 };
 
+const truncateToSecond = (date: Date): Date => {
+  const truncated = new Date(date);
+  truncated.setMilliseconds(0);
+  return truncated;
+};
+
 const computeDeltaForPropagationMode = (
   oldValue: Date | null,
   newValue: Date | null,
@@ -36,7 +42,7 @@ const computeDeltaForPropagationMode = (
   mode === 'shiftAllWaypoints' || mode === 'fromDeparture'
     ? computeDelta(oldValue, newValue)
     : oldValue && newValue
-      ? Duration.subtractDate(newValue, oldValue)
+      ? Duration.subtractDate(truncateToSecond(newValue), truncateToSecond(oldValue))
       : null;
 
 const formatSignedDelta = (delta: Duration) => {
