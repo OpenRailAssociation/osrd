@@ -33,7 +33,7 @@ humantime = "2"
 humantime-serde = "1"
 opentelemetry = "0.32.0"
 opentelemetry-otlp = { version = "0.32.0", features = ["grpc-tonic"] }
-opentelemetry_sdk = { version = "0.32.0", features = [
+opentelemetry_sdk = { version = "0.32.1", features = [
   "metrics",
   "rt-tokio-current-thread",
 ] }
