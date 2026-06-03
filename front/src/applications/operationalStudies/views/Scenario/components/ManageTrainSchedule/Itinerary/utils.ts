@@ -18,15 +18,17 @@ export const computePathStepCoordinates = (pathStepMetadata: PathStepMetadata) =
   if (pathStepMetadata.type === 'trackOffset') {
     return [pathStepMetadata.coordinates];
   }
+  const validParts = pathStepMetadata.parts.filter((p) => p.type === 'valid');
+  const validPartsCoordinates = validParts.map((part) => part.coordinates);
   if (pathStepMetadata.secondaryCode && pathStepMetadata.trackName) {
-    const foundPart = pathStepMetadata.parts.find(
+    const foundPartCoordinates = validParts.find(
       (part) => part.trackName === pathStepMetadata.trackName
-    );
-    // If the track name is unknown (not matching any part), fall back to all parts coordinates
-    return foundPart ? [foundPart.coordinates] : pathStepMetadata.parts.map((p) => p.coordinates);
+    )?.coordinates;
+    // If the track name is unknown (not matching any part), fall back to all valid parts coordinates
+    return foundPartCoordinates ? [foundPartCoordinates] : validPartsCoordinates;
   }
   if (pathStepMetadata.secondaryCode) {
-    return pathStepMetadata.parts.map((part) => part.coordinates);
+    return validPartsCoordinates;
   }
   // If the path step has no secondary code, don't display its marker on the map
   return [];

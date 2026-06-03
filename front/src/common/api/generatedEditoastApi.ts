@@ -1103,7 +1103,7 @@ const injectedRtkApi = api
         }),
         providesTags: ['timetable'],
       }),
-      postTimetableByIdPathStepsLocalTrackNames: build.mutation<
+      postTimetableByIdPathStepsLocalTrackNames: build.query<
         PostTimetableByIdPathStepsLocalTrackNamesApiResponse,
         PostTimetableByIdPathStepsLocalTrackNamesApiArg
       >({
@@ -1112,7 +1112,7 @@ const injectedRtkApi = api
           method: 'POST',
           body: queryArg.body,
         }),
-        invalidatesTags: ['timetable'],
+        providesTags: ['timetable'],
       }),
       getTimetableByIdRequirements: build.query<
         GetTimetableByIdRequirementsApiResponse,

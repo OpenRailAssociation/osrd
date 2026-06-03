@@ -366,9 +366,10 @@ const ItineraryModalMap = ({
                   matchOpRefAndOp(pathStepLocation, op)
                 );
                 const trackMetadata = pathStepMetadata.parts.find(
-                  (part) => part.trackId === matchedOp?.part.track
+                  (part) => part.type === 'valid' && part.trackId === matchedOp?.part.track
                 );
-                coordinates = trackMetadata?.coordinates;
+                coordinates =
+                  trackMetadata?.type === 'valid' ? trackMetadata.coordinates : undefined;
               }
             } else {
               const allCoordinates = computePathStepCoordinates(pathStepMetadata);

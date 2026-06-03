@@ -1,13 +1,34 @@
 import { useEffect, useMemo, useState, type RefObject } from 'react';
 
+import { skipToken } from '@reduxjs/toolkit/query';
 import type { Position } from 'geojson';
 
 import usePathOps from 'applications/operationalStudies/hooks/usePathOps';
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
-import type { TrainSchedule } from 'common/api/osrdEditoastApi';
+import {
+  osrdEditoastApi,
+  type OperationalPointReference,
+  type TrainSchedule,
+} from 'common/api/osrdEditoastApi';
 import type { PathStepMetadata, PathStepV2 } from 'reducers/osrdconf/types';
 import { getPointOnTrackCoordinates } from 'utils/geometry';
 import { mToMm } from 'utils/physics';
+
+/**
+ * Generates a unique key for an OperationalPointReference.
+ */
+const getOpRefKey = (opRef: OperationalPointReference): string => {
+  switch (opRef.type) {
+    case 'trigram':
+      return `trigram:${opRef.trigram}:${opRef.secondary_code ?? ''}`;
+    case 'uic':
+      return `uic:${opRef.uic}:${opRef.secondary_code ?? ''}`;
+    case 'id':
+      return `id:${opRef.operational_point}`;
+    default:
+      return '';
+  }
+};
 
 /**
  * For each path step, get all its secondary codes and track names to display in the form
@@ -17,11 +38,36 @@ export const usePathStepsMetadata = (
   pathSteps: PathStepV2[],
   pendingStepIdRef: RefObject<string>
 ) => {
-  const { infraId, getTrackSectionsByIds } = useScenarioContext();
+  const { infraId, timetableId, getTrackSectionsByIds } = useScenarioContext();
 
   const [pathStepsMetadataById, setPathStepsMetadataById] = useState<Map<string, PathStepMetadata>>(
     new Map()
   );
+
+  // Build the opRefsByKey map to query local track names from the timetable
+  const opRefsByKey = useMemo(() => {
+    const result: Record<string, OperationalPointReference> = {};
+    pathSteps.forEach((step) => {
+      if (!step.location || step.location.type !== 'operational_point_part_reference') return;
+      const { operational_point: opRef } = step.location;
+      const key = getOpRefKey(opRef);
+      if (key && !result[key]) result[key] = opRef;
+    });
+    return result;
+  }, [pathSteps]);
+
+  const hasOpRefs = Object.keys(opRefsByKey).length > 0;
+
+  // Fetch local track names used by other trains in the timetable
+  const { data: localTrackNamesData } =
+    osrdEditoastApi.endpoints.postTimetableByIdPathStepsLocalTrackNames.useQuery(
+      hasOpRefs && infraId
+        ? {
+            id: timetableId,
+            body: { infra_id: infraId, operational_point_references: opRefsByKey },
+          }
+        : skipToken
+    );
 
   // 1. Extract the train path to extract its steps related operational points
   const trainPath: TrainSchedule['path'] = useMemo(
@@ -114,6 +160,9 @@ export const usePathStepsMetadata = (
           return;
         }
 
+        const opRefKey = getOpRefKey(location.operational_point);
+        const timetableTrackNames = localTrackNamesData?.[opRefKey] ?? [];
+
         const isValidLocalTrackName = local_track_name
           ? matchedOp?.parts.some((part) => {
               const track = trackSectionsById[part.track];
@@ -122,12 +171,21 @@ export const usePathStepsMetadata = (
             })
           : true;
 
-        const parts: Extract<PathStepMetadata, { isInvalid: false; type: 'opRef' }>['parts'] =
+        const validParts: Extract<PathStepMetadata, { isInvalid: false; type: 'opRef' }>['parts'] =
           matchedOp.parts.map((part) => ({
+            type: 'valid' as const,
             trackId: part.track,
             trackName: part.local_track_name,
             coordinates: part.geo?.coordinates as Position,
           }));
+
+        const existingTrackNames = new Set(validParts.map((p) => p.trackName));
+        const customParts: Extract<PathStepMetadata, { isInvalid: false; type: 'opRef' }>['parts'] =
+          timetableTrackNames
+            .filter((name) => !existingTrackNames.has(name))
+            .map((name) => ({ type: 'custom' as const, trackName: name }));
+
+        const parts = [...validParts, ...customParts];
 
         newPathStepsMetadataById.set(pathStep.id, {
           type: 'opRef',
@@ -151,7 +209,7 @@ export const usePathStepsMetadata = (
       setPathStepsMetadataById(newPathStepsMetadataById);
     };
     fetchAndSetMetadata();
-  }, [pathStepsOperationalPoints, pathSteps]);
+  }, [pathStepsOperationalPoints, pathSteps, localTrackNamesData]);
 
   return { pathStepsMetadataById, setPathStepsMetadataById };
 };

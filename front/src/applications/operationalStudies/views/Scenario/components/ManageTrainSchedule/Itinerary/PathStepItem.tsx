@@ -149,11 +149,27 @@ const PathStepItem = ({
     const selectedSecondaryCode = selectedSecondaryCodeOption.id;
     if (!selectedSecondaryCode || !isOpRefMetadata(pathStepMetadata)) return [];
 
-    const sortedSuggestions = [...pathStepMetadata.parts, ...customTracks]
+    // Combine tracks from:
+    // 1. pathStepMetadata.parts — contains both 'valid' (from infra) and 'custom' (from timetable)
+    // 2. customTracks — tracks added by the user in the current form session
+    const customTracksAsParts = customTracks.map((track) => ({
+      type: 'custom' as const,
+      trackName: track.trackName,
+    }));
 
+    // Deduplicate by trackName
+    const allTracks = [...pathStepMetadata.parts, ...customTracksAsParts];
+    const seen = new Set<string>();
+    const uniqueTracks = allTracks.filter((track) => {
+      if (seen.has(track.trackName)) return false;
+      seen.add(track.trackName);
+      return true;
+    });
+
+    const sortedSuggestions = uniqueTracks
       .map((part, i) => ({
         label: part.trackName,
-        id: `${part.trackId}-${i}`,
+        id: part.type === 'valid' ? `${part.trackId}-${i}` : `custom-${part.trackName}-${i}`,
       }))
       // Sort with numbers first in ascending order, then alphabetically
       .sort((a, b) => {
@@ -171,7 +187,7 @@ const PathStepItem = ({
         }
       });
     return [{ label: '', id: '' }, ...sortedSuggestions];
-  }, [pathStepMetadata, selectedSecondaryCodeOption.id]);
+  }, [pathStepMetadata, selectedSecondaryCodeOption.id, customTracks]);
 
   const filteredTrackSuggestions = useMemo(() => {
     const input = trackNameQuery.toLowerCase();
