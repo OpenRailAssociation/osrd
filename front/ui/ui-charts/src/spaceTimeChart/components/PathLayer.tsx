@@ -51,26 +51,33 @@ type PathStyle = {
   endWidth: number;
   dashArray?: number[];
   opacity?: number;
-  lineCap?: CanvasLineCap;
+  lineCap: CanvasLineCap;
 };
 
-export type PathLevel = 1 | 2 | 3 | 4;
+export type PathLevel = 1 | 2 | 3 | 4 | 5;
 const STYLES: Record<PathLevel, PathStyle> = {
   1: {
-    width: 1.5,
-    endWidth: 1.5,
+    width: 0.5,
+    endWidth: 0.5,
+    lineCap: 'round',
   },
   2: {
     width: 1,
     endWidth: 1,
+    lineCap: 'round',
   },
   3: {
+    width: 1.5,
+    endWidth: 1.5,
+    lineCap: 'round',
+  },
+  4: {
     width: 1,
     endWidth: 1,
     dashArray: [5, 5],
     lineCap: 'square',
   },
-  4: {
+  5: {
     width: 1.5,
     endWidth: 1,
     dashArray: [0, 4],
@@ -551,7 +558,7 @@ export const PathLayer = ({
       ctx.lineWidth = style.width;
       ctx.setLineDash(style.dashArray || []);
       ctx.globalAlpha = style.opacity || 1;
-      ctx.lineCap = style.lineCap || 'square';
+      ctx.lineCap = style.lineCap;
       const lines = getPathLines(stcContext);
       lines.forEach((points) => {
         ctx.beginPath();
