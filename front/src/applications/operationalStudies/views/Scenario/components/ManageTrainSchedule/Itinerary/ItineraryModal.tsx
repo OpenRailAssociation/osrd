@@ -227,6 +227,7 @@ const ItineraryModal = ({
     resetOpSuggestions();
 
     if (activeStepId === stepId) setActiveStepId('');
+    if (mapSelectionStepId === stepId) setMapSelectionStepId(null);
 
     setPathSteps((prev) => {
       const step = prev.find((s) => s.id === stepId);
