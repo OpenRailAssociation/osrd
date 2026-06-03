@@ -15,6 +15,8 @@ class IncrementalRequirementEnvelopeAdapter(
     private val rollingStocks: DistanceRangeMap<PhysicsRollingStock>,
     private val envelopeWithStops: EnvelopeInterpolate?,
     override var simulationComplete: Boolean,
+    override val currentPathOffset: Offset<PhysicsPath> =
+        Offset(envelopeWithStops?.endPos?.meters ?: 0.meters),
 
     // If set to true, we consider that the train doesn't leave its current stop (yet).
     // Used to evaluate conflicts up to a stop, including the stop itself,
@@ -88,7 +90,8 @@ class IncrementalRequirementEnvelopeAdapter(
 
         val end = pathEndOff.meters
 
-        val trainBegin = -rollingStocks.first().value.length
+        val trainBegin =
+            -rollingStocks.first().value.length // TODO PEB: does it break for convoy change?
         val trainEnd = 0.0
 
         if (max(trainBegin, begin) < min(trainEnd, end)) return 0.0
@@ -114,14 +117,12 @@ class IncrementalRequirementEnvelopeAdapter(
     override val currentTime
         get() = envelopeWithStops?.totalTime ?: 0.0
 
-    override val currentPathOffset
-        get() = Offset<PhysicsPath>(envelopeWithStops?.endPos?.meters ?: 0.meters)
-
     override fun clone(): IncrementalRequirementCallbacks {
         return IncrementalRequirementEnvelopeAdapter(
             rollingStocks,
             envelopeWithStops, // This is effectively read-only, we don't need a deep copy here
             simulationComplete,
+            currentPathOffset,
             infiniteLastStop,
         )
     }
