@@ -218,7 +218,7 @@ const ItineraryModalMap = ({
         if (!result.length) return;
 
         const op = result[0].railjson as OperationalPoint;
-        const clickedTrackName = feature.properties?.extensions_sncf_track_name ?? null;
+        const clickedTrackName = feature.properties?.local_track_name ?? null;
 
         setPendingOpClick({
           coordinates,
