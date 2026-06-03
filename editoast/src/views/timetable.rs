@@ -1621,9 +1621,9 @@ mod tests {
             physics_consist.compute_rolling_resistance(),
             RollingResistance {
                 rolling_resistance_type: "davis".to_string(),
-                A: units::newton::new(35001.0),
-                B: units::kilogram_per_second::new(350.01),
-                C: units::kilogram_per_meter::new(7.0005),
+                A: units::newton::new(1350.0),
+                B: units::kilogram_per_second::new(47.0),
+                C: units::kilogram_per_meter::new(2.7),
             }
         );
 
