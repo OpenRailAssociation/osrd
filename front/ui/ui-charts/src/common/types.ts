@@ -47,7 +47,8 @@ export type CurveStyle = {
   level?: PathLevel;
   outline?: CurveOutline;
   label?: {
-    border?: { color: string; width: number };
+    background?: { color: string; opacity?: number; border?: string };
+    color?: string;
     fontWeight?: number;
   };
 };
