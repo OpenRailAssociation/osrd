@@ -44,7 +44,8 @@ export type PacedTrainResponseWithPaced = PacedTrainWithPaced & {
   id: number;
 };
 
-export type PacedTrainFromJson = Omit<TrainSchedule, 'category'> & {
+export type PacedTrainFromJson = Omit<TrainSchedule, 'start_time' | 'category'> & {
+  start_time: string | number;
   category?: TrainCategory | string | null;
 };
 

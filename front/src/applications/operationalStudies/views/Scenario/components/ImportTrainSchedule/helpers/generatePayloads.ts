@@ -102,6 +102,10 @@ export function generateTrainPayloads(
 
     trainSchedules.push({
       ...trainScheduleBase,
+      start_time:
+        typeof pacedTrain.start_time === 'string'
+          ? new Date(pacedTrain.start_time).getTime()
+          : pacedTrain.start_time,
       category: checkCategory(pacedTrain.category, allowedSubCategories),
       labels: buildLabels(pacedTrain.labels, pacedTrain.category, allowedSubCategories),
       paced: paced
