@@ -94,7 +94,7 @@ const StdcmSimulationReportSheet = ({
         {
           rollingStockName: rollingStock.name,
           mass: consist.totalMass ?? kgToT(rollingStock.mass),
-          length: rollingStock.length,
+          length: consist.totalLength ?? rollingStock.length,
         },
         t
       ),

@@ -129,7 +129,7 @@ const StdcmResultsTable = ({
                       {isFirstStep || step.duration !== null ? step.stopEndTime : ''}
                     </td>
                     <td className={cx('weight', { 'muted-text': !isFirstStep })}>
-                      {displayedMass ? `${Math.floor(displayedMass)}t` : '='}
+                      {displayedMass ? `${displayedMass}t` : '='}
                     </td>
                     <td className={cx('ref', { 'muted-text': !isFirstStep })}>
                       {displayedRollingStock ?? '='}
