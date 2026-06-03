@@ -331,7 +331,7 @@ dependencies = [
  "thiserror 2.0.18",
  "tokio",
  "tracing",
- "utoipa",
+ "utoipa 5.5.0 (git+https://github.com/leovalais/utoipa.git?branch=enum-variant-titles)",
 ]
 
 [[package]]
@@ -757,7 +757,7 @@ dependencies = [
  "tracing-subscriber",
  "uom",
  "url",
- "utoipa",
+ "utoipa 5.5.0 (git+https://github.com/leovalais/utoipa.git?branch=enum-variant-titles)",
 ]
 
 [[package]]
@@ -886,7 +886,7 @@ dependencies = [
  "tracing",
  "tracing-opentelemetry",
  "url",
- "utoipa",
+ "utoipa 5.5.0 (git+https://github.com/leovalais/utoipa.git?branch=enum-variant-titles)",
  "uuid",
 ]
 
@@ -1422,7 +1422,7 @@ dependencies = [
  "tracing-subscriber",
  "uom",
  "url",
- "utoipa",
+ "utoipa 5.5.0 (git+https://github.com/leovalais/utoipa.git?branch=enum-variant-titles)",
  "uuid",
 ]
 
@@ -1479,7 +1479,7 @@ dependencies = [
  "tracing",
  "uom",
  "url",
- "utoipa",
+ "utoipa 5.5.0 (git+https://github.com/leovalais/utoipa.git?branch=enum-variant-titles)",
  "uuid",
 ]
 
@@ -2787,7 +2787,7 @@ dependencies = [
  "serde",
  "serde_json",
  "thiserror 2.0.18",
- "utoipa",
+ "utoipa 5.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -4417,7 +4417,7 @@ dependencies = [
  "strum",
  "thiserror 2.0.18",
  "uom",
- "utoipa",
+ "utoipa 5.5.0 (git+https://github.com/leovalais/utoipa.git?branch=enum-variant-titles)",
  "uuid",
 ]
 
@@ -4436,7 +4436,7 @@ dependencies = [
  "serde_json",
  "strum",
  "thiserror 2.0.18",
- "utoipa",
+ "utoipa 5.5.0 (git+https://github.com/leovalais/utoipa.git?branch=enum-variant-titles)",
 ]
 
 [[package]]
@@ -4506,9 +4506,9 @@ dependencies = [
 
 [[package]]
 name = "serde_json"
-version = "1.0.149"
+version = "1.0.150"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "83fc039473c5595ace860d8c4fafa220ff474b3fc6bfdb4293327f1a37e94d86"
+checksum = "e8014e44b4736ed0538adeecded0fce2a272f22dc9578a7eb6b2d9993c74cfb9"
 dependencies = [
  "indexmap",
  "itoa",
@@ -5445,19 +5445,42 @@ checksum = "06abde3611657adf66d383f00b093d7faecc7fa57071cce2578660c9f1010821"
 
 [[package]]
 name = "utoipa"
-version = "5.4.0"
-source = "git+https://github.com/leovalais/utoipa.git?branch=enum-variant-titles#5103a24a6d61ef99baba6eacd6625734baff5dbc"
+version = "5.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8bde15df68e80b16c7d16b9616e80770ad158988daa56a27dccd1e55558b0160"
 dependencies = [
  "indexmap",
  "serde",
  "serde_json",
- "utoipa-gen",
+ "utoipa-gen 5.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "utoipa"
+version = "5.5.0"
+source = "git+https://github.com/leovalais/utoipa.git?branch=enum-variant-titles#5f5e910f340cfc7b43c85307b7883881a2fc36da"
+dependencies = [
+ "indexmap",
+ "serde",
+ "serde_json",
+ "utoipa-gen 5.5.0 (git+https://github.com/leovalais/utoipa.git?branch=enum-variant-titles)",
 ]
 
 [[package]]
 name = "utoipa-gen"
-version = "5.4.0"
-source = "git+https://github.com/leovalais/utoipa.git?branch=enum-variant-titles#5103a24a6d61ef99baba6eacd6625734baff5dbc"
+version = "5.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6ba0b99ee52df3028635d93840c797102da61f8a7bb3cf751032455895b52ef8"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
+]
+
+[[package]]
+name = "utoipa-gen"
+version = "5.5.0"
+source = "git+https://github.com/leovalais/utoipa.git?branch=enum-variant-titles#5f5e910f340cfc7b43c85307b7883881a2fc36da"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -6234,3 +6257,8 @@ checksum = "27bc9d5b815bc103f142aa054f561d9187d191692ec7c2d1e2b4737f8dbd7296"
 dependencies = [
  "zune-core",
 ]
+
+[[patch.unused]]
+name = "utoipa"
+version = "5.4.0"
+source = "git+https://github.com/leovalais/utoipa.git?branch=enum-variant-titles#5103a24a6d61ef99baba6eacd6625734baff5dbc"

@@ -122,7 +122,7 @@ rstest = { version = "0.26.1", default-features = false }
 schemas = { path = "./schemas" }
 search = { path = "./search" }
 serde = { version = "1.0.228", features = ["derive", "rc"] }
-serde_json = "1.0.149"
+serde_json = "1.0.150"
 serde_norway = "0.9.42"
 serde_with = { version = "3.20.0", default-features = false, features = [
   "macros",
