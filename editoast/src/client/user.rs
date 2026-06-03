@@ -1,6 +1,7 @@
 use anyhow::anyhow;
 use anyhow::bail;
 use authz;
+use authz::v2::Authorizer;
 use authz::v2::Check;
 use clap::Args;
 use clap::Subcommand;
@@ -183,13 +184,26 @@ pub async fn user_info(
             .ok_or_else(|| anyhow!("No user with identity '{user}' found"))?
             .id
     };
-    let regulator = openfga_config.into_regulator(pool.clone()).await?;
+    let openfga = openfga_config.into_client().await?;
+    let system = SystemAuthorizer {
+        openfga: &openfga,
+        conn: pool.get().await?,
+    };
     let Some(user) = editoast_models::User::retrieve(pool.get().await?, uid).await? else {
         tracing::error!(user.id = uid, "User not found");
         return Ok(());
     };
     let identities = user.get_identities(pool.get().await?).await?;
-    let groups = regulator.user_groups(&authz::User(uid)).await?;
+    let groups = match system
+        .authorize(authz::v2::user_groups(authz::User(uid)))
+        .await?
+        .access()
+        .await?
+    {
+        Ok(groups) => groups,
+        Err(Check::SubjectExists(authz::Subject::User(_))) => unreachable!("tested above"),
+        Err(check) => impossible!(check),
+    };
     let conn = pool.get().await?;
 
     println!("id      : {uid}");

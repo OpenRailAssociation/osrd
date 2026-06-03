@@ -118,19 +118,6 @@ impl<S: StorageDriver> Regulator<S> {
         }
     }
 
-    /// Returns the IDs of the groups for the provided user
-    #[tracing::instrument(skip_all, fields(user), ret(level = Level::DEBUG), err)]
-    pub async fn user_groups(&self, user: &User) -> Result<HashSet<Group>, Error<S::Error>> {
-        if !self.user_exists(user.0).await? {
-            return Err(Error::UnknownSubject(user.0));
-        }
-        let groups = self
-            .openfga
-            .list_users(User::group().query_users(user))
-            .await?;
-        Ok(groups.users.into_iter().collect())
-    }
-
     #[tracing::instrument(skip(self), ret(level = Level::DEBUG), err)]
     pub async fn user_roles(&self, user: &User) -> Result<HashSet<Role>, Error<S::Error>> {
         // no need to check for user inexistence, an empty set will be returned in this case

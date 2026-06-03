@@ -485,18 +485,6 @@ impl Authentication {
                 .map_err(|_| AuthorizationError::Forbidden),
         }
     }
-
-    /// Returns the underlying authorizer if the request is authenticated, otherwise returns an
-    /// error. If the request comes from Core, this returns false as well as it makes no sense to
-    /// have an Authorizer without an authenticated user.
-    fn authorizer(self) -> Result<Authorizer<PgAuthDriver>, AuthorizationError> {
-        match self {
-            Authentication::Authenticated(authorizer) => Ok(authorizer),
-            Authentication::Unauthenticated | Authentication::SkipAuthorization { .. } => {
-                Err(AuthorizationError::Unauthorized)
-            }
-        }
-    }
 }
 
 pub use server::middlewares::AuthenticationExt;

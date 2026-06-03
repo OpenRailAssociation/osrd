@@ -165,23 +165,39 @@ pub(in crate::views) async fn whoami(
     ))
 )]
 pub(in crate::views) async fn user_groups(
-    Extension(auth): AuthenticationExt,
+    Extension(roles): Extension<Vec<Role>>,
+    Extension(user): Extension<Option<authz::User>>,
     State(AppState {
         regulator, db_pool, ..
     }): State<AppState>,
 ) -> Result<Json<Vec<Group>>> {
-    let authorizer = auth.authorizer()?;
-    let user_id = authorizer.user_id();
-    let user_groups = regulator.user_groups(&authz::User(user_id)).await?;
-    let groups_id: Vec<i64> = user_groups.iter().map(|authz::Group(id)| *id).collect();
+    let user = user.ok_or(AuthorizationError::Unauthorized)?;
+    let user_authorizer =
+        UserAuthorizer::new(user, roles, regulator.openfga(), db_pool.get().await?);
+    let user_groups = authz::v2::user_groups(user)
+        .authorize(&user_authorizer)
+        .await?
+        .access()
+        .await?
+        .map_err(|rejection| match rejection {
+            Check::SubjectExists(authz::Subject::User(authz::User(user_id))) => {
+                AuthzError::UnknownSubject {
+                    subject_id: user_id,
+                }
+            }
+            rejection => impossible!(rejection),
+        })?;
 
+    let groups_id = user_groups.into_iter().map(|authz::Group(id)| id);
     let (result, missing_ids) =
         editoast_models::Group::retrieve_batch(&mut db_pool.get().await?, groups_id).await?;
 
     if !missing_ids.is_empty() {
-        tracing::warn!(missing_count = missing_ids.len(),
+        tracing::warn!(
+            missing_count = missing_ids.len(),
             missing_groups_id = ?missing_ids,
-             "Groups not found in database");
+            "Groups not found in database"
+        );
     }
 
     Ok(Json(result))
@@ -270,9 +286,24 @@ pub(in crate::views) async fn users_info(
 
     // Fetch groups for each user
     let mut groups_by_user = HashMap::new();
+    let system = SystemAuthorizer {
+        openfga: regulator.openfga(),
+        conn: db_pool.get().await?,
+    };
     for &user_id in users.keys() {
         // TODO: optimize by batching calls to OpenFGA
-        groups_by_user.insert(user_id, regulator.user_groups(&authz::User(user_id)).await?);
+        let groups = authz::v2::user_groups(authz::User(user_id))
+            .authorize(&system)
+            .await?
+            .access()
+            .await?
+            .map_err(|rejection| match rejection {
+                Check::SubjectExists(authz::Subject::User(authz::User(user_id))) => {
+                    AuthzError::UnknownUser { id: user_id }
+                }
+                rejection => impossible!(rejection),
+            })?;
+        groups_by_user.insert(user_id, groups);
     }
     let group_ids: HashSet<i64> = groups_by_user.values().flatten().map(|g| g.0).collect();
 
@@ -1886,12 +1917,29 @@ mod tests {
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn user_groups_skip_authz_is_unauthorized() {
+    async fn user_groups_skip_authz() {
         let app = test_app!().build();
         let user = app.user("test", "test").create().await;
+        let group = app.group("group").with_members([&user]).create().await;
 
-        app.get("/authz/me/groups")
+        // With a user in the request
+        let groups = app
+            .get("/authz/me/groups")
             .by_user(user.as_ref())
+            .skip_authz()
+            .await
+            .assert_status_ok()
+            .json::<Vec<Group>>();
+        assert_eq!(
+            groups,
+            vec![editoast_models::Group {
+                id: group.id,
+                name: "group".to_owned(),
+            }]
+        );
+
+        // Without a user in the request
+        app.get("/authz/me/groups")
             .skip_authz()
             .await
             .assert_status_unauthorized();
