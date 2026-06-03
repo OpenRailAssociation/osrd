@@ -313,9 +313,8 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
       for (let occurrenceIndex = 0; occurrenceIndex < count; occurrenceIndex += 1) {
         const occurrenceButton = occurrences.nth(occurrenceIndex);
 
-        const isSelected = await occurrenceButton.evaluate((el) =>
-          el.classList.contains('selected')
-        );
+        const isSelected =
+          (await occurrenceButton.getAttribute('class'))?.includes('selected') ?? false;
         if (!isSelected) {
           await occurrenceButton.click();
         }
@@ -344,7 +343,8 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
   // TODO: This function must be modified after we drop the old itinerary interface
   async editTrainSchedule(index = 0) {
     await expect(this.trainSchedules.nth(index)).toBeVisible();
-    await this.trainSchedules.nth(index).click();
+    await this.trainSchedules.nth(index).hover();
+    await expect(this.editTrainButton.nth(index)).toBeVisible();
     await this.editTrainButton.nth(index).click();
     await expect(this.itineraryModal).toBeVisible();
     await this.closeItineraryModalButton.click();
