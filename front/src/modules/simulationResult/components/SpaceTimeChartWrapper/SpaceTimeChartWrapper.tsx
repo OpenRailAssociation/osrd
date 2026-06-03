@@ -30,14 +30,19 @@ import { type PostWorkSchedulesProjectPathApiResponse } from 'common/api/osrdEdi
 import { useSubCategoryContext } from 'common/SubCategoryContext';
 import { configureHandlePan } from 'modules/simulationResult/components/SpaceTimeChartWrapper/helpers/configureHandlePan';
 import type {
+  CurveStyleExceptionType,
   PathOperationalPoint,
   TrainSpaceTimeData,
   WaypointsPanelData,
   DraggingState,
 } from 'modules/simulationResult/types';
-import { isPacedTrainWithDetails } from 'modules/trainSchedule/helpers/pacedTrain';
+import {
+  findExceptionWithOccurrenceId,
+  getFirstActiveOccurrenceId,
+  isPacedTrainWithDetails,
+} from 'modules/trainSchedule/helpers/pacedTrain';
 import type { TrainScheduleWithDetails } from 'modules/trainSchedule/types';
-import type { TrainId } from 'reducers/osrdconf/types';
+import type { OccurrenceId, TrainId } from 'reducers/osrdconf/types';
 import { updateSelectedTrain } from 'reducers/simulationResults';
 import {
   getHoveredTrainId,
@@ -51,6 +56,7 @@ import {
   formatPacedTrainIdToIndexedOccurrenceId,
   isOccurrenceId,
   extractPacedTrainIdFromOccurrenceId,
+  extractPacedTrainIdFromTrainId,
   extractOccurrenceIndexFromOccurrenceId,
   extractExceptionIdFromOccurrenceId,
   isAddedExceptionId,
@@ -59,9 +65,10 @@ import {
 import { mapBy } from 'utils/types';
 
 import { buildSplitPoints } from './buildSplitPoints';
-import CurveSelectionSidePanel from './CurveSelectionSidePanel';
+import CurveSelectionSidePanel, { type PanelSelectionMode } from './CurveSelectionSidePanel';
 import cutSpaceTimeCurves from './helpers/cutSpaceTimeCurves';
 import formatSpaceTimeCurves from './helpers/formatSpaceTimeCurves';
+import getPanelOccurrenceCounts from './helpers/getPanelOccurrenceCounts';
 import getPathStyle from './helpers/getPathStyle';
 import makeProjectedTrains from './helpers/makeProjectedTrains';
 import { getOccupancyBlocks } from './helpers/utils';
@@ -153,6 +160,9 @@ const SpaceTimeChartWrapper = ({
 
   const [hoveredItem, setHoveredItem] = useState<null | HoveredItem>(null);
   const [draggingState, setDraggingState] = useState<DraggingState>();
+
+  const [panelSelectionMode, setPanelSelectionMode] = useState<PanelSelectionMode>('compliant');
+  const [lastClickedOccurrenceId, setLastClickedOccurrenceId] = useState<OccurrenceId>();
 
   const translations = { linearMode: t('main.linearMode') };
 
@@ -364,6 +374,41 @@ const SpaceTimeChartWrapper = ({
     [setHoveredItem]
   );
 
+  const selectedPacedTrainId = selectedTrainId
+    ? extractPacedTrainIdFromTrainId(selectedTrainId)
+    : undefined;
+
+  const selectedTrain = selectedPacedTrainId
+    ? trainSchedulesWithDetailsById.get(extractEditoastIdFromPacedTrainId(selectedPacedTrainId))
+    : undefined;
+
+  const panelExceptionType: CurveStyleExceptionType =
+    selectedTrainBy === 'tod' ? 'path_and_schedule' : 'start_time';
+
+  const panelCounts =
+    selectedTrain && isPacedTrainWithDetails(selectedTrain) && selectedTrainBy !== 'timetable'
+      ? getPanelOccurrenceCounts(selectedTrain.paced, panelExceptionType)
+      : undefined;
+  const showCurvePanel = !!panelCounts;
+
+  const handlePanelModeChange = (mode: PanelSelectionMode) => {
+    setPanelSelectionMode(mode);
+    if (mode === 'single') {
+      const singleId =
+        lastClickedOccurrenceId ??
+        (selectedTrain && isPacedTrainWithDetails(selectedTrain) && selectedPacedTrainId
+          ? getFirstActiveOccurrenceId(selectedTrain, selectedPacedTrainId)
+          : undefined);
+      if (singleId) {
+        dispatch(updateSelectedTrain({ id: singleId, by: 'std' }));
+      }
+      return;
+    }
+    if (selectedPacedTrainId) {
+      dispatch(updateSelectedTrain({ id: selectedPacedTrainId, by: 'std' }));
+    }
+  };
+
   const handleClick: SpaceTimeChartProps['onClick'] = () => {
     if (
       !draggingState &&
@@ -386,6 +431,18 @@ const SpaceTimeChartWrapper = ({
         isTrainId(clickedTrainId) &&
         (selectedTrainId !== clickedTrainId || selectedTrainBy !== 'std')
       ) {
+        if (isOccurrenceId(clickedTrainId)) {
+          setLastClickedOccurrenceId(clickedTrainId);
+          const trainScheduleId = extractEditoastIdFromPacedTrainId(
+            extractPacedTrainIdFromOccurrenceId(clickedTrainId)
+          );
+          const trainSchedule = trainSchedulesWithDetailsById.get(trainScheduleId);
+          const exception =
+            trainSchedule && isPacedTrainWithDetails(trainSchedule)
+              ? findExceptionWithOccurrenceId(trainSchedule.paced.exceptions, clickedTrainId)
+              : undefined;
+          setPanelSelectionMode(exception?.start_time ? 'single' : 'compliant');
+        }
         onTrainClick(clickedTrainId);
       }
     }
@@ -463,6 +520,9 @@ const SpaceTimeChartWrapper = ({
               <PathLayer
                 key={`${path.id}-${path.points[0]?.position}`}
                 path={path}
+                // TODO: forward `panelSelectionMode` to getPathStyle when the
+                // curve-style mapping ticket needs it to pick which occurrences
+                // are highlighted in blue.
                 {...getPathStyle(
                   hoveredItem,
                   path,
@@ -493,13 +553,12 @@ const SpaceTimeChartWrapper = ({
               </>
             )}
           </SpaceTimeChart>
-          {/*TODO : update onModeChange and counts when implementing compliant/all/single modes*/}
-          {selectedTrainBy && selectedTrainBy !== 'timetable' && (
+          {showCurvePanel && (
             <CurveSelectionSidePanel
               position={height / 2}
-              panelSelectionMode="compliant"
-              onModeChange={() => {}}
-              counts={{ compliant: 3, all: 6 }}
+              panelSelectionMode={panelSelectionMode}
+              onModeChange={handlePanelModeChange}
+              counts={panelCounts}
             />
           )}
         </div>

@@ -1,7 +1,12 @@
 import { describe, it, expect } from 'vitest';
 
 import type { TrainSchedule, PacedTrainException } from 'common/api/osrdEditoastApi';
-import type { SimulatedException, SimulationSummary } from 'modules/trainSchedule/types';
+import type {
+  PacedTrainWithPacedWithDetails,
+  SimulatedException,
+  SimulationSummary,
+} from 'modules/trainSchedule/types';
+import type { PacedTrainId } from 'reducers/osrdconf/types';
 import { Duration } from 'utils/duration';
 import {
   formatEditoastIdToPacedTrainId,
@@ -11,6 +16,7 @@ import {
 
 import {
   extractOccurrenceDetailsFromPacedTrain,
+  getFirstActiveOccurrenceId,
   getOccurrencesNb,
   getOccurrencesWorstStatus,
   isOccurrencePresentInPacedTrain,
@@ -415,5 +421,100 @@ describe('isOccurrencePresentInPacedTrain', () => {
         trainSchedule
       )
     ).toEqual(false);
+  });
+});
+
+describe('getFirstActiveOccurrenceId', () => {
+  const PACED_ID = 'paced_1' as PacedTrainId;
+  const PACED_START_MS = new Date('2026-01-01T08:00:00Z').getTime();
+  const INTERVAL_MS = 10 * 60 * 1000;
+
+  const exception = (
+    partial: { key: string } & Partial<Record<keyof SimulatedException, unknown>>
+  ): SimulatedException => partial as SimulatedException;
+
+  const schedule = (exceptions: SimulatedException[] = []) =>
+    ({
+      startTime: new Date(PACED_START_MS),
+      paced: {
+        timeWindow: new Duration({ hours: 1 }),
+        interval: new Duration({ minutes: 10 }),
+        exceptions,
+      },
+    }) as unknown as PacedTrainWithPacedWithDetails;
+
+  it('should return the first slot when there are no exceptions', () => {
+    expect(getFirstActiveOccurrenceId(schedule(), PACED_ID)).toBe('indexedoccurrence_1_0');
+  });
+
+  it('should skip a disabled slot and return the next one', () => {
+    const result = getFirstActiveOccurrenceId(
+      schedule([exception({ key: 'e1', occurrence_index: 0, disabled: true })]),
+      PACED_ID
+    );
+    expect(result).toBe('indexedoccurrence_1_1');
+  });
+
+  it('should skip multiple consecutive disabled slots', () => {
+    const result = getFirstActiveOccurrenceId(
+      schedule([
+        exception({ key: 'e1', occurrence_index: 0, disabled: true }),
+        exception({ key: 'e2', occurrence_index: 1, disabled: true }),
+        exception({ key: 'e3', occurrence_index: 2, disabled: true }),
+      ]),
+      PACED_ID
+    );
+    expect(result).toBe('indexedoccurrence_1_3');
+  });
+
+  it('should pick the indexed slot whose start_time override makes it earliest', () => {
+    const result = getFirstActiveOccurrenceId(
+      schedule([
+        // Slot 2 is moved before slot 0 by its start_time override
+        exception({
+          key: 'e1',
+          occurrence_index: 2,
+          start_time: { value: PACED_START_MS - INTERVAL_MS },
+        }),
+      ]),
+      PACED_ID
+    );
+    expect(result).toBe('indexedoccurrence_1_2');
+  });
+
+  it('should pick an added exception when it is earlier than the first indexed slot', () => {
+    const result = getFirstActiveOccurrenceId(
+      schedule([
+        exception({
+          key: 'e1',
+          id: 42,
+          start_time: { value: PACED_START_MS - INTERVAL_MS },
+        }),
+      ]),
+      PACED_ID
+    );
+    expect(result).toBe('exception_1_42');
+  });
+
+  it('should keep the indexed slot when an added exception comes after it', () => {
+    const result = getFirstActiveOccurrenceId(
+      schedule([
+        exception({
+          key: 'e1',
+          id: 42,
+          start_time: { value: PACED_START_MS + 5 * INTERVAL_MS },
+        }),
+      ]),
+      PACED_ID
+    );
+    expect(result).toBe('indexedoccurrence_1_0');
+  });
+
+  it('should return undefined when every slot is disabled and no added exception exists', () => {
+    const exceptions: SimulatedException[] = [];
+    for (let i = 0; i < 6; i += 1) {
+      exceptions.push(exception({ key: `e${i}`, occurrence_index: i, disabled: true }));
+    }
+    expect(getFirstActiveOccurrenceId(schedule(exceptions), PACED_ID)).toBeUndefined();
   });
 });
