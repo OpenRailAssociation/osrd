@@ -628,14 +628,13 @@ impl<'a> GroupBuilder<'a> {
 }
 
 pub trait TestRequestExt {
-    fn by_user(self, user: impl AsRef<UserInfo>) -> Self;
-    fn impersonate(self, impersonated: impl AsRef<UserInfo>) -> Self;
+    fn by_user(self, user: &UserInfo) -> Self;
+    fn impersonate(self, impersonated: &UserInfo) -> Self;
     fn skip_authz(self) -> Self;
 }
 
 impl TestRequestExt for TestRequest {
-    fn by_user(self, user: impl AsRef<UserInfo>) -> Self {
-        let UserInfo { identities, name } = user.as_ref();
+    fn by_user(self, UserInfo { identities, name }: &UserInfo) -> Self {
         self.add_header(
             "x-remote-user-identity",
             identities.first().expect("no identity provided"),
@@ -643,12 +642,10 @@ impl TestRequestExt for TestRequest {
         .add_header("x-remote-user-name", name)
     }
 
-    fn impersonate(self, impersonated: impl AsRef<UserInfo>) -> Self {
+    fn impersonate(self, UserInfo { identities, .. }: &UserInfo) -> Self {
         self.add_header(
             "x-impersonate",
-            impersonated
-                .as_ref()
-                .identities
+            identities
                 .first()
                 .expect("existing user must have an identity"),
         )

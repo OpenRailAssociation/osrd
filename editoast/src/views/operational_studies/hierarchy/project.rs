@@ -408,7 +408,7 @@ pub mod tests {
             .create()
             .await;
 
-        let request = app.post("/projects").by_user(&user).json(&json!({
+        let request = app.post("/projects").by_user(user.as_ref()).json(&json!({
             "name": "test_project_failed",
             "description": "",
             "objectives": "",
