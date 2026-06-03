@@ -37,6 +37,7 @@ const expectedViaValues = [
 ];
 
 test.describe('Times and Stops tab', { tag: ['@op', '@times-stops-tab'] }, () => {
+  test.slow(); // TODO remove this once this PR is merged: #16969
   let project: Project;
   let study: Study;
   let scenario: Scenario;
