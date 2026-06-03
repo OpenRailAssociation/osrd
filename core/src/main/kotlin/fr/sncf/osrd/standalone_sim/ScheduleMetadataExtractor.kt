@@ -42,7 +42,6 @@ import fr.sncf.osrd.utils.units.TimeDelta
 import fr.sncf.osrd.utils.units.meters
 import fr.sncf.osrd.utils.units.metersPerSecond
 import fr.sncf.osrd.utils.units.seconds
-import kotlin.math.min
 
 // Reserve clear track with a margin for the reaction time of the driver
 const val CLOSED_SIGNAL_RESERVATION_MARGIN = 20.0
@@ -93,9 +92,34 @@ fun runScheduleMetadataExtractor(
     val envelopeAdapter =
         IncrementalRequirementEnvelopeAdapter(rollingStocks, envelopeWithStops, true)
     val spacingGenerator = SpacingResourceGenerator(fullInfra, context)
-    spacingGenerator.extendPath(trainPath.getBlocks(), trainPath.getRoutes(), pathStops, true)
-    // as the provided path is complete, the resource generator should never return NotEnoughPath
-    val spacingRequirements = spacingGenerator.processUpdate(envelopeAdapter)!!
+
+    // Generate spacing resources just as if a succession of trains (splitting on backtracking)
+    val spacingRequirements = mutableListOf<SpacingRequirement>()
+    val subpathExtremities =
+        listOf(Offset<PhysicsPath>(0.meters)) +
+            trainPath.getBacktrackLocations() +
+            listOf(Offset(trainPath.length.meters))
+    for ((subpathBegin, subpathEnd) in subpathExtremities.zipWithNext()) {
+        val subpath =
+            trainPath.subPath(
+                subpathBegin,
+                subpathEnd,
+                resetOffsets = false,
+                includeExactStart = true,
+                includeExactEnd = true,
+            )
+        spacingGenerator.extendPath(
+            subpath.getBlocks(),
+            subpath.getRoutes(),
+            pathStops.filter { it.pathOffset in subpathBegin..subpathEnd },
+            true,
+            subpath.getBacktrackLocations(),
+        )
+        // as the provided path is complete, the resource generator should never return
+        // NotEnoughPath
+        spacingRequirements.addAll(spacingGenerator.processUpdate(envelopeAdapter)!!)
+        spacingGenerator.resetAfterbacktracking()
+    }
 
     val routingRequirements =
         routingRequirements(
@@ -117,7 +141,7 @@ fun runScheduleMetadataExtractor(
         reportTrain.pathItemTimes,
         signalCriticalPositions,
         zoneUpdates,
-        spacingRequirements.map { it.toRJS(rawInfra) },
+        sortAndMergeRequirements(spacingRequirements).map { it.toRJS(rawInfra) },
         routingRequirements.map { it.toRJS(rawInfra) },
     )
 }
