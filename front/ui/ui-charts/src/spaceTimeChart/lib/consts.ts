@@ -19,7 +19,7 @@ export const OCCUPANCY_WARNING = '#FFEABF';
 
 // Fonts:
 export const FONT_SIZE = 10;
-export const FONT = 'IBM Plex Sans, sans-serif';
+export const FONT = 'IBM Plex Mono, monospace';
 
 export const DEFAULT_THEME: SpaceTimeChartTheme = {
   background: 'white',

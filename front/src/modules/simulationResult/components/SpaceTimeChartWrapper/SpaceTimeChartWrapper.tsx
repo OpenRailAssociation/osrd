@@ -606,6 +606,7 @@ const SpaceTimeChartWrapper = ({
                   color={style.color}
                   level={style.level}
                   border={style.outline}
+                  label={style.label}
                 />
               );
             })}

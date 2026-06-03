@@ -6,6 +6,7 @@ import { hexToRgb, indexToColor } from '../../common/helpers/colors';
 import { getCrispLineCoordinate } from '../../common/helpers/time';
 import { useDraw, usePicking } from '../../common/hooks/useCanvas';
 import type {
+  CurveStyle,
   DrawingFunction,
   PickingDrawingFunction,
   PickingElement,
@@ -92,12 +93,8 @@ export type PathLayerProps = {
   color: string;
   pickingTolerance?: number;
   level?: PathLevel;
-  border?: {
-    offset: number;
-    color: string;
-    width?: number;
-    backgroundColor?: string;
-  };
+  border?: CurveStyle['outline'];
+  label?: CurveStyle['label'];
 };
 
 /**
@@ -112,6 +109,7 @@ export const PathLayer = ({
   level = DEFAULT_LEVEL,
   pickingTolerance = DEFAULT_PICKING_TOLERANCE,
   border,
+  label,
 }: PathLayerProps) => {
   /**
    * This function returns the list of points to join to draw the path. As it can be discontinuous,
@@ -296,20 +294,24 @@ export const PathLayer = ({
         background,
         fontSize,
         fontFamily,
+        fontWeight = 400,
         padding = TEXT_PADDING,
         alpha = 0.75,
+        borderColor,
       }: {
         textColor: string;
         background: string;
         fontSize?: number;
         fontFamily?: string;
+        fontWeight?: number;
         padding?: number;
         alpha?: number;
+        borderColor?: string;
       }
     ) => {
       ctx.save();
 
-      ctx.font = `${fontSize}px ${fontFamily}`;
+      ctx.font = `${fontWeight} ${fontSize}px ${fontFamily}`;
 
       const measure = ctx.measureText(text);
       const left = measure.actualBoundingBoxLeft;
@@ -326,7 +328,20 @@ export const PathLayer = ({
       // BACKGROUND
       ctx.globalAlpha = alpha;
       ctx.fillStyle = background;
-      ctx.fillRect(rx, ry, w, h);
+      ctx.beginPath();
+      ctx.roundRect(rx, ry, w, h, 3);
+      ctx.fill();
+
+      // BORDER
+      if (borderColor) {
+        ctx.save();
+        ctx.globalAlpha = 1;
+        ctx.strokeStyle = borderColor;
+        ctx.lineWidth = 1;
+        ctx.roundRect(rx, ry, w, h, 3);
+        ctx.stroke();
+        ctx.restore();
+      }
 
       // TEXT
       ctx.globalAlpha = 1;
@@ -354,12 +369,12 @@ export const PathLayer = ({
           pathsStyles: { fontSize, fontFamily },
         },
       }: SpaceTimeChartContextType,
-      label: string,
+      text: string,
       labelColor: string,
       points: Point[],
       pathLength: number
     ) => {
-      if (!label) return;
+      if (!text) return;
 
       const firstPointOnScreenIndex = points.findIndex(({ x, y }) =>
         !swapAxis
@@ -405,22 +420,25 @@ export const PathLayer = ({
       ctx.textAlign = 'start';
 
       const padding = 2;
-      const measure = ctx.measureText(label);
+      const measure = ctx.measureText(text);
       const w = measure.width + 2 * padding;
 
       const dx = w < pathLength ? 5 : (pathLength - w) / 2; // Progressively center the label if the path is shorter than the label
-      const dy = angle >= 0 ? -5 : 15;
+      const dy = angle >= 0 ? -7 : 17;
 
-      drawLabelWithBackground(ctx, label, dx, dy, {
+      drawLabelWithBackground(ctx, text, dx, dy, {
         fontSize,
         fontFamily,
-        textColor: labelColor,
-        background,
+        fontWeight: label?.fontWeight,
+        textColor: label?.color ?? labelColor,
+        background: label?.background?.color ?? background,
+        alpha: label?.background?.opacity,
+        borderColor: label?.background?.border,
         padding,
       });
       ctx.restore();
     },
-    [drawLabelWithBackground]
+    [drawLabelWithBackground, label]
   );
 
   const computePathLength = useCallback(
@@ -525,14 +543,17 @@ export const PathLayer = ({
         drawLabelWithBackground(ctx, path.label, x, labelY, {
           fontFamily,
           fontSize,
-          textColor: color,
-          background,
+          fontWeight: label?.fontWeight,
+          textColor: label?.color ?? color,
+          background: label?.background?.color ?? background,
+          alpha: label?.background?.opacity,
+          borderColor: label?.background?.border,
         });
       }
 
       ctx.restore();
     },
-    [level, color, drawLabelWithBackground, path.label]
+    [level, color, drawLabelWithBackground, path.label, label]
   );
 
   const drawAll = useCallback<DrawingFunction<SpaceTimeChartContextType>>(
