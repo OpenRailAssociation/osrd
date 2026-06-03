@@ -749,9 +749,9 @@ mod tests {
         rolling_stock.startup_acceleration = units::meter_per_second_squared::new(0.04);
         rolling_stock.rolling_resistance = RollingResistance {
             rolling_resistance_type: "davis".to_string(),
-            A: units::newton::new(1.0),
-            B: units::kilogram_per_second::new(0.01),
-            C: units::kilogram_per_meter::new(0.0005),
+            A: units::newton::new(1000.0),
+            B: units::kilogram_per_second::new(40.0),
+            C: units::kilogram_per_meter::new(2.0),
         };
 
         let towed_rolling_stock = towed_rolling_stock();
