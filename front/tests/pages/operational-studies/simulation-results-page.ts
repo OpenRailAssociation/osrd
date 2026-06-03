@@ -18,6 +18,7 @@ class OpSimulationResultPage extends ScenarioPage {
   private readonly macroEditor: Locator;
   private readonly conflictsList: Locator;
   private readonly chronogram: Locator;
+  private readonly noDataSpan: Locator;
 
   constructor(page: Page) {
     super(page);
@@ -36,6 +37,7 @@ class OpSimulationResultPage extends ScenarioPage {
     this.timeStopsOutputs = page.getByTestId('time-stop-outputs');
     this.macroEditor = page.getByTestId('macro-editor');
     this.chronogram = page.getByTestId('chronogram');
+    this.noDataSpan = page.getByTestId('no-data-sdd');
   }
 
   private async openSettingsPanel(): Promise<void> {
@@ -62,6 +64,8 @@ class OpSimulationResultPage extends ScenarioPage {
       expect(this.manchetteSpaceTimeChart).toBeVisible(),
       expect(this.spaceTimeChart).toBeVisible(),
       expect(this.timesStopsDataSheet).toBeVisible(),
+      expect(this.speedSpaceChart).toBeVisible(),
+      expect(this.noDataSpan).toBeVisible(),
       expect(this.simulationMap).toBeVisible(),
       expect(this.chronogram).toBeVisible(),
     ]);

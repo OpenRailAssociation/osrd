@@ -138,7 +138,7 @@ const SpeedDistanceDiagramWrapper = ({
         />
       ) : (
         <div className="speed-space-chart-wrapper" style={{ height: `${height}px` }}>
-          <span className="no-data">
+          <span className="no-data" data-testid="no-data-sdd">
             {isSimulationInvalid
               ? t('speedDistanceSettings.invalidSimulation')
               : t('speedDistanceSettings.noData')}
