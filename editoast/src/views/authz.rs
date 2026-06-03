@@ -1730,6 +1730,34 @@ mod tests {
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn whoami_new_impersonator_always_forbidden() {
+        let app = test_app!().enable_authorization(true).build();
+        let impersonated = app
+            .user("impersonated", "Impersonated")
+            .with_roles([Role::Stdcm])
+            .create()
+            .await;
+        let identity = "Who's there?".to_owned();
+
+        let request = app
+            .get("/authz/me")
+            .by_user(&authz::identity::UserInfo {
+                identities: vec![identity.clone()],
+                name: "No one.".to_owned(),
+            })
+            .impersonate(impersonated.as_ref());
+        app.fetch(request)
+            .await
+            .assert_status(StatusCode::FORBIDDEN);
+
+        assert_eq!(
+            editoast_models::User::retrieve_by_identity(&identity, app.db_pool().get_ok()).await,
+            Ok(None),
+            "new user should not be registered"
+        );
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn whoami_skip_with_user_info() {
         let app = test_app!().enable_authorization(true).build();
         let user = app
