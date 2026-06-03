@@ -105,6 +105,7 @@ impl User {
     }
 
     /// Return the [User] with the provided identity, if any
+    #[tracing::instrument(skip_all, fields(identity), ret(level = "debug"), err)]
     pub async fn retrieve_by_identity(
         identity: &UserIdentity,
         conn: DbConnection,
