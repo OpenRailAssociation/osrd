@@ -15,6 +15,7 @@ use editoast_models::study::Study;
 use editoast_models::tags::Tags;
 use editoast_models::timetable::Timetable;
 use editoast_models::timetable_train_schedule_set::TimetableTrainScheduleSet;
+use editoast_models::towed_rolling_stock::TowedRollingStock;
 use editoast_models::train_schedule_exception::TrainScheduleException;
 use schemas::TrainScheduleExceptionChangeGroups;
 use schemas::infra::InfraObject;
@@ -213,6 +214,16 @@ pub async fn create_scenario_fixtures_set(
 
 pub async fn create_fast_rolling_stock(conn: &mut DbConnection, name: &str) -> RollingStock {
     Changeset::<RollingStock>::from(schemas::fixtures::fast_rolling_stock())
+        .name(name.to_string())
+        .locked(false)
+        .version(0)
+        .create(conn)
+        .await
+        .expect("Failed to create rolling stock")
+}
+
+pub async fn create_towed_rolling_stock(conn: &mut DbConnection, name: &str) -> TowedRollingStock {
+    Changeset::<TowedRollingStock>::from(schemas::fixtures::towed_rolling_stock())
         .name(name.to_string())
         .locked(false)
         .version(0)

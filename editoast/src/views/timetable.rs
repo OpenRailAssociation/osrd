@@ -898,14 +898,15 @@ impl PhysicsConsistParameters {
     }
 
     pub fn compute_rolling_resistance(&self) -> RollingResistance {
-        if let (Some(towed_rolling_stock), Some(total_mass)) =
-            (self.towed_rolling_stock.as_ref(), self.total_mass)
-        {
+        if let Some(towed_rolling_stock) = self.towed_rolling_stock.as_ref() {
             let traction_engine_rr = &self.traction_engine.rolling_resistance;
             let towed_rs_rr = &towed_rolling_stock.rolling_resistance;
             let traction_engine_mass = self.traction_engine.mass; // kg
 
-            let towed_mass = total_mass - traction_engine_mass; // kg
+            let towed_mass = match self.total_mass {
+                Some(total_mass) => total_mass - traction_engine_mass,
+                None => towed_rolling_stock.mass,
+            }; // kg
 
             let traction_engine_solid_friction_a = traction_engine_rr.A; // N
             let traction_engine_viscosity_friction_b = traction_engine_rr.B; // N/(m/s)
