@@ -5,7 +5,6 @@ import type { Role } from 'common/api/osrdEditoastApi';
 
 export type UserPreferences = {
   safeWord: string;
-  useNewTimesStopsTable: boolean;
 };
 
 export type UserState = {
@@ -35,7 +34,7 @@ export const userInitialState: UserState = {
   impersonatedUser: undefined,
   loginError: undefined,
   username: '',
-  userPreferences: { safeWord: '', useNewTimesStopsTable: true },
+  userPreferences: { safeWord: '' },
   userId: -1,
   userRoles: [],
   account: {},

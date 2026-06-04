@@ -1,8 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 
-import cx from 'classnames';
-import { useSelector } from 'react-redux';
-
 import type { PathPropertiesFormatted } from 'applications/operationalStudies/types';
 import type {
   CorePathfindingResultSuccess,
@@ -13,25 +10,19 @@ import type {
 } from 'common/api/osrdEditoastApi';
 import type { SimulationSummary, TrainScheduleWithDetails } from 'modules/trainSchedule/types';
 import type { Train } from 'reducers/osrdconf/types';
-import { getUseNewTimesStopsTable } from 'reducers/user/userSelectors';
-import { formatLocalTime } from 'utils/date';
 import { Duration, addDurationToDate } from 'utils/duration';
 
 import { computeOptimisticRow, propagationToEdits } from './helpers/cellUpdate';
 import { computePowerRestrictionWarnings } from './helpers/powerRestrictionIncompatibility';
 import { propagateTime } from './helpers/timePropagation';
-import useOutputTableData from './hooks/useOutputTableData';
 import useTimesStopsTableData from './hooks/useTimesStopsTableData';
 import useUpdateTimesStopsTable from './hooks/useUpdateTimesStopsTable';
-import TimesStops from './TimesStops';
 import TimesStopsTable from './TimesStopsTable';
 import {
-  TableType,
   type CellUpdate,
   type PendingEdit,
   type PropagationMode,
   type MarginValue,
-  type TimesStopsRow,
   type TimesStopsRowNew,
   type UpdateCellStatus,
 } from './types';
@@ -89,33 +80,21 @@ const TimesStopsOutput = ({
   isSimulationDataLoading = false,
   rollingStock,
 }: TimesStopsOutputProps) => {
-  const useNewTimesStopsTable = useSelector(getUseNewTimesStopsTable);
-
   // Refs used to track simulation refresh after a user edit (see isAwaitingSimulation):
   //   - preEditPathItemTimesRef: batch summary (simulatedPathItemTimes reference)
   //   - isTrainSimulationPendingRef: all simulation queries (isSimulationDataLoading)
   const preEditPathItemTimesRef = useRef<typeof simulatedPathItemTimes>(undefined);
   const isTrainSimulationPendingRef = useRef(false);
 
-  // Only call the hook that corresponds to the active table to avoid unnecessary computation
-  const legacyRows = useOutputTableData(
-    infraId,
-    isValid,
-    useNewTimesStopsTable ? undefined : selectedTrain,
-    useNewTimesStopsTable ? undefined : simulatedTrain,
-    useNewTimesStopsTable ? undefined : simulatedPathItemTimes,
-    useNewTimesStopsTable ? undefined : operationalPointsOnPath
-  );
-
-  const { rows: newRows, stableIsValid } = useTimesStopsTableData(
+  const { rows, stableIsValid } = useTimesStopsTableData(
     infraId,
     isValid,
     isSimulationDataLoading,
     selectedTrain,
-    useNewTimesStopsTable ? simulatedTrain : undefined,
-    useNewTimesStopsTable ? simulatedPathItemTimes : undefined,
-    useNewTimesStopsTable ? simulatedPathItemRespect : undefined,
-    useNewTimesStopsTable ? operationalPointsOnPath : undefined
+    simulatedTrain,
+    simulatedPathItemTimes,
+    simulatedPathItemRespect,
+    operationalPointsOnPath
   );
 
   // Keeps the last edit visible until selectedTrain.schedule gets a new reference.
@@ -140,17 +119,17 @@ const TimesStopsOutput = ({
   // TimesStopsTable (warnings, styling, etc.) should be computed from optimisticRows,
   // not from selectedTrain, to stay in sync with the displayed values during edits.
   const optimisticRows = useMemo(() => {
-    let rows: TimesStopsRowNew[] = newRows;
+    let copyRows: TimesStopsRowNew[] = rows;
     if (optimisticEdits) {
       const editMap = new Map(optimisticEdits.map((e): [string, PendingEdit] => [e.rowId, e]));
-      rows = newRows.map((row) => {
+      copyRows = rows.map((row) => {
         const edit = editMap.get(row.id);
         return edit ? { ...row, ...computeOptimisticRow(row, edit) } : row;
       });
     }
 
-    return bumpMidnightCrossings(rows);
-  }, [newRows, optimisticEdits]);
+    return bumpMidnightCrossings(copyRows);
+  }, [rows, optimisticEdits]);
 
   const startTime = useMemo(() => new Date(selectedTrain.start_time), [selectedTrain.start_time]);
 
@@ -180,7 +159,7 @@ const TimesStopsOutput = ({
     updatePowerRestrictions,
   } = useUpdateTimesStopsTable(
     selectedTrain,
-    newRows,
+    rows,
     trainSchedulesWithDetails,
     upsertTrainSchedules
   );
@@ -236,10 +215,10 @@ const TimesStopsOutput = ({
     const propagationResult = propagateTime(update, selectedTrain);
     if (!propagationResult) return [singleEdit];
 
-    const propagationEdits = propagationToEdits(propagationResult, newRows);
+    const propagationEdits = propagationToEdits(propagationResult, rows);
 
     // Origin arrival = start_time (not in schedule), so propagationToEdits misses it.
-    const originRow = newRows.at(0);
+    const originRow = rows.at(0);
     const originEdits: PendingEdit[] =
       originRow &&
       originRow.requestedArrival?.getTime() !== propagationResult.updatedStartTime.getTime()
@@ -276,11 +255,11 @@ const TimesStopsOutput = ({
       { rowId: editedRow.id, field: 'requestedTheoreticalMargin', value: requestedMargin },
     ];
 
-    const editedIndex = newRows.findIndex((r) => r.id === editedRow.id);
+    const editedIndex = rows.findIndex((r) => r.id === editedRow.id);
     if (editedIndex === -1) return edits;
 
-    for (let i = editedIndex + 1; i < newRows.length; i++) {
-      const row = newRows[i];
+    for (let i = editedIndex + 1; i < rows.length; i++) {
+      const row = rows[i];
       if (row.isTheoreticalMarginBoundary) break;
       edits.push({
         rowId: row.id,
@@ -363,46 +342,21 @@ const TimesStopsOutput = ({
       updatePowerRestrictions(row, value)
     );
 
-  if (useNewTimesStopsTable) {
-    return (
-      <TimesStopsTable
-        rows={optimisticRows}
-        startTime={startTime}
-        isValid={stableIsValid}
-        isComputedDataPending={isAwaitingSimulation}
-        availablePowerRestrictions={availablePowerRestrictions}
-        powerRestrictionWarningCount={powerRestrictionWarningCount}
-        powerRestrictionBlocks={powerRestrictionBlocks}
-        onArrivalChange={handleArrivalChange}
-        onStopDurationChange={handleStopDurationChange}
-        onDepartureChange={handleDepartureChange}
-        onReceptionSignalChange={handleReceptionSignalChange}
-        onRequestedMarginChange={handleRequestedMarginChange}
-        onPowerRestrictionChange={handlePowerRestrictionChange}
-      />
-    );
-  }
-
   return (
-    <TimesStops
-      rows={legacyRows}
-      tableType={TableType.Output}
-      cellClassName={({ rowData: rowData_, columnId }) => {
-        const rowData = rowData_ as TimesStopsRow;
-        // TODO: compare Date objects rather than strings
-        const arrivalScheduleNotRespected =
-          rowData.arrival?.time && rowData.calculatedArrival
-            ? formatLocalTime(rowData.calculatedArrival) !== rowData.arrival.time
-            : false;
-        const negativeDiffMargins = rowData.diffMargins && parseInt(rowData.diffMargins) < 0;
-        return cx({
-          'warning-schedule': arrivalScheduleNotRespected,
-          'warning-margin': negativeDiffMargins,
-          'secondary-code-column': columnId === 'ch',
-        });
-      }}
-      headerRowHeight={40}
-      dataIsLoading={newRows.length === 0}
+    <TimesStopsTable
+      rows={optimisticRows}
+      startTime={startTime}
+      isValid={stableIsValid}
+      isComputedDataPending={isAwaitingSimulation}
+      availablePowerRestrictions={availablePowerRestrictions}
+      powerRestrictionWarningCount={powerRestrictionWarningCount}
+      powerRestrictionBlocks={powerRestrictionBlocks}
+      onArrivalChange={handleArrivalChange}
+      onStopDurationChange={handleStopDurationChange}
+      onDepartureChange={handleDepartureChange}
+      onReceptionSignalChange={handleReceptionSignalChange}
+      onRequestedMarginChange={handleRequestedMarginChange}
+      onPowerRestrictionChange={handlePowerRestrictionChange}
     />
   );
 };

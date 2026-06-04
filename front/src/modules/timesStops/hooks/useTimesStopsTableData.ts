@@ -96,7 +96,7 @@ const buildTableRow = ({
   const rawComputedArrivalDate =
     computedArrival !== undefined ? new Date(startDate.getTime() + computedArrival.ms) : null;
 
-  // Snap to requested arrival when within tolerance, consistent with the legacy table behavior.
+  // Snap to requested arrival when within tolerance.
   const isOnTime =
     requestedArrival && rawComputedArrivalDate
       ? Duration.subtractDate(requestedArrival, rawComputedArrivalDate).abs() <=
@@ -166,9 +166,7 @@ const buildTableRow = ({
 };
 
 /**
- * Hook to build TableRow[] for the new Times & Stops table (TimesStopsTableNew).
- * This is separate from useOutputTableData to keep the legacy and new logic independent.
- * Once the new table is fully validated, useOutputTableData can be removed.
+ * Hook to build TableRow[] for the Times & Stops table.
  */
 const useTimesStopsTableData = (
   infraId: number,

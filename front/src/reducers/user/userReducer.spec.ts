@@ -58,7 +58,7 @@ describe('userReducer', () => {
       ...userInitialState,
       isLogged: true,
       username: 'Test userSlice',
-      userPreferences: { safeWord: '', useNewTimesStopsTable: false },
+      userPreferences: { safeWord: '' },
     });
     store.dispatch(logoutSuccess());
     const userState = store.getState().user;
@@ -97,13 +97,12 @@ describe('userReducer', () => {
     const store = createStore(userInitialState);
     const action = updateUserPreferences({
       safeWord: 'Test userSlice',
-      useNewTimesStopsTable: false,
     });
     store.dispatch(action);
     const userState = store.getState().user;
     expect(userState).toEqual({
       ...userInitialState,
-      userPreferences: { safeWord: 'Test userSlice', useNewTimesStopsTable: false },
+      userPreferences: { safeWord: 'Test userSlice' },
     });
   });
 });

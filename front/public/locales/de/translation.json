@@ -675,7 +675,6 @@
     "languages": "Sprachen",
     "safeWord": "Sicherheitskennwort",
     "safeWordHelp": "Das Sicherheitskennwort ermöglicht es, die Projektliste transparent mit dem eingegebenen Wort zu filtern, das als Tag verwendet wird. Wählen Sie ein kompliziertes Wort, das niemand versehentlich verwendet. Fügen Sie es als Tag zu einem Projekt hinzu; es wird bei der Projekterstellung automatisch hinzugefügt, wenn das Wort hier eingetragen ist.",
-    "useNewTimesStopsTable": "Neue Fahrplantabelle verwenden",
     "userSettings": "Benutzereinstellungen",
     "yourSafeWord": "Geben Sie Ihr Kennwort ein"
   },
