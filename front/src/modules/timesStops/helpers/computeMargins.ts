@@ -8,11 +8,9 @@ import type {
   Margins,
   MarginsCore,
   MarginsCoreComputed,
-  MarginsLegacyTable,
   MarginValue,
   TheoreticalMarginsRecord,
 } from '../types';
-import { formatDigitsAndUnit } from './utils';
 
 type PathItemTimes = Extract<SimulationSummary, { isValid: true }>['pathItemTimes'];
 
@@ -139,45 +137,5 @@ export function computeMargins(
     theoreticalMarginSeconds: { value: provisionalLostTime, unit: MarginUnit.second },
     calculatedMargin: { value: finalLostTime, unit: MarginUnit.second },
     diffMargins: { value: diffMargins, unit: MarginUnit.second },
-  };
-}
-
-export function computeMarginsLegacyTable(
-  theoreticalMargins: TheoreticalMarginsRecord | undefined,
-  train: Pick<Train, 'path' | 'margins'>,
-  scheduleByAt: Record<string, ScheduleItem>,
-  pathStepIndex: number,
-  pathItemTimes: PathItemTimes | undefined
-): MarginsLegacyTable {
-  const core = computeMarginsCore(
-    theoreticalMargins,
-    train,
-    scheduleByAt,
-    pathStepIndex,
-    pathItemTimes
-  );
-  if (!core) return marginsUndefined;
-  if (!pathItemTimes)
-    return {
-      theoreticalMargin: formatDigitsAndUnit(
-        core.theoreticalMargin.value,
-        core.theoreticalMargin.unit
-      ),
-      isTheoreticalMarginBoundary: core.isBoundary,
-      theoreticalMarginSeconds: undefined,
-      calculatedMargin: undefined,
-      diffMargins: undefined,
-    };
-
-  if (!isCoreComputed(core)) return marginsUndefined;
-  const { theoreticalMargin, isBoundary, provisionalLostTime, finalLostTime } = core;
-  const diffMargins = finalLostTime - provisionalLostTime;
-
-  return {
-    theoreticalMargin: formatDigitsAndUnit(theoreticalMargin.value, theoreticalMargin.unit),
-    isTheoreticalMarginBoundary: isBoundary,
-    theoreticalMarginSeconds: `${provisionalLostTime} s`,
-    calculatedMargin: `${finalLostTime} s`,
-    diffMargins: `${diffMargins} s`,
   };
 }
