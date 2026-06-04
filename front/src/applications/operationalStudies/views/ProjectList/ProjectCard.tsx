@@ -67,22 +67,24 @@ export default function ProjectCard({ setFilterChips, project, isSelected, toggl
       </div>
       <div className="project-card-name">{project.name}</div>
       <div className="project-card-description">{project.description}</div>
-      <div className="project-card-tags">
-        {project.tags
-          .filter((tag) => tag !== safeWord)
-          .map((tag) => (
-            <div
-              className="project-card-tags-tag"
-              key={tag}
-              role="button"
-              tabIndex={0}
-              onClick={() => setFilterChips(tag)}
-              title={tag}
-            >
-              {tag}
-            </div>
-          ))}
-      </div>
+      {project.tags.length > 0 && (
+        <div className="project-card-tags">
+          {project.tags
+            .filter((tag) => tag !== safeWord)
+            .map((tag) => (
+              <div
+                className="project-card-tags-tag"
+                key={tag}
+                role="button"
+                tabIndex={0}
+                onClick={() => setFilterChips(tag)}
+                title={tag}
+              >
+                {tag}
+              </div>
+            ))}
+        </div>
+      )}
     </div>
   );
 }
