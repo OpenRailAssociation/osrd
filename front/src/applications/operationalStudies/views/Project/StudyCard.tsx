@@ -58,7 +58,7 @@ export default function StudyCard({
       )}
       <div className="study-card-description">{study.description}</div>
 
-      {(study.budget !== 0 || study.service_code || study.business_code) && (
+      {(study.budget || study.service_code || study.business_code) && (
         <div className="study-card-financials">
           <div className="study-card-financials-infos">
             {study.service_code && (
@@ -83,10 +83,9 @@ export default function StudyCard({
         </div>
       )}
 
-      <div className="study-card-tags">
-        {study.tags &&
-          study.tags.length > 0 &&
-          study.tags.map((tag) => (
+      {study.tags.length > 0 && (
+        <div className="study-card-tags">
+          {study.tags.map((tag) => (
             <div
               className="study-card-tags-tag"
               key={tag}
@@ -98,7 +97,8 @@ export default function StudyCard({
               {tag}
             </div>
           ))}
-      </div>
+        </div>
+      )}
 
       <div className="study-card-footer">
         <div className="study-card-scenarios-count ml-auto">
