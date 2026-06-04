@@ -186,8 +186,6 @@ export type Margins<T = MarginValue> = {
   diffMargins?: T;
 };
 
-export type MarginsLegacyTable = Margins<string>;
-
 type MarginsCoreBase = {
   theoreticalMargin: MarginValue;
   isBoundary: boolean;
