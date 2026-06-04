@@ -33,17 +33,16 @@ test.describe(
     });
 
     test.beforeEach('Setup scenario with invalid trains', async ({ page }) => {
-      scenarioItems = (
-        await createScenario(
-          generateUniqueName('invalid-train-scenario'),
-          project.id,
-          study.id,
-          infra.id
-        )
-      ).scenario;
+      const { scenario, trainScheduleSet } = await createScenario(
+        generateUniqueName('invalid-train-scenario'),
+        project.id,
+        study.id,
+        infra.id
+      );
+      scenarioItems = scenario;
 
       const selectedTrains = [...trains.slice(3, 4), ...trains.slice(17, 18)];
-      await sendTrains(scenarioItems.timetable_id, selectedTrains);
+      await sendTrains(trainScheduleSet.id, selectedTrains);
 
       await page.goto(
         `/operational-studies/projects/${project.id}/studies/${study.id}/scenarios/${scenarioItems.id}`
