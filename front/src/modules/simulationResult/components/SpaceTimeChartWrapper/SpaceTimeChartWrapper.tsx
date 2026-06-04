@@ -65,7 +65,10 @@ import {
 import { mapBy } from 'utils/types';
 
 import { buildSplitPoints } from './buildSplitPoints';
-import CurveSelectionSidePanel, { type PanelSelectionMode } from './CurveSelectionSidePanel';
+import CurveSelectionSidePanel, {
+  PANEL_SELECTION_MODES,
+  type PanelSelectionMode,
+} from './CurveSelectionSidePanel';
 import cutSpaceTimeCurves from './helpers/cutSpaceTimeCurves';
 import formatSpaceTimeCurves from './helpers/formatSpaceTimeCurves';
 import getPanelOccurrenceCounts from './helpers/getPanelOccurrenceCounts';
@@ -155,6 +158,7 @@ const SpaceTimeChartWrapper = ({
   const isSimulationEnabled = useSelector(getIsSimulationEnabled);
   const { id: selectedTrainId, by: selectedTrainBy } = useSelector(getSelectedTrain) || {};
 
+  const wrapperRef = useRef<HTMLDivElement>(null);
   const manchetteWithSpaceTimeChartRef = useRef<HTMLDivElement>(null);
   const activeWaypointRef = useRef<HTMLDivElement>(null);
 
@@ -448,14 +452,47 @@ const SpaceTimeChartWrapper = ({
     }
   };
 
+  const handleKeyDown: React.KeyboardEventHandler<HTMLDivElement> = (e) => {
+    if (e.code === 'KeyS') {
+      if (!selectedPacedTrainId) return;
+      e.preventDefault();
+      const currentIndex = PANEL_SELECTION_MODES.indexOf(panelSelectionMode);
+      const nextMode = PANEL_SELECTION_MODES[(currentIndex + 1) % PANEL_SELECTION_MODES.length];
+      handlePanelModeChange(nextMode);
+      return;
+    }
+    if (e.key === 'Escape' && selectedTrainId && selectedTrainBy !== 'timetable') {
+      e.preventDefault();
+      dispatch(updateSelectedTrain({ id: selectedTrainId, by: 'timetable' }));
+      if (showCurvePanel) setPanelSelectionMode('compliant');
+    }
+  };
+
+  const handleCloseSettingsPanel = () => {
+    setShowSettingsPanel(false);
+    wrapperRef.current?.focus();
+  };
+
+  const handleSetWaypointsPanelIsOpen = (open: boolean) => {
+    setWaypointsPanelIsOpen?.(open);
+    if (!open) wrapperRef.current?.focus();
+  };
+
   return (
-    <div data-testid="manchette-space-time-chart" className="ui-manchette-space-time-chart-wrapper">
+    // eslint-disable-next-line jsx-a11y/no-static-element-interactions
+    <div
+      data-testid="manchette-space-time-chart"
+      className="ui-manchette-space-time-chart-wrapper"
+      ref={wrapperRef}
+      tabIndex={-1}
+      onKeyDown={handleKeyDown}
+    >
       {waypointsPanelData &&
         waypointsPanelIsOpen &&
         createPortal(
           <WaypointsPanel
             waypointsPanelIsOpen={waypointsPanelIsOpen}
-            setWaypointsPanelIsOpen={setWaypointsPanelIsOpen}
+            setWaypointsPanelIsOpen={handleSetWaypointsPanelIsOpen}
             waypoints={operationalPoints}
             waypointsPanelData={waypointsPanelData}
             hideOffsets={pathfindingHasFailed}
@@ -498,7 +535,7 @@ const SpaceTimeChartWrapper = ({
             <SettingsPanel
               settings={settings}
               onChange={setSettings}
-              onClose={() => setShowSettingsPanel(false)}
+              onClose={handleCloseSettingsPanel}
               isTrainScheduleValid={isTrainScheduleValid}
             />
           )}
