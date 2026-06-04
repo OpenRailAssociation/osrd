@@ -62,6 +62,7 @@ dependencies {
     implementation libs.moshi
     implementation libs.moshi.adapters
     implementation libs.moshi.kotlin
+    testImplementation libs.kotest.assertions.json
 
     // HTTP client
     implementation libs.okhttp
@@ -137,6 +138,7 @@ test {
     useJUnitPlatform {
         includeEngines 'junit-jupiter'
     }
+    maxHeapSize = "4g"
 }
 
 
