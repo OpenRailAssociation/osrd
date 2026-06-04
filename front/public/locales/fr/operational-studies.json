@@ -653,7 +653,7 @@
       "used": "utilisée"
     },
     "projectionInProgress": "Projection en cours : {{ count }}/{{ total }} trains",
-    "simulationSheet": "Fiche de simulation",
+    "simulationSheet": "Fiche de tracé",
     "speedDistanceDiagram": "GEV",
     "speedDistanceSettings": {
       "context": "Contexte",
