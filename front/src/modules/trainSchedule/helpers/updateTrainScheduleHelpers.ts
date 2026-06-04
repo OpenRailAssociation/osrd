@@ -45,18 +45,6 @@ export async function createPacedTrains(
   ).unwrap();
   return newPacedTrains;
 }
-export async function updateTrainSchedule(
-  dispatch: AppDispatch,
-  id: number,
-  trainSchedule: TrainSchedule
-) {
-  await dispatch(
-    osrdEditoastApi.endpoints.putTrainSchedulesById.initiate({
-      id,
-      trainSchedule,
-    })
-  ).unwrap();
-}
 
 async function updatePacedTrain(dispatch: AppDispatch, id: number, trainSchedule: TrainSchedule) {
   if (trainSchedule.paced?.exceptions && trainSchedule.paced.exceptions.length > 0) {
@@ -64,7 +52,12 @@ async function updatePacedTrain(dispatch: AppDispatch, id: number, trainSchedule
       'updatePacedTrain: exceptions should not be included in the paced field. Use exception endpoints instead.'
     );
   }
-  await updateTrainSchedule(dispatch, id, trainSchedule);
+  await dispatch(
+    osrdEditoastApi.endpoints.putTrainSchedulesById.initiate({
+      id,
+      trainSchedule,
+    })
+  ).unwrap();
 }
 
 export async function createExceptions(
