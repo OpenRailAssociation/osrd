@@ -110,7 +110,8 @@ impl From<AuthorizerError> for AuthzError {
 pub(in crate::views) struct WhoamiResponse {
     id: i64,
     name: String,
-    roles: Vec<Role>,
+    #[schema(value_type = Vec<Role>)]
+    roles: HashSet<Role>,
 }
 
 #[editoast_derive::route]
@@ -125,16 +126,17 @@ pub(in crate::views) struct WhoamiResponse {
     ))
 )]
 pub(in crate::views) async fn whoami(
-    Extension(mut roles): Extension<Vec<authz::Role>>,
+    Extension(roles): Extension<Vec<authz::Role>>,
     Extension(user): Extension<Option<editoast_models::User>>,
     Extension(authn): Extension<crate::authentication::Authentication>,
 ) -> Result<Json<WhoamiResponse>> {
     let skip = matches!(authn, crate::authentication::Authentication::Skip { .. });
     if let Some(editoast_models::User { id, name }) = user {
+        let mut roles = HashSet::from_iter(roles);
         // authorization is disabled (by CLI or header x-osrd-skip-authz) but identity headers are
-        // provided so we could fetch the user's roles, but Admin is lacking
-        if skip && !roles.contains(&Role::Admin) {
-            roles.push(Role::Admin);
+        // provided so we could fetch the user's roles, but Admin may be lacking
+        if skip {
+            roles.insert(Role::Admin);
         }
         Ok(Json(WhoamiResponse { id, name, roles }))
     } else if skip {
@@ -142,7 +144,7 @@ pub(in crate::views) async fn whoami(
         Ok(Json(WhoamiResponse {
             id: -1,
             name: "OSRD user".to_string(),
-            roles: vec![Role::Admin],
+            roles: HashSet::from([Role::Admin]),
         }))
     } else {
         Err(AuthorizationError::Forbidden.into())
@@ -1690,7 +1692,7 @@ mod tests {
             WhoamiResponse {
                 id: user.id,
                 name: "test".to_string(),
-                roles: vec![Role::OperationalStudies],
+                roles: HashSet::from([Role::OperationalStudies]),
             }
         );
     }
@@ -1724,7 +1726,7 @@ mod tests {
             WhoamiResponse {
                 id: impersonated.id,
                 name: "Impersonated".to_string(),
-                roles: vec![Role::Stdcm],
+                roles: HashSet::from([Role::Stdcm]),
             }
         );
     }
@@ -1778,7 +1780,7 @@ mod tests {
             WhoamiResponse {
                 id: user.id,
                 name: "Bob".to_string(),
-                roles: vec![Role::Admin],
+                roles: HashSet::from([Role::Admin]),
             }
         );
     }
@@ -1798,7 +1800,7 @@ mod tests {
             .assert_status(StatusCode::OK)
             .json_into::<WhoamiResponse>();
 
-        assert_eq!(roles, vec![Role::Admin]);
+        assert_eq!(roles, HashSet::from([Role::Admin]));
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
