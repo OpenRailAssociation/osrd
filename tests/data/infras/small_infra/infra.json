@@ -849,11 +849,9 @@
                     "track": "TA2"
                 }
             ],
-            "plc": null,
             "secondary_code": "BV",
             "secondary_name": "0",
-            "uic": 8722,
-            "weight": null
+            "uic": 8722
         },
         {
             "country_code": "FR",
@@ -868,11 +866,9 @@
                     "track": "TB0"
                 }
             ],
-            "plc": null,
             "secondary_code": "BV",
             "secondary_name": "0",
-            "uic": 8711,
-            "weight": null
+            "uic": 8711
         },
         {
             "country_code": "FR",
@@ -902,11 +898,9 @@
                     "track": "TC3"
                 }
             ],
-            "plc": null,
             "secondary_code": "BV",
             "secondary_name": "0",
-            "uic": 8733,
-            "weight": null
+            "uic": 8733
         },
         {
             "country_code": "FR",
@@ -926,11 +920,9 @@
                     "track": "TD1"
                 }
             ],
-            "plc": null,
             "secondary_code": "BV",
             "secondary_name": "0",
-            "uic": 8744,
-            "weight": null
+            "uic": 8744
         },
         {
             "country_code": "FR",
@@ -950,11 +942,9 @@
                     "track": "TE2"
                 }
             ],
-            "plc": null,
             "secondary_code": "BV",
             "secondary_name": "0",
-            "uic": 8755,
-            "weight": null
+            "uic": 8755
         },
         {
             "country_code": "FR",
@@ -969,11 +959,9 @@
                     "track": "TF1"
                 }
             ],
-            "plc": null,
             "secondary_code": "BV",
             "secondary_name": "0",
-            "uic": 8766,
-            "weight": null
+            "uic": 8766
         },
         {
             "country_code": "FR",
@@ -993,11 +981,9 @@
                     "track": "TG5"
                 }
             ],
-            "plc": null,
             "secondary_code": "BV",
             "secondary_name": "0",
-            "uic": 8777,
-            "weight": null
+            "uic": 8777
         },
         {
             "country_code": "FR",
@@ -1012,11 +998,9 @@
                     "track": "TH1"
                 }
             ],
-            "plc": null,
             "secondary_code": "BV",
             "secondary_name": "0",
-            "uic": 8788,
-            "weight": null
+            "uic": 8788
         }
     ],
     "routes": [
@@ -5004,7 +4988,6 @@
     "speed_sections": [
         {
             "id": "speed_section.0",
-            "on_routes": null,
             "speed_limit": 83.33333333333333,
             "speed_limit_by_tag": {
                 "HLP": 69.44444444444444
@@ -5200,7 +5183,6 @@
         },
         {
             "id": "speed_section.1",
-            "on_routes": null,
             "speed_limit": 39.44444444444444,
             "speed_limit_by_tag": {
                 "E32C": 27.77777777777778
@@ -5222,7 +5204,6 @@
         },
         {
             "id": "speed_section.2",
-            "on_routes": null,
             "speed_limit": 31.11111111111111,
             "speed_limit_by_tag": {
                 "MA100": 22.22222222222222

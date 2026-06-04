@@ -181,7 +181,6 @@
     "speed_sections": [
         {
             "id": "sp/50/t1...t1bis",
-            "on_routes": null,
             "speed_limit": 50.0,
             "speed_limit_by_tag": {},
             "track_ranges": [
@@ -201,7 +200,6 @@
         },
         {
             "id": "sp/40/td1..td3_t4",
-            "on_routes": null,
             "speed_limit": 40.0,
             "speed_limit_by_tag": {},
             "track_ranges": [

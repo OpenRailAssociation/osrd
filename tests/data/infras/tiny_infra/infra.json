@@ -61,11 +61,9 @@
                     "track": "ne.micro.foo_b"
                 }
             ],
-            "plc": null,
             "secondary_code": "BV",
             "secondary_name": "0",
-            "uic": 8700,
-            "weight": null
+            "uic": 8700
         },
         {
             "country_code": "FR",
@@ -80,11 +78,9 @@
                     "track": "ne.micro.bar_a"
                 }
             ],
-            "plc": null,
             "secondary_code": "BV",
             "secondary_name": "0",
-            "uic": 8700,
-            "weight": null
+            "uic": 8700
         }
     ],
     "routes": [
@@ -363,7 +359,6 @@
     "speed_sections": [
         {
             "id": "speed_section.0",
-            "on_routes": null,
             "speed_limit": 16.666666666666668,
             "speed_limit_by_tag": {},
             "track_ranges": [
