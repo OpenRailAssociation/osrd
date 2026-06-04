@@ -114,7 +114,7 @@ spec:
             {{- toYaml .Values.services.editoast.resources | nindent 12 }}
 
       {{- if .Values.services.editoast.service_account_name }}
-      service_account_name: {{ .Values.services.editoast.service_account_name }}
+      serviceAccountName: {{ .Values.services.editoast.service_account_name }}
       {{- end}}
 
       {{- if .Values.services.editoast.permanent_storage_size }}
