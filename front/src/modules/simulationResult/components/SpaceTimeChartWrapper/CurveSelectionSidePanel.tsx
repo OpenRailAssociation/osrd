@@ -4,6 +4,8 @@ import { useTranslation } from 'react-i18next';
 
 export type PanelSelectionMode = 'compliant' | 'all' | 'single';
 
+export const PANEL_SELECTION_MODES: PanelSelectionMode[] = ['compliant', 'all', 'single'];
+
 type CurveSelectionSidePanelProps = {
   position: number;
   panelSelectionMode: PanelSelectionMode;
