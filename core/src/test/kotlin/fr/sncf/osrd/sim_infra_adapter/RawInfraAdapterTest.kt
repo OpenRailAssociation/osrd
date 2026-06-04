@@ -17,6 +17,7 @@ import fr.sncf.osrd.utils.indexing.mutableStaticIdxArrayListOf
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
 import fr.sncf.osrd.utils.units.mutableOffsetArrayListOf
+import io.kotest.assertions.json.shouldEqualJson
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import org.junit.jupiter.params.ParameterizedTest
@@ -98,6 +99,21 @@ class RawInfraAdapterTest {
     fun smokeAdaptSmallInfra() {
         val rjsInfra = Helpers.getExampleInfra("small_infra/infra.json")
         parseRJSInfra(rjsInfra)
+    }
+
+    /**
+     * Checks that the content is unchanged when deserializing then serializing railjson.
+     *
+     * This ensures (not exhaustive) that railjson produced by core respects railjson format and
+     * stays compatible with the rest of the stack (initial file is tied to the rest of the stack)
+     */
+    @Test
+    fun checkSameContentDeserSerSmallInfra() {
+        val url = Helpers.getResourcePath("infras/small_infra/infra.json")
+        val initialContent = url.toFile().readText()
+        val rjsInfra = RJSInfra.adapter.fromJson(initialContent)!!
+        val serContent = RJSInfra.adapter.toJson(rjsInfra)
+        serContent.shouldEqualJson { initialContent }
     }
 
     /**
