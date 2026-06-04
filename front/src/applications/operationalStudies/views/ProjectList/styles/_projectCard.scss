@@ -1,4 +1,6 @@
 .project-card {
+  display: flex;
+  flex-direction: column;
   position: relative;
   border-radius: 4px;
   margin-bottom: 16px;
@@ -126,8 +128,8 @@
     text-overflow: ellipsis;
   }
   .project-card-description {
-    padding: 0 8px;
-    height: 62.4px;
+    padding: 0 8px 8px;
+    flex: 1;
     overflow-y: auto;
     font-size: 0.8rem;
     white-space: break-spaces;
