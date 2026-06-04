@@ -25,6 +25,7 @@ export type StepStatus =
   | 'marginNotHonored'
   | 'allHonored';
 
+//TODO: rename TimesStopsRowNew to TimesStopsRow when deleting the old times stop input table.
 export type TimesStopsRowNew = {
   // Identification
   /** Unique, opaque identifier for the row. Not to be confused with path step IDs or OP IDs. */

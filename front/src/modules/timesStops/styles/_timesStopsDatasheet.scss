@@ -13,10 +13,6 @@
     padding-inline: 8px 16px;
   }
 
-  .secondary-code-column {
-    color: var(--grey50);
-  }
-
   .self-center {
     align-self: center;
   }
@@ -31,14 +27,6 @@
 
   .repeatedValue {
     color: var(--grey30);
-  }
-
-  .warning-schedule {
-    background: var(--warning30);
-  }
-
-  .warning-margin {
-    background: rgba(var(--warning30-rgb), 0.5);
   }
 
   .dsg-cell {
@@ -83,10 +71,6 @@
     &.activeRow {
       font-weight: 600;
       color: var(--black100);
-      .dsg-cell-gutter,
-      .secondary-code-column {
-        font-weight: normal;
-      }
     }
 
     &.oddRow {
