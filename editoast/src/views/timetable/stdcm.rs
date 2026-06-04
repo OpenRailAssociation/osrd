@@ -155,14 +155,11 @@ pub(in crate::views) struct StdcmQueryParams {
 }
 
 /// This function computes a STDCM and returns the result.
+///
 /// It first checks user authorization, then retrieves timetable, infrastructure,
 /// train schedules, and rolling stock data, and runs train simulations.
 /// The result contains the simulation output based on the train schedules
 /// and infrastructure provided.
-///
-/// If the simulation fails, the function uses a virtual train to detect conflicts
-/// with existing train schedules. It then returns both the conflict information
-/// and the pathfinding result from the virtual train's simulation.
 #[tracing::instrument(
     target = "editoast::timetable",
     name = "stdcm",
