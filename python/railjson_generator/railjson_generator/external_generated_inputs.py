@@ -39,7 +39,12 @@ class ExternalGeneratedInputs:
     def save(self, path: PathLike):
         """Write to the path as railjson."""
         with open(path, "w") as f:
-            print(self.to_rjs().model_dump_json(indent=4, exclude_unset=True), file=f)
+            print(
+                self.to_rjs().model_dump_json(
+                    indent=4, exclude_unset=True, exclude_none=True
+                ),
+                file=f,
+            )
 
     def to_rjs(self):
         """Return the corresponding railjson `ElectricalProfileSet`."""

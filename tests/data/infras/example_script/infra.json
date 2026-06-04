@@ -96,11 +96,9 @@
                     "track": "track.1"
                 }
             ],
-            "plc": null,
             "secondary_code": "BV",
             "secondary_name": "0",
-            "uic": 8700,
-            "weight": null
+            "uic": 8700
         }
     ],
     "routes": [
