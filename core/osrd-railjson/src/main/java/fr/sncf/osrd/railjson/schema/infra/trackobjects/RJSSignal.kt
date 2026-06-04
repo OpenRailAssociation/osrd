@@ -16,6 +16,7 @@ class RJSSignal(
     @Json(name = "sight_distance") val sightDistance: Double,
     /** Each logical signal can be of a different type and simulated independently */
     @Json(name = "logical_signals") val logicalSignals: List<LogicalSignal>,
+    val extensions: RJSSignalExtensions = RJSSignalExtensions(null),
 ) : RJSTrackObject, Identified {
     class LogicalSignal(
         /**
@@ -50,3 +51,7 @@ class RJSSignal(
         )
     }
 }
+
+data class RJSSignalExtensions(val sncf: RJSSignalSncfExtension?)
+
+data class RJSSignalSncfExtension(val label: String, val side: String, val kp: String)

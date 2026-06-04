@@ -9,6 +9,7 @@ import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSBufferStop
 import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSSignal
 import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSTrainDetector
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSElectrification
+import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSLevelCrossing
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSNeutralSection
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSSpeedSection
 
@@ -36,6 +37,7 @@ data class RJSInfra(
     @Json(name = "speed_sections") val speedSections: List<RJSSpeedSection>,
     val electrifications: List<RJSElectrification>,
     @Json(name = "neutral_sections") val neutralSections: List<RJSNeutralSection>,
+    @Json(name = "level_crossings") val levelCrossings: List<RJSLevelCrossing>,
 ) {
     companion object {
         /** Moshi adapter used to serialize and deserialize RJSInfra */

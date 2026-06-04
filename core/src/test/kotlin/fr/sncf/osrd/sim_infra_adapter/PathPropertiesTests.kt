@@ -445,6 +445,7 @@ class PathPropertiesTests {
                     electrifications =
                         listOf(
                             RJSElectrification(
+                                "1500V_elec",
                                 "1500V",
                                 listOf(
                                     RJSApplicableDirectionsTrackRange(
@@ -462,6 +463,7 @@ class PathPropertiesTests {
                                 ),
                             ),
                             RJSElectrification(
+                                "25000V_elec",
                                 "25000V",
                                 listOf(
                                     RJSApplicableDirectionsTrackRange(

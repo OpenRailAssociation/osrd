@@ -81,6 +81,7 @@ class EnvelopeTrainPathTest {
                     electrifications =
                         listOf(
                             RJSElectrification(
+                                "no_name_elec",
                                 "",
                                 listOf(
                                     RJSApplicableDirectionsTrackRange(
@@ -92,6 +93,7 @@ class EnvelopeTrainPathTest {
                                 ),
                             ),
                             RJSElectrification(
+                                "1500V_elec",
                                 "1500V",
                                 listOf(
                                     RJSApplicableDirectionsTrackRange(
@@ -109,6 +111,7 @@ class EnvelopeTrainPathTest {
                                 ),
                             ),
                             RJSElectrification(
+                                "25000V_elec",
                                 "25000V",
                                 listOf(
                                     RJSApplicableDirectionsTrackRange(
@@ -137,6 +140,7 @@ class EnvelopeTrainPathTest {
                     electrifications =
                         listOf(
                             RJSElectrification(
+                                "no_name_elec",
                                 "",
                                 listOf(
                                     RJSApplicableDirectionsTrackRange(
@@ -148,6 +152,7 @@ class EnvelopeTrainPathTest {
                                 ),
                             ),
                             RJSElectrification(
+                                "1500V_elec",
                                 "1500V",
                                 listOf(
                                     RJSApplicableDirectionsTrackRange(
@@ -165,6 +170,7 @@ class EnvelopeTrainPathTest {
                                 ),
                             ),
                             RJSElectrification(
+                                "25000V_elec",
                                 "25000V",
                                 listOf(
                                     RJSApplicableDirectionsTrackRange(
@@ -219,6 +225,7 @@ class EnvelopeTrainPathTest {
                     electrifications =
                         listOf(
                             RJSElectrification(
+                                "1500V_elec",
                                 "1500V",
                                 listOf(
                                     RJSApplicableDirectionsTrackRange(

@@ -2,6 +2,7 @@ package fr.sncf.osrd.railjson.schema.infra.trackranges;
 
 import com.squareup.moshi.Json;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import fr.sncf.osrd.railjson.schema.common.Identified;
 import java.util.List;
 
 /**
@@ -12,7 +13,9 @@ import java.util.List;
  * href="https://osrd.fr/en/docs/explanation/neutral_sections/">the documentation</a>.
  */
 @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
-public class RJSNeutralSection {
+public class RJSNeutralSection implements Identified {
+    public String id;
+
     @Json(name = "announcement_track_ranges")
     public List<RJSDirectionalTrackRange> announcementTrackRanges;
 
@@ -22,4 +25,9 @@ public class RJSNeutralSection {
     /** Whether trains need to lower their pantograph when entering this section */
     @Json(name = "lower_pantograph")
     public boolean lowerPantograph;
+
+    @Override
+    public String getId() {
+        return id;
+    }
 }
