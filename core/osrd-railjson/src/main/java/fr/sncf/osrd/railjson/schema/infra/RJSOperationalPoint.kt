@@ -7,7 +7,7 @@ import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSOperationalPointPart
 class RJSOperationalPoint(
     override val id: String,
     val parts: List<RJSOperationalPointPart>,
-    val weight: String?,
+    val weight: Long?,
     val name: String,
     val uic: Long?,
     val plc: String?,

@@ -759,7 +759,7 @@ fun parseRJSInfra(rjsInfra: RJSInfra): RawInfra {
                 props["secondaryName"] = operationalPoint.secondaryName!!
             val weight = operationalPoint.weight
             if (weight != null) {
-                props["weight"] = weight
+                props["weight"] = weight.toString()
             }
             if (opPart.extensions?.sncf != null) props["kp"] = opPart.extensions!!.sncf!!.kp
             val localTrackName = opPart.localTrackName

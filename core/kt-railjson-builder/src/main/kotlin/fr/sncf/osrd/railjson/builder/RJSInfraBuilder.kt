@@ -353,6 +353,7 @@ class RJSInfraBuilder {
                 detectors = detectors.map { it.build() },
                 signals = signals.map { it.build(defaultSightDistance) },
                 routes = routes.map { it.build() },
+                levelCrossings = listOf(),
             )
         return rjsInfra
     }

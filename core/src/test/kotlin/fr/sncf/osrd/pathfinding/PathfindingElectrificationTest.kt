@@ -212,7 +212,8 @@ class PathfindingElectrificationTest : ApiTest() {
                     )
                 }
                 .toList()
-        val voltageAllElectrification = RJSElectrification("25000V", voltageAllTrackRanges)
+        val voltageAllElectrification =
+            RJSElectrification("all_tracks25000V", "25000V", voltageAllTrackRanges)
         val rjsInfraWithAllElectrifiedTrack =
             rjsInfra.copy(electrifications = ArrayList(listOf(voltageAllElectrification)))
         val infraWithAllElectrifiedTrack =
@@ -238,7 +239,8 @@ class PathfindingElectrificationTest : ApiTest() {
 
         val voltagePartialTrackRanges =
             voltageAllTrackRanges.filter { it.trackSectionID != trackSectionToBlock }
-        val voltagePartialElectrification = RJSElectrification("25000V", voltagePartialTrackRanges)
+        val voltagePartialElectrification =
+            RJSElectrification("25000V_elec", "25000V", voltagePartialTrackRanges)
         val rjsInfraPartialElectrifiedTrack =
             rjsInfra.copy(electrifications = ArrayList(listOf(voltagePartialElectrification)))
         val infraPartialElectrifiedTrack =
