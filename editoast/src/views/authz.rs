@@ -7,6 +7,7 @@ use crate::authorizers::UserAuthorizer;
 use crate::authorizers::impossible;
 use crate::error::Result;
 use crate::views::Authentication;
+use crate::views::authz::resources::Resource;
 use crate::views::authz::resources::StandardGrant;
 use crate::views::authz::resources::StandardPrivilege;
 use ::authz;
@@ -349,10 +350,6 @@ pub(in crate::views) async fn user_privileges(
     let mut result = HashMap::<_, Vec<_>>::new();
     let mut conn = db_pool.get().await?;
 
-    enum Resource {
-        Infra(authz::Infra),
-        RollingStock(authz::RollingStock),
-    }
     if let Some(user) = user {
         let resources = resources_ids.into_iter().flat_map(|(resource_type, ids)| {
             ids.into_iter().map(move |id| match resource_type {
@@ -361,13 +358,13 @@ pub(in crate::views) async fn user_privileges(
             })
         });
         let protected_privileges = resources.map(|resource| match resource {
-            Resource::Infra(infra) => v2::infra_privileges(user, infra)
+            resource @ Resource::Infra(infra) => v2::infra_privileges(user, infra)
                 .collect_into::<HashSet<StandardPrivilege>>()
-                .zip(v2::Protected::value(Resource::Infra(infra))),
-            Resource::RollingStock(rolling_stock) => {
+                .zip(v2::Protected::value(resource)),
+            resource @ Resource::RollingStock(rolling_stock) => {
                 v2::rolling_stock_privileges(user, rolling_stock)
                     .collect_into::<HashSet<StandardPrivilege>>()
-                    .zip(v2::Protected::value(Resource::RollingStock(rolling_stock)))
+                    .zip(v2::Protected::value(resource))
             }
         });
         let authorizer =
@@ -375,22 +372,15 @@ pub(in crate::views) async fn user_privileges(
         let accesses = authorizer.authorize_all(protected_privileges).await?;
         for access in v2::Access::access_all(accesses).await? {
             match access {
-                Ok((privileges, resource)) => match resource {
-                    Resource::Infra(authz::Infra(infra)) => result
-                        .entry(ResourceType::Infra)
+                Ok((privileges, resource)) => {
+                    result
+                        .entry(resource.get_type())
                         .or_default()
                         .push(ResourcePrivileges {
-                            resource_id: infra,
+                            resource_id: resource.id(),
                             privileges,
-                        }),
-                    Resource::RollingStock(authz::RollingStock(rolling_stock)) => result
-                        .entry(ResourceType::RollingStock)
-                        .or_default()
-                        .push(ResourcePrivileges {
-                            resource_id: rolling_stock,
-                            privileges,
-                        }),
-                },
+                        });
+                }
                 Err(Check::InfraExists(_)) | Err(Check::RollingStockExists(_)) => {
                     // not an error under the target API
                     // (though maybe we should revisit it?)
@@ -1065,13 +1055,13 @@ mod tests {
         assert_eq!(
             privileges.remove(&infra).unwrap(),
             HashSet::from([
-                StandardPrivilege::CanShareOwnership,
-                StandardPrivilege::CanDelete,
-                StandardPrivilege::CanRevoke,
                 StandardPrivilege::CanRead,
                 StandardPrivilege::CanShareRead,
-                StandardPrivilege::CanShareWrite,
                 StandardPrivilege::CanWrite,
+                StandardPrivilege::CanShareWrite,
+                StandardPrivilege::CanDelete,
+                StandardPrivilege::CanShareOwnership,
+                StandardPrivilege::CanRevoke,
             ])
         );
     }

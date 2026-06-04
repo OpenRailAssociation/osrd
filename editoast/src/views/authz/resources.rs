@@ -7,6 +7,28 @@ use serde::Serialize;
 use strum::Display;
 use utoipa::ToSchema;
 
+use crate::views::authz::ResourceType;
+
+pub enum Resource {
+    Infra(authz::Infra),
+    RollingStock(authz::RollingStock),
+}
+
+impl Resource {
+    pub(super) fn id(&self) -> i64 {
+        match self {
+            Resource::Infra(authz::Infra(id)) => *id,
+            Resource::RollingStock(authz::RollingStock(id)) => *id,
+        }
+    }
+    pub(super) fn get_type(&self) -> ResourceType {
+        match self {
+            Resource::Infra(_) => ResourceType::Infra,
+            Resource::RollingStock(_) => ResourceType::RollingStock,
+        }
+    }
+}
+
 #[derive(Serialize, Deserialize, ToSchema)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 #[cfg_attr(test, derive(Debug, PartialEq))]
