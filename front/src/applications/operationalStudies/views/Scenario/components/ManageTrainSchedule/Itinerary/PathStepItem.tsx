@@ -27,8 +27,6 @@ import {
 } from './ComboBoxCustomList/ListElementComponent';
 import { computePathStepCoordinates, isOpRefMetadata } from './utils';
 
-const EMPTY_OPTION = { label: '', id: '' };
-
 type PathStepProps = {
   pathStep: PathStepV2;
   setPathSteps?: React.Dispatch<React.SetStateAction<PathStepV2[]>>;
@@ -188,7 +186,7 @@ const PathStepItem = ({
     // No track should be selected if the path step is invalid or has no secondary code
     // or is a step added by map click
     if (!isOpRefMetadata(pathStepMetadata) || !pathStepMetadata.trackName) {
-      return EMPTY_OPTION;
+      return undefined;
     }
 
     return (
