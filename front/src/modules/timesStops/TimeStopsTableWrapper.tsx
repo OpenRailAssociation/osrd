@@ -27,7 +27,7 @@ import {
   type UpdateCellStatus,
 } from './types';
 
-type TimesStopsOutputProps = {
+type TimeStopsTableWrapperProps = {
   infraId: number;
   isValid?: boolean;
   selectedTrain: Train;
@@ -66,7 +66,7 @@ const bumpMidnightCrossings = (rows: TimesStopsRowNew[]): TimesStopsRowNew[] => 
   });
 };
 
-const TimesStopsOutput = ({
+const TimeStopsTableWrapper = ({
   infraId,
   isValid = false,
   selectedTrain,
@@ -79,7 +79,7 @@ const TimesStopsOutput = ({
   voltages,
   isSimulationDataLoading = false,
   rollingStock,
-}: TimesStopsOutputProps) => {
+}: TimeStopsTableWrapperProps) => {
   // Refs used to track simulation refresh after a user edit (see isAwaitingSimulation):
   //   - preEditPathItemTimesRef: batch summary (simulatedPathItemTimes reference)
   //   - isTrainSimulationPendingRef: all simulation queries (isSimulationDataLoading)
@@ -361,4 +361,4 @@ const TimesStopsOutput = ({
   );
 };
 
-export default TimesStopsOutput;
+export default TimeStopsTableWrapper;

@@ -21,7 +21,7 @@ import useProjectedConflicts from 'modules/simulationResult/components/SpaceTime
 import useTrackOccupancy from 'modules/simulationResult/components/SpaceTimeChartWrapper/useTrackOccupancy';
 import SpeedDistanceDiagramWrapper from 'modules/simulationResult/components/SpeedDistanceDiagram/SpeedDistanceDiagramWrapper';
 import type { ProjectionData, TrainSpaceTimeData } from 'modules/simulationResult/types';
-import TimesStopsOutput from 'modules/timesStops/TimesStopsOutput';
+import TimeStopsTableWrapper from 'modules/timesStops/TimeStopsTableWrapper';
 import TrainHeader from 'modules/trainHeader/TrainHeader';
 import { findExceptionWithOccurrenceId } from 'modules/trainSchedule/helpers/pacedTrain';
 import type { TrainScheduleWithDetails } from 'modules/trainSchedule/types';
@@ -391,7 +391,7 @@ const SimulationResults = ({
             withFooter
           >
             <div data-testid="time-stop-outputs" className="time-stop-outputs">
-              <TimesStopsOutput
+              <TimeStopsTableWrapper
                 infraId={infraId}
                 selectedTrain={simulationResults?.train}
                 trainSchedulesWithDetails={trainSchedulesWithDetails}
