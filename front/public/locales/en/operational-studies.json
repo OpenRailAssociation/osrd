@@ -648,7 +648,7 @@
       "used": "used"
     },
     "projectionInProgress": "Projection in progress: {{ count }}/{{ total }} trains",
-    "simulationSheet": "Simulation sheet",
+    "simulationSheet": "Train path sheet",
     "speedDistanceDiagram": "SDD",
     "speedDistanceSettings": {
       "context": "Context",
