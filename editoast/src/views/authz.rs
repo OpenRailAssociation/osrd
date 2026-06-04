@@ -886,6 +886,7 @@ mod tests {
                 StandardPrivilege::CanShareWrite,
                 StandardPrivilege::CanDelete,
                 StandardPrivilege::CanShareOwnership,
+                StandardPrivilege::CanRevoke,
             ])
         );
         assert_eq!(
@@ -962,7 +963,8 @@ mod tests {
                 StandardPrivilege::CanWrite,
                 StandardPrivilege::CanShareWrite,
                 StandardPrivilege::CanDelete,
-                StandardPrivilege::CanShareOwnership
+                StandardPrivilege::CanShareOwnership,
+                StandardPrivilege::CanRevoke,
             ])
         );
         assert!(!privileges.contains_key(&infra_unused));

@@ -151,6 +151,7 @@ pub fn infra_privileges(user: User, infra: Infra) -> Protected<HashSet<InfraPriv
                 can_share_write,
                 can_delete,
                 can_share_ownership,
+                can_revoke,
             ) = openfga
                 .checks((
                     User::role().check(&Role::Admin, &user),
@@ -160,6 +161,7 @@ pub fn infra_privileges(user: User, infra: Infra) -> Protected<HashSet<InfraPriv
                     Infra::can_share_write().check(&user, &infra),
                     Infra::can_delete().check(&user, &infra),
                     Infra::can_share_ownership().check(&user, &infra),
+                    Infra::can_revoke().check(&user, &infra),
                 ))
                 .await?;
             let mut privileges = HashSet::new();
@@ -171,6 +173,7 @@ pub fn infra_privileges(user: User, infra: Infra) -> Protected<HashSet<InfraPriv
             privileges.extend(
                 (admin || can_share_ownership).then_some(InfraPrivilege::CanShareOwnership),
             );
+            privileges.extend((admin || can_revoke).then_some(InfraPrivilege::CanRevoke));
             Ok(privileges)
         }
         .boxed()
@@ -464,6 +467,7 @@ mod tests {
                 InfraPrivilege::CanShareWrite,
                 InfraPrivilege::CanDelete,
                 InfraPrivilege::CanShareOwnership,
+                InfraPrivilege::CanRevoke,
             ])
         );
     }
