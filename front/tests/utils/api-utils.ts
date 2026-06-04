@@ -55,8 +55,12 @@ export const getApiRequest = async <T>(
   params?: { [key: string]: string | number | boolean }
 ): Promise<T> => {
   const apiContext = await getApiContext();
-  const response = await apiContext.get(url, { params });
-  return response.json() as T;
+  try {
+    const response = await apiContext.get(url, { params });
+    return response.json() as T;
+  } finally {
+    await apiContext.dispose();
+  }
 };
 
 /**
@@ -73,19 +77,23 @@ export const listApiRequest = async <T>(
   params?: { [key: string]: string | number | boolean }
 ): Promise<T[]> => {
   const apiContext = await getApiContext();
-  const itemList: T[] = [];
-  let nextPage: number | null = 1;
-  while (nextPage) {
-    const response = await apiContext.get(url, {
-      params: { page_size: 1000, ...params, page: nextPage },
-    });
-    const { results, next } = (await response.json()) as PaginationStats & {
-      results: T[];
-    };
-    itemList.push(...results);
-    nextPage = next;
+  try {
+    const itemList: T[] = [];
+    let nextPage: number | null = 1;
+    while (nextPage) {
+      const response = await apiContext.get(url, {
+        params: { page_size: 1000, ...params, page: nextPage },
+      });
+      const { results, next } = (await response.json()) as PaginationStats & {
+        results: T[];
+      };
+      itemList.push(...results);
+      nextPage = next;
+    }
+    return itemList;
+  } finally {
+    await apiContext.dispose();
   }
-  return itemList;
 };
 
 /**
@@ -120,9 +128,13 @@ export const postApiRequest = async <T, U>(
   parseResponse = true
 ): Promise<U> => {
   const apiContext = await getApiContext();
-  const response = await apiContext.post(url, { data, params });
-  handleErrorResponse(response, errorMessage);
-  return parseResponse ? (response.json() as U) : (response as U);
+  try {
+    const response = await apiContext.post(url, { data, params });
+    handleErrorResponse(response, errorMessage);
+    return parseResponse ? (response.json() as U) : (response as U);
+  } finally {
+    await apiContext.dispose();
+  }
 };
 
 /**
@@ -136,9 +148,13 @@ export const deleteApiRequest = async (
   errorMessage?: string
 ): Promise<APIResponse> => {
   const apiContext = await getApiContext();
-  const response = await apiContext.delete(url);
-  handleErrorResponse(response, errorMessage);
-  return response;
+  try {
+    const response = await apiContext.delete(url);
+    handleErrorResponse(response, errorMessage);
+    return response;
+  } finally {
+    await apiContext.dispose();
+  }
 };
 
 /**
