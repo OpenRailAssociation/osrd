@@ -24,7 +24,7 @@
     "@react-pdf/renderer": "^4.5.1",
     "@redux-devtools/extension": "^4.0.0",
     "@reduxjs/toolkit": "^2.12.0",
-    "@rjsf/core": "^6.5.3",
+    "@rjsf/core": "^6.6.1",
     "@rjsf/utils": "^6.5.3",
     "@rjsf/validator-ajv8": "^6.5.3",
     "@sdziadkowiec/react-datasheet-grid": "^4.12.3",
