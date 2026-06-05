@@ -12,11 +12,10 @@ const Scenario = () => {
 
   const { activeBoards, toggleBoard } = usePersistScenarioHeader(scenario?.id, [
     'trains',
-    'map',
     'std',
-    'sdd',
     'tables',
-    'chronogram',
+    'sdd',
+    'map',
   ]);
 
   if (!scenario || !sandboxId) return null;

@@ -13,6 +13,7 @@ import { Loader } from 'common/Loaders';
 import Conflicts from 'modules/conflict/components/Conflicts';
 import useConflictsFilter from 'modules/conflict/hooks/useConflictsFilter';
 import ScenarioLoaderMessage from 'modules/scenario/components/ScenarioLoaderMessage';
+import ChronogramWrapper from 'modules/simulationResult/components/Chronogram/ChronogramWrapper';
 import { setFailure } from 'reducers/main';
 import type { TrainScheduleToEditData } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
@@ -37,6 +38,8 @@ type ScenarioContentProps = {
 
 const MACRO_EDITOR_HEIGHT = 776; // px
 const MACRO_MIN_HEIGHT = 500;
+const CHRONOGRAM_INITIAL_HEIGHT = 492;
+const CHRONOGRAM_MIN_HEIGHT = 398;
 
 const ScenarioContent = ({ activeBoards, toggleBoard }: ScenarioContentProps) => {
   const { t, i18n } = useTranslation('operational-studies');
@@ -51,6 +54,7 @@ const ScenarioContent = ({ activeBoards, toggleBoard }: ScenarioContentProps) =>
   const [collapsedTimetableEdit, setCollapsedTimetableEdit] = useState(false);
   const [trainScheduleToEditData, setTrainScheduleToEditData] = useState<TrainScheduleToEditData>();
   const [macroBoardHeight, setMacroBoardHeight] = useState<number>(MACRO_EDITOR_HEIGHT);
+  const [chronogramHeight, setChronogramHeight] = useState<number>(CHRONOGRAM_INITIAL_HEIGHT);
 
   const {
     trainSchedulesWithDetails,
@@ -135,7 +139,7 @@ const ScenarioContent = ({ activeBoards, toggleBoard }: ScenarioContentProps) =>
     [updateTrainScheduleDepartureTime, refreshNge]
   );
 
-  const simulationResultBoards = ['map', 'tables', 'std', 'sdd', 'chronogram'] as Board[];
+  const simulationResultBoards = ['std', 'tables', 'sdd', 'map'] as Board[];
   const isBoardSimulationResultsActive = simulationResultBoards.some((board) =>
     activeBoards.has(board)
   );
@@ -218,6 +222,7 @@ const ScenarioContent = ({ activeBoards, toggleBoard }: ScenarioContentProps) =>
               <ScenarioLoaderMessage />
             )}
           <div className="scenario-results">
+            {/* STD / TABLES / SDD / MAP */}
             {isInfraLoaded && isBoardSimulationResultsActive && (
               <SimulationResults
                 scenarioData={{ name: scenario.name, infraName: scenario.infra_name }}
@@ -234,9 +239,10 @@ const ScenarioContent = ({ activeBoards, toggleBoard }: ScenarioContentProps) =>
                 setIsScrollingToTimeStopsTable={setIsScrollingToTimeStopsTable}
               />
             )}
+            {/* MACRO */}
             {activeBoards.has('macro') && (
               <BoardWrapper
-                name="MACRO"
+                name={t('boards.macro')}
                 resizable={{
                   height: macroBoardHeight,
                   setHeight: setMacroBoardHeight,
@@ -263,8 +269,30 @@ const ScenarioContent = ({ activeBoards, toggleBoard }: ScenarioContentProps) =>
                 </div>
               </BoardWrapper>
             )}
+            {/* CHRONOGRAM */}
+            {isInfraLoaded && trainSchedulesWithDetails.length > 0 && (
+              <BoardWrapper
+                hidden={!activeBoards.has('chronogram')}
+                name={t('boards.chronogram')}
+                resizable={{
+                  height: chronogramHeight,
+                  setHeight: setChronogramHeight,
+                  minHeight: CHRONOGRAM_MIN_HEIGHT,
+                }}
+                withFooter
+              >
+                <div data-testid="chronogram" className="simulation-chronogram">
+                  <ChronogramWrapper
+                    timetableId={timetableId}
+                    trainSchedulesWithDetails={trainSchedulesWithDetails}
+                    chronogramHeight={chronogramHeight}
+                  />
+                </div>
+              </BoardWrapper>
+            )}
           </div>
         </div>
+        {/* CONFLICTS */}
         <div
           className="right-column"
           data-testid="conflicts-list"

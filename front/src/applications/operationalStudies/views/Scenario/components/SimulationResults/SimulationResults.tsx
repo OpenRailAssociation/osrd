@@ -10,7 +10,6 @@ import useSimulationResults from 'applications/operationalStudies/hooks/useSimul
 import type { Board } from 'applications/operationalStudies/types';
 import { type Conflict, type TrainScheduleResponse } from 'common/api/osrdEditoastApi';
 import SimulationWarpedMap from 'common/Map/WarpedMap/SimulationWarpedMap';
-import ChronogramWrapper from 'modules/simulationResult/components/Chronogram/ChronogramWrapper';
 import createHandleTrainDrag from 'modules/simulationResult/components/SpaceTimeChartWrapper/helpers/createHandleTrainDrag';
 import SpaceTimeChartWrapper, {
   MANCHETTE_WITH_SPACE_TIME_CHART_DEFAULT_HEIGHT,
@@ -42,11 +41,10 @@ import BoardWrapper from '../BoardWrapper';
 import SimulationResultsExport from './SimulationResultsExport';
 import SimulationResultsMap from './SimulationResultsMap';
 
+// TODO: SimulationResults should be dropped and boards embedded directly inside ScenarioContent (see comments in #17091)
 export const HIDDEN_CHART_TOP_HEIGHT = 23;
 const SDD_INITIAL_HEIGHT = 460;
 const SDD_MIN_HEIGHT = 400;
-const CHRONOGRAM_INITIAL_HEIGHT = 492;
-const CHRONOGRAM_MIN_HEIGHT = 398;
 
 type SimulationResultsProps = {
   scenarioData: { name: string; infraName: string };
@@ -108,8 +106,6 @@ const SimulationResults = ({
     : undefined;
 
   const [SDDHeight, setSDDHeight] = useState(SDD_INITIAL_HEIGHT);
-
-  const [chronogramHeight, setChronogramHeight] = useState(CHRONOGRAM_INITIAL_HEIGHT);
 
   const [mapCanvas, setMapCanvas] = useState<string>();
 
@@ -303,6 +299,73 @@ const SimulationResults = ({
         </BoardWrapper>
       )}
 
+      {/* TIME STOPS TABLE */}
+      {simulationResults && (
+        <BoardWrapper
+          ref={timeStopsTableRef}
+          hidden={!activeBoards.has('tables')}
+          name={simulationResults.train.train_name}
+          items={[
+            {
+              title: displayOnlyPathSteps
+                ? t('simulationResults.displayWaypoints')
+                : t('simulationResults.hideWaypoints'),
+              icon: <Eye />,
+              onClick: () => {
+                dispatch(toggleDisplayOnlyPathSteps());
+              },
+            },
+          ]}
+          customHeader={
+            <TrainHeader
+              train={simulationResults.train}
+              trainSchedulesWithDetails={trainSchedulesWithDetails}
+              upsertTrainSchedules={upsertTrainSchedules}
+              setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
+              setTrainScheduleToEditData={setTrainScheduleToEditData}
+            />
+          }
+          customFooter={
+            simulationResults?.isValid && (
+              <div className="time-stop-outputs">
+                {/* SIMULATION EXPORT BUTTONS */}
+                <SimulationResultsExport
+                  path={simulationResults.path}
+                  scenarioData={scenarioData}
+                  train={simulationResults.train}
+                  simulation={simulationResults.simulation}
+                  pathProperties={simulationResults.pathProperties}
+                  rollingStock={simulationResults.rollingStock}
+                  mapCanvas={mapCanvas}
+                />
+              </div>
+            )
+          }
+          footerClass={'times-stops-table-footer'}
+          withFooter
+        >
+          <div data-testid="time-stop-outputs" className="time-stop-outputs">
+            <TimeStopsTableWrapper
+              infraId={infraId}
+              selectedTrain={simulationResults?.train}
+              trainSchedulesWithDetails={trainSchedulesWithDetails}
+              upsertTrainSchedules={upsertTrainSchedules}
+              isSimulationDataLoading={isSimulationDataLoading}
+              operationalPointsOnPath={simulationResults.pathProperties?.operationalPoints}
+              voltages={simulationResults.pathProperties?.voltages}
+              rollingStock={simulationResults.rollingStock}
+              {...(simulationResults?.isValid &&
+                simulationSummary?.isValid && {
+                  isValid: true,
+                  simulatedTrain: simulationResults.simulation.final_output,
+                  simulatedPathItemTimes: simulationSummary.pathItemTimes,
+                  simulatedPathItemRespect: simulationSummary.pathItemRespect,
+                })}
+            />
+          </div>
+        </BoardWrapper>
+      )}
+
       {/* SIMULATION : SPEED SPACE CHART */}
       {activeBoards.has('sdd') && (
         <BoardWrapper
@@ -342,97 +405,6 @@ const SimulationResults = ({
           />
         </div>
       </BoardWrapper>
-
-      {simulationResults && (
-        <>
-          {/* CHRONOGRAMME */}
-          {trainSchedulesWithDetails.length > 0 && (
-            <BoardWrapper
-              hidden={!activeBoards.has('chronogram')}
-              name={t('boards.chronogram')}
-              resizable={{
-                height: chronogramHeight,
-                setHeight: setChronogramHeight,
-                minHeight: CHRONOGRAM_MIN_HEIGHT,
-              }}
-              withFooter
-            >
-              <div data-testid="chronogram" className="simulation-chronogram">
-                <ChronogramWrapper
-                  timetableId={timetableId}
-                  trainSchedulesWithDetails={trainSchedulesWithDetails}
-                  chronogramHeight={chronogramHeight}
-                />
-              </div>
-            </BoardWrapper>
-          )}
-
-          {/* TIME STOPS TABLE */}
-          <BoardWrapper
-            ref={timeStopsTableRef}
-            hidden={!activeBoards.has('tables')}
-            name={simulationResults.train.train_name}
-            items={[
-              {
-                title: displayOnlyPathSteps
-                  ? t('simulationResults.displayWaypoints')
-                  : t('simulationResults.hideWaypoints'),
-                icon: <Eye />,
-                onClick: () => {
-                  dispatch(toggleDisplayOnlyPathSteps());
-                },
-              },
-            ]}
-            customHeader={
-              <TrainHeader
-                train={simulationResults.train}
-                trainSchedulesWithDetails={trainSchedulesWithDetails}
-                upsertTrainSchedules={upsertTrainSchedules}
-                setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
-                setTrainScheduleToEditData={setTrainScheduleToEditData}
-              />
-            }
-            customFooter={
-              simulationResults?.isValid && (
-                <div className="time-stop-outputs">
-                  {/* SIMULATION EXPORT BUTTONS */}
-                  <SimulationResultsExport
-                    path={simulationResults.path}
-                    scenarioData={scenarioData}
-                    train={simulationResults.train}
-                    simulation={simulationResults.simulation}
-                    pathProperties={simulationResults.pathProperties}
-                    rollingStock={simulationResults.rollingStock}
-                    mapCanvas={mapCanvas}
-                  />
-                </div>
-              )
-            }
-            footerClass={'times-stops-table-footer'}
-            withFooter
-          >
-            <div data-testid="time-stop-outputs" className="time-stop-outputs">
-              <TimeStopsTableWrapper
-                infraId={infraId}
-                selectedTrain={simulationResults?.train}
-                trainSchedulesWithDetails={trainSchedulesWithDetails}
-                upsertTrainSchedules={upsertTrainSchedules}
-                isSimulationDataLoading={isSimulationDataLoading}
-                operationalPointsOnPath={simulationResults.pathProperties?.operationalPoints}
-                voltages={simulationResults.pathProperties?.voltages}
-                rollingStock={simulationResults.rollingStock}
-                {...(simulationResults?.isValid &&
-                  simulationSummary?.isValid && {
-                    isValid: true,
-                    simulatedTrain: simulationResults.simulation.final_output,
-                    simulatedPathItemTimes: simulationSummary.pathItemTimes,
-                    simulatedPathItemRespect: simulationSummary.pathItemRespect,
-                  })}
-              />
-            </div>
-          </BoardWrapper>
-        </>
-      )}
     </div>
   );
 };

@@ -1,12 +1,13 @@
 {
   "boardFullNames": {
+    "chronogram": "Level Crossings",
     "sdd": "Speed Distance Diagram",
     "std": "Space Time Diagram"
   },
   "boards": {
-    "chronogram": "Chronogram",
+    "chronogram": "Crossings",
     "conflicts": "Conflicts",
-    "macro": "Macro",
+    "macro": "Network Graph",
     "map": "Map",
     "sdd": "SDD",
     "std": "STD",

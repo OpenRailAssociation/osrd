@@ -1,12 +1,13 @@
 {
   "boardFullNames": {
+    "chronogram": "Passages à niveau",
     "sdd": "Graphique Espace Vitesse",
     "std": "Graphique Espace Temps"
   },
   "boards": {
-    "chronogram": "Chronogramme",
+    "chronogram": "PNs",
     "conflicts": "Conflits",
-    "macro": "Macro",
+    "macro": "Réticulaire",
     "map": "Carte",
     "sdd": "GEV",
     "std": "GET",
