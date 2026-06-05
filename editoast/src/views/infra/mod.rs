@@ -742,7 +742,7 @@ pub(in crate::views) async fn match_operational_points(
     }))
 }
 
-fn compute_operational_point_geo(
+pub fn compute_operational_point_geo(
     points: &[geos::geojson::Geometry],
 ) -> Option<geos::geojson::Geometry> {
     if points.is_empty() {

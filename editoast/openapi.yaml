@@ -11604,6 +11604,15 @@ components:
           format: int32
           minimum: 0
       additionalProperties: false
+    OperationalPointOnPath:
+      allOf:
+      - $ref: '#/components/schemas/CoreOperationalPointOnPath'
+      - type: object
+        properties:
+          geo:
+            oneOf:
+            - type: 'null'
+            - $ref: '#/components/schemas/GeoJsonPoint'
     OperationalPointPart:
       type: object
       required:
@@ -12106,7 +12115,7 @@ components:
         operational_points:
           type: array
           items:
-            $ref: '#/components/schemas/CoreOperationalPointOnPath'
+            $ref: '#/components/schemas/OperationalPointOnPath'
           description: Operational points along the path
         slopes:
           oneOf:
