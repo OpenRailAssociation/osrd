@@ -17,12 +17,12 @@ import InfraLoadingState from './InfraLoadingState';
 
 const BOARDS: Board[] = [
   'trains',
+  'std',
+  'tables',
+  'sdd',
   'map',
   'macro',
-  'std',
-  'sdd',
   'chronogram',
-  'tables',
   'conflicts',
 ];
 
@@ -147,7 +147,9 @@ const ScenarioHeader = ({ activeBoards, toggleBoard }: ScenarioHeaderProps) => {
                     toggleBoard(board);
                   }}
                   title={
-                    board === 'sdd' || board === 'std' ? t(`boardFullNames.${board}`) : undefined
+                    board === 'sdd' || board === 'std' || board === 'chronogram'
+                      ? t(`boardFullNames.${board}`)
+                      : undefined
                   }
                 >
                   {t(`boards.${board}`)}
