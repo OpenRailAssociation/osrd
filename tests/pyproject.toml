@@ -14,7 +14,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-check = ["pyright~=1.1.409", "ruff~=0.15.14"]
+check = ["pyright~=1.1.409", "ruff~=0.15.16"]
 
 [tool.pyright]
 include = ["conftest.py", "fuzzer", "infra-scripts", "tests"]
@@ -25,9 +25,9 @@ extraPaths = ["../python/osrd_schemas", "../python/railjson_generator"]
 osrd_schemas = { path = "../python/osrd_schemas/", editable = true }
 railjson_generator = { path = "../python/railjson_generator/", editable = true }
 
+[tool.pytest.ini_options]
+addopts = "--doctest-modules"
+
 [build-system]
 requires = ["poetry-core>=2.4.1"]
 build-backend = "poetry.core.masonry.api"
-
-[tool.pytest.ini_options]
-addopts = "--doctest-modules"
