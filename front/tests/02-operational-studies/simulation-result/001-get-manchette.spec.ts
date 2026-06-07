@@ -139,14 +139,13 @@ test.describe('Space Time Diagram / Manchette', { tag: ['@op', '@manchette', '@s
         await getManchetteComponent.verifyVisibleWaypointsCount(
           STD_MANCHETTE.initialVisibleWaypoints
         );
-        await getManchetteComponent.hideWaypoint(STD_MANCHETTE.normalWaypointIndex);
-        // After hiding the normal waypoint the requested point is displayed instead
+        await getManchetteComponent.hideWaypoint(STD_MANCHETTE.firstHiddenWaypointIndex);
         await getManchetteComponent.verifyVisibleWaypointsCount(
-          STD_MANCHETTE.initialVisibleWaypoints
+          STD_MANCHETTE.visibleAfterHidingFirstWaypoint
         );
-        await getManchetteComponent.hideWaypoint(STD_MANCHETTE.requestedWaypointIndex, true);
+        await getManchetteComponent.hideWaypoint(STD_MANCHETTE.secondHiddenWaypointIndex, false);
         await getManchetteComponent.verifyVisibleWaypointsCount(
-          STD_MANCHETTE.visibleAfterHidingRequested
+          STD_MANCHETTE.visibleAfterHidingSecondWaypoint
         );
         await getManchetteComponent.openManchettePanel();
         await getManchetteComponent.verifyWaypointsCheckedState(
