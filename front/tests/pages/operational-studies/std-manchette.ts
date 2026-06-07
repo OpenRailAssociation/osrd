@@ -1,5 +1,5 @@
 import { readJsonFile } from '../../utils/file-utils';
-import { requestedPoint, type Waypoint } from '../../utils/manchette';
+import type { Waypoint } from '../../utils/manchette';
 import type { TimetableFilterTranslations } from '../../utils/types';
 const frScenarioTranslations: TimetableFilterTranslations = readJsonFile<{
   main: TimetableFilterTranslations;
@@ -9,7 +9,6 @@ export const requestedDestination = frScenarioTranslations.requestedDestination;
 export const expectedWaypointsPanelDataForUniqueTrain: Record<string, Partial<Waypoint>> = {
   North_East_station: { secondaryCode: 'BV', offset: '0.0', checked: true },
   Mid_East_station: { secondaryCode: 'BV', offset: '19.55', checked: true },
-  [requestedPoint('2')]: { offset: '22.47', checked: true },
   Mid_West_station: { secondaryCode: 'BV', offset: '34.0', checked: true },
   North_West_station: { secondaryCode: 'BC', offset: '47.55', checked: true },
 };
@@ -17,17 +16,15 @@ export const expectedWaypointsPanelDataForUniqueTrain: Record<string, Partial<Wa
 export const expectedWaypointsPanelDataForPacedTrain: Record<string, Partial<Waypoint>> = {
   North_East_station: { secondaryCode: 'BV', offset: '0.0', checked: true },
   Mid_East_station: { secondaryCode: 'BV', offset: '19.55', checked: true },
-  [requestedPoint('1')]: { offset: '22.47', checked: true },
   Mid_West_station: { secondaryCode: 'BV', offset: '34.0', checked: true },
   North_West_station: { secondaryCode: 'BV', offset: '47.60', checked: true },
-  [requestedDestination]: { offset: '47.65', checked: true },
 };
 
 export const expectedWaypointsListDataForPacedTrain: Record<string, Partial<Waypoint>> = {
   North_East_station: { secondaryCode: 'BV', offset: '0' },
-  [requestedPoint('1')]: { offset: '22.5' },
+  Mid_East_station: { secondaryCode: 'BV', offset: '19.6' },
   Mid_West_station: { secondaryCode: 'BV', offset: '34' },
-  [requestedDestination]: { offset: '47.7' },
+  North_West_station: { secondaryCode: 'BV', offset: '47.6' },
 };
 
 export const expectedWaypointsListDataForUniqueTrain: Record<string, Partial<Waypoint>> = {
@@ -37,17 +34,18 @@ export const expectedWaypointsListDataForUniqueTrain: Record<string, Partial<Way
   North_West_station: { secondaryCode: 'BC', offset: '47.6' },
 };
 
-export const WAYPOINT_CHECKBOX_STATE = { checked: 3, total: 5 };
+export const WAYPOINT_CHECKBOX_STATE = { checked: 2, total: 4 };
 export const STD_MANCHETTE = {
   occupancyWaypointIndex: 1,
-  requestedWaypointIndex: 2,
-  normalWaypointIndex: 3,
+  firstHiddenWaypointIndex: 3,
+  secondHiddenWaypointIndex: 2,
 
   initialVisibleWaypoints: 4,
-  visibleAfterHidingRequested: 3,
+  visibleAfterHidingFirstWaypoint: 3,
+  visibleAfterHidingSecondWaypoint: 2,
 
   waypointPanel: {
-    expectedChecked: 3,
-    expectedTotal: 5,
+    expectedChecked: 2,
+    expectedTotal: 4,
   },
 };
