@@ -1,6 +1,6 @@
 import { Fragment, useEffect, useRef, useState } from 'react';
 
-import { X, ChevronDown, ChevronUp, Hubot, SignOut } from '@osrd-project/ui-icons';
+import { X, ChevronDown, ChevronUp, Hubot, Person, SignOut } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -90,6 +90,11 @@ const ScenarioHeader = ({ activeBoards, toggleBoard }: ScenarioHeaderProps) => {
       className={cx('user-name', { 'is-truncated': isTruncated.username })}
       title={isTruncated.username ? username : undefined}
     >
+      {impersonatedUser ? (
+        <Hubot size="lg" className="mr-2 text-black" />
+      ) : (
+        <Person size="sm" className="mr-2 text-black" />
+      )}
       {username}
     </span>
   );
@@ -163,7 +168,6 @@ const ScenarioHeader = ({ activeBoards, toggleBoard }: ScenarioHeaderProps) => {
         {/* user information */}
         <div className="user-info">
           <div className="spacer" />
-          {impersonatedUser && <Hubot size="lg" className="mr-2 text-black" />}
           <UserActionsDropdown className="dropdwon-position" titleContent={userDropdownTitle} />
           {impersonatedUser && (
             <button type="button" onClick={() => impersonate(undefined)}>
