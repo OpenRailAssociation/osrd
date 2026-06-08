@@ -1,15 +1,17 @@
 import { useCallback, useMemo, useState } from 'react';
 
-import { Button, Checkbox, Input } from '@osrd-project/ui-core';
+import { Button, Checkbox, Input, Select } from '@osrd-project/ui-core';
 import { ChevronUp } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
 
 import type { PacedTrainWithPaced } from 'applications/operationalStudies/types';
+import useSpeedLimitTags from 'common/SpeedLimitTagSelector/useSpeedLimitTags';
 import type { Train } from 'reducers/osrdconf/types';
 import { useDateTimeLocale } from 'utils/date';
 import { usePrevious } from 'utils/hooks/state';
 import { findExceptionInPacedTrainByOccurenceId } from 'utils/trainExceptions';
 import { isOccurrenceId } from 'utils/trainId';
+import { createStandardSelectOptions } from 'utils/uiCoreHelpers';
 
 import {
   getCategoryName,
@@ -28,11 +30,13 @@ export type ExpandedTrainFormProps = {
 
 type TrainFieldsState = {
   train_name: string;
+  speed_limit_tag: string | null;
 };
 
 function getFieldsFromTrain(train: Train): TrainFieldsState {
   return {
     train_name: train.train_name,
+    speed_limit_tag: train.speed_limit_tag ?? null,
   };
 }
 
@@ -77,6 +81,7 @@ const ExpandedTrainForm = ({
 }: ExpandedTrainFormProps) => {
   const { t } = useTranslation(['operational-studies', 'translation']);
   const dateTimeLocale = useDateTimeLocale();
+  const speedLimitTags = useSpeedLimitTags();
 
   const pacedTrain = train.paced ? (train as PacedTrainWithPaced) : null;
   const occurenceId = isOccurrenceId(train.id) ? train.id : null;
@@ -109,13 +114,24 @@ const ExpandedTrainForm = ({
   );
 
   const onFieldBlur = useCallback(
-    async (_fieldName: keyof TrainFieldsState) => {
+    (_fieldName: keyof TrainFieldsState) => {
       const changes = extractChangesInFields(fieldsFromTrain, fields);
 
       if (Object.keys(changes).length) {
         const updatedTrain = applyFieldsToTrain(fields, train);
         onPersistTrain(updatedTrain);
       }
+    },
+    [fields, fieldsFromTrain]
+  );
+
+  const onFieldImmediateChange = useCallback(
+    (fieldName: keyof TrainFieldsState, newValue: TrainFieldsState[typeof fieldName]) => {
+      const newFields = { ...fields, [fieldName]: newValue };
+      const updatedTrain = applyFieldsToTrain(newFields, train);
+      onPersistTrain(updatedTrain);
+
+      setFields(newFields);
     },
     [fields]
   );
@@ -227,12 +243,16 @@ const ExpandedTrainForm = ({
           />
         </div>
         <div className="train-composition-code">
-          <Input
-            id="train-header-composition-code-input"
-            small
+          <Select
+            id="train-header-composition-code-select"
             label={t('manageTrainSchedule.trainHeader.form.compositionCode')}
-            value={train.speed_limit_tag ?? ''}
-            disabled
+            small
+            placeholder={t('manageTrainSchedule.noSpeedLimitByTag')}
+            value={fields.speed_limit_tag ?? ''}
+            {...createStandardSelectOptions(speedLimitTags)}
+            onChange={(value) => {
+              onFieldImmediateChange('speed_limit_tag', value ?? null);
+            }}
           />
         </div>
         <div className="train-recovery-margin">

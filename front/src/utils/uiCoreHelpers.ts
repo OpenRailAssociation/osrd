@@ -1,9 +1,9 @@
 // TODO: Remove undefined when osrd-ui's value type is optional
-type SelectFixedOption =
-  | {
+type SelectFixedOption<T> =
+  | (T & {
       label: string;
       id: string;
-    }
+    })
   | undefined;
 
 // Utility to create standardized options for <Select> components.
@@ -17,8 +17,8 @@ export const createStandardSelectOptions = <T>(opts: T[]) => ({
 
 // Utility function for handling fixed label-value object arrays
 // structure may vary, and custom label/value mappings are needed.
-export const createFixedSelectOptions = (opts: SelectFixedOption[]) => ({
+export const createFixedSelectOptions = <T>(opts: SelectFixedOption<T>[]) => ({
   options: opts,
-  getOptionLabel: (option: SelectFixedOption) => option?.label ?? '',
-  getOptionValue: (option: SelectFixedOption) => option?.id ?? '',
+  getOptionLabel: (option: SelectFixedOption<T>) => option?.label ?? '',
+  getOptionValue: (option: SelectFixedOption<T>) => option?.id ?? '',
 });
