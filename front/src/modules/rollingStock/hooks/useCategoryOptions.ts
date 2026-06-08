@@ -1,9 +1,18 @@
 import { useTranslation } from 'react-i18next';
 
+import type { TrainCategory } from 'common/api/osrdEditoastApi';
 import { useSubCategoryContext } from 'common/SubCategoryContext';
 import { TrainMainCategoryDict } from 'modules/rollingStock/consts';
 
 import type { CategoryOptionWithId } from '../types';
+
+export function categoryOptionId(category: TrainCategory): string {
+  if ('main_category' in category) {
+    return `main:${category.main_category}`;
+  } else {
+    return `sub:${category.sub_category_code}`;
+  }
+}
 
 /**
  * Custom hook to generate category options for a dropdown or selection component.
@@ -20,7 +29,7 @@ export default function useCategoryOptions(withPlaceholder = true) {
   const validMainCategories = Array.from(Object.values(TrainMainCategoryDict));
 
   const mainCategoryOptions: CategoryOptionWithId[] = validMainCategories.map((mainCategory) => ({
-    id: `main:${mainCategory}`,
+    id: categoryOptionId({ main_category: mainCategory }),
     label: t(`rollingStock.categoriesOptions.${mainCategory}`),
     category: { main_category: mainCategory },
   }));
@@ -29,7 +38,7 @@ export default function useCategoryOptions(withPlaceholder = true) {
     const matchedSubCategories = subCategories.filter((sub) => sub.main_category === mainCategory);
 
     return matchedSubCategories.map((sub) => ({
-      id: `sub:${sub.code}`,
+      id: categoryOptionId({ sub_category_code: sub.code }),
       label: sub.name,
       category: { sub_category_code: sub.code },
       color: sub.color,
