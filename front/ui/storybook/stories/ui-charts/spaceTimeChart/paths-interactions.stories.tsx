@@ -86,10 +86,7 @@ const Wrapper = ({
         xOffset={state.xOffset}
         yOffset={state.yOffset}
         onClick={({ event }) => {
-          const { hoveredPathId, selection, panTarget } = state;
-
-          // Skip events when something is being dragged or panned:
-          if (panTarget) return;
+          const { hoveredPathId, selection } = state;
 
           // Unselect everything when clicking stage (unless multi-selection is enabled and the ctrl key is down):
           if (!hoveredPathId) {

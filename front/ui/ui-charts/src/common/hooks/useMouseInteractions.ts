@@ -55,6 +55,7 @@ export function useMouseInteractions<T extends { fingerprint: string; getData: P
   const [panningState, setPanningState] = useState<
     { type: 'idle' } | { type: 'panning'; initialPosition: Point; initialData: DataPoint }
   >({ type: 'idle' });
+  const didPanRef = useRef(false);
 
   // Cache latest context in ref:
   useEffect(() => {
@@ -70,6 +71,7 @@ export function useMouseInteractions<T extends { fingerprint: string; getData: P
   const clickHandler = useCallback(
     (event: MouseEvent) => {
       if (!dom) return;
+      if (didPanRef.current) return;
 
       const { onClick } = handlersRef.current;
       if (onClick) {
@@ -119,7 +121,9 @@ export function useMouseInteractions<T extends { fingerprint: string; getData: P
     const { onPan } = handlersRef.current;
 
     if (down) {
-      // Start panning:
+      // Start panning: a fresh press is a potential click until it moves far
+      // enough to be a pan.
+      didPanRef.current = false;
       setPanningState({
         type: 'panning',
         initialPosition: position,
@@ -156,8 +160,20 @@ export function useMouseInteractions<T extends { fingerprint: string; getData: P
       });
     }
 
-    if (panningState.type === 'panning' && onPan)
-      onPan({
+    if (panningState.type === 'panning') {
+      // The browser fires a `click` even when the pointer drifts a few pixels
+      // between mousedown and mouseup. We only treat the gesture as a pan once
+      // it travels past a small threshold, so that tiny jitter during a real
+      // click doesn't end up swallowing it.
+      // 3px matches the usual native drag tolerance: small enough that a
+      // deliberate pan is detected almost immediately, but large enough to
+      // absorb the hand tremor / sub-pixel noise of a steady click.
+      const dx = position.x - panningState.initialPosition.x;
+      const dy = position.y - panningState.initialPosition.y;
+      if (Math.hypot(dx, dy) > 3) {
+        didPanRef.current = true;
+      }
+      onPan?.({
         isPanning: true,
         position,
         initialPosition: panningState.initialPosition,
@@ -165,6 +181,7 @@ export function useMouseInteractions<T extends { fingerprint: string; getData: P
         initialData: panningState.initialData,
         context: contextRef.current,
       });
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [position.x, position.y]);
 }
