@@ -1,3 +1,5 @@
+import { useCallback } from 'react';
+
 import { Duplicate, Pencil, Trash } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
@@ -9,23 +11,20 @@ import { setSuccess, setFailure } from 'reducers/main';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure, getErrorStatus } from 'utils/error';
 
+import type { PageMode } from '../RollingStockEditorView';
 import RollingStockEditorFormModal from './RollingStockEditorFormModal';
 
 type RollingStockEditorButtonsProps = {
   rollingStock: RollingStock;
-  setIsEditing: (isEditing: boolean) => void;
   resetFilters: () => void;
-  setOpenedRollingStockCardId: React.Dispatch<React.SetStateAction<number | undefined>>;
-  isRollingStockLocked: boolean;
+  setPageMode: React.Dispatch<React.SetStateAction<PageMode>>;
   isCondensed: boolean;
 };
 
 const RollingStockEditorButtons = ({
   rollingStock,
-  setIsEditing,
   resetFilters,
-  setOpenedRollingStockCardId,
-  isRollingStockLocked,
+  setPageMode,
   isCondensed,
 }: RollingStockEditorButtonsProps) => {
   const dispatch = useAppDispatch();
@@ -35,8 +34,37 @@ const RollingStockEditorButtons = ({
     osrdEditoastApi.endpoints.deleteRollingStockByRollingStockId.useMutation();
   const [postRollingstock] = osrdEditoastApi.endpoints.postRollingStock.useMutation();
 
-  const deleteRollingStock = () => {
-    setOpenedRollingStockCardId(undefined);
+  const editRollingStock = useCallback(() => {
+    setPageMode({ type: 'edit', rollingStockId: rollingStock.id });
+  }, [setPageMode, rollingStock.id]);
+
+  const duplicateRollingStock = () => {
+    const date = new Date().getTime().toString().slice(-3);
+    const duplicatedRollingstock = { ...rollingStock, name: `${rollingStock.name}-${date}` };
+    postRollingstock({
+      locked: false,
+      rollingStockForm: duplicatedRollingstock,
+    })
+      .unwrap()
+      .then((res) => {
+        setPageMode({ type: 'edit', rollingStockId: res.id });
+        resetFilters();
+        dispatch(
+          setSuccess({
+            title: t('rollingStock.messages.success'),
+            text: t('rollingStock.messages.rollingStockAdded'),
+          })
+        );
+      })
+      .catch((error) => {
+        dispatch(
+          setFailure(castErrorToFailure(error, { name: t('rollingStock.messages.failure') }))
+        );
+      });
+  };
+
+  const deleteRollingStock = useCallback(() => {
+    setPageMode({ type: 'idle' });
     if (!rollingStock.locked)
       deleteRollingStockById({ rollingStockId: rollingStock.id })
         .unwrap()
@@ -66,38 +94,12 @@ const RollingStockEditorButtons = ({
             )
           );
         });
-  };
-
-  const duplicateRollingStock = () => {
-    const date = new Date().getTime().toString().slice(-3);
-    const duplicatedRollingstock = { ...rollingStock, name: `${rollingStock.name}-${date}` };
-    postRollingstock({
-      locked: false,
-      rollingStockForm: duplicatedRollingstock,
-    })
-      .unwrap()
-      .then((res) => {
-        setOpenedRollingStockCardId(res.id);
-        setIsEditing(true);
-        resetFilters();
-        dispatch(
-          setSuccess({
-            title: t('rollingStock.messages.success'),
-            text: t('rollingStock.messages.rollingStockAdded'),
-          })
-        );
-      })
-      .catch((error) => {
-        dispatch(
-          setFailure(castErrorToFailure(error, { name: t('rollingStock.messages.failure') }))
-        );
-      });
-  };
+  }, [setPageMode, rollingStock.id, rollingStock.locked]);
 
   const confirmDelete = () => {
     openModal(
       <RollingStockEditorFormModal
-        request={deleteRollingStock}
+        onSubmit={deleteRollingStock}
         mainText={t('rollingStock.deleteRollingStock')}
         buttonText={t('common.yes')}
         deleteAction
@@ -118,11 +120,12 @@ const RollingStockEditorButtons = ({
         aria-label={t('common.edit')}
         title={t('common.edit')}
         tabIndex={0}
-        disabled={isRollingStockLocked}
-        onClick={() => setIsEditing(true)}
+        disabled={rollingStock.locked}
+        onClick={editRollingStock}
       >
         <Pencil />
       </button>
+
       <button
         data-testid="rollingstock-duplicate-button"
         type="button"
@@ -130,10 +133,11 @@ const RollingStockEditorButtons = ({
         aria-label={t('common.duplicate')}
         title={t('common.duplicate')}
         tabIndex={0}
-        onClick={() => duplicateRollingStock()}
+        onClick={duplicateRollingStock}
       >
         <Duplicate />
       </button>
+
       <button
         data-testid="rollingstock-delete-button"
         type="button"
@@ -141,8 +145,8 @@ const RollingStockEditorButtons = ({
         aria-label={t('common.delete')}
         title={t('common.delete')}
         tabIndex={0}
-        disabled={isRollingStockLocked}
-        onClick={() => confirmDelete()}
+        disabled={rollingStock.locked}
+        onClick={confirmDelete}
       >
         <Trash />
       </button>

@@ -20,7 +20,7 @@ type RollingStockCardProps = {
   noCardSelected: boolean;
   ref2scroll?: React.RefObject<HTMLDivElement | null>;
   rollingStock: LightRollingStockWithLiveries;
-  setOpenedRollingStockCardId: (openCardId: number | undefined) => void;
+  onClick: () => void;
   onSelectRollingStock?: (rollingStock: LightRollingStockWithLiveries, comfort: Comfort) => void;
 };
 
@@ -30,7 +30,7 @@ const RollingStockCard = ({
   noCardSelected,
   rollingStock,
   ref2scroll = undefined,
-  setOpenedRollingStockCardId,
+  onClick,
   onSelectRollingStock,
 }: RollingStockCardProps) => {
   const [curvesComfortList, setCurvesComfortList] = useState<Comfort[]>([]);
@@ -55,13 +55,6 @@ const RollingStockCard = ({
     return { ...localModes, voltages: localVoltages };
   }, [rollingStock.effort_curves.modes]);
 
-  function displayCardDetail() {
-    if (!isOpen) {
-      setOpenedRollingStockCardId(rollingStock.id);
-      setTimeout(() => ref2scrollWhenOpened.current?.scrollIntoView({ behavior: 'smooth' }), 500);
-    }
-  }
-
   return (
     <div
       className={cx('rollingstock-card', {
@@ -70,18 +63,13 @@ const RollingStockCard = ({
         solid: noCardSelected,
       })}
       role="button"
-      onClick={displayCardDetail}
+      onClick={onClick}
       tabIndex={0}
       ref={ref2scroll}
       data-testid={`rollingstock-${rollingStock.name}`}
     >
       <div
         className="rollingstock-card-header"
-        onClick={() => {
-          if (isOpen) setOpenedRollingStockCardId(undefined);
-        }}
-        role="button"
-        tabIndex={0}
         ref={isOpen && !isOnEditMode ? ref2scrollWhenOpened : undefined}
       >
         <div data-testid="rollingstock-title" className="rollingstock-title">

@@ -13,13 +13,11 @@ import { RollingStockInfo } from 'modules/rollingStock/components/RollingStockSe
 
 type RollingStockInformationPanelProps = {
   id: number;
-  isEditing: boolean;
   rollingStock: RollingStockWithLiveries;
 };
 
 export default function RollingStockInformationPanel({
   id,
-  isEditing,
   rollingStock,
 }: RollingStockInformationPanelProps) {
   const [curvesComfortList, setCurvesComfortList] = useState<Comfort[]>([]);
@@ -37,7 +35,7 @@ export default function RollingStockInformationPanel({
   };
 
   return (
-    <div className={cx('rollingstock-editor-form', { borders: !isEditing })}>
+    <div className={cx('rollingstock-editor-form borders')}>
       <div>
         <div className="rollingstock-card-header">
           <div data-testid="rollingstock-title" className="rollingstock-title">
