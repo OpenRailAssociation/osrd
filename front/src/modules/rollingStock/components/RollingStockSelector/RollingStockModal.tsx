@@ -54,7 +54,7 @@ function RollingStockModal({
             key={item.id}
             noCardSelected={openRollingStockCardId === undefined}
             isOpen={item.id === openRollingStockCardId}
-            setOpenedRollingStockCardId={setOpenRollingStockCardId}
+            onClick={() => setOpenRollingStockCardId(item.id)}
             ref2scroll={openRollingStockCardId === item.id ? ref2scroll : undefined}
             onSelectRollingStock={onSelectRollingStock}
           />

@@ -230,7 +230,7 @@ const CurveParamSelectors = ({
     openModal(
       <RollingStockEditorFormModal
         mainText={t(`rollingStock.delete.${title}`)}
-        request={() =>
+        onSubmit={() =>
           title === 'tractionMode' ? removeTractionMode(value) : removeAnotherRsParam(title, value)
         }
         buttonText={t('common.confirm')}
