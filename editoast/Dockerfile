@@ -60,7 +60,7 @@ COPY --from=planner /editoast/recipe.json recipe.json
 COPY --from=planner /editoast/editoast_derive/ editoast_derive
 COPY --from=test_data . /tests/data
 COPY --from=openfga/cli:v0.6.5 /fga /usr/local/bin/fga
-ENV RUSTFLAGS="-C target-feature=-crt-static -C link-arg=-fuse-ld=mold"
+ENV RUSTFLAGS="-C target-feature=-crt-static -C link-arg=-fuse-ld=mold -C link-args=-Wl,--build-id"
 ENV RUSTDOCFLAGS="-C target-feature=-crt-static -C link-arg=-fuse-ld=mold"
 ENV LLVM_PROFILE_FILE="editoast-%p-%m.profraw"
 RUN cargo chef cook --tests --recipe-path recipe.json

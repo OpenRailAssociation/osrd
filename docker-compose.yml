@@ -139,7 +139,7 @@ services:
         test_data: tests/data
         static_assets: assets
       args:
-        OSRD_GIT_DESCRIBE: development
+        OSRD_GIT_DESCRIBE: ${OSRD_GIT_DESCRIBE}
     environment:
       # Actual values in ./docker/osrdyne.yml (please maintain consistency)
       # Provided here only for reuse in compose layers and doc
@@ -174,7 +174,7 @@ services:
         static_assets: assets
       args:
         CARGO_PROFILE: dev
-        OSRD_GIT_DESCRIBE: development
+        OSRD_GIT_DESCRIBE: ${OSRD_GIT_DESCRIBE}
     restart: unless-stopped
     ports: [ "8090:80" ]
     environment:
@@ -213,7 +213,7 @@ services:
       context: gateway
       dockerfile: Dockerfile
       args:
-        OSRD_GIT_DESCRIBE: development
+        OSRD_GIT_DESCRIBE: ${OSRD_GIT_DESCRIBE}
         CARGO_PROFILE: dev
       additional_contexts:
         front_src: front
@@ -235,6 +235,7 @@ services:
       dockerfile: Dockerfile
       args:
         CARGO_PROFILE: dev
+        OSRD_GIT_DESCRIBE: ${OSRD_GIT_DESCRIBE}
     restart: unless-stopped
     ports: [ "4242:4242" ]
     environment:

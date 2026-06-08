@@ -129,7 +129,10 @@ async fn run() -> anyhow::Result<()> {
         Color::Auto => colored::control::set_override(std::io::stderr().is_terminal()),
     }
 
-    let app_version = client.app_version;
+    let app_version = client
+        .app_version
+        .and_then(|v| if v.is_empty() { None } else { Some(v) })
+        .or_else(|| buildid::build_id().map(to_hex_string));
 
     match client.command {
         Commands::Runserver(args) => {
@@ -230,4 +233,16 @@ async fn run() -> anyhow::Result<()> {
             garbage_collector::run_garbage_collector(db_pool.into(), openfga_config).await
         }
     }
+}
+
+fn to_hex_string(bytes: &[u8]) -> String {
+    // From https://github.com/rust-lang-deprecated/rustc-serialize/blob/f15f3b520017996041efc075556c860a68a7bf52/src/hex.rs#L43
+    static CHARS: &[u8] = b"0123456789abcdef";
+
+    let mut v = Vec::with_capacity(bytes.len() * 2);
+    for &byte in bytes.iter() {
+        v.push(CHARS[(byte >> 4) as usize]);
+        v.push(CHARS[(byte & 0xf) as usize]);
+    }
+    String::from_utf8(v).expect("hex string is valid UTF-8")
 }

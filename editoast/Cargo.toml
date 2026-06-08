@@ -172,6 +172,7 @@ axum-streams = { version = "0.25.0", features = ["json"] }
 axum-tracing-opentelemetry = { version = "0.38.0", default-features = false, features = [
   "tracing_level_info",
 ] }
+buildid = "1.0.4"
 cache.workspace = true
 chrono.workspace = true
 clap.workspace = true
