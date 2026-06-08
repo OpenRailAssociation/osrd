@@ -5,8 +5,12 @@ import { ChevronUp } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
 
 import type { PacedTrainWithPaced } from 'applications/operationalStudies/types';
+import type { TrainCategory } from 'common/api/osrdEditoastApi';
 import type { Comfort, ConstraintDistribution } from 'common/api/osrdRailwayManagerApi';
 import useSpeedLimitTags from 'common/SpeedLimitTagSelector/useSpeedLimitTags';
+import useCategoryOptions, {
+  categoryOptionId,
+} from 'modules/rollingStock/hooks/useCategoryOptions';
 import type { Train } from 'reducers/osrdconf/types';
 import { useDateTimeLocale } from 'utils/date';
 import { usePrevious } from 'utils/hooks/state';
@@ -15,7 +19,6 @@ import { isOccurrenceId } from 'utils/trainId';
 import { createFixedSelectOptions, createStandardSelectOptions } from 'utils/uiCoreHelpers';
 
 import {
-  getCategoryName,
   getServiceInterval,
   getServiceWindow,
   getShortDepartureDate,
@@ -33,6 +36,7 @@ type TrainFieldsState = {
   speed_limit_tag: string | null;
   constraint_distribution: ConstraintDistribution;
   comfort: Comfort | null;
+  category: TrainCategory | null;
 };
 
 function getFieldsFromTrain(train: Train): TrainFieldsState {
@@ -41,11 +45,17 @@ function getFieldsFromTrain(train: Train): TrainFieldsState {
     speed_limit_tag: train.speed_limit_tag ?? null,
     constraint_distribution: train.constraint_distribution,
     comfort: train.comfort ?? null,
+    category: train.category ?? null,
   };
 }
 
 function applyFieldsToTrain(fields: TrainFieldsState, train: Train): Train {
-  return { ...train, ...fields, comfort: fields.comfort === null ? undefined : fields.comfort };
+  return {
+    ...train,
+    ...fields,
+    comfort: fields.comfort === null ? undefined : fields.comfort,
+    category: fields.category === null ? undefined : fields.category,
+  };
 }
 
 function registerChange<K extends keyof TrainFieldsState>(
@@ -86,6 +96,7 @@ const ExpandedTrainForm = ({
   const { t } = useTranslation(['operational-studies', 'translation']);
   const dateTimeLocale = useDateTimeLocale();
   const speedLimitTags = useSpeedLimitTags();
+  const categoryOptions = useCategoryOptions();
 
   const pacedTrain = train.paced ? (train as PacedTrainWithPaced) : null;
   const occurenceId = isOccurrenceId(train.id) ? train.id : null;
@@ -177,6 +188,15 @@ const ExpandedTrainForm = ({
     [fields.comfort]
   );
 
+  const selectedCategoryId = useMemo(
+    () => (fields.category ? categoryOptionId(fields.category) : null),
+    [fields.category]
+  );
+  const selectedCategoryOption = useMemo(
+    () => categoryOptions.find((category) => category.id === selectedCategoryId),
+    [selectedCategoryId]
+  );
+
   const toggleBand = (
     <div className="toggle-band">
       <button className="header-toggle" onClick={() => onCollapse()}>
@@ -266,12 +286,17 @@ const ExpandedTrainForm = ({
           />
         </div>
         <div className="train-category">
-          <Input
-            id="train-header-category-input"
-            small
+          <Select
+            id="train-header-category-select"
             label={t('manageTrainSchedule.trainHeader.form.trainCategory')}
-            value={getCategoryName(train, t) ?? ''}
-            disabled
+            small
+            value={selectedCategoryOption}
+            options={categoryOptions}
+            getOptionLabel={(option) => option?.label ?? ''}
+            getOptionValue={(option) => option?.id ?? ''}
+            onChange={(value) => {
+              onFieldImmediateChange('category', value?.category ?? null);
+            }}
           />
         </div>
         <div className="train-rolling-stock">
