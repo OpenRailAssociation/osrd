@@ -73,10 +73,7 @@ const Wrapper = ({ spaceScaleType }: WrapperProps) => {
         xOffset={state.xOffset}
         yOffset={state.yOffset}
         onClick={() => {
-          const { hoveredPathId, selected, panTarget } = state;
-
-          // Skip events when something is being dragged or panned:
-          if (panTarget) return;
+          const { hoveredPathId, selected } = state;
 
           setState((s) => ({
             ...s,
