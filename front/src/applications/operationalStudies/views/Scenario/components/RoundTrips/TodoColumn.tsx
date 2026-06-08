@@ -62,11 +62,24 @@ const TodoColumn = ({
       }
     }
 
+    const compareByName = (a: PairingItem, b: PairingItem) =>
+      a.name.toLowerCase().localeCompare(b.name.toLowerCase());
+
+    const compareSuggestions = (a: PairingItem, b: PairingItem) => {
+      const aIsTodo = a.status === 'todo';
+      const bIsTodo = b.status === 'todo';
+
+      // Put "todo" items first
+      if (aIsTodo && !bIsTodo) return -1;
+      if (!aIsTodo && bIsTodo) return 1;
+
+      // Then sort alphabetically
+      return compareByName(a, b);
+    };
+
     return {
-      suggestions: suggestions.sort((a, b) =>
-        a.name.toLowerCase().localeCompare(b.name.toLowerCase())
-      ),
-      others: others.sort((a, b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase())),
+      suggestions: suggestions.sort(compareSuggestions),
+      others: others.sort(compareByName),
     };
   }, [trainSchedulesWithOpsById, pairingItemsById, itemIdToPair]);
 
