@@ -5,13 +5,14 @@ import { ChevronUp } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
 
 import type { PacedTrainWithPaced } from 'applications/operationalStudies/types';
+import type { ConstraintDistribution } from 'common/api/osrdRailwayManagerApi';
 import useSpeedLimitTags from 'common/SpeedLimitTagSelector/useSpeedLimitTags';
 import type { Train } from 'reducers/osrdconf/types';
 import { useDateTimeLocale } from 'utils/date';
 import { usePrevious } from 'utils/hooks/state';
 import { findExceptionInPacedTrainByOccurenceId } from 'utils/trainExceptions';
 import { isOccurrenceId } from 'utils/trainId';
-import { createStandardSelectOptions } from 'utils/uiCoreHelpers';
+import { createFixedSelectOptions, createStandardSelectOptions } from 'utils/uiCoreHelpers';
 
 import {
   getCategoryName,
@@ -31,12 +32,14 @@ export type ExpandedTrainFormProps = {
 type TrainFieldsState = {
   train_name: string;
   speed_limit_tag: string | null;
+  constraint_distribution: ConstraintDistribution;
 };
 
 function getFieldsFromTrain(train: Train): TrainFieldsState {
   return {
     train_name: train.train_name,
     speed_limit_tag: train.speed_limit_tag ?? null,
+    constraint_distribution: train.constraint_distribution,
   };
 }
 
@@ -134,6 +137,24 @@ const ExpandedTrainForm = ({
       setFields(newFields);
     },
     [fields]
+  );
+
+  const constraintDistributionsOptions: { id: ConstraintDistribution; label: string }[] = [
+    {
+      id: 'STANDARD',
+      label: t('manageTrainSchedule.allowances.distribution-linear'),
+    },
+    {
+      id: 'MARECO',
+      label: t('manageTrainSchedule.allowances.distribution-mareco'),
+    },
+  ];
+  const selectedConstraintDistributionOption = useMemo(
+    () =>
+      constraintDistributionsOptions.find(
+        (constraint) => constraint.id === fields.constraint_distribution
+      ),
+    [fields.constraint_distribution]
   );
 
   const toggleBand = (
@@ -256,16 +277,17 @@ const ExpandedTrainForm = ({
           />
         </div>
         <div className="train-recovery-margin">
-          <Input
-            id="train-header-recovery-margin-input"
-            small
+          <Select
+            id="train-header-recovery-margin-select"
             label={t('manageTrainSchedule.trainHeader.form.recoveryMargin')}
-            value={
-              train.constraint_distribution === 'MARECO'
-                ? t('manageTrainSchedule.allowances.distribution-mareco')
-                : t('manageTrainSchedule.allowances.distribution-linear')
-            }
-            disabled
+            small
+            value={selectedConstraintDistributionOption}
+            {...createFixedSelectOptions(constraintDistributionsOptions)}
+            onChange={(value) => {
+              if (value) {
+                onFieldImmediateChange('constraint_distribution', value.id);
+              }
+            }}
           />
         </div>
         <div className="train-comfort">
