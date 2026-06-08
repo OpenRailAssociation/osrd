@@ -5,9 +5,8 @@ import type { ScenarioReference } from 'common/api/osrdEditoastApi';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 
 type RollingStockEditorFormModalProps = {
-  setAddOrEditState?: React.Dispatch<React.SetStateAction<boolean>>;
-  // request can be a POST, PUT, PATCH or DELETE request
-  request?: () => void;
+  onSubmit?: () => void | Promise<void>;
+  onCancel?: () => void;
   mainText: string;
   errorObject?: ScenarioReference[];
   buttonText?: string;
@@ -15,8 +14,8 @@ type RollingStockEditorFormModalProps = {
 };
 
 const RollingStockEditorFormModal = ({
-  request,
-  setAddOrEditState,
+  onSubmit,
+  onCancel,
   mainText,
   errorObject,
   buttonText,
@@ -61,7 +60,10 @@ const RollingStockEditorFormModal = ({
           data-testid="confirm-modal-button-no"
           type="button"
           className="btn btn-sm btn-primary-gray"
-          onClick={() => closeModal()}
+          onClick={() => {
+            if (onCancel) onCancel();
+            closeModal();
+          }}
         >
           {t('common.no')}
         </button>
@@ -71,10 +73,7 @@ const RollingStockEditorFormModal = ({
             type="button"
             className={`btn btn-sm ${deleteAction ? 'bg-red text-white' : 'btn-primary'} ml-3`}
             onClick={() => {
-              if (request) request();
-              if (!request && setAddOrEditState) {
-                setAddOrEditState(false);
-              }
+              if (onSubmit) onSubmit();
               closeModal();
             }}
           >

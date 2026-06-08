@@ -24,6 +24,7 @@ import {
 import { modifyRollingStockElectricalValues } from '../helpers/electricalValues';
 import isRollingStockFormValid from '../helpers/isRollingStockFormValid';
 import { rollingStockEditorQueryArg } from '../helpers/utils';
+import type { PageMode } from '../RollingStockEditorView';
 import type { EffortCurveForms, RollingStockParametersValues } from '../types';
 import CategoryForm from './CategoryForm';
 import MetadataForm from './MetadataForm';
@@ -34,23 +35,17 @@ import RollingStockEditorFormModal from './RollingStockEditorFormModal';
 
 type RollingStockParametersProps = {
   rollingStockData?: RollingStockWithLiveries;
-  setAddOrEditState: React.Dispatch<React.SetStateAction<boolean>>;
-  setOpenedRollingStockCardId?: React.Dispatch<React.SetStateAction<number | undefined>>;
-  isAdding?: boolean;
+  setPageMode: React.Dispatch<React.SetStateAction<PageMode>>;
 };
 
-const RollingStockEditorForm = ({
-  rollingStockData,
-  setAddOrEditState,
-  setOpenedRollingStockCardId,
-  isAdding,
-}: RollingStockParametersProps) => {
+const RollingStockEditorForm = ({ rollingStockData, setPageMode }: RollingStockParametersProps) => {
   const dispatch = useAppDispatch();
   const { t } = useTranslation();
   const { t: rollingStockT } = useTranslation('translation', { keyPrefix: 'rollingStock' });
   const { openModal } = useModal();
   const [postRollingstock] = osrdEditoastApi.endpoints.postRollingStock.useMutation();
   const [putRollingStock] = osrdEditoastApi.endpoints.putRollingStockByRollingStockId.useMutation();
+  const isAdding = rollingStockData === undefined;
 
   const [errorMessage, setErrorMessage] = useState('');
 
@@ -75,21 +70,20 @@ const RollingStockEditorForm = ({
     RollingStock['power_restrictions']
   >(rollingStockData?.power_restrictions || {});
 
-  const addNewRollingstock = (payload: RollingStockForm) => () => {
+  const addNewRollingstock = (payload: RollingStockForm) => {
     postRollingstock({
       locked: false,
       rollingStockForm: payload,
     })
       .unwrap()
       .then((res) => {
-        if (setOpenedRollingStockCardId) setOpenedRollingStockCardId(res.id);
         dispatch(
           setSuccess({
             title: t('rollingStock.messages.success'),
             text: t('rollingStock.messages.rollingStockAdded'),
           })
         );
-        setAddOrEditState(false);
+        setPageMode({ type: 'view', rollingStockId: res.id });
       })
       .catch((error) => {
         dispatch(
@@ -102,7 +96,7 @@ const RollingStockEditorForm = ({
       });
   };
 
-  const updateRollingStock = (payload: RollingStockForm) => () => {
+  const updateRollingStock = (payload: RollingStockForm) => {
     if (rollingStockData) {
       putRollingStock({
         rollingStockId: rollingStockData.id,
@@ -116,7 +110,7 @@ const RollingStockEditorForm = ({
               text: t('rollingStock.messages.rollingStockUpdated'),
             })
           );
-          setAddOrEditState(false);
+          setPageMode({ type: 'view', rollingStockId: rollingStockData.id });
         })
         .catch((error) => {
           dispatch(
@@ -189,8 +183,7 @@ const RollingStockEditorForm = ({
     );
     openModal(
       <RollingStockEditorFormModal
-        setAddOrEditState={setAddOrEditState}
-        request={isAdding ? addNewRollingstock(payload) : updateRollingStock(payload)}
+        onSubmit={() => (isAdding ? addNewRollingstock(payload) : updateRollingStock(payload))}
         mainText={
           isAdding
             ? t('rollingStock.confirmAddRollingStock')
@@ -204,9 +197,13 @@ const RollingStockEditorForm = ({
   const cancel = () => {
     openModal(
       <RollingStockEditorFormModal
-        setAddOrEditState={setAddOrEditState}
         mainText={t('rollingStock.cancelUpdateRollingStock')}
         buttonText={t('common.yes')}
+        onSubmit={() =>
+          setPageMode(
+            isAdding ? { type: 'idle' } : { type: 'view', rollingStockId: rollingStockData.id }
+          )
+        }
       />
     );
   };
