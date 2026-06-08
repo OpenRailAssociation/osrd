@@ -96,7 +96,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v6
       - name: Set up 'uv'
-        uses: astral-sh/setup-uv@v8.1.0
+        uses: astral-sh/setup-uv@v8.2.0
         with:
           python-version: "3.12"
           enable-cache: true
@@ -128,7 +128,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - name: Set up 'uv'
-        uses: astral-sh/setup-uv@v8.1.0
+        uses: astral-sh/setup-uv@v8.2.0
         with:
           python-version: "3.11"
           enable-cache: true
@@ -151,7 +151,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - name: Set up 'uv'
-        uses: astral-sh/setup-uv@v8.1.0
+        uses: astral-sh/setup-uv@v8.2.0
         with:
           python-version: "3.11"
           enable-cache: true
@@ -241,7 +241,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
       - name: Set up 'uv'
-        uses: astral-sh/setup-uv@v8.1.0
+        uses: astral-sh/setup-uv@v8.2.0
         with:
           python-version: "3.11"
           enable-cache: true
@@ -263,7 +263,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - name: Set up 'uv'
-        uses: astral-sh/setup-uv@v8.1.0
+        uses: astral-sh/setup-uv@v8.2.0
         with:
           python-version: "3.11"
           enable-cache: true
@@ -300,7 +300,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
       - name: Set up 'uv'
-        uses: astral-sh/setup-uv@v8.1.0
+        uses: astral-sh/setup-uv@v8.2.0
         with:
           python-version: "3.11"
           enable-cache: true
@@ -750,7 +750,7 @@ jobs:
           docker load --input ./osrd-editoast.tar
           docker load --input ./osrd-osrdyne.tar
       - name: Set up 'uv'
-        uses: astral-sh/setup-uv@v8.1.0
+        uses: astral-sh/setup-uv@v8.2.0
         with:
           python-version: "3.11"
           enable-cache: true
@@ -1007,7 +1007,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - name: Set up 'uv'
-        uses: astral-sh/setup-uv@v8.1.0
+        uses: astral-sh/setup-uv@v8.2.0
         with:
           python-version: "3.11"
           enable-cache: true
