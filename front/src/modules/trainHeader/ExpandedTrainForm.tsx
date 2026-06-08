@@ -40,18 +40,27 @@ function applyFieldsToTrain(fields: TrainFieldsState, train: Train): Train {
   return { ...train, ...fields };
 }
 
+function registerChange<K extends keyof TrainFieldsState>(
+  changedValues: Partial<TrainFieldsState>,
+  changedKey: K,
+  newValue: TrainFieldsState[K]
+) {
+  changedValues[changedKey] = newValue;
+}
+
 function extractChangesInFields(
   before: TrainFieldsState,
   after: TrainFieldsState,
   current?: TrainFieldsState
 ): Partial<TrainFieldsState> {
   const changedValues: Partial<TrainFieldsState> = {};
+
   for (const fieldName of Object.keys(before) as (keyof TrainFieldsState)[]) {
     if (
       after[fieldName] !== before[fieldName] &&
       (!current || after[fieldName] !== current[fieldName])
     ) {
-      changedValues[fieldName] = after[fieldName];
+      registerChange(changedValues, fieldName, after[fieldName]);
     }
   }
   return changedValues;
