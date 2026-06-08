@@ -15,7 +15,7 @@
 
 [versions]
 kotlin = '2.3.21'
-ksp = '2.3.8'
+ksp = '2.3.9'
 kotlinx-coroutines = '1.10.+'
 logback = '1.5.+'
 moshi = '1.15.2'
@@ -82,5 +82,5 @@ kotlin-serialization = { id = 'org.jetbrains.kotlin.plugin.serialization', versi
 # java
 spotbugs = { id = 'com.github.spotbugs', version = '6.0.9' }
 spotless = { id = 'com.diffplug.spotless', version = '8.6.0' }
-shadow = { id = 'com.gradleup.shadow', version = '9.4.1' }
+shadow = { id = 'com.gradleup.shadow', version = '9.4.2' }
 versions = { id = 'com.github.ben-manes.versions', version = '0.54.0' }
