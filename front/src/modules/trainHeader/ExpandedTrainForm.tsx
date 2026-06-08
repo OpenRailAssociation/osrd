@@ -5,7 +5,7 @@ import { ChevronUp } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
 
 import type { PacedTrainWithPaced } from 'applications/operationalStudies/types';
-import type { ConstraintDistribution } from 'common/api/osrdRailwayManagerApi';
+import type { Comfort, ConstraintDistribution } from 'common/api/osrdRailwayManagerApi';
 import useSpeedLimitTags from 'common/SpeedLimitTagSelector/useSpeedLimitTags';
 import type { Train } from 'reducers/osrdconf/types';
 import { useDateTimeLocale } from 'utils/date';
@@ -16,7 +16,6 @@ import { createFixedSelectOptions, createStandardSelectOptions } from 'utils/uiC
 
 import {
   getCategoryName,
-  getComfortType,
   getServiceInterval,
   getServiceWindow,
   getShortDepartureDate,
@@ -33,6 +32,7 @@ type TrainFieldsState = {
   train_name: string;
   speed_limit_tag: string | null;
   constraint_distribution: ConstraintDistribution;
+  comfort: Comfort | null;
 };
 
 function getFieldsFromTrain(train: Train): TrainFieldsState {
@@ -40,11 +40,12 @@ function getFieldsFromTrain(train: Train): TrainFieldsState {
     train_name: train.train_name,
     speed_limit_tag: train.speed_limit_tag ?? null,
     constraint_distribution: train.constraint_distribution,
+    comfort: train.comfort ?? null,
   };
 }
 
 function applyFieldsToTrain(fields: TrainFieldsState, train: Train): Train {
-  return { ...train, ...fields };
+  return { ...train, ...fields, comfort: fields.comfort === null ? undefined : fields.comfort };
 }
 
 function registerChange<K extends keyof TrainFieldsState>(
@@ -155,6 +156,25 @@ const ExpandedTrainForm = ({
         (constraint) => constraint.id === fields.constraint_distribution
       ),
     [fields.constraint_distribution]
+  );
+
+  const comfortOptions: { id: Comfort; label: string }[] = [
+    {
+      id: 'STANDARD',
+      label: t('translation:rollingStock.comfortTypes.STANDARD'),
+    },
+    {
+      id: 'AIR_CONDITIONING',
+      label: t('translation:rollingStock.comfortTypes.AIR_CONDITIONING'),
+    },
+    {
+      id: 'HEATING',
+      label: t('translation:rollingStock.comfortTypes.HEATING'),
+    },
+  ];
+  const selectedComfortOption = useMemo(
+    () => comfortOptions.find((comfort) => comfort.id === fields.comfort),
+    [fields.comfort]
   );
 
   const toggleBand = (
@@ -291,12 +311,15 @@ const ExpandedTrainForm = ({
           />
         </div>
         <div className="train-comfort">
-          <Input
-            id="train-header-comfort-input"
-            small
+          <Select
+            id="train-header-comfort-select"
             label={t('manageTrainSchedule.trainHeader.form.comfort')}
-            value={getComfortType(train, t) ?? ''}
-            disabled
+            small
+            value={selectedComfortOption}
+            {...createFixedSelectOptions(comfortOptions)}
+            onChange={(value) => {
+              onFieldImmediateChange('comfort', value?.id ?? null);
+            }}
           />
         </div>
         <div className="train-electric-profile loose-field">
