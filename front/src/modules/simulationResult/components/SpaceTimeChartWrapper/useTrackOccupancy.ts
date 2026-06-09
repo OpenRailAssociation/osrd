@@ -180,7 +180,7 @@ const useTrackOccupancy = ({
   const fetchTrackOccupancy = useCallback(
     async (
       opRef: OperationalPointReference | undefined | null,
-      waypointId: string | undefined | null,
+      waypointId: string,
       trainsCollection: Record<number, TrainSpaceTimeData>
     ): Promise<MovableOccupancyZone[]> => {
       if (!opRef) return [];
@@ -232,6 +232,7 @@ const useTrackOccupancy = ({
               }
               zones.push(
                 getMovableOccupancyZone(
+                  waypointId,
                   trackId,
                   pacedTrainId,
                   occupation,
@@ -280,6 +281,7 @@ const useTrackOccupancy = ({
 
             zones.push(
               getMovableOccupancyZone(
+                waypointId,
                 trackId,
                 trainId,
                 occupation,
