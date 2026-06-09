@@ -39,7 +39,21 @@ export default defineConfig(({ mode }) => {
       react(),
       {
         ...checker({
-          oxlint: true,
+          oxlint: {
+            lintCommand: 'oxlint',
+            // TODO: Remove this explicit list as soon as vite-plugin-checker handles concurrent
+            //       watch files properly (i.e. with a debounce) or at least remove `test-results`
+            //       and `playwright-report` from the default watch paths.
+            watchPath: [
+              'src',
+              'tests',
+              'ui/storybook/stories',
+              'ui/ui-charts/src',
+              'ui/ui-core/src',
+              'ui/ui-icons/scripts',
+              'ui/ui-warped-data/src',
+            ],
+          },
           overlay: env.OSRD_VITE_OVERLAY !== 'false' && {
             initialIsOpen: env.OSRD_VITE_OVERLAY_OPEN_BY_DEFAULT === 'true',
           },
