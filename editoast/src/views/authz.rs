@@ -286,27 +286,31 @@ pub(in crate::views) async fn users_info(
     }
 
     // Fetch groups for each user
-    let mut groups_by_user = HashMap::new();
+    let groups_prots = v2::Protected::from_iter(
+        users
+            .keys()
+            .copied()
+            .map(authz::User)
+            .map(|user| v2::Protected::value(user).zip(v2::user_groups(user))),
+    );
     let system = SystemAuthorizer {
         openfga: regulator.openfga(),
         conn: db_pool.get().await?,
     };
-    for &user_id in users.keys() {
-        // TODO: optimize by batching calls to OpenFGA
-        let groups = authz::v2::user_groups(authz::User(user_id))
-            .authorize(&system)
-            .await?
-            .access()
-            .await?
-            .map_err(|rejection| match rejection {
-                Check::SubjectExists(authz::Subject::User(authz::User(user_id))) => {
-                    AuthzError::UnknownUser { id: user_id }
-                }
-                rejection => impossible!(rejection),
-            })?;
-        groups_by_user.insert(user_id, groups);
-    }
-    let group_ids: HashSet<i64> = groups_by_user.values().flatten().map(|g| g.0).collect();
+    let groups_by_user = system
+        .authorize(groups_prots)
+        .await?
+        .access()
+        .await?
+        .map_err(|rejection| match rejection {
+            Check::SubjectExists(authz::Subject::User(authz::User(user_id))) => {
+                AuthzError::UnknownUser { id: user_id }
+            }
+            rejection => impossible!(rejection),
+        })?
+        .into_iter()
+        .collect::<HashMap<_, _>>();
+    let group_ids: HashSet<_> = groups_by_user.values().flatten().map(|g| g.0).collect();
 
     let settings = SelectionSettings::new()
         .filter(move || Group::ID.eq_any(group_ids.clone().into_iter().collect_vec()));
@@ -333,7 +337,7 @@ pub(in crate::views) async fn users_info(
             }
             Err(rejection) => impossible!(rejection),
         };
-        let groups = groups_by_user[&user_id]
+        let groups = groups_by_user[&authz::User(user_id)]
             .iter()
             // Skip group if it does not exist
             .filter_map(|group_id| group_by_id.get(&group_id.0).cloned())
