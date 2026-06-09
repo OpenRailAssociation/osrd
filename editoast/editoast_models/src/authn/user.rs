@@ -238,6 +238,34 @@ impl UserWithIdentities {
             .map_err(database::DatabaseError::from))
     }
 
+    /// Streams users whose identifiers match the provided list
+    pub async fn stream_by_id(
+        conn: database::DbConnection,
+        ids: &[i64],
+    ) -> Result<
+        impl futures::stream::TryStream<Ok = Self, Error = database::DatabaseError>,
+        database::DatabaseError,
+    > {
+        use futures::TryStreamExt as _;
+
+        let query = diesel::sql_query(
+            r#"
+            SELECT u.id, u.name, ARRAY_AGG(i.identity) as identities
+            FROM authn_user u
+            LEFT JOIN authn_user_identity i ON i.user_id = u.id
+            WHERE u.id = ANY($1)
+            GROUP BY u.id
+            "#,
+        )
+        .bind::<diesel::sql_types::Array<diesel::sql_types::BigInt>, _>(ids);
+
+        Ok(query
+            .load_stream::<UserWithIdentitiesRow>(&mut conn.write().await)
+            .await?
+            .map_ok(Self::from)
+            .map_err(database::DatabaseError::from))
+    }
+
     /// Streams users whose one of their identities match the provided list
     pub async fn stream_by_identity(
         conn: database::DbConnection,
@@ -392,6 +420,44 @@ mod tests {
             vec!["grosminet", "titi", "toto"]
         );
     }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn stream_by_id() {
+        let pool = database::DbConnectionPoolV2::for_tests();
+        let conn = pool.get_ok();
+
+        let alice = User::register(
+            conn.clone(),
+            vec!["alice".to_owned(), "alice.alt".to_owned()],
+            "Alice".to_owned(),
+        )
+        .await
+        .expect("Alice should be created");
+        let bob = User::register(conn.clone(), vec!["bob".to_owned()], "Bob".to_string())
+            .await
+            .expect("Bob should be created");
+
+        let users = UserWithIdentities::stream_by_id(conn.clone(), &[alice.id, bob.id, -1])
+            .await
+            .expect("stream should be created")
+            .try_collect::<Vec<_>>()
+            .await
+            .expect("stream should succeed");
+        assert_eq!(
+            users,
+            vec![
+                UserWithIdentities {
+                    user: alice,
+                    identities: vec!["alice".to_owned(), "alice.alt".to_owned()],
+                },
+                UserWithIdentities {
+                    user: bob,
+                    identities: vec!["bob".to_owned()],
+                }
+            ]
+        );
+    }
+
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn stream_by_identity() {
         let pool = database::DbConnectionPoolV2::for_tests();
