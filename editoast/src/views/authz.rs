@@ -212,6 +212,7 @@ pub(in crate::views) struct UsersInfoRequest {
 }
 
 #[derive(Serialize, Deserialize, ToSchema)]
+#[cfg_attr(test, derive(Debug, PartialEq, Eq))]
 pub(in crate::views) struct UserInfo {
     id: i64,
     name: String,
@@ -1865,6 +1866,77 @@ mod tests {
             .json::<WhoamiResponse>();
 
         assert_eq!(roles, HashSet::from([Role::Admin]));
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn users_info() {
+        let app = test_app!().build();
+        let admin = app
+            .user("admin", "Admin")
+            .with_roles([Role::Admin])
+            .create()
+            .await;
+        let user_1 = app
+            .user("user_1", "User 1")
+            .with_roles([Role::OperationalStudies])
+            .create()
+            .await;
+        let user_2 = app
+            .user("user_2", "User 2")
+            .with_roles([Role::Stdcm])
+            .create()
+            .await;
+        let group_1 = app
+            .group("group_1")
+            .with_members([&user_1, &user_2])
+            .create()
+            .await;
+        let group_2 = app.group("group_2").with_members([&user_2]).create().await;
+
+        let mut users_info = app
+            .post("/authz/user/info")
+            .by_user(admin.as_ref())
+            .json(&json!({
+                "ids": [user_1.id],
+                "identities": [user_2.info.identities[0].clone()],
+            }))
+            .await
+            .assert_status_ok()
+            .json::<Vec<UserInfo>>();
+
+        users_info.sort_by_key(|user| user.id);
+
+        assert_eq!(
+            users_info,
+            vec![
+                UserInfo {
+                    id: user_1.id,
+                    name: user_1.info.name,
+                    identities: user_1.info.identities,
+                    roles: HashSet::from([Role::OperationalStudies]),
+                    groups: HashSet::from([Group {
+                        id: group_1.id,
+                        name: group_1.info.name.clone(),
+                    }]),
+                },
+                UserInfo {
+                    id: user_2.id,
+                    name: user_2.info.name,
+                    identities: user_2.info.identities,
+                    roles: HashSet::from([Role::Stdcm]),
+                    groups: HashSet::from([
+                        Group {
+                            id: group_1.id,
+                            name: group_1.info.name,
+                        },
+                        Group {
+                            id: group_2.id,
+                            name: group_2.info.name,
+                        },
+                    ]),
+                },
+            ]
+        );
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
