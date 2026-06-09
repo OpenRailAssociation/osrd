@@ -3,4 +3,5 @@ export const MANAGE_TRAIN_SCHEDULE_TYPES = Object.freeze({
   add: 'ADD',
   edit: 'EDIT',
   catalog: 'CATALOG',
+  itinerary: 'ITINERARY',
 });
