@@ -6,6 +6,8 @@
   &-header {
     display: flex;
     justify-content: space-between;
+    align-items: center;
+
     .user-grant {
       font-size: 0.875rem;
       color: var(--info60);
@@ -22,6 +24,8 @@
     // Overrides the default "pointer" cursor style applied to the div.grant-manager-body with role="button"
     // Necessary because we want to keep the role for accessibility but without the visual cursor effect
     cursor: default !important;
+    border-radius: 8px;
+    background-color: #fff;
   }
 
   .subject {

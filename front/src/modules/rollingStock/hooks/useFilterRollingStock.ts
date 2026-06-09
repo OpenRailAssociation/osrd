@@ -8,9 +8,11 @@ import type {
   LightRollingStockWithLiveries,
   TrainMainCategory,
 } from 'common/api/osrdEditoastApi';
+import useAuthz from 'common/authorization/hooks/useAuthz';
 import { setFailure } from 'reducers/main';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
+import { useAsyncMemo } from 'utils/useAsyncMemo';
 
 /**
  * - id: the rolling stock id
@@ -164,6 +166,7 @@ const useFilterRollingStock = ({
   isDebugMode?: boolean;
 } = {}) => {
   const dispatch = useAppDispatch();
+  const { getUserPrivileges } = useAuthz();
 
   const [filters, setFilters] = useState<RollingStockFilters>(initialFilters);
 
@@ -183,6 +186,17 @@ const useFilterRollingStock = ({
         : allRollingStocks,
     [isStdcm, isDebugMode, allRollingStocks]
   );
+
+  const userPrivilegesByRollingStockId = useAsyncMemo(async () => {
+    // early exit if rollingstock is empty
+    if (allRollingStocks.length === 0) return {};
+    // call editoast
+    const data = await getUserPrivileges({
+      rolling_stock: allRollingStocks.map((rs) => rs.id),
+      infra: [],
+    });
+    return data.rolling_stock || {};
+  }, [getUserPrivileges, JSON.stringify(allRollingStocks.map((rs) => rs.id))]);
 
   const [searchIsLoading, setSearchIsLoading] = useState(true);
 
@@ -232,12 +246,13 @@ const useFilterRollingStock = ({
   return {
     filteredRollingStockList,
     filters,
-    searchIsLoading,
+    isLoading: searchIsLoading || userPrivilegesByRollingStockId.type === 'loading',
     resetFilters,
     searchRollingStock,
     searchRollingStockById,
     toggleFilter,
     selectCategoryFilter,
+    userPrivilegesByRollingStockId,
   };
 };
 
