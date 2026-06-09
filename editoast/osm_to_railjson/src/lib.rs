@@ -1,3 +1,4 @@
+mod adjacency;
 mod generate_routes;
 mod generate_signals;
 mod operational_point;

@@ -8,8 +8,8 @@ use std::collections::HashMap;
 use tracing::debug;
 use tracing::error;
 
-use crate::utils::Branch;
-use crate::utils::NodeAdjacencies;
+use crate::adjacency::Branch;
+use crate::adjacency::NodeAdjacencies;
 
 pub(crate) fn switches_and_buffer_stops(
     adjacencies: &HashMap<osm4routing::NodeId, NodeAdjacencies<'_>>,

@@ -7,7 +7,7 @@ use schemas::infra::SignalExtensions;
 use schemas::infra::SignalSncfExtension;
 use std::collections::HashMap;
 
-use crate::utils::NodeAdjacencies;
+use crate::adjacency::NodeAdjacencies;
 use crate::utils::NodeToTrack;
 
 pub(crate) fn signals(
