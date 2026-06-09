@@ -838,6 +838,17 @@ jobs:
           ./scripts/load-railjson-rolling-stock.sh tests/data/rolling_stocks/realistic/*.json --force
           ./scripts/load-railjson-rolling-stock.sh tests/data/rolling_stocks/*.json
 
+  check_playwright_version:
+    runs-on: ubuntu-latest
+    name: Check Playwright version for nix
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@main
+      - name: Check versions of playwright
+        run: .github/scripts/check-playwright-version.sh
+
   end_to_end_tests:
     runs-on: ubuntu-latest
     name: End to end tests

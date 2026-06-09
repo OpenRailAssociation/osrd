@@ -39,6 +39,7 @@
       in
       with pkgs;
       {
+        packages.playwright-driver = playwright-driver;
         devShells.default = mkShell {
           buildInputs = [
             # Rust
