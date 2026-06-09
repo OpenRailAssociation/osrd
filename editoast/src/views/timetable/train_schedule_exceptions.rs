@@ -288,12 +288,12 @@ mod tests {
     use crate::error::InternalError;
     use crate::fixtures::create_timetable_with_simple_paced_train;
     use crate::fixtures::create_train_schedule_exception;
-    use crate::views::test_app::TestAppBuilder;
+    use crate::views::test_app;
     use crate::views::timetable::train_schedule_exceptions::TrainScheduleExceptionForm;
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn train_schedule_exception_created_post() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let pool = app.db_pool();
 
         let mut conn = pool.get_ok();
@@ -340,7 +340,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn train_schedule_exception_invalid_occurrence_index_post() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let pool = app.db_pool();
 
         let mut conn = pool.get_ok();
@@ -374,7 +374,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn train_schedule_exception_duplicated_occurrence_index_post() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let pool = app.db_pool();
 
         let mut conn = pool.get_ok();
@@ -418,7 +418,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn train_schedule_exception_deleted() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let pool = app.db_pool();
 
         let mut conn = pool.get_ok();
@@ -465,7 +465,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn train_schedule_exception_update() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let pool = app.db_pool();
 
         let (timetable, train_schedule) =
@@ -524,7 +524,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn train_schedule_exception_invalid_occurrence_index_update() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let pool = app.db_pool();
 
         let (timetable, train_schedule) =

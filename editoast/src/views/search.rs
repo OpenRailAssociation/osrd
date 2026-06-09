@@ -796,11 +796,11 @@ pub mod tests {
     use super::*;
     use crate::fixtures::create_simple_paced_train;
     use crate::fixtures::create_train_schedule_set;
-    use crate::views::test_app::TestAppBuilder;
+    use crate::views::test_app;
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn search_trainschedule_post_found() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let pool = app.db_pool();
 
         // Create a train_schedule_set in the database
@@ -828,7 +828,7 @@ pub mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn search_trainschedule_post_not_found() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let pool = app.db_pool();
 
         // Create a train_schedule_set in the database

@@ -78,16 +78,12 @@ impl SpanExporter for NoopSpanExporter {
 /// It allows configuring some parameters for the app service.
 /// Currently it allows setting the database connection pool (v1 or v2) and the core client.
 ///
-/// Use [TestAppBuilder::default_app] to get a default app with a v2 database connection pool
-/// and a default core client (mocking disabled).
-///
 /// The `db_pool_v1` parameter is only relevant while the pool migration is ongoing.
 pub(crate) struct TestAppBuilder {
     test_name: String,
     db_pool: Option<DbConnectionPoolV2>,
     core_client: Option<CoreClient>,
     enable_authorization: bool,
-    openfga_store: bool,
     enable_telemetry: bool,
     root_url: Option<Url>,
     trains_traffic: TrainsTrafficPool,
@@ -99,8 +95,7 @@ impl TestAppBuilder {
             test_name: String::from("editoast-test"),
             db_pool: None,
             core_client: None,
-            enable_authorization: false,
-            openfga_store: false,
+            enable_authorization: true,
             enable_telemetry: true,
             root_url: None,
             trains_traffic: TrainsTrafficPool::new(),
@@ -125,17 +120,8 @@ impl TestAppBuilder {
         self
     }
 
-    /// Setting this to true implies [with_openfga_store]
-    pub fn enable_authorization(mut self, enable_authorization: bool) -> Self {
-        self.enable_authorization = enable_authorization;
-        if enable_authorization {
-            self.openfga_store = true;
-        }
-        self
-    }
-
-    pub fn with_openfga_store(mut self) -> Self {
-        self.openfga_store = true;
+    pub fn skip_authz(mut self) -> Self {
+        self.enable_authorization = false;
         self
     }
 
@@ -157,10 +143,6 @@ impl TestAppBuilder {
         self
     }
 
-    pub fn default_app() -> TestApp {
-        TestAppBuilder::new().build()
-    }
-
     pub fn build(self) -> TestApp {
         // Generate test server config
         let config = ServerConfig {
@@ -168,7 +150,6 @@ impl TestAppBuilder {
             port: 0,
             address: String::default(),
             health_check_timeout: chrono::Duration::milliseconds(500),
-            enable_authorization: self.enable_authorization,
             map_layers_max_zoom: 18,
             postgres_config: PostgresConfig {
                 database_url: Url::parse("postgres://osrd:password@localhost:5432/osrd").unwrap(),
@@ -250,7 +231,7 @@ impl TestAppBuilder {
             fga_connection_settings.clone(),
         ))
         .expect("Failed creating OpenFGA authorization store");
-        if self.openfga_store {
+        if self.enable_authorization {
             let migrations_store_name = fga::test_utilities::sanitize_store_name_length(&format!(
                 "migrations@{}",
                 self.test_name
@@ -310,6 +291,7 @@ impl TestAppBuilder {
             test_name: self.test_name,
             server,
             app_state,
+            enable_authorization: self.enable_authorization,
             tracing_guard,
         }
     }
@@ -342,7 +324,11 @@ pub(crate) struct TestApp {
     test_name: String,
     server: TestServer,
     app_state: AppState,
-    #[expect(unused)] // included here to extend its lifetime, not meant to be used in any way
+    enable_authorization: bool,
+    #[expect(
+        unused,
+        reason = "included here to extend its lifetime, not meant to be used in any way"
+    )]
     tracing_guard: tracing::subscriber::DefaultGuard,
 }
 
@@ -390,7 +376,10 @@ impl TestApp {
         )
     }
 
-    pub async fn fetch(&self, req: TestRequest) -> TestResponse {
+    pub async fn fetch(&self, mut req: TestRequest) -> TestResponse {
+        if !self.enable_authorization {
+            req = req.skip_authz(); // x-osrd-skip-authz
+        }
         tracing::trace!(request = ?req);
         let response = req.await;
         TestResponse::new(response)
@@ -506,10 +495,8 @@ impl<'a> UserBuilder<'a> {
             infras_grant,
         } = self;
 
-        if !roles.is_empty() && !app.app_state.config.enable_authorization {
-            panic!(
-                "Authorization must be enabled and a model must be provided to grant a user some roles"
-            );
+        if (!roles.is_empty() || !infras_grant.is_empty()) && !app.enable_authorization {
+            panic!("An OpenFGA model must be provided to grant a user roles or infra grants");
         }
         let regulator = &app.app_state.regulator;
 
@@ -518,7 +505,7 @@ impl<'a> UserBuilder<'a> {
             editoast_models::User::register(app.db_pool().get().await.unwrap(), identities, name)
                 .await
                 .expect("User should be created successfully");
-        if app.app_state.config.enable_authorization {
+        if app.enable_authorization {
             v2::add_roles(authz::Subject::user(user.id), roles)
                 .authorize(&special_authorizers::Authorize(regulator.openfga()))
                 .await
@@ -579,10 +566,10 @@ impl<'a> GroupBuilder<'a> {
             members,
             infras_grant,
         } = self;
-        let authz_disabled = !app.app_state.config.enable_authorization;
-        if !roles.is_empty() && authz_disabled {
+        let needs_openfga = !roles.is_empty() || !members.is_empty() || !infras_grant.is_empty();
+        if needs_openfga && !app.enable_authorization {
             panic!(
-                "Authorization must be enabled and a model must be provided to grant a group some roles"
+                "An OpenFGA model must be provided to grant a group roles, members, or infra grants"
             );
         }
         let regulator = &app.app_state.regulator;
@@ -593,7 +580,7 @@ impl<'a> GroupBuilder<'a> {
                 .expect("group should be created successfully")
                 .id;
         let group = authz::identity::Group { id, info };
-        if !authz_disabled {
+        if app.enable_authorization {
             let group_auth = authz::Group(group.id);
             v2::add_roles(group_auth.into(), roles)
                 .authorize(&special_authorizers::Authorize(regulator.openfga()))

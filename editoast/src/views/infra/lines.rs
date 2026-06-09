@@ -92,14 +92,14 @@ mod tests {
 
     use crate::fixtures::create_empty_infra;
     use crate::infra_cache::operation::create::apply_create_operation;
-    use crate::views::test_app::TestAppBuilder;
+    use crate::views::test_app;
     use schemas::infra::TrackSection;
     use schemas::infra::TrackSectionExtensions;
     use schemas::primitives::BoundingBox;
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn returns_correct_bbox_for_existing_line_code() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
         let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
 
@@ -146,7 +146,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn returns_bad_request_when_line_code_not_found() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
         let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
 

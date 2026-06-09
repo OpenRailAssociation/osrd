@@ -307,12 +307,12 @@ pub mod tests {
     use editoast_models::stdcm_search_environment::fixtures::stdcm_search_env_fixtures;
 
     use super::*;
-    use crate::views::test_app::TestAppBuilder;
+    use crate::views::test_app;
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn create_stdcm_search_env() {
         // GIVEN
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let pool = app.db_pool();
 
         let (
@@ -366,7 +366,7 @@ pub mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn create_stdcm_search_env_with_bad_default_speed_limit_tag() {
         // GIVEN
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let pool = app.db_pool();
 
         let (
@@ -410,7 +410,7 @@ pub mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn retrieve_stdcm_search_env() {
         // GIVEN
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
 
         let pool = app.db_pool();
 
@@ -469,7 +469,7 @@ pub mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn retrieve_stdcm_search_env_not_found() {
         // GIVEN
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let pool = app.db_pool();
 
         StdcmSearchEnvironment::delete_all(&mut pool.get_ok())
@@ -487,7 +487,7 @@ pub mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn delete_stdcm_search_env() {
         // GIVEN
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let pool = app.db_pool();
 
         let (
@@ -530,7 +530,7 @@ pub mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn list_stdcm_search_env() {
         // GIVEN
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
 
         let pool = app.db_pool();
 

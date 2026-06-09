@@ -187,22 +187,9 @@ EDITOAST_NO_CACHE=true ./osrd-compose up -d
 
 ## Authorization
 
-### How to disable authorizations
+### Authorization bypass
 
-By default editoast is running with authorization enabled.
-You can disable it by using the environment variable `EDITOAST_ENABLE_AUTHORIZATION=false`
-
-```sh
-EDITOAST_ENABLE_AUTHORIZATION=false cargo run -- runserver
-```
-
-If you run the stack with docker:
-
-```sh
-EDITOAST_ENABLE_AUTHORIZATION=false docker compose up
-```
-
-If your client has a direct access to editoast, an other possibility is to add the header `x-osrd-skip-authz` in your requests.
+Trusted services behind the gateway or direct clients can bypass authorization for a request by adding the `x-osrd-skip-authz` header.
 
 ### User & role management
 

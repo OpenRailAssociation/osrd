@@ -511,7 +511,7 @@ fn track_range_from_endpoint(
 mod tests {
     use crate::fixtures::create_small_infra;
     use crate::views::infra::delimited_area::DelimitedAreaResponse;
-    use crate::views::test_app::TestAppBuilder;
+    use crate::views::test_app;
     use axum::http::StatusCode;
     use editoast_models::Infra;
 
@@ -528,7 +528,7 @@ mod tests {
         entries: Vec<DirectedLocation>,
         exits: Vec<DirectedLocation>,
     ) -> Vec<DirectionalTrackRange> {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let pool = app.db_pool();
         let Infra { id: infra_id, .. } = create_small_infra(&mut pool.get_ok()).await;
         let request = app

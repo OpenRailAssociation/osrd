@@ -55,13 +55,13 @@ pub(in crate::views) async fn icons(
 
 #[cfg(test)]
 mod tests {
-    use crate::views::test_app::TestAppBuilder;
+    use crate::views::test_app;
 
     use axum::http::StatusCode;
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn test_icons() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let request = app.get("/icons/TVM300/REP%20TGV.svg");
         let response = app.fetch(request).await.assert_status(StatusCode::OK);
         assert_eq!("image/svg+xml", response.content_type());
@@ -77,7 +77,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn test_icons_not_found() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let request = app.get("/icons/TVM300/NOT_A_THING.svg");
         app.fetch(request)
             .await

@@ -130,7 +130,7 @@ pub(in crate::views) async fn worker_load(
 mod tests {
     use super::*;
     use crate::fixtures::create_empty_infra;
-    use crate::views::test_app::TestAppBuilder;
+
     use core_client::CoreClient;
     use core_client::mocking::MockingClient;
     use database::DbConnectionPoolV2;
@@ -143,6 +143,8 @@ mod tests {
     #[case(false, WorkerStatus::NotReady)]
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn worker_load_test(#[case] loaded: bool, #[case] expected: WorkerStatus) {
+        use crate::views::test_app::test_app;
+
         let db_pool = DbConnectionPoolV2::for_tests();
         let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
 
@@ -152,7 +154,8 @@ mod tests {
             .json(json!({ "loaded": loaded }))
             .finish();
 
-        let app = TestAppBuilder::new()
+        let app = test_app!()
+            .skip_authz()
             .db_pool(db_pool)
             .core_client(CoreClient::Mocked(core))
             .build();

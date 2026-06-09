@@ -561,7 +561,7 @@ pub mod tests {
     use crate::views::path::pathfinding::PathfindingFailure;
     use crate::views::path::pathfinding::PathfindingInput;
     use crate::views::path::pathfinding::PathfindingResult;
-    use crate::views::test_app::TestAppBuilder;
+    use crate::views::test_app;
 
     fn pathfinding_input(path_items: Vec<PathItemLocation>) -> PathfindingInput {
         PathfindingInput {
@@ -600,7 +600,7 @@ pub mod tests {
             .response(StatusCode::OK)
             .json(pathfinding_result(0))
             .finish();
-        let app = TestAppBuilder::new().core_client(core.into()).build();
+        let app = test_app!().skip_authz().core_client(core.into()).build();
         let db_pool = app.db_pool();
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
         let path_items = vec![
@@ -639,7 +639,7 @@ pub mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn pathfinding_with_invalid_path_items_returns_invalid_path_items() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
         let path_items = vec![
@@ -698,7 +698,7 @@ pub mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn pathfinding_with_invalid_path_items_due_to_local_track_name() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
         let path_items = vec![
@@ -755,7 +755,7 @@ pub mod tests {
             .response(StatusCode::OK)
             .json(pathfinding_result(1))
             .finish();
-        let app = TestAppBuilder::new().core_client(core.into()).build();
+        let app = test_app!().skip_authz().core_client(core.into()).build();
         let db_pool = app.db_pool();
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
         let path_items = vec![

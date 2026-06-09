@@ -688,8 +688,8 @@ pub mod tests {
     use crate::fixtures::create_study;
     use crate::fixtures::create_timetable_with_train_schedule_set;
     use crate::fixtures::simple_paced_train_changeset;
+    use crate::views::test_app;
     use crate::views::test_app::TestApp;
-    use crate::views::test_app::TestAppBuilder;
     use editoast_models::rolling_stock::RollingStock;
 
     impl TestApp {
@@ -721,7 +721,7 @@ pub mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn create_rolling_stock_successfully() {
         // GIVEN
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
 
         let rs_name = "fast_rolling_stock_name";
@@ -757,7 +757,7 @@ pub mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn create_locked_rolling_stock_successfully() {
         // GIVEN
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
 
         let locked_rs_name = "locked_fast_rolling_stock_name";
@@ -784,7 +784,7 @@ pub mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn create_rolling_stock_with_duplicate_name() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
 
         let rs_name = "fast_rolling_stock_name";
@@ -807,7 +807,7 @@ pub mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn get_rolling_stock_usage_with_no_usage_returns_empty_ok() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let stock_name = Uuid::new_v4().to_string();
         let rolling_stock = fast_rolling_stock_form(stock_name.as_str());
         let request = app.rolling_stock_create_request(&rolling_stock);
@@ -827,7 +827,7 @@ pub mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn get_rolling_stock_usage_with_related_schedules_returns_schedules_list() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
 
         let create_rolling_stock_request =
@@ -936,7 +936,7 @@ pub mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn get_invalid_rolling_stock_id_returns_404_not_found() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
         let _ = RollingStock::delete_static(&mut db_pool.get_ok(), 1).await;
 
@@ -949,7 +949,7 @@ pub mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn create_rolling_stock_with_base_power_class_empty() {
         // GIVEN
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
 
         let rs_name = "fast_rolling_stock_name";
         let mut fast_rolling_stock_form = fast_rolling_stock_form(rs_name);
@@ -973,7 +973,7 @@ pub mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn create_rolling_stock_with_invalid_effort_curve() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
 
         let invalid_payload = schemas::fixtures::rolling_stock_with_invalid_effort_curves_json();
 
@@ -993,7 +993,7 @@ pub mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn create_rolling_stock_with_etcs_brake_params() {
         // GIVEN
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
 
         let rolling_stock_form = simple_etcs_level2_rolling_stock();
@@ -1026,7 +1026,7 @@ pub mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn get_rolling_stock_by_id() {
         // GIVEN
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
 
         let rs_name = "fast_rolling_stock_name";
@@ -1046,7 +1046,7 @@ pub mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn get_rolling_stock_by_name() {
         // GIVEN
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
 
         let rs_name = "fast_rolling_stock_name";
@@ -1065,7 +1065,7 @@ pub mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn get_unexisting_rolling_stock_by_id() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
 
         let request = app.rolling_stock_get_by_id_request(0);
 
@@ -1076,7 +1076,7 @@ pub mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn get_unexisting_rolling_stock_by_name() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
 
         let request =
             app.get(format!("/rolling_stock/name/{}", "unexisting_rolling_stock_name").as_str());
@@ -1089,7 +1089,7 @@ pub mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn update_unlocked_rolling_stock() {
         // GIVEN
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
 
         let rs_name = "fast_rolling_stock_name";
@@ -1126,7 +1126,7 @@ pub mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn update_rolling_stock_with_new_categories() {
         // GIVEN
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
 
         let fast_rolling_stock =
@@ -1178,7 +1178,7 @@ pub mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn update_rolling_stock_categories_should_fail_when_invalid() {
         // GIVEN
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
 
         let fast_rolling_stock =
@@ -1220,7 +1220,7 @@ pub mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn update_rolling_stock_failure_name_already_used() {
         // GIVEN
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
 
         let first_rs_name = "first_fast_rolling_stock_name";
@@ -1254,7 +1254,7 @@ pub mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn update_locked_rolling_stock_fails() {
         // GIVEN
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
 
         let locked_rs_name = "locked_fast_rolling_stock_name";
@@ -1286,7 +1286,7 @@ pub mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn patch_lock_rolling_stock_failed() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
 
         let id: i64 = rand::random();
         let request = app
@@ -1300,7 +1300,7 @@ pub mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn patch_lock_rolling_stock_successfully() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
 
         let rs_name = "fast_rolling_stock_name";
@@ -1327,7 +1327,7 @@ pub mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn patch_unlock_rolling_stock_successfully() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
 
         let locked_rs_name = "locked_fast_rolling_stock_name";
@@ -1362,7 +1362,7 @@ pub mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn get_power_restrictions_list() {
         // GIVEN
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
 
         let rs_name = "fast_rolling_stock_name";
@@ -1387,7 +1387,7 @@ pub mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn delete_locked_rolling_stock_fails() {
         // GIVEN
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
 
         let locked_rs_name = "locked_fast_rolling_stock_name";
@@ -1423,7 +1423,7 @@ pub mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn delete_unlocked_unused_rolling_stock_succeeds() {
         // GIVEN
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
 
         let rs_name = "fast_rolling_stock_name";
@@ -1448,7 +1448,7 @@ pub mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn delete_unlocked_used_rolling_stock_requires_force_flag() {
         // GIVEN
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
 
         let rs_name = "fast_rolling_stock_name";

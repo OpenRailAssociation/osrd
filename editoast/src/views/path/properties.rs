@@ -135,7 +135,7 @@ mod tests {
     use super::PathProperties;
     use crate::fixtures::create_small_infra;
     use crate::views::test_app::TestApp;
-    use crate::views::test_app::TestAppBuilder;
+    use crate::views::test_app::test_app;
 
     fn path_properties_response() -> core_client::path_properties::PathPropertiesResponse {
         core_client::path_properties::PathPropertiesResponse {
@@ -161,7 +161,7 @@ mod tests {
             .json(path_properties_response())
             .finish();
 
-        TestAppBuilder::new().core_client(core.into()).build()
+        test_app!().skip_authz().core_client(core.into()).build()
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 2)]

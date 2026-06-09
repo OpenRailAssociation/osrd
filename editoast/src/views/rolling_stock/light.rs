@@ -282,7 +282,7 @@ mod tests {
     use super::LightRollingStockWithLiveriesCountList;
     use crate::error::InternalError;
     use crate::fixtures::create_fast_rolling_stock;
-    use crate::views::test_app::TestAppBuilder;
+    use crate::views::test_app;
 
     fn is_sorted(data: &[i64]) -> bool {
         for elem in data.windows(2) {
@@ -295,7 +295,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn list_light_rolling_stock() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let request = app.get("/light_rolling_stock");
         app.fetch(request).await.assert_status(StatusCode::OK);
     }
@@ -303,7 +303,7 @@ mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn get_light_rolling_stock() {
         // GIVEN
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
 
         let rs_name = "fast_rolling_stock_name";
@@ -325,7 +325,7 @@ mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn get_light_rolling_stock_by_name() {
         // GIVEN
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
 
         let rs_name = "fast_rolling_stock_name";
@@ -347,7 +347,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn get_unexisting_light_rolling_stock() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
 
         let request = app.get(format!("/light_rolling_stock/{}", -1).as_str());
 
@@ -358,7 +358,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn list_light_rolling_stock_increasing_ids() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
 
         let generated_rolling_stock = (0..10)
@@ -419,7 +419,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn light_rolling_stock_max_page_size() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
 
         let request = app.get("/light_rolling_stock/?page_size=1010");
 

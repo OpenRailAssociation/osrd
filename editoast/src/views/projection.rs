@@ -965,7 +965,7 @@ pub async fn extract_train_details<T: TrainScheduleLike>(
 mod tests {
     use super::*;
     use crate::fixtures::create_small_infra;
-    use crate::views::test_app::TestAppBuilder;
+    use crate::views::test_app;
     use rstest::rstest;
     use schemas::infra::Direction;
     use schemas::infra::DirectionalTrackRange;
@@ -1187,7 +1187,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn test_simple_project_train_path_op() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
         let trigrams = ["SWS", "MWS", "MES", "NS", "SS"];
@@ -1249,7 +1249,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn test_simple_reverse_project_train_path_op() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
         let trigrams = ["SWS", "MWS", "MES", "NS", "SS"];
@@ -1312,7 +1312,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn test_points_project_train_path_op() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
         let trigrams = ["SWS", "MWS", "MES", "NS", "SS"];
@@ -1370,7 +1370,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn test_no_matching_points_project_train_path_op() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
         let op_cache = OperationalPointCache::load_path_items::<PathItemLocation>(

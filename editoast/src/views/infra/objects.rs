@@ -163,14 +163,14 @@ mod tests {
     use crate::fixtures::create_empty_infra;
     use crate::infra_cache::operation::create::apply_create_operation;
     use crate::views::infra::objects::ObjectQueryable;
-    use crate::views::test_app::TestAppBuilder;
+    use crate::views::test_app;
     use schemas::infra::Switch;
     use schemas::infra::SwitchType;
     use schemas::primitives::OSRDIdentified;
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn check_invalid_ids() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
         let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
 
@@ -185,7 +185,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn get_objects_no_ids() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
         let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
 
@@ -199,7 +199,7 @@ mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn get_objects_should_return_switch() {
         // GIVEN
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
         let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
 
@@ -245,7 +245,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn get_objects_duplicate_ids() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
         let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
 
@@ -260,7 +260,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn get_switch_types() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
         let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
 
@@ -297,7 +297,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn test_list_ids() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
         let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
 

@@ -327,7 +327,7 @@ pub mod test {
 
     use super::*;
     use crate::fixtures::create_scenario_fixtures_set;
-    use crate::views::test_app::TestAppBuilder;
+    use crate::views::test_app;
 
     impl PartialEq<MacroNoteResponse> for MacroNoteForm {
         fn eq(&self, other: &MacroNoteResponse) -> bool {
@@ -341,7 +341,7 @@ pub mod test {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn list_notes() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
 
         let fixtures1 =
@@ -402,7 +402,7 @@ pub mod test {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn create_note() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
 
         let fixtures =
@@ -449,7 +449,7 @@ pub mod test {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn create_note_scenario_not_found() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
         let fixtures =
             create_scenario_fixtures_set(&mut db_pool.get_ok(), "test_scenario_name").await;
@@ -473,7 +473,7 @@ pub mod test {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn get_note() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
         let fixtures =
             create_scenario_fixtures_set(&mut db_pool.get_ok(), "test_scenario_name").await;
@@ -501,7 +501,7 @@ pub mod test {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn get_note_not_found() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
 
         let request = app.get("/macro_notes/999999");
 
@@ -512,7 +512,7 @@ pub mod test {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn update_note() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
         let fixtures =
             create_scenario_fixtures_set(&mut db_pool.get_ok(), "test_scenario_name").await;
@@ -554,7 +554,7 @@ pub mod test {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn update_note_not_found() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
 
         let update = MacroNoteForm {
             x: 30,
@@ -573,7 +573,7 @@ pub mod test {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn delete_note() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
         let fixtures =
             create_scenario_fixtures_set(&mut db_pool.get_ok(), "test_scenario_name").await;
@@ -603,7 +603,7 @@ pub mod test {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn delete_note_not_found() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
 
         let request = app.delete("/macro_notes/999999");
 

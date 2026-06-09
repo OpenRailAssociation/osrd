@@ -172,72 +172,75 @@ mod tests {
 
     use super::*;
     use crate::fixtures::create_electrical_profile_set;
-    use crate::views::test_app::TestAppBuilder;
+    use crate::views::test_app;
     use schemas::infra::ElectricalProfile;
     use schemas::infra::TrackRange;
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn get_electrical_profile_list() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let pool = app.db_pool();
 
         let _set_1 = create_electrical_profile_set(&mut pool.get_ok()).await;
         let _set_2 = create_electrical_profile_set(&mut pool.get_ok()).await;
 
-        let response = app.get("/electrical_profile_set").await;
-        response.assert_status(StatusCode::OK);
-        let response: Vec<LightElectricalProfileSet> = response.json();
+        let response: Vec<LightElectricalProfileSet> = app
+            .fetch(app.get("/electrical_profile_set"))
+            .await
+            .assert_status(StatusCode::OK)
+            .json_into();
 
         assert!(response.len() >= 2);
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn get_unexisting_electrical_profile() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
 
-        let response = app.get("/electrical_profile_set/666").await;
-        response.assert_status(StatusCode::NOT_FOUND);
+        app.fetch(app.get("/electrical_profile_set/666"))
+            .await
+            .assert_status(StatusCode::NOT_FOUND);
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn get_electrical_profile() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let pool = app.db_pool();
 
         let electrical_profile_set = create_electrical_profile_set(&mut pool.get_ok()).await;
 
-        let response = app
-            .get(&format!(
-                "/electrical_profile_set/{}",
-                electrical_profile_set.id
-            ))
-            .await;
-        response.assert_status(StatusCode::OK);
+        app.fetch(app.get(&format!(
+            "/electrical_profile_set/{}",
+            electrical_profile_set.id
+        )))
+        .await
+        .assert_status(StatusCode::OK);
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn get_unexisting_electrical_profile_level_order() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
 
-        let response = app.get("/electrical_profile_set/666/level_order").await;
-        response.assert_status(StatusCode::NOT_FOUND);
+        app.fetch(app.get("/electrical_profile_set/666/level_order"))
+            .await
+            .assert_status(StatusCode::NOT_FOUND);
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn test_get_level_order_some() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let pool = app.db_pool();
 
         let electrical_profile_set = create_electrical_profile_set(&mut pool.get_ok()).await;
 
-        let response = app
-            .get(&format!(
+        let level_order: HashMap<String, Vec<String>> = app
+            .fetch(app.get(&format!(
                 "/electrical_profile_set/{}/level_order",
                 electrical_profile_set.id
-            ))
-            .await;
-        response.assert_status(StatusCode::OK);
-        let level_order: HashMap<String, Vec<String>> = response.json();
+            )))
+            .await
+            .assert_status(StatusCode::OK)
+            .json_into();
 
         assert_eq!(level_order.len(), 1);
         assert_eq!(
@@ -248,25 +251,25 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn delete_unexisting_electrical_profile() {
-        let app = TestAppBuilder::default_app();
-        let response = app.delete("/electrical_profile_set/666").await;
-        response.assert_status(StatusCode::NOT_FOUND);
+        let app = test_app!().skip_authz().build();
+        app.fetch(app.delete("/electrical_profile_set/666"))
+            .await
+            .assert_status(StatusCode::NOT_FOUND);
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn delete_electrical_profile() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let pool = app.db_pool();
 
         let electrical_profile_set = create_electrical_profile_set(&mut pool.get_ok()).await;
 
-        let response = app
-            .delete(&format!(
-                "/electrical_profile_set/{}",
-                electrical_profile_set.id
-            ))
-            .await;
-        response.assert_status(StatusCode::NO_CONTENT);
+        app.fetch(app.delete(&format!(
+            "/electrical_profile_set/{}",
+            electrical_profile_set.id
+        )))
+        .await
+        .assert_status(StatusCode::NO_CONTENT);
 
         let exists = ElectricalProfileSet::exists(&mut pool.get_ok(), electrical_profile_set.id)
             .await
@@ -277,7 +280,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn test_post() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let pool = app.db_pool();
 
         let ep_set = ElectricalProfileSetData {
@@ -289,12 +292,11 @@ mod tests {
             level_order: Default::default(),
         };
 
-        let response = app
-            .post("/electrical_profile_set/?name=elec")
-            .json(&ep_set)
-            .await;
-        response.assert_status(StatusCode::OK);
-        let created_ep: ElectricalProfileSet = response.json();
+        let created_ep: ElectricalProfileSet = app
+            .fetch(app.post("/electrical_profile_set/?name=elec").json(&ep_set))
+            .await
+            .assert_status(StatusCode::OK)
+            .json_into();
 
         let created_ep = ElectricalProfileSet::retrieve(pool.get_ok(), created_ep.id)
             .await

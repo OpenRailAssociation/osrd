@@ -834,8 +834,9 @@ pub mod tests {
     use crate::fixtures::create_small_infra;
     use crate::generated_data;
     use crate::infra_cache::operation::create::apply_create_operation;
+    use crate::views::test_app;
     use crate::views::test_app::TestApp;
-    use crate::views::test_app::TestAppBuilder;
+
     use editoast_models::infra::DEFAULT_INFRA_VERSION;
     use editoast_models::infra_objects::get_geometry_layer_table;
     use editoast_models::infra_objects::get_table;
@@ -849,7 +850,7 @@ pub mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn infra_clone_empty() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
         let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
 
@@ -876,7 +877,7 @@ pub mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn infra_clone() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
         let small_infra_id = small_infra.id;
@@ -952,7 +953,8 @@ pub mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn infra_delete() {
         let pool = DbConnectionPoolV2::for_tests();
-        let app = TestAppBuilder::new()
+        let app = test_app!()
+            .skip_authz()
             .db_pool(pool)
             .core_client(CoreClient::Mocked(MockingClient::default()))
             .build();
@@ -970,14 +972,14 @@ pub mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn infra_list() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let request = app.get("/infra/");
         app.fetch(request).await.assert_status(StatusCode::OK);
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn default_infra_create() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
 
         let request = app
             .post("/infra")
@@ -999,7 +1001,7 @@ pub mod tests {
     async fn infra_get() {
         let core_client = CoreClient::Mocked(MockingClient::default());
 
-        let app = TestAppBuilder::new().core_client(core_client).build();
+        let app = test_app!().skip_authz().core_client(core_client).build();
         let db_pool = app.db_pool();
         let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
 
@@ -1016,7 +1018,7 @@ pub mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn infra_rename() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
         let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
 
@@ -1040,7 +1042,7 @@ pub mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn infra_refresh() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
         let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
 
@@ -1058,7 +1060,7 @@ pub mod tests {
     // Slow test
     // PostgreSQL deadlock can happen in this test, see section `Deadlock` of [DbConnectionPoolV2::get] for more information
     async fn infra_refresh_force() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
         let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
 
@@ -1074,7 +1076,7 @@ pub mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn infra_get_speed_limit_tags() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let builtin_tags = app.speed_limit_tag_ids();
         let db_pool = app.db_pool();
         let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
@@ -1104,7 +1106,7 @@ pub mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn infra_get_all_voltages() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
         let infra_1 = create_empty_infra(&mut db_pool.get_ok()).await;
         let infra_2 = create_empty_infra(&mut db_pool.get_ok()).await;
@@ -1157,7 +1159,7 @@ pub mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     #[case(false)]
     async fn infra_get_voltages(#[case] include_rolling_stock_modes: bool) {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
         let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
 
@@ -1208,7 +1210,7 @@ pub mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn infra_get_switch_types() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
         let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
 
@@ -1227,7 +1229,7 @@ pub mod tests {
     async fn infra_lock() {
         let core_client = CoreClient::Mocked(MockingClient::default());
 
-        let app = TestAppBuilder::new().core_client(core_client).build();
+        let app = test_app!().skip_authz().core_client(core_client).build();
         let db_pool = app.db_pool();
         let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
 
@@ -1258,7 +1260,7 @@ pub mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn match_operational_points() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
         let mut infra = create_small_infra(&mut db_pool.get_ok()).await;
         let infra_cache = InfraCache::load(&mut db_pool.get_ok(), &infra)
@@ -1319,7 +1321,7 @@ pub mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn match_operational_point_input_with_incompatible_op_id_gets_filtered_out() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
         let infra = create_small_infra(&mut db_pool.get_ok()).await;
         let operational_point_references = vec![
@@ -1353,7 +1355,7 @@ pub mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn load_infra_cache() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
         let infra = create_empty_infra(&mut db_pool.get_ok()).await;
         let infra_caches = dashmap::DashMap::new();
@@ -1381,7 +1383,7 @@ pub mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn load_infra_cache_mut() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let db_pool = DbConnectionPoolV2::for_tests();
         let infra = create_empty_infra(&mut db_pool.get_ok()).await;
         let infra_caches = dashmap::DashMap::new();

@@ -424,7 +424,7 @@ mod tests {
     use crate::fixtures::create_scenario_fixtures_set;
     use crate::fixtures::create_study;
     use crate::fixtures::create_timetable;
-    use crate::views::test_app::TestAppBuilder;
+    use crate::views::test_app;
 
     pub fn scenario_url(scenario_id: Option<i64>) -> String {
         format!(
@@ -435,7 +435,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn get_scenario() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let pool = app.db_pool();
 
         let fixtures = create_scenario_fixtures_set(&mut pool.get_ok(), "test_scenario_name").await;
@@ -454,7 +454,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn get_scenarios() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let pool = app.db_pool();
 
         let fixtures = create_scenario_fixtures_set(&mut pool.get_ok(), "test_scenario_name").await;
@@ -483,7 +483,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn post_scenario() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let pool = app.db_pool();
 
         let project = create_project(&mut pool.get_ok(), "project_test_name").await;
@@ -537,7 +537,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn patch_scenario() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let pool = app.db_pool();
 
         let fixtures = create_scenario_fixtures_set(&mut pool.get_ok(), "test_scenario_name").await;
@@ -568,7 +568,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn patch_scenario_with_unavailable_infra() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let pool = app.db_pool();
 
         let fixtures = create_scenario_fixtures_set(&mut pool.get_ok(), "test_scenario_name").await;
@@ -587,7 +587,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn patch_infra_id_scenario() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let pool = app.db_pool();
 
         let fixtures = create_scenario_fixtures_set(&mut pool.get_ok(), "test_scenario_name").await;
@@ -617,7 +617,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn delete_scenario() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let pool = app.db_pool();
 
         let fixtures = create_scenario_fixtures_set(&mut pool.get_ok(), "test_scenario_name").await;

@@ -29,7 +29,6 @@ pub struct AuthenticationParameters {
     pub name: Option<String>,
     pub impersonate: Option<String>,
     pub skip: bool,
-    pub authorization_enabled: bool,
 }
 
 impl Authentication {
@@ -38,12 +37,6 @@ impl Authentication {
         let authn = match params {
             AuthenticationParameters {
                 skip: true,
-                identity,
-                name,
-                ..
-            }
-            | AuthenticationParameters {
-                authorization_enabled: false,
                 identity,
                 name,
                 ..

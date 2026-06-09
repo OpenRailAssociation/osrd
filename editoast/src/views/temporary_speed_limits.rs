@@ -167,7 +167,7 @@ mod tests {
     use uuid::Uuid;
 
     use crate::views::temporary_speed_limits::TemporarySpeedLimitCreateResponse;
-    use crate::views::test_app::TestAppBuilder;
+    use crate::views::test_app;
     use editoast_models::TemporarySpeedLimit;
 
     struct TimePeriod {
@@ -260,7 +260,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn create_temporary_speed_limits_succeeds() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let pool = app.db_pool();
 
         let group_name = Uuid::new_v4().to_string();
@@ -302,7 +302,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn create_temporary_speed_limit_groups_with_identical_name_fails() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
 
         let group_name = Uuid::new_v4().to_string();
         let request = app.create_temporary_speed_limit_group_request(
@@ -324,7 +324,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn create_ltv_with_invalid_invalid_time_period_fails() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
 
         let time_period = TimePeriod {
             start_date_time: Utc::now() + Duration::days(1),
@@ -344,7 +344,7 @@ mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     #[ignore] // TODO is this something we want to enforce ?
     async fn create_ltv_with_no_tracks_fails() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
 
         let request = app.create_temporary_speed_limit_group_request(
             RequestParameters::new().with_track_ranges(vec![]),

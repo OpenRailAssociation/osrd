@@ -187,7 +187,6 @@ services:
       TELEMETRY_ENDPOINT: "http://jaeger:4317"
       OSRD_MQ_URL: "amqp://osrd:password@rabbitmq:5672/%2f"
       FGA_API_URL: "http://openfga:8091"
-      EDITOAST_ENABLE_AUTHORIZATION: ${EDITOAST_ENABLE_AUTHORIZATION:-true}
       EDITOAST_NO_CACHE: ${EDITOAST_NO_CACHE:-false}
       S3_ACCESS_KEY_ID: access_key
       S3_SECRET_ACCESS_KEY: secret_key

@@ -446,12 +446,12 @@ pub mod tests {
 
     use super::*;
     use crate::fixtures::create_work_schedules_fixture_set;
-    use crate::views::test_app::TestAppBuilder;
+    use crate::views::test_app;
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn work_schedule_create() {
         // GIVEN
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let pool = app.db_pool();
 
         let request = app.post("/work_schedules").json(&json!({
@@ -484,7 +484,7 @@ pub mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn work_schedule_create_fail_start_date_after_end_date() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
 
         let request = app.post("/work_schedules").json(&json!({
             "work_schedule_group_name": "work schedule group name",
@@ -505,7 +505,7 @@ pub mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn work_schedule_create_fail_name_already_used() {
         // GIVEN
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let pool = app.db_pool();
 
         WorkScheduleGroup::changeset()
@@ -588,7 +588,7 @@ pub mod tests {
         #[case] expected_path_position_ranges: Vec<Vec<(u64, u64)>>,
     ) {
         // GIVEN
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let pool = app.db_pool();
         let conn = &mut pool.get_ok();
 
@@ -678,7 +678,7 @@ pub mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn work_schedule_endpoints_workflow() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
 
         // Create a new group
         let create_group_request = app.post("/work_schedules/group").json(&json!({}));
