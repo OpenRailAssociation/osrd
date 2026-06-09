@@ -23,6 +23,7 @@ export type ExpandedTrainFormProps = {
   train: Train;
   onCollapse: () => void;
   onPersistTrain: (updatedTrain: Train, addedExceptions?: { startTime: Date }[]) => Promise<void>;
+  onItineraryOpened: () => void;
 };
 
 type TrainFieldsState = {
@@ -59,7 +60,12 @@ function extractChangesInFields(
 /**
  * A header-shaped form that allow users to set most of the properties of a train, beside the itinerary itself.
  */
-const ExpandedTrainForm = ({ train, onCollapse, onPersistTrain }: ExpandedTrainFormProps) => {
+const ExpandedTrainForm = ({
+  train,
+  onCollapse,
+  onPersistTrain,
+  onItineraryOpened,
+}: ExpandedTrainFormProps) => {
   const { t } = useTranslation(['operational-studies', 'translation']);
   const dateTimeLocale = useDateTimeLocale();
 
@@ -265,9 +271,8 @@ const ExpandedTrainForm = ({ train, onCollapse, onPersistTrain }: ExpandedTrainF
           <Button
             label={t('manageTrainSchedule.trainHeader.itinerary')}
             variant="Quiet"
-            onClick={() => {}}
+            onClick={onItineraryOpened}
             size="small"
-            isDisabled
           />
         </div>
       </div>

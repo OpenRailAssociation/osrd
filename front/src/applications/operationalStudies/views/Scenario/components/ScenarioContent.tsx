@@ -214,6 +214,8 @@ const ScenarioContent = ({ activeBoards }: ScenarioContentProps) => {
                 activeBoards={activeBoards}
                 updateTrainScheduleDepartureTime={updateTrainScheduleDepartureTimeWithNge}
                 upsertTrainSchedules={upsertTrainSchedulesWithNge}
+                setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
+                setTrainScheduleToEditData={setTrainScheduleToEditData}
               />
             )}
             {activeBoards.has('macro') && (
