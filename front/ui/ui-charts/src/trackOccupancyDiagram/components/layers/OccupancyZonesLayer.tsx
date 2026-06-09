@@ -56,13 +56,13 @@ const OccupancyZonesLayer = ({
   occupancyZones,
   position,
   topPadding,
-  selectedTrainId,
+  selectedPathId,
 }: {
   tracks: Track[];
   occupancyZones: OccupancyZone[];
   position: number;
   topPadding: number;
-  selectedTrainId?: string;
+  selectedPathId?: string;
 }) => {
   const instructionsToDraw = useMemo(() => {
     const instructions: RenderingInstruction[] = [];
@@ -110,7 +110,7 @@ const OccupancyZonesLayer = ({
             type: 'occupancyZone',
             zone,
             offsetY: trackY + yPosition,
-            isSelected: zone.trainId === selectedTrainId,
+            isSelected: zone.pathId === selectedPathId,
             trailingText: zone.trailingText,
           });
 
@@ -134,7 +134,7 @@ const OccupancyZonesLayer = ({
             type: 'occupancyZone',
             zone,
             offsetY: trackY + yPosition,
-            isSelected: zone.trainId === selectedTrainId,
+            isSelected: zone.pathId === selectedPathId,
           });
 
           zoneCounter++;
@@ -167,7 +167,7 @@ const OccupancyZonesLayer = ({
     return sortBy(instructions, (instruction) =>
       instruction.type === 'occupancyZone' && instruction.isSelected ? 0 : 1
     );
-  }, [occupancyZones, selectedTrainId, topPadding, tracks]);
+  }, [occupancyZones, selectedPathId, topPadding, tracks]);
 
   const drawingFunction = useCallback<DrawingFunction<SpaceTimeChartContextType>>(
     (ctx, stcContext) => {
@@ -219,7 +219,7 @@ const OccupancyZonesLayer = ({
 
           const pickingElement: OccupancyZonePickingElement = {
             type: 'occupancyZone',
-            pathId: instruction.zone.trainId,
+            pathId: instruction.zone.pathId,
           };
           const pickingIndex = registerPickingElement(pickingElement);
           const color = hexToRgb(indexToColor(pickingIndex));

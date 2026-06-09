@@ -37,7 +37,7 @@ const TrackOccupancyCanvas = ({
   tracks,
   occupancyZones,
   draggingOccupancyZones,
-  selectedTrainId,
+  selectedPathId,
   onClose,
   onDragOver,
   topPadding = 0,
@@ -47,7 +47,7 @@ const TrackOccupancyCanvas = ({
   tracks: Track[];
   occupancyZones: OccupancyZone[];
   draggingOccupancyZones?: OccupancyZone[];
-  selectedTrainId?: string;
+  selectedPathId?: string;
   onClose?: () => void;
   onDragOver?: (trackId: string | undefined) => void;
   topPadding?: number;
@@ -110,7 +110,7 @@ const TrackOccupancyCanvas = ({
         position={position}
         topPadding={topPadding}
         occupancyZones={occupancyZones}
-        selectedTrainId={selectedTrainId}
+        selectedPathId={selectedPathId}
       />
       {draggingOccupancyZones && (
         <DraggingOccupancyZonesLayer occupancyZones={draggingOccupancyZones} />

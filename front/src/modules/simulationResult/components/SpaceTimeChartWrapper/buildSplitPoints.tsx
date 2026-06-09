@@ -56,8 +56,8 @@ export function buildSplitPoints(
   const countZonesByPacedTrainId = (zones: OccupancyZone[] = []) => {
     const counts = new Map<TrainId, Map<string, number>>();
     for (const zone of zones) {
-      if (isOccurrenceId(zone.trainId)) {
-        const pacedTrainId = extractPacedTrainIdFromOccurrenceId(zone.trainId);
+      if (isOccurrenceId(zone.pathId)) {
+        const pacedTrainId = extractPacedTrainIdFromOccurrenceId(zone.pathId);
         const pacedTrainIdCounts = counts.get(pacedTrainId) ?? new Map();
         pacedTrainIdCounts.set(zone.trackId, (pacedTrainIdCounts.get(zone.trackId) ?? 0) + 1);
         counts.set(pacedTrainId, pacedTrainIdCounts);
@@ -84,15 +84,15 @@ export function buildSplitPoints(
 
         const zonesCountByPacedTrainId = countZonesByPacedTrainId(baseZones);
 
-        const isHovered = hoveredTrainIdForChart === zone.trainId;
-        const isSelected = selectedTrainId === zone.trainId;
+        const isHovered = hoveredTrainIdForChart === zone.pathId;
+        const isSelected = selectedTrainId === zone.pathId;
         let totalOccurrencesOnTrack = 0;
-        if (isOccurrenceId(zone.trainId)) {
-          const pacedTrainId = extractPacedTrainIdFromOccurrenceId(zone.trainId);
+        if (isOccurrenceId(zone.pathId)) {
+          const pacedTrainId = extractPacedTrainIdFromOccurrenceId(zone.pathId);
           totalOccurrencesOnTrack =
             zonesCountByPacedTrainId.get(pacedTrainId)?.get(zone.trackId) ?? 0;
         }
-        const path = pathsById[zone.trainId];
+        const path = pathsById[zone.pathId];
         if (!path) return zone;
         const style = getPathStyle(hoveredItem, path, isDragging, selectedTrainId, hoveredTrainId);
         return {
@@ -131,7 +131,7 @@ export function buildSplitPoints(
             position={operationalPointPosition}
             tracks={tracks || []}
             occupancyZones={occupancyZones}
-            selectedTrainId={selectedTrainId}
+            selectedPathId={selectedTrainId}
             onClose={() => onCloseOccupancyLayer?.(waypointId)}
             topPadding={BASE_WAYPOINT_HEIGHT}
           />
