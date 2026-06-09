@@ -33,7 +33,10 @@ use editoast_models::Group;
 use editoast_models::Infra;
 use editoast_models::RollingStock;
 use editoast_models::User;
+use editoast_models::authn::user::UserWithIdentities;
 use editoast_models::prelude::*;
+use futures::FutureExt as _;
+use futures::TryStreamExt;
 use itertools::Itertools;
 use serde::Deserialize;
 use serde::Serialize;
@@ -241,63 +244,48 @@ pub(in crate::views) async fn users_info(
     State(AppState {
         regulator, db_pool, ..
     }): State<AppState>,
-    Json(body): Json<UsersInfoRequest>,
+    Json(UsersInfoRequest { ids, identities }): Json<UsersInfoRequest>,
 ) -> Result<Json<Vec<UserInfo>>> {
-    let UsersInfoRequest { ids: user_ids, .. } = body.clone();
+    let conn = db_pool.get().await?;
+    let users = {
+        let (mut u1, u2) = tokio::try_join!(
+            UserWithIdentities::stream_by_id(conn.clone(), &ids)
+                .await?
+                .try_collect::<Vec<_>>(),
+            UserWithIdentities::stream_by_identity(conn.clone(), &identities)
+                .await?
+                .try_collect::<Vec<_>>(),
+        )?;
+        u1.extend(u2);
+        u1
+    };
 
-    // Retrieve users by IDs
-    let users_1: Vec<_> =
-        User::retrieve_batch_or_fail(&mut db_pool.get().await?, user_ids, |missing| {
-            AuthzError::UnknownUser {
-                id: *missing.iter().next().unwrap(),
-            }
-        })
-        .await?;
-
-    // Retrieve users by identities
-    let users_2 =
-        User::get_batch_users_by_identity(&body.identities, &mut db_pool.get().await?).await?;
-
-    // Merge both user lists
-    let users: HashMap<_, _> = users_1
-        .into_iter()
-        .chain(users_2)
-        .map(|u| (u.id, u))
-        .collect();
-
-    let user_to_identities = User::get_batch_user_identities(
-        users.keys().copied().collect::<Vec<i64>>().as_slice(),
-        &mut db_pool.get().await?,
-    )
-    .await?
-    .into_iter()
-    .map(|(id, authz::identity::UserInfo { identities, .. })| (id, identities))
-    .collect::<HashMap<_, _>>();
-
-    if let Some(missing_identity) = body
-        .identities
-        .into_iter()
-        .find(|i| !user_to_identities.values().flatten().contains(i))
+    // Check for missing requested identities
     {
-        return Err(AuthzError::UnknownIdentity {
-            identity: missing_identity,
+        let identities = HashSet::from_iter(identities.iter());
+        let found_identities = users
+            .iter()
+            .flat_map(|u| u.identities.iter())
+            .collect::<HashSet<_>>();
+        let mut missing_identities = identities.difference(&found_identities);
+        if let Some(missing) = missing_identities.next() {
+            return Err(AuthzError::UnknownIdentity {
+                identity: missing.to_owned().to_owned(), // &&String
+            }
+            .into());
         }
-        .into());
     }
 
     // Fetch groups for each user
-    let groups_prots = v2::Protected::from_iter(
-        users
-            .keys()
-            .copied()
-            .map(authz::User)
-            .map(|user| v2::Protected::value(user).zip(v2::user_groups(user))),
-    );
+    let groups_prots = v2::Protected::from_iter(users.into_iter().map(|user| {
+        let user_groups = v2::user_groups(authz::User(user.user.id));
+        v2::Protected::value(user).zip(user_groups)
+    }));
     let system = SystemAuthorizer {
         openfga: regulator.openfga(),
-        conn: db_pool.get().await?,
+        conn,
     };
-    let groups_by_user = system
+    let user_groups = system
         .authorize(groups_prots)
         .await?
         .access()
@@ -307,49 +295,63 @@ pub(in crate::views) async fn users_info(
                 AuthzError::UnknownUser { id: user_id }
             }
             rejection => impossible!(rejection),
-        })?
-        .into_iter()
-        .collect::<HashMap<_, _>>();
-    let group_ids: HashSet<_> = groups_by_user.values().flatten().map(|g| g.0).collect();
+        })?;
 
-    let settings = SelectionSettings::new()
-        .filter(move || Group::ID.eq_any(group_ids.clone().into_iter().collect_vec()));
-    let groups = Group::list(&mut db_pool.get().await?, settings).await?;
-    let group_by_id = groups
-        .into_iter()
-        .map(|g| (g.id, g))
-        .collect::<HashMap<_, _>>();
-
-    let system = SystemAuthorizer {
-        openfga: regulator.openfga(),
-        conn: db_pool.get().await?,
+    // Find groups that really exist (OpenFGA can be out of sync sometimes)
+    let group_by_id = {
+        let group_ids = user_groups
+            .iter()
+            .flat_map(|(_, groups)| groups.iter().map(|g| **g))
+            .collect_vec();
+        let settings = SelectionSettings::new().filter(move || Group::ID.eq_any(group_ids.clone()));
+        let groups = Group::list(&mut db_pool.get().await?, settings).await?;
+        Arc::new(
+            groups
+                .into_iter()
+                .map(|g| (g.id, g))
+                .collect::<HashMap<_, _>>(),
+        )
     };
 
-    let mut results = Vec::new();
-    for (user_id, user) in users {
-        // TODO: optimize by batching calls to OpenFGA
-        let subject_roles: v2::Protected<Vec<Role>> =
-            authz::v2::subject_roles(authz::Subject::user(user_id));
-        let roles = match system.authorize(subject_roles).await?.access().await? {
-            Ok(roles) => roles,
-            Err(Check::SubjectExists(_)) => {
-                unreachable!("checked when retrieving users above")
-            }
-            Err(rejection) => impossible!(rejection),
-        };
-        let groups = groups_by_user[&authz::User(user_id)]
-            .iter()
-            // Skip group if it does not exist
-            .filter_map(|group_id| group_by_id.get(&group_id.0).cloned())
-            .collect();
-        results.push(UserInfo {
-            id: user_id,
-            name: user.name,
-            identities: user_to_identities[&user_id].clone(),
-            roles: roles.into_iter().collect::<HashSet<Role>>(),
+    // Fetch roles and build the response
+    let results = v2::Protected::from_iter(user_groups.into_iter().map(
+        |(
+            UserWithIdentities {
+                user: editoast_models::User { id, name },
+                identities,
+            },
             groups,
-        });
-    }
+        )| {
+            let group_by_id = group_by_id.clone();
+            v2::subject_roles(authz::Subject::user(id)).map(move |_, roles| {
+                async move {
+                    Ok(UserInfo {
+                        id,
+                        name,
+                        identities,
+                        roles: HashSet::from_iter(roles),
+                        groups: groups
+                            .into_iter()
+                            // Skip group if it does not exist
+                            .filter_map(|g| group_by_id.get(&*g).cloned())
+                            .collect(),
+                    })
+                }
+                .boxed()
+            })
+        },
+    ))
+    .authorize(&system)
+    .await?
+    .access()
+    .await?
+    .inspect_err(|rejection| match rejection {
+        Check::SubjectExists(authz::Subject::User(authz::User(_))) => {
+            unreachable!("checked while retrieving groups")
+        }
+        check => impossible!(check),
+    })
+    .expect("no rejections possible");
 
     Ok(Json(results))
 }
