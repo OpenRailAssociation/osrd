@@ -88,8 +88,8 @@ pub fn parse_osm(
 
     let track_sections = track_sections(&edges);
     let (switches, buffer_stops) = switches_and_buffer_stops(&mut adjacencies);
-    let speed_sections = edges.iter().clone().flat_map(speed_sections).collect_vec();
-    let electrifications = edges.iter().clone().flat_map(electrifications).collect();
+    let speed_sections = edges.iter().flat_map(speed_sections).collect_vec();
+    let electrifications = edges.iter().flat_map(electrifications).collect();
     let operational_points = operational_points(&osm_pbf_in, &nodes_tracks, &track_sections);
     let signals = if generate_signals {
         generate_signals::generate_signals(&track_sections, &switches, &speed_sections)
