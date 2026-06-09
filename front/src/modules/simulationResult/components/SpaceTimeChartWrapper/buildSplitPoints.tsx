@@ -18,6 +18,7 @@ import type { TrainId } from 'reducers/osrdconf/types';
 import { extractPacedTrainIdFromOccurrenceId, isOccurrenceId } from 'utils/trainId';
 
 import getPathStyle from './helpers/getPathStyle';
+import { parseOccupancyZonePathId, formatOccupancyZonePathId } from './helpers/zones';
 
 type OccupancyZonesLayers = {
   waypointId: string;
@@ -56,8 +57,9 @@ export function buildSplitPoints(
   const countZonesByPacedTrainId = (zones: OccupancyZone[] = []) => {
     const counts = new Map<TrainId, Map<string, number>>();
     for (const zone of zones) {
-      if (isOccurrenceId(zone.pathId)) {
-        const pacedTrainId = extractPacedTrainIdFromOccurrenceId(zone.pathId);
+      const { trainId } = parseOccupancyZonePathId(zone.pathId);
+      if (isOccurrenceId(trainId)) {
+        const pacedTrainId = extractPacedTrainIdFromOccurrenceId(trainId);
         const pacedTrainIdCounts = counts.get(pacedTrainId) ?? new Map();
         pacedTrainIdCounts.set(zone.trackId, (pacedTrainIdCounts.get(zone.trackId) ?? 0) + 1);
         counts.set(pacedTrainId, pacedTrainIdCounts);
@@ -81,18 +83,18 @@ export function buildSplitPoints(
     }) => {
       const occupancyZones = (zones || []).map((zone) => {
         const baseZones = zones ?? [];
-
         const zonesCountByPacedTrainId = countZonesByPacedTrainId(baseZones);
+        const { trainId } = parseOccupancyZonePathId(zone.pathId);
 
-        const isHovered = hoveredTrainIdForChart === zone.pathId;
-        const isSelected = selectedTrainId === zone.pathId;
+        const isHovered = hoveredTrainIdForChart === trainId;
+        const isSelected = selectedTrainId === trainId;
         let totalOccurrencesOnTrack = 0;
-        if (isOccurrenceId(zone.pathId)) {
-          const pacedTrainId = extractPacedTrainIdFromOccurrenceId(zone.pathId);
+        if (isOccurrenceId(trainId)) {
+          const pacedTrainId = extractPacedTrainIdFromOccurrenceId(trainId);
           totalOccurrencesOnTrack =
             zonesCountByPacedTrainId.get(pacedTrainId)?.get(zone.trackId) ?? 0;
         }
-        const path = pathsById[zone.pathId];
+        const path = pathsById[trainId];
         if (!path) return zone;
         const style = getPathStyle(hoveredItem, path, isDragging, selectedTrainId, hoveredTrainId);
         return {
@@ -122,6 +124,8 @@ export function buildSplitPoints(
         onClick: handleWaypointClick,
       };
 
+      const selectedPathId = selectedTrainId ? formatOccupancyZonePathId({ waypointId, trainId: selectedTrainId }) : undefined;
+
       return {
         id: operationalPointId,
         position: operationalPointPosition,
@@ -131,7 +135,7 @@ export function buildSplitPoints(
             position={operationalPointPosition}
             tracks={tracks || []}
             occupancyZones={occupancyZones}
-            selectedPathId={selectedTrainId}
+            selectedPathId={selectedPathId}
             onClose={() => onCloseOccupancyLayer?.(waypointId)}
             topPadding={BASE_WAYPOINT_HEIGHT}
           />

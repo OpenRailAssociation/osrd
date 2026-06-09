@@ -16,6 +16,7 @@ import {
   isSegmentPickingElement,
   isPointPickingElement,
   isInteractiveWaypoint,
+  isOccupancyPickingElement,
   type Track,
   type OccupancyZone,
 } from '@osrd-project/ui-charts';
@@ -77,6 +78,7 @@ import getPanelOccurrenceCounts from './helpers/getPanelOccurrenceCounts';
 import getStdExceptionType from './helpers/getStdExceptionType';
 import makeProjectedTrains from './helpers/makeProjectedTrains';
 import { getOccupancyBlocks } from './helpers/utils';
+import { parseOccupancyZonePathId } from './helpers/zones';
 import ProjectionLoadingMessage from './ProjectionLoadingMessage';
 import SettingsPanel from './SettingsPanel';
 import SpaceTimeChartToolbar from './SpaceTimeChartToolbar';
@@ -276,7 +278,15 @@ const SpaceTimeChartWrapper = ({
 
   const hoveredTrainIdForChart = useMemo(() => {
     const element = hoveredItem?.element;
-    if (element && 'pathId' in element) return element.pathId as TrainId;
+    if (element) {
+      if (isSegmentPickingElement(element) || isPointPickingElement(element)) {
+        return element.pathId as TrainId;
+      }
+      if (isOccupancyPickingElement(element)) {
+        const { trainId } = parseOccupancyZonePathId(element.pathId);
+        return trainId;
+      }
+    }
     return hoveredTrainId;
   }, [hoveredItem, hoveredTrainId]);
 

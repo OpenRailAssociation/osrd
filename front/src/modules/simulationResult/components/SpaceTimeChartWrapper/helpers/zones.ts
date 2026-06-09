@@ -6,6 +6,7 @@ import {
 } from 'common/api/osrdEditoastApi';
 import type { TrainId } from 'reducers/osrdconf/types';
 import { Duration } from 'utils/duration';
+import { isTrainId } from 'utils/trainId';
 
 import type { BaseTrainProjection } from '../../../types';
 
@@ -16,7 +17,37 @@ export type MovableOccupancyZone = OccupancyZone & {
   isStartTimeException?: boolean;
 };
 
+type OccupancyZoneReference = {
+  waypointId: string;
+  trainId: TrainId;
+};
+
 const EPSILON = 1e-5;
+
+export function formatOccupancyZonePathId(ref: OccupancyZoneReference): string {
+  return JSON.stringify(ref);
+}
+
+export function parseOccupancyZonePathId(pathId: string): OccupancyZoneReference {
+  let ref: unknown;
+  try {
+    ref = JSON.parse(pathId);
+  } catch (err) {
+    throw new Error('Malformed occupancy zone path ID: invalid JSON', { cause: err });
+  }
+  if (
+    !ref ||
+    typeof ref !== 'object' ||
+    !('waypointId' in ref) ||
+    typeof ref.waypointId !== 'string' ||
+    !('trainId' in ref) ||
+    typeof ref.trainId !== 'string' ||
+    !isTrainId(ref.trainId)
+  ) {
+    throw new Error('Malformed occupancy zone path ID: invalid fields');
+  }
+  return ref as OccupancyZoneReference;
+}
 
 /**
  * Given a train projection, return a function to get the position (in mm since the departure
@@ -52,6 +83,7 @@ function getTimeToPosition(
   };
 }
 export function getMovableOccupancyZone(
+  waypointId: string,
   trackId: string,
   trainId: TrainId,
   occupation: PostTrainSchedulesTrackOccupancyApiResponse[number]['trains'][number],
@@ -91,7 +123,7 @@ export function getMovableOccupancyZone(
 
   return {
     trackId,
-    pathId: trainId,
+    pathId: formatOccupancyZonePathId({ waypointId, trainId }),
     trainId,
     startTime: occupationStartTime,
     startDirection,
