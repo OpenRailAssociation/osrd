@@ -124,7 +124,7 @@ mod tests {
     use std::collections::HashMap;
 
     use crate::infra_cache::operation::create::apply_create_operation;
-    use crate::views::test_app::TestAppBuilder;
+    use crate::views::test_app;
     use editoast_models::Infra;
     use editoast_models::prelude::*;
     use schemas::infra::Detector;
@@ -134,7 +134,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn get_attached_detector() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let pool = app.db_pool();
 
         // Create empty infra

@@ -327,7 +327,7 @@ mod tests {
     use crate::fixtures::create_catalog_entry;
     use crate::fixtures::create_train_schedule_set;
     use crate::fixtures::simple_paced_train_base;
-    use crate::views::test_app::TestAppBuilder;
+    use crate::views::test_app;
     use crate::views::timetable::train_schedule::TrainScheduleResponse;
     use crate::views::train_schedule_set::TrainScheduleSetForm;
     use crate::views::train_schedule_set::TrainScheduleSetResponse;
@@ -353,7 +353,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn create_train_schedule() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let pool = app.db_pool();
 
         let train_schedule_set = create_train_schedule_set(&mut pool.get_ok()).await;
@@ -400,7 +400,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn get_paced_trains_for_train_schedule_set() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let pool = app.db_pool();
 
         let train_schedule_set = create_train_schedule_set(&mut pool.get_ok()).await;
@@ -446,7 +446,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn create_train_schedule_set_without_catalog_entry() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let train_schedule_set_form = TrainScheduleSetForm {
             catalog_entry_id: None,
             name: Some("test".to_string()),
@@ -481,7 +481,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn create_train_schedule_set_with_catalog_entry() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
         let catalog_entry = create_catalog_entry(&mut db_pool.get().await.unwrap()).await;
         let catalog_entry_id = catalog_entry.id;
@@ -519,7 +519,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn get_train_schedule_set() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
 
         let db_pool = app.db_pool();
         let train_schedule_set = create_train_schedule_set(&mut db_pool.get().await.unwrap()).await;
@@ -548,7 +548,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn get_train_schedule_set_with_catalog_entry() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
 
         let db_pool = app.db_pool();
         let (train_schedule_set, catalog_entry) =
@@ -591,7 +591,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn get_train_schedule_sets() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
         let train_schedule_set_1 =
             create_train_schedule_set(&mut db_pool.get().await.unwrap()).await;
@@ -645,7 +645,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn delete_train_schedule_set() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
 
         let db_pool = app.db_pool();
         let train_schedule_set = create_train_schedule_set(&mut db_pool.get().await.unwrap()).await;
@@ -664,7 +664,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn put_train_schedule_set() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
 
         let db_pool = app.db_pool();
         let train_schedule_set = create_train_schedule_set(&mut db_pool.get().await.unwrap()).await;
@@ -701,7 +701,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn put_train_schedule_set_with_catalog_entry() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
 
         let db_pool = app.db_pool();
         let catalog_entry = create_catalog_entry(&mut db_pool.get().await.unwrap()).await;

@@ -186,12 +186,12 @@ pub mod tests {
     use crate::fixtures::simple_paced_train_changeset;
     use crate::fixtures::simple_sub_category;
     use crate::views::sub_categories::SubCategoryPage;
-    use crate::views::test_app::TestAppBuilder;
+    use crate::views::test_app;
     use editoast_models::prelude::*;
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn sub_category_post() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
 
         let request = app.post("/sub_category").json(&json!([
@@ -246,7 +246,7 @@ pub mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn sub_category_duplicated_post() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
 
         let request = app.post("/sub_category").json(&json!([
             {
@@ -274,7 +274,7 @@ pub mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn sub_category_get() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
 
         let created_sub_category_1 = simple_sub_category(
@@ -307,7 +307,7 @@ pub mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn sub_category_delete() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
 
         let created_sub_category = simple_sub_category(

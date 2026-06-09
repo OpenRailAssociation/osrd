@@ -21,13 +21,12 @@ pub(in crate::views) async fn version(
 
 #[cfg(test)]
 mod tests {
+    use crate::views::test_app;
     use std::collections::HashMap;
-
-    use crate::views::test_app::TestAppBuilder;
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn version() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let request = app.get("/version");
         let response: HashMap<String, Option<String>> = app.fetch(request).await.json_into();
         assert!(response.contains_key("git_describe"));

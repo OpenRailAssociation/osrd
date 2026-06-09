@@ -133,8 +133,8 @@ pub(in crate::views) async fn whoami(
     let skip = matches!(authn, crate::authentication::Authentication::Skip { .. });
     if let Some(editoast_models::User { id, name }) = user {
         let mut roles = HashSet::from_iter(roles);
-        // authorization is disabled (by CLI or header x-osrd-skip-authz) but identity headers are
-        // provided so we could fetch the user's roles, but Admin may be lacking
+        // Authorization is skipped by header, but identity headers are provided so we could fetch
+        // the user's roles, though Admin may be lacking.
         if skip {
             roles.insert(Role::Admin);
         }
@@ -426,7 +426,7 @@ pub(in crate::views) async fn user_privileges(
             }
         }
     } else {
-        // Authorization is skipped (--enable-authorization or header), everyone has full access
+        // Authorization is skipped by header, everyone has full access
         debug_assert!(matches!(
             authn,
             crate::authentication::Authentication::Skip { .. }
@@ -954,7 +954,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn me_privileges() {
-        let app = test_app!().enable_authorization(true).build();
+        let app = test_app!().build();
         let Infra { id: infra1, .. } = create_empty_infra(&mut app.db_pool().get_ok()).await;
         let Infra { id: infra2, .. } = create_empty_infra(&mut app.db_pool().get_ok()).await;
         let Infra { id: infra3, .. } = create_empty_infra(&mut app.db_pool().get_ok()).await;
@@ -1023,7 +1023,7 @@ mod tests {
     // TODO: merge with the previous test once test deadlocks are fixed
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn me_privileges_bis() {
-        let app = test_app!().enable_authorization(true).build();
+        let app = test_app!().build();
         let Infra { id: infra1, .. } = create_empty_infra(&mut app.db_pool().get_ok()).await;
         let Infra { id: infra2, .. } = create_empty_infra(&mut app.db_pool().get_ok()).await;
         let Infra { id: infra3, .. } = create_empty_infra(&mut app.db_pool().get_ok()).await;
@@ -1085,11 +1085,11 @@ mod tests {
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn me_privileges_authz_disabled() {
-        let app = test_app!().enable_authorization(false).build();
+    async fn me_privileges_skip_authz() {
+        let app = test_app!().build();
         let Infra { id: infra, .. } = create_empty_infra(&mut app.db_pool().get_ok()).await;
         let mut privileges = app
-            .fetch(app.post("/authz/me/privileges").json(&json!({
+            .fetch(app.post("/authz/me/privileges").skip_authz().json(&json!({
                "infra": [infra]
             })))
             .await
@@ -1121,7 +1121,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn user_me_grants() {
-        let app = test_app!().enable_authorization(true).build();
+        let app = test_app!().build();
         let db_pool = app.db_pool();
         let infra = create_small_infra(&mut db_pool.get_ok()).await;
         let infra_no_grant = create_small_infra(&mut db_pool.get_ok()).await;
@@ -1188,7 +1188,7 @@ mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn users_grants_for_resource_id_test() {
         // This test start with an infra with one owner, one writer, and 5 readers
-        let app = test_app!().enable_authorization(true).build();
+        let app = test_app!().build();
         let db_pool = app.db_pool();
         let infra = create_small_infra(&mut db_pool.get_ok()).await;
         let user = app
@@ -1220,7 +1220,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn groups_grants_on_resource() {
-        let app = test_app!().enable_authorization(true).build();
+        let app = test_app!().build();
         let infra = create_small_infra(&mut app.db_pool().get_ok()).await;
         let alice = app
             .user("alice", "Alice")
@@ -1281,7 +1281,7 @@ mod tests {
         // This test starts with a user that is the owner of an infra.
         // Then it creates a new user and adds it as a writer to the infra.
         // Finally, it removes the new user from the infra.
-        let app = test_app!().enable_authorization(true).build();
+        let app = test_app!().build();
         let db_pool = app.db_pool();
         let openfga = app.openfga();
         let infra = authz::Infra(create_small_infra(&mut db_pool.get_ok()).await.id);
@@ -1340,7 +1340,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn only_owners_can_revoke_infra_grants() {
-        let app = test_app!().enable_authorization(true).build();
+        let app = test_app!().build();
         let infra = create_small_infra(&mut app.db_pool().get_ok()).await;
         let writer = app
             .user("writer", "Writer")
@@ -1374,7 +1374,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn admins_can_revoke_infra_grants() {
-        let app = test_app!().enable_authorization(true).build();
+        let app = test_app!().build();
         let infra = create_small_infra(&mut app.db_pool().get_ok()).await;
         let admin = app
             .user("admin", "Admin")
@@ -1408,7 +1408,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn last_infra_owner_can_be_revoked_by_admin() {
-        let app = test_app!().enable_authorization(true).build();
+        let app = test_app!().build();
         let infra = create_small_infra(&mut app.db_pool().get_ok()).await;
         let admin = app
             .user("admin", "Admin")
@@ -1442,7 +1442,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn owner_cannot_revoke_another_infra_owner() {
-        let app = test_app!().enable_authorization(true).build();
+        let app = test_app!().build();
         let infra = create_small_infra(&mut app.db_pool().get_ok()).await;
         let alice = app
             .user("alice", "Alice")
@@ -1476,7 +1476,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn give_grant_to_groups() {
-        let app = test_app!().enable_authorization(true).build();
+        let app = test_app!().build();
         let openfga = app.openfga();
         let infra = create_small_infra(&mut app.db_pool().get_ok()).await;
         let alice = app
@@ -1560,7 +1560,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn adding_a_grant_that_already_exists() {
-        let app = test_app!().enable_authorization(true).build();
+        let app = test_app!().build();
         let db_pool = app.db_pool();
         let infra = create_small_infra(&mut db_pool.get_ok()).await;
         let user = app
@@ -1591,7 +1591,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn skipped_authz_can_set_and_remove_grants() {
-        let app = test_app!().enable_authorization(true).build();
+        let app = test_app!().build();
         let openfga = app.openfga();
         let db_pool = app.db_pool();
         let infra = authz::Infra(create_small_infra(&mut db_pool.get_ok()).await.id);
@@ -1641,7 +1641,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn remove_a_grant_that_doesnt_exists() {
-        let app = test_app!().enable_authorization(true).build();
+        let app = test_app!().build();
         let db_pool = app.db_pool();
         let infra = create_small_infra(&mut db_pool.get_ok()).await;
         let owner = app
@@ -1673,7 +1673,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn whoami_test() {
-        let app = test_app!().enable_authorization(true).build();
+        let app = test_app!().build();
         let user = app
             .user("test", "test")
             .with_roles([Role::OperationalStudies])
@@ -1699,7 +1699,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn whoami_impersonation() {
-        let app = test_app!().enable_authorization(true).build();
+        let app = test_app!().build();
         let impersonator = app
             .user("impersonator", "Impersonator")
             .with_roles([Role::Admin])
@@ -1733,7 +1733,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn whoami_new_impersonator_always_forbidden() {
-        let app = test_app!().enable_authorization(true).build();
+        let app = test_app!().build();
         let impersonated = app
             .user("impersonated", "Impersonated")
             .with_roles([Role::Stdcm])
@@ -1761,7 +1761,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn whoami_skip_with_user_info() {
-        let app = test_app!().enable_authorization(true).build();
+        let app = test_app!().build();
         let user = app
             .user("bob", "Bob")
             .with_roles([Role::Admin])
@@ -1786,14 +1786,11 @@ mod tests {
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn whoami_authorization_disabled() {
-        let app = test_app!()
-            .enable_authorization(false)
-            .with_openfga_store()
-            .build();
+    async fn whoami_skip_with_unprivileged_user_info() {
+        let app = test_app!().build();
         let user = app.user("test", "test").create().await;
 
-        let request = app.get("/authz/me").by_user(user.as_ref());
+        let request = app.get("/authz/me").by_user(user.as_ref()).skip_authz();
         let WhoamiResponse { roles, .. } = app
             .fetch(request)
             .await
@@ -1805,7 +1802,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn user_groups_test() {
-        let app = test_app!().enable_authorization(true).build();
+        let app = test_app!().build();
         let user_1 = app.user("test1", "test1").create().await;
         let user_2 = app.user("test2", "test2").create().await;
         let group_1 = app
@@ -1854,14 +1851,14 @@ mod tests {
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn user_groups_authorization_disabled() {
-        let app = test_app!()
-            .enable_authorization(false)
-            .with_openfga_store()
-            .build();
+    async fn user_groups_skip_authz_is_unauthorized() {
+        let app = test_app!().build();
         let user = app.user("test", "test").create().await;
 
-        let request = app.get("/authz/me/groups").by_user(user.as_ref());
+        let request = app
+            .get("/authz/me/groups")
+            .by_user(user.as_ref())
+            .skip_authz();
         app.fetch(request)
             .await
             .assert_status(StatusCode::UNAUTHORIZED);
@@ -1869,7 +1866,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn list_groups_test() {
-        let app = test_app!().enable_authorization(true).build();
+        let app = test_app!().build();
 
         // Create an admin user
         let admin = app
@@ -1900,7 +1897,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn list_groups_forbidden_non_admin() {
-        let app = test_app!().enable_authorization(true).build();
+        let app = test_app!().build();
 
         // Create a non-admin user
         let user = app

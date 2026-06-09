@@ -452,12 +452,12 @@ pub mod tests {
     use super::*;
     use crate::fixtures::create_project;
     use crate::fixtures::create_study;
-    use crate::views::test_app::TestAppBuilder;
+    use crate::views::test_app;
     use editoast_models::study::Study;
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn study_post() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
 
         let created_project = create_project(&mut db_pool.get_ok(), "test_project_name").await;
@@ -488,7 +488,7 @@ pub mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn study_list() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
 
         let created_project = create_project(&mut db_pool.get_ok(), "test_project_name").await;
@@ -517,7 +517,7 @@ pub mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn study_get() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
 
         let created_project = create_project(&mut db_pool.get_ok(), "test_project_name").await;
@@ -539,7 +539,7 @@ pub mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn study_get_not_found() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
 
         let created_project = create_project(&mut db_pool.get_ok(), "test_project_name").await;
@@ -556,7 +556,7 @@ pub mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn study_delete() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
 
         let created_project = create_project(&mut db_pool.get_ok(), "test_project_name").await;
@@ -579,7 +579,7 @@ pub mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn study_patch() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
 
         let created_project = create_project(&mut db_pool.get_ok(), "test_project_name").await;

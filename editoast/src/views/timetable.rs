@@ -1143,12 +1143,12 @@ mod tests {
     use crate::fixtures::create_train_schedule_exception;
     use crate::fixtures::create_train_schedule_set;
     use crate::fixtures::simple_paced_train_base;
-    use crate::views::test_app::TestAppBuilder;
+    use crate::views::test_app;
     use editoast_models::train_schedule::TrainScheduleChangeset;
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn get_unexisting_timetable() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let request = app.get(&format!("/timetable/{}/train_schedules", 0));
         app.fetch(request)
             .await
@@ -1157,7 +1157,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn timetable_post() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let pool = app.db_pool();
 
         // Insert timetable
@@ -1180,7 +1180,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn timetable_delete() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let pool = app.db_pool();
 
         let timetable = create_timetable(&mut pool.get_ok()).await;
@@ -1200,7 +1200,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn get_timetable_train_schedules() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let pool = app.db_pool();
 
         // Setup timetable 1 data
@@ -1308,7 +1308,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn get_not_found_timetable_train_schedules() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let request = app.get(format!("/timetable/{}/train_schedules", 0).as_str());
         let response: InternalError = app
             .fetch(request)
@@ -1661,7 +1661,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn test_set_links_train_schedule_sets_to_timetable() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
 
         let timetable = create_timetable(&mut db_pool.get().await.unwrap()).await;
@@ -1688,7 +1688,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn test_get_local_track_names_simple_train_schedule() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
 
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;

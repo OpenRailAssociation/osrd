@@ -22,7 +22,7 @@ use crate::views::Regulator;
 
 #[tracing::instrument(skip_all, fields(authn))]
 pub(in crate::views) async fn authentication_extraction_middleware(
-    State(AppState { config, .. }): State<AppState>,
+    State(AppState { .. }): State<AppState>,
     mut req: Request,
     next: Next,
 ) -> Result<Response> {
@@ -54,7 +54,6 @@ pub(in crate::views) async fn authentication_extraction_middleware(
         name,
         impersonate,
         skip: skip_authz,
-        authorization_enabled: config.enable_authorization,
     })
     .map_err(
         |AuthenticationParameters {
@@ -62,14 +61,12 @@ pub(in crate::views) async fn authentication_extraction_middleware(
              name,
              impersonate,
              skip,
-             authorization_enabled,
          }| {
             tracing::error!(
                 identity,
                 name,
                 impersonate,
                 skip,
-                authorization_enabled,
                 "invalid authentication parameters"
             );
             AuthorizationError::Unauthorized
@@ -251,7 +248,6 @@ pub(in crate::views) async fn authentication_validation_middleware(
 pub type AuthenticationExt = axum::extract::Extension<Authentication>;
 
 async fn authenticate(
-    enable_authorization: bool,
     headers: &axum::http::HeaderMap,
     regulator: Regulator,
 ) -> Result<Authentication, AuthorizationError> {
@@ -278,14 +274,6 @@ async fn authenticate(
     let skip_authz = headers.contains_key(SKIP_AUTHZ);
 
     let (user, identity) = match (identity, name) {
-        (identity, name) if !enable_authorization => {
-            tracing::debug!(
-                identity,
-                name,
-                "authorization disabled — all role and permission checks are bypassed"
-            );
-            return Ok(Authentication::SkipAuthorization { identity, name });
-        }
         (identity, name) if skip_authz => {
             tracing::debug!(identity, name, "authorization skipped by request");
             return Ok(Authentication::SkipAuthorization { identity, name });
@@ -339,14 +327,12 @@ async fn authenticate(
 }
 
 pub(in crate::views) async fn authentication_middleware(
-    State(AppState {
-        regulator, config, ..
-    }): State<AppState>,
+    State(AppState { regulator, .. }): State<AppState>,
     mut req: Request,
     next: Next,
 ) -> Result<Response> {
     let headers = req.headers();
-    let authorizer = authenticate(config.enable_authorization, headers, regulator).await?;
+    let authorizer = authenticate(headers, regulator).await?;
     req.extensions_mut().insert(authorizer);
     Ok(next.run(req).await)
 }

@@ -344,7 +344,7 @@ pub mod test {
 
     use super::*;
     use crate::fixtures::create_scenario_fixtures_set;
-    use crate::views::test_app::TestAppBuilder;
+    use crate::views::test_app;
 
     impl PartialEq<MacroNodeResponse> for MacroNode {
         fn eq(&self, other: &MacroNodeResponse) -> bool {
@@ -375,7 +375,7 @@ pub mod test {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn create() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
 
         let fixtures =
@@ -413,7 +413,7 @@ pub mod test {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn update() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
         let fixtures = create_macro_node_fixtures_set(&mut db_pool.get_ok(), 1).await;
 
@@ -447,7 +447,7 @@ pub mod test {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn get() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
         let fixtures = create_macro_node_fixtures_set(&mut db_pool.get_ok(), 1).await;
 
@@ -463,7 +463,7 @@ pub mod test {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn get_node_not_found() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
 
         let request = app.get("/macro_nodes/999999");
 
@@ -474,7 +474,7 @@ pub mod test {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn list() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
         let fixtures = create_macro_node_fixtures_set(&mut db_pool.get_ok(), 10).await;
 
@@ -494,7 +494,7 @@ pub mod test {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn delete() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
         let fixtures = create_macro_node_fixtures_set(&mut db_pool.get_ok(), 1).await;
 

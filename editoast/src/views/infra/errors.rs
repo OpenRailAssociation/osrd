@@ -133,11 +133,11 @@ mod tests {
     use axum::http::StatusCode;
 
     use crate::fixtures::create_empty_infra;
-    use crate::views::test_app::TestAppBuilder;
+    use crate::views::test_app;
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn list_errors_get() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
         let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
 

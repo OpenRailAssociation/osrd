@@ -1870,8 +1870,9 @@ mod tests {
     use crate::fixtures::simple_sub_category;
     use crate::views::path::pathfinding::PathfindingFailure;
     use crate::views::path::pathfinding::PathfindingResult;
+    use crate::views::test_app;
     use crate::views::test_app::TestApp;
-    use crate::views::test_app::TestAppBuilder;
+
     use crate::views::test_app::TestResponse;
     use crate::views::tests::mocked_core_pathfinding_sim_and_proj;
     use crate::views::timetable::simulation;
@@ -1903,7 +1904,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn train_schedule_post() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let pool = app.db_pool();
 
         let train_schedule_set = create_train_schedule_set(&mut pool.get_ok()).await;
@@ -1929,7 +1930,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn train_schedule_with_sub_category() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let pool = app.db_pool();
 
         let created_sub_category = simple_sub_category(
@@ -1988,7 +1989,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn update_paced_train_resets_exceptions_when_interval_changes() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let pool = app.db_pool();
 
         let (timetable, train_schedule_set) =
@@ -2061,7 +2062,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn update_paced_train() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let pool = app.db_pool();
 
         let (timetable, train_schedule_set) =
@@ -2103,7 +2104,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn train_schedule_delete() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let pool = app.db_pool();
 
         let train_schedule_set = create_train_schedule_set(&mut pool.get_ok()).await;
@@ -2128,7 +2129,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn get_not_found_train_schedule() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let request = app.get(&format!("/train_schedules/{}", 0));
 
         let response: InternalError = app
@@ -2142,7 +2143,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn get_train_schedule() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let pool = app.db_pool();
 
         let train_schedule_set = create_train_schedule_set(&mut pool.get_ok()).await;
@@ -2207,7 +2208,8 @@ mod tests {
         .await;
 
         let core = mocked_core_pathfinding_sim_and_proj();
-        let app = TestAppBuilder::new()
+        let app = test_app!()
+            .skip_authz()
             .db_pool(db_pool)
             .core_client(core.into())
             .build();
@@ -2381,7 +2383,8 @@ mod tests {
     async fn paced_train_simulation_summary() {
         // Setup tests tools
         let core = mocked_core_pathfinding_sim_and_proj();
-        let app = TestAppBuilder::new()
+        let app = test_app!()
+            .skip_authz()
             .db_pool(DbConnectionPoolV2::for_tests())
             .core_client(core.into())
             .build();
@@ -2608,7 +2611,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn get_paced_train_path_infra_not_found() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let pool = app.db_pool();
         let train_schedule_set = create_train_schedule_set(&mut pool.get_ok()).await;
         let paced_train =
@@ -2633,7 +2636,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn get_paced_train_path_not_found() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let pool = app.db_pool();
         let small_infra = create_small_infra(&mut pool.get_ok()).await;
 
@@ -2653,7 +2656,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn get_paced_train_path_with_invalid_exception_key() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let pool = app.db_pool();
         let small_infra = create_small_infra(&mut pool.get_ok()).await;
         let train_schedule_set = create_train_schedule_set(&mut pool.get_ok()).await;
@@ -2695,7 +2698,7 @@ mod tests {
                 "status": "success"
             }))
             .finish();
-        let app = TestAppBuilder::new().core_client(core.into()).build();
+        let app = test_app!().skip_authz().core_client(core.into()).build();
         let db_pool = app.db_pool();
 
         create_fast_rolling_stock(&mut db_pool.get_ok(), "R2D2").await;
@@ -2744,7 +2747,7 @@ mod tests {
                 "status": "success"
             }))
             .finish();
-        let app = TestAppBuilder::new().core_client(core.into()).build();
+        let app = test_app!().skip_authz().core_client(core.into()).build();
         let db_pool = app.db_pool();
 
         create_fast_rolling_stock(&mut db_pool.get_ok(), "R2D2").await;
@@ -2813,7 +2816,7 @@ mod tests {
                 "status": "success"
             }))
             .finish();
-        let app = TestAppBuilder::new().core_client(core.into()).build();
+        let app = test_app!().skip_authz().core_client(core.into()).build();
         let db_pool = app.db_pool();
 
         let (timetable, train_schedule_set) =
@@ -2886,7 +2889,8 @@ mod tests {
             .expect("Failed to create paced train");
 
         let core = mocked_core_pathfinding_sim_and_proj();
-        let app = TestAppBuilder::new()
+        let app = test_app!()
+            .skip_authz()
             .db_pool(db_pool)
             .core_client(core.into())
             .build();
@@ -3025,7 +3029,7 @@ mod tests {
             .response(StatusCode::OK)
             .json(simulation_empty_response())
             .finish();
-        let app = TestAppBuilder::new().core_client(core.into()).build();
+        let app = test_app!().skip_authz().core_client(core.into()).build();
         let db_pool = app.db_pool();
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
         let rolling_stock =
@@ -3151,7 +3155,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn move_train_schedules_to_another_train_schedule_set() {
-        let app = TestAppBuilder::new().build();
+        let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
         let train_schedule_set = create_train_schedule_set(&mut db_pool.get_ok()).await;
         let train_schedule =

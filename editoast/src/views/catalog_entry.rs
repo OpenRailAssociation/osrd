@@ -155,7 +155,7 @@ pub(in crate::views) async fn delete(
 mod tests {
     use crate::fixtures::create_catalog_entry;
     use crate::fixtures::create_catalog_entry_with_name;
-    use crate::views::test_app::TestAppBuilder;
+    use crate::views::test_app;
 
     use super::*;
     use editoast_models::catalog_entry::CatalogEntry;
@@ -163,7 +163,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn catalog_entry_post() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
 
         let catalog_entry_form = CatalogEntryForm {
             name: Some("test".to_string()),
@@ -188,7 +188,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn catalog_entry_get() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
 
         let catalog_entry = create_catalog_entry(&mut db_pool.get().await.unwrap()).await;
@@ -206,7 +206,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn catalog_entry_delete() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
 
         let catalog_entry = create_catalog_entry(&mut db_pool.get().await.unwrap()).await;
@@ -224,7 +224,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn catalog_entry_unexisting_delete() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
 
         let request = app.delete("/catalog_entries/999999");
 
@@ -234,7 +234,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn catalog_entry_put() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
 
         let catalog_entry = create_catalog_entry(&mut db_pool.get().await.unwrap()).await;
@@ -262,7 +262,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn catalog_entry_list_paginated() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
 
         let catalog_entry_1 =

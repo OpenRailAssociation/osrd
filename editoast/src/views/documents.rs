@@ -139,7 +139,7 @@ mod tests {
     use serde::Deserialize;
 
     use super::*;
-    use crate::views::test_app::TestAppBuilder;
+    use crate::views::test_app;
 
     #[derive(Deserialize, Clone, Debug)]
     struct PostDocumentResponse {
@@ -148,7 +148,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn document_post() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let pool = app.db_pool();
 
         let request = app
@@ -160,9 +160,8 @@ mod tests {
             .bytes("Document post test data".into());
 
         // Insert document
-        let response = request.await;
-        response.assert_status(StatusCode::CREATED);
-        let new_doc = response.json::<PostDocumentResponse>().document_key;
+        let response = app.fetch(request).await.assert_status(StatusCode::CREATED);
+        let new_doc = response.json_into::<PostDocumentResponse>().document_key;
 
         // Get create document
         let document = Document::retrieve(pool.get_ok(), new_doc)
@@ -175,7 +174,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn get_document() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let pool = app.db_pool();
 
         // Insert document test
@@ -187,16 +186,18 @@ mod tests {
             .expect("Failed to create document");
 
         // Get document test
-        let response = app.get(&format!("/documents/{}", document.id)).await;
-        response.assert_status(StatusCode::OK);
-        let response = response.as_bytes();
+        let response = app
+            .fetch(app.get(&format!("/documents/{}", document.id)))
+            .await
+            .assert_status(StatusCode::OK)
+            .bytes();
 
-        assert_eq!(response.as_ref(), b"Document post test data");
+        assert_eq!(response.as_slice(), b"Document post test data");
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn document_delete() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let pool = app.db_pool();
 
         // Insert document test
@@ -208,10 +209,9 @@ mod tests {
             .expect("Failed to create document");
 
         // Delete document request
-        let response = app
-            .delete(format!("/documents/{}", document.id).as_str())
-            .await;
-        response.assert_status(StatusCode::NO_CONTENT);
+        app.fetch(app.delete(format!("/documents/{}", document.id).as_str()))
+            .await
+            .assert_status(StatusCode::NO_CONTENT);
 
         // Get create document
         let document = Document::exists(&mut pool.get_ok(), document.id)

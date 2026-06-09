@@ -64,10 +64,6 @@ pub struct RunserverArgs {
     address: String,
     #[command(flatten)]
     core: CoreArgs,
-    /// If this option is set to false, any role and permission check will be bypassed. Even if no user is
-    /// provided by the request headers of if the provided user doesn't have the required privileges.
-    #[clap(long, env = "EDITOAST_ENABLE_AUTHORIZATION", default_value_t = true)]
-    enable_authorization: bool,
     /// The timeout to use when performing the healthcheck, in milliseconds
     #[clap(long, env = "EDITOAST_HEALTH_CHECK_TIMEOUT_MS", default_value_t = 1000)]
     health_check_timeout_ms: u64,
@@ -91,7 +87,6 @@ pub async fn runserver(
                 core_client_channels_size,
                 worker_pool_id,
             },
-        enable_authorization,
         health_check_timeout_ms,
         root_url,
         dynamic_assets_path,
@@ -115,7 +110,6 @@ pub async fn runserver(
         address,
         health_check_timeout: Duration::milliseconds(health_check_timeout_ms as i64),
         map_layers_max_zoom: map_layers_config.max_zoom as u8,
-        enable_authorization,
         postgres_config: postgres.into(),
         osrdyne_config: views::OsrdyneConfig {
             mq_url,

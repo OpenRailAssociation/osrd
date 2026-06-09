@@ -360,8 +360,9 @@ mod tests {
     use crate::fixtures::create_fast_rolling_stock;
     use crate::fixtures::create_small_infra;
     use crate::fixtures::create_timetable_with_train_schedule_set;
-    use crate::views::test_app::TestAppBuilder;
     use crate::views::test_app::TestResponse;
+    use crate::views::test_app::test_app;
+
     use chrono::TimeDelta;
     use core_client::mocking::MockingClient;
     use core_client::pathfinding::PathfindingResultSuccess;
@@ -532,7 +533,7 @@ mod tests {
         track: &str,
         lc_position: f64,
     ) -> (TestResponse, Identifier, TrainSchedule) {
-        let app = TestAppBuilder::new().core_client(core.into()).build();
+        let app = test_app!().skip_authz().core_client(core.into()).build();
         let db_pool = app.db_pool();
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
         let rolling_stock =

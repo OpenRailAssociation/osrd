@@ -607,7 +607,7 @@ mod tests {
     use crate::fixtures::create_timetable;
     use crate::fixtures::create_towed_rolling_stock;
     use crate::views::path::pathfinding::PathfindingResult;
-    use crate::views::test_app::TestAppBuilder;
+    use crate::views::test_app::test_app;
     use crate::views::timetable::simulation_empty_response;
     use crate::views::timetable::stdcm::Request;
     use crate::views::timetable::stdcm::request::ConsistSchedule;
@@ -972,7 +972,7 @@ mod tests {
             core
         };
 
-        let app = TestAppBuilder::new().core_client(core.into()).build();
+        let app = test_app!().skip_authz().core_client(core.into()).build();
         let db_pool = app.db_pool();
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
         let timetable = create_timetable(&mut db_pool.get_ok()).await;
@@ -1057,7 +1057,7 @@ mod tests {
             })
             .finish();
 
-        let app = TestAppBuilder::new().core_client(core.into()).build();
+        let app = test_app!().skip_authz().core_client(core.into()).build();
         let db_pool = app.db_pool();
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
         let timetable = create_timetable(&mut db_pool.get_ok()).await;
@@ -1101,7 +1101,7 @@ mod tests {
             })
             .finish();
 
-        let app = TestAppBuilder::new().core_client(core.into()).build();
+        let app = test_app!().skip_authz().core_client(core.into()).build();
         let db_pool = app.db_pool();
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
         let timetable = create_timetable(&mut db_pool.get_ok()).await;
@@ -1155,7 +1155,7 @@ mod tests {
             })
             .finish();
 
-        let app = TestAppBuilder::new().core_client(core.into()).build();
+        let app = test_app!().skip_authz().core_client(core.into()).build();
         let db_pool = app.db_pool();
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
         let timetable = create_timetable(&mut db_pool.get_ok()).await;
@@ -1228,7 +1228,7 @@ mod tests {
             })
             .finish();
 
-        let app = TestAppBuilder::new().core_client(core.into()).build();
+        let app = test_app!().skip_authz().core_client(core.into()).build();
         let db_pool = app.db_pool();
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
         let timetable = create_timetable(&mut db_pool.get_ok()).await;
@@ -1417,7 +1417,7 @@ mod tests {
             })
             .finish();
 
-        let app = TestAppBuilder::new().core_client(core.into()).build();
+        let app = test_app!().skip_authz().core_client(core.into()).build();
         let db_pool = app.db_pool();
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
         let timetable = create_timetable(&mut db_pool.get_ok()).await;
@@ -1517,7 +1517,7 @@ mod tests {
             })
             .finish();
 
-        let app = TestAppBuilder::new().core_client(core.into()).build();
+        let app = test_app!().skip_authz().core_client(core.into()).build();
         let db_pool = app.db_pool();
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
         let timetable = create_timetable(&mut db_pool.get_ok()).await;
@@ -1656,7 +1656,7 @@ mod tests {
             })
             .finish();
 
-        let app = TestAppBuilder::new().core_client(core.into()).build();
+        let app = test_app!().skip_authz().core_client(core.into()).build();
         let db_pool = app.db_pool();
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
         let timetable = create_timetable(&mut db_pool.get_ok()).await;

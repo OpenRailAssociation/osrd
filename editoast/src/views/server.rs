@@ -84,7 +84,6 @@ pub struct ServerConfig {
     pub address: String,
     pub health_check_timeout: Duration,
     pub map_layers_max_zoom: u8,
-    pub enable_authorization: bool,
     pub postgres_config: PostgresConfig,
     pub osrdyne_config: OsrdyneConfig,
     pub valkey_config: cache::Config,
@@ -330,16 +329,7 @@ impl Server {
 
     pub async fn start(self) -> std::io::Result<()> {
         let Self { app_state, router } = self;
-        let ServerConfig {
-            address,
-            port,
-            enable_authorization,
-            ..
-        } = app_state.config.as_ref();
-
-        if !*enable_authorization {
-            warn!("authorization disabled — all role and permission checks are bypassed");
-        }
+        let ServerConfig { address, port, .. } = app_state.config.as_ref();
 
         info!("Running server...");
         let service = ServiceExt::<axum::extract::Request>::into_make_service(router);

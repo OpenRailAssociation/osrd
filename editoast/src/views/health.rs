@@ -96,13 +96,12 @@ pub async fn check_health(
 
 #[cfg(test)]
 mod tests {
+    use crate::views::test_app;
     use reqwest::StatusCode;
-
-    use crate::views::test_app::TestAppBuilder;
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn health() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let request = app.get("/health");
         app.fetch(request).await.assert_status(StatusCode::OK);
     }

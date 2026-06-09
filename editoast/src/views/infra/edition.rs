@@ -990,12 +990,12 @@ pub mod tests {
     use crate::generated_data::infra_error::InfraError;
     use crate::generated_data::infra_error::InfraErrorType;
     use crate::views::infra::errors::query_errors;
+    use crate::views::test_app;
     use crate::views::test_app::TestApp;
-    use crate::views::test_app::TestAppBuilder;
     use editoast_models::infra::ObjectQueryable;
 
     async fn setup_split_track_test() -> (TestApp, Infra) {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
 
@@ -1009,7 +1009,7 @@ pub mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn split_track_section_should_return_404_with_bad_infra() {
         // Init
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
 
         // Make a call with a bad infra ID
         let request = app
@@ -1028,7 +1028,7 @@ pub mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn split_track_section_should_return_404_with_bad_id() {
         // Init
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
 
@@ -1049,7 +1049,7 @@ pub mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn split_track_section_should_fail_with_bad_distance() {
         // Init
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
 
@@ -1110,7 +1110,7 @@ pub mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn infra_edition_updates_modification_date() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
         let mut small_infra = create_small_infra(&mut db_pool.get_ok()).await;
         let mut infra_cache = InfraCache::load(&mut db_pool.get_ok(), &small_infra)
@@ -1152,7 +1152,7 @@ pub mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn apply_edit_transaction_should_work() {
         // Init
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
         let conn = &mut db_pool.get().await.unwrap();
 
@@ -1195,7 +1195,7 @@ pub mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn apply_edit_transaction_should_rollback() {
         // Init
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
         let conn = &mut db_pool.get().await.unwrap();
         let mut small_infra = create_small_infra(conn).await;

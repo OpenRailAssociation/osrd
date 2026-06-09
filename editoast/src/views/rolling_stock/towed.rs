@@ -231,8 +231,8 @@ pub(in crate::views) async fn patch_by_id_locked(
 #[cfg(test)]
 mod tests {
     use super::TowedRollingStockCountList;
+    use crate::views::test_app;
     use crate::views::test_app::TestApp;
-    use crate::views::test_app::TestAppBuilder;
     use axum::http::StatusCode;
     use common::units;
     use editoast_models::TowedRollingStock;
@@ -279,7 +279,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn create_and_list_towed_rolling_stock() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
 
         let name = Uuid::new_v4().to_string();
         let towed_rolling_stock = create_towed_rolling_stock(&app, &name, LOCKED).await;
@@ -303,7 +303,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn get_unknown_towed_rolling_stock() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
 
         let id: i64 = rand::random();
 
@@ -314,7 +314,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn create_and_get_towed_rolling_stock() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
 
         let name = Uuid::new_v4().to_string();
         let created_towed_rolling_stock = create_towed_rolling_stock(&app, &name, LOCKED).await;
@@ -334,7 +334,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn modify_unknown_towed_rolling_stock() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
 
         let name = Uuid::new_v4().to_string();
         let towed_rolling_stock = create_towed_rolling_stock(&app, &name, UNLOCKED).await;
@@ -350,7 +350,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn modify_towed_rolling_stock() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
 
         let name = Uuid::new_v4().to_string();
         let mut towed_rolling_stock = create_towed_rolling_stock(&app, &name, UNLOCKED).await;
@@ -375,7 +375,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn modify_lock_on_unknown_towed_rolling_stock() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
 
         let id: i64 = rand::random(); // <-- doesn't exist
         app.fetch(
@@ -388,7 +388,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn modify_locked_towed_rolling_stock_fails() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
 
         let name = Uuid::new_v4().to_string();
         let mut towed_rolling_stock = create_towed_rolling_stock(&app, &name, LOCKED).await;
@@ -405,7 +405,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn modify_locked_towed_rolling_stock_after_unlocked() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
 
         let name = Uuid::new_v4().to_string();
         let mut towed_rolling_stock = create_towed_rolling_stock(&app, &name, LOCKED).await;

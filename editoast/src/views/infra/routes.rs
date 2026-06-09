@@ -312,7 +312,7 @@ mod tests {
     use crate::views::infra::routes::RoutesFromNodesPositions;
     use crate::views::infra::routes::RoutesResponse;
     use crate::views::infra::routes::WaypointType;
-    use crate::views::test_app::TestAppBuilder;
+    use crate::views::test_app;
     use schemas::infra::BufferStop;
     use schemas::infra::Detector;
     use schemas::infra::Route;
@@ -386,7 +386,7 @@ mod tests {
             ),
         ];
 
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
 
@@ -441,7 +441,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn get_routes_should_return_routes_from_buffer_stop_and_detector() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
         let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
         let empty_infra_id = empty_infra.id;
@@ -534,7 +534,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn get_routes_should_return_empty_response() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
         let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
 

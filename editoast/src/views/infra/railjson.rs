@@ -245,14 +245,14 @@ mod tests {
     use super::*;
     use crate::fixtures::create_empty_infra;
     use crate::infra_cache::operation::create::apply_create_operation;
-    use crate::views::test_app::TestAppBuilder;
+    use crate::views::test_app;
     use schemas::infra::RAILJSON_VERSION;
     use schemas::infra::SwitchType;
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     // PostgreSQL deadlock can happen in this test, see section `Deadlock` of [DbConnectionPoolV2::get] for more information
     async fn test_get_railjson() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
         let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
 
@@ -279,7 +279,7 @@ mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     // PostgreSQL deadlock can happen in this test, see section `Deadlock` of [DbConnectionPoolV2::get] for more information
     async fn test_post_railjson() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
 
         let railjson = RailJson {

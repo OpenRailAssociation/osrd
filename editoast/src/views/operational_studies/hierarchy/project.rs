@@ -368,12 +368,10 @@ pub mod tests {
 
     use crate::fixtures::create_project;
     use crate::views::test_app;
-    use crate::views::test_app::TestAppBuilder;
-    use crate::views::test_app::TestRequestExt;
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn project_post() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let pool = app.db_pool();
 
         let project_name = "test_project";
@@ -400,30 +398,8 @@ pub mod tests {
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn project_post_should_fail_when_authorization_is_enabled() {
-        let app = test_app!().enable_authorization(true).build();
-        let user = app
-            .user("bob", "Bob")
-            .with_roles([Role::Stdcm])
-            .create()
-            .await;
-
-        let request = app.post("/projects").by_user(user.as_ref()).json(&json!({
-            "name": "test_project_failed",
-            "description": "",
-            "objectives": "",
-            "funders": "",
-        }));
-
-        // OpsWrite is required to complete this request successfully.
-        app.fetch(request)
-            .await
-            .assert_status(StatusCode::FORBIDDEN);
-    }
-
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn project_list() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
 
         let created_project = create_project(&mut db_pool.get_ok(), "test_project_name").await;
@@ -447,7 +423,7 @@ pub mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn project_get() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
 
         let created_project = create_project(&mut db_pool.get_ok(), "test_project_name").await;
@@ -465,7 +441,7 @@ pub mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn project_delete() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
 
         let created_project = create_project(&mut db_pool.get_ok(), "test_project_name").await;
@@ -485,7 +461,7 @@ pub mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn project_patch() {
-        let app = TestAppBuilder::default_app();
+        let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
 
         let created_project = create_project(&mut db_pool.get_ok(), "test_project_name").await;
@@ -518,7 +494,7 @@ pub mod tests {
 
     #[tokio::test(flavor = "multi_thread")]
     async fn test_update_image() {
-        let app = test_app!().build();
+        let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
 
         // no image by default

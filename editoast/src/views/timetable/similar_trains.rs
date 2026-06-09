@@ -456,7 +456,7 @@ mod tests {
 
     use crate::fixtures::create_fast_rolling_stock;
     use crate::views::test_app::TestApp;
-    use crate::views::test_app::TestAppBuilder;
+    use crate::views::test_app::test_app;
     use crate::views::timetable::similar_trains::trains_traffic::TrainTraffic;
 
     use super::*;
@@ -587,7 +587,8 @@ mod tests {
         app: TestApp,
     }
     async fn init_test(trains_traffic: Vec<TrainTraffic>) -> InitTestResponse {
-        let app = TestAppBuilder::new()
+        let app = test_app!()
+            .skip_authz()
             .with_trains_traffic(trains_traffic.clone())
             .build();
         let db_pool = app.db_pool();
