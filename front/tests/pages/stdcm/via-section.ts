@@ -29,8 +29,8 @@ class ViaSection extends STDCMPage {
     return this.viaCards.nth(viaNumber - 1);
   }
 
-  private getViaCH(viaNumber: number): Locator {
-    return this.getViaCard(viaNumber).getByTestId('operational-point-ch');
+  private getViaSecondaryCode(viaNumber: number): Locator {
+    return this.getViaCard(viaNumber).getByTestId('operational-point-secondary-code');
   }
 
   private getViaCI(viaNumber: number): Locator {
@@ -51,14 +51,14 @@ class ViaSection extends STDCMPage {
 
   private getViaLocators(viaNumber: number): {
     ci: Locator;
-    ch: Locator;
+    secondaryCode: Locator;
     type: Locator;
     stopTime: Locator;
     warning: Locator;
   } {
     return {
       ci: this.getViaCI(viaNumber),
-      ch: this.getViaCH(viaNumber),
+      secondaryCode: this.getViaSecondaryCode(viaNumber),
       type: this.getViaType(viaNumber),
       stopTime: this.getViaStopTime(viaNumber),
       warning: this.getViaWarning(viaNumber),
@@ -97,7 +97,7 @@ class ViaSection extends STDCMPage {
     selectedSuggestionText: string;
     defaultViaType: string;
   }): Promise<void> {
-    const { ci, ch, type } = this.getViaLocators(viaNumber);
+    const { ci, secondaryCode, type } = this.getViaLocators(viaNumber);
     const selectedSuggestion = this.getSuggestionByText(selectedSuggestionText);
 
     await this.addViaButton.nth(viaNumber - 1).click();
@@ -109,22 +109,22 @@ class ViaSection extends STDCMPage {
     await expect(selectedSuggestion).toBeVisible();
     await selectedSuggestion.click();
 
-    await expect(ch).toHaveValue(EMPTY_SELECT_VALUE);
-    await ch.selectOption(expectedChValue);
-    await expect(ch).toHaveValue(expectedChValue);
+    await expect(secondaryCode).toHaveValue(EMPTY_SELECT_VALUE);
+    await secondaryCode.selectOption(expectedChValue);
+    await expect(secondaryCode).toHaveValue(expectedChValue);
     await expect(type).toHaveValue(defaultViaType);
   }
 
   async addAndDeletedDefaultVia(defaultPassageTimeType: string): Promise<void> {
     const viaNumber = 1;
-    const { ci, ch, type } = this.getViaLocators(viaNumber);
+    const { ci, secondaryCode, type } = this.getViaLocators(viaNumber);
 
     await this.addViaButton.click();
 
     await expect(this.viaCards).toBeVisible();
     await expectFieldsToHaveValues([
       [ci, ''],
-      [ch, EMPTY_SELECT_VALUE],
+      [secondaryCode, EMPTY_SELECT_VALUE],
       [type, defaultPassageTimeType],
     ]);
 
@@ -133,7 +133,7 @@ class ViaSection extends STDCMPage {
     await this.viaDeleteButton.click();
 
     await expect(ci).toBeHidden();
-    await expect(ch).toBeHidden();
+    await expect(secondaryCode).toBeHidden();
     await expect(type).toBeHidden();
   }
 
