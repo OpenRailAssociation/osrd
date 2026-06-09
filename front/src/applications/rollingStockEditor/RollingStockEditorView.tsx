@@ -5,6 +5,8 @@ import { skipToken } from '@reduxjs/toolkit/query';
 import { useTranslation } from 'react-i18next';
 
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import GrantsManager from 'common/authorization/components/GrantsManager';
+import useAuthz from 'common/authorization/hooks/useAuthz';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { ModalProvider } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import { LoaderFill } from 'common/Loaders';
@@ -40,6 +42,9 @@ const RollingStockEditor = () => {
     return undefined;
   }, [pageMode]);
 
+  const { checkUserRole } = useAuthz();
+  const hasOperationalStudiesRole = checkUserRole(['OperationalStudies']);
+
   const [postRollingstock] = osrdEditoastApi.endpoints.postRollingStock.useMutation();
 
   const { data: selectedRollingStock, isFetching: isSelectedRollingStockLoading } =
@@ -57,8 +62,9 @@ const RollingStockEditor = () => {
     searchRollingStock,
     toggleFilter,
     selectCategoryFilter,
-    searchIsLoading,
+    isLoading,
     resetFilters,
+    userPrivilegesByRollingStockId,
   } = useFilterRollingStock();
 
   // depending on the current key of ref2scroll, scroll to the selected rolling stock card when it is opened with scrollIntoView()
@@ -133,12 +139,14 @@ const RollingStockEditor = () => {
     );
   }, [openModal, setPageMode]);
 
+  const isRollingStockReady = userPrivilegesByRollingStockId.type === 'ready';
+
   return (
     <>
       <NavBar appName={<>{t('applications.rolling-stocks-editor')}</>} />
       <div className="d-flex rollingstock-editor">
         {/*  Aside */}
-        <div className="d-flex ml-4 flex-column rollingstock-editor-left-container">
+        <div className="rollingstock-editor-left-container">
           {/* Overlay to disable the list while editing */}
           {(pageMode.type === 'create' || pageMode.type === 'edit') && (
             <div
@@ -151,26 +159,28 @@ const RollingStockEditor = () => {
             </div>
           )}
 
-          <div className="d-flex items-center mb-4 w-100 rollingstock-editor-actions">
-            <button
-              type="button"
-              className="btn btn-primary"
-              data-testid="new-rollingstock-button"
-              onClick={() => setPageMode({ type: 'create' })}
-            >
-              {t('rollingStock.addNewRollingStock')}
-            </button>
-            <button
-              type="button"
-              className="d-flex justify-content-start mb-2 py-1 px-2"
-              aria-label={t('rollingStock.importRollingStock')}
-              title={t('rollingStock.importRollingStock')}
-              onClick={openUploadFileModal}
-            >
-              <Upload className="mr-2" />
-              {t('rollingStock.importRollingStock')}
-            </button>
-          </div>
+          {hasOperationalStudiesRole && (
+            <div className="d-flex items-center mb-4 w-100 rollingstock-editor-actions">
+              <button
+                type="button"
+                className="btn btn-primary"
+                data-testid="new-rollingstock-button"
+                onClick={() => setPageMode({ type: 'create' })}
+              >
+                {t('rollingStock.addNewRollingStock')}
+              </button>
+              <button
+                type="button"
+                className="d-flex justify-content-start mb-2 py-1 px-2"
+                aria-label={t('rollingStock.importRollingStock')}
+                title={t('rollingStock.importRollingStock')}
+                onClick={openUploadFileModal}
+              >
+                <Upload className="mr-2" />
+                {t('rollingStock.importRollingStock')}
+              </button>
+            </div>
+          )}
 
           <SearchRollingStock
             filteredRollingStockList={filteredRollingStockList}
@@ -180,19 +190,23 @@ const RollingStockEditor = () => {
             selectCategoryFilter={selectCategoryFilter}
             hasWhiteBackground
           />
+
           <RollingStockEditorList
-            isLoading={searchIsLoading}
+            isLoading={isLoading}
             pageMode={pageMode}
             setPageMode={setPageMode}
             resetFilters={resetFilters}
             data={filteredRollingStockList}
             selectedRollingStock={selectedRollingStock}
             ref2scroll={ref2scroll}
+            userPrivilegesByRollingStockId={
+              isRollingStockReady ? userPrivilegesByRollingStockId.data : {}
+            }
           />
         </div>
 
         {/* Main  */}
-        <div className="d-flex flex-column pl-0 rollingstock-editor-form-container mb-3">
+        <div className="rollingstock-editor-main-container">
           {/* Create */}
           {pageMode.type === 'create' && <RollingStockEditorForm setPageMode={setPageMode} />}
           {/* Edit */}
@@ -212,18 +226,27 @@ const RollingStockEditor = () => {
             <>
               {isSelectedRollingStockLoading && <LoaderFill />}
               {selectedRollingStock && (
-                <RollingStockInformationPanel
-                  id={pageMode.rollingStockId}
-                  rollingStock={selectedRollingStock}
-                />
+                <div className={'rollingstock-editor-form'}>
+                  <RollingStockInformationPanel
+                    id={pageMode.rollingStockId}
+                    rollingStock={selectedRollingStock}
+                  />
+                  <GrantsManager
+                    resourceId={selectedRollingStock.id}
+                    resourceType="rolling_stock"
+                    userPrivileges={
+                      isRollingStockReady
+                        ? userPrivilegesByRollingStockId.data[selectedRollingStock.id]
+                        : undefined
+                    }
+                  />
+                </div>
               )}
             </>
           )}
           {/* Empty placeholder */}
           {pageMode.type === 'idle' && (
-            <p className="rollingstock-editor-unselected pt-1 px-5">
-              {t('rollingStock.chooseRollingStock')}
-            </p>
+            <p className="rollingstock-editor-unselected">{t('rollingStock.chooseRollingStock')}</p>
           )}
         </div>
       </div>

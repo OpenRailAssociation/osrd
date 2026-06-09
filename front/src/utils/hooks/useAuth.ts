@@ -38,10 +38,13 @@ function useAuth() {
   }, [isUserLogged]);
 
   useEffect(() => {
-    if (data) {
-      dispatch(updateAuthzUser(data ? { userRoles: data.roles, userId: data.id } : undefined));
+    if (impersonatedUser) {
+      dispatch(updateAuthzUser({ userRoles: impersonatedUser.roles, userId: impersonatedUser.id }));
     }
-  }, [isUserLogged, data]);
+    if (data) {
+      dispatch(updateAuthzUser({ userRoles: data.roles, userId: data.id }));
+    }
+  }, [isUserLogged, data, impersonatedUser]);
 
   /**
    * Function to impersonate the given user, or if undefined, stop the impersonation.
