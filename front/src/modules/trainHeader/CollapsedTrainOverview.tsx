@@ -18,12 +18,17 @@ import {
 export type CollapsedTrainOverviewProps = {
   train: Train;
   onExpand: () => void;
+  onItineraryOpened: () => void;
 };
 
 /**
  * A simple line that shows an overview of the key properties of a train.
  */
-const CollapsedTrainOverview = ({ train, onExpand }: CollapsedTrainOverviewProps) => {
+const CollapsedTrainOverview = ({
+  train,
+  onExpand,
+  onItineraryOpened,
+}: CollapsedTrainOverviewProps) => {
   const { t } = useTranslation(['operational-studies', 'translation']);
   const dateTimeLocale = useDateTimeLocale();
 
@@ -68,9 +73,8 @@ const CollapsedTrainOverview = ({ train, onExpand }: CollapsedTrainOverviewProps
         <Button
           label={t('manageTrainSchedule.trainHeader.itinerary')}
           variant="Quiet"
-          onClick={() => {}}
+          onClick={onItineraryOpened}
           size="small"
-          isDisabled
         />
       </div>
       <button className="header-toggle" onClick={() => onExpand()}>

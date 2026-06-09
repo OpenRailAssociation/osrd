@@ -1,23 +1,28 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
 import { useTranslation } from 'react-i18next';
 
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import { updateTrainSchedule } from 'applications/operationalStudies/views/Scenario/components/ManageTrainSchedule/hooks/useUpdateTrainSchedule';
+import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/views/Scenario/consts';
 import type { TrainScheduleResponse } from 'common/api/osrdEditoastApi';
 import type { PacedTrainWithDetails } from 'modules/trainSchedule/types';
 import { setFailure } from 'reducers/main';
-import type { Train } from 'reducers/osrdconf/types';
+import { selectTrainToEdit } from 'reducers/osrdconf/operationalStudiesConf';
+import type { Train, TrainScheduleToEditData } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 import { extractEditoastIdFromTrainId, isOccurrenceId } from 'utils/trainId';
 
 import CollapsedTrainOverview from './CollapsedTrainOverview';
 import ExpandedTrainForm from './ExpandedTrainForm';
+import { applyOccurrenceOnPacedTrain } from './utils/applyOccurrenceOnPacedTrain';
 
 export type TrainHeaderProps = {
   train: Train;
   trainSchedulesWithDetails: PacedTrainWithDetails[];
   upsertTrainSchedules: (trainSchedules: TrainScheduleResponse[]) => void;
+  setDisplayTrainScheduleManagement: (type: string) => void;
+  setTrainScheduleToEditData: (trainScheduleToEditData?: TrainScheduleToEditData) => void;
 };
 
 /**
@@ -29,6 +34,8 @@ const TrainHeader = ({
   train,
   trainSchedulesWithDetails,
   upsertTrainSchedules,
+  setDisplayTrainScheduleManagement,
+  setTrainScheduleToEditData,
 }: TrainHeaderProps) => {
   const [expanded, setExpanded] = useState(false);
   const { t } = useTranslation(['operational-studies']);
@@ -72,6 +79,23 @@ const TrainHeader = ({
     }
   };
 
+  const onItineraryOpened = useCallback(() => {
+    dispatch(
+      selectTrainToEdit({
+        trainSchedule: occurrenceId
+          ? applyOccurrenceOnPacedTrain(originalPacedTrain, train, occurrenceId)
+          : originalPacedTrain,
+        isOccurrence: !!occurrenceId,
+      })
+    );
+    setTrainScheduleToEditData({
+      trainScheduleId,
+      originalPacedTrain: originalPacedTrain ?? train,
+      occurrenceId,
+    });
+    setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.edit);
+  }, [train, originalPacedTrain, trainScheduleId, occurrenceId]);
+
   if (expanded) {
     return (
       <ExpandedTrainForm
@@ -81,6 +105,7 @@ const TrainHeader = ({
           setExpanded(false);
         }}
         onPersistTrain={onPersistTrain}
+        onItineraryOpened={onItineraryOpened}
       />
     );
   }
@@ -91,6 +116,7 @@ const TrainHeader = ({
       onExpand={() => {
         setExpanded(true);
       }}
+      onItineraryOpened={onItineraryOpened}
     />
   );
 };

@@ -25,6 +25,7 @@ import TimeStopsTableWrapper from 'modules/timesStops/TimeStopsTableWrapper';
 import TrainHeader from 'modules/trainHeader/TrainHeader';
 import { findExceptionWithOccurrenceId } from 'modules/trainSchedule/helpers/pacedTrain';
 import type { TrainScheduleWithDetails } from 'modules/trainSchedule/types';
+import type { TrainScheduleToEditData } from 'reducers/osrdconf/types';
 import { toggleDisplayOnlyPathSteps, updateSelectedTrain } from 'reducers/simulationResults';
 import {
   getDisplayOnlyPathSteps,
@@ -56,6 +57,8 @@ type SimulationResultsProps = {
   activeBoards: Set<Board>;
   updateTrainScheduleDepartureTime: (trainId: number, newDepartureTime: Date) => Promise<void>;
   upsertTrainSchedules: (trainSchedules: TrainScheduleResponse[]) => void;
+  setDisplayTrainScheduleManagement: (type: string) => void;
+  setTrainScheduleToEditData: (trainScheduleToEditData?: TrainScheduleToEditData) => void;
 };
 
 const SimulationResults = ({
@@ -67,6 +70,8 @@ const SimulationResults = ({
   activeBoards,
   updateTrainScheduleDepartureTime,
   upsertTrainSchedules,
+  setTrainScheduleToEditData,
+  setDisplayTrainScheduleManagement,
 }: SimulationResultsProps) => {
   const { t } = useTranslation('operational-studies');
   const dispatch = useAppDispatch();
@@ -369,6 +374,8 @@ const SimulationResults = ({
                 train={simulationResults.train}
                 trainSchedulesWithDetails={trainSchedulesWithDetails}
                 upsertTrainSchedules={upsertTrainSchedules}
+                setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
+                setTrainScheduleToEditData={setTrainScheduleToEditData}
               />
             }
             customFooter={
