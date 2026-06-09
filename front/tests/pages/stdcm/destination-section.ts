@@ -7,7 +7,7 @@ import STDCMPage from './stdcm-page';
 
 class DestinationSection extends STDCMPage {
   readonly destinationCiField: Locator;
-  readonly destinationChField: Locator;
+  readonly destinationSecondaryCodeField: Locator;
   readonly destinationArrival: Locator;
   readonly dateDestinationArrival: Locator;
   readonly timeDestinationArrival: Locator;
@@ -19,7 +19,9 @@ class DestinationSection extends STDCMPage {
   constructor(page: Page) {
     super(page);
     this.destinationCiField = this.destinationCard.getByTestId('operational-point-ci');
-    this.destinationChField = this.destinationCard.getByTestId('operational-point-ch');
+    this.destinationSecondaryCodeField = this.destinationCard.getByTestId(
+      'operational-point-secondary-code'
+    );
     this.destinationArrival = page.getByTestId('select-destination-arrival');
     this.dateDestinationArrival = page.getByTestId('date-destination-arrival-input');
     this.timeDestinationArrival = page.getByTestId('time-destination-arrival-input');
@@ -91,7 +93,7 @@ class DestinationSection extends STDCMPage {
   async verifyDefaultDestinationFields(defaultArrivalType: string): Promise<void> {
     await expectFieldsToHaveValues([
       [this.destinationCiField, ''],
-      [this.destinationChField, EMPTY_SELECT_VALUE],
+      [this.destinationSecondaryCodeField, EMPTY_SELECT_VALUE],
       [this.destinationArrival, defaultArrivalType],
     ]);
   }
@@ -122,8 +124,8 @@ class DestinationSection extends STDCMPage {
       expectedSuggestions: southSuggestions,
     });
 
-    await this.destinationChField.selectOption(chValue);
-    await expect(this.destinationChField).toHaveValue(chValue);
+    await this.destinationSecondaryCodeField.selectOption(chValue);
+    await expect(this.destinationSecondaryCodeField).toHaveValue(chValue);
     await expect(this.destinationArrival).toHaveValue(arrivalType.default);
 
     await this.launchSimulationButton.click();
@@ -170,8 +172,8 @@ class DestinationSection extends STDCMPage {
       expectedSuggestions: southSuggestions,
     });
 
-    await this.destinationChField.selectOption(chValue);
-    await expect(this.destinationChField).toHaveValue(chValue);
+    await this.destinationSecondaryCodeField.selectOption(chValue);
+    await expect(this.destinationSecondaryCodeField).toHaveValue(chValue);
     await expect(this.destinationArrival).toHaveValue(arrivalType);
   }
 
@@ -186,7 +188,7 @@ class DestinationSection extends STDCMPage {
   }): Promise<void> {
     await expectFieldsToHaveValues([
       [this.destinationCiField, expectedCiValue],
-      [this.destinationChField, chValue],
+      [this.destinationSecondaryCodeField, chValue],
       [this.destinationArrival, updatedArrivalType],
     ]);
   }

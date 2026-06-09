@@ -10,7 +10,7 @@ import type {
 import STDCMPage from './stdcm-page';
 
 class OriginSection extends STDCMPage {
-  readonly originChField: Locator;
+  readonly originSecondaryCodeField: Locator;
   readonly originCiField: Locator;
   readonly dateOriginArrival: Locator;
   readonly originArrival: Locator;
@@ -19,7 +19,7 @@ class OriginSection extends STDCMPage {
 
   constructor(page: Page) {
     super(page);
-    this.originChField = this.originCard.getByTestId('operational-point-ch');
+    this.originSecondaryCodeField = this.originCard.getByTestId('operational-point-secondary-code');
     this.originCiField = this.originCard.getByTestId('operational-point-ci');
     this.originArrival = page.getByTestId('select-origin-arrival');
     this.dateOriginArrival = page.getByTestId('date-origin-arrival-input');
@@ -53,7 +53,7 @@ class OriginSection extends STDCMPage {
     tolerance,
   }: DefaultOriginFields): Promise<void> {
     await expect(this.originCiField).toHaveValue('');
-    await expect(this.originChField).toHaveValue(EMPTY_SELECT_VALUE);
+    await expect(this.originSecondaryCodeField).toHaveValue(EMPTY_SELECT_VALUE);
     await expect(this.originArrival).toHaveValue(arrivalType);
     await expect(this.dateOriginArrival).toHaveValue(arrivalDate);
     await expect(this.timeOriginArrival).toHaveValue(arrivalTime);
@@ -71,7 +71,7 @@ class OriginSection extends STDCMPage {
     } = expectedDetails;
 
     await expect(this.originCiField).toHaveValue(originCi);
-    await expect(this.originChField).toHaveValue(originCh);
+    await expect(this.originSecondaryCodeField).toHaveValue(originCh);
     await expect(this.originArrival).toHaveValue(originArrival);
     await expect(this.dateOriginArrival).toHaveValue(dateOriginArrival);
     await expect(this.timeOriginArrival).toHaveValue(timeOriginArrival);
@@ -97,16 +97,16 @@ class OriginSection extends STDCMPage {
       expectedSuggestions,
     });
 
-    await expect(this.originChField).toHaveValue(EMPTY_SELECT_VALUE);
+    await expect(this.originSecondaryCodeField).toHaveValue(EMPTY_SELECT_VALUE);
     await expect(this.originArrival).toHaveValue(arrivalType.default);
     await expect(this.dateOriginArrival).toHaveValue(arrivalDate);
     await expect(this.timeOriginArrival).toHaveValue(arrivalTime);
     await expect(this.toleranceOriginArrival).toHaveValue(tolerance);
 
-    await this.originChField.selectOption(chValue);
-    await expect(this.originChField).toHaveValue(chValue);
-    await this.originChField.selectOption(updatedChValue);
-    await expect(this.originChField).toHaveValue(updatedChValue);
+    await this.originSecondaryCodeField.selectOption(chValue);
+    await expect(this.originSecondaryCodeField).toHaveValue(chValue);
+    await this.originSecondaryCodeField.selectOption(updatedChValue);
+    await expect(this.originSecondaryCodeField).toHaveValue(updatedChValue);
 
     await this.originArrival.selectOption(arrivalType.updated);
     await expect(this.originArrival).toHaveValue(arrivalType.updated);
@@ -139,8 +139,8 @@ class OriginSection extends STDCMPage {
       expectedSuggestions,
     });
 
-    await this.originChField.selectOption(chValue);
-    await expect(this.originChField).toHaveValue(chValue);
+    await this.originSecondaryCodeField.selectOption(chValue);
+    await expect(this.originSecondaryCodeField).toHaveValue(chValue);
 
     if (isPrecise && arrivalTypeOverride) {
       await this.originArrival.selectOption(arrivalTypeOverride);

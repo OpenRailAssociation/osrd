@@ -176,7 +176,7 @@ const StdcmOperationalPoint = ({
         <Select
           label={t('trainPath.ch')}
           id={`${pathStepId}-ch`}
-          data-testid="operational-point-ch"
+          data-testid="operational-point-secondary-code"
           value={operationalPoint?.secondaryCode ? operationalPoint : undefined}
           onChange={handleChSelect}
           options={chSuggestions}
