@@ -6,6 +6,7 @@ import type {
   LightRollingStockWithLiveries,
   RollingStockWithLiveries,
 } from 'common/api/osrdEditoastApi';
+import type { Privilege } from 'common/authorization/types';
 import { Loader } from 'common/Loaders';
 import { RollingStockCard } from 'modules/rollingStock/components/RollingStockCard';
 
@@ -20,6 +21,7 @@ type RollingStockEditorListProps = {
   resetFilters: () => void;
   ref2scroll: RefObject<HTMLInputElement | null>;
   selected?: RollingStockWithLiveries;
+  userPrivilegesByRollingStockId: Record<number, Set<Privilege>>;
 };
 
 export const RollingStockEditorList = ({
@@ -30,6 +32,7 @@ export const RollingStockEditorList = ({
   resetFilters,
   ref2scroll,
   selected,
+  userPrivilegesByRollingStockId,
 }: RollingStockEditorListProps) => {
   const { t } = useTranslation();
 
@@ -66,6 +69,7 @@ export const RollingStockEditorList = ({
                     isCondensed
                     rollingStock={selected}
                     resetFilters={resetFilters}
+                    userPrivileges={userPrivilegesByRollingStockId[rs.id] || new Set()}
                   />
                 )}
               </div>
