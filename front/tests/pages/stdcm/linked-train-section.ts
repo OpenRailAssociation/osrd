@@ -125,7 +125,7 @@ class LinkedTrainSection extends STDCMPage {
 
     await expectFieldsToHaveValues([
       [this.originPage.originCiField, originCi],
-      [this.originPage.originChField, originCh],
+      [this.originPage.originSecondaryCodeField, originCh],
       [this.originPage.originArrival, originArrival],
       [this.originPage.dateOriginArrival, dateOriginArrival],
       [this.originPage.timeOriginArrival, timeOriginArrival],
@@ -165,7 +165,7 @@ class LinkedTrainSection extends STDCMPage {
 
     await expectFieldsToHaveValues([
       [this.destinationPage.destinationCiField, destinationCi],
-      [this.destinationPage.destinationChField, destinationCh],
+      [this.destinationPage.destinationSecondaryCodeField, destinationCh],
       [this.destinationPage.destinationArrival, destinationArrival],
       [this.destinationPage.dateDestinationArrival, dateDestinationArrival],
       [this.destinationPage.timeDestinationArrival, timeDestinationArrival],
