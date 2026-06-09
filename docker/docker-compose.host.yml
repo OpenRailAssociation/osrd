@@ -48,7 +48,7 @@ services:
       S3_ENDPOINT_URL: http://127.0.0.1:9900
       S3_BUCKET_NAME: osrd
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:8090/health" ]
+      test: [ "CMD", "curl", "-f", "-H", "x-osrd-skip-authz: true", "http://localhost:8090/health" ]
 
   gateway:
     ports: !reset []

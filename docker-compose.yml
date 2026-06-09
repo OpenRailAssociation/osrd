@@ -200,7 +200,7 @@ services:
         editoast roles add 'mock/mocked' Admin &&
         exec editoast runserver"
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost/health" ]
+      test: [ "CMD", "curl", "-f", "-H", "x-osrd-skip-authz: true", "http://localhost/health" ]
       start_period: 4s
       interval: 5s
       retries: 6

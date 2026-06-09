@@ -33,7 +33,6 @@ use editoast_models::Infra;
 use editoast_models::RollingStock;
 use editoast_models::User;
 use editoast_models::prelude::*;
-use itertools::Either;
 use itertools::Itertools;
 use serde::Deserialize;
 use serde::Serialize;
@@ -128,9 +127,9 @@ pub(in crate::views) struct WhoamiResponse {
 pub(in crate::views) async fn whoami(
     Extension(roles): Extension<Vec<authz::Role>>,
     Extension(user): Extension<Option<editoast_models::User>>,
-    Extension(authn): Extension<crate::authentication::Authentication>,
+    Extension(authn): Extension<crate::authentication::Mode>,
 ) -> Result<Json<WhoamiResponse>> {
-    let skip = matches!(authn, crate::authentication::Authentication::Skip { .. });
+    let skip = matches!(authn, crate::authentication::Mode::Skip { .. });
     if let Some(editoast_models::User { id, name }) = user {
         let mut roles = HashSet::from_iter(roles);
         // Authorization is skipped by header, but identity headers are provided so we could fetch
@@ -346,13 +345,10 @@ pub(in crate::views) async fn user_privileges(
     }): State<AppState>,
     Extension(user): Extension<Option<authz::User>>,
     Extension(roles): Extension<Vec<Role>>,
-    Extension(authn): Extension<crate::authentication::Authentication>,
+    Extension(authn): Extension<crate::authentication::Mode>,
     Json(resources_ids): Json<HashMap<ResourceType, Vec<i64>>>,
 ) -> Result<Json<HashMap<ResourceType, Vec<ResourcePrivileges>>>> {
-    if matches!(
-        authn,
-        crate::authentication::Authentication::Unauthenticated
-    ) {
+    if matches!(authn, crate::authentication::Mode::Unauthenticated) {
         return Err(AuthorizationError::Unauthorized.into());
     }
 
@@ -427,10 +423,7 @@ pub(in crate::views) async fn user_privileges(
         }
     } else {
         // Authorization is skipped by header, everyone has full access
-        debug_assert!(matches!(
-            authn,
-            crate::authentication::Authentication::Skip { .. }
-        ));
+        debug_assert!(matches!(authn, crate::authentication::Mode::Skip { .. }));
 
         let privileges = HashSet::from([
             StandardPrivilege::CanRead,
@@ -754,9 +747,7 @@ pub(in crate::views) async fn update_grants(
         db_pool, regulator, ..
     }): State<AppState>,
     Extension(auth): AuthenticationExt,
-    Extension(user): Extension<Option<authz::User>>,
-    Extension(roles): Extension<Vec<Role>>,
-    Extension(authn): Extension<crate::authentication::Authentication>,
+    Extension(authenticated_user): Extension<crate::authentication::State>,
     Json(body): Json<BodyUpdateGrants>,
 ) -> Result<impl IntoResponse> {
     // Fetch subjects from the database and determine whether they're a user or a group.
@@ -843,33 +834,8 @@ pub(in crate::views) async fn update_grants(
                 .map(|r| r.into_protected(&subjects))
                 .process_results(|iter| authz::v2::Protected::from_iter(iter))?;
 
-            // TODO: make an Extension to simplify this logic
-            let authorizer = match (authn, user) {
-                (
-                    crate::authentication::Authentication::Authenticated { .. }
-                    | crate::authentication::Authentication::Impersonating { .. },
-                    Some(user),
-                ) => Either::Left(UserAuthorizer::new(
-                    user,
-                    roles.clone(),
-                    regulator.openfga(),
-                    db_pool.get().await?,
-                )),
-                (crate::authentication::Authentication::Skip { .. }, _) => {
-                    Either::Right(SystemAuthorizer {
-                        openfga: regulator.openfga(),
-                        conn: db_pool.get().await?,
-                    })
-                }
-                (crate::authentication::Authentication::Unauthenticated, None) => {
-                    return Err(AuthorizationError::Unauthorized.into());
-                }
-                _ => {
-                    unreachable!(
-                        "Authenticated | Impersonating implies Some(user) and Unauthenticated implies None"
-                    );
-                }
-            };
+            let authorizer =
+                authenticated_user.authorizer(regulator.openfga(), db_pool.get().await?);
 
             match prot.authorize(&authorizer).await?.access().await? {
                 Ok(_) => Ok(StatusCode::NO_CONTENT),

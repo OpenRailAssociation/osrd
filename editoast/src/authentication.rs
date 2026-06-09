@@ -1,3 +1,9 @@
+use authz::Role;
+
+use crate::authorizers::SystemAuthorizer;
+use crate::authorizers::UserAuthorizer;
+use crate::views::AuthorizationError;
+
 /// Editoast authentication states
 ///
 /// Represents all valid user states for editoast interactions. The values are
@@ -6,7 +12,7 @@
 ///
 /// The values are **not validated by the builder**.
 #[derive(Debug, Clone)]
-pub enum Authentication {
+pub enum Mode {
     Unauthenticated,
     Authenticated {
         identity: String,
@@ -31,7 +37,7 @@ pub struct AuthenticationParameters {
     pub skip: bool,
 }
 
-impl Authentication {
+impl Mode {
     #[tracing::instrument(name = "authentication request")]
     pub fn try_new(params: AuthenticationParameters) -> Result<Self, AuthenticationParameters> {
         let authn = match params {
@@ -65,5 +71,57 @@ impl Authentication {
             params => return Err(params),
         };
         Ok(authn)
+    }
+}
+
+#[derive(Debug, Clone)]
+pub enum State {
+    Skip {
+        #[expect(unused)]
+        user: Option<authz::User>,
+        #[expect(unused)]
+        roles: Vec<Role>,
+    },
+    Authenticated {
+        user: authz::User,
+        roles: Vec<Role>,
+    },
+}
+
+impl State {
+    pub fn authorizer<'a>(
+        &self,
+        openfga: &'a fga::Client,
+        conn: database::DbConnection,
+    ) -> itertools::Either<UserAuthorizer<'a>, SystemAuthorizer<'a>> {
+        match self {
+            State::Authenticated { user, roles } => {
+                itertools::Either::Left(UserAuthorizer::new(*user, roles.clone(), openfga, conn))
+            }
+            State::Skip { .. } => itertools::Either::Right(SystemAuthorizer {
+                openfga,
+                conn: conn.clone(),
+            }),
+        }
+    }
+
+    /// Builds the authentication [State] from a parsed [Mode] and the user already
+    /// resolved by the middleware (DB querying happens there, not here).
+    ///
+    /// `user` is expected to be `Some` for [Mode::Authenticated] and
+    /// [Mode::Impersonating] (in which case it is the impersonated user).
+    pub fn try_new(
+        mode: Mode,
+        user: Option<authz::User>,
+        roles: Vec<Role>,
+    ) -> Result<Self, AuthorizationError> {
+        match mode {
+            Mode::Unauthenticated => Err(AuthorizationError::Unauthorized),
+            Mode::Authenticated { .. } | Mode::Impersonating { .. } => {
+                let user = user.expect("providing the request user is required when Mode::Authenticated or Mode::Impersonating");
+                Ok(State::Authenticated { user, roles })
+            }
+            Mode::Skip { .. } => Ok(State::Skip { user, roles }),
+        }
     }
 }

@@ -339,7 +339,7 @@ struct SearchDBResult {
 pub(in crate::views) async fn search(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(roles): Extension<Vec<authz::Role>>,
-    Extension(authn): Extension<crate::authentication::Authentication>,
+    Extension(authn): Extension<crate::authentication::Mode>,
     Query(PaginationQueryParams { page, page_size }): Query<PaginationQueryParams<1000>>,
     Json(SearchPayload { object, query, dry }): Json<SearchPayload>,
 ) -> Result<Json<serde_json::Value>> {
@@ -357,7 +357,7 @@ pub(in crate::views) async fn search(
     };
 
     if let Some(required_role) = required_role
-        && !matches!(authn, crate::authentication::Authentication::Skip { .. })
+        && !matches!(authn, crate::authentication::Mode::Skip { .. })
         && !roles.contains(&required_role)
         && !roles.contains(&Role::Admin)
     {

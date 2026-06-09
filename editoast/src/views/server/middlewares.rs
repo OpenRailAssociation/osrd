@@ -49,7 +49,7 @@ pub(in crate::views) async fn authentication_extraction_middleware(
     });
     let skip_authz = headers.contains_key(SKIP_AUTHZ);
 
-    let authn = crate::authentication::Authentication::try_new(AuthenticationParameters {
+    let authn = crate::authentication::Mode::try_new(AuthenticationParameters {
         identity,
         name,
         impersonate,
@@ -85,9 +85,9 @@ pub(in crate::views) async fn authentication_extraction_middleware(
 /// - the impersonator must be an admin
 /// - the impersonated user must already exist in the database, we do not create it if it does not
 /// - push the roles of the origin user in the request extensions
-#[tracing::instrument(skip_all, fields(user.id, user.name, user.roles))]
+#[tracing::instrument(skip_all, fields(user.id, user.name, user.roles, authz.state))]
 pub(in crate::views) async fn authentication_validation_middleware(
-    Extension(authn): Extension<crate::authentication::Authentication>,
+    Extension(authn): Extension<crate::authentication::Mode>,
     State(AppState {
         db_pool, regulator, ..
     }): State<AppState>,
@@ -158,8 +158,8 @@ pub(in crate::views) async fn authentication_validation_middleware(
     }
 
     let (user, roles_prot) = match &authn {
-        crate::authentication::Authentication::Authenticated { identity, name }
-        | crate::authentication::Authentication::Skip {
+        crate::authentication::Mode::Authenticated { identity, name }
+        | crate::authentication::Mode::Skip {
             identity: Some(identity),
             name: Some(name),
         } => {
@@ -176,7 +176,7 @@ pub(in crate::views) async fn authentication_validation_middleware(
             })
             .await?
         }
-        crate::authentication::Authentication::Impersonating {
+        crate::authentication::Mode::Impersonating {
             impersonator_identity,
             impersonator_name,
             impersonated_identity,
@@ -215,9 +215,9 @@ pub(in crate::views) async fn authentication_validation_middleware(
             })
             .await?
         }
-        crate::authentication::Authentication::Unauthenticated
-        | crate::authentication::Authentication::Skip { .. } => {
-            (None, ::authz::v2::Protected::default())
+        crate::authentication::Mode::Skip { .. } => (None, ::authz::v2::Protected::default()),
+        crate::authentication::Mode::Unauthenticated => {
+            return Err(AuthorizationError::Unauthorized.into());
         }
     };
 
@@ -236,6 +236,15 @@ pub(in crate::views) async fn authentication_validation_middleware(
     span.record("user.roles", tracing::field::debug(&roles));
     span.record("user.is_admin", roles.contains(&Role::Admin));
 
+    let authz_user = user
+        .as_ref()
+        .map(|editoast_models::User { id, .. }| ::authz::User(*id));
+    let state = crate::authentication::State::try_new(authn, authz_user, roles.clone())?;
+    span.record("authz.state", tracing::field::debug(&state));
+
+    req.extensions_mut().insert(state);
+    // TODO: the following extensions are kept for the handlers and middlewares that
+    // haven't been migrated to `authentication::State` yet. To be removed in a follow-up PR.
     let user_id = user.as_ref().map(|editoast_models::User { id, .. }| *id);
     req.extensions_mut().insert(roles);
     // for `fga` queries and `authz` interface

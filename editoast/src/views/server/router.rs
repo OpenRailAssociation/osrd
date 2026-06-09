@@ -137,7 +137,7 @@ impl DocumentedRouter {
         let method_router = if let Some(required_role) = required_role {
             method_router.route_layer(axum::middleware::from_fn(
                 move |Extension(roles): Extension<Vec<authz::Role>>,
-                      Extension(authn): Extension<crate::authentication::Authentication>,
+                      Extension(authn): Extension<crate::authentication::Mode>,
                       req: axum::extract::Request,
                       next: axum::middleware::Next| {
                     verify_role(required_role, roles, authn, req, next)
@@ -173,12 +173,12 @@ impl DocumentedRouter {
 async fn verify_role(
     required_role: authz::Role,
     roles: Vec<authz::Role>,
-    authn: crate::authentication::Authentication,
+    authn: crate::authentication::Mode,
     req: axum::extract::Request,
     next: axum::middleware::Next,
 ) -> axum::response::Response {
     match (authn, roles) {
-        (crate::authentication::Authentication::Skip { .. }, _) => {
+        (crate::authentication::Mode::Skip { .. }, _) => {
             tracing::Span::current().record("decision", "skip");
             next.run(req).await
         }
