@@ -1,5 +1,4 @@
 .rollingstock-editor {
-  padding-top: 80px;
   max-height: calc(100dvh - var(--header-height));
 
   &-list {
@@ -8,15 +7,6 @@
 
     .rollingstock-body-container-img {
       min-height: 38.4px;
-    }
-
-    &-cards {
-      .active {
-        .rollingstock-card-header,
-        .rollingstock-footer {
-          cursor: default;
-        }
-      }
     }
 
     .rolling-stock-card-container {
@@ -55,15 +45,12 @@
   }
 
   &-form {
+    align-self: center;
     height: 100%;
-    width: 100%;
     justify-content: space-between;
     max-height: 88vh;
-    overflow-y: scroll;
-
-    width: 100%;
-    align-self: center;
     overflow: auto;
+    width: 100%;
 
     > .rollingstock-card-header {
       @media screen and (min-width: 1140px) {
@@ -142,47 +129,23 @@
       }
     }
 
-    &-container {
-      height: 100%;
+    .tab-content {
+      background-color: var(--white);
+      border-radius: 8px;
+    }
 
-      .tab-content {
-        background-color: var(--white);
-        border-radius: 8px;
-      }
-
-      .tab-pane {
-        padding-top: 16px;
-      }
-
-      .tabs {
-        margin-bottom: 16px;
-      }
-
-      overflow-y: auto;
-      width: 100%;
-
-      @media screen and (min-width: 767px) {
-        padding-right: 24px;
-        width: 50%;
-        position: fixed;
-        right: 0;
-        top: 80px;
-      }
-
-      @media screen and (min-width: 1140px) {
-        width: 60%;
-      }
+    .tab-pane {
+      padding-top: 16px;
     }
   }
 
-  &borders {
-    border: 3.2px solid #d7d7d7;
-    border-radius: 8px;
-  }
-
   &-left-container {
-    width: 94%;
+    display: flex;
+    flex-direction: column;
+    margin-left: 24px;
     padding-right: 24px;
+    padding-top: 80px;
+    width: 94%;
 
     @media screen and (min-width: 767px) {
       width: 45%;
@@ -193,9 +156,28 @@
     }
   }
 
+  &-main-container {
+    max-width: 60%;
+    padding: 40px 24px 24px 20px;
+    flex-grow: 1;
+
+    .grant-manager {
+      margin: 24px 0 0 0;
+      padding: 16px 0;
+      border-top: 1px solid var(--grey20);
+
+      .grant-manager-body {
+        margin: 16px 24px 0 24px;
+        padding: 16px;
+      }
+    }
+  }
+
   &-unselected {
     margin: 0 auto;
     display: none;
+    text-align: center;
+    margin-top: 44px;
 
     @media screen and (min-width: 767px) {
       display: block;

@@ -32,7 +32,7 @@ function RollingStockModal({
     searchRollingStock,
     toggleFilter,
     selectCategoryFilter,
-    searchIsLoading,
+    isLoading,
   } = useFilterRollingStock();
 
   useEffect(() => {
@@ -81,7 +81,7 @@ function RollingStockModal({
           />
         </div>
         <div className="rollingstock-search-list">
-          {searchIsLoading ? <Loader msg={t('rollingStock.waitingLoader')} /> : rollingStocksList}
+          {isLoading ? <Loader msg={t('rollingStock.waitingLoader')} /> : rollingStocksList}
         </div>
       </div>
     </ModalBodySNCF>
