@@ -8,6 +8,7 @@ use super::utils::*;
 use crate::generate_routes;
 use crate::generate_signals;
 use crate::operational_point::operational_points;
+use crate::signal::signals;
 use crate::switch_and_buffer_stop::switches_and_buffer_stops;
 use schemas::infra::RailJson;
 

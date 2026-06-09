@@ -2,18 +2,12 @@ use geo_types::Coord;
 use osm4routing::Distance;
 use osm4routing::Edge;
 use osm4routing::NodeId;
-use osm4routing::osmpbfreader::Node;
 use schemas::infra::ApplicableDirections;
 use schemas::infra::ApplicableDirectionsTrackRange;
 use schemas::infra::Detector;
-use schemas::infra::Direction;
 use schemas::infra::Electrification;
 use schemas::infra::Endpoint;
-use schemas::infra::LogicalSignal;
-use schemas::infra::Side;
 use schemas::infra::Signal;
-use schemas::infra::SignalExtensions;
-use schemas::infra::SignalSncfExtension;
 use schemas::infra::Speed;
 use schemas::infra::SpeedSection;
 use schemas::infra::TrackEndpoint;
@@ -129,24 +123,6 @@ fn angle(o: Coord, a: Coord, b: Coord) -> f64 {
     ((a.y - o.y).atan2(a.x - o.x).to_degrees() - (b.y - o.y).atan2(b.x - o.x).to_degrees()).abs()
 }
 
-fn direction(node: &osm4routing::osmpbfreader::Node) -> Direction {
-    let direction_tag = node
-        .tags
-        .get("railway:signal:direction")
-        .map(|tag| tag.as_str())
-        .unwrap_or("forward");
-    if direction_tag == "forward" || direction_tag == "both" {
-        Direction::StartToStop
-    } else {
-        Direction::StopToStart
-    }
-}
-
-fn main_signal(node: &osm4routing::osmpbfreader::OsmObj) -> bool {
-    node.tags().contains_key("railway:signal:main")
-        || node.tags().contains_key("railway:signal:combined")
-}
-
 /// When reading OpenStreetMap data, we sometimes need to match a Node to a Track and position
 /// This struct maps the nodes to the Edges (a Way from OpenStreetMap that might have been split)
 pub(crate) struct NodeToTrack<'a> {
@@ -186,53 +162,6 @@ impl<'a> NodeToTrack<'a> {
             ))
         })
     }
-}
-
-pub(crate) fn signals(
-    osm_pbf_in: &std::path::PathBuf,
-    nodes_to_tracks: &NodeToTrack,
-    adjacencies: &HashMap<osm4routing::NodeId, NodeAdjacencies>,
-) -> Vec<Signal> {
-    let file = std::fs::File::open(osm_pbf_in).unwrap();
-    let mut pbf = osm4routing::osmpbfreader::OsmPbfReader::new(file);
-    pbf.iter()
-        .flatten()
-        .filter(main_signal)
-        .flat_map(|obj| match obj {
-            osm4routing::osmpbfreader::OsmObj::Node(node) => Some(node),
-            _ => None,
-        })
-        .filter(|node| adjacencies.get(&node.id).map_or(0, |adj| adj.edges.len()) != 1) // Ignore all the nodes that are at the end of a track, as it will be buffer stops
-        .flat_map(|node| {
-            if let Some((track, position, _local_ref)) = nodes_to_tracks.track_and_position(node.id)
-            {
-                let mut settings = HashMap::new();
-                settings.insert("Nf".into(), "true".into());
-
-                let mut default_parameters = HashMap::new();
-                default_parameters.insert("jaune_cli".into(), "false".into());
-
-                Some(Signal {
-                    id: node.id.0.to_string().into(),
-                    direction: direction(&node),
-                    track,
-                    position,
-                    sight_distance: 400.,
-                    logical_signals: vec![LogicalSignal {
-                        signaling_system: "BAL".to_string(),
-                        settings,
-                        default_parameters,
-                        ..Default::default()
-                    }],
-                    extensions: SignalExtensions {
-                        sncf: Some(sncf_extensions(&node)),
-                    },
-                })
-            } else {
-                None
-            }
-        })
-        .collect()
 }
 
 pub(crate) fn speed_sections(edge: &Edge) -> Vec<SpeedSection> {
@@ -307,33 +236,6 @@ fn speed_section(edge: &Edge, limit: &String, dir: ApplicableDirections) -> Opti
         )],
         ..Default::default()
     })
-}
-
-fn sncf_extensions(node: &Node) -> SignalSncfExtension {
-    let label = node
-        .tags
-        .get("ref")
-        .map(|r| r.as_str())
-        .unwrap_or_default()
-        .into();
-    let side = node
-        .tags
-        .get("railway:signal:position")
-        .map(|s| {
-            if s == "left" {
-                Side::Left
-            } else if s == "right" {
-                Side::Right
-            } else {
-                Side::Center
-            }
-        })
-        .unwrap_or_default();
-    SignalSncfExtension {
-        label,
-        side,
-        ..Default::default()
-    }
 }
 
 /// Builds a detector that is located on the same position as the signal
