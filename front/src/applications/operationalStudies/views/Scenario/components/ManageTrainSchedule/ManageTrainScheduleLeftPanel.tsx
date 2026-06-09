@@ -50,7 +50,12 @@ const ManageTrainScheduleLeftPanel = ({
   const { openModal, closeModal } = useModal();
 
   const [isWorking, setIsWorking] = useState(false);
-  const [itineraryModalIsOpen, setItineraryModalIsOpen] = useState(false);
+  const [itineraryModalIsOpen, setItineraryModalIsOpen] = useState(
+    displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.add ||
+      displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.edit ||
+      displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.itinerary
+  );
+  const [itineraryChanged, setItineraryChanged] = useState(false);
 
   const leaveManageTrainSchedule = () => {
     setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.none);
@@ -79,12 +84,16 @@ const ManageTrainScheduleLeftPanel = ({
 
   useEffect(() => {
     if (
-      displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.add ||
-      displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.edit
+      displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.itinerary &&
+      !itineraryModalIsOpen
     ) {
-      setItineraryModalIsOpen(true);
+      if (itineraryChanged) {
+        updateTimetable();
+      } else {
+        leaveManageTrainSchedule();
+      }
     }
-  }, [displayTrainScheduleManagement]);
+  }, [displayTrainScheduleManagement, itineraryModalIsOpen, itineraryChanged]);
 
   return (
     <div className="scenario-timetable-manage-train-schedule left-column">
@@ -199,7 +208,10 @@ const ManageTrainScheduleLeftPanel = ({
       {itineraryModalIsOpen && (
         <ItineraryModal
           itineraryModalIsOpen={itineraryModalIsOpen}
-          setItineraryModalIsOpen={setItineraryModalIsOpen}
+          onClose={({ withChanges }) => {
+            setItineraryModalIsOpen(false);
+            setItineraryChanged(withChanges);
+          }}
           displayTrainScheduleManagement={displayTrainScheduleManagement}
         />
       )}

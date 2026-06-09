@@ -93,7 +93,7 @@ const TrainHeader = ({
       originalPacedTrain: originalPacedTrain ?? train,
       occurrenceId,
     });
-    setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.edit);
+    setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.itinerary);
   }, [train, originalPacedTrain, trainScheduleId, occurrenceId]);
 
   if (expanded) {

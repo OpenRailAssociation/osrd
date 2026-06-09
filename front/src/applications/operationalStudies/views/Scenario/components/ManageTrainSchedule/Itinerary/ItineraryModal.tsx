@@ -60,7 +60,7 @@ import { computePathStepCoordinates, getOpKey, isOpRefMetadata } from './utils';
 
 type ItineraryModalProps = {
   itineraryModalIsOpen: boolean;
-  setItineraryModalIsOpen: (isOpen: boolean) => void;
+  onClose: ({ withChanges }: { withChanges: boolean }) => void;
   displayTrainScheduleManagement: string;
 };
 
@@ -74,7 +74,7 @@ export type ItineraryModalFormState = {
 
 const ItineraryModal = ({
   itineraryModalIsOpen,
-  setItineraryModalIsOpen,
+  onClose,
   displayTrainScheduleManagement,
 }: ItineraryModalProps) => {
   const { t } = useTranslation('operational-studies', {
@@ -125,9 +125,9 @@ const ItineraryModal = ({
       : 'intermediateWaypointsPanel.showLabel'
   );
 
-  const closeModal = () => {
+  const closeModal = ({ withChanges }: { withChanges: boolean }) => {
     modalRef.current?.close();
-    setItineraryModalIsOpen(false);
+    onClose({ withChanges });
   };
 
   const handleCancelMapSelection = useCallback(() => {
@@ -138,7 +138,7 @@ const ItineraryModal = ({
     if (mapSelectionStepId !== null) {
       handleCancelMapSelection();
     } else {
-      closeModal();
+      closeModal({ withChanges: false });
     }
   }, [mapSelectionStepId, handleCancelMapSelection]);
 
@@ -416,7 +416,8 @@ const ItineraryModal = ({
   useEffect(() => {
     if (
       displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.edit ||
-      displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.add
+      displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.add ||
+      displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.itinerary
     ) {
       const formattedPathSteps = storePathSteps
         .filter((pathStep): pathStep is PathStep => pathStep !== null)
@@ -574,7 +575,7 @@ const ItineraryModal = ({
     );
 
     launchPathfinding(pathStepsFromV2, modalFormState.rollingStockId, { isInitialization: true });
-    closeModal();
+    closeModal({ withChanges: true });
   };
 
   useModalFocusTrap(modalRef, handleEscapeOrClose);
@@ -857,10 +858,19 @@ const ItineraryModal = ({
             label={t('cancel')}
             variant="Cancel"
             size="medium"
-            onClick={closeModal}
+            onClick={() => closeModal({ withChanges: false })}
             dataTestID="close-itinerary-modal"
           />
-          <Button label={t('next')} variant="Primary" size="medium" onClick={submitItinerary} />
+          <Button
+            label={
+              displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.itinerary
+                ? t('edit')
+                : t('next')
+            }
+            variant="Primary"
+            size="medium"
+            onClick={submitItinerary}
+          />
         </div>
       </div>
       {waypointsPanelOpen && (

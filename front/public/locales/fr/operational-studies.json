@@ -422,6 +422,7 @@
       "alertMissingRequestedPoint": "Il faut au minimum deux points de passage pour définir un itinéraire",
       "cancel": "Annuler",
       "cancelMapSelection": "Annuler",
+      "edit": "Modifier l’itinéraire",
       "focusLocationOnMap": "Centrer la carte sur ce point remarquable",
       "frameAll": "Centrer sur tous les points de passage sur la carte",
       "intermediateWaypointsPanel": {
