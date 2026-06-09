@@ -8,6 +8,7 @@ use super::utils::*;
 use crate::generate_routes;
 use crate::generate_signals;
 use crate::operational_point::operational_points;
+use crate::switch_and_buffer_stop::switches_and_buffer_stops;
 use schemas::infra::RailJson;
 
 use itertools::Itertools as _;
@@ -83,11 +84,11 @@ pub fn parse_osm(
         .filter(|e| e.source != e.target)
         .collect_vec();
 
-    let mut adjacencies = build_adjacencies(&edges);
+    let adjacencies = build_adjacencies(&edges);
     let nodes_tracks = NodeToTrack::from_edges(&edges);
 
     let track_sections = track_sections(&edges);
-    let (switches, buffer_stops) = switches_and_buffer_stops(&mut adjacencies);
+    let (switches, buffer_stops) = switches_and_buffer_stops(&adjacencies);
     let speed_sections = edges.iter().flat_map(speed_sections).collect_vec();
     let electrifications = edges.iter().flat_map(electrifications).collect();
     let operational_points = operational_points(&osm_pbf_in, &nodes_tracks, &track_sections);
