@@ -12,11 +12,13 @@ use axum::extract::Path;
 use axum::extract::State;
 use common::geometry::GeoJsonLineString;
 use core_client::path_properties::OperationalPointOnPath;
+use core_client::path_properties::OperationalPointOnPathInfo;
 use core_client::path_properties::PathPropertiesRequest;
 use core_client::path_properties::PropertyElectrificationValues;
 use core_client::path_properties::PropertyValuesF64;
 use core_client::path_properties::PropertyZoneValues;
 use core_client::pathfinding::TrackRange;
+use database::DbConnection;
 use geos::geojson::Geometry;
 use serde::Deserialize;
 use serde::Serialize;
@@ -26,7 +28,9 @@ use utoipa::ToSchema;
 
 use crate::AppState;
 use crate::error::Result;
+use crate::generated_data::operational_point::OperationalPointLayer;
 use crate::views::AuthenticationExt;
+use crate::views::infra::compute_operational_point_geo;
 use crate::views::path::retrieve_infra_version;
 
 #[derive(Debug, Serialize, Deserialize, ToSchema, Hash)]
@@ -57,17 +61,32 @@ pub(in crate::views) struct PathProperties {
     zones: PropertyZoneValues,
 }
 
-impl From<core_client::path_properties::PathPropertiesResponse> for PathProperties {
-    fn from(response: core_client::path_properties::PathPropertiesResponse) -> Self {
-        PathProperties {
-            slopes: response.slopes,
-            curves: response.curves,
-            electrifications: response.electrifications,
-            geometry: response.geometry,
-            operational_points: response.operational_points,
-            zones: response.zones,
-        }
+fn build_operational_point_on_path(
+    opop_info: &OperationalPointOnPathInfo,
+    geo_points: Option<&Vec<Geometry>>,
+) -> OperationalPointOnPath {
+    OperationalPointOnPath {
+        info: opop_info.clone(),
+        geo: geo_points.and_then(|points| compute_operational_point_geo(points)),
     }
+}
+
+/// Add geographical position to `OperationalPointOnPathInfo`
+async fn populate_opop_geo(
+    conn: &mut DbConnection,
+    infra_id: i64,
+    operational_points_on_path: &[OperationalPointOnPathInfo],
+) -> Result<Vec<OperationalPointOnPath>> {
+    let opop_ids: Vec<_> = operational_points_on_path
+        .iter()
+        .map(|opop_info| opop_info.id.as_str())
+        .collect();
+    let geo_points = OperationalPointLayer::get(conn, infra_id, &opop_ids).await?;
+
+    Ok(operational_points_on_path
+        .iter()
+        .map(|opop| build_operational_point_on_path(opop, geo_points.get(opop.id.as_str())))
+        .collect())
 }
 
 /// Compute path properties
@@ -116,14 +135,26 @@ pub(in crate::views) async fn post(
     .run(Arc::new(tokio::sync::Mutex::new(vkconn)), core_client)
     .await?;
 
-    Ok(Json(PathProperties::from(path_properties)))
+    Ok(Json(PathProperties {
+        slopes: path_properties.slopes,
+        curves: path_properties.curves,
+        electrifications: path_properties.electrifications,
+        geometry: path_properties.geometry,
+        operational_points: populate_opop_geo(
+            conn,
+            infra_id,
+            path_properties.operational_points.as_slice(),
+        )
+        .await?,
+        zones: path_properties.zones,
+    }))
 }
 
 #[cfg(test)]
 mod tests {
     use axum::http::StatusCode;
     use core_client::mocking::MockingClient;
-    use core_client::path_properties::OperationalPointOnPath;
+    use core_client::path_properties::OperationalPointOnPathInfo;
     use core_client::path_properties::PropertyElectrificationValue;
     use core_client::path_properties::PropertyElectrificationValues;
     use core_client::path_properties::PropertyValuesF64;
@@ -148,7 +179,7 @@ mod tests {
             geometry: geos::geojson::Geometry::new(geos::geojson::Value::LineString(vec![vec![
                 0.0, 0.0,
             ]])),
-            operational_points: vec![OperationalPointOnPath::new_test("1", 0, "1")],
+            operational_points: vec![OperationalPointOnPathInfo::new_test("1", 0, "1")],
             zones: PropertyZoneValues::new(vec![0, 1], vec!["Zone 1".into()]),
         }
     }
@@ -187,8 +218,13 @@ mod tests {
             path_properties_response.electrifications
         );
         assert_eq!(response.geometry, path_properties_response.geometry);
+        let operational_points_info: Vec<_> = response
+            .operational_points
+            .iter()
+            .map(|op| op.info.clone())
+            .collect();
         assert_eq!(
-            response.operational_points,
+            operational_points_info,
             path_properties_response.operational_points
         );
     }
@@ -216,8 +252,13 @@ mod tests {
             path_properties_response.electrifications
         );
         assert_eq!(response.geometry, path_properties_response.geometry);
+        let operational_points_info: Vec<_> = response
+            .operational_points
+            .iter()
+            .map(|op| op.info.clone())
+            .collect();
         assert_eq!(
-            response.operational_points,
+            operational_points_info,
             path_properties_response.operational_points
         );
     }

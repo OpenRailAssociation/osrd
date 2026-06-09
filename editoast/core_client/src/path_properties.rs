@@ -1,3 +1,4 @@
+use common::geometry::GeoJsonPoint;
 use geos::geojson::Geometry;
 use schemas::infra::OperationalPointExtensions;
 use schemas::infra::OperationalPointPart;
@@ -33,7 +34,7 @@ pub struct PathPropertiesResponse {
     /// Geometry of the path
     pub geometry: Geometry,
     /// Operational points along the path
-    pub operational_points: Vec<OperationalPointOnPath>,
+    pub operational_points: Vec<OperationalPointOnPathInfo>,
     /// Zones along the path
     pub zones: PropertyZoneValues,
 }
@@ -90,11 +91,18 @@ pub enum PropertyElectrificationValue {
     NonElectrified,
 }
 
-/// Operational point along a path.
-#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
-#[schema(as = CoreOperationalPointOnPath)]
-#[derive(PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema, PartialEq)]
 pub struct OperationalPointOnPath {
+    #[serde(flatten)]
+    pub info: OperationalPointOnPathInfo,
+    #[schema(value_type = Option<GeoJsonPoint>)]
+    pub geo: Option<geos::geojson::Geometry>,
+}
+
+/// Operational point along a path.
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema, PartialEq)]
+#[schema(as = CoreOperationalPointOnPath)]
+pub struct OperationalPointOnPathInfo {
     /// Id of the operational point
     #[schema(inline)]
     pub id: Identifier,
@@ -110,9 +118,9 @@ pub struct OperationalPointOnPath {
     pub weight: Option<u8>,
 }
 
-impl OperationalPointOnPath {
+impl OperationalPointOnPathInfo {
     pub fn new_test(id: &str, ci: i64, trigram: &str) -> Self {
-        OperationalPointOnPath {
+        OperationalPointOnPathInfo {
             id: Identifier(id.into()),
             part: OperationalPointPart {
                 track: Identifier("T1".to_string()),

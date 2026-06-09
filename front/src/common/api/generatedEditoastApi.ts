@@ -3564,6 +3564,9 @@ export type CoreOperationalPointOnPath = {
   /** Importance of the operational point */
   weight: number | null;
 };
+export type OperationalPointOnPath = CoreOperationalPointOnPath & {
+  geo?: null | GeoJsonPoint;
+};
 export type PathProperties = {
   /** Curves along the path */
   curves: {
@@ -3596,7 +3599,7 @@ export type PathProperties = {
   /** Geometry of the path */
   geometry: GeoJsonLineString;
   /** Operational points along the path */
-  operational_points: CoreOperationalPointOnPath[];
+  operational_points: OperationalPointOnPath[];
   /** Slopes along the path */
   slopes: {
     /** List of `n` boundaries of the ranges.
