@@ -39,7 +39,6 @@ export default defineConfig(({ mode }) => {
       react(),
       {
         ...checker({
-          typescript: true,
           oxlint: true,
           overlay: env.OSRD_VITE_OVERLAY !== 'false' && {
             initialIsOpen: env.OSRD_VITE_OVERLAY_OPEN_BY_DEFAULT === 'true',

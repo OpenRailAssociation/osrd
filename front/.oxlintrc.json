@@ -448,6 +448,7 @@
   },
   "options": {
     "typeAware": true,
+    "typeCheck": true,
     "reportUnusedDisableDirectives": "error"
   },
   "overrides": [

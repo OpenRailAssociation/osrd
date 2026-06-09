@@ -29,7 +29,7 @@
     "build": "rollup -c --failAfterWarnings",
     "watch": "rollup -c -w",
     "prepublishOnly": "npm run clean && npm run build",
-    "lint": "tsc && oxlint . --max-warnings 0 && oxfmt . --check",
+    "lint": "oxlint . --max-warnings 0 && oxfmt . --check",
     "lint:fix": "oxlint . --fix && oxfmt . --write"
   },
   "dependencies": {
