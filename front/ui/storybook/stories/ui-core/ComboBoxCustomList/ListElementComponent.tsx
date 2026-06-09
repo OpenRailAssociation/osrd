@@ -14,7 +14,7 @@ export type OperationalPointSuggestion = {
   id: string;
   mainCode: string;
   name: string;
-  chList: secondaryCodeSuggestion[];
+  secondaryCodeList: secondaryCodeSuggestion[];
 };
 
 export type ListElementComponentProps = {
@@ -41,19 +41,19 @@ export const ListElementComponent = ({
     <span className="op-suggestion-name">{suggestion.name}</span>
 
     <div className="op-suggestion-secondary-code-list">
-      {suggestion.chList.map((ch) => (
+      {suggestion.secondaryCodeList.map((secondaryCode) => (
         <span
-          key={ch.code}
+          key={secondaryCode.code}
           className={cx('op-suggestion-secondary-code', {
-            'op-suggestion-secondary-code--best': ch.isBestSuggestion,
-            'op-suggestion-secondary-code--inactive': ch.isCandidate === false,
+            'op-suggestion-secondary-code--best': secondaryCode.isBestSuggestion,
+            'op-suggestion-secondary-code--inactive': secondaryCode.isCandidate === false,
           })}
           onClick={(e) => {
             e.preventDefault();
-            onPickCh?.(ch.code);
+            onPickCh?.(secondaryCode.code);
           }}
         >
-          {ch.code}
+          {secondaryCode.code}
         </span>
       ))}
     </div>

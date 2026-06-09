@@ -18,7 +18,7 @@ type Suggestion = {
   id: string;
   mainCode: string;
   name: string;
-  chList: OpCh[];
+  secondaryCodeList: OpCh[];
 };
 
 const ALL_SUGGESTIONS: Suggestion[] = [
@@ -26,7 +26,7 @@ const ALL_SUGGESTIONS: Suggestion[] = [
     id: '1',
     name: 'Le Havre',
     mainCode: 'LHV',
-    chList: [
+    secondaryCodeList: [
       { code: 'BV' },
       { code: 'BR' },
       { code: 'BB' },
@@ -41,67 +41,67 @@ const ALL_SUGGESTIONS: Suggestion[] = [
     id: '2',
     name: 'Le Havre Graville',
     mainCode: 'LHG',
-    chList: [{ code: 'BV' }, { code: 'BQ' }],
+    secondaryCodeList: [{ code: 'BV' }, { code: 'BQ' }],
   },
   {
     id: '3',
     name: 'Bordeaux',
     mainCode: 'BDX',
-    chList: [{ code: 'BV' }, { code: 'BR' }, { code: 'BB' }],
+    secondaryCodeList: [{ code: 'BV' }, { code: 'BR' }, { code: 'BB' }],
   },
   {
     id: '4',
     name: 'Bruxelles Midi',
     mainCode: 'BRM',
-    chList: [{ code: 'BM' }, { code: 'BR' }],
+    secondaryCodeList: [{ code: 'BM' }, { code: 'BR' }],
   },
   {
     id: '5',
     name: 'Auber',
     mainCode: 'AUB',
-    chList: [{ code: '00' }, { code: 'BV' }],
+    secondaryCodeList: [{ code: '00' }, { code: 'BV' }],
   },
   {
     id: '6',
     name: 'Fontenay aux roses',
     mainCode: 'FAR',
-    chList: [{ code: '00' }, { code: 'BV' }],
+    secondaryCodeList: [{ code: '00' }, { code: 'BV' }],
   },
   {
     id: '7',
     name: 'Sceaux',
     mainCode: 'SCX',
-    chList: [{ code: '00' }, { code: 'BV' }],
+    secondaryCodeList: [{ code: '00' }, { code: 'BV' }],
   },
   {
     id: '8',
     name: 'Robinson',
     mainCode: 'ROB',
-    chList: [{ code: '00' }, { code: 'BV' }],
+    secondaryCodeList: [{ code: '00' }, { code: 'BV' }],
   },
   {
     id: '9',
     name: 'Port-Royal',
     mainCode: 'PRY',
-    chList: [{ code: '00' }, { code: 'BV' }],
+    secondaryCodeList: [{ code: '00' }, { code: 'BV' }],
   },
   {
     id: '10',
     name: 'Denfert-Rochereau',
     mainCode: 'DFR',
-    chList: [{ code: '00' }, { code: 'BV' }],
+    secondaryCodeList: [{ code: '00' }, { code: 'BV' }],
   },
   {
     id: '11',
     name: 'Lille Europe',
     mainCode: 'LEW',
-    chList: [{ code: '00' }, { code: 'BV' }],
+    secondaryCodeList: [{ code: '00' }, { code: 'BV' }],
   },
   {
     id: '12',
     name: 'Lille Flandres',
     mainCode: 'LE',
-    chList: [{ code: '00' }, { code: 'BV' }],
+    secondaryCodeList: [{ code: '00' }, { code: 'BV' }],
   },
 ];
 const normalize = (value: string) => value.normalize('NFD').toLowerCase();
@@ -125,8 +125,8 @@ function filterAndMarkSuggestions(allSuggestions: Suggestion[], rawQuery: string
   if (!query) {
     return allSuggestions.map((suggestion) => ({
       ...suggestion,
-      chList: suggestion.chList.map((ch) => ({
-        ...ch,
+      chList: suggestion.secondaryCodeList.map((secondaryCode) => ({
+        ...secondaryCode,
         isCandidate: true,
         isBestSuggestion: false,
       })),
@@ -152,8 +152,8 @@ function filterAndMarkSuggestions(allSuggestions: Suggestion[], rawQuery: string
     if (exactTrigramMatches.length > 0) {
       return exactTrigramMatches.map((s) => ({
         ...s,
-        chList: s.chList.map((ch) => ({
-          ...ch,
+        secondaryCodeList: s.secondaryCodeList.map((secondaryCode) => ({
+          ...secondaryCode,
           isCandidate: true,
           isBestSuggestion: false,
         })),
@@ -166,14 +166,16 @@ function filterAndMarkSuggestions(allSuggestions: Suggestion[], rawQuery: string
       .filter(
         (s) =>
           s.mainCode.toUpperCase() === baseUpper &&
-          s.chList.some((ch) => ch.code.toUpperCase() === lastTokenUpper)
+          s.secondaryCodeList.some(
+            (secondaryCode) => secondaryCode.code.toUpperCase() === lastTokenUpper
+          )
       )
       .map((s) => ({
         ...s,
-        chList: s.chList.map((ch) => {
-          const isExactCh = ch.code.toUpperCase() === lastTokenUpper;
+        secondaryCodeList: s.secondaryCodeList.map((secondaryCode) => {
+          const isExactCh = secondaryCode.code.toUpperCase() === lastTokenUpper;
           return {
-            ...ch,
+            ...secondaryCode,
             isCandidate: isExactCh,
             isBestSuggestion: isExactCh,
           };
@@ -188,9 +190,11 @@ function filterAndMarkSuggestions(allSuggestions: Suggestion[], rawQuery: string
       const nameNorm = normalize(suggestion.name);
       const trigramUpper = suggestion.mainCode.toUpperCase();
 
-      // chPrefixMatch should be false if there is no lastToken
-      const chPrefixMatch = lastToken
-        ? suggestion.chList.some((ch) => ch.code.toUpperCase().startsWith(lastTokenUpper))
+      // secondaryCodePrefixMatch should be false if there is no lastToken
+      const secondaryCodePrefixMatch = lastToken
+        ? suggestion.secondaryCodeList.some((secondaryCode) =>
+            secondaryCode.code.toUpperCase().startsWith(lastTokenUpper)
+          )
         : false;
 
       if (isSingleToken) {
@@ -200,20 +204,20 @@ function filterAndMarkSuggestions(allSuggestions: Suggestion[], rawQuery: string
 
         const matchesName = nameNorm.includes(tokenNorm);
         const matchesTrigram = trigramUpper.includes(tokenUpper);
-        const matchesCh = suggestion.chList.some((ch) =>
-          ch.code.toUpperCase().includes(tokenUpper)
+        const matchesSecondaryCode = suggestion.secondaryCodeList.some((secondaryCode) =>
+          secondaryCode.code.toUpperCase().includes(tokenUpper)
         );
 
-        if (!matchesName && !matchesTrigram && !matchesCh) return null;
+        if (!matchesName && !matchesTrigram && !matchesSecondaryCode) return null;
 
         const trigramExact = trigramUpper === tokenUpper;
         const trigramPrefix = !trigramExact && trigramUpper.startsWith(tokenUpper);
         const namePrefix = nameNorm.startsWith(tokenNorm);
         const nameContains = matchesName && !namePrefix;
-        const chPrefix = suggestion.chList.some((ch) =>
-          ch.code.toUpperCase().startsWith(tokenUpper)
+        const chPrefix = suggestion.secondaryCodeList.some((secondaryCode) =>
+          secondaryCode.code.toUpperCase().startsWith(tokenUpper)
         );
-        const chContains = matchesCh && !chPrefix;
+        const chContains = matchesSecondaryCode && !chPrefix;
 
         let category = 6;
         if (trigramExact) category = 0;
@@ -226,20 +230,20 @@ function filterAndMarkSuggestions(allSuggestions: Suggestion[], rawQuery: string
         return {
           suggestion: {
             ...suggestion,
-            chList: suggestion.chList.map((ch) => ({
-              ...ch,
+            secondaryCodeList: suggestion.secondaryCodeList.map((secondaryCode) => ({
+              ...secondaryCode,
               isCandidate: true,
               isBestSuggestion: false,
             })),
           },
           category,
           baseScore: 99,
-          chScore: 99,
+          secondaryCodeScore: 99,
         };
       }
 
-      // If last token doesn't start like a known CH, we keep the full text matching
-      if (!chPrefixMatch) {
+      // If last token doesn't start like a known secondary code, we keep the full text matching
+      if (!secondaryCodePrefixMatch) {
         const fullNorm = normalize(query);
         const fullUpper = query.toUpperCase();
 
@@ -251,28 +255,28 @@ function filterAndMarkSuggestions(allSuggestions: Suggestion[], rawQuery: string
         return {
           suggestion: {
             ...suggestion,
-            chList: suggestion.chList.map((ch) => ({
-              ...ch,
+            secondaryCodeList: suggestion.secondaryCodeList.map((secondaryCode) => ({
+              ...secondaryCode,
               isCandidate: true,
               isBestSuggestion: false,
             })),
           },
           baseScore: getBaseScore(suggestion, baseUpper, baseNorm),
-          chScore: 99,
+          secondaryCodeScore: 99,
           category: 0,
         };
       }
 
-      // Query starts as a known CH => base must match (name or trigram)
+      // Query starts as a known secondary code => base must match (name or trigram)
       const baseMatchesName = nameNorm.includes(baseNorm);
       const baseMatchesTrigram = trigramUpper.includes(baseUpper);
       const baseMatches = baseMatchesName || baseMatchesTrigram;
       if (!baseMatches) return null;
 
-      const chList = suggestion.chList.map((ch) => {
-        const codeUpper = ch.code.toUpperCase();
+      const secondaryCodeList = suggestion.secondaryCodeList.map((secondaryCode) => {
+        const codeUpper = secondaryCode.code.toUpperCase();
         return {
-          ...ch,
+          ...secondaryCode,
           isCandidate: codeUpper.startsWith(lastTokenUpper),
           isBestSuggestion: false,
         };
@@ -280,10 +284,17 @@ function filterAndMarkSuggestions(allSuggestions: Suggestion[], rawQuery: string
       // we apply scores depending on how suggestion matches base and last token
 
       const baseScore = getBaseScore(suggestion, baseUpper, baseNorm);
-      const chExact = suggestion.chList.some((ch) => ch.code.toUpperCase() === lastTokenUpper);
-      const chScore = chExact ? 0 : 1;
+      const secondaryCodeExact = suggestion.secondaryCodeList.some(
+        (secondaryCode) => secondaryCode.code.toUpperCase() === lastTokenUpper
+      );
+      const secondaryCodeScore = secondaryCodeExact ? 0 : 1;
 
-      return { suggestion: { ...suggestion, chList }, baseScore, chScore, category: 0 };
+      return {
+        suggestion: { ...suggestion, secondaryCodeList: secondaryCodeList },
+        baseScore,
+        secondaryCodeScore,
+        category: 0,
+      };
     })
     .filter((x) => x !== null);
 
@@ -295,7 +306,7 @@ function filterAndMarkSuggestions(allSuggestions: Suggestion[], rawQuery: string
 
       return (
         a.baseScore - b.baseScore ||
-        a.chScore - b.chScore ||
+        a.secondaryCodeScore - b.secondaryCodeScore ||
         a.suggestion.name.localeCompare(b.suggestion.name, 'fr')
       );
     })
@@ -306,8 +317,8 @@ function filterAndMarkSuggestions(allSuggestions: Suggestion[], rawQuery: string
   let bestChIndex = -1;
 
   preliminary.forEach((s, sIndex) => {
-    s.chList.forEach((ch, chIndex) => {
-      if (ch.isCandidate) {
+    s.secondaryCodeList.forEach((secondaryCode, chIndex) => {
+      if (secondaryCode.isCandidate) {
         candidateCount += 1;
         if (candidateCount === 1) {
           bestSuggestionIndex = sIndex;
@@ -325,8 +336,8 @@ function filterAndMarkSuggestions(allSuggestions: Suggestion[], rawQuery: string
   // If there is exactly one candidate, highlight it
   return preliminary.map((s, sIndex) => ({
     ...s,
-    chList: s.chList.map((ch, chIndex) => ({
-      ...ch,
+    chList: s.secondaryCodeList.map((secondaryCode, chIndex) => ({
+      ...secondaryCode,
       isBestSuggestion: sIndex === bestSuggestionIndex && chIndex === bestChIndex,
     })),
   }));
@@ -338,7 +349,7 @@ const ComboBoxStory = (props: { small?: boolean; disabled?: boolean; readOnly?: 
   const [filteredSuggestions, setFilteredSuggestions] = useState<Suggestion[]>(
     filterAndMarkSuggestions(ALL_SUGGESTIONS, '')
   );
-  const [pickedCh, setPickedCh] = useState<string>();
+  const [pickedCh, setPickedSecondaryCode] = useState<string>();
   const pendingPickedChRef = useRef<string>(undefined);
   const valueRef = useRef(value);
 
@@ -348,19 +359,20 @@ const ComboBoxStory = (props: { small?: boolean; disabled?: boolean; readOnly?: 
   const onSelectSuggestion = (suggestion?: Suggestion) => {
     if (!suggestion) {
       setValue(undefined);
-      setPickedCh(undefined);
+      setPickedSecondaryCode(undefined);
       valueRef.current = undefined;
       return;
     }
 
-    const chFromClick = pendingPickedChRef.current;
+    const secondaryCodeFromClick = pendingPickedChRef.current;
     pendingPickedChRef.current = undefined;
 
     const fallback =
-      suggestion.chList.find((ch) => ch.isBestSuggestion)?.code ?? suggestion.chList[0]?.code;
+      suggestion.secondaryCodeList.find((secondaryCode) => secondaryCode.isBestSuggestion)?.code ??
+      suggestion.secondaryCodeList[0]?.code;
 
     setValue(suggestion);
-    setPickedCh(chFromClick ?? fallback);
+    setPickedSecondaryCode(secondaryCodeFromClick ?? fallback);
     valueRef.current = suggestion;
   };
 
