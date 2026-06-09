@@ -8,6 +8,7 @@ use tracing::info;
 use super::utils::*;
 use crate::generate_routes;
 use crate::generate_signals;
+use crate::operational_point::operational_points;
 use schemas::infra::RailJson;
 
 use itertools::Itertools as _;
