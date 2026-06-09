@@ -5,6 +5,7 @@ use tracing::debug;
 use tracing::info;
 
 use super::utils::*;
+use crate::adjacency::build_adjacencies;
 use crate::generate_routes;
 use crate::generate_signals;
 use crate::operational_point::operational_points;
