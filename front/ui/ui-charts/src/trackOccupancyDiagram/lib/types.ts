@@ -8,7 +8,7 @@ export type Track = {
 };
 
 export type OccupancyZone = {
-  trainId: string;
+  pathId: string;
   trackId: string;
   trainName: string;
   originStation?: string;

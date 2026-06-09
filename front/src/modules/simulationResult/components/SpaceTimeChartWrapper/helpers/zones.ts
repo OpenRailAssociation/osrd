@@ -9,7 +9,7 @@ import { Duration } from 'utils/duration';
 
 import type { BaseTrainProjection } from '../../../types';
 
-export type MovableOccupancyZone = Omit<OccupancyZone, 'trainId'> & {
+export type MovableOccupancyZone = OccupancyZone & {
   dbStartTime: number;
   dbEndTime: number;
   trainId: TrainId;
@@ -91,6 +91,7 @@ export function getMovableOccupancyZone(
 
   return {
     trackId,
+    pathId: trainId,
     trainId,
     startTime: occupationStartTime,
     startDirection,

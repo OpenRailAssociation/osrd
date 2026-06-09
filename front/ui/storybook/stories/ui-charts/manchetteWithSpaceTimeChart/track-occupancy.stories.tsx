@@ -60,7 +60,7 @@ const TrackOccupancyDiagramWithinSpaceTimeChartWrapper = ({ height = 561 }: { he
     ];
     const occupancyZones: OccupancyZone[] = paths.flatMap((path, i) =>
       getOccupancyZonesFromPathAtGivenWaypoint(path.points, operationalPoint.position, {
-        trainId: path.id,
+        pathId: path.id,
         trackId: tracks[i % tracks.length].id, // (i.e. pick some random track)
         trainName: 'foobar',
         color: path.color,
@@ -77,7 +77,7 @@ const TrackOccupancyDiagramWithinSpaceTimeChartWrapper = ({ height = 561 }: { he
             position={operationalPoint.position}
             tracks={tracks}
             occupancyZones={occupancyZones}
-            selectedTrainId={selectedTrain}
+            selectedPathId={selectedTrain}
             onClose={() => setSelectedWaypoint(undefined)}
             topPadding={BASE_WAYPOINT_HEIGHT}
           />

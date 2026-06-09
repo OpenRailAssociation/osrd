@@ -20,12 +20,12 @@ const TrackOccupancyDiagramStory = ({
   autoHeight?: boolean;
   isDragging?: boolean;
 }) => {
-  const [selectedTrainId, setSelectedTrainId] = useState<string>();
+  const [selectedPathId, setSelectedPathId] = useState<string>();
 
   useEffect(() => {
     // TODO: fix this lint
     /* eslint-disable-next-line react-hooks-js/set-state-in-effect */
-    setSelectedTrainId(`${trainId}`);
+    setSelectedPathId(`${trainId}`);
   }, [trainId]);
 
   return (
@@ -34,8 +34,8 @@ const TrackOccupancyDiagramStory = ({
         tracks={TRACKS}
         occupancyZones={OCCUPANCY_ZONES}
         draggingOccupancyZones={isDragging ? DRAGGING_OCCUPANCY_ZONES : undefined}
-        selectedTrainId={selectedTrainId}
-        onSelectedTrainIdChange={setSelectedTrainId}
+        selectedPathId={selectedPathId}
+        onSelectedPathIdChange={setSelectedPathId}
         height={autoHeight ? undefined : 500}
       />
     </div>

@@ -17,8 +17,8 @@ const TrackOccupancyStandalone = ({
   tracks,
   occupancyZones,
   draggingOccupancyZones,
-  selectedTrainId,
-  onSelectedTrainIdChange,
+  selectedPathId,
+  onSelectedPathIdChange,
   onHoveredChildUpdate,
   onDragOver,
   height = TRACK_HEIGHT_CONTAINER * tracks.length + DEFAULT_THEME.timeCaptionsSize,
@@ -26,8 +26,8 @@ const TrackOccupancyStandalone = ({
   tracks: Track[];
   occupancyZones: OccupancyZone[];
   draggingOccupancyZones?: OccupancyZone[];
-  selectedTrainId?: string;
-  onSelectedTrainIdChange?: (selectedTrainId?: string) => void;
+  selectedPathId?: string;
+  onSelectedPathIdChange?: (selectedPathId?: string) => void;
   onHoveredChildUpdate?: SpaceTimeChartProps['onHoveredChildUpdate'];
   onDragOver?: (trackId: string | undefined) => void;
   height?: number;
@@ -77,7 +77,7 @@ const TrackOccupancyStandalone = ({
             topPadding={BASE_WAYPOINT_HEIGHT * 1.5}
             occupancyZones={occupancyZones}
             draggingOccupancyZones={draggingOccupancyZones}
-            selectedTrainId={selectedTrainId}
+            selectedPathId={selectedPathId}
             onDragOver={handleDragOver}
             hideBorders
           />
@@ -92,7 +92,7 @@ const TrackOccupancyStandalone = ({
       tracks,
       occupancyZones,
       draggingOccupancyZones,
-      selectedTrainId,
+      selectedPathId,
       highlightedTrackId,
       handleDragOver,
     ]
@@ -144,13 +144,13 @@ const TrackOccupancyStandalone = ({
               {...spaceTimeChartProps}
               hideGrid={true}
               onClick={
-                onSelectedTrainIdChange &&
+                onSelectedPathIdChange &&
                 (({ hoveredItem }) => {
                   if (hoveredItem?.layer && isOccupancyPickingElement(hoveredItem.element)) {
                     const newId = hoveredItem.element.pathId;
-                    onSelectedTrainIdChange(newId === selectedTrainId ? undefined : newId);
+                    onSelectedPathIdChange(newId === selectedPathId ? undefined : newId);
                   } else {
-                    onSelectedTrainIdChange(undefined);
+                    onSelectedPathIdChange(undefined);
                   }
                 })
               }

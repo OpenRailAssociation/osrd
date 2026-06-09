@@ -2,7 +2,7 @@ import { type OccupancyZone } from '@osrd-project/ui-charts';
 
 const OCCUPANCY_ZONES: OccupancyZone[] = [
   {
-    trainId: '1',
+    pathId: '1',
     trackId: '1',
     trainName: '241536',
     curveStyle: { color: 'rgb(121, 118, 113)', opacity: 1 },
@@ -12,7 +12,7 @@ const OCCUPANCY_ZONES: OccupancyZone[] = [
     endTime: new Date('2024/04/02 01:30').getTime(),
   },
   {
-    trainId: '2',
+    pathId: '2',
     trackId: '2',
     trainName: '524136',
     curveStyle: { color: 'rgb(121, 118, 113)', opacity: 1 },
@@ -22,7 +22,7 @@ const OCCUPANCY_ZONES: OccupancyZone[] = [
     endTime: new Date('2024/04/02 00:23').getTime(),
   },
   {
-    trainId: '3',
+    pathId: '3',
     trackId: '3',
     trainName: '356124',
     curveStyle: { color: 'rgb(121, 118, 113)', opacity: 1 },
@@ -32,7 +32,7 @@ const OCCUPANCY_ZONES: OccupancyZone[] = [
     endTime: new Date('2024/04/02 00:53').getTime(),
   },
   {
-    trainId: '4',
+    pathId: '4',
     trackId: '4',
     trainName: '643152',
     curveStyle: { color: 'rgb(121, 118, 113)', opacity: 1 },
@@ -42,7 +42,7 @@ const OCCUPANCY_ZONES: OccupancyZone[] = [
     endTime: new Date('2024/04/02 00:50').getTime(),
   },
   {
-    trainId: '5',
+    pathId: '5',
     trackId: '5',
     trainName: '356421',
     curveStyle: { color: 'rgb(121, 118, 113)', opacity: 1 },
@@ -52,7 +52,7 @@ const OCCUPANCY_ZONES: OccupancyZone[] = [
     endTime: new Date('2024/04/02 00:32').getTime(),
   },
   {
-    trainId: '6',
+    pathId: '6',
     trackId: '6',
     trainName: '634215',
     curveStyle: { color: 'rgb(121, 118, 113)', opacity: 1 },
@@ -62,7 +62,7 @@ const OCCUPANCY_ZONES: OccupancyZone[] = [
     endTime: new Date('2024/04/02 00:15').getTime(),
   },
   {
-    trainId: '7',
+    pathId: '7',
     trackId: '4',
     trainName: '316452',
     curveStyle: { color: 'rgb(121, 118, 113)', opacity: 1 },
@@ -72,7 +72,7 @@ const OCCUPANCY_ZONES: OccupancyZone[] = [
     endTime: new Date('2024/04/02 02:44').getTime(),
   },
   {
-    trainId: '8',
+    pathId: '8',
     trackId: '3',
     trainName: '165234',
     curveStyle: { color: 'rgb(121, 118, 113)', opacity: 1 },
@@ -82,7 +82,7 @@ const OCCUPANCY_ZONES: OccupancyZone[] = [
     endTime: new Date('2024/04/02 01:53').getTime(),
   },
   {
-    trainId: '9',
+    pathId: '9',
     trackId: '1',
     trainName: '463512',
     curveStyle: { color: 'rgb(121, 118, 113)', opacity: 1 },
@@ -92,7 +92,7 @@ const OCCUPANCY_ZONES: OccupancyZone[] = [
     endTime: new Date('2024/04/02 00:40').getTime(),
   },
   {
-    trainId: '10',
+    pathId: '10',
     trackId: '6',
     trainName: '215643',
     curveStyle: { color: 'rgb(121, 118, 113)', opacity: 1 },
@@ -102,7 +102,7 @@ const OCCUPANCY_ZONES: OccupancyZone[] = [
     endTime: new Date('2024/04/02 03:15').getTime(),
   },
   {
-    trainId: '11',
+    pathId: '11',
     trackId: '2',
     trainName: '645312',
     curveStyle: { color: 'rgb(121, 118, 113)', opacity: 1 },
@@ -112,7 +112,7 @@ const OCCUPANCY_ZONES: OccupancyZone[] = [
     endTime: new Date('2024/04/02 01:23').getTime(),
   },
   {
-    trainId: '12',
+    pathId: '12',
     trackId: '2',
     trainName: '635214',
     curveStyle: { color: 'rgb(121, 118, 113)', opacity: 1 },
@@ -122,7 +122,7 @@ const OCCUPANCY_ZONES: OccupancyZone[] = [
     endTime: new Date('2024/04/02 02:23').getTime(),
   },
   {
-    trainId: '13',
+    pathId: '13',
     trackId: '2',
     trainName: '352614',
     curveStyle: { color: 'rgb(121, 118, 113)', opacity: 1 },
@@ -132,7 +132,7 @@ const OCCUPANCY_ZONES: OccupancyZone[] = [
     endTime: new Date('2024/04/02 03:23').getTime(),
   },
   {
-    trainId: '14',
+    pathId: '14',
     trackId: '6',
     trainName: '342615',
     curveStyle: { color: 'rgb(121, 118, 113)', opacity: 1 },
@@ -142,7 +142,7 @@ const OCCUPANCY_ZONES: OccupancyZone[] = [
     endTime: new Date('2024/04/02 01:15').getTime(),
   },
   {
-    trainId: '15',
+    pathId: '15',
     trackId: '6',
     trainName: '132645',
     curveStyle: { color: 'rgb(121, 118, 113)', opacity: 1 },
@@ -152,7 +152,7 @@ const OCCUPANCY_ZONES: OccupancyZone[] = [
     endTime: new Date('2024/04/02 02:15').getTime(),
   },
   {
-    trainId: '16',
+    pathId: '16',
     trackId: '5',
     trainName: '642531',
     curveStyle: { color: 'rgb(121, 118, 113)', opacity: 1 },
@@ -162,7 +162,7 @@ const OCCUPANCY_ZONES: OccupancyZone[] = [
     endTime: new Date('2024/04/02 01:32').getTime(),
   },
   {
-    trainId: '17',
+    pathId: '17',
     trackId: '5',
     trainName: '652341',
     curveStyle: { color: 'rgb(121, 118, 113)', opacity: 1 },
@@ -172,7 +172,7 @@ const OCCUPANCY_ZONES: OccupancyZone[] = [
     endTime: new Date('2024/04/02 02:32').getTime(),
   },
   {
-    trainId: '18',
+    pathId: '18',
     trackId: '5',
     trainName: '423561',
     curveStyle: { color: 'rgb(121, 118, 113)', opacity: 1 },
@@ -182,7 +182,7 @@ const OCCUPANCY_ZONES: OccupancyZone[] = [
     endTime: new Date('2024/04/02 03:32').getTime(),
   },
   {
-    trainId: '19',
+    pathId: '19',
     trackId: '3',
     trainName: '123456',
     curveStyle: { color: 'rgb(121, 118, 113)', opacity: 1 },
@@ -192,7 +192,7 @@ const OCCUPANCY_ZONES: OccupancyZone[] = [
     endTime: new Date('2024/04/02 02:53').getTime(),
   },
   {
-    trainId: '20',
+    pathId: '20',
     trackId: '3',
     trainName: '153264',
     curveStyle: { color: 'rgb(121, 118, 113)', opacity: 1 },
@@ -202,7 +202,7 @@ const OCCUPANCY_ZONES: OccupancyZone[] = [
     endTime: new Date('2024/04/02 03:53').getTime(),
   },
   {
-    trainId: '21',
+    pathId: '21',
     trackId: '1',
     trainName: '465321',
     curveStyle: { color: 'rgb(121, 118, 113)', opacity: 1 },
@@ -212,7 +212,7 @@ const OCCUPANCY_ZONES: OccupancyZone[] = [
     endTime: new Date('2024/04/02 02:59').getTime(),
   },
   {
-    trainId: '23',
+    pathId: '23',
     trackId: '4',
     trainName: '643152',
     curveStyle: { color: 'rgb(121, 118, 113)', opacity: 1 },
@@ -222,7 +222,7 @@ const OCCUPANCY_ZONES: OccupancyZone[] = [
     endTime: new Date('2024/04/02 01:05').getTime(),
   },
   {
-    trainId: '24',
+    pathId: '24',
     trackId: '4',
     trainName: '643152',
     curveStyle: { color: 'rgb(121, 118, 113)', opacity: 1 },
@@ -232,7 +232,7 @@ const OCCUPANCY_ZONES: OccupancyZone[] = [
     endTime: new Date('2024/04/02 01:02').getTime(),
   },
   {
-    trainId: '25',
+    pathId: '25',
     trackId: '4',
     trainName: '643152',
     curveStyle: { color: 'rgb(121, 118, 113)', opacity: 1 },
@@ -242,7 +242,7 @@ const OCCUPANCY_ZONES: OccupancyZone[] = [
     endTime: new Date('2024/04/02 01:11').getTime(),
   },
   {
-    trainId: '26',
+    pathId: '26',
     trackId: '4',
     trainName: '643152',
     curveStyle: { color: 'rgb(121, 118, 113)', opacity: 1 },
@@ -252,7 +252,7 @@ const OCCUPANCY_ZONES: OccupancyZone[] = [
     endTime: new Date('2024/04/02 02:14').getTime(),
   },
   {
-    trainId: '27',
+    pathId: '27',
     trackId: '4',
     trainName: '643152',
     curveStyle: { color: 'rgb(121, 118, 113)', opacity: 1 },
@@ -262,7 +262,7 @@ const OCCUPANCY_ZONES: OccupancyZone[] = [
     endTime: new Date('2024/04/02 02:07').getTime(),
   },
   {
-    trainId: '28',
+    pathId: '28',
     trackId: '4',
     trainName: '643152',
     curveStyle: { color: 'rgb(121, 118, 113)', opacity: 1 },
@@ -272,7 +272,7 @@ const OCCUPANCY_ZONES: OccupancyZone[] = [
     endTime: new Date('2024/04/02 02:11').getTime(),
   },
   {
-    trainId: '29',
+    pathId: '29',
     trackId: '4',
     trainName: '643152',
     curveStyle: { color: 'rgb(121, 118, 113)', opacity: 1 },
@@ -282,7 +282,7 @@ const OCCUPANCY_ZONES: OccupancyZone[] = [
     endTime: new Date('2024/04/02 02:09').getTime(),
   },
   {
-    trainId: '30',
+    pathId: '30',
     trackId: '4',
     trainName: '643152',
     curveStyle: { color: 'rgb(121, 118, 113)', opacity: 1 },
@@ -292,7 +292,7 @@ const OCCUPANCY_ZONES: OccupancyZone[] = [
     endTime: new Date('2024/04/02 02:17').getTime(),
   },
   {
-    trainId: '31',
+    pathId: '31',
     trackId: '4',
     trainName: '643152',
     curveStyle: { color: 'rgb(121, 118, 113)', opacity: 1 },
@@ -302,7 +302,7 @@ const OCCUPANCY_ZONES: OccupancyZone[] = [
     endTime: new Date('2024/04/02 02:29').getTime(),
   },
   {
-    trainId: '32',
+    pathId: '32',
     trackId: '4',
     trainName: '643152',
     curveStyle: { color: 'rgb(121, 118, 113)', opacity: 1 },
@@ -312,7 +312,7 @@ const OCCUPANCY_ZONES: OccupancyZone[] = [
     endTime: new Date('2024/04/02 02:26').getTime(),
   },
   {
-    trainId: '33',
+    pathId: '33',
     trackId: '4',
     trainName: '643152',
     curveStyle: { color: 'rgb(121, 118, 113)', opacity: 1 },
@@ -322,7 +322,7 @@ const OCCUPANCY_ZONES: OccupancyZone[] = [
     endTime: new Date('2024/04/02 02:57').getTime(),
   },
   {
-    trainId: '34',
+    pathId: '34',
     trackId: '4',
     trainName: '643152',
     curveStyle: { color: 'rgb(121, 118, 113)', opacity: 1 },
@@ -332,7 +332,7 @@ const OCCUPANCY_ZONES: OccupancyZone[] = [
     endTime: new Date('2024/04/02 02:53').getTime(),
   },
   {
-    trainId: '33',
+    pathId: '33',
     trackId: '4',
     trainName: '643152',
     curveStyle: { color: 'rgb(121, 118, 113)', opacity: 1 },
@@ -342,7 +342,7 @@ const OCCUPANCY_ZONES: OccupancyZone[] = [
     endTime: new Date('2024/04/02 03:07').getTime(),
   },
   {
-    trainId: '34',
+    pathId: '34',
     trackId: '4',
     trainName: '643152',
     curveStyle: { color: 'rgb(121, 118, 113)', opacity: 1 },
@@ -352,7 +352,7 @@ const OCCUPANCY_ZONES: OccupancyZone[] = [
     endTime: new Date('2024/04/02 02:59').getTime(),
   },
   {
-    trainId: '35',
+    pathId: '35',
     trackId: '4',
     trainName: '643152',
     curveStyle: { color: 'rgb(121, 118, 113)', opacity: 1 },
@@ -362,7 +362,7 @@ const OCCUPANCY_ZONES: OccupancyZone[] = [
     endTime: new Date('2024/04/02 03:20').getTime(),
   },
   {
-    trainId: '36',
+    pathId: '36',
     trackId: '4',
     trainName: '643152',
     curveStyle: { color: 'rgb(121, 118, 113)', opacity: 1 },
@@ -372,7 +372,7 @@ const OCCUPANCY_ZONES: OccupancyZone[] = [
     endTime: new Date('2024/04/02 00:10').getTime(),
   },
   {
-    trainId: '37',
+    pathId: '37',
     trackId: '4',
     trainName: '643152',
     curveStyle: { color: 'rgb(121, 118, 113)', opacity: 1 },
@@ -382,7 +382,7 @@ const OCCUPANCY_ZONES: OccupancyZone[] = [
     endTime: new Date('2024/04/02 01:25').getTime(),
   },
   {
-    trainId: '38',
+    pathId: '38',
     trackId: '4',
     trainName: '643152',
     curveStyle: { color: 'rgb(121, 118, 113)', opacity: 1 },
@@ -392,7 +392,7 @@ const OCCUPANCY_ZONES: OccupancyZone[] = [
     endTime: new Date('2024/04/02 00:10').getTime(),
   },
   {
-    trainId: '39',
+    pathId: '39',
     trackId: '4',
     trainName: '643152',
     curveStyle: { color: 'rgb(121, 118, 113)', opacity: 1 },
@@ -402,7 +402,7 @@ const OCCUPANCY_ZONES: OccupancyZone[] = [
     endTime: new Date('2024/04/02 00:10').getTime(),
   },
   {
-    trainId: '40',
+    pathId: '40',
     trackId: '4',
     trainName: '643152',
     curveStyle: { color: 'rgb(121, 118, 113)', opacity: 1 },
@@ -412,7 +412,7 @@ const OCCUPANCY_ZONES: OccupancyZone[] = [
     endTime: new Date('2024/04/02 00:10').getTime(),
   },
   {
-    trainId: '41',
+    pathId: '41',
     trackId: '4',
     trainName: '643152',
     curveStyle: { color: 'rgb(121, 118, 113)', opacity: 1 },
@@ -422,7 +422,7 @@ const OCCUPANCY_ZONES: OccupancyZone[] = [
     endTime: new Date('2024/04/02 00:10').getTime(),
   },
   {
-    trainId: '42',
+    pathId: '42',
     trackId: '4',
     trainName: '643152',
     curveStyle: { color: 'rgb(121, 118, 113)', opacity: 1 },
@@ -432,7 +432,7 @@ const OCCUPANCY_ZONES: OccupancyZone[] = [
     endTime: new Date('2024/04/02 00:10').getTime(),
   },
   {
-    trainId: '43',
+    pathId: '43',
     trackId: '4',
     trainName: '643152',
     curveStyle: { color: 'rgb(121, 118, 113)', opacity: 1 },
@@ -442,7 +442,7 @@ const OCCUPANCY_ZONES: OccupancyZone[] = [
     endTime: new Date('2024/04/02 00:10').getTime(),
   },
   {
-    trainId: '44',
+    pathId: '44',
     trackId: '4',
     trainName: '643152',
     curveStyle: { color: 'rgb(121, 118, 113)', opacity: 1 },
@@ -452,7 +452,7 @@ const OCCUPANCY_ZONES: OccupancyZone[] = [
     endTime: new Date('2024/04/02 00:10').getTime(),
   },
   {
-    trainId: '45',
+    pathId: '45',
     trackId: '4',
     trainName: '643152',
     curveStyle: { color: 'rgb(121, 118, 113)', opacity: 1 },
@@ -462,7 +462,7 @@ const OCCUPANCY_ZONES: OccupancyZone[] = [
     endTime: new Date('2024/04/02 00:10').getTime(),
   },
   {
-    trainId: '46',
+    pathId: '46',
     trackId: '4',
     trainName: '643152',
     curveStyle: { color: 'rgb(121, 118, 113)', opacity: 1 },
@@ -472,7 +472,7 @@ const OCCUPANCY_ZONES: OccupancyZone[] = [
     endTime: new Date('2024/04/02 00:10').getTime(),
   },
   {
-    trainId: '47',
+    pathId: '47',
     trackId: '4',
     trainName: '643152',
     curveStyle: { color: 'rgb(121, 118, 113)', opacity: 1 },

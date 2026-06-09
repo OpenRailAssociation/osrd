@@ -14,21 +14,21 @@ import './styles/track-occupancy.css';
 
 const TrackOccupancyDiagramStory = () => {
   const [allOccupancyZones, setAllOccupancyZones] = useState(OCCUPANCY_ZONES);
-  const [hoveredTrainId, setHoveredTrainId] = useState<string>();
+  const [hoveredPathId, setHoveredPathId] = useState<string>();
   const [hoveredTrackId, setHoveredTrackId] = useState<string>();
-  const [draggingTrainId, setDraggingTrainId] = useState<string>();
+  const [draggingPathId, setDraggingPathId] = useState<string>();
 
   const { occupancyZones, draggingOccupancyZones } = useMemo(
     () => ({
-      occupancyZones: allOccupancyZones.filter((zone) => zone.trainId !== draggingTrainId),
-      draggingOccupancyZones: allOccupancyZones.filter((zone) => zone.trainId === draggingTrainId),
+      occupancyZones: allOccupancyZones.filter((zone) => zone.pathId !== draggingPathId),
+      draggingOccupancyZones: allOccupancyZones.filter((zone) => zone.pathId === draggingPathId),
     }),
-    [allOccupancyZones, draggingTrainId]
+    [allOccupancyZones, draggingPathId]
   );
 
   const handleHoveredChildUpdate: SpaceTimeChartProps['onHoveredChildUpdate'] = useCallback(
     ({ item }) => {
-      setHoveredTrainId(
+      setHoveredPathId(
         item && isOccupancyPickingElement(item.element) ? item.element.pathId : undefined
       );
     },
@@ -36,20 +36,20 @@ const TrackOccupancyDiagramStory = () => {
   );
 
   const handleMouseDown = useCallback(() => {
-    setDraggingTrainId(hoveredTrainId);
-  }, [hoveredTrainId]);
+    setDraggingPathId(hoveredPathId);
+  }, [hoveredPathId]);
 
   const handleMouseUp = useCallback(() => {
-    if (draggingTrainId && hoveredTrackId) {
+    if (draggingPathId && hoveredTrackId) {
       setAllOccupancyZones((prev) =>
         prev.map((zone) =>
-          zone.trainId === draggingTrainId ? { ...zone, trackId: hoveredTrackId } : zone
+          zone.pathId === draggingPathId ? { ...zone, trackId: hoveredTrackId } : zone
         )
       );
     }
 
-    setDraggingTrainId(undefined);
-  }, [draggingTrainId, hoveredTrackId]);
+    setDraggingPathId(undefined);
+  }, [draggingPathId, hoveredTrackId]);
 
   return (
     <div
