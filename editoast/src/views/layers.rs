@@ -250,7 +250,7 @@ mod tests {
             LayersError::new_view_not_found("does_not_exist", &map_layers.layers["track_sections"])
                 .into();
 
-        let app = test_app!().build();
+        let app = test_app!().skip_authz().build();
         let body: InternalError = app
             .get("/layers/layer/track_sections/mvt/does_not_exist?infra=2")
             .await
@@ -282,7 +282,7 @@ mod tests {
             maxzoom: 18,
         };
 
-        let app = test_app!().root_url(root_url).build();
+        let app = test_app!().root_url(root_url).skip_authz().build();
         let body: ViewMetadata = app
             .get("/layers/layer/track_sections/mvt/geo?infra=2")
             .await
