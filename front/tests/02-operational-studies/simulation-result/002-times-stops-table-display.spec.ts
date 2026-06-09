@@ -1,9 +1,3 @@
-import type { Infra, Project, Scenario, Study } from 'common/api/osrdEditoastApi';
-
-import {
-  trainScheduleProjectName,
-  trainScheduleStudyName,
-} from '../../assets/constants/project-const';
 import {
   COMPUTED_THEORETICAL_MARGIN_DEPARTURE,
   EXPECTED_COLUMN_COUNT,
@@ -17,55 +11,16 @@ import {
   ROW_INDEX_VIA_A,
   ROW_INDEX_VIA_B,
   ROW_INDEX_WAYPOINT,
-  SCENARIO_NAME_PREFIX,
   STATUS_CLASSES,
   STOP_DURATION_NONE,
   STOP_DURATION_VIA_A,
   STOP_DURATION_VIA_B,
-  myTrain,
 } from '../../assets/operation-studies/simulation-result/times-stops-table-const';
 import test from '../../page-object-fixture';
-import { generateUniqueName, waitForInfraStateToBeCached } from '../../utils';
-import { getInfra, getProject, getStudy } from '../../utils/api-utils';
-import createScenario from '../../utils/scenario';
-import sendTrains from '../../utils/send-trains';
-import { deleteScenario } from '../../utils/teardown-utils';
+import setupScenarioWithTrain from './times-stops-scenario-fixture';
 
 test.describe('Times Stops Table — Display', { tag: ['@op', '@times-stops'] }, () => {
-  let project: Project;
-  let study: Study;
-  let scenarioItems: Scenario;
-  let infra: Infra;
-
-  test.beforeAll('Create scenario with Train21', async () => {
-    project = await getProject(trainScheduleProjectName);
-    study = await getStudy(project.id, trainScheduleStudyName);
-    infra = await getInfra();
-    const { scenario, trainScheduleSet } = await createScenario(
-      generateUniqueName(SCENARIO_NAME_PREFIX),
-      project.id,
-      study.id,
-      infra.id
-    );
-    scenarioItems = scenario;
-    await sendTrains(trainScheduleSet.id, myTrain);
-  });
-
-  test.beforeEach(
-    'Open scenario and wait for times-stops table',
-    async ({ page, scenarioTimetableSection }) => {
-      await page.goto(
-        `/operational-studies/projects/${project.id}/studies/${study.id}/scenarios/${scenarioItems.id}`
-      );
-      await waitForInfraStateToBeCached(infra.id);
-      await scenarioTimetableSection.enableOnlyTimesStopsTable();
-      await scenarioTimetableSection.verifyTimesStopsDataSheetVisibility();
-    }
-  );
-
-  test.afterAll('Delete created scenario', async () => {
-    await deleteScenario(study.id, scenarioItems.name);
-  });
+  setupScenarioWithTrain();
 
   /** *************** Test 1 **************** */
   test('Display structure and stop data', async ({ timesStopsTablePage }) => {
