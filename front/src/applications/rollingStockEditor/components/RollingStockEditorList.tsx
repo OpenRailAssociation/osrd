@@ -6,6 +6,7 @@ import type {
   LightRollingStockWithLiveries,
   RollingStockWithLiveries,
 } from 'common/api/osrdEditoastApi';
+import type { Privilege } from 'common/authorization/types';
 import { Loader } from 'common/Loaders';
 import { RollingStockCard } from 'modules/rollingStock/components/RollingStockCard';
 
@@ -20,6 +21,7 @@ type RollingStockEditorListProps = {
   resetFilters: () => void;
   ref2scroll: RefObject<HTMLInputElement | null>;
   selected?: RollingStockWithLiveries;
+  userPrivilegesByRollingStockId: Record<number, Set<Privilege>>;
 };
 
 export const RollingStockEditorList = ({
@@ -30,6 +32,7 @@ export const RollingStockEditorList = ({
   resetFilters,
   ref2scroll,
   selected,
+  userPrivilegesByRollingStockId,
 }: RollingStockEditorListProps) => {
   const { t } = useTranslation();
 
@@ -43,28 +46,35 @@ export const RollingStockEditorList = ({
       {isLoading && <Loader msg={t('rollingStock.waitingLoader')} />}
       {!isLoading && (
         <>
-          {data.map((rs) => (
-            <div key={rs.id}>
-              <div className="rolling-stock-card-container">
-                <RollingStockCard
-                  isOnEditMode
-                  rollingStock={rs}
-                  noCardSelected={selectedRollingStockId === undefined}
-                  isOpen={rs.id === selectedRollingStockId}
-                  onClick={() => setPageMode({ type: 'view', rollingStockId: rs.id })}
-                  ref2scroll={selectedRollingStockId === rs.id ? ref2scroll : undefined}
-                />
-                {rs.id === selectedRollingStockId && selected && (
-                  <RollingStockEditorButtons
-                    setPageMode={setPageMode}
-                    isCondensed
-                    rollingStock={selected}
-                    resetFilters={resetFilters}
+          {data
+            .filter(
+              (rs) =>
+                userPrivilegesByRollingStockId[rs.id] &&
+                userPrivilegesByRollingStockId[rs.id].has('can_read')
+            )
+            .map((rs) => (
+              <div key={rs.id}>
+                <div className="rolling-stock-card-container">
+                  <RollingStockCard
+                    isOnEditMode
+                    rollingStock={rs}
+                    noCardSelected={selectedRollingStockId === undefined}
+                    isOpen={rs.id === selectedRollingStockId}
+                    onClick={() => setPageMode({ type: 'view', rollingStockId: rs.id })}
+                    ref2scroll={selectedRollingStockId === rs.id ? ref2scroll : undefined}
                   />
-                )}
+                  {rs.id === selectedRollingStockId && selected && (
+                    <RollingStockEditorButtons
+                      setPageMode={setPageMode}
+                      isCondensed
+                      rollingStock={selected}
+                      resetFilters={resetFilters}
+                      userPrivileges={userPrivilegesByRollingStockId[rs.id] || new Set()}
+                    />
+                  )}
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
           {data.length === 0 && (
             <div data-testid="rollingstock-empty-result" className="rollingstock-empty">
               {t('rollingStock.resultFound', { count: 0 })}
