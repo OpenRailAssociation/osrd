@@ -90,9 +90,10 @@ pub(crate) struct TestAppBuilder {
 }
 
 impl TestAppBuilder {
-    pub fn new() -> Self {
+    /// Prefer using [`test_app!`] macro instead
+    pub fn new(test_name: String) -> Self {
         Self {
-            test_name: String::from("editoast-test"),
+            test_name,
             db_pool: None,
             core_client: None,
             enable_authorization: true,
@@ -100,14 +101,6 @@ impl TestAppBuilder {
             root_url: None,
             trains_traffic: TrainsTrafficPool::new(),
         }
-    }
-
-    /// Configures the name of the test
-    ///
-    /// Used to name the OpenFGA store created for the test.
-    pub fn test_name(mut self, test_name: String) -> Self {
-        self.test_name = test_name;
-        self
     }
 
     pub fn db_pool(mut self, db_pool: DbConnectionPoolV2) -> Self {
@@ -304,7 +297,7 @@ impl TestAppBuilder {
 /// The crate `stdext` is required.
 macro_rules! test_app {
     () => {
-        $crate::views::test_app::TestAppBuilder::new().test_name(
+        $crate::views::test_app::TestAppBuilder::new(
             stdext::function_name!()
                 .split("::")
                 .filter(|x| *x != "{{closure}}")
