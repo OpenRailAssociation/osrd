@@ -105,6 +105,28 @@ pub(crate) struct NodeAdjacencies<'a> {
     pub branches: Vec<Branch>,
 }
 
+pub fn build_adjacencies<'a>(
+    edges: &'a [Edge],
+) -> HashMap<osm4routing::NodeId, NodeAdjacencies<'a>> {
+    let mut adjacencies = HashMap::<osm4routing::NodeId, NodeAdjacencies>::new();
+    for edge in edges {
+        adjacencies.entry(edge.source).or_default().edges.push(edge);
+        adjacencies.entry(edge.target).or_default().edges.push(edge);
+    }
+    for (node, adj) in &mut adjacencies {
+        for e1 in &adj.edges {
+            for e2 in &adj.edges {
+                if e1.id < e2.id
+                    && let Some(branch) = try_into_branch(*node, e1, e2)
+                {
+                    adj.branches.push(branch);
+                }
+            }
+        }
+    }
+    adjacencies
+}
+
 fn link_switch(node: NodeId, branches: &[Branch]) -> Switch {
     let mut ports = HashMap::new();
     ports.insert("A".into(), branches[0].0.clone());
@@ -489,16 +511,6 @@ pub(crate) fn switches_and_buffer_stops(
     let mut switches = Vec::new();
     let mut buffer_stops = Vec::new();
     for (node, adj) in adjacencies {
-        for e1 in &adj.edges {
-            for e2 in &adj.edges {
-                if e1.id < e2.id
-                    && let Some(branch) = try_into_branch(*node, e1, e2)
-                {
-                    adj.branches.push(branch);
-                }
-            }
-        }
-
         let id = node.0;
         let edges_count = adj.edges.len();
         let branches_count = adj.branches.len();

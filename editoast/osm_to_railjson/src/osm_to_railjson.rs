@@ -1,4 +1,3 @@
-use std::collections::HashMap;
 use std::error::Error;
 use std::path::PathBuf;
 
@@ -84,11 +83,7 @@ pub fn parse_osm(
         .filter(|e| e.source != e.target)
         .collect_vec();
 
-    let mut adjacencies = HashMap::<osm4routing::NodeId, NodeAdjacencies>::new();
-    for edge in &edges {
-        adjacencies.entry(edge.source).or_default().edges.push(edge);
-        adjacencies.entry(edge.target).or_default().edges.push(edge);
-    }
+    let mut adjacencies = build_adjacencies(&edges);
     let nodes_tracks = NodeToTrack::from_edges(&edges);
 
     let track_sections = track_sections(&edges);
