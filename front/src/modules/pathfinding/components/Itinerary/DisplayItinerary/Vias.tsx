@@ -54,7 +54,7 @@ const Vias = ({ zoomToFeaturePoint }: ViasProps) => {
               {via.location.type === 'operational_point_part_reference' &&
                 via.location.operational_point.type !== 'id' &&
                 via.location.operational_point.secondary_code && (
-                  <small data-testid="via-dropped-ch">
+                  <small data-testid="via-dropped-secondary-code">
                     {via.location.operational_point.secondary_code}
                   </small>
                 )}

@@ -87,8 +87,8 @@ test.describe('Route tab', { tag: ['@op', '@route-tab'] }, () => {
 
     await test.step('Add two waypoints and verify via list', async () => {
       const expectedViaValues = [
-        { name: 'Mid_West_station', ch: 'BV', uic: '33', km: 'KM 12.050' },
-        { name: 'Mid_East_station', ch: 'BV', uic: '44', km: 'KM 26.500' },
+        { name: 'Mid_West_station', secondaryCode: 'BV', uic: '33', km: 'KM 12.050' },
+        { name: 'Mid_East_station', secondaryCode: 'BV', uic: '44', km: 'KM 26.500' },
       ];
       await routeTab.addNewWaypoints(
         2,

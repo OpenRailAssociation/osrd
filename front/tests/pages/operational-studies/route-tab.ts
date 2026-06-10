@@ -63,8 +63,8 @@ class RouteTab {
     return waypointSuggestion.getByTestId('suggested-via-name');
   }
 
-  // Get the CH locator of a waypoint suggestion.
-  private static getWaypointSuggestionChLocator(waypointSuggestion: Locator): Locator {
+  // Get the secondary code locator of a waypoint suggestion.
+  private static getWaypointSuggestionSecondaryCodeLocator(waypointSuggestion: Locator): Locator {
     return waypointSuggestion.getByTestId('suggested-via-secondary-code');
   }
 
@@ -83,9 +83,9 @@ class RouteTab {
     return droppedWaypoint.getByTestId('via-dropped-name');
   }
 
-  // Get the CH locator of a dropped waypoint.
-  private static getWaypointDroppedChLocator(droppedWaypoint: Locator): Locator {
-    return droppedWaypoint.getByTestId('via-dropped-ch');
+  // Get the secondary code locator of a dropped waypoint.
+  private static getWaypointDroppedSecondaryCodeLocator(droppedWaypoint: Locator): Locator {
+    return droppedWaypoint.getByTestId('via-dropped-secondary-code');
   }
 
   // Get the UIC locator of a dropped waypoint.
@@ -229,19 +229,19 @@ class RouteTab {
     }
   }
 
-  // Validate the waypoint suggestions by checking the name, CH, UIC, and distance.
+  // Validate the waypoint suggestions by checking the name, secondray code, UIC, and distance.
   private static async validateWaypointSuggestions(
     waypointSuggestion: Locator,
     expectedName: string,
-    expectedCh: string,
+    expectedSecondaryCode: string,
     expectedUic: string,
     expectedKm: string
   ) {
     await expect(RouteTab.getWaypointSuggestionNameLocator(waypointSuggestion)).toHaveText(
       expectedName
     );
-    await expect(RouteTab.getWaypointSuggestionChLocator(waypointSuggestion)).toHaveText(
-      expectedCh
+    await expect(RouteTab.getWaypointSuggestionSecondaryCodeLocator(waypointSuggestion)).toHaveText(
+      expectedSecondaryCode
     );
     await expect(RouteTab.getWaypointSuggestionUicLocator(waypointSuggestion)).toHaveText(
       expectedUic
@@ -251,15 +251,17 @@ class RouteTab {
     );
   }
 
-  // Validate the added waypoints by checking the name, CH, and UIC.
+  // Validate the added waypoints by checking the name, secondary code, and UIC.
   async validateAddedWaypoint(
     droppedWaypoint: Locator,
     expectedName: string,
-    expectedCh: string,
+    expectedSecondaryCode: string,
     expectedUic: string
   ) {
     await expect(RouteTab.getWaypointDroppedNameLocator(droppedWaypoint)).toHaveText(expectedName);
-    await expect(RouteTab.getWaypointDroppedChLocator(droppedWaypoint)).toHaveText(expectedCh);
+    await expect(RouteTab.getWaypointDroppedSecondaryCodeLocator(droppedWaypoint)).toHaveText(
+      expectedSecondaryCode
+    );
     await expect(RouteTab.getWaypointDroppedUicLocator(droppedWaypoint)).toHaveText(expectedUic);
   }
 
@@ -267,7 +269,7 @@ class RouteTab {
   async addNewWaypoints(
     suggestedWaypointsCount: number,
     waypointToAddNames: string[],
-    expectedValues: { name: string; ch: string; uic: string; km: string }[]
+    expectedValues: { name: string; secondaryCode: string; uic: string; km: string }[]
   ) {
     await this.addWaypointsButton.click();
     await expect(this.viaModal).toBeVisible();
@@ -282,7 +284,7 @@ class RouteTab {
       await RouteTab.validateWaypointSuggestions(
         waypointSuggestion,
         expectedValue.name,
-        expectedValue.ch,
+        expectedValue.secondaryCode,
         expectedValue.uic,
         expectedValue.km
       );
@@ -302,7 +304,7 @@ class RouteTab {
       await this.validateAddedWaypoint(
         droppedWaypoint,
         expectedValue.name,
-        expectedValue.ch,
+        expectedValue.secondaryCode,
         expectedValue.uic
       );
 
