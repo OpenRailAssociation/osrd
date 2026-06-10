@@ -78,8 +78,8 @@ class NGEPage extends OpSimulationResultPage {
     await this.graphContainer.click({ position });
   }
 
-  async fillNodeDetails(trigram: string, name: string) {
-    await this.textInputs.first().fill(trigram);
+  async fillNodeDetails(mainCode: string, name: string) {
+    await this.textInputs.first().fill(mainCode);
     await this.textInputs.nth(1).fill(name);
   }
 
@@ -190,10 +190,10 @@ class NGEPage extends OpSimulationResultPage {
     await this.page.mouse.up();
   }
 
-  async createNode(position: { x: number; y: number }, trigram: string, name: string) {
+  async createNode(position: { x: number; y: number }, mainCode: string, name: string) {
     await this.toggleTopologyEditor();
     await this.clickGraphAt(position);
-    await this.fillNodeDetails(trigram, name);
+    await this.fillNodeDetails(mainCode, name);
     await this.closeAside();
   }
 
