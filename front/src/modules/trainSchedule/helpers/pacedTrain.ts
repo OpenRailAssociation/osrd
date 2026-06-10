@@ -7,17 +7,19 @@ import type {
   PacedTrainException,
   TrainScheduleResponse,
 } from 'common/api/osrdEditoastApi';
-import type { OccurrenceId, PacedTrainId } from 'reducers/osrdconf/types';
+import type { OccurrenceId, PacedTrainId, TrainId } from 'reducers/osrdconf/types';
 import { Duration, addDurationToDate } from 'utils/duration';
 import {
   extractEditoastIdFromPacedTrainId,
   extractExceptionIdFromOccurrenceId,
   extractOccurrenceIndexFromOccurrenceId,
   extractPacedTrainIdFromOccurrenceId,
+  extractEditoastIdFromTrainId,
   formatPacedTrainIdToExceptionId,
   formatPacedTrainIdToIndexedOccurrenceId,
   isAddedExceptionId,
   isIndexedOccurrenceId,
+  isOccurrenceId,
 } from 'utils/trainId';
 
 import type {
@@ -88,6 +90,37 @@ export const findExceptionWithOccurrenceId = <T extends PacedTrainException>(
   const addedExceptionId = extractExceptionIdFromOccurrenceId(occurrenceId);
   return exceptions.find(({ id }) => Number(addedExceptionId) === id);
 };
+
+/**
+ * Given a train ID, return its train schedule and exception.
+ *
+ * The train schedule is unset if the train is not found. The exception is
+ * unset if the train is not an exception (e.g. unique train schedule or
+ * regular occurrence).
+ */
+export function findTrainScheduleAndException(
+  trainSchedules: TrainScheduleWithDetails[],
+  trainId: TrainId
+): {
+  trainSchedule: TrainScheduleWithDetails | undefined;
+  exception: SimulatedException | undefined;
+} {
+  const trainScheduleId = extractEditoastIdFromTrainId(trainId);
+  const trainSchedule = trainSchedules.find((ts) => ts.id === trainScheduleId);
+  if (!trainSchedule || !isOccurrenceId(trainId)) {
+    return { trainSchedule, exception: undefined };
+  }
+  if (!trainSchedule.paced) {
+    throw new Error('Occurrence ID references a unique train');
+  }
+
+  const exception = findExceptionWithOccurrenceId(trainSchedule.paced.exceptions, trainId);
+  if (isAddedExceptionId(trainId) && !exception) {
+    throw new Error('Occurrence ID references a non-existing exception ID');
+  }
+
+  return { trainSchedule, exception };
+}
 
 export const extractOccurrenceDetailsFromPacedTrain = <
   T extends Omit<TrainSchedule, 'paced' | 'exceptions'>,
