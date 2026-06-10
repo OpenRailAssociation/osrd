@@ -105,7 +105,7 @@ fn parts(
 		.collect()
 }
 
-/// If the local_track_name is None, we try to find if the track_section associated to this operational_point_part has a track_name.
+/// If the local_track_name is None, we try to find if the track_section associated with this operational_point_part has a track_name.
 /// If no track_name is found, we generate a random one.
 fn local_track_name_fallback(
     track: &Identifier,
@@ -127,7 +127,7 @@ fn local_track_name_fallback(
 }
 
 /// Get operational point main_code.
-/// Look through the nodes member of the relation and find one that has a "railway:ref" tag.
+/// Look through the nodes members of the relation and find one that has a "railway:ref" tag.
 fn main_code(relation: &Relation, node_id_to_main_code: &HashMap<NodeId, String>) -> String {
     relation
         .refs
