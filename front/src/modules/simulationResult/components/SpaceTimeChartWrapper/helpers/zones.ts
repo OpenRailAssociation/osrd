@@ -17,7 +17,7 @@ export type MovableOccupancyZone = OccupancyZone & {
   isStartTimeException?: boolean;
 };
 
-type OccupancyZoneReference = {
+export type OccupancyZoneReference = {
   waypointId: string;
   trainId: TrainId;
 };
