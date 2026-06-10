@@ -4339,26 +4339,30 @@ paths:
                           enum:
                           - id
                     - type: object
-                      title: OperationalPointReferenceTrigram
+                      title: OperationalPointReferenceDomestic
                       required:
-                      - trigram
+                      - country_code
+                      - main_code
                       - type
                       properties:
+                        country_code:
+                          type: string
+                          minLength: 1
+                        main_code:
+                          oneOf:
+                          - type: string
+                            minLength: 1
+                          description: The operational point main code
                         secondary_code:
                           oneOf:
                           - type: 'null'
                           - type: string
                             minLength: 1
                           description: An optional secondary code to identify a more specific location
-                        trigram:
-                          oneOf:
-                          - type: string
-                            minLength: 1
-                          description: The operational point trigram
                         type:
                           type: string
                           enum:
-                          - trigram
+                          - domestic
                     - type: object
                       title: OperationalPointReferenceUic
                       required:
@@ -11721,26 +11725,30 @@ components:
             enum:
             - id
       - type: object
-        title: OperationalPointReferenceTrigram
+        title: OperationalPointReferenceDomestic
         required:
-        - trigram
+        - country_code
+        - main_code
         - type
         properties:
+          country_code:
+            type: string
+            minLength: 1
+          main_code:
+            oneOf:
+            - type: string
+              minLength: 1
+            description: The operational point main code
           secondary_code:
             oneOf:
             - type: 'null'
             - type: string
               minLength: 1
             description: An optional secondary code to identify a more specific location
-          trigram:
-            oneOf:
-            - type: string
-              minLength: 1
-            description: The operational point trigram
           type:
             type: string
             enum:
-            - trigram
+            - domestic
       - type: object
         title: OperationalPointReferenceUic
         required:
@@ -13612,9 +13620,12 @@ components:
       - main_code
       - name
       - is_passenger_station
+      - country_code
       - geographic
       - track_sections
       properties:
+        country_code:
+          type: string
         geographic:
           $ref: '#/components/schemas/GeoJsonPoint'
         infra_id:

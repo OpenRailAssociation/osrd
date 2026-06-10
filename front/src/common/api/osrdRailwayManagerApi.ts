@@ -100,11 +100,12 @@ export type Items = {
               type: 'id';
             }
           | {
+              country_code: string;
+              /** The operational point main code */
+              main_code: string;
               /** An optional secondary code to identify a more specific location */
               secondary_code?: null | string;
-              /** The operational point trigram */
-              trigram: string;
-              type: 'trigram';
+              type: 'domestic';
             }
           | {
               /** An optional secondary code to identify a more specific location */
@@ -205,11 +206,12 @@ export type TransformTimetableResponse = {
                   type: 'id';
                 }
               | {
+                  country_code: string;
+                  /** The operational point main code */
+                  main_code: string;
                   /** An optional secondary code to identify a more specific location */
                   secondary_code?: null | string;
-                  /** The operational point trigram */
-                  trigram: string;
-                  type: 'trigram';
+                  type: 'domestic';
                 }
               | {
                   /** An optional secondary code to identify a more specific location */

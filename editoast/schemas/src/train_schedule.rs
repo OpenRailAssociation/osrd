@@ -259,8 +259,9 @@ impl TrainOccurrence {
                     id: NonBlankString::from("c"),
                     location: PathItemLocation::OperationalPointPartReference(
                         OperationalPointPartReference {
-                            operational_point: OperationalPointReference::Trigram {
-                                trigram: NonBlankString::from("MWS"),
+                            operational_point: OperationalPointReference::Domestic {
+                                country_code: NonBlankString::from("FR"),
+                                main_code: NonBlankString::from("MWS"),
                                 secondary_code: Some("BV".into()),
                             },
                             local_track_name: None,

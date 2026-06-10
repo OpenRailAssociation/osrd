@@ -296,10 +296,10 @@ impl OperationalPointModel {
             .collect())
     }
 
-    pub async fn retrieve_from_trigrams(
+    pub async fn retrieve_from_main_codes(
         conn: &mut DbConnection,
         infra_id: i64,
-        trigrams: &[String],
+        main_codes: &[String],
     ) -> Result<Vec<Self>, database::DatabaseError> {
         use database::tables::infra_object_operational_point::dsl;
         use diesel::dsl::sql;
@@ -314,7 +314,7 @@ impl OperationalPointModel {
 
         Ok(dsl::infra_object_operational_point
             .filter(dsl::infra_id.eq(infra_id))
-            .filter(sql::<Nullable<Text>>("data->>'main_code'").eq_any(trigrams))
+            .filter(sql::<Nullable<Text>>("data->>'main_code'").eq_any(main_codes))
             .load(&mut conn.write().await)
             .await?
             .into_iter()
@@ -432,7 +432,7 @@ mod tests_retrieve {
     use crate::Infra;
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn from_trigrams() {
+    async fn from_main_codes() {
         let db_pool = DbConnectionPoolV2::for_tests();
         let railjson = schemas::fixtures::small_infra();
         let small_infra = Infra::changeset()
@@ -441,11 +441,11 @@ mod tests_retrieve {
             .persist(railjson, &mut db_pool.get_ok())
             .await
             .unwrap();
-        let trigrams = vec!["MES".to_string(), "WS".to_string()];
-        let res = OperationalPointModel::retrieve_from_trigrams(
+        let main_codes = vec!["MES".to_string(), "WS".to_string()];
+        let res = OperationalPointModel::retrieve_from_main_codes(
             &mut db_pool.get_ok(),
             small_infra.id,
-            &trigrams,
+            &main_codes,
         )
         .await
         .expect("Failed to retrieve operational points");

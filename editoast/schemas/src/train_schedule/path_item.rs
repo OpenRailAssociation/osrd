@@ -62,11 +62,13 @@ pub enum OperationalPointReference {
         #[schema(inline)]
         operational_point: Identifier,
     },
-    #[schema(title = "OperationalPointReferenceTrigram")]
-    Trigram {
-        /// The operational point trigram
+    #[schema(title = "OperationalPointReferenceDomestic")]
+    Domestic {
         #[schema(inline)]
-        trigram: NonBlankString,
+        country_code: NonBlankString,
+        /// The operational point main code
+        #[schema(inline)]
+        main_code: NonBlankString,
         /// An optional secondary code to identify a more specific location
         #[schema(inline)]
         secondary_code: Option<NonBlankString>,
@@ -85,14 +87,16 @@ impl std::fmt::Display for OperationalPointReference {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::Id { operational_point } => write!(f, "id:{operational_point}"),
-            Self::Trigram {
-                trigram,
+            Self::Domestic {
+                country_code,
+                main_code,
                 secondary_code: None,
-            } => write!(f, "trigram:{trigram}"),
-            Self::Trigram {
-                trigram,
+            } => write!(f, "domestic:{country_code}:{main_code}"),
+            Self::Domestic {
+                country_code,
+                main_code,
                 secondary_code: Some(secondary_code),
-            } => write!(f, "trigram:{trigram}:{secondary_code}"),
+            } => write!(f, "domestic:{country_code}:{main_code}:{secondary_code}"),
             Self::Uic {
                 uic,
                 secondary_code: None,

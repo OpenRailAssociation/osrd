@@ -191,8 +191,8 @@ impl Infra {
                 .bind::<BigInt, _>(self.id)
                 .execute(conn.write().await.deref_mut()).await?;
 
-            sql_query("INSERT INTO search_operational_point(id, infra_id, obj_id, uic, main_code, secondary_code, name, is_passenger_station, secondary_name)
-                        SELECT op.id, $1, op.obj_id, uic, main_code, secondary_code, name, is_passenger_station, secondary_name FROM search_operational_point
+            sql_query("INSERT INTO search_operational_point(id, infra_id, obj_id, uic, main_code, secondary_code, name, is_passenger_station, secondary_name, country_code)
+                        SELECT op.id, $1, op.obj_id, uic, main_code, secondary_code, name, is_passenger_station, secondary_name, country_code FROM search_operational_point
                         JOIN infra_object_operational_point AS op ON search_operational_point.obj_id = op.obj_id and op.infra_id = $1
                         WHERE search_operational_point.infra_id = $2")
                 .bind::<BigInt, _>(cloned_infra.id)

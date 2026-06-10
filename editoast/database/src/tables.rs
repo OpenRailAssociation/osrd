@@ -602,6 +602,7 @@ diesel::table! {
         name -> Nullable<Text>,
         is_passenger_station -> Nullable<Bool>,
         secondary_name -> Nullable<Text>,
+        country_code -> Nullable<Text>,
     }
 }
 

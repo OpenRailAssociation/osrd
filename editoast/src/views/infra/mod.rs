@@ -1371,8 +1371,9 @@ pub mod tests {
             OperationalPointReference::Id {
                 operational_point: ("West_station").into(),
             },
-            OperationalPointReference::Trigram {
-                trigram: "MES".into(),
+            OperationalPointReference::Domestic {
+                country_code: "FR".into(),
+                main_code: "MES".into(),
                 secondary_code: Some("BV".into()),
             },
             OperationalPointReference::Uic {
@@ -1424,8 +1425,9 @@ pub mod tests {
                 uic: 8,
                 secondary_code: None,
             },
-            OperationalPointReference::Trigram {
-                trigram: "MES".into(),
+            OperationalPointReference::Domestic {
+                country_code: "FR".into(),
+                main_code: "MES".into(),
                 secondary_code: Some("PAUL".into()),
             },
         ];

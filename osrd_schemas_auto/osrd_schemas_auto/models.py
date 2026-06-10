@@ -2644,16 +2644,17 @@ class SecondaryCode2(RootModel[str]):
     """
 
 
-class OperationalPointReferenceTrigram(BaseModel):
+class OperationalPointReferenceDomestic(BaseModel):
+    country_code: Annotated[str, Field(min_length=1)]
+    main_code: str
+    """
+    The operational point main code
+    """
     secondary_code: SecondaryCode2 | None = None
     """
     An optional secondary code to identify a more specific location
     """
-    trigram: str
-    """
-    The operational point trigram
-    """
-    type: Literal["trigram"]
+    type: Literal["domestic"]
 
 
 class OperationalPointReferenceUic(BaseModel):
@@ -4887,7 +4888,7 @@ class OperationalPointPartReference(BaseModel):
     local_track_name: LocalTrackName | None = None
     operational_point: (
         OperationalPointReferenceId
-        | OperationalPointReferenceTrigram
+        | OperationalPointReferenceDomestic
         | OperationalPointReferenceUic
     )
 
@@ -5170,6 +5171,7 @@ class SearchResultItemOperationalPoint(BaseModel):
 
     """
 
+    country_code: str
     geographic: GeoJsonPoint
     infra_id: int
     is_passenger_station: bool

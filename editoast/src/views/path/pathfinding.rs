@@ -605,15 +605,17 @@ pub mod tests {
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
         let path_items = vec![
             PathItemLocation::OperationalPointPartReference(OperationalPointPartReference {
-                operational_point: OperationalPointReference::Trigram {
-                    trigram: "WS".into(),
+                operational_point: OperationalPointReference::Domestic {
+                    country_code: "FR".into(),
+                    main_code: "WS".into(),
                     secondary_code: Some("BV".into()),
                 },
                 local_track_name: None,
             }),
             PathItemLocation::OperationalPointPartReference(OperationalPointPartReference {
-                operational_point: OperationalPointReference::Trigram {
-                    trigram: "WS".into(),
+                operational_point: OperationalPointReference::Domestic {
+                    country_code: "FR".into(),
+                    main_code: "WS".into(),
                     secondary_code: Some("BV".into()),
                 },
                 local_track_name: None,
@@ -641,22 +643,25 @@ pub mod tests {
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
         let path_items = vec![
             PathItemLocation::OperationalPointPartReference(OperationalPointPartReference {
-                operational_point: OperationalPointReference::Trigram {
-                    trigram: "WS".into(),
+                operational_point: OperationalPointReference::Domestic {
+                    country_code: "FR".into(),
+                    main_code: "WS".into(),
                     secondary_code: Some("BV".into()),
                 },
                 local_track_name: None,
             }),
             PathItemLocation::OperationalPointPartReference(OperationalPointPartReference {
-                operational_point: OperationalPointReference::Trigram {
-                    trigram: "NO_TRIGRAM".into(),
+                operational_point: OperationalPointReference::Domestic {
+                    country_code: "FR".into(),
+                    main_code: "NO_MAIN_CODE".into(),
                     secondary_code: None,
                 },
                 local_track_name: None,
             }),
             PathItemLocation::OperationalPointPartReference(OperationalPointPartReference {
-                operational_point: OperationalPointReference::Trigram {
-                    trigram: "SWS".into(),
+                operational_point: OperationalPointReference::Domestic {
+                    country_code: "FR".into(),
+                    main_code: "SWS".into(),
                     secondary_code: Some("BV".into()),
                 },
                 local_track_name: None,
@@ -677,8 +682,9 @@ pub mod tests {
                         index: 1,
                         path_item: PathItemLocation::OperationalPointPartReference(
                             OperationalPointPartReference {
-                                operational_point: OperationalPointReference::Trigram {
-                                    trigram: "NO_TRIGRAM".into(),
+                                operational_point: OperationalPointReference::Domestic {
+                                    country_code: "FR".into(),
+                                    main_code: "NO_MAIN_CODE".into(),
                                     secondary_code: None
                                 },
                                 local_track_name: None,
@@ -751,15 +757,17 @@ pub mod tests {
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
         let path_items = vec![
             PathItemLocation::OperationalPointPartReference(OperationalPointPartReference {
-                operational_point: OperationalPointReference::Trigram {
-                    trigram: "WS".into(),
+                operational_point: OperationalPointReference::Domestic {
+                    country_code: "FR".into(),
+                    main_code: "WS".into(),
                     secondary_code: Some("BV".into()),
                 },
                 local_track_name: None,
             }),
             PathItemLocation::OperationalPointPartReference(OperationalPointPartReference {
-                operational_point: OperationalPointReference::Trigram {
-                    trigram: "SWS".into(),
+                operational_point: OperationalPointReference::Domestic {
+                    country_code: "FR".into(),
+                    main_code: "SWS".into(),
                     secondary_code: Some("BV".into()),
                 },
                 local_track_name: None,

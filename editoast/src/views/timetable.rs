@@ -1720,9 +1720,10 @@ mod tests {
             operational_point_references: HashMap::from([
                 (
                     "Mid_West_station".into(),
-                    // MWS is the trigram of Mid_West_station — tests cross-reference resolution
-                    OperationalPointReference::Trigram {
-                        trigram: "MWS".into(),
+                    // MWS is the main code of Mid_West_station — tests cross-reference resolution
+                    OperationalPointReference::Domestic {
+                        country_code: "FR".into(),
+                        main_code: "MWS".into(),
                         secondary_code: Some("BV".into()),
                     },
                 ),
