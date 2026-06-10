@@ -10,7 +10,7 @@ end-to-end testing.
 ## Unique Trains
 
 - Multiple rolling stock categories
-- Distinct itineraries using predefined trigrams or requested map points
+- Distinct itineraries using predefined main codes or requested map points
 - Different margins and timetable offsets
 - Various input configurations
 - Diverse speed limit tags and labels
