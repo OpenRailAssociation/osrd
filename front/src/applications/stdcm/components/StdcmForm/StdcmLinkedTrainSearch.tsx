@@ -1,7 +1,7 @@
 import { useState } from 'react';
 
 import { DatePicker, Input } from '@osrd-project/ui-core';
-import { ArrowDown, ArrowUp, Gear } from '@osrd-project/ui-icons';
+import { ArrowDown, ArrowUp } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
 
 import useLinkedTrainSearch from 'applications/stdcm/hooks/useLinkedTrainSearch';
@@ -14,46 +14,44 @@ import StdcmLinkedTrainResults from './StdcmLinkedTrainResults';
 type StdcmLinkedTrainSearchProps = {
   disabled: boolean;
   linkedTrainType: LinkedTrainType;
-  linkedOpId: string;
 };
 
-const StdcmLinkedTrainSearch = ({
-  disabled,
-  linkedTrainType,
-  linkedOpId,
-}: StdcmLinkedTrainSearchProps) => {
+const StdcmLinkedTrainSearch = ({ disabled, linkedTrainType }: StdcmLinkedTrainSearchProps) => {
   const { t } = useTranslation('stdcm');
   const [displayLinkedTrainSearch, setShowLinkedTrainSearch] = useState(false);
   const [isLinkedTrainDateValid, setIsLinkedTrainDateValid] = useState(true);
 
   const {
-    displaySearchButton,
-    launchTrainScheduleSearch,
-    linkedTrainDate,
-    linkedTrainResults,
-    resetLinkedTrainSearch,
-    selectableSlot,
-    setDisplaySearchButton,
-    setLinkedTrainDate,
-    setTrainNameInput,
-    trainNameInput,
-  } = useLinkedTrainSearch();
+    loading,
+    searchTerm,
+    setSearchTerm,
+    selectableDateSlot,
+    searchDate,
+    setSearchDate,
+    searchedLinkedTrains,
+    launchSearch,
+    selectedLinkedTrainIndex,
+    selectLinkedTrain,
+    resetSearch,
+  } = useLinkedTrainSearch(linkedTrainType);
 
   const removeLinkedTrainCard = () => {
     setShowLinkedTrainSearch(false);
-    resetLinkedTrainSearch();
+    resetSearch();
   };
 
   return (
     <div
       data-testid={`${linkedTrainType}-container`}
-      className={`stdcm-linked-train-search-container ${linkedTrainType}-linked-train`}
+      className={`stdcm-linked-train-search-container ${linkedTrainType === 'anteriorTrain' ? 'anterior' : 'posterior'}-linked-train`}
     >
-      {!displayLinkedTrainSearch ? (
+      {!(displayLinkedTrainSearch || searchedLinkedTrains) ? (
         <StdcmDefaultCard
           disabled={disabled}
           text={t(`linkedTrainDefaultCard.${linkedTrainType}`)}
-          Icon={linkedTrainType === 'anterior' ? <ArrowUp size="lg" /> : <ArrowDown size="lg" />}
+          Icon={
+            linkedTrainType === 'anteriorTrain' ? <ArrowUp size="lg" /> : <ArrowDown size="lg" />
+          }
           className="add-linked-train"
           onClick={() => setShowLinkedTrainSearch(true)}
           testId="add-linked-train"
@@ -79,10 +77,9 @@ const StdcmLinkedTrainSearch = ({
               testIdPrefix="linked-train-id"
               id="linked-train-id"
               type="text"
-              value={trainNameInput}
+              value={searchTerm}
               onChange={(e) => {
-                setDisplaySearchButton(true);
-                setTrainNameInput(e.target.value);
+                setSearchTerm(e.target.value);
               }}
               label="N°"
               narrow
@@ -95,45 +92,36 @@ const StdcmLinkedTrainSearch = ({
                 name: 'op-date',
                 narrow: true,
               }}
-              selectableSlot={selectableSlot}
-              value={linkedTrainDate}
+              selectableSlot={selectableDateSlot}
+              value={searchDate}
               onDateChange={(date) => {
-                setDisplaySearchButton(true);
                 setIsLinkedTrainDateValid(date !== undefined);
                 if (date) {
-                  setLinkedTrainDate(date);
+                  setSearchDate(date);
                 }
               }}
             />
           </div>
-          {displaySearchButton && (
+          {!loading && searchTerm && searchDate && (
             <button
               data-testid="linked-train-search-button"
               className="stdcm-linked-train-button"
               type="button"
-              onClick={launchTrainScheduleSearch}
+              onClick={launchSearch}
               disabled={!isLinkedTrainDateValid}
             >
               {t('find')}
             </button>
           )}
-          {!displaySearchButton && !linkedTrainResults && (
-            <div className="stdcm-linked-train-button white">
-              <Gear size="lg" className="stdcm-linked-train-loading" />
-            </div>
+          {(searchedLinkedTrains || loading) && (
+            <StdcmLinkedTrainResults
+              linkedTrainType={linkedTrainType}
+              linkedTrainResults={searchedLinkedTrains}
+              selectLinkedTrain={selectLinkedTrain}
+              selectedLinkedTrainIndex={selectedLinkedTrainIndex}
+              loading={loading}
+            />
           )}
-          {linkedTrainResults &&
-            (linkedTrainResults.length > 0 ? (
-              <StdcmLinkedTrainResults
-                linkedTrainResults={linkedTrainResults}
-                linkedOp={{
-                  extremityType: linkedTrainType === 'anterior' ? 'destination' : 'origin',
-                  id: linkedOpId,
-                }}
-              />
-            ) : (
-              <p className="text-center mb-0">{t('noCorrespondingResults')}</p>
-            ))}
         </StdcmCard>
       )}
     </div>

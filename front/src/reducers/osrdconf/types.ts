@@ -9,6 +9,7 @@ import type {
   StdcmSearchDatetimeWindow,
   StdcmSimulation,
   StdcmStopTypes,
+  StdcmLinkedTrainSearchState,
 } from 'applications/stdcm/types';
 import type {
   TrainCategory,
@@ -85,7 +86,11 @@ export type OsrdStdcmConfState = OsrdConfState & {
   loadingGauge?: LoadingGaugeType;
   lightRollingStockID?: number;
   towedRollingStockID?: number;
-  linkedTrains: LinkedTrains;
+  linkedTrains: LinkedTrains; // TOCHECK/TODECIDE: can we drop this and use the search results + index instead?
+  linkedTrainsSearch: {
+    anteriorTrain: StdcmLinkedTrainSearchState;
+    posteriorTrain: StdcmLinkedTrainSearchState;
+  };
   simulations: StdcmSimulation[];
   selectedSimulationIndex?: number;
   retainedSimulationIndex?: number;

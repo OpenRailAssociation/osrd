@@ -1,4 +1,4 @@
-import { useMemo, useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 
 import { compact } from 'lodash';
 import { useTranslation } from 'react-i18next';
@@ -13,19 +13,27 @@ import type {
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { setFailure } from 'reducers/main';
 import {
+  updateLinkedTrainSearchTerm,
+  updateLinkedTrainSearchDate,
+  updateLinkedTrainSearchResults,
+  selectLinkedTrainSearchResult,
+  resetLinkedTrainSearch,
+} from 'reducers/osrdconf/stdcmConf';
+import {
+  getLinkedTrainsSearchState,
   getSearchDatetimeWindow,
   getStdcmInfraID,
   getStdcmTimetableID,
 } from 'reducers/osrdconf/stdcmConf/selectors';
 import { useAppDispatch } from 'store';
-import { isArrivalDateInSearchTimeWindow, isEqualDate } from 'utils/date';
+import { isEqualDate } from 'utils/date';
 import { Duration } from 'utils/duration';
 import { castErrorToFailure } from 'utils/error';
 
-import type { StdcmLinkedTrainResult } from '../types';
+import type { LinkedTrainType } from '../types';
 import computeOpSchedules from '../utils/computeOpSchedules';
 
-const useLinkedTrainSearch = () => {
+const useLinkedTrainSearch = (linkedTrainType: LinkedTrainType) => {
   const { t } = useTranslation('stdcm', { keyPrefix: 'trainPath.linkedTrain' });
   const dispatch = useAppDispatch();
 
@@ -39,18 +47,29 @@ const useLinkedTrainSearch = () => {
   const timetableId = useSelector(getStdcmTimetableID);
   const searchDatetimeWindow = useSelector(getSearchDatetimeWindow);
 
-  const selectableSlot = useMemo(() => {
-    const startDate = new Date(searchDatetimeWindow.begin);
+  const selectableDateSlot = useMemo(() => {
+    const startDate = new Date(searchDatetimeWindow.begin); // TOCHECK: why do we need this for start, but not end?
     return {
       start: startDate,
       end: searchDatetimeWindow.end,
     };
   }, [searchDatetimeWindow]);
 
-  const [displaySearchButton, setDisplaySearchButton] = useState(true);
-  const [trainNameInput, setTrainNameInput] = useState('');
-  const [linkedTrainDate, setLinkedTrainDate] = useState(selectableSlot.start);
-  const [linkedTrainResults, setLinkedTrainResults] = useState<StdcmLinkedTrainResult[]>();
+  const [loading, setLoading] = useState(false);
+  const {
+    searchTerm,
+    date: searchDate,
+    selectedIndex: selectedLinkedTrainIndex,
+    results: searchedLinkedTrains,
+  } = useSelector(getLinkedTrainsSearchState)[linkedTrainType];
+
+  const setSearchTerm = (term: string) =>
+    dispatch(updateLinkedTrainSearchTerm({ linkedTrainType, searchTerm: term }));
+  const setSearchDate = (date: Date) =>
+    dispatch(updateLinkedTrainSearchDate({ linkedTrainType, date }));
+  const resetSearch = () => dispatch(resetLinkedTrainSearch({ linkedTrainType }));
+  const selectLinkedTrain = (selectedIndex: number) =>
+    dispatch(selectLinkedTrainSearchResult({ linkedTrainType, selectedIndex }));
 
   const getExtremityDetails = useCallback(
     async (pathItem: PathItem) => {
@@ -102,11 +121,10 @@ const useLinkedTrainSearch = () => {
     [postTrainSchedulesSimulationSummary, infraId]
   );
 
-  const launchTrainScheduleSearch = useCallback(async () => {
-    setLinkedTrainResults(undefined);
-    if (!trainNameInput) return;
-    setDisplaySearchButton(false);
-    setLinkedTrainResults([]);
+  const launchSearch = useCallback(async () => {
+    dispatch(updateLinkedTrainSearchResults({ linkedTrainType, results: [] }));
+    if (!searchTerm || !searchDate) return;
+    setLoading(true);
 
     try {
       // Fetch the train schedule sets linked to the timetable to search among them
@@ -121,17 +139,16 @@ const useLinkedTrainSearch = () => {
       const results = (await postSearch({
         searchPayload: {
           object: 'trainschedule',
-          query: ['and', ['search', ['train_name'], trainNameInput], ['or', ...tssPayload]],
+          query: ['and', ['search', ['train_name'], searchTerm], ['or', ...tssPayload]],
         },
         pageSize: 25,
       }).unwrap()) as SearchResultItemTrainSchedule[];
       const filteredResults = results.filter((result) =>
-        isEqualDate(linkedTrainDate, new Date(result.start_time))
+        isEqualDate(searchDate, new Date(result.start_time))
       );
 
       if (!filteredResults.length) {
-        setDisplaySearchButton(true);
-        setLinkedTrainResults([]);
+        dispatch(updateLinkedTrainSearchResults({ linkedTrainType, results: [] }));
         return;
       }
 
@@ -164,44 +181,31 @@ const useLinkedTrainSearch = () => {
           };
         })
       );
-      setLinkedTrainResults(compact(newLinkedPathResults));
+      dispatch(
+        updateLinkedTrainSearchResults({ linkedTrainType, results: compact(newLinkedPathResults) })
+      );
     } catch (error) {
       dispatch(setFailure(castErrorToFailure(error)));
-      setDisplaySearchButton(true);
+    } finally {
+      setLoading(false);
     }
-  }, [
-    postSearch,
-    trainNameInput,
-    timetableId,
-    getTrainScheduleSets,
-    linkedTrainDate,
-    getExtremityDetails,
-  ]);
-
-  const resetLinkedTrainSearch = () => {
-    setDisplaySearchButton(true);
-    setLinkedTrainResults(undefined);
-    setTrainNameInput('');
-  };
-
-  useEffect(() => {
-    if (!isArrivalDateInSearchTimeWindow(linkedTrainDate, searchDatetimeWindow)) {
-      setLinkedTrainDate(selectableSlot.start);
-      resetLinkedTrainSearch();
-    }
-  }, [selectableSlot]);
+  }, [postSearch, searchTerm, timetableId, getTrainScheduleSets, searchDate, getExtremityDetails]);
 
   return {
-    displaySearchButton,
-    launchTrainScheduleSearch,
-    linkedTrainDate,
-    linkedTrainResults,
-    resetLinkedTrainSearch,
-    selectableSlot,
-    setDisplaySearchButton,
-    setLinkedTrainDate,
-    setTrainNameInput,
-    trainNameInput,
+    loading,
+    // TODECIDE: Should we bother exposing pass through values + setters, with the hook acting as a single store entrypoint for the component,
+    // or should we instead use the store selectors and reducers directly in the component instead?
+    // Or perhaps should we move launchSearch in the store as a reducer too? -> currently we don't tend to put rtkqueries in the store, so I think not
+    searchTerm,
+    setSearchTerm,
+    selectableDateSlot,
+    searchDate,
+    setSearchDate,
+    searchedLinkedTrains,
+    launchSearch,
+    selectedLinkedTrainIndex,
+    selectLinkedTrain,
+    resetSearch,
   };
 };
 

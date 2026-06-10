@@ -7,8 +7,8 @@ import {
   MarginType,
   StdcmStopTypes,
   type ConsistData,
-  type ExtremityPathStepType,
-  type StdcmLinkedTrainExtremity,
+  type LinkedTrainType,
+  type StdcmLinkedTrainResult,
   type StdcmSimulation,
 } from 'applications/stdcm/types';
 import { buildMapStateReducer } from 'reducers/commonMap';
@@ -20,6 +20,14 @@ import { Duration } from 'utils/duration';
 import type { ArrayElement, PickAndNonNullableFields } from 'utils/types';
 
 const DEFAULT_TOLERANCE = new Duration({ minutes: 30 });
+
+const getDefaultLinkedTrainsSearch = (state?: Draft<OsrdStdcmConfState>) => {
+  const initDate = state?.searchDatetimeWindow?.begin; // TOCHECK: this behavior
+  return {
+    anteriorTrain: { searchTerm: '', date: initDate ? new Date(initDate) : undefined },
+    posteriorTrain: { searchTerm: '', date: initDate ? new Date(initDate) : undefined },
+  };
+};
 
 export const stdcmConfInitialState: OsrdStdcmConfState = {
   ...defaultCommonConf,
@@ -52,12 +60,13 @@ export const stdcmConfInitialState: OsrdStdcmConfState = {
     anteriorTrain: undefined,
     posteriorTrain: undefined,
   },
+  linkedTrainsSearch: getDefaultLinkedTrainsSearch(),
   simulations: [],
 };
 
 const updateSimulationState = (state: Draft<OsrdStdcmConfState>, simulation: StdcmSimulation) => {
   const {
-    inputs: { consist, pathSteps },
+    inputs: { consist, pathSteps, linkedTrains, linkedTrainsSearch },
   } = simulation;
   state.rollingStockID = consist?.tractionEngine?.id;
   state.towedRollingStockID = consist?.towedRollingStock?.id;
@@ -67,6 +76,8 @@ const updateSimulationState = (state: Draft<OsrdStdcmConfState>, simulation: Std
   state.loadingGauge = consist?.loadingGauge ?? 'GA';
   state.speedLimitByTag = consist?.speedLimitByTag;
   state.stdcmPathSteps = pathSteps;
+  state.linkedTrains = linkedTrains;
+  state.linkedTrainsSearch = linkedTrainsSearch;
 };
 
 export const stdcmConfSlice = createSlice({
@@ -85,6 +96,7 @@ export const stdcmConfSlice = createSlice({
       state.maxSpeed = stdcmConfInitialState.maxSpeed;
       state.speedLimitByTag = stdcmConfInitialState.speedLimitByTag;
       state.linkedTrains = stdcmConfInitialState.linkedTrains;
+      state.linkedTrainsSearch = getDefaultLinkedTrainsSearch(state);
       state.retainedSimulationIndex = stdcmConfInitialState.retainedSimulationIndex;
       state.selectedSimulationIndex = stdcmConfInitialState.selectedSimulationIndex;
       state.simulations = stdcmConfInitialState.simulations;
@@ -228,6 +240,10 @@ export const stdcmConfSlice = createSlice({
       }
 
       state.stdcmPathSteps = [newOrigin, ...state.stdcmPathSteps.slice(1, -1), newDestination];
+
+      // use the searchDatetimeWindow begin date as the default date for the linked train search // TOCHECK: this behavior
+      state.linkedTrainsSearch.anteriorTrain.date = searchDatetimeWindow?.begin;
+      state.linkedTrainsSearch.posteriorTrain.date = searchDatetimeWindow?.begin;
     },
     updateStdcmPathSteps(
       state: Draft<OsrdStdcmConfState>,
@@ -263,21 +279,58 @@ export const stdcmConfSlice = createSlice({
         (pathStep) => pathStep.id !== action.payload
       );
     },
-    updateLinkedTrainExtremity(
+    updateLinkedTrainSearchTerm(
       state: Draft<OsrdStdcmConfState>,
       action: PayloadAction<{
-        linkedTrainExtremity: ExtremityPathStepType;
-        trainName: string;
-        pathStep: StdcmLinkedTrainExtremity;
-        pathStepId: string;
+        searchTerm: string;
+        linkedTrainType: 'anteriorTrain' | 'posteriorTrain';
       }>
     ) {
-      const { linkedTrainExtremity, trainName, pathStep, pathStepId } = action.payload;
-      const { name, ch, geographic, arrivalDate, date, time, trigram, uic, obj_id } = pathStep;
+      const { searchTerm, linkedTrainType } = action.payload;
+      state.linkedTrainsSearch[linkedTrainType].searchTerm = searchTerm;
+    },
+    updateLinkedTrainSearchDate(
+      state: Draft<OsrdStdcmConfState>,
+      action: PayloadAction<{
+        date: Date;
+        linkedTrainType: 'anteriorTrain' | 'posteriorTrain';
+      }>
+    ) {
+      const { date, linkedTrainType } = action.payload;
+      state.linkedTrainsSearch[linkedTrainType].date = date;
+    },
+    updateLinkedTrainSearchResults(
+      state: Draft<OsrdStdcmConfState>,
+      action: PayloadAction<{
+        results: StdcmLinkedTrainResult[];
+        linkedTrainType: 'anteriorTrain' | 'posteriorTrain';
+      }>
+    ) {
+      const { results, linkedTrainType } = action.payload;
+      state.linkedTrainsSearch[linkedTrainType].selectedIndex = undefined;
+      state.linkedTrainsSearch[linkedTrainType].results = results;
+      state.linkedTrains[linkedTrainType] = stdcmConfInitialState.linkedTrains[linkedTrainType];
+    },
+    selectLinkedTrainSearchResult(
+      state: Draft<OsrdStdcmConfState>,
+      action: PayloadAction<{
+        selectedIndex: number;
+        linkedTrainType: LinkedTrainType;
+      }>
+    ) {
+      const { selectedIndex, linkedTrainType } = action.payload;
+      const isAnteriorTrain = linkedTrainType === 'anteriorTrain';
+      const linkedTrain = state.linkedTrainsSearch[linkedTrainType].results!.at(selectedIndex)!;
+
+      state.linkedTrainsSearch[linkedTrainType].selectedIndex = selectedIndex;
+
+      const linkedExtremity = isAnteriorTrain ? linkedTrain.destination : linkedTrain.origin;
+      const { name, ch, geographic, arrivalDate, date, time, trigram, uic, obj_id } =
+        linkedExtremity;
 
       const coordinates: [number, number] = [geographic.coordinates[0], geographic.coordinates[1]];
-
-      const newPathStep = {
+      const linkedPathStepIndex = isAnteriorTrain ? 0 : state.stdcmPathSteps.length - 1;
+      const linkedPathStep = {
         operationalPoint: {
           id: obj_id,
           name,
@@ -286,27 +339,28 @@ export const stdcmConfSlice = createSlice({
           secondaryCode: ch,
           uic,
         },
-        id: pathStepId,
         arrival: arrivalDate,
-        ...(linkedTrainExtremity === 'origin' && {
+        ...(isAnteriorTrain && {
           arrivalType: ArrivalTimeTypes.PRECISE_TIME,
         }),
       };
+      state.stdcmPathSteps[linkedPathStepIndex] = {
+        ...state.stdcmPathSteps[linkedPathStepIndex],
+        ...linkedPathStep,
+      };
 
-      const newLinkedTrain = { date, time, trainName };
-
-      if (linkedTrainExtremity === 'destination') {
-        state.linkedTrains.anteriorTrain = newLinkedTrain;
-      } else {
-        state.linkedTrains.posteriorTrain = newLinkedTrain;
-      }
-      const newPathSteps = state.stdcmPathSteps.map((step) => {
-        if (step.id === action.payload.pathStepId) {
-          return { ...step, ...newPathStep };
-        }
-        return step;
-      });
-      state.stdcmPathSteps = newPathSteps;
+      state.linkedTrains[linkedTrainType] = { date, time, trainName: linkedTrain.trainName };
+    },
+    resetLinkedTrainSearch(
+      state: Draft<OsrdStdcmConfState>,
+      action: PayloadAction<{
+        linkedTrainType: LinkedTrainType;
+      }>
+    ) {
+      const { linkedTrainType } = action.payload;
+      state.linkedTrainsSearch[linkedTrainType] =
+        getDefaultLinkedTrainsSearch(state)[linkedTrainType];
+      state.linkedTrains[linkedTrainType] = stdcmConfInitialState.linkedTrains[linkedTrainType];
     },
     addStdcmSimulations(
       state: Draft<OsrdStdcmConfState>,
@@ -356,7 +410,11 @@ export const {
   updateStdcmPathStep,
   addStdcmVia,
   deleteStdcmVia,
-  updateLinkedTrainExtremity,
+  updateLinkedTrainSearchTerm,
+  updateLinkedTrainSearchDate,
+  updateLinkedTrainSearchResults,
+  selectLinkedTrainSearchResult,
+  resetLinkedTrainSearch,
   selectSimulation,
   retainSimulation,
   addStdcmSimulations,

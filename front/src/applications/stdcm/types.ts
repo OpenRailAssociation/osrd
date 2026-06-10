@@ -100,6 +100,21 @@ export enum MarginType {
   TIME_PER_DISTANCE = 'time_per_distance',
 }
 
+// export type StdcmLinkedTrainSearchResult = {
+//   date: string;
+//   time: string;
+//   trainName: string;
+//   origin: StdcmLinkedTrainExtremity;
+//   destination: StdcmLinkedTrainExtremity;
+// };
+
+export type StdcmLinkedTrainSearchState = {
+  results?: StdcmLinkedTrainResult[];
+  selectedIndex?: number;
+  date?: Date;
+  searchTerm: string;
+};
+
 export type StdcmSimulationInputs = {
   departureDate?: string;
   departureTime?: string;
@@ -117,6 +132,10 @@ export type StdcmSimulationInputs = {
     speedLimitByTag?: string;
   };
   linkedTrains: LinkedTrains;
+  linkedTrainsSearch: {
+    anteriorTrain: StdcmLinkedTrainSearchState;
+    posteriorTrain: StdcmLinkedTrainSearchState;
+  };
 };
 
 export type ConsistData = {
@@ -249,14 +268,12 @@ export type StdcmLinkedTrainResult = {
   trainName: string;
 };
 
-export type ExtremityPathStepType = 'origin' | 'destination';
-
 export type LoaderStatus = {
   status: 'loader-fixed-bottom' | 'loader-fixed-top' | 'loader-absolute';
   firstLaunch: boolean;
 };
 
-export type LinkedTrainType = 'anterior' | 'posterior';
+export type LinkedTrainType = 'anteriorTrain' | 'posteriorTrain';
 
 export type StdcmSearchDatetimeWindow = {
   begin: Date;

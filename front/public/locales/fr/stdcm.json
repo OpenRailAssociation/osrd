@@ -53,8 +53,8 @@
   "infrastructure": "Infra",
   "leaveAt": "Partir à {{ time }}",
   "linkedTrainDefaultCard": {
-    "anterior": "Indiquer le sillon antérieur",
-    "posterior": "Indiquer le sillon postérieur"
+    "anteriorTrain": "Indiquer le sillon antérieur",
+    "posteriorTrain": "Indiquer le sillon postérieur"
   },
   "mailFeedback": {
     "body": "Nous vous invitons à nous envoyer un message.\nDès que vous avez une gêne ou une remarque,\nmême si vous n'y mettez pas la forme.\n\nMerci à vous par avance,\nL'équipe du projet {{stdcmName}}\n\n(vous pouvez effacer ce message)",
@@ -287,10 +287,10 @@
     "date": "Date",
     "destination": "Destination",
     "linkedTrain": {
-      "anterior": "Sillon antérieur",
+      "anteriorTrain": "Sillon antérieur",
       "error": "Erreur de sillons liés",
       "noTrainScheduleSetFound": "Aucun paquet lié à cette grille horaire n'a été trouvé",
-      "posterior": "Sillon postérieur"
+      "posteriorTrain": "Sillon postérieur"
     },
     "origin": "Origine",
     "preciseTime": "horaire précis",

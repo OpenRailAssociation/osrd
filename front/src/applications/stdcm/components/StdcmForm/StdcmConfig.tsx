@@ -327,11 +327,7 @@ const StdcmConfig = ({
       )}
       <div className="d-flex">
         <div className="stdcm-parameters">
-          <StdcmLinkedTrainSearch
-            disabled={disabled}
-            linkedTrainType="anterior"
-            linkedOpId={origin.id}
-          />
+          <StdcmLinkedTrainSearch disabled={disabled} linkedTrainType="anteriorTrain" />
           <StdcmConsist
             disabled={disabled}
             isDebugMode={isDebugMode}
@@ -359,11 +355,7 @@ const StdcmConfig = ({
             onHasViaConsistErrorsChange={setViaConsistErrors}
           />
           <StdcmDestination disabled={disabled} onItineraryChange={onItineraryChange} />
-          <StdcmLinkedTrainSearch
-            disabled={disabled}
-            linkedTrainType="posterior"
-            linkedOpId={destination.id}
-          />
+          <StdcmLinkedTrainSearch disabled={disabled} linkedTrainType="posteriorTrain" />
 
           <div
             className={cx('stdcm-launch-request', {
