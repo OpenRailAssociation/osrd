@@ -434,7 +434,7 @@
     "C2": "1",
     "C1": "3"
   },
-  "energy_sources": [ ],
+  "energy_sources": [],
   "electrical_power_startup_time": 6.0,
   "raise_pantograph_time": 16.0,
   "version": 1,
@@ -452,7 +452,7 @@
       "type": "TVM430"
     }
   ],
-  "liveries": [ ],
+  "liveries": [],
   "primary_category": "FREIGHT_TRAIN",
-  "other_categories": [ ]
+  "other_categories": []
 }
