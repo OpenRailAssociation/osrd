@@ -27,7 +27,7 @@ export function findFirstPdf(directory: string): string | null {
 }
 
 export async function parsePdfText(buffer: Buffer) {
-  const doc = await getDocument(new Uint8Array(buffer)).promise;
+  const doc = await getDocument({ data: new Uint8Array(buffer) }).promise;
   let fullText = '';
   for (let pageNum = 1; pageNum <= doc.numPages; pageNum += 1) {
     const page = await doc.getPage(pageNum);
