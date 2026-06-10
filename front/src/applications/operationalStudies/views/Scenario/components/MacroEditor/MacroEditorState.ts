@@ -4,6 +4,7 @@ import { sortBy } from 'lodash';
 import type {
   MacroNodeResponse,
   OperationalPoint,
+  OperationalPointReference,
   PathItemLocation,
 } from 'common/api/osrdEditoastApi';
 
@@ -133,7 +134,7 @@ export default class MacroEditorState {
         const node = this.nodes[this.indexByPathKey[key]];
         if (node?.dbId) return 0;
         if (key.startsWith('op_id:')) return 1;
-        if (key.startsWith('trigram:')) return 2;
+        if (key.startsWith('domestic:')) return 2;
         if (key.startsWith('uic:')) return 3;
         // default
         return 4;
@@ -246,22 +247,43 @@ export default class MacroEditorState {
    */
   static getPathKey(item: PathItemLocation): string {
     if (item.type === 'track_offset') return `track_offset:${item.track}+${item.offset}`;
-    if (item.operational_point.type === 'trigram')
-      return `trigram:${item.operational_point.trigram}${item.operational_point.secondary_code ? `/${item.operational_point.secondary_code}` : ''}`;
+    if (item.operational_point.type === 'domestic') {
+      return `domestic:${MacroEditorState.encodeDomesticReference(item.operational_point)}`;
+    }
     if (item.operational_point.type === 'id')
       return `op_id:${item.operational_point.operational_point}`;
     return `uic:${item.operational_point.uic}${item.operational_point.secondary_code ? `/${item.operational_point.secondary_code}` : ''}`;
   }
 
   /**
+   * Encode a domestic operational point reference in the form:
+   * ${country_code}-${main_code}/${secondary_code}
+   */
+  static encodeDomesticReference(
+    opRef: Extract<OperationalPointReference, { type: 'domestic' }>
+  ): string {
+    const secondaryCode = opRef.secondary_code ? `/${opRef.secondary_code}` : '';
+    const countryCode = opRef.country_code === '??' ? '' : `${opRef.country_code}-`;
+    return `${countryCode}${opRef.main_code}${secondaryCode}`;
+  }
+
+  /**
    * Given a search result item, returns all possible pathKeys, ordered by weight.
    */
   static getPathKeys(op: OperationalPoint): string[] {
-    const { main_code, secondary_code, uic } = op ?? {};
+    const { main_code, secondary_code, uic, country_code } = op ?? {};
 
     const result = [];
     result.push(`op_id:${op.id}`);
-    if (main_code) result.push(`trigram:${main_code}${secondary_code ? `/${secondary_code}` : ''}`);
+    if (main_code) {
+      result.push(
+        this.getPathKey({
+          type: 'operational_point_part_reference',
+          operational_point: { main_code, secondary_code, country_code, type: 'domestic' },
+          local_track_name: null,
+        })
+      );
+    }
     if (uic) result.push(`uic:${uic}${secondary_code ? `/${secondary_code}` : ''}`);
     for (const opPart of op.parts) {
       result.push(`track_offset:${opPart.track}+${opPart.position}`);
@@ -279,11 +301,10 @@ export default class MacroEditorState {
           operational_point: { operational_point: value, type: 'id' },
         };
       }
-      case 'trigram': {
-        const [trigram, secondary_code] = value.split('/');
+      case 'domestic': {
         return {
           type: 'operational_point_part_reference',
-          operational_point: { trigram, secondary_code, type: 'trigram' },
+          operational_point: this.decodeDomesticReference(value),
         };
       }
       case 'uic': {
@@ -300,5 +321,26 @@ export default class MacroEditorState {
       default:
         throw new Error(`Invalid path key type "${type}"`);
     }
+  }
+
+  /**
+   * Decode a domestic operational point reference in the form:
+   * ${country_code}-${main_code}/${secondary_code}
+   */
+  static decodeDomesticReference(
+    pathKey: string
+  ): Extract<OperationalPointReference, { type: 'domestic' }> {
+    const [country_code_main_code, secondary_code] = pathKey.split('/');
+    const country_code_main_code_split = country_code_main_code.split('-');
+
+    let country_code, main_code;
+    if (country_code_main_code_split.length === 2) {
+      [country_code, main_code] = country_code_main_code_split;
+    } else {
+      main_code = country_code_main_code;
+      country_code = '??';
+    }
+
+    return { main_code, secondary_code, country_code, type: 'domestic' };
   }
 }

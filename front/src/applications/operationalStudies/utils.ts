@@ -185,7 +185,7 @@ export const matchOpRefAndWaypoint = (
     );
   }
   return (
-    location.operational_point.trigram === waypoint.main_code &&
+    location.operational_point.main_code === waypoint.main_code &&
     location.operational_point.secondary_code === waypoint.secondary_code
   );
 };
@@ -511,6 +511,6 @@ export const groupRoundTrips = (
 
 export const getInvalidStepLabel = (opRef: OperationalPointReference) => {
   if (opRef.type === 'uic') return opRef.uic.toString();
-  if (opRef.type === 'trigram') return opRef.trigram;
+  if (opRef.type === 'domestic') return opRef.main_code;
   return opRef.operational_point;
 };

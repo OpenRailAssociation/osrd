@@ -15,6 +15,7 @@ describe('filterMissingFields', () => {
     ...(hasOP && {
       operationalPoint: {
         id: 'op1',
+        countryCode: 'FR',
         mainCode: 'ABC',
         uic: 12345,
         secondaryCode: '00',
@@ -32,6 +33,7 @@ describe('filterMissingFields', () => {
     ...(hasOP && {
       operationalPoint: {
         id: 'op2',
+        countryCode: 'FR',
         mainCode: 'DEF',
         uic: 67890,
         secondaryCode: '00',

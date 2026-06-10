@@ -26,7 +26,12 @@ describe('formatTrainSchedulePayload', () => {
         id: '0-0',
         location: {
           type: 'operational_point_part_reference',
-          operational_point: { trigram: 'WS', secondary_code: 'BV', type: 'trigram' },
+          operational_point: {
+            main_code: 'WS',
+            secondary_code: 'BV',
+            type: 'domestic',
+            country_code: 'FR',
+          },
           local_track_name: null,
         },
         name: 'West_station',
@@ -40,7 +45,12 @@ describe('formatTrainSchedulePayload', () => {
         id: '1-1',
         location: {
           type: 'operational_point_part_reference',
-          operational_point: { trigram: 'SS', secondary_code: 'BV', type: 'trigram' },
+          operational_point: {
+            main_code: 'SS',
+            secondary_code: 'BV',
+            type: 'domestic',
+            country_code: 'FR',
+          },
           local_track_name: null,
         },
         name: 'South_station',
@@ -86,9 +96,10 @@ describe('formatTrainSchedulePayload', () => {
             location: {
               type: 'operational_point_part_reference',
               operational_point: {
-                trigram: 'WS',
+                main_code: 'WS',
                 secondary_code: 'BV',
-                type: 'trigram',
+                country_code: 'FR',
+                type: 'domestic',
               },
               local_track_name: null,
             },
@@ -98,9 +109,10 @@ describe('formatTrainSchedulePayload', () => {
             location: {
               type: 'operational_point_part_reference',
               operational_point: {
-                trigram: 'SS',
+                main_code: 'SS',
                 secondary_code: 'BV',
-                type: 'trigram',
+                country_code: 'FR',
+                type: 'domestic',
               },
               local_track_name: null,
             },

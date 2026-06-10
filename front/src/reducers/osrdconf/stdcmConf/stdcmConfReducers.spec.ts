@@ -80,6 +80,7 @@ const stdcmPathSteps: StdcmPathStep[] = [
   {
     operationalPoint: {
       id: '0',
+      countryCode: 'FR',
       uic: 1,
       mainCode: 'A',
       secondaryCode: 'BV',
@@ -97,6 +98,7 @@ const stdcmPathSteps: StdcmPathStep[] = [
   {
     operationalPoint: {
       id: '1',
+      countryCode: 'FR',
       uic: 2,
       mainCode: 'B',
       secondaryCode: 'BV',
@@ -111,6 +113,7 @@ const stdcmPathSteps: StdcmPathStep[] = [
   {
     operationalPoint: {
       id: '2',
+      countryCode: 'FR',
       uic: 3,
       mainCode: 'C',
       secondaryCode: 'BV',
@@ -125,6 +128,7 @@ const stdcmPathSteps: StdcmPathStep[] = [
   {
     operationalPoint: {
       id: '3',
+      countryCode: 'FR',
       uic: 4,
       mainCode: 'D',
       secondaryCode: 'BV',
@@ -139,6 +143,7 @@ const stdcmPathSteps: StdcmPathStep[] = [
   {
     operationalPoint: {
       id: '4',
+      countryCode: 'FR',
       uic: 5,
       mainCode: 'E',
       secondaryCode: 'BV',

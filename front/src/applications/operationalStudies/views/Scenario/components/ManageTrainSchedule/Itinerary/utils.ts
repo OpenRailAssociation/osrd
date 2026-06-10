@@ -43,11 +43,12 @@ export const buildOpRef = (op: OperationalPoint): OperationalPointReference => {
       uic,
       secondary_code: ch,
     };
-  const trigram = op.main_code;
-  if (trigram)
+  const mainCode = op.main_code;
+  if (mainCode)
     return {
-      type: 'trigram',
-      trigram,
+      type: 'domestic',
+      main_code: mainCode,
+      country_code: op.country_code,
       secondary_code: ch,
     };
   return {
@@ -65,7 +66,7 @@ export const buildOpDisplayName = (op: OperationalPoint): string => {
 export const getOpKey = (location: PathItemLocation | null): string | null => {
   if (!location || location.type === 'track_offset') return null;
   const op = location.operational_point;
-  if (op.type === 'trigram') return `${op.trigram} ${op.secondary_code}`;
+  if (op.type === 'domestic') return `${op.country_code} ${op.main_code} ${op.secondary_code}`;
   if (op.type === 'uic') return `${op.uic} ${op.secondary_code}`;
   if (op.type === 'id') return `${op.operational_point}`;
   return null;

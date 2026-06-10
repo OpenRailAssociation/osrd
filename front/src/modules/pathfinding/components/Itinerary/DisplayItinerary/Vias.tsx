@@ -44,8 +44,8 @@ const Vias = ({ zoomToFeaturePoint }: ViasProps) => {
                 {`${
                   via.name ||
                   ('operational_point' in via.location &&
-                    via.location.operational_point.type === 'trigram' &&
-                    via.location.operational_point.trigram) ||
+                    via.location.operational_point.type === 'domestic' &&
+                    via.location.operational_point.main_code) ||
                   (via.positionOnPath &&
                     `KM ${(Math.round(via.positionOnPath) / 1000000).toFixed(3)}`) ||
                   t('unavailableDistance')

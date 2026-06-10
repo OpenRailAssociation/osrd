@@ -236,6 +236,7 @@ export type StdcmLinkedTrainExtremity = {
   obj_id: string;
   time: string;
   main_code: string;
+  country_code: string;
   uic: number;
 };
 

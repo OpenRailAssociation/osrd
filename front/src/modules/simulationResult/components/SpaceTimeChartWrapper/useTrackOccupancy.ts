@@ -748,12 +748,12 @@ const useTrackOccupancy = ({
                   type: 'id',
                 },
               });
-            } else if (itemLocation.operational_point.type === 'trigram') {
+            } else if (itemLocation.operational_point.type === 'domestic') {
               trainsStationLabels[trainSchedule.id] = {
                 ...trainsStationLabels[trainSchedule.id],
                 [side]: {
                   type: 'label',
-                  label: itemLocation.operational_point.trigram,
+                  label: itemLocation.operational_point.main_code,
                 },
               };
             } else if (itemLocation.operational_point.type === 'uic') {

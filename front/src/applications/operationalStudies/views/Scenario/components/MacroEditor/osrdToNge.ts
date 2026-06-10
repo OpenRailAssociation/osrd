@@ -315,8 +315,8 @@ export const loadAndIndexNge = async (
           path_item_key: key,
           trigram:
             pathItem.location.type === 'operational_point_part_reference' &&
-            pathItem.location.operational_point.type === 'trigram'
-              ? pathItem.location.operational_point.trigram
+            pathItem.location.operational_point.type === 'domestic'
+              ? pathItem.location.operational_point.main_code
               : null,
           connection_time: 0,
           labels: [],
@@ -334,11 +334,10 @@ export const loadAndIndexNge = async (
     .flatMap((trainSchedule) => trainSchedule.pathOps)
     .filter((op) => op !== null);
   for (const op of pathOps) {
-    const { main_code, secondary_code } = op ?? {};
     for (const pathKey of MacroEditorState.getPathKeys(op)) {
       state.updateNodeDataByKey(pathKey, {
         full_name: op.name,
-        trigram: main_code ? main_code + (secondary_code ? `/${secondary_code}` : '') : null,
+        trigram: MacroEditorState.encodeDomesticReference({ ...op, type: 'domestic' }),
         geocoord: op.geo ? { lng: op.geo.coordinates[0], lat: op.geo.coordinates[1] } : undefined,
       });
     }

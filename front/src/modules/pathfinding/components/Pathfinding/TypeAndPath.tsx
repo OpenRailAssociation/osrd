@@ -165,14 +165,15 @@ const TypeAndPath = ({ setDisplayTypeAndPath, isInNewModal = false }: TypeAndPat
     if (infraId && opList.length > 0) {
       const pathSteps: PathItem[] = opList
         .filter((op) => op.main_code !== '')
-        .map(({ main_code, secondary_code }) => ({
+        .map(({ main_code, secondary_code, country_code }) => ({
           id: uuidV4(),
           location: {
             type: 'operational_point_part_reference',
             operational_point: {
-              trigram: main_code,
+              main_code,
               secondary_code,
-              type: 'trigram',
+              country_code,
+              type: 'domestic',
             },
           },
         }));

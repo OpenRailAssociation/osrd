@@ -16,6 +16,7 @@ export type OperationalPointSuggestion = {
   mainCode: string;
   uic?: number | null;
   name: string;
+  countryCode: string;
   secondaryCodeList: OpSecondaryCode[];
 };
 

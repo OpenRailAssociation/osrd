@@ -214,7 +214,7 @@ export const relabelDuplicateTrigrams = (nodes: NodeDto[]): NodeDto[] => {
     const trigramIds = trigramsToIds.get(node.betriebspunktName)!;
     if (trigramIds.length === 1) return node;
     const idIndex = trigramIds.findIndex((id) => id === node.id);
-    const newTrigram = `${node.betriebspunktName}-${idIndex + 1}`;
+    const newTrigram = `${node.betriebspunktName}_${idIndex + 1}`;
     return {
       ...node,
       betriebspunktName: newTrigram,
@@ -230,7 +230,7 @@ export const convertNgeDtoToOsrd = (dto: NetzgrafikDto): TimetableJsonPayload =>
   for (const node of dedupNodes) {
     macroNodes.push({
       ...castNgeNode(node, dto.labels),
-      path_item_key: `trigram:${node.betriebspunktName}`,
+      path_item_key: `domestic:${node.betriebspunktName}`,
     });
   }
 

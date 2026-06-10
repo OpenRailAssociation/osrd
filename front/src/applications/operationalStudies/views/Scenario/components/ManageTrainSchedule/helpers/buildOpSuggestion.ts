@@ -36,6 +36,7 @@ export const buildOpSuggestion = (
         mainCode: r.main_code,
         uic: r.uic,
         name: r.name,
+        countryCode: r.country_code,
         secondaryCodeList,
       });
     } else if (

@@ -32,7 +32,7 @@ import {
 } from '../consts';
 import MacroEditorState from '../MacroEditorState';
 import {
-  fetchStationSecondaryCode,
+  fetchStationSecondaryCodeCountryCode,
   getFrequencyFromFrequencyId,
   getTrainCategoryFromTrainrunCategoryId,
   storeRoundTrip,
@@ -148,11 +148,13 @@ const createPathItemFromNode = (
     const indexedNode = state.getNodeByNgeId(node.id)!;
     pathItemLocation = MacroEditorState.parsePathKey(indexedNode.path_item_key);
   } else {
-    const [trigram, secondary_code] = node.betriebspunktName.split('/');
     // TODO : handle this case in xml import refacto
+    const { main_code, secondary_code, country_code } = MacroEditorState.decodeDomesticReference(
+      node.betriebspunktName
+    );
     pathItemLocation = {
       type: 'operational_point_part_reference',
-      operational_point: { trigram, secondary_code, type: 'trigram' },
+      operational_point: { main_code, secondary_code, type: 'domestic', country_code },
       local_track_name: null,
     };
   }
@@ -344,8 +346,8 @@ export const generatePathAndSchedule = (
   return { start_time: startDate.getTime(), path, schedule };
 };
 
-// TODO: drop this function once this PR is merged:
-// https://github.com/OpenRailAssociation/osrd/pull/10325
+// Populate secondary code when user did not specified one
+// so we can still find operational points when created from NGE
 const populateSecondaryCodesInPath = async (
   path: TrainSchedule['path'],
   infraId: number,
@@ -354,16 +356,19 @@ const populateSecondaryCodesInPath = async (
   const promises = path.map(async (pathItem) => {
     if (
       pathItem.location.type === 'track_offset' ||
-      pathItem.location.operational_point.type !== 'trigram' ||
-      pathItem.location.operational_point.secondary_code
+      pathItem.location.operational_point.type !== 'domestic' ||
+      (pathItem.location.operational_point.country_code !== '??' &&
+        pathItem.location.operational_point.secondary_code)
     ) {
       return;
     }
-    pathItem.location.operational_point.secondary_code = await fetchStationSecondaryCode(
-      pathItem.location.operational_point.trigram,
+    const { secondary_code, country_code } = await fetchStationSecondaryCodeCountryCode(
+      pathItem.location.operational_point,
       infraId,
       dispatch
     );
+    if (secondary_code) pathItem.location.operational_point.secondary_code = secondary_code;
+    if (country_code) pathItem.location.operational_point.country_code = country_code;
   });
 
   await Promise.all(promises);

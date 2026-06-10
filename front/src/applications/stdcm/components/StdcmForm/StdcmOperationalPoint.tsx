@@ -25,6 +25,7 @@ const stdcmOpFromSearchResult = (searchResult: SearchResultItemOperationalPoint)
   if (!searchResult.uic) throw new Error(`Operational point ${searchResult.obj_id} has no UIC`);
   return {
     id: searchResult.obj_id,
+    countryCode: searchResult.country_code,
     uic: searchResult.uic,
     mainCode: searchResult.main_code,
     secondaryCode: searchResult.secondary_code,

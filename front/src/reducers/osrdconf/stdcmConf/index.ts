@@ -273,8 +273,18 @@ export const stdcmConfSlice = createSlice({
       }>
     ) {
       const { linkedTrainExtremity, trainName, pathStep, pathStepId } = action.payload;
-      const { name, secondary_code, geographic, arrivalDate, date, time, main_code, uic, obj_id } =
-        pathStep;
+      const {
+        name,
+        secondary_code,
+        country_code,
+        geographic,
+        arrivalDate,
+        date,
+        time,
+        main_code,
+        uic,
+        obj_id,
+      } = pathStep;
 
       if (!geographic) {
         throw new Error('Path step does not have geographic position');
@@ -289,6 +299,7 @@ export const stdcmConfSlice = createSlice({
           coordinates,
           mainCode: main_code,
           secondaryCode: secondary_code,
+          countryCode: country_code,
           uic,
         },
         id: pathStepId,
