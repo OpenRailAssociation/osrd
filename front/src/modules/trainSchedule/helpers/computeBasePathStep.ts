@@ -33,9 +33,9 @@ const computeBasePathStep = (
 
   let name;
   if (location.type === 'operational_point_part_reference') {
-    if (location.operational_point.type === 'trigram') {
+    if (location.operational_point.type === 'domestic') {
       name =
-        location.operational_point.trigram +
+        location.operational_point.main_code +
         (location.operational_point.secondary_code
           ? `/${location.operational_point.secondary_code}`
           : '');

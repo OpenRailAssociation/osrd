@@ -7,7 +7,7 @@ export const secondaryCodeStarts = (s: OperationalPointSuggestion, tokenUpper: s
 export const secondaryCodeIncludes = (s: OperationalPointSuggestion, tokenUpper: string) =>
   s.secondaryCodeList.some((secondaryCode) => toUpper(secondaryCode.code).includes(tokenUpper));
 
-export const inferUniqueChFromInput = (
+export const inferUniqueSecondaryCodeFromInput = (
   suggestion: OperationalPointSuggestion,
   rawInput: string
 ) => {
@@ -28,8 +28,13 @@ export const inferUniqueChFromInput = (
   return undefined;
 };
 
-export const hasChPrefix = (s: OperationalPointSuggestion, chTokenUpper: string) =>
-  s.secondaryCodeList.some((secondaryCode) => toUpper(secondaryCode.code).startsWith(chTokenUpper));
+export const hasSecondaryCodePrefix = (
+  s: OperationalPointSuggestion,
+  secondaryCodeTokenUpper: string
+) =>
+  s.secondaryCodeList.some((secondaryCode) =>
+    toUpper(secondaryCode.code).startsWith(secondaryCodeTokenUpper)
+  );
 
 export const tokenMatchesIncludesNoCh = (s: OperationalPointSuggestion, token: string) => {
   const tokenNormalized = normalizeName(token);
@@ -68,7 +73,9 @@ export const shouldKeepMainCodeLock = (s: OperationalPointSuggestion, tokens: st
   const beforeLastText = tokens.slice(1, -1).join(' ').trim();
 
   const lastIsChForThisSuggestion =
-    lastTokenUpper.length >= 2 && lastTokenUpper.length <= 3 && hasChPrefix(s, lastTokenUpper);
+    lastTokenUpper.length >= 2 &&
+    lastTokenUpper.length <= 3 &&
+    hasSecondaryCodePrefix(s, lastTokenUpper);
 
   if (lastIsChForThisSuggestion) {
     if (!beforeLastText) return true;
@@ -83,8 +90,8 @@ export const shouldKeepMainCodeLock = (s: OperationalPointSuggestion, tokens: st
 export const selectSecondaryCode = (
   suggestion: OperationalPointSuggestion,
   rawInput: string,
-  forcedCh?: string
+  forcedSecondaryCode?: string
 ) => {
-  const unique = inferUniqueChFromInput(suggestion, rawInput);
-  return forcedCh ?? unique ?? suggestion.secondaryCodeList[0]?.code;
+  const unique = inferUniqueSecondaryCodeFromInput(suggestion, rawInput);
+  return forcedSecondaryCode ?? unique ?? suggestion.secondaryCodeList[0]?.code;
 };

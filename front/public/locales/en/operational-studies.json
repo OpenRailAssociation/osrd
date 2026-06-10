@@ -440,6 +440,7 @@
         "showLabel": "Display all intermediate OPs"
       },
       "invalidOP": "Non recognized point: ",
+      "mainCode": "Main code",
       "moveLocationOnMap": "Move location on the map",
       "movePointOnMap": "Move this waypoint using the map",
       "noComputation": "There will be no computation for this train",
@@ -459,7 +460,6 @@
       },
       "track": "Track",
       "trainName": "Train name",
-      "trigram": "Trigram",
       "uic": "UIC",
       "unknownTrack": "Unknown track at {{names}}"
     },

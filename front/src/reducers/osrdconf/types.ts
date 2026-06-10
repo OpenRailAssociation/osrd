@@ -186,6 +186,7 @@ export type StdcmPathStep = {
     secondaryCode?: string | null;
     name: string;
     coordinates: [number, number];
+    countryCode: string;
   };
 } & (
   | {

@@ -70,6 +70,7 @@ export const buildSteps = (
         arrivalDate,
         departureDate,
         stopFor,
+        countryCode: '??',
       };
     })
     .filter((step) => step !== null);

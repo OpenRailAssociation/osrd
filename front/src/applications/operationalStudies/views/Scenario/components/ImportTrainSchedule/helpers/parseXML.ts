@@ -248,7 +248,12 @@ const parseXML = async (xmlDoc: Document): Promise<TimetableJsonPayload> => {
         type: 'operational_point_part_reference',
         operational_point: !Number.isNaN(uic)
           ? { uic, secondary_code: secondaryCode, type: 'uic' }
-          : { trigram: mainCode, secondary_code: secondaryCode, type: 'trigram' },
+          : {
+              main_code: mainCode,
+              secondary_code: secondaryCode,
+              country_code: '??',
+              type: 'domestic',
+            },
       });
     });
   });

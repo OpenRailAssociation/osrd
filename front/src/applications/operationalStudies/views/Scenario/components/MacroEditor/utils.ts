@@ -10,6 +10,7 @@ import {
   osrdEditoastApi,
   type MacroNodeResponse,
   type SearchPayload,
+  type OperationalPointReference,
   type SearchResultItemOperationalPoint,
   type SubCategory,
   type TrainCategory,
@@ -268,14 +269,27 @@ export const getTrainrunCategoryId = (
   return trainrunCategories.find((cat) => cat.colorRef === subKey)!.id;
 };
 
-export const fetchStationSecondaryCode = async (
-  trigram: string,
+export const fetchStationSecondaryCodeCountryCode = async (
+  operationalPoint: Extract<OperationalPointReference, { type: 'domestic' }>,
   infraId: number,
   dispatch: AppDispatch
 ) => {
+  const opQueryParams = [];
+  if (operationalPoint.country_code !== '??') {
+    opQueryParams.push(['=', ['country_code'], operationalPoint.country_code]);
+  }
+  if (operationalPoint.secondary_code) {
+    opQueryParams.push(['=', ['secondary_code'], operationalPoint.secondary_code]);
+  }
+
   const searchPayload: SearchPayload = {
     object: 'operationalpoint',
-    query: ['and', ['=', ['infra_id'], infraId], ['=', ['main_code'], trigram]],
+    query: [
+      'and',
+      ['=', ['infra_id'], infraId],
+      ['=', ['main_code'], operationalPoint.main_code],
+      ...opQueryParams,
+    ],
   };
   const searchResults = (await dispatch(
     osrdEditoastApi.endpoints.postSearch.initiate({
@@ -284,7 +298,10 @@ export const fetchStationSecondaryCode = async (
   ).unwrap()) as SearchResultItemOperationalPoint[];
 
   const stationOp = searchResults.find((op) => op.is_passenger_station);
-  return stationOp?.secondary_code;
+  return {
+    secondary_code: stationOp?.secondary_code,
+    country_code: stationOp?.country_code,
+  };
 };
 
 export const localStorageFilterSettingKey = (scenarioId: number) =>

@@ -6,6 +6,7 @@ import {
 } from '../sortOperationalPoints';
 
 const baseOp = {
+  country_code: 'FR',
   geographic: { coordinates: [], type: 'Point' as const },
   infra_id: 1,
   is_passenger_station: false,

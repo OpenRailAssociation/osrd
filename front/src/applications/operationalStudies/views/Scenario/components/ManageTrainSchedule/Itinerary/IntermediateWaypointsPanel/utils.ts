@@ -16,8 +16,8 @@ const opRefKey = (ref: OperationalPointReference) => {
       return `id:${ref.operational_point}`;
     case 'uic':
       return `uic:${ref.uic}:${ref.secondary_code ?? ''}`;
-    case 'trigram':
-      return `trigram:${ref.trigram}:${ref.secondary_code ?? ''}`;
+    case 'domestic':
+      return `domestic:${ref.country_code}:${ref.main_code}:${ref.secondary_code ?? ''}`;
   }
 };
 

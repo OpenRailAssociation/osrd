@@ -55,8 +55,8 @@ beforeEach(() => {
 
 describe('useLazyProjectTrains', () => {
   const operationalPointReferences: OperationalPointReference[] = [
-    { secondary_code: 'BV', trigram: 'OP1', type: 'trigram' },
-    { secondary_code: 'BV', trigram: 'OP2', type: 'trigram' },
+    { secondary_code: 'BV', main_code: 'OP1', country_code: 'FR', type: 'domestic' },
+    { secondary_code: 'BV', main_code: 'OP2', country_code: 'FR', type: 'domestic' },
   ];
 
   const mockTrain: TrainScheduleResponse = {
@@ -232,7 +232,9 @@ describe('useLazyProjectTrains', () => {
         () =>
           useLazyProjectTrains({
             ...base,
-            operationalPointReferences: [{ secondary_code: 'BV', trigram: 'OP1', type: 'trigram' }],
+            operationalPointReferences: [
+              { secondary_code: 'BV', main_code: 'OP1', country_code: 'FR', type: 'domestic' },
+            ],
           }),
         {}
       );

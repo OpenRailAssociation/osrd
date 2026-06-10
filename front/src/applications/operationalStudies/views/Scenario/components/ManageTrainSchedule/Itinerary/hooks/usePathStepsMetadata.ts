@@ -19,8 +19,8 @@ import { mToMm } from 'utils/physics';
  */
 const getOpRefKey = (opRef: OperationalPointReference): string => {
   switch (opRef.type) {
-    case 'trigram':
-      return `trigram:${opRef.trigram}:${opRef.secondary_code ?? ''}`;
+    case 'domestic':
+      return `domestic:${opRef.country_code}-${opRef.main_code}:${opRef.secondary_code ?? ''}`;
     case 'uic':
       return `uic:${opRef.uic}:${opRef.secondary_code ?? ''}`;
     case 'id':

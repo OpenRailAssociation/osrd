@@ -32,6 +32,7 @@ export const formatSuggestedOperationalPoints = (
     name: op.name,
     uic: op.uic,
     secondaryCode: op.secondary_code,
+    countryCode: op.country_code,
     kp: op.part.extensions?.sncf?.kp,
     mainCode: op.main_code,
     isPassengerStation: op.is_passenger_station,
@@ -45,7 +46,10 @@ export const formatSuggestedOperationalPoints = (
 
 export const matchPathStepAndOp = (
   step: PathItemLocation,
-  op: Pick<SuggestedOP, 'opId' | 'uic' | 'secondaryCode' | 'mainCode' | 'track' | 'offsetOnTrack'>
+  op: Pick<
+    SuggestedOP,
+    'opId' | 'uic' | 'secondaryCode' | 'mainCode' | 'track' | 'offsetOnTrack' | 'countryCode'
+  >
 ) => {
   if (step.type === 'track_offset') {
     return step.track === op.track && step.offset === op.offsetOnTrack;
@@ -60,8 +64,9 @@ export const matchPathStepAndOp = (
     );
   }
   return (
-    step.operational_point.trigram === op.mainCode &&
-    step.operational_point.secondary_code === op.secondaryCode
+    step.operational_point.main_code === op.mainCode &&
+    step.operational_point.secondary_code === op.secondaryCode &&
+    step.operational_point.country_code === op.countryCode
   );
 };
 
@@ -186,6 +191,7 @@ export const pathStepMatchesOp = (
     | 'opId'
     | 'uic'
     | 'secondaryCode'
+    | 'countryCode'
     | 'mainCode'
     | 'track'
     | 'offsetOnTrack'
@@ -222,6 +228,7 @@ export const isVia = (
     | 'opId'
     | 'uic'
     | 'secondaryCode'
+    | 'countryCode'
     | 'mainCode'
     | 'track'
     | 'offsetOnTrack'

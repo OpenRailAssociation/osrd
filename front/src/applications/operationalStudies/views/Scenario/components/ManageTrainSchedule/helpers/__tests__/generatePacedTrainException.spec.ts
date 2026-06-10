@@ -14,7 +14,12 @@ describe('generatePacedTrainException', () => {
     id: '0-0',
     location: {
       type: 'operational_point_part_reference',
-      operational_point: { trigram: 'WS', secondary_code: 'BV', type: 'trigram' },
+      operational_point: {
+        main_code: 'WS',
+        secondary_code: 'BV',
+        type: 'domestic',
+        country_code: 'FR',
+      },
       local_track_name: null,
     },
   };
@@ -23,7 +28,12 @@ describe('generatePacedTrainException', () => {
     id: '1-1',
     location: {
       type: 'operational_point_part_reference',
-      operational_point: { trigram: 'SS', secondary_code: 'BV', type: 'trigram' },
+      operational_point: {
+        main_code: 'SS',
+        secondary_code: 'BV',
+        type: 'domestic',
+        country_code: 'FR',
+      },
       local_track_name: null,
     },
   };
@@ -194,9 +204,10 @@ describe('generatePacedTrainException', () => {
           location: {
             type: 'operational_point_part_reference',
             operational_point: {
-              trigram: 'NS',
+              main_code: 'NS',
               secondary_code: 'BV',
-              type: 'trigram',
+              type: 'domestic',
+              country_code: 'FR',
             },
             local_track_name: null,
           },
@@ -217,7 +228,12 @@ describe('generatePacedTrainException', () => {
             expect.objectContaining({
               location: expect.objectContaining({
                 type: 'operational_point_part_reference',
-                operational_point: { trigram: 'NS', secondary_code: 'BV', type: 'trigram' },
+                operational_point: {
+                  main_code: 'NS',
+                  secondary_code: 'BV',
+                  type: 'domestic',
+                  country_code: 'FR',
+                },
                 local_track_name: null,
               }),
             }),
