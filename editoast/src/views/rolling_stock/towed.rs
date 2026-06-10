@@ -233,7 +233,6 @@ mod tests {
     use super::TowedRollingStockCountList;
     use crate::views::test_app;
     use crate::views::test_app::TestApp;
-    use axum::http::StatusCode;
     use common::units;
     use editoast_models::TowedRollingStock;
 
@@ -266,32 +265,26 @@ mod tests {
             "const_gamma": 1.0,
         });
 
-        let request = app
-            .post("/towed_rolling_stock")
+        app.post("/towed_rolling_stock")
             .add_query_param("locked", locked)
-            .json(&towed_rolling_stock_json);
-
-        app.fetch(request)
+            .json(&towed_rolling_stock_json)
             .await
-            .assert_status(StatusCode::OK)
-            .json_into()
+            .assert_status_ok()
+            .json()
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn create_and_list_towed_rolling_stock() {
         let app = test_app!().skip_authz().build();
-
         let name = Uuid::new_v4().to_string();
         let towed_rolling_stock = create_towed_rolling_stock(&app, &name, LOCKED).await;
 
         let towed_rolling_stocks: TowedRollingStockCountList = app
-            .fetch(
-                app.get("/towed_rolling_stock")
-                    .add_query_param("page_size", 50),
-            )
+            .get("/towed_rolling_stock")
+            .add_query_param("page_size", 50)
             .await
-            .assert_status(StatusCode::OK)
-            .json_into();
+            .assert_status_ok()
+            .json();
 
         assert!(
             towed_rolling_stocks
@@ -307,9 +300,9 @@ mod tests {
 
         let id: i64 = rand::random();
 
-        app.fetch(app.get(&format!("/towed_rolling_stock/{id}")))
+        app.get(&format!("/towed_rolling_stock/{id}"))
             .await
-            .assert_status(StatusCode::NOT_FOUND);
+            .assert_status_not_found();
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -324,10 +317,10 @@ mod tests {
         let id = created_towed_rolling_stock.id;
 
         let get_towed_rolling_stock: TowedRollingStock = app
-            .fetch(app.get(&format!("/towed_rolling_stock/{id}")))
+            .get(&format!("/towed_rolling_stock/{id}"))
             .await
-            .assert_status(StatusCode::OK)
-            .json_into();
+            .assert_status_ok()
+            .json();
 
         assert_eq!(get_towed_rolling_stock, created_towed_rolling_stock);
     }
@@ -340,12 +333,10 @@ mod tests {
         let towed_rolling_stock = create_towed_rolling_stock(&app, &name, UNLOCKED).await;
 
         let id: i64 = rand::random(); // <-- doesn't exist
-        app.fetch(
-            app.put(&format!("/towed_rolling_stock/{id}"))
-                .json(&towed_rolling_stock),
-        )
-        .await
-        .assert_status(StatusCode::NOT_FOUND);
+        app.put(&format!("/towed_rolling_stock/{id}"))
+            .json(&towed_rolling_stock)
+            .await
+            .assert_status_not_found();
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -358,13 +349,11 @@ mod tests {
         let id = towed_rolling_stock.id;
         towed_rolling_stock.mass = units::kilogram::new(13000.0);
         let updated_towed_rolling_stock: TowedRollingStock = app
-            .fetch(
-                app.put(&format!("/towed_rolling_stock/{id}"))
-                    .json(&towed_rolling_stock),
-            )
+            .put(&format!("/towed_rolling_stock/{id}"))
+            .json(&towed_rolling_stock)
             .await
-            .assert_status(StatusCode::OK)
-            .json_into();
+            .assert_status_ok()
+            .json();
 
         assert_eq!(updated_towed_rolling_stock.name, name);
         assert_eq!(
@@ -378,12 +367,10 @@ mod tests {
         let app = test_app!().skip_authz().build();
 
         let id: i64 = rand::random(); // <-- doesn't exist
-        app.fetch(
-            app.patch(&format!("/towed_rolling_stock/{id}/locked"))
-                .json(&json!({ "locked": false })),
-        )
-        .await
-        .assert_status(StatusCode::NOT_FOUND);
+        app.patch(&format!("/towed_rolling_stock/{id}/locked"))
+            .json(&json!({ "locked": false }))
+            .await
+            .assert_status_not_found();
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -395,12 +382,10 @@ mod tests {
 
         let id = towed_rolling_stock.id;
         towed_rolling_stock.mass = units::kilogram::new(13000.0);
-        app.fetch(
-            app.put(&format!("/towed_rolling_stock/{id}"))
-                .json(&towed_rolling_stock),
-        )
-        .await
-        .assert_status(StatusCode::CONFLICT);
+        app.put(&format!("/towed_rolling_stock/{id}"))
+            .json(&towed_rolling_stock)
+            .await
+            .assert_status_conflict();
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -412,17 +397,13 @@ mod tests {
 
         let id = towed_rolling_stock.id;
         towed_rolling_stock.mass = units::kilogram::new(13000.0);
-        app.fetch(
-            app.patch(&format!("/towed_rolling_stock/{id}/locked"))
-                .json(&json!({ "locked": false })),
-        )
-        .await
-        .assert_status(StatusCode::NO_CONTENT);
-        app.fetch(
-            app.put(&format!("/towed_rolling_stock/{id}"))
-                .json(&towed_rolling_stock),
-        )
-        .await
-        .assert_status(StatusCode::OK);
+        app.patch(&format!("/towed_rolling_stock/{id}/locked"))
+            .json(&json!({ "locked": false }))
+            .await
+            .assert_status_no_content();
+        app.put(&format!("/towed_rolling_stock/{id}"))
+            .json(&towed_rolling_stock)
+            .await
+            .assert_status_ok();
     }
 }

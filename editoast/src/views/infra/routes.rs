@@ -299,7 +299,6 @@ pub(in crate::views) async fn get_routes_nodes(
 
 #[cfg(test)]
 mod tests {
-    use axum::http::StatusCode;
     use pretty_assertions::assert_eq;
 
     use serde_json::json;
@@ -430,11 +429,7 @@ mod tests {
                 .json(&params);
             println!("{request:?}  body:\n    {params}");
 
-            let got: RoutesFromNodesPositions = app
-                .fetch(request)
-                .await
-                .assert_status(StatusCode::OK)
-                .json_into();
+            let got: RoutesFromNodesPositions = request.await.assert_status_ok().json();
             compare_result(got, expected_result)
         }
     }
@@ -495,14 +490,11 @@ mod tests {
 
         // BufferStop Routes
         let waypoint_type = WaypointType::BufferStop;
-        let request =
-            app.get(format!("/infra/{empty_infra_id}/routes/{waypoint_type}/bs_stop").as_str());
-
         let routes: RoutesResponse = app
-            .fetch(request)
+            .get(format!("/infra/{empty_infra_id}/routes/{waypoint_type}/bs_stop").as_str())
             .await
-            .assert_status(StatusCode::OK)
-            .json_into();
+            .assert_status_ok()
+            .json();
 
         assert_eq!(
             routes,
@@ -514,14 +506,11 @@ mod tests {
 
         // Detector Routes
         let waypoint_type = WaypointType::Detector;
-        let request = app
-            .get(format!("/infra/{empty_infra_id}/routes/{waypoint_type}/detector_001").as_str());
-
         let routes: RoutesResponse = app
-            .fetch(request)
+            .get(format!("/infra/{empty_infra_id}/routes/{waypoint_type}/detector_001").as_str())
             .await
-            .assert_status(StatusCode::OK)
-            .json_into();
+            .assert_status_ok()
+            .json();
 
         assert_eq!(
             routes,
@@ -539,19 +528,17 @@ mod tests {
         let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
 
         let waypoint_type = WaypointType::Detector;
-        let request = app.get(
-            format!(
-                "/infra/{}/routes/{waypoint_type}/NOT_EXISTING_WAYPOINT_ID",
-                empty_infra.id
-            )
-            .as_str(),
-        );
-
         let routes: RoutesResponse = app
-            .fetch(request)
+            .get(
+                format!(
+                    "/infra/{}/routes/{waypoint_type}/NOT_EXISTING_WAYPOINT_ID",
+                    empty_infra.id
+                )
+                .as_str(),
+            )
             .await
-            .assert_status(StatusCode::OK)
-            .json_into();
+            .assert_status_ok()
+            .json();
 
         assert_eq!(
             routes,

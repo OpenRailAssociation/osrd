@@ -360,8 +360,8 @@ mod tests {
     use crate::fixtures::create_fast_rolling_stock;
     use crate::fixtures::create_small_infra;
     use crate::fixtures::create_timetable_with_train_schedule_set;
-    use crate::views::test_app::TestResponse;
     use crate::views::test_app::test_app;
+    use axum_test::TestResponse;
 
     use chrono::TimeDelta;
     use core_client::mocking::MockingClient;
@@ -575,18 +575,16 @@ mod tests {
             .await
             .expect("Failed to create train");
 
-        let request = app
-            .post("/level_crossing_occupancy")
-            .json(&LevelCrossingOccupancyForm {
-                train_ids: vec![train.id],
-                level_crossing_ids: vec![level_crossing.obj_id.clone().into()],
-                infra_id: small_infra.id,
-                timetable_id: timetable.id,
-                electrical_profile_set_id: None,
-            });
-
         (
-            app.fetch(request).await,
+            app.post("/level_crossing_occupancy")
+                .json(&LevelCrossingOccupancyForm {
+                    train_ids: vec![train.id],
+                    level_crossing_ids: vec![level_crossing.obj_id.clone().into()],
+                    infra_id: small_infra.id,
+                    timetable_id: timetable.id,
+                    electrical_profile_set_id: None,
+                })
+                .await,
             level_crossing.obj_id.clone().into(),
             train,
         )
@@ -599,7 +597,7 @@ mod tests {
             init_level_crossing_test(750.0, "LC_TC1", "TC1").await;
 
         let occupancies: HashMap<Identifier, Vec<LevelCrossingOccupancy>> =
-            response.assert_status(StatusCode::OK).json_into();
+            response.assert_status_ok().json();
 
         assert!(occupancies.contains_key(&level_crossing_id));
         let lc_occupancies = occupancies.get(&level_crossing_id).unwrap();
@@ -629,7 +627,7 @@ mod tests {
             init_level_crossing_test(750.0, "LC_TX1", "TX1").await;
 
         let occupancies: HashMap<Identifier, Vec<LevelCrossingOccupancy>> =
-            response.assert_status(StatusCode::OK).json_into();
+            response.assert_status_ok().json();
 
         // Level crossing should exist but have no occupancies
         assert_eq!(

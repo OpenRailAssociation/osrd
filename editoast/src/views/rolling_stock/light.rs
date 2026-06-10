@@ -271,10 +271,8 @@ impl From<ModeEffortCurves> for LightModeEffortCurves {
 
 #[cfg(test)]
 mod tests {
-    use std::collections::HashSet;
-
-    use axum::http::StatusCode;
     use pretty_assertions::assert_eq;
+    use std::collections::HashSet;
 
     use editoast_models::prelude::*;
 
@@ -296,8 +294,7 @@ mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn list_light_rolling_stock() {
         let app = test_app!().skip_authz().build();
-        let request = app.get("/light_rolling_stock");
-        app.fetch(request).await.assert_status(StatusCode::OK);
+        app.get("/light_rolling_stock").await.assert_status_ok();
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -309,14 +306,12 @@ mod tests {
         let rs_name = "fast_rolling_stock_name";
         let fast_rolling_stock = create_fast_rolling_stock(&mut db_pool.get_ok(), rs_name).await;
 
-        let request = app.get(format!("/light_rolling_stock/{}", fast_rolling_stock.id).as_str());
-
         // WHEN
         let response: LightRollingStockWithLiveries = app
-            .fetch(request)
+            .get(format!("/light_rolling_stock/{}", fast_rolling_stock.id).as_str())
             .await
-            .assert_status(StatusCode::OK)
-            .json_into();
+            .assert_status_ok()
+            .json();
 
         // THEN
         assert_eq!(response.rolling_stock.id, fast_rolling_stock.id);
@@ -331,14 +326,12 @@ mod tests {
         let rs_name = "fast_rolling_stock_name";
         let fast_rolling_stock = create_fast_rolling_stock(&mut db_pool.get_ok(), rs_name).await;
 
-        let request = app.get(format!("/light_rolling_stock/name/{rs_name}").as_str());
-
         // WHEN
         let response: LightRollingStockWithLiveries = app
-            .fetch(request)
+            .get(format!("/light_rolling_stock/name/{rs_name}").as_str())
             .await
-            .assert_status(StatusCode::OK)
-            .json_into();
+            .assert_status_ok()
+            .json();
 
         // THEN
         assert_eq!(response.rolling_stock.id, fast_rolling_stock.id);
@@ -349,11 +342,9 @@ mod tests {
     async fn get_unexisting_light_rolling_stock() {
         let app = test_app!().skip_authz().build();
 
-        let request = app.get(format!("/light_rolling_stock/{}", -1).as_str());
-
-        app.fetch(request)
+        app.get(format!("/light_rolling_stock/{}", -1).as_str())
             .await
-            .assert_status(StatusCode::NOT_FOUND);
+            .assert_status_not_found();
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -389,20 +380,15 @@ mod tests {
             .map(|rs| rs.id)
             .collect::<HashSet<_>>();
 
-        let request = app.get("/light_rolling_stock/");
         let response: LightRollingStockWithLiveriesCountList = app
-            .fetch(request)
+            .get("/light_rolling_stock/")
             .await
-            .assert_status(StatusCode::OK)
-            .json_into();
+            .assert_status_ok()
+            .json();
         let count = response.stats.count;
         let uri = format!("/light_rolling_stock/?page_size={count}");
-        let request = app.get(&uri);
-        let response: LightRollingStockWithLiveriesCountList = app
-            .fetch(request)
-            .await
-            .assert_status(StatusCode::OK)
-            .json_into();
+        let response: LightRollingStockWithLiveriesCountList =
+            app.get(&uri).await.assert_status_ok().json();
 
         // Ensure that AT LEAST all the rolling stocks create above are returned, in order
         let vec_ids = response
@@ -421,10 +407,8 @@ mod tests {
     async fn light_rolling_stock_max_page_size() {
         let app = test_app!().skip_authz().build();
 
-        let request = app.get("/light_rolling_stock/?page_size=1010");
-
-        app.fetch(request)
+        app.get("/light_rolling_stock/?page_size=1010")
             .await
-            .assert_status(StatusCode::BAD_REQUEST);
+            .assert_status_bad_request();
     }
 }

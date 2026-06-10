@@ -620,15 +620,12 @@ pub mod tests {
             }),
         ];
 
-        let request = app
-            .post(format!("/infra/{}/pathfinding/blocks", small_infra.id).as_str())
-            .json(&pathfinding_input(path_items));
-
         let pathfinding_result: PathfindingResult = app
-            .fetch(request)
+            .post(format!("/infra/{}/pathfinding/blocks", small_infra.id).as_str())
+            .json(&pathfinding_input(path_items))
             .await
-            .assert_status(StatusCode::OK)
-            .json_into();
+            .assert_status_ok()
+            .json();
         assert_eq!(
             pathfinding_result,
             PathfindingResult::Failure(PathfindingFailure::PathfindingInputError(
@@ -666,15 +663,12 @@ pub mod tests {
             }),
         ];
 
-        let request = app
-            .post(format!("/infra/{}/pathfinding/blocks", small_infra.id).as_str())
-            .json(&pathfinding_input(path_items));
-
         let pathfinding_result: PathfindingResult = app
-            .fetch(request)
+            .post(format!("/infra/{}/pathfinding/blocks", small_infra.id).as_str())
+            .json(&pathfinding_input(path_items))
             .await
-            .assert_status(StatusCode::OK)
-            .json_into();
+            .assert_status_ok()
+            .json();
         assert_eq!(
             pathfinding_result,
             PathfindingResult::Failure(PathfindingFailure::PathfindingInputError(
@@ -718,15 +712,12 @@ pub mod tests {
             }),
         ];
 
-        let request = app
-            .post(format!("/infra/{}/pathfinding/blocks", small_infra.id).as_str())
-            .json(&pathfinding_input(path_items));
-
         let pathfinding_result: PathfindingResult = app
-            .fetch(request)
+            .post(format!("/infra/{}/pathfinding/blocks", small_infra.id).as_str())
+            .json(&pathfinding_input(path_items))
             .await
-            .assert_status(StatusCode::OK)
-            .json_into();
+            .assert_status_ok()
+            .json();
         assert_eq!(
             pathfinding_result,
             PathfindingResult::Failure(PathfindingFailure::PathfindingInputError(
@@ -775,15 +766,12 @@ pub mod tests {
             }),
         ];
 
-        let request = app
-            .post(format!("/infra/{}/pathfinding/blocks", small_infra.id).as_str())
-            .json(&pathfinding_input(path_items));
-
         let pathfinding_res: PathfindingResult = app
-            .fetch(request)
+            .post(format!("/infra/{}/pathfinding/blocks", small_infra.id).as_str())
+            .json(&pathfinding_input(path_items))
             .await
-            .assert_status(StatusCode::OK)
-            .json_into();
+            .assert_status_ok()
+            .json();
         assert_eq!(pathfinding_res, pathfinding_result(1));
     }
 }

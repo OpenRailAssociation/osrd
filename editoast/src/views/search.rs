@@ -794,8 +794,6 @@ pub struct SearchConfigFinder;
 
 #[cfg(test)]
 pub mod tests {
-
-    use axum::http::StatusCode;
     use pretty_assertions::assert_eq;
 
     use serde_json::json;
@@ -817,17 +815,16 @@ pub mod tests {
         let train = create_simple_paced_train(&mut pool.get_ok(), train_schedule_set.id).await;
 
         // The body
-        let request = app.post("/search").json(&json!({
-            "object": "trainschedule",
-            "query": ["and", ["=", ["train_name"], train.train_name],
-                             ["=", ["train_schedule_set_id"], train.train_schedule_set_id]],
-        }));
-
         let response: Vec<SearchResultItemTrainSchedule> = app
-            .fetch(request)
+            .post("/search")
+            .json(&json!({
+                "object": "trainschedule",
+                "query": ["and", ["=", ["train_name"], train.train_name],
+                                 ["=", ["train_schedule_set_id"], train.train_schedule_set_id]],
+            }))
             .await
-            .assert_status(StatusCode::OK)
-            .json_into();
+            .assert_status_ok()
+            .json();
 
         assert_eq!(response.len(), 1);
         assert_eq!(response[0].train_name, train.train_name);
@@ -847,17 +844,16 @@ pub mod tests {
         let train_name = "NonExistingTrain";
 
         // The body
-        let request = app.post("/search").json(&json!({
-            "object": "trainschedule",
-            "query": ["and", ["=", ["train_name"], train_name],
-                             ["=", ["train_schedule_set_id"], train_schedule_set.id]],
-        }));
-
         let response: Vec<SearchResultItemTrainSchedule> = app
-            .fetch(request)
+            .post("/search")
+            .json(&json!({
+                "object": "trainschedule",
+                "query": ["and", ["=", ["train_name"], train_name],
+                                 ["=", ["train_schedule_set_id"], train_schedule_set.id]],
+            }))
             .await
-            .assert_status(StatusCode::OK)
-            .json_into();
+            .assert_status_ok()
+            .json();
 
         assert_eq!(response.len(), 0);
     }

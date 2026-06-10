@@ -873,14 +873,11 @@ pub mod tests {
         let db_pool = app.db_pool();
         let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
 
-        let request =
-            app.post(format!("/infra/{}/clone/?name=cloned_infra", empty_infra.id).as_str());
-
         let cloned_infra_id: i64 = app
-            .fetch(request)
+            .post(format!("/infra/{}/clone/?name=cloned_infra", empty_infra.id).as_str())
             .await
-            .assert_status(StatusCode::OK)
-            .json_into();
+            .assert_status_ok()
+            .json();
         let cloned_infra = Infra::retrieve(db_pool.get_ok(), cloned_infra_id)
             .await
             .unwrap()
@@ -917,14 +914,11 @@ pub mod tests {
             .await
             .expect("Failed to create switch_type object");
 
-        let req_clone =
-            app.post(format!("/infra/{small_infra_id}/clone/?name=cloned_infra").as_str());
-
         let cloned_infra_id: i64 = app
-            .fetch(req_clone)
+            .post(format!("/infra/{small_infra_id}/clone/?name=cloned_infra").as_str())
             .await
-            .assert_status(StatusCode::OK)
-            .json_into();
+            .assert_status_ok()
+            .json();
 
         let _cloned_infra = Infra::retrieve(db_pool.get_ok(), cloned_infra_id)
             .await
@@ -980,34 +974,31 @@ pub mod tests {
         let db_pool = app.db_pool();
         let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
 
-        app.fetch(app.delete_infra_request(empty_infra.id))
+        app.delete_infra_request(empty_infra.id)
             .await
-            .assert_status(StatusCode::NO_CONTENT);
+            .assert_status_no_content();
 
-        app.fetch(app.delete_infra_request(empty_infra.id))
+        app.delete_infra_request(empty_infra.id)
             .await
-            .assert_status(StatusCode::NOT_FOUND);
+            .assert_status_not_found();
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn infra_list() {
         let app = test_app!().skip_authz().build();
-        let request = app.get("/infra/");
-        app.fetch(request).await.assert_status(StatusCode::OK);
+        app.get("/infra/").await.assert_status_ok();
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn default_infra_create() {
         let app = test_app!().skip_authz().build();
 
-        let request = app
-            .post("/infra")
-            .json(&json!({ "name": "create_infra_test" }));
         let infra: Infra = app
-            .fetch(request)
+            .post("/infra")
+            .json(&json!({ "name": "create_infra_test" }))
             .await
             .assert_status(StatusCode::CREATED)
-            .json_into();
+            .json();
 
         assert_eq!(infra.name, "create_infra_test");
         assert_eq!(infra.railjson_version, RAILJSON_VERSION);
@@ -1024,15 +1015,15 @@ pub mod tests {
         let db_pool = app.db_pool();
         let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
 
-        let req = app.get(format!("/infra/{}", empty_infra.id).as_str());
-
-        app.fetch(req).await.assert_status(StatusCode::OK);
+        app.get(format!("/infra/{}", empty_infra.id).as_str())
+            .await
+            .assert_status_ok();
 
         empty_infra.delete(&mut db_pool.get_ok()).await.unwrap();
 
-        let req = app.get(format!("/infra/{}", empty_infra.id).as_str());
-
-        app.fetch(req).await.assert_status(StatusCode::NOT_FOUND);
+        app.get(format!("/infra/{}", empty_infra.id).as_str())
+            .await
+            .assert_status_not_found();
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -1041,15 +1032,12 @@ pub mod tests {
         let db_pool = app.db_pool();
         let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
 
-        let req = app
-            .put(format!("/infra/{}", empty_infra.id).as_str())
-            .json(&json!({"name": "rename_test"}));
-
         let infra: Infra = app
-            .fetch(req)
+            .put(format!("/infra/{}", empty_infra.id).as_str())
+            .json(&json!({"name": "rename_test"}))
             .await
-            .assert_status(StatusCode::OK)
-            .json_into();
+            .assert_status_ok()
+            .json();
 
         assert_eq!(infra.name, "rename_test");
     }
@@ -1065,13 +1053,11 @@ pub mod tests {
         let db_pool = app.db_pool();
         let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
 
-        let req = app.post(format!("/infra/refresh/?infras={}", empty_infra.id).as_str());
-
         let refreshed_infras: InfraRefreshedResponse = app
-            .fetch(req)
+            .post(format!("/infra/refresh/?infras={}", empty_infra.id).as_str())
             .await
-            .assert_status(StatusCode::OK)
-            .json_into();
+            .assert_status_ok()
+            .json();
         assert_eq!(refreshed_infras.infra_refreshed, vec![empty_infra.id]);
     }
 
@@ -1083,13 +1069,11 @@ pub mod tests {
         let db_pool = app.db_pool();
         let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
 
-        let req =
-            app.post(format!("/infra/refresh/?infras={}&force=true", empty_infra.id).as_str());
         let refreshed_infras: InfraRefreshedResponse = app
-            .fetch(req)
+            .post(format!("/infra/refresh/?infras={}&force=true", empty_infra.id).as_str())
             .await
-            .assert_status(StatusCode::OK)
-            .json_into();
+            .assert_status_ok()
+            .json();
         assert!(refreshed_infras.infra_refreshed.contains(&empty_infra.id));
     }
 
@@ -1109,13 +1093,11 @@ pub mod tests {
             .await
             .expect("Failed to create speed section object");
 
-        let req = app.get(format!("/infra/{}/speed_limit_tags/", empty_infra.id).as_str());
-
         let mut speed_limit_tags: Vec<String> = app
-            .fetch(req)
+            .get(format!("/infra/{}/speed_limit_tags/", empty_infra.id).as_str())
             .await
-            .assert_status(StatusCode::OK)
-            .json_into();
+            .assert_status_ok()
+            .json();
 
         let mut test_tags = builtin_tags.0.clone();
         test_tags.push("test_tag".to_string());
@@ -1158,13 +1140,7 @@ pub mod tests {
         )
         .await;
 
-        let req = app.get("/infra/voltages/");
-
-        let voltages: Vec<String> = app
-            .fetch(req)
-            .await
-            .assert_status(StatusCode::OK)
-            .json_into();
+        let voltages: Vec<String> = app.get("/infra/voltages/").await.assert_status_ok().json();
 
         assert!(voltages.len() >= 3);
         assert!(voltages.contains(&String::from("0V")));
@@ -1200,28 +1176,22 @@ pub mod tests {
         )
         .await;
 
-        let req = app.get(
-            format!(
-                "/infra/{}/voltages/?include_rolling_stock_modes={}",
-                empty_infra.id, include_rolling_stock_modes
+        let voltages: Vec<String> = app
+            .get(
+                format!(
+                    "/infra/{}/voltages/?include_rolling_stock_modes={}",
+                    empty_infra.id, include_rolling_stock_modes
+                )
+                .as_str(),
             )
-            .as_str(),
-        );
+            .await
+            .assert_status_ok()
+            .json();
 
         if !include_rolling_stock_modes {
-            let voltages: Vec<String> = app
-                .fetch(req)
-                .await
-                .assert_status(StatusCode::OK)
-                .json_into();
             assert_eq!(voltages[0], "0");
             assert_eq!(voltages.len(), 1);
         } else {
-            let voltages: Vec<String> = app
-                .fetch(req)
-                .await
-                .assert_status(StatusCode::OK)
-                .json_into();
             assert!(voltages.contains(&String::from("25000V")));
             assert!(voltages.len() >= 2);
         }
@@ -1233,13 +1203,11 @@ pub mod tests {
         let db_pool = app.db_pool();
         let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
 
-        let req = app.get(format!("/infra/{}/switch_types/", empty_infra.id).as_str());
-
         let switch_types: Vec<SwitchType> = app
-            .fetch(req)
+            .get(format!("/infra/{}/switch_types/", empty_infra.id).as_str())
             .await
-            .assert_status(StatusCode::OK)
-            .json_into();
+            .assert_status_ok()
+            .json();
 
         assert_eq!(switch_types.len(), 5);
     }
@@ -1253,9 +1221,9 @@ pub mod tests {
         let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
 
         // Lock infra
-        let req = app.post(format!("/infra/{}/lock/", empty_infra.id).as_str());
-
-        app.fetch(req).await.assert_status(StatusCode::NO_CONTENT);
+        app.post(format!("/infra/{}/lock/", empty_infra.id).as_str())
+            .await
+            .assert_status_no_content();
 
         // Check lock
         let infra = Infra::retrieve(db_pool.get_ok(), empty_infra.id)
@@ -1265,9 +1233,9 @@ pub mod tests {
         assert!(infra.locked);
 
         // Unlock infra
-        let req = app.post(format!("/infra/{}/unlock/", empty_infra.id).as_str());
-
-        app.fetch(req).await.assert_status(StatusCode::NO_CONTENT);
+        app.post(format!("/infra/{}/unlock/", empty_infra.id).as_str())
+            .await
+            .assert_status_no_content();
 
         // Check lock
         let infra = Infra::retrieve(db_pool.get_ok(), empty_infra.id)
@@ -1302,16 +1270,14 @@ pub mod tests {
                 secondary_code: None,
             },
         ];
-        let request = app
+        let response: MatchOperationalPointsResponse = app
             .post(format!("/infra/{}/match_operational_points", infra.id).as_str())
             .json(&json!({
                 "operational_point_references": operational_point_references,
-            }));
-        let response: MatchOperationalPointsResponse = app
-            .fetch(request)
+            }))
             .await
-            .assert_status(StatusCode::OK)
-            .json_into();
+            .assert_status_ok()
+            .json();
         let response_op_identifiers = response
             .related_operational_points
             .iter()
@@ -1353,16 +1319,14 @@ pub mod tests {
                 secondary_code: Some("PAUL".into()),
             },
         ];
-        let request = app
+        let response: MatchOperationalPointsResponse = app
             .post(format!("/infra/{}/match_operational_points", infra.id).as_str())
             .json(&json!({
                 "operational_point_references": operational_point_references,
-            }));
-        let response: MatchOperationalPointsResponse = app
-            .fetch(request)
+            }))
             .await
-            .assert_status(StatusCode::OK)
-            .json_into();
+            .assert_status_ok()
+            .json();
         let response_op_identifiers = response
             .related_operational_points
             .iter()

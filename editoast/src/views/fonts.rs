@@ -59,15 +59,13 @@ pub(in crate::views) async fn fonts(
 mod tests {
     use crate::views::test_app;
 
-    use axum::http::StatusCode;
-
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn test_font() {
         let app = test_app!().skip_authz().build();
-        let request = app.get("/fonts/IBMPlexSans/0-255.pbf");
-        let response = app.fetch(request).await.assert_status(StatusCode::OK);
+        let response = app.get("/fonts/IBMPlexSans/0-255.pbf").await;
+        response.assert_status_ok();
         assert_eq!("application/octet-stream", response.content_type());
-        let response = response.bytes();
+        let response = response.into_bytes();
         let expected = std::fs::read(
             app.config()
                 .dynamic_assets_path
@@ -80,9 +78,8 @@ mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn test_font_not_found() {
         let app = test_app!().skip_authz().build();
-        let request = app.get("/fonts/Comic%20Sans/0-255.pbf");
-        app.fetch(request)
+        app.get("/fonts/Comic%20Sans/0-255.pbf")
             .await
-            .assert_status(StatusCode::NOT_FOUND);
+            .assert_status_not_found();
     }
 }

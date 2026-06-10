@@ -175,7 +175,6 @@ async fn delete_sub_category_and_fallback_to_main(
 
 #[cfg(test)]
 pub mod tests {
-    use axum::http::StatusCode;
     use editoast_models::rolling_stock::TrainMainCategory;
     use pretty_assertions::assert_eq;
 
@@ -194,30 +193,29 @@ pub mod tests {
         let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
 
-        let request = app.post("/sub_category").json(&json!([
-            {
-                "code": "tjv",
-                "name": "TJV",
-                "main_category": schemas::rolling_stock::TrainMainCategory::HighSpeedTrain,
-                "color": "#FF0000",
-                "background_color": "#FF0000",
-                "hovered_color": "#FF0000",
-            },
-            {
-                "code": "ter",
-                "name": "TER",
-                "main_category": schemas::rolling_stock::TrainMainCategory::CommuterTrain,
-                "color": "#00FF00",
-                "background_color": "#00FF00",
-                "hovered_color": "#00FF00",
-            }
-        ]));
-
         let response: Vec<SubCategory> = app
-            .fetch(request)
+            .post("/sub_category")
+            .json(&json!([
+                {
+                    "code": "tjv",
+                    "name": "TJV",
+                    "main_category": schemas::rolling_stock::TrainMainCategory::HighSpeedTrain,
+                    "color": "#FF0000",
+                    "background_color": "#FF0000",
+                    "hovered_color": "#FF0000",
+                },
+                {
+                    "code": "ter",
+                    "name": "TER",
+                    "main_category": schemas::rolling_stock::TrainMainCategory::CommuterTrain,
+                    "color": "#00FF00",
+                    "background_color": "#00FF00",
+                    "hovered_color": "#00FF00",
+                }
+            ]))
             .await
-            .assert_status(StatusCode::OK)
-            .json_into();
+            .assert_status_ok()
+            .json();
         let created_sub_category1 = response.first().unwrap();
 
         let sub_category_1 = editoast_models::SubCategory::retrieve(
@@ -248,28 +246,27 @@ pub mod tests {
     async fn sub_category_duplicated_post() {
         let app = test_app!().skip_authz().build();
 
-        let request = app.post("/sub_category").json(&json!([
-            {
-                "code": "tjv",
-                "name": "TJV",
-                "main_category": schemas::rolling_stock::TrainMainCategory::HighSpeedTrain,
-                "color": "#FF0000",
-                "background_color": "#FF0000",
-                "hovered_color": "#FF0000",
-            },
-            {
-                "code": "tjv",
-                "name": "TJV",
-                "main_category": schemas::rolling_stock::TrainMainCategory::CommuterTrain,
-                "color": "#00FF00",
-                "background_color": "#00FF00",
-                "hovered_color": "#00FF00",
-            }
-        ]));
-
-        app.fetch(request)
+        app.post("/sub_category")
+            .json(&json!([
+                {
+                    "code": "tjv",
+                    "name": "TJV",
+                    "main_category": schemas::rolling_stock::TrainMainCategory::HighSpeedTrain,
+                    "color": "#FF0000",
+                    "background_color": "#FF0000",
+                    "hovered_color": "#FF0000",
+                },
+                {
+                    "code": "tjv",
+                    "name": "TJV",
+                    "main_category": schemas::rolling_stock::TrainMainCategory::CommuterTrain,
+                    "color": "#00FF00",
+                    "background_color": "#00FF00",
+                    "hovered_color": "#00FF00",
+                }
+            ]))
             .await
-            .assert_status(StatusCode::BAD_REQUEST);
+            .assert_status_bad_request();
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -293,12 +290,7 @@ pub mod tests {
         .await
         .expect("Failed to create sub category");
 
-        let request = app.get("/sub_category");
-        let response: SubCategoryPage = app
-            .fetch(request)
-            .await
-            .assert_status(StatusCode::OK)
-            .json_into();
+        let response: SubCategoryPage = app.get("/sub_category").await.assert_status_ok().json();
         assert_eq!(
             response.results,
             vec![created_sub_category_1.into(), created_sub_category_2.into()]
@@ -336,13 +328,12 @@ pub mod tests {
             .await
             .expect("Failed to create paced train");
 
-        let request = app.delete(&format!(
+        app.delete(&format!(
             "/sub_category/{}",
             created_sub_category.code.clone()
-        ));
-        app.fetch(request)
-            .await
-            .assert_status(StatusCode::NO_CONTENT);
+        ))
+        .await
+        .assert_status_no_content();
 
         let paced_train_1 =
             editoast_models::TrainSchedule::retrieve(db_pool.get_ok(), paced_train_1.id)

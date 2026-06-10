@@ -130,7 +130,6 @@ pub(in crate::views) async fn query_errors(
 
 #[cfg(test)]
 mod tests {
-    use axum::http::StatusCode;
 
     use crate::fixtures::create_empty_infra;
     use crate::views::test_app;
@@ -144,13 +143,14 @@ mod tests {
         let error_type = "overlapping_electrifications";
         let level = "warnings";
 
-        let req = app.get(
+        app.get(
             format!(
                 "/infra/{}/errors?error_type={}&level={}",
                 empty_infra.id, error_type, level
             )
             .as_str(),
-        );
-        app.fetch(req).await.assert_status(StatusCode::OK);
+        )
+        .await
+        .assert_status_ok();
     }
 }

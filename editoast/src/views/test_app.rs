@@ -5,6 +5,7 @@
 use authz::v2;
 use authz::v2::TestClientExt;
 use authz::v2::special_authorizers;
+use axum::http::Method;
 use std::collections::HashMap;
 use std::collections::HashSet;
 use std::path::PathBuf;
@@ -17,6 +18,7 @@ use authz::identity::GroupInfo;
 use authz::identity::UserInfo;
 use axum::Router;
 use axum_test::TestRequest;
+use axum_test::TestResponse;
 use axum_test::TestServer;
 use axum_tracing_opentelemetry::middleware::OtelAxumLayer;
 use common::tracing::SpanUploading;
@@ -369,33 +371,33 @@ impl TestApp {
         )
     }
 
-    pub async fn fetch(&self, mut req: TestRequest) -> TestResponse {
-        if !self.enable_authorization {
-            req = req.skip_authz(); // x-osrd-skip-authz
+    pub fn method(&self, method: Method, path: &str) -> TestRequest {
+        let request = self.server.method(method, &trim_path(path));
+        if self.enable_authorization {
+            request
+        } else {
+            request.skip_authz() // x-osrd-skip-authz
         }
-        tracing::trace!(request = ?req);
-        let response = req.await;
-        TestResponse::new(response)
     }
 
     pub fn get(&self, path: &str) -> TestRequest {
-        self.server.get(&trim_path(path))
+        self.method(Method::GET, path)
     }
 
     pub fn post(&self, path: &str) -> TestRequest {
-        self.server.post(&trim_path(path))
+        self.method(Method::POST, path)
     }
 
     pub fn put(&self, path: &str) -> TestRequest {
-        self.server.put(&trim_path(path))
+        self.method(Method::PUT, path)
     }
 
     pub fn patch(&self, path: &str) -> TestRequest {
-        self.server.patch(&trim_path(path))
+        self.method(Method::PATCH, path)
     }
 
     pub fn delete(&self, path: &str) -> TestRequest {
-        self.server.delete(&trim_path(path))
+        self.method(Method::DELETE, path)
     }
 
     fn authz_subject(&self, subject_id: i64) -> authz::Subject {
@@ -649,107 +651,21 @@ fn trim_path(path: &str) -> String {
     }
 }
 
-pub struct TestResponse {
-    inner: axum_test::TestResponse,
-    log_payload: bool,
+pub trait TestResponseExt {
+    fn last_jsonl<T: DeserializeOwned>(&self) -> T;
+    fn jsonl<T: DeserializeOwned>(&self) -> Vec<T>;
 }
 
-impl TestResponse {
-    #[tracing::instrument(name = "Response", level = "debug", skip(inner), fields(status = ?inner.status_code()))]
-    fn new(inner: axum_test::TestResponse) -> Self {
-        tracing::trace!(response = ?inner);
-        Self {
-            inner,
-            log_payload: true,
-        }
-    }
-
-    #[allow(unused)]
-    pub fn log_payload(mut self, log_payload: bool) -> Self {
-        self.log_payload = log_payload;
-        self
-    }
-
-    #[track_caller]
-    fn render_response_lossy(self) -> String {
-        if !self.log_payload {
-            return "payload logging disabled".to_string();
-        }
-        let bytes = self.inner.into_bytes();
-        serde_json::from_slice::<serde_json::Value>(&bytes)
-            .ok()
-            .and_then(|json| serde_json::to_string_pretty(&json).ok())
-            .unwrap_or_else(|| "cannot render response body".to_string())
-    }
-
-    #[track_caller]
-    pub fn assert_status(self, expected_status: axum::http::StatusCode) -> Self {
-        let actual_status = self.inner.status_code();
-        if actual_status != expected_status {
-            let body = self.render_response_lossy();
-            pretty_assertions::assert_eq!(
-                actual_status,
-                expected_status,
-                "unexpected status code body={body}"
-            );
-            unreachable!("should have already panicked")
-        } else {
-            self
-        }
-    }
-
-    pub fn bytes(self) -> Vec<u8> {
-        self.inner.into_bytes().into()
-    }
-
-    pub fn string(self) -> String {
-        String::from_utf8(self.bytes()).expect("body should be valid UTF-8")
-    }
-
-    #[track_caller]
-    pub fn content_type(&self) -> String {
-        self.inner
-            .header("Content-Type")
-            .to_str()
-            .expect("Content-Type header should be valid UTF-8")
-            .to_string()
-    }
-
+impl TestResponseExt for TestResponse {
     #[tracing::instrument(
         name = "Deserialization",
         level = "debug",
         skip(self),
-        fields(response_status = ?self.inner.status_code())
+        fields(response_status = ?self.status_code())
     )]
     #[track_caller]
-    pub fn json_into<T: DeserializeOwned>(self) -> T {
-        let body = self.bytes();
-        serde_json::from_slice(body.as_ref()).unwrap_or_else(|err| {
-            tracing::error!(error = ?err, "Error deserializing test response into the desired type");
-            let actual: serde_json::Value =
-                serde_json::from_slice(body.as_ref()).unwrap_or_else(|err| {
-                    tracing::error!(
-                        error = ?err,
-                        ?body,
-                        "Failed to deserialize test response body into JSON"
-                    );
-                    panic!("could not deserialize test response into JSON");
-                });
-            let pretty = serde_json::to_string_pretty(&actual).unwrap();
-            tracing::error!(body = %pretty, "Actual JSON value");
-            panic!("could not deserialize test request");
-        })
-    }
-
-    #[tracing::instrument(
-        name = "Deserialization",
-        level = "debug",
-        skip(self),
-        fields(response_status = ?self.inner.status_code())
-    )]
-    #[track_caller]
-    pub fn last_jsonl_into<T: DeserializeOwned>(self) -> T {
-        self.jsonl_into()
+    fn last_jsonl<T: DeserializeOwned>(&self) -> T {
+        self.jsonl()
             .into_iter()
             .last()
             .expect("Response should not be empty")
@@ -759,11 +675,11 @@ impl TestResponse {
         name = "Deserialization",
         level = "debug",
         skip(self),
-        fields(response_status = ?self.inner.status_code())
+        fields(response_status = ?self.status_code())
     )]
     #[track_caller]
-    pub fn jsonl_into<T: DeserializeOwned>(self) -> Vec<T> {
-        let body = self.string();
+    fn jsonl<T: DeserializeOwned>(&self) -> Vec<T> {
+        let body = self.text();
 
         body.lines()
             .map(|line| {

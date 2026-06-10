@@ -151,17 +151,18 @@ mod tests {
         let app = test_app!().skip_authz().build();
         let pool = app.db_pool();
 
-        let request = app
+        // Insert document
+        let new_doc = app
             .post("/documents")
             .add_header(
                 header::CONTENT_TYPE,
                 header::HeaderValue::from_str("text/plain").unwrap(),
             )
-            .bytes("Document post test data".into());
-
-        // Insert document
-        let response = app.fetch(request).await.assert_status(StatusCode::CREATED);
-        let new_doc = response.json_into::<PostDocumentResponse>().document_key;
+            .bytes("Document post test data".into())
+            .await
+            .assert_status(StatusCode::CREATED)
+            .json::<PostDocumentResponse>()
+            .document_key;
 
         // Get create document
         let document = Document::retrieve(pool.get_ok(), new_doc)
@@ -186,13 +187,11 @@ mod tests {
             .expect("Failed to create document");
 
         // Get document test
-        let response = app
-            .fetch(app.get(&format!("/documents/{}", document.id)))
-            .await
-            .assert_status(StatusCode::OK)
-            .bytes();
+        let response = app.get(&format!("/documents/{}", document.id)).await;
+        response.assert_status_ok();
+        let response = response.into_bytes();
 
-        assert_eq!(response.as_slice(), b"Document post test data");
+        assert_eq!(response.as_ref(), b"Document post test data");
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -209,9 +208,9 @@ mod tests {
             .expect("Failed to create document");
 
         // Delete document request
-        app.fetch(app.delete(format!("/documents/{}", document.id).as_str()))
+        app.delete(format!("/documents/{}", document.id).as_str())
             .await
-            .assert_status(StatusCode::NO_CONTENT);
+            .assert_status_no_content();
 
         // Get create document
         let document = Document::exists(&mut pool.get_ok(), document.id)

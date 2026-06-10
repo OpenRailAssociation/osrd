@@ -159,15 +159,15 @@ mod tests {
             .db_pool(db_pool)
             .core_client(CoreClient::Mocked(core))
             .build();
-        let req = app.post("/worker_load").json(&WorkerLoadForm {
-            infra_id: empty_infra.id,
-            timetable_id: None,
-        });
         let response: WorkerStatus = app
-            .fetch(req)
+            .post("/worker_load")
+            .json(&WorkerLoadForm {
+                infra_id: empty_infra.id,
+                timetable_id: None,
+            })
             .await
-            .assert_status(StatusCode::OK)
-            .json_into();
+            .assert_status_ok()
+            .json();
         assert_eq!(response, expected);
     }
 }

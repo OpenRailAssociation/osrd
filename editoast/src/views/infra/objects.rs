@@ -153,7 +153,6 @@ pub(in crate::views) async fn list_objects_ids(
 
 #[cfg(test)]
 mod tests {
-    use axum::http::StatusCode;
     use pretty_assertions::assert_eq;
 
     use schemas::primitives::Identifier;
@@ -174,13 +173,10 @@ mod tests {
         let db_pool = app.db_pool();
         let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
 
-        let request = app
-            .post(format!("/infra/{}/objects/TrackSection", empty_infra.id).as_str())
-            .json(&["invalid_id"]);
-
-        app.fetch(request)
+        app.post(format!("/infra/{}/objects/TrackSection", empty_infra.id).as_str())
+            .json(&["invalid_id"])
             .await
-            .assert_status(StatusCode::BAD_REQUEST);
+            .assert_status_bad_request();
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -189,11 +185,10 @@ mod tests {
         let db_pool = app.db_pool();
         let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
 
-        let request = app
-            .post(format!("/infra/{}/objects/TrackSection", empty_infra.id).as_str())
-            .json(&vec![""; 0]);
-
-        app.fetch(request).await.assert_status(StatusCode::OK);
+        app.post(format!("/infra/{}/objects/TrackSection", empty_infra.id).as_str())
+            .json(&vec![""; 0])
+            .await
+            .assert_status_ok();
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -217,16 +212,14 @@ mod tests {
         .expect("Failed to create switch object");
 
         // WHEN
-        let request = app
-            .post(format!("/infra/{}/objects/Switch", empty_infra.id).as_str())
-            .json(&vec!["switch_001"]);
 
         // THEN
         let switch_object: Vec<ObjectQueryable> = app
-            .fetch(request)
+            .post(format!("/infra/{}/objects/Switch", empty_infra.id).as_str())
+            .json(&vec!["switch_001"])
             .await
-            .assert_status(StatusCode::OK)
-            .json_into();
+            .assert_status_ok()
+            .json();
         let expected_switch_object = vec![ObjectQueryable {
             obj_id: switch.get_id().to_string(),
             railjson: json!({
@@ -249,13 +242,10 @@ mod tests {
         let db_pool = app.db_pool();
         let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
 
-        let request = app
-            .post(format!("/infra/{}/objects/TrackSection", empty_infra.id).as_str())
-            .json(&vec!["id"; 2]);
-
-        app.fetch(request)
+        app.post(format!("/infra/{}/objects/TrackSection", empty_infra.id).as_str())
+            .json(&vec!["id"; 2])
             .await
-            .assert_status(StatusCode::BAD_REQUEST);
+            .assert_status_bad_request();
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -274,15 +264,12 @@ mod tests {
         .await
         .expect("Failed to create switch type object");
 
-        let request = app
-            .post(format!("/infra/{}/objects/SwitchType", empty_infra.id).as_str())
-            .json(&vec![switch_type.id.clone()]);
-
         let switch_type_object: Vec<ObjectQueryable> = app
-            .fetch(request)
+            .post(format!("/infra/{}/objects/SwitchType", empty_infra.id).as_str())
+            .json(&vec![switch_type.id.clone()])
             .await
-            .assert_status(StatusCode::OK)
-            .json_into();
+            .assert_status_ok()
+            .json();
         let expected_switch_type_object = vec![ObjectQueryable {
             obj_id: switch_type.get_id().to_string(),
             railjson: json!({
@@ -318,13 +305,11 @@ mod tests {
             .await
             .expect("Failed to create switch type object");
 
-        let request = app.get(format!("/infra/{}/objects/SwitchType/ids", empty_infra.id).as_str());
-
         let response = app
-            .fetch(request)
+            .get(format!("/infra/{}/objects/SwitchType/ids", empty_infra.id).as_str())
             .await
-            .assert_status(StatusCode::OK)
-            .json_into::<JsonValue>();
+            .assert_status_ok()
+            .json::<JsonValue>();
 
         assert!(matches!(response, JsonValue::Object(_)));
         let mut ids = response

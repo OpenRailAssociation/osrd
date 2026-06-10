@@ -81,7 +81,6 @@ pub(in crate::views) async fn get_line_bbox(
 
 #[cfg(test)]
 mod tests {
-    use axum::http::StatusCode;
     use geos::geojson::Geometry;
     use pretty_assertions::assert_eq;
 
@@ -126,13 +125,11 @@ mod tests {
             .await
             .expect("Failed to create track section object");
 
-        let request =
-            app.get(format!("/infra/{}/lines/{line_code}/bbox/", empty_infra.id).as_str());
         let bounding_box: BoundingBox = app
-            .fetch(request)
+            .get(format!("/infra/{}/lines/{line_code}/bbox/", empty_infra.id).as_str())
             .await
-            .assert_status(StatusCode::OK)
-            .json_into();
+            .assert_status_ok()
+            .json();
         assert_eq!(
             bounding_box,
             BoundingBox {
@@ -151,15 +148,14 @@ mod tests {
         let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
 
         let not_existing_line_code = 123456789;
-        let request = app.get(
+        app.get(
             format!(
                 "/infra/{}/lines/{not_existing_line_code}/bbox/",
                 empty_infra.id
             )
             .as_str(),
-        );
-        app.fetch(request)
-            .await
-            .assert_status(StatusCode::BAD_REQUEST);
+        )
+        .await
+        .assert_status_bad_request();
     }
 }

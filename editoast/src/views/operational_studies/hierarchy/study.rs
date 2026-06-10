@@ -462,20 +462,20 @@ pub mod tests {
 
         let created_project = create_project(&mut db_pool.get_ok(), "test_project_name").await;
 
-        let request = app.post("/studies/").json(&json!({
-            "name": "study_test",
-            "description": "Study description",
-            "state": "Starting",
-            "business_code": "",
-            "service_code": "",
-            "study_type": "",
-            "project_id": created_project.id,
-        }));
         let response: StudyWithScenarioCount = app
-            .fetch(request)
+            .post("/studies/")
+            .json(&json!({
+                "name": "study_test",
+                "description": "Study description",
+                "state": "Starting",
+                "business_code": "",
+                "service_code": "",
+                "study_type": "",
+                "project_id": created_project.id,
+            }))
             .await
             .assert_status(StatusCode::CREATED)
-            .json_into();
+            .json();
 
         let study = Study::retrieve(db_pool.get_ok(), response.study.id)
             .await
@@ -496,15 +496,12 @@ pub mod tests {
         let created_study =
             create_study(&mut db_pool.get_ok(), "test_study_name", created_project.id).await;
 
-        let request = app
-            .get("/studies")
-            .add_query_param("project_id", created_project.id);
-
         let response: StudyListResponse = app
-            .fetch(request)
+            .get("/studies")
+            .add_query_param("project_id", created_project.id)
             .await
-            .assert_status(StatusCode::OK)
-            .json_into();
+            .assert_status_ok()
+            .json();
 
         let studies_retrieved = response
             .results
@@ -525,13 +522,11 @@ pub mod tests {
         let created_study =
             create_study(&mut db_pool.get_ok(), "test_study_name", created_project.id).await;
 
-        let request = app.get(&format!("/studies/{}", created_study.id));
-
         let response: StudyResponse = app
-            .fetch(request)
+            .get(&format!("/studies/{}", created_study.id))
             .await
-            .assert_status(StatusCode::OK)
-            .json_into();
+            .assert_status_ok()
+            .json();
 
         assert_eq!(response.study, created_study);
         assert_eq!(response.study.project_id, created_project.id);
@@ -547,11 +542,9 @@ pub mod tests {
         let created_study =
             create_study(&mut db_pool.get_ok(), "test_study_name", created_project.id).await;
 
-        let request = app.get(&format!("/studies/{}", created_study.id + 1000));
-
-        app.fetch(request)
+        app.get(&format!("/studies/{}", created_study.id + 1000))
             .await
-            .assert_status(StatusCode::NOT_FOUND);
+            .assert_status_not_found();
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -564,11 +557,9 @@ pub mod tests {
         let created_study =
             create_study(&mut db_pool.get_ok(), "test_study_name", created_project.id).await;
 
-        let request = app.delete(&format!("/studies/{}", created_study.id));
-
-        app.fetch(request)
+        app.delete(&format!("/studies/{}", created_study.id))
             .await
-            .assert_status(StatusCode::NO_CONTENT);
+            .assert_status_no_content();
 
         let exists = Study::exists(&mut db_pool.get_ok(), created_study.id)
             .await
@@ -590,14 +581,13 @@ pub mod tests {
         let study_name = "rename_test";
         let study_budget = 20000;
 
-        let request = app
-            .patch(&format!("/studies/{}", created_study.id))
+        app.patch(&format!("/studies/{}", created_study.id))
             .json(&json!({
                 "name": study_name,
                 "budget": study_budget,
-            }));
-
-        app.fetch(request).await.assert_status(StatusCode::OK);
+            }))
+            .await
+            .assert_status_ok();
 
         let updated_study = Study::retrieve(db_pool.get_ok(), created_study.id)
             .await

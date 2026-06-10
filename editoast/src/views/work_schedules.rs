@@ -454,23 +454,21 @@ pub mod tests {
         let app = test_app!().skip_authz().build();
         let pool = app.db_pool();
 
-        let request = app.post("/work_schedules").json(&json!({
-            "work_schedule_group_name": "work schedule group name",
-            "work_schedules": [{
-                "start_date_time": "2024-01-01T08:00:00Z",
-                "end_date_time": "2024-01-01T09:00:00Z",
-                "track_ranges": [],
-                "obj_id": "work_schedule_obj_id",
-                "work_schedule_type": "CATENARY"
-            }]
-        }));
-
-        // WHEN
         let work_schedule_response = app
-            .fetch(request)
+            .post("/work_schedules")
+            .json(&json!({
+                "work_schedule_group_name": "work schedule group name",
+                "work_schedules": [{
+                    "start_date_time": "2024-01-01T08:00:00Z",
+                    "end_date_time": "2024-01-01T09:00:00Z",
+                    "track_ranges": [],
+                    "obj_id": "work_schedule_obj_id",
+                    "work_schedule_type": "CATENARY"
+                }]
+            }))
             .await
             .assert_status(StatusCode::CREATED)
-            .json_into::<WorkScheduleCreateResponse>();
+            .json::<WorkScheduleCreateResponse>();
 
         // THEN
         let created_group = WorkScheduleGroup::retrieve(
@@ -486,20 +484,19 @@ pub mod tests {
     async fn work_schedule_create_fail_start_date_after_end_date() {
         let app = test_app!().skip_authz().build();
 
-        let request = app.post("/work_schedules").json(&json!({
-            "work_schedule_group_name": "work schedule group name",
-            "work_schedules": [{
-                "start_date_time": "2024-01-01T08:00:00Z",
-                "end_date_time": "2024-01-01T07:00:00Z",
-                "track_ranges": [],
-                "obj_id": "work_schedule_obj_id",
-                "work_schedule_type": "CATENARY"
-            }]
-        }));
-
-        app.fetch(request)
+        app.post("/work_schedules")
+            .json(&json!({
+                "work_schedule_group_name": "work schedule group name",
+                "work_schedules": [{
+                    "start_date_time": "2024-01-01T08:00:00Z",
+                    "end_date_time": "2024-01-01T07:00:00Z",
+                    "track_ranges": [],
+                    "obj_id": "work_schedule_obj_id",
+                    "work_schedule_type": "CATENARY"
+                }]
+            }))
             .await
-            .assert_status(StatusCode::UNPROCESSABLE_ENTITY);
+            .assert_status_unprocessable_entity();
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -515,22 +512,21 @@ pub mod tests {
             .await
             .expect("Failed to create work schedule group");
 
-        let request = app.post("/work_schedules").json(&json!({
-            "work_schedule_group_name": "duplicated work schedule group name",
-            "work_schedules": [{
-                "start_date_time": "2024-01-01T08:00:00Z",
-                "end_date_time": "2024-01-01T09:00:00Z",
-                "track_ranges": [],
-                "obj_id": "work_schedule_obj_id",
-                "work_schedule_type": "CATENARY"
-            }]
-        }));
-
         let work_schedule_response = app
-            .fetch(request)
+            .post("/work_schedules")
+            .json(&json!({
+                "work_schedule_group_name": "duplicated work schedule group name",
+                "work_schedules": [{
+                    "start_date_time": "2024-01-01T08:00:00Z",
+                    "end_date_time": "2024-01-01T09:00:00Z",
+                    "track_ranges": [],
+                    "obj_id": "work_schedule_obj_id",
+                    "work_schedule_type": "CATENARY"
+                }]
+            }))
             .await
-            .assert_status(StatusCode::BAD_REQUEST)
-            .json_into::<crate::error::InternalError>();
+            .assert_status_bad_request()
+            .json::<crate::error::InternalError>();
 
         assert_eq!(
             &work_schedule_response.error_type,
@@ -621,42 +617,40 @@ pub mod tests {
         let (work_schedule_group, work_schedules) =
             create_work_schedules_fixture_set(conn, working_schedules_changeset).await;
 
-        let request = app.post("/work_schedules/project_path").json(&json!({
-            "work_schedule_group_id": work_schedule_group.id,
-            "path_track_ranges": [
-                {
-                    "track_section": "a",
-                    "begin": 0,
-                    "end": 100000,
-                    "direction": "START_TO_STOP"
-                },
-                {
-                    "track_section": "b",
-                    "begin": 0,
-                    "end": 100000,
-                    "direction": "START_TO_STOP"
-                },
-                {
-                    "track_section": "c",
-                    "begin": 0,
-                    "end": 100000,
-                    "direction": "START_TO_STOP"
-                },
-                {
-                    "track_section": "d",
-                    "begin": 0,
-                    "end": 100000,
-                    "direction": "START_TO_STOP"
-                }
-            ]
-        }));
-
-        // WHEN
         let work_schedule_project_response = app
-            .fetch(request)
+            .post("/work_schedules/project_path")
+            .json(&json!({
+                "work_schedule_group_id": work_schedule_group.id,
+                "path_track_ranges": [
+                    {
+                        "track_section": "a",
+                        "begin": 0,
+                        "end": 100000,
+                        "direction": "START_TO_STOP"
+                    },
+                    {
+                        "track_section": "b",
+                        "begin": 0,
+                        "end": 100000,
+                        "direction": "START_TO_STOP"
+                    },
+                    {
+                        "track_section": "c",
+                        "begin": 0,
+                        "end": 100000,
+                        "direction": "START_TO_STOP"
+                    },
+                    {
+                        "track_section": "d",
+                        "begin": 0,
+                        "end": 100000,
+                        "direction": "START_TO_STOP"
+                    }
+                ]
+            }))
             .await
-            .assert_status(StatusCode::OK)
-            .json_into::<Vec<WorkScheduleProjection>>();
+            .assert_status_ok()
+            .json::<Vec<WorkScheduleProjection>>();
 
         // THEN
         let expected: Vec<WorkScheduleProjection> = expected_path_position_ranges
@@ -682,47 +676,43 @@ pub mod tests {
 
         // Create a new group
         let create_group_request = app.post("/work_schedules/group").json(&json!({}));
-        let group_creation_response = app
-            .fetch(create_group_request)
+        let group_creation_response = (create_group_request)
             .await
-            .assert_status(StatusCode::OK)
-            .json_into::<WorkScheduleGroupCreateResponse>();
+            .assert_status_ok()
+            .json::<WorkScheduleGroupCreateResponse>();
         let group_id = group_creation_response.work_schedule_group_id;
         let work_schedule_url = format!("/work_schedules/group/{group_id}");
 
         // Add a work schedule
         let ref_obj_id = Uuid::new_v4().to_string();
-        let request = app.put(&work_schedule_url).json(&json!([{
-                "start_date_time": "2024-01-01T08:00:00Z",
-                "end_date_time": "2024-01-01T09:00:00Z",
-                "track_ranges": [],
-                "obj_id": ref_obj_id,
-                "work_schedule_type": "CATENARY"
-            }]
-        ));
-        app.fetch(request).await.assert_status(StatusCode::OK);
+        app.put(&work_schedule_url)
+            .json(&json!([{
+                    "start_date_time": "2024-01-01T08:00:00Z",
+                    "end_date_time": "2024-01-01T09:00:00Z",
+                    "track_ranges": [],
+                    "obj_id": ref_obj_id,
+                    "work_schedule_type": "CATENARY"
+                }]
+            ))
+            .await
+            .assert_status_ok();
 
         // Get the content of the group
-        let request = app.get(&work_schedule_url);
         let response = app
-            .fetch(request)
+            .get(&work_schedule_url)
             .await
-            .assert_status(StatusCode::OK)
-            .json_into::<GroupContentResponse>();
+            .assert_status_ok()
+            .json::<GroupContentResponse>();
         let work_schedules = response.results;
         assert_eq!(1, work_schedules.len());
         assert_eq!(ref_obj_id, work_schedules[0].obj_id);
 
         // Delete it
-        let request = app.delete(&work_schedule_url);
-        app.fetch(request)
+        app.delete(&work_schedule_url)
             .await
-            .assert_status(StatusCode::NO_CONTENT);
+            .assert_status_no_content();
 
         // Try to access it
-        let request = app.get(&work_schedule_url);
-        app.fetch(request)
-            .await
-            .assert_status(StatusCode::NOT_FOUND);
+        app.get(&work_schedule_url).await.assert_status_not_found();
     }
 }

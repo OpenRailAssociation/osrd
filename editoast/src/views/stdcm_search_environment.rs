@@ -345,14 +345,13 @@ pub mod tests {
             allowed_tracks: None,
         };
 
-        let request = app.post("/stdcm/search_environment").json(&form);
-
         // WHEN
         let stdcm_search_env = app
-            .fetch(request)
+            .post("/stdcm/search_environment")
+            .json(&form)
             .await
             .assert_status(StatusCode::CREATED)
-            .json_into::<StdcmSearchEnvironment>();
+            .json::<StdcmSearchEnvironment>();
 
         // THEN
         let stdcm_search_env_in_db =
@@ -399,12 +398,11 @@ pub mod tests {
             allowed_tracks: None,
         };
 
-        let request = app.post("/stdcm/search_environment").json(&form);
-
         // WHEN
-        app.fetch(request)
+        app.post("/stdcm/search_environment")
+            .json(&form)
             .await
-            .assert_status(StatusCode::UNPROCESSABLE_ENTITY);
+            .assert_status_unprocessable_entity();
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -452,14 +450,12 @@ pub mod tests {
                 .expect("Failed to create stdcm search environment");
         }
 
-        let request = app.get("/stdcm/search_environment");
-
         // WHEN
         let stdcm_search_env = app
-            .fetch(request)
+            .get("/stdcm/search_environment")
             .await
-            .assert_status(StatusCode::OK)
-            .json_into::<StdcmSearchEnvironmentResponse>();
+            .assert_status_ok()
+            .json::<StdcmSearchEnvironmentResponse>();
 
         // THEN
         assert_eq!(stdcm_search_env.enabled_from, enabled_from);
@@ -477,11 +473,10 @@ pub mod tests {
             .expect("Failed to delete all search environments");
 
         // WHEN
-        let request = app.get("/stdcm/search_environment");
-        let response = app.fetch(request).await;
+        let response = app.get("/stdcm/search_environment").await;
 
         // THEN
-        response.assert_status(StatusCode::NO_CONTENT);
+        response.assert_status_no_content();
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -512,12 +507,10 @@ pub mod tests {
             .await
             .expect("Failed to create stdcm search environment");
 
-        let request = app.delete(&format!("/stdcm/search_environment/{}", env.id));
-
         // WHEN
-        app.fetch(request)
+        app.delete(&format!("/stdcm/search_environment/{}", env.id))
             .await
-            .assert_status(StatusCode::NO_CONTENT);
+            .assert_status_no_content();
 
         // THEN
         let deleted_env_exists = StdcmSearchEnvironment::exists(&mut pool.get_ok(), env.id)
@@ -570,14 +563,12 @@ pub mod tests {
             .await
             .expect("Failed to create stdcm search environment");
 
-        let request = app.get("/stdcm/search_environment/list");
-
         // WHEN
         let stdcm_search_env_response = app
-            .fetch(request)
+            .get("/stdcm/search_environment/list")
             .await
-            .assert_status(StatusCode::OK)
-            .json_into::<StdcmSearchEnvListResponse>();
+            .assert_status_ok()
+            .json::<StdcmSearchEnvListResponse>();
 
         // THEN
         let created_ids = HashSet::from([env1.id, env2.id, env3.id]);

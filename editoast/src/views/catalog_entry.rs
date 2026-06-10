@@ -169,14 +169,12 @@ mod tests {
             name: Some("test".to_string()),
         };
 
-        let request = app
-            .post("/catalog_entries")
-            .json(&json!(catalog_entry_form));
         let catalog_entry: CatalogEntry = app
-            .fetch(request)
+            .post("/catalog_entries")
+            .json(&json!(catalog_entry_form))
             .await
             .assert_status(StatusCode::CREATED)
-            .json_into();
+            .json();
         assert_eq!(
             catalog_entry,
             CatalogEntry {
@@ -193,12 +191,11 @@ mod tests {
 
         let catalog_entry = create_catalog_entry(&mut db_pool.get().await.unwrap()).await;
 
-        let request = app.get("/catalog_entries");
         let catalog_entries = app
-            .fetch(request)
+            .get("/catalog_entries")
             .await
-            .assert_status(StatusCode::OK)
-            .json_into::<CatalogEntryPage>();
+            .assert_status_ok()
+            .json::<CatalogEntryPage>();
         let results = catalog_entries.results;
         assert_eq!(results.len(), 1);
         assert_eq!(results, vec![catalog_entry]);
@@ -211,10 +208,10 @@ mod tests {
 
         let catalog_entry = create_catalog_entry(&mut db_pool.get().await.unwrap()).await;
 
-        let request = app.delete(format!("/catalog_entries/{}", catalog_entry.id).as_str());
-
-        let response = app.fetch(request).await;
-        response.assert_status(StatusCode::NO_CONTENT);
+        let response = app
+            .delete(format!("/catalog_entries/{}", catalog_entry.id).as_str())
+            .await;
+        response.assert_status_no_content();
 
         let exists = CatalogEntry::exists(&mut db_pool.get_ok(), catalog_entry.id)
             .await
@@ -226,10 +223,8 @@ mod tests {
     async fn catalog_entry_unexisting_delete() {
         let app = test_app!().skip_authz().build();
 
-        let request = app.delete("/catalog_entries/999999");
-
-        let response = app.fetch(request).await;
-        response.assert_status(StatusCode::NOT_FOUND);
+        let response = app.delete("/catalog_entries/999999").await;
+        response.assert_status_not_found();
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -243,14 +238,12 @@ mod tests {
             name: Some("test2".to_string()),
         };
 
-        let request = app
-            .put(format!("/catalog_entries/{}", catalog_entry.id).as_str())
-            .json(&json!(catalog_entry_form));
         let catalog_entry_result: CatalogEntry = app
-            .fetch(request)
+            .put(format!("/catalog_entries/{}", catalog_entry.id).as_str())
+            .json(&json!(catalog_entry_form))
             .await
-            .assert_status(StatusCode::OK)
-            .json_into();
+            .assert_status_ok()
+            .json();
         assert_eq!(
             catalog_entry_result,
             CatalogEntry {
@@ -269,12 +262,8 @@ mod tests {
             create_catalog_entry_with_name(&mut db_pool.get().await.unwrap(), "test_1").await;
         let catalog_entry_2 =
             create_catalog_entry_with_name(&mut db_pool.get().await.unwrap(), "test_2").await;
-        let request = app.get("/catalog_entries");
-        let catalog_entries: CatalogEntryPage = app
-            .fetch(request)
-            .await
-            .assert_status(StatusCode::OK)
-            .json_into();
+        let catalog_entries: CatalogEntryPage =
+            app.get("/catalog_entries").await.assert_status_ok().json();
         let results = catalog_entries.results;
         assert_eq!(results, vec![catalog_entry_1, catalog_entry_2]);
     }

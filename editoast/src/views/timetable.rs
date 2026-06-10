@@ -1150,10 +1150,9 @@ mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn get_unexisting_timetable() {
         let app = test_app!().skip_authz().build();
-        let request = app.get(&format!("/timetable/{}/train_schedules", 0));
-        app.fetch(request)
+        app.get(&format!("/timetable/{}/train_schedules", 0))
             .await
-            .assert_status(StatusCode::NOT_FOUND);
+            .assert_status_not_found();
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -1162,13 +1161,12 @@ mod tests {
         let pool = app.db_pool();
 
         // Insert timetable
-        let request = app.post("/timetable");
 
         let created_timetable: TimetableResult = app
-            .fetch(request)
+            .post("/timetable")
             .await
             .assert_status(StatusCode::CREATED)
-            .json_into();
+            .json();
 
         let retrieved_timetable =
             Timetable::retrieve(pool.get_ok(), created_timetable.timetable_id)
@@ -1186,11 +1184,9 @@ mod tests {
 
         let timetable = create_timetable(&mut pool.get_ok()).await;
 
-        let request = app.delete(format!("/timetable/{}", timetable.id).as_str());
-
-        app.fetch(request)
+        app.delete(format!("/timetable/{}", timetable.id).as_str())
             .await
-            .assert_status(StatusCode::NO_CONTENT);
+            .assert_status_no_content();
 
         let exists = Timetable::exists(&mut pool.get_ok(), timetable.id)
             .await
@@ -1279,12 +1275,11 @@ mod tests {
         )
         .await;
 
-        let request = app.get(format!("/timetable/{}/train_schedules", timetable1.id).as_str());
         let list: ListTrainSchedulesResponse = app
-            .fetch(request)
+            .get(format!("/timetable/{}/train_schedules", timetable1.id).as_str())
             .await
-            .assert_status(StatusCode::OK)
-            .json_into();
+            .assert_status_ok()
+            .json();
 
         // Check if the timetable has the two train schedules
         assert_eq!(list.results.len(), 2);
@@ -1310,12 +1305,11 @@ mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn get_not_found_timetable_train_schedules() {
         let app = test_app!().skip_authz().build();
-        let request = app.get(format!("/timetable/{}/train_schedules", 0).as_str());
         let response: InternalError = app
-            .fetch(request)
+            .get(format!("/timetable/{}/train_schedules", 0).as_str())
             .await
-            .assert_status(StatusCode::NOT_FOUND)
-            .json_into();
+            .assert_status_not_found()
+            .json();
         assert_eq!(&response.error_type, "editoast:timetable:NotFound")
     }
 
@@ -1663,19 +1657,16 @@ mod tests {
         let train_schedule_set_form = TrainScheduleSetForm {
             train_schedule_set_ids: HashSet::from([train_schedule_set_id]),
         };
-        let request = app
-            .post(format!("/timetable/{}/train_schedule_sets", timetable.id).as_str())
-            .json(&train_schedule_set_form);
-        app.fetch(request)
+        app.post(format!("/timetable/{}/train_schedule_sets", timetable.id).as_str())
+            .json(&train_schedule_set_form)
             .await
-            .assert_status(StatusCode::NO_CONTENT);
+            .assert_status_no_content();
 
-        let request = app.get(format!("/timetable/{}/train_schedule_sets", timetable.id).as_str());
         let train_schedule_sets: Vec<TrainScheduleSet> = app
-            .fetch(request)
+            .get(format!("/timetable/{}/train_schedule_sets", timetable.id).as_str())
             .await
-            .assert_status(StatusCode::OK)
-            .json_into();
+            .assert_status_ok()
+            .json();
         assert_eq!(train_schedule_sets, vec![train_schedule_set]);
     }
 
@@ -1753,15 +1744,12 @@ mod tests {
             infra_id: small_infra.id,
         };
 
-        let request = app
-            .post(format!("/timetable/{}/path_steps/local_track_names", timetable.id).as_str())
-            .json(&form);
-
         let response: HashMap<String, HashSet<String>> = app
-            .fetch(request)
+            .post(format!("/timetable/{}/path_steps/local_track_names", timetable.id).as_str())
+            .json(&form)
             .await
-            .assert_status(StatusCode::OK)
-            .json_into();
+            .assert_status_ok()
+            .json();
 
         assert_eq!(
             response.get("Mid_West_station"),

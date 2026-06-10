@@ -346,13 +346,11 @@ pub enum AutoFixesEditoastError {
 
 #[cfg(test)]
 mod tests {
-    use std::collections::HashMap;
-
-    use axum::http::StatusCode;
     use pretty_assertions::assert_eq;
     use rstest::rstest;
     use schemas::infra::BufferStop;
     use schemas::infra::BufferStopExtension;
+    use std::collections::HashMap;
 
     use super::*;
     use crate::fixtures::create_empty_infra;
@@ -404,10 +402,10 @@ mod tests {
         let small_infra_id = small_infra.id;
 
         let operations: Vec<Operation> = app
-            .fetch(app.auto_fixes_request(small_infra_id))
+            .auto_fixes_request(small_infra_id)
             .await
-            .assert_status(StatusCode::OK)
-            .json_into();
+            .assert_status_ok()
+            .json();
 
         assert!(operations.is_empty());
     }
@@ -461,10 +459,10 @@ mod tests {
 
         // WHEN
         let operations: Vec<Operation> = app
-            .fetch(app.auto_fixes_request(small_infra_id))
+            .auto_fixes_request(small_infra_id)
             .await
-            .assert_status(StatusCode::OK)
-            .json_into();
+            .assert_status_ok()
+            .json();
 
         // THEN
         let (infra_errors_after_fix, _) = query_errors(&mut db_pool.get_ok(), &small_infra).await;
@@ -505,10 +503,10 @@ mod tests {
             .expect("Failed to delete BufferStop");
 
         let operations: Vec<Operation> = app
-            .fetch(app.auto_fixes_request(small_infra_id))
+            .auto_fixes_request(small_infra_id)
             .await
-            .assert_status(StatusCode::OK)
-            .json_into();
+            .assert_status_ok()
+            .json();
 
         assert!(operations.contains(&Operation::Delete(DeleteOperation {
             obj_id: "rt.DE0->buffer_stop.4".to_string(),
@@ -743,10 +741,10 @@ mod tests {
         .expect("Failed to create invalid_switch object");
 
         let operations: Vec<Operation> = app
-            .fetch(app.auto_fixes_request(small_infra_id))
+            .auto_fixes_request(small_infra_id)
             .await
-            .assert_status(StatusCode::OK)
-            .json_into();
+            .assert_status_ok()
+            .json();
 
         assert!(operations.contains(&Operation::Delete(DeleteOperation {
             obj_id: invalid_switch.get_id().to_string(),
@@ -796,10 +794,10 @@ mod tests {
         }
 
         let operations: Vec<Operation> = app
-            .fetch(app.auto_fixes_request(empty_infra_id))
+            .auto_fixes_request(empty_infra_id)
             .await
-            .assert_status(StatusCode::OK)
-            .json_into();
+            .assert_status_ok()
+            .json();
 
         assert!(operations.contains(&Operation::Delete(DeleteOperation {
             obj_id: bs_odd.get_id().clone(),
@@ -831,10 +829,10 @@ mod tests {
         }
 
         let operations: Vec<Operation> = app
-            .fetch(app.auto_fixes_request(empty_infra_id))
+            .auto_fixes_request(empty_infra_id)
             .await
-            .assert_status(StatusCode::OK)
-            .json_into();
+            .assert_status_ok()
+            .json();
 
         for obj in [
             &electrification,
@@ -897,10 +895,10 @@ mod tests {
         }
 
         let operations: Vec<Operation> = app
-            .fetch(app.auto_fixes_request(empty_infra_id))
+            .auto_fixes_request(empty_infra_id)
             .await
-            .assert_status(StatusCode::OK)
-            .json_into();
+            .assert_status_ok()
+            .json();
 
         for obj in [&track, &electrification, &speed_section] {
             assert!(!operations.contains(&Operation::Delete(DeleteOperation {
@@ -960,10 +958,10 @@ mod tests {
         }
 
         let operations: Vec<Operation> = app
-            .fetch(app.auto_fixes_request(empty_infra_id))
+            .auto_fixes_request(empty_infra_id)
             .await
-            .assert_status(StatusCode::OK)
-            .json_into();
+            .assert_status_ok()
+            .json();
 
         assert_eq!(operations.len(), error_count);
 
@@ -1018,10 +1016,10 @@ mod tests {
         }
 
         let operations: Vec<Operation> = app
-            .fetch(app.auto_fixes_request(empty_infra_id))
+            .auto_fixes_request(empty_infra_id)
             .await
-            .assert_status(StatusCode::OK)
-            .json_into();
+            .assert_status_ok()
+            .json();
 
         for obj in [&operational_point, &level_crossing] {
             assert!(operations.iter().any(|op| {
@@ -1054,10 +1052,10 @@ mod tests {
 
         // WHEN
         let operations: Vec<Operation> = app
-            .fetch(app.auto_fixes_request(empty_infra_id))
+            .auto_fixes_request(empty_infra_id)
             .await
-            .assert_status(StatusCode::OK)
-            .json_into();
+            .assert_status_ok()
+            .json();
 
         // THEN
         assert_eq!(operations.len(), 2);

@@ -233,7 +233,6 @@ pub(in crate::views) async fn cache_and_get_mvt_tile(
 
 #[cfg(test)]
 mod tests {
-    use axum::http::StatusCode;
     use rstest::rstest;
     use std::collections::HashMap;
     use url::Url;
@@ -252,12 +251,11 @@ mod tests {
                 .into();
 
         let app = test_app!().build();
-        let request = app.get("/layers/layer/track_sections/mvt/does_not_exist?infra=2");
         let body: InternalError = app
-            .fetch(request)
+            .get("/layers/layer/track_sections/mvt/does_not_exist?infra=2")
             .await
-            .assert_status(StatusCode::NOT_FOUND)
-            .json_into();
+            .assert_status_not_found()
+            .json();
         assert_eq!(body, error);
     }
 
@@ -285,12 +283,11 @@ mod tests {
         };
 
         let app = test_app!().root_url(root_url).build();
-        let request = app.get("/layers/layer/track_sections/mvt/geo?infra=2");
         let body: ViewMetadata = app
-            .fetch(request)
+            .get("/layers/layer/track_sections/mvt/geo?infra=2")
             .await
-            .assert_status(StatusCode::OK)
-            .json_into();
+            .assert_status_ok()
+            .json();
         assert_eq!(expected_body, body);
     }
 }

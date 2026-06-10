@@ -441,13 +441,7 @@ mod tests {
         let fixtures = create_scenario_fixtures_set(&mut pool.get_ok(), "test_scenario_name").await;
 
         let url = scenario_url(Some(fixtures.scenario.id));
-        let request = app.get(&url);
-
-        let response: ScenarioResponse = app
-            .fetch(request)
-            .await
-            .assert_status(StatusCode::OK)
-            .json_into();
+        let response: ScenarioResponse = app.get(&url).await.assert_status_ok().json();
 
         assert_eq!(response.scenario, fixtures.scenario);
     }
@@ -460,15 +454,12 @@ mod tests {
         let fixtures = create_scenario_fixtures_set(&mut pool.get_ok(), "test_scenario_name").await;
 
         let url = scenario_url(None);
-        let request = app
-            .get(&url)
-            .add_query_params(json!({"study_id": fixtures.scenario.study_id}));
-
         let mut response: ListScenariosResponse = app
-            .fetch(request)
+            .get(&url)
+            .add_query_params(json!({"study_id": fixtures.scenario.study_id}))
             .await
-            .assert_status(StatusCode::OK)
-            .json_into();
+            .assert_status_ok()
+            .json();
 
         assert!(!response.results.is_empty());
         assert_eq!(
@@ -500,20 +491,19 @@ mod tests {
         let scenario_tags = Tags::new(vec!["tag1".to_string(), "tag2".to_string()]);
 
         // Insert scenario
-        let request = app.post(&url).json(&json!({
-            "name": scenario_name,
-            "description": scenario_description,
-            "infra_id": scenario_infra_id,
-            "timetable_id": scenario_timetable_id,
-            "tags": scenario_tags,
-            "study_id": study.id
-        }));
-
         let response: ScenarioWithDetails = app
-            .fetch(request)
+            .post(&url)
+            .json(&json!({
+                "name": scenario_name,
+                "description": scenario_description,
+                "infra_id": scenario_infra_id,
+                "timetable_id": scenario_timetable_id,
+                "tags": scenario_tags,
+                "study_id": study.id
+            }))
             .await
             .assert_status(StatusCode::CREATED)
-            .json_into();
+            .json();
 
         assert_eq!(response.scenario.name, scenario_name);
         assert_eq!(response.scenario.description, scenario_description);
@@ -549,16 +539,16 @@ mod tests {
         let scenario_tags = Tags::new(vec!["patched_tag1".to_string(), "patched_tag2".to_string()]);
 
         // Update scenario
-        let request = app.patch(&url).json(&json!({
-            "name": scenario_name,
-            "description": scenario_description,
-            "tags": scenario_tags
-        }));
         let response: ScenarioWithDetails = app
-            .fetch(request)
+            .patch(&url)
+            .json(&json!({
+                "name": scenario_name,
+                "description": scenario_description,
+                "tags": scenario_tags
+            }))
             .await
-            .assert_status(StatusCode::OK)
-            .json_into();
+            .assert_status_ok()
+            .json();
 
         assert_eq!(response.scenario.name, scenario_name);
         assert_eq!(response.scenario.description, scenario_description);
@@ -576,13 +566,12 @@ mod tests {
         let url = scenario_url(Some(fixtures.scenario.id));
 
         // Update scenario
-        let request = app.patch(&url).json(&json!({
-            "infra_id": 999999999,
-        }));
-
-        app.fetch(request)
+        app.patch(&url)
+            .json(&json!({
+                "infra_id": 999999999,
+            }))
             .await
-            .assert_status(StatusCode::NOT_FOUND);
+            .assert_status_not_found();
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -601,15 +590,15 @@ mod tests {
         let scenario_name = "new patched scenario V2";
         let scenario_other_infra_id = other_infra.id;
 
-        let request = app.patch(&url).json(&json!({
-            "name": scenario_name,
-            "infra_id": scenario_other_infra_id,
-        }));
         let response: ScenarioWithDetails = app
-            .fetch(request)
+            .patch(&url)
+            .json(&json!({
+                "name": scenario_name,
+                "infra_id": scenario_other_infra_id,
+            }))
             .await
-            .assert_status(StatusCode::OK)
-            .json_into();
+            .assert_status_ok()
+            .json();
 
         assert_eq!(response.scenario.infra_id, scenario_other_infra_id);
         assert_eq!(response.scenario.name, scenario_name);
@@ -623,11 +612,7 @@ mod tests {
         let fixtures = create_scenario_fixtures_set(&mut pool.get_ok(), "test_scenario_name").await;
 
         let url = scenario_url(Some(fixtures.scenario.id));
-        let request = app.delete(&url);
-
-        app.fetch(request)
-            .await
-            .assert_status(StatusCode::NO_CONTENT);
+        app.delete(&url).await.assert_status_no_content();
 
         let exists = Scenario::exists(&mut pool.get_ok(), fixtures.scenario.id)
             .await
