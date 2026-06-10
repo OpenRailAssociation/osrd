@@ -61,7 +61,7 @@
                     "track": "ne.micro.foo_b"
                 }
             ],
-            "secondary_code": "BV",
+            "secondary_code": "FOO",
             "secondary_name": "0",
             "uic": 8700
         },
@@ -78,7 +78,7 @@
                     "track": "ne.micro.bar_a"
                 }
             ],
-            "secondary_code": "BV",
+            "secondary_code": "BAR",
             "secondary_name": "0",
             "uic": 8700
         }

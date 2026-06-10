@@ -33,9 +33,9 @@ def _build_scenario_data() -> ScenarioData:
     builder = InfraBuilder()
 
     # Create operational points
-    op_a = builder.add_operational_point("op.a")
-    op_b = builder.add_operational_point("op.b")
-    op_c = builder.add_operational_point("op.c")
+    op_a = builder.add_operational_point(label="op.a", secondary_code="A")
+    op_b = builder.add_operational_point(label="op.b", secondary_code="B")
+    op_c = builder.add_operational_point(label="op.c", secondary_code="C")
 
     # Create track sections
     t_a = builder.add_track_section(length=10_000, label="t_a")
