@@ -29,7 +29,7 @@
     "@rjsf/validator-ajv8": "^6.5.3",
     "@sdziadkowiec/react-datasheet-grid": "^4.12.3",
     "@tanstack/react-table": "^8.21.3",
-    "@tanstack/react-virtual": "^3.13.26",
+    "@tanstack/react-virtual": "^3.14.2",
     "@turf/along": "^7.3.5",
     "@turf/bbox": "^7.3.5",
     "@turf/bbox-clip": "^7.3.5",
