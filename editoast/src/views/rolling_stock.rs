@@ -671,7 +671,6 @@ async fn create_compound_image(
 
 #[cfg(test)]
 pub mod tests {
-    use axum::http::StatusCode;
     use editoast_models::rolling_stock::TrainMainCategory;
     use itertools::Itertools;
     use pretty_assertions::assert_eq;
@@ -727,13 +726,13 @@ pub mod tests {
         let rs_name = "fast_rolling_stock_name";
         let fast_rolling_stock_form = fast_rolling_stock_form(rs_name);
 
-        let request = app.rolling_stock_create_request(&fast_rolling_stock_form);
-
         // WHEN
-        let raw_response = app.fetch(request).await;
+        let raw_response = app
+            .rolling_stock_create_request(&fast_rolling_stock_form)
+            .await;
 
         // THEN
-        let response: RollingStock = raw_response.assert_status(StatusCode::OK).json_into();
+        let response: RollingStock = raw_response.assert_status_ok().json();
         // Check if the rolling stock was created in the database
         let rolling_stock = RollingStock::retrieve(db_pool.get_ok(), response.id)
             .await
@@ -763,15 +762,14 @@ pub mod tests {
         let locked_rs_name = "locked_fast_rolling_stock_name";
         let locked_fast_rolling_stock_form = fast_rolling_stock_form(locked_rs_name);
 
-        let request = app
-            .post("/rolling_stock?locked=true")
-            .json(&locked_fast_rolling_stock_form);
-
         // WHEN
-        let raw_response = app.fetch(request).await;
+        let raw_response = app
+            .post("/rolling_stock?locked=true")
+            .json(&locked_fast_rolling_stock_form)
+            .await;
 
         // THEN
-        let response: RollingStock = raw_response.assert_status(StatusCode::OK).json_into();
+        let response: RollingStock = raw_response.assert_status_ok().json();
         // Check if the rolling stock was created in the database with locked = true
         let rolling_stock = RollingStock::retrieve(db_pool.get_ok(), response.id)
             .await
@@ -791,13 +789,11 @@ pub mod tests {
         let _ = create_fast_rolling_stock(&mut db_pool.get_ok(), rs_name).await;
         let new_fast_rolling_stock_form = fast_rolling_stock_form(rs_name);
 
-        let request = app.rolling_stock_create_request(&new_fast_rolling_stock_form);
-
         let response: InternalError = app
-            .fetch(request)
+            .rolling_stock_create_request(&new_fast_rolling_stock_form)
             .await
-            .assert_status(StatusCode::BAD_REQUEST)
-            .json_into();
+            .assert_status_bad_request()
+            .json();
 
         assert_eq!(
             response.error_type,
@@ -810,18 +806,16 @@ pub mod tests {
         let app = test_app!().skip_authz().build();
         let stock_name = Uuid::new_v4().to_string();
         let rolling_stock = fast_rolling_stock_form(stock_name.as_str());
-        let request = app.rolling_stock_create_request(&rolling_stock);
         let RollingStock { id, .. } = app
-            .fetch(request)
+            .rolling_stock_create_request(&rolling_stock)
             .await
-            .assert_status(StatusCode::OK)
-            .json_into();
-        let request = app.get(&format!("/rolling_stock/{id}/usage"));
+            .assert_status_ok()
+            .json();
         let related_schedules: Vec<ScenarioReference> = app
-            .fetch(request)
+            .get(&format!("/rolling_stock/{id}/usage"))
             .await
-            .assert_status(StatusCode::OK)
-            .json_into();
+            .assert_status_ok()
+            .json();
         assert!(related_schedules.is_empty());
     }
 
@@ -832,18 +826,16 @@ pub mod tests {
 
         let create_rolling_stock_request =
             app.rolling_stock_create_request(&fast_rolling_stock_form(&Uuid::new_v4().to_string()));
-        let rolling_stock: RollingStock = app
-            .fetch(create_rolling_stock_request)
+        let rolling_stock: RollingStock = (create_rolling_stock_request)
             .await
-            .assert_status(StatusCode::OK)
-            .json_into();
+            .assert_status_ok()
+            .json();
         let create_other_rolling_stock_request =
             app.rolling_stock_create_request(&fast_rolling_stock_form(&Uuid::new_v4().to_string()));
-        let other_rolling_stock: RollingStock = app
-            .fetch(create_other_rolling_stock_request)
+        let other_rolling_stock: RollingStock = (create_other_rolling_stock_request)
             .await
-            .assert_status(StatusCode::OK)
-            .json_into();
+            .assert_status_ok()
+            .json();
 
         let project = create_project(&mut db_pool.get_ok(), &Uuid::new_v4().to_string()).await;
         let study = create_study(
@@ -904,12 +896,11 @@ pub mod tests {
             .await
             .unwrap();
 
-        let request = app.get(&format!("/rolling_stock/{}/usage", rolling_stock.id));
         let related_scenarios: Vec<ScenarioReference> = app
-            .fetch(request)
+            .get(&format!("/rolling_stock/{}/usage", rolling_stock.id))
             .await
-            .assert_status(StatusCode::OK)
-            .json_into();
+            .assert_status_ok()
+            .json();
         let expected_scenarios = [
             ScenarioReference {
                 project_id: project.id,
@@ -940,10 +931,9 @@ pub mod tests {
         let db_pool = app.db_pool();
         let _ = RollingStock::delete_static(&mut db_pool.get_ok(), 1).await;
 
-        let request = app.get("/rolling_stock/1/usage");
-        app.fetch(request)
+        app.get("/rolling_stock/1/usage")
             .await
-            .assert_status(StatusCode::NOT_FOUND);
+            .assert_status_not_found();
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -955,15 +945,13 @@ pub mod tests {
         let mut fast_rolling_stock_form = fast_rolling_stock_form(rs_name);
         fast_rolling_stock_form.base_power_class = Some("".to_string());
 
-        let request = app.rolling_stock_create_request(&fast_rolling_stock_form);
-
         // WHEN
-        let raw_response = app.fetch(request).await;
+        let raw_response = app
+            .rolling_stock_create_request(&fast_rolling_stock_form)
+            .await;
 
         // THEN
-        let response: InternalError = raw_response
-            .assert_status(StatusCode::BAD_REQUEST)
-            .json_into();
+        let response: InternalError = raw_response.assert_status_bad_request().json();
 
         assert_eq!(
             response.error_type,
@@ -977,17 +965,14 @@ pub mod tests {
 
         let invalid_payload = schemas::fixtures::rolling_stock_with_invalid_effort_curves_json();
 
-        let request = app
-            .post("/rolling_stock")
+        app.post("/rolling_stock")
             .add_header(
                 axum::http::header::CONTENT_TYPE,
                 axum::http::header::HeaderValue::from_str("application/json").unwrap(),
             )
-            .bytes(invalid_payload.into());
-
-        app.fetch(request)
+            .bytes(invalid_payload.into())
             .await
-            .assert_status(StatusCode::UNPROCESSABLE_ENTITY);
+            .assert_status_unprocessable_entity();
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -999,10 +984,11 @@ pub mod tests {
         let rolling_stock_form = simple_etcs_level2_rolling_stock();
 
         // WHEN
-        let request = app.rolling_stock_create_request(&rolling_stock_form);
-        let raw_response = app.fetch(request);
-
-        let response: RollingStock = raw_response.await.assert_status(StatusCode::OK).json_into();
+        let response: RollingStock = app
+            .rolling_stock_create_request(&rolling_stock_form)
+            .await
+            .assert_status_ok()
+            .json();
         // Check if the rolling stock was created in the database
         let rolling_stock = RollingStock::retrieve(db_pool.get_ok(), response.id)
             .await
@@ -1032,13 +1018,13 @@ pub mod tests {
         let rs_name = "fast_rolling_stock_name";
         let fast_rolling_stock = create_fast_rolling_stock(&mut db_pool.get_ok(), rs_name).await;
 
-        let request = app.rolling_stock_get_by_id_request(fast_rolling_stock.id);
-
         // WHEN
-        let raw_response = app.fetch(request).await;
+        let raw_response = app
+            .rolling_stock_get_by_id_request(fast_rolling_stock.id)
+            .await;
 
         // THEN
-        let response: RollingStock = raw_response.assert_status(StatusCode::OK).json_into();
+        let response: RollingStock = raw_response.assert_status_ok().json();
 
         assert_eq!(response, fast_rolling_stock);
     }
@@ -1052,13 +1038,13 @@ pub mod tests {
         let rs_name = "fast_rolling_stock_name";
         let fast_rolling_stock = create_fast_rolling_stock(&mut db_pool.get_ok(), rs_name).await;
 
-        let request = app.get(format!("/rolling_stock/name/{rs_name}").as_str());
-
         // WHEN
-        let raw_response = app.fetch(request).await;
+        let raw_response = app
+            .get(format!("/rolling_stock/name/{rs_name}").as_str())
+            .await;
 
         // THEN
-        let response: RollingStock = raw_response.assert_status(StatusCode::OK).json_into();
+        let response: RollingStock = raw_response.assert_status_ok().json();
 
         assert_eq!(response, fast_rolling_stock);
     }
@@ -1067,23 +1053,18 @@ pub mod tests {
     async fn get_unexisting_rolling_stock_by_id() {
         let app = test_app!().skip_authz().build();
 
-        let request = app.rolling_stock_get_by_id_request(0);
-
-        app.fetch(request)
+        app.rolling_stock_get_by_id_request(0)
             .await
-            .assert_status(StatusCode::NOT_FOUND);
+            .assert_status_not_found();
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn get_unexisting_rolling_stock_by_name() {
         let app = test_app!().skip_authz().build();
 
-        let request =
-            app.get(format!("/rolling_stock/name/{}", "unexisting_rolling_stock_name").as_str());
-
-        app.fetch(request)
+        app.get(format!("/rolling_stock/name/{}", "unexisting_rolling_stock_name").as_str())
             .await
-            .assert_status(StatusCode::NOT_FOUND);
+            .assert_status_not_found();
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -1100,15 +1081,14 @@ pub mod tests {
         let updated_rs_name = "updated_fast_rolling_stock_name";
         rolling_stock_form.name = updated_rs_name.to_string();
 
-        let request = app
-            .put(format!("/rolling_stock/{}", fast_rolling_stock.id).as_str())
-            .json(&&rolling_stock_form);
-
         // WHEN
-        let raw_response = app.fetch(request).await;
+        let raw_response = app
+            .put(format!("/rolling_stock/{}", fast_rolling_stock.id).as_str())
+            .json(&&rolling_stock_form)
+            .await;
 
         // THEN
-        raw_response.assert_status(StatusCode::OK);
+        raw_response.assert_status_ok();
 
         let updated_rolling_stock: RollingStock =
             RollingStock::retrieve(db_pool.get_ok(), fast_rolling_stock.id)
@@ -1146,15 +1126,14 @@ pub mod tests {
         let other_categories = vec![schemas::rolling_stock::TrainMainCategory::RegionalTrain];
         rolling_stock_form.other_categories = other_categories;
 
-        let request = app
-            .put(format!("/rolling_stock/{}", fast_rolling_stock.id).as_str())
-            .json(&&rolling_stock_form);
-
         // WHEN
-        let raw_response = app.fetch(request).await;
+        let raw_response = app
+            .put(format!("/rolling_stock/{}", fast_rolling_stock.id).as_str())
+            .json(&&rolling_stock_form)
+            .await;
 
         // THEN
-        raw_response.assert_status(StatusCode::OK);
+        raw_response.assert_status_ok();
 
         let updated_rolling_stock: RollingStock =
             RollingStock::retrieve(db_pool.get_ok(), fast_rolling_stock.id)
@@ -1192,17 +1171,14 @@ pub mod tests {
         let other_categories = vec![*primary_category.clone()];
         rolling_stock_form.other_categories = other_categories.clone();
 
-        let request = app
-            .put(format!("/rolling_stock/{}", fast_rolling_stock.id).as_str())
-            .json(&&rolling_stock_form);
-
         // WHEN
-        let raw_response = app.fetch(request).await;
+        let raw_response = app
+            .put(format!("/rolling_stock/{}", fast_rolling_stock.id).as_str())
+            .json(&&rolling_stock_form)
+            .await;
 
         // THEN
-        let response = raw_response
-            .assert_status(StatusCode::UNPROCESSABLE_ENTITY)
-            .string();
+        let response = raw_response.assert_status_unprocessable_entity().text();
         assert_eq!(
             response,
             "Failed to deserialize the JSON body into the target type: invalid rolling-stock: primary_category: The primary_category cannot be listed in other_categories for rolling stocks."
@@ -1233,17 +1209,14 @@ pub mod tests {
 
         let second_fast_rolling_stock_form: RollingStockForm = second_fast_rolling_stock.into();
 
-        let request = app
-            .put(format!("/rolling_stock/{}", first_fast_rolling_stock.id).as_str())
-            .json(&second_fast_rolling_stock_form);
-
         // WHEN
-        let raw_response = app.fetch(request).await;
+        let raw_response = app
+            .put(format!("/rolling_stock/{}", first_fast_rolling_stock.id).as_str())
+            .json(&second_fast_rolling_stock_form)
+            .await;
 
         // THEN
-        let response: InternalError = raw_response
-            .assert_status(StatusCode::BAD_REQUEST)
-            .json_into();
+        let response: InternalError = raw_response.assert_status_bad_request().json();
 
         assert_eq!(
             response.error_type,
@@ -1272,15 +1245,14 @@ pub mod tests {
             schemas::fixtures::fast_rolling_stock();
         second_fast_rolling_stock_form.name = "second_fast_rolling_stock_name".to_owned();
 
-        let request = app
-            .put(format!("/rolling_stock/{}", locked_fast_rolling_stock.id).as_str())
-            .json(&second_fast_rolling_stock_form);
-
         // WHEN
-        let raw_response = app.fetch(request).await;
+        let raw_response = app
+            .put(format!("/rolling_stock/{}", locked_fast_rolling_stock.id).as_str())
+            .json(&second_fast_rolling_stock_form)
+            .await;
 
         // THEN
-        let response: InternalError = raw_response.assert_status(StatusCode::CONFLICT).json_into();
+        let response: InternalError = raw_response.assert_status_conflict().json();
         assert_eq!(response.error_type, "editoast:rollingstocks:IsLocked");
     }
 
@@ -1289,13 +1261,10 @@ pub mod tests {
         let app = test_app!().skip_authz().build();
 
         let id: i64 = rand::random();
-        let request = app
-            .patch(&format!("/rolling_stock/{id}/locked"))
-            .json(&json!({ "locked": true }));
-
-        app.fetch(request)
+        app.patch(&format!("/rolling_stock/{id}/locked"))
+            .json(&json!({ "locked": true }))
             .await
-            .assert_status(StatusCode::NOT_FOUND);
+            .assert_status_not_found();
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -1308,13 +1277,10 @@ pub mod tests {
 
         assert!(!fast_rolling_stock.locked);
 
-        let request = app
-            .patch(format!("/rolling_stock/{}/locked", fast_rolling_stock.id).as_str())
-            .json(&json!({ "locked": true }));
-
-        app.fetch(request)
+        app.patch(format!("/rolling_stock/{}/locked", fast_rolling_stock.id).as_str())
+            .json(&json!({ "locked": true }))
             .await
-            .assert_status(StatusCode::NO_CONTENT);
+            .assert_status_no_content();
 
         let fast_rolling_stock: RollingStock =
             RollingStock::retrieve(db_pool.get_ok(), fast_rolling_stock.id)
@@ -1342,13 +1308,10 @@ pub mod tests {
             .expect("Failed to create rolling stock");
         assert!(locked_fast_rolling_stock.locked);
 
-        let request = app
-            .patch(format!("/rolling_stock/{}/locked", locked_fast_rolling_stock.id).as_str())
-            .json(&json!({ "locked": false }));
-
-        app.fetch(request)
+        app.patch(format!("/rolling_stock/{}/locked", locked_fast_rolling_stock.id).as_str())
+            .json(&json!({ "locked": false }))
             .await
-            .assert_status(StatusCode::NO_CONTENT);
+            .assert_status_no_content();
 
         let fast_rolling_stock: RollingStock =
             RollingStock::retrieve(db_pool.get_ok(), locked_fast_rolling_stock.id)
@@ -1369,13 +1332,11 @@ pub mod tests {
         let fast_rolling_stock = create_fast_rolling_stock(&mut db_pool.get_ok(), rs_name).await;
         let power_restrictions = fast_rolling_stock.power_restrictions.clone();
 
-        let request = app.get("/rolling_stock/power_restrictions");
-
         // WHEN
-        let raw_response = app.fetch(request).await;
+        let raw_response = app.get("/rolling_stock/power_restrictions").await;
 
         // THEN
-        let response: Vec<String> = raw_response.assert_status(StatusCode::OK).json_into();
+        let response: Vec<String> = raw_response.assert_status_ok().json();
         let power_restrictions = serde_json::to_string(&power_restrictions)
             .expect("Failed to convert power_restrictions to string");
         assert!(power_restrictions.contains(&"C2".to_string()));
@@ -1401,14 +1362,13 @@ pub mod tests {
             .await
             .expect("Failed to create rolling stock");
 
-        let request =
-            app.delete(format!("/rolling_stock/{}", locked_fast_rolling_stock.id).as_str());
-
         // WHEN
-        let raw_response = app.fetch(request).await;
+        let raw_response = app
+            .delete(format!("/rolling_stock/{}", locked_fast_rolling_stock.id).as_str())
+            .await;
 
         // THEN
-        let response: InternalError = raw_response.assert_status(StatusCode::CONFLICT).json_into();
+        let response: InternalError = raw_response.assert_status_conflict().json();
 
         assert_eq!(response.error_type, "editoast:rollingstocks:IsLocked");
 
@@ -1430,13 +1390,13 @@ pub mod tests {
         let fast_rolling_stock = create_fast_rolling_stock(&mut db_pool.get_ok(), rs_name).await;
         assert!(!fast_rolling_stock.locked);
 
-        let request = app.delete(format!("/rolling_stock/{}", fast_rolling_stock.id).as_str());
-
         // WHEN
-        let raw_response = app.fetch(request).await;
+        let raw_response = app
+            .delete(format!("/rolling_stock/{}", fast_rolling_stock.id).as_str())
+            .await;
 
         // THEN
-        raw_response.assert_status(StatusCode::NO_CONTENT);
+        raw_response.assert_status_no_content();
 
         let rolling_stock_exists =
             RollingStock::exists(&mut db_pool.get_ok(), fast_rolling_stock.id)
@@ -1480,15 +1440,13 @@ pub mod tests {
             .await
             .expect("Failed to create paced train");
 
-        let request = app.delete(format!("/rolling_stock/{}", fast_rolling_stock.id).as_str());
-        let request_forced =
-            app.delete(format!("/rolling_stock/{}?force=true", fast_rolling_stock.id).as_str());
-
         // WHEN
-        let raw_response = app.fetch(request).await;
+        let raw_response = app
+            .delete(format!("/rolling_stock/{}", fast_rolling_stock.id).as_str())
+            .await;
 
         // THEN
-        let response: InternalError = raw_response.assert_status(StatusCode::CONFLICT).json_into();
+        let response: InternalError = raw_response.assert_status_conflict().json();
         assert_eq!(response.error_type, "editoast:rollingstocks:IsUsed");
 
         let rolling_stock_exists =
@@ -1499,10 +1457,12 @@ pub mod tests {
         assert!(rolling_stock_exists);
 
         // WHEN
-        let raw_response_forced = app.fetch(request_forced).await;
+        let raw_response_forced = app
+            .delete(format!("/rolling_stock/{}?force=true", fast_rolling_stock.id).as_str())
+            .await;
 
         // THEN
-        raw_response_forced.assert_status(StatusCode::NO_CONTENT);
+        raw_response_forced.assert_status_no_content();
 
         let rolling_stock_exists =
             RollingStock::exists(&mut db_pool.get_ok(), fast_rolling_stock.id)

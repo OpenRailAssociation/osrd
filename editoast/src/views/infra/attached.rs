@@ -160,10 +160,10 @@ mod tests {
             .await
             .expect("Failed to create detector object");
 
-        let req =
-            app.get(format!("/infra/{}/attached/{}/", empty_infra.id, track.get_id()).as_str());
-
-        let response: HashMap<ObjectType, Vec<String>> = app.fetch(req).await.json_into();
+        let response: HashMap<ObjectType, Vec<String>> = app
+            .get(format!("/infra/{}/attached/{}/", empty_infra.id, track.get_id()).as_str())
+            .await
+            .json();
         assert_eq!(response.get(&ObjectType::Detector).unwrap().len(), 1);
     }
 }

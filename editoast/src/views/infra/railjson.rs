@@ -264,13 +264,11 @@ mod tests {
         .await
         .expect("Failed to create SwitchType object");
 
-        let request = app.get(&format!("/infra/{}/railjson", empty_infra.id));
-
         let railjson: RailJson = app
-            .fetch(request)
+            .get(&format!("/infra/{}/railjson", empty_infra.id))
             .await
-            .assert_status(StatusCode::OK)
-            .json_into();
+            .assert_status_ok()
+            .json();
 
         assert_eq!(railjson.version, RAILJSON_VERSION);
         assert_eq!(railjson.extended_switch_types.len(), 1);
@@ -296,15 +294,12 @@ mod tests {
             ..Default::default()
         };
 
-        let req = app
-            .post("/infra/railjson?name=post_railjson_test")
-            .json(&railjson);
-
         let res: PostRailjsonResponse = app
-            .fetch(req)
+            .post("/infra/railjson?name=post_railjson_test")
+            .json(&railjson)
             .await
             .assert_status(StatusCode::CREATED)
-            .json_into();
+            .json();
 
         assert!(
             Infra::delete_static(&mut db_pool.get_ok(), res.infra)

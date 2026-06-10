@@ -376,18 +376,17 @@ pub mod tests {
 
         let project_name = "test_project";
 
-        let request = app.post("/projects").json(&json!({
-            "name": project_name,
-            "description": "",
-            "objectives": "",
-            "funders": "",
-        }));
-
         let response: ProjectWithStudyCount = app
-            .fetch(request)
+            .post("/projects")
+            .json(&json!({
+                "name": project_name,
+                "description": "",
+                "objectives": "",
+                "funders": "",
+            }))
             .await
             .assert_status(StatusCode::CREATED)
-            .json_into();
+            .json();
 
         let project = Project::retrieve(pool.get_ok(), response.project.id)
             .await
@@ -404,13 +403,8 @@ pub mod tests {
 
         let created_project = create_project(&mut db_pool.get_ok(), "test_project_name").await;
 
-        let request = app.get("/projects/");
-
-        let response: ProjectWithStudyCountList = app
-            .fetch(request)
-            .await
-            .assert_status(StatusCode::OK)
-            .json_into();
+        let response: ProjectWithStudyCountList =
+            app.get("/projects/").await.assert_status_ok().json();
 
         let project_retrieved = response
             .results
@@ -428,13 +422,11 @@ pub mod tests {
 
         let created_project = create_project(&mut db_pool.get_ok(), "test_project_name").await;
 
-        let request = app.get(format!("/projects/{}", created_project.id).as_str());
-
         let response: ProjectWithStudyCount = app
-            .fetch(request)
+            .get(format!("/projects/{}", created_project.id).as_str())
             .await
-            .assert_status(StatusCode::OK)
-            .json_into();
+            .assert_status_ok()
+            .json();
 
         assert_eq!(response.project, created_project);
     }
@@ -446,11 +438,9 @@ pub mod tests {
 
         let created_project = create_project(&mut db_pool.get_ok(), "test_project_name").await;
 
-        let request = app.delete(format!("/projects/{}", created_project.id).as_str());
-
-        app.fetch(request)
+        app.delete(format!("/projects/{}", created_project.id).as_str())
             .await
-            .assert_status(StatusCode::NO_CONTENT);
+            .assert_status_no_content();
 
         let exists = Project::exists(&mut db_pool.get_ok(), created_project.id)
             .await
@@ -469,18 +459,15 @@ pub mod tests {
         let updated_name = "rename_test";
         let updated_budget = 20000;
 
-        let request = app
+        let response: ProjectWithStudyCount = app
             .patch(format!("/projects/{}", created_project.id).as_str())
             .json(&json!({
                 "name": updated_name,
                 "budget": updated_budget
-            }));
-
-        let response: ProjectWithStudyCount = app
-            .fetch(request)
+            }))
             .await
-            .assert_status(StatusCode::OK)
-            .json_into();
+            .assert_status_ok()
+            .json();
 
         let project = Project::retrieve(db_pool.get_ok(), response.project.id)
             .await
@@ -542,12 +529,12 @@ pub mod tests {
             .expect("Failed to create image");
 
         // let's add one
-        let request = app
-            .patch(format!("/projects/{}", project.id).as_str())
+        app.patch(format!("/projects/{}", project.id).as_str())
             .json(&json!({
                 "image": image.id
-            }));
-        app.fetch(request).await.assert_status(StatusCode::OK);
+            }))
+            .await
+            .assert_status_ok();
 
         check_image(db_pool.get_ok(), Some(image.id)).await;
 
@@ -560,12 +547,12 @@ pub mod tests {
             .await
             .expect("Failed to create new image");
 
-        let request = app
-            .patch(format!("/projects/{}", project.id).as_str())
+        app.patch(format!("/projects/{}", project.id).as_str())
             .json(&json!({
                 "image": new_image.id
-            }));
-        app.fetch(request).await.assert_status(StatusCode::OK);
+            }))
+            .await
+            .assert_status_ok();
 
         check_image(db_pool.get_ok(), Some(new_image.id)).await;
         assert!(
@@ -575,12 +562,12 @@ pub mod tests {
         );
 
         // now we remove the image
-        let request = app
-            .patch(format!("/projects/{}", project.id).as_str())
+        app.patch(format!("/projects/{}", project.id).as_str())
             .json(&json!({
                 "image": null
-            }));
-        app.fetch(request).await.assert_status(StatusCode::OK);
+            }))
+            .await
+            .assert_status_ok();
 
         check_image(db_pool.get_ok(), None).await;
         assert!(

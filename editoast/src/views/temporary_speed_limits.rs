@@ -266,19 +266,17 @@ mod tests {
         let group_name = Uuid::new_v4().to_string();
         let request_obj_id = Uuid::new_v4().to_string();
 
-        let request = app.create_temporary_speed_limit_group_request(
-            RequestParameters::new()
-                .with_group_name(group_name.clone())
-                .with_obj_id(request_obj_id.clone()),
-        );
-
         // Speed limit group checks
 
         let TemporarySpeedLimitCreateResponse { group_id } = app
-            .fetch(request)
+            .create_temporary_speed_limit_group_request(
+                RequestParameters::new()
+                    .with_group_name(group_name.clone())
+                    .with_obj_id(request_obj_id.clone()),
+            )
             .await
             .assert_status(StatusCode::CREATED)
-            .json_into();
+            .json();
         let created_group = TemporarySpeedLimitGroup::retrieve(pool.get_ok(), group_id)
             .await
             .expect("Failed to retrieve the created temporary speed limit group")
@@ -305,21 +303,24 @@ mod tests {
         let app = test_app!().skip_authz().build();
 
         let group_name = Uuid::new_v4().to_string();
-        let request = app.create_temporary_speed_limit_group_request(
-            RequestParameters::new().with_group_name(group_name.clone()),
-        );
-        let _ = app.fetch(request).await.assert_status(StatusCode::CREATED);
-
-        let request = app.create_temporary_speed_limit_group_request(RequestParameters::new());
-        let _ = app.fetch(request).await.assert_status(StatusCode::CREATED);
-
-        let request = app.create_temporary_speed_limit_group_request(
-            RequestParameters::new().with_group_name(group_name.clone()),
-        );
         let _ = app
-            .fetch(request)
+            .create_temporary_speed_limit_group_request(
+                RequestParameters::new().with_group_name(group_name.clone()),
+            )
             .await
-            .assert_status(StatusCode::BAD_REQUEST);
+            .assert_status(StatusCode::CREATED);
+
+        let _ = app
+            .create_temporary_speed_limit_group_request(RequestParameters::new())
+            .await
+            .assert_status(StatusCode::CREATED);
+
+        let _ = app
+            .create_temporary_speed_limit_group_request(
+                RequestParameters::new().with_group_name(group_name.clone()),
+            )
+            .await
+            .assert_status_bad_request();
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -331,14 +332,12 @@ mod tests {
             end_date_time: Utc::now(),
         };
 
-        let request = app.create_temporary_speed_limit_group_request(
-            RequestParameters::new().with_time_period(time_period),
-        );
-
         let _ = app
-            .fetch(request)
+            .create_temporary_speed_limit_group_request(
+                RequestParameters::new().with_time_period(time_period),
+            )
             .await
-            .assert_status(StatusCode::UNPROCESSABLE_ENTITY);
+            .assert_status_unprocessable_entity();
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -346,13 +345,11 @@ mod tests {
     async fn create_ltv_with_no_tracks_fails() {
         let app = test_app!().skip_authz().build();
 
-        let request = app.create_temporary_speed_limit_group_request(
-            RequestParameters::new().with_track_ranges(vec![]),
-        );
-
         let _ = app
-            .fetch(request)
+            .create_temporary_speed_limit_group_request(
+                RequestParameters::new().with_track_ranges(vec![]),
+            )
             .await
-            .assert_status(StatusCode::UNPROCESSABLE_ENTITY);
+            .assert_status_unprocessable_entity();
     }
 }

@@ -450,7 +450,6 @@ mod tests {
     use chrono::Duration;
     use itertools::Itertools;
     use pretty_assertions::assert_eq;
-    use reqwest::StatusCode;
     use rstest::rstest;
     use uuid::Uuid;
 
@@ -672,12 +671,12 @@ mod tests {
             },
             waypoints,
         };
-        let request = app.post("/similar_trains").json(&request);
         let response: Response = app
-            .fetch(request)
+            .post("/similar_trains")
+            .json(&request)
             .await
-            .assert_status(StatusCode::OK)
-            .json_into();
+            .assert_status_ok()
+            .json();
 
         let expected_response = Response {
             similar_trains: vec![SimilarTrainItem {
@@ -820,12 +819,12 @@ mod tests {
             },
             waypoints,
         };
-        let request = app.post("/similar_trains").json(&request);
         let response: Response = app
-            .fetch(request)
+            .post("/similar_trains")
+            .json(&request)
             .await
-            .assert_status(StatusCode::OK)
-            .json_into();
+            .assert_status_ok()
+            .json();
 
         assert_eq!(response, Response { similar_trains });
     }
@@ -912,12 +911,12 @@ mod tests {
                 },
             ],
         };
-        let request = app.post("/similar_trains").json(&request);
         let response: Response = app
-            .fetch(request)
+            .post("/similar_trains")
+            .json(&request)
             .await
-            .assert_status(StatusCode::OK)
-            .json_into();
+            .assert_status_ok()
+            .json();
 
         let expected_response = Response {
             similar_trains: vec![
@@ -1060,12 +1059,12 @@ mod tests {
                 },
             ],
         };
-        let request = app.post("/similar_trains").json(&request);
         let response: Response = app
-            .fetch(request)
+            .post("/similar_trains")
+            .json(&request)
             .await
-            .assert_status(StatusCode::OK)
-            .json_into();
+            .assert_status_ok()
+            .json();
 
         let expected_response = Response {
             similar_trains: vec![
@@ -1161,12 +1160,12 @@ mod tests {
                 },
             ],
         };
-        let request = app.post("/similar_trains").json(&request);
         let response: Response = app
-            .fetch(request)
+            .post("/similar_trains")
+            .json(&request)
             .await
-            .assert_status(StatusCode::OK)
-            .json_into();
+            .assert_status_ok()
+            .json();
 
         let expected_response = Response {
             similar_trains: vec![
@@ -1294,12 +1293,12 @@ mod tests {
                 },
             ],
         };
-        let request = app.post("/similar_trains").json(&request);
         let response: Response = app
-            .fetch(request)
+            .post("/similar_trains")
+            .json(&request)
             .await
-            .assert_status(StatusCode::OK)
-            .json_into();
+            .assert_status_ok()
+            .json();
 
         let expected_response = Response {
             similar_trains: vec![SimilarTrainItem {
@@ -1327,12 +1326,12 @@ mod tests {
                 },
             ],
         };
-        let request = app.post("/similar_trains").json(&request);
         let response: Response = app
-            .fetch(request)
+            .post("/similar_trains")
+            .json(&request)
             .await
-            .assert_status(StatusCode::OK)
-            .json_into();
+            .assert_status_ok()
+            .json();
 
         let expected_response = Response {
             similar_trains: vec![SimilarTrainItem {

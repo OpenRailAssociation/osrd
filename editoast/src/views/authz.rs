@@ -971,16 +971,14 @@ mod tests {
             .await;
 
         let mut privileges = app
-            .fetch(
-                app.post("/authz/me/privileges")
-                    .by_user(toto.as_ref())
-                    .json(&json!({
-                       "infra": [infra1, infra2, infra3, infra4]
-                    })),
-            )
+            .post("/authz/me/privileges")
+            .by_user(toto.as_ref())
+            .json(&json!({
+               "infra": [infra1, infra2, infra3, infra4]
+            }))
             .await
-            .assert_status(StatusCode::OK)
-            .json_into::<HashMap<ResourceType, Vec<ResourcePrivileges>>>()
+            .assert_status_ok()
+            .json::<HashMap<ResourceType, Vec<ResourcePrivileges>>>()
             .remove(&ResourceType::Infra)
             .unwrap()
             .into_iter()
@@ -1040,16 +1038,14 @@ mod tests {
             .await;
 
         let mut privileges = app
-            .fetch(
-                app.post("/authz/me/privileges")
-                    .by_user(tata.as_ref())
-                    .json(&json!({
-                       "infra": [infra1, infra2, infra3, infra4]
-                    })),
-            )
+            .post("/authz/me/privileges")
+            .by_user(tata.as_ref())
+            .json(&json!({
+               "infra": [infra1, infra2, infra3, infra4]
+            }))
             .await
-            .assert_status(StatusCode::OK)
-            .json_into::<HashMap<ResourceType, Vec<ResourcePrivileges>>>()
+            .assert_status_ok()
+            .json::<HashMap<ResourceType, Vec<ResourcePrivileges>>>()
             .remove(&ResourceType::Infra)
             .unwrap()
             .into_iter()
@@ -1089,12 +1085,14 @@ mod tests {
         let app = test_app!().build();
         let Infra { id: infra, .. } = create_empty_infra(&mut app.db_pool().get_ok()).await;
         let mut privileges = app
-            .fetch(app.post("/authz/me/privileges").skip_authz().json(&json!({
+            .post("/authz/me/privileges")
+            .skip_authz()
+            .json(&json!({
                "infra": [infra]
-            })))
+            }))
             .await
-            .assert_status(StatusCode::OK)
-            .json_into::<HashMap<ResourceType, Vec<ResourcePrivileges>>>()
+            .assert_status_ok()
+            .json::<HashMap<ResourceType, Vec<ResourcePrivileges>>>()
             .remove(&ResourceType::Infra)
             .unwrap()
             .into_iter()
@@ -1133,17 +1131,15 @@ mod tests {
             .await;
 
         // Ask the grant of the user for the infra
-        let request = app
+        let response: HashMap<ResourceType, Vec<UserResourceGrant>> = app
             .post("/authz/me/grants")
             .by_user(user.as_ref())
             .json(&json!({
                 "infra": [infra.id],
-            }));
-        let response: HashMap<ResourceType, Vec<UserResourceGrant>> = app
-            .fetch(request)
+            }))
             .await
-            .assert_status(StatusCode::OK)
-            .json_into();
+            .assert_status_ok()
+            .json();
 
         // Check the direct grant is there
         assert_eq!(
@@ -1162,17 +1158,15 @@ mod tests {
             .await;
 
         // Ask the grant of the user for the infra again
-        let request = app
+        let response: HashMap<ResourceType, Vec<UserResourceGrant>> = app
             .post("/authz/me/grants")
             .by_user(user.as_ref())
             .json(&json!({
                 "infra": [infra.id, infra_no_grant.id, infra_no_grant.id + 1000],
-            }));
-        let response: HashMap<ResourceType, Vec<UserResourceGrant>> = app
-            .fetch(request)
+            }))
             .await
-            .assert_status(StatusCode::OK)
-            .json_into();
+            .assert_status_ok()
+            .json();
 
         // Check the inherited grant from the group has overridden by the user's direct grant
         // Unreadable and non-existent infras are filtered out
@@ -1207,14 +1201,12 @@ mod tests {
         }
 
         // Get the full user list for the infra
-        let request_all = app
-            .get(&format!("/authz/{}/{}", ResourceType::Infra, infra.id))
-            .by_user(user.as_ref());
         let subjects: Vec<SubjectGrant> = app
-            .fetch(request_all)
+            .get(&format!("/authz/{}/{}", ResourceType::Infra, infra.id))
+            .by_user(user.as_ref())
             .await
-            .assert_status(StatusCode::OK)
-            .json_into();
+            .assert_status_ok()
+            .json();
         assert_eq!(subjects.len(), 6);
     }
 
@@ -1255,13 +1247,11 @@ mod tests {
             .await;
 
         let subjects: Vec<SubjectGrant> = app
-            .fetch(
-                app.get(&format!("/authz/{}/{}", ResourceType::Infra, infra.id))
-                    .by_user(alice.as_ref()),
-            )
+            .get(&format!("/authz/{}/{}", ResourceType::Infra, infra.id))
+            .by_user(alice.as_ref())
             .await
-            .assert_status(StatusCode::OK)
-            .json_into();
+            .assert_status_ok()
+            .json();
 
         let grants = subjects
             .into_iter()
@@ -1294,8 +1284,7 @@ mod tests {
 
         // Create a new user and add it as a writer to the infra with the grant API
         let writer = authz::User::from(app.user("writer", "Writer").create().await);
-        let request_grant = app
-            .post("/authz/grants")
+        app.post("/authz/grants")
             .by_user(owner.as_ref())
             .json(&json!({
                 "grant": [
@@ -1306,8 +1295,7 @@ mod tests {
                         "grant": InfraGrant::Writer
                     }
                 ]
-            }));
-        app.fetch(request_grant)
+            }))
             .await
             .assert_status(StatusCode::CREATED);
 
@@ -1318,8 +1306,7 @@ mod tests {
         );
 
         // Remove the user from the API
-        let request_revoke = app
-            .post("/authz/grants")
+        app.post("/authz/grants")
             .by_user(owner.as_ref())
             .json(&json!({
                 "revoke": [
@@ -1329,10 +1316,9 @@ mod tests {
                         "resource_id": *infra
                     }
                 ]
-            }));
-        app.fetch(request_revoke)
+            }))
             .await
-            .assert_status(StatusCode::NO_CONTENT);
+            .assert_status_no_content();
 
         // Check that the new user has the good grant
         assert_eq!(openfga.infra_direct_grant(writer, infra).await, None);
@@ -1353,21 +1339,19 @@ mod tests {
             .create()
             .await;
 
-        app.fetch(
-            app.post("/authz/grants")
-                .by_user(writer.as_ref())
-                .json(&json!({
-                    "revoke": [
-                        {
-                            "subject_id": reader.id,
-                            "resource_type": ResourceType::Infra,
-                            "resource_id": infra.id
-                        }
-                    ]
-                })),
-        )
-        .await
-        .assert_status(StatusCode::FORBIDDEN);
+        app.post("/authz/grants")
+            .by_user(writer.as_ref())
+            .json(&json!({
+                "revoke": [
+                    {
+                        "subject_id": reader.id,
+                        "resource_type": ResourceType::Infra,
+                        "resource_id": infra.id
+                    }
+                ]
+            }))
+            .await
+            .assert_status_forbidden();
 
         app.assert_infra_grant(infra.id, reader.id, Some(InfraGrant::Reader));
     }
@@ -1387,21 +1371,19 @@ mod tests {
             .create()
             .await;
 
-        app.fetch(
-            app.post("/authz/grants")
-                .by_user(admin.as_ref())
-                .json(&json!({
-                    "revoke": [
-                        {
-                            "subject_id": reader.id,
-                            "resource_type": ResourceType::Infra,
-                            "resource_id": infra.id
-                        }
-                    ]
-                })),
-        )
-        .await
-        .assert_status(StatusCode::NO_CONTENT);
+        app.post("/authz/grants")
+            .by_user(admin.as_ref())
+            .json(&json!({
+                "revoke": [
+                    {
+                        "subject_id": reader.id,
+                        "resource_type": ResourceType::Infra,
+                        "resource_id": infra.id
+                    }
+                ]
+            }))
+            .await
+            .assert_status_no_content();
 
         app.assert_infra_grant(infra.id, reader.id, None);
     }
@@ -1421,21 +1403,19 @@ mod tests {
             .create()
             .await;
 
-        app.fetch(
-            app.post("/authz/grants")
-                .by_user(admin.as_ref())
-                .json(&json!({
-                    "revoke": [
-                        {
-                            "subject_id": owner.id,
-                            "resource_type": ResourceType::Infra,
-                            "resource_id": infra.id
-                        }
-                    ]
-                })),
-        )
-        .await
-        .assert_status(StatusCode::NO_CONTENT);
+        app.post("/authz/grants")
+            .by_user(admin.as_ref())
+            .json(&json!({
+                "revoke": [
+                    {
+                        "subject_id": owner.id,
+                        "resource_type": ResourceType::Infra,
+                        "resource_id": infra.id
+                    }
+                ]
+            }))
+            .await
+            .assert_status_no_content();
 
         app.assert_infra_grant(infra.id, owner.id, None);
     }
@@ -1455,21 +1435,19 @@ mod tests {
             .create()
             .await;
 
-        app.fetch(
-            app.post("/authz/grants")
-                .by_user(alice.as_ref())
-                .json(&json!({
-                    "revoke": [
-                        {
-                            "subject_id": bob.id,
-                            "resource_type": ResourceType::Infra,
-                            "resource_id": infra.id
-                        }
-                    ]
-                })),
-        )
-        .await
-        .assert_status(StatusCode::FORBIDDEN);
+        app.post("/authz/grants")
+            .by_user(alice.as_ref())
+            .json(&json!({
+                "revoke": [
+                    {
+                        "subject_id": bob.id,
+                        "resource_type": ResourceType::Infra,
+                        "resource_id": infra.id
+                    }
+                ]
+            }))
+            .await
+            .assert_status_forbidden();
 
         app.assert_infra_grant(infra.id, bob.id, Some(InfraGrant::Owner));
     }
@@ -1496,28 +1474,26 @@ mod tests {
         let bob = authz::User::from(bob);
         let alice_and_bob = authz::Group::from(alice_and_bob);
 
-        app.fetch(
-            app.post("/authz/grants")
-                .by_user(alice_info.as_ref())
-                .json(&json!({
-                    "grant": [
-                        {
-                            "subject_id": *alice_and_bob,
-                            "resource_type": ResourceType::Infra,
-                            "resource_id": *infra,
-                            "grant": InfraGrant::Writer
-                        },
-                        {
-                            "subject_id": *bob,
-                            "resource_type": ResourceType::Infra,
-                            "resource_id": *infra,
-                            "grant": InfraGrant::Reader
-                        }
-                    ]
-                })),
-        )
-        .await
-        .assert_status(StatusCode::CREATED);
+        app.post("/authz/grants")
+            .by_user(alice_info.as_ref())
+            .json(&json!({
+                "grant": [
+                    {
+                        "subject_id": *alice_and_bob,
+                        "resource_type": ResourceType::Infra,
+                        "resource_id": *infra,
+                        "grant": InfraGrant::Writer
+                    },
+                    {
+                        "subject_id": *bob,
+                        "resource_type": ResourceType::Infra,
+                        "resource_id": *infra,
+                        "grant": InfraGrant::Reader
+                    }
+                ]
+            }))
+            .await
+            .assert_status(StatusCode::CREATED);
 
         assert_eq!(
             openfga.infra_direct_grant(alice, infra).await,
@@ -1535,21 +1511,19 @@ mod tests {
         app.assert_infra_grant(*infra, *bob, Some(InfraGrant::Writer)); // inherited group grant
         app.assert_infra_grant(*infra, *alice, Some(InfraGrant::Owner)); // inherited group grant superseded by direct user grant
 
-        app.fetch(
-            app.post("/authz/grants")
-                .by_user(alice_info.as_ref())
-                .json(&json!({
-                    "revoke": [
-                        {
-                            "subject_id": *alice_and_bob,
-                            "resource_type": ResourceType::Infra,
-                            "resource_id": *infra
-                        }
-                    ]
-                })),
-        )
-        .await
-        .assert_status(StatusCode::NO_CONTENT);
+        app.post("/authz/grants")
+            .by_user(alice_info.as_ref())
+            .json(&json!({
+                "revoke": [
+                    {
+                        "subject_id": *alice_and_bob,
+                        "resource_type": ResourceType::Infra,
+                        "resource_id": *infra
+                    }
+                ]
+            }))
+            .await
+            .assert_status_no_content();
 
         assert_eq!(openfga.infra_direct_grant(alice_and_bob, infra).await, None); // group grant removed
         assert_eq!(
@@ -1571,8 +1545,7 @@ mod tests {
             .await;
 
         // Adding OWNER on the same user/infra
-        let request_revoke = app
-            .post("/authz/grants")
+        app.post("/authz/grants")
             .by_user(user.as_ref())
             .json(&json!({
                 "grant": [
@@ -1583,8 +1556,7 @@ mod tests {
                         "grant": InfraGrant::Owner
                     }
                 ]
-            }));
-        app.fetch(request_revoke)
+            }))
             .await
             .assert_status(StatusCode::CREATED);
     }
@@ -1603,17 +1575,18 @@ mod tests {
         );
 
         // Adding OWNER on the same user/infra
-        let request_grant = app.post("/authz/grants").skip_authz().json(&json!({
-            "grant": [
-                {
-                    "subject_id": *user,
-                    "resource_type": ResourceType::Infra,
-                    "resource_id": *infra,
-                    "grant": InfraGrant::Owner
-                }
-            ]
-        }));
-        app.fetch(request_grant)
+        app.post("/authz/grants")
+            .skip_authz()
+            .json(&json!({
+                "grant": [
+                    {
+                        "subject_id": *user,
+                        "resource_type": ResourceType::Infra,
+                        "resource_id": *infra,
+                        "grant": InfraGrant::Owner
+                    }
+                ]
+            }))
             .await
             .assert_status(StatusCode::CREATED);
 
@@ -1623,18 +1596,19 @@ mod tests {
         );
 
         // Remove the grant
-        let request_revoke = app.post("/authz/grants").skip_authz().json(&json!({
-            "revoke": [
-                {
-                    "subject_id": *user,
-                    "resource_type": ResourceType::Infra,
-                    "resource_id": *infra
-                }
-            ]
-        }));
-        app.fetch(request_revoke)
+        app.post("/authz/grants")
+            .skip_authz()
+            .json(&json!({
+                "revoke": [
+                    {
+                        "subject_id": *user,
+                        "resource_type": ResourceType::Infra,
+                        "resource_id": *infra
+                    }
+                ]
+            }))
             .await
-            .assert_status(StatusCode::NO_CONTENT);
+            .assert_status_no_content();
 
         assert_eq!(openfga.infra_direct_grant(user, infra).await, None);
     }
@@ -1654,8 +1628,7 @@ mod tests {
         let other = app.user("other", "Other").create().await;
 
         // Remove the READER grant should not fail
-        let request_grant = app
-            .post("/authz/grants")
+        app.post("/authz/grants")
             .by_user(owner.as_ref())
             .json(&json!({
                 "revoke": [
@@ -1665,10 +1638,9 @@ mod tests {
                         "resource_id": infra.id,
                     }
                 ]
-            }));
-        app.fetch(request_grant)
+            }))
             .await
-            .assert_status(StatusCode::NO_CONTENT);
+            .assert_status_no_content();
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -1680,12 +1652,12 @@ mod tests {
             .create()
             .await;
 
-        let request = app.get("/authz/me").by_user(user.as_ref());
         let user_data = app
-            .fetch(request)
+            .get("/authz/me")
+            .by_user(user.as_ref())
             .await
-            .assert_status(StatusCode::OK)
-            .json_into::<WhoamiResponse>();
+            .assert_status_ok()
+            .json::<WhoamiResponse>();
 
         assert_eq!(
             user_data,
@@ -1711,15 +1683,13 @@ mod tests {
             .create()
             .await;
 
-        let request = app
+        let user_data = app
             .get("/authz/me")
             .by_user(impersonator.as_ref())
-            .impersonate(impersonated.as_ref());
-        let user_data = app
-            .fetch(request)
+            .impersonate(impersonated.as_ref())
             .await
-            .assert_status(StatusCode::OK)
-            .json_into::<WhoamiResponse>();
+            .assert_status_ok()
+            .json::<WhoamiResponse>();
 
         assert_eq!(
             user_data,
@@ -1741,16 +1711,14 @@ mod tests {
             .await;
         let identity = "Who's there?".to_owned();
 
-        let request = app
-            .get("/authz/me")
+        app.get("/authz/me")
             .by_user(&authz::identity::UserInfo {
                 identities: vec![identity.clone()],
                 name: "No one.".to_owned(),
             })
-            .impersonate(impersonated.as_ref());
-        app.fetch(request)
+            .impersonate(impersonated.as_ref())
             .await
-            .assert_status(StatusCode::FORBIDDEN);
+            .assert_status_forbidden();
 
         assert_eq!(
             editoast_models::User::retrieve_by_identity(&identity, app.db_pool().get_ok()).await,
@@ -1768,12 +1736,13 @@ mod tests {
             .create()
             .await;
 
-        let request = app.get("/authz/me").by_user(user.as_ref()).skip_authz();
         let user_data = app
-            .fetch(request)
+            .get("/authz/me")
+            .by_user(user.as_ref())
+            .skip_authz()
             .await
-            .assert_status(StatusCode::OK)
-            .json_into::<WhoamiResponse>();
+            .assert_status_ok()
+            .json::<WhoamiResponse>();
 
         assert_eq!(
             user_data,
@@ -1790,12 +1759,13 @@ mod tests {
         let app = test_app!().build();
         let user = app.user("test", "test").create().await;
 
-        let request = app.get("/authz/me").by_user(user.as_ref()).skip_authz();
         let WhoamiResponse { roles, .. } = app
-            .fetch(request)
+            .get("/authz/me")
+            .by_user(user.as_ref())
+            .skip_authz()
             .await
-            .assert_status(StatusCode::OK)
-            .json_into::<WhoamiResponse>();
+            .assert_status_ok()
+            .json::<WhoamiResponse>();
 
         assert_eq!(roles, HashSet::from([Role::Admin]));
     }
@@ -1812,19 +1782,18 @@ mod tests {
             .await;
         let group_2 = app.group("group_2").with_members([&user_1]).create().await;
 
-        let request_1 = app.get("/authz/me/groups").by_user(user_1.as_ref());
-        let request_2 = app.get("/authz/me/groups").by_user(user_2.as_ref());
-
         let mut groups_user_1 = app
-            .fetch(request_1)
+            .get("/authz/me/groups")
+            .by_user(user_1.as_ref())
             .await
-            .assert_status(StatusCode::OK)
-            .json_into::<Vec<Group>>();
+            .assert_status_ok()
+            .json::<Vec<Group>>();
         let groups_user_2 = app
-            .fetch(request_2)
+            .get("/authz/me/groups")
+            .by_user(user_2.as_ref())
             .await
-            .assert_status(StatusCode::OK)
-            .json_into::<Vec<Group>>();
+            .assert_status_ok()
+            .json::<Vec<Group>>();
 
         groups_user_1.sort_by_key(|g| g.id);
 
@@ -1855,13 +1824,11 @@ mod tests {
         let app = test_app!().build();
         let user = app.user("test", "test").create().await;
 
-        let request = app
-            .get("/authz/me/groups")
+        app.get("/authz/me/groups")
             .by_user(user.as_ref())
-            .skip_authz();
-        app.fetch(request)
+            .skip_authz()
             .await
-            .assert_status(StatusCode::UNAUTHORIZED);
+            .assert_status_unauthorized();
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -1881,12 +1848,12 @@ mod tests {
         let group_3 = app.group("G3").create().await;
 
         // List all groups as admin
-        let request = app.get("/authz/groups").by_user(admin.as_ref());
         let groups = app
-            .fetch(request)
+            .get("/authz/groups")
+            .by_user(admin.as_ref())
             .await
-            .assert_status(StatusCode::OK)
-            .json_into::<Vec<Group>>();
+            .assert_status_ok()
+            .json::<Vec<Group>>();
 
         // Verify all groups are returned
         assert_eq!(groups.len(), 3);
@@ -1907,9 +1874,9 @@ mod tests {
             .await;
 
         // Try to list groups as non-admin
-        let request = app.get("/authz/groups").by_user(user.as_ref());
-        app.fetch(request)
+        app.get("/authz/groups")
+            .by_user(user.as_ref())
             .await
-            .assert_status(StatusCode::FORBIDDEN);
+            .assert_status_forbidden();
     }
 }

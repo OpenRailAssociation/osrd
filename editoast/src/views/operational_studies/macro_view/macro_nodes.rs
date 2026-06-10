@@ -392,15 +392,15 @@ pub mod test {
             is_collapsed: false,
         }];
 
-        let request = app.post("/macro_nodes").json(&MacroNodeBatchForm {
-            macro_nodes: nodes_data.clone(),
-            scenario_id: fixtures.scenario.id,
-        });
         let response: MacroNodeBatchResponse = app
-            .fetch(request)
+            .post("/macro_nodes")
+            .json(&MacroNodeBatchForm {
+                macro_nodes: nodes_data.clone(),
+                scenario_id: fixtures.scenario.id,
+            })
             .await
             .assert_status(StatusCode::CREATED)
-            .json_into();
+            .json();
 
         let node = MacroNode::retrieve(db_pool.get_ok(), response.macro_nodes[0].id)
             .await
@@ -427,14 +427,12 @@ pub mod test {
             path_item_key: "A->B".to_string(),
             is_collapsed: false,
         };
-        let request = app
-            .put(&format!("/macro_nodes/{}", fixtures.nodes[0].id))
-            .json(&node_data);
         let response: MacroNodeResponse = app
-            .fetch(request)
+            .put(&format!("/macro_nodes/{}", fixtures.nodes[0].id))
+            .json(&node_data)
             .await
-            .assert_status(StatusCode::OK)
-            .json_into();
+            .assert_status_ok()
+            .json();
 
         let node = MacroNode::retrieve(db_pool.get_ok(), fixtures.nodes[0].id)
             .await
@@ -451,12 +449,11 @@ pub mod test {
         let db_pool = app.db_pool();
         let fixtures = create_macro_node_fixtures_set(&mut db_pool.get_ok(), 1).await;
 
-        let request = app.get(&format!("/macro_nodes/{}", fixtures.nodes[0].id));
         let response: MacroNodeResponse = app
-            .fetch(request)
+            .get(&format!("/macro_nodes/{}", fixtures.nodes[0].id))
             .await
-            .assert_status(StatusCode::OK)
-            .json_into();
+            .assert_status_ok()
+            .json();
 
         assert!(fixtures.nodes[0] == response);
     }
@@ -465,11 +462,9 @@ pub mod test {
     async fn get_node_not_found() {
         let app = test_app!().skip_authz().build();
 
-        let request = app.get("/macro_nodes/999999");
-
-        app.fetch(request)
+        app.get("/macro_nodes/999999")
             .await
-            .assert_status(StatusCode::NOT_FOUND);
+            .assert_status_not_found();
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -478,15 +473,14 @@ pub mod test {
         let db_pool = app.db_pool();
         let fixtures = create_macro_node_fixtures_set(&mut db_pool.get_ok(), 10).await;
 
-        let request = app.get(&format!(
-            "/macro_nodes?page=1&page_size=5&scenario_id={}",
-            fixtures.scenario.id
-        ));
         let response: MacroNodeListResponse = app
-            .fetch(request)
+            .get(&format!(
+                "/macro_nodes?page=1&page_size=5&scenario_id={}",
+                fixtures.scenario.id
+            ))
             .await
-            .assert_status(StatusCode::OK)
-            .json_into();
+            .assert_status_ok()
+            .json();
 
         assert_eq!(10, response.stats.count);
         assert_eq!(5, response.results.len());
@@ -498,10 +492,9 @@ pub mod test {
         let db_pool = app.db_pool();
         let fixtures = create_macro_node_fixtures_set(&mut db_pool.get_ok(), 1).await;
 
-        let request = app.delete(&format!("/macro_nodes/{}", fixtures.nodes[0].id));
-        app.fetch(request)
+        app.delete(&format!("/macro_nodes/{}", fixtures.nodes[0].id))
             .await
-            .assert_status(StatusCode::NO_CONTENT);
+            .assert_status_no_content();
 
         let found = MacroNode::exists(&mut db_pool.get_ok(), fixtures.nodes[0].id)
             .await

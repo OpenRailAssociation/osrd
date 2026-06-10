@@ -27,8 +27,7 @@ mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn version() {
         let app = test_app!().skip_authz().build();
-        let request = app.get("/version");
-        let response: HashMap<String, Option<String>> = app.fetch(request).await.json_into();
+        let response: HashMap<String, Option<String>> = app.get("/version").await.json();
         assert!(response.contains_key("git_describe"));
     }
 }

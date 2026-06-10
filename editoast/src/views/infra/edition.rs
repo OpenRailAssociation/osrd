@@ -982,7 +982,6 @@ enum EditionError {
 
 #[cfg(test)]
 pub mod tests {
-    use axum::http::StatusCode;
     use pretty_assertions::assert_eq;
 
     use super::*;
@@ -999,9 +998,9 @@ pub mod tests {
         let db_pool = app.db_pool();
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
 
-        let req_refresh =
-            app.post(format!("/infra/refresh/?infras={}&force=true", small_infra.id).as_str());
-        app.fetch(req_refresh).await.assert_status(StatusCode::OK);
+        app.post(format!("/infra/refresh/?infras={}&force=true", small_infra.id).as_str())
+            .await
+            .assert_status_ok();
 
         (app, small_infra)
     }
@@ -1012,17 +1011,15 @@ pub mod tests {
         let app = test_app!().skip_authz().build();
 
         // Make a call with a bad infra ID
-        let request = app
-            .post("/infra/123456789/split_track_section/")
+
+        // Check that we receive a 404
+        app.post("/infra/123456789/split_track_section/")
             .json(&json!({
                 "track": String::from("INVALID-ID"),
                 "offset": 1,
-            }));
-
-        // Check that we receive a 404
-        app.fetch(request)
+            }))
             .await
-            .assert_status(StatusCode::NOT_FOUND);
+            .assert_status_not_found();
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -1033,17 +1030,15 @@ pub mod tests {
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
 
         // Make a call with a bad ID
-        let request = app
-            .post(format!("/infra/{}/split_track_section", small_infra.id).as_str())
+
+        // Check that we receive a 404
+        app.post(format!("/infra/{}/split_track_section", small_infra.id).as_str())
             .json(&json!({
                 "track":"INVALID-ID",
                 "offset": 1,
-            }));
-
-        // Check that we receive a 404
-        app.fetch(request)
+            }))
             .await
-            .assert_status(StatusCode::NOT_FOUND);
+            .assert_status_not_found();
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -1054,17 +1049,15 @@ pub mod tests {
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
 
         // Make a call with a bad distance
-        let request = app
-            .post(format!("/infra/{}/split_track_section", small_infra.id).as_str())
+
+        // Check that we receive an error
+        app.post(format!("/infra/{}/split_track_section", small_infra.id).as_str())
             .json(&json!({
                 "track": "TA0",
                 "offset": 5000000,
-            }));
-
-        // Check that we receive an error
-        app.fetch(request)
+            }))
             .await
-            .assert_status(StatusCode::BAD_REQUEST);
+            .assert_status_bad_request();
     }
 
     #[rstest::rstest]
@@ -1079,17 +1072,15 @@ pub mod tests {
         let (init_errors, _) = query_errors(&mut db_pool.get_ok(), &small_infra).await;
 
         // Make a call to split the track section
-        let request = app
+        let res: Vec<String> = app
             .post(format!("/infra/{}/split_track_section", small_infra.id).as_str())
             .json(&json!({
                 "track": track,
                 "offset": offset,
-            }));
-        let res: Vec<String> = app
-            .fetch(request)
+            }))
             .await
-            .assert_status(StatusCode::OK)
-            .json_into();
+            .assert_status_ok()
+            .json();
 
         // Check the response
         assert_eq!(res.len(), 2);
@@ -1262,17 +1253,15 @@ pub mod tests {
         let (app, small_infra) = setup_split_track_test().await;
         let db_pool = app.db_pool();
 
-        let request = app
+        let res: Vec<String> = app
             .post(format!("/infra/{}/split_track_section", small_infra.id).as_str())
             .json(&json!({
                 "track": "TD0",
                 "offset": offset,
-            }));
-        let res: Vec<String> = app
-            .fetch(request)
+            }))
             .await
-            .assert_status(StatusCode::OK)
-            .json_into();
+            .assert_status_ok()
+            .json();
 
         assert_eq!(res.len(), 2);
         let expected_track_id = &res[expected_track_index];
@@ -1305,17 +1294,15 @@ pub mod tests {
         let (app, small_infra) = setup_split_track_test().await;
         let db_pool = app.db_pool();
 
-        let request = app
+        let res: Vec<String> = app
             .post(format!("/infra/{}/split_track_section", small_infra.id).as_str())
             .json(&json!({
                 "track": "TD0",
                 "offset": 15_000_000,
-            }));
-        let res: Vec<String> = app
-            .fetch(request)
+            }))
             .await
-            .assert_status(StatusCode::OK)
-            .json_into();
+            .assert_status_ok()
+            .json();
 
         assert_eq!(res.len(), 2);
         let expected_track_id = &res[expected_track_index];
@@ -1342,17 +1329,15 @@ pub mod tests {
         let (app, small_infra) = setup_split_track_test().await;
         let db_pool = app.db_pool();
 
-        let request = app
+        let res: Vec<String> = app
             .post(format!("/infra/{}/split_track_section", small_infra.id).as_str())
             .json(&json!({
                 "track": track,
                 "offset": offset,
-            }));
-        let res: Vec<String> = app
-            .fetch(request)
+            }))
             .await
-            .assert_status(StatusCode::OK)
-            .json_into();
+            .assert_status_ok()
+            .json();
 
         assert_eq!(res.len(), 2);
         let expected_track_id = &res[expected_track_index];
@@ -1377,17 +1362,15 @@ pub mod tests {
         let (app, small_infra) = setup_split_track_test().await;
         let db_pool = app.db_pool();
 
-        let request = app
+        let res: Vec<String> = app
             .post(format!("/infra/{}/split_track_section", small_infra.id).as_str())
             .json(&json!({
                 "track": "TA6",
                 "offset": 2_000_000,
-            }));
-        let res: Vec<String> = app
-            .fetch(request)
+            }))
             .await
-            .assert_status(StatusCode::OK)
-            .json_into();
+            .assert_status_ok()
+            .json();
 
         assert_eq!(res.len(), 2);
         let expected_track_id = &res[expected_track_index];
@@ -1413,17 +1396,15 @@ pub mod tests {
         let (app, small_infra) = setup_split_track_test().await;
         let db_pool = app.db_pool();
 
-        let request = app
+        let res: Vec<String> = app
             .post(format!("/infra/{}/split_track_section", small_infra.id).as_str())
             .json(&json!({
                 "track": track,
                 "offset": offset,
-            }));
-        let res: Vec<String> = app
-            .fetch(request)
+            }))
             .await
-            .assert_status(StatusCode::OK)
-            .json_into();
+            .assert_status_ok()
+            .json();
 
         assert_eq!(res.len(), 2);
         let expected_track_id = &res[expected_track_index];

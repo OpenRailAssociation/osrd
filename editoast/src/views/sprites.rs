@@ -83,17 +83,14 @@ pub(in crate::views) async fn sprites(
 mod tests {
     use crate::views::test_app;
 
-    use axum::http::StatusCode;
-
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn test_signaling_systems() {
         let app = test_app!().skip_authz().build();
-        let request = app.get("/sprites/signaling_systems");
         let response: Vec<String> = app
-            .fetch(request)
+            .get("/sprites/signaling_systems")
             .await
-            .assert_status(StatusCode::OK)
-            .json_into();
+            .assert_status_ok()
+            .json();
 
         assert!(response.contains(&"BAL".to_string()));
         assert!(response.contains(&"BAPR".to_string()));
@@ -105,10 +102,10 @@ mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn test_sprites() {
         let app = test_app!().skip_authz().build();
-        let request = app.get("/sprites/TVM300/REP%20TGV.svg");
-        let response = app.fetch(request).await.assert_status(StatusCode::OK);
+        let response = app.get("/sprites/TVM300/REP%20TGV.svg").await;
+        response.assert_status_ok();
         assert_eq!("image/svg+xml", response.content_type());
-        let response = response.bytes();
+        let response = response.into_bytes();
         let expected = std::fs::read(
             app.config()
                 .dynamic_assets_path
@@ -121,9 +118,8 @@ mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn test_sprites_not_found() {
         let app = test_app!().skip_authz().build();
-        let request = app.get("/sprites/TVM300/NOT_A_THING.svg");
-        app.fetch(request)
+        app.get("/sprites/TVM300/NOT_A_THING.svg")
             .await
-            .assert_status(StatusCode::NOT_FOUND);
+            .assert_status_not_found();
     }
 }

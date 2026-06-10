@@ -607,6 +607,7 @@ mod tests {
     use crate::fixtures::create_timetable;
     use crate::fixtures::create_towed_rolling_stock;
     use crate::views::path::pathfinding::PathfindingResult;
+    use crate::views::test_app::TestResponseExt as _;
     use crate::views::test_app::test_app;
     use crate::views::timetable::simulation_empty_response;
     use crate::views::timetable::stdcm::Request;
@@ -987,15 +988,12 @@ mod tests {
             None,
         ));
 
-        let request = app
-            .post(format!("/timetable/{}/stdcm?infra={}", timetable.id, small_infra.id).as_str())
-            .json(&get_stdcm_payload(None, consist_schedule));
-
         let stdcm_response: StdcmProgression = app
-            .fetch(request)
+            .post(format!("/timetable/{}/stdcm?infra={}", timetable.id, small_infra.id).as_str())
+            .json(&get_stdcm_payload(None, consist_schedule))
             .await
-            .assert_status(StatusCode::OK)
-            .last_jsonl_into();
+            .assert_status_ok()
+            .last_jsonl();
 
         if let PathfindingResult::Success(path) =
             PathfindingResult::Success(pathfinding_result_success())
@@ -1072,15 +1070,12 @@ mod tests {
             None,
         ));
 
-        let request = app
-            .post(format!("/timetable/{}/stdcm?infra={}", timetable.id, small_infra.id).as_str())
-            .json(&get_stdcm_payload(None, consist_schedule));
-
         let stdcm_response: InternalError = app
-            .fetch(request)
+            .post(format!("/timetable/{}/stdcm?infra={}", timetable.id, small_infra.id).as_str())
+            .json(&get_stdcm_payload(None, consist_schedule))
             .await
-            .assert_status(StatusCode::BAD_REQUEST)
-            .json_into();
+            .assert_status_bad_request()
+            .json();
 
         assert_eq!(stdcm_response.error_type, expected_error_type.to_string());
         assert_eq!(
@@ -1116,15 +1111,12 @@ mod tests {
             None,
         ));
 
-        let request = app
-            .post(format!("/timetable/{}/stdcm?infra={}", timetable.id, small_infra.id).as_str())
-            .json(&get_stdcm_payload(None, consist_schedule));
-
         let stdcm_response: StdcmProgression = app
-            .fetch(request)
+            .post(format!("/timetable/{}/stdcm?infra={}", timetable.id, small_infra.id).as_str())
+            .json(&get_stdcm_payload(None, consist_schedule))
             .await
-            .assert_status(StatusCode::OK)
-            .last_jsonl_into();
+            .assert_status_ok()
+            .last_jsonl();
 
         assert_eq!(
             stdcm_response,
@@ -1170,15 +1162,12 @@ mod tests {
             None,
         ));
 
-        let request = app
-            .post(format!("/timetable/{}/stdcm?infra={}", timetable.id, small_infra.id).as_str())
-            .json(&get_stdcm_payload(None, consist_schedule));
-
         let stdcm_response: Vec<StdcmProgression> = app
-            .fetch(request)
+            .post(format!("/timetable/{}/stdcm?infra={}", timetable.id, small_infra.id).as_str())
+            .json(&get_stdcm_payload(None, consist_schedule))
             .await
-            .assert_status(StatusCode::OK)
-            .jsonl_into();
+            .assert_status_ok()
+            .jsonl();
 
         if let PathfindingResult::Success(path) =
             PathfindingResult::Success(pathfinding_result_success())
@@ -1243,15 +1232,12 @@ mod tests {
             None,
         ));
 
-        let request = app
-            .post(format!("/timetable/{}/stdcm?infra={}", timetable.id, small_infra.id).as_str())
-            .json(&get_stdcm_payload(None, consist_schedule));
-
         let stdcm_response: Vec<StdcmProgression> = app
-            .fetch(request)
+            .post(format!("/timetable/{}/stdcm?infra={}", timetable.id, small_infra.id).as_str())
+            .json(&get_stdcm_payload(None, consist_schedule))
             .await
-            .assert_status(StatusCode::OK)
-            .jsonl_into();
+            .assert_status_ok()
+            .jsonl();
 
         assert_eq!(stdcm_response.len(), 3);
         assert_eq!(
@@ -1464,15 +1450,12 @@ mod tests {
         // Consist change
         // MWS -> SS
 
-        let request = app
-            .post(format!("/timetable/{}/stdcm?infra={}", timetable.id, small_infra.id).as_str())
-            .json(&payload);
-
         let stdcm_response: StdcmProgression = app
-            .fetch(request)
+            .post(format!("/timetable/{}/stdcm?infra={}", timetable.id, small_infra.id).as_str())
+            .json(&payload)
             .await
-            .assert_status(StatusCode::OK)
-            .last_jsonl_into();
+            .assert_status_ok()
+            .last_jsonl();
 
         assert_eq!(
             stdcm_response,
@@ -1550,15 +1533,12 @@ mod tests {
         // Consist change
         // MES -> SES
 
-        let request = app
-            .post(format!("/timetable/{}/stdcm?infra={}", timetable.id, small_infra.id).as_str())
-            .json(&payload);
-
         let stdcm_response: StdcmProgression = app
-            .fetch(request)
+            .post(format!("/timetable/{}/stdcm?infra={}", timetable.id, small_infra.id).as_str())
+            .json(&payload)
             .await
-            .assert_status(StatusCode::OK)
-            .last_jsonl_into();
+            .assert_status_ok()
+            .last_jsonl();
 
         assert_eq!(
             stdcm_response,
@@ -1673,15 +1653,12 @@ mod tests {
             Some(towed_rolling_stock.id),
         ));
 
-        let request = app
-            .post(format!("/timetable/{}/stdcm?infra={}", timetable.id, small_infra.id).as_str())
-            .json(&get_stdcm_payload(None, consist_schedule));
-
         let stdcm_response: StdcmProgression = app
-            .fetch(request)
+            .post(format!("/timetable/{}/stdcm?infra={}", timetable.id, small_infra.id).as_str())
+            .json(&get_stdcm_payload(None, consist_schedule))
             .await
-            .assert_status(StatusCode::OK)
-            .last_jsonl_into();
+            .assert_status_ok()
+            .last_jsonl();
 
         assert_eq!(
             stdcm_response,

@@ -375,15 +375,14 @@ pub mod test {
                 .expect("Failed to create macro note");
         }
 
-        let request = app.get(&format!(
-            "/macro_notes?page=1&page_size=3&scenario_id={}",
-            fixtures1.scenario.id
-        ));
         let response: MacroNoteListResponse = app
-            .fetch(request)
+            .get(&format!(
+                "/macro_notes?page=1&page_size=3&scenario_id={}",
+                fixtures1.scenario.id
+            ))
             .await
-            .assert_status(StatusCode::OK)
-            .json_into();
+            .assert_status_ok()
+            .json();
 
         let ids: Vec<i64> = response.results.iter().map(|note| note.id).collect();
         let mut sorted_ids = ids.clone();
@@ -425,15 +424,15 @@ pub mod test {
             },
         ];
 
-        let request = app.post("/macro_notes").json(&MacroNoteBatchForm {
-            macro_notes: notes_data.clone(),
-            scenario_id: fixtures.scenario.id,
-        });
         let response: MacroNoteBatchResponse = app
-            .fetch(request)
+            .post("/macro_notes")
+            .json(&MacroNoteBatchForm {
+                macro_notes: notes_data.clone(),
+                scenario_id: fixtures.scenario.id,
+            })
             .await
             .assert_status(StatusCode::CREATED)
-            .json_into();
+            .json();
 
         assert_eq!(notes_data.len(), response.macro_notes.len());
 
@@ -462,13 +461,13 @@ pub mod test {
             labels: Tags::new(vec!["A".to_string()]),
         }];
 
-        let request = app.post("/macro_notes").json(&MacroNoteBatchForm {
-            macro_notes: notes_data.clone(),
-            scenario_id: fixtures.scenario.id + 1,
-        });
-        app.fetch(request)
+        app.post("/macro_notes")
+            .json(&MacroNoteBatchForm {
+                macro_notes: notes_data.clone(),
+                scenario_id: fixtures.scenario.id + 1,
+            })
             .await
-            .assert_status(StatusCode::NOT_FOUND);
+            .assert_status_not_found();
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -488,13 +487,11 @@ pub mod test {
             .await
             .expect("Failed to create macro note");
 
-        let request = app.get(&format!("/macro_notes/{}", note.id));
-
         let response: MacroNoteResponse = app
-            .fetch(request)
+            .get(&format!("/macro_notes/{}", note.id))
             .await
-            .assert_status(StatusCode::OK)
-            .json_into();
+            .assert_status_ok()
+            .json();
 
         assert_eq!(MacroNoteResponse::from(note), response);
     }
@@ -503,11 +500,9 @@ pub mod test {
     async fn get_note_not_found() {
         let app = test_app!().skip_authz().build();
 
-        let request = app.get("/macro_notes/999999");
-
-        app.fetch(request)
+        app.get("/macro_notes/999999")
             .await
-            .assert_status(StatusCode::NOT_FOUND);
+            .assert_status_not_found();
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -535,13 +530,12 @@ pub mod test {
             labels: Tags::new(vec!["New label".to_string(), "B".to_string()]),
         };
 
-        let request = app.put(&format!("/macro_notes/{}", note.id)).json(&update);
-
         let response: MacroNoteResponse = app
-            .fetch(request)
+            .put(&format!("/macro_notes/{}", note.id))
+            .json(&update)
             .await
-            .assert_status(StatusCode::OK)
-            .json_into();
+            .assert_status_ok()
+            .json();
 
         let note = MacroNote::retrieve(db_pool.get_ok(), note.id)
             .await
@@ -564,11 +558,10 @@ pub mod test {
             labels: Tags::new(vec!["New label".to_string(), "B".to_string()]),
         };
 
-        let request = app.put("/macro_notes/999999999").json(&update);
-
-        app.fetch(request)
+        app.put("/macro_notes/999999999")
+            .json(&update)
             .await
-            .assert_status(StatusCode::NOT_FOUND);
+            .assert_status_not_found();
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -589,11 +582,9 @@ pub mod test {
             .await
             .expect("Failed to create macro note");
 
-        let request = app.delete(&format!("/macro_notes/{}", note.id));
-
-        app.fetch(request)
+        app.delete(&format!("/macro_notes/{}", note.id))
             .await
-            .assert_status(StatusCode::NO_CONTENT);
+            .assert_status_no_content();
 
         let still_exists = MacroNote::exists(&mut db_pool.get_ok(), note.id)
             .await
@@ -605,10 +596,8 @@ pub mod test {
     async fn delete_note_not_found() {
         let app = test_app!().skip_authz().build();
 
-        let request = app.delete("/macro_notes/999999");
-
-        app.fetch(request)
+        app.delete("/macro_notes/999999")
             .await
-            .assert_status(StatusCode::NOT_FOUND);
+            .assert_status_not_found();
     }
 }

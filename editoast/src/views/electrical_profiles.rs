@@ -166,8 +166,6 @@ pub enum ElectricalProfilesError {
 
 #[cfg(test)]
 mod tests {
-
-    use axum::http::StatusCode;
     use pretty_assertions::assert_eq;
 
     use super::*;
@@ -185,10 +183,10 @@ mod tests {
         let _set_2 = create_electrical_profile_set(&mut pool.get_ok()).await;
 
         let response: Vec<LightElectricalProfileSet> = app
-            .fetch(app.get("/electrical_profile_set"))
+            .get("/electrical_profile_set")
             .await
-            .assert_status(StatusCode::OK)
-            .json_into();
+            .assert_status_ok()
+            .json();
 
         assert!(response.len() >= 2);
     }
@@ -197,9 +195,9 @@ mod tests {
     async fn get_unexisting_electrical_profile() {
         let app = test_app!().skip_authz().build();
 
-        app.fetch(app.get("/electrical_profile_set/666"))
+        app.get("/electrical_profile_set/666")
             .await
-            .assert_status(StatusCode::NOT_FOUND);
+            .assert_status_not_found();
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -209,21 +207,21 @@ mod tests {
 
         let electrical_profile_set = create_electrical_profile_set(&mut pool.get_ok()).await;
 
-        app.fetch(app.get(&format!(
+        app.get(&format!(
             "/electrical_profile_set/{}",
             electrical_profile_set.id
-        )))
+        ))
         .await
-        .assert_status(StatusCode::OK);
+        .assert_status_ok();
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn get_unexisting_electrical_profile_level_order() {
         let app = test_app!().skip_authz().build();
 
-        app.fetch(app.get("/electrical_profile_set/666/level_order"))
+        app.get("/electrical_profile_set/666/level_order")
             .await
-            .assert_status(StatusCode::NOT_FOUND);
+            .assert_status_not_found();
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -234,13 +232,13 @@ mod tests {
         let electrical_profile_set = create_electrical_profile_set(&mut pool.get_ok()).await;
 
         let level_order: HashMap<String, Vec<String>> = app
-            .fetch(app.get(&format!(
+            .get(&format!(
                 "/electrical_profile_set/{}/level_order",
                 electrical_profile_set.id
-            )))
+            ))
             .await
-            .assert_status(StatusCode::OK)
-            .json_into();
+            .assert_status_ok()
+            .json();
 
         assert_eq!(level_order.len(), 1);
         assert_eq!(
@@ -252,9 +250,9 @@ mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn delete_unexisting_electrical_profile() {
         let app = test_app!().skip_authz().build();
-        app.fetch(app.delete("/electrical_profile_set/666"))
+        app.delete("/electrical_profile_set/666")
             .await
-            .assert_status(StatusCode::NOT_FOUND);
+            .assert_status_not_found();
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -264,12 +262,12 @@ mod tests {
 
         let electrical_profile_set = create_electrical_profile_set(&mut pool.get_ok()).await;
 
-        app.fetch(app.delete(&format!(
+        app.delete(&format!(
             "/electrical_profile_set/{}",
             electrical_profile_set.id
-        )))
+        ))
         .await
-        .assert_status(StatusCode::NO_CONTENT);
+        .assert_status_no_content();
 
         let exists = ElectricalProfileSet::exists(&mut pool.get_ok(), electrical_profile_set.id)
             .await
@@ -293,10 +291,11 @@ mod tests {
         };
 
         let created_ep: ElectricalProfileSet = app
-            .fetch(app.post("/electrical_profile_set/?name=elec").json(&ep_set))
+            .post("/electrical_profile_set/?name=elec")
+            .json(&ep_set)
             .await
-            .assert_status(StatusCode::OK)
-            .json_into();
+            .assert_status_ok()
+            .json();
 
         let created_ep = ElectricalProfileSet::retrieve(pool.get_ok(), created_ep.id)
             .await

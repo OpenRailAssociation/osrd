@@ -366,7 +366,7 @@ mod tests {
 
         let train_schedules = vec![train_schedule_1, train_schedule_2.clone()];
 
-        let request = app
+        let response: Vec<TrainScheduleResponse> = app
             .post(
                 format!(
                     "/train_schedule_sets/{}/train_schedules",
@@ -374,13 +374,10 @@ mod tests {
                 )
                 .as_str(),
             )
-            .json(&train_schedules);
-
-        let response: Vec<TrainScheduleResponse> = app
-            .fetch(request)
+            .json(&train_schedules)
             .await
             .assert_status(StatusCode::CREATED)
-            .json_into();
+            .json();
 
         assert!(response.len() == 2);
 
@@ -411,7 +408,7 @@ mod tests {
         train_schedule_2.paced.as_mut().unwrap().interval =
             Duration::seconds(45).try_into().unwrap();
 
-        let request = app
+        let _: Vec<TrainScheduleResponse> = app
             .post(
                 format!(
                     "/train_schedule_sets/{}/train_schedules",
@@ -419,27 +416,22 @@ mod tests {
                 )
                 .as_str(),
             )
-            .json(&vec![train_schedule_1, train_schedule_2]);
-
-        let _: Vec<TrainScheduleResponse> = app
-            .fetch(request)
+            .json(&vec![train_schedule_1, train_schedule_2])
             .await
             .assert_status(StatusCode::CREATED)
-            .json_into();
-
-        let request = app.get(
-            format!(
-                "/train_schedule_sets/{}/train_schedules",
-                train_schedule_set.id
-            )
-            .as_str(),
-        );
+            .json();
 
         let response: Vec<TrainScheduleResponse> = app
-            .fetch(request)
+            .get(
+                format!(
+                    "/train_schedule_sets/{}/train_schedules",
+                    train_schedule_set.id
+                )
+                .as_str(),
+            )
             .await
-            .assert_status(StatusCode::OK)
-            .json_into();
+            .assert_status_ok()
+            .json();
 
         assert_eq!(response.len(), 2);
     }
@@ -453,14 +445,12 @@ mod tests {
             description: String::default(),
             published: false,
         };
-        let request = app
-            .post("/train_schedule_sets")
-            .json(&train_schedule_set_form);
         let response: TrainScheduleSetResponse = app
-            .fetch(request)
+            .post("/train_schedule_sets")
+            .json(&train_schedule_set_form)
             .await
             .assert_status(StatusCode::CREATED)
-            .json_into();
+            .json();
 
         let expected_response = TrainScheduleSet {
             id: 1,
@@ -491,14 +481,12 @@ mod tests {
             description: String::default(),
             published: false,
         };
-        let request = app
-            .post("/train_schedule_sets")
-            .json(&train_schedule_set_form);
         let response: TrainScheduleSetResponse = app
-            .fetch(request)
+            .post("/train_schedule_sets")
+            .json(&train_schedule_set_form)
             .await
             .assert_status(StatusCode::CREATED)
-            .json_into();
+            .json();
 
         let expected_response = TrainScheduleSet {
             id: 1,
@@ -524,12 +512,11 @@ mod tests {
         let db_pool = app.db_pool();
         let train_schedule_set = create_train_schedule_set(&mut db_pool.get().await.unwrap()).await;
 
-        let request = app.get(&format!("/train_schedule_sets/{}", train_schedule_set.id));
         let response: TrainScheduleSetResponse = app
-            .fetch(request)
+            .get(&format!("/train_schedule_sets/{}", train_schedule_set.id))
             .await
-            .assert_status(StatusCode::OK)
-            .json_into();
+            .assert_status_ok()
+            .json();
 
         assert_eq!(
             response,
@@ -555,12 +542,11 @@ mod tests {
             create_train_schedule_set_linked_to_catalog_entry(&mut db_pool.get().await.unwrap())
                 .await;
 
-        let request = app.get(&format!("/train_schedule_sets/{}", train_schedule_set.id));
         let response: TrainScheduleSetResponse = app
-            .fetch(request)
+            .get(&format!("/train_schedule_sets/{}", train_schedule_set.id))
             .await
-            .assert_status(StatusCode::OK)
-            .json_into();
+            .assert_status_ok()
+            .json();
 
         assert_eq!(
             response,
@@ -597,12 +583,11 @@ mod tests {
             create_train_schedule_set(&mut db_pool.get().await.unwrap()).await;
         let train_schedule_set_2 =
             create_train_schedule_set_published(&mut db_pool.get().await.unwrap()).await;
-        let request = app.get("/train_schedule_sets?published=false");
         let response: Vec<TrainScheduleSetResponse> = app
-            .fetch(request)
+            .get("/train_schedule_sets?published=false")
             .await
-            .assert_status(StatusCode::OK)
-            .json_into();
+            .assert_status_ok()
+            .json();
         assert_eq!(response.len(), 1);
         assert_eq!(
             response,
@@ -612,12 +597,11 @@ mod tests {
             }]
         );
 
-        let request = app.get("/train_schedule_sets?published=true");
         let response: Vec<TrainScheduleSetResponse> = app
-            .fetch(request)
+            .get("/train_schedule_sets?published=true")
             .await
-            .assert_status(StatusCode::OK)
-            .json_into();
+            .assert_status_ok()
+            .json();
         assert_eq!(response.len(), 1);
         assert_eq!(
             response,
@@ -627,12 +611,11 @@ mod tests {
             }]
         );
 
-        let request = app.get("/train_schedule_sets?catalog_entry_id=1");
         let response: Vec<TrainScheduleSetResponse> = app
-            .fetch(request)
+            .get("/train_schedule_sets?catalog_entry_id=1")
             .await
-            .assert_status(StatusCode::OK)
-            .json_into();
+            .assert_status_ok()
+            .json();
         assert_eq!(response.len(), 1);
         assert_eq!(
             response,
@@ -650,10 +633,9 @@ mod tests {
         let db_pool = app.db_pool();
         let train_schedule_set = create_train_schedule_set(&mut db_pool.get().await.unwrap()).await;
         let train_schedule_set_id = train_schedule_set.id;
-        let request = app.delete(&format!("/train_schedule_sets/{}", train_schedule_set_id));
-        app.fetch(request)
+        app.delete(&format!("/train_schedule_sets/{}", train_schedule_set_id))
             .await
-            .assert_status(StatusCode::NO_CONTENT);
+            .assert_status_no_content();
 
         assert!(
             !TrainScheduleSet::exists(&mut db_pool.get().await.unwrap(), train_schedule_set_id)
@@ -675,14 +657,12 @@ mod tests {
             description: "test description".to_string(),
             published: false,
         };
-        let request = app
-            .put(&format!("/train_schedule_sets/{}", train_schedule_set_id))
-            .json(&train_schedule_set_form);
         let response: TrainScheduleSetResponse = app
-            .fetch(request)
+            .put(&format!("/train_schedule_sets/{}", train_schedule_set_id))
+            .json(&train_schedule_set_form)
             .await
-            .assert_status(StatusCode::OK)
-            .json_into();
+            .assert_status_ok()
+            .json();
 
         assert_eq!(
             response,
@@ -713,14 +693,12 @@ mod tests {
             description: "test description".to_string(),
             published: true,
         };
-        let request = app
-            .put(&format!("/train_schedule_sets/{}", train_schedule_set_id))
-            .json(&train_schedule_set_form);
         let response: TrainScheduleSetResponse = app
-            .fetch(request)
+            .put(&format!("/train_schedule_sets/{}", train_schedule_set_id))
+            .json(&train_schedule_set_form)
             .await
-            .assert_status(StatusCode::OK)
-            .json_into();
+            .assert_status_ok()
+            .json();
 
         assert_eq!(
             response,

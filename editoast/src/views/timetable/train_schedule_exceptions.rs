@@ -279,7 +279,6 @@ mod tests {
     use editoast_models::prelude::Retrieve;
     use editoast_models::prelude::*;
     use editoast_models::train_schedule_exception::TrainScheduleExceptionChangeset;
-    use reqwest::StatusCode;
     use schemas::TrainScheduleExceptionChangeGroups;
     use schemas::paced_train::StartTimeChangeGroup;
     use schemas::paced_train::TrainNameChangeGroup;
@@ -319,15 +318,12 @@ mod tests {
             };
 
         // Insert train schedule exception
-        let request = app
-            .post(format!("/timetable/{}/train_schedule_exception", timetable.id).as_str())
-            .json(&json!(&train_schedule_exception_form));
-
         let response: schemas::TrainScheduleException = app
-            .fetch(request)
+            .post(format!("/timetable/{}/train_schedule_exception", timetable.id).as_str())
+            .json(&json!(&train_schedule_exception_form))
             .await
-            .assert_status(StatusCode::OK)
-            .json_into();
+            .assert_status_ok()
+            .json();
 
         assert_eq!(response.occurrence_index, None);
         assert_eq!(
@@ -356,15 +352,12 @@ mod tests {
             };
 
         // Insert train schedule exception
-        let request = app
-            .post(format!("/timetable/{}/train_schedule_exception", timetable.id).as_str())
-            .json(&json!(&train_schedule_exception_form));
-
         let response: InternalError = app
-            .fetch(request)
+            .post(format!("/timetable/{}/train_schedule_exception", timetable.id).as_str())
+            .json(&json!(&train_schedule_exception_form))
             .await
-            .assert_status(StatusCode::BAD_REQUEST)
-            .json_into();
+            .assert_status_bad_request()
+            .json();
 
         assert_eq!(
             &response.error_type,
@@ -400,15 +393,12 @@ mod tests {
             };
 
         // Insert train schedule exception
-        let request = app
-            .post(format!("/timetable/{}/train_schedule_exception", timetable.id).as_str())
-            .json(&json!(&train_schedule_exception_form));
-
         let response: InternalError = app
-            .fetch(request)
+            .post(format!("/timetable/{}/train_schedule_exception", timetable.id).as_str())
+            .json(&json!(&train_schedule_exception_form))
             .await
-            .assert_status(StatusCode::BAD_REQUEST)
-            .json_into();
+            .assert_status_bad_request()
+            .json();
 
         assert_eq!(
             &response.error_type,
@@ -448,13 +438,12 @@ mod tests {
                 .expect("Failed to retrieve train schedule exception");
         assert!(exists);
 
-        let request = app.post("/train_schedule_exceptions/delete").json(&json!({
-            "ids": [train_schedule_exception.id]
-        }));
-
-        app.fetch(request)
+        app.post("/train_schedule_exceptions/delete")
+            .json(&json!({
+                "ids": [train_schedule_exception.id]
+            }))
             .await
-            .assert_status(StatusCode::NO_CONTENT);
+            .assert_status_no_content();
 
         let exists =
             TrainScheduleException::exists(&mut pool.get_ok(), train_schedule_exception.id)
@@ -497,13 +486,10 @@ mod tests {
             };
 
         // Update train schedule exception
-        let request = app
-            .put(format!("/train_schedule_exception/{}", train_schedule_exception.id).as_str())
-            .json(&json!(&train_schedule_exception_form));
-
-        app.fetch(request)
+        app.put(format!("/train_schedule_exception/{}", train_schedule_exception.id).as_str())
+            .json(&json!(&train_schedule_exception_form))
             .await
-            .assert_status(StatusCode::NO_CONTENT);
+            .assert_status_no_content();
 
         let updated_exception = editoast_models::TrainScheduleException::retrieve(
             pool.get_ok(),
@@ -556,15 +542,12 @@ mod tests {
             };
 
         // Update train schedule exception
-        let request = app
-            .put(format!("/train_schedule_exception/{}", train_schedule_exception.id).as_str())
-            .json(&json!(&train_schedule_exception_form));
-
         let response: InternalError = app
-            .fetch(request)
+            .put(format!("/train_schedule_exception/{}", train_schedule_exception.id).as_str())
+            .json(&json!(&train_schedule_exception_form))
             .await
-            .assert_status(StatusCode::BAD_REQUEST)
-            .json_into();
+            .assert_status_bad_request()
+            .json();
 
         assert_eq!(
             &response.error_type,

@@ -1873,12 +1873,12 @@ mod tests {
     use crate::views::test_app;
     use crate::views::test_app::TestApp;
 
-    use crate::views::test_app::TestResponse;
     use crate::views::tests::mocked_core_pathfinding_sim_and_proj;
     use crate::views::timetable::simulation;
     use crate::views::timetable::simulation::SimulationResponseSuccess;
     use crate::views::timetable::simulation::SummaryResponse;
     use crate::views::timetable::simulation_empty_response;
+    use axum_test::TestResponse;
     use editoast_models::train_schedule::OccurrenceId;
     use editoast_models::train_schedule::TrainScheduleChangeset;
 
@@ -1910,7 +1910,8 @@ mod tests {
         let train_schedule_set = create_train_schedule_set(&mut pool.get_ok()).await;
         let train_schedule = simple_paced_train_base();
         // Insert train schedule
-        let request = app
+
+        let response: Vec<TrainScheduleResponse> = app
             .post(
                 format!(
                     "/train_schedule_sets/{}/train_schedules",
@@ -1918,13 +1919,10 @@ mod tests {
                 )
                 .as_str(),
             )
-            .json(&json!(vec![train_schedule]));
-
-        let response: Vec<TrainScheduleResponse> = app
-            .fetch(request)
+            .json(&json!(vec![train_schedule]))
             .await
             .assert_status(StatusCode::CREATED)
-            .json_into();
+            .json();
         assert_eq!(response.len(), 1);
     }
 
@@ -1948,7 +1946,8 @@ mod tests {
         });
 
         // Insert train schedule
-        let request = app
+
+        let response: Vec<TrainScheduleResponse> = app
             .post(
                 format!(
                     "/train_schedule_sets/{}/train_schedules",
@@ -1956,13 +1955,10 @@ mod tests {
                 )
                 .as_str(),
             )
-            .json(&json!(vec![train_schedule]));
-
-        let response: Vec<TrainScheduleResponse> = app
-            .fetch(request)
+            .json(&json!(vec![train_schedule]))
             .await
             .assert_status(StatusCode::CREATED)
-            .json_into();
+            .json();
 
         assert_eq!(response.len(), 1);
 
@@ -2034,16 +2030,13 @@ mod tests {
         updated_train_schedule.paced.as_mut().unwrap().interval =
             chrono::Duration::minutes(30).try_into().unwrap();
 
-        let request = app
-            .put(&format!(
-                "/train_schedules/{}?timetable_id={}",
-                train_schedule.id, timetable.id
-            ))
-            .json(&json!(&updated_train_schedule));
-
-        app.fetch(request)
-            .await
-            .assert_status(StatusCode::NO_CONTENT);
+        app.put(&format!(
+            "/train_schedules/{}?timetable_id={}",
+            train_schedule.id, timetable.id
+        ))
+        .json(&json!(&updated_train_schedule))
+        .await
+        .assert_status_no_content();
 
         let exceptions_after = TrainScheduleException::retrieve_exceptions_by_train_schedules(
             &mut pool.get_ok(),
@@ -2076,19 +2069,16 @@ mod tests {
         paced_train_base.paced.as_mut().unwrap().interval =
             Duration::minutes(15).try_into().unwrap();
 
-        let request = app
-            .put(
-                format!(
-                    "/train_schedules/{}?timetable_id={}",
-                    paced_train.id, timetable.id
-                )
-                .as_str(),
+        app.put(
+            format!(
+                "/train_schedules/{}?timetable_id={}",
+                paced_train.id, timetable.id
             )
-            .json(&json!(&paced_train_base));
-
-        app.fetch(request)
-            .await
-            .assert_status(StatusCode::NO_CONTENT);
+            .as_str(),
+        )
+        .json(&json!(&paced_train_base))
+        .await
+        .assert_status_no_content();
 
         let updated_paced_train =
             editoast_models::TrainSchedule::retrieve(pool.get_ok(), paced_train.id)
@@ -2111,14 +2101,11 @@ mod tests {
         let train_schedule =
             create_simple_paced_train(&mut pool.get_ok(), train_schedule_set.id).await;
 
-        let request = app
-            .delete("/train_schedules/")
-            .json(&json!({"ids": vec![train_schedule.id]}));
-
         let _ = app
-            .fetch(request)
+            .delete("/train_schedules/")
+            .json(&json!({"ids": vec![train_schedule.id]}))
             .await
-            .assert_status(StatusCode::NO_CONTENT);
+            .assert_status_no_content();
 
         let exists = editoast_models::TrainSchedule::exists(&mut pool.get_ok(), train_schedule.id)
             .await
@@ -2130,13 +2117,11 @@ mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn get_not_found_train_schedule() {
         let app = test_app!().skip_authz().build();
-        let request = app.get(&format!("/train_schedules/{}", 0));
-
         let response: InternalError = app
-            .fetch(request)
+            .get(&format!("/train_schedules/{}", 0))
             .await
-            .assert_status(StatusCode::NOT_FOUND)
-            .json_into();
+            .assert_status_not_found()
+            .json();
 
         assert_eq!(&response.error_type, "editoast:train_schedule:NotFound")
     }
@@ -2150,13 +2135,11 @@ mod tests {
         let paced_train =
             create_simple_paced_train(&mut pool.get_ok(), train_schedule_set.id).await;
 
-        let request = app.get(&format!("/train_schedules/{}", paced_train.id));
-
         let response = app
-            .fetch(request)
+            .get(&format!("/train_schedules/{}", paced_train.id))
             .await
-            .assert_status(StatusCode::OK)
-            .json_into::<TrainScheduleResponse>();
+            .assert_status_ok()
+            .json::<TrainScheduleResponse>();
 
         assert_eq!(
             response.train_schedule,
@@ -2220,18 +2203,17 @@ mod tests {
     async fn paced_train_simulation() {
         let (app, infra_id, _timetable, train_schedule, _exception) =
             app_infra_id_paced_train_id_for_simulation_tests().await;
-        let request = app.get(
-            format!(
-                "/train_schedules/{}/simulation/?infra_id={infra_id}",
-                train_schedule.id
-            )
-            .as_str(),
-        );
         let response: core_client::simulation::Response = app
-            .fetch(request)
+            .get(
+                format!(
+                    "/train_schedules/{}/simulation/?infra_id={infra_id}",
+                    train_schedule.id
+                )
+                .as_str(),
+            )
             .await
-            .assert_status(StatusCode::OK)
-            .json_into();
+            .assert_status_ok()
+            .json();
 
         assert_eq!(response, simulation_empty_response());
     }
@@ -2240,18 +2222,17 @@ mod tests {
     async fn paced_train_exception_simulation_with_invalid_exception_key() {
         let (app, infra_id, _timetable, train_schedule, _exception) =
             app_infra_id_paced_train_id_for_simulation_tests().await;
-        let request = app.get(
-            format!(
-                "/train_schedules/{}/simulation/?infra_id={infra_id}&exception_id=9999",
-                train_schedule.id
-            )
-            .as_str(),
-        );
         let response: InternalError = app
-            .fetch(request)
+            .get(
+                format!(
+                    "/train_schedules/{}/simulation/?infra_id={infra_id}&exception_id=9999",
+                    train_schedule.id
+                )
+                .as_str(),
+            )
             .await
-            .assert_status(StatusCode::NOT_FOUND)
-            .json_into();
+            .assert_status_not_found()
+            .json();
 
         assert_eq!(
             &response.error_type,
@@ -2263,18 +2244,17 @@ mod tests {
     async fn paced_train_exception_simulation() {
         let (app, infra_id, _timetable, train_schedule, exception) =
             app_infra_id_paced_train_id_for_simulation_tests().await;
-        let request = app.get(
-            format!(
-                "/train_schedules/{}/simulation/?infra_id={infra_id}&exception_id={}",
-                train_schedule.id, exception.id
-            )
-            .as_str(),
-        );
         let response: simulation::Response = app
-            .fetch(request)
+            .get(
+                format!(
+                    "/train_schedules/{}/simulation/?infra_id={infra_id}&exception_id={}",
+                    train_schedule.id, exception.id
+                )
+                .as_str(),
+            )
             .await
-            .assert_status(StatusCode::OK)
-            .json_into();
+            .assert_status_ok()
+            .json();
 
         assert_eq!(
             response,
@@ -2337,18 +2317,17 @@ mod tests {
             .expect("Fail to update exception");
 
         // WHEN
-        let request = app.get(
-            format!(
-                "/train_schedules/{}/simulation/?infra_id={infra_id}&exception_id={}",
-                train_schedule.id, exception.id
-            )
-            .as_str(),
-        );
         let response: simulation::Response = app
-            .fetch(request)
+            .get(
+                format!(
+                    "/train_schedules/{}/simulation/?infra_id={infra_id}&exception_id={}",
+                    train_schedule.id, exception.id
+                )
+                .as_str(),
+            )
             .await
-            .assert_status(StatusCode::OK)
-            .json_into();
+            .assert_status_ok()
+            .json();
 
         // THEN
         assert_eq!(
@@ -2367,14 +2346,11 @@ mod tests {
     async fn paced_train_simulation_not_found() {
         let (app, infra_id, _timetable, _train_schedule, _exception) =
             app_infra_id_paced_train_id_for_simulation_tests().await;
-        let request =
-            app.get(format!("/train_schedules/{}/simulation/?infra_id={}", 0, infra_id).as_str());
-
         let response: InternalError = app
-            .fetch(request)
+            .get(format!("/train_schedules/{}/simulation/?infra_id={}", 0, infra_id).as_str())
             .await
-            .assert_status(StatusCode::NOT_FOUND)
-            .json_into();
+            .assert_status_not_found()
+            .json();
 
         assert_eq!(&response.error_type, "editoast:train_schedule:NotFound")
     }
@@ -2491,19 +2467,16 @@ mod tests {
         )
         .await;
 
-        let request = app
+        let mut response: HashMap<i64, TrainScheduleSummaryResponse> = app
             .post("/train_schedules/simulation_summary")
             .json(&json!({
                 "infra_id": small_infra.id,
                 "timetable_id": timetable.id,
                 "ids": vec![train_schedule.id],
-            }));
-
-        let mut response: HashMap<i64, TrainScheduleSummaryResponse> = app
-            .fetch(request)
+            }))
             .await
-            .assert_status(StatusCode::OK)
-            .json_into();
+            .assert_status_ok()
+            .json();
         assert_eq!(response.len(), 1);
 
         let TrainScheduleSummaryResponse {
@@ -2590,18 +2563,16 @@ mod tests {
         let (app, infra_id, _timetable, _paced_train_id, _exception) =
             app_infra_id_paced_train_id_for_simulation_tests().await;
         let timetable = create_timetable(&mut app.db_pool().get_ok()).await;
-        let request = app
+        let response: InternalError = app
             .post("/train_schedules/simulation_summary")
             .json(&json!({
                 "infra_id": infra_id,
                 "timetable_id": timetable.id,
                 "ids": vec![0],
-            }));
-        let response: InternalError = app
-            .fetch(request)
+            }))
             .await
-            .assert_status(StatusCode::NOT_FOUND)
-            .json_into();
+            .assert_status_not_found()
+            .json();
 
         assert_eq!(
             &response.error_type,
@@ -2617,16 +2588,14 @@ mod tests {
         let paced_train =
             create_simple_paced_train(&mut pool.get_ok(), train_schedule_set.id).await;
 
-        let request = app.get(&format!(
-            "/train_schedules/{}/path?infra_id={}",
-            paced_train.id, 0
-        ));
-
         let response: InternalError = app
-            .fetch(request)
+            .get(&format!(
+                "/train_schedules/{}/path?infra_id={}",
+                paced_train.id, 0
+            ))
             .await
-            .assert_status(StatusCode::NOT_FOUND)
-            .json_into();
+            .assert_status_not_found()
+            .json();
 
         assert_eq!(
             &response.error_type,
@@ -2640,16 +2609,14 @@ mod tests {
         let pool = app.db_pool();
         let small_infra = create_small_infra(&mut pool.get_ok()).await;
 
-        let request = app.get(&format!(
-            "/train_schedules/{}/path?infra_id={}",
-            0, small_infra.id
-        ));
-
         let response: InternalError = app
-            .fetch(request)
+            .get(&format!(
+                "/train_schedules/{}/path?infra_id={}",
+                0, small_infra.id
+            ))
             .await
-            .assert_status(StatusCode::NOT_FOUND)
-            .json_into();
+            .assert_status_not_found()
+            .json();
 
         assert_eq!(&response.error_type, "editoast:train_schedule:NotFound");
     }
@@ -2662,18 +2629,17 @@ mod tests {
         let train_schedule_set = create_train_schedule_set(&mut pool.get_ok()).await;
         let paced_train =
             create_simple_paced_train(&mut pool.get_ok(), train_schedule_set.id).await;
-        let request = app.get(
-            format!(
-                "/train_schedules/{}/path/?infra_id={}&exception_id=1234",
-                paced_train.id, small_infra.id
-            )
-            .as_str(),
-        );
         let response: InternalError = app
-            .fetch(request)
+            .get(
+                format!(
+                    "/train_schedules/{}/path/?infra_id={}&exception_id=1234",
+                    paced_train.id, small_infra.id
+                )
+                .as_str(),
+            )
             .await
-            .assert_status(StatusCode::NOT_FOUND)
-            .json_into();
+            .assert_status_not_found()
+            .json();
 
         assert_eq!(
             &response.error_type,
@@ -2707,16 +2673,14 @@ mod tests {
             create_simple_paced_train(&mut db_pool.get_ok(), train_schedule_set.id).await;
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
 
-        let request = app.get(&format!(
-            "/train_schedules/{}/path?infra_id={}",
-            paced_train.id, small_infra.id
-        ));
-
         let response = app
-            .fetch(request)
+            .get(&format!(
+                "/train_schedules/{}/path?infra_id={}",
+                paced_train.id, small_infra.id
+            ))
             .await
-            .assert_status(StatusCode::OK)
-            .json_into::<PathfindingResult>();
+            .assert_status_ok()
+            .json::<PathfindingResult>();
 
         assert_eq!(
             response,
@@ -2778,16 +2742,14 @@ mod tests {
 
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
 
-        let request = app.get(&format!(
-            "/train_schedules/{}/path?infra_id={}&exception_id={}",
-            train_schedule.id, small_infra.id, change_rolling_stock_exception.id
-        ));
-
         let response = app
-            .fetch(request)
+            .get(&format!(
+                "/train_schedules/{}/path?infra_id={}&exception_id={}",
+                train_schedule.id, small_infra.id, change_rolling_stock_exception.id
+            ))
             .await
-            .assert_status(StatusCode::OK)
-            .json_into::<PathfindingResult>();
+            .assert_status_ok()
+            .json::<PathfindingResult>();
 
         assert_eq!(
             response,
@@ -2844,16 +2806,14 @@ mod tests {
 
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
 
-        let request = app.get(&format!(
-            "/train_schedules/{}/path?infra_id={}&exception_id={}",
-            train_schedule.id, small_infra.id, change_train_name_exception.id
-        ));
-
         let response = app
-            .fetch(request)
+            .get(&format!(
+                "/train_schedules/{}/path?infra_id={}&exception_id={}",
+                train_schedule.id, small_infra.id, change_train_name_exception.id
+            ))
             .await
-            .assert_status(StatusCode::OK)
-            .json_into::<PathfindingResult>();
+            .assert_status_ok()
+            .json::<PathfindingResult>();
 
         assert_eq!(
             response,
@@ -2896,25 +2856,25 @@ mod tests {
             .build();
 
         // TEST
-        let request = app.post("/train_schedules/project_path").json(&json!({
-            "infra_id": small_infra.id,
-            "timetable_id": timetable.id,
-            "electrical_profile_set_id": null,
-            "ids": vec![paced_train_fail.id, paced_train_valid.id],
-            "track_section_ranges": [
-                {
-                    "track_section": "TA1",
-                    "begin": 0,
-                    "end": 100,
-                    "direction": "START_TO_STOP"
-                }
-            ],
-        }));
         let response: HashMap<i64, ProjectPathTrainScheduleResult> = app
-            .fetch(request)
+            .post("/train_schedules/project_path")
+            .json(&json!({
+                "infra_id": small_infra.id,
+                "timetable_id": timetable.id,
+                "electrical_profile_set_id": null,
+                "ids": vec![paced_train_fail.id, paced_train_valid.id],
+                "track_section_ranges": [
+                    {
+                        "track_section": "TA1",
+                        "begin": 0,
+                        "end": 100,
+                        "direction": "START_TO_STOP"
+                    }
+                ],
+            }))
             .await
-            .assert_status(StatusCode::OK)
-            .json_into();
+            .assert_status_ok()
+            .json();
         // EXPECT
         // TODO: improve this test
         assert_eq!(response.len(), 2);
@@ -2962,8 +2922,9 @@ mod tests {
         )
         .await;
 
-        let request = app.post("/train_schedules/occupancy_blocks").json(
-            &json!({"ids": vec![train_schedule.id],
+        let response = app
+            .post("/train_schedules/occupancy_blocks")
+            .json(&json!({"ids": vec![train_schedule.id],
                 "infra_id": infra_id,
                 "timetable_id": timetable.id,
                 "path": {
@@ -2976,11 +2937,10 @@ mod tests {
                     "routes": [],
                     "blocks":[],
                 },
-            }),
-        );
-        let response = app.fetch(request).await;
+            }))
+            .await;
         let response: HashMap<i64, OccupancyBlocksTrainScheduleResult> =
-            response.assert_status(StatusCode::OK).json_into();
+            response.assert_status_ok().json();
         assert_eq!(response.len(), 1);
         // TODO fix mocked simulation to return path item times that respect times
         assert_eq!(
@@ -3058,8 +3018,7 @@ mod tests {
                 .expect("Failed to create exception");
         }
 
-        let request = app
-            .post("/train_schedules/track_occupancy")
+        app.post("/train_schedules/track_occupancy")
             .json(&TrackOccupancyForm {
                 train_schedule_ids: vec![train_schedule.id],
                 operational_point_reference,
@@ -3067,9 +3026,8 @@ mod tests {
                 timetable_id: timetable.id,
                 electrical_profile_set_id: None,
                 use_simulation,
-            });
-
-        app.fetch(request).await
+            })
+            .await
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -3090,7 +3048,7 @@ mod tests {
             true,
         );
         let track_occupancies: Vec<TrackSectionOccupancy> =
-            response.await.assert_status(StatusCode::OK).json_into();
+            response.await.assert_status_ok().json();
 
         assert_eq!(track_occupancies.len(), 1);
         let item = &track_occupancies[0];
@@ -3119,7 +3077,7 @@ mod tests {
             true,
         );
         let track_occupancies: Vec<TrackSectionOccupancy> =
-            response.await.assert_status(StatusCode::OK).json_into();
+            response.await.assert_status_ok().json();
 
         assert_eq!(track_occupancies.len(), 1);
         let item = &track_occupancies[0];
@@ -3148,7 +3106,7 @@ mod tests {
             true,
         );
         let track_occupancies: Vec<TrackSectionOccupancy> =
-            response.await.assert_status(StatusCode::OK).json_into();
+            response.await.assert_status_ok().json();
 
         assert!(track_occupancies.is_empty());
     }
@@ -3167,11 +3125,10 @@ mod tests {
             train_schedule_ids: vec![train_schedule.id],
             train_schedule_set_id: train_schedule_set_to_move.id,
         };
-        let request = app.patch("/train_schedules/move").json(&move_form);
-
-        app.fetch(request)
+        app.patch("/train_schedules/move")
+            .json(&move_form)
             .await
-            .assert_status(StatusCode::NO_CONTENT);
+            .assert_status_no_content();
 
         let train_schedule =
             editoast_models::TrainSchedule::retrieve(db_pool.get_ok(), train_schedule.id)
@@ -3226,7 +3183,7 @@ mod tests {
             use_simulation,
         );
         let track_occupancies: Vec<TrackSectionOccupancy> =
-            response.await.assert_status(StatusCode::OK).json_into();
+            response.await.assert_status_ok().json();
         assert_eq!(track_occupancies.len(), 1);
         assert_eq!(
             track_occupancies[0].local_track_name,
@@ -3269,7 +3226,7 @@ mod tests {
             false,
         );
         let track_occupancies: Vec<TrackSectionOccupancy> =
-            response.await.assert_status(StatusCode::OK).json_into();
+            response.await.assert_status_ok().json();
 
         assert_eq!(track_occupancies.len(), 1);
         assert_eq!(track_occupancies[0].local_track_name, local_track_name);
@@ -3301,7 +3258,7 @@ mod tests {
             false,
         );
         let track_occupancies: Vec<TrackSectionOccupancy> =
-            response.await.assert_status(StatusCode::OK).json_into();
+            response.await.assert_status_ok().json();
 
         assert!(track_occupancies.is_empty());
     }
@@ -3441,7 +3398,7 @@ mod tests {
             true,
         );
         let track_occupancies: Vec<TrackSectionOccupancy> =
-            response.await.assert_status(StatusCode::OK).json_into();
+            response.await.assert_status_ok().json();
         assert!(!track_occupancies.is_empty());
     }
 }
