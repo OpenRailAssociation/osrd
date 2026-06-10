@@ -540,18 +540,18 @@ class EditoastAuthzErrorDatabase(BaseModel):
     type: Literal["EditoastAuthzErrorDatabase"]
 
 
-class EditoastAuthzErrorUnknownIdentityContext(BaseModel):
-    identity: str
+class EditoastAuthzErrorUnknownIdentitiesContext(BaseModel):
+    identities: dict[str, Any]
 
 
-class EditoastAuthzErrorUnknownIdentity(BaseModel):
+class EditoastAuthzErrorUnknownIdentities(BaseModel):
     context: Annotated[
-        EditoastAuthzErrorUnknownIdentityContext | None,
-        Field(title="EditoastAuthzErrorUnknownIdentityContext"),
+        EditoastAuthzErrorUnknownIdentitiesContext | None,
+        Field(title="EditoastAuthzErrorUnknownIdentitiesContext"),
     ] = None
     message: str
     status: Literal[404]
-    type: Literal["EditoastAuthzErrorUnknownIdentity"]
+    type: Literal["EditoastAuthzErrorUnknownIdentities"]
 
 
 class EditoastAuthzErrorUnknownResourceContext(BaseModel):
@@ -4318,7 +4318,7 @@ class EditoastError(
         | EditoastAuthorizationErrorUnauthorized
         | EditoastAuthzErrorAuthorizer
         | EditoastAuthzErrorDatabase
-        | EditoastAuthzErrorUnknownIdentity
+        | EditoastAuthzErrorUnknownIdentities
         | EditoastAuthzErrorUnknownResource
         | EditoastAuthzErrorUnknownSubject
         | EditoastAuthzErrorUnknownUser
@@ -4481,7 +4481,7 @@ class EditoastError(
         | EditoastAuthorizationErrorUnauthorized
         | EditoastAuthzErrorAuthorizer
         | EditoastAuthzErrorDatabase
-        | EditoastAuthzErrorUnknownIdentity
+        | EditoastAuthzErrorUnknownIdentities
         | EditoastAuthzErrorUnknownResource
         | EditoastAuthzErrorUnknownSubject
         | EditoastAuthzErrorUnknownUser

@@ -6411,7 +6411,7 @@ components:
           type: string
           enum:
           - editoast:authz:Database
-    EditoastAuthzErrorUnknownIdentity:
+    EditoastAuthzErrorUnknownIdentities:
       type: object
       required:
       - type
@@ -6420,12 +6420,12 @@ components:
       properties:
         context:
           type: object
-          title: EditoastAuthzErrorUnknownIdentityContext
+          title: EditoastAuthzErrorUnknownIdentitiesContext
           required:
-          - identity
+          - identities
           properties:
-            identity:
-              type: string
+            identities:
+              type: object
         message:
           type: string
         status:
@@ -6435,7 +6435,7 @@ components:
         type:
           type: string
           enum:
-          - editoast:authz:UnknownIdentity
+          - editoast:authz:UnknownIdentities
     EditoastAuthzErrorUnknownResource:
       type: object
       required:
@@ -6992,7 +6992,7 @@ components:
       - $ref: '#/components/schemas/EditoastAuthorizationErrorUnauthorized'
       - $ref: '#/components/schemas/EditoastAuthzErrorAuthorizer'
       - $ref: '#/components/schemas/EditoastAuthzErrorDatabase'
-      - $ref: '#/components/schemas/EditoastAuthzErrorUnknownIdentity'
+      - $ref: '#/components/schemas/EditoastAuthzErrorUnknownIdentities'
       - $ref: '#/components/schemas/EditoastAuthzErrorUnknownResource'
       - $ref: '#/components/schemas/EditoastAuthzErrorUnknownSubject'
       - $ref: '#/components/schemas/EditoastAuthzErrorUnknownUser'

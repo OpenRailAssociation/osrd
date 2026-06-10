@@ -84,9 +84,9 @@ enum AuthzError {
     #[error("Unknown user id '{id}'")]
     #[editoast_error(status = 404)]
     UnknownUser { id: i64 },
-    #[error("Unknown user identity '{identity}'")]
+    #[error("Unknown user identities '{}'", identities.iter().format(", "))]
     #[editoast_error(status = 404)]
-    UnknownIdentity { identity: String },
+    UnknownIdentities { identities: HashSet<String> },
     #[error("Authorization error")]
     #[editoast_error(forward)]
     Authz(#[from] AuthorizationError),
@@ -267,12 +267,15 @@ pub(in crate::views) async fn users_info(
             .iter()
             .flat_map(|u| u.identities.iter())
             .collect::<HashSet<_>>();
-        let mut missing_identities = identities.difference(&found_identities);
-        if let Some(missing) = missing_identities.next() {
-            return Err(AuthzError::UnknownIdentity {
-                identity: missing.to_owned().to_owned(), // &&String
-            }
-            .into());
+        let missing_identities = identities
+            .difference(&found_identities)
+            .map(std::ops::Deref::deref)
+            .cloned() // &&String
+            .collect::<HashSet<_>>();
+        if !missing_identities.is_empty() {
+            return Err(AuthzError::UnknownIdentities {
+                identities: missing_identities,
+            })?;
         }
     }
 
