@@ -189,7 +189,7 @@ DROP FUNCTION IF EXISTS {update_trigger_function};
                 terms.push(format!("{sql} AS {}", criteria.name));
             }
         }
-        terms.join("\n,    ")
+        terms.join(",\n    ")
     }
 
     pub fn has_migration(&self) -> bool {

@@ -1950,9 +1950,10 @@ mod tests {
     use editoast_models::train_schedule::OccurrenceId;
     use editoast_models::train_schedule::TrainScheduleChangeset;
 
-    pub fn new_op_with_trigram_and_local_track_name(
+    pub fn new_op_with_main_code_and_local_track_name(
         id: &str,
-        trigram: &str,
+        country_code: &str,
+        main_code: &str,
         secondary_code: Option<NonBlankString>,
         local_track_name: Option<NonBlankString>,
     ) -> PathItem {
@@ -1960,8 +1961,9 @@ mod tests {
             id: id.into(),
             location: PathItemLocation::OperationalPointPartReference(
                 OperationalPointPartReference {
-                    operational_point: OperationalPointReference::Trigram {
-                        trigram: trigram.into(),
+                    operational_point: OperationalPointReference::Domestic {
+                        country_code: country_code.into(),
+                        main_code: main_code.into(),
                         secondary_code,
                     },
                     local_track_name,
@@ -3399,14 +3401,27 @@ mod tests {
         let response = init_paced_train_test(
             false,
             vec![
-                new_op_with_trigram_and_local_track_name("Mid_West_station", "MWS", None, None),
-                new_op_with_trigram_and_local_track_name(
+                new_op_with_main_code_and_local_track_name(
+                    "Mid_West_station",
+                    "FR",
+                    "MWS",
+                    None,
+                    None,
+                ),
+                new_op_with_main_code_and_local_track_name(
                     "UNKNOWN_ID",
-                    "UNKNOWN_TRIGRAM",
+                    "UNKNOWN_COUNTRY_CODE",
+                    "UNKNOWN_MAIN_CODE",
                     None,
                     Some(NonBlankString("UNKNOWN_V".to_string())),
                 ),
-                new_op_with_trigram_and_local_track_name("Mid_East_station", "MES", None, None),
+                new_op_with_main_code_and_local_track_name(
+                    "Mid_East_station",
+                    "FR",
+                    "MES",
+                    None,
+                    None,
+                ),
             ],
             vec![
                 ScheduleItem {
@@ -3425,8 +3440,9 @@ mod tests {
                     Duration::new(0, 0).expect("Failed to parse duration"),
                 ),
             ],
-            OperationalPointReference::Trigram {
-                trigram: "UNKNOWN_TRIGRAM".into(),
+            OperationalPointReference::Domestic {
+                country_code: "UNKNOWN_COUNTRY_CODE".into(),
+                main_code: "UNKNOWN_MAIN_CODE".into(),
                 secondary_code: None,
             },
             use_simulation,
@@ -3514,8 +3530,9 @@ mod tests {
 
     #[test]
     fn unknown_op_without_local_track_name_has_null_reference() {
-        let op_ref = OperationalPointReference::Trigram {
-            trigram: "UNKNOWN".into(),
+        let op_ref = OperationalPointReference::Domestic {
+            country_code: "UNKNOWN".into(),
+            main_code: "UNKNOWN".into(),
             secondary_code: None,
         };
         let path_item = PathItem {
@@ -3553,8 +3570,9 @@ mod tests {
 
     #[test]
     fn unknown_op_non_first_item_without_arrival_returns_none() {
-        let op_ref = OperationalPointReference::Trigram {
-            trigram: "UNKNOWN".into(),
+        let op_ref = OperationalPointReference::Domestic {
+            country_code: "UNKNOWN".into(),
+            main_code: "UNKNOWN".into(),
             secondary_code: None,
         };
         let path_item = PathItem {
@@ -3593,8 +3611,9 @@ mod tests {
 
     #[test]
     fn unknown_op_first_path_item_no_arrival_uses_start_time() {
-        let op_ref = OperationalPointReference::Trigram {
-            trigram: "UNKNOWN".into(),
+        let op_ref = OperationalPointReference::Domestic {
+            country_code: "UNKNOWN".into(),
+            main_code: "UNKNOWN".into(),
             secondary_code: None,
         };
         let start_time = ms_since_epoch("2026-01-01T00:00:00Z");

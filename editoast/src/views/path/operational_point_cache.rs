@@ -2,6 +2,7 @@ use core_client::pathfinding::InvalidPathItem;
 use core_client::pathfinding::PathfindingInputError;
 use database::DbConnection;
 use itertools::Itertools;
+use schemas::infra::Domestic;
 use schemas::infra::OperationalPoint;
 use schemas::infra::TrackOffset;
 use schemas::primitives::NonBlankString;
@@ -27,9 +28,9 @@ pub struct OperationalPointCache {
     /// All operational points are stored here exactly once
     ops: Vec<OperationalPointModel>,
     /// Maps UIC code to indices in the ops Vec
-    uic_to_indices: HashMap<u32, Vec<usize>>,
-    /// Maps trigram to indices in the ops Vec
-    trigram_to_indices: HashMap<NonBlankString, Vec<usize>>,
+    uic_to_indices: HashMap<(u32, Option<NonBlankString>), usize>,
+    /// Maps domestic (country code, main code, secondary code) to indices in the ops Vec
+    domestic_to_indices: HashMap<Domestic, usize>,
     /// Maps obj_id to index in the ops Vec
     obj_id_to_index: HashMap<String, usize>,
     /// Information about track section existence for path item tracks
@@ -42,7 +43,7 @@ impl OperationalPointCache {
     /// Load the operational point cache from a list of pathfinding inputs
     ///
     /// This method ensures that all retrieved operational points are indexed
-    /// across all available lookup methods (ID, UIC, trigram), regardless of
+    /// across all available lookup methods (ID, UIC, main code), regardless of
     /// how they were initially queried. This makes the cache API consistent:
     /// an operational point can be retrieved using any of its identifiers,
     /// not just the one used to build the cache.
@@ -115,20 +116,20 @@ impl OperationalPointCache {
         }
 
         // Step 1: Retrieve operational points from database using the requested identifiers
-        let (trigrams, ops_uic, ops_id) = collect_path_item_ids(operational_points);
+        let (ops_domestics, ops_uic, ops_id) = collect_path_item_ids(operational_points);
         let uic_conn = &mut conn.clone();
-        let trigram_conn = &mut conn.clone();
+        let domestic_conn = &mut conn.clone();
         let ids_conn = &mut conn.clone();
-        let (uic_results, trigram_results, ids_results) = tokio::try_join!(
+        let (uic_results, domestics_results, ids_results) = tokio::try_join!(
             retrieve_op_from_uic(uic_conn, infra_id, &ops_uic),
-            retrieve_op_from_trigrams(trigram_conn, infra_id, &trigrams),
+            retrieve_op_from_domestics(domestic_conn, infra_id, &ops_domestics),
             retrieve_op_from_ids(ids_conn, infra_id, &ops_id)
         )?;
 
         // Step 2: Collect all unique OPs first, deduplicating by obj_id
         let ops: Vec<OperationalPointModel> = ids_results
             .into_iter()
-            .chain(trigram_results)
+            .chain(domestics_results)
             .chain(uic_results)
             .map(|op| (op.obj_id.clone(), op))
             .collect::<HashMap<String, OperationalPointModel>>()
@@ -137,8 +138,8 @@ impl OperationalPointCache {
 
         // Step 3: Build index maps from the ops vector
         let mut obj_id_to_index: HashMap<String, usize> = HashMap::new();
-        let mut uic_to_indices: HashMap<u32, Vec<usize>> = HashMap::new();
-        let mut trigram_to_indices: HashMap<NonBlankString, Vec<usize>> = HashMap::new();
+        let mut uic_to_indices: HashMap<(u32, Option<NonBlankString>), usize> = HashMap::new();
+        let mut domestic_to_indices: HashMap<Domestic, usize> = HashMap::new();
 
         for (index, op) in ops.iter().enumerate() {
             // Build ID index
@@ -146,20 +147,24 @@ impl OperationalPointCache {
 
             // Build UIC index if present
             if let Some(op_uic) = op.uic {
-                uic_to_indices.entry(op_uic).or_default().push(index);
+                uic_to_indices.insert((op_uic, op.secondary_code.clone()), index);
             }
 
-            // Build trigram index if present
-            trigram_to_indices
-                .entry(op.main_code.clone())
-                .or_default()
-                .push(index);
+            // Build domestic (country code, main code, secondary code) index if present
+            domestic_to_indices.insert(
+                Domestic {
+                    country_code: op.country_code.clone(),
+                    main_code: op.main_code.clone(),
+                    secondary_code: op.secondary_code.clone(),
+                },
+                index,
+            );
         }
 
         Ok(OperationalPointCache {
             ops,
             uic_to_indices,
-            trigram_to_indices,
+            domestic_to_indices,
             obj_id_to_index,
             path_item_tracks_exists: Default::default(),
             track_ids_to_local_track_name: Default::default(),
@@ -171,21 +176,19 @@ impl OperationalPointCache {
         self.obj_id_to_index.get(id).map(|&idx| &self.ops[idx])
     }
 
-    /// Get the operational points associated with a trigram
-    pub fn get_from_trigram(
-        &self,
-        trigram: &str,
-    ) -> Option<impl Iterator<Item = &OperationalPointModel>> {
-        self.trigram_to_indices
-            .get(trigram)
-            .map(|indices| indices.iter().map(|&idx| &self.ops[idx]))
+    /// Get the operational points associated with a domestic (country code, main code, secondary code)
+    pub fn get_from_domestic(&self, domestic: &Domestic) -> Option<&OperationalPointModel> {
+        self.domestic_to_indices
+            .get(domestic)
+            .map(|&idx| &self.ops[idx])
     }
 
     /// Get the operational points associated with a UIC code
-    pub fn get_from_uic(&self, uic: u32) -> Option<impl Iterator<Item = &OperationalPointModel>> {
-        self.uic_to_indices
-            .get(&uic)
-            .map(|indices| indices.iter().map(|&idx| &self.ops[idx]))
+    pub fn get_from_uic(
+        &self,
+        uic: &(u32, Option<NonBlankString>),
+    ) -> Option<&OperationalPointModel> {
+        self.uic_to_indices.get(uic).map(|&idx| &self.ops[idx])
     }
 
     /// Get the track name by track id
@@ -196,28 +199,28 @@ impl OperationalPointCache {
 
     /// Retrieve the operational point ID given a reference
     pub fn get_op_ref_id(&self, op_ref: &OperationalPointReference) -> Option<String> {
-        let (ops, secondary_code) = match op_ref {
-            OperationalPointReference::Id { operational_point } => {
-                return self
-                    .get_from_id(&operational_point.0)
-                    .map(|op| op.obj_id.clone());
-            }
-            OperationalPointReference::Trigram {
-                trigram,
+        match op_ref {
+            OperationalPointReference::Id { operational_point } => self
+                .get_from_id(&operational_point.0)
+                .map(|op| op.obj_id.clone()),
+            OperationalPointReference::Domestic {
+                country_code,
+                main_code,
                 secondary_code,
-            } => (
-                self.get_from_trigram(&trigram.0).map(|op| op.collect())?,
-                secondary_code,
-            ),
+            } => self
+                .get_from_domestic(&Domestic {
+                    country_code: country_code.clone(),
+                    main_code: main_code.clone(),
+                    secondary_code: secondary_code.clone(),
+                })
+                .map(|op| op.obj_id.clone()),
             OperationalPointReference::Uic {
                 uic,
                 secondary_code,
-            } => (
-                self.get_from_uic(*uic).map(|op| op.collect())?,
-                secondary_code,
-            ),
-        };
-        find_op_by_secondary_code(secondary_code.as_ref(), ops).map(|op| op.obj_id.clone())
+            } => self
+                .get_from_uic(&(*uic, secondary_code.clone()))
+                .map(|op| op.obj_id.clone()),
+        }
     }
 
     /// Extract locations from path items
@@ -277,21 +280,23 @@ impl OperationalPointCache {
                 PathItemLocation::OperationalPointPartReference(
                     OperationalPointPartReference {
                         operational_point:
-                            OperationalPointReference::Trigram {
-                                trigram,
+                            OperationalPointReference::Domestic {
+                                country_code,
+                                main_code,
                                 secondary_code,
                             },
                         local_track_name,
                     },
                 ) => {
-                    let ops = self
-                        .get_from_trigram(&trigram.0)
-                        .map(|op| op.collect())
-                        .unwrap_or_default();
-                    let op = find_op_by_secondary_code(secondary_code.as_ref(), ops);
-                    let track_offsets = op
+                    let track_offsets = self
+                        .get_from_domestic(&Domestic {
+                            country_code: country_code.clone(),
+                            main_code: main_code.clone(),
+                            secondary_code: secondary_code.clone(),
+                        })
                         .map(|op| op.track_offsets_by_local_track_name(local_track_name.as_ref()))
                         .unwrap_or_default();
+
                     if track_offsets.is_empty() {
                         invalid_path_items.push(InvalidPathItem {
                             index,
@@ -311,12 +316,8 @@ impl OperationalPointCache {
                         local_track_name,
                     },
                 ) => {
-                    let ops = self
-                        .get_from_uic(*uic)
-                        .map(|op| op.collect())
-                        .unwrap_or_default();
-                    let op = find_op_by_secondary_code(secondary_code.as_ref(), ops);
-                    let track_offsets = op
+                    let track_offsets = self
+                        .get_from_uic(&(*uic, secondary_code.clone()))
                         .map(|op| op.track_offsets_by_local_track_name(local_track_name.as_ref()))
                         .unwrap_or_default();
                     if track_offsets.is_empty() {
@@ -347,8 +348,8 @@ impl OperationalPointCache {
     #[cfg(test)]
     pub(crate) fn new(
         ops: Vec<OperationalPointModel>,
-        uic_to_indices: HashMap<u32, Vec<usize>>,
-        trigram_to_indices: HashMap<NonBlankString, Vec<usize>>,
+        uic_to_indices: HashMap<(u32, Option<NonBlankString>), usize>,
+        domestic_to_indices: HashMap<Domestic, usize>,
         obj_id_to_index: HashMap<String, usize>,
         path_item_tracks_exists: HashMap<String, bool>,
         track_ids_to_local_track_name: Vec<HashMap<String, NonBlankString>>,
@@ -356,7 +357,7 @@ impl OperationalPointCache {
         Self {
             ops,
             uic_to_indices,
-            trigram_to_indices,
+            domestic_to_indices,
             obj_id_to_index,
             path_item_tracks_exists,
             track_ids_to_local_track_name,
@@ -370,20 +371,23 @@ impl OperationalPointCache {
             } => self
                 .get_from_id(&operational_point.0)
                 .map(|op_model| &op_model.schema),
-            OperationalPointReference::Trigram {
-                ref trigram,
+            OperationalPointReference::Domestic {
+                country_code,
+                ref main_code,
                 secondary_code,
-            } => self.get_from_trigram(&trigram.0).and_then(|op_models| {
-                find_op_by_secondary_code(secondary_code.as_ref(), op_models.collect())
-                    .map(|op| &op.schema)
-            }),
+            } => self
+                .get_from_domestic(&Domestic {
+                    country_code: country_code.clone(),
+                    main_code: main_code.clone(),
+                    secondary_code: secondary_code.clone(),
+                })
+                .map(|op| &op.schema),
             OperationalPointReference::Uic {
                 uic,
                 secondary_code,
-            } => self.get_from_uic(uic).and_then(|op_models| {
-                find_op_by_secondary_code(secondary_code.as_ref(), op_models.collect())
-                    .map(|op| &op.schema)
-            }),
+            } => self
+                .get_from_uic(&(uic, secondary_code.clone()))
+                .map(|op| &op.schema),
         }
     }
 }
@@ -391,15 +395,27 @@ impl OperationalPointCache {
 /// Collect the ids of the operational points from the path items
 fn collect_path_item_ids(
     operational_points: &[OperationalPointReference],
-) -> (Vec<String>, Vec<u32>, Vec<String>) {
-    let mut trigrams: HashSet<String> = HashSet::new();
+) -> (
+    Vec<editoast_models::infra_objects::Domestic>,
+    Vec<u32>,
+    Vec<String>,
+) {
+    let mut domestics: HashSet<(String, String, Option<String>)> = HashSet::new();
     let mut ops_uic: HashSet<u32> = HashSet::new();
     let mut ops_id: HashSet<String> = HashSet::new();
 
     for item in operational_points {
         match item {
-            OperationalPointReference::Trigram { trigram, .. } => {
-                trigrams.insert(trigram.clone().0);
+            OperationalPointReference::Domestic {
+                country_code,
+                main_code,
+                secondary_code,
+            } => {
+                domestics.insert((
+                    country_code.clone().0,
+                    main_code.clone().0,
+                    secondary_code.clone().map(|s| s.0),
+                ));
             }
             OperationalPointReference::Uic { uic, .. } => {
                 ops_uic.insert(*uic);
@@ -412,7 +428,7 @@ fn collect_path_item_ids(
         }
     }
     (
-        trigrams.into_iter().collect(),
+        domestics.into_iter().collect(),
         ops_uic.into_iter().collect(),
         ops_id.into_iter().collect(),
     )
@@ -429,13 +445,13 @@ async fn retrieve_op_from_uic(
         .map_err(Into::into)
 }
 
-/// Retrieve operational points from operational point trigrams
-async fn retrieve_op_from_trigrams(
+/// Retrieve operational points from operational point domestics (country code, main code, secondary code)
+async fn retrieve_op_from_domestics(
     conn: &mut DbConnection,
     infra_id: i64,
-    trigrams: &[String],
+    domestics: &[editoast_models::infra_objects::Domestic],
 ) -> Result<Vec<OperationalPointModel>> {
-    OperationalPointModel::retrieve_from_trigrams(conn, infra_id, trigrams)
+    OperationalPointModel::retrieve_from_domestics(conn, infra_id, domestics)
         .await
         .map_err(Into::into)
 }
@@ -451,18 +467,6 @@ async fn retrieve_op_from_ids(
         .map_err(Into::into)
 }
 
-/// Filter operational points by secondary code to return one unique OP
-/// since the tuple (operational_point, ch) is supposed to be unique in a given infra.
-/// If secondary_code is None, searches for an OP without sncf extension.
-/// If secondary_code is Some, searches for an OP whose sncf extension matches the given code.
-fn find_op_by_secondary_code<'a>(
-    secondary_code: Option<&NonBlankString>,
-    ops: Vec<&'a OperationalPointModel>,
-) -> Option<&'a OperationalPointModel> {
-    ops.into_iter()
-        .find(|op| secondary_code == op.secondary_code.as_ref())
-}
-
 #[cfg(test)]
 mod tests {
     use database::DbConnectionPoolV2;
@@ -473,7 +477,13 @@ mod tests {
     use crate::fixtures::create_empty_infra;
     use crate::fixtures::create_infra_object;
 
-    fn create_op(obj_id: &str, main_code: &str, uic: u32) -> OperationalPoint {
+    fn create_op(
+        obj_id: &str,
+        main_code: &str,
+        uic: u32,
+        country_code: &str,
+        secondary_code: &str,
+    ) -> OperationalPoint {
         OperationalPoint {
             id: Identifier::from(obj_id),
             parts: vec![],
@@ -481,9 +491,9 @@ mod tests {
             name: "Test OP".into(),
             uic: Some(uic),
             plc: None,
-            country_code: "FR".into(),
+            country_code: country_code.into(),
             main_code: main_code.into(),
-            secondary_code: Some("00".into()),
+            secondary_code: Some(secondary_code.into()),
             is_passenger_station: false,
             secondary_name: Some("Test OP".into()),
         }
@@ -496,14 +506,18 @@ mod tests {
         let infra = create_empty_infra(&mut conn).await;
 
         // Create three operational points with different identifier combinations
-        let op1 = create_op("op_1", "ABC", 1234);
-        let op2 = create_op("op_2", "DEF", 91011); // UIC not revelant
-        let op3 = create_op("op_3", "HIJ", 5678); // trigram not revelant
+        let op1 = create_op("op_1", "ABC", 1234, "FR", "00");
+        let op2 = create_op("op_2", "DEF", 91011, "FR", "00"); // UIC not relevant
+        let op3 = create_op("op_3", "HIJ", 5678, "FR", "00"); // main code not relevant
+        let op4 = create_op("op_4", "ABC", 1111, "DE", "00"); // same main code as op1 but different country code
+        let op5 = create_op("op_5", "ABC", 2222, "FR", "11"); // same main code and country code as op1 but different secondary code
 
         // Insert OPs into the database
         create_infra_object(&mut conn, infra.id, op1).await;
         create_infra_object(&mut conn, infra.id, op2).await;
         create_infra_object(&mut conn, infra.id, op3).await;
+        create_infra_object(&mut conn, infra.id, op4).await;
+        create_infra_object(&mut conn, infra.id, op5).await;
 
         // Create path items that reference these OPs by different methods
         let path_items = [
@@ -514,16 +528,33 @@ mod tests {
                 local_track_name: None,
             }),
             PathItemLocation::OperationalPointPartReference(OperationalPointPartReference {
-                operational_point: OperationalPointReference::Trigram {
-                    trigram: NonBlankString::from("DEF"),
-                    secondary_code: None,
+                operational_point: OperationalPointReference::Domestic {
+                    country_code: "FR".into(),
+                    main_code: "DEF".into(),
+                    secondary_code: Some("00".into()),
                 },
                 local_track_name: None,
             }),
             PathItemLocation::OperationalPointPartReference(OperationalPointPartReference {
                 operational_point: OperationalPointReference::Uic {
                     uic: 5678,
-                    secondary_code: None,
+                    secondary_code: Some("00".into()),
+                },
+                local_track_name: None,
+            }),
+            PathItemLocation::OperationalPointPartReference(OperationalPointPartReference {
+                operational_point: OperationalPointReference::Domestic {
+                    country_code: "DE".into(),
+                    main_code: "ABC".into(),
+                    secondary_code: Some("00".into()),
+                },
+                local_track_name: None,
+            }),
+            PathItemLocation::OperationalPointPartReference(OperationalPointPartReference {
+                operational_point: OperationalPointReference::Domestic {
+                    country_code: "FR".into(),
+                    main_code: "ABC".into(),
+                    secondary_code: Some("11".into()),
                 },
                 local_track_name: None,
             }),
@@ -534,17 +565,23 @@ mod tests {
             .await
             .expect("Failed to load cache");
 
-        // Test OP1 (has both trigram and UIC) can be found by all methods
+        // Test OP1 (has both main code and UIC) can be found by all methods
         assert!(
             cache.get_from_id("op_1").is_some(),
             "OP1 should be findable by ID"
         );
         assert!(
-            cache.get_from_trigram("ABC").is_some(),
-            "OP1 should be findable by trigram even though queried by ID"
+            cache
+                .get_from_domestic(&Domestic {
+                    country_code: "FR".into(),
+                    main_code: "ABC".into(),
+                    secondary_code: Some("00".into())
+                })
+                .is_some(),
+            "OP1 should be findable by main code even though queried by ID"
         );
         assert!(
-            cache.get_from_uic(1234).is_some(),
+            cache.get_from_uic(&(1234, Some("00".into()))).is_some(),
             "OP1 should be findable by UIC even though queried by ID"
         );
 
@@ -552,65 +589,117 @@ mod tests {
         assert_eq!(cache.get_from_id("op_1").unwrap().obj_id, "op_1");
         assert_eq!(
             cache
-                .get_from_trigram("ABC")
-                .map(|op| op.collect::<Vec<_>>())
-                .unwrap()
-                .first()
+                .get_from_domestic(&Domestic {
+                    country_code: "FR".into(),
+                    main_code: "ABC".into(),
+                    secondary_code: Some("00".into())
+                })
                 .unwrap()
                 .obj_id,
             "op_1"
         );
         assert_eq!(
             cache
-                .get_from_uic(1234)
-                .map(|op| op.collect::<Vec<_>>())
-                .unwrap()
-                .first()
+                .get_from_uic(&(1234, Some("00".into())))
                 .unwrap()
                 .obj_id,
             "op_1"
         );
 
-        // Test OP2 (trigram only) is indexed by ID and trigram but not UIC
+        // Test OP2 (main code only) is indexed by ID and main code but not UIC
         assert!(
             cache.get_from_id("op_2").is_some(),
-            "OP2 should be findable by ID even though queried by trigram"
+            "OP2 should be findable by ID even though queried by main code"
         );
         assert!(
-            cache.get_from_trigram("DEF").is_some(),
-            "OP2 should be findable by trigram"
+            cache
+                .get_from_domestic(&Domestic {
+                    country_code: "FR".into(),
+                    main_code: "DEF".into(),
+                    secondary_code: Some("00".into())
+                })
+                .is_some(),
+            "OP2 should be findable by main code"
         );
         assert_eq!(cache.get_from_id("op_2").unwrap().obj_id, "op_2");
         assert_eq!(
             cache
-                .get_from_trigram("DEF")
-                .map(|op| op.collect::<Vec<_>>())
-                .unwrap()
-                .first()
+                .get_from_domestic(&Domestic {
+                    country_code: "FR".into(),
+                    main_code: "DEF".into(),
+                    secondary_code: Some("00".into())
+                })
                 .unwrap()
                 .obj_id,
             "op_2"
         );
 
-        // Test OP3 (UIC only) is indexed by ID and UIC but not trigram
+        // Test OP3 (UIC only) is indexed by ID and UIC but not main code
         assert!(
             cache.get_from_id("op_3").is_some(),
             "OP3 should be findable by ID even though queried by UIC"
         );
         assert!(
-            cache.get_from_uic(5678).is_some(),
+            cache.get_from_uic(&(5678, Some("00".into()))).is_some(),
             "OP3 should be findable by UIC"
         );
         assert_eq!(cache.get_from_id("op_3").unwrap().obj_id, "op_3");
         assert_eq!(
             cache
-                .get_from_uic(5678)
-                .map(|op| op.collect::<Vec<_>>())
-                .unwrap()
-                .first()
+                .get_from_uic(&(5678, Some("00".into())))
                 .unwrap()
                 .obj_id,
             "op_3"
+        );
+
+        // Test OP4 is indexed differently than OP1 event if it has the same main code
+        assert!(
+            cache.get_from_id("op_4").is_some(),
+            "OP4 should be findable by ID"
+        );
+        assert_eq!(cache.get_from_id("op_4").unwrap().obj_id, "op_4");
+        assert_eq!(
+            cache
+                .get_from_domestic(&Domestic {
+                    country_code: "DE".into(),
+                    main_code: "ABC".into(),
+                    secondary_code: Some("00".into())
+                })
+                .unwrap()
+                .obj_id,
+            "op_4"
+        );
+        assert_eq!(
+            cache
+                .get_from_uic(&(1111, Some("00".into())))
+                .unwrap()
+                .obj_id,
+            "op_4"
+        );
+
+        // Test OP5 is indexed differently than OP1 event if it has the same main code and country code
+        assert!(
+            cache.get_from_id("op_5").is_some(),
+            "OP5 should be findable by ID"
+        );
+        assert_eq!(cache.get_from_id("op_5").unwrap().obj_id, "op_5");
+        assert_eq!(
+            cache
+                .get_from_domestic(&Domestic {
+                    country_code: "FR".into(),
+                    main_code: "ABC".into(),
+                    secondary_code: Some("11".into())
+                })
+                .unwrap()
+                .obj_id,
+            "op_5"
+        );
+        assert_eq!(
+            cache
+                .get_from_uic(&(2222, Some("11".into())))
+                .unwrap()
+                .obj_id,
+            "op_5"
         );
     }
 }

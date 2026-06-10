@@ -626,8 +626,9 @@ mod tests {
                     duration: Some(0),
                     location: PathItemLocation::OperationalPointPartReference(
                         OperationalPointPartReference {
-                            operational_point: OperationalPointReference::Trigram {
-                                trigram: "WS".into(),
+                            operational_point: OperationalPointReference::Domestic {
+                                country_code: "FR".into(),
+                                main_code: "WS".into(),
                                 secondary_code: Some("BV".into()),
                             },
                             local_track_name: None,
@@ -644,8 +645,9 @@ mod tests {
                     duration: Some(0),
                     location: PathItemLocation::OperationalPointPartReference(
                         OperationalPointPartReference {
-                            operational_point: OperationalPointReference::Trigram {
-                                trigram: "MWS".into(),
+                            operational_point: OperationalPointReference::Domestic {
+                                country_code: "FR".into(),
+                                main_code: "MWS".into(),
                                 secondary_code: Some("BV".into()),
                             },
                             local_track_name: None,
@@ -694,13 +696,14 @@ mod tests {
         }
     }
 
-    fn build_step(trigram: &str) -> PathfindingItem {
+    fn build_step(main_code: &str) -> PathfindingItem {
         PathfindingItem {
             duration: Some(0),
             location: PathItemLocation::OperationalPointPartReference(
                 OperationalPointPartReference {
-                    operational_point: OperationalPointReference::Trigram {
-                        trigram: trigram.into(),
+                    operational_point: OperationalPointReference::Domestic {
+                        country_code: "FR".into(),
+                        main_code: main_code.into(),
                         secondary_code: Some("BV".into()),
                     },
                     local_track_name: None,

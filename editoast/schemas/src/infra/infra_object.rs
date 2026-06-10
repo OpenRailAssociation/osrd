@@ -10,9 +10,17 @@ use super::SpeedSection;
 use super::Switch;
 use super::SwitchType;
 use super::TrackSection;
+use crate::primitives::NonBlankString;
 use crate::primitives::OSRDIdentified;
 use crate::primitives::OSRDObject;
 use crate::primitives::ObjectType;
+
+#[derive(Debug, Eq, Hash, PartialEq)]
+pub struct Domestic {
+    pub country_code: NonBlankString,
+    pub main_code: NonBlankString,
+    pub secondary_code: Option<NonBlankString>,
+}
 
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize, utoipa::ToSchema)]
 #[serde(tag = "obj_type", deny_unknown_fields)]
