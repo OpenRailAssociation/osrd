@@ -30,7 +30,7 @@ import type { PathProjectionResult, PathProjectionResultOperationalPoint } from 
 
 /**
  * Generates a display name for a virtual operational point based on available reference data.
- * Uses trigram --> UIC --> operational_point --> position-based fallbacks in priority order.
+ * Uses main_code --> UIC --> operational_point --> position-based fallbacks in priority order.
  */
 const getVirtualOpName = (
   opRef: OperationalPointReference,
@@ -38,7 +38,7 @@ const getVirtualOpName = (
   totalCount: number,
   t: TFunction<'operational-studies'>
 ): string => {
-  if (opRef.type === 'trigram') return opRef.trigram;
+  if (opRef.type === 'domestic') return opRef.main_code;
   if (opRef.type === 'uic') return opRef.uic.toString();
   if (opRef.type === 'id') return t('main.operationalPointReference');
   if (index === 0) return t('main.requestedOrigin');
@@ -68,10 +68,10 @@ const createVirtualOp = (
     name: virtualName,
     uic: opRef.type === 'uic' ? opRef.uic : 0,
     secondary_code: (opRef.type !== 'id' && opRef.secondary_code) || '',
-    main_code: opRef.type === 'trigram' ? opRef.trigram : '',
+    main_code: opRef.type === 'domestic' ? opRef.main_code : '',
     position,
     weight,
-    country_code: '??',
+    country_code: opRef.type === 'domestic' ? opRef.country_code : '??',
     is_passenger_station: false,
   };
 };

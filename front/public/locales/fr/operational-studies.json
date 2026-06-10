@@ -437,6 +437,7 @@
         "showLabel": "Afficher tous les PR intermédiaires"
       },
       "invalidOP": "Point non reconnu : ",
+      "mainCode": "Code principal",
       "moveLocationOnMap": "Déplacer le point remarquable sur la carte",
       "movePointOnMap": "Déplacez ce point en utilisant la carte",
       "next": "Suivant",
@@ -450,7 +451,6 @@
       "stop": "Arrêt",
       "track": "Voie",
       "trainName": "Nom du train",
-      "trigram": "Trigramme",
       "uic": "UIC",
       "unknownTrack": "Voie inconnue à {{names}}"
     },

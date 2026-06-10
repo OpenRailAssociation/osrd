@@ -193,7 +193,7 @@ export const convertNgeDtoToOsrd = (dto: NetzgrafikDto): TimetableJsonPayload =>
   for (const node of dedupNodes) {
     macroNodes.push({
       ...castNgeNode(node, dto.labels),
-      path_item_key: `trigram:${node.betriebspunktName}`,
+      path_item_key: `domestic:${node.betriebspunktName}`,
     });
   }
 

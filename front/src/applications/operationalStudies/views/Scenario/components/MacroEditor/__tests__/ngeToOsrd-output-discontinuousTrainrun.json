@@ -9,7 +9,7 @@
       "position_x": 672,
       "position_y": 800,
       "labels": [],
-      "path_item_key": "trigram:SS"
+      "path_item_key": "domestic:SS"
     },
     {
       "ngeId": 7,
@@ -20,7 +20,7 @@
       "position_x": 320,
       "position_y": 32,
       "labels": [],
-      "path_item_key": "trigram:RTR"
+      "path_item_key": "domestic:RTR"
     },
     {
       "ngeId": 8,
@@ -31,7 +31,7 @@
       "position_x": 320,
       "position_y": 192,
       "labels": [],
-      "path_item_key": "trigram:LTH"
+      "path_item_key": "domestic:LTH"
     },
     {
       "connection_time": 4,
@@ -39,7 +39,7 @@
       "is_collapsed": false,
       "labels": [],
       "ngeId": 10,
-      "path_item_key": "trigram:WLD",
+      "path_item_key": "domestic:WLD",
       "position_x": 960,
       "position_y": 960,
       "trigram": "WLD"
@@ -50,7 +50,7 @@
       "is_collapsed": false,
       "labels": [],
       "ngeId": 11,
-      "path_item_key": "trigram:FLR",
+      "path_item_key": "domestic:FLR",
       "position_x": 1120,
       "position_y": 1120,
       "trigram": "FLR"
@@ -70,7 +70,7 @@
         {
           "location": {
             "type": "operational_point_part_reference",
-            "operational_point": { "trigram": "RTR", "type": "trigram" },
+            "operational_point": { "main_code": "RTR", "type": "domestic", "country_code": "??" },
             "local_track_name": null
           },
           "id": "7-0"
@@ -78,7 +78,7 @@
         {
           "location": {
             "type": "operational_point_part_reference",
-            "operational_point": { "trigram": "LTH", "type": "trigram" },
+            "operational_point": { "main_code": "LTH", "type": "domestic", "country_code": "??" },
             "local_track_name": null
           },
           "id": "8-1"
@@ -86,7 +86,7 @@
         {
           "location": {
             "type": "operational_point_part_reference",
-            "operational_point": { "trigram": "SS", "type": "trigram" },
+            "operational_point": { "main_code": "SS", "type": "domestic", "country_code": "??" },
             "local_track_name": null
           },
           "id": "6-2"
@@ -121,7 +121,7 @@
         {
           "location": {
             "type": "operational_point_part_reference",
-            "operational_point": { "trigram": "SS", "type": "trigram" },
+            "operational_point": { "main_code": "SS", "type": "domestic", "country_code": "??" },
             "local_track_name": null
           },
           "id": "6-0"
@@ -129,7 +129,7 @@
         {
           "location": {
             "type": "operational_point_part_reference",
-            "operational_point": { "trigram": "LTH", "type": "trigram" },
+            "operational_point": { "main_code": "LTH", "type": "domestic", "country_code": "??" },
             "local_track_name": null
           },
           "id": "8-1"
@@ -137,7 +137,7 @@
         {
           "location": {
             "type": "operational_point_part_reference",
-            "operational_point": { "trigram": "RTR", "type": "trigram" },
+            "operational_point": { "main_code": "RTR", "type": "domestic", "country_code": "??" },
             "local_track_name": null
           },
           "id": "7-2"
@@ -176,7 +176,7 @@
           "id": "10-0",
           "location": {
             "type": "operational_point_part_reference",
-            "operational_point": { "trigram": "WLD", "type": "trigram" },
+            "operational_point": { "main_code": "WLD", "type": "domestic", "country_code": "??" },
             "local_track_name": null
           }
         },
@@ -184,7 +184,7 @@
           "id": "11-1",
           "location": {
             "type": "operational_point_part_reference",
-            "operational_point": { "trigram": "FLR", "type": "trigram" },
+            "operational_point": { "main_code": "FLR", "type": "domestic", "country_code": "??" },
             "local_track_name": null
           }
         }
@@ -217,7 +217,7 @@
           "id": "11-0",
           "location": {
             "type": "operational_point_part_reference",
-            "operational_point": { "trigram": "FLR", "type": "trigram" },
+            "operational_point": { "main_code": "FLR", "type": "domestic", "country_code": "??" },
             "local_track_name": null
           }
         },
@@ -225,7 +225,7 @@
           "id": "10-1",
           "location": {
             "type": "operational_point_part_reference",
-            "operational_point": { "trigram": "WLD", "type": "trigram" },
+            "operational_point": { "main_code": "WLD", "type": "domestic", "country_code": "??" },
             "local_track_name": null
           }
         }

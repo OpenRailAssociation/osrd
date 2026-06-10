@@ -125,8 +125,8 @@ const PathStepItem = ({
         ? `/${pathStepMetadata.secondaryCode}`
         : '';
 
-    if (location?.operational_point.type === 'trigram') {
-      message += t('trigram') + ' ' + location.operational_point.trigram;
+    if (location?.operational_point.type === 'domestic') {
+      message += t('mainCode') + ' ' + location.operational_point.main_code;
     }
 
     if (location?.operational_point.type === 'uic') {

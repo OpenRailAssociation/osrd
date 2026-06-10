@@ -95,10 +95,10 @@ export const useOperationalPointSearch = ({
     setIsEditingByStepId((prev) => ({ ...prev, [stepId]: true }));
   }, []);
 
-  const chooseChForSuggestion = useCallback(
-    (stepId: string, suggestion: OperationalPointSuggestion, forcedCh?: string) => {
+  const chooseSecondaryCodeForSuggestion = useCallback(
+    (stepId: string, suggestion: OperationalPointSuggestion, forcedSecondaryCode?: string) => {
       const rawInput = draftByStepId[stepId] ?? '';
-      return selectSecondaryCode(suggestion, rawInput, forcedCh);
+      return selectSecondaryCode(suggestion, rawInput, forcedSecondaryCode);
     },
     [draftByStepId]
   );
@@ -211,7 +211,7 @@ export const useOperationalPointSearch = ({
     formatChosenValue,
     commitSelectionForStep,
     startEditingForStep,
-    chooseChForSuggestion,
+    chooseSecondaryCodeForSuggestion,
     reopenSuggestionsForStep,
   };
 };

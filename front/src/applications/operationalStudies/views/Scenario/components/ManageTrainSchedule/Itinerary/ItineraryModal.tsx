@@ -153,7 +153,7 @@ const ItineraryModal = ({
     resetOpSuggestions,
     formatChosenValue,
     commitSelectionForStep,
-    chooseChForSuggestion,
+    chooseSecondaryCodeForSuggestion,
     reopenSuggestionsForStep,
   } = useOperationalPointSearch({});
 
@@ -189,18 +189,25 @@ const ItineraryModal = ({
     suggestion: OperationalPointSuggestion,
     forcedCh?: string
   ) => {
-    const chosenCh = chooseChForSuggestion(stepId, suggestion, forcedCh);
-    if (!chosenCh) return;
+    const chosenSecondaryCode = chooseSecondaryCodeForSuggestion(stepId, suggestion, forcedCh);
+    if (!chosenSecondaryCode) return;
     pendingStepIdRef.current = stepId;
     confirmedStepIdRef.current = stepId;
     let opRef: OperationalPointReference;
 
     if (suggestion.uic) {
-      opRef = { type: 'uic', uic: suggestion.uic, secondary_code: chosenCh };
+      opRef = { type: 'uic', uic: suggestion.uic, secondary_code: chosenSecondaryCode };
     } else if (suggestion.mainCode) {
-      opRef = { type: 'trigram', trigram: suggestion.mainCode, secondary_code: chosenCh };
+      opRef = {
+        type: 'domestic',
+        main_code: suggestion.mainCode,
+        secondary_code: chosenSecondaryCode,
+        country_code: suggestion.countryCode,
+      };
     } else {
-      const chosenOpId = suggestion.secondaryCodeList.find((c) => c.code === chosenCh)?.opId;
+      const chosenOpId = suggestion.secondaryCodeList.find(
+        (c) => c.code === chosenSecondaryCode
+      )?.opId;
       opRef = { type: 'id', operational_point: chosenOpId! };
     }
     const newLocation: PathItemLocation = {
@@ -215,7 +222,7 @@ const ItineraryModal = ({
       return ensureTrailingEmptyStep(next);
     });
     initCustomTracksEntry(newLocation);
-    commitSelectionForStep(stepId, formatChosenValue(suggestion, chosenCh));
+    commitSelectionForStep(stepId, formatChosenValue(suggestion, chosenSecondaryCode));
     resetOpSuggestions();
   };
   const isOnlyStep = pathSteps.length === 1;

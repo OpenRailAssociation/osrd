@@ -2,12 +2,12 @@ import type { TrainScheduleResponse } from 'common/api/osrdEditoastApi';
 import type { AppDispatch } from 'store';
 
 import type { NetzgrafikDto, NGEEvent, NodeDto } from '../../NGE/types';
-import type MacroEditorState from '../MacroEditorState';
+import MacroEditorState from '../MacroEditorState';
 import type { NodeIndexed } from '../MacroEditorState';
 import {
   createMacroNode,
   deleteMacroNodeByNgeId,
-  fetchStationSecondaryCode,
+  fetchStationSecondaryCodeCountryCode,
   updateMacroNode,
 } from '../utils';
 import { updateTrainrunsByNode } from './trainrun';
@@ -64,24 +64,32 @@ export const handleNodeOperation = async ({
         if (indexNode.dbId) {
           // Update the key if mainCode has changed and key is based on it
           let nodeKey = indexNode.path_item_key;
-          let mainCode = node.betriebspunktName;
-          if (nodeKey.startsWith('trigram:') && indexNode.trigram !== mainCode) {
-            if (!mainCode.includes('/')) {
-              const secondaryCode = await fetchStationSecondaryCode(
-                mainCode,
+          let domesticReference = node.betriebspunktName;
+          if (nodeKey.startsWith('domestic:') && indexNode.trigram !== domesticReference) {
+            const decodedDomesticReference =
+              MacroEditorState.decodeDomesticReference(domesticReference);
+            const { main_code } = decodedDomesticReference;
+            let { secondary_code, country_code } = decodedDomesticReference;
+            if (!secondary_code) {
+              const fetched = await fetchStationSecondaryCodeCountryCode(
+                main_code,
                 state.infraId,
                 dispatch
               );
-              if (secondaryCode) {
-                mainCode = `${mainCode}/${secondaryCode}`;
-              }
+              if (fetched.secondary_code) secondary_code = fetched.secondary_code;
+              if (fetched.country_code) country_code = fetched.country_code;
             }
-            nodeKey = `trigram:${mainCode}`;
+            domesticReference = MacroEditorState.encodeDomesticReference({
+              main_code,
+              secondary_code,
+              country_code,
+            });
+            nodeKey = `domestic:${domesticReference}`;
           }
           await updateMacroNode(state, dispatch, {
             ...indexNode,
             ...castNgeNode(node, netzgrafikDto.labels),
-            trigram: mainCode,
+            trigram: domesticReference,
             dbId: indexNode.dbId,
             path_item_key: nodeKey,
           });
@@ -108,8 +116,12 @@ export const handleNodeOperation = async ({
         }
       } else {
         // It's an unknown node, we need to create it in the db
-        // We assume that `betriebspunktName` is a trigram
-        const key = `trigram:${node.betriebspunktName}`;
+        // We assume that `betriebspunktName` follows the `${country_code}-${main_code}/${secondary_code}` format
+        const key = MacroEditorState.getPathKey({
+          type: 'operational_point_part_reference',
+          operational_point: MacroEditorState.decodeDomesticReference(node.betriebspunktName),
+          local_track_name: null,
+        });
         // Create the node
         await createMacroNode(
           state,

@@ -79,6 +79,7 @@ export const buildSteps = (
         arrivalDate,
         departureDate,
         stopFor,
+        countryCode: '???',
       };
     })
     .filter((step) => step !== null);
@@ -101,7 +102,12 @@ export const buildSteps = (
         id,
         location: {
           type: 'operational_point_part_reference',
-          operational_point: { trigram: step.name, secondary_code: step.chCode, type: 'trigram' },
+          operational_point: {
+            main_code: step.name,
+            secondary_code: step.chCode,
+            type: 'domestic',
+            country_code: step.countryCode,
+          },
         },
       });
     }

@@ -9,7 +9,7 @@
       "position_x": 672,
       "position_y": 800,
       "labels": [],
-      "path_item_key": "trigram:SS-1"
+      "path_item_key": "domestic:SS-1"
     },
     {
       "ngeId": 7,
@@ -20,7 +20,7 @@
       "position_x": 320,
       "position_y": 32,
       "labels": [],
-      "path_item_key": "trigram:RTR"
+      "path_item_key": "domestic:RTR"
     },
     {
       "ngeId": 8,
@@ -31,7 +31,7 @@
       "position_x": 320,
       "position_y": 192,
       "labels": [],
-      "path_item_key": "trigram:SS-2"
+      "path_item_key": "domestic:SS-2"
     }
   ],
   "macro_notes": [
@@ -57,7 +57,7 @@
         {
           "location": {
             "type": "operational_point_part_reference",
-            "operational_point": { "trigram": "RTR", "type": "trigram" },
+            "operational_point": { "main_code": "RTR", "type": "domestic", "country_code": "??" },
             "local_track_name": null
           },
           "id": "7-0"
@@ -65,7 +65,7 @@
         {
           "location": {
             "type": "operational_point_part_reference",
-            "operational_point": { "trigram": "SS-2", "type": "trigram" },
+            "operational_point": { "main_code": "SS-2", "type": "domestic", "country_code": "??" },
             "local_track_name": null
           },
           "id": "8-1"
@@ -73,7 +73,7 @@
         {
           "location": {
             "type": "operational_point_part_reference",
-            "operational_point": { "trigram": "SS-1", "type": "trigram" },
+            "operational_point": { "main_code": "SS-1", "type": "domestic", "country_code": "??" },
             "local_track_name": null
           },
           "id": "6-2"

@@ -8,7 +8,7 @@ export type Haltezeit = {
 
 export type NodeDto = {
   id: number;
-  /** Trigram */
+  /** Name */
   betriebspunktName: string;
   fullName: string;
   positionX: number;

@@ -63,7 +63,13 @@ function getOperationalPointReference(
   // to the backend would filter for OPs with an empty secondary_code rather than any.
   const secondaryCode = op.secondary_code || null;
   const mainCode = op.main_code;
-  if (mainCode) return { type: 'trigram', trigram: mainCode, secondary_code: secondaryCode };
+  if (mainCode)
+    return {
+      type: 'domestic',
+      main_code: mainCode,
+      secondary_code: secondaryCode,
+      country_code: op.country_code,
+    };
   const uic = op.uic;
   if (uic) return { type: 'uic', uic, secondary_code: secondaryCode };
   // Only use the opId when it refers to a real infra OP. Virtual OPs (unrecognised, created
@@ -756,12 +762,12 @@ const useTrackOccupancy = ({
                   type: 'id',
                 },
               });
-            } else if (itemLocation.operational_point.type === 'trigram') {
+            } else if (itemLocation.operational_point.type === 'domestic') {
               trainsStationLabels[trainSchedule.id] = {
                 ...trainsStationLabels[trainSchedule.id],
                 [side]: {
                   type: 'label',
-                  label: itemLocation.operational_point.trigram,
+                  label: itemLocation.operational_point.main_code,
                 },
               };
             } else if (itemLocation.operational_point.type === 'uic') {

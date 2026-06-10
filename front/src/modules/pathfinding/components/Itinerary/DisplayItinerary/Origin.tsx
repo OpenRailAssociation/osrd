@@ -40,8 +40,8 @@ const Origin = ({ zoomToFeaturePoint }: OriginProps) => {
             origin.location.track.split('-')[0]) ||
           (origin &&
             origin.location.type === 'operational_point_part_reference' &&
-            origin.location.operational_point.type === 'trigram' &&
-            origin.location.operational_point.trigram)}
+            origin.location.operational_point.type === 'domestic' &&
+            origin.location.operational_point.main_code)}
       </strong>
       {location &&
         location.type === 'operational_point_part_reference' &&

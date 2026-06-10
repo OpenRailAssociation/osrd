@@ -98,6 +98,7 @@ export const formatOperationalPoints = (
         opId: op.id,
         uic: op.uic,
         secondaryCode: op.secondary_code,
+        countryCode: op.country_code,
         mainCode: op.main_code,
         track: op.part.track,
         offsetOnTrack: op.part.position,

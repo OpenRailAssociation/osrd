@@ -58,8 +58,8 @@ const Destination = ({ zoomToFeaturePoint }: DestinationProps) => {
                 destination.location.type === 'track_offset' &&
                 destination.location.track.split('-')[0]) ||
               (destination.location.type === 'operational_point_part_reference' &&
-                destination.location.operational_point.type === 'trigram' &&
-                destination.location.operational_point.trigram)}
+                destination.location.operational_point.type === 'domestic' &&
+                destination.location.operational_point.main_code)}
           </strong>
           {location &&
             location.type === 'operational_point_part_reference' &&

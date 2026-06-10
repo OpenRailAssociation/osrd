@@ -401,7 +401,7 @@ export const groupRoundTrips = (
 
 export const getInvalidStepLabel = (opRef: OperationalPointReference) => {
   if (opRef.type === 'uic') return opRef.uic.toString();
-  if (opRef.type === 'trigram') return opRef.trigram;
+  if (opRef.type === 'domestic') return opRef.main_code;
   return opRef.operational_point;
 };
 
@@ -421,7 +421,8 @@ export const matchOpRefAndOp = (
     );
   }
   return (
-    location.operational_point.trigram === op.main_code &&
-    location.operational_point.secondary_code === op.secondary_code
+    location.operational_point.main_code === op.main_code &&
+    location.operational_point.secondary_code === op.secondary_code &&
+    location.operational_point.country_code === op.country_code
   );
 };
