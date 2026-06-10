@@ -91,7 +91,7 @@
                     "track": "t_a"
                 }
             ],
-            "secondary_code": "BV",
+            "secondary_code": "A",
             "secondary_name": "0",
             "uic": 8700
         },
@@ -108,7 +108,7 @@
                     "track": "t_b"
                 }
             ],
-            "secondary_code": "BV",
+            "secondary_code": "B",
             "secondary_name": "0",
             "uic": 8700
         },
@@ -125,7 +125,7 @@
                     "track": "t_center"
                 }
             ],
-            "secondary_code": "BV",
+            "secondary_code": "C",
             "secondary_name": "0",
             "uic": 8700
         }

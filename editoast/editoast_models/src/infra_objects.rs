@@ -288,7 +288,7 @@ impl OperationalPointModel {
 
         Ok(dsl::infra_object_operational_point
             .filter(dsl::infra_id.eq(infra_id))
-            .filter(sql::<Nullable<BigInt>>("(data->'uic')::int").eq_any(uic))
+            .filter(sql::<Nullable<BigInt>>("NULLIF(data->>'uic', 'null')::int").eq_any(uic))
             .load(&mut conn.write().await)
             .await?
             .into_iter()

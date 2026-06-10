@@ -76,7 +76,7 @@
                     "track": "t_a1"
                 }
             ],
-            "secondary_code": "BV",
+            "secondary_code": "A",
             "secondary_name": "0",
             "uic": 8700
         },
@@ -93,7 +93,7 @@
                     "track": "t_a2"
                 }
             ],
-            "secondary_code": "BV",
+            "secondary_code": "AA",
             "secondary_name": "0",
             "uic": 8700
         },
@@ -110,7 +110,7 @@
                     "track": "t_b1"
                 }
             ],
-            "secondary_code": "BV",
+            "secondary_code": "B",
             "secondary_name": "0",
             "uic": 8700
         },
@@ -127,7 +127,7 @@
                     "track": "t_b2"
                 }
             ],
-            "secondary_code": "BV",
+            "secondary_code": "BB",
             "secondary_name": "0",
             "uic": 8700
         }
