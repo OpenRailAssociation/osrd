@@ -1,6 +1,7 @@
 import {
   isPointPickingElement,
   isSegmentPickingElement,
+  isOccupancyPickingElement,
   type HoveredItem,
   type SpaceTimeChartProps,
 } from '@osrd-project/ui-charts';
@@ -18,6 +19,7 @@ import {
 
 import type { IndividualTrainProjection, TrainSpaceTimeData } from '../../../types';
 import { isIndividualOccurrenceProjection } from './utils';
+import { parseOccupancyZonePathId, type OccupancyZoneReference } from './zones';
 
 type DraggingState =
   | {
@@ -43,6 +45,11 @@ type ConfigureHandlePanParams = {
   setPreviousPanning: (v: boolean) => void;
   zoomMode: boolean;
   trainScheduleProjections: TrainSpaceTimeData[];
+  occupancyZoneDragAndDrop?: {
+    isDragging: boolean;
+    onDragStart: (zoneRef: OccupancyZoneReference) => void;
+    onDrop: () => void;
+  };
   dispatch: AppDispatch;
 };
 
@@ -58,6 +65,7 @@ export function configureHandlePan({
   setPreviousPanning,
   zoomMode,
   trainScheduleProjections,
+  occupancyZoneDragAndDrop,
   dispatch,
 }: ConfigureHandlePanParams): NonNullable<SpaceTimeChartProps['onPan']> {
   return async (payload) => {
@@ -121,6 +129,7 @@ export function configureHandlePan({
       isPanning &&
       !previousPanning &&
       !zoomMode &&
+      !occupancyZoneDragAndDrop?.isDragging &&
       hoveredItem &&
       (isSegmentPickingElement(hoveredItem.element) || isPointPickingElement(hoveredItem.element))
     ) {
@@ -141,6 +150,27 @@ export function configureHandlePan({
         draggedTrain: train,
         initialDepartureTime: train.departureTime,
       });
+    }
+
+    if (occupancyZoneDragAndDrop) {
+      if (
+        isPanning &&
+        !previousPanning &&
+        !occupancyZoneDragAndDrop.isDragging &&
+        !zoomMode &&
+        hoveredItem &&
+        isOccupancyPickingElement(hoveredItem.element)
+      ) {
+        occupancyZoneDragAndDrop.onDragStart(parseOccupancyZonePathId(hoveredItem.element.pathId));
+        return;
+      }
+
+      if (occupancyZoneDragAndDrop?.isDragging) {
+        if (!isPanning) {
+          occupancyZoneDragAndDrop.onDrop();
+        }
+        return;
+      }
     }
 
     // if no hovered train, we pan normally
