@@ -36,7 +36,7 @@
       "ImpersonatedUserNotFound": "Utilisateur usurpé inconnu",
       "NoSuchUser": "Utilisateur inconnu",
       "Unauthorized": "Utilisateur non authentifié",
-      "UnknownIdentity": "Identité inconnue '{{identity}}'",
+      "UnknownIdentities": "Identités inconnues '{{identities}}'",
       "UnknownResource": "Ressource inconnue",
       "UnknownResourceType": "Type de ressource inconnu",
       "UnknownSubject": "Sujet inconnu",
