@@ -5,6 +5,7 @@ import {
   type HoveredItem,
   type SpaceTimeChartProps,
   useManchetteWithSpaceTimeChart,
+  useEdgePan,
   ZoomRect,
   ConflictLayer,
   PathLayer,
@@ -41,6 +42,7 @@ import type {
 } from 'modules/simulationResult/types';
 import {
   findExceptionWithOccurrenceId,
+  findTrainScheduleAndException,
   getFirstActiveOccurrenceId,
   isPacedTrainWithDetails,
 } from 'modules/trainSchedule/helpers/pacedTrain';
@@ -78,7 +80,11 @@ import getPanelOccurrenceCounts from './helpers/getPanelOccurrenceCounts';
 import getStdExceptionType from './helpers/getStdExceptionType';
 import makeProjectedTrains from './helpers/makeProjectedTrains';
 import { getOccupancyBlocks } from './helpers/utils';
-import { parseOccupancyZonePathId } from './helpers/zones';
+import {
+  parseOccupancyZonePathId,
+  formatOccupancyZonePathId,
+  type OccupancyZoneReference,
+} from './helpers/zones';
 import ProjectionLoadingMessage from './ProjectionLoadingMessage';
 import SettingsPanel from './SettingsPanel';
 import SpaceTimeChartToolbar from './SpaceTimeChartToolbar';
@@ -117,6 +123,12 @@ type SpaceTimeChartWrapperBaseProps = {
   }) => Promise<void>;
   height?: number;
   onTrainClick?: (trainId: TrainId) => void;
+  onOccupancyZoneDrop?: (
+    waypointId: string,
+    trainId: TrainId,
+    zone: OccupancyZone,
+    track: Track
+  ) => void;
   selectedProjectionId: TrainId;
   trainSchedulesWithDetails?: TrainScheduleWithDetails[];
   pathfindingHasFailed?: boolean;
@@ -173,6 +185,7 @@ const SpaceTimeChartWrapper = ({
   height = MANCHETTE_WITH_SPACE_TIME_CHART_DEFAULT_HEIGHT,
   handleTrainDrag,
   onTrainClick,
+  onOccupancyZoneDrop,
   selectedProjectionId,
   trainSchedulesWithDetails,
   waypointsPanelIsOpen,
@@ -192,6 +205,9 @@ const SpaceTimeChartWrapper = ({
 
   const [hoveredItem, setHoveredItem] = useState<null | HoveredItem>(null);
   const [draggingState, setDraggingState] = useState<DraggingState>();
+  const [draggingOccupancyZoneRef, setDraggingOccupancyZoneRef] =
+    useState<OccupancyZoneReference | null>(null);
+  const [dragOverTrackId, setDragOverTrackId] = useState<string | undefined>();
 
   const [panelSelectionMode, setPanelSelectionMode] = useState<PanelSelectionMode>('compliant');
   const [lastClickedOccurrenceId, setLastClickedOccurrenceId] = useState<OccurrenceId>();
@@ -290,6 +306,52 @@ const SpaceTimeChartWrapper = ({
     return hoveredTrainId;
   }, [hoveredItem, hoveredTrainId]);
 
+  // If we're dealing a unique train or an exception, use the ID as-is so
+  // that only this single occupancy zone gets dragged. Otherwise, we're
+  // dealing with a compliant occurrence: extract the paced train ID so
+  // that all compliant occurrences get dragged.
+  const draggingOccupancyZoneBaseTrainId = useMemo(() => {
+    if (!draggingOccupancyZoneRef) {
+      return null;
+    }
+    const { trainId } = draggingOccupancyZoneRef;
+    const { exception } = findTrainScheduleAndException(trainSchedulesWithDetails ?? [], trainId);
+    if (isPacedTrainId(trainId) || exception) {
+      return trainId;
+    } else {
+      return extractPacedTrainIdFromOccurrenceId(trainId);
+    }
+  }, [draggingOccupancyZoneRef]);
+
+  const isDraggingOccupancyZoneId = useCallback(
+    (waypointId: string, trainId: TrainId) => {
+      if (
+        waypointId !== draggingOccupancyZoneRef?.waypointId ||
+        !draggingOccupancyZoneBaseTrainId
+      ) {
+        return false;
+      }
+
+      // When dragging a single occurrence, a single occupancy zone is marked
+      // as being dragged
+      if (isOccurrenceId(draggingOccupancyZoneBaseTrainId)) {
+        return trainId === draggingOccupancyZoneBaseTrainId;
+      }
+
+      // When dragging a paced train, mark all compliant occupancy zones as
+      // being dragged
+      if (
+        isOccurrenceId(trainId) &&
+        extractPacedTrainIdFromOccurrenceId(trainId) !== draggingOccupancyZoneBaseTrainId
+      ) {
+        return false;
+      }
+      const { exception } = findTrainScheduleAndException(trainSchedulesWithDetails ?? [], trainId);
+      return !exception;
+    },
+    [draggingOccupancyZoneRef, draggingOccupancyZoneBaseTrainId, trainSchedulesWithDetails]
+  );
+
   const splitPoints = useMemo<SplitPoint[]>(
     () =>
       buildSplitPoints(
@@ -303,7 +365,10 @@ const SpaceTimeChartWrapper = ({
         handleWaypointClick,
         activeWaypointId,
         hoveredTrainIdForChart,
-        hoveredTrainId
+        hoveredTrainId,
+        isDraggingOccupancyZoneId,
+        dragOverTrackId,
+        setDragOverTrackId
       ),
     [
       trackOccupancyDiagramsData,
@@ -318,6 +383,9 @@ const SpaceTimeChartWrapper = ({
       activeWaypointRef,
       hoveredTrainIdForChart,
       hoveredTrainId,
+      isDraggingOccupancyZoneId,
+      dragOverTrackId,
+      setDragOverTrackId,
     ]
   );
 
@@ -331,6 +399,7 @@ const SpaceTimeChartWrapper = ({
     toggleZoomMode,
     zoomMode,
     setTimeOrigin,
+    pan,
   } = useManchetteWithSpaceTimeChart({
     waypoints: manchetteWaypoints,
     manchetteWithSpaceTimeChartRef,
@@ -381,6 +450,28 @@ const SpaceTimeChartWrapper = ({
     [manchetteProps, activeWaypointId, handleWaypointClick]
   );
 
+  const handleOccupancyZoneDragStart = useCallback((zoneRef: OccupancyZoneReference) => {
+    setDraggingOccupancyZoneRef(zoneRef);
+  }, []);
+
+  const handleOccupancyZoneDrop = useCallback(() => {
+    if (!draggingOccupancyZoneRef) {
+      throw new Error('Got occupancy zone drop event with no dragging occupancy zone');
+    }
+
+    const { waypointId, trainId } = draggingOccupancyZoneRef;
+    const waypoint = trackOccupancyDiagramsData!.find((wp) => wp.waypointId === waypointId)!;
+    const draggingPathId = formatOccupancyZonePathId(draggingOccupancyZoneRef);
+    const zone = waypoint.zones!.find(({ pathId }) => pathId === draggingPathId)!;
+    const dragOverTrack = waypoint.tracks!.find((tr) => tr.id === dragOverTrackId);
+    if (dragOverTrack && zone.trackId !== dragOverTrackId && onOccupancyZoneDrop) {
+      onOccupancyZoneDrop(waypointId, trainId, zone, dragOverTrack);
+    }
+    setDraggingOccupancyZoneRef(null);
+  }, [trackOccupancyDiagramsData, draggingOccupancyZoneRef, dragOverTrackId, onOccupancyZoneDrop]);
+
+  const isDraggingOccupancyZone = Boolean(draggingOccupancyZoneRef);
+
   const handlePan = useCallback(
     // TODO: fix this lint
     // eslint-disable-next-line react-hooks-js/use-memo
@@ -396,6 +487,11 @@ const SpaceTimeChartWrapper = ({
       setPreviousPanning,
       zoomMode,
       trainScheduleProjections,
+      occupancyZoneDragAndDrop: {
+        isDragging: isDraggingOccupancyZone,
+        onDragStart: handleOccupancyZoneDragStart,
+        onDrop: handleOccupancyZoneDrop,
+      },
       dispatch,
     }),
     [
@@ -406,6 +502,9 @@ const SpaceTimeChartWrapper = ({
       previousPanning,
       zoomMode,
       trainScheduleProjections,
+      isDraggingOccupancyZone,
+      handleOccupancyZoneDragStart,
+      handleOccupancyZoneDrop,
       dispatch,
     ]
   );
@@ -517,6 +616,12 @@ const SpaceTimeChartWrapper = ({
     if (!open) wrapperRef.current?.focus();
   };
 
+  const { onMouseMove } = useEdgePan({
+    enableY: isDraggingOccupancyZone,
+    spaceTimeChartProps,
+    pan,
+  });
+
   return (
     // eslint-disable-next-line jsx-a11y/no-static-element-interactions
     <div
@@ -548,7 +653,7 @@ const SpaceTimeChartWrapper = ({
         data-testid="manchette-spacetimediagram-ref"
         ref={manchetteWithSpaceTimeChartRef}
         className="manchette flex"
-        style={{ height }}
+        style={{ height, cursor: isDraggingOccupancyZone ? 'ns-resize' : undefined }}
         onScroll={handleScroll}
       >
         <Manchette
@@ -588,6 +693,7 @@ const SpaceTimeChartWrapper = ({
             onPan={handlePan}
             onClick={handleClick}
             onHoveredChildUpdate={handleHoveredChildUpdate}
+            onMouseMove={onMouseMove}
             spaceOrigin={
               (waypointsPanelData?.filteredWaypoints ?? operationalPoints).at(0)?.position || 0
             }
