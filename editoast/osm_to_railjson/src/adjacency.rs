@@ -6,13 +6,13 @@ use schemas::infra::Endpoint;
 use schemas::infra::TrackEndpoint;
 use std::collections::HashMap;
 
-/// A branch it a pair of two edges that share a node
-/// and whose angle is flat enough for a train to go from one edge to an other
+/// A branch is a pair of two edges that share a node
+/// and whose angle is flat enough for a train to go from one edge to another
 pub type Branch = (TrackEndpoint, TrackEndpoint);
 
-// When building the network topology, most things happen around a Node (in the OpenStreetMap sense)
-// That’s where buffer stops, and switches happen
-// To do that, we count how many edges are adjacent to that node and how many branches go through that node
+/// When building the network topology, most things happen around a Node (in the OpenStreetMap sense)
+/// That’s where buffer stops, and switches happen
+/// To do that, we count how many edges are adjacent to that node and how many branches go through that node
 #[derive(Default)]
 pub(crate) struct NodeAdjacencies<'a> {
     pub edges: Vec<&'a Edge>,
@@ -61,11 +61,11 @@ fn try_into_branch(center: osm4routing::NodeId, e1: &Edge, e2: &Edge) -> Option<
     }
 }
 
-// Given an edge and a coordinate, returns the coordinates used to compute the angle
-// It uses the nearest OpenStreetMap node, and the other as the rails might do a loop
-// that would result in a bad angle
-// However, sometimes nodes can be stacked at the same coordinates (e.g. to have different signals at the end of the way)
-// That is why look for the first node that is at least 1m away from the edge start
+/// Given an edge and a coordinate, returns the coordinates used to compute the angle
+/// It uses the nearest OpenStreetMap node, and the other as the rails might do a loop
+/// that would result in a bad angle
+/// However, sometimes nodes can be stacked at the same coordinates (e.g. to have different signals at the end of the way)
+/// That is why it looks for the first node that is at least 1m away from the edge start
 fn reference_coord(n: NodeId, edge: &Edge) -> Coord {
     if edge.nodes[0] == n {
         let start = edge.geometry[0];
@@ -85,13 +85,13 @@ fn reference_coord(n: NodeId, edge: &Edge) -> Coord {
     }
 }
 
-// In order for a train to be able to go from one edge to another
-// The angle must be as flat as possible (180°)
+/// In order for a train to be able to go from one edge to another
+/// The angle must be as flat as possible (180°)
 fn flat(angle: f64) -> bool {
     (180.0 - angle).abs() <= 30.0
 }
 
-// Computes the angle between the segments [oa] and [ob]
+/// Computes the angle between the segments [oa] and [ob]
 fn angle(o: Coord, a: Coord, b: Coord) -> f64 {
     ((a.y - o.y).atan2(a.x - o.x).to_degrees() - (b.y - o.y).atan2(b.x - o.x).to_degrees()).abs()
 }
