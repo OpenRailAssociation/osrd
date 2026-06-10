@@ -48,7 +48,10 @@ export function buildSplitPoints(
   handleWaypointClick?: (waypointId: string) => void,
   activeWaypointId?: string,
   hoveredTrainIdForChart?: TrainId,
-  hoveredTrainId?: TrainId
+  hoveredTrainId?: TrainId,
+  isDraggingOccupancyZoneId?: (waypointId: string, trainId: TrainId) => boolean,
+  activeTrackId?: string,
+  onTrackDragOver?: (trackId: string | undefined) => void
 ): SplitPoint[] {
   if (!occupancyZonesLayers?.length) return [];
 
@@ -124,7 +127,17 @@ export function buildSplitPoints(
         onClick: handleWaypointClick,
       };
 
-      const selectedPathId = selectedTrainId ? formatOccupancyZonePathId({ waypointId, trainId: selectedTrainId }) : undefined;
+      const selectedPathId = selectedTrainId
+        ? formatOccupancyZonePathId({ waypointId, trainId: selectedTrainId })
+        : undefined;
+
+      const isDraggingOccupancyZone = (zone: OccupancyZone) => {
+        if (!isDraggingOccupancyZoneId) {
+          return false;
+        }
+        const { trainId } = parseOccupancyZonePathId(zone.pathId);
+        return isDraggingOccupancyZoneId(waypointId, trainId);
+      };
 
       return {
         id: operationalPointId,
@@ -134,14 +147,16 @@ export function buildSplitPoints(
           <TrackOccupancyCanvas
             position={operationalPointPosition}
             tracks={tracks || []}
-            occupancyZones={occupancyZones}
+            occupancyZones={occupancyZones.filter((zone) => !isDraggingOccupancyZone(zone))}
+            draggingOccupancyZones={occupancyZones.filter(isDraggingOccupancyZone)}
             selectedPathId={selectedPathId}
             onClose={() => onCloseOccupancyLayer?.(waypointId)}
+            onDragOver={onTrackDragOver}
             topPadding={BASE_WAYPOINT_HEIGHT}
           />
         ),
         manchetteNode: (
-          <TrackOccupancyManchette tracks={tracks || []}>
+          <TrackOccupancyManchette tracks={tracks || []} activeTrackId={activeTrackId}>
             <WaypointComponent
               waypoint={waypoint}
               waypointRef={waypointId === activeWaypointId ? activeWaypointRef : undefined}
