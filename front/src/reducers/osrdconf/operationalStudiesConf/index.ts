@@ -97,6 +97,14 @@ export const operationalStudiesConfSlice = createSlice({
         state.interval = new Duration({ minutes: 60 });
       }
     },
+    // Clears stale data left by selectTrainToEdit/updateItineraryForm so a new train form starts empty
+    resetItineraryForm(state: Draft<OperationalStudiesConfState>) {
+      return {
+        ...operationalStudiesInitialConf,
+        mapSettings: state.mapSettings,
+        infraID: state.infraID,
+      };
+    },
     // Use this action to transform an op to via from times and stop table or
     // from the suggested via modal
     upsertViaFromSuggestedOP(
@@ -135,6 +143,7 @@ export const operationalStudiesConfSliceActions = operationalStudiesConfSlice.ac
 
 export const {
   selectTrainToEdit,
+  resetItineraryForm,
   resetUsingSpeedLimits,
 
   // train settings reducer

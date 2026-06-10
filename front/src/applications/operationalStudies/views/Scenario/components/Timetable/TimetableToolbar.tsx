@@ -22,6 +22,8 @@ import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import MenuTriggerButton from 'common/MenuTriggerButton';
 import UploadFileModal from 'common/uploadFileModal';
 import type { TrainScheduleWithDetails } from 'modules/trainSchedule/types';
+import { resetItineraryForm } from 'reducers/osrdconf/operationalStudiesConf';
+import { useAppDispatch } from 'store';
 
 import { MANAGE_TRAIN_SCHEDULE_TYPES } from '../../consts';
 import useImportTrainSchedules from '../ImportTrainSchedule';
@@ -69,6 +71,7 @@ const TimetableToolbar = ({
   upsertTrainSchedules,
 }: TimetableToolbarProps) => {
   const { t } = useTranslation(['operational-studies', 'translation'], { keyPrefix: 'main' });
+  const dispatch = useAppDispatch();
 
   const { infraId, timetableId } = useScenarioContext();
   const { data: pacedTrainRoundTripsData } =
@@ -205,7 +208,10 @@ const TimetableToolbar = ({
             className="add-button"
             data-testid="scenarios-add-train-schedule-button"
             title={t('timetable.addTrainSchedule')}
-            onClick={() => setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.add)}
+            onClick={() => {
+              dispatch(resetItineraryForm());
+              setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.add);
+            }}
             type="button"
           >
             <Plus />
