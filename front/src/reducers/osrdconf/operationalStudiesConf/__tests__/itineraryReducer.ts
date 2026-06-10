@@ -3,6 +3,7 @@ import { beforeEach, it, expect } from 'vitest';
 import {
   operationalStudiesConfSlice,
   operationalStudiesInitialConf,
+  resetItineraryForm,
 } from 'reducers/osrdconf/operationalStudiesConf';
 import commonConfBuilder from 'reducers/osrdconf/osrdConfCommon/__tests__/commonConfBuilder';
 import type { OperationalStudiesConfState } from 'reducers/osrdconf/types';
@@ -41,6 +42,17 @@ const testItineraryReducer = () => {
     store.dispatch(deleteItinerary());
     const state = getState();
     expect(state.pathSteps).toEqual([null, null]);
+  });
+
+  it('should handle resetItineraryForm', () => {
+    const pathSteps = testDataBuilder.buildPathSteps();
+    const store = createStore({ pathSteps });
+    store.dispatch(resetItineraryForm());
+    const state = getState();
+    expect(state.category).toBe(operationalStudiesInitialConf.category);
+    expect(state.rollingStockName).toBe(operationalStudiesInitialConf.rollingStockName);
+    expect(state.name).toBe(operationalStudiesInitialConf.name);
+    expect(state.pathSteps).toEqual(operationalStudiesInitialConf.pathSteps);
   });
 };
 
