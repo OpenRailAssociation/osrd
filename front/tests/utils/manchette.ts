@@ -8,7 +8,7 @@ const frScenarioTranslations: TimetableFilterTranslations = readJsonFile<{
 
 export type Waypoint = {
   name: string;
-  ch: string | undefined;
+  secondaryCode: string | undefined;
   offset: string;
   checked?: boolean;
 };
@@ -28,7 +28,7 @@ export function verifyWaypointsData(
   for (const wp of actualWaypoints) {
     const expected = expectedWaypoints[wp.name];
     expect(expected).toBeTruthy();
-    if (wp.ch) expect(wp.ch).toBe(expected.ch);
+    if (wp.secondaryCode) expect(wp.secondaryCode).toBe(expected.secondaryCode);
     expect(wp.offset).toBe(expected.offset);
     if (wp.checked) expect(wp.checked).toBe(expected.checked);
   }

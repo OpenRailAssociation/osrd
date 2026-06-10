@@ -124,14 +124,14 @@ class GetManchetteComponent extends OpSimulationResultPage {
     const count = await this.waypointItems.count();
     return Promise.all(
       [...Array(count).keys()].map(async (waypointIndex) => {
-        const [name, ch, offset, checked] = await Promise.all([
+        const [name, secondaryCode, offset, checked] = await Promise.all([
           getCleanText(this.getWaypointNamePanelLocator(waypointIndex)),
           getCleanText(this.getWaypointChPanelLocator(waypointIndex)),
           getCleanText(this.getWaypointOffsetPanelLocator(waypointIndex)),
           this.getWaypointCheckboxLocator(waypointIndex).isChecked(),
         ]);
 
-        return { name, ch, offset, checked };
+        return { name, secondaryCode, offset, checked };
       })
     );
   }
@@ -141,16 +141,16 @@ class GetManchetteComponent extends OpSimulationResultPage {
     await expect(this.waypointsList).toHaveCount(expectedCount);
     return Promise.all(
       [...Array(expectedCount).keys()].map(async (waypointIndex) => {
-        let ch;
+        let secondaryCode;
         const [name, offset] = await Promise.all([
           getCleanText(this.getWaypointNameListLocator(waypointIndex)),
           getCleanText(this.getWaypointOffsetListLocator(waypointIndex)),
         ]);
         if ((await this.getWaypointChListLocator(waypointIndex).count()) > 0) {
           await expect(this.getWaypointChListLocator(waypointIndex)).toBeVisible();
-          ch = await getCleanText(this.getWaypointChListLocator(waypointIndex));
+          secondaryCode = await getCleanText(this.getWaypointChListLocator(waypointIndex));
         }
-        return { name, ch, offset };
+        return { name, secondaryCode, offset };
       })
     );
   }
