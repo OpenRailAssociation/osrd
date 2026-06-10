@@ -45,6 +45,7 @@ pub use electrical_profiles::ElectricalProfileSetData;
 pub use electrical_profiles::LevelValues;
 pub use electrification::Electrification;
 pub use endpoint::Endpoint;
+pub use infra_object::Domestic;
 pub use infra_object::InfraObject;
 pub use level_crossing::LevelCrossing;
 pub use level_crossing::LevelCrossingPart;

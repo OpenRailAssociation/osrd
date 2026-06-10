@@ -488,6 +488,11 @@ pub(super) struct SearchResultItemTrack {
         name = "secondary_name",
         data_type = "text",
         sql = "infra_object_operational_point.data->>'secondary_name'",
+    ),
+    column(
+        name = "country_code",
+        data_type = "text",
+        sql = "infra_object_operational_point.data->>'country_code'",
     )
 )]
 /// A search result item for a query with `object = "operationalpoint"`
@@ -510,6 +515,8 @@ pub(super) struct SearchResultItemOperationalPoint {
     is_passenger_station: bool,
     #[search(sql = "OP.data#>>'{secondary_name}'")]
     secondary_name: Option<String>,
+    #[search(sql = "OP.data#>>'{country_code}'")]
+    country_code: String,
     #[search(sql = "ST_AsGeoJSON(ST_Transform(lay.geographic, 4326))::json")]
     #[schema(value_type = Option<GeoJsonPoint>)]
     geographic: Option<Geometry>,

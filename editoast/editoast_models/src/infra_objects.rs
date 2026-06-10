@@ -11,6 +11,8 @@ use database::DbConnection;
 use database::tables::*;
 use schemas::primitives::ObjectType;
 
+pub type Domestic = (String, String, Option<String>);
+
 pub trait ModelBackedSchema: Sized {
     type Model: SchemaModel + Into<Self>;
 }
@@ -299,10 +301,10 @@ impl OperationalPointModel {
     }
 
     #[tracing::instrument(skip(conn), err)]
-    pub async fn retrieve_from_trigrams(
+    pub async fn retrieve_from_domestics(
         conn: &mut DbConnection,
         infra_id: i64,
-        trigrams: &[String],
+        domestics: &[Domestic],
     ) -> Result<Vec<Self>, database::DatabaseError> {
         use database::tables::infra_object_operational_point::dsl;
         use diesel::dsl::sql;
@@ -310,14 +312,22 @@ impl OperationalPointModel {
         use diesel::sql_types::*;
         use diesel_async::RunQueryDsl;
 
-        if trigrams.is_empty() {
+        if domestics.is_empty() {
             // We know the result of the SQL query is going to be empty, avoid sending it.
             return Ok(Vec::new());
         }
-
-        Ok(dsl::infra_object_operational_point
-            .filter(dsl::infra_id.eq(infra_id))
-            .filter(sql::<Nullable<Text>>("data->>'main_code'").eq_any(trigrams))
+        let mut query = dsl::infra_object_operational_point.into_boxed();
+        for (country_code, main_code, secondary_code) in domestics {
+            query =
+                query.or_filter(dsl::infra_id.eq(infra_id).and(
+                    sql::<Text>("data->>'main_code'").eq(main_code).and(
+                        sql::<Text>("data->>'country_code'").eq(country_code).and(
+                            sql::<Nullable<Text>>("data->>'secondary_code'").eq(secondary_code),
+                        ),
+                    ),
+                ))
+        }
+        Ok(query
             .load(&mut conn.write().await)
             .await?
             .into_iter()
@@ -435,7 +445,7 @@ mod tests_retrieve {
     use crate::Infra;
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn from_trigrams() {
+    async fn from_main_codes() {
         let db_pool = DbConnectionPoolV2::for_tests();
         let railjson = schemas::fixtures::small_infra();
         let small_infra = Infra::changeset()
@@ -444,11 +454,14 @@ mod tests_retrieve {
             .persist(railjson, &mut db_pool.get_ok())
             .await
             .unwrap();
-        let trigrams = vec!["MES".to_string(), "WS".to_string()];
-        let res = OperationalPointModel::retrieve_from_trigrams(
+        let domestics = vec![
+            ("FR".to_string(), "MES".to_string(), Some("BV".to_string())),
+            ("FR".to_string(), "WS".to_string(), Some("BV".to_string())),
+        ];
+        let res = OperationalPointModel::retrieve_from_domestics(
             &mut db_pool.get_ok(),
             small_infra.id,
-            &trigrams,
+            &domestics,
         )
         .await
         .expect("Failed to retrieve operational points");

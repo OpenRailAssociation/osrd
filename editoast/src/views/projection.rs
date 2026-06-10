@@ -1143,19 +1143,20 @@ mod tests {
         assert_eq!(curve.times, vec![74, 80]);
     }
 
-    fn create_path_item_from_trigram(trigram: &str) -> OperationalPointReference {
-        OperationalPointReference::Trigram {
-            trigram: trigram.into(),
+    fn create_path_item_from_main_code(main_code: &str) -> OperationalPointReference {
+        OperationalPointReference::Domestic {
+            country_code: "FR".into(),
+            main_code: main_code.into(),
             secondary_code: Some("BV".into()),
         }
     }
 
-    fn create_path_items_from_trigrams(trigrams: &[&str]) -> Vec<PathItemLocation> {
-        trigrams
+    fn create_path_items_from_main_codes(main_codes: &[&str]) -> Vec<PathItemLocation> {
+        main_codes
             .iter()
-            .map(|&trigram| {
+            .map(|&main_code| {
                 PathItemLocation::OperationalPointPartReference(OperationalPointPartReference {
-                    operational_point: create_path_item_from_trigram(trigram),
+                    operational_point: create_path_item_from_main_code(main_code),
                     local_track_name: None,
                 })
             })
@@ -1163,11 +1164,11 @@ mod tests {
     }
 
     impl OperationalPointRefAndTime {
-        fn new_trigram(arrival_time: u64, stop_for: u64, trigram: &str) -> Self {
+        fn new_domestic(arrival_time: u64, stop_for: u64, main_code: &str) -> Self {
             OperationalPointRefAndTime {
                 arrival_time,
                 stop_for,
-                op_ref: create_path_item_from_trigram(trigram),
+                op_ref: create_path_item_from_main_code(main_code),
             }
         }
     }
@@ -1189,8 +1190,8 @@ mod tests {
         let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
-        let trigrams = ["SWS", "MWS", "MES", "NS", "SS"];
-        let path_items = create_path_items_from_trigrams(&trigrams);
+        let main_codes = ["SWS", "MWS", "MES", "NS", "SS"];
+        let path_items = create_path_items_from_main_codes(&main_codes);
         let op_cache =
             OperationalPointCache::load_path_items(db_pool.get_ok(), small_infra.id, &path_items)
                 .await
@@ -1204,20 +1205,20 @@ mod tests {
                 ],
             }),
             refs: vec![
-                OperationalPointRefAndTime::new_trigram(0, 0, "SWS"),
-                OperationalPointRefAndTime::new_trigram(10, 0, "MWS"),
-                OperationalPointRefAndTime::new_trigram(19, 0, "MES"),
-                OperationalPointRefAndTime::new_trigram(35, 2, "NS"),
+                OperationalPointRefAndTime::new_domestic(0, 0, "SWS"),
+                OperationalPointRefAndTime::new_domestic(10, 0, "MWS"),
+                OperationalPointRefAndTime::new_domestic(19, 0, "MES"),
+                OperationalPointRefAndTime::new_domestic(35, 2, "NS"),
             ],
         };
         // Manchette
         let projection_op_id_to_positions = OperationalPointProjection::new(
             vec![
-                create_path_item_from_trigram("SWS"),
-                create_path_item_from_trigram("MWS"),
-                create_path_item_from_trigram("MES"),
-                create_path_item_from_trigram("NS"),
-                create_path_item_from_trigram("SS"),
+                create_path_item_from_main_code("SWS"),
+                create_path_item_from_main_code("MWS"),
+                create_path_item_from_main_code("MES"),
+                create_path_item_from_main_code("NS"),
+                create_path_item_from_main_code("SS"),
             ],
             vec![100_000; 4],
             &op_cache,
@@ -1251,8 +1252,8 @@ mod tests {
         let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
-        let trigrams = ["SWS", "MWS", "MES", "NS", "SS"];
-        let path_items = create_path_items_from_trigrams(&trigrams);
+        let main_codes = ["SWS", "MWS", "MES", "NS", "SS"];
+        let path_items = create_path_items_from_main_codes(&main_codes);
         let op_cache =
             OperationalPointCache::load_path_items(db_pool.get_ok(), small_infra.id, &path_items)
                 .await
@@ -1266,20 +1267,20 @@ mod tests {
                 ],
             }),
             refs: vec![
-                OperationalPointRefAndTime::new_trigram(0, 0, "NS"),
-                OperationalPointRefAndTime::new_trigram(10, 0, "MES"),
-                OperationalPointRefAndTime::new_trigram(19, 0, "MWS"),
-                OperationalPointRefAndTime::new_trigram(35, 0, "SWS"),
+                OperationalPointRefAndTime::new_domestic(0, 0, "NS"),
+                OperationalPointRefAndTime::new_domestic(10, 0, "MES"),
+                OperationalPointRefAndTime::new_domestic(19, 0, "MWS"),
+                OperationalPointRefAndTime::new_domestic(35, 0, "SWS"),
             ],
         };
         // Manchette
         let projection_op_id_to_positions = OperationalPointProjection::new(
             vec![
-                create_path_item_from_trigram("SWS"),
-                create_path_item_from_trigram("MWS"),
-                create_path_item_from_trigram("MES"),
-                create_path_item_from_trigram("NS"),
-                create_path_item_from_trigram("SS"),
+                create_path_item_from_main_code("SWS"),
+                create_path_item_from_main_code("MWS"),
+                create_path_item_from_main_code("MES"),
+                create_path_item_from_main_code("NS"),
+                create_path_item_from_main_code("SS"),
             ],
             vec![100_000; 4],
             &op_cache,
@@ -1314,8 +1315,8 @@ mod tests {
         let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
-        let trigrams = ["SWS", "MWS", "MES", "NS", "SS"];
-        let path_items = create_path_items_from_trigrams(&trigrams);
+        let main_codes = ["SWS", "MWS", "MES", "NS", "SS"];
+        let path_items = create_path_items_from_main_codes(&main_codes);
         let op_cache =
             OperationalPointCache::load_path_items(db_pool.get_ok(), small_infra.id, &path_items)
                 .await
@@ -1324,24 +1325,24 @@ mod tests {
         let train_to_project_on_op = TrainToProjectOnOperationalPoint {
             space_time_curve: None,
             refs: vec![
-                OperationalPointRefAndTime::new_trigram(0, 1, "SWS"),
+                OperationalPointRefAndTime::new_domestic(0, 1, "SWS"),
                 OperationalPointRefAndTime::default(),
-                OperationalPointRefAndTime::new_trigram(10, 0, "MWS"),
-                OperationalPointRefAndTime::new_trigram(21, 3, "MES"),
+                OperationalPointRefAndTime::new_domestic(10, 0, "MWS"),
+                OperationalPointRefAndTime::new_domestic(21, 3, "MES"),
                 OperationalPointRefAndTime::default(),
-                OperationalPointRefAndTime::new_trigram(28, 0, "NS"),
+                OperationalPointRefAndTime::new_domestic(28, 0, "NS"),
                 OperationalPointRefAndTime::default(),
-                OperationalPointRefAndTime::new_trigram(35, 1, "SS"),
+                OperationalPointRefAndTime::new_domestic(35, 1, "SS"),
             ],
         };
         // Manchette
         let projection_op_id_to_positions = OperationalPointProjection::new(
             vec![
-                create_path_item_from_trigram("SWS"),
-                create_path_item_from_trigram("MWS"),
-                create_path_item_from_trigram("MES"),
-                create_path_item_from_trigram("NS"),
-                create_path_item_from_trigram("SS"),
+                create_path_item_from_main_code("SWS"),
+                create_path_item_from_main_code("MWS"),
+                create_path_item_from_main_code("MES"),
+                create_path_item_from_main_code("NS"),
+                create_path_item_from_main_code("SS"),
             ],
             vec![100_000; 4],
             &op_cache,
@@ -1387,11 +1388,11 @@ mod tests {
         // Manchette
         let projection_op_id_to_positions = OperationalPointProjection::new(
             vec![
-                create_path_item_from_trigram("SWS"),
-                create_path_item_from_trigram("MWS"),
-                create_path_item_from_trigram("MES"),
-                create_path_item_from_trigram("NS"),
-                create_path_item_from_trigram("SS"),
+                create_path_item_from_main_code("SWS"),
+                create_path_item_from_main_code("MWS"),
+                create_path_item_from_main_code("MES"),
+                create_path_item_from_main_code("NS"),
+                create_path_item_from_main_code("SS"),
             ],
             vec![100_000; 4],
             &op_cache,
