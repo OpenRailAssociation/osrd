@@ -33,7 +33,7 @@ type AsyncState<T> = { type: 'loading'; data?: T; abort?: () => void } | { type:
 type ZonesState = AsyncState<MovableOccupancyZone[]>;
 type OperationalPointState = { selected: boolean; zones: ZonesState };
 
-type DeployedWaypoint = {
+export type DeployedWaypoint = {
   waypointId: string;
   operationalPointId: string;
   operationalPointPosition: number;

@@ -37,6 +37,7 @@ import {
   isOccurrenceId,
 } from 'utils/trainId';
 
+import useOccupancyZoneDrop from '../../hooks/useOccupancyZoneDrop';
 import BoardWrapper from '../BoardWrapper';
 import SimulationResultsExport from './SimulationResultsExport';
 import SimulationResultsMap from './SimulationResultsMap';
@@ -185,6 +186,14 @@ const SimulationResults = ({
     updateTrainScheduleDepartureTime,
   });
 
+  const handleOccupancyZoneDrop = useOccupancyZoneDrop({
+    trainSchedules,
+    trainSchedulesWithDetails,
+    pathOperationalPoints: filteredOperationalPoints,
+    deployedWaypoints,
+    upsertTrainSchedules,
+  });
+
   const isEtcs = useMemo(
     () =>
       !!simulationResults?.rollingStock?.supported_signaling_systems.find(
@@ -288,6 +297,7 @@ const SimulationResults = ({
                   onTrainClick={(trainId) => {
                     dispatch(updateSelectedTrain({ id: trainId, by: 'std' }));
                   }}
+                  onOccupancyZoneDrop={handleOccupancyZoneDrop}
                   selectedProjectionId={trainIdUsedForProjection}
                   waypointsPanelIsOpen={waypointsPanelIsOpen}
                   setWaypointsPanelIsOpen={setWaypointsPanelIsOpen}
