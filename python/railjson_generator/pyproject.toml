@@ -28,5 +28,5 @@ osrd-schemas-auto = { path = "../../osrd_schemas_auto", editable = true }
 addopts = "--doctest-modules"
 
 [build-system]
-requires = ["poetry-core>=1.0.0"]
+requires = ["poetry-core>=2.4.1"]
 build-backend = "poetry.core.masonry.api"
