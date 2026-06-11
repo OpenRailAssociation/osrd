@@ -109,11 +109,13 @@
       align-items: center;
       height: 24px;
       justify-content: space-between;
+      min-width: 0;
       .rollingstock-info-begin {
         height: 24px;
         display: flex;
         align-items: center;
         overflow: hidden;
+        min-width: 0;
 
         .rollingstock-info-series {
           height: 24px;

@@ -38,7 +38,7 @@ export const RollingStockInfo = ({
           <BiLockAlt />
         </span>
       )}
-      <div className="rollingstock-info w-100">
+      <div className="rollingstock-info">
         {showSeries && (
           <span className="rollingstock-info-begin">
             <span className="rollingstock-info-series">
