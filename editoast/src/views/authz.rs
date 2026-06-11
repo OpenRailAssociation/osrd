@@ -20,6 +20,7 @@ use authz::v2;
 use authz::v2::Actor;
 use authz::v2::Authorizer;
 use authz::v2::Check;
+use authz::v2::Protected;
 use axum::Extension;
 use axum::extract::Path;
 use axum::extract::State;
@@ -33,6 +34,8 @@ use editoast_models::Infra;
 use editoast_models::RollingStock;
 use editoast_models::User;
 use editoast_models::prelude::*;
+use fga::model::Relation as _;
+use futures::FutureExt as _;
 use itertools::Either;
 use itertools::Itertools;
 use serde::Deserialize;
@@ -843,9 +846,94 @@ pub(in crate::views) async fn update_grants(
                         .allowed()?;
                     }
                     ResourceType::RollingStock => {
-                        panic!(
-                            "not implemented yet, requires implementing rolling stock grants in OpenFGA and exposing them in the authorizer"
-                        )
+                        let authorizer =
+                            authz::v2::special_authorizers::Authorize(regulator.openfga());
+                        let subject = subject.clone();
+                        let prot_give_rs_grant = Protected::new(move |openfga| {
+                            async move {
+                                match subject {
+                                    authz::Subject::User(user) => match grant {
+                                        StandardGrant::Reader => {
+                                            openfga
+                                                .prepare_writes()
+                                                .write(&authz::RollingStock::reader().tuple(
+                                                    &user,
+                                                    &authz::RollingStock(resource_id),
+                                                ))
+                                                .execute()
+                                                .await
+                                                .unwrap();
+                                        }
+                                        StandardGrant::Writer => {
+                                            openfga
+                                                .prepare_writes()
+                                                .write(&authz::RollingStock::writer().tuple(
+                                                    &user,
+                                                    &authz::RollingStock(resource_id),
+                                                ))
+                                                .execute()
+                                                .await
+                                                .unwrap();
+                                        }
+                                        StandardGrant::Owner => {
+                                            openfga
+                                                .prepare_writes()
+                                                .write(&authz::RollingStock::owner().tuple(
+                                                    &user,
+                                                    &authz::RollingStock(resource_id),
+                                                ))
+                                                .execute()
+                                                .await
+                                                .unwrap();
+                                        }
+                                    },
+                                    authz::Subject::Group(group) => match grant {
+                                        StandardGrant::Reader => {
+                                            openfga
+                                                .prepare_writes()
+                                                .write(&authz::RollingStock::reader().tuple(
+                                                    authz::Group::member().userset(&group),
+                                                    &authz::RollingStock(resource_id),
+                                                ))
+                                                .execute()
+                                                .await
+                                                .unwrap();
+                                        }
+                                        StandardGrant::Writer => {
+                                            openfga
+                                                .prepare_writes()
+                                                .write(&authz::RollingStock::writer().tuple(
+                                                    authz::Group::member().userset(&group),
+                                                    &authz::RollingStock(resource_id),
+                                                ))
+                                                .execute()
+                                                .await
+                                                .unwrap();
+                                        }
+                                        StandardGrant::Owner => {
+                                            openfga
+                                                .prepare_writes()
+                                                .write(&authz::RollingStock::owner().tuple(
+                                                    authz::Group::member().userset(&group),
+                                                    &authz::RollingStock(resource_id),
+                                                ))
+                                                .execute()
+                                                .await
+                                                .unwrap();
+                                        }
+                                    },
+                                }
+                                Ok(())
+                            }
+                            .boxed()
+                        });
+                        authorizer
+                            .authorize(prot_give_rs_grant)
+                            .await
+                            .unwrap()
+                            .access()
+                            .await
+                            .unwrap();
                     }
                 }
             }
