@@ -112,4 +112,10 @@ describe('sortOperationalPointsFromNameAndUicSearch', () => {
     const b = { ...baseOp, uic: 0, main_code: 'a' };
     expect(sortWithQuery(a, b)).toEqual(0);
   });
+
+  it('should not depend on argument order', () => {
+    const a = { ...baseOp, is_passenger_station: true, secondary_code: 'AA' };
+    const b = { ...baseOp, is_passenger_station: true, secondary_code: 'BB' };
+    expect(sortWithQuery(a, b)).toEqual(-sortWithQuery(b, a));
+  });
 });
