@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from 'react';
 
-import { Button, Checkbox, DurationInput, Input, Select } from '@osrd-project/ui-core';
+import { Button, DurationInput, Input, Select, Switch } from '@osrd-project/ui-core';
 import { ChevronUp } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
 
@@ -36,6 +36,7 @@ type TrainFieldsState = {
   category: TrainCategory | null;
   service_cadence?: number;
   service_window?: number;
+  use_electrical_profiles: boolean | null;
 };
 
 function getFieldsFromTrain(train: Train): TrainFieldsState {
@@ -47,6 +48,7 @@ function getFieldsFromTrain(train: Train): TrainFieldsState {
     category: train.category ?? null,
     service_cadence: Duration.parse(train.paced?.interval ?? '0').valueOf(),
     service_window: Duration.parse(train.paced?.time_window ?? '0').valueOf(),
+    use_electrical_profiles: train?.options?.use_electrical_profiles ?? null,
   };
 }
 
@@ -65,6 +67,10 @@ function applyFieldsToTrain(fields: TrainFieldsState, train: Train): Train {
     comfort: fields.comfort === null ? undefined : fields.comfort,
     category: fields.category === null ? undefined : fields.category,
     paced,
+    options: {
+      use_electrical_profiles:
+        fields?.use_electrical_profiles === null ? undefined : fields.use_electrical_profiles,
+    },
   };
 }
 
@@ -362,13 +368,14 @@ const ExpandedTrainForm = ({
           />
         </div>
         <div className="train-electric-profile loose-field">
-          <Checkbox
+          <Switch
             id="train-header-electric-profile-input"
-            checked={train?.options?.use_electrical_profiles}
-            disabled
-          >
-            {t('manageTrainSchedule.trainHeader.form.electricalProfiles')}
-          </Checkbox>
+            checked={fields.use_electrical_profiles ?? false}
+            label={t('manageTrainSchedule.trainHeader.form.electricalProfiles')}
+            onChange={(event) => {
+              onFieldImmediateChange('use_electrical_profiles', event.target.checked);
+            }}
+          />
         </div>
         <div className="train-tags">
           <Input
