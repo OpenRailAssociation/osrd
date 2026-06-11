@@ -19,6 +19,7 @@ use crate::v2::infra_effective_grant;
 use crate::v2::infra_granted_subjects;
 use crate::v2::infra_privileges;
 use crate::v2::infra_revoke_grant;
+use crate::v2::infra_set_grant;
 use crate::v2::rolling_stock_effective_grant;
 use crate::v2::rolling_stock_granted_subjects;
 use crate::v2::rolling_stock_privileges;
@@ -115,30 +116,12 @@ impl TestClientExt for fga::Client {
             .unwrap()
     }
 
-    // TODO: use infra_set_grant -> Protected when available
     async fn infra_set_grant(&self, subject: Subject, infra: Infra, grant: InfraGrant) {
-        let mut writes = self.prepare_writes();
-        match (subject, grant) {
-            (Subject::User(user), InfraGrant::Reader) => {
-                writes.push(&Infra::reader().tuple(&user, &infra))
-            }
-            (Subject::User(user), InfraGrant::Writer) => {
-                writes.push(&Infra::writer().tuple(&user, &infra))
-            }
-            (Subject::User(user), InfraGrant::Owner) => {
-                writes.push(&Infra::owner().tuple(&user, &infra))
-            }
-            (Subject::Group(group), InfraGrant::Reader) => {
-                writes.push(&Infra::reader().tuple(Group::member().userset(&group), &infra))
-            }
-            (Subject::Group(group), InfraGrant::Writer) => {
-                writes.push(&Infra::writer().tuple(Group::member().userset(&group), &infra))
-            }
-            (Subject::Group(group), InfraGrant::Owner) => {
-                writes.push(&Infra::owner().tuple(Group::member().userset(&group), &infra))
-            }
-        };
-        writes.execute().await.unwrap();
+        let authorize = special_authorizers::Authorize(self);
+        authorize
+            .access_value(infra_set_grant(subject, infra, grant))
+            .await
+            .unwrap()
     }
 
     async fn infra_revoke_grant(&self, subject: Subject, infra: Infra) -> bool {

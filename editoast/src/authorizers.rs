@@ -44,6 +44,7 @@ impl SystemAuthorizer<'_> {
             Check::HasRole(..)
             | Check::HasInfraPrivilege(..)
             | Check::HasRollingStockPrivilege(..)
+            | Check::CanAlterSubjectInfraGrant(..)
             | Check::SubjectEffectiveInfraGrantIsNot(..)
             | Check::IsNotLastInfraOwner(..) => None,
         })
@@ -106,6 +107,10 @@ impl<'c> UserAuthorizer<'c> {
         }
     }
 
+    fn issuer(&self) -> authz::Subject {
+        authz::Subject::User(self.user)
+    }
+
     #[tracing::instrument(target = "UserAutorizer::check", skip_all, fields(?check, issuer = ?self.user, roles = ?self.roles), ret(level = "trace"), err)]
     async fn check<'ch>(&self, check: &'ch Check) -> Result<Option<&'ch Check>, Error> {
         Ok(match check {
@@ -134,6 +139,39 @@ impl<'c> UserAuthorizer<'c> {
                         .await?;
                 (!privileges.contains(privilege)).then_some(check)
             }
+
+            Check::CanAlterSubjectInfraGrant(subject @ authz::Subject::User(_), infra) => {
+                let issuer = self.issuer();
+                let Ok((Some(issuer_grant), current_grant)) =
+                    authz::v2::infra_effective_grant(issuer, *infra)
+                        .zip(authz::v2::infra_effective_grant(*subject, *infra))
+                        .access_authorized::<Infallible>(self.openfga)
+                        .access()
+                        .await?
+                else {
+                    // According to the authorization model, non-Admin users must have a grant to share
+                    return Ok(Some(check));
+                };
+
+                if let Some(current_grant) = current_grant {
+                    if issuer == *subject {
+                        // I can alter my own grant and self-demote;
+                        None
+                    } else {
+                        // but I cannot do the same thing to my equals.
+                        (current_grant >= issuer_grant).then_some(check)
+                    }
+                } else {
+                    // Unprivileged subjects can always be shared to.
+                    None
+                }
+            }
+            Check::CanAlterSubjectInfraGrant(authz::Subject::Group(_), _) => {
+                // The only users allowed to alter groups grants are admins who bypass this entire
+                // verification function. So if we reach here, well then... TOO BAD GAME OVER LOL
+                Some(check)
+            }
+
             Check::SubjectEffectiveInfraGrantIsNot(grant, subject, infra) => {
                 let Ok(subject_grant) = authz::v2::infra_effective_grant(*subject, *infra)
                     .access_authorized::<Infallible>(self.openfga)
@@ -376,6 +414,10 @@ mod tests {
         InfraPrivilege::CanDelete,
         authz::Infra(i64::MAX)
     ))]
+    #[case::can_alter_subject_infra_grant(Check::CanAlterSubjectInfraGrant(
+        authz::Subject::User(authz::User(i64::MAX)),
+        authz::Infra(i64::MAX)
+    ))]
     #[case::subject_effective_infra_grant_is_not(Check::SubjectEffectiveInfraGrantIsNot(
         InfraGrant::Owner,
         authz::Subject::User(authz::User(i64::MAX)),
@@ -474,6 +516,102 @@ mod tests {
 
         let check = Check::HasInfraPrivilege(Actor::User(target), InfraPrivilege::CanDelete, infra);
         assert_eq!(authorize(&user_authorizer, check).await, Err(check));
+    }
+
+    mod can_alter_subject_infra_grant {
+        use super::*;
+
+        const ISSUER_NOTHING: authz::User = authz::User(0);
+        const ISSUER_READER: authz::User = authz::User(1);
+        const ISSUER_WRITER: authz::User = authz::User(2);
+        const ISSUER_OWNER: authz::User = authz::User(3);
+        const USER_NOTHING: authz::Subject = authz::Subject::User(authz::User(4));
+        const USER_READER: authz::Subject = authz::Subject::User(authz::User(5));
+        const USER_WRITER: authz::Subject = authz::Subject::User(authz::User(6));
+        const USER_OWNER: authz::Subject = authz::Subject::User(authz::User(7));
+        const GROUP_NOTHING: authz::Subject = authz::Subject::Group(authz::Group(8));
+        const GROUP_READER: authz::Subject = authz::Subject::Group(authz::Group(9));
+        const GROUP_WRITER: authz::Subject = authz::Subject::Group(authz::Group(10));
+        const GROUP_OWNER: authz::Subject = authz::Subject::Group(authz::Group(11));
+
+        #[rstest]
+        // a user grants another user
+        #[case::target_user_1(ISSUER_READER, USER_NOTHING, true)]
+        #[case::target_user_2(ISSUER_READER, USER_READER, false)]
+        #[case::target_user_3(ISSUER_READER, USER_WRITER, false)]
+        #[case::target_user_4(ISSUER_READER, USER_OWNER, false)]
+        #[case::target_user_5(ISSUER_WRITER, USER_NOTHING, true)]
+        #[case::target_user_6(ISSUER_WRITER, USER_READER, true)]
+        #[case::target_user_7(ISSUER_WRITER, USER_WRITER, false)]
+        #[case::target_user_8(ISSUER_WRITER, USER_OWNER, false)]
+        #[case::target_user_9(ISSUER_OWNER, USER_NOTHING, true)]
+        #[case::target_user_10(ISSUER_OWNER, USER_READER, true)]
+        #[case::target_user_11(ISSUER_OWNER, USER_WRITER, true)]
+        #[case::target_user_12(ISSUER_OWNER, USER_OWNER, false)]
+        // non-admins cannot grant groups
+        #[case::target_group_1(ISSUER_READER, GROUP_NOTHING, false)]
+        #[case::target_group_2(ISSUER_READER, GROUP_READER, false)]
+        #[case::target_group_3(ISSUER_READER, GROUP_WRITER, false)]
+        #[case::target_group_4(ISSUER_READER, GROUP_OWNER, false)]
+        #[case::target_group_5(ISSUER_WRITER, GROUP_NOTHING, false)]
+        #[case::target_group_6(ISSUER_WRITER, GROUP_READER, false)]
+        #[case::target_group_7(ISSUER_WRITER, GROUP_WRITER, false)]
+        #[case::target_group_8(ISSUER_WRITER, GROUP_OWNER, false)]
+        #[case::target_group_9(ISSUER_OWNER, GROUP_NOTHING, false)]
+        #[case::target_group_10(ISSUER_OWNER, GROUP_READER, false)]
+        #[case::target_group_11(ISSUER_OWNER, GROUP_WRITER, false)]
+        #[case::target_group_12(ISSUER_OWNER, GROUP_OWNER, false)]
+        // targeting self is allowed within privilege limits
+        #[case::target_self_1(ISSUER_READER, authz::Subject::User(ISSUER_READER), true)]
+        #[case::target_self_2(ISSUER_WRITER, authz::Subject::User(ISSUER_WRITER), true)]
+        #[case::target_self_3(ISSUER_OWNER, authz::Subject::User(ISSUER_OWNER), true)]
+        // a user with no grant do not have the privilege to share grants
+        #[case::unreachable(ISSUER_NOTHING, USER_NOTHING, false)]
+        #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+        async fn test(
+            #[case] issuer: authz::User,
+            #[case] target: authz::Subject,
+            #[case] ok: bool,
+        ) {
+            let openfga = openfga().await;
+            let pool = DbConnectionPoolV2::for_tests();
+            let user_authorizer = UserAuthorizer::new(issuer, vec![], &openfga, pool.get_ok());
+
+            openfga
+                .prepare_writes()
+                .write(&authz::Infra::reader().tuple(&ISSUER_READER, &authz::Infra(1)))
+                .write(&authz::Infra::writer().tuple(&ISSUER_WRITER, &authz::Infra(1)))
+                .write(&authz::Infra::owner().tuple(&ISSUER_OWNER, &authz::Infra(1)))
+                .write(
+                    &authz::Infra::reader().tuple(&authz::User(USER_READER.id()), &authz::Infra(1)),
+                )
+                .write(
+                    &authz::Infra::writer().tuple(&authz::User(USER_WRITER.id()), &authz::Infra(1)),
+                )
+                .write(
+                    &authz::Infra::owner().tuple(&authz::User(USER_OWNER.id()), &authz::Infra(1)),
+                )
+                .write(&authz::Infra::reader().tuple(
+                    authz::Group::member().userset(&authz::Group(GROUP_READER.id())),
+                    &authz::Infra(1),
+                ))
+                .write(&authz::Infra::writer().tuple(
+                    authz::Group::member().userset(&authz::Group(GROUP_WRITER.id())),
+                    &authz::Infra(1),
+                ))
+                .write(&authz::Infra::owner().tuple(
+                    authz::Group::member().userset(&authz::Group(GROUP_OWNER.id())),
+                    &authz::Infra(1),
+                ))
+                .execute()
+                .await
+                .unwrap();
+
+            let check = Check::CanAlterSubjectInfraGrant(target, authz::Infra(1));
+            let result = authorize(&user_authorizer, check).await;
+            let expected = ok.then_some(()).ok_or(check);
+            assert_eq!(result, expected);
+        }
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -582,6 +720,10 @@ mod tests {
     #[case::has_infra_privilege(Check::HasInfraPrivilege(
         Actor::Issuer,
         InfraPrivilege::CanWrite,
+        authz::Infra(i64::MAX)
+    ))]
+    #[case::can_alter_subject_infra_grant(Check::CanAlterSubjectInfraGrant(
+        authz::Subject::user(i64::MAX),
         authz::Infra(i64::MAX)
     ))]
     #[case::subject_effective_infra_grant_is_not(Check::SubjectEffectiveInfraGrantIsNot(

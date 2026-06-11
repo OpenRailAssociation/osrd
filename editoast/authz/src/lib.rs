@@ -195,9 +195,12 @@ mod mock_driver {
             infra: model::Infra,
             grant: InfraGrant,
         ) {
-            self.give_infra_grant_unchecked(&user.into(), &infra, grant)
+            v2::infra_set_grant(user.into(), infra, grant)
+                .authorize(&v2::special_authorizers::Authorize(self.openfga()))
                 .await
                 .expect("infra grant set should succeed")
+                .unwrap_authorized()
+                .await;
         }
 
         pub async fn assert_infra_grant_eq(

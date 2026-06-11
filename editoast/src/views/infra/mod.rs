@@ -9,9 +9,9 @@ pub(in crate::views) mod pathfinding;
 pub(in crate::views) mod railjson;
 pub(in crate::views) mod routes;
 
-use authz;
 use authz::InfraGrant;
 use authz::InfraPrivilege;
+use authz::v2;
 use authz::v2::Authorizer as _;
 use authz::v2::Check;
 use axum::Extension;
@@ -38,12 +38,14 @@ use thiserror::Error;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
 
-use super::Authentication;
 use super::AuthenticationExt;
 use super::pagination::PaginationStats;
 use crate::AppState;
 use crate::Arc;
+use crate::authentication;
+use crate::authorizers::SystemAuthorizer;
 use crate::authorizers::UserAuthorizer;
+use crate::authorizers::impossible;
 use crate::error::Result;
 use crate::generated_data::InfraGeneratedData as _;
 use crate::generated_data::operational_point::OperationalPointLayer;
@@ -304,22 +306,42 @@ pub(in crate::views) async fn create(
     State(AppState {
         db_pool, regulator, ..
     }): State<AppState>,
-    Extension(auth): AuthenticationExt,
+    Extension(authn_state): Extension<authentication::State>,
     Json(infra_form): Json<InfraCreateForm>,
 ) -> Result<impl IntoResponse> {
     let infra: Changeset<Infra> = infra_form.into_changeset();
-    let infra = infra.create(&mut db_pool.get().await?).await?;
+    let mut conn = db_pool.get().await?;
+    let infra = infra.create(&mut conn).await?;
 
-    // Assign OWNER to the user on the infra if authz is enabled
-    // NOTE: we use the regulator here instead of the one in the authorizer to bypass the checks on grant_infra_owner
-    if let Authentication::Authenticated(authorizer) = auth {
-        regulator
-            .give_infra_grant_unchecked(
-                &authz::Subject::User(authz::User(authorizer.user_id())),
-                &authz::Infra(infra.id),
-                InfraGrant::Owner,
-            )
-            .await?;
+    if let authentication::State::Authenticated { user, .. } = &authn_state {
+        match v2::infra_set_grant(
+            authz::Subject::User(*user),
+            authz::Infra(infra.id),
+            InfraGrant::Owner,
+        )
+        .authorize(&SystemAuthorizer {
+            openfga: regulator.openfga(),
+            conn: conn.clone(),
+        })
+        .await?
+        .access()
+        .await?
+        {
+            Ok(()) => {}
+            Err(v2::Check::SubjectExists(subject)) => {
+                unreachable!("authenticated user should exist: {subject:?}")
+            }
+            Err(v2::Check::InfraExists(infra)) => {
+                unreachable!("infra was just created: {infra:?}")
+            }
+            Err(
+                check @ (v2::Check::HasInfraPrivilege(..)
+                | v2::Check::CanAlterSubjectInfraGrant(..)),
+            ) => {
+                unreachable!("SystemAuthorizer should not reject infra grant checks: {check:?}")
+            }
+            Err(check) => impossible!(check),
+        }
     }
 
     Ok((StatusCode::CREATED, Json(infra)))
@@ -345,6 +367,7 @@ pub(in crate::views) struct CloneQuery {
 )]
 pub(in crate::views) async fn clone(
     Extension(auth): AuthenticationExt,
+    Extension(authn_state): Extension<authentication::State>,
     Path(InfraIdParam { infra_id }): Path<InfraIdParam>,
     State(AppState {
         db_pool, regulator, ..
@@ -368,16 +391,35 @@ pub(in crate::views) async fn clone(
 
     let cloned_infra = infra.clone(&mut conn, name).await?;
 
-    // Assign OWNER to the user on the infra if authz is enabled
-    // NOTE: we use the regulator here instead of the one in the authorizer to bypass the checks on grant_infra_owner
-    if let Authentication::Authenticated(authorizer) = auth {
-        regulator
-            .give_infra_grant_unchecked(
-                &authz::Subject::User(authz::User(authorizer.user_id())),
-                &authz::Infra(cloned_infra.id),
-                InfraGrant::Owner,
-            )
-            .await?;
+    if let authentication::State::Authenticated { user, .. } = &authn_state {
+        match v2::infra_set_grant(
+            authz::Subject::User(*user),
+            authz::Infra(cloned_infra.id),
+            InfraGrant::Owner,
+        )
+        .authorize(&SystemAuthorizer {
+            openfga: regulator.openfga(),
+            conn: conn.clone(),
+        })
+        .await?
+        .access()
+        .await?
+        {
+            Ok(()) => {}
+            Err(v2::Check::SubjectExists(subject)) => {
+                unreachable!("authenticated user should exist: {subject:?}")
+            }
+            Err(v2::Check::InfraExists(infra)) => {
+                unreachable!("infra was just cloned: {infra:?}")
+            }
+            Err(
+                check @ (v2::Check::HasInfraPrivilege(..)
+                | v2::Check::CanAlterSubjectInfraGrant(..)),
+            ) => {
+                unreachable!("SystemAuthorizer should not reject infra grant checks: {check:?}")
+            }
+            Err(check) => impossible!(check),
+        }
     }
 
     Ok(Json(cloned_infra.id))
@@ -890,12 +932,19 @@ pub mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn infra_clone_empty() {
-        let app = test_app!().skip_authz().build();
+        let app = test_app!().build();
         let db_pool = app.db_pool();
         let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
+        let user = app
+            .user("thomas", "Thomas")
+            .with_roles([Role::OperationalStudies])
+            .with_infra_grant(empty_infra.id, InfraGrant::Reader)
+            .create()
+            .await;
 
         let cloned_infra_id: i64 = app
             .post(format!("/infra/{}/clone/?name=cloned_infra", empty_infra.id).as_str())
+            .by_user(user.as_ref())
             .await
             .assert_status_ok()
             .json();
@@ -904,6 +953,7 @@ pub mod tests {
             .unwrap()
             .expect("infra was not cloned");
         assert_eq!(cloned_infra.name, "cloned_infra");
+        app.assert_infra_grant(cloned_infra_id, user.id, Some(InfraGrant::Owner));
     }
 
     #[derive(QueryableByName)]
@@ -914,10 +964,16 @@ pub mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn infra_clone() {
-        let app = test_app!().skip_authz().build();
+        let app = test_app!().build();
         let db_pool = app.db_pool();
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
         let small_infra_id = small_infra.id;
+        let user = app
+            .user("thomas", "Thomas")
+            .with_roles([Role::OperationalStudies])
+            .with_infra_grant(small_infra_id, InfraGrant::Reader)
+            .create()
+            .await;
         let infra_cache = InfraCache::load(&mut db_pool.get_ok(), &small_infra)
             .await
             .unwrap();
@@ -937,6 +993,7 @@ pub mod tests {
 
         let cloned_infra_id: i64 = app
             .post(format!("/infra/{small_infra_id}/clone/?name=cloned_infra").as_str())
+            .by_user(user.as_ref())
             .await
             .assert_status_ok()
             .json();
@@ -945,6 +1002,7 @@ pub mod tests {
             .await
             .unwrap()
             .expect("infra was not cloned");
+        app.assert_infra_grant(cloned_infra_id, user.id, Some(InfraGrant::Owner));
 
         let mut tables = vec!["infra_layer_error"];
         for object in ObjectType::iter() {
@@ -1095,10 +1153,16 @@ pub mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn default_infra_create() {
-        let app = test_app!().skip_authz().build();
+        let app = test_app!().build();
+        let user = app
+            .user("thomas", "Thomas")
+            .with_roles([Role::OperationalStudies])
+            .create()
+            .await;
 
         let infra: Infra = app
             .post("/infra")
+            .by_user(user.as_ref())
             .json(&json!({ "name": "create_infra_test" }))
             .await
             .assert_status(StatusCode::CREATED)
@@ -1109,6 +1173,7 @@ pub mod tests {
         assert_eq!(infra.version, DEFAULT_INFRA_VERSION);
         assert_eq!(infra.generated_version, None);
         assert!(!infra.locked);
+        app.assert_infra_grant(infra.id, user.id, Some(InfraGrant::Owner));
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]

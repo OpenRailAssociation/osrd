@@ -42,6 +42,7 @@ use tower_http::trace::TraceLayer;
 use url::Url;
 
 use crate::AppState;
+use crate::authorizers::SystemAuthorizer;
 use crate::generated_data::speed_limit_tags_config::SpeedLimitTagIds;
 use crate::infra_cache::InfraCache;
 use crate::views::service_router;
@@ -525,15 +526,21 @@ impl<'a> UserBuilder<'a> {
                 .unwrap_authorized()
                 .await;
 
+            let system = SystemAuthorizer {
+                openfga: regulator.openfga(),
+                conn: app.db_pool().get().await.unwrap(),
+            };
             for (infra_id, grant) in infras_grant.into_iter() {
-                regulator
-                    .give_infra_grant_unchecked(
-                        &authz::Subject::User(authz::User(user.id)),
-                        &authz::Infra(infra_id),
-                        grant,
-                    )
-                    .await
-                    .expect("Infra grant should be given successfully")
+                v2::infra_set_grant(
+                    authz::Subject::User(authz::User(user.id)),
+                    authz::Infra(infra_id),
+                    grant,
+                )
+                .authorize(&system)
+                .await
+                .expect("Infra grant should be given successfully")
+                .unwrap_authorized()
+                .await;
             }
             for (rolling_stock_id, grant) in rolling_stock_grants.into_iter() {
                 app.openfga()
@@ -637,12 +644,18 @@ impl<'a> GroupBuilder<'a> {
             .unwrap_authorized()
             .await;
 
+            let system = SystemAuthorizer {
+                openfga: regulator.openfga(),
+                conn: app.db_pool().get().await.unwrap(),
+            };
             let subject = authz::Subject::Group(group_auth);
             for (infra_id, grant) in infras_grant.into_iter() {
-                regulator
-                    .give_infra_grant_unchecked(&subject, &authz::Infra(infra_id), grant)
+                v2::infra_set_grant(subject, authz::Infra(infra_id), grant)
+                    .authorize(&system)
                     .await
                     .expect("Infra grant should be given successfully")
+                    .unwrap_authorized()
+                    .await;
             }
             for (rolling_stock_id, grant) in rolling_stock_grants.into_iter() {
                 app.openfga()
