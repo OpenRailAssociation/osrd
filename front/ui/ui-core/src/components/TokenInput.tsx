@@ -7,20 +7,26 @@ export type TokenInputProps = {
   label: string;
   tokens: string[];
   small?: boolean;
+  onChange?: (tokens: string[]) => void;
+  onBlur?: () => void;
 };
 
-const TokenInput = ({ label, tokens: initialTokens, small }: TokenInputProps) => {
+const TokenInput = ({ label, tokens: initialTokens, small, onChange, onBlur }: TokenInputProps) => {
   const [tokens, setTokens] = useState(initialTokens);
   const [newToken, setNewToken] = useState('');
   const [selectedToken, setSelectedToken] = useState<number | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const addToken = (token: string) => {
-    setTokens((oldTokens) => [...oldTokens, token]);
+    const newTokens = [...tokens, token];
+    setTokens(newTokens);
+    onChange?.(newTokens);
   };
 
   const removeToken = (index: number) => {
-    setTokens((oldTokens) => oldTokens.toSpliced(index, 1));
+    const newTokens = tokens.toSpliced(index, 1);
+    setTokens(newTokens);
+    onChange?.(newTokens);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -66,6 +72,7 @@ const TokenInput = ({ label, tokens: initialTokens, small }: TokenInputProps) =>
           value={newToken}
           onChange={(e) => setNewToken(e.target.value)}
           onKeyDown={handleKeyDown}
+          onBlur={onBlur}
           className="token-input"
           ref={inputRef}
         />
