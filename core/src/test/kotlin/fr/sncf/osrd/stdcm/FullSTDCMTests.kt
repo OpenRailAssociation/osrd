@@ -457,7 +457,7 @@ fun makeRequirementsFromPath(
         )
             as PathfindingBlockSuccess
 
-    val trainPath = path.path.toTrainPath(infra.rawInfra, infra.blockInfra, null)
+    val trainPath = path.path.toTrainPath(listOf(), infra.rawInfra, infra.blockInfra, null)
     val sim =
         runStandaloneSimulation(
             infra,

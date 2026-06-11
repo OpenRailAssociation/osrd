@@ -50,9 +50,11 @@ class CSVLogger(filename: String, private val keys: List<String>) {
 /** Return the geo coordinates of a node. */
 fun STDCMNode.toGeoPoint(rawInfra: RawInfra, blockInfra: BlockInfra): Point {
     val blockRange = infraExplorer.getCurrentBlockRange()
-    val geo = buildTrainPathFromBlock(rawInfra, blockInfra, blockRange.value).getGeo()
+    val geo = buildTrainPathFromBlock(rawInfra, blockInfra, blockRange.value, listOf()).getGeo()
     val blockLength = blockInfra.getBlockLength(blockRange.value)
     val blockOffset = blockRange.offsetFromTrainPath(infraExplorer.getSimulatedLength())
+    // TODO interpolate at the track-section level, as the geo length is not guaranteed equal to
+    //   the topo length for all track-sections
     var p = geo.interpolateNormalized(blockOffset.meters / blockLength.meters)
     if (p.lat.isNaN() || p.lon.isNaN()) p = geo.getPoints().first()
     return p

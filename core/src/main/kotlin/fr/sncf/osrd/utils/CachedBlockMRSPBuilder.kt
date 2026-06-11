@@ -55,7 +55,8 @@ data class CachedBlockMRSPBuilder(
     fun getMRSP(block: BlockId): Envelope {
         return mrspCache.computeIfAbsent(block) {
             // TODO: change input to infra explorers, and fetch last route there
-            val pathProps = buildTrainPathFromBlock(rawInfra, blockInfra, block, routes = listOf())
+            val pathProps =
+                buildTrainPathFromBlock(rawInfra, blockInfra, block, listOf(), routes = listOf())
             computeMRSP(
                 pathProps,
                 rsMaxSpeed,

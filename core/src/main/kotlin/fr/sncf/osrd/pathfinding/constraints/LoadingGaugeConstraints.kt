@@ -15,7 +15,7 @@ data class LoadingGaugeConstraints(
 ) : PathfindingConstraint {
     override fun apply(edge: BlockId): Collection<OffsetRange<Block>> {
         val res = HashSet<OffsetRange<Block>>()
-        val path = buildTrainPathFromBlock(infra, blockInfra, edge)
+        val path = buildTrainPathFromBlock(infra, blockInfra, edge, listOf())
         res.addAll(getBlockedRanges(loadingGaugeType, path))
         return res
     }

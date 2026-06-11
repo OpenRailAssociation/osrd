@@ -88,7 +88,13 @@ class TestBALtoBAL {
                 blockInfra.getBlocksStartingAtDetector(detV.decreasing).first(),
             )
         val trainPath =
-            buildTrainPathFromBlocks(infra, blockInfra, blocks, routeNames = listOf("U-Z"))
+            buildTrainPathFromBlocks(
+                infra,
+                blockInfra,
+                blocks,
+                listOf(),
+                routeNames = listOf("U-Z"),
+            )
         val zoneStates = mutableListOf(ZoneStatus.CLEAR, ZoneStatus.CLEAR, ZoneStatus.CLEAR)
         val res =
             simulator.evaluate(
@@ -190,6 +196,7 @@ class TestBALtoBAL {
                 infra,
                 blockInfra,
                 blockRanges,
+                listOf(),
                 routeNames = listOf("U-Z"),
             )
         val zoneStates = mutableListOf(ZoneStatus.CLEAR, ZoneStatus.CLEAR, ZoneStatus.CLEAR)

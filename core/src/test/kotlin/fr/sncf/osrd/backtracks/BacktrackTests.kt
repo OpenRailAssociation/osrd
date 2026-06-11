@@ -166,9 +166,9 @@ class BacktrackTests {
             infra.rawInfra,
             infra.blockInfra,
             buildRangeList(blockRanges),
+            listOf(backtrackLocation),
             routeNames =
                 listOf("rt.bf.a->det.a3", "rt.det.a3->bf.c", "rt.bf.c->det.c1", "rt.det.c1->bf.b"),
-            backtrackLocations = listOf(backtrackLocation),
         )
     }
 
@@ -236,8 +236,8 @@ class BacktrackTests {
             infra.rawInfra,
             infra.blockInfra,
             buildRangeList(blockRanges),
+            listOf(backtrackLocation),
             routeNames = listOf("rt.bf.a->det.a3", "rt.det.a3->bf.c", "rt.det.c1->bf.b"),
-            backtrackLocations = listOf(backtrackLocation),
         )
     }
 
@@ -315,9 +315,9 @@ class BacktrackTests {
             infra.rawInfra,
             infra.blockInfra,
             buildRangeList(blockRanges),
+            listOf(backtrackLocation),
             routeNames =
                 listOf("rt.bf.a->det.a3", "rt.det.a3->bf.c", "rt.bf.c->det.c1", "rt.det.c1->bf.b"),
-            backtrackLocations = listOf(backtrackLocation),
         )
     }
 

@@ -10,7 +10,6 @@ import fr.sncf.osrd.cli.RsWithStatus
 import fr.sncf.osrd.cli.Take
 import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.standalone_sim.runStandaloneSimulation
-import fr.sncf.osrd.utils.*
 import io.opentelemetry.api.trace.Span
 import java.io.File
 import java.time.LocalDateTime
@@ -54,7 +53,12 @@ class SimulationEndpoint(
 
             // Parse path
             val trainPath =
-                request.path.toTrainPath(infra.rawInfra, infra.blockInfra, electricalProfileMap)
+                request.path.toTrainPath(
+                    request.backtrackPathItems.map { request.pathItemPositions[it] },
+                    infra.rawInfra,
+                    infra.blockInfra,
+                    electricalProfileMap,
+                )
 
             val res =
                 runStandaloneSimulation(

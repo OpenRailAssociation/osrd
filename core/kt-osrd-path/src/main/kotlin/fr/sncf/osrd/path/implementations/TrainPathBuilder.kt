@@ -26,12 +26,14 @@ fun buildTrainPathFromBlock(
     rawInfra: RawInfra,
     blockInfra: BlockInfra,
     blockId: BlockId,
+    backtrackLocations: List<Offset<Block>>,
     beginOffset: Offset<Block> = Offset(0.meters),
     endOffset: Offset<Block> = blockInfra.getBlockLength(blockId),
     routes: List<RouteId>? = null,
     routeNames: List<String>? = null,
     electricalProfileMapping: ElectricalProfileMapping? = null,
 ): TrainPath {
+    backtrackLocations.forEach { assert(it == beginOffset || it == endOffset) }
     val blockList =
         listOf(
             BlockRange(
@@ -47,6 +49,7 @@ fun buildTrainPathFromBlock(
         rawInfra,
         blockInfra,
         blockList,
+        backtrackLocations.map { Offset(it.distance) },
         routes,
         routeNames,
         electricalProfileMapping,
@@ -58,6 +61,7 @@ fun buildTrainPathFromBlocks(
     rawInfra: RawInfra,
     blockInfra: BlockInfra,
     blocks: List<BlockId>,
+    backtrackLocations: List<Offset<PhysicsPath>>,
     routes: List<RouteId>? = null,
     routeNames: List<String>? = null,
     electricalProfileMapping: ElectricalProfileMapping? = null,
@@ -82,6 +86,7 @@ fun buildTrainPathFromBlocks(
         rawInfra,
         blockInfra,
         blockRanges,
+        backtrackLocations,
         routes,
         routeNames,
         electricalProfileMapping,
@@ -93,11 +98,11 @@ fun buildTrainPathFromBlockRanges(
     rawInfra: RawInfra,
     blockInfra: BlockInfra,
     blockRanges: List<BlockRange>,
+    backtrackLocations: List<Offset<PhysicsPath>>,
     routes: List<RouteId>? = null,
     routeNames: List<String>? = null,
     electricalProfileMapping: ElectricalProfileMapping? = null,
     haveApproximateBlocks: Boolean = false,
-    backtrackLocations: List<Offset<PhysicsPath>> = listOf(),
 ): TrainPath {
     require(routes == null || routeNames == null)
     val chunks = generateTrackChunks(rawInfra, blockInfra, blockRanges)
@@ -123,6 +128,7 @@ fun buildTrainPathFromChunks(
     rawInfra: RawInfra,
     blockInfra: BlockInfra,
     chunkRanges: List<DirChunkRange>,
+    backtrackLocations: List<Offset<PhysicsPath>>,
     routes: List<RouteId>? = null,
     routeNames: List<String>? = null,
     electricalProfileMapping: ElectricalProfileMapping? = null,
@@ -132,6 +138,7 @@ fun buildTrainPathFromChunks(
         rawInfra,
         blockInfra,
         blockRanges,
+        backtrackLocations,
         routes,
         routeNames,
         electricalProfileMapping,
@@ -147,6 +154,7 @@ fun buildTrainPathFromTracks(
     rawInfra: RawInfra,
     blockInfra: BlockInfra,
     trackRanges: List<DirTrackRange>,
+    backtrackLocations: List<Offset<PhysicsPath>>,
     routes: List<RouteId>? = null,
     routeNames: List<String>? = null,
     electricalProfileMapping: ElectricalProfileMapping? = null,
@@ -170,6 +178,7 @@ fun buildTrainPathFromTracks(
         rawInfra,
         blockInfra,
         chunkRanges,
+        backtrackLocations,
         routes,
         routeNames,
         electricalProfileMapping,

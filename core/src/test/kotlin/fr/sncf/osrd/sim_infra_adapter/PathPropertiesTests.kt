@@ -566,6 +566,7 @@ class PathPropertiesTests {
                 infra.rawInfra,
                 infra.blockInfra,
                 BlockId(0U),
+                listOf(),
                 routes = listOf(),
             )
         val speedLimits = path.getSpeedLimitProperties("trainTag", null)
@@ -613,6 +614,7 @@ class PathPropertiesTests {
                 infra.rawInfra,
                 infra.blockInfra,
                 blocks.last(),
+                listOf(),
                 routeNames = listOf("rt.DH2->buffer_stop.7"),
             )
 

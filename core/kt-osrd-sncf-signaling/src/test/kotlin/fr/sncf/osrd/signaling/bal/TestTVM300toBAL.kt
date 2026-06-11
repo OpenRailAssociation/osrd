@@ -76,7 +76,13 @@ class TestTVM300toBAL {
             )
         val zoneStates = mutableListOf(ZoneStatus.CLEAR, ZoneStatus.CLEAR, ZoneStatus.INCOMPATIBLE)
         val trainPath =
-            buildTrainPathFromBlocks(infra, blockInfra, blocks, routeNames = listOf("W-Z"))
+            buildTrainPathFromBlocks(
+                infra,
+                blockInfra,
+                blocks,
+                listOf(),
+                routeNames = listOf("W-Z"),
+            )
         val res =
             simulator.evaluate(
                 infra,

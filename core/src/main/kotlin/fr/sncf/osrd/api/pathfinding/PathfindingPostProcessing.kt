@@ -46,13 +46,16 @@ private fun validatePathfindingResponse(
     // TODO path migrations: some of those checks won't be true anymore with backtracks
     if (res !is PathfindingBlockSuccess) return
 
-    val trainPath = res.path.toTrainPath(infra.rawInfra, infra.blockInfra, null)
+    val backtrackLocations = res.backtrackPathItems.map { res.pathItemPositions[it] }
+
+    val trainPath = res.path.toTrainPath(backtrackLocations, infra.rawInfra, infra.blockInfra, null)
     val blocks = trainPath.getBlocks()
     for ((i, blockRange) in blocks.withIndex()) {
         val block = blockRange.value
         val stopAtBufferStop = infra.blockInfra.blockStopAtBufferStop(block)
         val isLastBlock = i == blocks.size - 1
-        if (stopAtBufferStop && !isLastBlock) {
+        val endsBacktracking = blockRange.pathEnd in backtrackLocations
+        if (stopAtBufferStop && !(isLastBlock || endsBacktracking)) {
             val zonePath = infra.blockInfra.getBlockZonePaths(block).last()
             val detector = infra.rawInfra.getZonePathExit(zonePath)
             val detectorName = infra.rawInfra.getDetectorName(detector.value)

@@ -502,12 +502,13 @@ pub async fn consist_train_simulation_batch<T: TrainScheduleLike>(
             train_schedule,
             consist,
         } = train_schedule_with_consist;
-        let (path, path_item_positions) = match pathfinding.as_ref() {
+        let (path, path_item_positions, backtrack_path_items) = match pathfinding.as_ref() {
             PathfindingResult::Success(PathfindingResultSuccess {
                 path,
                 path_item_positions,
+                backtrack_path_items,
                 ..
-            }) => (path, path_item_positions),
+            }) => (path, path_item_positions, backtrack_path_items),
             PathfindingResult::Failure(pathfinding_failed) => {
                 simulation_results[index] =
                     Some(Arc::new(simulation::Response::PathfindingFailed {
@@ -522,6 +523,7 @@ pub async fn consist_train_simulation_batch<T: TrainScheduleLike>(
             infra,
             train_schedule,
             path_item_positions,
+            backtrack_path_items.as_ref(),
             path,
             electrical_profile_set_id,
             PhysicsConsist::from(consist.clone()),
@@ -748,6 +750,7 @@ fn build_simulation_request<T: TrainScheduleLike>(
     infra: &Infra,
     train_schedule: &T,
     path_item_positions: &[u64],
+    backtrack_path_items: Option<&Vec<usize>>,
     path: &TrainPath,
     electrical_profile_set_id: Option<i64>,
     physics_consist: PhysicsConsist,
@@ -775,7 +778,7 @@ fn build_simulation_request<T: TrainScheduleLike>(
         physics_consist,
         electrical_profile_set_id,
         path_item_positions: path_item_positions.to_vec(),
-        backtrack_path_items: Some(vec![]),
+        backtrack_path_items: backtrack_path_items.cloned(),
     }
 }
 

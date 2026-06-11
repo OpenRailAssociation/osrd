@@ -22,7 +22,7 @@ class DriverBehaviourTest {
                 infra.addBlock("b", "c", 100.meters, 10.0),
                 infra.addBlock("c", "d", 100.meters, 20.0),
             )
-        val path = buildTrainPathFromBlocks(infra, infra, blocks, routes = listOf())
+        val path = buildTrainPathFromBlocks(infra, infra, blocks, listOf(), routes = listOf())
         val testRollingStock = TestTrains.VERY_SHORT_FAST_TRAIN
         val driverBehaviour = DriverBehaviour(2.0, 3.0)
         var mrsp = computeMRSP(path, testRollingStock, true, null, null)
