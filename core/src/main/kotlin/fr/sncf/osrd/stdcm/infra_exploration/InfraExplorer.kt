@@ -141,6 +141,15 @@ interface InfraExplorer {
     ): List<PathStop>
 
     /**
+     * Returns the backtrack locations in the given interval, going up to the path start/end if
+     * unspecified
+     */
+    fun getBacktrackLocationsInRange(
+        from: Offset<PhysicsPath>? = null,
+        to: Offset<PhysicsPath>? = null,
+    ): List<Offset<PhysicsPath>>
+
+    /**
      * Returns the end of the lookahead as a train path offset. Can also be seen as the total length
      * of the currently known path.
      */
@@ -169,6 +178,8 @@ data class ExplorerStep(
     val plannedTimingData: PlannedTimingData? = null,
 )
 
+data class TrainPathCacheKey(val blockId: BlockId, val backtrackLocation: Offset<Block>?)
+
 /**
  * Init all InfraExplorers starting at the given location. The last of `stops` are used to identify
  * when the incremental path is complete. `constraints` are used to determine if a block can be
@@ -185,8 +196,8 @@ fun initInfraExplorers(
     require(constraints == null || targets.isEmpty() || constraints.size == targets.size)
     val infraExplorers = mutableListOf<InfraExplorer>()
     val block = location.edge
-    val pathProps = buildTrainPathFromBlock(rawInfra, blockInfra, block)
-    val blockToPathProperties = mutableMapOf(block to pathProps)
+    val pathProps = buildTrainPathFromBlock(rawInfra, blockInfra, block, listOf())
+    val blockToPathProperties = mutableMapOf(TrainPathCacheKey(block, null) to pathProps)
     val routes = blockInfra.routesOnBlock(rawInfra, block)
 
     routes.forEach { route ->
@@ -221,7 +232,7 @@ private class InfraExplorerImpl(
     private var routes: AppendOnlyLinkedList<RouteRange>,
     private var blockRoutes: AppendOnlyMap<BlockId, RouteId>,
     private var lastTrack: TrackSectionId?,
-    private var trainPathCache: MutableMap<BlockId, TrainPath>,
+    private var trainPathCache: MutableMap<TrainPathCacheKey, TrainPath>,
     private var currentIndex: Int = 0, // /!\ currentBlockRange should be updated simultaneously /!\
     private var currentBlockRange: BlockRange? = null,
     private var stepTracker: StepTracker,
@@ -234,10 +245,26 @@ private class InfraExplorerImpl(
         // We also can't set a first route for sure in initInfraExplorer, but we set the first cache
         // entry.
         // So we have to correct that here now that we now which route we're on.
+        val blockRange = getCurrentBlockRange()
+        val blockBacktrackLocations =
+            getBacktrackLocationsInRange(blockRange.pathBegin, blockRange.pathEnd).map {
+                Offset<Block>(it.distance - blockRange.objectAbsolutePathStart.distance)
+            }
+
+        assert(blockBacktrackLocations.size <= 1)
+        val trainPathCacheKey =
+            TrainPathCacheKey(getCurrentBlock(), blockBacktrackLocations.firstOrNull())
+
         val path =
-            trainPathCache.getOrElse(getCurrentBlock()) {
-                val res = buildTrainPathFromBlock(rawInfra, blockInfra, getCurrentBlock())
-                trainPathCache[getCurrentBlock()] = res
+            trainPathCache.getOrElse(trainPathCacheKey) {
+                val res =
+                    buildTrainPathFromBlock(
+                        rawInfra,
+                        blockInfra,
+                        getCurrentBlock(),
+                        blockBacktrackLocations,
+                    )
+                trainPathCache[trainPathCacheKey] = res
                 res
             }
         val route = blockRoutes[getCurrentBlock()]!!
@@ -396,9 +423,18 @@ private class InfraExplorerImpl(
             rawInfra,
             blockInfra,
             blocks,
+            getSeenBacktrackLocations(),
             getExploredRoutes(),
             electricalProfileMapping = electricalProfileMapping,
         )
+    }
+
+    private fun getSeenBacktrackLocations(): List<Offset<PhysicsPath>> {
+        return stepTracker
+            .iterateSeenStepsBackwards()
+            .mapNotNull { if (it.isBacktracking) it.travelledPathOffset else null }
+            .toList()
+            .asReversed()
     }
 
     private fun <T, U> getSubRanges(
@@ -436,9 +472,30 @@ private class InfraExplorerImpl(
         return getStepTracker()
             .iterateSeenStepsBackwards()
             .takeWhile { it.travelledPathOffset >= from }
-            .filter { it.originalStep.stop && it.travelledPathOffset <= to }
-            .map {
-                PathStop(it.travelledPathOffset, RJSTrainStop.RJSReceptionSignal.SHORT_SLIP_STOP)
+            .mapNotNull {
+                if (it.originalStep.stop && it.travelledPathOffset <= to)
+                    PathStop(
+                        it.travelledPathOffset,
+                        RJSTrainStop.RJSReceptionSignal.SHORT_SLIP_STOP,
+                    )
+                else null
+            }
+            .toList()
+            .asReversed()
+    }
+
+    override fun getBacktrackLocationsInRange(
+        from: Offset<PhysicsPath>?,
+        to: Offset<PhysicsPath>?,
+    ): List<Offset<PhysicsPath>> {
+        val from = from ?: Offset.zero()
+        val to = to ?: getLookaheadEndOffset()
+        return getStepTracker()
+            .iterateSeenStepsBackwards()
+            .takeWhile { it.travelledPathOffset >= from }
+            .mapNotNull {
+                if (it.isBacktracking && it.travelledPathOffset <= to) it.travelledPathOffset
+                else null
             }
             .toList()
             .asReversed()

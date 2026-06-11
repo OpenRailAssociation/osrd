@@ -150,7 +150,7 @@ class SignalProjectionTests {
             )
 
         val jsonTrainPath = JsonTrainPath(blocks, routes, trackSectionRanges)
-        val trainPath = jsonTrainPath.toTrainPath(infra.rawInfra, infra.blockInfra, null)
+        val trainPath = jsonTrainPath.toTrainPath(listOf(), infra.rawInfra, infra.blockInfra, null)
 
         val signalProjections =
             projectSignals(

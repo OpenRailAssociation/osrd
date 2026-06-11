@@ -87,7 +87,13 @@ data class CachedBlockMaxSpeedEnvBuilder(
             mrspEnvCache.computeIfAbsent(cacheKey) {
                 // TODO: change input to infra explorers, and fetch last route there
                 val pathProps =
-                    buildTrainPathFromBlock(rawInfra, blockInfra, block, routes = listOf())
+                    buildTrainPathFromBlock(
+                        rawInfra,
+                        blockInfra,
+                        block,
+                        listOf(),
+                        routes = listOf(),
+                    )
                 val rollingStock = consistSchedule.rollingStocks[step]
                 val context = build(rollingStock, pathProps, timeStep, comfort)
                 val mrsp =

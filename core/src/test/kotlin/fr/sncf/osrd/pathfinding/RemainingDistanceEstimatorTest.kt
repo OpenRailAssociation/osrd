@@ -31,7 +31,13 @@ class RemainingDistanceEstimatorTest {
     fun setUp() {
         smallInfra = Helpers.smallInfra
         block = Helpers.getBlocksOnRoutes(smallInfra!!, listOf("rt.DA2->DA5"))[0]
-        path = buildTrainPathFromBlock(smallInfra!!.rawInfra, smallInfra!!.blockInfra, block!!)
+        path =
+            buildTrainPathFromBlock(
+                smallInfra!!.rawInfra,
+                smallInfra!!.blockInfra,
+                block!!,
+                listOf(),
+            )
     }
 
     @ParameterizedTest

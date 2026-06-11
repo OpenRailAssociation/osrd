@@ -4,6 +4,7 @@ import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.path.implementations.PartialDirTrackRange
 import fr.sncf.osrd.path.implementations.buildRangeList
 import fr.sncf.osrd.path.implementations.buildTrainPathFromTracks
+import fr.sncf.osrd.path.interfaces.PhysicsPath
 import fr.sncf.osrd.path.interfaces.TrainPath
 import fr.sncf.osrd.path.interfaces.subRange
 import fr.sncf.osrd.path.legacy_objects.ElectricalProfileMapping
@@ -21,6 +22,7 @@ fun pathFromTracks(
     dir: Direction,
     start: Distance,
     end: Distance,
+    backtrackLocations: List<Offset<PhysicsPath>>,
     electricalProfileMapping: ElectricalProfileMapping? = null,
     routeNames: List<String>? = null,
 ): TrainPath {
@@ -42,6 +44,7 @@ fun pathFromTracks(
         rawInfra,
         blockInfra,
         trackRanges.subRange(Offset(start), Offset(end)),
+        backtrackLocations,
         electricalProfileMapping = electricalProfileMapping,
         routeNames = routeNames,
     )
@@ -53,6 +56,7 @@ fun pathFromTracks(
     dir: Direction,
     start: Distance,
     end: Distance,
+    backtrackLocations: List<Offset<PhysicsPath>> = listOf(),
     electricalProfileMapping: ElectricalProfileMapping? = null,
     routeNames: List<String>? = null,
 ): TrainPath {
@@ -63,6 +67,7 @@ fun pathFromTracks(
         dir,
         start,
         end,
+        backtrackLocations,
         electricalProfileMapping = electricalProfileMapping,
         routeNames = routeNames,
     )

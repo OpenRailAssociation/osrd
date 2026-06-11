@@ -14,10 +14,12 @@ import fr.sncf.osrd.cli.Take
 import fr.sncf.osrd.path.implementations.PartialDirTrackRange
 import fr.sncf.osrd.path.implementations.buildRangeList
 import fr.sncf.osrd.path.implementations.buildTrainPathFromTracks
+import fr.sncf.osrd.path.interfaces.PhysicsPath
 import fr.sncf.osrd.path.interfaces.TrainPath
 import fr.sncf.osrd.reporting.exceptions.OSRDError.newUnknownTrackSectionError
 import fr.sncf.osrd.sim_infra.api.DirTrackSectionId
 import fr.sncf.osrd.toDirection
+import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.Offset.Companion.max
 import fr.sncf.osrd.utils.units.Offset.Companion.min
 import fr.sncf.osrd.utils.units.forceDirected
@@ -34,7 +36,12 @@ class PathPropEndpoint(private val infraManager: InfraProvider) : Take {
             // Load infra
             val infra = infraManager.getInfra(request.infra, request.expectedVersion)
 
-            val trainPath = buildTrainPath(infra, request.trackSectionRanges)
+            val trainPath =
+                buildTrainPath(
+                    infra,
+                    request.trackSectionRanges,
+                    listOf(), // TODO: convey (then use) backtrackLocations in the request
+                )
             val res = makePathPropResponse(trainPath, infra.rawInfra)
 
             RsJson(RsWithBody(pathPropResponseAdapter.toJson(res)))
@@ -47,6 +54,7 @@ class PathPropEndpoint(private val infraManager: InfraProvider) : Take {
     private fun buildTrainPath(
         infra: FullInfra,
         trackRanges: List<DirectionalTrackRange>,
+        backtrackLocations: List<Offset<PhysicsPath>>,
     ): TrainPath {
         val partialTrackRanges =
             trackRanges.map {
@@ -65,6 +73,11 @@ class PathPropEndpoint(private val infraManager: InfraProvider) : Take {
                 )
             }
         val trackRanges = buildRangeList(partialTrackRanges)
-        return buildTrainPathFromTracks(infra.rawInfra, infra.blockInfra, trackRanges)
+        return buildTrainPathFromTracks(
+            infra.rawInfra,
+            infra.blockInfra,
+            trackRanges,
+            backtrackLocations,
+        )
     }
 }

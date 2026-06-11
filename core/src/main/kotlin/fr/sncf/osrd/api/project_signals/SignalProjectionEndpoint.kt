@@ -25,6 +25,7 @@ class SignalProjectionEndpoint(private val infraManager: InfraProvider) : Take {
             // Parse path
             val trainPath =
                 request.path.toTrainPath(
+                    listOf(), // TODO: convey (then use) backtrackLocations in the request
                     infra.rawInfra,
                     infra.blockInfra,
                     electricalProfileMapping = null,

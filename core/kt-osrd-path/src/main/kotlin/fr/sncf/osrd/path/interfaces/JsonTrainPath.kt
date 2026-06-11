@@ -39,6 +39,7 @@ data class JsonTrainPath(
     }
 
     fun toTrainPath(
+        backtrackLocations: List<Offset<PhysicsPath>>,
         rawInfra: RawInfra,
         blockInfra: BlockInfra,
         electricalProfileMapping: ElectricalProfileMapping?,
@@ -54,6 +55,7 @@ data class JsonTrainPath(
             rawInfra,
             blockInfra,
             blockRanges = blockRanges,
+            backtrackLocations = backtrackLocations,
             routeNames = routes.map { it.id },
             electricalProfileMapping = electricalProfileMapping,
         )

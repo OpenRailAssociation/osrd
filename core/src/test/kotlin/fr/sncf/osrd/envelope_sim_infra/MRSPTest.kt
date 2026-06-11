@@ -151,13 +151,21 @@ class MRSPTest {
         // Compute paths
         val infra = fullInfraFromRJS(rjsInfra, InfraMetadata("modified_small_infra"))
         val blockInfra = infra.blockInfra
-        path = buildTrainPathFromBlock(infra.rawInfra, blockInfra, BlockId(0U), routes = listOf())
+        path =
+            buildTrainPathFromBlock(
+                infra.rawInfra,
+                blockInfra,
+                BlockId(0U),
+                listOf(),
+                routes = listOf(),
+            )
         val block30 = Helpers.getBlocksOnRoutes(infra, listOf(route1.id))[0]
         path30 =
             buildTrainPathFromBlock(
                 infra.rawInfra,
                 blockInfra,
                 block30,
+                listOf(),
                 routeNames = listOf(route1.id),
             )
         val block60 = Helpers.getBlocksOnRoutes(infra, listOf(route2.id))[0]
@@ -166,6 +174,7 @@ class MRSPTest {
                 infra.rawInfra,
                 blockInfra,
                 block60,
+                listOf(),
                 routeNames = listOf(route2.id),
             )
     }
@@ -186,6 +195,7 @@ class MRSPTest {
                     infra.rawInfra,
                     infra.blockInfra,
                     block,
+                    listOf(),
                     routeNames = listOf(route),
                 )
             val pathLen = routeLen(route)
@@ -209,7 +219,13 @@ class MRSPTest {
         val block = Helpers.getBlocksOnRoutes(infra, listOf(ROUTES[0])).last()
         pathTo1NoRoutes =
             TestPath(
-                buildTrainPathFromBlock(infra.rawInfra, infra.blockInfra, block, routes = listOf()),
+                buildTrainPathFromBlock(
+                    infra.rawInfra,
+                    infra.blockInfra,
+                    block,
+                    listOf(),
+                    routes = listOf(),
+                ),
                 Envelope.make(
                     EnvelopeTestUtils.makeFlatPart(
                         LimitKind.SPEED_LIMIT,

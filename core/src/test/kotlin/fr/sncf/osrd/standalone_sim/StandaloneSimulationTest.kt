@@ -51,7 +51,7 @@ class StandaloneSimulationTest {
             .map { infra.blockInfra.getBlockFromName("block.${md5(it)}")!! }
 
     private val trainPath =
-        buildTrainPathFromBlocks(infra.rawInfra, infra.blockInfra, blocks, routes)
+        buildTrainPathFromBlocks(infra.rawInfra, infra.blockInfra, blocks, listOf(), routes)
     private val pathLength = trainPath.getLength()
 
     // Build a reference max speed envelope

@@ -20,7 +20,7 @@ data class ElectrificationConstraints(
     val compatibleElectrification: Collection<String>,
 ) : PathfindingConstraint {
     override fun apply(edge: BlockId): Collection<OffsetRange<Block>> {
-        val path = buildTrainPathFromBlock(rawInfra, blockInfra, edge)
+        val path = buildTrainPathFromBlock(rawInfra, blockInfra, edge, listOf())
         return getBlockedRanges(path, compatibleElectrification)
     }
 
