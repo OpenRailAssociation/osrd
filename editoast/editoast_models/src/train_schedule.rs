@@ -4,6 +4,7 @@ use crate::tags::Tags;
 use chrono::Duration as ChronoDuration;
 use common::units::millisecond;
 use common::units::quantities::Offset;
+use derive_more::Display;
 use editoast_derive::Model;
 use itertools::Itertools;
 use schemas;
@@ -298,6 +299,51 @@ impl TrainSchedule {
             .sorted_by_key(|(_, ts)| millisecond::i64::from(ts.start_time))
     }
 
+    /// Returns an iterator over the base train and exceptions (disabled included)
+    /// - base train
+    /// - occurrences modified by exceptions
+    /// - occurrences created by exceptions (additional trains)
+    ///
+    /// If it's not a paced train (i.e., no time window), this will return the single train schedule.
+    ///
+    /// Useful to have all occurrences that can have different simulations.
+    /// IMPORTANT: Do not use this function to get all occurrences for conflict detection, as it includes disabled occurrences. Use `iter_occurrences` instead.
+    pub fn iter_base_and_exceptions(
+        &self,
+        exceptions: &[TrainScheduleException],
+    ) -> impl Iterator<Item = (BaseTrainOrOccurrenceId, TrainOccurrence)> {
+        let mut results = vec![(
+            BaseTrainOrOccurrenceId::Base(self.id),
+            self.clone().into_train_occurrence(),
+        )];
+
+        let modified_exceptions = exceptions.iter().filter_map(|e| {
+            e.occurrence_index
+                .map(|occurrence_index| (occurrence_index, e))
+        });
+
+        // Modify corresponding occurrences.
+        for (occurrence_index, exception) in modified_exceptions {
+            let occurrence_id =
+                OccurrenceId::new_modified(self.id, occurrence_index as usize, exception.id);
+            results.push((
+                BaseTrainOrOccurrenceId::Occurrence(occurrence_id),
+                self.apply_train_schedule_exception(exception),
+            ));
+        }
+
+        results
+            .into_iter()
+            .chain(self.get_created_occurrences_exceptions(exceptions).map(
+                |(occurrence_id, train_occurrence)| {
+                    (
+                        BaseTrainOrOccurrenceId::Occurrence(occurrence_id),
+                        train_occurrence,
+                    )
+                },
+            ))
+    }
+
     /// Determines whether the pace (time window and interval) of the train schedule is the same as the given pace.
     pub fn has_same_pace(&self, paced: Option<&Paced>) -> bool {
         self.interval == paced.as_ref().map(|p| p.interval.into())
@@ -344,6 +390,12 @@ impl From<paced_train::TrainSchedule> for TrainScheduleChangeset {
             None => changeset.sub_category(None).main_category(None),
         }
     }
+}
+
+#[derive(Debug, Clone, Display, PartialEq, Eq, Hash)]
+pub enum BaseTrainOrOccurrenceId {
+    Occurrence(OccurrenceId),
+    Base(i64),
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, ToSchema, Hash)]
