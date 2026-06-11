@@ -1,26 +1,17 @@
 import type { SearchResultItemOperationalPoint } from 'common/api/osrdEditoastApi';
 
-/** Sort two operational points alphabetically first by name, then by secondary code (prioritizing passenger station) */
+/**
+ * Sort two operational points alphabetically first by name, then by whether
+ * they are passenger stations (by putting passenger stations first), then by
+ * secondary code.
+ */
 const sortOperationalPointsByNameAndSecondaryCode = (
   a: SearchResultItemOperationalPoint,
   b: SearchResultItemOperationalPoint
-) => {
-  const nameComparison = a.name.localeCompare(b.name);
-  if (nameComparison !== 0) {
-    return nameComparison;
-  }
-
-  const secondaryCodeA = a.secondary_code ?? '';
-  const secondaryCodeB = b.secondary_code ?? '';
-
-  if (a.is_passenger_station) {
-    return -1;
-  }
-  if (b.is_passenger_station) {
-    return 1;
-  }
-  return secondaryCodeA.localeCompare(secondaryCodeB);
-};
+) =>
+  a.name.localeCompare(b.name) ||
+  Number(b.is_passenger_station) - Number(a.is_passenger_station) ||
+  (a.secondary_code ?? '').localeCompare(b.secondary_code ?? '');
 
 /** Sort two operational points alphabetically first by main code, then by name, then by secondary code (prioritizing passenger station) */
 export const sortOperationalPointsFromMainCodeSearch = (
