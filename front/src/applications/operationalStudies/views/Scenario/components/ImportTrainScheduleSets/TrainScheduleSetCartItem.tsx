@@ -8,6 +8,13 @@ import type { CartManagement, EnhancedTrainScheduleSet, TrainScheduleSetImportTy
 
 const TRAINSCHEDULESET_IMPORT_TYPE: TrainScheduleSetImportType[] = ['reference', 'copy'];
 
+const renderOptionIcon = (set: TrainScheduleSetImportType) => {
+  if (set === 'copy') {
+    return <DesktopDownload />;
+  }
+  return <Broadcast />;
+};
+
 type TrainScheduleSetCartItemProps = CartManagement & {
   trainScheduleSet: EnhancedTrainScheduleSet;
   catalogEntry: CatalogEntry;
@@ -31,7 +38,7 @@ const TrainScheduleSetCartItem = ({
           value={importType}
           getOptionLabel={(set) => t(`importType.${set}`)}
           getOptionValue={(set) => `${set}`}
-          getOptionIcon={(set) => (set === 'copy' ? <DesktopDownload /> : <Broadcast />)}
+          getOptionIcon={renderOptionIcon}
           onChange={(set) => upsertToCart(trainScheduleSet.id, set)}
           options={TRAINSCHEDULESET_IMPORT_TYPE}
         />

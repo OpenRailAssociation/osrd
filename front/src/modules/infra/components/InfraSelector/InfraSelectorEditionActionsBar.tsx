@@ -12,7 +12,7 @@ import { setFailure } from 'reducers/main';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 
-const EMPTY_USER_PRIVILEGES = new Set();
+const EMPTY_USER_PRIVILEGES = new Set<Privilege>();
 
 type ActionBarProps = {
   infra: Infra;
@@ -27,7 +27,7 @@ const ActionsBar = ({
   isFocused,
   setIsFocused,
   inputValue,
-  userPrivileges = EMPTY_USER_PRIVILEGES as Set<Privilege>,
+  userPrivileges = EMPTY_USER_PRIVILEGES,
 }: ActionBarProps) => {
   const { t } = useTranslation();
   const [isWaiting, setIsWaiting] = useState(false);

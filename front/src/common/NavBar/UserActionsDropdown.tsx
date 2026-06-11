@@ -29,14 +29,15 @@ const UserActionsDropdown = ({
   const { openModal } = useModal();
   const { t, i18n } = useTranslation();
 
+  const openUserSettingsModal = () => openModal(<UserSettings />);
+  const openChangeLanguageModal = () => openModal(<ChangeLanguageModal />, 'sm');
+  const openHelpModalSNCF = () => openModal(<HelpModalSNCF />, 'lg');
+  const openReleaseInformationModal = () => openModal(<ReleaseInformation />, 'lg');
+
   const dropdownItems = [
     {
       node: (
-        <button
-          type="button"
-          className="btn-link text-reset"
-          onClick={() => openModal(<ReleaseInformation />, 'lg')}
-        >
+        <button type="button" className="btn-link text-reset" onClick={openReleaseInformationModal}>
           <span className="mr-2">
             <Info />
           </span>
@@ -47,11 +48,7 @@ const UserActionsDropdown = ({
     },
     {
       node: (
-        <button
-          type="button"
-          className="btn-link text-reset"
-          onClick={() => openModal(<HelpModalSNCF />, 'lg')}
-        >
+        <button type="button" className="btn-link text-reset" onClick={openHelpModalSNCF}>
           <span className="mr-2">
             <Report />
           </span>
@@ -62,11 +59,7 @@ const UserActionsDropdown = ({
     },
     {
       node: (
-        <button
-          type="button"
-          className="btn-link text-reset"
-          onClick={() => openModal(<ChangeLanguageModal />, 'sm')}
-        >
+        <button type="button" className="btn-link text-reset" onClick={openChangeLanguageModal}>
           <span className="mr-2">
             {i18n.language && getUnicodeFlagIcon(languageCodeToCountryCode(i18n.language))}
           </span>
@@ -81,7 +74,7 @@ const UserActionsDropdown = ({
           data-testid="user-settings-btn"
           type="button"
           className="user-settings-btn btn-link text-reset"
-          onClick={() => openModal(<UserSettings />)}
+          onClick={openUserSettingsModal}
         >
           <span className="mr-2">
             <Gear variant="fill" />

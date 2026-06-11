@@ -7,6 +7,7 @@ import {
   flexRender,
   getCoreRowModel,
   useReactTable,
+  type CellContext,
   type Row,
   type RowData,
 } from '@tanstack/react-table';
@@ -18,6 +19,7 @@ import type { ReceptionSignal } from 'common/api/osrdEditoastApi';
 import { SkeletonLoader } from 'common/Loaders';
 import { NO_POWER_RESTRICTION } from 'modules/powerRestriction/consts';
 import { formatLocalTime, useDateTimeLocale } from 'utils/date';
+import type { Duration } from 'utils/duration';
 import { calculateTimeDifferenceInDays } from 'utils/timeManipulation';
 
 import DurationCell, { type DurationCellHandle } from './DurationCell';
@@ -192,12 +194,305 @@ const TimesStopsTable = ({
     []
   );
 
+  const returnMarginCell = ({
+    info,
+    showPolarity,
+    editable,
+    dataTestId,
+  }: {
+    info: CellContext<TimesStopsRowNew, MarginValue | undefined>;
+    showPolarity?: boolean;
+    editable?: boolean;
+    dataTestId: string;
+  }) => {
+    const { allRows } = info.table.options.meta!;
+    const isLastRow = info.row.index === allRows.length - 1;
+    if (info.table.options.meta!.isComputedDataPending && !isLastRow) {
+      return <SkeletonLoader className="cell-loading-placeholder" />;
+    }
+    const marginValue = info.getValue() ?? null;
+    return (
+      <MarginCell
+        data-testid={dataTestId}
+        marginValue={marginValue}
+        showPolarity={showPolarity}
+        editable={editable}
+      />
+    );
+  };
+
+  const returnRequestTheoreticalMarginCell = (
+    info: CellContext<TimesStopsRowNew, MarginValue | undefined>
+  ) => {
+    const { allRows } = info.table.options.meta!;
+    const row = info.row.original;
+    const isFirstRow = info.row.index === 0;
+    const isLastRow = info.row.index === allRows.length - 1;
+
+    if (isLastRow) return null;
+
+    const marginValue =
+      isScheduledOP(row) || !!row.requestedTheoreticalMargin
+        ? row.requestedTheoreticalMargin
+        : null;
+    const isInherited = !row.isTheoreticalMarginBoundary || !row.requestedTheoreticalMargin;
+
+    return (
+      <div data-testid="requested-theoretical-margin">
+        <MarginCell
+          data-testid="margin-cell-editable"
+          marginValue={marginValue ?? null}
+          editable={!isLastRow}
+          isInherited={isFirstRow ? false : isInherited}
+          isFirstRow={isFirstRow}
+          onCommit={(value) => info.table.options.meta!.onRequestedMarginChange(row, value)}
+        />
+      </div>
+    );
+  };
+
+  const returnShortSlipDistanceCell = (
+    info: CellContext<TimesStopsRowNew, boolean | undefined>
+  ) => {
+    const { closedSignal, shortSlipDistance } = info.row.original;
+    const isDisabled = !closedSignal;
+
+    return (
+      <Checkbox
+        id={`shortSlipDistance-${info.row.id}`}
+        data-testid="short-slip-distance"
+        small
+        checked={!!shortSlipDistance}
+        disabled={isDisabled}
+        onChange={() => {
+          if (!isDisabled) {
+            const signal = onStopSignalToReceptionSignal(closedSignal, !shortSlipDistance);
+            info.table.options.meta!.onReceptionSignalChange(info.row.original, signal);
+          }
+        }}
+      />
+    );
+  };
+
+  const returnPowerRestrictionCell = (info: CellContext<TimesStopsRowNew, string | null>) => {
+    const {
+      availablePowerRestrictions: codes,
+      powerRestrictionBlocks: blocks,
+      onPowerRestrictionChange: onRestrictionChange,
+    } = info.table.options.meta!;
+    const value = info.getValue();
+    const row = info.row.original;
+
+    // On the first row of an incompatible block, display the propagated restriction
+    // in a lighter style so the user can see which code is causing the warning and
+    // edit it directly at the boundary.
+    const blockInfo = blocks.get(row.id);
+    const showPropagated =
+      value === null && blockInfo?.isBlockStart && blockInfo.propagatedValue !== null;
+    const displayedValue = showPropagated ? blockInfo.propagatedValue : value;
+
+    return (
+      <div
+        className={cx('power-restriction-select-wrapper', {
+          'power-restriction-propagated': showPropagated,
+        })}
+      >
+        <select
+          data-testid="power-restriction-select"
+          value={displayedValue ?? ''}
+          onChange={(e) => {
+            const v = e.target.value;
+            onRestrictionChange(row, v === '' ? null : v);
+          }}
+        >
+          <option value="" data-testid="power-restriction-option-empty"></option>
+          <option
+            value={NO_POWER_RESTRICTION}
+            data-testid={`power-restriction-option-${NO_POWER_RESTRICTION}`}
+          >
+            Ø
+          </option>
+          {codes.map((c) => (
+            <option key={c} value={c} data-testid={`power-restriction-option-${c}`}>
+              {c}
+            </option>
+          ))}
+        </select>
+        <TriangleDown className="power-restriction-arrow" />
+      </div>
+    );
+  };
+
+  const returnDepartureTimeCell = (info: CellContext<TimesStopsRowNew, Date | null>) => {
+    const row = info.row.original;
+    return (
+      <TimeCell
+        ref={registerTimeCellRef(info.row.index, 'requestedDeparture')}
+        {...info}
+        referenceDate={getDepartureReferenceDate(row, startTime)}
+        prefillValue={row.computedDeparture}
+        onEnterKeyDown={() => focusCellBelow(info.row.index, 'requestedDeparture')}
+        onTabKeyDown={(direction) =>
+          focusRequestedCellOnTab(info.row.index, 'requestedDeparture', direction)
+        }
+        onCommit={(date, propagationMode) =>
+          info.table.options.meta!.onDepartureChange(row, date, propagationMode)
+        }
+      />
+    );
+  };
+
+  const returnReceptionOnCloseSignalCell = (
+    info: CellContext<TimesStopsRowNew, boolean | undefined>
+  ) => {
+    const { closedSignal, stopDuration, shortSlipDistance } = info.row.original;
+    const isDisabled = !stopDuration;
+
+    return (
+      <Checkbox
+        id={`closedSignal-${info.row.id}`}
+        data-testid="signal-reception-closed"
+        small
+        checked={!!closedSignal}
+        disabled={isDisabled}
+        onChange={() => {
+          if (!isDisabled) {
+            const newClosedSignal = !closedSignal;
+            // When unchecking closedSignal, also reset shortSlipDistance to false
+            const signal = onStopSignalToReceptionSignal(
+              newClosedSignal,
+              newClosedSignal ? shortSlipDistance : false
+            );
+            info.table.options.meta!.onReceptionSignalChange(info.row.original, signal);
+          }
+        }}
+      />
+    );
+  };
+
+  const returnStopDurationCell = (info: CellContext<TimesStopsRowNew, Duration | null>) => (
+    <DurationCell
+      ref={registerTimeCellRef(info.row.index, 'stopDuration')}
+      {...info}
+      onChange={(e) =>
+        info.table.options.meta!.onStopDurationChange(info.row.original, e.target.value)
+      }
+    />
+  );
+
+  const returnStepStatusCell = (info: CellContext<TimesStopsRowNew, unknown>) => {
+    if (info.table.options.meta!.isComputedDataPending) {
+      return <span data-testid="step-status">&nbsp;</span>;
+    }
+
+    const { stepStatus, computedArrival, requestedArrival, pathStepId } = info.row.original;
+    const isPathStep = Boolean(pathStepId);
+
+    const isSuccessSchedule =
+      requestedArrival &&
+      computedArrival &&
+      !(stepStatus === 'marginNotHonored') &&
+      !(stepStatus === 'scheduleNotHonored');
+
+    const className = cx({
+      'success-schedule': isPathStep && isSuccessSchedule,
+      'warning-schedule': isPathStep && stepStatus === 'scheduleNotHonored',
+      'warning-margin': isPathStep && stepStatus === 'marginNotHonored',
+      'invalid-path-step': stepStatus === 'invalidPathStep',
+    });
+
+    return (
+      <span data-testid="step-status" className={className}>
+        &nbsp;
+      </span>
+    );
+  };
+
+  const returnOPCell = (info: CellContext<TimesStopsRowNew, string>) => {
+    const { name, secondaryCode, pathStepId } = info.row.original;
+    return (
+      <>
+        {pathStepId && <span className="requested-point-dot" data-testid="op-name-dot" />}
+        <span
+          className="op-full-name"
+          data-testid="op-full-name"
+          title={`${name}${secondaryCode ? ` ${secondaryCode}` : ''}`}
+        >
+          {name}
+        </span>
+        {secondaryCode && (
+          <span className="secondary-code" data-testid="secondary-code">
+            {secondaryCode}
+          </span>
+        )}
+      </>
+    );
+  };
+
+  const returnOPOnPathIndexCell = (info: CellContext<TimesStopsRowNew, unknown>) => (
+    <span data-testid="row-index">{info.row.original.opOnPathIndex + 1}</span>
+  );
+
+  const returnTrackNameCell = (info: CellContext<TimesStopsRowNew, string>) => {
+    const { pathStepId, hasRequestedTrack } = info.row.original;
+    return (
+      <>
+        {pathStepId && hasRequestedTrack && (
+          <span className="requested-point-dot" data-testid="track-name-dot" />
+        )}
+        <span data-testid="track-name" title={info.getValue()}>
+          {info.getValue() ?? ''}
+        </span>
+      </>
+    );
+  };
+
+  const returnArrivalTimeCell = (info: CellContext<TimesStopsRowNew, Date | null>) => {
+    const row = info.row.original;
+    const { allRows, onArrivalChange: onArrival } = info.table.options.meta!;
+    return (
+      <TimeCell
+        ref={registerTimeCellRef(info.row.index, 'requestedArrival')}
+        {...info}
+        referenceDate={getArrivalReferenceDate(row, allRows, startTime)}
+        prefillValue={row.computedArrival}
+        onEnterKeyDown={() => focusCellBelow(info.row.index, 'requestedArrival')}
+        onTabKeyDown={(direction) =>
+          focusRequestedCellOnTab(info.row.index, 'requestedArrival', direction)
+        }
+        onCommit={(date, propagationMode) => onArrival(row, date, propagationMode)}
+        disableClear={info.row.index === 0}
+      />
+    );
+  };
+
+  const returnCalculatedArrivalTimeCell = (info: CellContext<TimesStopsRowNew, Date | null>) => {
+    if (info.table.options.meta!.isComputedDataPending) {
+      return <SkeletonLoader className="cell-loading-placeholder" />;
+    }
+    const value = info.getValue();
+    return <span data-testid="computed-arrival">{value ? formatLocalTime(value) : ''}</span>;
+  };
+
+  const returnCalculatedDepartureTimeCell = (info: CellContext<TimesStopsRowNew, Date | null>) => {
+    if (info.table.options.meta!.isComputedDataPending) {
+      return <SkeletonLoader className="cell-loading-placeholder" />;
+    }
+    const value = info.getValue();
+    const isEmpty = !value;
+    return (
+      <span data-testid="computed-departure" className={cx({ 'cell-empty-dot': isEmpty })}>
+        {isEmpty ? '•' : formatLocalTime(value)}
+      </span>
+    );
+  };
+
   const columns = useMemo(
     () => [
       columnHelper.display({
         id: 'opOnPathIndex',
         header: '',
-        cell: (info) => <span data-testid="row-index">{info.row.original.opOnPathIndex + 1}</span>,
+        cell: returnOPOnPathIndexCell,
         meta: {
           className: 'col-index computed',
         },
@@ -205,59 +500,14 @@ const TimesStopsTable = ({
       columnHelper.display({
         id: 'stepStatus',
         header: '',
-        cell: (info) => {
-          if (info.table.options.meta!.isComputedDataPending) {
-            return <span data-testid="step-status">&nbsp;</span>;
-          }
-
-          const { stepStatus, computedArrival, requestedArrival, pathStepId } = info.row.original;
-          const isPathStep = Boolean(pathStepId);
-
-          const isSuccessSchedule =
-            requestedArrival &&
-            computedArrival &&
-            !(stepStatus === 'marginNotHonored') &&
-            !(stepStatus === 'scheduleNotHonored');
-
-          const className = cx({
-            'success-schedule': isPathStep && isSuccessSchedule,
-            'warning-schedule': isPathStep && stepStatus === 'scheduleNotHonored',
-            'warning-margin': isPathStep && stepStatus === 'marginNotHonored',
-            'invalid-path-step': stepStatus === 'invalidPathStep',
-          });
-
-          return (
-            <span data-testid="step-status" className={className}>
-              &nbsp;
-            </span>
-          );
-        },
+        cell: returnStepStatusCell,
         meta: {
           className: 'col-step-status computed',
         },
       }),
       columnHelper.accessor('name', {
         header: () => t('operational_point'),
-        cell: (info) => {
-          const { name, secondaryCode, pathStepId } = info.row.original;
-          return (
-            <>
-              {pathStepId && <span className="requested-point-dot" data-testid="op-name-dot" />}
-              <span
-                className="op-full-name"
-                data-testid="op-full-name"
-                title={`${name}${secondaryCode ? ` ${secondaryCode}` : ''}`}
-              >
-                {name}
-              </span>
-              {secondaryCode && (
-                <span className="secondary-code" data-testid="secondary-code">
-                  {secondaryCode}
-                </span>
-              )}
-            </>
-          );
-        },
+        cell: returnOPCell,
         meta: {
           className: 'col-name computed',
           title: t('operational_point'),
@@ -265,19 +515,7 @@ const TimesStopsTable = ({
       }),
       columnHelper.accessor('track', {
         header: () => t('trackName'),
-        cell: (info) => {
-          const { pathStepId, hasRequestedTrack } = info.row.original;
-          return (
-            <>
-              {pathStepId && hasRequestedTrack && (
-                <span className="requested-point-dot" data-testid="track-name-dot" />
-              )}
-              <span data-testid="track-name" title={info.getValue()}>
-                {info.getValue() ?? ''}
-              </span>
-            </>
-          );
-        },
+        cell: returnTrackNameCell,
         meta: {
           className: 'col-track computed',
           title: t('trackName'),
@@ -285,24 +523,7 @@ const TimesStopsTable = ({
       }),
       columnHelper.accessor('requestedArrival', {
         header: () => t('arrivalTime'),
-        cell: (info) => {
-          const row = info.row.original;
-          const { allRows, onArrivalChange: onArrival } = info.table.options.meta!;
-          return (
-            <TimeCell
-              ref={registerTimeCellRef(info.row.index, 'requestedArrival')}
-              {...info}
-              referenceDate={getArrivalReferenceDate(row, allRows, startTime)}
-              prefillValue={row.computedArrival}
-              onEnterKeyDown={() => focusCellBelow(info.row.index, 'requestedArrival')}
-              onTabKeyDown={(direction) =>
-                focusRequestedCellOnTab(info.row.index, 'requestedArrival', direction)
-              }
-              onCommit={(date, propagationMode) => onArrival(row, date, propagationMode)}
-              disableClear={info.row.index === 0}
-            />
-          );
-        },
+        cell: returnArrivalTimeCell,
         meta: {
           className: 'col-requested-arrival col-with-clock-time',
           tabbable: true,
@@ -311,13 +532,7 @@ const TimesStopsTable = ({
       }),
       columnHelper.accessor('computedArrival', {
         header: () => t('calculatedArrivalTime'),
-        cell: (info) => {
-          if (info.table.options.meta!.isComputedDataPending) {
-            return <SkeletonLoader className="cell-loading-placeholder" />;
-          }
-          const value = info.getValue();
-          return <span data-testid="computed-arrival">{value ? formatLocalTime(value) : ''}</span>;
-        },
+        cell: returnCalculatedArrivalTimeCell,
         meta: {
           className: 'col-computed-arrival col-with-clock-time computed',
           title: t('calculatedArrivalTime'),
@@ -325,15 +540,7 @@ const TimesStopsTable = ({
       }),
       columnHelper.accessor('stopDuration', {
         header: () => t('stopTime'),
-        cell: (info) => (
-          <DurationCell
-            ref={registerTimeCellRef(info.row.index, 'stopDuration')}
-            {...info}
-            onChange={(e) =>
-              info.table.options.meta!.onStopDurationChange(info.row.original, e.target.value)
-            }
-          />
-        ),
+        cell: returnStopDurationCell,
         meta: {
           className: 'col-stop-duration col-with-duration',
           tabbable: true,
@@ -342,24 +549,7 @@ const TimesStopsTable = ({
       }),
       columnHelper.accessor('requestedDeparture', {
         header: () => t('departureTime'),
-        cell: (info) => {
-          const row = info.row.original;
-          return (
-            <TimeCell
-              ref={registerTimeCellRef(info.row.index, 'requestedDeparture')}
-              {...info}
-              referenceDate={getDepartureReferenceDate(row, startTime)}
-              prefillValue={row.computedDeparture}
-              onEnterKeyDown={() => focusCellBelow(info.row.index, 'requestedDeparture')}
-              onTabKeyDown={(direction) =>
-                focusRequestedCellOnTab(info.row.index, 'requestedDeparture', direction)
-              }
-              onCommit={(date, propagationMode) =>
-                info.table.options.meta!.onDepartureChange(row, date, propagationMode)
-              }
-            />
-          );
-        },
+        cell: returnDepartureTimeCell,
         meta: {
           className: 'col-requested-departure col-with-clock-time',
           tabbable: true,
@@ -368,18 +558,7 @@ const TimesStopsTable = ({
       }),
       columnHelper.accessor('computedDeparture', {
         header: () => t('calculatedDepartureTime'),
-        cell: (info) => {
-          if (info.table.options.meta!.isComputedDataPending) {
-            return <SkeletonLoader className="cell-loading-placeholder" />;
-          }
-          const value = info.getValue();
-          const isEmpty = !value;
-          return (
-            <span data-testid="computed-departure" className={cx({ 'cell-empty-dot': isEmpty })}>
-              {isEmpty ? '•' : formatLocalTime(value)}
-            </span>
-          );
-        },
+        cell: returnCalculatedDepartureTimeCell,
         meta: {
           className: 'col-computed-departure col-with-clock-time computed',
           title: t('calculatedDepartureTime'),
@@ -387,31 +566,7 @@ const TimesStopsTable = ({
       }),
       columnHelper.accessor('closedSignal', {
         header: () => t('receptionOnClosedSignal'),
-        cell: (info) => {
-          const { closedSignal, stopDuration, shortSlipDistance } = info.row.original;
-          const isDisabled = !stopDuration;
-
-          return (
-            <Checkbox
-              id={`closedSignal-${info.row.id}`}
-              data-testid="signal-reception-closed"
-              small
-              checked={!!closedSignal}
-              disabled={isDisabled}
-              onChange={() => {
-                if (!isDisabled) {
-                  const newClosedSignal = !closedSignal;
-                  // When unchecking closedSignal, also reset shortSlipDistance to false
-                  const signal = onStopSignalToReceptionSignal(
-                    newClosedSignal,
-                    newClosedSignal ? shortSlipDistance : false
-                  );
-                  info.table.options.meta!.onReceptionSignalChange(info.row.original, signal);
-                }
-              }}
-            />
-          );
-        },
+        cell: returnReceptionOnCloseSignalCell,
         meta: {
           className: 'col-closed-signal col-with-checkbox',
           title: t('receptionOnClosedSignalFull'),
@@ -419,26 +574,7 @@ const TimesStopsTable = ({
       }),
       columnHelper.accessor('shortSlipDistance', {
         header: () => t('shortSlipDistance'),
-        cell: (info) => {
-          const { closedSignal, shortSlipDistance } = info.row.original;
-          const isDisabled = !closedSignal;
-
-          return (
-            <Checkbox
-              id={`shortSlipDistance-${info.row.id}`}
-              data-testid="short-slip-distance"
-              small
-              checked={!!shortSlipDistance}
-              disabled={isDisabled}
-              onChange={() => {
-                if (!isDisabled) {
-                  const signal = onStopSignalToReceptionSignal(closedSignal, !shortSlipDistance);
-                  info.table.options.meta!.onReceptionSignalChange(info.row.original, signal);
-                }
-              }}
-            />
-          );
-        },
+        cell: returnShortSlipDistanceCell,
         meta: {
           className: 'col-short-slip-distance col-with-checkbox',
           title: t('shortSlipDistance'),
@@ -446,87 +582,14 @@ const TimesStopsTable = ({
       }),
       columnHelper.accessor('powerRestriction', {
         header: () => t('powerRestriction'),
-        cell: (info) => {
-          const {
-            availablePowerRestrictions: codes,
-            powerRestrictionBlocks: blocks,
-            onPowerRestrictionChange: onRestrictionChange,
-          } = info.table.options.meta!;
-          const value = info.getValue();
-          const row = info.row.original;
-
-          // On the first row of an incompatible block, display the propagated restriction
-          // in a lighter style so the user can see which code is causing the warning and
-          // edit it directly at the boundary.
-          const blockInfo = blocks.get(row.id);
-          const showPropagated =
-            value === null && blockInfo?.isBlockStart && blockInfo.propagatedValue !== null;
-          const displayedValue = showPropagated ? blockInfo.propagatedValue : value;
-
-          return (
-            <div
-              className={cx('power-restriction-select-wrapper', {
-                'power-restriction-propagated': showPropagated,
-              })}
-            >
-              <select
-                data-testid="power-restriction-select"
-                value={displayedValue ?? ''}
-                onChange={(e) => {
-                  const v = e.target.value;
-                  onRestrictionChange(row, v === '' ? null : v);
-                }}
-              >
-                <option value="" data-testid="power-restriction-option-empty"></option>
-                <option
-                  value={NO_POWER_RESTRICTION}
-                  data-testid={`power-restriction-option-${NO_POWER_RESTRICTION}`}
-                >
-                  Ø
-                </option>
-                {codes.map((c) => (
-                  <option key={c} value={c} data-testid={`power-restriction-option-${c}`}>
-                    {c}
-                  </option>
-                ))}
-              </select>
-              <TriangleDown className="power-restriction-arrow" />
-            </div>
-          );
-        },
+        cell: returnPowerRestrictionCell,
         meta: {
           className: 'col-power-restriction',
         },
       }),
       columnHelper.accessor('requestedTheoreticalMargin', {
         header: () => t('requestedTheoreticalMargin'),
-        cell: (info) => {
-          const { allRows } = info.table.options.meta!;
-          const row = info.row.original;
-          const isFirstRow = info.row.index === 0;
-          const isLastRow = info.row.index === allRows.length - 1;
-
-          if (isLastRow) return null;
-
-          const marginValue =
-            isScheduledOP(row) || !!row.requestedTheoreticalMargin
-              ? row.requestedTheoreticalMargin
-              : null;
-          const isInherited = !row.isTheoreticalMarginBoundary || !row.requestedTheoreticalMargin;
-
-          return (
-            <div data-testid="requested-theoretical-margin">
-              <MarginCell
-                data-testid="margin-cell-editable"
-                marginValue={marginValue ?? null}
-                editable={!isLastRow}
-                isInherited={isFirstRow ? false : isInherited}
-                isFirstRow={isFirstRow}
-                onCommit={(value) => info.table.options.meta!.onRequestedMarginChange(row, value)}
-              />
-            </div>
-          );
-        },
+        cell: returnRequestTheoreticalMarginCell,
         meta: {
           className: 'col-requested-theoretical-margin',
           title: t('requestedTheoreticalMargin'),
@@ -534,21 +597,7 @@ const TimesStopsTable = ({
       }),
       columnHelper.accessor('computedTheoreticalMarginSeconds', {
         header: () => t('computedTheoreticalMargin'),
-        cell: (info) => {
-          const { allRows } = info.table.options.meta!;
-          const isLastRow = info.row.index === allRows.length - 1;
-          if (info.table.options.meta!.isComputedDataPending && !isLastRow) {
-            return <SkeletonLoader className="cell-loading-placeholder" />;
-          }
-          const marginValue = info.getValue() ?? null;
-          return (
-            <MarginCell
-              data-testid="computed-theoretical-margin"
-              marginValue={marginValue}
-              editable={false}
-            />
-          );
-        },
+        cell: (info) => returnMarginCell({ info, dataTestId: 'computed-theoretical-margin' }),
         meta: {
           className: 'col-computed-theoretical-margin computed computed-margin',
           title: t('computedTheoreticalMargin'),
@@ -556,17 +605,7 @@ const TimesStopsTable = ({
       }),
       columnHelper.accessor('realMargin', {
         header: () => t('realMargin'),
-        cell: (info) => {
-          const { allRows } = info.table.options.meta!;
-          const isLastRow = info.row.index === allRows.length - 1;
-          if (info.table.options.meta!.isComputedDataPending && !isLastRow) {
-            return <SkeletonLoader className="cell-loading-placeholder" />;
-          }
-          const marginValue = info.getValue() ?? null;
-          return (
-            <MarginCell data-testid="real-margin" marginValue={marginValue} editable={false} />
-          );
-        },
+        cell: (info) => returnMarginCell({ info, dataTestId: 'real-margin' }),
         meta: {
           className: 'col-real-margin computed computed-margin',
           title: t('realMargin'),
@@ -574,22 +613,8 @@ const TimesStopsTable = ({
       }),
       columnHelper.accessor('marginsDifference', {
         header: () => t('diffMargins'),
-        cell: (info) => {
-          const { allRows } = info.table.options.meta!;
-          const isLastRow = info.row.index === allRows.length - 1;
-          if (info.table.options.meta!.isComputedDataPending && !isLastRow) {
-            return <SkeletonLoader className="cell-loading-placeholder" />;
-          }
-          const marginValue = info.getValue() ?? null;
-          return (
-            <MarginCell
-              data-testid="margins-difference"
-              marginValue={marginValue}
-              showPolarity
-              editable={false}
-            />
-          );
-        },
+        cell: (info) =>
+          returnMarginCell({ info, showPolarity: true, dataTestId: 'margins-difference' }),
         meta: {
           className: 'col-margins-difference computed computed-margin',
           title: t('diffMargins'),

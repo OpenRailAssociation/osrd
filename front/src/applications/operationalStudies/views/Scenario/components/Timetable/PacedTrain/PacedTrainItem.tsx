@@ -1,4 +1,4 @@
-import { useContext, useMemo } from 'react';
+import { useCallback, useContext, useMemo } from 'react';
 
 import { Checkbox } from '@osrd-project/ui-core';
 import { ChevronDown, ChevronRight, Clock, Flame, Manchette } from '@osrd-project/ui-icons';
@@ -55,6 +55,18 @@ import { formatTrainDuration, getTrainCategoryClassName } from '../utils';
 import useOccurrenceActions from './hooks/useOccurrenceActions';
 import useOccurrences from './hooks/useOccurrences';
 import OccurrenceItem from './OccurrenceItem';
+
+const openConfirmModal = ({
+  openModal,
+  deleteAllExceptions,
+  title,
+}: {
+  openModal: (modal: React.ReactNode) => void;
+  deleteAllExceptions: () => void;
+  title: string;
+}) => {
+  openModal(<ConfirmModal onConfirm={() => deleteAllExceptions()} title={title} />);
+};
 
 type PacedTrainItemProps = {
   isInSelection: boolean;
@@ -319,6 +331,13 @@ const PacedTrainItem = ({
     [pacedTrain.summary, pacedTrain.paced.exceptions]
   );
 
+  const openDeleteModal = useCallback(async () => {
+    openModal(
+      <DeleteModal handleDelete={async () => deletePacedTrain()} selectedPacedTrainCount={1} />,
+      'sm'
+    );
+  }, [deletePacedTrain, openModal, t]);
+
   const content = (
     <div
       data-testid="scenario-train-schedule"
@@ -432,24 +451,15 @@ const PacedTrainItem = ({
           moveTrainSchedule={moveTrainSchedule}
           duplicateTrainSchedule={duplicatePacedTrain}
           editTrainSchedule={() => selectPacedTrainToEdit(pacedTrain)}
-          deleteTrainSchedule={async () => {
-            openModal(
-              <DeleteModal
-                handleDelete={async () => deletePacedTrain()}
-                selectedPacedTrainCount={1}
-              />,
-              'sm'
-            );
-          }}
+          deleteTrainSchedule={openDeleteModal}
           showResetExceptionsButton={pacedTrain.paced.exceptions.length > 0}
-          resetAllExceptions={() => {
-            openModal(
-              <ConfirmModal
-                onConfirm={() => deleteAllExceptions()}
-                title={t('timetable.resetAllExceptions')}
-              />
-            );
-          }}
+          resetAllExceptions={() =>
+            openConfirmModal({
+              openModal,
+              deleteAllExceptions,
+              title: t('timetable.resetAllExceptions'),
+            })
+          }
           showMovebutton={showMovebutton}
         />
       </div>

@@ -1,3 +1,5 @@
+import { useCallback } from 'react';
+
 import { Trash } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
 import { AiFillCheckCircle } from 'react-icons/ai';
@@ -23,6 +25,20 @@ const SelectionToolbar = ({
 }: SelectionToolbarProps) => {
   const { t } = useTranslation('operational-studies');
   const { openModal } = useModal();
+
+  const openDeleteItemsModal = useCallback(
+    () =>
+      openModal(
+        <DeleteItemsModal
+          handleDeleteItems={onDelete}
+          translationKey={t(`${item}.confirm-delete`, {
+            count: selectedItemCount,
+          })}
+        />,
+        'sm'
+      ),
+    [openModal, onDelete, t, item, selectedItemCount]
+  );
   return (
     <div className="selection-toolbar">
       <AiFillCheckCircle />
@@ -35,17 +51,7 @@ const SelectionToolbar = ({
         data-testid={dataTestId}
         className="btn btn-sm btn-danger"
         type="button"
-        onClick={() =>
-          openModal(
-            <DeleteItemsModal
-              handleDeleteItems={onDelete}
-              translationKey={t(`${item}.confirm-delete`, {
-                count: selectedItemCount,
-              })}
-            />,
-            'sm'
-          )
-        }
+        onClick={openDeleteItemsModal}
       >
         <Trash />
         <span className="ml-2">{t('operational-studies-management.delete')}</span>

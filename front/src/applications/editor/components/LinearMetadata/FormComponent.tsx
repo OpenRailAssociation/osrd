@@ -145,6 +145,8 @@ const IntervalEditorComponent = (
     setSelectedData(selected !== null && data[selected] ? data[selected] : null);
   }, [selected, data]);
 
+  const openHelpModal = useCallback(() => openModal(<HelpModal />, 'lg'), [openModal]);
+
   return (
     <div className="linear-metadata">
       <div className="header">
@@ -154,7 +156,7 @@ const IntervalEditorComponent = (
           className="btn btn-unstyled p-1 ml-1"
           aria-label={t('common.help-display')}
           title={t('common.help-display')}
-          onClick={() => openModal(<HelpModal />, 'lg')}
+          onClick={openHelpModal}
         >
           <MdOutlineHelpOutline />
         </button>

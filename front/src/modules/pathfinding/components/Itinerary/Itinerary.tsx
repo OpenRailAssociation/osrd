@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { ArrowSwitch, Route, Plus, Rocket, Trash } from '@osrd-project/ui-icons';
 import bbox from '@turf/bbox';
@@ -92,6 +92,17 @@ const Itinerary = ({ rollingStockId }: { rollingStockId: number | undefined }) =
     seeWholeItinerary();
   }, [pathProperties]);
 
+  const openModalWithSuggestedVias = useCallback(
+    () =>
+      openModal(
+        <ModalSuggestedVias
+          suggestedVias={pathStepsAndSuggestedOPs!}
+          launchPathfinding={launchPathfinding}
+        />
+      ),
+    [openModal, pathStepsAndSuggestedOPs, launchPathfinding]
+  );
+
   return (
     <div className="osrd-config-item">
       <div className="mb-2 d-flex">
@@ -129,14 +140,7 @@ const Itinerary = ({ rollingStockId }: { rollingStockId: number | undefined }) =
               data-testid="add-waypoints-button"
               className="col ml-1 my-1 text-white btn bg-info btn-sm"
               type="button"
-              onClick={() =>
-                openModal(
-                  <ModalSuggestedVias
-                    suggestedVias={pathStepsAndSuggestedOPs}
-                    launchPathfinding={launchPathfinding}
-                  />
-                )
-              }
+              onClick={openModalWithSuggestedVias}
             >
               <span className="mr-1">{t('addVias')}</span>
               <Plus />

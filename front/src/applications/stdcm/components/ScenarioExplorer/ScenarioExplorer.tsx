@@ -1,3 +1,5 @@
+import { useCallback } from 'react';
+
 import { skipToken } from '@reduxjs/toolkit/query';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
@@ -53,20 +55,22 @@ const ScenarioExplorer = ({
       <div className="scenario-explorator-card-noscenario">{t('noScenarioSelected')}</div>
     );
 
+  const openScenarioExplorerModal = useCallback(() => {
+    openModal(
+      <ScenarioExplorerModal
+        globalProjectId={globalProjectId}
+        globalStudyId={globalStudyId}
+        globalScenarioId={globalScenarioId}
+      />,
+      'lg'
+    );
+  }, [globalProjectId, globalStudyId, globalScenarioId, openModal]);
+
   return (
     <div
       className="scenario-explorator-card"
       data-testid="scenario-explorator"
-      onClick={() => {
-        openModal(
-          <ScenarioExplorerModal
-            globalProjectId={globalProjectId}
-            globalStudyId={globalStudyId}
-            globalScenarioId={globalScenarioId}
-          />,
-          'lg'
-        );
-      }}
+      onClick={openScenarioExplorerModal}
       role="button"
       tabIndex={0}
     >

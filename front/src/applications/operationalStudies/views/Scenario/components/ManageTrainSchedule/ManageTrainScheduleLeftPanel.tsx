@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from 'react';
+import { useCallback, useContext, useEffect, useState } from 'react';
 
 import { ChevronLeft, Pencil } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
@@ -97,6 +97,41 @@ const ManageTrainScheduleLeftPanel = ({
     }
   }, [displayTrainScheduleManagement, itineraryModalIsOpen, itineraryChanged]);
 
+  const openConfirmModal = useCallback(() => {
+    if (
+      trainScheduleToEditData &&
+      trainScheduleToEditData.originalPacedTrain.paced &&
+      trainScheduleToEditData.originalPacedTrain.paced.exceptions.length > 0 &&
+      (osrdConf.timeWindow.toISOString() !==
+        trainScheduleToEditData.originalPacedTrain.paced.timeWindow.toISOString() ||
+        osrdConf.interval.toISOString() !==
+          trainScheduleToEditData.originalPacedTrain.paced.interval.toISOString())
+    ) {
+      openModal(
+        <ConfirmModal
+          title={t('pacedTrains.resetExceptionsConfirmation')}
+          onConfirm={() => {
+            updateTimetable();
+            closeModal();
+          }}
+          onCancel={closeModal}
+          withCloseButton={false}
+        />,
+        'sm'
+      );
+    } else {
+      updateTimetable();
+    }
+  }, [
+    closeModal,
+    osrdConf.interval,
+    osrdConf.timeWindow,
+    trainScheduleToEditData,
+    updateTimetable,
+    openModal,
+    t,
+  ]);
+
   return (
     <div className="scenario-timetable-manage-train-schedule left-column">
       <div className="scenario-timetable-manage-train-schedule-header">
@@ -106,31 +141,7 @@ const ManageTrainScheduleLeftPanel = ({
               <button
                 className="btn btn-warning mb-2"
                 type="button"
-                onClick={() => {
-                  if (
-                    trainScheduleToEditData.originalPacedTrain.paced &&
-                    trainScheduleToEditData.originalPacedTrain.paced.exceptions.length > 0 &&
-                    (osrdConf.timeWindow.toISOString() !==
-                      trainScheduleToEditData.originalPacedTrain.paced.timeWindow.toISOString() ||
-                      osrdConf.interval.toISOString() !==
-                        trainScheduleToEditData.originalPacedTrain.paced.interval.toISOString())
-                  ) {
-                    openModal(
-                      <ConfirmModal
-                        title={t('pacedTrains.resetExceptionsConfirmation')}
-                        onConfirm={() => {
-                          updateTimetable();
-                          closeModal();
-                        }}
-                        onCancel={closeModal}
-                        withCloseButton={false}
-                      />,
-                      'sm'
-                    );
-                  } else {
-                    updateTimetable();
-                  }
-                }}
+                onClick={openConfirmModal}
                 data-testid="submit-edit-train-schedule"
               >
                 <span className="mr-2">

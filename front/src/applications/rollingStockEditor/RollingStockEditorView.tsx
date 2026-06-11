@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { Upload } from '@osrd-project/ui-icons';
 import { skipToken } from '@reduxjs/toolkit/query';
@@ -176,6 +176,23 @@ const RollingStockEditor = () => {
     }
   };
 
+  const openUploadFileModal = useCallback(() => {
+    openModal(<UploadFileModal handleSubmit={importFile} />);
+  }, [openModal, importFile]);
+
+  const openRollingStockEditorFormModal = useCallback(() => {
+    openModal(
+      <RollingStockEditorFormModal
+        mainText={t('common.leaveEditionMode')}
+        request={() => {
+          setIsAdding(false);
+          setIsEditing(false);
+        }}
+        buttonText={t('common.confirm')}
+      />
+    );
+  }, [openModal, setIsAdding, setIsEditing]);
+
   return (
     <>
       <NavBar appName={<>{t('applications.rolling-stocks-editor')}</>} />
@@ -186,18 +203,7 @@ const RollingStockEditor = () => {
               className="rollingstock-editor-disablelist"
               role="button"
               tabIndex={0}
-              onClick={() => {
-                openModal(
-                  <RollingStockEditorFormModal
-                    mainText={t('common.leaveEditionMode')}
-                    request={() => {
-                      setIsAdding(false);
-                      setIsEditing(false);
-                    }}
-                    buttonText={t('common.confirm')}
-                  />
-                );
-              }}
+              onClick={openRollingStockEditorFormModal}
             >
               <span>{t('rollingStock.listDisabled')}</span>
             </div>
@@ -219,9 +225,7 @@ const RollingStockEditor = () => {
               className="d-flex justify-content-start mb-2 py-1 px-2"
               aria-label={t('rollingStock.importRollingStock')}
               title={t('rollingStock.importRollingStock')}
-              onClick={() => {
-                openModal(<UploadFileModal handleSubmit={importFile} />);
-              }}
+              onClick={openUploadFileModal}
             >
               <Upload className="mr-2" />
               {t('rollingStock.importRollingStock')}

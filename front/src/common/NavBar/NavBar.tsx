@@ -49,6 +49,8 @@ const NavBar = ({ appName }: NavBarProps) => {
     </div>
   );
 
+  const openUserSettingsModal = () => openModal(<UserSettings />);
+
   return (
     <div className={cx('nav-bar', { impersonated: impersonatedUser })}>
       <div
@@ -78,7 +80,7 @@ const NavBar = ({ appName }: NavBarProps) => {
             <button
               type="button"
               className="safe-word-btn"
-              onClick={() => openModal(<UserSettings />)}
+              onClick={openUserSettingsModal}
               aria-label={t('nav-bar.userSettings')}
               title={t('nav-bar.userSettings')}
             >
