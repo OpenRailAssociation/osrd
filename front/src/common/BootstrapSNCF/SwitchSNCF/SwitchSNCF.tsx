@@ -21,9 +21,11 @@ export type SwitchSNCFProps = {
   disabled?: boolean;
 };
 
+const NO_OPTIONS: SwitchSNCFProps['options'] = [];
+
 const SwitchSNCF = ({
   type,
-  options = [],
+  options = NO_OPTIONS,
   onChange,
   checkedName,
   name,

@@ -34,6 +34,8 @@ type DefaultBaseMapProps = {
 const ZOOM_DEFAULT = 5;
 const ZOOM_DELTA = 1.5;
 
+const NO_PATH_STEP_MARKERS: MarkerInformation[] = [];
+
 /**
  * Default base map used to display a path and some markers.
  * No interactions are available, except zoom in/out, pan and reset pitch/bearing.
@@ -42,7 +44,7 @@ const DefaultBaseMap = ({
   mapId,
   infraId,
   geometry,
-  pathStepMarkers = [],
+  pathStepMarkers = NO_PATH_STEP_MARKERS,
   isFeasible = true,
   children,
   mapSettings,

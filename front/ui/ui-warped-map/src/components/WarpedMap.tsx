@@ -13,6 +13,7 @@ import Loader from './Loader';
 import TransformedDataMap from './TransformedDataMap';
 
 const TIME_LABEL = 'Warping data';
+const PARTIAL_COMPONENTS_DEFAULTS = {};
 
 interface PathStatePayload {
   path: Feature<LineString>;
@@ -45,7 +46,7 @@ const WarpedMap = ({
   path,
   pathLayer,
   sources,
-  components: partialComponents = {},
+  components: partialComponents = PARTIAL_COMPONENTS_DEFAULTS,
   mapStyle,
   warpingOptions,
   log,

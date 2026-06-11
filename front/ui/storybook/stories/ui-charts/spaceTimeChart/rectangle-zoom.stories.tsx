@@ -38,6 +38,10 @@ const DEFAULT_ZOOM_MS_PER_PX = 10000;
 const MIN_SPACE_ZOOM = 10 * KILOMETER;
 const MAX_SPACE_ZOOM = 0.01 * KILOMETER;
 const DEFAULT_SPACE_ZOOM = 0.3 * KILOMETER;
+
+const NO_OPERATIONAL_POINTS: OperationalPoint[] = [];
+const NO_PATHS: (PathData & { color: string })[] = [];
+
 type SpaceTimeHorizontalZoomWrapperProps = {
   swapAxes: boolean;
   spaceOrigin: number;
@@ -83,8 +87,8 @@ const RectangleZoomWrapper = ({
   spaceOrigin,
   xOffset,
   yOffset,
-  operationalPoints = [],
-  paths = [],
+  operationalPoints = NO_OPERATIONAL_POINTS,
+  paths = NO_PATHS,
 }: SpaceTimeHorizontalZoomWrapperProps) => {
   const [state, setState] = useState<StoryState>({
     timeZoomValue: timeScaleToZoomValue(DEFAULT_ZOOM_MS_PER_PX),

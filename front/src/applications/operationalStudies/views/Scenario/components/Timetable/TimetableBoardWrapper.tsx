@@ -24,6 +24,8 @@ import { postFullImportPayload } from '../ImportTrainSchedule/helpers/postPayloa
 import Timetable from './Timetable';
 import { copyTrainSchedulesToClipboard } from './utils';
 
+const NO_TRAIN_SCHEDULES: TrainScheduleResponse[] = [];
+
 type TimetableBoardWrapperProps = {
   setDisplayTrainScheduleManagement: (mode: string) => void;
   upsertTrainSchedules: (trainSchedules: TrainScheduleResponse[]) => void;
@@ -44,7 +46,7 @@ const TimetableBoardWrapper = ({
   setTrainScheduleToEditData,
   removeTrainSchedules,
   trainScheduleToEditData,
-  trainSchedules = [],
+  trainSchedules = NO_TRAIN_SCHEDULES,
   trainSchedulesWithDetails,
   refreshNge,
   projectingOnSimulatedPathException,

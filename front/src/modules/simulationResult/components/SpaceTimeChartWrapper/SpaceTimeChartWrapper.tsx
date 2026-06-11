@@ -149,6 +149,7 @@ type SpaceTimeChartWrapperProps = SpaceTimeChartWrapperBaseProps &
   );
 
 export const MANCHETTE_WITH_SPACE_TIME_CHART_DEFAULT_HEIGHT = 561;
+const NO_CONFLICTS: Conflict[] = [];
 
 /**
  * Builds the hover input for the curve-style helper. Chart hover wins over
@@ -182,7 +183,7 @@ const SpaceTimeChartWrapper = ({
   operationalPoints,
   trainScheduleProjections,
   waypointsPanelData,
-  conflicts = [],
+  conflicts = NO_CONFLICTS,
   workSchedules,
   trackOccupancyDiagramsData,
   onCloseOccupancyLayer,

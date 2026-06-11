@@ -48,6 +48,8 @@ export const HIDDEN_CHART_TOP_HEIGHT = 23;
 const SDD_INITIAL_HEIGHT = 460;
 const SDD_MIN_HEIGHT = 400;
 
+const NO_CONFLICTS: Conflict[] = [];
+
 type SimulationResultsProps = {
   scenarioData: { name: string; infraName: string };
   projectionData: ProjectionData | undefined;
@@ -72,7 +74,7 @@ const SimulationResults = ({
   projectionData,
   trainSchedulesWithDetails,
   trainSchedules,
-  conflicts = [],
+  conflicts = NO_CONFLICTS,
   activeBoards,
   updateTrainScheduleDepartureTime,
   upsertTrainSchedules,

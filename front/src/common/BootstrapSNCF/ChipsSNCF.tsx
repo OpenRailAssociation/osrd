@@ -14,6 +14,8 @@ enum colorClasses {
   white = 'bg-white text-dark',
 }
 
+const NO_TAGS: string[] = [];
+
 type Props = {
   tags?: string[];
   addTag: (tag: string) => void;
@@ -29,7 +31,7 @@ type Props = {
  * addTag is only called if the inputted tag is not already present in the tags array.
  */
 export default function ChipsSNCF({
-  tags = [],
+  tags = NO_TAGS,
   addTag,
   removeTag,
   title,

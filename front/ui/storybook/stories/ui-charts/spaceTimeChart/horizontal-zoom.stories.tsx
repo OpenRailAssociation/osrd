@@ -25,6 +25,10 @@ const MAX_ZOOM = 100;
 const MIN_ZOOM_MS_PER_PX = 600000;
 const MAX_ZOOM_MS_PER_PX = 625;
 const DEFAULT_ZOOM_MS_PER_PX = 7500;
+
+const NO_OPERATIONAL_POINTS: OperationalPoint[] = [];
+const NO_PATHS: (PathData & { color: string })[] = [];
+
 type SpaceTimeHorizontalZoomWrapperProps = {
   offset: number;
   operationalPoints: OperationalPoint[];
@@ -40,8 +44,8 @@ const timeScaleToZoomValue = (timeScale: number) =>
 
 const SpaceTimeHorizontalZoomWrapper = ({
   offset,
-  operationalPoints = [],
-  paths = [],
+  operationalPoints = NO_OPERATIONAL_POINTS,
+  paths = NO_PATHS,
 }: SpaceTimeHorizontalZoomWrapperProps) => {
   const [state, setState] = useState<{
     zoomValue: number;

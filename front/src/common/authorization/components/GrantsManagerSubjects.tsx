@@ -11,6 +11,8 @@ import type { Grant, Privilege, ResourceType } from '../types';
 import GrantManagerAddSubjectForm from './GrantManagerAddSubjectForm';
 import GrantsManagerSubject from './GrantsManagerSubject';
 
+const EMPTY_USER_PRIVILEGES: Set<Privilege> = new Set();
+
 type GrantsManagerSubjectsProps = {
   resourceId: number;
   resourceType: ResourceType;
@@ -21,7 +23,7 @@ type GrantsManagerSubjectsProps = {
 const GrantsManagerSubjects = ({
   resourceId,
   resourceType,
-  userPrivileges = new Set(),
+  userPrivileges = EMPTY_USER_PRIVILEGES,
   onChangeSuccess,
 }: GrantsManagerSubjectsProps) => {
   const { t } = useTranslation();

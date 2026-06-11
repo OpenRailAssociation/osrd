@@ -18,6 +18,8 @@ import TrainScheduleSetDialog from './TrainScheduleSet/TrainScheduleSetDialog';
 import type { TimetableMode } from './types';
 import useFilterTrainSchedules from './useFilterTrainSchedules';
 
+const NO_TRAIN_SCHEDULES: TrainScheduleResponse[] = [];
+
 type TimetableProps = {
   setDisplayTrainScheduleManagement: (mode: string) => void;
   upsertTrainSchedules: (trainSchedules: TrainScheduleResponse[]) => void;
@@ -41,7 +43,7 @@ const Timetable = ({
   removeAndUnselectTrains,
   handleDeleteTrainSchedules,
   trainScheduleToEditData,
-  trainSchedules = [],
+  trainSchedules = NO_TRAIN_SCHEDULES,
   trainSchedulesWithDetails,
   refreshNge,
   selectedTrainScheduleIds,
