@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useRef, useState } from 'react';
+import { Fragment, useCallback, useEffect, useRef, useState } from 'react';
 
 import { X, ChevronDown, ChevronUp, Hubot, SignOut } from '@osrd-project/ui-icons';
 import cx from 'classnames';
@@ -92,6 +92,16 @@ const ScenarioHeader = ({ activeBoards, toggleBoard }: ScenarioHeaderProps) => {
     >
       {username}
     </span>
+  );
+
+  const openAddandEditModal = useCallback(
+    () =>
+      openModal(
+        <AddAndEditScenarioModal editionMode scenario={scenario} />,
+        'xl',
+        'no-close-modal'
+      ),
+    [openModal, scenario]
   );
 
   return (
@@ -215,13 +225,7 @@ const ScenarioHeader = ({ activeBoards, toggleBoard }: ScenarioHeaderProps) => {
               className="edit-scenario"
               type="button"
               aria-label={t('main.editScenario')}
-              onClick={() =>
-                openModal(
-                  <AddAndEditScenarioModal editionMode scenario={scenario} />,
-                  'xl',
-                  'no-close-modal'
-                )
-              }
+              onClick={openAddandEditModal}
               title={t('main.editScenario')}
               data-testid="edit-scenario"
             >

@@ -1,4 +1,4 @@
-import { useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 
 import { Pencil, Trash } from '@osrd-project/ui-icons';
 import cx from 'classnames';
@@ -240,6 +240,18 @@ const AddOrEditScenarioModal = ({ editionMode = false, scenario }: AddOrEditScen
     }
   };
 
+  const openDeleteItemsModal = useCallback(
+    () =>
+      openModal(
+        <DeleteItemsModal
+          handleDeleteItems={removeScenario}
+          translationKey={t('scenario.confirm-delete', { count: 1 })}
+        />,
+        'sm'
+      ),
+    [openModal, removeScenario, t]
+  );
+
   useEffect(() => {
     if (scenario) {
       initialValuesRef.current = { ...scenario };
@@ -367,15 +379,7 @@ const AddOrEditScenarioModal = ({ editionMode = false, scenario }: AddOrEditScen
               data-testid="delete-scenario"
               className="btn btn-sm btn-outline-danger mr-auto"
               type="button"
-              onClick={() =>
-                openModal(
-                  <DeleteItemsModal
-                    handleDeleteItems={removeScenario}
-                    translationKey={t('scenario.confirm-delete', { count: 1 })}
-                  />,
-                  'sm'
-                )
-              }
+              onClick={openDeleteItemsModal}
             >
               <span className="mr-2">
                 <Trash />

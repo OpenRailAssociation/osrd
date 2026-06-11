@@ -7,7 +7,6 @@ import { GRANTS_LABEL } from 'common/authorization/consts';
 
 import type { Grant, Privilege, ResourceType } from '../types';
 import GrantsManagerSubjects from './GrantsManagerSubjects';
-import { DEFAULT_SET } from 'common/consts';
 
 function getGrantLabel(userPrivileges: Set<Privilege>): keyof typeof GRANTS_LABEL {
   if (userPrivileges.has('can_delete')) return 'OWNER';

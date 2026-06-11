@@ -1,4 +1,4 @@
-import { useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 
 import { Note, Pencil, Trash } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
@@ -209,6 +209,18 @@ const AddOrEditStudyModal = ({ editionMode, study, scenarios }: AddOrEditStudyMo
   ) {
     maxStudyStartDate = currentStudy.actual_end_date;
   }
+
+  const openDeleteItemsModal = useCallback(
+    () =>
+      openModal(
+        <DeleteItemsModal
+          handleDeleteItems={deleteStudy}
+          translationKey={t('study.confirm-delete', { count: 1 })}
+        />,
+        'sm'
+      ),
+    [openModal, deleteStudy, t]
+  );
 
   return (
     <div data-testid="study-edition-modal" className="study-edition-modal" ref={modalRef}>
@@ -462,15 +474,7 @@ const AddOrEditStudyModal = ({ editionMode, study, scenarios }: AddOrEditStudyMo
               data-testid="delete-study"
               className="btn btn-outline-danger mr-auto"
               type="button"
-              onClick={() =>
-                openModal(
-                  <DeleteItemsModal
-                    handleDeleteItems={deleteStudy}
-                    translationKey={t('study.confirm-delete', { count: 1 })}
-                  />,
-                  'sm'
-                )
-              }
+              onClick={openDeleteItemsModal}
             >
               <span className="mr-2">
                 <Trash />

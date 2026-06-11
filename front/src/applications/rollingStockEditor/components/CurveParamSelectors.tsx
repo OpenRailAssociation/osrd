@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useCallback } from 'react';
 import type { Dispatch, SetStateAction } from 'react';
 
 import { Alert } from '@osrd-project/ui-icons';
@@ -247,6 +247,22 @@ const CurveParamSelectors = ({
     if (powerRestrictionCodes) setPowerRestrictionList(powerRestrictionCodes);
   }, [powerRestrictionCodes]);
 
+  const openPowerRestrictionGridModal = useCallback(() => {
+    openModal(
+      <PowerRestrictionGridModal
+        powerRestrictionsList={powerRestrictionList}
+        updatePowerRestrictions={updatePowerRestrictionsList}
+        currentPowerRestrictions={[...rollingstockParams.powerRestrictions]}
+      />,
+      'lg'
+    );
+  }, [
+    powerRestrictionList,
+    rollingstockParams.powerRestrictions,
+    openModal,
+    updatePowerRestrictionsList,
+  ]);
+
   return (
     <div className="rollingstock-editor-effort-speed-curves">
       <div className="selector-container">
@@ -336,15 +352,7 @@ const CurveParamSelectors = ({
               selectNewItemButtonProps={{
                 options: powerRestrictionList,
                 selectNewItem: updatePowerRestrictionsList,
-                customOnClick: () =>
-                  openModal(
-                    <PowerRestrictionGridModal
-                      powerRestrictionsList={powerRestrictionList}
-                      updatePowerRestrictions={updatePowerRestrictionsList}
-                      currentPowerRestrictions={[...rollingstockParams.powerRestrictions]}
-                    />,
-                    'lg'
-                  ),
+                customOnClick: openPowerRestrictionGridModal,
               }}
               dataTestId="power-restriction-selector"
             />

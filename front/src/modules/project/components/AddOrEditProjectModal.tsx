@@ -1,4 +1,4 @@
-import { useContext, useEffect, useRef, useState } from 'react';
+import { useCallback, useContext, useEffect, useRef, useState } from 'react';
 
 import { Pencil, Trash } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
@@ -255,6 +255,18 @@ export default function AddOrEditProjectModal({
 
   useModalFocusTrap(modalRef, closeModal);
 
+  const openDeleteItemsModal = useCallback(
+    () =>
+      openModal(
+        <DeleteItemsModal
+          handleDeleteItems={removeProject}
+          translationKey={t('project.confirm-delete', { count: 1 })}
+        />,
+        'sm'
+      ),
+    [openModal, removeProject, t]
+  );
+
   return (
     <div className="project-edition-modal" ref={modalRef}>
       {clickedOutside && (
@@ -432,15 +444,7 @@ export default function AddOrEditProjectModal({
               data-testid="delete-project"
               className="btn btn-outline-danger mr-auto"
               type="button"
-              onClick={() =>
-                openModal(
-                  <DeleteItemsModal
-                    handleDeleteItems={removeProject}
-                    translationKey={t('project.confirm-delete', { count: 1 })}
-                  />,
-                  'sm'
-                )
-              }
+              onClick={openDeleteItemsModal}
             >
               <span className="mr-2">
                 <Trash />

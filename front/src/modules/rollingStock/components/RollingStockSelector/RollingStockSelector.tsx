@@ -61,21 +61,23 @@ const RollingStockSelector = ({
 
   const { t } = useTranslation();
 
+  const openRollingStockSelectorModal = useCallback(() => {
+    openModal(
+      <RollingStockModal
+        rollingStockId={rollingStockId}
+        ref2scroll={ref2scroll}
+        onSelectRollingStock={selectRollingStock}
+      />,
+      'lg'
+    );
+  }, [rollingStockId, ref2scroll, selectRollingStock]);
+
   return (
     <div className="osrd-config-item mb-2">
       <div
         className="osrd-config-item-container osrd-config-item-clickable"
         data-testid="rollingstock-selector"
-        onClick={() => {
-          openModal(
-            <RollingStockModal
-              rollingStockId={rollingStockId}
-              ref2scroll={ref2scroll}
-              onSelectRollingStock={selectRollingStock}
-            />,
-            'lg'
-          );
-        }}
+        onClick={openRollingStockSelectorModal}
         role="button"
         tabIndex={0}
       >

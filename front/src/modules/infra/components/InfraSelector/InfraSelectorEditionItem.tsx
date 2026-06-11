@@ -12,7 +12,7 @@ import ActionsBar from './InfraSelectorEditionActionsBar';
 import InfraSelectorEditionActionsBarDelete from './InfraSelectorEditionActionsBarDelete';
 import { editoastUpToDateIndicator } from './InfraSelectorModalBodyStandard';
 
-const EMPTY_USER_PRIVILEGES = new Set();
+const EMPTY_USER_PRIVILEGES = new Set<Privilege>();
 
 type InfraSelectorEditionItemProps = {
   infra: Infra;
@@ -25,7 +25,7 @@ const InfraSelectorEditionItem = ({
   infra,
   isFocused,
   setIsFocused,
-  userPrivileges = EMPTY_USER_PRIVILEGES as Set<Privilege>,
+  userPrivileges = EMPTY_USER_PRIVILEGES,
 }: InfraSelectorEditionItemProps) => {
   const [value, setValue] = useState(infra.name);
   const [runningDelete, setRunningDelete] = useState(false);

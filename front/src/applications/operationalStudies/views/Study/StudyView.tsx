@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { Pencil } from '@osrd-project/ui-icons';
 import { skipToken } from '@reduxjs/toolkit/query';
@@ -85,6 +85,16 @@ const StudyView = () => {
           pageSize: 1000,
         }
       : skipToken
+  );
+
+  const openAddorEditStudyModal = useCallback(
+    () =>
+      openModal(
+        <AddOrEditStudyModal editionMode study={study} scenarios={scenarios?.results} />,
+        'xl',
+        'no-close-modal'
+      ),
+    [study, scenarios, openModal]
   );
 
   const {
@@ -249,17 +259,7 @@ const StudyView = () => {
                     data-testid="study-modify-button"
                     className="study-details-modify-button"
                     type="button"
-                    onClick={() =>
-                      openModal(
-                        <AddOrEditStudyModal
-                          editionMode
-                          study={study}
-                          scenarios={scenarios?.results}
-                        />,
-                        'xl',
-                        'no-close-modal'
-                      )
-                    }
+                    onClick={openAddorEditStudyModal}
                   >
                     <span className="study-details-modify-button-text">
                       {t('study.modifyStudy')}

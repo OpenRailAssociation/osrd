@@ -298,6 +298,35 @@ const StdcmResults = ({
     );
   }, [pdfInstance, deploymentSettings, simulationReportSheetNumber]);
 
+  const openSendToRailwayManagerModal = useCallback(() => {
+    if (hasSimulationResults) {
+      openModal(
+        <SendToRailwayManagerModal
+          consist={selectedSimulation.inputs.consist}
+          stdcmResults={outputs}
+          linkedTrains={selectedSimulation.inputs.linkedTrains}
+          simulationReportSheetNumber={simulationReportSheetNumber}
+          similarTrains={similarTrains}
+          pdfBlob={pdfInstance.blob!}
+          onClose={closeModal}
+          onSuccess={handleSubmitSuccess}
+        />,
+        'xl',
+        'no-close-modal'
+      );
+    }
+  }, [
+    closeModal,
+    handleSubmitSuccess,
+    openModal,
+    outputs,
+    selectedSimulation.inputs.consist,
+    selectedSimulation.inputs.linkedTrains,
+    simulationReportSheetNumber,
+    similarTrains,
+    pdfInstance.blob,
+  ]);
+
   return (
     <>
       <StdcmSimulationNavigator
@@ -350,22 +379,7 @@ const StdcmResults = ({
                             label={t('transferSheetToRailManager')}
                             isDisabled={pdfInstance.loading}
                             isLoading={pdfInstance.loading}
-                            onClick={() => {
-                              openModal(
-                                <SendToRailwayManagerModal
-                                  consist={selectedSimulation.inputs.consist}
-                                  stdcmResults={outputs}
-                                  linkedTrains={selectedSimulation.inputs.linkedTrains}
-                                  simulationReportSheetNumber={simulationReportSheetNumber}
-                                  similarTrains={similarTrains}
-                                  pdfBlob={pdfInstance.blob!}
-                                  onClose={closeModal}
-                                  onSuccess={handleSubmitSuccess}
-                                />,
-                                'xl',
-                                'no-close-modal'
-                              );
-                            }}
+                            onClick={openSendToRailwayManagerModal}
                           />
                         ) : (
                           <div className="success-message">

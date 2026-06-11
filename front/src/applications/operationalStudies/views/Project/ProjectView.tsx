@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { Pencil } from '@osrd-project/ui-icons';
 import { skipToken } from '@reduxjs/toolkit/query';
@@ -209,6 +209,18 @@ const ProjectView = () => {
     getStudiesList();
   }, [sortOption, filter, projectStudies]);
 
+  const openAddOrEditProjectModal = useCallback(() => {
+    openModal(
+      <AddOrEditProjectModal
+        editionMode
+        project={project}
+        projectStudies={projectStudies?.results}
+      />,
+      'xl',
+      'no-close-modal'
+    );
+  }, [openModal, project, projectStudies]);
+
   return (
     <>
       <NavBar appName={<BreadCrumbs project={project} />} />
@@ -232,17 +244,7 @@ const ProjectView = () => {
                           data-testid="project-update-button"
                           className="project-details-title-modify-button"
                           type="button"
-                          onClick={() =>
-                            openModal(
-                              <AddOrEditProjectModal
-                                editionMode
-                                project={project}
-                                projectStudies={projectStudies?.results}
-                              />,
-                              'xl',
-                              'no-close-modal'
-                            )
-                          }
+                          onClick={openAddOrEditProjectModal}
                         >
                           <span className="project-details-title-modify-button-text">
                             {t('project.modifyProject')}
