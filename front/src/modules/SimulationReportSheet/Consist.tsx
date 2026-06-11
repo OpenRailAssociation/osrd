@@ -102,6 +102,8 @@ const RollingStockDisplay = ({
   return <Text style={styles.consistAndRoute.consistInfoData}>{rollingStockName}</Text>;
 };
 
+const NO_CONSIST_CHANGES: ConsistChangeData[] = [];
+
 type ConsistProps = {
   rollingStockName: string;
   mass: string;
@@ -121,7 +123,7 @@ const Consist = ({
   speedLimitByTag,
   loadingGauge,
   towedRollingStockName,
-  consistChanges = [],
+  consistChanges = NO_CONSIST_CHANGES,
 }: ConsistProps) => {
   const { t } = useTranslation('stdcm');
 

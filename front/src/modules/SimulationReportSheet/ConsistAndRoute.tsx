@@ -8,6 +8,8 @@ import Route from './Route';
 import styles from './styles/SimulationReportStyleSheet';
 import type { ConsistChangeData, RouteTableRow } from './types';
 
+const NO_CONSIST_CHANGES: ConsistChangeData[] = [];
+
 type ConsistAndRouteProps = {
   isStdcm?: boolean;
   stdcmLinkedTrains?: LinkedTrains;
@@ -29,7 +31,7 @@ const ConsistAndRoute = ({
   initialConsist,
   stdcmLinkedTrains,
   routeTableRows,
-  consistChanges = [],
+  consistChanges = NO_CONSIST_CHANGES,
 }: ConsistAndRouteProps) => {
   const { t } = useTranslation('stdcm');
 

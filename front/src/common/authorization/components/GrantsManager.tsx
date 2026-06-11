@@ -7,6 +7,7 @@ import { GRANTS_LABEL } from 'common/authorization/consts';
 
 import type { Grant, Privilege, ResourceType } from '../types';
 import GrantsManagerSubjects from './GrantsManagerSubjects';
+import { DEFAULT_SET } from 'common/consts';
 
 function getGrantLabel(userPrivileges: Set<Privilege>): keyof typeof GRANTS_LABEL {
   if (userPrivileges.has('can_delete')) return 'OWNER';
@@ -14,6 +15,8 @@ function getGrantLabel(userPrivileges: Set<Privilege>): keyof typeof GRANTS_LABE
   if (userPrivileges.has('can_read')) return 'READER';
   return 'NONE';
 }
+
+const EMPTY_USER_PRIVILEGES: Set<Privilege> = new Set();
 
 type GrantsManagerProps = {
   resourceId: number;
@@ -25,7 +28,7 @@ type GrantsManagerProps = {
 const GrantsManager = ({
   resourceId,
   resourceType,
-  userPrivileges = new Set(),
+  userPrivileges = EMPTY_USER_PRIVILEGES,
   onChangeSuccess,
 }: GrantsManagerProps) => {
   const { t } = useTranslation();

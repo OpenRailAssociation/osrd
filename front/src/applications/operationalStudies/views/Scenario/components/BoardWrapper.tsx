@@ -6,6 +6,8 @@ import MenuTriggerButton from 'common/MenuTriggerButton';
 import type { OSRDMenuItem } from 'common/OSRDMenu';
 import ResizableSection from 'common/ResizableSection';
 
+const NO_ITEMS: OSRDMenuItem[] = [];
+
 type ResizableProps = {
   height: number;
   setHeight: React.Dispatch<React.SetStateAction<number>>;
@@ -32,7 +34,7 @@ const BoardWrapper = ({
   hidden = false,
   name,
   fullName,
-  items = [],
+  items = NO_ITEMS,
   withFooter = false,
   footerClass,
   dataTestId,

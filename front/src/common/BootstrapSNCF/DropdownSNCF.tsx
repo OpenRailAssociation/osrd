@@ -15,9 +15,11 @@ type DropdownSNCFProps = {
   noArrow?: boolean;
 };
 
+const NO_ITEMS: DropdownSNCFProps['items'] = [];
+
 const DropdownSNCF = ({
   titleContent,
-  items = [],
+  items = NO_ITEMS,
   type = 'transparent',
   className,
   noArrow = false,

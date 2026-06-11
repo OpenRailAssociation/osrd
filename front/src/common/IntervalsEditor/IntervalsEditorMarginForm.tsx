@@ -5,6 +5,8 @@ import SelectSNCF from 'common/BootstrapSNCF/SelectImprovedSNCF';
 
 import type { IntervalItem } from './types';
 
+const NO_UNITS: string[] = [];
+
 type IntervalsEditorMarginFormProps = {
   data: IntervalItem[];
   defaultUnit?: string;
@@ -22,7 +24,7 @@ const IntervalsEditorMarginForm = ({
   interval,
   selectedIntervalIndex,
   setData,
-  units = [],
+  units = NO_UNITS,
 }: IntervalsEditorMarginFormProps) => (
   <div className="intervals-editor-form-column">
     <div className="intervals-editor-form-input">

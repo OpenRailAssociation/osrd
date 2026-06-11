@@ -7,6 +7,11 @@ import { type StatusWithMessage } from '../StatusMessage';
 import { TOLERANCE_RANGES } from './consts';
 import ToleranceRangeGrid from './ToleranceRangeGrid';
 
+const DEFAULT_TOLERANCE_VALUES = {
+  minusTolerance: TOLERANCE_RANGES[0].value,
+  plusTolerance: TOLERANCE_RANGES[0].value,
+};
+
 export type ToleranceValues = {
   minusTolerance: number;
   plusTolerance: number;
@@ -21,10 +26,7 @@ export type TolerancePickerProps = Omit<InputProps, 'value'> & {
 
 const TolerancePicker = ({
   onToleranceChange,
-  toleranceValues: { minusTolerance, plusTolerance } = {
-    minusTolerance: TOLERANCE_RANGES[0].value,
-    plusTolerance: TOLERANCE_RANGES[0].value,
-  },
+  toleranceValues: { minusTolerance, plusTolerance } = DEFAULT_TOLERANCE_VALUES,
   translateWarningMessage,
   testIdPrefix,
   ...inputProps

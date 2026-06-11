@@ -9,6 +9,7 @@ import {
   SpaceTimeChart,
   SpaceTimeChartCanvasContext,
   type SpaceTimeChartContextType,
+  type SplitPoint,
   useDraw,
   useManchetteWithSpaceTimeChart,
 } from '@osrd-project/ui-charts';
@@ -88,6 +89,8 @@ const FlatStep = ({ position }: { position: number }) => {
   return null;
 };
 
+const NO_SPLIT_POINTS: SplitPoint[] = [];
+
 /**
  * This component shows how to use the useManchetteWithSpaceTimeChart hook with split points:
  */
@@ -96,7 +99,7 @@ const SplitManchetteWithSpaceTimeChartWrapper = ({
   paths,
   selectedTrain,
   height = 561,
-  splitPoints = [],
+  splitPoints = NO_SPLIT_POINTS,
 }: {
   waypoints: typeof SAMPLE_WAYPOINTS;
   paths: typeof SAMPLE_CHART_PATHS;

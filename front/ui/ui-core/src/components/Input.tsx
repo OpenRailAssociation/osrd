@@ -54,6 +54,8 @@ export type InputProps = React.InputHTMLAttributes<HTMLInputElement> &
     testIdPrefix?: string;
   };
 
+const DEFAULT_ICONS: IconConfig[] = [];
+
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
   (
     {
@@ -70,7 +72,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
       narrow,
       inputFieldWrapperClassname = '',
       small = false,
-      withIcons = [],
+      withIcons = DEFAULT_ICONS,
       onKeyUp,
       onBlur,
       onCloseStatusMessage,

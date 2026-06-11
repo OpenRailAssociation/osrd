@@ -59,6 +59,12 @@ export type LinearMetadataDatavizProps<T> = IntervalItemBaseProps<T> & {
   onResize?: (index: number, gap: number, finalized: boolean) => void;
 };
 
+const DEFAULT_OPTIONS = {
+  resizingScale: false,
+  fullHeightItem: false,
+  showValues: false,
+};
+
 /**
  * Component that displays a linear metadata of a line.
  */
@@ -71,7 +77,7 @@ export const LinearMetadataDataviz = <T extends { [key: string]: string | number
   highlighted,
   intervalType,
   operationalPoints,
-  options = { resizingScale: false, fullHeightItem: false, showValues: false },
+  options = DEFAULT_OPTIONS,
   viewBox,
   onClick,
   onDoubleClick,

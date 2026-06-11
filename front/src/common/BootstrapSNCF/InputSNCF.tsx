@@ -47,6 +47,8 @@ export type InputSNCFProps = {
   ref?: React.RefObject<HTMLInputElement>;
 };
 
+const NO_INPUT_PROPS: InputSNCFProps['inputProps'] = {};
+
 const InputSNCF = ({
   // Basic input props
   id,
@@ -59,7 +61,7 @@ const InputSNCF = ({
   onChange,
   value,
   readonly = false,
-  inputProps = {},
+  inputProps = NO_INPUT_PROPS,
   list,
   // Error handling
   isInvalid = false,
