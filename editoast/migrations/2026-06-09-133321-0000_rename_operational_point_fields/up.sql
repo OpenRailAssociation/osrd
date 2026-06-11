@@ -13,7 +13,7 @@ UPDATE infra_object_operational_point
 SET data = jsonb_set(data, '{country_code}', '"FR"'::jsonb);
 
 UPDATE infra_object_operational_point
-SET data = jsonb_set(data, '{is_passenger_station}', to_jsonb(data->'extensions'->'sncf'->>'ch' = 'BV' OR data->'extensions'->'sncf'->>'ch' = '00'));
+SET data = jsonb_set(data, '{is_passenger_station}', to_jsonb(COALESCE(data->'extensions'->'sncf'->>'ch', 'BV') = 'BV' OR data->'extensions'->'sncf'->>'ch' = '00'));
 
 UPDATE infra_object_operational_point
 SET data = data - 'extensions';
