@@ -5,11 +5,9 @@ use tracing::debug;
 use crate::Authorization;
 use crate::Error;
 use crate::Infra;
-use crate::InfraGrant;
 use crate::Regulator;
 use crate::Role;
 use crate::StorageDriver;
-use crate::Subject;
 use crate::identity::UserIdentity;
 use crate::identity::UserInfo;
 use crate::model::InfraPrivilege;
@@ -68,17 +66,6 @@ impl<S: StorageDriver> Authorizer<S> {
     ) -> Result<Authorization<()>, Error<S::Error>> {
         self.regulator
             .authorize_infra(&User(self.user_id), infra, privilege)
-            .await
-    }
-
-    pub async fn give_infra_grant(
-        &self,
-        subject: &Subject,
-        infra: &Infra,
-        grant: InfraGrant,
-    ) -> Result<Authorization<()>, Error<S::Error>> {
-        self.regulator
-            .give_infra_grant(&User(self.user_id), subject, infra, grant)
             .await
     }
 }

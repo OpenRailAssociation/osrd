@@ -66,6 +66,12 @@ pub enum Check {
     HasInfraPrivilege(Actor, InfraPrivilege, Infra),
     /// The actor needs a rolling stock privilege to perform the operation
     HasRollingStockPrivilege(Actor, RollingStockPrivilege, RollingStock),
+    /// The issuer must be allowed to change the subject's infra grant
+    ///
+    /// Ensures that the issuer cannot demote a more or equally privileged user, except themself.
+    /// IMPORTANT: it is *NOT* a replacement for [`Self::HasInfraPrivilege`] with sharing privileges (forbids illegal promotions)
+    /// NOTE: groups grants are managed by admins exclusively so this check always rejects group subjects as admin checks are bypassed
+    CanAlterSubjectInfraGrant(Subject, Infra),
     /// The subject must not have the specified effective infra grant
     SubjectEffectiveInfraGrantIsNot(InfraGrant, Subject, Infra),
     /// The subject must not be the last direct owner of the infra
@@ -169,6 +175,11 @@ impl<T> Protected<T> {
 
     pub fn with_check_iter(mut self, checks: impl IntoIterator<Item = Check>) -> Self {
         self.checks.extend(checks);
+        self
+    }
+
+    pub fn reset_checks(mut self) -> Self {
+        self.checks.clear();
         self
     }
 }

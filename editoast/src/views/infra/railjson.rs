@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
-use authz;
 use authz::InfraGrant;
+use authz::v2;
 use axum::Extension;
 use axum::extract::Json;
 use axum::extract::Path;
@@ -21,10 +21,12 @@ use utoipa::IntoParams;
 use utoipa::ToSchema;
 
 use crate::AppState;
+use crate::authentication;
+use crate::authorizers::SystemAuthorizer;
+use crate::authorizers::impossible;
 use crate::error::Result;
 use crate::generated_data::InfraGeneratedData as _;
 use crate::infra_cache::InfraCache;
-use crate::views::Authentication;
 use crate::views::AuthenticationExt;
 use crate::views::infra::InfraApiError;
 use crate::views::infra::InfraIdParam;
@@ -192,37 +194,56 @@ pub(in crate::views) async fn post_railjson(
         config,
         ..
     }): State<AppState>,
-    Extension(auth): AuthenticationExt,
+    Extension(authn_state): Extension<authentication::State>,
     Query(params): Query<PostRailjsonQueryParams>,
     Json(railjson): Json<RailJson>,
 ) -> Result<impl IntoResponse> {
+    let mut conn = db_pool.get().await?;
     let mut infra = Infra::changeset()
         .name(params.name.clone())
         .last_railjson_version()
-        .persist(railjson, &mut db_pool.get().await?)
+        .persist(railjson, &mut conn)
         .await
         .map_err(RailJsonError::from)?;
-    let infra_id = infra.id;
 
-    // Assign OWNER to the user on the infra if authz is enabled
-    // NOTE: we use the regulator here instead of the one in the authorizer to bypass the checks on can_share_ownership
-    if let Authentication::Authenticated(authorizer) = auth {
-        regulator
-            .give_infra_grant_unchecked(
-                &authz::Subject::User(authz::User(authorizer.user_id())),
-                &authz::Infra(infra.id),
-                InfraGrant::Owner,
-            )
-            .await?;
+    if let authentication::State::Authenticated { user, .. } = &authn_state {
+        match v2::infra_set_grant(
+            authz::Subject::user(*user),
+            authz::Infra(infra.id),
+            InfraGrant::Owner,
+        )
+        .authorize(&SystemAuthorizer {
+            openfga: regulator.openfga(),
+            conn: conn.clone(),
+        })
+        .await?
+        .access()
+        .await?
+        {
+            Ok(()) => {}
+            Err(v2::Check::SubjectExists(subject)) => {
+                unreachable!("authenticated user should exist: {subject:?}")
+            }
+            Err(v2::Check::InfraExists(infra)) => {
+                unreachable!("infra was just imported: {infra:?}")
+            }
+            Err(
+                check @ (v2::Check::HasInfraPrivilege(..)
+                | v2::Check::CanAlterSubjectInfraGrant(..)),
+            ) => {
+                unreachable!("SystemAuthorizer should not reject infra grant checks: {check:?}")
+            }
+            Err(check) => impossible!(check),
+        }
     }
 
     infra
-        .bump_version(&mut db_pool.get().await?)
+        .bump_version(&mut conn)
         .await
-        .map_err(|_| InfraApiError::NotFound { infra_id })?;
+        .map_err(|_| InfraApiError::NotFound { infra_id: infra.id })?;
     if params.generate_data {
         let infra_cache = InfraCache::get_or_load(
-            &mut db_pool.get().await?,
+            &mut conn,
             &infra_caches,
             &infra,
             &valkey_client,
@@ -246,6 +267,7 @@ mod tests {
     use crate::fixtures::create_empty_infra;
     use crate::infra_cache::operation::create::apply_create_operation;
     use crate::views::test_app;
+    use crate::views::test_app::TestRequestExt as _;
     use schemas::infra::RAILJSON_VERSION;
     use schemas::infra::SwitchType;
 
@@ -277,8 +299,13 @@ mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     // PostgreSQL deadlock can happen in this test, see section `Deadlock` of [DbConnectionPoolV2::get] for more information
     async fn test_post_railjson() {
-        let app = test_app!().skip_authz().build();
+        let app = test_app!().build();
         let db_pool = app.db_pool();
+        let user = app
+            .user("thomas", "Thomas")
+            .with_roles([authz::Role::OperationalStudies])
+            .create()
+            .await;
 
         let railjson = RailJson {
             buffer_stops: (0..10).map(|_| Default::default()).collect(),
@@ -296,11 +323,13 @@ mod tests {
 
         let res: PostRailjsonResponse = app
             .post("/infra/railjson?name=post_railjson_test")
+            .by_user(user.as_ref())
             .json(&railjson)
             .await
             .assert_status(StatusCode::CREATED)
             .json();
 
+        app.assert_infra_grant(res.infra, user.id, Some(InfraGrant::Owner));
         assert!(
             Infra::delete_static(&mut db_pool.get_ok(), res.infra)
                 .await

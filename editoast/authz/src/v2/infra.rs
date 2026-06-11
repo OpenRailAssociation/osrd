@@ -142,6 +142,80 @@ pub fn infra_effective_grant(subject: Subject, infra: Infra) -> Protected<Option
     ))
 }
 
+/// Sets the (direct) grant a subject has on an [Infra].
+///
+/// No transaction is setup as OpenFGA does not support them.
+pub fn infra_set_grant(subject: Subject, infra: Infra, new_grant: InfraGrant) -> Protected<()> {
+    let prot = infra_revoke_grant(subject, infra).map(move |openfga, _has_revoked| {
+        async move {
+            let mut writes = openfga.prepare_writes();
+            match (subject, new_grant) {
+                (Subject::User(user), InfraGrant::Reader) => {
+                    writes.push(&Infra::reader().tuple(&user, &infra))
+                }
+                (Subject::User(user), InfraGrant::Writer) => {
+                    writes.push(&Infra::writer().tuple(&user, &infra))
+                }
+                (Subject::User(user), InfraGrant::Owner) => {
+                    writes.push(&Infra::owner().tuple(&user, &infra))
+                }
+                (Subject::Group(group), InfraGrant::Reader) => {
+                    writes.push(&Infra::reader().tuple(Group::member().userset(&group), &infra))
+                }
+                (Subject::Group(group), InfraGrant::Writer) => {
+                    writes.push(&Infra::writer().tuple(Group::member().userset(&group), &infra))
+                }
+                (Subject::Group(group), InfraGrant::Owner) => {
+                    writes.push(&Infra::owner().tuple(Group::member().userset(&group), &infra))
+                }
+            };
+            writes.execute().await?;
+            Ok(())
+        }
+        .boxed()
+    });
+
+    let share_privilege = match new_grant {
+        InfraGrant::Reader => InfraPrivilege::CanShareRead,
+        InfraGrant::Writer => InfraPrivilege::CanShareWrite,
+        InfraGrant::Owner => InfraPrivilege::CanShareOwnership,
+    };
+
+    // Set grant rules:
+    // 1. Issuer must have the correct sharing privilege [HasInfraPrivilege]
+    // 2. Issuer is admin (may not have any direct grant on the resource)
+    //     1. *can* demote the last owner [Authorizer admin bypass]
+    //     2. can demote or promote anyone to any grant level otherwise [Authorizer admin bypass]
+    //     3. can demote or promote any group [Authorizer admin bypass]
+    // 3. Issuer is owner
+    //     1. cannot demote the last owner (including self) [IsNotLastInfraOwner]
+    //     2. cannot demote another owner [CanAlterSubjectInfraGrant]
+    //     3. can demote or promote anyone to any grant level otherwise [CanAlterSubjectInfraGrant]
+    //     4. **cannot** demote or promote any group [CanAlterSubjectInfraGrant]
+    // 4. Issuer is anything else
+    //     1. can demote self [HasInfraPrivilege]
+    //     2. cannot promote self [HasInfraPrivilege]
+    //     3. can promote anyone up to their own grant level [CanAlterSubjectInfraGrant + HasInfraPrivilege]
+    //     4. can demote anyone with a strictly lower grant level than their own [CanAlterSubjectInfraGrant]
+    //     5. **cannot** demote or promote any group [CanAlterSubjectInfraGrant]
+    let prot = prot
+        .reset_checks() // get rid of revoking-specific checks
+        .with_check(Check::SubjectExists(subject))
+        .with_check(Check::InfraExists(infra))
+        .with_check(Check::HasInfraPrivilege(
+            Actor::Issuer,
+            share_privilege,
+            infra,
+        ))
+        .with_check(Check::CanAlterSubjectInfraGrant(subject, infra));
+
+    if new_grant != InfraGrant::Owner {
+        prot.with_check(Check::IsNotLastInfraOwner(subject, infra))
+    } else {
+        prot
+    }
+}
+
 /// Revokes the (direct) grant a subject has on an [Infra], if any
 ///
 /// Returns `true` if a grant was revoked, `false` otherwise, making the operation idempotent.
@@ -532,6 +606,78 @@ mod tests {
             .unwrap()
             .unwrap_authorized()
             .await;
+    }
+
+    #[rstest::rstest]
+    #[case::user_reader(Subject::user(1), InfraGrant::Reader)]
+    #[case::user_writer(Subject::user(1), InfraGrant::Writer)]
+    #[case::user_owner(Subject::user(1), InfraGrant::Owner)]
+    #[case::group_reader(Subject::group(1), InfraGrant::Reader)]
+    #[case::group_writer(Subject::group(1), InfraGrant::Writer)]
+    #[case::group_owner(Subject::group(1), InfraGrant::Owner)]
+    #[tokio::test]
+    async fn infra_set_grant_ok(#[case] subject: Subject, #[case] grant: InfraGrant) {
+        let openfga = crate::authz_client!();
+        openfga.infra_set_grant(subject, Infra(1), grant).await;
+        assert_eq!(
+            openfga.infra_direct_grant(subject, Infra(1)).await,
+            Some(grant)
+        );
+    }
+
+    #[tokio::test]
+    async fn infra_set_grant_replaces_existing_direct_grant() {
+        let openfga = crate::authz_client!();
+
+        openfga
+            .infra_set_grant(Subject::user(1), Infra(1), InfraGrant::Reader)
+            .await;
+        assert_eq!(
+            openfga.infra_direct_grant(Subject::user(1), Infra(1)).await,
+            Some(InfraGrant::Reader)
+        );
+
+        openfga
+            .infra_set_grant(Subject::user(1), Infra(1), InfraGrant::Writer)
+            .await;
+        assert_eq!(
+            openfga.infra_direct_grant(Subject::user(1), Infra(1)).await,
+            Some(InfraGrant::Writer)
+        );
+    }
+
+    #[tokio::test]
+    async fn infra_set_grant_preserves_inherited() {
+        let openfga = crate::authz_client!();
+
+        openfga
+            .prepare_writes()
+            .write(&Group::member().tuple(&User(1), &Group(10)))
+            .write(&Infra::writer().tuple(Group::member().userset(&Group(10)), &Infra(1))) // inherited
+            .write(&Infra::reader().tuple(&User(1), &Infra(1))) // direct
+            .write(&Infra::owner().tuple(&User(1), &Infra(2))) // unrelated
+            .execute()
+            .await
+            .unwrap();
+
+        openfga
+            .infra_set_grant(Subject::user(1), Infra(1), InfraGrant::Writer)
+            .await;
+
+        assert_eq!(
+            openfga.infra_direct_grant(Subject::user(1), Infra(1)).await,
+            Some(InfraGrant::Writer)
+        );
+        assert_eq!(
+            openfga
+                .infra_direct_grant(Subject::group(10), Infra(1))
+                .await,
+            Some(InfraGrant::Writer)
+        );
+        assert_eq!(
+            openfga.infra_direct_grant(Subject::user(1), Infra(2)).await,
+            Some(InfraGrant::Owner)
+        );
     }
 
     #[rstest::rstest]
