@@ -24,6 +24,7 @@ use editoast_derive::EditoastError;
 use editoast_models::TrainScheduleException;
 use editoast_models::prelude::*;
 use editoast_models::round_trips::TrainScheduleRoundTrips;
+use editoast_models::train_schedule::BaseTrainOrOccurrenceId;
 use editoast_models::train_schedule::train_schedule_schema_from_model;
 use futures::StreamExt as _;
 use itertools::Either;
@@ -381,7 +382,7 @@ pub(in crate::views) async fn simulation_summary(
         .iter()
         .flat_map(|ts| {
             let ts_exceptions = exceptions.remove(&ts.id).unwrap_or_default();
-            ts.iter_occurrences(&ts_exceptions).collect_vec()
+            ts.iter_base_and_exceptions(&ts_exceptions).collect_vec()
         })
         .collect::<HashMap<_, _>>();
 
@@ -453,43 +454,6 @@ pub(in crate::views) async fn simulation_summary(
     /////
     // Prepare the API responses from the core simulation
 
-    // Duplicate simulations for each train schedule
-    let simulations = simulations.into_iter().flat_map(
-        |Correlated {
-             correlation_key,
-             data,
-         }| {
-            // Simulation from different train schedules might be grouped into
-            // the same correlation object (each having its own correlation key
-            // still), but the final response need one simulation for each train
-            // schedule (not each occurrence of the same train schedule though)
-            let grouped_correlation_keys = correlation_key
-                .into_iter()
-                .into_grouping_map_by(|occurrence_id| match occurrence_id {
-                    OccurrenceId::Base {
-                        train_schedule_id,
-                        index: _,
-                    }
-                    | OccurrenceId::Modified {
-                        train_schedule_id,
-                        index: _,
-                        exception_id: _,
-                    }
-                    | OccurrenceId::Created {
-                        train_schedule_id,
-                        exception_id: _,
-                    } => *train_schedule_id,
-                })
-                .collect::<HashSet<_>>();
-            grouped_correlation_keys
-                .into_values()
-                .map(move |correlation_key| Correlated {
-                    correlation_key,
-                    data: data.clone(),
-                })
-        },
-    );
-
     // Collect all the simulations per train schedule
     let simulation_summaries = simulations
         .into_iter()
@@ -498,16 +462,7 @@ pub(in crate::views) async fn simulation_summary(
                  correlation_key,
                  data,
              }| {
-                let correlation_key = if let Some(base) = correlation_key
-                    .iter()
-                    .find(|occurrence_id| matches!(occurrence_id, OccurrenceId::Base { .. }))
-                {
-                    // We need to produce only one simulation response for all
-                    // occurrences that are identical to the base occurrence
-                    HashSet::from([base.clone()])
-                } else {
-                    correlation_key
-                };
+                // We need to duplicate all simulations outputs since the output must be flattend
                 correlation_key
                     .into_iter()
                     .map(move |occurrence_id| (occurrence_id, data.clone()))
@@ -553,25 +508,29 @@ pub(in crate::views) async fn simulation_summary(
             HashMap::<i64, TrainScheduleSummaryResponseBuilder>::default(),
             |mut simulation_summaries, (occurrence_id, summary_response)| {
                 match occurrence_id {
-                    OccurrenceId::Base {
-                        train_schedule_id,
-                        index: _,
-                    } => {
+                    BaseTrainOrOccurrenceId::Base(train_schedule_id) => {
                         let builder = simulation_summaries.entry(train_schedule_id).or_default();
                         builder.train_schedule(summary_response);
                     }
-                    OccurrenceId::Modified {
-                        train_schedule_id,
-                        index: _,
-                        exception_id,
-                    }
-                    | OccurrenceId::Created {
-                        train_schedule_id,
-                        exception_id,
-                    } => {
-                        let builder = simulation_summaries.entry(train_schedule_id).or_default();
-                        builder.add_exception(exception_id, summary_response);
-                    }
+
+                    BaseTrainOrOccurrenceId::Occurrence(occurrence_id) => match occurrence_id {
+                        OccurrenceId::Base { .. } => {
+                            unreachable!("We should not simulate base occurrence");
+                        }
+                        OccurrenceId::Modified {
+                            train_schedule_id,
+                            index: _,
+                            exception_id,
+                        }
+                        | OccurrenceId::Created {
+                            train_schedule_id,
+                            exception_id,
+                        } => {
+                            let builder =
+                                simulation_summaries.entry(train_schedule_id).or_default();
+                            builder.add_exception(exception_id, summary_response);
+                        }
+                    },
                 }
                 simulation_summaries
             },
@@ -2556,6 +2515,70 @@ mod tests {
                 ]
             })
         );
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn paced_train_simulation_summary_with_all_occurrences_disabled() {
+        let core = mocked_core_pathfinding_sim_and_proj();
+        let app = test_app!()
+            .skip_authz()
+            .db_pool(DbConnectionPoolV2::for_tests())
+            .core_client(core.into())
+            .build();
+        let db_pool = app.db_pool();
+
+        let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
+        let (timetable, train_schedule_set) =
+            create_timetable_with_train_schedule_set(&mut db_pool.get_ok()).await;
+        create_fast_rolling_stock(&mut db_pool.get_ok(), "R2D2").await;
+
+        let train_schedule = TrainSchedule {
+            train_occurrence: schemas::TrainOccurrence::fake(),
+            paced: Some(Paced {
+                time_window: Duration::hours(1).try_into().unwrap(),
+                interval: Duration::minutes(15).try_into().unwrap(),
+                exceptions: vec![],
+            }),
+        };
+        let train_schedule: TrainScheduleChangeset = train_schedule.into();
+        let train_schedule = train_schedule
+            .train_schedule_set_id(train_schedule_set.id)
+            .create(&mut db_pool.get_ok())
+            .await
+            .expect("Failed to create train schedule");
+
+        for i in 0..4 {
+            TrainScheduleException::changeset()
+                .timetable_id(timetable.id)
+                .train_schedule_id(train_schedule.id)
+                .occurrence_index(Some(i))
+                .key(Some(format!("disabled_occurrence_{}", i)))
+                .disabled(true)
+                .change_groups(TrainScheduleExceptionChangeGroups {
+                    initial_speed: Some(InitialSpeedChangeGroup { value: 1.23 }),
+                    ..Default::default()
+                })
+                .create(&mut db_pool.get_ok())
+                .await
+                .expect("Failed to create exception");
+        }
+
+        let mut response: HashMap<i64, TrainScheduleSummaryResponse> = app
+            .post("/train_schedules/simulation_summary")
+            .json(&json!({
+                "infra_id": small_infra.id,
+                "timetable_id": timetable.id,
+                "ids": vec![train_schedule.id],
+            }))
+            .await
+            .assert_status_ok()
+            .json();
+
+        assert_eq!(response.len(), 1);
+        let train_schedule_summary = response
+            .remove(&train_schedule.id)
+            .expect("missing simulation summary for train schedule");
+        assert_eq!(train_schedule_summary.exceptions.len(), 4);
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
