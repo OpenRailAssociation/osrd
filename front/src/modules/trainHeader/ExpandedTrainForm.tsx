@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from 'react';
 
-import { Button, DurationInput, Input, Select, Switch } from '@osrd-project/ui-core';
+import { Button, DurationInput, Input, Select, Switch, TokenInput } from '@osrd-project/ui-core';
 import { ChevronUp } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
 
@@ -37,6 +37,7 @@ type TrainFieldsState = {
   service_cadence?: number;
   service_window?: number;
   use_electrical_profiles: boolean | null;
+  labels: string[];
 };
 
 function getFieldsFromTrain(train: Train): TrainFieldsState {
@@ -49,6 +50,7 @@ function getFieldsFromTrain(train: Train): TrainFieldsState {
     service_cadence: Duration.parse(train.paced?.interval ?? '0').valueOf(),
     service_window: Duration.parse(train.paced?.time_window ?? '0').valueOf(),
     use_electrical_profiles: train?.options?.use_electrical_profiles ?? null,
+    labels: train.labels ?? [],
   };
 }
 
@@ -378,12 +380,13 @@ const ExpandedTrainForm = ({
           />
         </div>
         <div className="train-tags">
-          <Input
-            id="train-header-tags-input"
+          <TokenInput
             small
             label={t('manageTrainSchedule.trainHeader.form.tags')}
-            value={train?.labels?.join(', ') ?? ''}
-            disabled
+            tokens={train?.labels ?? []}
+            onChange={(tokens) => {
+              onFieldImmediateChange('labels', tokens);
+            }}
           />
         </div>
 
