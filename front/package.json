@@ -111,7 +111,7 @@
     "@types/d3-scale": "^4.0.9",
     "@types/lodash": "^4.17.24",
     "@types/node": "^25",
-    "@types/react": "^19.2.16",
+    "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "@types/tether": "^1.4.9",
     "@vitejs/plugin-react": "^6.0.2",
