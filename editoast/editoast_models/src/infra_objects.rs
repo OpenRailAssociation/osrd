@@ -278,6 +278,12 @@ impl OperationalPointModel {
         use diesel::prelude::*;
         use diesel::sql_types::*;
         use diesel_async::RunQueryDsl;
+
+        if uic.is_empty() {
+            // We know the result of the SQL query is going to be empty, avoid sending it.
+            return Ok(Vec::new());
+        }
+
         let uic: Vec<i64> = uic.iter().map(|&u| i64::from(u)).collect();
 
         Ok(dsl::infra_object_operational_point
@@ -300,6 +306,11 @@ impl OperationalPointModel {
         use diesel::prelude::*;
         use diesel::sql_types::*;
         use diesel_async::RunQueryDsl;
+
+        if trigrams.is_empty() {
+            // We know the result of the SQL query is going to be empty, avoid sending it.
+            return Ok(Vec::new());
+        }
 
         Ok(dsl::infra_object_operational_point
             .filter(dsl::infra_id.eq(infra_id))
