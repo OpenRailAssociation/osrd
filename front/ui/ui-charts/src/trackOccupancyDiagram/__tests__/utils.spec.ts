@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { getTickPattern } from '../components/utils';
+import { getLabelMarks, getTickPattern } from '../components/utils';
 
 describe('getTickPattern', () => {
   const fiveMinutes = ['05', '10', '20', '25', '35', '40', '50', '55'];
@@ -54,5 +54,18 @@ describe('getTickPattern', () => {
     expect(getTickPattern('01')).not.toEqual('FIVE_MINUTES');
     expect(getTickPattern('01')).not.toEqual('QUARTER_HOUR');
     expect(getTickPattern('01')).not.toEqual('HALF_HOUR');
+  });
+});
+
+describe('getLabelMarks', () => {
+  const HOUR = 3600 * 1000;
+  const timeRanges = [HOUR];
+  const labelLevels = [1];
+
+  // Regression test for https://github.com/OpenRailAssociation/osrd/issues/12613
+  it('should return no marks for non-finite time bounds', () => {
+    expect(getLabelMarks(timeRanges, Infinity, Infinity, labelLevels)).toEqual({});
+    expect(getLabelMarks(timeRanges, -Infinity, 2 * HOUR, labelLevels)).toEqual({});
+    expect(getLabelMarks(timeRanges, NaN, NaN, labelLevels)).toEqual({});
   });
 });
