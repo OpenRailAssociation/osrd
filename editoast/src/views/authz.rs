@@ -15,6 +15,7 @@ use ::authz::InfraGrant;
 use ::authz::InfraPrivilege;
 use ::authz::Role;
 use authz::Authorization;
+use authz::RollingStockGrant;
 use authz::RollingStockPrivilege;
 use authz::v2;
 use authz::v2::Actor;
@@ -38,6 +39,8 @@ use itertools::Itertools;
 use serde::Deserialize;
 use serde::Serialize;
 use strum::Display;
+#[cfg(test)]
+use strum::EnumIter;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
 
@@ -58,7 +61,7 @@ enum SubjectType {
 #[derive(Display, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, ToSchema)]
 #[serde(rename_all = "snake_case")]
 #[strum(serialize_all = "snake_case")]
-#[cfg_attr(test, derive(Debug))]
+#[cfg_attr(test, derive(Debug, EnumIter))]
 pub(in crate::views) enum ResourceType {
     Infra,
     RollingStock,
@@ -595,7 +598,7 @@ pub(in crate::views) struct SubjectGrant {
         (status = 200, description = "Get list of user that have a grant on the resource", body = inline(Vec<SubjectGrant>)),
     ),
 )]
-pub(in crate::views) async fn my_grants_on_resource(
+pub(in crate::views) async fn resource_granted_users(
     Extension(user): Extension<Option<authz::User>>,
     Extension(roles): Extension<Vec<authz::Role>>,
     State(AppState {
@@ -607,18 +610,18 @@ pub(in crate::views) async fn my_grants_on_resource(
     let Some(user) = user else {
         return Err(AuthorizationError::Unauthorized.into());
     };
+    let conn = db_pool.get().await?;
+    let openfga = regulator.openfga();
+    let authorizer = UserAuthorizer {
+        user,
+        roles,
+        openfga,
+        conn,
+    };
     // Ask OpenFGA about grants on the resource
     let ((readers, writers), owners) = match resource_type {
         ResourceType::Infra => {
             let infra = authz::Infra(resource_id);
-            let conn = db_pool.get().await?;
-            let openfga = regulator.openfga();
-            let authorizer = UserAuthorizer {
-                user,
-                roles,
-                openfga,
-                conn,
-            };
             authorizer
                 .authorize(
                     authz::v2::infra_granted_subjects(infra, InfraGrant::Reader)
@@ -638,7 +641,38 @@ pub(in crate::views) async fn my_grants_on_resource(
                     rejection => impossible!(rejection),
                 })?
         }
-        ResourceType::RollingStock => todo!(),
+        ResourceType::RollingStock => {
+            let rolling_stock = authz::RollingStock(resource_id);
+            authorizer
+                .authorize(
+                    authz::v2::rolling_stock_granted_subjects(
+                        rolling_stock,
+                        RollingStockGrant::Reader,
+                    )
+                    .zip(authz::v2::rolling_stock_granted_subjects(
+                        rolling_stock,
+                        RollingStockGrant::Writer,
+                    ))
+                    .zip(authz::v2::rolling_stock_granted_subjects(
+                        rolling_stock,
+                        RollingStockGrant::Owner,
+                    )),
+                )
+                .await?
+                .access()
+                .await?
+                .map_err(|err| match err {
+                    Check::HasRollingStockPrivilege(
+                        Actor::Issuer,
+                        RollingStockPrivilege::CanRead,
+                        _,
+                    ) => AuthzError::Authz(AuthorizationError::Forbidden),
+                    Check::RollingStockExists(rolling_stock) => AuthzError::UnknownResource {
+                        resource_id: rolling_stock.0,
+                    },
+                    rejection => impossible!(rejection),
+                })?
+        }
     };
 
     // NOTE: the same subject can appear in multiple lists. This can happen
@@ -952,12 +986,12 @@ pub(in crate::views) async fn list_groups(
 #[cfg(test)]
 mod tests {
     use authz::RollingStockGrant;
+    use authz::v2::TestClientExt as _;
     use axum::http::StatusCode;
     use pretty_assertions::assert_eq;
     use serde_json::json;
     use std::collections::HashSet;
-
-    use authz::v2::TestClientExt as _;
+    use strum::IntoEnumIterator;
 
     use super::*;
     use crate::fixtures::create_empty_infra;
@@ -1213,9 +1247,11 @@ mod tests {
         );
     }
 
+    // TODO rewrite the test and check which users have grants on which resources.
+    // Currently the test only checks the number of users with a grant on the resouces, which is a
+    // weak asssertion.
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn users_grants_for_resource_id_test() {
-        // This test start with an infra with one owner, one writer, and 5 readers
         let app = test_app!().build();
         let db_pool = app.db_pool();
         let infra = create_small_infra(&mut db_pool.get_ok()).await;
@@ -1223,55 +1259,80 @@ mod tests {
             .user("authz", "Authz")
             .with_roles([Role::OperationalStudies])
             .with_infra_grant(infra.id, InfraGrant::Owner)
+            .with_rolling_stock_grant(infra.id, RollingStockGrant::Owner)
             .create()
             .await;
-
+        let rolling_stock = create_fast_rolling_stock(&mut db_pool.get_ok(), "rolling_stock").await;
         for name in ["ben", "hal", "joe", "luc", "mar"] {
             app.user(name, name)
                 .with_roles([Role::OperationalStudies])
                 .with_infra_grant(infra.id, InfraGrant::Reader)
+                .with_rolling_stock_grant(rolling_stock.id, RollingStockGrant::Reader)
                 .create()
                 .await;
         }
-
-        // Get the full user list for the infra
-        let subjects: Vec<SubjectGrant> = app
-            .get(&format!("/authz/{}/{}", ResourceType::Infra, infra.id))
-            .by_user(user.as_ref())
-            .await
-            .assert_status_ok()
-            .json();
-        assert_eq!(subjects.len(), 6);
+        // Temporary fix: add a few users so that the number of users with reader grant are not the
+        // same for the infra and the rolling stock.
+        for name in ["tim", "tom"] {
+            app.user(name, name)
+                .with_roles([Role::OperationalStudies])
+                .with_rolling_stock_grant(rolling_stock.id, RollingStockGrant::Reader)
+                .create()
+                .await;
+        }
+        for resource_type in ResourceType::iter() {
+            let subjects: Vec<SubjectGrant> = app
+                .get(&format!("/authz/{}/{}", resource_type, infra.id))
+                .by_user(user.as_ref())
+                .await
+                .assert_status(StatusCode::OK)
+                .json();
+            match resource_type {
+                ResourceType::Infra => {
+                    assert_eq!(subjects.len(), 6);
+                }
+                ResourceType::RollingStock => {
+                    assert_eq!(subjects.len(), 8);
+                }
+            }
+        }
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn groups_grants_on_resource() {
         let app = test_app!().build();
+        let db_pool = app.db_pool();
         let infra = create_small_infra(&mut app.db_pool().get_ok()).await;
+        let rolling_stock = create_fast_rolling_stock(&mut db_pool.get_ok(), "rolling_stock").await;
         let alice = app
             .user("alice", "Alice")
             .with_infra_grant(infra.id, InfraGrant::Reader)
+            .with_rolling_stock_grant(rolling_stock.id, RollingStockGrant::Reader)
             .create()
             .await;
         let bob = app
             .user("bob", "Bob")
             .with_infra_grant(infra.id, InfraGrant::Owner)
+            .with_rolling_stock_grant(rolling_stock.id, RollingStockGrant::Owner)
             .create()
             .await;
         let tom = app
             .user("tom", "Tom")
             .with_infra_grant(infra.id, InfraGrant::Owner)
+            .with_rolling_stock_grant(rolling_stock.id, RollingStockGrant::Owner)
             .create()
             .await;
         let jerry = app
             .user("jerry", "Jerry")
             .with_infra_grant(infra.id, InfraGrant::Reader)
+            .with_rolling_stock_grant(rolling_stock.id, RollingStockGrant::Reader)
             .create()
             .await;
         let alice_and_bob = app
             .group("Alice and Bob")
             .with_members([&alice, &bob])
             .with_infra_grant(infra.id, InfraGrant::Writer)
+            .with_rolling_stock_grant(rolling_stock.id, RollingStockGrant::Writer)
             .create()
             .await;
         let tom_and_jerry = app
@@ -1279,25 +1340,30 @@ mod tests {
             .with_members([&tom, &jerry])
             .create()
             .await;
+        for resource_type in ResourceType::iter() {
+            let resource_id = match resource_type {
+                ResourceType::Infra => infra.id,
+                ResourceType::RollingStock => rolling_stock.id,
+            };
+            let subjects: Vec<SubjectGrant> = app
+                .get(&format!("/authz/{}/{}", resource_type, resource_id))
+                .by_user(alice.as_ref())
+                .await
+                .assert_status(StatusCode::OK)
+                .json();
 
-        let subjects: Vec<SubjectGrant> = app
-            .get(&format!("/authz/{}/{}", ResourceType::Infra, infra.id))
-            .by_user(alice.as_ref())
-            .await
-            .assert_status_ok()
-            .json();
+            let grants = subjects
+                .into_iter()
+                .map(|SubjectGrant { id, grant, .. }| (id, grant))
+                .collect::<HashMap<_, _>>();
 
-        let grants = subjects
-            .into_iter()
-            .map(|SubjectGrant { id, grant, .. }| (id, grant))
-            .collect::<HashMap<_, _>>();
-
-        assert_eq!(grants.get(&alice.id), Some(&StandardGrant::Writer)); // group grants can supersede direct user grants
-        assert_eq!(grants.get(&bob.id), Some(&StandardGrant::Owner)); // but do not override them
-        assert_eq!(grants.get(&tom.id), Some(&StandardGrant::Owner)); // direct user grant
-        assert_eq!(grants.get(&jerry.id), Some(&StandardGrant::Reader)); // likewise
-        assert_eq!(grants.get(&alice_and_bob.id), Some(&StandardGrant::Writer)); // group direct grant
-        assert_eq!(grants.get(&tom_and_jerry.id), None); // no group grant (not even there in the response)
+            assert_eq!(grants.get(&alice.id), Some(&StandardGrant::Writer)); // group grants can supersede direct user grants
+            assert_eq!(grants.get(&bob.id), Some(&StandardGrant::Owner)); // but do not override them
+            assert_eq!(grants.get(&tom.id), Some(&StandardGrant::Owner)); // direct user grant
+            assert_eq!(grants.get(&jerry.id), Some(&StandardGrant::Reader)); // likewise
+            assert_eq!(grants.get(&alice_and_bob.id), Some(&StandardGrant::Writer)); // group direct grant
+            assert_eq!(grants.get(&tom_and_jerry.id), None); // no group grant (not even there in the response)
+        }
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
