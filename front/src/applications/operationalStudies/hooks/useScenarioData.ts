@@ -39,6 +39,7 @@ import {
   isOccurrenceId,
 } from 'utils/trainId';
 import { mapBy } from 'utils/types';
+import { useAsyncMemo } from 'utils/useAsyncMemo';
 
 import useAutoSelectTrainIds from './useAutoSelectTrainIds';
 import useLazySimulateTrains from './useLazySimulateTrains';
@@ -160,15 +161,73 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
 
   const isConflictsLoading = isUninitialized || isFetching;
 
-  const trainSchedulesWithDetails = useMemo(() => {
+  /**
+   * Given a list of train, check if all the necessary rollingstocks are in the list.
+   * If not, we call the API to check if it's a missing or forbidden reason.
+   */
+  const getMissingRollingStockStatus = useCallback(
+    async (trains: TrainScheduleResponse[]) => {
+      const missingRollingStockMap = new Map<
+        string,
+        'rolling_stock_not_found' | 'rolling_stock_forbidden'
+      >();
+      const missingRollingStockNameSet = new Set(
+        trains
+          .map((train) => train.rolling_stock_name)
+          .filter((rsName) => !rollingStocksByName.has(rsName))
+      );
+      for (const rollingStockName of missingRollingStockNameSet) {
+        const getRollingStockByNameQuery = dispatch(
+          osrdEditoastApi.endpoints.getRollingStockNameByRollingStockName.initiate({
+            rollingStockName,
+            __skipGlobal403: true,
+          })
+        );
+        getRollingStockByNameQuery.unsubscribe();
+        const getRollingStockByNameResponse = await getRollingStockByNameQuery;
+        const { error } = getRollingStockByNameResponse;
+        if (error && 'status' in error && error.status) {
+          missingRollingStockMap.set(
+            rollingStockName,
+            error.status === 403 ? 'rolling_stock_forbidden' : 'rolling_stock_not_found'
+          );
+        }
+      }
+      return missingRollingStockMap;
+    },
+    [dispatch, rollingStocksByName]
+  );
+
+  const trainSchedulesWithDetails = useAsyncMemo(async () => {
+    const missingRollingStockMap = await getMissingRollingStockStatus(trainSchedules || []);
     const trains = (trainSchedules || []).map((trainSchedule) => {
       const simulatedTrain = simulatedTrainsById.get(trainSchedule.id);
-      if (simulatedTrain) return simulatedTrain;
-      const rollingStock = rollingStocksByName.get(trainSchedule.rolling_stock_name);
-      return formatTrainScheduleWithDetails(trainSchedule, scenario.timetable_type, rollingStock);
+      const rollingStockName = trainSchedule.rolling_stock_name;
+      const rollingStock = rollingStocksByName.get(rollingStockName);
+      const train =
+        simulatedTrain ||
+        formatTrainScheduleWithDetails(trainSchedule, scenario.timetable_type, rollingStock);
+
+      return {
+        ...train,
+        ...(missingRollingStockMap.has(rollingStockName)
+          ? {
+              summary: {
+                isValid: false as const,
+                invalidReason: missingRollingStockMap.get(rollingStockName)!,
+              },
+            }
+          : {}),
+      };
     });
     return sortBy(trains, ['startTime', 'name', 'id']);
-  }, [trainSchedules, rollingStocksByName, simulatedTrainsById, scenario.timetable_type]);
+  }, [
+    trainSchedules,
+    rollingStocksByName,
+    simulatedTrainsById,
+    scenario.timetable_type,
+    getMissingRollingStockStatus,
+  ]);
 
   const projectedTrains = useMemo(
     () => Array.from(projectedTrainsById.values()),
@@ -183,7 +242,11 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
     [scenario.timetable_type, trainSchedules]
   );
 
-  useAutoSelectTrainIds(trainSchedules ? trainSchedulesWithDetails : undefined);
+  useAutoSelectTrainIds(
+    trainSchedules && trainSchedulesWithDetails.type === 'ready'
+      ? trainSchedulesWithDetails.data
+      : undefined
+  );
 
   // first load of the summaries
   useEffect(() => {
@@ -437,7 +500,8 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
 
   const results = useMemo(
     () => ({
-      trainSchedulesWithDetails,
+      trainSchedulesWithDetails:
+        trainSchedulesWithDetails.type === 'ready' ? trainSchedulesWithDetails.data : [],
       trainSchedules,
       projectionData: projectionPath
         ? {

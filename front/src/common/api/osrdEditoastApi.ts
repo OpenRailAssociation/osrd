@@ -26,6 +26,8 @@ import {
   type RelatedOperationalPoint,
   type SimulationResponse,
   type StdcmResponse,
+  type GetRollingStockNameByRollingStockNameApiResponse,
+  type GetRollingStockNameByRollingStockNameApiArg,
 } from './generatedEditoastApi';
 
 // Type extension for PostTimetableByIdStdcm to include traceId
@@ -249,6 +251,20 @@ const osrdEditoastApi = generatedEditoastApi
           return { data: result };
         },
         providesTags: ['catalog_entry'],
+      }),
+      /**
+       * Override default `getRollingStockNameByRollingStockName` by adding the param `__skipGlobal403`
+       * that, if set to true, disable the global 403 redirect feature.
+       * Check the `add403HttpErrorListener`.
+       */
+      getRollingStockNameByRollingStockName: builder.query<
+        GetRollingStockNameByRollingStockNameApiResponse,
+        GetRollingStockNameByRollingStockNameApiArg & { __skipGlobal403?: boolean }
+      >({
+        query: (queryArg) => ({
+          url: `/rolling_stock/name/${queryArg.rollingStockName}`,
+        }),
+        providesTags: ['rolling_stock'],
       }),
     }),
   })

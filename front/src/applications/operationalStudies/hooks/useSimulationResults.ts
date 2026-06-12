@@ -150,6 +150,7 @@ const useSimulationResults = (
       train?.rolling_stock_name
         ? {
             rollingStockName: train.rolling_stock_name,
+            __skipGlobal403: true,
           }
         : skipToken
     );

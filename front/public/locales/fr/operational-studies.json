@@ -233,6 +233,7 @@
         "not_found_in_routes": "Itinéraire manquant",
         "not_found_in_tracks": "Voie manquante",
         "pathfinding_not_found": "Chemin introuvable",
+        "rolling_stock_forbidden": "MR interdit",
         "rolling_stock_not_found": "MR non trouvé",
         "simulation_failed": "Simulation impossible",
         "unauthorized_rolling_stock": "Matériel roulant non autorisé",
