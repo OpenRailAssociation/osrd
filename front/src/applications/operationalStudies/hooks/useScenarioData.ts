@@ -114,6 +114,7 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
     const trains = (trainSchedules || []).map((trainSchedule) => {
       const simulatedTrain = simulatedTrainsById.get(trainSchedule.id);
       if (simulatedTrain) return simulatedTrain;
+      // TODO: check privileges on RS
       const rollingStock = rollingStocksByName.get(trainSchedule.rolling_stock_name);
       return formatPacedTrainWithDetails(trainSchedule, rollingStock);
     });

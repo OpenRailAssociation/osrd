@@ -26,6 +26,8 @@ import {
   type RelatedOperationalPoint,
   type SimulationResponse,
   type StdcmResponse,
+  type GetLightRollingStockNameByRollingStockNameApiResponse,
+  type GetLightRollingStockNameByRollingStockNameApiArg,
 } from './generatedEditoastApi';
 
 // Type extension for PostTimetableByIdStdcm to include traceId
@@ -249,6 +251,15 @@ const osrdEditoastApi = generatedEditoastApi
           return { data: result };
         },
         providesTags: ['catalog_entry'],
+      }),
+      getLightRollingStockNameByRollingStockName: builder.query<
+        GetLightRollingStockNameByRollingStockNameApiResponse,
+        GetLightRollingStockNameByRollingStockNameApiArg & { __skipGlobal403?: boolean }
+      >({
+        query: (queryArg) => ({
+          url: `/light_rolling_stock/name/${queryArg.rollingStockName}`,
+        }),
+        providesTags: ['rolling_stock'],
       }),
     }),
   })

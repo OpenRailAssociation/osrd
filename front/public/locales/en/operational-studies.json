@@ -230,6 +230,7 @@
         "not_found_in_tracks": "Missing track",
         "pathfinding_failure": "Pathfinding failed",
         "pathfinding_not_found": "Pathfinding not found",
+        "rolling_stock_forbidden": "MR forbidden",
         "rolling_stock_not_found": "RS not found",
         "simulation_failed": "Simulation failed",
         "zero_length_path": "Departure and arrival are identical"
