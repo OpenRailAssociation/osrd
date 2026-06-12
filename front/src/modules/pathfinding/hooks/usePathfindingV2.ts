@@ -85,7 +85,11 @@ const usePathfindingV2 = () => {
         };
         const pathPropertiesResult = await postPathProperties(pathPropertiesParams).unwrap();
 
-        setPathProperties({ ...pathPropertiesResult, length: pathfindingResult.length });
+        setPathProperties({
+          ...pathPropertiesResult,
+          length: pathfindingResult.length,
+          pathItemPositions: pathfindingResult.path_item_positions,
+        });
         return;
       }
 
@@ -107,6 +111,7 @@ const usePathfindingV2 = () => {
           ...pathPropertiesResult,
           length: pathfindingResult.relaxed_constraints_path.length,
           incompatibleConstraints: pathfindingResult.incompatible_constraints,
+          pathItemPositions: pathfindingResult.relaxed_constraints_path.path_item_positions,
         });
         setPathfindingError(t(`pathfindingErrors.${pathfindingResult.error_type}`));
         return;

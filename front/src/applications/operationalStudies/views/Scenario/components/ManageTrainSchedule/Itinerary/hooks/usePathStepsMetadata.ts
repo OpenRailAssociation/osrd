@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type RefObject } from 'react';
+import { useCallback, useEffect, useMemo, useState, type RefObject } from 'react';
 
 import { skipToken } from '@reduxjs/toolkit/query';
 import type { Position } from 'geojson';
@@ -153,6 +153,14 @@ export const usePathStepsMetadata = (
         const { local_track_name } = location;
 
         if (!matchedOp) {
+          // A just-added step has no match until /match_operational_points
+          // answers; keep its pre-filled metadata instead of flagging it
+          const previous = pathStepsMetadataById.get(pathStep.id);
+          if (previous && !previous.isInvalid && previous.type === 'opRef') {
+            newPathStepsMetadataById.set(pathStep.id, previous);
+            return;
+          }
+
           newPathStepsMetadataById.set(pathStep.id, {
             isInvalid: true,
             localTrackName: local_track_name ?? undefined,
@@ -164,7 +172,7 @@ export const usePathStepsMetadata = (
         const timetableTrackNames = localTrackNamesData?.[opRefKey] ?? [];
 
         const isValidLocalTrackName = local_track_name
-          ? matchedOp?.parts.some((part) => {
+          ? matchedOp.parts.some((part) => {
               const track = trackSectionsById[part.track];
               if (!track) return false;
               return local_track_name === part.local_track_name;
@@ -211,5 +219,11 @@ export const usePathStepsMetadata = (
     fetchAndSetMetadata();
   }, [pathStepsOperationalPoints, pathSteps, localTrackNamesData]);
 
-  return { pathStepsMetadataById, setPathStepsMetadataById };
+  const setPathStepMetadata = useCallback(
+    (id: string, metadata: PathStepMetadata) =>
+      setPathStepsMetadataById((prev) => new Map(prev).set(id, metadata)),
+    []
+  );
+
+  return { pathStepsMetadataById, setPathStepMetadata };
 };

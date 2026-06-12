@@ -2,7 +2,9 @@ import { useCallback, useEffect, useEffectEvent, useMemo, useRef, useState } fro
 
 import { Button } from '@osrd-project/ui-core';
 import { ArrowSwitch, Fold, FrameAll, Plus, Unfold } from '@osrd-project/ui-icons';
+import along from '@turf/along';
 import bbox from '@turf/bbox';
+import { lineString } from '@turf/helpers';
 import cx from 'classnames';
 import type { Position } from 'geojson';
 import { useTranslation } from 'react-i18next';
@@ -13,6 +15,7 @@ import { useManageTrainScheduleContext } from 'applications/operationalStudies/h
 import { useOperationalPointSearch } from 'applications/operationalStudies/hooks/useOperationalPointSearch';
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import type {
+  CoreOperationalPointOnPath,
   OperationalPointReference,
   PathProperties,
   PathItemLocation,
@@ -159,7 +162,10 @@ const ItineraryModal = ({
 
   const { launchPathfinding } = useManageTrainScheduleContext();
 
-  const { pathStepsMetadataById } = usePathStepsMetadata(pathSteps, pendingStepIdRef);
+  const { pathStepsMetadataById, setPathStepMetadata } = usePathStepsMetadata(
+    pathSteps,
+    pendingStepIdRef
+  );
   const { launchPathfindingV2, pathProperties, pathfindingError } = usePathfindingV2();
   const { convertFeatureClickToLocation } = useMapTrackSelection(infraId);
 
@@ -177,12 +183,15 @@ const ItineraryModal = ({
     [pathSteps, pathStepsMetadataById]
   );
 
-  const initCustomTracksEntry = (location: PathItemLocation | null) => {
-    const opKey = getOpKey(location);
-    if (opKey && !customTracksByOpKey.has(opKey)) {
-      setCustomTracksByOpKey((prev) => new Map(prev).set(opKey, []));
-    }
-  };
+  const initCustomTracksEntry = useCallback(
+    (location: PathItemLocation | null) => {
+      const opKey = getOpKey(location);
+      if (opKey && !customTracksByOpKey.has(opKey)) {
+        setCustomTracksByOpKey((prev) => new Map(prev).set(opKey, []));
+      }
+    },
+    [customTracksByOpKey]
+  );
 
   const applyOperationalPointToStep = (
     stepId: string,
@@ -251,6 +260,58 @@ const ItineraryModal = ({
     setActiveStepId(newStep.id);
     setInputForStep(newStep.id, '');
   };
+
+  const handleAddWaypoint = useCallback(
+    (op: CoreOperationalPointOnPath, afterStepId: string) => {
+      const insertIndex = pathSteps.findIndex((step) => step.id === afterStepId) + 1;
+      if (insertIndex === 0) return;
+
+      const newStep = createEmptyPathStep();
+
+      newStep.location = {
+        type: 'operational_point_part_reference',
+        operational_point: {
+          type: 'trigram',
+          trigram: op.main_code,
+          secondary_code: op.secondary_code,
+        },
+      };
+      initCustomTracksEntry(newStep.location);
+
+      // Sample the path geometry at the op position so the prefilled marker has
+      // coordinates:
+      const geometry = pathProperties?.geometry;
+      const coordinates = geometry
+        ? along(lineString(geometry.coordinates), op.position, { units: 'millimeters' }).geometry
+            .coordinates
+        : undefined;
+
+      // Pre-fill the metadata so the new step shows its name right away and
+      // is not briefly flagged invalid while its OP match is fetched
+      setPathStepMetadata(newStep.id, {
+        type: 'opRef',
+        isInvalid: false,
+        name: op.name,
+        uic: op.uic,
+        secondaryCode: op.secondary_code,
+        parts: coordinates
+          ? [
+              {
+                type: 'valid',
+                trackId: op.part.track,
+                trackName: op.part.local_track_name,
+                coordinates,
+              },
+            ]
+          : [],
+      });
+
+      setPathSteps((prev) =>
+        ensureTrailingEmptyStep(addElementAtIndex(prev, insertIndex, newStep))
+      );
+    },
+    [pathSteps, pathProperties, initCustomTracksEntry, setPathStepMetadata]
+  );
 
   const isStepInvalidAndIsEditing = (step: PathStepV2, metadata?: PathStepMetadata) => {
     if (!metadata?.isInvalid) return false;
@@ -884,6 +945,7 @@ const ItineraryModal = ({
             pathProperties={displayedPathProperties}
             status={waypointsPanelStatus}
             onHide={() => setWaypointsPanelOpen(false)}
+            onAddWaypoint={handleAddWaypoint}
           />
         </div>
       )}

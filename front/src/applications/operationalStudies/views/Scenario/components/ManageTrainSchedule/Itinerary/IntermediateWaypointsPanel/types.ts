@@ -1,8 +1,9 @@
-import type { SuggestedOP } from 'modules/trainSchedule/types';
+import type { CoreOperationalPointOnPath } from 'common/api/osrdEditoastApi';
 import type { PathStepV2 } from 'reducers/osrdconf/types';
 
 export type WaypointGroup = {
   requestedStep: PathStepV2;
-  requestedOp: SuggestedOP | undefined;
-  intermediates: SuggestedOP[];
+  requestedOp: CoreOperationalPointOnPath | undefined;
+  intermediates: CoreOperationalPointOnPath[];
+  duplicatesCount: number;
 };

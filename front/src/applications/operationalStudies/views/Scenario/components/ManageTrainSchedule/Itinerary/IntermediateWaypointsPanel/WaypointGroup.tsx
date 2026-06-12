@@ -3,15 +3,24 @@ import { useState } from 'react';
 import { ChevronDown, ChevronUp } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
 
+import type { CoreOperationalPointOnPath } from 'common/api/osrdEditoastApi';
+
 import type { WaypointGroup as WaypointGroupType } from './types';
 import WaypointRow from './WaypointRow';
 
 type WaypointGroupProps = {
   group: WaypointGroupType;
+  requestedLabel: string;
+  onAdd: (op: CoreOperationalPointOnPath) => void;
   defaultExpanded?: boolean;
 };
 
-const WaypointGroup = ({ group, defaultExpanded = true }: WaypointGroupProps) => {
+const WaypointGroup = ({
+  group,
+  requestedLabel,
+  onAdd,
+  defaultExpanded = true,
+}: WaypointGroupProps) => {
   const { t } = useTranslation('operational-studies', {
     keyPrefix: 'manageTrainSchedule.itineraryModal.intermediateWaypointsPanel',
   });
@@ -35,13 +44,17 @@ const WaypointGroup = ({ group, defaultExpanded = true }: WaypointGroupProps) =>
         ) : (
           <span className="intermediate-waypoints-panel__group-toggle" aria-hidden />
         )}
-        <WaypointRow op={group.requestedOp} isRequested />
+        <WaypointRow
+          op={group.requestedOp}
+          fallbackName={requestedLabel}
+          count={group.duplicatesCount}
+        />
       </div>
       {expanded && hasIntermediates && (
         <ul className="intermediate-waypoints-panel__group-body">
           {group.intermediates.map((op) => (
-            <li key={op.opId ?? `${op.track}-${op.offsetOnTrack}-${op.positionOnPath}`}>
-              <WaypointRow op={op} isRequested={false} />
+            <li key={`${op.id}-${op.position}`}>
+              <WaypointRow op={op} onAdd={() => onAdd(op)} />
             </li>
           ))}
         </ul>

@@ -427,6 +427,7 @@
       "focusLocationOnMap": "Focus the map on this operational point",
       "frameAll": "Center on all path steps on map",
       "intermediateWaypointsPanel": {
+        "addWaypoint": "Add to itinerary",
         "collapseGroup": "Collapse intermediate points",
         "expandGroup": "Expand intermediate points",
         "hide": "Hide",
