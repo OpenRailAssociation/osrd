@@ -24,6 +24,7 @@ import StdcmStopType from './StdcmStopType';
 import StopDurationInput from './StopDurationInput';
 
 type StdcmViasProps = StdcmItineraryProps & {
+  isDebugMode: boolean;
   skipAnimation: boolean;
   initialConsist: ConsistData;
   initialConsistErrors: ConsistErrors;
