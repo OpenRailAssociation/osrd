@@ -235,7 +235,7 @@
         "pathfinding_not_found": "Chemin introuvable",
         "rolling_stock_not_found": "MR non trouvé",
         "simulation_failed": "Simulation impossible",
-        "unauthorized_rolling_stock": "Matériel roulant non autorisé",
+        "unauthorized_rolling_stock": "MR interdit",
         "zero_length_path": "L'origine et la destination sont identiques"
       },
       "invalidTrains": "Certains trains sont invalides",
