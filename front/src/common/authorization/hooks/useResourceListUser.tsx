@@ -19,7 +19,6 @@ export default function useResourceListSubjects(resourceType: ResourceType, id: 
 
   /**
    * Fetches the user list for a given resource type and resource id.
-   * @param pageNb the page number to fetch
    */
   const fetchPage = useCallback(async () => {
     setLoading(true);
@@ -29,7 +28,7 @@ export default function useResourceListSubjects(resourceType: ResourceType, id: 
         resourceType,
         resourceId: id,
       }).unwrap();
-      setSubjects((prev) => [...prev, ...response]);
+      setSubjects(response);
     } catch (err) {
       setError(err as Error);
     } finally {
