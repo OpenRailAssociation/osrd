@@ -235,7 +235,7 @@
         "pathfinding_not_found": "Pathfinding not found",
         "rolling_stock_not_found": "RS not found",
         "simulation_failed": "Simulation failed",
-        "unauthorized_rolling_stock": "Unauthorized Rolling Stock",
+        "unauthorized_rolling_stock": "Unauthorized RS",
         "zero_length_path": "Departure and arrival are identical"
       },
       "invalidTrains": "Some trains are invalid",
