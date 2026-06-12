@@ -1,6 +1,10 @@
 version = 1
 revision = 3
 requires-python = ">=3.11"
+resolution-markers = [
+    "python_full_version >= '3.14'",
+    "python_full_version < '3.14'",
+]
 
 [[package]]
 name = "annotated-types"
@@ -184,23 +188,21 @@ toml = [
 
 [[package]]
 name = "datamodel-code-generator"
-version = "0.35.0"
+version = "0.60.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "argcomplete" },
-    { name = "black" },
+    { name = "black", marker = "sys_platform != 'emscripten'" },
     { name = "genson" },
     { name = "inflect" },
-    { name = "isort" },
+    { name = "isort", marker = "sys_platform != 'emscripten'" },
     { name = "jinja2" },
-    { name = "packaging" },
     { name = "pydantic" },
     { name = "pyyaml" },
-    { name = "tomli", marker = "python_full_version < '3.12'" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/70/e1/dbf7c2edb1b1db1f4fd472ee92f985ec97d58902512013d9c4584108329c/datamodel_code_generator-0.35.0.tar.gz", hash = "sha256:46805fa2515d3871f6bfafce9aa63128e735a7a6a4cfcbf9c27b3794ee4ea846", size = 459915, upload-time = "2025-10-09T19:26:49.837Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/39/fc/c27ca19607d391b0e15c469748256207dae13ecd0cf2dc61811c523d97eb/datamodel_code_generator-0.60.1.tar.gz", hash = "sha256:320597e2b47b59c2d4d6147f22b9e3bc1a3ac558b38d62388b7ffbe6bd283d83", size = 1139620, upload-time = "2026-06-07T17:38:42.583Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/95/ef/0ed17459fe6076219fcd45f69a0bb4bd1cb041b39095ca2946808a9b5f04/datamodel_code_generator-0.35.0-py3-none-any.whl", hash = "sha256:c356d1e4a555f86667a4262db03d4598a30caeda8f51786555fd269c8abb806b", size = 121436, upload-time = "2025-10-09T19:26:48.437Z" },
+    { url = "https://files.pythonhosted.org/packages/7e/f7/1debf05421fc6aa28441f47cd9eec40da3145dc9e5dafc9934207b1dc4c1/datamodel_code_generator-0.60.1-py3-none-any.whl", hash = "sha256:2b2477a6182588076aa44ba7e0202a233c983ff7f62e4f02a2869cefedfd300c", size = 336847, upload-time = "2026-06-07T17:38:40.821Z" },
 ]
 
 [[package]]
@@ -412,7 +414,7 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
-    { name = "datamodel-code-generator", specifier = "==0.35.0" },
+    { name = "datamodel-code-generator", specifier = "==0.60.1" },
     { name = "geojson-pydantic", specifier = "~=1.0.0" },
     { name = "openapi-pydantic", specifier = "==0.5.1" },
     { name = "pydantic", specifier = ">=2.12.2" },
