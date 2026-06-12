@@ -63,7 +63,22 @@ type TrainFieldsState = {
   added_exception_date: Date;
   rolling_stock_name: string;
   departure_date: Date;
+  initial_speed: string | null;
 };
+
+type initialSpeedProblem = 'INVALID_NUMBER' | 'ROUNDING' | 'TOO_HIGH' | null;
+
+function computeInitialSpeedError(
+  initialSpeed: string | null,
+  rollingStock?: LightRollingStockWithLiveries
+): initialSpeedProblem {
+  if (!initialSpeed) return 'INVALID_NUMBER';
+  const floatInitialSpeed = Number.parseFloat(initialSpeed);
+  if (!isFinite(floatInitialSpeed) || floatInitialSpeed < 0) return 'INVALID_NUMBER';
+  if (Math.round(floatInitialSpeed * 10) / 10 !== floatInitialSpeed) return 'ROUNDING';
+  if (rollingStock && floatInitialSpeed > rollingStock?.max_speed) return 'TOO_HIGH';
+  return null;
+}
 
 function getFieldsFromTrain(train: Train): TrainFieldsState {
   return {
@@ -79,10 +94,16 @@ function getFieldsFromTrain(train: Train): TrainFieldsState {
     added_exception_date: new Date(train.start_time),
     rolling_stock_name: train.rolling_stock_name,
     departure_date: new Date(train.start_time),
+    initial_speed:
+      train.initial_speed === undefined ? null : String(Math.round(train.initial_speed * 36) / 10),
   };
 }
 
-function applyFieldsToTrain(fields: TrainFieldsState, train: Train): Train {
+function applyFieldsToTrain(
+  fields: TrainFieldsState,
+  train: Train,
+  rollingStock?: LightRollingStockWithLiveries
+): Train {
   const paced = train.paced
     ? {
         exceptions: train.paced.exceptions,
@@ -104,6 +125,10 @@ function applyFieldsToTrain(fields: TrainFieldsState, train: Train): Train {
         fields?.use_electrical_profiles === null ? undefined : fields.use_electrical_profiles,
     },
     start_time: fields.departure_date.valueOf(),
+    initial_speed:
+      fields.initial_speed === null || computeInitialSpeedError(fields.initial_speed, rollingStock)
+        ? train.initial_speed
+        : Number.parseFloat(fields.initial_speed) / 3.6,
   };
 }
 
@@ -168,9 +193,13 @@ const ExpandedTrainForm = ({
   const fieldsFromTrain = useMemo(() => getFieldsFromTrain(train), [train]);
   const [fields, setFields] = useState<TrainFieldsState>(fieldsFromTrain);
   const [extraOccurrencesVisible, setExtraOccurrencesVisible] = useState(false);
-
   const extraOccurrences =
     train.paced?.exceptions?.filter((exp) => exp.occurrence_index === undefined) ?? [];
+
+  const selectedRollingStock = useMemo(
+    () => rollingStocks.find((rs) => rs.name === fields.rolling_stock_name),
+    [fields.rolling_stock_name, rollingStocks]
+  );
 
   // Reset fields values if they changed outside of the form (e.g., because it was an
   // exception and the user reverted it back to an occurence through the train list)
@@ -196,7 +225,7 @@ const ExpandedTrainForm = ({
     (_fieldName: keyof TrainFieldsState) => {
       const changes = extractChangesInFields(fieldsFromTrain, fields);
       if (Object.keys(changes).length) {
-        const updatedTrain = applyFieldsToTrain(fields, train);
+        const updatedTrain = applyFieldsToTrain(fields, train, selectedRollingStock);
         onPersistTrain(updatedTrain);
       }
     },
@@ -206,7 +235,7 @@ const ExpandedTrainForm = ({
   const onFieldImmediateChange = useCallback(
     (fieldName: keyof TrainFieldsState, newValue: TrainFieldsState[typeof fieldName]) => {
       const newFields = { ...fields, [fieldName]: newValue };
-      const updatedTrain = applyFieldsToTrain(newFields, train);
+      const updatedTrain = applyFieldsToTrain(newFields, train, selectedRollingStock);
       onPersistTrain(updatedTrain);
 
       setFields(newFields);
@@ -250,7 +279,6 @@ const ExpandedTrainForm = ({
     () => comfortOptions.find((comfort) => comfort.id === fields.comfort),
     [fields.comfort]
   );
-
   const selectedCategoryId = useMemo(
     () => (fields.category ? categoryOptionId(fields.category) : null),
     [fields.category]
@@ -259,29 +287,31 @@ const ExpandedTrainForm = ({
     () => categoryOptions.find((category) => category.id === selectedCategoryId),
     [selectedCategoryId]
   );
-  const selectedRollingStock = useMemo(
-    () => rollingStocks.find((rs) => rs.name === fields.rolling_stock_name),
-    [fields.rolling_stock_name, rollingStocks]
-  );
-  const erroneousFields = useMemo(() => !fields.train_name, [fields.train_name]);
 
   const subCategories = useSubCategoryContext();
-
   const currentSubCategory = useMemo(() => {
     const category = fields.category;
     if (!category || isMainCategory(category)) return undefined;
     return subCategories.find((option) => option.code === category.sub_category_code);
   }, [fields.category, subCategories]);
-
   const isCategoryWarning = checkCategoryWarning(
     selectedRollingStock,
     fields.category,
     currentSubCategory
   );
-
   const categoryWarning = isCategoryWarning
     ? t('manageTrainSchedule.trainHeader.categoryMismatch')
     : undefined;
+
+  const initialSpeedError = useMemo(
+    () => computeInitialSpeedError(fields.initial_speed, selectedRollingStock),
+    [fields.initial_speed, selectedRollingStock, computeInitialSpeedError]
+  );
+
+  const erroneousFields = useMemo(
+    () => !fields.train_name || !fields.initial_speed || !!initialSpeedError,
+    [fields.train_name, fields.initial_speed, initialSpeedError]
+  );
 
   const toggleBand = (
     <div className="toggle-band">
@@ -428,8 +458,33 @@ const ExpandedTrainForm = ({
             id="train-header-initial-velocity-input"
             small
             label={t('manageTrainSchedule.trainHeader.form.initialVelocity')}
-            value={train.initial_speed ?? ''}
-            disabled
+            value={fields.initial_speed ?? '0'}
+            trailingContent={'km/h'}
+            onChange={(event) => {
+              onFieldChange('initial_speed', event.target.value);
+            }}
+            onBlur={() => onFieldBlur('initial_speed')}
+            statusWithMessage={(() => {
+              switch (initialSpeedError) {
+                case 'INVALID_NUMBER':
+                  return {
+                    status: 'error',
+                    message: t('manageTrainSchedule.trainHeader.form.invalidInitialSpeed'),
+                  };
+                case 'ROUNDING':
+                  return {
+                    status: 'error',
+                    message: t('manageTrainSchedule.trainHeader.form.invalidInitialSpeedRounding'),
+                  };
+                case 'TOO_HIGH':
+                  return {
+                    status: 'error',
+                    message: t('manageTrainSchedule.trainHeader.form.initialSpeedTooHigh'),
+                  };
+                default:
+                  return undefined;
+              }
+            })()}
           />
         </div>
         <div className="train-category">
