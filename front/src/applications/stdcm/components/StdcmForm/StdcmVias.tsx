@@ -227,9 +227,7 @@ const StdcmVias = ({
               onClick={() => addViaOnClick(pathStepIndex)}
               disabled={disabled}
             />
-            {/* TODO #15344: remove isDebugMode */}
-            {isDebugMode &&
-              pathStep.stopType === StdcmStopTypes.SERVICE_STOP &&
+            {pathStep.stopType === StdcmStopTypes.SERVICE_STOP &&
               (!pathStep.consistChange ? (
                 <StdcmDefaultCard
                   testId="edit-consist"

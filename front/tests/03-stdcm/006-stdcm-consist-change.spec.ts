@@ -52,11 +52,6 @@ test.describe('STDCM Consist Change', { tag: ['@stdcm', '@stdcm-consist-change']
     stdcmPage,
     stdcmSimulationResultPage,
   }, testInfo) => {
-    // TODO remove this when the feature is fully enabled: #15344
-    await test.step('Enable debug mode', async () => {
-      await stdcmPage.enableDebugMode();
-    });
-
     await test.step('Fill consist, origin and destination', async () => {
       await consistSection.fillAndVerifyConsistDetails({
         consistFields: INITIAL_CONSIST_DETAILS,
