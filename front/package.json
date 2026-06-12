@@ -136,7 +136,7 @@
     "vite-plugin-checker": "^0.14.1",
     "vite-plugin-static-copy": "^4.1.0",
     "vite-tsconfig-paths": "^6.1.1",
-    "vitest": "^4.1.7"
+    "vitest": "^4.1.8"
   },
   "scripts": {
     "start": "vite",
