@@ -271,6 +271,11 @@
             display: none;
           }
 
+          &[aria-expanded='true'] {
+            background-color: var(--black5);
+            color: var(--primary70);
+          }
+
           &[aria-expanded='true'],
           &:hover:not(:disabled) {
             padding-right: 12px;
@@ -650,7 +655,7 @@
       align-items: center;
       min-width: 0;
       height: 36px;
-      padding-right: 10px;
+      padding-right: 14px;
       color: var(--grey80);
       gap: $rowGap;
 
@@ -671,6 +676,12 @@
       }
     }
 
+    &__row-count {
+      font-size: 0.85em;
+      font-weight: 400;
+      color: var(--grey40);
+    }
+
     &__row-station-icon,
     &__row-status,
     &__row-add {
@@ -687,6 +698,7 @@
     &__row-ch {
       min-width: 20px;
       text-align: right;
+      font-family: var(--font-mono), monospace;
     }
 
     &__row-status {
@@ -694,10 +706,7 @@
     }
 
     &__row-add {
-      color: var(--grey20);
-      // TODO:
-      // Restore visible style for that button
-      // color: var(--primary60);
+      color: var(--primary60);
     }
   }
 

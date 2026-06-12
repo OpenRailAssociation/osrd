@@ -176,6 +176,7 @@ export type CategoryColors = { base: string; strong: string; surface: string };
 export type ItineraryPathProperties = PathProperties & {
   length: number;
   incompatibleConstraints?: CoreIncompatibleConstraints;
+  pathItemPositions?: number[];
 };
 
 export type PathProjectionResultOperationalPoint = Omit<

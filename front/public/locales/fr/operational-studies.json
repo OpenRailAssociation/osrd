@@ -427,6 +427,7 @@
       "focusLocationOnMap": "Centrer la carte sur ce point remarquable",
       "frameAll": "Centrer sur tous les points de passage sur la carte",
       "intermediateWaypointsPanel": {
+        "addWaypoint": "Ajouter à l'itinéraire",
         "collapseGroup": "Replier les points intermédiaires",
         "expandGroup": "Déplier les points intermédiaires",
         "hide": "Masquer",

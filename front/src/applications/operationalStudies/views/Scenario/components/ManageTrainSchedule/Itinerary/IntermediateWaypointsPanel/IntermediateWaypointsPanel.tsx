@@ -3,9 +3,8 @@ import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import type { ItineraryPathProperties } from 'applications/operationalStudies/types';
+import type { CoreOperationalPointOnPath } from 'common/api/osrdEditoastApi';
 import DotsLoader from 'common/DotsLoader';
-import { formatSuggestedOperationalPoints } from 'modules/pathfinding/utils';
-import type { SuggestedOP } from 'modules/trainSchedule/types';
 import type { PathStepV2 } from 'reducers/osrdconf/types';
 
 import { groupOperationalPoints } from './utils';
@@ -16,6 +15,7 @@ type IntermediateWaypointsPanelProps = {
   pathProperties: ItineraryPathProperties | undefined;
   status: 'idle' | 'loading' | 'error' | 'success';
   onHide: () => void;
+  onAddWaypoint: (op: CoreOperationalPointOnPath, afterStepId: string) => void;
 };
 
 const IntermediateWaypointsPanel = ({
@@ -23,23 +23,37 @@ const IntermediateWaypointsPanel = ({
   pathProperties,
   status,
   onHide,
+  onAddWaypoint,
 }: IntermediateWaypointsPanelProps) => {
   const { t } = useTranslation('operational-studies', {
     keyPrefix: 'manageTrainSchedule.itineraryModal.intermediateWaypointsPanel',
   });
 
-  const suggestedOps: SuggestedOP[] = useMemo(() => {
-    if (!pathProperties?.operational_points || !pathProperties.geometry) return [];
-    return formatSuggestedOperationalPoints(
-      pathProperties.operational_points,
-      pathProperties.geometry,
-      pathProperties.length
-    );
-  }, [pathProperties]);
+  // Name a requested step that matches no OP, mirroring the form's labels
+  // (PathStepItem). The last located step is the destination; the trailing
+  // placeholder has no location and is skipped.
+  const { t: tMain } = useTranslation('operational-studies', { keyPrefix: 'main' });
+  const lastLocatedStepId = pathSteps.filter((step) => step.location !== null).at(-1)?.id;
+  const getRequestedLabel = (step: PathStepV2) => {
+    const index = pathSteps.findIndex((s) => s.id === step.id);
+    if (index === 0) return tMain('requestedOrigin');
+    if (step.id === lastLocatedStepId) return tMain('requestedDestination');
+    return tMain('requestedPoint', { count: index + 1 });
+  };
+
+  // path_item_positions lines up with the located steps, in order. Pair them
+  // here so the grouping can look a step's position up by id.
+  const positionByStepId = useMemo(() => {
+    const locatedSteps = pathSteps.filter((step) => step.location !== null);
+    const positions = pathProperties?.pathItemPositions;
+    if (positions?.length !== locatedSteps.length) return undefined;
+    return new Map(locatedSteps.map((step, i) => [step.id, positions[i]]));
+  }, [pathSteps, pathProperties]);
 
   const groups = useMemo(
-    () => groupOperationalPoints(suggestedOps, pathSteps),
-    [suggestedOps, pathSteps]
+    () =>
+      groupOperationalPoints(pathProperties?.operational_points ?? [], pathSteps, positionByStepId),
+    [pathProperties, pathSteps, positionByStepId]
   );
 
   return (
@@ -55,7 +69,12 @@ const IntermediateWaypointsPanel = ({
       ) : status === 'success' ? (
         <div className="intermediate-waypoints-panel__list">
           {groups.map((group) => (
-            <WaypointGroup key={group.requestedStep.id} group={group} />
+            <WaypointGroup
+              key={group.requestedStep.id}
+              group={group}
+              requestedLabel={getRequestedLabel(group.requestedStep)}
+              onAdd={(op) => onAddWaypoint(op, group.requestedStep.id)}
+            />
           ))}
         </div>
       ) : (
