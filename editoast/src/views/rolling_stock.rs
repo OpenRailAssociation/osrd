@@ -1,6 +1,13 @@
 pub(in crate::views) mod light;
 pub(in crate::views) mod towed;
 
+use authz::RollingStockPrivilege;
+use authz::v2::Access;
+use authz::v2::Actor;
+use authz::v2::Authorizer;
+use authz::v2::Check;
+use authz::v2::Protected;
+use axum::Extension;
 use schemas::RollingStock as RollingStockForm;
 
 use std::io::Cursor;
@@ -36,8 +43,10 @@ use thiserror::Error;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
 
+use crate::AppState;
 use crate::error::InternalError;
 use crate::error::Result;
+use crate::views::AuthorizationError;
 
 #[derive(Debug, Serialize, ToSchema)]
 pub struct RollingStockWithLiveries {
@@ -180,9 +189,27 @@ pub struct RollingStockNameParam {
     )
 )]
 pub(in crate::views) async fn get(
-    State(db_pool): State<Arc<DbConnectionPoolV2>>,
+    State(AppState {
+        regulator, db_pool, ..
+    }): State<AppState>,
+    Extension(state): Extension<crate::authentication::State>,
     Path(rolling_stock_id): Path<i64>,
 ) -> Result<Json<RollingStockWithLiveries>> {
+    // TODO: Do we need to match the variant or just check if the access is denied?
+    if let Access::Denied { .. } = state
+        .authorizer(regulator.openfga(), db_pool.get().await?)
+        .authorize(
+            Protected::value(()).with_check(Check::HasRollingStockPrivilege(
+                Actor::Issuer,
+                RollingStockPrivilege::CanRead,
+                authz::RollingStock(rolling_stock_id),
+            )),
+        )
+        .await?
+    {
+        return Err(AuthorizationError::Forbidden.into());
+    };
+
     let rolling_stock = retrieve_existing_rolling_stock(
         &mut db_pool.get().await?,
         RollingStockKey::Id(rolling_stock_id),
@@ -204,7 +231,10 @@ pub(in crate::views) async fn get(
     )
 )]
 pub(in crate::views) async fn get_by_name(
-    State(db_pool): State<Arc<DbConnectionPoolV2>>,
+    State(AppState {
+        regulator, db_pool, ..
+    }): State<AppState>,
+    Extension(state): Extension<crate::authentication::State>,
     Path(rolling_stock_name): Path<String>,
 ) -> Result<Json<RollingStockWithLiveries>> {
     let rolling_stock = retrieve_existing_rolling_stock(
@@ -212,6 +242,22 @@ pub(in crate::views) async fn get_by_name(
         RollingStockKey::Name(rolling_stock_name),
     )
     .await?;
+
+    // TODO: Do we need to match the variant or just check if the access is denied?
+    if let Access::Denied { .. } = state
+        .authorizer(regulator.openfga(), db_pool.get().await?)
+        .authorize(
+            Protected::value(()).with_check(Check::HasRollingStockPrivilege(
+                Actor::Issuer,
+                RollingStockPrivilege::CanRead,
+                authz::RollingStock(rolling_stock.id),
+            )),
+        )
+        .await?
+    {
+        return Err(AuthorizationError::Forbidden.into());
+    };
+
     let rolling_stock_with_liveries =
         RollingStockWithLiveries::try_fetch(&mut db_pool.get().await?, rolling_stock).await?;
     Ok(Json(rolling_stock_with_liveries))
@@ -689,6 +735,7 @@ pub mod tests {
     use crate::fixtures::simple_paced_train_changeset;
     use crate::views::test_app;
     use crate::views::test_app::TestApp;
+    use crate::views::test_app::TestRequestExt;
     use editoast_models::rolling_stock::RollingStock;
 
     impl TestApp {
@@ -1027,6 +1074,76 @@ pub mod tests {
         let response: RollingStock = raw_response.assert_status_ok().json();
 
         assert_eq!(response, fast_rolling_stock);
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn get_rolling_stock_by_id_with_permission() {
+        let app = test_app!().build();
+        let db_pool = app.db_pool();
+
+        let rs_name = "fast_rolling_stock_name";
+        let fast_rolling_stock = create_fast_rolling_stock(&mut db_pool.get_ok(), rs_name).await;
+
+        // a user that has the role to reach the endpoint and a read grant on the rolling stock
+        let user = app
+            .user("authorized", "Authorized")
+            .with_roles([Role::OperationalStudies])
+            .with_rolling_stock_grant(fast_rolling_stock.id, authz::RollingStockGrant::Reader)
+            .create()
+            .await;
+
+        let raw_response = app
+            .rolling_stock_get_by_id_request(fast_rolling_stock.id)
+            .by_user(&user.info)
+            .await;
+
+        raw_response.assert_status_ok();
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn get_rolling_stock_by_id_with_privilege_and_no_roles() {
+        let app = test_app!().build();
+        let db_pool = app.db_pool();
+
+        let rs_name = "fast_rolling_stock_name";
+        let fast_rolling_stock = create_fast_rolling_stock(&mut db_pool.get_ok(), rs_name).await;
+
+        // a user that does not have the role to reach the endpoint but has a read grant on the rolling stock
+        let user = app
+            .user("unauthorized", "Unauthorized")
+            .with_rolling_stock_grant(fast_rolling_stock.id, authz::RollingStockGrant::Reader)
+            .create()
+            .await;
+
+        let raw_response = app
+            .rolling_stock_get_by_id_request(fast_rolling_stock.id)
+            .by_user(&user.info)
+            .await;
+
+        raw_response.assert_status_forbidden();
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn get_rolling_stock_by_id_without_permission() {
+        let app = test_app!().build();
+        let db_pool = app.db_pool();
+
+        let rs_name = "fast_rolling_stock_name";
+        let fast_rolling_stock = create_fast_rolling_stock(&mut db_pool.get_ok(), rs_name).await;
+
+        // a user that has the role to reach the endpoint but no read grant on the rolling stock
+        let user = app
+            .user("unauthorized", "Unauthorized")
+            .with_roles([Role::OperationalStudies])
+            .create()
+            .await;
+
+        let raw_response = app
+            .rolling_stock_get_by_id_request(fast_rolling_stock.id)
+            .by_user(&user.info)
+            .await;
+
+        raw_response.assert_status_forbidden();
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]

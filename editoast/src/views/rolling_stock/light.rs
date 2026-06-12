@@ -1,3 +1,10 @@
+use authz::RollingStockPrivilege;
+use authz::v2::Access;
+use authz::v2::Actor;
+use authz::v2::Authorizer;
+use authz::v2::Check;
+use authz::v2::Protected;
+use axum::Extension;
 use axum::extract::Json;
 use axum::extract::Path;
 use axum::extract::Query;
@@ -28,7 +35,9 @@ use super::RollingStockError;
 use super::RollingStockIdParam;
 use super::RollingStockKey;
 use super::RollingStockNameParam;
+use crate::AppState;
 use crate::error::Result;
+use crate::views::AuthorizationError;
 use crate::views::pagination::PaginatedList;
 use crate::views::pagination::PaginationQueryParams;
 use crate::views::pagination::PaginationStats;
@@ -118,9 +127,27 @@ pub(in crate::views) async fn list(
     )
 )]
 pub(in crate::views) async fn get(
-    State(db_pool): State<Arc<DbConnectionPoolV2>>,
+    State(AppState {
+        regulator, db_pool, ..
+    }): State<AppState>,
+    Extension(state): Extension<crate::authentication::State>,
     Path(light_rolling_stock_id): Path<i64>,
 ) -> Result<Json<LightRollingStockWithLiveries>> {
+    // TODO: Do we need to match the variant or just check if the access is denied?
+    if let Access::Denied { .. } = state
+        .authorizer(regulator.openfga(), db_pool.get().await?)
+        .authorize(
+            Protected::value(()).with_check(Check::HasRollingStockPrivilege(
+                Actor::Issuer,
+                RollingStockPrivilege::CanRead,
+                authz::RollingStock(light_rolling_stock_id),
+            )),
+        )
+        .await?
+    {
+        return Err(AuthorizationError::Forbidden.into());
+    };
+
     let rolling_stock =
         RollingStock::retrieve_or_fail(db_pool.get().await?, light_rolling_stock_id, || {
             RollingStockError::KeyNotFound {
@@ -144,7 +171,10 @@ pub(in crate::views) async fn get(
     )
 )]
 pub(in crate::views) async fn get_by_name(
-    State(db_pool): State<Arc<DbConnectionPoolV2>>,
+    State(AppState {
+        regulator, db_pool, ..
+    }): State<AppState>,
+    Extension(state): Extension<crate::authentication::State>,
     Path(light_rolling_stock_name): Path<String>,
 ) -> Result<Json<LightRollingStockWithLiveries>> {
     let rolling_stock = RollingStock::retrieve_or_fail(
@@ -155,6 +185,21 @@ pub(in crate::views) async fn get_by_name(
         },
     )
     .await?;
+
+    if let Access::Denied { .. } = state
+        .authorizer(regulator.openfga(), db_pool.get().await?)
+        .authorize(
+            Protected::value(()).with_check(Check::HasRollingStockPrivilege(
+                Actor::Issuer,
+                RollingStockPrivilege::CanRead,
+                authz::RollingStock(rolling_stock.id),
+            )),
+        )
+        .await?
+    {
+        return Err(AuthorizationError::Forbidden.into());
+    };
+
     let light_rolling_stock_with_liveries =
         LightRollingStockWithLiveries::try_fetch(&mut db_pool.get().await?, rolling_stock).await?;
     Ok(Json(light_rolling_stock_with_liveries))
