@@ -156,17 +156,11 @@ export type StdcmSimulation = {
   alternativePath?: 'upstream' | 'downstream';
 };
 
-/** This type is used for StdcmConsist component */
-export type StdcmConfigCardProps = {
-  disabled?: boolean;
-  consistErrors?: ConsistErrors;
-  isDebugMode?: boolean;
-};
-
 /* This type is used for StdcmOrigin, StdcmDestination and StdcmVias component */
 export type StdcmItineraryProps = {
+  disabled?: boolean;
   onItineraryChange: () => void;
-} & StdcmConfigCardProps;
+};
 
 export enum ArrivalTimeTypes {
   PRECISE_TIME = 'preciseTime',
