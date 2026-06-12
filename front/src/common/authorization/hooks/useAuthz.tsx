@@ -52,7 +52,7 @@ export default function useAuthz() {
    * Retrieve grants of the connected user for a list of resources.
    */
   const getUserGrants = useCallback(
-    async (resources: Record<ResourceType, number[]>) => {
+    async (resources: Partial<Record<ResourceType, number[]>>) => {
       const result = await retrieveUserGrants({ body: resources }).unwrap();
       return Object.keys(result).reduce(
         (accByType, resourceType) => {
@@ -75,7 +75,7 @@ export default function useAuthz() {
    * Retrieve privileges of the connected user for a list of resources.
    */
   const getUserPrivileges = useCallback(
-    async (resources: Record<ResourceType, number[]>) => {
+    async (resources: Partial<Record<ResourceType, number[]>>) => {
       const result = await retrieveUserPrivileges({ body: resources }).unwrap();
       return Object.keys(result).reduce(
         (accByType, resourceType) => {
