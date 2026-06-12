@@ -46,35 +46,41 @@ export const RollingStockEditorList = ({
       {isLoading && <Loader msg={t('rollingStock.waitingLoader')} />}
       {!isLoading && (
         <>
-          {data.map((rs) => (
-            <div key={rs.id}>
-              <div className="rolling-stock-card-container">
-                <RollingStockCard
-                  isOnEditMode
-                  rollingStock={rs}
-                  noCardSelected={selectedRollingStockId === undefined}
-                  isOpen={rs.id === selectedRollingStockId}
-                  onClick={() => {
-                    setPageMode((prev) =>
-                      'rollingStockId' in prev && prev.rollingStockId === rs.id
-                        ? { type: 'idle' }
-                        : { type: 'view', rollingStockId: rs.id }
-                    );
-                  }}
-                  ref2scroll={selectedRollingStockId === rs.id ? ref2scroll : undefined}
-                />
-                {rs.id === selectedRollingStockId && selected && (
-                  <RollingStockEditorButtons
-                    setPageMode={setPageMode}
-                    isCondensed
-                    rollingStock={selected}
-                    resetFilters={resetFilters}
-                    userPrivileges={userPrivilegesByRollingStockId[rs.id] || new Set()}
+          {data
+            .filter(
+              (rs) =>
+                userPrivilegesByRollingStockId[rs.id] &&
+                userPrivilegesByRollingStockId[rs.id].has('can_read')
+            )
+            .map((rs) => (
+              <div key={rs.id}>
+                <div className="rolling-stock-card-container">
+                  <RollingStockCard
+                    isOnEditMode
+                    rollingStock={rs}
+                    noCardSelected={selectedRollingStockId === undefined}
+                    isOpen={rs.id === selectedRollingStockId}
+                    onClick={() => {
+                      setPageMode((prev) =>
+                        'rollingStockId' in prev && prev.rollingStockId === rs.id
+                          ? { type: 'idle' }
+                          : { type: 'view', rollingStockId: rs.id }
+                      );
+                    }}
+                    ref2scroll={selectedRollingStockId === rs.id ? ref2scroll : undefined}
                   />
-                )}
+                  {rs.id === selectedRollingStockId && selected && (
+                    <RollingStockEditorButtons
+                      setPageMode={setPageMode}
+                      isCondensed
+                      rollingStock={selected}
+                      resetFilters={resetFilters}
+                      userPrivileges={userPrivilegesByRollingStockId[rs.id] || new Set()}
+                    />
+                  )}
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
           {data.length === 0 && (
             <div data-testid="rollingstock-empty-result" className="rollingstock-empty">
               {t('rollingStock.resultFound', { count: 0 })}
