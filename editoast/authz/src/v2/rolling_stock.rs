@@ -1,5 +1,7 @@
+use fga::client::UserList;
 use futures::FutureExt;
 use std::collections::HashSet;
+use itertools::Itertools as _;
 
 use fga::model::Relation as _;
 
@@ -136,6 +138,75 @@ pub fn rolling_stock_effective_grant(
         RollingStockPrivilege::CanRead,
         rolling_stock,
     ))
+}
+
+/// Return an operation that checks the list of subjects which have the given grant on an infra.
+pub fn rolling_stock_granted_subjects(rolling_stock: RollingStock, grant: RollingStockGrant) -> Protected<Vec<Subject>> {
+    fn get_granted_users(rolling_stock: RollingStock, grant: RollingStockGrant) -> Protected<Vec<User>> {
+        Protected::new(move |openfga| {
+            async move {
+                match grant {
+                    RollingStockGrant::Reader => {
+                        openfga
+                            .list_users(RollingStock::reader().query_users(&rolling_stock))
+                            .await
+                    }
+                    RollingStockGrant::Writer => {
+                        openfga
+                            .list_users(RollingStock::writer().query_users(&rolling_stock))
+                            .await
+                    }
+                    RollingStockGrant::Owner => {
+                        openfga.list_users(RollingStock::owner().query_users(&rolling_stock)).await
+                    }
+                }
+                .map(|UserList { users, .. }| users)
+            }
+            .boxed()
+        })
+    }
+    fn get_granted_groups(rolling_stock: RollingStock, grant: RollingStockGrant) -> Protected<Vec<Group>> {
+        Protected::new(move |openfga| {
+            async move {
+                match grant {
+                    RollingStockGrant::Reader => {
+                        openfga
+                            .list_usersets(RollingStock::reader().query_usersets(Group::member(), &rolling_stock))
+                            .await
+                    }
+                    RollingStockGrant::Writer => {
+                        openfga
+                            .list_usersets(RollingStock::writer().query_usersets(Group::member(), &rolling_stock))
+                            .await
+                    }
+                    RollingStockGrant::Owner => {
+                        openfga
+                            .list_usersets(RollingStock::owner().query_usersets(Group::member(), &rolling_stock))
+                            .await
+                    }
+                }
+            }
+            .boxed()
+        })
+    }
+    get_granted_users(rolling_stock, grant)
+        .zip(get_granted_groups(rolling_stock, grant))
+        .map(move |_, (users, groups)| {
+            async move {
+                Ok(users
+                    .into_iter()
+                    .map(Subject::User)
+                    .chain(groups.into_iter().map(Subject::Group))
+                    .collect_vec())
+            }
+            .boxed()
+        })
+        .with_check(Check::HasRollingStockPrivilege(
+            Actor::Issuer,
+            RollingStockPrivilege::CanRead,
+            rolling_stock,
+        ))
+        .with_check(Check::RollingStockExists(rolling_stock))
 }
 
 #[cfg(test)]

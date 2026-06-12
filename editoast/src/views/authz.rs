@@ -15,6 +15,7 @@ use ::authz::InfraGrant;
 use ::authz::InfraPrivilege;
 use ::authz::Role;
 use authz::Authorization;
+use authz::RollingStockGrant;
 use authz::RollingStockPrivilege;
 use authz::v2;
 use authz::v2::Actor;
@@ -641,7 +642,35 @@ pub(in crate::views) async fn my_grants_on_resource(
                     rejection => impossible!(rejection),
                 })?
         }
-        ResourceType::RollingStock => todo!(),
+        ResourceType::RollingStock => {
+            let rs = authz::RollingStock(resource_id);
+            let conn = db_pool.get().await?;
+            let openfga = regulator.openfga();
+            let authorizer = UserAuthorizer {
+                user,
+                roles,
+                openfga,
+                conn,
+            };
+            authorizer
+                .authorize(
+                    authz::v2::rolling_stock_granted_subjects(rs, RollingStockGrant::Reader)
+                        .zip(authz::v2::rolling_stock_granted_subjects(rs, RollingStockGrant::Writer))
+                        .zip(authz::v2::rolling_stock_granted_subjects(rs, RollingStockGrant::Owner)),
+                )
+                .await?
+                .access()
+                .await?
+                .map_err(|err| match err {
+                    Check::HasRollingStockPrivilege(Actor::Issuer, RollingStockPrivilege::CanRead, ..) => {
+                        AuthzError::Authz(AuthorizationError::Forbidden)
+                    }
+                    Check::RollingStockExists(_) => AuthzError::UnknownResource {
+                        resource_id: rs.0,
+                    },
+                    rejection => impossible!(rejection),
+                })?
+        },
     };
 
     // NOTE: the same subject can appear in multiple lists. This can happen
