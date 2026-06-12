@@ -26,6 +26,8 @@
   line-height: 1.25rem;
   font-size: 0.875rem;
 
+  cursor: text;
+
   .unit-field {
     line-height: 20px;
     letter-spacing: 0;

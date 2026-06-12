@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from 'react';
 
-import { Button, Checkbox, Input, Select } from '@osrd-project/ui-core';
+import { Button, Checkbox, DurationInput, Input, Select } from '@osrd-project/ui-core';
 import { ChevronUp } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
 
@@ -13,16 +13,13 @@ import useCategoryOptions, {
 } from 'modules/rollingStock/hooks/useCategoryOptions';
 import type { Train } from 'reducers/osrdconf/types';
 import { useDateTimeLocale } from 'utils/date';
+import { Duration } from 'utils/duration';
 import { usePrevious } from 'utils/hooks/state';
 import { findExceptionInPacedTrainByOccurenceId } from 'utils/trainExceptions';
 import { isOccurrenceId } from 'utils/trainId';
 import { createFixedSelectOptions, createStandardSelectOptions } from 'utils/uiCoreHelpers';
 
-import {
-  getServiceInterval,
-  getServiceWindow,
-  getShortDepartureDate,
-} from './utils/trainProperties';
+import { getShortDepartureDate } from './utils/trainProperties';
 
 export type ExpandedTrainFormProps = {
   train: Train;
@@ -37,6 +34,8 @@ type TrainFieldsState = {
   constraint_distribution: ConstraintDistribution;
   comfort: Comfort | null;
   category: TrainCategory | null;
+  service_cadence?: number;
+  service_window?: number;
 };
 
 function getFieldsFromTrain(train: Train): TrainFieldsState {
@@ -46,15 +45,26 @@ function getFieldsFromTrain(train: Train): TrainFieldsState {
     constraint_distribution: train.constraint_distribution,
     comfort: train.comfort ?? null,
     category: train.category ?? null,
+    service_cadence: Duration.parse(train.paced?.interval ?? '0').valueOf(),
+    service_window: Duration.parse(train.paced?.time_window ?? '0').valueOf(),
   };
 }
 
 function applyFieldsToTrain(fields: TrainFieldsState, train: Train): Train {
+  const paced = train.paced
+    ? {
+        exceptions: train.paced.exceptions,
+        interval: new Duration({ milliseconds: fields.service_cadence }).toISOString(),
+        time_window: new Duration({ milliseconds: fields.service_window }).toISOString(),
+      }
+    : undefined;
+
   return {
     ...train,
     ...fields,
     comfort: fields.comfort === null ? undefined : fields.comfort,
     category: fields.category === null ? undefined : fields.category,
+    paced,
   };
 }
 
@@ -72,7 +82,6 @@ function extractChangesInFields(
   current?: TrainFieldsState
 ): Partial<TrainFieldsState> {
   const changedValues: Partial<TrainFieldsState> = {};
-
   for (const fieldName of Object.keys(before) as (keyof TrainFieldsState)[]) {
     if (
       after[fieldName] !== before[fieldName] &&
@@ -131,7 +140,6 @@ const ExpandedTrainForm = ({
   const onFieldBlur = useCallback(
     (_fieldName: keyof TrainFieldsState) => {
       const changes = extractChangesInFields(fieldsFromTrain, fields);
-
       if (Object.keys(changes).length) {
         const updatedTrain = applyFieldsToTrain(fields, train);
         onPersistTrain(updatedTrain);
@@ -223,21 +231,27 @@ const ExpandedTrainForm = ({
                 {t('manageTrainSchedule.trainHeader.serviceModelTrain')}
               </div>
               <div className="train-service-cadence">
-                <Input
+                <DurationInput
                   id="train-header-service-cadence-input"
                   small
+                  units={['m']}
+                  padChar="0"
+                  max={3_600_000}
                   label={t('manageTrainSchedule.trainHeader.form.serviceCadence')}
-                  value={`${getServiceInterval(pacedTrain) ?? 0} min`}
-                  disabled
+                  value={fields.service_cadence ?? 0}
+                  onChange={(ms) => onFieldImmediateChange('service_cadence', ms)}
                 />
               </div>
               <div className="train-service-window">
-                <Input
+                <DurationInput
                   id="train-header-service-window-input"
                   small
+                  units={['h', 'm']}
+                  padChar="0"
+                  max={5 * 3_600_000} // 5h00m
                   label={t('manageTrainSchedule.trainHeader.form.serviceWindow')}
-                  value={`${getServiceWindow(pacedTrain) ?? 0} min`}
-                  disabled
+                  value={fields.service_window ?? 2 * 3_600_000} // 2h00m
+                  onChange={(ms) => onFieldImmediateChange('service_window', ms)}
                 />
               </div>
               <div className="actions">

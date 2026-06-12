@@ -28,7 +28,7 @@ export type DurationInputProps = {
   small?: boolean;
   hint?: string;
   label?: string;
-} & React.ComponentPropsWithoutRef<'div'>;
+} & Omit<React.ComponentPropsWithoutRef<'div'>, 'onChange'>;
 
 const PRESETS: Record<string, Omit<UnitConfig, 'key'>> = {
   h: { label: 'h', digits: 2, msPerUnit: 3_600_000 },
@@ -93,7 +93,6 @@ function useDurationInput({
   max,
 }: Omit<DurationInputProps, 'id'>) {
   const fields = useMemo(() => normalizeUnits(units, padChar, max), [units, padChar, max]);
-
   const inputRefs = useRef<Record<string, HTMLInputElement>>({});
 
   const [initialValue, setInitialValue] = useState(value);
@@ -129,13 +128,6 @@ function useDurationInput({
       if (previous) focusField(previous.key);
     },
     [fields, focusField]
-  );
-
-  const emit = useCallback(
-    (nextValues: FormattedValues) => {
-      onChange?.(toTotalMilliseconds(fields, nextValues));
-    },
-    [fields, onChange]
   );
 
   const handleChange = useCallback(
@@ -175,8 +167,8 @@ function useDurationInput({
     const clamped = Math.min(max, ms);
     const next = toFormattedValues(fields, clamped);
     setFormattedValues(next);
-    emit(next);
-  }, [fields, formattedValues, max, emit]);
+    onChange?.(toTotalMilliseconds(fields, next));
+  }, [fields, formattedValues, max, onChange]);
 
   return {
     fields,
@@ -195,7 +187,6 @@ type UnitFieldProps = {
   inputRef: (el: HTMLInputElement | null) => void;
   onChange: (value: string) => void;
   onFocus: () => void;
-  onBlur: () => void;
   onKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) => void;
   tabIndex: number;
 };
@@ -206,7 +197,6 @@ const UnitField = function UnitField({
   inputRef,
   onChange,
   onFocus,
-  onBlur,
   onKeyDown,
   tabIndex,
 }: UnitFieldProps) {
@@ -228,7 +218,6 @@ const UnitField = function UnitField({
         aria-label={label}
         onChange={(e) => onChange(e.target.value)}
         onFocus={onFocus}
-        onBlur={onBlur}
         onKeyDown={onKeyDown}
       />
       <span aria-hidden onClick={onFocus}>
@@ -255,21 +244,14 @@ const DurationInput = ({
   hint,
   ...rest
 }: DurationInputProps) => {
-  const {
-    fields,
-    formattedValues,
-    inputRefs,
-    handleChange,
-    handleFocus,
-    handleBlur,
-    handleKeyDown,
-  } = useDurationInput({
-    units,
-    value,
-    onChange,
-    padChar,
-    max,
-  });
+  const { fields, formattedValues, inputRefs, handleChange, handleFocus, handleKeyDown } =
+    useDurationInput({
+      units,
+      value,
+      onChange,
+      padChar,
+      max,
+    });
 
   return (
     <FieldWrapper id={id} label={label} hint={hint} small={small}>
@@ -277,6 +259,7 @@ const DurationInput = ({
         className={cx('ui-duration-input', { small })}
         role="group"
         aria-label="Duration Input"
+        onClick={() => inputRefs.current[fields[0].key]?.focus()}
         {...rest}
       >
         {fields.map((setting, idx) => (
@@ -290,7 +273,6 @@ const DurationInput = ({
             tabIndex={idx === 0 ? 0 : -1}
             onChange={(val) => handleChange(setting, val)}
             onFocus={() => handleFocus(setting)}
-            onBlur={() => handleBlur()}
             onKeyDown={(e) => handleKeyDown(setting, e)}
           />
         ))}

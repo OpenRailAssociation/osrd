@@ -61,6 +61,13 @@
     :where(& > *) {
       grid-column: 1 / end-column;
     }
+
+    .train-service-cadence,
+    .train-service-window {
+      .ui-duration-input {
+        width: 100%;
+      }
+    }
   }
 
   .train-paced-kind {
