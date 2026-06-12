@@ -2,6 +2,8 @@
 //! test axum server, database connection pool, and different mocking
 //! components.
 
+use authz::RollingStock;
+use authz::RollingStockGrant;
 use authz::v2;
 use authz::v2::TestClientExt;
 use authz::v2::special_authorizers;
@@ -452,6 +454,7 @@ pub struct UserBuilder<'a> {
     info: UserInfo,
     roles: HashSet<Role>,
     infras_grant: HashMap<i64, InfraGrant>,
+    rolling_stock_grants: HashMap<i64, RollingStockGrant>,
 }
 
 pub struct GroupBuilder<'a> {
@@ -460,6 +463,7 @@ pub struct GroupBuilder<'a> {
     roles: HashSet<Role>,
     members: HashSet<&'a authz::identity::User>,
     infras_grant: HashMap<i64, InfraGrant>,
+    rolling_stock_grants: HashMap<i64, RollingStockGrant>,
 }
 
 impl<'a> UserBuilder<'a> {
@@ -469,6 +473,7 @@ impl<'a> UserBuilder<'a> {
             info,
             roles: Default::default(),
             infras_grant: HashMap::default(),
+            rolling_stock_grants: HashMap::default(),
         }
     }
 
@@ -482,15 +487,28 @@ impl<'a> UserBuilder<'a> {
         self
     }
 
+    #[expect(unused)]
+    pub fn with_rolling_stock_grant(
+        mut self,
+        rolling_stock_id: i64,
+        grant: RollingStockGrant,
+    ) -> Self {
+        self.rolling_stock_grants.insert(rolling_stock_id, grant);
+        self
+    }
+
     pub async fn create(self) -> authz::identity::User {
         let Self {
             app,
             info,
             roles,
             infras_grant,
+            rolling_stock_grants,
         } = self;
 
-        if (!roles.is_empty() || !infras_grant.is_empty()) && !app.enable_authorization {
+        if (!roles.is_empty() || !infras_grant.is_empty() || !rolling_stock_grants.is_empty())
+            && !app.enable_authorization
+        {
             panic!("An OpenFGA model must be provided to grant a user roles or infra grants");
         }
         let regulator = &app.app_state.regulator;
@@ -518,6 +536,15 @@ impl<'a> UserBuilder<'a> {
                     .await
                     .expect("Infra grant should be given successfully")
             }
+            for (rolling_stock_id, grant) in rolling_stock_grants.into_iter() {
+                app.openfga()
+                    .give_rolling_stock_grant(
+                        RollingStock(rolling_stock_id),
+                        authz::Subject::User(authz::User(user.id)),
+                        grant,
+                    )
+                    .await;
+            }
         }
         authz::identity::User { info, id: user.id }
     }
@@ -531,6 +558,7 @@ impl<'a> GroupBuilder<'a> {
             roles: Default::default(),
             members: Default::default(),
             infras_grant: HashMap::default(),
+            rolling_stock_grants: HashMap::default(),
         }
     }
 
@@ -553,6 +581,16 @@ impl<'a> GroupBuilder<'a> {
         self
     }
 
+    #[expect(unused)]
+    pub fn with_rolling_stock_grant(
+        mut self,
+        rolling_stock_id: i64,
+        grant: RollingStockGrant,
+    ) -> Self {
+        self.rolling_stock_grants.insert(rolling_stock_id, grant);
+        self
+    }
+
     pub async fn create(self) -> authz::identity::Group {
         let Self {
             app,
@@ -560,8 +598,12 @@ impl<'a> GroupBuilder<'a> {
             roles,
             members,
             infras_grant,
+            rolling_stock_grants,
         } = self;
-        let needs_openfga = !roles.is_empty() || !members.is_empty() || !infras_grant.is_empty();
+        let needs_openfga = !roles.is_empty()
+            || !members.is_empty()
+            || !infras_grant.is_empty()
+            || !rolling_stock_grants.is_empty();
         if needs_openfga && !app.enable_authorization {
             panic!(
                 "An OpenFGA model must be provided to grant a group roles, members, or infra grants"
@@ -603,6 +645,11 @@ impl<'a> GroupBuilder<'a> {
                     .give_infra_grant_unchecked(&subject, &authz::Infra(infra_id), grant)
                     .await
                     .expect("Infra grant should be given successfully")
+            }
+            for (rolling_stock_id, grant) in rolling_stock_grants.into_iter() {
+                app.openfga()
+                    .give_rolling_stock_grant(RollingStock(rolling_stock_id), subject, grant)
+                    .await;
             }
         }
         group
