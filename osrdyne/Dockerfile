@@ -47,7 +47,7 @@ COPY . .
 #######################
 # Running env : build #
 #######################
-FROM alpine:3.23 AS running_env
+FROM alpine:3.24 AS running_env
 RUN apk add --no-cache curl ca-certificates bind-tools
 COPY --from=run_builder /cargo_osrdyne/bin/osrdyne /usr/local/bin/osrdyne
 
