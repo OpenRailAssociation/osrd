@@ -126,6 +126,12 @@ type TimeCellTabEntry = {
 };
 
 const HEADER_HEIGHT = 40;
+
+/**
+ * height: 47px + border-bottom: 1px (see _timesStopsTable.scss)
+ */
+const POWER_RESTRICTION_WARNING_HEIGHT = 48;
+
 const ROW_HEIGHT = 40;
 const DAY_CHANGE_BANNER_HEIGHT = 40;
 
@@ -698,12 +704,17 @@ const TimesStopsTable = ({
 
   const virtualItems = virtualizer.getVirtualItems();
 
+  let height = virtualizer.getTotalSize() + HEADER_HEIGHT;
+  if (powerRestrictionWarningCount > 0) {
+    height += POWER_RESTRICTION_WARNING_HEIGHT;
+  }
+
   return (
     <div
       className={cx('times-stops-table-new', { 'computed-data-pending': isComputedDataPending })}
       data-testid="times-stops-table-new"
       ref={virtualizedWrapperRef}
-      style={{ height: `${virtualizer.getTotalSize() + HEADER_HEIGHT}px` }}
+      style={{ height: `${height}px` }}
     >
       <table className="table-container">
         {powerRestrictionWarningCount > 0 && (
