@@ -319,7 +319,10 @@ const SpaceTimeChartWrapper = ({
           .filter((train) => train.spaceTimeCurves.length > 0)
           .map((p) => +p.departureTime)
       );
-      setTimeOrigin(minTime);
+
+      if (Number.isFinite(minTime)) {
+        setTimeOrigin(minTime);
+      }
     }
   }, [selectedProjectionId, trainScheduleProjections.length]);
 

@@ -72,6 +72,8 @@ export const getLabelMarks = (
 ) => {
   const labelMarks: Record<number, { level: number; rangeIndex: number }> = {};
 
+  if (!Number.isFinite(minT) || !Number.isFinite(maxT)) return labelMarks;
+
   timeRanges.map((range, index) => {
     const labelLevel = labelLevels[index];
 
