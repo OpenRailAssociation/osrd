@@ -200,9 +200,11 @@ describe('useSimulationResults', () => {
       electricalProfileSetId: ELECTRICAL_PROFILE_SET_ID,
       exceptionId: undefined,
     });
-    expect(getRollingStockNameByRollingStockName).toHaveBeenCalledWith({
-      rollingStockName: ROLLING_STOCK_NAME,
-    });
+    expect(getRollingStockNameByRollingStockName).toHaveBeenCalledWith(
+      expect.objectContaining({
+        rollingStockName: ROLLING_STOCK_NAME,
+      })
+    );
     expect(postInfraByInfraIdPathProperties).toHaveBeenCalledWith({
       infraId: INFRA_ID,
       pathPropertiesInput: { track_section_ranges: trackSectionRanges },

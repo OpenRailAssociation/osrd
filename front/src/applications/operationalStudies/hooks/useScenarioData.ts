@@ -13,6 +13,7 @@ import useLazyProjectTrains from 'modules/simulationResult/components/SpaceTimeC
 import { formatPacedTrainWithDetails } from 'modules/trainSchedule/helpers/formatTrainScheduleWithDetails';
 import { useAppDispatch } from 'store';
 import { mapBy } from 'utils/types';
+import { useAsyncMemo } from 'utils/useAsyncMemo';
 
 import useAutoSelectTrainIds from './useAutoSelectTrainIds';
 import useLazySimulateTrains from './useLazySimulateTrains';
@@ -34,7 +35,7 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
   const [updateTrainSchedule] = osrdEditoastApi.endpoints.putTrainSchedulesById.useMutation();
 
   const { workerStatus } = useScenarioContext();
-  const { rollingStocks, rollingStockMap: rollingStocksByName } = useRollingStockContext();
+  const { rollingStocks, rollingStockMap } = useRollingStockContext();
 
   const projectionPath = usePathProjection(infraId, trainSchedulesById);
 
@@ -110,22 +111,82 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
 
   const isConflictsLoading = isUninitialized || isFetching;
 
-  const trainSchedulesWithDetails = useMemo(() => {
-    const trains = (trainSchedules || []).map((trainSchedule) => {
-      const simulatedTrain = simulatedTrainsById.get(trainSchedule.id);
-      if (simulatedTrain) return simulatedTrain;
-      const rollingStock = rollingStocksByName.get(trainSchedule.rolling_stock_name);
-      return formatPacedTrainWithDetails(trainSchedule, rollingStock);
-    });
+  const getMissingRollingStockStatus = useCallback(
+    async (trains: TrainScheduleResponse[]) => {
+      const missingRollingStockMap = new Map<
+        string,
+        'rolling_stock_not_found' | 'rolling_stock_forbidden'
+      >();
+      const missingRollingStockNameSet = new Set(
+        trains
+          .map((train) => train.rolling_stock_name)
+          .filter((rsName) => !rollingStockMap.has(rsName))
+      );
+      for (const rollingStockName of missingRollingStockNameSet) {
+        const getRollingStockByNameQuery = dispatch(
+          osrdEditoastApi.endpoints.getRollingStockNameByRollingStockName.initiate({
+            rollingStockName,
+            __skipGlobal403: true,
+          })
+        );
+        getRollingStockByNameQuery.unsubscribe();
+        const getRollingStockByNameResponse = await getRollingStockByNameQuery;
+        const { error } = getRollingStockByNameResponse;
+        if (error && 'status' in error && error.status) {
+          missingRollingStockMap.set(
+            rollingStockName,
+            error.status === 403 ? 'rolling_stock_forbidden' : 'rolling_stock_not_found'
+          );
+        }
+      }
+      return missingRollingStockMap;
+    },
+    [dispatch, rollingStockMap]
+  );
+
+  const trainSchedulesWithDetails = useAsyncMemo(async () => {
+    const missingRollingStockMap = await getMissingRollingStockStatus(trainSchedules || []);
+    const trains = await Promise.all(
+      (trainSchedules || []).map(async (trainSchedule) => {
+        // Checking the rolling stock
+        const rollingStockName = trainSchedule.rolling_stock_name;
+        const simulatedTrain = simulatedTrainsById.get(trainSchedule.id);
+        const train =
+          simulatedTrain ||
+          formatPacedTrainWithDetails(
+            trainSchedule,
+            rollingStockMap.has(rollingStockName)
+              ? rollingStockMap.get(rollingStockName)
+              : undefined
+          );
+
+        return {
+          ...train,
+          ...(missingRollingStockMap.has(rollingStockName)
+            ? {
+                summary: {
+                  isValid: false as const,
+                  invalidReason: missingRollingStockMap.get(rollingStockName)!,
+                },
+              }
+            : {}),
+        };
+      })
+    );
+
     return sortBy(trains, ['startTime', 'name', 'id']);
-  }, [trainSchedules, rollingStocksByName, simulatedTrainsById]);
+  }, [trainSchedules, rollingStockMap, simulatedTrainsById, getMissingRollingStockStatus]);
 
   const projectedTrains = useMemo(
     () => Array.from(projectedTrainsById.values()),
     [projectedTrainsById]
   );
 
-  useAutoSelectTrainIds(trainSchedules ? trainSchedulesWithDetails : undefined);
+  useAutoSelectTrainIds(
+    trainSchedules && trainSchedulesWithDetails.type === 'ready'
+      ? trainSchedulesWithDetails.data
+      : undefined
+  );
 
   // first load of the summaries
   useEffect(() => {
@@ -282,7 +343,8 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
 
   const results = useMemo(
     () => ({
-      trainSchedulesWithDetails,
+      trainSchedulesWithDetails:
+        trainSchedulesWithDetails.type === 'ready' ? trainSchedulesWithDetails.data : [],
       trainSchedules,
       projectionData: projectionPath
         ? {

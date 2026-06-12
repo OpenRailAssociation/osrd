@@ -230,6 +230,7 @@
         "not_found_in_tracks": "Voie manquante",
         "pathfinding_failure": "Calcul non abouti",
         "pathfinding_not_found": "Chemin introuvable",
+        "rolling_stock_forbidden": "MR interdit",
         "rolling_stock_not_found": "MR non trouvé",
         "simulation_failed": "Simulation impossible",
         "zero_length_path": "L'origine et la destination sont identiques"
