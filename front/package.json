@@ -119,7 +119,7 @@
     "eslint-plugin-import": "^2.31.0",
     "eslint-plugin-react-hooks": "^7.1.1",
     "glob": "^13.0.6",
-    "happy-dom": "^20.9.0",
+    "happy-dom": "^20.10.2",
     "i18next-fs-backend": "^2.6.6",
     "json-key-path-list": "^2.0.3",
     "openapi-types": "^12.1.3",
