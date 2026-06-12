@@ -138,11 +138,6 @@ export const useOperationalPointSearch = ({
       const largeRes = await search(largePayload(infraId, debouncedTrimmedInput));
       if (cancelled) return;
 
-      if (!largeRes) {
-        resetOpSuggestions();
-        return;
-      }
-
       const suggestionsLarge = buildOpSuggestion(largeRes);
 
       // 2) We try to lock trigram from the "large" call

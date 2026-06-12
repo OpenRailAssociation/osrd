@@ -27,7 +27,6 @@ export const buildOpSuggestion = (
     const existing = map.get(key);
 
     if (!existing) {
-      if (!r.uic) throw new Error(`Operational point ${r.obj_id} has no UIC`);
       const secondaryCodeList = r.secondary_code
         ? [{ code: r.secondary_code, opId: r.obj_id }]
         : [];
