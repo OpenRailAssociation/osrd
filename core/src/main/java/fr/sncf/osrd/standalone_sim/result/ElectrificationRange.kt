@@ -27,14 +27,13 @@ class ElectrificationRange(
     sealed interface ElectrificationUsage {
         data class ElectrifiedUsage(
             val mode: String,
-            @field:Json(name = "mode_handled") val modeHandled: Boolean,
+            @Json(name = "mode_handled") val modeHandled: Boolean,
             val profile: String?,
-            @field:Json(name = "profile_handled") val profileHandled: Boolean,
+            @Json(name = "profile_handled") val profileHandled: Boolean,
         ) : ElectrificationUsage
 
-        data class NeutralUsage(
-            @field:Json(name = "lower_pantograph") val lowerPantograph: Boolean
-        ) : ElectrificationUsage
+        data class NeutralUsage(@Json(name = "lower_pantograph") val lowerPantograph: Boolean) :
+            ElectrificationUsage
 
         class NonElectrifiedUsage : ElectrificationUsage
     }
