@@ -44,7 +44,7 @@ class WorkerLoadEndpoint(
         /** Infra id */
         var infra: String,
         /** Infra version */
-        @field:Json(name = "expected_version") var expectedVersion: Int?,
+        @Json(name = "expected_version") var expectedVersion: Int?,
         /** Timetable ID */
         var timetable: Int?,
     )
