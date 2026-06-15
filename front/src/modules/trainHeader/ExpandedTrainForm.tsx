@@ -3,12 +3,14 @@ import { useCallback, useMemo, useState } from 'react';
 import {
   Button,
   ComboBox,
+  DatePicker,
   DurationInput,
   Input,
   Select,
   Switch,
   TokenInput,
   useDefaultComboBox,
+  type CalendarSlot,
 } from '@osrd-project/ui-core';
 import { ChevronUp } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
@@ -25,7 +27,6 @@ import useCategoryOptions, {
 } from 'modules/rollingStock/hooks/useCategoryOptions';
 import useFilterRollingStock from 'modules/rollingStock/hooks/useFilterRollingStock';
 import type { Train } from 'reducers/osrdconf/types';
-import { useDateTimeLocale } from 'utils/date';
 import { Duration } from 'utils/duration';
 import { usePrevious } from 'utils/hooks/state';
 import { findExceptionInPacedTrainByOccurenceId } from 'utils/trainExceptions';
@@ -35,7 +36,9 @@ import { createFixedSelectOptions, createStandardSelectOptions } from 'utils/uiC
 import ExtraOccurrenceForm from './ExtraOccurrenceForm';
 import ExtraOccurrenceRow from './ExtraOccurrenceRow';
 import type { ExtraOccurrencesChanges } from './TrainHeader';
-import { getShortDepartureDate } from './utils/trainProperties';
+
+// TODO: Passing `undefined` to DatePicker's selectableSlot prop should mean this
+export const ANY_DATE_SLOT: CalendarSlot = { start: new Date(0), end: null };
 
 export type ExpandedTrainFormProps = {
   train: Train;
@@ -59,6 +62,7 @@ type TrainFieldsState = {
   labels: string[];
   added_exception_date: Date;
   rolling_stock_name: string;
+  departure_date: Date;
 };
 
 function getFieldsFromTrain(train: Train): TrainFieldsState {
@@ -74,6 +78,7 @@ function getFieldsFromTrain(train: Train): TrainFieldsState {
     labels: train.labels ?? [],
     added_exception_date: new Date(train.start_time),
     rolling_stock_name: train.rolling_stock_name,
+    departure_date: new Date(train.start_time),
   };
 }
 
@@ -98,6 +103,7 @@ function applyFieldsToTrain(fields: TrainFieldsState, train: Train): Train {
       use_electrical_profiles:
         fields?.use_electrical_profiles === null ? undefined : fields.use_electrical_profiles,
     },
+    start_time: fields.departure_date.valueOf(),
   };
 }
 
@@ -136,7 +142,6 @@ const ExpandedTrainForm = ({
   onItineraryOpened,
 }: ExpandedTrainFormProps) => {
   const { t } = useTranslation(['operational-studies', 'translation']);
-  const dateTimeLocale = useDateTimeLocale();
   const speedLimitTags = useSpeedLimitTags();
   const categoryOptions = useCategoryOptions();
 
@@ -397,12 +402,25 @@ const ExpandedTrainForm = ({
           />
         </div>
         <div className="train-departure-date">
-          <Input
-            id="train-header-departure-date-input"
-            small
-            label={t('manageTrainSchedule.trainHeader.form.departureDate')}
-            value={getShortDepartureDate(train, dateTimeLocale) ?? ''}
-            disabled
+          <DatePicker
+            value={fields.departure_date}
+            isRangeMode={false}
+            inputProps={{
+              id: 'train-header-departure-date-input',
+              label: t('manageTrainSchedule.trainHeader.form.departureDate'),
+              small: true,
+            }}
+            onDateChange={(departureDate) => {
+              if (!departureDate) return;
+              const startTimeDate = new Date(train.start_time);
+              departureDate?.setHours(
+                startTimeDate.getHours(),
+                startTimeDate.getMinutes(),
+                startTimeDate.getSeconds()
+              );
+              onFieldImmediateChange('departure_date', departureDate);
+            }}
+            selectableSlot={ANY_DATE_SLOT}
           />
         </div>
         <div className="train-initial-velocity">
