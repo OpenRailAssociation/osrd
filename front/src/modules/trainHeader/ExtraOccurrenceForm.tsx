@@ -1,14 +1,13 @@
-import { Button, DatePicker, TimePicker, type CalendarSlot } from '@osrd-project/ui-core';
+import { Button, DatePicker, TimePicker } from '@osrd-project/ui-core';
 import { useTranslation } from 'react-i18next';
+
+import { ANY_DATE_SLOT } from './ExpandedTrainForm';
 
 type ExtraOccurrenceFormProps = {
   addedExceptionDate: Date;
   setAddedExceptionDate: (newDate: Date) => void;
   onCreateAddedException: () => void;
 };
-
-// TODO: Passing `undefined` to DatePicker's selectableSlot prop should mean this
-const ANY_DATE_SLOT: CalendarSlot = { start: new Date(0), end: null };
 
 const ExtraOccurrenceForm = ({
   addedExceptionDate,
