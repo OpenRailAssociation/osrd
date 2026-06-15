@@ -310,6 +310,34 @@ impl OperationalPointModel {
             .map(Self::from_row)
             .collect())
     }
+
+    /// Retrieve the list of operational points that match the given (object) IDs
+    ///
+    /// Use this instead of [`OperationalPointModel::retrieve_batch_unchecked`]
+    /// when all the operational points are known to be in the same infra.
+    pub async fn retrieve_from_ids(
+        conn: &mut DbConnection,
+        infra_id: i64,
+        ids: &[String],
+    ) -> Result<Vec<Self>, database::DatabaseError> {
+        use database::tables::infra_object_operational_point::dsl;
+        use diesel::prelude::*;
+        use diesel_async::RunQueryDsl;
+
+        if ids.is_empty() {
+            // We know the result of the SQL query is going to be empty, avoid sending it.
+            return Ok(Vec::new());
+        }
+
+        Ok(dsl::infra_object_operational_point
+            .filter(dsl::infra_id.eq(infra_id))
+            .filter(dsl::obj_id.eq_any(ids))
+            .load(&mut conn.write().await)
+            .await?
+            .into_iter()
+            .map(Self::from_row)
+            .collect())
+    }
 }
 
 #[cfg(test)]

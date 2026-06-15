@@ -436,9 +436,7 @@ async fn retrieve_op_from_ids(
     infra_id: i64,
     ops_id: &[String],
 ) -> Result<Vec<OperationalPointModel>> {
-    let ops_id = ops_id.iter().map(|obj_id| (infra_id, obj_id.clone()));
-    // a check for missing ids is performed later
-    OperationalPointModel::retrieve_batch_unchecked::<_, Vec<_>>(conn, ops_id)
+    OperationalPointModel::retrieve_from_ids(conn, infra_id, ops_id)
         .await
         .map_err(Into::into)
 }
