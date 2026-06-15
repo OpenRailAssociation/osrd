@@ -671,13 +671,13 @@ async fn create_compound_image(
 
 #[cfg(test)]
 pub mod tests {
+    use editoast_models::rolling_stock::ScenarioReference;
     use editoast_models::rolling_stock::TrainMainCategory;
     use itertools::Itertools;
-    use pretty_assertions::assert_eq;
     use serde_json::json;
     use uuid::Uuid;
 
-    use super::*;
+    use super::RollingStockForm;
     use crate::error::InternalError;
     use crate::fixtures::create_fast_rolling_stock;
     use crate::fixtures::create_project;
@@ -689,6 +689,7 @@ pub mod tests {
     use crate::fixtures::simple_paced_train_changeset;
     use crate::views::test_app;
     use crate::views::test_app::TestApp;
+    use editoast_models::prelude::*;
     use editoast_models::rolling_stock::RollingStock;
 
     impl TestApp {
@@ -717,758 +718,815 @@ pub mod tests {
         .expect("Unable to parse example rolling stock")
     }
 
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn create_rolling_stock_successfully() {
-        // GIVEN
-        let app = test_app!().skip_authz().build();
-        let db_pool = app.db_pool();
+    // TODO PR: name submodules and split according to the route, the action, the handler method... ?
+    mod post_create {
+        // at the moment: named after the http request method and the route
+        use super::*;
+        use pretty_assertions::assert_eq;
 
-        let rs_name = "fast_rolling_stock_name";
-        let fast_rolling_stock_form = fast_rolling_stock_form(rs_name);
+        #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+        async fn create_rolling_stock_successfully() {
+            // GIVEN
+            let app = test_app!().skip_authz().build();
+            let db_pool = app.db_pool();
 
-        // WHEN
-        let raw_response = app
-            .rolling_stock_create_request(&fast_rolling_stock_form)
-            .await;
+            let rs_name = "fast_rolling_stock_name";
+            let fast_rolling_stock_form = fast_rolling_stock_form(rs_name);
 
-        // THEN
-        let response: RollingStock = raw_response.assert_status_ok().json();
-        // Check if the rolling stock was created in the database
-        let rolling_stock = RollingStock::retrieve(db_pool.get_ok(), response.id)
-            .await
-            .expect("Failed to retrieve rolling stock")
-            .expect("Rolling stock not found");
+            // WHEN
+            let raw_response = app
+                .rolling_stock_create_request(&fast_rolling_stock_form)
+                .await;
 
-        assert_eq!(rolling_stock.name, rs_name);
-        assert_eq!(
-            fast_rolling_stock_form.startup_time,
-            rolling_stock.startup_time
-        );
-        let rolling_stock: schemas::RollingStock = rolling_stock.into();
-        assert_eq!(
-            rolling_stock
-                .supported_signaling_systems()
-                .contains("ETCS_LEVEL2"),
-            false
-        );
+            // THEN
+            let response: RollingStock = raw_response.assert_status_ok().json();
+            // Check if the rolling stock was created in the database
+            let rolling_stock = RollingStock::retrieve(db_pool.get_ok(), response.id)
+                .await
+                .expect("Failed to retrieve rolling stock")
+                .expect("Rolling stock not found");
+
+            assert_eq!(rolling_stock.name, rs_name);
+            assert_eq!(
+                fast_rolling_stock_form.startup_time,
+                rolling_stock.startup_time
+            );
+            let rolling_stock: schemas::RollingStock = rolling_stock.into();
+            assert_eq!(
+                rolling_stock
+                    .supported_signaling_systems()
+                    .contains("ETCS_LEVEL2"),
+                false
+            );
+        }
+
+        #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+        async fn create_locked_rolling_stock_successfully() {
+            // GIVEN
+            let app = test_app!().skip_authz().build();
+            let db_pool = app.db_pool();
+
+            let locked_rs_name = "locked_fast_rolling_stock_name";
+            let locked_fast_rolling_stock_form = fast_rolling_stock_form(locked_rs_name);
+
+            // WHEN
+            let raw_response = app
+                .post("/rolling_stock?locked=true")
+                .json(&locked_fast_rolling_stock_form)
+                .await;
+
+            // THEN
+            let response: RollingStock = raw_response.assert_status_ok().json();
+            // Check if the rolling stock was created in the database with locked = true
+            let rolling_stock = RollingStock::retrieve(db_pool.get_ok(), response.id)
+                .await
+                .expect("Failed to retrieve rolling stock")
+                .expect("Rolling stock not found");
+
+            assert_eq!(rolling_stock.name, locked_rs_name);
+            assert_eq!(rolling_stock.locked, true);
+        }
+
+        #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+        async fn create_rolling_stock_with_duplicate_name() {
+            let app = test_app!().skip_authz().build();
+            let db_pool = app.db_pool();
+
+            let rs_name = "fast_rolling_stock_name";
+            let _ = create_fast_rolling_stock(&mut db_pool.get_ok(), rs_name).await;
+            let new_fast_rolling_stock_form = fast_rolling_stock_form(rs_name);
+
+            let response: InternalError = app
+                .rolling_stock_create_request(&new_fast_rolling_stock_form)
+                .await
+                .assert_status_bad_request()
+                .json();
+
+            assert_eq!(
+                response.error_type,
+                "editoast:rollingstocks:NameAlreadyUsed"
+            );
+        }
+
+        #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+        async fn create_rolling_stock_with_base_power_class_empty() {
+            // GIVEN
+            let app = test_app!().skip_authz().build();
+
+            let rs_name = "fast_rolling_stock_name";
+            let mut fast_rolling_stock_form = fast_rolling_stock_form(rs_name);
+            fast_rolling_stock_form.base_power_class = Some("".to_string());
+
+            // WHEN
+            let raw_response = app
+                .rolling_stock_create_request(&fast_rolling_stock_form)
+                .await;
+
+            // THEN
+            let response: InternalError = raw_response.assert_status_bad_request().json();
+
+            assert_eq!(
+                response.error_type,
+                "editoast:rollingstocks:BasePowerClassEmpty"
+            );
+        }
+
+        #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+        async fn create_rolling_stock_with_invalid_effort_curve() {
+            let app = test_app!().skip_authz().build();
+
+            let invalid_payload =
+                schemas::fixtures::rolling_stock_with_invalid_effort_curves_json();
+
+            app.post("/rolling_stock")
+                .add_header(
+                    axum::http::header::CONTENT_TYPE,
+                    axum::http::header::HeaderValue::from_str("application/json").unwrap(),
+                )
+                .bytes(invalid_payload.into())
+                .await
+                .assert_status_unprocessable_entity();
+        }
+
+        #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+        async fn create_rolling_stock_with_etcs_brake_params() {
+            // GIVEN
+            let app = test_app!().skip_authz().build();
+            let db_pool = app.db_pool();
+
+            let rolling_stock_form = simple_etcs_level2_rolling_stock();
+
+            // WHEN
+            let response: RollingStock = app
+                .rolling_stock_create_request(&rolling_stock_form)
+                .await
+                .assert_status_ok()
+                .json();
+            // Check if the rolling stock was created in the database
+            let rolling_stock = RollingStock::retrieve(db_pool.get_ok(), response.id)
+                .await
+                .expect("Failed to retrieve rolling stock")
+                .expect("Rolling stock not found");
+
+            let rolling_stock: schemas::RollingStock = rolling_stock.into();
+
+            // THEN
+            assert_eq!(
+                rolling_stock
+                    .supported_signaling_systems()
+                    .contains("ETCS_LEVEL2"),
+                true
+            );
+
+            assert_eq!(rolling_stock.name, rolling_stock_form.name);
+            assert_eq!(rolling_stock_form.startup_time, rolling_stock.startup_time);
+        }
     }
 
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn create_locked_rolling_stock_successfully() {
-        // GIVEN
-        let app = test_app!().skip_authz().build();
-        let db_pool = app.db_pool();
+    mod get_usage {
+        use super::*;
+        use pretty_assertions::assert_eq;
 
-        let locked_rs_name = "locked_fast_rolling_stock_name";
-        let locked_fast_rolling_stock_form = fast_rolling_stock_form(locked_rs_name);
+        #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+        async fn get_rolling_stock_usage_with_no_usage_returns_empty_ok() {
+            let app = test_app!().skip_authz().build();
+            let stock_name = Uuid::new_v4().to_string();
+            let rolling_stock = fast_rolling_stock_form(stock_name.as_str());
+            let RollingStock { id, .. } = app
+                .rolling_stock_create_request(&rolling_stock)
+                .await
+                .assert_status_ok()
+                .json();
+            let related_schedules: Vec<ScenarioReference> = app
+                .get(&format!("/rolling_stock/{id}/usage"))
+                .await
+                .assert_status_ok()
+                .json();
+            assert!(related_schedules.is_empty());
+        }
 
-        // WHEN
-        let raw_response = app
-            .post("/rolling_stock?locked=true")
-            .json(&locked_fast_rolling_stock_form)
-            .await;
+        #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+        async fn get_rolling_stock_usage_with_related_schedules_returns_schedules_list() {
+            let app = test_app!().skip_authz().build();
+            let db_pool = app.db_pool();
 
-        // THEN
-        let response: RollingStock = raw_response.assert_status_ok().json();
-        // Check if the rolling stock was created in the database with locked = true
-        let rolling_stock = RollingStock::retrieve(db_pool.get_ok(), response.id)
-            .await
-            .expect("Failed to retrieve rolling stock")
-            .expect("Rolling stock not found");
+            let create_rolling_stock_request = app.rolling_stock_create_request(
+                &fast_rolling_stock_form(&Uuid::new_v4().to_string()),
+            );
+            let rolling_stock: RollingStock = (create_rolling_stock_request)
+                .await
+                .assert_status_ok()
+                .json();
+            let create_other_rolling_stock_request = app.rolling_stock_create_request(
+                &fast_rolling_stock_form(&Uuid::new_v4().to_string()),
+            );
+            let other_rolling_stock: RollingStock = (create_other_rolling_stock_request)
+                .await
+                .assert_status_ok()
+                .json();
 
-        assert_eq!(rolling_stock.name, locked_rs_name);
-        assert_eq!(rolling_stock.locked, true);
-    }
-
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn create_rolling_stock_with_duplicate_name() {
-        let app = test_app!().skip_authz().build();
-        let db_pool = app.db_pool();
-
-        let rs_name = "fast_rolling_stock_name";
-        let _ = create_fast_rolling_stock(&mut db_pool.get_ok(), rs_name).await;
-        let new_fast_rolling_stock_form = fast_rolling_stock_form(rs_name);
-
-        let response: InternalError = app
-            .rolling_stock_create_request(&new_fast_rolling_stock_form)
-            .await
-            .assert_status_bad_request()
-            .json();
-
-        assert_eq!(
-            response.error_type,
-            "editoast:rollingstocks:NameAlreadyUsed"
-        );
-    }
-
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn get_rolling_stock_usage_with_no_usage_returns_empty_ok() {
-        let app = test_app!().skip_authz().build();
-        let stock_name = Uuid::new_v4().to_string();
-        let rolling_stock = fast_rolling_stock_form(stock_name.as_str());
-        let RollingStock { id, .. } = app
-            .rolling_stock_create_request(&rolling_stock)
-            .await
-            .assert_status_ok()
-            .json();
-        let related_schedules: Vec<ScenarioReference> = app
-            .get(&format!("/rolling_stock/{id}/usage"))
-            .await
-            .assert_status_ok()
-            .json();
-        assert!(related_schedules.is_empty());
-    }
-
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn get_rolling_stock_usage_with_related_schedules_returns_schedules_list() {
-        let app = test_app!().skip_authz().build();
-        let db_pool = app.db_pool();
-
-        let create_rolling_stock_request =
-            app.rolling_stock_create_request(&fast_rolling_stock_form(&Uuid::new_v4().to_string()));
-        let rolling_stock: RollingStock = (create_rolling_stock_request)
-            .await
-            .assert_status_ok()
-            .json();
-        let create_other_rolling_stock_request =
-            app.rolling_stock_create_request(&fast_rolling_stock_form(&Uuid::new_v4().to_string()));
-        let other_rolling_stock: RollingStock = (create_other_rolling_stock_request)
-            .await
-            .assert_status_ok()
-            .json();
-
-        let project = create_project(&mut db_pool.get_ok(), &Uuid::new_v4().to_string()).await;
-        let study = create_study(
-            &mut db_pool.get_ok(),
-            &Uuid::new_v4().to_string(),
-            project.id,
-        )
-        .await;
-
-        let (timetable_1, train_schedule_set_1) =
-            create_timetable_with_train_schedule_set(&mut db_pool.get_ok()).await;
-
-        let (timetable_2, train_schedule_set_2) =
-            create_timetable_with_train_schedule_set(&mut db_pool.get_ok()).await;
-        let (timetable_3, train_schedule_set_3) =
-            create_timetable_with_train_schedule_set(&mut db_pool.get_ok()).await;
-
-        let infra = create_small_infra(&mut db_pool.get_ok()).await;
-        let scenario_1 = create_scenario(
-            &mut db_pool.get_ok(),
-            &Uuid::new_v4().to_string(),
-            study.id,
-            timetable_1.id,
-            infra.id,
-        )
-        .await;
-        let scenario_2 = create_scenario(
-            &mut db_pool.get_ok(),
-            &Uuid::new_v4().to_string(),
-            study.id,
-            timetable_2.id,
-            infra.id,
-        )
-        .await;
-        // scenario_3 will not use the required rolling stock and should thus not be queried
-        let _scenario_3 = create_scenario(
-            &mut db_pool.get_ok(),
-            &Uuid::new_v4().to_string(),
-            study.id,
-            timetable_3.id,
-            infra.id,
-        )
-        .await;
-
-        simple_paced_train_changeset(train_schedule_set_1.id)
-            .rolling_stock_name(rolling_stock.name.clone())
-            .create(&mut db_pool.get_ok())
-            .await
-            .unwrap();
-        simple_paced_train_changeset(train_schedule_set_2.id)
-            .rolling_stock_name(rolling_stock.name)
-            .create(&mut db_pool.get_ok())
-            .await
-            .unwrap();
-        simple_paced_train_changeset(train_schedule_set_3.id)
-            .rolling_stock_name(other_rolling_stock.name)
-            .create(&mut db_pool.get_ok())
-            .await
-            .unwrap();
-
-        let related_scenarios: Vec<ScenarioReference> = app
-            .get(&format!("/rolling_stock/{}/usage", rolling_stock.id))
-            .await
-            .assert_status_ok()
-            .json();
-        let expected_scenarios = [
-            ScenarioReference {
-                project_id: project.id,
-                project_name: project.name.clone(),
-                study_id: study.id,
-                study_name: study.name.clone(),
-                scenario_id: scenario_1.id,
-                scenario_name: scenario_1.name.clone(),
-            },
-            ScenarioReference {
-                project_id: project.id,
-                project_name: project.name.clone(),
-                study_id: study.id,
-                study_name: study.name.clone(),
-                scenario_id: scenario_2.id,
-                scenario_name: scenario_2.name.clone(),
-            },
-        ];
-        assert_eq!(
-            related_scenarios.iter().sorted().collect_vec(),
-            expected_scenarios.iter().sorted().collect_vec()
-        );
-    }
-
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn get_invalid_rolling_stock_id_returns_404_not_found() {
-        let app = test_app!().skip_authz().build();
-        let db_pool = app.db_pool();
-        let _ = RollingStock::delete_static(&mut db_pool.get_ok(), 1).await;
-
-        app.get("/rolling_stock/1/usage")
-            .await
-            .assert_status_not_found();
-    }
-
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn create_rolling_stock_with_base_power_class_empty() {
-        // GIVEN
-        let app = test_app!().skip_authz().build();
-
-        let rs_name = "fast_rolling_stock_name";
-        let mut fast_rolling_stock_form = fast_rolling_stock_form(rs_name);
-        fast_rolling_stock_form.base_power_class = Some("".to_string());
-
-        // WHEN
-        let raw_response = app
-            .rolling_stock_create_request(&fast_rolling_stock_form)
-            .await;
-
-        // THEN
-        let response: InternalError = raw_response.assert_status_bad_request().json();
-
-        assert_eq!(
-            response.error_type,
-            "editoast:rollingstocks:BasePowerClassEmpty"
-        );
-    }
-
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn create_rolling_stock_with_invalid_effort_curve() {
-        let app = test_app!().skip_authz().build();
-
-        let invalid_payload = schemas::fixtures::rolling_stock_with_invalid_effort_curves_json();
-
-        app.post("/rolling_stock")
-            .add_header(
-                axum::http::header::CONTENT_TYPE,
-                axum::http::header::HeaderValue::from_str("application/json").unwrap(),
+            let project = create_project(&mut db_pool.get_ok(), &Uuid::new_v4().to_string()).await;
+            let study = create_study(
+                &mut db_pool.get_ok(),
+                &Uuid::new_v4().to_string(),
+                project.id,
             )
-            .bytes(invalid_payload.into())
-            .await
-            .assert_status_unprocessable_entity();
-    }
-
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn create_rolling_stock_with_etcs_brake_params() {
-        // GIVEN
-        let app = test_app!().skip_authz().build();
-        let db_pool = app.db_pool();
-
-        let rolling_stock_form = simple_etcs_level2_rolling_stock();
-
-        // WHEN
-        let response: RollingStock = app
-            .rolling_stock_create_request(&rolling_stock_form)
-            .await
-            .assert_status_ok()
-            .json();
-        // Check if the rolling stock was created in the database
-        let rolling_stock = RollingStock::retrieve(db_pool.get_ok(), response.id)
-            .await
-            .expect("Failed to retrieve rolling stock")
-            .expect("Rolling stock not found");
-
-        let rolling_stock: schemas::RollingStock = rolling_stock.into();
-
-        // THEN
-        assert_eq!(
-            rolling_stock
-                .supported_signaling_systems()
-                .contains("ETCS_LEVEL2"),
-            true
-        );
-
-        assert_eq!(rolling_stock.name, rolling_stock_form.name);
-        assert_eq!(rolling_stock_form.startup_time, rolling_stock.startup_time);
-    }
-
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn get_rolling_stock_by_id() {
-        // GIVEN
-        let app = test_app!().skip_authz().build();
-        let db_pool = app.db_pool();
-
-        let rs_name = "fast_rolling_stock_name";
-        let fast_rolling_stock = create_fast_rolling_stock(&mut db_pool.get_ok(), rs_name).await;
-
-        // WHEN
-        let raw_response = app
-            .rolling_stock_get_by_id_request(fast_rolling_stock.id)
             .await;
 
-        // THEN
-        let response: RollingStock = raw_response.assert_status_ok().json();
+            let (timetable_1, train_schedule_set_1) =
+                create_timetable_with_train_schedule_set(&mut db_pool.get_ok()).await;
 
-        assert_eq!(response, fast_rolling_stock);
-    }
+            let (timetable_2, train_schedule_set_2) =
+                create_timetable_with_train_schedule_set(&mut db_pool.get_ok()).await;
+            let (timetable_3, train_schedule_set_3) =
+                create_timetable_with_train_schedule_set(&mut db_pool.get_ok()).await;
 
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn get_rolling_stock_by_name() {
-        // GIVEN
-        let app = test_app!().skip_authz().build();
-        let db_pool = app.db_pool();
-
-        let rs_name = "fast_rolling_stock_name";
-        let fast_rolling_stock = create_fast_rolling_stock(&mut db_pool.get_ok(), rs_name).await;
-
-        // WHEN
-        let raw_response = app
-            .get(format!("/rolling_stock/name/{rs_name}").as_str())
+            let infra = create_small_infra(&mut db_pool.get_ok()).await;
+            let scenario_1 = create_scenario(
+                &mut db_pool.get_ok(),
+                &Uuid::new_v4().to_string(),
+                study.id,
+                timetable_1.id,
+                infra.id,
+            )
+            .await;
+            let scenario_2 = create_scenario(
+                &mut db_pool.get_ok(),
+                &Uuid::new_v4().to_string(),
+                study.id,
+                timetable_2.id,
+                infra.id,
+            )
+            .await;
+            // scenario_3 will not use the required rolling stock and should thus not be queried
+            let _scenario_3 = create_scenario(
+                &mut db_pool.get_ok(),
+                &Uuid::new_v4().to_string(),
+                study.id,
+                timetable_3.id,
+                infra.id,
+            )
             .await;
 
-        // THEN
-        let response: RollingStock = raw_response.assert_status_ok().json();
-
-        assert_eq!(response, fast_rolling_stock);
-    }
-
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn get_unexisting_rolling_stock_by_id() {
-        let app = test_app!().skip_authz().build();
-
-        app.rolling_stock_get_by_id_request(0)
-            .await
-            .assert_status_not_found();
-    }
-
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn get_unexisting_rolling_stock_by_name() {
-        let app = test_app!().skip_authz().build();
-
-        app.get(format!("/rolling_stock/name/{}", "unexisting_rolling_stock_name").as_str())
-            .await
-            .assert_status_not_found();
-    }
-
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn update_unlocked_rolling_stock() {
-        // GIVEN
-        let app = test_app!().skip_authz().build();
-        let db_pool = app.db_pool();
-
-        let rs_name = "fast_rolling_stock_name";
-
-        let fast_rolling_stock = create_fast_rolling_stock(&mut db_pool.get_ok(), rs_name).await;
-
-        let mut rolling_stock_form: RollingStockForm = fast_rolling_stock.clone().into();
-        let updated_rs_name = "updated_fast_rolling_stock_name";
-        rolling_stock_form.name = updated_rs_name.to_string();
-
-        // WHEN
-        let raw_response = app
-            .put(format!("/rolling_stock/{}", fast_rolling_stock.id).as_str())
-            .json(&&rolling_stock_form)
-            .await;
-
-        // THEN
-        raw_response.assert_status_ok();
-
-        let updated_rolling_stock: RollingStock =
-            RollingStock::retrieve(db_pool.get_ok(), fast_rolling_stock.id)
+            simple_paced_train_changeset(train_schedule_set_1.id)
+                .rolling_stock_name(rolling_stock.name.clone())
+                .create(&mut db_pool.get_ok())
                 .await
-                .expect("Failed to retrieve rolling stock")
-                .expect("Rolling stock not found");
+                .unwrap();
+            simple_paced_train_changeset(train_schedule_set_2.id)
+                .rolling_stock_name(rolling_stock.name)
+                .create(&mut db_pool.get_ok())
+                .await
+                .unwrap();
+            simple_paced_train_changeset(train_schedule_set_3.id)
+                .rolling_stock_name(other_rolling_stock.name)
+                .create(&mut db_pool.get_ok())
+                .await
+                .unwrap();
 
-        assert_eq!(updated_rolling_stock.name, updated_rs_name);
-        assert_eq!(
-            updated_rolling_stock.version,
-            fast_rolling_stock.version + 1
-        );
+            let related_scenarios: Vec<ScenarioReference> = app
+                .get(&format!("/rolling_stock/{}/usage", rolling_stock.id))
+                .await
+                .assert_status_ok()
+                .json();
+            let expected_scenarios = [
+                ScenarioReference {
+                    project_id: project.id,
+                    project_name: project.name.clone(),
+                    study_id: study.id,
+                    study_name: study.name.clone(),
+                    scenario_id: scenario_1.id,
+                    scenario_name: scenario_1.name.clone(),
+                },
+                ScenarioReference {
+                    project_id: project.id,
+                    project_name: project.name.clone(),
+                    study_id: study.id,
+                    study_name: study.name.clone(),
+                    scenario_id: scenario_2.id,
+                    scenario_name: scenario_2.name.clone(),
+                },
+            ];
+            assert_eq!(
+                related_scenarios.iter().sorted().collect_vec(),
+                expected_scenarios.iter().sorted().collect_vec()
+            );
+        }
+
+        #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+        async fn get_invalid_rolling_stock_id_returns_404_not_found() {
+            let app = test_app!().skip_authz().build();
+            let db_pool = app.db_pool();
+            let _ = RollingStock::delete_static(&mut db_pool.get_ok(), 1).await;
+
+            app.get("/rolling_stock/1/usage")
+                .await
+                .assert_status_not_found();
+        }
     }
 
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn update_rolling_stock_with_new_categories() {
-        // GIVEN
-        let app = test_app!().skip_authz().build();
-        let db_pool = app.db_pool();
+    mod get {
+        use super::*;
+        use pretty_assertions::assert_eq;
 
-        let fast_rolling_stock =
-            create_fast_rolling_stock(&mut db_pool.get_ok(), "fast_rolling_stock_with_categories")
+        #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+        async fn get_rolling_stock_by_id() {
+            // GIVEN
+            let app = test_app!().skip_authz().build();
+            let db_pool = app.db_pool();
+
+            let rs_name = "fast_rolling_stock_name";
+            let fast_rolling_stock =
+                create_fast_rolling_stock(&mut db_pool.get_ok(), rs_name).await;
+
+            // WHEN
+            let raw_response = app
+                .rolling_stock_get_by_id_request(fast_rolling_stock.id)
                 .await;
 
-        assert_eq!(
-            fast_rolling_stock.primary_category,
-            TrainMainCategory(schemas::rolling_stock::TrainMainCategory::CommuterTrain,)
-        );
-        assert_eq!(fast_rolling_stock.other_categories, vec![]);
+            // THEN
+            let response: RollingStock = raw_response.assert_status_ok().json();
 
-        let mut rolling_stock_form: RollingStockForm = fast_rolling_stock.clone().into();
-        let primary_category =
-            TrainMainCategory(schemas::rolling_stock::TrainMainCategory::HighSpeedTrain);
-        rolling_stock_form.primary_category = *primary_category.clone();
-        let other_categories = vec![schemas::rolling_stock::TrainMainCategory::RegionalTrain];
-        rolling_stock_form.other_categories = other_categories;
+            assert_eq!(response, fast_rolling_stock);
+        }
 
-        // WHEN
-        let raw_response = app
-            .put(format!("/rolling_stock/{}", fast_rolling_stock.id).as_str())
-            .json(&&rolling_stock_form)
-            .await;
+        #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+        async fn get_unexisting_rolling_stock_by_id() {
+            let app = test_app!().skip_authz().build();
 
-        // THEN
-        raw_response.assert_status_ok();
-
-        let updated_rolling_stock: RollingStock =
-            RollingStock::retrieve(db_pool.get_ok(), fast_rolling_stock.id)
+            app.rolling_stock_get_by_id_request(0)
                 .await
-                .expect("Failed to retrieve rolling stock")
-                .expect("Rolling stock not found");
-
-        assert_eq!(
-            updated_rolling_stock.version,
-            fast_rolling_stock.version + 1
-        );
-        assert_eq!(updated_rolling_stock.primary_category, primary_category);
-        assert_eq!(
-            updated_rolling_stock.other_categories,
-            vec![TrainMainCategory(
-                schemas::rolling_stock::TrainMainCategory::RegionalTrain
-            )]
-        );
+                .assert_status_not_found();
+        }
     }
 
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn update_rolling_stock_categories_should_fail_when_invalid() {
-        // GIVEN
-        let app = test_app!().skip_authz().build();
-        let db_pool = app.db_pool();
+    mod get_name {
+        use super::*;
+        use pretty_assertions::assert_eq;
 
-        let fast_rolling_stock =
-            create_fast_rolling_stock(&mut db_pool.get_ok(), "fast_rolling_stock_with_categories")
+        #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+        async fn get_rolling_stock_by_name() {
+            // GIVEN
+            let app = test_app!().skip_authz().build();
+            let db_pool = app.db_pool();
+
+            let rs_name = "fast_rolling_stock_name";
+            let fast_rolling_stock =
+                create_fast_rolling_stock(&mut db_pool.get_ok(), rs_name).await;
+
+            // WHEN
+            let raw_response = app
+                .get(format!("/rolling_stock/name/{rs_name}").as_str())
                 .await;
 
-        let mut rolling_stock_form: RollingStockForm = fast_rolling_stock.clone().into();
-        let primary_category =
-            TrainMainCategory(schemas::rolling_stock::TrainMainCategory::HighSpeedTrain);
-        rolling_stock_form.primary_category = *primary_category.clone();
-        let other_categories = vec![*primary_category.clone()];
-        rolling_stock_form.other_categories = other_categories.clone();
+            // THEN
+            let response: RollingStock = raw_response.assert_status_ok().json();
 
-        // WHEN
-        let raw_response = app
-            .put(format!("/rolling_stock/{}", fast_rolling_stock.id).as_str())
-            .json(&&rolling_stock_form)
+            assert_eq!(response, fast_rolling_stock);
+        }
+
+        #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+        async fn get_unexisting_rolling_stock_by_name() {
+            let app = test_app!().skip_authz().build();
+
+            app.get(format!("/rolling_stock/name/{}", "unexisting_rolling_stock_name").as_str())
+                .await
+                .assert_status_not_found();
+        }
+    }
+
+    mod put {
+        use super::*;
+        use pretty_assertions::assert_eq;
+
+        #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+        async fn update_unlocked_rolling_stock() {
+            // GIVEN
+            let app = test_app!().skip_authz().build();
+            let db_pool = app.db_pool();
+
+            let rs_name = "fast_rolling_stock_name";
+
+            let fast_rolling_stock =
+                create_fast_rolling_stock(&mut db_pool.get_ok(), rs_name).await;
+
+            let mut rolling_stock_form: RollingStockForm = fast_rolling_stock.clone().into();
+            let updated_rs_name = "updated_fast_rolling_stock_name";
+            rolling_stock_form.name = updated_rs_name.to_string();
+
+            // WHEN
+            let raw_response = app
+                .put(format!("/rolling_stock/{}", fast_rolling_stock.id).as_str())
+                .json(&&rolling_stock_form)
+                .await;
+
+            // THEN
+            raw_response.assert_status_ok();
+
+            let updated_rolling_stock: RollingStock =
+                RollingStock::retrieve(db_pool.get_ok(), fast_rolling_stock.id)
+                    .await
+                    .expect("Failed to retrieve rolling stock")
+                    .expect("Rolling stock not found");
+
+            assert_eq!(updated_rolling_stock.name, updated_rs_name);
+            assert_eq!(
+                updated_rolling_stock.version,
+                fast_rolling_stock.version + 1
+            );
+        }
+
+        #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+        async fn update_rolling_stock_with_new_categories() {
+            // GIVEN
+            let app = test_app!().skip_authz().build();
+            let db_pool = app.db_pool();
+
+            let fast_rolling_stock = create_fast_rolling_stock(
+                &mut db_pool.get_ok(),
+                "fast_rolling_stock_with_categories",
+            )
             .await;
 
-        // THEN
-        let response = raw_response.assert_status_unprocessable_entity().text();
-        assert_eq!(
-            response,
-            "Failed to deserialize the JSON body into the target type: invalid rolling-stock: primary_category: The primary_category cannot be listed in other_categories for rolling stocks."
-        );
+            assert_eq!(
+                fast_rolling_stock.primary_category,
+                TrainMainCategory(schemas::rolling_stock::TrainMainCategory::CommuterTrain,)
+            );
+            assert_eq!(fast_rolling_stock.other_categories, vec![]);
 
-        let updated_rolling_stock: RollingStock =
-            RollingStock::retrieve(db_pool.get_ok(), fast_rolling_stock.id)
-                .await
-                .expect("Failed to retrieve rolling stock")
-                .expect("Rolling stock not found");
+            let mut rolling_stock_form: RollingStockForm = fast_rolling_stock.clone().into();
+            let primary_category =
+                TrainMainCategory(schemas::rolling_stock::TrainMainCategory::HighSpeedTrain);
+            rolling_stock_form.primary_category = *primary_category.clone();
+            let other_categories = vec![schemas::rolling_stock::TrainMainCategory::RegionalTrain];
+            rolling_stock_form.other_categories = other_categories;
 
-        assert_eq!(updated_rolling_stock.version, fast_rolling_stock.version);
-    }
+            // WHEN
+            let raw_response = app
+                .put(format!("/rolling_stock/{}", fast_rolling_stock.id).as_str())
+                .json(&&rolling_stock_form)
+                .await;
 
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn update_rolling_stock_failure_name_already_used() {
-        // GIVEN
-        let app = test_app!().skip_authz().build();
-        let db_pool = app.db_pool();
+            // THEN
+            raw_response.assert_status_ok();
 
-        let first_rs_name = "first_fast_rolling_stock_name";
-        let first_fast_rolling_stock =
-            create_fast_rolling_stock(&mut db_pool.get_ok(), first_rs_name).await;
+            let updated_rolling_stock: RollingStock =
+                RollingStock::retrieve(db_pool.get_ok(), fast_rolling_stock.id)
+                    .await
+                    .expect("Failed to retrieve rolling stock")
+                    .expect("Rolling stock not found");
 
-        let second_rs_name = "second_fast_rolling_stock_name";
-        let second_fast_rolling_stock =
-            create_rolling_stock_with_energy_sources(&mut db_pool.get_ok(), second_rs_name).await;
+            assert_eq!(
+                updated_rolling_stock.version,
+                fast_rolling_stock.version + 1
+            );
+            assert_eq!(updated_rolling_stock.primary_category, primary_category);
+            assert_eq!(
+                updated_rolling_stock.other_categories,
+                vec![TrainMainCategory(
+                    schemas::rolling_stock::TrainMainCategory::RegionalTrain
+                )]
+            );
+        }
 
-        let second_fast_rolling_stock_form: RollingStockForm = second_fast_rolling_stock.into();
+        #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+        async fn update_rolling_stock_categories_should_fail_when_invalid() {
+            // GIVEN
+            let app = test_app!().skip_authz().build();
+            let db_pool = app.db_pool();
 
-        // WHEN
-        let raw_response = app
-            .put(format!("/rolling_stock/{}", first_fast_rolling_stock.id).as_str())
-            .json(&second_fast_rolling_stock_form)
+            let fast_rolling_stock = create_fast_rolling_stock(
+                &mut db_pool.get_ok(),
+                "fast_rolling_stock_with_categories",
+            )
             .await;
 
-        // THEN
-        let response: InternalError = raw_response.assert_status_bad_request().json();
+            let mut rolling_stock_form: RollingStockForm = fast_rolling_stock.clone().into();
+            let primary_category =
+                TrainMainCategory(schemas::rolling_stock::TrainMainCategory::HighSpeedTrain);
+            rolling_stock_form.primary_category = *primary_category.clone();
+            let other_categories = vec![*primary_category.clone()];
+            rolling_stock_form.other_categories = other_categories.clone();
 
-        assert_eq!(
-            response.error_type,
-            "editoast:rollingstocks:NameAlreadyUsed"
-        );
+            // WHEN
+            let raw_response = app
+                .put(format!("/rolling_stock/{}", fast_rolling_stock.id).as_str())
+                .json(&&rolling_stock_form)
+                .await;
+
+            // THEN
+            let response = raw_response.assert_status_unprocessable_entity().text();
+            assert_eq!(
+                response,
+                "Failed to deserialize the JSON body into the target type: invalid rolling-stock: primary_category: The primary_category cannot be listed in other_categories for rolling stocks."
+            );
+
+            let updated_rolling_stock: RollingStock =
+                RollingStock::retrieve(db_pool.get_ok(), fast_rolling_stock.id)
+                    .await
+                    .expect("Failed to retrieve rolling stock")
+                    .expect("Rolling stock not found");
+
+            assert_eq!(updated_rolling_stock.version, fast_rolling_stock.version);
+        }
+
+        #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+        async fn update_rolling_stock_failure_name_already_used() {
+            // GIVEN
+            let app = test_app!().skip_authz().build();
+            let db_pool = app.db_pool();
+
+            let first_rs_name = "first_fast_rolling_stock_name";
+            let first_fast_rolling_stock =
+                create_fast_rolling_stock(&mut db_pool.get_ok(), first_rs_name).await;
+
+            let second_rs_name = "second_fast_rolling_stock_name";
+            let second_fast_rolling_stock =
+                create_rolling_stock_with_energy_sources(&mut db_pool.get_ok(), second_rs_name)
+                    .await;
+
+            let second_fast_rolling_stock_form: RollingStockForm = second_fast_rolling_stock.into();
+
+            // WHEN
+            let raw_response = app
+                .put(format!("/rolling_stock/{}", first_fast_rolling_stock.id).as_str())
+                .json(&second_fast_rolling_stock_form)
+                .await;
+
+            // THEN
+            let response: InternalError = raw_response.assert_status_bad_request().json();
+
+            assert_eq!(
+                response.error_type,
+                "editoast:rollingstocks:NameAlreadyUsed"
+            );
+        }
+
+        #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+        async fn update_locked_rolling_stock_fails() {
+            // GIVEN
+            let app = test_app!().skip_authz().build();
+            let db_pool = app.db_pool();
+
+            let locked_rs_name = "locked_fast_rolling_stock_name";
+            let locked_fast_rolling_stock_changeset =
+                Changeset::<RollingStock>::from(schemas::fixtures::fast_rolling_stock())
+                    .name(locked_rs_name.to_owned())
+                    .locked(true)
+                    .version(0);
+            let locked_fast_rolling_stock = locked_fast_rolling_stock_changeset
+                .create(&mut db_pool.get_ok())
+                .await
+                .expect("Failed to create rolling stock");
+
+            let mut second_fast_rolling_stock_form: RollingStockForm =
+                schemas::fixtures::fast_rolling_stock();
+            second_fast_rolling_stock_form.name = "second_fast_rolling_stock_name".to_owned();
+
+            // WHEN
+            let raw_response = app
+                .put(format!("/rolling_stock/{}", locked_fast_rolling_stock.id).as_str())
+                .json(&second_fast_rolling_stock_form)
+                .await;
+
+            // THEN
+            let response: InternalError = raw_response.assert_status_conflict().json();
+            assert_eq!(response.error_type, "editoast:rollingstocks:IsLocked");
+        }
     }
 
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn update_locked_rolling_stock_fails() {
-        // GIVEN
-        let app = test_app!().skip_authz().build();
-        let db_pool = app.db_pool();
+    // TODO PR: what to do with path parameters in the module name ?
+    mod patch_locked {
+        use super::*;
+        use pretty_assertions::assert_eq;
 
-        let locked_rs_name = "locked_fast_rolling_stock_name";
-        let locked_fast_rolling_stock_changeset =
-            Changeset::<RollingStock>::from(schemas::fixtures::fast_rolling_stock())
-                .name(locked_rs_name.to_owned())
-                .locked(true)
-                .version(0);
-        let locked_fast_rolling_stock = locked_fast_rolling_stock_changeset
-            .create(&mut db_pool.get_ok())
-            .await
-            .expect("Failed to create rolling stock");
+        #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+        async fn patch_lock_rolling_stock_failed() {
+            let app = test_app!().skip_authz().build();
 
-        let mut second_fast_rolling_stock_form: RollingStockForm =
-            schemas::fixtures::fast_rolling_stock();
-        second_fast_rolling_stock_form.name = "second_fast_rolling_stock_name".to_owned();
+            let id: i64 = rand::random();
+            app.patch(&format!("/rolling_stock/{id}/locked"))
+                .json(&json!({ "locked": true }))
+                .await
+                .assert_status_not_found();
+        }
 
-        // WHEN
-        let raw_response = app
-            .put(format!("/rolling_stock/{}", locked_fast_rolling_stock.id).as_str())
-            .json(&second_fast_rolling_stock_form)
+        #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+        async fn patch_lock_rolling_stock_successfully() {
+            let app = test_app!().skip_authz().build();
+            let db_pool = app.db_pool();
+
+            let rs_name = "fast_rolling_stock_name";
+            let fast_rolling_stock =
+                create_fast_rolling_stock(&mut db_pool.get_ok(), rs_name).await;
+
+            assert!(!fast_rolling_stock.locked);
+
+            app.patch(format!("/rolling_stock/{}/locked", fast_rolling_stock.id).as_str())
+                .json(&json!({ "locked": true }))
+                .await
+                .assert_status_no_content();
+
+            let fast_rolling_stock: RollingStock =
+                RollingStock::retrieve(db_pool.get_ok(), fast_rolling_stock.id)
+                    .await
+                    .expect("Failed to retrieve rolling stock")
+                    .expect("Rolling stock not found");
+
+            assert_eq!(fast_rolling_stock.locked, true)
+        }
+
+        #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+        async fn patch_unlock_rolling_stock_successfully() {
+            let app = test_app!().skip_authz().build();
+            let db_pool = app.db_pool();
+
+            let locked_rs_name = "locked_fast_rolling_stock_name";
+            let locked_fast_rolling_stock_changeset =
+                Changeset::<RollingStock>::from(schemas::fixtures::fast_rolling_stock())
+                    .name(locked_rs_name.to_owned())
+                    .locked(true)
+                    .version(0);
+            let locked_fast_rolling_stock = locked_fast_rolling_stock_changeset
+                .create(&mut db_pool.get_ok())
+                .await
+                .expect("Failed to create rolling stock");
+            assert!(locked_fast_rolling_stock.locked);
+
+            app.patch(format!("/rolling_stock/{}/locked", locked_fast_rolling_stock.id).as_str())
+                .json(&json!({ "locked": false }))
+                .await
+                .assert_status_no_content();
+
+            let fast_rolling_stock: RollingStock =
+                RollingStock::retrieve(db_pool.get_ok(), locked_fast_rolling_stock.id)
+                    .await
+                    .expect("Failed to retrieve rolling stock")
+                    .expect("Rolling stock not found");
+
+            assert!(!fast_rolling_stock.locked);
+        }
+    }
+
+    mod get_power_restrictions {
+        use super::*;
+
+        #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+        async fn get_power_restrictions_list() {
+            // GIVEN
+            let app = test_app!().skip_authz().build();
+            let db_pool = app.db_pool();
+
+            let rs_name = "fast_rolling_stock_name";
+            let fast_rolling_stock =
+                create_fast_rolling_stock(&mut db_pool.get_ok(), rs_name).await;
+            let power_restrictions = fast_rolling_stock.power_restrictions.clone();
+
+            // WHEN
+            let raw_response = app.get("/rolling_stock/power_restrictions").await;
+
+            // THEN
+            let response: Vec<String> = raw_response.assert_status_ok().json();
+            let power_restrictions = serde_json::to_string(&power_restrictions)
+                .expect("Failed to convert power_restrictions to string");
+            assert!(power_restrictions.contains(&"C2".to_string()));
+            assert!(power_restrictions.contains(&"C5".to_string()));
+            assert!(response.contains(&"C2".to_string()));
+            assert!(response.contains(&"C5".to_string()));
+        }
+    }
+
+    mod delete {
+        use super::*;
+        use pretty_assertions::assert_eq;
+
+        #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+        async fn delete_locked_rolling_stock_fails() {
+            // GIVEN
+            let app = test_app!().skip_authz().build();
+            let db_pool = app.db_pool();
+
+            let locked_rs_name = "locked_fast_rolling_stock_name";
+            let locked_fast_rolling_stock_changeset =
+                Changeset::<RollingStock>::from(schemas::fixtures::fast_rolling_stock())
+                    .name(locked_rs_name.to_owned())
+                    .locked(true)
+                    .version(0);
+            let locked_fast_rolling_stock = locked_fast_rolling_stock_changeset
+                .create(&mut db_pool.get_ok())
+                .await
+                .expect("Failed to create rolling stock");
+
+            // WHEN
+            let raw_response = app
+                .delete(format!("/rolling_stock/{}", locked_fast_rolling_stock.id).as_str())
+                .await;
+
+            // THEN
+            let response: InternalError = raw_response.assert_status_conflict().json();
+
+            assert_eq!(response.error_type, "editoast:rollingstocks:IsLocked");
+
+            let rolling_stock_exists =
+                RollingStock::exists(&mut db_pool.get_ok(), locked_fast_rolling_stock.id)
+                    .await
+                    .expect("Failed to check if rolling stock exists");
+
+            assert!(rolling_stock_exists);
+        }
+
+        #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+        async fn delete_unlocked_unused_rolling_stock_succeeds() {
+            // GIVEN
+            let app = test_app!().skip_authz().build();
+            let db_pool = app.db_pool();
+
+            let rs_name = "fast_rolling_stock_name";
+            let fast_rolling_stock =
+                create_fast_rolling_stock(&mut db_pool.get_ok(), rs_name).await;
+            assert!(!fast_rolling_stock.locked);
+
+            // WHEN
+            let raw_response = app
+                .delete(format!("/rolling_stock/{}", fast_rolling_stock.id).as_str())
+                .await;
+
+            // THEN
+            raw_response.assert_status_no_content();
+
+            let rolling_stock_exists =
+                RollingStock::exists(&mut db_pool.get_ok(), fast_rolling_stock.id)
+                    .await
+                    .expect("Failed to check if rolling stock exists");
+            assert!(!rolling_stock_exists);
+        }
+
+        #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+        async fn delete_unlocked_used_rolling_stock_requires_force_flag() {
+            // GIVEN
+            let app = test_app!().skip_authz().build();
+            let db_pool = app.db_pool();
+
+            let rs_name = "fast_rolling_stock_name";
+            let fast_rolling_stock =
+                create_fast_rolling_stock(&mut db_pool.get_ok(), rs_name).await;
+            assert!(!fast_rolling_stock.locked);
+
+            let project = create_project(&mut db_pool.get_ok(), &Uuid::new_v4().to_string()).await;
+            let study = create_study(
+                &mut db_pool.get_ok(),
+                &Uuid::new_v4().to_string(),
+                project.id,
+            )
+            .await;
+            let (timetable, train_schedule_set) =
+                create_timetable_with_train_schedule_set(&mut db_pool.get_ok()).await;
+            let infra = create_small_infra(&mut db_pool.get_ok()).await;
+            create_scenario(
+                &mut db_pool.get_ok(),
+                &Uuid::new_v4().to_string(),
+                study.id,
+                timetable.id,
+                infra.id,
+            )
             .await;
 
-        // THEN
-        let response: InternalError = raw_response.assert_status_conflict().json();
-        assert_eq!(response.error_type, "editoast:rollingstocks:IsLocked");
-    }
-
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn patch_lock_rolling_stock_failed() {
-        let app = test_app!().skip_authz().build();
-
-        let id: i64 = rand::random();
-        app.patch(&format!("/rolling_stock/{id}/locked"))
-            .json(&json!({ "locked": true }))
-            .await
-            .assert_status_not_found();
-    }
-
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn patch_lock_rolling_stock_successfully() {
-        let app = test_app!().skip_authz().build();
-        let db_pool = app.db_pool();
-
-        let rs_name = "fast_rolling_stock_name";
-        let fast_rolling_stock = create_fast_rolling_stock(&mut db_pool.get_ok(), rs_name).await;
-
-        assert!(!fast_rolling_stock.locked);
-
-        app.patch(format!("/rolling_stock/{}/locked", fast_rolling_stock.id).as_str())
-            .json(&json!({ "locked": true }))
-            .await
-            .assert_status_no_content();
-
-        let fast_rolling_stock: RollingStock =
-            RollingStock::retrieve(db_pool.get_ok(), fast_rolling_stock.id)
+            simple_paced_train_changeset(train_schedule_set.id)
+                .rolling_stock_name(fast_rolling_stock.name.clone())
+                .create(&mut db_pool.get_ok())
                 .await
-                .expect("Failed to retrieve rolling stock")
-                .expect("Rolling stock not found");
+                .expect("Failed to create paced train");
 
-        assert_eq!(fast_rolling_stock.locked, true)
-    }
+            // WHEN
+            let raw_response = app
+                .delete(format!("/rolling_stock/{}", fast_rolling_stock.id).as_str())
+                .await;
 
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn patch_unlock_rolling_stock_successfully() {
-        let app = test_app!().skip_authz().build();
-        let db_pool = app.db_pool();
+            // THEN
+            let response: InternalError = raw_response.assert_status_conflict().json();
+            assert_eq!(response.error_type, "editoast:rollingstocks:IsUsed");
 
-        let locked_rs_name = "locked_fast_rolling_stock_name";
-        let locked_fast_rolling_stock_changeset =
-            Changeset::<RollingStock>::from(schemas::fixtures::fast_rolling_stock())
-                .name(locked_rs_name.to_owned())
-                .locked(true)
-                .version(0);
-        let locked_fast_rolling_stock = locked_fast_rolling_stock_changeset
-            .create(&mut db_pool.get_ok())
-            .await
-            .expect("Failed to create rolling stock");
-        assert!(locked_fast_rolling_stock.locked);
+            let rolling_stock_exists =
+                RollingStock::exists(&mut db_pool.get_ok(), fast_rolling_stock.id)
+                    .await
+                    .expect("Failed to check if rolling stock exists");
 
-        app.patch(format!("/rolling_stock/{}/locked", locked_fast_rolling_stock.id).as_str())
-            .json(&json!({ "locked": false }))
-            .await
-            .assert_status_no_content();
+            assert!(rolling_stock_exists);
 
-        let fast_rolling_stock: RollingStock =
-            RollingStock::retrieve(db_pool.get_ok(), locked_fast_rolling_stock.id)
-                .await
-                .expect("Failed to retrieve rolling stock")
-                .expect("Rolling stock not found");
+            // WHEN
+            let raw_response_forced = app
+                .delete(format!("/rolling_stock/{}?force=true", fast_rolling_stock.id).as_str())
+                .await;
 
-        assert!(!fast_rolling_stock.locked);
-    }
+            // THEN
+            raw_response_forced.assert_status_no_content();
 
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn get_power_restrictions_list() {
-        // GIVEN
-        let app = test_app!().skip_authz().build();
-        let db_pool = app.db_pool();
+            let rolling_stock_exists =
+                RollingStock::exists(&mut db_pool.get_ok(), fast_rolling_stock.id)
+                    .await
+                    .expect("Failed to check if rolling stock exists");
 
-        let rs_name = "fast_rolling_stock_name";
-        let fast_rolling_stock = create_fast_rolling_stock(&mut db_pool.get_ok(), rs_name).await;
-        let power_restrictions = fast_rolling_stock.power_restrictions.clone();
-
-        // WHEN
-        let raw_response = app.get("/rolling_stock/power_restrictions").await;
-
-        // THEN
-        let response: Vec<String> = raw_response.assert_status_ok().json();
-        let power_restrictions = serde_json::to_string(&power_restrictions)
-            .expect("Failed to convert power_restrictions to string");
-        assert!(power_restrictions.contains(&"C2".to_string()));
-        assert!(power_restrictions.contains(&"C5".to_string()));
-        assert!(response.contains(&"C2".to_string()));
-        assert!(response.contains(&"C5".to_string()));
-    }
-
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn delete_locked_rolling_stock_fails() {
-        // GIVEN
-        let app = test_app!().skip_authz().build();
-        let db_pool = app.db_pool();
-
-        let locked_rs_name = "locked_fast_rolling_stock_name";
-        let locked_fast_rolling_stock_changeset =
-            Changeset::<RollingStock>::from(schemas::fixtures::fast_rolling_stock())
-                .name(locked_rs_name.to_owned())
-                .locked(true)
-                .version(0);
-        let locked_fast_rolling_stock = locked_fast_rolling_stock_changeset
-            .create(&mut db_pool.get_ok())
-            .await
-            .expect("Failed to create rolling stock");
-
-        // WHEN
-        let raw_response = app
-            .delete(format!("/rolling_stock/{}", locked_fast_rolling_stock.id).as_str())
-            .await;
-
-        // THEN
-        let response: InternalError = raw_response.assert_status_conflict().json();
-
-        assert_eq!(response.error_type, "editoast:rollingstocks:IsLocked");
-
-        let rolling_stock_exists =
-            RollingStock::exists(&mut db_pool.get_ok(), locked_fast_rolling_stock.id)
-                .await
-                .expect("Failed to check if rolling stock exists");
-
-        assert!(rolling_stock_exists);
-    }
-
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn delete_unlocked_unused_rolling_stock_succeeds() {
-        // GIVEN
-        let app = test_app!().skip_authz().build();
-        let db_pool = app.db_pool();
-
-        let rs_name = "fast_rolling_stock_name";
-        let fast_rolling_stock = create_fast_rolling_stock(&mut db_pool.get_ok(), rs_name).await;
-        assert!(!fast_rolling_stock.locked);
-
-        // WHEN
-        let raw_response = app
-            .delete(format!("/rolling_stock/{}", fast_rolling_stock.id).as_str())
-            .await;
-
-        // THEN
-        raw_response.assert_status_no_content();
-
-        let rolling_stock_exists =
-            RollingStock::exists(&mut db_pool.get_ok(), fast_rolling_stock.id)
-                .await
-                .expect("Failed to check if rolling stock exists");
-        assert!(!rolling_stock_exists);
-    }
-
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn delete_unlocked_used_rolling_stock_requires_force_flag() {
-        // GIVEN
-        let app = test_app!().skip_authz().build();
-        let db_pool = app.db_pool();
-
-        let rs_name = "fast_rolling_stock_name";
-        let fast_rolling_stock = create_fast_rolling_stock(&mut db_pool.get_ok(), rs_name).await;
-        assert!(!fast_rolling_stock.locked);
-
-        let project = create_project(&mut db_pool.get_ok(), &Uuid::new_v4().to_string()).await;
-        let study = create_study(
-            &mut db_pool.get_ok(),
-            &Uuid::new_v4().to_string(),
-            project.id,
-        )
-        .await;
-        let (timetable, train_schedule_set) =
-            create_timetable_with_train_schedule_set(&mut db_pool.get_ok()).await;
-        let infra = create_small_infra(&mut db_pool.get_ok()).await;
-        create_scenario(
-            &mut db_pool.get_ok(),
-            &Uuid::new_v4().to_string(),
-            study.id,
-            timetable.id,
-            infra.id,
-        )
-        .await;
-
-        simple_paced_train_changeset(train_schedule_set.id)
-            .rolling_stock_name(fast_rolling_stock.name.clone())
-            .create(&mut db_pool.get_ok())
-            .await
-            .expect("Failed to create paced train");
-
-        // WHEN
-        let raw_response = app
-            .delete(format!("/rolling_stock/{}", fast_rolling_stock.id).as_str())
-            .await;
-
-        // THEN
-        let response: InternalError = raw_response.assert_status_conflict().json();
-        assert_eq!(response.error_type, "editoast:rollingstocks:IsUsed");
-
-        let rolling_stock_exists =
-            RollingStock::exists(&mut db_pool.get_ok(), fast_rolling_stock.id)
-                .await
-                .expect("Failed to check if rolling stock exists");
-
-        assert!(rolling_stock_exists);
-
-        // WHEN
-        let raw_response_forced = app
-            .delete(format!("/rolling_stock/{}?force=true", fast_rolling_stock.id).as_str())
-            .await;
-
-        // THEN
-        raw_response_forced.assert_status_no_content();
-
-        let rolling_stock_exists =
-            RollingStock::exists(&mut db_pool.get_ok(), fast_rolling_stock.id)
-                .await
-                .expect("Failed to check if rolling stock exists");
-
-        assert!(!rolling_stock_exists);
+            assert!(!rolling_stock_exists);
+        }
     }
 }
