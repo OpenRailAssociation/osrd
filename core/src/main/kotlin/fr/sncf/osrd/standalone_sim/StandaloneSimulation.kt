@@ -66,7 +66,6 @@ fun runStandaloneSimulation(
     schedule: List<SimulationScheduleItem>,
     initialSpeed: Double,
     margins: RangeValues<MarginValue>,
-    pathItemPositions: List<Offset<PhysicsPath>>,
     driverBehaviour: DriverBehaviour = DriverBehaviour(),
 ): SimulationSuccess {
     if (trainPath.getLength() == Offset.zero<TrainPath>()) throw OSRDError(ZeroLengthPath)
@@ -149,21 +148,9 @@ fun runStandaloneSimulation(
             )
         )
     val maxEffortResult =
-        makeSimpleReportTrain(
-            maxEffortEnvelope,
-            trainPath,
-            rollingStocks,
-            schedule,
-            pathItemPositions,
-        )
+        makeSimpleReportTrain(maxEffortEnvelope, trainPath, rollingStocks, schedule)
     val provisionalResult =
-        makeSimpleReportTrain(
-            provisionalEnvelope,
-            trainPath,
-            rollingStocks,
-            schedule,
-            pathItemPositions,
-        )
+        makeSimpleReportTrain(provisionalEnvelope, trainPath, rollingStocks, schedule)
     val finalEnvelopeResult =
         runScheduleMetadataExtractor(
             finalEnvelope,
@@ -172,7 +159,6 @@ fun runStandaloneSimulation(
             infra,
             rollingStocks,
             schedule,
-            pathItemPositions,
             context,
         )
 
@@ -284,7 +270,7 @@ fun buildFinalEnvelope(
         if (point.arrival == null) {
             // No specified arrival time,
             // we account for the stop duration and move on
-            prevFixedPointDepartureTime += point.stopFor?.seconds ?: 0.0
+            prevFixedPointDepartureTime += point.stopDetails?.duration?.seconds ?: 0.0
             continue
         }
         val sectionTime =
@@ -294,7 +280,7 @@ fun buildFinalEnvelope(
         if (abs(extraTime) < context.timeStep) {
             // The time diff is already within the margin computation tolerance,
             // adding a margin for this can increase the difference
-            prevFixedPointDepartureTime += point.stopFor?.seconds ?: 0.0
+            prevFixedPointDepartureTime += point.stopDetails?.duration?.seconds ?: 0.0
             continue
         }
         if (extraTime >= 0.0) {
@@ -308,7 +294,8 @@ fun buildFinalEnvelope(
                     point.pathOffset,
                 )
             )
-            prevFixedPointDepartureTime = arrivalTime + extraTime + (point.stopFor?.seconds ?: 0.0)
+            prevFixedPointDepartureTime =
+                arrivalTime + extraTime + (point.stopDetails?.duration?.seconds ?: 0.0)
         } else {
             // We need to *remove* time compared to the provisional envelope.
             // Ideally we would distribute the (negative) extra time following the same logic as
@@ -338,7 +325,9 @@ fun buildFinalEnvelope(
                 )
             )
             prevFixedPointDepartureTime =
-                earliestPossibleArrival + maxEffortExtraTime + (point.stopFor?.seconds ?: 0.0)
+                earliestPossibleArrival +
+                    maxEffortExtraTime +
+                    (point.stopDetails?.duration?.seconds ?: 0.0)
         }
         prevFixedPointOffset = point.pathOffset
     }
@@ -461,5 +450,7 @@ fun buildProvisionalEnvelope(
 }
 
 fun getSimStops(schedule: List<SimulationScheduleItem>): List<SimStop> {
-    return schedule.filter { it.stopFor != null }.map { SimStop(it.pathOffset, it.receptionSignal) }
+    return schedule
+        .filter { it.stopDetails != null }
+        .map { SimStop(it.pathOffset, it.stopDetails!!.receptionSignal) }
 }

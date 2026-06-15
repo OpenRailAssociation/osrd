@@ -38,7 +38,8 @@ fun makeSafetySpeedRanges(
     val stopsWithSafetySpeed =
         schedule
             .filter {
-                it.receptionSignal.isStopOnClosedSignal &&
+                it.stopDetails != null &&
+                    it.stopDetails.receptionSignal.isStopOnClosedSignal &&
                     // ETCS signaling system already handles Safety Approach Speed via braking
                     // curves
                     !isStopInSignalingSystemRange(it.pathOffset, signalingRanges, ETCS_LEVEL2.id)
@@ -46,7 +47,8 @@ fun makeSafetySpeedRanges(
             .map {
                 SafetySpeedStop(
                     it.pathOffset,
-                    it.receptionSignal == RJSTrainStop.RJSReceptionSignal.SHORT_SLIP_STOP,
+                    it.stopDetails!!.receptionSignal ==
+                        RJSTrainStop.RJSReceptionSignal.SHORT_SLIP_STOP,
                 )
             }
             .toMutableList()

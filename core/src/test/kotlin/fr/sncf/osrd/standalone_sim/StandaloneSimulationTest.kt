@@ -5,6 +5,7 @@ import fr.sncf.osrd.api.RangeValues
 import fr.sncf.osrd.api.standalone_sim.MarginValue
 import fr.sncf.osrd.api.standalone_sim.ReportTrain
 import fr.sncf.osrd.api.standalone_sim.SimulationScheduleItem
+import fr.sncf.osrd.api.standalone_sim.StopDetails
 import fr.sncf.osrd.envelope_sim.Comfort
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext
 import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue.Percentage
@@ -88,7 +89,6 @@ class StandaloneSimulationTest {
                 listOf(),
                 0.0,
                 RangeValues(listOf(), listOf()),
-                listOf(),
             )
         println(res)
     }
@@ -118,21 +118,22 @@ class StandaloneSimulationTest {
                     maxEffortEnvelope.interpolateDepartureFrom(thirdDistance.meters).seconds +
                         60.seconds,
                     null,
-                    OPEN,
                 ),
                 SimulationScheduleItem(
                     halfDistance,
                     maxEffortEnvelope.interpolateDepartureFrom(halfDistance.meters).seconds +
                         120.seconds,
-                    15.seconds,
-                    OPEN,
+                    StopDetails(15.seconds, OPEN, false),
                 ),
-                SimulationScheduleItem(twoThirdDistance, null, 30.seconds, OPEN),
+                SimulationScheduleItem(
+                    twoThirdDistance,
+                    null,
+                    StopDetails(30.seconds, OPEN, false),
+                ),
                 SimulationScheduleItem(
                     pathLength,
                     maxEffortEnvelope.totalTime.seconds + 300.seconds,
-                    0.seconds,
-                    OPEN,
+                    StopDetails(0.seconds, OPEN, false),
                 ),
             )
 
@@ -226,7 +227,6 @@ class StandaloneSimulationTest {
                 testCase.schedule,
                 testCase.startSpeed,
                 testCase.margins,
-                listOf(),
                 DriverBehaviour(0.0, 0.0),
             )
 
@@ -249,7 +249,11 @@ class StandaloneSimulationTest {
             if (scheduledPoint.arrival != null) {
                 assertEquals(scheduledPoint.arrival.seconds, arrival, 2.0)
             }
-            assertEquals(scheduledPoint.stopFor?.seconds ?: 0.0, departure - arrival, 2.0)
+            assertEquals(
+                scheduledPoint.stopDetails?.duration?.seconds ?: 0.0,
+                departure - arrival,
+                2.0,
+            )
         }
 
         // Test margin values
@@ -294,11 +298,23 @@ class StandaloneSimulationTest {
         val schedule =
             listOf(
                 // Start of path, check that it doesn't extend beyond the start
-                SimulationScheduleItem(Offset(42.meters), 42.seconds, 42.seconds, SHORT_SLIP_STOP),
+                SimulationScheduleItem(
+                    Offset(42.meters),
+                    42.seconds,
+                    StopDetails(42.seconds, SHORT_SLIP_STOP, false),
+                ),
                 // OPEN, check that this is ignored
-                SimulationScheduleItem(Offset(10_000.meters), 42.seconds, 42.seconds, OPEN),
+                SimulationScheduleItem(
+                    Offset(10_000.meters),
+                    42.seconds,
+                    StopDetails(42.seconds, OPEN, false),
+                ),
                 // STOP before the last buffer stop
-                SimulationScheduleItem(Offset(10_300.meters), 42.seconds, 42.seconds, STOP),
+                SimulationScheduleItem(
+                    Offset(10_300.meters),
+                    42.seconds,
+                    StopDetails(42.seconds, STOP, false),
+                ),
             )
 
         val signalingRanges = buildSignalingRanges(infra, trainPath)
@@ -327,16 +343,23 @@ class StandaloneSimulationTest {
         // switch or buffer-stop is under ETCS or not doesn't matter)
         val schedule =
             listOf(
-                SimulationScheduleItem(Offset(42.meters), 42.seconds, 42.seconds, STOP),
+                SimulationScheduleItem(
+                    Offset(42.meters),
+                    42.seconds,
+                    StopDetails(42.seconds, STOP, false),
+                ),
                 // Stop associated to the 10150m signal
                 SimulationScheduleItem(
                     Offset(10_000.meters),
                     42.seconds,
-                    42.seconds,
-                    SHORT_SLIP_STOP,
+                    StopDetails(42.seconds, SHORT_SLIP_STOP, false),
                 ),
                 // Stop associated to the last buffer stop
-                SimulationScheduleItem(Offset(10_300.meters), 42.seconds, 42.seconds, STOP),
+                SimulationScheduleItem(
+                    Offset(10_300.meters),
+                    42.seconds,
+                    StopDetails(42.seconds, STOP, false),
+                ),
             )
 
         val signalingRangesBAL = buildSignalingRanges(infra, trainPath)

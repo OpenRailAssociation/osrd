@@ -280,8 +280,7 @@ class STDCMEndpoint(
                 SimulationScheduleItem(
                     path.trainPath.getLength(),
                     null,
-                    0.1.seconds,
-                    RJSTrainStop.RJSReceptionSignal.STOP,
+                    StopDetails(0.1.seconds, RJSTrainStop.RJSReceptionSignal.STOP, false),
                 )
             )
             val reportTrain =
@@ -291,7 +290,6 @@ class STDCMEndpoint(
                     infra,
                     path.rollingStocks as DistanceRangeMap<PhysicsRollingStock>,
                     scheduleItems,
-                    listOf(),
                 )
 
             // Lighter description of the same simulation result
@@ -593,7 +591,9 @@ private fun parseSimulationScheduleItems(
     return parseRawSimulationScheduleItems(
         trainStops.map {
             val duration = if (it.duration > 0.0) it.duration.seconds else null
-            SimulationScheduleItem(Offset(it.position.meters), null, duration, it.receptionSignal)
+            val stopDetails =
+                if (duration != null) StopDetails(duration, it.receptionSignal, false) else null
+            SimulationScheduleItem(Offset(it.position.meters), null, stopDetails)
         }
     )
 }
