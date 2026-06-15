@@ -37,6 +37,7 @@ import {
 } from 'reducers/simulationResults';
 import { getTrainIdUsedForProjection } from 'reducers/simulationResults/selectors';
 import { useAppDispatch, type AppDispatch } from 'store';
+import { Duration } from 'utils/duration';
 import { formatEditoastIdToPacedTrainId, isOccurrenceId } from 'utils/trainId';
 
 import {
@@ -213,8 +214,10 @@ export async function updateTrainSchedule({
   // Reconcile existing exceptions with the new paced train settings and newly added ones
   // Note: exceptions are reset by the backend when cadence/interval changes
   const intervalChanged =
-    updatedTrainSchedule.paced.interval !== originalPacedTrain.paced.interval.toISOString() ||
-    updatedTrainSchedule.paced.time_window !== originalPacedTrain.paced.timeWindow.toISOString();
+    Duration.parse(updatedTrainSchedule.paced.interval).valueOf() !==
+      originalPacedTrain.paced.interval.valueOf() ||
+    Duration.parse(updatedTrainSchedule.paced.time_window).valueOf() !==
+      originalPacedTrain.paced.timeWindow.valueOf();
 
   // Reconcile remaining exceptions with the new paced train settings and newly added ones
   const {
