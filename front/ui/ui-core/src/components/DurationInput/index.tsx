@@ -2,7 +2,7 @@ import React, { useCallback, useMemo, useRef, useState } from 'react';
 
 import cx from 'classnames';
 
-import FieldWrapper, { type FieldWrapperProps } from './FieldWrapper';
+import FieldWrapper, { type FieldWrapperProps } from '../FieldWrapper';
 
 type UnitConfig = {
   key: string;
@@ -11,7 +11,13 @@ type UnitConfig = {
   digits?: number;
 };
 
-export type UnitProps = 'h' | 'm' | 's' | 'ms' | UnitConfig;
+export type UnitProps =
+  | 'h'
+  | 'm'
+  | 's'
+  | 'ms'
+  | (Partial<UnitConfig> & Pick<UnitConfig, 'key'>)
+  | (Partial<UnitConfig> & Pick<UnitConfig, 'label'>);
 
 type UnitSetting = UnitConfig & {
   max: number;
@@ -31,14 +37,14 @@ export type DurationInputProps = {
   statusWithMessage?: FieldWrapperProps['statusWithMessage'];
 } & Omit<React.ComponentPropsWithoutRef<'div'>, 'onChange'>;
 
-const PRESETS: Record<string, Omit<UnitConfig, 'key'>> = {
+export const PRESETS: Record<string, Omit<UnitConfig, 'key'>> = {
   h: { label: 'h', digits: 2, msPerUnit: 3_600_000 },
   m: { label: 'm', digits: 2, msPerUnit: 60_000 },
   s: { label: 's', digits: 2, msPerUnit: 1_000 },
   ms: { label: 'ms', digits: 3, msPerUnit: 1 },
 };
 
-function normalizeUnits(units: UnitProps[], padChar: string, max: number): UnitSetting[] {
+export function normalizeUnits(units: UnitProps[], padChar: string, max: number): UnitSetting[] {
   const configs: UnitConfig[] = units.map((u) => {
     if (typeof u === 'string') {
       return { key: u, ...PRESETS[u] };
@@ -76,16 +82,16 @@ function normalizeUnits(units: UnitProps[], padChar: string, max: number): UnitS
 
 type FormattedValues = Record<string, string>;
 
-function toUnitField(ms: number, unit: UnitSetting): [string, string] {
+export function toUnitField(ms: number, unit: UnitSetting): [string, string] {
   const value = Math.floor(ms / (unit.msPerUnit || 1)) % (unit.max ?? Infinity);
   return [unit.key, String(value || unit.padChar).padStart(unit.digits ?? 0, unit.padChar)];
 }
 
-function toFormattedValues(units: UnitSetting[], ms: number): FormattedValues {
+export function toFormattedValues(units: UnitSetting[], ms: number): FormattedValues {
   return Object.fromEntries(units.map((u) => toUnitField(ms, u)));
 }
 
-function toTotalMilliseconds(fields: UnitSetting[], values: FormattedValues): number {
+export function toTotalMilliseconds(fields: UnitSetting[], values: FormattedValues): number {
   return fields.reduce((acc, f) => {
     const cleaned = values[f.key].replace(/[^0-9]/g, '');
     const value = parseInt(cleaned, 10) || 0;
@@ -93,7 +99,7 @@ function toTotalMilliseconds(fields: UnitSetting[], values: FormattedValues): nu
   }, 0);
 }
 
-function useDurationInput({
+export function useDurationInput({
   units,
   value,
   onChange,
