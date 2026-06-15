@@ -416,6 +416,7 @@
           "**/__tests__/**",
           "**/.storybook/**",
           "**/*.spec.ts",
+          "**/*.spec.tsx",
           "**/build.js",
           "**/playwright.config.ts",
           "**/rollup.config.js",
