@@ -57,6 +57,7 @@ type UpdateTrainScheduleParams = {
   updatedTrainSchedule: TrainSchedule;
   occurrenceId?: OccurrenceId;
   addedExceptions: { startTime: Date }[];
+  deletedAddedExceptionId?: number;
   upsertTrainSchedules: (trainSchedules: TrainScheduleResponse[]) => void;
   dispatch: AppDispatch;
 };
@@ -77,6 +78,7 @@ export async function updateTrainSchedule({
   updatedTrainSchedule,
   occurrenceId,
   addedExceptions,
+  deletedAddedExceptionId,
   upsertTrainSchedules,
   dispatch,
 }: UpdateTrainScheduleParams): Promise<UpdateTrainScheduleResult> {
@@ -230,17 +232,25 @@ export async function updateTrainSchedule({
     intervalChanged ? [] : originalPacedExceptions
   );
 
-  if (exceptionsToDeleteIds.length > 0) {
-    await deleteExceptions(dispatch, exceptionsToDeleteIds);
+  const allExceptionsToDelete =
+    deletedAddedExceptionId !== undefined
+      ? [...exceptionsToDeleteIds, deletedAddedExceptionId]
+      : exceptionsToDeleteIds;
+
+  if (allExceptionsToDelete.length > 0) {
+    await deleteExceptions(dispatch, allExceptionsToDelete);
   }
 
   if (exceptionsToUpdate.length > 0) {
     await updateExceptions(dispatch, exceptionsToUpdate, trainScheduleId);
   }
 
-  const finalExceptions = [...reconciledExceptions, ...createdExceptions];
+  const finalExceptions = [...reconciledExceptions, ...createdExceptions].filter(
+    (exc) => !exc.id || !allExceptionsToDelete.includes(exc.id)
+  );
 
   // Store the paced train with the final exceptions list
+  // TODO: We should be able to not run this when we only add or delete an extra occurrence
   await storePacedTrain(
     trainScheduleId,
     {
