@@ -15,7 +15,6 @@ use std::collections::HashSet;
 use crate::error::Result;
 use editoast_models::OperationalPointModel;
 use editoast_models::TrackSectionModel;
-use editoast_models::prelude::*;
 
 use super::pathfinding::PathfindingFailure;
 
@@ -74,20 +73,19 @@ impl OperationalPointCache {
             .ops
             .iter()
             .flat_map(|op| &op.parts)
-            .map(|part| (infra_id, part.track.0.clone()));
+            .map(|part| part.track.0.clone());
 
         let path_item_tracks = path_items.iter().filter_map(|item| match item.borrow() {
-            PathItemLocation::TrackOffset(TrackOffset { track, .. }) => {
-                Some((infra_id, track.0.clone()))
-            }
+            PathItemLocation::TrackOffset(TrackOffset { track, .. }) => Some(track.0.clone()),
             _ => None,
         });
 
-        let tracks = op_tracks.chain(path_item_tracks);
+        let req_track_ids = op_tracks.chain(path_item_tracks).collect::<Vec<String>>();
         let track_sections =
-            TrackSectionModel::retrieve_batch_unchecked::<_, Vec<_>>(&mut conn, tracks).await?;
+            TrackSectionModel::retrieve_from_ids(&mut conn, infra_id, &req_track_ids).await?;
 
-        let track_ids = track_sections
+        // Not all track sections may have been found.
+        let resp_track_ids = track_sections
             .iter()
             .map(|track| track.obj_id.clone())
             .collect();
@@ -100,7 +98,7 @@ impl OperationalPointCache {
             .collect();
 
         op_cache.track_ids_to_local_track_name = track_ids_to_local_track_name;
-        op_cache.track_ids = track_ids;
+        op_cache.track_ids = resp_track_ids;
         Ok(op_cache)
     }
 
