@@ -518,9 +518,11 @@
         "mareco": "Marge Mareco"
       },
       "form": {
+        "add": "Ajouter",
         "comfort": "Confort",
         "compositionCode": "Code composition",
         "departureDate": "Date de départ",
+        "departureTime": "Heure de départ",
         "electricalProfiles": "Profils électriques",
         "extraOccurrences_one": "{{count}} occurrence ajoutée",
         "extraOccurrences_other": "{{count}} occurrences ajoutées",

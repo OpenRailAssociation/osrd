@@ -518,9 +518,11 @@
         "mareco": "Mareco margin"
       },
       "form": {
+        "add": "Add",
         "comfort": "Comfort",
         "compositionCode": "Composition code",
         "departureDate": "Departure date",
+        "departureTime": "Departure time",
         "electricalProfiles": "Electrical profiles",
         "extraOccurrences_one": "{{count}} extra occurrence",
         "extraOccurrences_other": "{{count}} extra occurrences",

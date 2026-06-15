@@ -25,6 +25,11 @@ export type TrainHeaderProps = {
   setTrainScheduleToEditData: (trainScheduleToEditData?: TrainScheduleToEditData) => void;
 };
 
+export type ExtraOccurrencesChanges = {
+  addedExceptions?: { startTime: Date }[];
+  deletedAddedExceptionId?: number;
+};
+
 /**
  * A dual-purpose header that shows either a collapsed overview on some key train characteristics,
  * or an expanded form that allow the user to edit every data about the train outside of the train
@@ -54,7 +59,7 @@ const TrainHeader = ({
 
   const onPersistTrain = async (
     updatedTrain: Train,
-    addedExceptions: { startTime: Date }[] = []
+    extraOccurrencesChanges?: ExtraOccurrencesChanges
   ) => {
     const result = await updateTrainSchedule({
       upsertTrainSchedules,
@@ -63,7 +68,8 @@ const TrainHeader = ({
       occurrenceId,
       updatedTrainSchedule: updatedTrain,
       timetableId,
-      addedExceptions,
+      addedExceptions: extraOccurrencesChanges?.addedExceptions ?? [],
+      deletedAddedExceptionId: extraOccurrencesChanges?.deletedAddedExceptionId,
       dispatch,
     });
 
