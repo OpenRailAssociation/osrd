@@ -136,7 +136,11 @@ public final class OSRDError extends RuntimeException {
     public static OSRDError newInfraLoadingError(ErrorType errorType, Object sourceOperation, Throwable e) {
         var error = new OSRDError(errorType, e);
         error.context.put("source_operation", sourceOperation);
-        error.context.put("original_error", e);
+        // Note: most java throwables are not serializable by Moshi, so we only include the error if we know
+        // we can serialize it
+        if (e instanceof OSRDError osrdError) {
+            error.context.put("original_error", osrdError);
+        }
         return error;
     }
 
