@@ -47,7 +47,6 @@ processes:
       - "TELEMETRY_ENDPOINT=http://localhost:4317"
       - "OSRD_MQ_URL=amqp://osrd:password@localhost:5672/%2f"
       - "FGA_API_URL=http://localhost:8091"
-      - "EDITOAST_ENABLE_AUTHORIZATION=${EDITOAST_ENABLE_AUTHORIZATION:-true}"
       - "EDITOAST_NO_CACHE=${EDITOAST_NO_CACHE:-false}"
       - "EDITOAST_CORE_SINGLE_WORKER=true"
       - "DYNAMIC_ASSETS_PATH=${OSRD_PATH}/assets"
