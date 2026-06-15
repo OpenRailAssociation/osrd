@@ -19,12 +19,18 @@ import { findExceptionInPacedTrainByOccurenceId } from 'utils/trainExceptions';
 import { isOccurrenceId } from 'utils/trainId';
 import { createFixedSelectOptions, createStandardSelectOptions } from 'utils/uiCoreHelpers';
 
+import ExtraOccurrenceForm from './ExtraOccurrenceForm';
+import ExtraOccurrenceRow from './ExtraOccurrenceRow';
+import type { ExtraOccurrencesChanges } from './TrainHeader';
 import { getShortDepartureDate } from './utils/trainProperties';
 
 export type ExpandedTrainFormProps = {
   train: Train;
   onCollapse: () => void;
-  onPersistTrain: (updatedTrain: Train, addedExceptions?: { startTime: Date }[]) => Promise<void>;
+  onPersistTrain: (
+    updatedTrain: Train,
+    extraOccurrencesChanges?: ExtraOccurrencesChanges
+  ) => Promise<void>;
   onItineraryOpened: () => void;
 };
 
@@ -38,6 +44,7 @@ type TrainFieldsState = {
   service_window?: number;
   use_electrical_profiles: boolean | null;
   labels: string[];
+  added_exception_date: Date;
 };
 
 function getFieldsFromTrain(train: Train): TrainFieldsState {
@@ -51,6 +58,7 @@ function getFieldsFromTrain(train: Train): TrainFieldsState {
     service_window: train.paced ? Duration.parse(train.paced.time_window).valueOf() : undefined,
     use_electrical_profiles: train?.options?.use_electrical_profiles ?? null,
     labels: train.labels ?? [],
+    added_exception_date: new Date(train.start_time),
   };
 }
 
@@ -124,6 +132,10 @@ const ExpandedTrainForm = ({
 
   const fieldsFromTrain = useMemo(() => getFieldsFromTrain(train), [train]);
   const [fields, setFields] = useState<TrainFieldsState>(fieldsFromTrain);
+  const [extraOccurrencesVisible, setExtraOccurrencesVisible] = useState(false);
+
+  const extraOccurrences =
+    train.paced?.exceptions?.filter((exp) => exp.occurrence_index === undefined) ?? [];
 
   // Reset fields values if they changed outside of the form (e.g., because it was an
   // exception and the user reverted it back to an occurence through the train list)
@@ -234,46 +246,81 @@ const ExpandedTrainForm = ({
               </div>
             </div>
           ) : (
-            <div className="train-service-form">
-              <div className="train-paced-kind">
-                {t('manageTrainSchedule.trainHeader.serviceModelTrain')}
+            <>
+              <div className="train-service-form">
+                <div className="train-paced-kind">
+                  {t('manageTrainSchedule.trainHeader.serviceModelTrain')}
+                </div>
+                <div className="train-service-cadence">
+                  <DurationInput
+                    id="train-header-service-cadence-input"
+                    small
+                    units={['m']}
+                    padChar="0"
+                    max={3_600_000}
+                    label={t('manageTrainSchedule.trainHeader.form.serviceCadence')}
+                    value={fields.service_cadence ?? 0}
+                    onChange={(ms) => onFieldImmediateChange('service_cadence', ms)}
+                  />
+                </div>
+                <div className="train-service-window">
+                  <DurationInput
+                    id="train-header-service-window-input"
+                    small
+                    units={['h', 'm']}
+                    padChar="0"
+                    max={5 * 3_600_000} // 5h00m
+                    label={t('manageTrainSchedule.trainHeader.form.serviceWindow')}
+                    value={fields.service_window ?? 2 * 3_600_000} // 2h00m
+                    onChange={(ms) => onFieldImmediateChange('service_window', ms)}
+                  />
+                </div>
+                <div className="actions">
+                  <Button
+                    label={t('manageTrainSchedule.trainHeader.form.extraOccurrences', {
+                      count: extraOccurrences.length,
+                    })}
+                    variant="Quiet"
+                    onClick={() => {
+                      setExtraOccurrencesVisible(!extraOccurrencesVisible);
+                    }}
+                    size="small"
+                  />
+                </div>
               </div>
-              <div className="train-service-cadence">
-                <DurationInput
-                  id="train-header-service-cadence-input"
-                  small
-                  units={['m']}
-                  padChar="0"
-                  max={3_600_000}
-                  label={t('manageTrainSchedule.trainHeader.form.serviceCadence')}
-                  value={fields.service_cadence ?? 0}
-                  onChange={(ms) => onFieldImmediateChange('service_cadence', ms)}
-                />
-              </div>
-              <div className="train-service-window">
-                <DurationInput
-                  id="train-header-service-window-input"
-                  small
-                  units={['h', 'm']}
-                  padChar="0"
-                  max={5 * 3_600_000} // 5h00m
-                  label={t('manageTrainSchedule.trainHeader.form.serviceWindow')}
-                  value={fields.service_window ?? 2 * 3_600_000} // 2h00m
-                  onChange={(ms) => onFieldImmediateChange('service_window', ms)}
-                />
-              </div>
-              <div className="actions">
-                <Button
-                  label={t('manageTrainSchedule.trainHeader.form.extraOccurrences', {
-                    count: 0 /* TODO: properly compute the number of extra occurrences */,
-                  })}
-                  variant="Quiet"
-                  onClick={() => {}}
-                  size="small"
-                  isDisabled
-                />
-              </div>
-            </div>
+
+              {extraOccurrencesVisible && (
+                <div className="train-extra-occurrences">
+                  <ExtraOccurrenceForm
+                    addedExceptionDate={fields.added_exception_date}
+                    setAddedExceptionDate={(newAddedExceptionDate) =>
+                      onFieldChange('added_exception_date', newAddedExceptionDate)
+                    }
+                    onCreateAddedException={() => {
+                      onPersistTrain(train, {
+                        addedExceptions: [{ startTime: fields.added_exception_date }],
+                      });
+                    }}
+                  />
+                  <div className="train-extra-occurrences-list">
+                    {extraOccurrences
+                      .filter((occurrence) => occurrence.start_time?.value)
+                      .map((occurrence) => (
+                        <ExtraOccurrenceRow
+                          key={`${occurrence.id}-${occurrence.key}`}
+                          startTime={new Date(occurrence.start_time!.value)}
+                          onDelete={() => {
+                            // TODO_EXCEPTION: remove this when the exception migration will be done
+                            if (occurrence.id !== null && occurrence.id !== undefined) {
+                              onPersistTrain(train, { deletedAddedExceptionId: occurrence.id });
+                            }
+                          }}
+                        />
+                      ))}
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </div>
       )}

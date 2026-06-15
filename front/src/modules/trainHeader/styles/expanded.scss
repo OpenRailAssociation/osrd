@@ -5,6 +5,9 @@
   display: grid;
   grid-template-columns: repeat(3, minmax(200px, 1fr)) 1fr [end-column];
 
+  /* Useful to align some non-field element with other fields  */
+  --non-field-padding: 32px 13px 16px 16px;
+
   :where(& > *) {
     grid-column: 1 / end-column;
   }
@@ -33,13 +36,12 @@
 
     .loose-field {
       align-content: center;
-      padding: 32px 16px 16px 16px;
+      padding: var(--non-field-padding);
     }
 
     .actions {
       place-self: end end;
-      margin-bottom: 16px;
-      margin-right: 8px;
+      padding: var(--non-field-padding);
       grid-row: 3;
       grid-column: end-column;
     }
@@ -53,17 +55,17 @@
     background-color: var(--ambientB10);
     display: grid;
     grid-template-columns: subgrid;
-    padding-inline: 16px;
     border-bottom: 1px solid var(--black10);
 
     .toggle-band {
       justify-self: end;
       z-index: 1;
-      margin-right: -8px;
+      padding-right: 0;
     }
 
     :where(& > *) {
       grid-column: 1 / end-column;
+      padding-inline: 16px;
     }
 
     .train-service-cadence,
@@ -110,9 +112,88 @@
     }
 
     .actions {
-      align-self: end;
+      align-self: center;
+      padding: var(--non-field-padding);
+    }
+  }
+
+  .train-extra-occurrences {
+    display: grid;
+    grid-template-columns: subgrid;
+
+    background-color: var(--ambientB5);
+
+    label {
+      margin-bottom: unset;
+    }
+  }
+
+  .train-add-extra-occurrence-form {
+    display: grid;
+    grid-template-columns: subgrid;
+
+    grid-column: 2 / end-column;
+
+    .actions {
+      place-self: center start;
+      padding: var(--non-field-padding);
+    }
+  }
+
+  .train-extra-occurrences-list {
+    display: grid;
+    grid-template-columns: subgrid;
+
+    grid-column: 1 / end-column;
+    margin-bottom: 26px;
+    row-gap: 2px;
+  }
+
+  .train-extra-occurrence {
+    display: grid;
+    grid-template-columns: subgrid;
+
+    grid-column: 1 / end-column;
+
+    .train-extra-occurrence-date {
+      background-color: var(--white100);
+      padding: 6px 7px;
       margin-left: 16px;
-      margin-bottom: 18px;
+    }
+
+    .train-extra-occurrence-time {
+      background-color: var(--white100);
+      padding: 6px 26px;
+      border-top-right-radius: 4px;
+      border-bottom-right-radius: 4px;
+      margin-right: 14px;
+    }
+
+    .train-extra-occurrence-delete {
+      place-self: stretch end;
+      background-color: var(--white100);
+      padding: 8px;
+      margin-right: -15px;
+      display: grid;
+      place-content: center;
+      border-top-left-radius: 4px;
+      border-bottom-left-radius: 4px;
+      color: var(--primary60);
+
+      &:hover,
+      &:focus-visible {
+        color: var(--error60);
+        background-color: var(--error5);
+      }
+
+      &:focus,
+      &:focus-visible {
+        outline: 0 none;
+      }
+
+      span {
+        display: contents;
+      }
     }
   }
 }
