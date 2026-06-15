@@ -54,15 +54,20 @@ fun runScheduleMetadataExtractor(
     fullInfra: FullInfra,
     rollingStocks: DistanceRangeMap<PhysicsRollingStock>,
     schedule: List<SimulationScheduleItem>,
-    pathItemPositions: List<Offset<PhysicsPath>>,
     context: EnvelopeSimContext? = null,
 ): CompleteReportTrain {
     assert(envelope.continuous)
 
     val legacyStops =
         schedule
-            .filter { it.stopFor != null }
-            .map { TrainStop(it.pathOffset.meters, it.stopFor!!.seconds, it.receptionSignal) }
+            .filter { it.stopDetails != null }
+            .map {
+                TrainStop(
+                    it.pathOffset.meters,
+                    it.stopDetails!!.duration.seconds,
+                    it.stopDetails.receptionSignal,
+                )
+            }
 
     val rawInfra = fullInfra.rawInfra
 
@@ -84,7 +89,9 @@ fun runScheduleMetadataExtractor(
         }
 
     val pathStops =
-        schedule.filter { it.stopFor != null }.map { PathStop(it.pathOffset, it.receptionSignal) }
+        schedule
+            .filter { it.stopDetails != null }
+            .map { PathStop(it.pathOffset, it.stopDetails!!.receptionSignal) }
     val closedSignalStops = pathStops.filter { it.receptionSignal.isStopOnClosedSignal }
 
     val signalCriticalPositions =
@@ -107,8 +114,7 @@ fun runScheduleMetadataExtractor(
             zoneOccupationChangeEvents,
             rollingStocks,
         )
-    val reportTrain =
-        makeSimpleReportTrain(envelope, trainPath, rollingStocks, schedule, pathItemPositions)
+    val reportTrain = makeSimpleReportTrain(envelope, trainPath, rollingStocks, schedule)
     return CompleteReportTrain(
         reportTrain.positions,
         reportTrain.times,
@@ -210,7 +216,6 @@ fun makeSimpleReportTrain(
     trainPath: TrainPath,
     rollingStocks: DistanceRangeMap<PhysicsRollingStock>,
     schedule: List<SimulationScheduleItem>,
-    pathItemPositions: List<Offset<PhysicsPath>>,
 ): ReportTrain {
     // Compute energy consumed
     require(arePositionsEqual(rollingStocks.upperBound().meters, envelope.endPos))
@@ -220,13 +225,21 @@ fun makeSimpleReportTrain(
     // Account for stop durations
     val stops =
         schedule
-            .filter { it.stopFor != null }
-            .map { TrainStop(it.pathOffset.meters, it.stopFor!!.seconds, it.receptionSignal) }
+            .filter { it.stopDetails != null }
+            .map {
+                TrainStop(
+                    it.pathOffset.meters,
+                    it.stopDetails!!.duration.seconds,
+                    it.stopDetails.receptionSignal,
+                )
+            }
     val envelopeStopWrapper = EnvelopeStopWrapper(envelope, stops)
 
     val pathItemTimes =
-        pathItemPositions.map { position: Offset<PhysicsPath> ->
-            TimeDelta.fromSeconds(envelopeStopWrapper.interpolateArrivalAt(position.meters))
+        schedule.map { item: SimulationScheduleItem ->
+            TimeDelta.fromSeconds(
+                envelopeStopWrapper.interpolateArrivalAt((item.pathOffset.meters))
+            )
         }
 
     // Iterate over the points and simplify the results

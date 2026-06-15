@@ -473,7 +473,6 @@ fun makeRequirementsFromPath(
             listOf(),
             0.0,
             RangeValues(),
-            listOf(),
         )
 
     return sim.finalOutput.spacingRequirements.map {

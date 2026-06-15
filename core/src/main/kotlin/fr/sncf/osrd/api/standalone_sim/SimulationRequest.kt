@@ -32,15 +32,13 @@ class SimulationRequest(
     val options: TrainScheduleOptions,
     @Json(name = "physics_consist") val physicsConsist: PhysicsConsistModel,
     @Json(name = "electrical_profile_set_id") val electricalProfileSetId: String?,
-    @Json(name = "path_item_positions") val pathItemPositions: List<Offset<PhysicsPath>>,
-    @Json(name = "backtrack_path_items") val backtrackPathItems: List<Int>,
 ) {
     init {
-        backtrackPathItems.forEach { pathItemIndex ->
-            require(pathItemIndex > 0 && pathItemIndex < pathItemPositions.size - 1)
-            require(
-                schedule.first { it.pathOffset == pathItemPositions[pathItemIndex] }.stopFor != null
-            )
+        // Schedule should at least contain a departure and an arrival.
+        require(schedule.size >= 2)
+        // The departure and the arrival shouldn't be backtracking
+        arrayOf(schedule[0], schedule[schedule.size - 1]).forEach { scheduleItem ->
+            require(scheduleItem.stopDetails == null || !scheduleItem.stopDetails.isBacktracking)
         }
     }
 
@@ -94,8 +92,13 @@ class EffortCurve(
 class SimulationScheduleItem(
     @Json(name = "path_offset") val pathOffset: Offset<PhysicsPath>,
     val arrival: TimeDelta?,
-    @Json(name = "stop_for") val stopFor: Duration?,
+    @Json(name = "stop_details") val stopDetails: StopDetails?,
+)
+
+class StopDetails(
+    val duration: Duration,
     @Json(name = "reception_signal") val receptionSignal: RJSReceptionSignal,
+    @Json(name = "is_backtracking") val isBacktracking: Boolean,
 )
 
 sealed class MarginValue {

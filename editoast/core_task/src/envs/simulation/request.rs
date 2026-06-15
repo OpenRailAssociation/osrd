@@ -80,11 +80,18 @@ pub(super) fn build_request(
     ) in params.schedule_items().iter().enumerate()
     {
         let position = path_item_positions[i];
+        let stop_details = stop_for.map(|duration| core_client::simulation::StopDetails {
+            duration,
+            reception_signal: *reception_signal,
+            is_backtracking: match backtrack_path_items {
+                None => false,
+                Some(ref items) => items.contains(&i),
+            },
+        });
         schedule.push(core_client::simulation::SimulationScheduleItem {
             path_offset: position,
             arrival: *arrival_at,
-            stop_for: *stop_for,
-            reception_signal: *reception_signal,
+            stop_details,
         });
     }
 
@@ -116,8 +123,6 @@ pub(super) fn build_request(
         options: params.options().clone(),
         physics_consist: sim_consist.0.clone(),
         path,
-        path_item_positions,
-        backtrack_path_items,
     })
 }
 
@@ -229,14 +234,16 @@ mod tests {
                 core_client::simulation::SimulationScheduleItem {
                     path_offset: 0,
                     arrival: None,
-                    stop_for: None,
-                    reception_signal: Default::default(),
+                    stop_details: None,
                 },
                 core_client::simulation::SimulationScheduleItem {
                     path_offset: 10,
                     arrival: Some(300),
-                    stop_for: Some(0),
-                    reception_signal: Default::default(),
+                    stop_details: Some(core_client::simulation::StopDetails {
+                        duration: 0,
+                        reception_signal: Default::default(),
+                        is_backtracking: false,
+                    }),
                 },
             ],
             margins: core_client::simulation::SimulationMargins {
@@ -252,8 +259,6 @@ mod tests {
             options: Default::default(),
             physics_consist: sim_consist.0,
             path,
-            path_item_positions,
-            backtrack_path_items: Some(vec![]),
         };
 
         assert_eq!(request, expected);
@@ -338,32 +343,47 @@ mod tests {
                 core_client::simulation::SimulationScheduleItem {
                     path_offset: 0,
                     arrival: None,
-                    stop_for: Some(0),
-                    reception_signal: Default::default(),
+                    stop_details: Some(core_client::simulation::StopDetails {
+                        duration: 0,
+                        reception_signal: Default::default(),
+                        is_backtracking: false,
+                    }),
                 },
                 core_client::simulation::SimulationScheduleItem {
                     path_offset: 10,
                     arrival: Some(100),
-                    stop_for: Some(0),
-                    reception_signal: Default::default(),
+                    stop_details: Some(core_client::simulation::StopDetails {
+                        duration: 0,
+                        reception_signal: Default::default(),
+                        is_backtracking: false,
+                    }),
                 },
                 core_client::simulation::SimulationScheduleItem {
                     path_offset: 20,
                     arrival: Some(200),
-                    stop_for: Some(0),
-                    reception_signal: Default::default(),
+                    stop_details: Some(core_client::simulation::StopDetails {
+                        duration: 0,
+                        reception_signal: Default::default(),
+                        is_backtracking: false,
+                    }),
                 },
                 core_client::simulation::SimulationScheduleItem {
                     path_offset: 30,
                     arrival: Some(300),
-                    stop_for: Some(0),
-                    reception_signal: Default::default(),
+                    stop_details: Some(core_client::simulation::StopDetails {
+                        duration: 0,
+                        reception_signal: Default::default(),
+                        is_backtracking: false,
+                    }),
                 },
                 core_client::simulation::SimulationScheduleItem {
                     path_offset: 40,
                     arrival: Some(400),
-                    stop_for: Some(0),
-                    reception_signal: Default::default(),
+                    stop_details: Some(core_client::simulation::StopDetails {
+                        duration: 0,
+                        reception_signal: Default::default(),
+                        is_backtracking: false,
+                    }),
                 },
             ],
             margins: core_client::simulation::SimulationMargins {
@@ -398,8 +418,6 @@ mod tests {
             options: Default::default(),
             physics_consist: sim_consist.0,
             path,
-            path_item_positions,
-            backtrack_path_items: Some(vec![]),
         };
 
         assert_eq!(request, expected);

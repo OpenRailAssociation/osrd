@@ -7,6 +7,7 @@ import fr.sncf.osrd.api.RangeValues
 import fr.sncf.osrd.api.SignalCriticalPosition
 import fr.sncf.osrd.api.path_properties.makePathPropResponse
 import fr.sncf.osrd.api.standalone_sim.SimulationScheduleItem
+import fr.sncf.osrd.api.standalone_sim.StopDetails
 import fr.sncf.osrd.conflicts.PathStop
 import fr.sncf.osrd.envelope_sim.Comfort
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock
@@ -631,14 +632,16 @@ class BacktrackTests {
                         SimulationScheduleItem(
                             Offset(9700.meters),
                             null,
-                            60.seconds,
-                            SHORT_SLIP_STOP,
+                            StopDetails(60.seconds, SHORT_SLIP_STOP, false),
                         ),
-                        SimulationScheduleItem(Offset(18700.meters), null, 0.seconds, OPEN),
+                        SimulationScheduleItem(
+                            Offset(18700.meters),
+                            null,
+                            StopDetails(0.seconds, OPEN, false),
+                        ),
                     ),
                 initialSpeed = 0.0,
                 margins = RangeValues(),
-                pathItemPositions = listOf(Offset(9700.meters), Offset(18700.meters)),
             )
         assertEquals(Offset(18700.meters), resp.finalOutput.positions.last())
 
@@ -757,14 +760,16 @@ class BacktrackTests {
                         SimulationScheduleItem(
                             Offset(8000.meters),
                             null,
-                            60.seconds,
-                            SHORT_SLIP_STOP,
+                            StopDetails(60.seconds, SHORT_SLIP_STOP, false),
                         ),
-                        SimulationScheduleItem(Offset(15300.meters), null, 0.seconds, OPEN),
+                        SimulationScheduleItem(
+                            Offset(15300.meters),
+                            null,
+                            StopDetails(0.seconds, OPEN, false),
+                        ),
                     ),
                 initialSpeed = 0.0,
                 margins = RangeValues(),
-                pathItemPositions = listOf(Offset(8000.meters), Offset(15300.meters)),
             )
         assertEquals(Offset(15300.meters), resp.finalOutput.positions.last())
 
@@ -866,12 +871,19 @@ class BacktrackTests {
                 timeStep = 2.0,
                 schedule =
                     listOf(
-                        SimulationScheduleItem(Offset(8400.meters), null, 60.seconds, STOP),
-                        SimulationScheduleItem(Offset(16400.meters), null, 0.seconds, OPEN),
+                        SimulationScheduleItem(
+                            Offset(8400.meters),
+                            null,
+                            StopDetails(60.seconds, STOP, false),
+                        ),
+                        SimulationScheduleItem(
+                            Offset(16400.meters),
+                            null,
+                            StopDetails(0.seconds, OPEN, false),
+                        ),
                     ),
                 initialSpeed = 0.0,
                 margins = RangeValues(),
-                pathItemPositions = listOf(Offset(8400.meters), Offset(16400.meters)),
             )
         assertEquals(Offset(16400.meters), resp.finalOutput.positions.last())
 

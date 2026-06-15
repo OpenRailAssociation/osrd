@@ -116,10 +116,18 @@ pub struct SimulationScheduleItem {
     pub path_offset: u64,
     /// Time in ms since the departure of the train
     pub arrival: Option<u64>,
-    /// Duration of the stop in ms
-    pub stop_for: Option<u64>,
+    /// Stop details if this is a stop
+    pub stop_details: Option<StopDetails>,
+}
+
+#[derive(Debug, Serialize, Hash, PartialEq)]
+pub struct StopDetails {
+    /// Stop duration in ms
+    pub duration: u64,
     /// Whether the next signal is expected to be blocking while stopping
     pub reception_signal: ReceptionSignal,
+    /// Whether this stop is followed by a backtracking
+    pub is_backtracking: bool,
 }
 
 #[derive(Debug, Serialize, Hash, PartialEq)]
@@ -280,11 +288,6 @@ pub struct Request {
     pub options: TrainScheduleOptions,
     pub physics_consist: PhysicsConsist,
     pub electrical_profile_set_id: Option<i64>,
-    /// The path offsets in mm of each path item given as input of the pathfinding
-    pub path_item_positions: Vec<u64>,
-    /// The indexes of the path items where the train backtracks
-    // TODO: Remove Option once front is fully connected
-    pub backtrack_path_items: Option<Vec<usize>>,
 }
 
 #[derive(Serialize, Deserialize, PartialEq, Clone, Debug)]

@@ -51,10 +51,15 @@ class SimulationEndpoint(
             // Parse rolling stocks
             val rollingStock = parseRawRollingStock(request.physicsConsist)
 
+            val backtrackLocations =
+                request.schedule
+                    .filter { it.stopDetails != null && it.stopDetails.isBacktracking }
+                    .map { it.pathOffset }
+
             // Parse path
             val trainPath =
                 request.path.toTrainPath(
-                    request.backtrackPathItems.map { request.pathItemPositions[it] },
+                    backtrackLocations,
                     infra.rawInfra,
                     infra.blockInfra,
                     electricalProfileMap,
@@ -75,7 +80,6 @@ class SimulationEndpoint(
                     parseRawSimulationScheduleItems(request.schedule),
                     request.initialSpeed,
                     request.margins,
-                    request.pathItemPositions,
                 )
             return RsJson(RsWithBody(simulationResponseAdapter.toJson(res)))
         } catch (ex: Throwable) {

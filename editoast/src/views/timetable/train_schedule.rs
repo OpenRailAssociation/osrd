@@ -808,7 +808,7 @@ pub(in crate::views) async fn etcs_braking_curves(
                 .into();
             train_schedule.apply_train_schedule_exception(&exception)
         }
-        None => train_schedule.into_train_occurrence(),
+        None => train_schedule.clone().into_train_occurrence(),
     };
 
     // Compute simulation of a train schedule
@@ -858,7 +858,12 @@ pub(in crate::views) async fn etcs_braking_curves(
         &train_occurrence.path,
         &pathfinding_response.path_item_positions,
     );
-    let schedule = build_sim_schedule_items(&train_occurrence.schedule, &path_items_to_position);
+    let schedule = build_sim_schedule_items(
+        &train_occurrence.schedule,
+        &path_items_to_position,
+        &train_schedule.path,
+        None,
+    );
     let power_restrictions = build_sim_power_restriction_items(
         &train_occurrence.power_restrictions,
         &path_items_to_position,

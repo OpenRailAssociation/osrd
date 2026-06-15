@@ -13,6 +13,7 @@ use core_client::simulation::SimulationPowerRestrictionItem;
 use core_client::simulation::SimulationScheduleItem;
 use core_client::simulation::SimulationSuccess;
 use core_client::simulation::SpeedLimitProperties;
+use core_client::simulation::StopDetails;
 use core_task::PathfindingConsist;
 use core_task::SimulationConsist;
 use core_task::SimulationTrain;
@@ -752,7 +753,12 @@ fn build_simulation_request<T: TrainScheduleLike>(
 ) -> core_client::simulation::Request {
     let path_items_to_position =
         build_path_items_to_position(train_schedule.path(), path_item_positions);
-    let schedule = build_sim_schedule_items(train_schedule.schedule(), &path_items_to_position);
+    let schedule = build_sim_schedule_items(
+        train_schedule.schedule(),
+        &path_items_to_position,
+        train_schedule.path(),
+        backtrack_path_items,
+    );
     let margins = build_sim_margins(train_schedule.margins(), &path_items_to_position);
     let power_restrictions = build_sim_power_restriction_items(
         train_schedule.power_restrictions(),
@@ -772,8 +778,6 @@ fn build_simulation_request<T: TrainScheduleLike>(
         options: train_schedule.options().clone(),
         physics_consist,
         electrical_profile_set_id,
-        path_item_positions: path_item_positions.to_vec(),
-        backtrack_path_items: backtrack_path_items.cloned(),
     }
 }
 
@@ -794,21 +798,45 @@ pub fn build_path_items_to_position<'t>(
 pub fn build_sim_schedule_items(
     schedule_items: &[ScheduleItem],
     path_items_to_position: &HashMap<&schemas::primitives::NonBlankString, u64>,
+    path_items: &[PathItem],
+    backtrack_path_items: Option<&Vec<usize>>,
 ) -> Vec<SimulationScheduleItem> {
-    schedule_items
+    let schedule_items: HashMap<_, _> = schedule_items
         .iter()
-        .map(|schedule_item| SimulationScheduleItem {
-            path_offset: path_items_to_position[&schedule_item.at],
-            arrival: schedule_item
-                .arrival
-                .as_ref()
-                .map(|t| t.num_milliseconds() as u64),
-            stop_for: schedule_item
-                .stop_for
-                .as_ref()
-                .map(|t| t.num_milliseconds() as u64),
-            reception_signal: schedule_item.reception_signal,
-        })
+        .map(|schedule_item| (&schedule_item.at, schedule_item))
+        .collect();
+    let mut is_backtracking = vec![false; path_items.len()];
+    backtrack_path_items
+        .unwrap_or(&vec![])
+        .iter()
+        .for_each(|index| is_backtracking[*index] = true);
+    path_items
+        .iter()
+        .zip(is_backtracking)
+        .map(
+            |(path_item, is_backtracking)| match schedule_items.get(&path_item.id) {
+                None => match is_backtracking {
+                    true => unreachable!(),
+                    _ => SimulationScheduleItem {
+                        path_offset: path_items_to_position[&path_item.id],
+                        arrival: None,
+                        stop_details: None,
+                    },
+                },
+                Some(schedule_item) => SimulationScheduleItem {
+                    path_offset: path_items_to_position[&schedule_item.at],
+                    arrival: schedule_item
+                        .arrival
+                        .as_ref()
+                        .map(|t| t.num_milliseconds() as u64),
+                    stop_details: schedule_item.stop_for.as_ref().map(|t| StopDetails {
+                        duration: t.num_milliseconds() as u64,
+                        reception_signal: schedule_item.reception_signal,
+                        is_backtracking,
+                    }),
+                },
+            },
+        )
         .collect()
 }
 
@@ -857,6 +885,7 @@ fn compute_train_simulation_hash_with_versioning(
 mod tests {
     use super::*;
     use schemas::TrainOccurrence;
+    use schemas::train_schedule::ReceptionSignal;
 
     // Test data
     // The simulation responses contain just enough data to compute
@@ -1038,5 +1067,38 @@ mod tests {
         let respect: Vec<bool> =
             path_item_respect_times(&sim.final_output.report_train.path_item_times, &schedule);
         assert_eq!(*respect, [true, false, true]);
+    }
+
+    #[test]
+    fn test_build_simulation_schedule() {
+        let train_schedule = train_schedule_honored();
+        let path_item_positions: [u64; 2] = [0, 3000];
+        let path_items_to_position =
+            build_path_items_to_position(train_schedule.path(), &path_item_positions);
+        let simulation_schedule_items = build_sim_schedule_items(
+            &train_schedule.schedule,
+            &path_items_to_position,
+            train_schedule.path(),
+            None,
+        );
+        assert_eq!(
+            simulation_schedule_items,
+            [
+                SimulationScheduleItem {
+                    path_offset: 0,
+                    arrival: None,
+                    stop_details: None
+                },
+                SimulationScheduleItem {
+                    path_offset: 3000,
+                    arrival: None,
+                    stop_details: Some(StopDetails {
+                        duration: 0,
+                        reception_signal: ReceptionSignal::Open,
+                        is_backtracking: false,
+                    })
+                }
+            ]
+        );
     }
 }
