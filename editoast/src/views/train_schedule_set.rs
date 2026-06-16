@@ -324,6 +324,7 @@ pub(in crate::views) async fn get_train_schedules(
 #[cfg(test)]
 mod tests {
 
+    use crate::error::InternalError;
     use crate::fixtures::create_catalog_entry;
     use crate::fixtures::create_train_schedule_set;
     use crate::fixtures::simple_paced_train_base;
@@ -332,6 +333,7 @@ mod tests {
     use crate::views::train_schedule_set::TrainScheduleSetForm;
     use crate::views::train_schedule_set::TrainScheduleSetResponse;
     use chrono::Duration;
+    use common::units::second;
     use database::DbConnection;
     use editoast_models::CatalogEntry;
     use editoast_models::TrainScheduleSet;
@@ -393,6 +395,129 @@ mod tests {
             .expect("Failed to fetch train schedules");
 
         assert!(list_result.len() == 2);
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn create_train_schedule_in_hourly_train_schedule_set() {
+        let app = test_app!().skip_authz().build();
+        let pool = app.db_pool();
+
+        let train_schedule_set = TrainScheduleSet::changeset()
+            .name(Some("hourly_train_schedule_set".into()))
+            .timetable_type(editoast_models::timetable_type::TimetableType(
+                schemas::timetable_type::TimetableType::Hourly,
+            ))
+            .create(&mut pool.get_ok())
+            .await
+            .expect("Failed to create train schedule set");
+        let mut train_schedule_1 = simple_paced_train_base();
+        let mut train_schedule_2 = simple_paced_train_base();
+        train_schedule_1.train_occurrence.start_time = second::i64::new(5 * 60);
+        train_schedule_2.train_occurrence.start_time = second::i64::new(5 * 60);
+        train_schedule_1.paced.as_mut().unwrap().time_window =
+            Duration::minutes(120).try_into().unwrap();
+        train_schedule_1.paced.as_mut().unwrap().interval =
+            Duration::minutes(30).try_into().unwrap();
+        train_schedule_2.paced.as_mut().unwrap().time_window =
+            Duration::minutes(120).try_into().unwrap();
+        train_schedule_2.paced.as_mut().unwrap().interval =
+            Duration::minutes(15).try_into().unwrap();
+
+        let train_schedules = vec![train_schedule_1, train_schedule_2.clone()];
+
+        let response: Vec<TrainScheduleResponse> = app
+            .post(
+                format!(
+                    "/train_schedule_sets/{}/train_schedules",
+                    train_schedule_set.id
+                )
+                .as_str(),
+            )
+            .json(&train_schedules)
+            .await
+            .assert_status(StatusCode::CREATED)
+            .json();
+
+        assert!(response.len() == 2);
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn create_unique_train_schedule_in_hourly_train_schedule_set() {
+        let app = test_app!().skip_authz().build();
+        let pool = app.db_pool();
+
+        let train_schedule_set = TrainScheduleSet::changeset()
+            .name(Some("hourly_train_schedule_set".into()))
+            .timetable_type(editoast_models::timetable_type::TimetableType(
+                schemas::timetable_type::TimetableType::Hourly,
+            ))
+            .create(&mut pool.get_ok())
+            .await
+            .expect("Failed to create train schedule set");
+        let mut train_schedule_1 = simple_paced_train_base();
+        let mut train_schedule_2 = simple_paced_train_base();
+        train_schedule_1.train_occurrence.start_time = second::i64::new(5 * 60);
+        train_schedule_2.train_occurrence.start_time = second::i64::new(5 * 60);
+        train_schedule_1.paced = None;
+        train_schedule_2.paced.as_mut().unwrap().time_window =
+            Duration::minutes(120).try_into().unwrap();
+        train_schedule_2.paced.as_mut().unwrap().interval =
+            Duration::minutes(30).try_into().unwrap();
+
+        let train_schedules = vec![train_schedule_1, train_schedule_2.clone()];
+
+        let response: InternalError = app
+            .post(
+                format!(
+                    "/train_schedule_sets/{}/train_schedules",
+                    train_schedule_set.id
+                )
+                .as_str(),
+            )
+            .json(&train_schedules)
+            .await
+            .assert_status_internal_server_error()
+            .json();
+
+        assert_eq!(&response.error_type, "editoast:ModelError")
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn create_invalid_start_time_train_schedule_in_hourly_train_schedule_set() {
+        let app = test_app!().skip_authz().build();
+        let pool = app.db_pool();
+
+        let train_schedule_set = TrainScheduleSet::changeset()
+            .name(Some("hourly_train_schedule_set".into()))
+            .timetable_type(editoast_models::timetable_type::TimetableType(
+                schemas::timetable_type::TimetableType::Hourly,
+            ))
+            .create(&mut pool.get_ok())
+            .await
+            .expect("Failed to create train schedule set");
+        let mut train_schedule_1 = simple_paced_train_base();
+        train_schedule_1.train_occurrence.start_time = second::i64::new(121 * 60);
+        train_schedule_1.paced.as_mut().unwrap().time_window =
+            Duration::minutes(120).try_into().unwrap();
+        train_schedule_1.paced.as_mut().unwrap().interval =
+            Duration::minutes(30).try_into().unwrap();
+
+        let train_schedules = vec![train_schedule_1.clone()];
+
+        let response: InternalError = app
+            .post(
+                format!(
+                    "/train_schedule_sets/{}/train_schedules",
+                    train_schedule_set.id
+                )
+                .as_str(),
+            )
+            .json(&train_schedules)
+            .await
+            .assert_status_internal_server_error()
+            .json();
+
+        assert_eq!(&response.error_type, "editoast:ModelError")
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -458,6 +583,7 @@ mod tests {
             name: Some("test".to_string()),
             description: String::default(),
             published: false,
+            timetable_type: Default::default(),
         };
 
         assert_eq!(
@@ -494,6 +620,7 @@ mod tests {
             name: Some("test".to_string()),
             description: String::default(),
             published: false,
+            timetable_type: Default::default(),
         };
 
         assert_eq!(
@@ -527,6 +654,7 @@ mod tests {
                     name: None,
                     description: String::default(),
                     published: false,
+                    timetable_type: Default::default(),
                 },
                 train_schedule_count: 0
             }
@@ -557,6 +685,7 @@ mod tests {
                     name: Some("test_with_catalog_entry".into()),
                     description: String::default(),
                     published: false,
+                    timetable_type: Default::default(),
                 },
                 train_schedule_count: 0
             }
@@ -673,6 +802,7 @@ mod tests {
                     name: Some("test_updated".to_string()),
                     description: "test description".to_string(),
                     published: false,
+                    timetable_type: Default::default(),
                 },
                 train_schedule_count: 0
             }
@@ -709,6 +839,7 @@ mod tests {
                     name: Some("test_updated".to_string()),
                     description: "test description".to_string(),
                     published: true,
+                    timetable_type: Default::default(),
                 },
                 train_schedule_count: 0
             }

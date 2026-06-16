@@ -2540,6 +2540,7 @@ export type GetTimetableByIdTrainScheduleSetsApiResponse =
     id: number;
     name?: string | null;
     published: boolean;
+    timetable_type: TimetableType;
   }[];
 export type GetTimetableByIdTrainScheduleSetsApiArg = {
   /** A timetable ID */
@@ -4671,8 +4672,10 @@ export type SubCategory = {
 export type SubCategoryPage = PaginationStats & {
   results: SubCategory[];
 };
+export type TimetableType = 'CALENDAR' | 'HOURLY';
 export type TimetableResult = {
   timetable_id: number;
+  timetable_type: TimetableType;
 };
 export type CoreConflictType = 'Spacing' | 'Routing';
 export type CoreConflictRequirement = {
@@ -4996,6 +4999,7 @@ export type TrainScheduleSet = {
   id: number;
   name?: string | null;
   published: boolean;
+  timetable_type: TimetableType;
 };
 export type TrainScheduleSetResponse = TrainScheduleSet & {
   train_schedule_count: number;

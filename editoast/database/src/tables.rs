@@ -6,6 +6,10 @@ pub mod sql_types {
     pub struct Geometry;
 
     #[derive(diesel::sql_types::SqlType)]
+    #[diesel(postgres_type(name = "timetable_type"))]
+    pub struct TimetableType;
+
+    #[derive(diesel::sql_types::SqlType)]
     #[diesel(postgres_type(name = "train_main_category"))]
     pub struct TrainMainCategory;
 }
@@ -788,9 +792,11 @@ diesel::table! {
 diesel::table! {
     use diesel::sql_types::*;
     use postgis_diesel::sql_types::*;
+    use super::sql_types::TimetableType;
 
     timetable (id) {
         id -> Int8,
+        timetable_type -> TimetableType,
     }
 }
 
@@ -891,6 +897,7 @@ diesel::table! {
 diesel::table! {
     use diesel::sql_types::*;
     use postgis_diesel::sql_types::*;
+    use super::sql_types::TimetableType;
 
     train_schedule_set (id) {
         id -> Int8,
@@ -899,6 +906,7 @@ diesel::table! {
         name -> Nullable<Varchar>,
         description -> Text,
         published -> Bool,
+        timetable_type -> TimetableType,
     }
 }
 

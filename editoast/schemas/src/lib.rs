@@ -3,6 +3,7 @@ pub mod infra;
 pub mod paced_train;
 pub mod primitives;
 pub mod rolling_stock;
+pub mod timetable_type;
 pub mod train_schedule;
 pub mod train_schedule_exception;
 

@@ -49,6 +49,7 @@ use schemas::rolling_stock::LoadingGaugeType;
 use schemas::rolling_stock::RollingResistance;
 use schemas::rolling_stock::RollingStock;
 use schemas::rolling_stock::TowedRollingStock;
+use schemas::timetable_type::TimetableType;
 use schemas::train_schedule::OperationalPointReference;
 use schemas::train_schedule::PathItemLocation;
 use schemas::train_schedule::TrainScheduleLike;
@@ -106,12 +107,14 @@ enum TimetableError {
 #[cfg_attr(test, derive(PartialEq))]
 pub(in crate::views) struct TimetableResult {
     pub timetable_id: i64,
+    pub timetable_type: TimetableType,
 }
 
 impl From<Timetable> for TimetableResult {
     fn from(timetable: Timetable) -> Self {
         Self {
             timetable_id: timetable.id,
+            timetable_type: timetable.timetable_type.0,
         }
     }
 }
@@ -1130,6 +1133,7 @@ mod tests {
     use schemas::fixtures::simple_rolling_stock;
     use schemas::fixtures::towed_rolling_stock;
 
+    use editoast_models::train_schedule::TrainScheduleChangeset;
     use schemas::rolling_stock::RollingResistance;
     use schemas::train_schedule::OperationalPointPartReference;
     use schemas::train_schedule::PathItem;
@@ -1145,7 +1149,6 @@ mod tests {
     use crate::fixtures::create_train_schedule_set;
     use crate::fixtures::simple_paced_train_base;
     use crate::views::test_app;
-    use editoast_models::train_schedule::TrainScheduleChangeset;
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn get_unexisting_timetable() {
@@ -1760,5 +1763,86 @@ mod tests {
             response.get("Mid_East_station"),
             Some(&HashSet::from(["East_1".to_string()]))
         );
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn test_set_links_train_schedule_sets_to_timetable_with_hourly_type() {
+        let app = test_app!().skip_authz().build();
+        let db_pool = app.db_pool();
+
+        let mut conn = db_pool.get().await.unwrap();
+
+        let timetable = Timetable::changeset()
+            .timetable_type(editoast_models::timetable_type::TimetableType(
+                schemas::timetable_type::TimetableType::Hourly,
+            ))
+            .create(&mut conn)
+            .await
+            .expect("Failed to create timetable");
+
+        let train_schedule_set = TrainScheduleSet::changeset()
+            .name(None)
+            .timetable_type(editoast_models::timetable_type::TimetableType(
+                schemas::timetable_type::TimetableType::Hourly,
+            ))
+            .create(&mut conn)
+            .await
+            .expect("Failed to create train schedule set");
+
+        let train_schedule_set_id = train_schedule_set.id;
+        let train_schedule_set_form = TrainScheduleSetForm {
+            train_schedule_set_ids: HashSet::from([train_schedule_set_id]),
+        };
+
+        app.post(format!("/timetable/{}/train_schedule_sets", timetable.id).as_str())
+            .json(&train_schedule_set_form)
+            .await
+            .assert_status(StatusCode::NO_CONTENT);
+
+        let train_schedule_sets: Vec<TrainScheduleSet> = app
+            .get(format!("/timetable/{}/train_schedule_sets", timetable.id).as_str())
+            .await
+            .assert_status_ok()
+            .json();
+        assert_eq!(train_schedule_sets, vec![train_schedule_set]);
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn test_set_links_train_schedule_sets_to_timetable_with_type_mismatch() {
+        let app = test_app!().skip_authz().build();
+        let db_pool = app.db_pool();
+
+        let mut conn = db_pool.get().await.unwrap();
+
+        let hourly_timetable = Timetable::changeset()
+            .timetable_type(editoast_models::timetable_type::TimetableType(
+                schemas::timetable_type::TimetableType::Hourly,
+            ))
+            .create(&mut conn)
+            .await
+            .expect("Failed to create timetable");
+
+        let train_schedule_set = TrainScheduleSet::changeset()
+            .name(None)
+            .timetable_type(editoast_models::timetable_type::TimetableType(
+                schemas::timetable_type::TimetableType::Calendar,
+            ))
+            .create(&mut conn)
+            .await
+            .expect("Failed to create train schedule set");
+
+        let train_schedule_set_id = train_schedule_set.id;
+        let train_schedule_set_form = TrainScheduleSetForm {
+            train_schedule_set_ids: HashSet::from([train_schedule_set_id]),
+        };
+
+        let response: InternalError = app
+            .post(format!("/timetable/{}/train_schedule_sets", hourly_timetable.id).as_str())
+            .json(&train_schedule_set_form)
+            .await
+            .assert_status_internal_server_error()
+            .json();
+
+        assert_eq!(&response.error_type, "editoast:ModelError")
     }
 }

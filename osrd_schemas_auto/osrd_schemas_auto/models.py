@@ -3705,12 +3705,9 @@ class TestOperation(BaseModel):
     """
 
 
-class TimetableResult(BaseModel):
-    """
-    Creation result for a Timetable
-    """
-
-    timetable_id: int
+class TimetableType(Enum):
+    CALENDAR = "CALENDAR"
+    HOURLY = "HOURLY"
 
 
 class TowedRollingStock(BaseModel):
@@ -3874,6 +3871,7 @@ class TrainScheduleSet(BaseModel):
     id: int
     name: str | None = None
     published: bool
+    timetable_type: TimetableType
 
 
 class TrainScheduleSetForm(BaseModel):
@@ -5353,6 +5351,15 @@ class SwitchExtensions(BaseModel):
         extra="forbid",
     )
     sncf: SwitchSncfExtension | None = None
+
+
+class TimetableResult(BaseModel):
+    """
+    Creation result for a Timetable
+    """
+
+    timetable_id: int
+    timetable_type: TimetableType
 
 
 class TrackSectionExtensions(BaseModel):

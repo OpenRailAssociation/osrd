@@ -9,6 +9,7 @@ use database::DbConnection;
 use editoast_derive::Model;
 
 use crate::prelude::*;
+use crate::timetable_type::TimetableType;
 
 #[derive(Deserialize, Serialize, ToSchema, Debug, Clone, PartialEq, Model)]
 #[model(table = database::tables::train_schedule_set)]
@@ -20,6 +21,7 @@ pub struct TrainScheduleSet {
     pub name: Option<String>,
     pub description: String,
     pub published: bool,
+    pub timetable_type: TimetableType,
 }
 
 impl TrainScheduleSet {
