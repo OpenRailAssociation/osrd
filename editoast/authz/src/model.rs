@@ -140,6 +140,7 @@ pub enum InfraGrant {
     Eq,
     Hash,
 )]
+#[cfg_attr(test, derive(PartialOrd, Ord))]
 #[fga(name = "rolling_stock")]
 pub struct RollingStock(pub i64);
 
