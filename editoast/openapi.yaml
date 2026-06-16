@@ -3721,6 +3721,7 @@ paths:
                   - id
                   - description
                   - published
+                  - timetable_type
                   properties:
                     catalog_entry_id:
                       type:
@@ -3738,6 +3739,8 @@ paths:
                       - 'null'
                     published:
                       type: boolean
+                    timetable_type:
+                      $ref: '#/components/schemas/TimetableType'
     post:
       tags:
       - timetable
@@ -15504,10 +15507,18 @@ components:
       description: Creation result for a Timetable
       required:
       - timetable_id
+      - timetable_type
       properties:
         timetable_id:
           type: integer
           format: int64
+        timetable_type:
+          $ref: '#/components/schemas/TimetableType'
+    TimetableType:
+      type: string
+      enum:
+      - CALENDAR
+      - HOURLY
     TowedRollingStock:
       type: object
       required:
@@ -15967,6 +15978,7 @@ components:
       - id
       - description
       - published
+      - timetable_type
       properties:
         catalog_entry_id:
           type:
@@ -15984,6 +15996,8 @@ components:
           - 'null'
         published:
           type: boolean
+        timetable_type:
+          $ref: '#/components/schemas/TimetableType'
     TrainScheduleSetForm:
       type: object
       required:

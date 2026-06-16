@@ -24,6 +24,7 @@ pub mod tags;
 pub mod temporary_speed_limits;
 pub mod timetable;
 pub mod timetable_train_schedule_set;
+pub mod timetable_type;
 pub mod towed_rolling_stock;
 pub mod train_schedule;
 pub mod train_schedule_exception;

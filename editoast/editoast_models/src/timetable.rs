@@ -1,6 +1,7 @@
 use common::units::millisecond;
 use common::units::quantities::Offset;
 use database::DatabaseError;
+use database::tables::sql_types;
 use diesel::prelude::*;
 use diesel::sql_query;
 use diesel::sql_types::Array;
@@ -14,6 +15,7 @@ use std::ops::DerefMut;
 use database::DbConnection;
 
 use crate::timetable_train_schedule_set::TimetableTrainScheduleSet;
+use crate::timetable_type::TimetableType;
 
 #[derive(Debug, Default, Clone, Model)]
 #[cfg_attr(test, derive(serde::Deserialize))]
@@ -21,6 +23,7 @@ use crate::timetable_train_schedule_set::TimetableTrainScheduleSet;
 #[model(gen(ops = crd, list))]
 pub struct Timetable {
     pub id: i64,
+    pub timetable_type: TimetableType,
 }
 
 impl From<Timetable> for Option<i64> {
@@ -162,6 +165,8 @@ impl Timetable {
 pub struct TimetableWithTrains {
     #[diesel(sql_type = BigInt)]
     pub id: i64,
+    #[diesel(sql_type = sql_types::TimetableType)]
+    pub timetable_type: TimetableType,
     #[diesel(sql_type = Array<BigInt>)]
     pub paced_train_ids: Vec<i64>,
 }
@@ -207,6 +212,7 @@ impl From<TimetableWithTrains> for Timetable {
     fn from(timetable_with_trains: TimetableWithTrains) -> Self {
         Self {
             id: timetable_with_trains.id,
+            timetable_type: timetable_with_trains.timetable_type,
         }
     }
 }

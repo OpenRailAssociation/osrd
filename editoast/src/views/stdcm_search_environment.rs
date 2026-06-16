@@ -302,11 +302,13 @@ pub mod tests {
     use chrono::DurationRound;
     use chrono::TimeZone;
     use chrono::Utc;
+    use editoast_models::Timetable;
     use pretty_assertions::assert_eq;
 
     use editoast_models::stdcm_search_environment::fixtures::stdcm_search_env_fixtures;
 
     use super::*;
+    use crate::error::InternalError;
     use crate::views::test_app;
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -403,6 +405,61 @@ pub mod tests {
             .json(&form)
             .await
             .assert_status_unprocessable_entity();
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn create_stdcm_search_env_with_timetable_type_is_different_than_calendar() {
+        // GIVEN
+        let app = test_app!().skip_authz().build();
+        let pool = app.db_pool();
+
+        let (
+            infra,
+            _timetable,
+            work_schedule_group,
+            temporary_speed_limit_group,
+            electrical_profile_set,
+        ) = stdcm_search_env_fixtures(&mut pool.get_ok()).await;
+
+        let hourly_timetable = Timetable::changeset()
+            .timetable_type(editoast_models::timetable_type::TimetableType(
+                schemas::timetable_type::TimetableType::Hourly,
+            ))
+            .create(&mut pool.get_ok())
+            .await
+            .expect("Failed to create timetable");
+
+        let form = StdcmSearchEnvironmentCreateForm {
+            infra_id: infra.id,
+            electrical_profile_set_id: Some(electrical_profile_set.id),
+            work_schedule_group_id: Some(work_schedule_group.id),
+            temporary_speed_limit_group_id: Some(temporary_speed_limit_group.id),
+            timetable_id: hourly_timetable.id,
+            search_window_begin: Utc.with_ymd_and_hms(2024, 1, 2, 0, 0, 0).unwrap(),
+            search_window_end: Utc.with_ymd_and_hms(2024, 1, 15, 0, 0, 0).unwrap(),
+            enabled_from: Utc.with_ymd_and_hms(2024, 1, 1, 0, 0, 0).unwrap(),
+            enabled_until: Utc.with_ymd_and_hms(2024, 1, 1, 23, 59, 59).unwrap(),
+            operational_points: Some(Vec::from([1, 2, 3])),
+            operational_points_id_filtered: Vec::from(["uuid-1".to_string(), "uuid-2".to_string()])
+                .into(),
+            speed_limits: Some(SpeedLimits {
+                speed_limit_tags: vec![("MA80".to_string(), 80), ("MA90".to_string(), 90)]
+                    .into_iter()
+                    .collect::<HashMap<String, i64>>(),
+                default_speed_limit_tag: Some("MA80".to_string()),
+            }),
+            allowed_tracks: None,
+        };
+
+        // WHEN
+        let response: InternalError = app
+            .post("/stdcm/search_environment")
+            .json(&form)
+            .await
+            .assert_status_internal_server_error()
+            .json();
+
+        assert_eq!(&response.error_type, "editoast:ModelError")
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
