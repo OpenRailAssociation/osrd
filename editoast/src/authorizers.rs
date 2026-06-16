@@ -46,7 +46,9 @@ impl SystemAuthorizer<'_> {
             | Check::HasRollingStockPrivilege(..)
             | Check::CanAlterSubjectInfraGrant(..)
             | Check::SubjectEffectiveInfraGrantIsNot(..)
-            | Check::IsNotLastInfraOwner(..) => None,
+            | Check::SubjectEffectiveRollingStockGrantIsNot(..)
+            | Check::IsNotLastInfraOwner(..)
+            | Check::IsNotLastRollingStockOwner(..) => None,
         })
     }
 }
@@ -186,12 +188,30 @@ impl<'c> UserAuthorizer<'c> {
                     .await?;
                 (subject_grant == Some(*grant)).then_some(check)
             }
+            Check::SubjectEffectiveRollingStockGrantIsNot(grant, subject, rolling_stock) => {
+                let Ok(subject_grant) =
+                    authz::v2::rolling_stock_effective_grant(*subject, *rolling_stock)
+                        .access_authorized::<Infallible>(self.openfga)
+                        .access()
+                        .await?;
+                (subject_grant == Some(*grant)).then_some(check)
+            }
             Check::IsNotLastInfraOwner(subject, infra) => {
                 let Ok(owners) =
                     authz::v2::infra_granted_subjects(*infra, authz::InfraGrant::Owner)
                         .access_authorized::<Infallible>(self.openfga)
                         .access()
                         .await?;
+                (owners.len() == 1 && owners.contains(subject)).then_some(check)
+            }
+            Check::IsNotLastRollingStockOwner(subject, rolling_stock) => {
+                let Ok(owners) = authz::v2::rolling_stock_granted_subjects(
+                    *rolling_stock,
+                    authz::RollingStockGrant::Owner,
+                )
+                .access_authorized::<Infallible>(self.openfga)
+                .access()
+                .await?;
                 (owners.len() == 1 && owners.contains(subject)).then_some(check)
             }
             // checked by SystemAuthorizer
@@ -259,6 +279,7 @@ mod tests {
     use authz::InfraGrant;
     use authz::InfraPrivilege;
     use authz::Role;
+    use authz::RollingStockGrant;
     use authz::v2::Actor;
     use authz::v2::Check;
     use authz::v2::Protected;
@@ -268,6 +289,7 @@ mod tests {
 
     use super::*;
     use crate::fixtures::create_empty_infra;
+    use crate::fixtures::create_fast_rolling_stock;
 
     async fn openfga() -> fga::Client {
         let openfga = fga::test_client!("authz@");
@@ -435,6 +457,17 @@ mod tests {
         authz::Subject::User(authz::User(i64::MAX)),
         authz::Infra(i64::MAX)
     ))]
+    #[case::subject_effective_rolling_stock_grant_is_not(
+        Check::SubjectEffectiveRollingStockGrantIsNot(
+            RollingStockGrant::Owner,
+            authz::Subject::User(authz::User(i64::MAX)),
+            authz::RollingStock(i64::MAX)
+        )
+    )]
+    #[case::is_not_last_rolling_stock_owner(Check::IsNotLastRollingStockOwner(
+        authz::Subject::User(authz::User(i64::MAX)),
+        authz::RollingStock(i64::MAX)
+    ))]
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn system_authorizer_ignores_non_sanity_checks(#[case] check: Check) {
         let openfga = openfga().await;
@@ -504,6 +537,38 @@ mod tests {
         let user_authorizer = UserAuthorizer::new(no_grant, vec![], &openfga, pool.get_ok());
         let check = Check::HasInfraPrivilege(Actor::Issuer, InfraPrivilege::CanShareRead, infra);
         assert_eq!(authorize(&user_authorizer, check).await, Err(check));
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn user_authorizer_subject_effective_rolling_stock_grant_is_not() {
+        let openfga = openfga().await;
+        let pool = DbConnectionPoolV2::for_tests();
+        let issuer = create_user(&pool, "issuer").await;
+        let target = create_user(&pool, "target").await;
+        let rolling_stock = authz::RollingStock(
+            create_fast_rolling_stock(&mut pool.get_ok(), "rolling_stock")
+                .await
+                .id,
+        );
+        openfga
+            .write_tuples(&[authz::RollingStock::owner().tuple(&target, &rolling_stock)])
+            .await
+            .unwrap();
+        let user_authorizer = UserAuthorizer::new(issuer, vec![], &openfga, pool.get_ok());
+
+        let check = Check::SubjectEffectiveRollingStockGrantIsNot(
+            RollingStockGrant::Owner,
+            authz::Subject::User(target),
+            rolling_stock,
+        );
+        assert_eq!(authorize(&user_authorizer, check).await, Err(check));
+
+        let check = Check::SubjectEffectiveRollingStockGrantIsNot(
+            RollingStockGrant::Writer,
+            authz::Subject::User(target),
+            rolling_stock,
+        );
+        assert_eq!(authorize(&user_authorizer, check).await, Ok(()));
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -678,6 +743,38 @@ mod tests {
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn user_authorizer_subject_effective_rolling_stock_grant_is_not() {
+        let openfga = openfga().await;
+        let pool = DbConnectionPoolV2::for_tests();
+        let issuer = create_user(&pool, "issuer").await;
+        let target = create_user(&pool, "target").await;
+        let rolling_stock = authz::RollingStock(
+            create_fast_rolling_stock(&mut pool.get_ok(), "rolling_stock")
+                .await
+                .id,
+        );
+        openfga
+            .write_tuples(&[authz::RollingStock::owner().tuple(&target, &rolling_stock)])
+            .await
+            .unwrap();
+        let user_authorizer = UserAuthorizer::new(issuer, vec![], &openfga, pool.get_ok());
+
+        let check = Check::SubjectEffectiveRollingStockGrantIsNot(
+            RollingStockGrant::Owner,
+            authz::Subject::User(target),
+            rolling_stock,
+        );
+        assert_eq!(authorize(&user_authorizer, check).await, Err(check));
+
+        let check = Check::SubjectEffectiveRollingStockGrantIsNot(
+            RollingStockGrant::Writer,
+            authz::Subject::User(target),
+            rolling_stock,
+        );
+        assert_eq!(authorize(&user_authorizer, check).await, Ok(()));
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn user_authorizer_subject_effective_infra_grant_is_not_checks_inherited_grant() {
         let openfga = openfga().await;
         let pool = DbConnectionPoolV2::for_tests();
@@ -698,6 +795,38 @@ mod tests {
             InfraGrant::Owner,
             authz::Subject::User(target),
             infra,
+        );
+        assert_eq!(authorize(&user_authorizer, check).await, Err(check));
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn user_authorizer_subject_effective_rolling_stock_grant_is_not_checks_inherited_grant() {
+        let openfga = openfga().await;
+        let pool = DbConnectionPoolV2::for_tests();
+        let issuer = create_user(&pool, "issuer").await;
+        let target = create_user(&pool, "target").await;
+        let group = create_group(&pool, "owners").await;
+        let rolling_stock = authz::RollingStock(
+            create_fast_rolling_stock(&mut pool.get_ok(), "rolling_stock")
+                .await
+                .id,
+        );
+        openfga
+            .prepare_writes()
+            .write(&authz::Group::member().tuple(&target, &group))
+            .write(
+                &authz::RollingStock::owner()
+                    .tuple(authz::Group::member().userset(&group), &rolling_stock),
+            )
+            .execute()
+            .await
+            .unwrap();
+        let user_authorizer = UserAuthorizer::new(issuer, vec![], &openfga, pool.get_ok());
+
+        let check = Check::SubjectEffectiveRollingStockGrantIsNot(
+            RollingStockGrant::Owner,
+            authz::Subject::User(target),
+            rolling_stock,
         );
         assert_eq!(authorize(&user_authorizer, check).await, Err(check));
     }
@@ -732,6 +861,40 @@ mod tests {
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn user_authorizer_is_not_last_rolling_stock_owner_user() {
+        let openfga = openfga().await;
+        let pool = DbConnectionPoolV2::for_tests();
+        let issuer = create_user(&pool, "issuer").await;
+        let owner = create_user(&pool, "owner").await;
+        let other_owner = create_user(&pool, "other-owner").await;
+        let no_grant = create_user(&pool, "no-grant").await;
+        let rolling_stock = authz::RollingStock(
+            create_fast_rolling_stock(&mut pool.get_ok(), "rolling_stock")
+                .await
+                .id,
+        );
+        openfga
+            .write_tuples(&[authz::RollingStock::owner().tuple(&owner, &rolling_stock)])
+            .await
+            .unwrap();
+        let user_authorizer = UserAuthorizer::new(issuer, vec![], &openfga, pool.get_ok());
+
+        let check = Check::IsNotLastRollingStockOwner(authz::Subject::User(owner), rolling_stock);
+        assert_eq!(authorize(&user_authorizer, check).await, Err(check));
+
+        let check =
+            Check::IsNotLastRollingStockOwner(authz::Subject::User(no_grant), rolling_stock);
+        assert_eq!(authorize(&user_authorizer, check).await, Ok(()));
+
+        openfga
+            .write_tuples(&[authz::RollingStock::owner().tuple(&other_owner, &rolling_stock)])
+            .await
+            .unwrap();
+        let check = Check::IsNotLastRollingStockOwner(authz::Subject::User(owner), rolling_stock);
+        assert_eq!(authorize(&user_authorizer, check).await, Ok(()));
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn user_authorizer_is_not_last_infra_owner_group() {
         let openfga = openfga().await;
         let pool = DbConnectionPoolV2::for_tests();
@@ -747,6 +910,28 @@ mod tests {
         let user_authorizer = UserAuthorizer::new(issuer, vec![], &openfga, pool.get_ok());
 
         let check = Check::IsNotLastInfraOwner(authz::Subject::Group(group), infra);
+        assert_eq!(authorize(&user_authorizer, check).await, Err(check));
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn user_authorizer_is_not_last_rolling_stock_owner_group() {
+        let openfga = openfga().await;
+        let pool = DbConnectionPoolV2::for_tests();
+        let issuer = create_user(&pool, "issuer").await;
+        let group = create_group(&pool, "group").await;
+        let rolling_stock = authz::RollingStock(
+            create_fast_rolling_stock(&mut pool.get_ok(), "rolling_stock")
+                .await
+                .id,
+        );
+        openfga
+            .write_tuples(&[authz::RollingStock::owner()
+                .tuple(authz::Group::member().userset(&group), &rolling_stock)])
+            .await
+            .unwrap();
+        let user_authorizer = UserAuthorizer::new(issuer, vec![], &openfga, pool.get_ok());
+
+        let check = Check::IsNotLastRollingStockOwner(authz::Subject::Group(group), rolling_stock);
         assert_eq!(authorize(&user_authorizer, check).await, Err(check));
     }
 
@@ -770,6 +955,17 @@ mod tests {
     #[case::is_not_last_infra_owner(Check::IsNotLastInfraOwner(
         authz::Subject::user(i64::MAX),
         authz::Infra(i64::MAX)
+    ))]
+    #[case::subject_effective_rolling_stock_grant_is_not(
+        Check::SubjectEffectiveRollingStockGrantIsNot(
+            RollingStockGrant::Owner,
+            authz::Subject::user(i64::MAX),
+            authz::RollingStock(i64::MAX)
+        )
+    )]
+    #[case::is_not_last_infra_owner(Check::IsNotLastRollingStockOwner(
+        authz::Subject::user(i64::MAX),
+        authz::RollingStock(i64::MAX)
     ))]
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn user_authorizer_admin_bypass(#[case] check: Check) {
