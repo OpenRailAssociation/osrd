@@ -1,4 +1,6 @@
 use authz::RollingStockPrivilege;
+use authz::v2::Authorizer;
+use authz::v2::Check;
 use authz::v2::rolling_stock_privileges;
 use axum::Extension;
 use axum::extract::Json;
@@ -8,7 +10,6 @@ use axum::extract::State;
 use common::units;
 use common::units::quantities::Length;
 use database::DbConnection;
-use database::DbConnectionPoolV2;
 use editoast_models::prelude::*;
 use editoast_models::rolling_stock::RollingStock;
 use editoast_models::rolling_stock::TrainMainCategory;
@@ -22,7 +23,6 @@ use schemas::rolling_stock::SupportedSignalingSystem;
 use serde::Serialize;
 use std::collections::HashMap;
 use std::collections::HashSet;
-use std::sync::Arc;
 use uom::si::f64::Mass;
 use uom::si::f64::Velocity;
 use utoipa::ToSchema;
@@ -32,7 +32,9 @@ use super::RollingStockIdParam;
 use super::RollingStockKey;
 use super::RollingStockNameParam;
 use crate::AppState;
+use crate::authorizers::impossible;
 use crate::error::Result;
+use crate::views::AuthorizationError;
 use crate::views::pagination::PaginatedList;
 use crate::views::pagination::PaginationQueryParams;
 use crate::views::pagination::PaginationStats;
@@ -88,14 +90,48 @@ pub(in crate::views) struct LightRollingStockWithLiveriesCountList {
     )
 )]
 pub(in crate::views) async fn list(
-    State(db_pool): State<Arc<DbConnectionPoolV2>>,
+    State(AppState {
+        db_pool, regulator, ..
+    }): State<AppState>,
+
+    Extension(authn_state): Extension<crate::authentication::State>,
     Query(page_settings): Query<PaginationQueryParams<1000>>,
 ) -> Result<Json<LightRollingStockWithLiveriesCountList>> {
-    let settings = page_settings
-        .into_selection_settings()
-        .order_by(|| RollingStock::ID.asc());
+    let conn = &mut db_pool.get().await?;
+    let default_settings = page_settings.into_selection_settings();
+    let settings = if let Some(user) = authn_state.regular_user() {
+        let authorizer = authn_state.authorizer(regulator.openfga(), db_pool.get().await?);
+        let authorized_rolling_stocks = authorizer
+            .authorize(authz::v2::rolling_stock_list(
+                user,
+                RollingStockPrivilege::CanRead,
+            ))
+            .await?
+            .access()
+            .await?
+            .map_err(|err| match err {
+                Check::SubjectExists(_) => AuthorizationError::Forbidden,
+                check => impossible!(check),
+            })?;
+        match authorized_rolling_stocks {
+            authz::v2::ResourcesList::All => default_settings,
+            authz::v2::ResourcesList::Privileged(authorized_rolling_stocks) => default_settings
+                .filter(move || {
+                    RollingStock::ID.eq_any(
+                        authorized_rolling_stocks
+                            .iter()
+                            .map(|rolling_stock| rolling_stock.0)
+                            .collect(),
+                    )
+                }),
+        }
+    } else {
+        default_settings
+    };
+
     let (rolling_stocks, stats) =
-        RollingStock::list_paginated(&mut db_pool.get().await?, settings).await?;
+        RollingStock::list_paginated(conn, settings.order_by(move || RollingStock::ID.asc()))
+            .await?;
 
     let results = rolling_stocks.into_iter().zip(db_pool.iter_conn()).map(
         |(rolling_stock, conn)| async move {
@@ -302,6 +338,8 @@ impl From<ModeEffortCurves> for LightModeEffortCurves {
 
 #[cfg(test)]
 mod tests {
+    use authz::Role;
+    use authz::RollingStockGrant;
     use pretty_assertions::assert_eq;
     use std::collections::HashSet;
 
@@ -328,6 +366,57 @@ mod tests {
     async fn list_light_rolling_stock() {
         let app = test_app!().skip_authz().build();
         app.get("/light_rolling_stock").await.assert_status_ok();
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn rolling_stock_list_filters_authorized_rolling_stocks() {
+        let app = test_app!().build();
+        let db_pool = app.db_pool();
+        let rolling_stock_grant =
+            create_fast_rolling_stock(&mut db_pool.get_ok(), "fast_rolling_stock_grant").await;
+        let rolling_stock_no_grant =
+            create_fast_rolling_stock(&mut db_pool.get_ok(), "fast_rolling_stock_no_grant").await;
+        // Regular user with the correct roles should see only the rolling stock he is associated with:
+        let user = app
+            .user("user_identity", "user_name")
+            .with_rolling_stock_grant(rolling_stock_grant.id, RollingStockGrant::Reader)
+            .create()
+            .await;
+        let response: LightRollingStockWithLiveriesCountList = app
+            .get("/light_rolling_stock")
+            .by_user(user.as_ref())
+            .await
+            .assert_status_ok()
+            .json();
+        assert_eq!(
+            response
+                .results
+                .iter()
+                .map(|rolling_stock| rolling_stock.rolling_stock.id)
+                .collect::<Vec<_>>(),
+            vec![rolling_stock_grant.id]
+        );
+        // TODO: separate in two tests (admins_can_list_all_rolling_stocks and user_can_list_their_rolling_stocks)
+        // An admin should see all the rolling stocks:
+        let admin = app
+            .user("admin", "admin")
+            .with_roles([Role::Admin])
+            .create()
+            .await;
+        let response: LightRollingStockWithLiveriesCountList = app
+            .get("/light_rolling_stock/")
+            .by_user(admin.as_ref())
+            .await
+            .assert_status_ok()
+            .json();
+        assert_eq!(
+            response
+                .results
+                .iter()
+                .map(|rolling_stock| rolling_stock.rolling_stock.id)
+                .collect::<Vec<_>>(),
+            vec![rolling_stock_grant.id, rolling_stock_no_grant.id]
+        );
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
