@@ -192,7 +192,7 @@ pub(in crate::views) async fn get(
     Path(rolling_stock_id): Path<i64>,
 ) -> Result<Json<RollingStockWithLiveries>> {
     if let Some(user) = authn_state.regular_user() {
-        let authorizer = authn_state.authorizer(regulator.openfga(), db_pool.get().await?);
+        let authorizer = authn_state.authorizer(regulator.openfga());
         crate::authorizers::require(
             &authorizer,
             rolling_stock_privileges(user, authz::RollingStock(rolling_stock_id)),
@@ -235,7 +235,7 @@ pub(in crate::views) async fn get_by_name(
     .await?;
 
     if let Some(user) = authn_state.regular_user() {
-        let authorizer = authn_state.authorizer(regulator.openfga(), db_pool.get().await?);
+        let authorizer = authn_state.authorizer(regulator.openfga());
         crate::authorizers::require(
             &authorizer,
             rolling_stock_privileges(user, authz::RollingStock(rolling_stock.id)),

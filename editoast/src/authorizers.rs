@@ -2,9 +2,8 @@ use std::convert::Infallible;
 use std::marker::PhantomData;
 use std::ops::Not as _;
 
-use authz::ProjectGrant;
 use crate::views::AuthorizationError;
-use crate::views::AuthorizerError;
+use authz::ProjectGrant;
 use authz::v2::Access;
 use authz::v2::Actor;
 use authz::v2::Authorizer;
@@ -296,12 +295,10 @@ where
     <I as IntoIterator>::Item: PartialEq,
     U: Authorizer<Error = Error>,
 {
-    let access = authorizer.authorize(protected).await.map_err(|e| match e {
-        Error::Database(error) => {
-            AuthorizationError::AuthError(AuthorizerError::Storage(error.into()))
-        }
-        Error::OpenFga(error) => error.into(),
-    })?;
+    let access = authorizer
+        .authorize(protected)
+        .await
+        .map_err(|e| AuthorizationError::from(e.0))?;
     let Ok(privileges) = access.access().await? else {
         return Err(AuthorizationError::Forbidden);
     };
