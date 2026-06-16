@@ -109,6 +109,11 @@ pub trait TestClientExt {
     async fn project_privileges(&self, user: User, project: Project) -> HashSet<ProjectPrivilege>;
     async fn project_list(&self, user: User) -> ResourcesList<Project>;
     async fn project_granted_subjects(&self, project: Project) -> Vec<Subject>;
+    async fn rolling_stock_list(
+        &self,
+        user: User,
+        privilege: RollingStockPrivilege,
+    ) -> ResourcesList<RollingStock>;
 }
 
 impl TestClientExt for fga::Client {
@@ -357,6 +362,20 @@ impl TestClientExt for fga::Client {
     async fn project_granted_subjects(&self, project: Project) -> Vec<Subject> {
         special_authorizers::Authorize(self)
             .access_value(project_granted_subjects(project))
+            .await
+            .unwrap()
+    }
+
+    async fn rolling_stock_list(
+        &self,
+        user: User,
+        privilege: RollingStockPrivilege,
+    ) -> ResourcesList<RollingStock> {
+        let authorize = special_authorizers::Authorize(self);
+        authorize
+            .access_value(crate::v2::rolling_stock::rolling_stock_list(
+                user, privilege,
+            ))
             .await
             .unwrap()
     }
