@@ -98,6 +98,11 @@ pub trait TestClientExt {
         subject: Subject,
         project: Project,
     ) -> Option<ProjectGrant>;
+    async fn rolling_stock_list(
+        &self,
+        user: User,
+        privilege: RollingStockPrivilege,
+    ) -> ResourcesList<RollingStock>;
 }
 
 impl TestClientExt for fga::Client {
@@ -310,6 +315,20 @@ impl TestClientExt for fga::Client {
         let authorize = special_authorizers::Authorize(self);
         authorize
             .access_value(project_effective_grant(subject, project))
+            .await
+            .unwrap()
+    }
+
+    async fn rolling_stock_list(
+        &self,
+        user: User,
+        privilege: RollingStockPrivilege,
+    ) -> ResourcesList<RollingStock> {
+        let authorize = special_authorizers::Authorize(self);
+        authorize
+            .access_value(crate::v2::rolling_stock::rolling_stock_list(
+                user, privilege,
+            ))
             .await
             .unwrap()
     }
