@@ -9,7 +9,7 @@ dependencies = ["osrd-schemas", "osrd-schemas-auto"]
 
 [project.optional-dependencies]
 check = [
-  "pyright~=1.1.393",
+  "pyright~=1.1.410",
   "pytest-cov~=7.1.0",
   "pytest~=9.0.3",
   "ruff~=0.15.16",
