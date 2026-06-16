@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 from typing import List, Optional, Tuple
 
-from geojson_pydantic.types import LineStringCoords
+from geojson_pydantic.types import LineStringCoords, Position2D
 from osrd_schemas_auto import models
 from pydantic import ValidationError
 
@@ -136,7 +136,7 @@ class TrackSection:
     def to_rjs(self):
         # Replace 'None' by '0.0'
         coordinates: LineStringCoords = list(
-            map(lambda pos: (pos[0] or 0.0, pos[1] or 0.0), self.coordinates)
+            map(lambda pos: Position2D(pos[0] or 0.0, pos[1] or 0.0), self.coordinates)
         )
         try:
             geo_data = make_geo_lines(coordinates)
