@@ -354,13 +354,11 @@ const PathStepItem = ({
           style={{
             borderColor: !isInvalidAndIsEditing
               ? isIndexed
-                ? categoryColors.background
-                : categoryColors.normal
+                ? categoryColors.surface
+                : categoryColors.base
               : '',
             // @ts-expect-error: variable CSS custom property to be used to style ::before
-            '--pathBackground': isTrailingPlaceHolder
-              ? 'rgba(0, 0, 0, 0.2)'
-              : categoryColors.normal,
+            '--pathBackground': isTrailingPlaceHolder ? 'rgba(0, 0, 0, 0.2)' : categoryColors.base,
             '--counterLink': connectorLong ? '48px' : '28px',
           }}
           onClick={(e) => {

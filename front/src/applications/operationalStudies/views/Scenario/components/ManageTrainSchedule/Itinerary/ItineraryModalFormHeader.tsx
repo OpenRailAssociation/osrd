@@ -161,7 +161,7 @@ const ItineraryModalFormHeader = ({
         <div
           className="category-color"
           style={{
-            backgroundColor: categoryColors.normal,
+            backgroundColor: categoryColors.base,
           }}
         />
         <div className="category-select">
