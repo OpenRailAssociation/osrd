@@ -517,6 +517,7 @@
         "linear": "Marge linéaire",
         "mareco": "Marge Mareco"
       },
+      "categoryMismatch": "L’association du matériel roulant et de la catégorie est atypique",
       "form": {
         "add": "Ajouter",
         "comfort": "Confort",

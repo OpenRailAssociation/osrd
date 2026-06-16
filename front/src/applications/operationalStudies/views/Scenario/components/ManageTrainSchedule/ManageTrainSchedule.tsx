@@ -21,7 +21,7 @@ import Itinerary from 'modules/pathfinding/components/Itinerary';
 import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
 import { RollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector';
 import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector';
-import isMainCategory from 'modules/rollingStock/helpers/category';
+import isMainCategory, { checkCategoryWarning } from 'modules/rollingStock/helpers/category';
 import { isElectric } from 'modules/rollingStock/helpers/electric';
 import TimesStopsInput from 'modules/timesStops/TimesStopsInput';
 import {
@@ -260,22 +260,7 @@ const ManageTrainSchedule = () => {
     return subCategories.find((option) => option.code === currentCategory.sub_category_code);
   }, [currentCategory, subCategories]);
 
-  const isCategoryWarning = (() => {
-    if (!rollingStock || !currentCategory) return false;
-
-    if (isMainCategory(currentCategory)) {
-      return (
-        currentCategory.main_category !== rollingStock.primary_category &&
-        !rollingStock.other_categories.includes(currentCategory.main_category)
-      );
-    }
-
-    if (currentSubCategory) {
-      return currentSubCategory.main_category !== rollingStock.primary_category;
-    }
-
-    return false;
-  })();
+  const isCategoryWarning = checkCategoryWarning(rollingStock, currentCategory, currentSubCategory);
 
   const categoryWarning = isCategoryWarning ? t('categoryMismatch') : undefined;
   return (

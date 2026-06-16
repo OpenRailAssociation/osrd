@@ -16,7 +16,10 @@ import { useTranslation } from 'react-i18next';
 import type { PacedTrainWithPaced } from 'applications/operationalStudies/types';
 import type { LightRollingStockWithLiveries, TrainCategory } from 'common/api/osrdEditoastApi';
 import type { Comfort, ConstraintDistribution } from 'common/api/osrdRailwayManagerApi';
+import Banner from 'common/Banner';
 import useSpeedLimitTags from 'common/SpeedLimitTagSelector/useSpeedLimitTags';
+import { useSubCategoryContext } from 'common/SubCategoryContext';
+import isMainCategory, { checkCategoryWarning } from 'modules/rollingStock/helpers/category';
 import useCategoryOptions, {
   categoryOptionId,
 } from 'modules/rollingStock/hooks/useCategoryOptions';
@@ -252,10 +255,28 @@ const ExpandedTrainForm = ({
     [selectedCategoryId]
   );
   const selectedRollingStock = useMemo(
-    () => rollingStocks.find((rs) => rs.name === fields.rolling_stock_name) ?? null,
+    () => rollingStocks.find((rs) => rs.name === fields.rolling_stock_name),
     [fields.rolling_stock_name, rollingStocks]
   );
   const erroneousFields = useMemo(() => !fields.train_name, [fields.train_name]);
+
+  const subCategories = useSubCategoryContext();
+
+  const currentSubCategory = useMemo(() => {
+    const category = fields.category;
+    if (!category || isMainCategory(category)) return undefined;
+    return subCategories.find((option) => option.code === category.sub_category_code);
+  }, [fields.category, subCategories]);
+
+  const isCategoryWarning = checkCategoryWarning(
+    selectedRollingStock,
+    fields.category,
+    currentSubCategory
+  );
+
+  const categoryWarning = isCategoryWarning
+    ? t('manageTrainSchedule.trainHeader.categoryMismatch')
+    : undefined;
 
   const toggleBand = (
     <div className="toggle-band">
@@ -501,6 +522,7 @@ const ExpandedTrainForm = ({
           />
         </div>
       </div>
+      {categoryWarning && <Banner message={categoryWarning} />}
     </div>
   );
 };
