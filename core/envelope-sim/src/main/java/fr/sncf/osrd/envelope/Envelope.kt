@@ -1,6 +1,5 @@
 package fr.sncf.osrd.envelope
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import fr.sncf.osrd.envelope.part.EnvelopePart
 import fr.sncf.osrd.envelope.part.minEnvelopeParts
 import fr.sncf.osrd.envelope_utils.DoubleUtils
@@ -10,7 +9,6 @@ import fr.sncf.osrd.utils.areSpeedsEqual
 import java.util.*
 import java.util.stream.Stream
 
-@SuppressFBWarnings("URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
 class Envelope(parts: Array<EnvelopePart>) :
     Iterable<EnvelopePart>, SearchableEnvelope, EnvelopeInterpolate {
     private val parts: Array<EnvelopePart>
