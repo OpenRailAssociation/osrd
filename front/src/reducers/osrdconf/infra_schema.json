@@ -650,33 +650,10 @@
                     "items": {
                         "anyOf": [
                             {
-                                "maxItems": 2,
-                                "minItems": 2,
-                                "prefixItems": [
-                                    {
-                                        "type": "number"
-                                    },
-                                    {
-                                        "type": "number"
-                                    }
-                                ],
-                                "type": "array"
+                                "$ref": "#/$defs/Position2D"
                             },
                             {
-                                "maxItems": 3,
-                                "minItems": 3,
-                                "prefixItems": [
-                                    {
-                                        "type": "number"
-                                    },
-                                    {
-                                        "type": "number"
-                                    },
-                                    {
-                                        "type": "number"
-                                    }
-                                ],
-                                "type": "array"
+                                "$ref": "#/$defs/Position3D"
                             }
                         ]
                     },
@@ -1076,6 +1053,40 @@
             ],
             "title": "OperationalPointPartSncfExtension",
             "type": "object"
+        },
+        "Position2D": {
+            "maxItems": 2,
+            "minItems": 2,
+            "prefixItems": [
+                {
+                    "title": "Longitude",
+                    "type": "number"
+                },
+                {
+                    "title": "Latitude",
+                    "type": "number"
+                }
+            ],
+            "type": "array"
+        },
+        "Position3D": {
+            "maxItems": 3,
+            "minItems": 3,
+            "prefixItems": [
+                {
+                    "title": "Longitude",
+                    "type": "number"
+                },
+                {
+                    "title": "Latitude",
+                    "type": "number"
+                },
+                {
+                    "title": "Altitude",
+                    "type": "number"
+                }
+            ],
+            "type": "array"
         },
         "Route": {
             "description": "This class is used to describe routes on the infrastructure.",

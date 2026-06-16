@@ -214,14 +214,14 @@ wheels = [
 
 [[package]]
 name = "geojson-pydantic"
-version = "1.0.2"
+version = "2.1.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "pydantic" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/ee/a5/e1cbfaef7cef4c8fb95b9ba46faedc6dca3b115f44bb95ef4e89c4683756/geojson_pydantic-1.0.2.tar.gz", hash = "sha256:3179d665ad8763670681b73aded2228df20a1164951e9d7075be8f370eb681f4", size = 9180, upload-time = "2024-01-16T18:13:07.259Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/d9/76/77c6f2e608028a2885e4d9d9a28cb6801879972d4bb3106c1dca02201df6/geojson_pydantic-2.1.1.tar.gz", hash = "sha256:3b64fa2dcd98108ff8a19bfb01eee3dab41bc230be2481804aefd7c1659d1c23", size = 8156, upload-time = "2026-04-07T09:48:07.252Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/b1/d5/75118ba2f51bb5110066d5f8cc50c13b222f6ff6e75b0fc2ec1ee3bd6d48/geojson_pydantic-1.0.2-py3-none-any.whl", hash = "sha256:d7a7f8ff4ca27298f62d1af182f69ec85f9990b9db80fa7e0161be1de2a9ae0f", size = 8588, upload-time = "2024-01-16T18:13:04.026Z" },
+    { url = "https://files.pythonhosted.org/packages/95/97/d59d999f00aec90fc7a4efb742fc11e6c160552aa1b313438d3497998644/geojson_pydantic-2.1.1-py3-none-any.whl", hash = "sha256:55354f22ededc3c070e3210fec6f518d784b65c4368c1763f2c6dc4bab79b898", size = 9456, upload-time = "2026-04-07T09:48:05.772Z" },
 ]
 
 [[package]]
@@ -391,7 +391,7 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
-    { name = "geojson-pydantic", specifier = "~=1.0.0" },
+    { name = "geojson-pydantic", specifier = "~=2.1.1" },
     { name = "pydantic", specifier = ">=2.13.4" },
     { name = "pyright", marker = "extra == 'check'", specifier = "~=1.1.393" },
     { name = "ruff", marker = "extra == 'check'", specifier = "~=0.15.16" },
@@ -413,7 +413,7 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "datamodel-code-generator", specifier = "==0.35.0" },
-    { name = "geojson-pydantic", specifier = "~=1.0.0" },
+    { name = "geojson-pydantic", specifier = "~=2.1.1" },
     { name = "openapi-pydantic", specifier = "==0.5.1" },
     { name = "pydantic", specifier = ">=2.12.2" },
     { name = "pyyaml", specifier = "==6.0.3" },
