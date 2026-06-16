@@ -20,6 +20,7 @@ use crate::v2::infra_granted_subjects;
 use crate::v2::infra_privileges;
 use crate::v2::infra_revoke_grant;
 use crate::v2::infra_set_grant;
+use crate::v2::rolling_stock_direct_grant;
 use crate::v2::rolling_stock_effective_grant;
 use crate::v2::rolling_stock_granted_subjects;
 use crate::v2::rolling_stock_privileges;
@@ -48,6 +49,11 @@ pub trait TestClientExt {
         rolling_stock: RollingStock,
     ) -> HashSet<RollingStockPrivilege>;
     async fn rolling_stock_effective_grant(
+        &self,
+        subject: Subject,
+        rolling_stock: RollingStock,
+    ) -> Option<RollingStockGrant>;
+    async fn rolling_stock_direct_grant(
         &self,
         subject: Subject,
         rolling_stock: RollingStock,
@@ -100,6 +106,18 @@ impl TestClientExt for fga::Client {
         let authorize = special_authorizers::Authorize(self);
         authorize
             .access_value(infra_effective_grant(subject, infra))
+            .await
+            .unwrap()
+    }
+
+    async fn rolling_stock_direct_grant(
+        &self,
+        subject: Subject,
+        rolling_stock: RollingStock,
+    ) -> Option<RollingStockGrant> {
+        let authorize = special_authorizers::Authorize(self);
+        authorize
+            .access_value(rolling_stock_direct_grant(subject, rolling_stock))
             .await
             .unwrap()
     }

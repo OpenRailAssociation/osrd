@@ -21,6 +21,7 @@ use crate::InfraGrant;
 use crate::InfraPrivilege;
 use crate::Role;
 use crate::RollingStock;
+use crate::RollingStockGrant;
 use crate::Subject;
 use crate::User;
 use crate::model::RollingStockPrivilege;
@@ -423,6 +424,64 @@ where
         match self {
             itertools::Either::Left(l) => l.authorize(data).await,
             itertools::Either::Right(r) => r.authorize(data).await,
+        }
+    }
+}
+
+enum Grant {
+    Reader,
+    Writer,
+    Owner,
+}
+
+impl From<Grant> for RollingStockGrant {
+    fn from(grant: Grant) -> Self {
+        match grant {
+            Grant::Reader => RollingStockGrant::Reader,
+            Grant::Writer => RollingStockGrant::Writer,
+            Grant::Owner => RollingStockGrant::Owner,
+        }
+    }
+}
+
+impl From<Grant> for InfraGrant {
+    fn from(grant: Grant) -> Self {
+        match grant {
+            Grant::Reader => InfraGrant::Reader,
+            Grant::Writer => InfraGrant::Writer,
+            Grant::Owner => InfraGrant::Owner,
+        }
+    }
+}
+
+/// Given a list of the existing direct grants on a resource, either return its direct grant
+/// if there is only one or panic if multiple direct grants exist.
+// TODO PR: pass an extra `resource_type` parameter to make the panic message more explicit ?
+fn validate_direct_grant(
+    is_reader: bool,
+    is_writer: bool,
+    is_owner: bool,
+    resource_id: i64,
+    subject: Subject,
+) -> Option<Grant> {
+    match (is_reader, is_writer, is_owner) {
+        (true, false, false) => Some(Grant::Reader),
+        (false, true, false) => Some(Grant::Writer),
+        (false, false, true) => Some(Grant::Owner),
+        (false, false, false) => None,
+        _ => {
+            tracing::error!(
+                is_reader,
+                is_writer,
+                is_owner,
+                ?subject,
+                resource = ?resource_id,
+                "Subject has multiple direct grants on the same resource"
+            );
+            panic!(
+                "Subject '{subject:?}' has multiple direct grants on the same resource '{resource_id:?}', which is not supposed to happen by design. \n\
+                        Detected direct grants: reader: {is_reader}, writer: {is_writer}, owner: {is_owner}"
+            )
         }
     }
 }

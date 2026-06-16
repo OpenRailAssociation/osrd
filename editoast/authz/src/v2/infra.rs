@@ -17,6 +17,7 @@ use crate::v2::Check;
 use crate::v2::Protected;
 use crate::v2::ResourcesList;
 use crate::v2::subject_roles;
+use crate::v2::validate_direct_grant;
 
 /// Returns the *direct grant* a subject has on an [Infra], if any
 ///
@@ -30,42 +31,25 @@ pub fn infra_direct_grant(subject: Subject, infra: Infra) -> Protected<Option<In
         async move {
             let (is_reader, is_writer, is_owner) = match &subject {
                 Subject::User(user) => tokio::try_join!(
-                    openfga
-                        .tuple_exists(Infra::reader().tuple(user, &infra)),
-                    openfga
-                        .tuple_exists(Infra::writer().tuple(user, &infra)),
+                    openfga.tuple_exists(Infra::reader().tuple(user, &infra)),
+                    openfga.tuple_exists(Infra::writer().tuple(user, &infra)),
                     openfga.tuple_exists(Infra::owner().tuple(user, &infra)),
                 )?,
                 Subject::Group(group) => tokio::try_join!(
-                    openfga
-                        .tuple_exists(Infra::reader().tuple(Group::member().userset(group), &infra)),
-                    openfga
-                        .tuple_exists(Infra::writer().tuple(Group::member().userset(group), &infra)),
+                    openfga.tuple_exists(
+                        Infra::reader().tuple(Group::member().userset(group), &infra)
+                    ),
+                    openfga.tuple_exists(
+                        Infra::writer().tuple(Group::member().userset(group), &infra)
+                    ),
                     openfga
                         .tuple_exists(Infra::owner().tuple(Group::member().userset(group), &infra)),
                 )?,
             };
-
-            match (is_reader, is_writer, is_owner) {
-                (true, false, false) => Ok(Some(InfraGrant::Reader)),
-                (false, true, false) => Ok(Some(InfraGrant::Writer)),
-                (false, false, true) => Ok(Some(InfraGrant::Owner)),
-                (false, false, false) => Ok(None),
-                _ => {
-                    tracing::error!(
-                        is_reader,
-                        is_writer,
-                        is_owner,
-                        ?subject,
-                        resource = ?infra,
-                        "Subject has multiple direct grants on the same resource"
-                    );
-                    panic!(
-                        "Subject '{subject:?}' has multiple direct grants on the same resource '{infra:?}', which is not supposed to happen by design. \n\
-                        Detected direct grants: reader: {is_reader}, writer: {is_writer}, owner: {is_owner}"
-                    )
-                }
-            }
+            Ok(
+                validate_direct_grant(is_reader, is_writer, is_owner, *infra, subject)
+                    .map(Into::into),
+            )
         }
         .boxed()
     })
