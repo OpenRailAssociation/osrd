@@ -273,6 +273,65 @@ pub fn rolling_stock_direct_grant(
     .with_check(Check::SubjectExists(subject))
     .with_check(Check::RollingStockExists(rolling_stock))
 }
+
+/// Revokes the (direct) grant a subject has on a [RollingStock], if any
+///
+/// Returns `true` if a grant was revoked, `false` otherwise, making the operation idempotent.
+/// No transaction is setup as OpenFGA does not support them.
+pub fn rolling_stock_revoke_grant(
+    subject: Subject,
+    rolling_stock: RollingStock,
+) -> Protected<bool> {
+    let prot = rolling_stock_direct_grant(subject, rolling_stock).map(move |openfga, grant| {
+        async move {
+            let Some(grant) = grant else {
+                return Ok(false);
+            };
+
+            let mut delete = openfga.prepare_deletes();
+            match (subject, grant) {
+                (Subject::User(user), RollingStockGrant::Reader) => {
+                    delete.push(&RollingStock::reader().tuple(&user, &rolling_stock))
+                }
+                (Subject::User(user), RollingStockGrant::Writer) => {
+                    delete.push(&RollingStock::writer().tuple(&user, &rolling_stock))
+                }
+                (Subject::User(user), RollingStockGrant::Owner) => {
+                    delete.push(&RollingStock::owner().tuple(&user, &rolling_stock))
+                }
+                (Subject::Group(group), RollingStockGrant::Reader) => delete.push(
+                    &RollingStock::reader().tuple(Group::member().userset(&group), &rolling_stock),
+                ),
+                (Subject::Group(group), RollingStockGrant::Writer) => delete.push(
+                    &RollingStock::writer().tuple(Group::member().userset(&group), &rolling_stock),
+                ),
+                (Subject::Group(group), RollingStockGrant::Owner) => delete.push(
+                    &RollingStock::owner().tuple(Group::member().userset(&group), &rolling_stock),
+                ),
+            };
+            delete.execute().await?;
+            Ok(true)
+        }
+        .boxed()
+    });
+
+    // Revoking rules:
+    // 1. Only owners (and admins) can fully revoke grants
+    // 2. The last owner of a resource cannot be revoked (admins can)
+    // 3. An owner cannot revoke another owner
+    prot.with_check(Check::HasRollingStockPrivilege(
+        Actor::Issuer,
+        RollingStockPrivilege::CanRevoke,
+        rolling_stock,
+    ))
+    .with_check(Check::SubjectEffectiveRollingStockGrantIsNot(
+        RollingStockGrant::Owner,
+        subject,
+        rolling_stock,
+    ))
+    .with_check(Check::IsNotLastRollingStockOwner(subject, rolling_stock))
+}
+
 #[cfg(test)]
 mod tests {
     use rstest::rstest;
@@ -567,6 +626,99 @@ mod tests {
             .unwrap()
             .unwrap_authorized()
             .await;
+    }
+
+    #[rstest::rstest]
+    #[case::user_reader(Subject::user(1), RollingStockGrant::Reader)]
+    #[case::user_writer(Subject::user(1), RollingStockGrant::Writer)]
+    #[case::user_owner(Subject::user(1), RollingStockGrant::Owner)]
+    #[case::group_reader(Subject::group(1), RollingStockGrant::Reader)]
+    #[case::group_writer(Subject::group(1), RollingStockGrant::Writer)]
+    #[case::group_owner(Subject::group(1), RollingStockGrant::Owner)]
+    #[tokio::test]
+    async fn revoke_rolling_stock_grant_ok(
+        #[case] subject: Subject,
+        #[case] grant: RollingStockGrant,
+    ) {
+        let openfga = crate::authz_client!();
+        openfga
+            .give_rolling_stock_grant(RollingStock(1), subject, grant)
+            .await;
+        assert_eq!(
+            openfga
+                .rolling_stock_direct_grant(subject, RollingStock(1))
+                .await,
+            Some(grant)
+        );
+        assert!(
+            openfga
+                .rolling_stock_revoke_grant(subject, RollingStock(1))
+                .await
+        );
+        assert_eq!(
+            openfga
+                .rolling_stock_direct_grant(subject, RollingStock(1))
+                .await,
+            None
+        );
+    }
+
+    #[tokio::test]
+    async fn revoke_rolling_stock_grant_noop() {
+        let openfga = crate::authz_client!();
+        assert!(
+            !openfga
+                .rolling_stock_revoke_grant(Subject::user(1), RollingStock(1))
+                .await
+        );
+    }
+
+    #[tokio::test]
+    async fn revoke_rolling_stock_grant_with_inherited() {
+        let openfga = crate::authz_client!();
+
+        openfga
+            .prepare_writes()
+            .write(&Group::member().tuple(&User(1), &Group(10)))
+            .write(
+                &RollingStock::writer()
+                    .tuple(Group::member().userset(&Group(10)), &RollingStock(1)),
+            ) // inherited
+            .write(&RollingStock::reader().tuple(&User(1), &RollingStock(1))) // direct
+            .write(&RollingStock::owner().tuple(&User(1), &RollingStock(2))) // unrelated
+            .execute()
+            .await
+            .unwrap();
+
+        assert_eq!(
+            openfga
+                .rolling_stock_direct_grant(Subject::user(1), RollingStock(1))
+                .await,
+            Some(RollingStockGrant::Reader)
+        );
+        assert!(
+            openfga
+                .rolling_stock_revoke_grant(Subject::user(1), RollingStock(1))
+                .await
+        );
+        assert_eq!(
+            openfga
+                .rolling_stock_direct_grant(Subject::user(1), RollingStock(1))
+                .await,
+            None
+        );
+        assert_eq!(
+            openfga
+                .rolling_stock_effective_grant(Subject::user(1), RollingStock(1))
+                .await,
+            Some(RollingStockGrant::Writer)
+        );
+        assert_eq!(
+            openfga
+                .rolling_stock_direct_grant(Subject::user(1), RollingStock(2))
+                .await,
+            Some(RollingStockGrant::Owner)
+        );
     }
 
     #[rstest]

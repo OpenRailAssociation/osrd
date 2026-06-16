@@ -24,6 +24,7 @@ use crate::v2::rolling_stock_direct_grant;
 use crate::v2::rolling_stock_effective_grant;
 use crate::v2::rolling_stock_granted_subjects;
 use crate::v2::rolling_stock_privileges;
+use crate::v2::rolling_stock_revoke_grant;
 use crate::v2::special_authorizers;
 use crate::v2::user_groups;
 
@@ -43,6 +44,11 @@ pub trait TestClientExt {
     async fn infra_privileges(&self, user: User, infra: Infra) -> HashSet<InfraPrivilege>;
     async fn infra_granted_subjects(&self, infra: Infra, grant: InfraGrant) -> Vec<Subject>;
     async fn infra_list(&self, user: User, privilege: InfraPrivilege) -> ResourcesList<Infra>;
+    async fn rolling_stock_revoke_grant(
+        &self,
+        subject: Subject,
+        rolling_stock: RollingStock,
+    ) -> bool;
     async fn rolling_stock_privileges(
         &self,
         user: User,
@@ -196,6 +202,17 @@ impl TestClientExt for fga::Client {
         let authorize = special_authorizers::Authorize(self);
         authorize
             .access_value(rolling_stock_granted_subjects(rolling_stock, grant))
+            .await
+            .unwrap()
+    }
+    async fn rolling_stock_revoke_grant(
+        &self,
+        subject: Subject,
+        rolling_stock: RollingStock,
+    ) -> bool {
+        let authorize = special_authorizers::Authorize(self);
+        authorize
+            .access_value(rolling_stock_revoke_grant(subject, rolling_stock))
             .await
             .unwrap()
     }
