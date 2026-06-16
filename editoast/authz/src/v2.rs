@@ -78,6 +78,10 @@ pub enum Check {
     SubjectEffectiveInfraGrantIsNot(InfraGrant, Subject, Infra),
     /// The subject must not be the last direct owner of the infra
     IsNotLastInfraOwner(Subject, Infra),
+    /// The subject must not have the specified effective rolling stock grant
+    SubjectEffectiveRollingStockGrantIsNot(RollingStockGrant, Subject, RollingStock),
+    /// The subject must not be the last direct owner of the rolling stock
+    IsNotLastRollingStockOwner(Subject, RollingStock),
 
     /// The subject must exist in PostgreSQL
     SubjectExists(Subject),
