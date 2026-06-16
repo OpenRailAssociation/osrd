@@ -14,7 +14,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-check = ["pyright~=1.1.410", "ruff~=0.15.16"]
+check = ["pyright~=1.1.410", "ruff~=0.15.17"]
 
 [tool.pyright]
 include = ["conftest.py", "fuzzer", "infra-scripts", "tests"]
