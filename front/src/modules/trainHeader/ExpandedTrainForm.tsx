@@ -47,8 +47,8 @@ function getFieldsFromTrain(train: Train): TrainFieldsState {
     constraint_distribution: train.constraint_distribution,
     comfort: train.comfort ?? null,
     category: train.category ?? null,
-    service_cadence: Duration.parse(train.paced?.interval ?? '0').valueOf(),
-    service_window: Duration.parse(train.paced?.time_window ?? '0').valueOf(),
+    service_cadence: train.paced ? Duration.parse(train.paced.interval).valueOf() : undefined,
+    service_window: train.paced ? Duration.parse(train.paced.time_window).valueOf() : undefined,
     use_electrical_profiles: train?.options?.use_electrical_profiles ?? null,
     labels: train.labels ?? [],
   };
