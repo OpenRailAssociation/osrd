@@ -1,16 +1,26 @@
 import { useCallback, useMemo, useState } from 'react';
 
-import { Button, DurationInput, Input, Select, Switch, TokenInput } from '@osrd-project/ui-core';
+import {
+  Button,
+  ComboBox,
+  DurationInput,
+  Input,
+  Select,
+  Switch,
+  TokenInput,
+  useDefaultComboBox,
+} from '@osrd-project/ui-core';
 import { ChevronUp } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
 
 import type { PacedTrainWithPaced } from 'applications/operationalStudies/types';
-import type { TrainCategory } from 'common/api/osrdEditoastApi';
+import type { LightRollingStockWithLiveries, TrainCategory } from 'common/api/osrdEditoastApi';
 import type { Comfort, ConstraintDistribution } from 'common/api/osrdRailwayManagerApi';
 import useSpeedLimitTags from 'common/SpeedLimitTagSelector/useSpeedLimitTags';
 import useCategoryOptions, {
   categoryOptionId,
 } from 'modules/rollingStock/hooks/useCategoryOptions';
+import useFilterRollingStock from 'modules/rollingStock/hooks/useFilterRollingStock';
 import type { Train } from 'reducers/osrdconf/types';
 import { useDateTimeLocale } from 'utils/date';
 import { Duration } from 'utils/duration';
@@ -45,6 +55,7 @@ type TrainFieldsState = {
   use_electrical_profiles: boolean | null;
   labels: string[];
   added_exception_date: Date;
+  rolling_stock_name: string;
 };
 
 function getFieldsFromTrain(train: Train): TrainFieldsState {
@@ -59,6 +70,7 @@ function getFieldsFromTrain(train: Train): TrainFieldsState {
     use_electrical_profiles: train?.options?.use_electrical_profiles ?? null,
     labels: train.labels ?? [],
     added_exception_date: new Date(train.start_time),
+    rolling_stock_name: train.rolling_stock_name,
   };
 }
 
@@ -77,6 +89,7 @@ function applyFieldsToTrain(fields: TrainFieldsState, train: Train): Train {
     train_name: fields.train_name || train.train_name,
     comfort: fields.comfort === null ? undefined : fields.comfort,
     category: fields.category === null ? undefined : fields.category,
+    rolling_stock_name: fields.rolling_stock_name,
     paced,
     options: {
       use_electrical_profiles:
@@ -123,6 +136,19 @@ const ExpandedTrainForm = ({
   const dateTimeLocale = useDateTimeLocale();
   const speedLimitTags = useSpeedLimitTags();
   const categoryOptions = useCategoryOptions();
+
+  const { filteredRollingStockList: rollingStocks } = useFilterRollingStock();
+
+  const getRollingStockLabel = (rs: LightRollingStockWithLiveries) => {
+    const secondPart = rs.metadata?.series || rs.metadata?.reference || '';
+    return secondPart ? `${rs.name} - ${secondPart}` : rs.name;
+  };
+
+  const {
+    suggestions: rollingStockSuggestions,
+    onChange: onRollingStockQueryChange,
+    resetSuggestions: resetRollingStockSuggestions,
+  } = useDefaultComboBox(rollingStocks, getRollingStockLabel);
 
   const pacedTrain = train.paced ? (train as PacedTrainWithPaced) : null;
   const occurenceId = isOccurrenceId(train.id) ? train.id : null;
@@ -224,6 +250,10 @@ const ExpandedTrainForm = ({
   const selectedCategoryOption = useMemo(
     () => categoryOptions.find((category) => category.id === selectedCategoryId),
     [selectedCategoryId]
+  );
+  const selectedRollingStock = useMemo(
+    () => rollingStocks.find((rs) => rs.name === fields.rolling_stock_name) ?? null,
+    [fields.rolling_stock_name, rollingStocks]
   );
   const erroneousFields = useMemo(() => !fields.train_name, [fields.train_name]);
 
@@ -379,12 +409,27 @@ const ExpandedTrainForm = ({
           />
         </div>
         <div className="train-rolling-stock">
-          <Input
+          <ComboBox
             id="train-header-rolling-stock-input"
-            small
             label={t('manageTrainSchedule.trainHeader.form.rollingStock')}
-            value={train.rolling_stock_name ?? ''}
-            disabled
+            small
+            autoComplete="off"
+            value={
+              selectedRollingStock
+                ? getRollingStockLabel(selectedRollingStock)
+                : fields.rolling_stock_name
+            }
+            suggestions={rollingStockSuggestions.map(getRollingStockLabel)}
+            getSuggestionLabel={(s) => s}
+            onSelectSuggestion={(label) => {
+              const rs = rollingStocks.find((r) => getRollingStockLabel(r) === label);
+              if (rs) onFieldImmediateChange('rolling_stock_name', rs.name);
+            }}
+            resetSuggestions={resetRollingStockSuggestions}
+            onChange={(e) => {
+              onRollingStockQueryChange(e);
+              onFieldChange('rolling_stock_name', e.target.value);
+            }}
           />
         </div>
         <div className="train-composition-code">
