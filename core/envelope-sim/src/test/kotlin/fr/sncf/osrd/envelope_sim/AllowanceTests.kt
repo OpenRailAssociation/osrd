@@ -1,7 +1,6 @@
 package fr.sncf.osrd.envelope_sim
 
 import com.carrotsearch.hppc.DoubleArrayList
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.envelope.EnvelopeShape
 import fr.sncf.osrd.envelope.EnvelopeTransitions
@@ -610,7 +609,6 @@ class AllowanceTests {
 
     /** Test standard mareco allowance with different accelerating slopes */
     @Test
-    @SuppressFBWarnings("FL_FLOATS_AS_LOOP_COUNTERS")
     fun testMarecoAcceleratingSlopes() {
         val length = 100000.0
         val gradeValues = DoubleArrayList()

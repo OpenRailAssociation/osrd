@@ -1,6 +1,5 @@
 package fr.sncf.osrd.envelope_sim
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import fr.sncf.osrd.envelope.OverlayEnvelopeBuilder
 import fr.sncf.osrd.envelope.part.ConstrainedEnvelopePartBuilder
 import fr.sncf.osrd.envelope.part.EnvelopePartBuilder
@@ -44,7 +43,6 @@ class MarecoDecelerationTests {
      * the test suite, but it can be tweaked to test more cases.
      */
     @Test
-    @SuppressFBWarnings("FL_FLOATS_AS_LOOP_COUNTERS")
     fun testIteratively() {
         // Iterating by 0.1 causes float approximations and values that aren't well-rounded,
         // it helps to find some edge cases
