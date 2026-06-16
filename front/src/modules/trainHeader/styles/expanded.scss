@@ -206,6 +206,10 @@
       }
     }
   }
+
+  .banner {
+    margin-bottom: 0;
+  }
 }
 
 @container board-wrapper (width < 800px) {

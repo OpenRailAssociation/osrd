@@ -517,6 +517,7 @@
         "linear": "Linear margin",
         "mareco": "Mareco margin"
       },
+      "categoryMismatch": "This rolling stock and train category are an unusual match",
       "form": {
         "add": "Add",
         "comfort": "Comfort",
