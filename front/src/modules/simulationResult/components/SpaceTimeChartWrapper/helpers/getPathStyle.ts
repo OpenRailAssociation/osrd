@@ -55,7 +55,7 @@ const getPathStyle = (
           ))
     ) {
       return {
-        color: colors.hovered,
+        color: colors.strong,
         level: 1,
         ...(train.isSimulated === false && { border: invalidBorder }),
       };
@@ -70,14 +70,14 @@ const getPathStyle = (
     if (isOccurrenceId(hoveredTrainIdFromTimetable)) {
       if (train.id === hoveredTrainIdFromTimetable) {
         return {
-          color: colors.hovered,
+          color: colors.strong,
           level: 1,
           ...(train.isSimulated === false && { border: invalidBorder }),
         };
       }
     } else if (trainScheduleId === extractEditoastIdFromPacedTrainId(hoveredTrainIdFromTimetable)) {
       return {
-        color: colors.hovered,
+        color: colors.strong,
         level: 1,
         ...(train.isSimulated === false && { border: invalidBorder }),
       };
@@ -89,7 +89,7 @@ const getPathStyle = (
     if (isOccurrenceId(selectedTrainId)) {
       if (train.id === selectedTrainId) {
         return {
-          color: colors.normal,
+          color: colors.base,
           level: 1,
           border:
             train.isSimulated === false
@@ -97,13 +97,13 @@ const getPathStyle = (
                   offset: 3,
                   width: 13,
                   color: 'rgba(0, 0, 0, 0.05)',
-                  backgroundColor: colors.background,
+                  backgroundColor: colors.surface,
                 }
               : {
                   offset: 3,
                   width: 0.5,
-                  color: colors.normal,
-                  backgroundColor: colors.background,
+                  color: colors.base,
+                  backgroundColor: colors.surface,
                 },
         };
       }
@@ -114,7 +114,7 @@ const getPathStyle = (
           extractPacedTrainIdFromOccurrenceId(selectedTrainId)
       ) {
         return {
-          color: colors.normal,
+          color: colors.base,
           level: 1,
           border:
             train.isSimulated === false
@@ -122,13 +122,13 @@ const getPathStyle = (
               : {
                   offset: 3.5,
                   color: 'transparent',
-                  backgroundColor: colors.background,
+                  backgroundColor: colors.surface,
                 },
         };
       }
     } else if (train.id === selectedTrainId) {
       return {
-        color: colors.normal,
+        color: colors.base,
         level: 1,
         ...(train.isSimulated === false && { border: invalidBorder }),
       };
@@ -136,7 +136,7 @@ const getPathStyle = (
   }
 
   return {
-    color: colors.normal,
+    color: colors.base,
     ...(train.isSimulated === false && { border: invalidBorder }),
   };
 };

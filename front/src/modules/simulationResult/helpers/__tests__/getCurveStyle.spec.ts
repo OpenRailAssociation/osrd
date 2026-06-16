@@ -15,17 +15,17 @@ const colors = DEFAULT_TRAIN_PATH_COLORS;
 
 describe('getCurveStyle', () => {
   describe('none', () => {
-    it('should return the normal color with full opacity', () => {
+    it('should return the base color with full opacity', () => {
       const style = getCurveStyle('none', { colors, isSimulated: true });
-      expect(style.color).toBe(colors.normal);
+      expect(style.color).toBe(colors.base);
       expect(style.opacity).toBe(1);
       expect(style.outline).toBeUndefined();
     });
 
-    it('should label with the normal color, a regular font and a white background', () => {
+    it('should label with the base color, a regular font and a white background', () => {
       const style = getCurveStyle('none', { colors, isSimulated: true });
       expect(style.label).toEqual({
-        color: colors.normal,
+        color: colors.base,
         fontWeight: 400,
         background: { color: REST_BACKGROUND_COLOR, opacity: 0.9 },
       });
@@ -55,11 +55,11 @@ describe('getCurveStyle', () => {
       });
     });
 
-    it('should label with the hovered color, bold, with a normal-colored border', () => {
+    it('should label with the hovered color, bold, with a base-colored border', () => {
       const style = getCurveStyle('active', { colors, isSimulated: true });
       expect(style.label).toEqual({
-        color: colors.hovered,
-        background: { color: colors.background, border: colors.normal },
+        color: colors.strong,
+        background: { color: colors.surface, border: colors.base },
         fontWeight: 600,
       });
     });
@@ -73,21 +73,21 @@ describe('getCurveStyle', () => {
   describe('passivePrimary', () => {
     it('should return the category color with a background-colored outline', () => {
       const style = getCurveStyle('passivePrimary', { colors, isSimulated: true });
-      expect(style.color).toBe(colors.normal);
+      expect(style.color).toBe(colors.base);
       expect(style.level).toBeUndefined();
       expect(style.opacity).toBe(1);
       expect(style.outline).toEqual({
         offset: 0,
         width: 3,
-        color: colors.background,
+        color: colors.surface,
       });
     });
 
-    it('should label like active: hovered color, bold, with a normal-colored border', () => {
+    it('should label like active: hovered color, bold, with a base-colored border', () => {
       const style = getCurveStyle('passivePrimary', { colors, isSimulated: true });
       expect(style.label).toEqual({
-        color: colors.hovered,
-        background: { color: colors.background, border: colors.normal },
+        color: colors.strong,
+        background: { color: colors.surface, border: colors.base },
         fontWeight: 600,
       });
     });
@@ -99,22 +99,22 @@ describe('getCurveStyle', () => {
   });
 
   describe('passiveSecondary', () => {
-    it('should return the normal color with a thin background-colored outline', () => {
+    it('should return the base color with a thin background-colored outline', () => {
       const style = getCurveStyle('passiveSecondary', { colors, isSimulated: true });
-      expect(style.color).toBe(colors.normal);
+      expect(style.color).toBe(colors.base);
       expect(style.opacity).toBe(1);
       expect(style.outline).toEqual({
         offset: 0,
         width: 2,
-        color: colors.background,
+        color: colors.surface,
       });
     });
 
-    it('should label with the hovered color and a normal-colored border on the background', () => {
+    it('should label with the hovered color and a base-colored border on the background', () => {
       const style = getCurveStyle('passiveSecondary', { colors, isSimulated: true });
       expect(style.label).toEqual({
-        color: colors.hovered,
-        background: { color: colors.background, border: colors.normal },
+        color: colors.strong,
+        background: { color: colors.surface, border: colors.base },
         fontWeight: 400,
       });
     });
@@ -141,8 +141,8 @@ describe('getCurveStyle', () => {
     it('should keep the active selection label', () => {
       const style = getCurveStyle('drag', { colors, isSimulated: true });
       expect(style.label).toEqual({
-        color: colors.normal,
-        background: { color: colors.background },
+        color: colors.base,
+        background: { color: colors.surface },
         fontWeight: 600,
       });
     });
@@ -151,9 +151,9 @@ describe('getCurveStyle', () => {
   describe('out of selection', () => {
     it('should use the background tint for the curve and the label', () => {
       const style = getCurveStyle('none', { colors, isSimulated: true }, { outOfSelection: true });
-      expect(style.color).toBe(colors.background);
+      expect(style.color).toBe(colors.surface);
       expect(style.label).toEqual({
-        color: colors.background,
+        color: colors.surface,
         fontWeight: 400,
         background: { color: REST_BACKGROUND_COLOR, opacity: 0.9 },
       });
@@ -180,9 +180,9 @@ describe('getCurveStyle', () => {
 
     it('should leave the base style untouched when not out of selection', () => {
       const style = getCurveStyle('none', { colors, isSimulated: true }, { outOfSelection: false });
-      expect(style.color).toBe(colors.normal);
+      expect(style.color).toBe(colors.base);
       expect(style.label).toEqual({
-        color: colors.normal,
+        color: colors.base,
         fontWeight: 400,
         background: { color: REST_BACKGROUND_COLOR, opacity: 0.9 },
       });
@@ -192,13 +192,13 @@ describe('getCurveStyle', () => {
   describe('hover modifier', () => {
     it('should switch a none-state curve to the hovered tint at level 3', () => {
       const style = getCurveStyle('none', { colors, isSimulated: true }, { hovered: true });
-      expect(style.color).toBe(colors.hovered);
+      expect(style.color).toBe(colors.strong);
       expect(style.level).toBe(3);
       expect(style.opacity).toBe(1);
       expect(style.outline).toBeUndefined();
       expect(style.label).toEqual({
-        color: colors.hovered,
-        background: { color: colors.background },
+        color: colors.strong,
+        background: { color: colors.surface },
         fontWeight: 400,
       });
     });

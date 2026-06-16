@@ -42,8 +42,8 @@ type StyleOptions = {
 };
 
 const hoveredLabel = (colors: CategoryColors): NonNullable<CurveStyle['label']> => ({
-  color: colors.hovered,
-  background: { color: colors.background },
+  color: colors.strong,
+  background: { color: colors.surface },
   fontWeight: FONT_WEIGHT_REGULAR,
 });
 
@@ -51,10 +51,10 @@ const getBaseStyle = (state: CurveVisualState, train: TrainForStyle): CurveStyle
   const { colors, isSimulated } = train;
 
   const noneStyle: CurveStyle = {
-    color: colors.normal,
+    color: colors.base,
     opacity: 1,
     label: {
-      color: colors.normal,
+      color: colors.base,
       fontWeight: FONT_WEIGHT_REGULAR,
       background: RESTING_LABEL_BACKGROUND,
     },
@@ -70,8 +70,8 @@ const getBaseStyle = (state: CurveVisualState, train: TrainForStyle): CurveStyle
         ? { offset: 0, width: 3, color: SELECTED_CURVE_OUTLINE_COLOR }
         : INVALID_OUTLINE,
     label: {
-      color: colors.hovered,
-      background: { color: colors.background, border: colors.normal },
+      color: colors.strong,
+      background: { color: colors.surface, border: colors.base },
       fontWeight: FONT_WEIGHT_BOLD,
     },
   };
@@ -80,25 +80,25 @@ const getBaseStyle = (state: CurveVisualState, train: TrainForStyle): CurveStyle
   // happened elsewhere (mirror chart, or timetable). It keeps the category
   // color so it doesn't take the spotlight away from the actual click target.
   const passivePrimaryStyle: CurveStyle = {
-    color: colors.normal,
+    color: colors.base,
     opacity: 1,
     outline:
-      isSimulated === true ? { offset: 0, width: 3, color: colors.background } : INVALID_OUTLINE,
+      isSimulated === true ? { offset: 0, width: 3, color: colors.surface } : INVALID_OUTLINE,
     label: {
-      color: colors.hovered,
-      background: { color: colors.background, border: colors.normal },
+      color: colors.strong,
+      background: { color: colors.surface, border: colors.base },
       fontWeight: FONT_WEIGHT_BOLD,
     },
   };
 
   const passiveSecondaryStyle: CurveStyle = {
-    color: colors.normal,
+    color: colors.base,
     opacity: 1,
     outline:
-      isSimulated === true ? { offset: 0, width: 2, color: colors.background } : INVALID_OUTLINE,
+      isSimulated === true ? { offset: 0, width: 2, color: colors.surface } : INVALID_OUTLINE,
     label: {
-      color: colors.hovered,
-      background: { color: colors.background, border: colors.normal },
+      color: colors.strong,
+      background: { color: colors.surface, border: colors.base },
       fontWeight: FONT_WEIGHT_REGULAR,
     },
   };
@@ -109,8 +109,8 @@ const getBaseStyle = (state: CurveVisualState, train: TrainForStyle): CurveStyle
     level: 1,
     outline: { offset: 0, width: 1.5, color: DRAGGED_CURVE_OUTLINE_COLOR },
     label: {
-      color: colors.normal,
-      background: { color: colors.background },
+      color: colors.base,
+      background: { color: colors.surface },
       fontWeight: FONT_WEIGHT_BOLD,
     },
   };
@@ -141,7 +141,7 @@ const getHoveredStyle = (state: CurveVisualState, train: TrainForStyle): CurveSt
   // 'none' hovered is a full visual switch to the category hovered tint.
   if (state === 'none') {
     return {
-      color: colors.hovered,
+      color: colors.strong,
       opacity: 1,
       level: 3,
       label: hoveredLabel(colors),
@@ -168,10 +168,10 @@ const getCurveStyle = (
   if (outOfSelection) {
     const { colors } = train;
     return {
-      color: colors.background,
+      color: colors.surface,
       opacity: 1,
       label: {
-        color: colors.background,
+        color: colors.surface,
         fontWeight: FONT_WEIGHT_REGULAR,
         background: RESTING_LABEL_BACKGROUND,
       },

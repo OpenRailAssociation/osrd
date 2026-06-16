@@ -60,9 +60,9 @@ const formatSpaceTimeCurves = (
         );
         if (currentSubCategory) {
           colors = {
-            normal: currentSubCategory.color,
-            hovered: currentSubCategory.hovered_color,
-            background: currentSubCategory.background_color,
+            base: currentSubCategory.color,
+            strong: currentSubCategory.hovered_color,
+            surface: currentSubCategory.background_color,
           };
         }
       }

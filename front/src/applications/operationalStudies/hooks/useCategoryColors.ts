@@ -22,9 +22,9 @@ const useCategoryColors = (category: TrainCategory | null | undefined) => {
 
     if (category && !isMainCategory(category) && currentSubCategory) {
       return {
-        normal: currentSubCategory.color || DEFAULT_TRAIN_PATH_COLORS.normal,
-        hovered: currentSubCategory.hovered_color || DEFAULT_TRAIN_PATH_COLORS.hovered,
-        background: currentSubCategory.background_color || DEFAULT_TRAIN_PATH_COLORS.background,
+        base: currentSubCategory.color || DEFAULT_TRAIN_PATH_COLORS.base,
+        strong: currentSubCategory.hovered_color || DEFAULT_TRAIN_PATH_COLORS.strong,
+        surface: currentSubCategory.background_color || DEFAULT_TRAIN_PATH_COLORS.surface,
       };
     }
 

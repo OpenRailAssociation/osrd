@@ -57,9 +57,9 @@ describe('useCategoryColors', () => {
     const { result } = renderHook(() => useCategoryColors(category));
 
     expect(result.current.categoryColors).toEqual({
-      normal: '#ff0000',
-      hovered: '#cc0000',
-      background: '#ffe0e0',
+      base: '#ff0000',
+      strong: '#cc0000',
+      surface: '#ffe0e0',
     });
     expect(result.current.currentSubCategory).toEqual(mockSubCategories[0]);
   });
