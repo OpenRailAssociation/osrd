@@ -296,10 +296,10 @@ impl OperationalPointModel {
             .collect())
     }
 
-    pub async fn retrieve_from_main_codes(
+    pub async fn retrieve_from_domestics(
         conn: &mut DbConnection,
         infra_id: i64,
-        main_codes: &[String],
+        domestics: &[(String, String)],
     ) -> Result<Vec<Self>, database::DatabaseError> {
         use database::tables::infra_object_operational_point::dsl;
         use diesel::dsl::sql;
@@ -307,14 +307,19 @@ impl OperationalPointModel {
         use diesel::sql_types::*;
         use diesel_async::RunQueryDsl;
 
-        if trigrams.is_empty() {
+        if domestics.is_empty() {
             // We know the result of the SQL query is going to be empty, avoid sending it.
             return Ok(Vec::new());
         }
+        let (country_codes, main_codes): (Vec<&String>, Vec<&String>) = domestics
+            .iter()
+            .map(|(main_code, country_code)| (main_code, country_code))
+            .unzip();
 
         Ok(dsl::infra_object_operational_point
             .filter(dsl::infra_id.eq(infra_id))
-            .filter(sql::<Nullable<Text>>("data->>'main_code'").eq_any(main_codes))
+            .filter(sql::<Text>("data->>'main_code'").eq_any(main_codes))
+            .filter(sql::<Text>("data->>'country_code'").eq_any(country_codes))
             .load(&mut conn.write().await)
             .await?
             .into_iter()
@@ -441,11 +446,14 @@ mod tests_retrieve {
             .persist(railjson, &mut db_pool.get_ok())
             .await
             .unwrap();
-        let main_codes = vec!["MES".to_string(), "WS".to_string()];
-        let res = OperationalPointModel::retrieve_from_main_codes(
+        let domestics = vec![
+            ("FR".to_string(), "MES".to_string()),
+            ("FR".to_string(), "WS".to_string()),
+        ];
+        let res = OperationalPointModel::retrieve_from_domestics(
             &mut db_pool.get_ok(),
             small_infra.id,
-            &main_codes,
+            &domestics,
         )
         .await
         .expect("Failed to retrieve operational points");

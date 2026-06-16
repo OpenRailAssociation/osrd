@@ -1165,7 +1165,7 @@ mod tests {
     }
 
     impl OperationalPointRefAndTime {
-        fn new_main_code(arrival_time: u64, stop_for: u64, main_code: &str) -> Self {
+        fn new_domestic(arrival_time: u64, stop_for: u64, main_code: &str) -> Self {
             OperationalPointRefAndTime {
                 arrival_time,
                 stop_for,
@@ -1206,10 +1206,10 @@ mod tests {
                 ],
             }),
             refs: vec![
-                OperationalPointRefAndTime::new_main_code(0, 0, "SWS"),
-                OperationalPointRefAndTime::new_main_code(10, 0, "MWS"),
-                OperationalPointRefAndTime::new_main_code(19, 0, "MES"),
-                OperationalPointRefAndTime::new_main_code(35, 2, "NS"),
+                OperationalPointRefAndTime::new_domestic(0, 0, "SWS"),
+                OperationalPointRefAndTime::new_domestic(10, 0, "MWS"),
+                OperationalPointRefAndTime::new_domestic(19, 0, "MES"),
+                OperationalPointRefAndTime::new_domestic(35, 2, "NS"),
             ],
         };
         // Manchette
@@ -1268,10 +1268,10 @@ mod tests {
                 ],
             }),
             refs: vec![
-                OperationalPointRefAndTime::new_main_code(0, 0, "NS"),
-                OperationalPointRefAndTime::new_main_code(10, 0, "MES"),
-                OperationalPointRefAndTime::new_main_code(19, 0, "MWS"),
-                OperationalPointRefAndTime::new_main_code(35, 0, "SWS"),
+                OperationalPointRefAndTime::new_domestic(0, 0, "NS"),
+                OperationalPointRefAndTime::new_domestic(10, 0, "MES"),
+                OperationalPointRefAndTime::new_domestic(19, 0, "MWS"),
+                OperationalPointRefAndTime::new_domestic(35, 0, "SWS"),
             ],
         };
         // Manchette
@@ -1326,14 +1326,14 @@ mod tests {
         let train_to_project_on_op = TrainToProjectOnOperationalPoint {
             space_time_curve: None,
             refs: vec![
-                OperationalPointRefAndTime::new_main_code(0, 1, "SWS"),
+                OperationalPointRefAndTime::new_domestic(0, 1, "SWS"),
                 OperationalPointRefAndTime::default(),
-                OperationalPointRefAndTime::new_main_code(10, 0, "MWS"),
-                OperationalPointRefAndTime::new_main_code(21, 3, "MES"),
+                OperationalPointRefAndTime::new_domestic(10, 0, "MWS"),
+                OperationalPointRefAndTime::new_domestic(21, 3, "MES"),
                 OperationalPointRefAndTime::default(),
-                OperationalPointRefAndTime::new_main_code(28, 0, "NS"),
+                OperationalPointRefAndTime::new_domestic(28, 0, "NS"),
                 OperationalPointRefAndTime::default(),
-                OperationalPointRefAndTime::new_main_code(35, 1, "SS"),
+                OperationalPointRefAndTime::new_domestic(35, 1, "SS"),
             ],
         };
         // Manchette

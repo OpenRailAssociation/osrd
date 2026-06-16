@@ -27,8 +27,8 @@ pub struct OperationalPointCache {
     ops: Vec<OperationalPointModel>,
     /// Maps UIC code to indices in the ops Vec
     uic_to_indices: HashMap<u32, Vec<usize>>,
-    /// Maps main code to indices in the ops Vec
-    main_code_to_indices: HashMap<NonBlankString, Vec<usize>>,
+    /// Maps domestic (country code, main code) to indices in the ops Vec
+    domestic_to_indices: HashMap<(NonBlankString, NonBlankString), Vec<usize>>,
     /// Maps obj_id to index in the ops Vec
     obj_id_to_index: HashMap<String, usize>,
     track_ids: HashSet<String>,
@@ -113,13 +113,13 @@ impl OperationalPointCache {
         }
 
         // Step 1: Retrieve operational points from database using the requested identifiers
-        let (main_codes, ops_uic, ops_id) = collect_path_item_ids(operational_points);
+        let (domestics, ops_uic, ops_id) = collect_path_item_ids(operational_points);
         let uic_conn = &mut conn.clone();
         let main_code_conn = &mut conn.clone();
         let ids_conn = &mut conn.clone();
         let (uic_results, main_code_results, ids_results) = tokio::try_join!(
             retrieve_op_from_uic(uic_conn, infra_id, &ops_uic),
-            retrieve_op_from_main_codes(main_code_conn, infra_id, &main_codes),
+            retrieve_op_from_domestics(main_code_conn, infra_id, &domestics),
             retrieve_op_from_ids(ids_conn, infra_id, &ops_id)
         )?;
 
@@ -136,7 +136,8 @@ impl OperationalPointCache {
         // Step 3: Build index maps from the ops vector
         let mut obj_id_to_index: HashMap<String, usize> = HashMap::new();
         let mut uic_to_indices: HashMap<u32, Vec<usize>> = HashMap::new();
-        let mut main_code_to_indices: HashMap<NonBlankString, Vec<usize>> = HashMap::new();
+        let mut domestic_to_indices: HashMap<(NonBlankString, NonBlankString), Vec<usize>> =
+            HashMap::new();
         let track_ids_to_local_track_name: HashMap<String, NonBlankString> = HashMap::new();
         let track_ids: HashSet<String> = HashSet::new();
 
@@ -149,9 +150,9 @@ impl OperationalPointCache {
                 uic_to_indices.entry(op_uic).or_default().push(index);
             }
 
-            // Build main code index if present
-            main_code_to_indices
-                .entry(op.main_code.clone())
+            // Build domestic (country code, main code) index if present
+            domestic_to_indices
+                .entry((op.country_code.clone(), op.main_code.clone()))
                 .or_default()
                 .push(index);
         }
@@ -159,7 +160,7 @@ impl OperationalPointCache {
         Ok(OperationalPointCache {
             ops,
             uic_to_indices,
-            main_code_to_indices,
+            domestic_to_indices,
             obj_id_to_index,
             track_ids,
             track_ids_to_local_track_name,
@@ -171,13 +172,13 @@ impl OperationalPointCache {
         self.obj_id_to_index.get(id).map(|&idx| &self.ops[idx])
     }
 
-    /// Get the operational points associated with a main code
-    pub fn get_from_main_code(
+    /// Get the operational points associated with a domestic (country code, main code)
+    pub fn get_from_domestic(
         &self,
-        main_code: &str,
+        domestic: (&str, &str),
     ) -> Option<impl Iterator<Item = &OperationalPointModel>> {
-        self.main_code_to_indices
-            .get(main_code)
+        self.domestic_to_indices
+            .get(&(domestic.0.into(), domestic.1.into()))
             .map(|indices| indices.iter().map(|&idx| &self.ops[idx]))
     }
 
@@ -209,11 +210,8 @@ impl OperationalPointCache {
                 main_code,
                 secondary_code,
             } => (
-                get_ops_by_country_code(
-                    country_code,
-                    self.get_from_main_code(&main_code.0)
-                        .map(|op| op.collect())?,
-                ),
+                self.get_from_domestic((&country_code.0, &main_code.0))
+                    .map(|op| op.collect())?,
                 secondary_code,
             ),
             OperationalPointReference::Uic {
@@ -271,12 +269,10 @@ impl OperationalPointCache {
                         local_track_name,
                     },
                 ) => {
-                    let ops = get_ops_by_country_code(
-                        country_code,
-                        self.get_from_main_code(&main_code.0)
-                            .map(|op| op.collect())
-                            .unwrap_or_default(),
-                    );
+                    let ops = self
+                        .get_from_domestic((&country_code.0, &main_code.0))
+                        .map(|op| op.collect())
+                        .unwrap_or_default();
                     let op = find_op_by_secondary_code(secondary_code.as_ref(), ops);
                     let track_offsets = op
                         .map(|op| op.track_offsets_by_local_track_name(local_track_name.as_ref()))
@@ -348,7 +344,7 @@ impl OperationalPointCache {
     pub(crate) fn new(
         ops: Vec<OperationalPointModel>,
         uic_to_indices: HashMap<u32, Vec<usize>>,
-        main_code_to_indices: HashMap<NonBlankString, Vec<usize>>,
+        domestic_to_indices: HashMap<(NonBlankString, NonBlankString), Vec<usize>>,
         obj_id_to_index: HashMap<String, usize>,
         track_ids: HashSet<String>,
         track_ids_to_local_track_name: HashMap<String, NonBlankString>,
@@ -356,7 +352,7 @@ impl OperationalPointCache {
         Self {
             ops,
             uic_to_indices,
-            main_code_to_indices,
+            domestic_to_indices,
             obj_id_to_index,
             track_ids,
             track_ids_to_local_track_name,
@@ -374,10 +370,12 @@ impl OperationalPointCache {
                 country_code,
                 ref main_code,
                 secondary_code,
-            } => self.get_from_main_code(&main_code.0).and_then(|op_models| {
-                let ops = get_ops_by_country_code(&country_code, op_models.collect());
-                find_op_by_secondary_code(secondary_code.as_ref(), ops).map(|op| &op.schema)
-            }),
+            } => self
+                .get_from_domestic((&country_code.0, &main_code.0))
+                .and_then(|op_models| {
+                    find_op_by_secondary_code(secondary_code.as_ref(), op_models.collect())
+                        .map(|op| &op.schema)
+                }),
             OperationalPointReference::Uic {
                 uic,
                 secondary_code,
@@ -392,15 +390,19 @@ impl OperationalPointCache {
 /// Collect the ids of the operational points from the path items
 fn collect_path_item_ids(
     operational_points: &[OperationalPointReference],
-) -> (Vec<String>, Vec<u32>, Vec<String>) {
-    let mut main_codes: Vec<String> = Vec::new();
+) -> (Vec<(String, String)>, Vec<u32>, Vec<String>) {
+    let mut domestics: Vec<(String, String)> = Vec::new();
     let mut ops_uic: Vec<u32> = Vec::new();
     let mut ops_id: Vec<String> = Vec::new();
 
     for item in operational_points {
         match item {
-            OperationalPointReference::Domestic { main_code, .. } => {
-                main_codes.push(main_code.clone().0);
+            OperationalPointReference::Domestic {
+                country_code,
+                main_code,
+                ..
+            } => {
+                domestics.push((country_code.clone().0, main_code.clone().0));
             }
             OperationalPointReference::Uic { uic, .. } => {
                 ops_uic.push(*uic);
@@ -412,7 +414,7 @@ fn collect_path_item_ids(
             }
         }
     }
-    (main_codes, ops_uic, ops_id)
+    (domestics, ops_uic, ops_id)
 }
 
 /// Retrieve operational points from operational point uic codes
@@ -427,12 +429,12 @@ async fn retrieve_op_from_uic(
 }
 
 /// Retrieve operational points from operational point main codes
-async fn retrieve_op_from_main_codes(
+async fn retrieve_op_from_domestics(
     conn: &mut DbConnection,
     infra_id: i64,
-    main_codes: &[String],
+    domestics: &[(String, String)],
 ) -> Result<Vec<OperationalPointModel>> {
-    OperationalPointModel::retrieve_from_main_codes(conn, infra_id, main_codes)
+    OperationalPointModel::retrieve_from_domestics(conn, infra_id, domestics)
         .await
         .map_err(Into::into)
 }
@@ -460,16 +462,6 @@ fn find_op_by_secondary_code<'a>(
         .find(|op| secondary_code == op.secondary_code.as_ref())
 }
 
-/// Get the operational points associated with a country code
-fn get_ops_by_country_code<'a>(
-    country_code: &NonBlankString,
-    ops: Vec<&'a OperationalPointModel>,
-) -> Vec<&'a OperationalPointModel> {
-    ops.into_iter()
-        .filter(|op| *country_code == op.country_code)
-        .collect()
-}
-
 #[cfg(test)]
 mod tests {
     use database::DbConnectionPoolV2;
@@ -480,7 +472,7 @@ mod tests {
     use crate::fixtures::create_empty_infra;
     use crate::fixtures::create_infra_object;
 
-    fn create_op(obj_id: &str, main_code: &str, uic: u32) -> OperationalPoint {
+    fn create_op(obj_id: &str, main_code: &str, uic: u32, country_code: &str) -> OperationalPoint {
         OperationalPoint {
             id: Identifier::from(obj_id),
             parts: vec![],
@@ -488,7 +480,7 @@ mod tests {
             name: "Test OP".into(),
             uic: Some(uic),
             plc: None,
-            country_code: "FR".into(),
+            country_code: country_code.into(),
             main_code: main_code.into(),
             secondary_code: Some("00".into()),
             is_passenger_station: false,
@@ -503,14 +495,16 @@ mod tests {
         let infra = create_empty_infra(&mut conn).await;
 
         // Create three operational points with different identifier combinations
-        let op1 = create_op("op_1", "ABC", 1234);
-        let op2 = create_op("op_2", "DEF", 91011); // UIC not revelant
-        let op3 = create_op("op_3", "HIJ", 5678); // main code not revelant
+        let op1 = create_op("op_1", "ABC", 1234, "FR");
+        let op2 = create_op("op_2", "DEF", 91011, "FR"); // UIC not relevant
+        let op3 = create_op("op_3", "HIJ", 5678, "FR"); // main code not relevant
+        let op4 = create_op("op_4", "ABC", 1111, "DE"); // same main code as op1 but different country code
 
         // Insert OPs into the database
         create_infra_object(&mut conn, infra.id, op1).await;
         create_infra_object(&mut conn, infra.id, op2).await;
         create_infra_object(&mut conn, infra.id, op3).await;
+        create_infra_object(&mut conn, infra.id, op4).await;
 
         // Create path items that reference these OPs by different methods
         let path_items = [
@@ -535,6 +529,14 @@ mod tests {
                 },
                 local_track_name: None,
             }),
+            PathItemLocation::OperationalPointPartReference(OperationalPointPartReference {
+                operational_point: OperationalPointReference::Domestic {
+                    country_code: "DE".into(),
+                    main_code: "ABC".into(),
+                    secondary_code: None,
+                },
+                local_track_name: None,
+            }),
         ];
 
         // Load the cache using the real load() method
@@ -548,7 +550,7 @@ mod tests {
             "OP1 should be findable by ID"
         );
         assert!(
-            cache.get_from_main_code("ABC").is_some(),
+            cache.get_from_domestic(("FR", "ABC")).is_some(),
             "OP1 should be findable by main code even though queried by ID"
         );
         assert!(
@@ -560,7 +562,7 @@ mod tests {
         assert_eq!(cache.get_from_id("op_1").unwrap().obj_id, "op_1");
         assert_eq!(
             cache
-                .get_from_main_code("ABC")
+                .get_from_domestic(("FR", "ABC"))
                 .map(|op| op.collect::<Vec<_>>())
                 .unwrap()
                 .first()
@@ -585,13 +587,13 @@ mod tests {
             "OP2 should be findable by ID even though queried by main code"
         );
         assert!(
-            cache.get_from_main_code("DEF").is_some(),
+            cache.get_from_domestic(("FR", "DEF")).is_some(),
             "OP2 should be findable by main code"
         );
         assert_eq!(cache.get_from_id("op_2").unwrap().obj_id, "op_2");
         assert_eq!(
             cache
-                .get_from_main_code("DEF")
+                .get_from_domestic(("FR", "DEF"))
                 .map(|op| op.collect::<Vec<_>>())
                 .unwrap()
                 .first()
@@ -619,6 +621,33 @@ mod tests {
                 .unwrap()
                 .obj_id,
             "op_3"
+        );
+
+        // Test OP4 is indexed differently than OP1 event if it has the same main code
+        assert!(
+            cache.get_from_id("op_4").is_some(),
+            "OP4 should be findable by ID"
+        );
+        assert_eq!(cache.get_from_id("op_4").unwrap().obj_id, "op_4");
+        assert_eq!(
+            cache
+                .get_from_domestic(("DE", "ABC"))
+                .map(|op| op.collect::<Vec<_>>())
+                .unwrap()
+                .first()
+                .unwrap()
+                .obj_id,
+            "op_4"
+        );
+        assert_eq!(
+            cache
+                .get_from_uic(1111)
+                .map(|op| op.collect::<Vec<_>>())
+                .unwrap()
+                .first()
+                .unwrap()
+                .obj_id,
+            "op_4"
         );
     }
 }

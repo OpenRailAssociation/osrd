@@ -666,6 +666,14 @@ pub mod tests {
                 },
                 local_track_name: None,
             }),
+            PathItemLocation::OperationalPointPartReference(OperationalPointPartReference {
+                operational_point: OperationalPointReference::Domestic {
+                    country_code: "NO_COUNTRY_CODE".into(),
+                    main_code: "WS".into(),
+                    secondary_code: Some("BV".into()),
+                },
+                local_track_name: None,
+            }),
         ];
 
         let pathfinding_result: PathfindingResult = app
@@ -678,19 +686,34 @@ pub mod tests {
             pathfinding_result,
             PathfindingResult::Failure(PathfindingFailure::PathfindingInputError(
                 PathfindingInputError::InvalidPathItems {
-                    items: vec![InvalidPathItem {
-                        index: 1,
-                        path_item: PathItemLocation::OperationalPointPartReference(
-                            OperationalPointPartReference {
-                                operational_point: OperationalPointReference::Domestic {
-                                    country_code: "FR".into(),
-                                    main_code: "NO_MAIN_CODE".into(),
-                                    secondary_code: None
-                                },
-                                local_track_name: None,
-                            }
-                        )
-                    }]
+                    items: vec![
+                        InvalidPathItem {
+                            index: 1,
+                            path_item: PathItemLocation::OperationalPointPartReference(
+                                OperationalPointPartReference {
+                                    operational_point: OperationalPointReference::Domestic {
+                                        country_code: "FR".into(),
+                                        main_code: "NO_MAIN_CODE".into(),
+                                        secondary_code: None
+                                    },
+                                    local_track_name: None,
+                                }
+                            )
+                        },
+                        InvalidPathItem {
+                            index: 3,
+                            path_item: PathItemLocation::OperationalPointPartReference(
+                                OperationalPointPartReference {
+                                    operational_point: OperationalPointReference::Domestic {
+                                        country_code: "NO_COUNTRY_CODE".into(),
+                                        main_code: "WS".into(),
+                                        secondary_code: Some("BV".into())
+                                    },
+                                    local_track_name: None,
+                                }
+                            )
+                        }
+                    ]
                 }
             ))
         );
