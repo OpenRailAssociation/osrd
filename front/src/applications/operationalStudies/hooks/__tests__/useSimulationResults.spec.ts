@@ -438,11 +438,13 @@ describe('useSimulationResults', () => {
     mockUseSelectedTrainSchedule.mockReturnValue({ ...baseTrain, id: 2 });
     rerender();
 
-    await waitFor(() => expect(result.current.results?.train.id).toBe('paced_2'));
-    expect(getTrainPath).toHaveBeenLastCalledWith({
-      id: 'paced_2',
-      infraId: INFRA_ID,
-      exceptionId: undefined,
+    await waitFor(() => {
+      expect(result.current.results?.train.id).toBe('paced_2');
+      expect(getTrainPath).toHaveBeenLastCalledWith({
+        id: 'paced_2',
+        infraId: INFRA_ID,
+        exceptionId: undefined,
+      });
     });
   });
 });
