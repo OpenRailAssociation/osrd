@@ -3865,10 +3865,18 @@ class TrainScheduleSetForm(BaseModel):
     description: str
     name: str | None = None
     published: bool
+    timetable_type: TimetableType
 
 
 class TrainScheduleSetResponse(TrainScheduleSet):
     train_schedule_count: Annotated[int, Field(ge=0)]
+
+
+class TrainScheduleSetUpdateForm(BaseModel):
+    catalog_entry_id: int | None = None
+    description: str
+    name: str | None = None
+    published: bool
 
 
 class Version(BaseModel):

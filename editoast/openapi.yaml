@@ -4100,7 +4100,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/TrainScheduleSetForm'
+              $ref: '#/components/schemas/TrainScheduleSetUpdateForm'
         required: true
       responses:
         '200':
@@ -15993,6 +15993,7 @@ components:
       required:
       - description
       - published
+      - timetable_type
       properties:
         catalog_entry_id:
           type:
@@ -16007,6 +16008,8 @@ components:
           - 'null'
         published:
           type: boolean
+        timetable_type:
+          $ref: '#/components/schemas/TimetableType'
     TrainScheduleSetResponse:
       allOf:
       - $ref: '#/components/schemas/TrainScheduleSet'
@@ -16018,6 +16021,25 @@ components:
             type: integer
             format: int64
             minimum: 0
+    TrainScheduleSetUpdateForm:
+      type: object
+      required:
+      - description
+      - published
+      properties:
+        catalog_entry_id:
+          type:
+          - integer
+          - 'null'
+          format: int64
+        description:
+          type: string
+        name:
+          type:
+          - string
+          - 'null'
+        published:
+          type: boolean
     TrainScheduleSimulationSummaryResult:
       type: object
       required:

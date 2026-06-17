@@ -74,6 +74,7 @@ const useScenario = () => {
           name: null, // sandbox never has a name
           description: '',
           published: false,
+          timetable_type: 'CALENDAR',
         },
       }).unwrap();
 

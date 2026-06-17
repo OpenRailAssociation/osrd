@@ -157,7 +157,7 @@ export default function useScenarioTrainScheduleSet(
 
       await updateTrainScheduleSetMutation({
         id: trainScheduleSet.id,
-        trainScheduleSetForm: {
+        trainScheduleSetUpdateForm: {
           ...trainScheduleSetData,
           catalog_entry_id: catalogEntryId,
         },
@@ -296,6 +296,7 @@ export default function useScenarioTrainScheduleSet(
               catalog_entry_id: item.trainScheduleSet.catalog_entry_id,
               published: false,
               description: item.trainScheduleSet.description,
+              timetable_type: 'CALENDAR',
             },
           }).unwrap();
 
