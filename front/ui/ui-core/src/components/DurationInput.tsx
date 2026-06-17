@@ -187,6 +187,7 @@ type UnitFieldProps = {
   inputRef: (el: HTMLInputElement | null) => void;
   onChange: (value: string) => void;
   onFocus: () => void;
+  onBlur: () => void;
   onKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) => void;
   tabIndex: number;
 };
@@ -197,6 +198,7 @@ const UnitField = function UnitField({
   inputRef,
   onChange,
   onFocus,
+  onBlur,
   onKeyDown,
   tabIndex,
 }: UnitFieldProps) {
@@ -218,6 +220,7 @@ const UnitField = function UnitField({
         aria-label={label}
         onChange={(e) => onChange(e.target.value)}
         onFocus={onFocus}
+        onBlur={onBlur}
         onKeyDown={onKeyDown}
       />
       <span aria-hidden onClick={onFocus}>
@@ -244,14 +247,21 @@ const DurationInput = ({
   hint,
   ...rest
 }: DurationInputProps) => {
-  const { fields, formattedValues, inputRefs, handleChange, handleFocus, handleKeyDown } =
-    useDurationInput({
-      units,
-      value,
-      onChange,
-      padChar,
-      max,
-    });
+  const {
+    fields,
+    formattedValues,
+    inputRefs,
+    handleChange,
+    handleFocus,
+    handleBlur,
+    handleKeyDown,
+  } = useDurationInput({
+    units,
+    value,
+    onChange,
+    padChar,
+    max,
+  });
 
   return (
     <FieldWrapper id={id} label={label} hint={hint} small={small}>
@@ -273,6 +283,7 @@ const DurationInput = ({
             tabIndex={idx === 0 ? 0 : -1}
             onChange={(val) => handleChange(setting, val)}
             onFocus={() => handleFocus(setting)}
+            onBlur={() => handleBlur()}
             onKeyDown={(e) => handleKeyDown(setting, e)}
           />
         ))}
