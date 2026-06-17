@@ -24,7 +24,7 @@ export type DurationInputProps = {
   value: number;
   padChar: string;
   onChange?: (ms: number) => void;
-  max: number;
+  max?: number;
   small?: boolean;
   hint?: string;
   label?: string;
@@ -90,7 +90,7 @@ function useDurationInput({
   value,
   onChange,
   padChar,
-  max,
+  max = 99 * 3_600_000, // 99 HOURS
 }: Omit<DurationInputProps, 'id'>) {
   const fields = useMemo(() => normalizeUnits(units, padChar, max), [units, padChar, max]);
   const inputRefs = useRef<Record<string, HTMLInputElement>>({});
@@ -242,7 +242,7 @@ const DurationInput = ({
   onChange,
   padChar = '0',
   small = false,
-  max = 99 * 3_600_000, // 99 HOURS
+  max,
   label,
   hint,
   ...rest

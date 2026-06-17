@@ -322,7 +322,6 @@ const ExpandedTrainForm = ({
                     small
                     units={['h', 'm']}
                     padChar="0"
-                    max={5 * 3_600_000} // 5h00m
                     label={t('manageTrainSchedule.trainHeader.form.serviceWindow')}
                     value={fields.service_window ?? 2 * 3_600_000} // 2h00m
                     onChange={(ms) => onFieldImmediateChange('service_window', ms)}
