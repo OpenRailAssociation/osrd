@@ -36,8 +36,6 @@
           "rustfmt"
           "rust-analyzer"
         ];
-
-        osrd-dev-scripts = pkgs.callPackage ./nix/scripts.nix { };
       in
       with pkgs;
       {
@@ -61,6 +59,7 @@
             uv
             openfga-cli
             process-compose
+            jq
 
             # Core
             gradle
@@ -73,10 +72,6 @@
             nixfmt
             nixd
             nil
-
-            # OSRD dev scripts
-            osrd-dev-scripts
-            jq
           ]
           # Section added only on Linux systems
           ++ lib.optionals (!stdenv.isDarwin) [
