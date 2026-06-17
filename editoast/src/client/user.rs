@@ -68,7 +68,7 @@ pub struct AddArgs {
 #[derive(Debug, Args)]
 pub struct InfoArgs {
     /// Id or identity of the user
-    user: String,
+    id_or_identity: String,
 }
 
 #[derive(Debug, Args)]
@@ -172,16 +172,16 @@ pub async fn add_user(
 
 /// Get a user
 pub async fn user_info(
-    InfoArgs { user }: InfoArgs,
+    InfoArgs { id_or_identity }: InfoArgs,
     openfga_config: OpenfgaConfig,
     pool: Arc<DbConnectionPoolV2>,
 ) -> anyhow::Result<()> {
-    let uid = if let Ok(id) = user.parse::<i64>() {
+    let uid = if let Ok(id) = id_or_identity.parse::<i64>() {
         id
     } else {
-        editoast_models::User::retrieve_by_identity(&user, pool.get().await?)
+        editoast_models::User::retrieve_by_identity(&id_or_identity, pool.get().await?)
             .await?
-            .ok_or_else(|| anyhow!("No user with identity '{user}' found"))?
+            .ok_or_else(|| anyhow!("No user with identity '{id_or_identity}' found"))?
             .id
     };
     let openfga = openfga_config.into_client().await?;
