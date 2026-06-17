@@ -74,6 +74,7 @@ function applyFieldsToTrain(fields: TrainFieldsState, train: Train): Train {
   return {
     ...train,
     ...fields,
+    train_name: fields.train_name || train.train_name,
     comfort: fields.comfort === null ? undefined : fields.comfort,
     category: fields.category === null ? undefined : fields.category,
     paced,
@@ -224,10 +225,11 @@ const ExpandedTrainForm = ({
     () => categoryOptions.find((category) => category.id === selectedCategoryId),
     [selectedCategoryId]
   );
+  const erroneousFields = useMemo(() => !fields.train_name, [fields.train_name]);
 
   const toggleBand = (
     <div className="toggle-band">
-      <button className="header-toggle" onClick={() => onCollapse()}>
+      <button className="header-toggle" onClick={() => onCollapse()} disabled={erroneousFields}>
         <ChevronUp />
       </button>
     </div>
@@ -334,6 +336,14 @@ const ExpandedTrainForm = ({
             value={fields.train_name}
             onChange={(event) => onFieldChange('train_name', event.target.value)}
             onBlur={() => onFieldBlur('train_name')}
+            statusWithMessage={
+              !fields.train_name
+                ? {
+                    status: 'error',
+                    message: t('manageTrainSchedule.errorMessages.requiredField'),
+                  }
+                : undefined
+            }
           />
         </div>
         <div className="train-departure-date">
