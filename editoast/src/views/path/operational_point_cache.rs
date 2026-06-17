@@ -175,10 +175,10 @@ impl OperationalPointCache {
     /// Get the operational points associated with a domestic (country code, main code)
     pub fn get_from_domestic(
         &self,
-        domestic: (&str, &str),
+        domestic: &(NonBlankString, NonBlankString),
     ) -> Option<impl Iterator<Item = &OperationalPointModel>> {
         self.domestic_to_indices
-            .get(&(domestic.0.into(), domestic.1.into()))
+            .get(domestic)
             .map(|indices| indices.iter().map(|&idx| &self.ops[idx]))
     }
 
@@ -210,7 +210,7 @@ impl OperationalPointCache {
                 main_code,
                 secondary_code,
             } => (
-                self.get_from_domestic((&country_code.0, &main_code.0))
+                self.get_from_domestic(&(country_code.clone(), main_code.clone()))
                     .map(|op| op.collect())?,
                 secondary_code,
             ),
@@ -270,7 +270,7 @@ impl OperationalPointCache {
                     },
                 ) => {
                     let ops = self
-                        .get_from_domestic((&country_code.0, &main_code.0))
+                        .get_from_domestic(&(country_code.clone(), main_code.clone()))
                         .map(|op| op.collect())
                         .unwrap_or_default();
                     let op = find_op_by_secondary_code(secondary_code.as_ref(), ops);
@@ -371,7 +371,7 @@ impl OperationalPointCache {
                 ref main_code,
                 secondary_code,
             } => self
-                .get_from_domestic((&country_code.0, &main_code.0))
+                .get_from_domestic(&(country_code.clone(), main_code.clone()))
                 .and_then(|op_models| {
                     find_op_by_secondary_code(secondary_code.as_ref(), op_models.collect())
                         .map(|op| &op.schema)
@@ -550,7 +550,9 @@ mod tests {
             "OP1 should be findable by ID"
         );
         assert!(
-            cache.get_from_domestic(("FR", "ABC")).is_some(),
+            cache
+                .get_from_domestic(&("FR".into(), "ABC".into()))
+                .is_some(),
             "OP1 should be findable by main code even though queried by ID"
         );
         assert!(
@@ -562,7 +564,7 @@ mod tests {
         assert_eq!(cache.get_from_id("op_1").unwrap().obj_id, "op_1");
         assert_eq!(
             cache
-                .get_from_domestic(("FR", "ABC"))
+                .get_from_domestic(&("FR".into(), "ABC".into()))
                 .map(|op| op.collect::<Vec<_>>())
                 .unwrap()
                 .first()
@@ -587,13 +589,15 @@ mod tests {
             "OP2 should be findable by ID even though queried by main code"
         );
         assert!(
-            cache.get_from_domestic(("FR", "DEF")).is_some(),
+            cache
+                .get_from_domestic(&("FR".into(), "DEF".into()))
+                .is_some(),
             "OP2 should be findable by main code"
         );
         assert_eq!(cache.get_from_id("op_2").unwrap().obj_id, "op_2");
         assert_eq!(
             cache
-                .get_from_domestic(("FR", "DEF"))
+                .get_from_domestic(&("FR".into(), "DEF".into()))
                 .map(|op| op.collect::<Vec<_>>())
                 .unwrap()
                 .first()
@@ -631,7 +635,7 @@ mod tests {
         assert_eq!(cache.get_from_id("op_4").unwrap().obj_id, "op_4");
         assert_eq!(
             cache
-                .get_from_domestic(("DE", "ABC"))
+                .get_from_domestic(&("DE".into(), "ABC".into()))
                 .map(|op| op.collect::<Vec<_>>())
                 .unwrap()
                 .first()
