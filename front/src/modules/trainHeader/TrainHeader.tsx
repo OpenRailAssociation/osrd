@@ -100,7 +100,15 @@ const TrainHeader = ({
       occurrenceId,
     });
     setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.itinerary);
-  }, [train, originalPacedTrain, trainScheduleId, occurrenceId]);
+  }, [
+    train,
+    originalPacedTrain,
+    trainScheduleId,
+    occurrenceId,
+    dispatch,
+    setDisplayTrainScheduleManagement,
+    setTrainScheduleToEditData,
+  ]);
 
   if (expanded) {
     return (
