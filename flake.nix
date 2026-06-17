@@ -72,6 +72,7 @@
             # Nix formatter
             nixfmt
             nixd
+            nil
 
             # OSRD dev scripts
             osrd-dev-scripts
