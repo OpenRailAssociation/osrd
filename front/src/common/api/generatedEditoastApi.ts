@@ -1322,7 +1322,7 @@ const injectedRtkApi = api
         query: (queryArg) => ({
           url: `/train_schedule_sets/${queryArg.id}`,
           method: 'PUT',
-          body: queryArg.trainScheduleSetForm,
+          body: queryArg.trainScheduleSetUpdateForm,
         }),
         invalidatesTags: ['train_schedule_set'],
       }),
@@ -2642,7 +2642,7 @@ export type PutTrainScheduleSetsByIdApiResponse =
 export type PutTrainScheduleSetsByIdApiArg = {
   /** A train schedule set ID */
   id: number;
-  trainScheduleSetForm: TrainScheduleSetForm;
+  trainScheduleSetUpdateForm: TrainScheduleSetUpdateForm;
 };
 export type DeleteTrainScheduleSetsByIdApiResponse = unknown;
 export type DeleteTrainScheduleSetsByIdApiArg = {
@@ -5010,6 +5010,13 @@ export type TrainScheduleSetResponse = TrainScheduleSet & {
   train_schedule_count: number;
 };
 export type TrainScheduleSetForm = {
+  catalog_entry_id?: number | null;
+  description: string;
+  name?: string | null;
+  published: boolean;
+  timetable_type: TimetableType;
+};
+export type TrainScheduleSetUpdateForm = {
   catalog_entry_id?: number | null;
   description: string;
   name?: string | null;

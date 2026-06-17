@@ -45,7 +45,9 @@ export default async function createScenario(
   const study: Study = studyId ? ({ id: studyId } as Study) : await getStudy(project.id);
 
   // Create a new timetable result
-  const timetableResult: TimetableResult = await postApiRequest(`/api/timetable`);
+  const timetableResult: TimetableResult = await postApiRequest(`/api/timetable`, {
+    timetable_type: 'CALENDAR',
+  });
 
   // Create the sandbox
   const trainScheduleSet: TrainScheduleSet = await postApiRequest(`/api/train_schedule_sets`, {
@@ -53,6 +55,7 @@ export default async function createScenario(
     description: '',
     catalog_entry_id: null,
     published: false,
+    timetable_type: 'CALENDAR',
   });
 
   // Link the timetable with the sandbox

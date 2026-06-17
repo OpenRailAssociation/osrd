@@ -60,6 +60,7 @@ pub(in crate::views) struct TrainScheduleSetForm {
     name: Option<String>,
     description: String,
     published: bool,
+    timetable_type: schemas::timetable_type::TimetableType,
 }
 
 impl TrainScheduleSetForm {
@@ -69,6 +70,9 @@ impl TrainScheduleSetForm {
             .name(self.name)
             .description(self.description)
             .published(self.published)
+            .timetable_type(editoast_models::timetable_type::TimetableType(
+                self.timetable_type,
+            ))
     }
 }
 
@@ -89,10 +93,10 @@ pub(in crate::views) struct TrainScheduleSetIdParam {
 )]
 pub(in crate::views) async fn post(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
-    Json(train_schedule_set_create_form): Json<TrainScheduleSetForm>,
+    Json(train_schedule_set_form): Json<TrainScheduleSetForm>,
 ) -> Result<impl IntoResponse> {
     let conn = &mut db_pool.get().await?;
-    let changeset = train_schedule_set_create_form.into_changeset();
+    let changeset = train_schedule_set_form.into_changeset();
     let train_schedule_set = changeset.create(conn).await?;
 
     Ok((
@@ -182,12 +186,29 @@ pub(in crate::views) async fn get(
     Ok(Json(results))
 }
 
+#[derive(Serialize, Deserialize, ToSchema)]
+pub(in crate::views) struct TrainScheduleSetUpdateForm {
+    catalog_entry_id: Option<i64>,
+    name: Option<String>,
+    description: String,
+    published: bool,
+}
+
+impl TrainScheduleSetUpdateForm {
+    pub fn into_changeset(self) -> Changeset<TrainScheduleSet> {
+        TrainScheduleSet::changeset()
+            .catalog_entry_id(self.catalog_entry_id)
+            .name(self.name)
+            .description(self.description)
+            .published(self.published)
+    }
+}
 #[editoast_derive::route(authz::Role::OperationalStudies)]
 #[utoipa::path(
     put, path = "",
     tag = "train_schedule_set",
     params(TrainScheduleSetIdParam),
-    request_body = TrainScheduleSetForm,
+    request_body = TrainScheduleSetUpdateForm,
     responses(
         (status = 200, description = "Train schedule set", body = TrainScheduleSetResponse),
         (status = 404, description = "Train schedule set not found"),
@@ -198,7 +219,7 @@ pub(in crate::views) async fn put(
     Path(TrainScheduleSetIdParam {
         id: train_schedule_set_id,
     }): Path<TrainScheduleSetIdParam>,
-    Json(train_schedule_set_form): Json<TrainScheduleSetForm>,
+    Json(train_schedule_set_form): Json<TrainScheduleSetUpdateForm>,
 ) -> Result<Json<TrainScheduleSetResponse>> {
     let conn = &mut db_pool.get().await?;
     let changeset = train_schedule_set_form.into_changeset();
@@ -332,6 +353,7 @@ mod tests {
     use crate::views::timetable::train_schedule::TrainScheduleResponse;
     use crate::views::train_schedule_set::TrainScheduleSetForm;
     use crate::views::train_schedule_set::TrainScheduleSetResponse;
+    use crate::views::train_schedule_set::TrainScheduleSetUpdateForm;
     use chrono::Duration;
     use common::units::second;
     use database::DbConnection;
@@ -569,6 +591,7 @@ mod tests {
             name: Some("test".to_string()),
             description: String::default(),
             published: false,
+            timetable_type: schemas::timetable_type::TimetableType::Calendar,
         };
         let response: TrainScheduleSetResponse = app
             .post("/train_schedule_sets")
@@ -606,6 +629,7 @@ mod tests {
             name: Some("test".to_string()),
             description: String::default(),
             published: false,
+            timetable_type: schemas::timetable_type::TimetableType::Calendar,
         };
         let response: TrainScheduleSetResponse = app
             .post("/train_schedule_sets")
@@ -620,7 +644,9 @@ mod tests {
             name: Some("test".to_string()),
             description: String::default(),
             published: false,
-            timetable_type: Default::default(),
+            timetable_type: editoast_models::timetable_type::TimetableType(
+                schemas::timetable_type::TimetableType::Calendar,
+            ),
         };
 
         assert_eq!(
@@ -780,7 +806,7 @@ mod tests {
         let db_pool = app.db_pool();
         let train_schedule_set = create_train_schedule_set(&mut db_pool.get().await.unwrap()).await;
         let train_schedule_set_id = train_schedule_set.id;
-        let train_schedule_set_form = TrainScheduleSetForm {
+        let train_schedule_set_form = TrainScheduleSetUpdateForm {
             catalog_entry_id: None,
             name: Some("test_updated".to_string()),
             description: "test description".to_string(),
@@ -802,7 +828,9 @@ mod tests {
                     name: Some("test_updated".to_string()),
                     description: "test description".to_string(),
                     published: false,
-                    timetable_type: Default::default(),
+                    timetable_type: editoast_models::timetable_type::TimetableType(
+                        schemas::timetable_type::TimetableType::Calendar
+                    ),
                 },
                 train_schedule_count: 0
             }
@@ -817,7 +845,7 @@ mod tests {
         let catalog_entry = create_catalog_entry(&mut db_pool.get().await.unwrap()).await;
         let train_schedule_set = create_train_schedule_set(&mut db_pool.get().await.unwrap()).await;
         let train_schedule_set_id = train_schedule_set.id;
-        let train_schedule_set_form = TrainScheduleSetForm {
+        let train_schedule_set_form = TrainScheduleSetUpdateForm {
             catalog_entry_id: Some(catalog_entry.id),
             name: Some("test_updated".to_string()),
             description: "test description".to_string(),

@@ -13,6 +13,7 @@ import {
   osrdEditoastApi,
   type ScenarioPatchForm,
   type ScenarioWithDetails,
+  type TimetableType,
 } from 'common/api/osrdEditoastApi';
 import ChipsSNCF from 'common/BootstrapSNCF/ChipsSNCF';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
@@ -152,18 +153,18 @@ const AddOrEditScenarioModal = ({ editionMode = false, scenario }: AddOrEditScen
       setDisplayErrors(true);
     } else if (projectId && studyId && currentScenario && currentScenario.name) {
       try {
+        const timetableType: TimetableType = 'CALENDAR';
         // Creating a scenario requires to: create a sandbox, a timetable, link both and finally create the scenario
         const sandbox = await postTrainScheduleSets({
           trainScheduleSetForm: {
             name: null, // sandbox never has a name
             description: '',
             published: false,
+            timetable_type: timetableType,
           },
         }).unwrap();
         const timetable = await postTimetable({
-          timetableForm: {
-            timetable_type: 'CALENDAR',
-          },
+          timetableForm: { timetable_type: timetableType },
         }).unwrap();
         await linkTrainScheduleSetToTimetable({
           id: timetable.timetable_id,
