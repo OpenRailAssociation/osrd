@@ -174,7 +174,8 @@ fn parse_role_case_insensitive(tag: &str) -> anyhow::Result<Role> {
             return Ok(role);
         }
     }
-    bail!("Invalid role tag '{tag}'");
+    let expected: Vec<String> = Role::iter().map(|role| role.to_string()).collect();
+    bail!("Invalid role tag '{tag}', expected one of {expected:?}");
 }
 
 pub async fn add_roles(
