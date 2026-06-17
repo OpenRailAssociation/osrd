@@ -18,6 +18,16 @@
     padding-top: 3px;
     margin-right: 8px;
     margin-bottom: -28px;
+
+    .header-toggle:disabled {
+      opacity: 0.5;
+      pointer-events: none;
+
+      &:hover,
+      &:focus {
+        box-shadow: none;
+      }
+    }
   }
 
   .train-form {
