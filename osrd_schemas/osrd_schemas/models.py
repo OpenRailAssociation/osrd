@@ -2297,6 +2297,70 @@ class EditoastTrainScheduleSetErrorNotFound(BaseModel):
     type: Literal["editoast:train_schedule_set:NotFound"]
 
 
+class EditoastTsiErrorInvalidEncoding(BaseModel):
+    context: Annotated[
+        dict[str, Any] | None, Field(title="EditoastTsiErrorInvalidEncodingContext")
+    ] = None
+    message: str
+    status: Literal[400]
+    type: Literal["editoast:stdcm:tsi:InvalidEncoding"]
+
+
+class EditoastTsiErrorNoCompletedEvent(BaseModel):
+    context: Annotated[
+        dict[str, Any] | None, Field(title="EditoastTsiErrorNoCompletedEventContext")
+    ] = None
+    message: str
+    status: Literal[400]
+    type: Literal["editoast:stdcm:tsi:NoCompletedEvent"]
+
+
+class EditoastTsiErrorPathNotFound(BaseModel):
+    context: Annotated[
+        dict[str, Any] | None, Field(title="EditoastTsiErrorPathNotFoundContext")
+    ] = None
+    message: str
+    status: Literal[400]
+    type: Literal["editoast:stdcm:tsi:PathNotFound"]
+
+
+class EditoastTsiErrorResponseCollectionFailed(BaseModel):
+    context: Annotated[
+        dict[str, Any] | None,
+        Field(title="EditoastTsiErrorResponseCollectionFailedContext"),
+    ] = None
+    message: str
+    status: Literal[400]
+    type: Literal["editoast:stdcm:tsi:ResponseCollectionFailed"]
+
+
+class EditoastTsiErrorSimulationError(BaseModel):
+    context: Annotated[
+        dict[str, Any] | None, Field(title="EditoastTsiErrorSimulationErrorContext")
+    ] = None
+    message: str
+    status: Literal[400]
+    type: Literal["editoast:stdcm:tsi:SimulationError"]
+
+
+class EditoastTsiErrorXmlParse(BaseModel):
+    context: Annotated[
+        dict[str, Any] | None, Field(title="EditoastTsiErrorXmlParseContext")
+    ] = None
+    message: str
+    status: Literal[400]
+    type: Literal["editoast:stdcm:tsi:XmlParse"]
+
+
+class EditoastTsiErrorXmlSerialize(BaseModel):
+    context: Annotated[
+        dict[str, Any] | None, Field(title="EditoastTsiErrorXmlSerializeContext")
+    ] = None
+    message: str
+    status: Literal[400]
+    type: Literal["editoast:stdcm:tsi:XmlSerialize"]
+
+
 class EditoastWorkScheduleErrorDatabase(BaseModel):
     context: Annotated[
         dict[str, Any] | None, Field(title="EditoastWorkScheduleErrorDatabaseContext")
@@ -4556,6 +4620,13 @@ class EditoastError(
         | EditoastTrainScheduleExceptionErrorTrainScheduleNotFound
         | EditoastTrainScheduleSetErrorDatabase
         | EditoastTrainScheduleSetErrorNotFound
+        | EditoastTsiErrorInvalidEncoding
+        | EditoastTsiErrorNoCompletedEvent
+        | EditoastTsiErrorPathNotFound
+        | EditoastTsiErrorResponseCollectionFailed
+        | EditoastTsiErrorSimulationError
+        | EditoastTsiErrorXmlParse
+        | EditoastTsiErrorXmlSerialize
         | EditoastWorkScheduleErrorDatabase
         | EditoastWorkScheduleErrorNameAlreadyUsed
         | EditoastWorkScheduleErrorWorkScheduleGroupNotFound
@@ -4719,6 +4790,13 @@ class EditoastError(
         | EditoastTrainScheduleExceptionErrorTrainScheduleNotFound
         | EditoastTrainScheduleSetErrorDatabase
         | EditoastTrainScheduleSetErrorNotFound
+        | EditoastTsiErrorInvalidEncoding
+        | EditoastTsiErrorNoCompletedEvent
+        | EditoastTsiErrorPathNotFound
+        | EditoastTsiErrorResponseCollectionFailed
+        | EditoastTsiErrorSimulationError
+        | EditoastTsiErrorXmlParse
+        | EditoastTsiErrorXmlSerialize
         | EditoastWorkScheduleErrorDatabase
         | EditoastWorkScheduleErrorNameAlreadyUsed
         | EditoastWorkScheduleErrorWorkScheduleGroupNotFound
