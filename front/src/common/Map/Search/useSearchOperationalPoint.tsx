@@ -44,7 +44,11 @@ export default function useSearchOperationalPoint({
 
   const stdcmPerimeterOperationalpointsFilter = useMemo(() => {
     if (isStdcm && !isSuperUser && stdcmOperationalPoints) {
-      return ['or', ...stdcmOperationalPoints.map((ci) => ['=', ['ci'], ci])];
+      // CI is the last 6 digits of the UIC code (uic=87723254 => ci=723254).
+      return [
+        'or',
+        ...stdcmOperationalPoints.map((ci) => ['like', ['to_string', ['uic']], `%${ci}`]),
+      ];
     }
     return true;
   }, [stdcmOperationalPoints, isSuperUser, isStdcm]);
