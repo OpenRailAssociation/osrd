@@ -18,18 +18,18 @@
 //! - PCS: <https://docs.rne.eu/pcs/>
 //! - RNE PCS CB Technical Specifications: <https://docs.rne.eu/pcs/pcs-capacity-broker-cb-basics/#API>
 
-mod taftsi;
-mod prm;
 mod pdm;
+mod prm;
+mod taftsi;
 
+use axum::Extension;
 use axum::body::Bytes;
 use axum::extract::Json;
 use axum::extract::Path;
 use axum::extract::Query;
 use axum::extract::State;
-use axum::response::IntoResponse;
-use axum::Extension;
 use axum::http::header;
+use axum::response::IntoResponse;
 use http_body_util::BodyExt as _;
 use serde::Deserialize;
 use utoipa::IntoParams;
@@ -37,9 +37,7 @@ use utoipa::IntoParams;
 use crate::AppState;
 use crate::error::Result;
 use crate::views::AuthenticationExt;
-use crate::views::timetable::stdcm::{
-    StdcmProgression, StdcmQueryParams, StdcmResponse, stdcm
-};
+use crate::views::timetable::stdcm::{StdcmProgression, StdcmQueryParams, StdcmResponse, stdcm};
 use editoast_derive::EditoastError;
 
 #[derive(Debug, thiserror::Error, EditoastError)]
@@ -105,7 +103,10 @@ pub(in crate::views) async fn stdcm_tsi(
     let prm = prm::parse_xml(&body)?; // Parsing & validation
     let stdcm_request = prm::into_stdcm_request(&prm, query.rolling_stock_id)?;
     // TODO: For testing purposes, remove before merge
-    tracing::debug!("STDCM request: {}", serde_json::to_string(&stdcm_request).unwrap_or_default());
+    tracing::debug!(
+        "STDCM request: {}",
+        serde_json::to_string(&stdcm_request).unwrap_or_default()
+    );
 
     let stdcm_query = StdcmQueryParams { infra: query.infra };
     let response = stdcm(
@@ -128,7 +129,8 @@ pub(in crate::views) async fn stdcm_tsi(
     Ok((
         [(header::CONTENT_TYPE, "application/xml; charset=utf-8")],
         pdm_xml,
-    ).into_response())
+    )
+        .into_response())
 }
 
 async fn collect_last_response(
@@ -144,15 +146,15 @@ async fn collect_last_response(
     tracing::debug!("STDCM raw body: {:?}", std::str::from_utf8(&bytes));
 
     bytes
-    .split(|&b| b == b'\n')
-    .filter(|line| !line.is_empty())
-    .find_map(|line| {
-        if let Ok(StdcmProgression::Completed(r)) =
-            serde_json::from_slice::<StdcmProgression>(line)
-        {
-            return Some(r);
-        }
-        serde_json::from_slice::<StdcmResponse>(line).ok()
-    })
-    .ok_or(TsiError::NoCompletedEvent)
+        .split(|&b| b == b'\n')
+        .filter(|line| !line.is_empty())
+        .find_map(|line| {
+            if let Ok(StdcmProgression::Completed(r)) =
+                serde_json::from_slice::<StdcmProgression>(line)
+            {
+                return Some(r);
+            }
+            serde_json::from_slice::<StdcmResponse>(line).ok()
+        })
+        .ok_or(TsiError::NoCompletedEvent)
 }

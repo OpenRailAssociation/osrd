@@ -152,9 +152,9 @@ impl<'de> Deserialize<'de> for PathRequestMessage {
             .timezone()
             .from_local_datetime(&dt)
             .single()
-            .ok_or_else(|| serde::de::Error::custom(
-                "Ambiguous departure datetime (DST transition)",
-            ))?;
+            .ok_or_else(|| {
+                serde::de::Error::custom("Ambiguous departure datetime (DST transition)")
+            })?;
 
         // ResponsibleApplicant and ResponsibleRU are mandatory on the departure location
         departure_location

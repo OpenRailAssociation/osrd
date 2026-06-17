@@ -164,8 +164,12 @@ pub struct TimingAtLocation {
     pub dwell_time: f64,
 }
 
-pub fn tenth_of_minute_to_ms(dt: f64) -> u64 { (dt * TENTH_MINUTE_MS).round() as u64 }
-pub fn ms_to_tenth_of_minute(ms: u64) -> f64 { ms as f64 / TENTH_MINUTE_MS }
+pub fn tenth_of_minute_to_ms(dt: f64) -> u64 {
+    (dt * TENTH_MINUTE_MS).round() as u64
+}
+pub fn ms_to_tenth_of_minute(ms: u64) -> f64 {
+    ms as f64 / TENTH_MINUTE_MS
+}
 
 #[derive(Debug, Deserialize, Clone)]
 pub struct PlannedTrainTechnicalData {
@@ -231,7 +235,6 @@ pub struct PlannedJourneyLocation {
     #[serde(default)]
     pub planned_train_data: Option<PlannedTrainData>,
 }
-
 
 #[derive(Debug, Deserialize, Clone)]
 pub struct PathInformation {
