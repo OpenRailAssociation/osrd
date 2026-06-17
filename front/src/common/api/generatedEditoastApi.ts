@@ -4200,8 +4200,10 @@ export type Scenario = {
   tags: Tags;
   timetable_id: number;
 };
+export type TimetableType = 'CALENDAR' | 'HOURLY';
 export type ScenarioWithDetails = Scenario & {
   infra_name: string;
+  timetable_type: TimetableType;
   train_schedules_count: number;
 };
 export type ScenarioCreateForm = {
@@ -4234,6 +4236,7 @@ export type ScenarioResponse = Scenario & {
   infra_name: string;
   project: Project;
   study: Study;
+  timetable_type: TimetableType;
   train_schedules_count: number;
 };
 export type ScenarioPatchForm = {
@@ -4668,7 +4671,6 @@ export type SubCategory = {
 export type SubCategoryPage = PaginationStats & {
   results: SubCategory[];
 };
-export type TimetableType = 'CALENDAR' | 'HOURLY';
 export type TimetableResult = {
   timetable_id: number;
   timetable_type: TimetableType;

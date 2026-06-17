@@ -5121,6 +5121,7 @@ class ScenarioPatchForm(BaseModel):
 
 class ScenarioWithDetails(Scenario):
     infra_name: str
+    timetable_type: TimetableType
     train_schedules_count: int
 
 
@@ -5965,6 +5966,7 @@ class ScenarioResponse(Scenario):
     infra_name: str
     project: Project
     study: Study
+    timetable_type: TimetableType
     train_schedules_count: int
 
 

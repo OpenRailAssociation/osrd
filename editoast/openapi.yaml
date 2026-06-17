@@ -13472,6 +13472,7 @@ components:
         - train_schedules_count
         - project
         - study
+        - timetable_type
         properties:
           infra_name:
             type: string
@@ -13479,6 +13480,8 @@ components:
             $ref: '#/components/schemas/Project'
           study:
             $ref: '#/components/schemas/Study'
+          timetable_type:
+            $ref: '#/components/schemas/TimetableType'
           train_schedules_count:
             type: integer
             format: int64
@@ -13489,9 +13492,12 @@ components:
         required:
         - infra_name
         - train_schedules_count
+        - timetable_type
         properties:
           infra_name:
             type: string
+          timetable_type:
+            $ref: '#/components/schemas/TimetableType'
           train_schedules_count:
             type: integer
             format: int64
