@@ -26,7 +26,7 @@ def create_scenario(
     session: Session,
 ) -> tuple[int, int, int]:
     # Create the timetable
-    r = session.post(editoast_url + "/timetable/")
+    r = session.post(editoast_url + "/timetable/", json={"timetable_type": "CALENDAR"})
     if r.status_code // 100 != 2:
         err = f"Error creating timetable {r.status_code}: {r.content}"
         raise RuntimeError(err)
@@ -39,6 +39,7 @@ def create_scenario(
             "name": None,
             "published": False,
             "description": "",
+            "timetable_type": "CALENDAR",
         },
     )
     if r.status_code // 100 != 2:

@@ -126,7 +126,9 @@ def get_infra(editoast_url: str, infra_name: str, session: Session) -> int:
 
 def create_scenario(editoast_url: str, infra_id: int, session: Session) -> Scenario:
     # Create the timetable
-    r = _post_with_timeout(session, editoast_url + "/timetable/", json={})
+    r = _post_with_timeout(
+        session, editoast_url + "/timetable/", json={"timetable_type": "CALENDAR"}
+    )
     timetable_id = r.json()["timetable_id"]
     r = _post_with_timeout(
         session,
@@ -136,6 +138,7 @@ def create_scenario(editoast_url: str, infra_id: int, session: Session) -> Scena
             "name": None,
             "published": False,
             "description": "",
+            "timetable_type": "CALENDAR",
         },
     )
     train_schedule_set_id = r.json()["id"]

@@ -514,7 +514,7 @@ def west_to_south_east_simulations(
 
 @pytest.fixture
 def timetable_id(session: Session) -> int:
-    r = session.post(f"{EDITOAST_URL}timetable/")
+    r = session.post(f"{EDITOAST_URL}timetable/", json={"timetable_type": "CALENDAR"})
     if not r.ok:
         raise RuntimeError(f"Error creating timetable {r.status_code}: {r.content}")
     return r.json()["timetable_id"]
@@ -529,6 +529,7 @@ def train_schedule_set_id(session: Session, timetable_id: int) -> int:
             "catalog_entry": None,
             "description": "",
             "published": False,
+            "timetable_type": "CALENDAR",
         },
     )
     r.raise_for_status()

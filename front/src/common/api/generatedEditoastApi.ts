@@ -1293,6 +1293,7 @@ const injectedRtkApi = api
           params: {
             catalog_entry_id: queryArg.catalogEntryId,
             published: queryArg.published,
+            timetable_type: queryArg.timetableType,
           },
         }),
         providesTags: ['train_schedule_set'],
@@ -2625,6 +2626,7 @@ export type GetTrainScheduleSetsApiResponse =
 export type GetTrainScheduleSetsApiArg = {
   catalogEntryId?: number;
   published?: boolean;
+  timetableType?: TimetableType;
 };
 export type PostTrainScheduleSetsApiResponse =
   /** status 201 Train schedule set */ TrainScheduleSetResponse;
