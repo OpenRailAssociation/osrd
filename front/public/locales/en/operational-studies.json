@@ -542,6 +542,13 @@
         "trainName": "Train name"
       },
       "itinerary": "Itinerary",
+      "serviceChangeWarning": {
+        "cancel": "Cancel",
+        "confirm": "Confirm",
+        "explanations_one": "Editing the cadence or the duration of the service will reset an exception. Do you wish to continue?",
+        "explanations_other": "Editing the cadence or the duration of the service will reset {{count}} exceptions. Do you wish to continue?",
+        "header": "Service model changed"
+      },
       "serviceModelTrain": "Service model train",
       "serviceOccurrence": "Service occurrence"
     },

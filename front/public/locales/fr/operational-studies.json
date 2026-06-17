@@ -542,6 +542,13 @@
         "trainName": "Nom du train"
       },
       "itinerary": "Itinéraire",
+      "serviceChangeWarning": {
+        "cancel": "Annuler",
+        "confirm": "Confirmer",
+        "explanations_one": "Modifier la cadence ou la plage de répétition supprimera une exception. Voulez-vous continuer ?",
+        "explanations_other": "Modifier la cadence ou la plage de répétition supprimera {{count}} exceptions. Voulez-vous continuer ?",
+        "header": "Modèle de service modifié"
+      },
       "serviceModelTrain": "Train modèle de mission",
       "serviceOccurrence": "Occurrence de mission"
     },
