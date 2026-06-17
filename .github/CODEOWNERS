@@ -17,9 +17,9 @@
 /scripts                                                 @openrailassociation/OSRD-DevOps
 
 # --- NIX ---
-/nix                                                     @openrailassociation/OSRD-DevOps
-/flake.lock                                              @openrailassociation/OSRD-DevOps
-*.nix                                                    @openrailassociation/OSRD-DevOps
+/nix                                                     @openrailassociation/OSRD-DevOps @openrailassociation/OSRD-NixTools
+/flake.lock                                              @openrailassociation/OSRD-DevOps @openrailassociation/OSRD-NixTools
+*.nix                                                    @openrailassociation/OSRD-DevOps @openrailassociation/OSRD-NixTools
 
 # --- FRONT ---
 /front                                                   @openrailassociation/OSRD-Front
