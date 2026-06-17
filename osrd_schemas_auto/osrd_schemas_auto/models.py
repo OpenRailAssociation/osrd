@@ -5339,6 +5339,10 @@ class SwitchExtensions(BaseModel):
     sncf: SwitchSncfExtension | None = None
 
 
+class TimetableForm(BaseModel):
+    timetable_type: TimetableType
+
+
 class TimetableResult(BaseModel):
     """
     Creation result for a Timetable

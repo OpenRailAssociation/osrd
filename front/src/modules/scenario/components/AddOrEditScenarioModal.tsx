@@ -160,7 +160,11 @@ const AddOrEditScenarioModal = ({ editionMode = false, scenario }: AddOrEditScen
             published: false,
           },
         }).unwrap();
-        const timetable = await postTimetable().unwrap();
+        const timetable = await postTimetable({
+          timetableForm: {
+            timetable_type: 'CALENDAR',
+          },
+        }).unwrap();
         await linkTrainScheduleSetToTimetable({
           id: timetable.timetable_id,
           body: { train_schedule_set_ids: [sandbox.id] },
