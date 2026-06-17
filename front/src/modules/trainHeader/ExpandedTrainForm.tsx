@@ -229,7 +229,7 @@ const ExpandedTrainForm = ({
         onPersistTrain(updatedTrain);
       }
     },
-    [fields, fieldsFromTrain]
+    [train, fields, fieldsFromTrain, onPersistTrain]
   );
 
   const onFieldImmediateChange = useCallback(
@@ -240,10 +240,11 @@ const ExpandedTrainForm = ({
 
       setFields(newFields);
     },
-    [fields]
+    [fields, train, onPersistTrain]
   );
 
-  const constraintDistributionsOptions: { id: ConstraintDistribution; label: string }[] = [
+  const constraintDistributionsOptions: { id: ConstraintDistribution; label: string }[] = useMemo(
+    () => [
     {
       id: 'STANDARD',
       label: t('manageTrainSchedule.allowances.distribution-linear'),
@@ -252,16 +253,19 @@ const ExpandedTrainForm = ({
       id: 'MARECO',
       label: t('manageTrainSchedule.allowances.distribution-mareco'),
     },
-  ];
+    ],
+    [t]
+  );
   const selectedConstraintDistributionOption = useMemo(
     () =>
       constraintDistributionsOptions.find(
         (constraint) => constraint.id === fields.constraint_distribution
       ),
-    [fields.constraint_distribution]
+    [fields.constraint_distribution, constraintDistributionsOptions]
   );
 
-  const comfortOptions: { id: Comfort; label: string }[] = [
+  const comfortOptions: { id: Comfort; label: string }[] = useMemo(
+    () => [
     {
       id: 'STANDARD',
       label: t('translation:rollingStock.comfortTypes.STANDARD'),
@@ -274,10 +278,12 @@ const ExpandedTrainForm = ({
       id: 'HEATING',
       label: t('translation:rollingStock.comfortTypes.HEATING'),
     },
-  ];
+    ],
+    [t]
+  );
   const selectedComfortOption = useMemo(
     () => comfortOptions.find((comfort) => comfort.id === fields.comfort),
-    [fields.comfort]
+    [comfortOptions, fields.comfort]
   );
   const selectedCategoryId = useMemo(
     () => (fields.category ? categoryOptionId(fields.category) : null),
@@ -285,7 +291,7 @@ const ExpandedTrainForm = ({
   );
   const selectedCategoryOption = useMemo(
     () => categoryOptions.find((category) => category.id === selectedCategoryId),
-    [selectedCategoryId]
+    [categoryOptions, selectedCategoryId]
   );
 
   const subCategories = useSubCategoryContext();
