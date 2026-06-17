@@ -18,6 +18,7 @@ export const INVALID_OUTLINE: CurveOutline = {
 
 const FONT_WEIGHT_REGULAR = 400;
 const FONT_WEIGHT_BOLD = 600;
+const OUT_OF_SELECTION_OPACITY = 0.3;
 const RESTING_LABEL_BACKGROUND: NonNullable<CurveStyle['label']>['background'] = {
   color: REST_BACKGROUND_COLOR,
   opacity: 0.9,
@@ -168,10 +169,10 @@ const getCurveStyle = (
   if (outOfSelection) {
     const { colors } = train;
     return {
-      color: colors.surface,
-      opacity: 1,
+      color: colors.base,
+      opacity: OUT_OF_SELECTION_OPACITY,
       label: {
-        color: colors.surface,
+        color: colors.base,
         fontWeight: FONT_WEIGHT_REGULAR,
         background: RESTING_LABEL_BACKGROUND,
       },

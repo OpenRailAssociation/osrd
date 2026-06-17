@@ -746,6 +746,7 @@ const SpaceTimeChartWrapper = ({
                   path={path}
                   color={style.color}
                   level={style.level}
+                  opacity={style.opacity}
                   border={style.outline}
                   label={style.label}
                 />

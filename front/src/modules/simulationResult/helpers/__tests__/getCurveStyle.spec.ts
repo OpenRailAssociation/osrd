@@ -149,11 +149,12 @@ describe('getCurveStyle', () => {
   });
 
   describe('out of selection', () => {
-    it('should use the background tint for the curve and the label', () => {
+    it('should keep the normal color and fade with a reduced opacity', () => {
       const style = getCurveStyle('none', { colors, isSimulated: true }, { outOfSelection: true });
-      expect(style.color).toBe(colors.surface);
+      expect(style.color).toBe(colors.base);
+      expect(style.opacity).toBeLessThan(1);
       expect(style.label).toEqual({
-        color: colors.surface,
+        color: colors.base,
         fontWeight: 400,
         background: { color: REST_BACKGROUND_COLOR, opacity: 0.9 },
       });
