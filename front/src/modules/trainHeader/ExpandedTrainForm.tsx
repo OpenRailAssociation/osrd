@@ -35,6 +35,7 @@ import { createFixedSelectOptions, createStandardSelectOptions } from 'utils/uiC
 
 import ExtraOccurrenceForm from './ExtraOccurrenceForm';
 import ExtraOccurrenceRow from './ExtraOccurrenceRow';
+import { ServiceChangeWarningDialog } from './ServiceChangeWarningDialog';
 import type { ExtraOccurrencesChanges } from './TrainHeader';
 
 // TODO: Passing `undefined` to DatePicker's selectableSlot prop should mean this
@@ -64,6 +65,7 @@ type TrainFieldsState = {
   rolling_stock_name: string;
   departure_date: Date;
   initial_speed: string | null;
+  service_changed_confirmed: boolean;
 };
 
 type initialSpeedProblem = 'INVALID_NUMBER' | 'ROUNDING' | 'TOO_HIGH' | null;
@@ -96,6 +98,7 @@ function getFieldsFromTrain(train: Train): TrainFieldsState {
     departure_date: new Date(train.start_time),
     initial_speed:
       train.initial_speed === undefined ? null : String(Math.round(train.initial_speed * 36) / 10),
+    service_changed_confirmed: !train.paced || train.paced.exceptions.length === 0,
   };
 }
 
@@ -107,8 +110,12 @@ function applyFieldsToTrain(
   const paced = train.paced
     ? {
         exceptions: train.paced.exceptions,
-        interval: new Duration({ milliseconds: fields.service_cadence }).toISOString(),
-        time_window: new Duration({ milliseconds: fields.service_window }).toISOString(),
+        interval: fields.service_changed_confirmed
+          ? new Duration({ milliseconds: fields.service_cadence }).toISOString()
+          : train.paced.interval,
+        time_window: fields.service_changed_confirmed
+          ? new Duration({ milliseconds: fields.service_window }).toISOString()
+          : train.paced.time_window,
       }
     : undefined;
 
@@ -245,14 +252,14 @@ const ExpandedTrainForm = ({
 
   const constraintDistributionsOptions: { id: ConstraintDistribution; label: string }[] = useMemo(
     () => [
-    {
-      id: 'STANDARD',
-      label: t('manageTrainSchedule.allowances.distribution-linear'),
-    },
-    {
-      id: 'MARECO',
-      label: t('manageTrainSchedule.allowances.distribution-mareco'),
-    },
+      {
+        id: 'STANDARD',
+        label: t('manageTrainSchedule.allowances.distribution-linear'),
+      },
+      {
+        id: 'MARECO',
+        label: t('manageTrainSchedule.allowances.distribution-mareco'),
+      },
     ],
     [t]
   );
@@ -266,18 +273,18 @@ const ExpandedTrainForm = ({
 
   const comfortOptions: { id: Comfort; label: string }[] = useMemo(
     () => [
-    {
-      id: 'STANDARD',
-      label: t('translation:rollingStock.comfortTypes.STANDARD'),
-    },
-    {
-      id: 'AIR_CONDITIONING',
-      label: t('translation:rollingStock.comfortTypes.AIR_CONDITIONING'),
-    },
-    {
-      id: 'HEATING',
-      label: t('translation:rollingStock.comfortTypes.HEATING'),
-    },
+      {
+        id: 'STANDARD',
+        label: t('translation:rollingStock.comfortTypes.STANDARD'),
+      },
+      {
+        id: 'AIR_CONDITIONING',
+        label: t('translation:rollingStock.comfortTypes.AIR_CONDITIONING'),
+      },
+      {
+        id: 'HEATING',
+        label: t('translation:rollingStock.comfortTypes.HEATING'),
+      },
     ],
     [t]
   );
@@ -326,6 +333,26 @@ const ExpandedTrainForm = ({
       </button>
     </div>
   );
+
+  const isServiceChangeWarningDialogVisible = useMemo(
+    () =>
+      !fields.service_changed_confirmed &&
+      (fields.service_cadence?.valueOf() !== fieldsFromTrain.service_cadence?.valueOf() ||
+        fields.service_window?.valueOf() !== fieldsFromTrain.service_window?.valueOf()),
+    [train.paced, fields, fieldsFromTrain]
+  );
+
+  const revertServiceChange = useCallback(() => {
+    setFields({
+      ...fields,
+      service_cadence: fieldsFromTrain.service_cadence,
+      service_window: fieldsFromTrain.service_window,
+    });
+  }, [fields, fieldsFromTrain]);
+
+  const confirmServiceChange = useCallback(() => {
+    onFieldImmediateChange('service_changed_confirmed', true);
+  }, [onFieldImmediateChange]);
 
   return (
     <div className="train-header expanded-train-form">
@@ -601,6 +628,13 @@ const ExpandedTrainForm = ({
         </div>
       </div>
       {categoryWarning && <Banner message={categoryWarning} />}
+      {isServiceChangeWarningDialogVisible && (
+        <ServiceChangeWarningDialog
+          exceptionsCount={train.paced!.exceptions.length}
+          onCancel={revertServiceChange}
+          onConfirm={confirmServiceChange}
+        />
+      )}
     </div>
   );
 };
