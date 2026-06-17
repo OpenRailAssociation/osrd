@@ -3278,6 +3278,12 @@ paths:
       tags:
       - timetable
       summary: Create a timetable
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TimetableForm'
+        required: true
       responses:
         '201':
           description: Timetable with train schedule ids
@@ -15479,6 +15485,13 @@ components:
             within the target document where the operation is performed.
         value:
           description: Value to test against.
+    TimetableForm:
+      type: object
+      required:
+      - timetable_type
+      properties:
+        timetable_type:
+          $ref: '#/components/schemas/TimetableType'
     TimetableResult:
       type: object
       description: Creation result for a Timetable

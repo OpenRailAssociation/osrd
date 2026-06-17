@@ -125,21 +125,36 @@ pub struct TimetableIdParam {
     pub id: i64,
 }
 
+#[derive(Serialize, Deserialize, ToSchema)]
+pub(in crate::views) struct TimetableForm {
+    timetable_type: schemas::timetable_type::TimetableType,
+}
+
+impl TimetableForm {
+    pub fn into_changeset(self) -> Changeset<Timetable> {
+        Timetable::changeset().timetable_type(editoast_models::timetable_type::TimetableType(
+            self.timetable_type,
+        ))
+    }
+}
+
 /// Create a timetable
 #[editoast_derive::route(authz::Role::OperationalStudies)]
 #[utoipa::path(
     post, path = "",
     tag = "timetable",
+    request_body = TimetableForm,
     responses(
         (status = 201, description = "Timetable with train schedule ids", body = TimetableResult),
     ),
 )]
 pub(in crate::views) async fn post(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
+    Json(timetable_form): Json<TimetableForm>,
 ) -> Result<impl IntoResponse> {
     let conn = &mut db_pool.get().await?;
 
-    let timetable = Timetable::changeset().create(conn).await?;
+    let timetable = timetable_form.into_changeset().create(conn).await?;
     let response: TimetableResult = timetable.into();
 
     Ok((StatusCode::CREATED, Json(response)))
@@ -1167,6 +1182,9 @@ mod tests {
 
         let created_timetable: TimetableResult = app
             .post("/timetable")
+            .json(&TimetableForm {
+                timetable_type: schemas::timetable_type::TimetableType::Hourly,
+            })
             .await
             .assert_status(StatusCode::CREATED)
             .json();

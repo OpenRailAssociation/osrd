@@ -1077,7 +1077,11 @@ const injectedRtkApi = api
         invalidatesTags: ['temporary_speed_limits'],
       }),
       postTimetable: build.mutation<PostTimetableApiResponse, PostTimetableApiArg>({
-        query: () => ({ url: `/timetable`, method: 'POST' }),
+        query: (queryArg) => ({
+          url: `/timetable`,
+          method: 'POST',
+          body: queryArg.timetableForm,
+        }),
         invalidatesTags: ['timetable'],
       }),
       deleteTimetableById: build.mutation<
@@ -2423,7 +2427,9 @@ export type PostTemporarySpeedLimitGroupApiArg = {
 };
 export type PostTimetableApiResponse =
   /** status 201 Timetable with train schedule ids */ TimetableResult;
-export type PostTimetableApiArg = void;
+export type PostTimetableApiArg = {
+  timetableForm: TimetableForm;
+};
 export type DeleteTimetableByIdApiResponse = unknown;
 export type DeleteTimetableByIdApiArg = {
   /** A timetable ID */
@@ -4663,6 +4669,9 @@ export type SubCategoryPage = PaginationStats & {
 export type TimetableType = 'CALENDAR' | 'HOURLY';
 export type TimetableResult = {
   timetable_id: number;
+  timetable_type: TimetableType;
+};
+export type TimetableForm = {
   timetable_type: TimetableType;
 };
 export type CoreConflictType = 'Spacing' | 'Routing';
