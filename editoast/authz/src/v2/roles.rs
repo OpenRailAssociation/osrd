@@ -86,6 +86,8 @@ pub fn remove_roles(subject: Subject, roles: HashSet<Role>) -> Protected<()> {
 
 #[cfg(test)]
 mod tests {
+    use rstest::rstest;
+
     use crate::v2::TestClientExt as _;
     use crate::v2::add_members;
     use crate::v2::special_authorizers::Authorize;
@@ -357,5 +359,33 @@ mod tests {
             openfga.subject_roles(&Subject::user(2)).await,
             HashSet::from_iter([Role::Stdcm])
         );
+    }
+
+    #[rstest]
+    #[case::subject_roles(
+        subject_roles(Subject::user(1)).checks,
+        &[Check::SubjectExists(Subject::user(1))]
+    )]
+    #[case::add_roles(
+        add_roles(Subject::user(1), HashSet::from([Role::Admin, Role::Stdcm])).checks,
+        &[
+            Check::SubjectExists(Subject::user(1)),
+            Check::HasRole(Actor::Issuer, Role::Admin)
+        ]
+    )]
+    #[case::remove_roles(
+        remove_roles(Subject::user(1), HashSet::from([Role::Admin, Role::Stdcm])).checks,
+        &[
+            Check::SubjectExists(Subject::user(1)),
+            Check::HasRole(Actor::Issuer, Role::Admin)
+        ]
+    )]
+    fn protected_contains_expected_checks(
+        #[case] protected_checks: HashSet<Check>,
+        #[case] expected_checks: &[Check],
+    ) {
+        // Make sure that each public protected op contains its expected list of checks
+        let expected_checks = expected_checks.iter().copied().collect::<HashSet<_>>();
+        assert_eq!(expected_checks, protected_checks);
     }
 }

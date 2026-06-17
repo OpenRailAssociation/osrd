@@ -231,6 +231,8 @@ pub fn rolling_stock_granted_subjects(
 
 #[cfg(test)]
 mod tests {
+    use rstest::rstest;
+
     use crate::User;
     use crate::v2::TestClientExt as _;
     use crate::v2::special_authorizers::Authorize;
@@ -342,7 +344,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn rolling_stock_granted_subjects() {
+    async fn rolling_stock_granted_subjects_direct_and_indirect() {
         let openfga = crate::authz_client!();
         openfga
             .prepare_writes()
@@ -372,5 +374,40 @@ mod tests {
         expected.sort();
         response.sort();
         assert_eq!(response, expected);
+    }
+
+    #[rstest]
+    #[case::rolling_stock_privileges(
+        rolling_stock_privileges(User(1), RollingStock(1)).checks,
+        &[
+           Check::SubjectExists(Subject::user(1)),
+           Check::HasRollingStockPrivilege(Actor::Issuer, RollingStockPrivilege::CanRead, RollingStock(1)),
+           Check::RollingStockExists(RollingStock(1))
+        ]
+    )]
+    #[rstest]
+    #[case::rolling_stock_effective_grant(
+        rolling_stock_effective_grant(Subject::user(1), RollingStock(1)).checks,
+        &[
+           Check::SubjectExists(Subject::user(1)),
+           Check::HasRollingStockPrivilege(Actor::Issuer, RollingStockPrivilege::CanRead, RollingStock(1)),
+           Check::RollingStockExists(RollingStock(1))
+        ]
+    )]
+    #[rstest]
+    #[case::rolling_stock_granted_subjects(
+        rolling_stock_granted_subjects(RollingStock(1), RollingStockGrant::Writer).checks,
+        &[
+           Check::HasRollingStockPrivilege(Actor::Issuer, RollingStockPrivilege::CanRead, RollingStock(1)),
+           Check::RollingStockExists(RollingStock(1))
+        ]
+    )]
+    fn protected_contains_expected_checks(
+        #[case] protected_checks: HashSet<Check>,
+        #[case] expected_checks: &[Check],
+    ) {
+        // Make sure that each public protected op contains its expected list of checks
+        let expected_checks = expected_checks.iter().copied().collect::<HashSet<_>>();
+        assert_eq!(expected_checks, protected_checks);
     }
 }

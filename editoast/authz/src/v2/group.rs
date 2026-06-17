@@ -102,6 +102,9 @@ pub fn remove_members(group: Group, members: HashSet<User>) -> Protected<()> {
 
 #[cfg(test)]
 mod tests {
+    use rstest::rstest;
+
+    use crate::Subject;
     use crate::v2::TestClientExt as _;
     use crate::v2::special_authorizers::Authorize;
 
@@ -269,5 +272,41 @@ mod tests {
             openfga.user_groups(User(1)).await,
             HashSet::from([Group(1), Group(2)])
         );
+    }
+
+    #[rstest]
+    #[case::group_members(
+        group_members(Group(1)).checks,
+        &[Check::SubjectExists(Subject::group(1))]
+    )]
+    #[case::user_groups(
+        user_groups(User(1)).checks,
+        &[Check::SubjectExists(Subject::user(1))]
+    )]
+    #[case::add_members(
+        add_members(Group(1), HashSet::from([User(1), User(2)])).checks,
+        &[
+            Check::SubjectExists(Subject::group(1)),
+            Check::SubjectExists(Subject::user(1)),
+            Check::SubjectExists(Subject::user(2)),
+            Check::HasRole(Actor::Issuer, Role::Admin),
+        ]
+    )]
+    #[case::remove_members(
+        remove_members(Group(1), HashSet::from([User(1), User(2)])).checks,
+        &[
+            Check::SubjectExists(Subject::group(1)),
+            Check::SubjectExists(Subject::user(1)),
+            Check::SubjectExists(Subject::user(2)),
+            Check::HasRole(Actor::Issuer, Role::Admin),
+        ]
+    )]
+    fn protected_contains_expected_checks(
+        #[case] protected_checks: HashSet<Check>,
+        #[case] expected_checks: &[Check],
+    ) {
+        // Make sure that each public protected op contains its expected list of checks
+        let expected_checks = expected_checks.iter().copied().collect::<HashSet<_>>();
+        assert_eq!(expected_checks, protected_checks);
     }
 }

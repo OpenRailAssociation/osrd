@@ -364,6 +364,8 @@ pub fn infra_list(user: User, privilege: InfraPrivilege) -> Protected<ResourcesL
 
 #[cfg(test)]
 mod tests {
+    use rstest::rstest;
+
     use crate::v2::TestClientExt as _;
     use crate::v2::special_authorizers::Authorize;
 
@@ -654,7 +656,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn infra_granted_subjects() {
+    async fn infra_granted_subjects_direct_and_indirect() {
         let openfga = crate::authz_client!();
         openfga
             .prepare_writes()
@@ -685,7 +687,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn infra_list() {
+    async fn infra_list_direct_inherited_and_admin_bypass() {
         let openfga = crate::authz_client!();
         openfga
             .prepare_writes()
@@ -745,5 +747,58 @@ mod tests {
         // Only user_2 with reader grant should see the infra as being writable
         assert_eq!(infras_1, vec![]);
         assert_eq!(infras_2, vec![Infra(1)]);
+    }
+
+    #[rstest]
+    #[case::infra_direct_grant(
+        infra_direct_grant(Subject::user(1), Infra(1)).checks,
+        &[
+            Check::SubjectExists(Subject::user(1)),
+            Check::InfraExists(Infra(1))])
+        ]
+    #[case::infra_effective_grant(
+        infra_effective_grant(Subject::user(1), Infra(1)).checks,
+        &[
+            Check::SubjectExists(Subject::user(1)),
+            Check::InfraExists(Infra(1)),
+            Check::HasInfraPrivilege(Actor::Issuer, InfraPrivilege::CanRead, Infra(1)),
+        ]
+    )]
+    #[case::infra_revoke_grant(
+        infra_revoke_grant(Subject::user(1), Infra(1)).checks,
+        &[
+            Check::SubjectExists(Subject::user(1)),
+            Check::InfraExists(Infra(1)),
+            Check::HasInfraPrivilege(Actor::Issuer, InfraPrivilege::CanRevoke, Infra(1)),
+            Check::IsNotLastInfraOwner(Subject::user(1), Infra(1)),
+            Check::SubjectEffectiveInfraGrantIsNot(InfraGrant::Owner, Subject::user(1), Infra(1))
+        ]
+    )]
+    #[case::infra_privileges(
+        infra_privileges(User(1), Infra(1)).checks,
+        &[
+            Check::SubjectExists(Subject::user(1)),
+            Check::InfraExists(Infra(1)),
+            Check::HasInfraPrivilege(Actor::Issuer, InfraPrivilege::CanRead, Infra(1)),
+        ]
+    )]
+    #[case::infra_privileges(
+        infra_granted_subjects(Infra(1), InfraGrant::Owner).checks,
+        &[
+            Check::InfraExists(Infra(1)),
+            Check::HasInfraPrivilege(Actor::Issuer, InfraPrivilege::CanRead, Infra(1)),
+        ]
+    )]
+    #[case::infra_list(
+        infra_list(User(1), InfraPrivilege::CanRead).checks,
+        &[Check::SubjectExists(Subject::user(1))]
+    )]
+    fn protected_contains_expected_checks(
+        #[case] protected_checks: HashSet<Check>,
+        #[case] expected_checks: &[Check],
+    ) {
+        // Make sure that each public protected op contains its expected list of checks
+        let expected_checks = expected_checks.iter().copied().collect::<HashSet<_>>();
+        assert_eq!(expected_checks, protected_checks);
     }
 }
