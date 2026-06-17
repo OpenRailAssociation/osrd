@@ -53,6 +53,7 @@ class _ScenarioResponse:
     last_modification: str
     tags: list[str]
     infra_name: str
+    timetable_type: str
     project: _Project
     study: _Study
 

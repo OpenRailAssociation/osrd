@@ -124,7 +124,12 @@ describe('useScenario', () => {
 
     await waitFor(() => expect(result.current.sandboxId).toBe(999));
     expect(mocks.postTrainScheduleSets).toHaveBeenCalledWith({
-      trainScheduleSetForm: { name: null, description: '', published: false },
+      trainScheduleSetForm: {
+        name: null,
+        description: '',
+        published: false,
+        timetable_type: 'CALENDAR',
+      },
     });
     expect(mocks.linkTrainScheduleSets).toHaveBeenCalledWith({
       id: mockScenario.timetable_id,

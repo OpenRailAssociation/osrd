@@ -4030,6 +4030,11 @@ paths:
         required: false
         schema:
           type: boolean
+      - name: timetable_type
+        in: query
+        required: false
+        schema:
+          $ref: '#/components/schemas/TimetableType'
       responses:
         '200':
           description: list of train schedule sets

@@ -113,6 +113,7 @@ pub(in crate::views) async fn post(
 pub(in crate::views) struct TrainScheduleSetQueryParams {
     catalog_entry_id: Option<i64>,
     published: Option<bool>,
+    timetable_type: Option<schemas::timetable_type::TimetableType>,
 }
 
 #[editoast_derive::route(authz::Role::OperationalStudies)]
@@ -158,6 +159,7 @@ pub(in crate::views) async fn get(
     Query(TrainScheduleSetQueryParams {
         catalog_entry_id,
         published,
+        timetable_type,
     }): Query<TrainScheduleSetQueryParams>,
 ) -> Result<Json<Vec<TrainScheduleSetResponse>>> {
     let conn = &mut db_pool.get().await?;
@@ -171,6 +173,14 @@ pub(in crate::views) async fn get(
 
     if let Some(published) = published {
         settings = settings.filter(move || TrainScheduleSet::PUBLISHED.eq(published));
+    }
+
+    if let Some(timetable_type) = timetable_type {
+        settings = settings.filter(move || {
+            TrainScheduleSet::TIMETABLE_TYPE.eq(editoast_models::timetable_type::TimetableType(
+                timetable_type,
+            ))
+        });
     }
 
     let train_schedule_sets = TrainScheduleSet::list(conn, settings).await?;
@@ -730,8 +740,59 @@ mod tests {
             .expect("Failed to create train schedule set")
     }
 
+    async fn create_train_schedule_with_timetable_type(conn: &mut DbConnection, timetable_type: editoast_models::timetable_type::TimetableType) -> TrainScheduleSet {
+        let catalog_entry = create_catalog_entry(conn).await;
+        TrainScheduleSet::changeset()
+            .catalog_entry_id(Some(catalog_entry.id))
+            .name(Some("test".to_string()))
+            .description(String::default())
+            .timetable_type(timetable_type)
+            .create(conn)
+            .await
+            .expect("Failed to create train schedule set")
+    }
+
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn get_train_schedule_sets() {
+        let app = test_app!().skip_authz().build();
+        let db_pool = app.db_pool();
+        let train_schedule_set_1 =
+            create_train_schedule_set(&mut db_pool.get().await.unwrap()).await;
+        let train_schedule_set_2 =
+            create_train_schedule_with_timetable_type(&mut db_pool.get().await.unwrap(), editoast_models::timetable_type::TimetableType(
+                schemas::timetable_type::TimetableType::Hourly
+            )).await;
+        let response: Vec<TrainScheduleSetResponse> = app
+            .get("/train_schedule_sets?timetable_type=HOURLY")
+            .await
+            .assert_status_ok()
+            .json();
+        assert_eq!(response.len(), 1);
+        assert_eq!(
+            response,
+            vec![TrainScheduleSetResponse {
+                train_schedule_set: train_schedule_set_2,
+                train_schedule_count: 0,
+            }]
+        );
+
+        let response: Vec<TrainScheduleSetResponse> = app
+            .get("/train_schedule_sets?timetable_type=CALENDAR")
+            .await
+            .assert_status_ok()
+            .json();
+        assert_eq!(response.len(), 1);
+        assert_eq!(
+            response,
+            vec![TrainScheduleSetResponse {
+                train_schedule_set: train_schedule_set_1.clone(),
+                train_schedule_count: 0,
+            }]
+        );
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn get_train_schedule_sets_with_timetable_type() {
         let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
         let train_schedule_set_1 =
