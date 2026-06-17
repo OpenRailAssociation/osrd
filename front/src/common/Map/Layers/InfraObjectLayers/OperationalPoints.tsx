@@ -29,7 +29,11 @@ function getColorByHighlighted(data: {
   if (data.highlightedOperationalPoints && data.highlightedOperationalPoints.length > 0)
     return [
       'case',
-      ['in', ['get', 'extensions_sncf_ci'], ['literal', data.highlightedOperationalPoints]],
+      [
+        'in',
+        ['to-number', ['slice', ['to-string', ['get', 'uic']], 2]],
+        ['literal', data.highlightedOperationalPoints],
+      ],
       data.inColor,
       data.outColor,
     ];
@@ -47,7 +51,11 @@ function getFilterHighlighted(
 ): FilterSpecification {
   let result: FilterSpecification = true;
   if (data.highlightedOperationalPoints && data.highlightedOperationalPoints.length > 0)
-    result = ['in', ['get', 'extensions_sncf_ci'], ['literal', data.highlightedOperationalPoints]];
+    result = [
+      'in',
+      ['to-number', ['slice', ['to-string', ['get', 'uic']], 2]],
+      ['literal', data.highlightedOperationalPoints],
+    ];
   else if (data.highlightedArea) result = ['within', data.highlightedArea];
 
   if (reverseCondition === true) {
@@ -221,7 +229,10 @@ const OperationalPointsLayer = ({
       'text-offset': [0.75, -1],
       'text-max-width': 32,
     },
-    filter: getFilterHighlighted({ highlightedArea, highlightedOperationalPoints }),
+    filter: getFilterHighlighted({
+      highlightedArea,
+      highlightedOperationalPoints,
+    }),
     paint: {
       'text-color': colors.op.textName,
       'text-halo-width': DEFAULT_HALO_WIDTH,
