@@ -740,7 +740,10 @@ mod tests {
             .expect("Failed to create train schedule set")
     }
 
-    async fn create_train_schedule_with_timetable_type(conn: &mut DbConnection, timetable_type: editoast_models::timetable_type::TimetableType) -> TrainScheduleSet {
+    async fn create_train_schedule_set_with_timetable_type(
+        conn: &mut DbConnection,
+        timetable_type: editoast_models::timetable_type::TimetableType,
+    ) -> TrainScheduleSet {
         let catalog_entry = create_catalog_entry(conn).await;
         TrainScheduleSet::changeset()
             .catalog_entry_id(Some(catalog_entry.id))
@@ -753,15 +756,18 @@ mod tests {
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn get_train_schedule_sets() {
+    async fn get_train_schedule_sets_with_timetable_type() {
         let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
         let train_schedule_set_1 =
             create_train_schedule_set(&mut db_pool.get().await.unwrap()).await;
-        let train_schedule_set_2 =
-            create_train_schedule_with_timetable_type(&mut db_pool.get().await.unwrap(), editoast_models::timetable_type::TimetableType(
-                schemas::timetable_type::TimetableType::Hourly
-            )).await;
+        let train_schedule_set_2 = create_train_schedule_set_with_timetable_type(
+            &mut db_pool.get().await.unwrap(),
+            editoast_models::timetable_type::TimetableType(
+                schemas::timetable_type::TimetableType::Hourly,
+            ),
+        )
+        .await;
         let response: Vec<TrainScheduleSetResponse> = app
             .get("/train_schedule_sets?timetable_type=HOURLY")
             .await
@@ -792,7 +798,7 @@ mod tests {
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn get_train_schedule_sets_with_timetable_type() {
+    async fn get_train_schedule_sets() {
         let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
         let train_schedule_set_1 =

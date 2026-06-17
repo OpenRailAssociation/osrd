@@ -121,17 +121,25 @@ pub struct ScenarioWithDetails {
     pub scenario: Scenario,
     pub infra_name: String,
     pub train_schedules_count: i64,
+    pub timetable_type: schemas::timetable_type::TimetableType,
 }
 
 impl ScenarioWithDetails {
     pub async fn from_scenario(
         scenario: Scenario,
         conn: &mut DbConnection,
-    ) -> Result<Self, database::DatabaseError> {
+    ) -> Result<Self, ScenarioError> {
+        let timetable = Timetable::retrieve_or_fail(conn.clone(), scenario.timetable_id, || {
+            ScenarioError::TimetableNotFound {
+                timetable_id: scenario.timetable_id,
+            }
+        })
+        .await?;
         Ok(Self {
             infra_name: scenario.infra_name(conn).await?,
             train_schedules_count: scenario.train_schedules_count(conn).await?,
             scenario,
+            timetable_type: timetable.timetable_type.0,
         })
     }
 }
@@ -144,6 +152,7 @@ pub struct ScenarioResponse {
     pub train_schedules_count: i64,
     pub project: Project,
     pub study: Study,
+    pub timetable_type: schemas::timetable_type::TimetableType,
 }
 
 impl ScenarioResponse {
@@ -158,6 +167,7 @@ impl ScenarioResponse {
             train_schedules_count: scenarios_with_details.train_schedules_count,
             project,
             study,
+            timetable_type: scenarios_with_details.timetable_type,
         }
     }
 }
@@ -176,7 +186,6 @@ pub(in crate::views) async fn create(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Json(data): Json<ScenarioCreateForm>,
 ) -> Result<impl IntoResponse> {
-    let timetable_id = data.timetable_id;
     let infra_id = data.infra_id;
     let study_id = data.study_id;
     let scenario_cs = data.into_changeset();
@@ -185,11 +194,6 @@ pub(in crate::views) async fn create(
         db_pool.get().await?,
         study_id,
         async move |mut conn, study, _project| {
-            Timetable::exists_or_fail(&mut conn, timetable_id, || {
-                ScenarioError::TimetableNotFound { timetable_id }
-            })
-            .await?;
-
             Infra::exists_or_fail(&mut conn, infra_id, || ScenarioError::InfraNotFound {
                 infra_id,
             })
