@@ -254,7 +254,8 @@
   z-index: 4;
 
   .scenario-timetable-manage-train-schedule {
-    overflow: hidden;
+    overflow-x: hidden;
+    overflow-y: auto;
     background-color: #d7d7d7aa;
     border-radius: 4px;
     animation: fadein 1s;
