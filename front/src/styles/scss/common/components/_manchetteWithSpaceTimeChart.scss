@@ -66,6 +66,11 @@
         font-family: IBM plex sans;
         font-weight: 600;
       }
+
+      .curve-selection-icon,
+      .curve-selection-icon * {
+        pointer-events: none;
+      }
     }
 
     .selected-icon {

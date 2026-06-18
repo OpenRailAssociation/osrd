@@ -49,20 +49,28 @@ const CurveSelectionSidePanel = ({
 
   return (
     <div className="curve-selection-side-panel" style={{ top: position }}>
-      {formattedOccurrences.map(({ mode, value, icon, isActive }) => (
-        <button
-          key={mode}
-          className={cx('numbered-icon', { 'selected-icon': isActive })}
-          title={t(`simulationResults.curveSelection.${mode}`, {
-            count: value,
-          })}
-          onClick={() => onModeChange(mode)}
-        >
-          {icon}
-          {value > 0 && <span className="occurrences-number">{value}</span>}
-          {isActive && <div className="selection-marker" />}
-        </button>
-      ))}
+      {formattedOccurrences.map(({ mode, value, icon, isActive }) => {
+        const title = t(`simulationResults.curveSelection.${mode}`, {
+          count: value,
+        });
+
+        return (
+          <button
+            key={mode}
+            type="button"
+            className={cx('numbered-icon', { 'selected-icon': isActive })}
+            title={title}
+            aria-label={title}
+            onClick={() => onModeChange(mode)}
+          >
+            <span className="curve-selection-icon" aria-hidden>
+              {icon}
+            </span>
+            {value > 0 && <span className="occurrences-number">{value}</span>}
+            {isActive && <div className="selection-marker" />}
+          </button>
+        );
+      })}
     </div>
   );
 };
