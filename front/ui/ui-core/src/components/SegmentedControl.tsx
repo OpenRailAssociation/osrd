@@ -45,6 +45,7 @@ const SegmentedControl = <T,>({
             option.value === getOptionValue(value) && 'checked'
           )}
           title={option.label}
+          data-testid={`segmented-control-${option.value}`}
         >
           <div className="segmented-control-option-content">
             {option.icon ? option.icon : option.label}
