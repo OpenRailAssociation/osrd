@@ -132,5 +132,104 @@ class ItineraryModalPage {
   async checkPathStepCounterText(index: number, expectedText: string) {
     await expect(this.pathStepCounter.nth(index)).toHaveText(expectedText);
   }
+
+  async selectRollingStock(
+    rollingStockQuery: string,
+    expectedRollingStockName: string,
+    expectedCategoryValue: string
+  ) {
+    await this.rollingStockSelector.click();
+    await this.rollingStockSelector.fill(rollingStockQuery);
+    await expect(this.rollingStockFirstSuggestion).toBeVisible();
+    await this.rollingStockFirstSuggestion.click();
+    await expect(this.rollingStockSelector).toHaveValue(expectedRollingStockName);
+    await expect(this.categorySelector).toHaveValue(expectedCategoryValue);
+  }
+
+  async selectCompositionCode(compositionCode: string) {
+    await expect(this.compositionCodeInput).toBeVisible();
+    await this.compositionCodeInput.click();
+    await this.compositionCodeInput.selectOption(compositionCode);
+    await expect(this.compositionCodeInput).toHaveValue(compositionCode);
+  }
+
+  async fillTrainName(trainName: string) {
+    await expect(this.trainNameInput).toBeVisible();
+    await this.trainNameInput.click();
+    await this.trainNameInput.fill(trainName);
+    await expect(this.trainNameInput).toHaveValue(trainName);
+  }
+
+  async launchRocketSearch(mainCode: string) {
+    await this.rocketSearch.click();
+    await this.rocketSearch.fill(mainCode);
+    await expect(this.launchRocketSearchButton).toBeVisible();
+    await expect(this.launchRocketSearchButton).toBeEnabled();
+    await this.launchRocketSearchButton.click();
+  }
+
+  async checkRowsCreationAfterRocketSearch(firstStepValue: string, secondStepValue: string) {
+    await expect(this.comboBox).toHaveCount(3);
+    await expect(this.comboBox.first()).toHaveValue(firstStepValue);
+    await expect(this.comboBox.nth(1)).toHaveValue(secondStepValue);
+    await expect(this.comboBox.nth(2)).toHaveValue('');
+    await expect(this.pathStepCounter.nth(2)).toHaveText('');
+  }
+
+  async checkMapUpdate(count: number) {
+    await expect(this.itineraryModalMap).toBeVisible();
+    await expect(this.pathStepMarker).toHaveCount(count);
+  }
+
+  async checkItineraryReverse(expectedFirstValue: string, expectedSecondValue: string) {
+    await expect(this.itineraryReverseButton).toBeVisible();
+    await this.itineraryReverseButton.click();
+    await expect(this.comboBox.first()).toHaveValue(expectedFirstValue);
+    await expect(this.comboBox.nth(1)).toHaveValue(expectedSecondValue);
+    await expect(this.pathStepCounter.nth(2)).toHaveText('');
+  }
+
+  async checkTrackSelectionAndStopsUpdate(
+    trackNameIndex: number,
+    trackName: string,
+    withStopUpdated: boolean
+  ) {
+    const trackNameSelector = this.trackNameSelector.nth(trackNameIndex);
+    const segmentedControlInputPass = this.segmentedControlInputPass.nth(trackNameIndex);
+    const segmentedControlInputStop = this.segmentedControlInputStop.nth(trackNameIndex);
+
+    await expect(trackNameSelector).toBeVisible();
+    await trackNameSelector.click();
+    await trackNameSelector.fill(trackName);
+    await trackNameSelector.press('Enter');
+    await expect(segmentedControlInputPass).toBeVisible();
+    await expect(segmentedControlInputStop).toBeVisible();
+    if (withStopUpdated) {
+      await expect(segmentedControlInputPass).not.toBeChecked();
+      await expect(segmentedControlInputStop).toBeChecked();
+      await segmentedControlInputPass.click();
+      await expect(segmentedControlInputPass).toBeChecked();
+      await expect(segmentedControlInputStop).not.toBeChecked();
+    } else {
+      await expect(segmentedControlInputPass).toBeChecked();
+      await expect(segmentedControlInputStop).not.toBeChecked();
+      await segmentedControlInputStop.click();
+      await expect(segmentedControlInputStop).toBeChecked();
+      await expect(segmentedControlInputPass).not.toBeChecked();
+    }
+  }
+
+  async createTrain() {
+    await expect(this.itineraryModalNextButton).toBeVisible();
+    await this.itineraryModalNextButton.click();
+    await expect(this.createTimetableItemButton).toBeVisible();
+    await this.createTimetableItemButton.click();
+  }
+
+  async checkTrainPresenceInTimetable(name: string) {
+    await expect(this.timetableItem).toBeVisible();
+    await expect(this.timetableItemName).toBeVisible();
+    await expect(this.timetableItemName).toHaveText(name);
+  }
 }
 export default ItineraryModalPage;

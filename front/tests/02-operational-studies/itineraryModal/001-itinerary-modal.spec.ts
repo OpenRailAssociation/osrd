@@ -5,7 +5,17 @@ import { waitForInfraStateToBeCached } from '../../utils';
 import { getInfra } from '../../utils/api-utils';
 import createScenario from '../../utils/scenario';
 import { deleteScenario } from '../../utils/teardown-utils';
-import { PLACEHOLDER } from './itinerary-modal.consts';
+import {
+  COMPOSITION_CODE,
+  NORTH_STATION,
+  PLACEHOLDER,
+  ROCKET_SEARCH_INPUT,
+  ROLLING_STOCK_NAME,
+  ROLLING_STOCK_NAME_QUERY,
+  SOUTH_STATION,
+  TRACK_NAME,
+  TRAIN_NAME,
+} from './itinerary-modal.consts';
 
 test.describe('Itinerary Modal, Default ', { tag: ['@op', '@itinerary-modal'] }, () => {
   let project: Project;
@@ -75,4 +85,40 @@ test.describe('Itinerary Modal, Default ', { tag: ['@op', '@itinerary-modal'] },
       await itineraryModalPage.checkTrailingPlaceholder();
     });
   });
+
+  /** *************** Test 3 **************** */
+  test(
+    'Create a train with rocket pathfinding',
+    { tag: '@smoke' },
+    async ({ itineraryModalPage }) => {
+      await test.step('Select rolling stock', async () => {
+        await itineraryModalPage.selectRollingStock(
+          ROLLING_STOCK_NAME_QUERY,
+          ROLLING_STOCK_NAME,
+          PLACEHOLDER
+        );
+        await itineraryModalPage.selectCompositionCode(COMPOSITION_CODE);
+        await itineraryModalPage.fillTrainName(TRAIN_NAME);
+      });
+      await test.step('Launch rocket search', async () => {
+        await itineraryModalPage.launchRocketSearch(ROCKET_SEARCH_INPUT);
+      });
+      await test.step('Check itinerary rows created after rocket search', async () => {
+        await itineraryModalPage.checkRowsCreationAfterRocketSearch(NORTH_STATION, SOUTH_STATION);
+      });
+      await test.step('Check path step marker presence on map', async () => {
+        await itineraryModalPage.checkMapUpdate(2);
+      });
+      await test.step('Check itinerary reverse', async () => {
+        await itineraryModalPage.checkItineraryReverse(SOUTH_STATION, NORTH_STATION);
+      });
+      await test.step('Check track selection and stops update', async () => {
+        await itineraryModalPage.checkTrackSelectionAndStopsUpdate(1, TRACK_NAME, true);
+      });
+      await test.step('Create a train and verify presence in the timetable', async () => {
+        await itineraryModalPage.createTrain();
+        await itineraryModalPage.checkTrainPresenceInTimetable(TRAIN_NAME);
+      });
+    }
+  );
 });
