@@ -12221,18 +12221,6 @@ components:
               enum:
               - pathfinding_not_found
         title: PathfindingFailurePathfindingNotFound
-      - type: object
-        title: PathfindingFailureInternalError
-        required:
-        - core_error
-        - failed_status
-        properties:
-          core_error:
-            $ref: '#/components/schemas/InternalError'
-          failed_status:
-            type: string
-            enum:
-            - internal_error
     PathfindingInput:
       type: object
       description: |-
@@ -14528,19 +14516,6 @@ components:
               - pathfinding_not_found
         title: SummaryResponsePathfindingNotFound
         description: Pathfinding not found
-      - type: object
-        title: SummaryResponsePathfindingFailure
-        description: An error has occurred during pathfinding
-        required:
-        - core_error
-        - status
-        properties:
-          core_error:
-            $ref: '#/components/schemas/InternalError'
-          status:
-            type: string
-            enum:
-            - pathfinding_failure
       - type: object
         title: SummaryResponseSimulationFailed
         description: An error has occurred during computing

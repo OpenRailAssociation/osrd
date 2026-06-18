@@ -10,7 +10,6 @@ import fr.sncf.osrd.api.DirectionalTrackRange
 import fr.sncf.osrd.path.interfaces.JsonTrainPath
 import fr.sncf.osrd.path.interfaces.PhysicsPath
 import fr.sncf.osrd.path.interfaces.TrainPath
-import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.utils.json.UnitAdapterFactory
 import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
@@ -76,9 +75,6 @@ data class RangeValue<T>(val range: OffsetRange<TrainPath>, val value: T?) {
     }
 }
 
-class PathfindingFailed(@Json(name = "core_error") val coreError: OSRDError) :
-    PathfindingBlockResponse
-
 class NotEnoughPathItems : PathfindingBlockResponse
 
 val polymorphicPathfindingResponseAdapter: PolymorphicJsonAdapterFactory<PathfindingBlockResponse> =
@@ -89,7 +85,6 @@ val polymorphicPathfindingResponseAdapter: PolymorphicJsonAdapterFactory<Pathfin
         .withSubtype(NotFoundInTracks::class.java, "not_found_in_tracks")
         .withSubtype(IncompatibleConstraintsPathResponse::class.java, "incompatible_constraints")
         .withSubtype(NotEnoughPathItems::class.java, "not_enough_path_items")
-        .withSubtype(PathfindingFailed::class.java, "internal_error")
 
 val pathfindingResponseAdapter: JsonAdapter<PathfindingBlockResponse> =
     Moshi.Builder()

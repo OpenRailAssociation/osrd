@@ -11,6 +11,7 @@ import fr.sncf.osrd.path.interfaces.PhysicsPath
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSLoadingGaugeLimit
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType
+import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.train.TestTrains
 import fr.sncf.osrd.utils.Helpers
@@ -362,10 +363,11 @@ class PathfindingTest : ApiTest() {
                 )
             )
         val response = PathfindingBlocksEndpoint(infraManager).act(RqFake(requestBody))
-        assert(response.statusCode() == 200)
-        val parsed = (pathfindingResponseAdapter.fromJson(response.body()) as? PathfindingFailed)!!
-        AssertionsForClassTypes.assertThat(parsed.coreError.type)
-            .isEqualTo("core:unknown_track_section")
+        assertEquals(response.statusCode(), 400)
+        assertEquals(
+            (OSRDError.adapter.fromJson(response.body()) as OSRDError).type,
+            "core:unknown_track_section",
+        )
     }
 
     @Test
