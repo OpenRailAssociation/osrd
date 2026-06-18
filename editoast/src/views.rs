@@ -503,8 +503,8 @@ pub enum AuthorizationError {
     #[error("Forbidden (403) — user must be an admin to impersonate")]
     #[editoast_error(status = 403)]
     ForbiddenImpersonation,
-    #[error("Not Found (403) — impersonated user '{identity}' not found")]
-    #[editoast_error(status = 403)]
+    #[error("Not Found (404) — impersonated user '{identity}' not found")]
+    #[editoast_error(status = 404)]
     ImpersonatedUserNotFound { identity: String },
     #[error(transparent)]
     #[editoast_error(status = 500)]

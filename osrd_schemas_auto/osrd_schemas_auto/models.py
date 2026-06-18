@@ -508,7 +508,7 @@ class EditoastAuthorizationErrorImpersonatedUserNotFound(BaseModel):
         Field(title="EditoastAuthorizationErrorImpersonatedUserNotFoundContext"),
     ] = None
     message: str
-    status: Literal[403]
+    status: Literal[404]
     type: Literal["EditoastAuthorizationErrorImpersonatedUserNotFound"]
 
 
