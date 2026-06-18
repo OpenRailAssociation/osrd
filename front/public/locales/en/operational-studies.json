@@ -530,6 +530,7 @@
         "extraOccurrences_other": "{{count}} extra occurrences",
         "extraOccurrences_zero": "Extra occurrences",
         "initialVelocity": "Initial velocity",
+        "nullServiceCadence": "Service cadence can not be null",
         "recoveryMargin": "Recovery margin",
         "rollingStock": "Rolling stock",
         "serviceCadence": "Cadence",

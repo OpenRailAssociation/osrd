@@ -86,7 +86,10 @@ function applyFieldsToTrain(fields: TrainFieldsState, train: Train): Train {
   const paced = train.paced
     ? {
         exceptions: train.paced.exceptions,
-        interval: new Duration({ milliseconds: fields.service_cadence }).toISOString(),
+        interval:
+          fields.service_cadence !== 0
+            ? new Duration({ milliseconds: fields.service_cadence }).toISOString()
+            : train.paced.interval,
         time_window: new Duration({ milliseconds: fields.service_window }).toISOString(),
       }
     : undefined;
@@ -263,7 +266,10 @@ const ExpandedTrainForm = ({
     () => rollingStocks.find((rs) => rs.name === fields.rolling_stock_name),
     [fields.rolling_stock_name, rollingStocks]
   );
-  const erroneousFields = useMemo(() => !fields.train_name, [fields.train_name]);
+  const erroneousFields = useMemo(
+    () => !fields.train_name || fields.service_cadence === 0,
+    [fields.train_name, fields.service_cadence]
+  );
 
   const subCategories = useSubCategoryContext();
 
@@ -319,6 +325,14 @@ const ExpandedTrainForm = ({
                     label={t('manageTrainSchedule.trainHeader.form.serviceCadence')}
                     value={fields.service_cadence ?? 0}
                     onChange={(ms) => onFieldImmediateChange('service_cadence', ms)}
+                    statusWithMessage={
+                      fields.service_cadence === 0
+                        ? {
+                            status: 'error',
+                            message: t('manageTrainSchedule.trainHeader.form.nullServiceCadence'),
+                          }
+                        : undefined
+                    }
                   />
                 </div>
                 <div className="train-service-window">

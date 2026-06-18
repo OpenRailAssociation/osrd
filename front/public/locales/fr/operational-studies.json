@@ -530,6 +530,7 @@
         "extraOccurrences_other": "{{count}} occurrences ajoutées",
         "extraOccurrences_zero": "Occurrences ajoutées",
         "initialVelocity": "Vitesse initiale",
+        "nullServiceCadence": "La cadence de service ne peut pas être nulle",
         "recoveryMargin": "Marge de régularité",
         "rollingStock": "Matériel roulant",
         "serviceCadence": "Cadence",
