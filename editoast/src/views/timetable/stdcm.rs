@@ -463,21 +463,23 @@ impl VirtualTrainRun {
         .zip(consists_parameters)
         .map(|((start, end), consist)| {
             let path = convert_steps(&stdcm_request.steps[start..=end]);
-            let last_step = path.last().expect("empty step list");
+            let _last_step = path.last().expect("empty step list");
 
             let train_occurrence = TrainOccurrence {
                 train_name: "".to_string(),
                 labels: vec![],
                 rolling_stock_name: consist.traction_engine.name.clone(),
                 start_time: millisecond::i64::new(approx_start_time.timestamp_millis()),
-                schedule: vec![ScheduleItem {
-                    // Make the train stop at the end
-                    at: last_step.id.clone(),
-                    arrival: None,
-                    stop_for: Some(PositiveDuration::try_from(Duration::zero()).unwrap()),
-                    reception_signal: ReceptionSignal::Open,
-                    ..Default::default()
-                }],
+                schedule: path
+                    .iter()
+                    .map(|path_item| ScheduleItem {
+                        at: path_item.id.clone(),
+                        arrival: None,
+                        stop_for: Some(PositiveDuration::try_from(Duration::zero()).unwrap()),
+                        reception_signal: ReceptionSignal::Stop,
+                        ..Default::default()
+                    })
+                    .collect(),
                 margins: build_single_margin(stdcm_request.margin),
                 initial_speed: 0.0,
                 comfort: stdcm_request.comfort,

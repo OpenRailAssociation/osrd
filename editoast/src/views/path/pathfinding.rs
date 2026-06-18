@@ -390,15 +390,17 @@ fn build_pathfinding_request(
         .extract_location_from_path_items(&pathfinding_input.path_items)
         .map_err(PathfindingResult::Failure)?;
 
+    let len = track_offsets.len();
     // Create the pathfinding request
     Ok(PathfindingRequest {
         infra: infra.id,
         expected_version: infra.version,
         path_items: track_offsets
             .into_iter()
-            .map(|offsets| core_client::pathfinding::PathItem {
+            .enumerate()
+            .map(|(i, offsets)| core_client::pathfinding::PathItem {
                 locations: offsets,
-                can_backtrack: Some(false),
+                can_backtrack: Some(i > 0 && i < len - 1),
             })
             .collect(),
         rolling_stock_loading_gauge: pathfinding_input.rolling_stock_loading_gauge,
