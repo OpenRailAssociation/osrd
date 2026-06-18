@@ -60,5 +60,36 @@ class ItineraryModalPage {
     this.timetableItem = page.getByTestId('scenario-train-schedule');
     this.timetableItemName = this.timetableItem.getByTestId('train-name');
   }
+
+  async checkItineraryModalDefaultState() {
+    await expect(this.itineraryModalFormHeader).toBeVisible();
+    await expect(this.itineraryModalFormBody).toBeVisible();
+    await expect(this.itineraryModalFormFooter).toBeVisible();
+    await expect(this.itineraryModalMap).toBeVisible();
+    await expect(this.itineraryModalCancelButton).toBeVisible();
+    await expect(this.itineraryModalNextButton).toBeVisible();
+  }
+
+  async checkItineraryModalHeader(expectedText: string) {
+    await expect(this.categorySelector).toBeVisible();
+    await expect(this.categorySelector).toHaveValue(expectedText);
+    await expect(this.rollingStockSelector).toBeVisible();
+    await expect(this.rollingStockSelector).toHaveValue('');
+    await expect(this.compositionCodeInput).toBeVisible();
+    await expect(this.compositionCodeInput).toHaveValue(expectedText);
+    await expect(this.trainNameInput).toBeVisible();
+    await expect(this.trainNameInput).toHaveValue('');
+  }
+
+  async checkItineraryModalEmptyRocket() {
+    await expect(this.rocketSearch).toBeVisible();
+    await expect(this.rocketSearch).toHaveValue('');
+  }
+
+  async checkItineraryModalDefaultRowContent() {
+    await expect(this.comboBox).toBeVisible();
+    await expect(this.comboBox).toHaveValue('');
+    await expect(this.comboBox).toHaveCount(1);
+  }
 }
 export default ItineraryModalPage;

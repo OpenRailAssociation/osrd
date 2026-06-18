@@ -78,6 +78,11 @@ class OperationalStudiesPage extends ScenarioTimetableSection {
     await expect(this.manageTrainSchedulePage).toBeVisible();
   }
 
+  async openItineraryModal() {
+    await this.openItineraryModalButton.click();
+    await expect(this.itineraryModalTab).toBeVisible();
+  }
+
   async openRouteTab() {
     await this.routeTab.click();
   }
