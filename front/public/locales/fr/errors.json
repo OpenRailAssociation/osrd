@@ -125,7 +125,9 @@
       "Database": "Erreur interne (base de données)",
       "InfraNotFound": "Infrastructure '{{infra_id}}' non trouvée.",
       "LevelCrossingBatchNotFound": "'{{count}}' passage(s) à niveau introuvable(s).",
-      "TrainBatchNotFound": "'{{count}}' mission(s) introuvable(s)."
+      "TimetableNotFound": "Grille horaire '{{timetable_id}}' introuvable.",
+      "TrainBatchNotFound": "'{{count}}' mission(s) introuvable(s).",
+      "UnsupportedTimetableType": "Les trames ne sont pas gérées."
     },
     "macro_node": {
       "Database": "Erreur interne",

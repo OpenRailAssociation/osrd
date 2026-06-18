@@ -7044,7 +7044,9 @@ components:
       - $ref: '#/components/schemas/EditoastLevelCrossingErrorDatabase'
       - $ref: '#/components/schemas/EditoastLevelCrossingErrorInfraNotFound'
       - $ref: '#/components/schemas/EditoastLevelCrossingErrorLevelCrossingBatchNotFound'
+      - $ref: '#/components/schemas/EditoastLevelCrossingErrorTimetableNotFound'
       - $ref: '#/components/schemas/EditoastLevelCrossingErrorTrainBatchNotFound'
+      - $ref: '#/components/schemas/EditoastLevelCrossingErrorUnsupportedTimetableType'
       - $ref: '#/components/schemas/EditoastLinesErrorsLineNotFound'
       - $ref: '#/components/schemas/EditoastListErrorsErrorsWrongErrorTypeProvided'
       - $ref: '#/components/schemas/EditoastMacroNodeErrorDatabase'
@@ -7452,6 +7454,31 @@ components:
           type: string
           enum:
           - editoast:level_crossing:LevelCrossingBatchNotFound
+    EditoastLevelCrossingErrorTimetableNotFound:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          title: EditoastLevelCrossingErrorTimetableNotFoundContext
+          required:
+          - timetable_id
+          properties:
+            timetable_id:
+              type: integer
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 404
+        type:
+          type: string
+          enum:
+          - editoast:level_crossing:TimetableNotFound
     EditoastLevelCrossingErrorTrainBatchNotFound:
       type: object
       required:
@@ -7477,6 +7504,26 @@ components:
           type: string
           enum:
           - editoast:level_crossing:TrainBatchNotFound
+    EditoastLevelCrossingErrorUnsupportedTimetableType:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          title: EditoastLevelCrossingErrorUnsupportedTimetableTypeContext
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 422
+        type:
+          type: string
+          enum:
+          - editoast:level_crossing:UnsupportedTimetableType
     EditoastLinesErrorsLineNotFound:
       type: object
       required:
