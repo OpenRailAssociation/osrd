@@ -1,5 +1,6 @@
 import { useContext, useMemo, useState, type PropsWithChildren } from 'react';
 
+import type { Geometry } from 'geojson';
 import type { TFunction } from 'i18next';
 import { isEmpty, isNil } from 'lodash';
 import maplibregl from 'maplibre-gl';
@@ -254,8 +255,7 @@ const MapUnplugged = ({
                       // instead. This fixes it:
                       entity = {
                         ...entity,
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        geometry: entity.geometry || (entity as any)._geometry,
+                        geometry: entity.geometry || (entity as { _geometry?: Geometry })._geometry,
                       };
                       activeTool.onClickEntity(entity, eventWithFeature, extendedContext);
                     }
