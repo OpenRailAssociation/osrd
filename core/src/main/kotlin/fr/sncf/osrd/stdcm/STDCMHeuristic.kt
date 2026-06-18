@@ -5,13 +5,14 @@ import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.sim_infra.api.BlockInfra
+import fr.sncf.osrd.sim_infra.api.BlockLocation
 import fr.sncf.osrd.sim_infra.api.RawInfra
 import fr.sncf.osrd.sim_infra.utils.getBlockEntry
 import fr.sncf.osrd.stdcm.graph.STDCMEdge
 import fr.sncf.osrd.stdcm.infra_exploration.ExplorerStep
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorerWithEnvelope
 import fr.sncf.osrd.stdcm.infra_exploration.StepTracker
-import fr.sncf.osrd.utils.indexing.StaticIdx
+import fr.sncf.osrd.stdcm.infra_exploration.getOppositeBlockLocations
 import fr.sncf.osrd.utils.units.Offset
 import io.opentelemetry.api.trace.SpanKind
 import io.opentelemetry.instrumentation.annotations.WithSpan
@@ -33,7 +34,8 @@ data class STDCMAStarHeuristic(
     /**
      * Defines a function that can be used as a heuristic for an A* pathfinding. It takes an edge,
      * and offset on this edge, and a step tracker as input, and returns an estimation of the
-     * remaining time needed to get to the end.
+     * remaining time needed to get to the end. // TODO: we might need to call getBlockTime with the
+     * actual offset of the backtracking locations if any.
      */
     fun invoke(edge: STDCMEdge, offset: Offset<Block>?, stepTracker: StepTracker): Double {
         val lookahead = edge.infraExplorer.getLookahead()
@@ -63,18 +65,18 @@ data class STDCMAStarHeuristic(
             maxSpeedEnvBuilder.getMaxSpeedEnvelope(lastBlock, expectedIndex, null).beginSpeed
         for (block in allBlocks.asReversed()) {
             timeUntilStartOfLastBlock +=
-                maxSpeedEnvBuilder.getBlockTime(
-                    block,
-                    expectedIndex,
-                    null,
-                    endSpeed,
-                    allowanceValue,
-                )
+                maxSpeedEnvBuilder.getBlockTime(block, expectedIndex, endSpeed, allowanceValue)
             endSpeed =
                 maxSpeedEnvBuilder.getMaxSpeedEnvelope(block, expectedIndex, endSpeed).beginSpeed
         }
         val timeSinceFirstBlock =
-            maxSpeedEnvBuilder.getBlockTime(edge.block, expectedIndex, offset, null, allowanceValue)
+            maxSpeedEnvBuilder.getBlockTime(
+                edge.block,
+                expectedIndex,
+                null,
+                allowanceValue,
+                offset ?: blockInfra.getBlockLength(edge.block),
+            )
         timeUntilStartOfLastBlock -= timeSinceFirstBlock
 
         val remainingTime = timeUntilStartOfLastBlock + timeAfterStartOfLastBlock
@@ -159,7 +161,7 @@ class STDCMHeuristicBuilder(
                 val remainingTimeSinceBlockStart =
                     remainingTimeEstimations.first()[it.edge] ?: Double.POSITIVE_INFINITY
                 val timeSinceBlockStart =
-                    maxSpeedEnvBuilder.getBlockTime(it.edge, 0, it.offset, null, allowance)
+                    maxSpeedEnvBuilder.getBlockTime(it.edge, 0, null, allowance, it.offset)
                 remainingTimeSinceBlockStart - timeSinceBlockStart
             } ?: Double.POSITIVE_INFINITY
         logger.info(
@@ -210,15 +212,68 @@ class STDCMHeuristicBuilder(
         val blocks = blockInfra.getBlocksEndingAtDetector(detector)
         val res = mutableListOf<PendingBlock>()
         for (block in blocks) {
-            val newBlock =
-                makePendingBlock(
-                    block,
-                    null,
+            val newStep =
+                getNewBlockStep(
+                    BlockLocation(block, blockInfra.getBlockLength(block)),
                     pendingBlock.stepIndex,
-                    pendingBlock.remainingTimeAtBlockStart,
-                    predecessorEndSpeed,
                 )
-            newBlock?.let { res.add(it) }
+            if (newStep == null || !steps[newStep.stepIndex].canBacktrack) {
+                // The step is unchanged or does not backtrack: the path goes through the whole
+                // block.
+                val newBlock =
+                    makePendingBlock(
+                        block,
+                        Offset.zero(),
+                        blockInfra.getBlockLength(block),
+                        newStep?.stepIndex ?: pendingBlock.stepIndex,
+                        pendingBlock.remainingTimeAtBlockStart,
+                        predecessorEndSpeed,
+                    )
+                newBlock?.let { res.add(it) }
+            } else if (newStep.stepIndex == 0) {
+                // We're at the start of the path: start offset should be the exact value.
+                val newBlock =
+                    makePendingBlock(
+                        block,
+                        newStep.blockLocation.offset,
+                        blockInfra.getBlockLength(block),
+                        0,
+                        pendingBlock.remainingTimeAtBlockStart,
+                        predecessorEndSpeed,
+                    )
+                newBlock?.let { res.add(it) }
+            } else { // The train can backtrack at this location: generate both the current block
+                // and its opposite blocks to allow backtracking.
+                val newBlock =
+                    makePendingBlock(
+                        block,
+                        // We are starting at the backtrack location: we are building an optimistic
+                        // heuristic.
+                        newStep.blockLocation.offset,
+                        blockInfra.getBlockLength(block),
+                        newStep.stepIndex,
+                        pendingBlock.remainingTimeAtBlockStart,
+                        predecessorEndSpeed,
+                    )
+                if (newBlock != null) {
+                    res.add(newBlock)
+                    // Generate the opposing blocks for the backtracking.
+                    val oppositeBlockLocations =
+                        getOppositeBlockLocations(newStep.blockLocation, blockInfra, rawInfra)
+                    for (oppositeBlock in oppositeBlockLocations) {
+                        val oppositeBlock =
+                            makePendingBlock(
+                                oppositeBlock.edge,
+                                Offset.zero(),
+                                oppositeBlock.offset,
+                                newStep.stepIndex,
+                                newBlock.remainingTimeAtBlockStart,
+                                0.0,
+                            )
+                        oppositeBlock?.let { res.add(it) }
+                    }
+                }
+            }
         }
         return res
     }
@@ -228,39 +283,71 @@ class STDCMHeuristicBuilder(
         val res = PriorityQueue<PendingBlock>()
         val stepCount = steps.size
         for (wp in steps[stepCount - 1].locations) {
-            makePendingBlock(wp.edge, wp.offset, stepCount - 1, 0.0, 0.0)?.let { res.add(it) }
+            val newStep = getNewBlockStep(wp, stepCount - 1)
+            makePendingBlock(
+                    wp.edge,
+                    Offset.zero(),
+                    wp.offset,
+                    (newStep?.stepIndex) ?: (stepCount - 1),
+                    0.0,
+                    0.0,
+                )
+                ?.let { res.add(it) }
         }
         return res
     }
 
+    data class BlockStep(val blockLocation: BlockLocation, val stepIndex: Int)
+
+    /**
+     * Find the new step (if any) corresponding to the new block. The step is on the block and is
+     * the closest one to the block's start.
+     */
+    private fun getNewBlockStep(blockLocation: BlockLocation, oldStepIndex: Int): BlockStep? {
+        var currentIndex = oldStepIndex
+        var currentLocation = blockLocation
+        while (currentIndex > 0) {
+            val step = steps[currentIndex - 1]
+            val currentLocations =
+                step.locations.filter {
+                    it.edge == currentLocation.edge && it.offset <= currentLocation.offset
+                }
+            if (currentLocations.isEmpty()) break
+            currentLocation = currentLocations.maxBy { it.offset }
+            currentIndex--
+        }
+        return if (currentIndex < oldStepIndex) BlockStep(currentLocation, currentIndex) else null
+    }
+
     /** Instantiate one pending block. */
     private fun makePendingBlock(
-        block: StaticIdx<Block>,
-        offset: Offset<Block>?,
-        currentIndex: Int,
+        block: BlockId,
+        startOffset: Offset<Block>,
+        endOffset: Offset<Block>,
+        index: Int,
         remainingTime: Double,
         endSpeed: Double?,
     ): PendingBlock? {
-        var newIndex = currentIndex
-        val actualOffset = offset ?: blockInfra.getBlockLength(block)
-        while (newIndex > 0) {
-            val step = steps[newIndex - 1]
-            if (step.locations.none { it.edge == block && it.offset <= actualOffset }) {
-                break
-            }
-            newIndex--
-        }
-        if (consistSchedule?.constraints != null && newIndex > 0 && remainingTime > 0.0) {
-            // We stop if there's any blocking constraint on the block,
-            // but only if not on the first or last block
-            // (as the constrained range may not be part of the path)
-            if (consistSchedule.constraints[newIndex].apply(block).isNotEmpty()) return null
+        if (
+            consistSchedule?.constraints != null &&
+                consistSchedule.constraints[index].apply(block).any {
+                    it.start < endOffset && it.end > startOffset
+                }
+        ) {
+            return null
         }
         return PendingBlock(
             block,
-            newIndex,
+            index,
             remainingTime +
-                maxSpeedEnvBuilder.getBlockTime(block, newIndex, offset, endSpeed, allowance),
+                maxSpeedEnvBuilder.getBlockTime(
+                    block,
+                    index,
+                    endSpeed,
+                    allowance,
+                    endOffset,
+                    startOffset,
+                ),
             endSpeed,
         )
     }

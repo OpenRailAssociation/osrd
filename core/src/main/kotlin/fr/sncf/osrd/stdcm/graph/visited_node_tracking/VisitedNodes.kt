@@ -2,6 +2,7 @@ package fr.sncf.osrd.stdcm.graph.visited_node_tracking
 
 import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.sim_infra.api.BlockId
+import fr.sncf.osrd.sim_infra.api.BlockLocation
 import fr.sncf.osrd.sim_infra.api.DirDetectorId
 import fr.sncf.osrd.sim_infra.utils.getBlockEntry
 import fr.sncf.osrd.sim_infra.utils.getBlockExit
@@ -53,6 +54,8 @@ data class VisitedNodes(
         val identifier: EdgeIdentifier,
         val waypointIndex: Int,
         val startOffset: Distance,
+        val backtrackingLocation:
+            BlockLocation?, // Can be in another block, later than current edge.
     )
 
     /**

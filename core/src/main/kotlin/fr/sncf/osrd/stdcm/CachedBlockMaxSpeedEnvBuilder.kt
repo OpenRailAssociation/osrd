@@ -130,16 +130,22 @@ data class CachedBlockMaxSpeedEnvBuilder(
     fun getBlockTime(
         block: BlockId,
         step: Int,
-        endOffset: Offset<Block>?,
         endSpeed: Double?,
         allowanceValue: AllowanceValue? = null,
+        endOffset: Offset<Block> = blockInfra.getBlockLength(block),
+        startOffset: Offset<Block> = Offset.zero(),
     ): Double {
-        if (endOffset?.distance == 0.meters) return 0.0
-        val actualLength = endOffset ?: blockInfra.getBlockLength(block)
-        val time =
-            getMaxSpeedEnvelope(block, step, endSpeed)
-                .interpolateArrivalAtClamp(actualLength.meters)
-        val allowanceTime = allowanceValue?.getAllowanceTime(time, actualLength.meters)
+        if (endOffset.distance == 0.meters) return 0.0
+        if (startOffset >= endOffset) return 0.0
+        val maxSpeedEnv = getMaxSpeedEnvelope(block, step, endSpeed)
+        val startTime =
+            if (startOffset.distance == 0.meters) 0.0
+            else maxSpeedEnv.interpolateArrivalAtClamp(startOffset.meters)
+        val endTime =
+            getMaxSpeedEnvelope(block, step, endSpeed).interpolateArrivalAtClamp(endOffset.meters)
+        val time = endTime - startTime
+        val length = endOffset - startOffset
+        val allowanceTime = allowanceValue?.getAllowanceTime(time, length.meters)
         return time + (allowanceTime ?: 0.0)
     }
 

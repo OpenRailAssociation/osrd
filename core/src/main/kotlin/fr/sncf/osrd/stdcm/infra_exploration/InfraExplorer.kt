@@ -52,6 +52,7 @@ import kotlin.to
  */
 interface InfraExplorer {
     val isPathComplete: Boolean
+    val backtrackingLocations: AppendOnlyLinkedList<BlockLocation>
 
     /**
      * Get the path properties for the current edge only, starting at the given offset and for the
@@ -156,14 +157,27 @@ interface InfraExplorer {
     fun getLookaheadEndOffset(): Offset<PhysicsPath>
 }
 
-/** Returns the current block and the lookahead blocks */
+/** Returns the current block and the lookahead blocks. */
 fun InfraExplorer.getRemainingBlocks(): List<BlockId> {
     val res = mutableListOf(getCurrentBlock())
     res.addAll(getLookahead().map { it.value })
     return res
 }
 
-/** Used to identify an edge */
+/** Returns the first backtracking location in the lookahead blocks. */
+fun InfraExplorer.getBacktrackingLocationInLookahead(): BlockLocation? {
+    val lastBacktrackingLocation = this.backtrackingLocations.lastOrNull() ?: return null
+    return if (
+        this.getLookahead().any {
+            it.value == lastBacktrackingLocation.edge &&
+                it.objectEnd == lastBacktrackingLocation.offset
+        }
+    )
+        lastBacktrackingLocation
+    else null
+}
+
+/** Used to identify an edge. */
 interface EdgeIdentifier {
     override fun equals(other: Any?): Boolean
 
@@ -224,11 +238,11 @@ private class InfraExplorerImpl(
     private val rawInfra: RawInfra,
     private val blockInfra: BlockInfra,
     private val rollingStockLength: Distance,
-    // the "teleporting" part during backtracking (tail location becomes head location) is skipped
-    // so there is a spatial discontinuity in this range list
+    // The "teleporting" part during backtracking (tail location becomes head location) is skipped
+    // so there is a spatial discontinuity in this range list.
     private var blockRanges: AppendOnlyLinkedList<BlockRange>,
-    // the "teleporting" part during backtracking (tail location becomes head location) is skipped
-    // so there is a spatial discontinuity in this range list
+    // The "teleporting" part during backtracking (tail location becomes head location) is skipped
+    // so there is a spatial discontinuity in this range list.
     private var routes: AppendOnlyLinkedList<RouteRange>,
     private var blockRoutes: AppendOnlyMap<BlockId, RouteId>,
     private var lastTrack: TrackSectionId?,
@@ -238,6 +252,9 @@ private class InfraExplorerImpl(
     private var stepTracker: StepTracker,
     private var constraints: List<PathfindingConstraint>?,
     override var isPathComplete: Boolean = false,
+    // The locations where this InfraExplorer is really backtracking.
+    override var backtrackingLocations: AppendOnlyLinkedList<BlockLocation> =
+        appendOnlyLinkedListOf(),
 ) : InfraExplorer {
     override fun getCurrentEdgePathProperties(offset: Offset<Block>, length: Distance?): TrainPath {
         // We re-compute the routes of the current path since the cache may be incorrect
@@ -315,7 +332,10 @@ private class InfraExplorerImpl(
                         blockLocation,
                         possibleBacktracking.location,
                     )
-                if (extendedToBacktracking) infraExplorers.add(explorerToBacktracking)
+                if (extendedToBacktracking) {
+                    explorerToBacktracking.backtrackingLocations.add(possibleBacktracking.location)
+                    infraExplorers.add(explorerToBacktracking)
+                }
             }
         }
         return infraExplorers
@@ -402,6 +422,7 @@ private class InfraExplorerImpl(
             this.stepTracker.clone(),
             this.constraints,
             this.isPathComplete,
+            this.backtrackingLocations.shallowCopy(),
         )
     }
 
@@ -698,7 +719,7 @@ private class InfraExplorerImpl(
  * From a given block location, return all the block locations corresponding to the opposite
  * direction
  */
-private fun getOppositeBlockLocations(
+fun getOppositeBlockLocations(
     blockLocation: BlockLocation,
     blockInfra: BlockInfra,
     rawInfra: RawInfra,
