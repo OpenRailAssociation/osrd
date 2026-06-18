@@ -174,7 +174,7 @@ pub(in crate::views) async fn user_groups(
         regulator, db_pool, ..
     }): State<AppState>,
 ) -> Result<Json<Vec<Group>>> {
-    let user = user.ok_or(AuthorizationError::Unauthorized)?;
+    let user = user.ok_or(AuthorizationError::Unauthenticated)?;
     let user_authorizer =
         UserAuthorizer::new(user, roles, regulator.openfga(), db_pool.get().await?);
     let user_groups = authz::v2::user_groups(user)
@@ -393,7 +393,7 @@ pub(in crate::views) async fn user_privileges(
     Json(resources_ids): Json<HashMap<ResourceType, Vec<i64>>>,
 ) -> Result<Json<HashMap<ResourceType, Vec<ResourcePrivileges>>>> {
     if matches!(authn, crate::authentication::Mode::Unauthenticated) {
-        return Err(AuthorizationError::Unauthorized.into());
+        return Err(AuthorizationError::Unauthenticated.into());
     }
 
     let mut result = HashMap::<_, Vec<_>>::new();
@@ -541,7 +541,7 @@ pub(in crate::views) async fn user_grants(
     Json(body): Json<HashMap<ResourceType, Vec<i64>>>,
 ) -> Result<Json<HashMap<ResourceType, Vec<UserResourceGrant>>>> {
     let Some(user) = user else {
-        return Err(AuthorizationError::Unauthorized.into());
+        return Err(AuthorizationError::Unauthenticated.into());
     };
     let authorizer = UserAuthorizer::new(user, roles, regulator.openfga(), db_pool.get().await?);
 
@@ -642,7 +642,7 @@ pub(in crate::views) async fn resource_granted_users(
     Path(ResourceIdParam { resource_id }): Path<ResourceIdParam>,
 ) -> Result<Json<Vec<SubjectGrant>>> {
     let Some(user) = user else {
-        return Err(AuthorizationError::Unauthorized.into());
+        return Err(AuthorizationError::Unauthenticated.into());
     };
     let conn = db_pool.get().await?;
     let openfga = regulator.openfga();
@@ -903,7 +903,7 @@ pub(in crate::views) async fn update_grants(
                                 .await
                                 .map(Authorization::Granted),
                             Authentication::Unauthenticated => {
-                                return Err(AuthorizationError::Unauthorized.into());
+                                return Err(AuthorizationError::Unauthenticated.into());
                             }
                         }?
                         .allowed()?;

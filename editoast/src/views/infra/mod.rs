@@ -228,7 +228,7 @@ pub(in crate::views) async fn list(
                 }
             }
         }
-        (None, _) => return Err(AuthorizationError::Unauthorized)?,
+        (None, _) => return Err(AuthorizationError::Unauthenticated)?,
     };
     let (infras, stats) =
         Infra::list_paginated(conn, settings.order_by(move || Infra::ID.asc())).await?;

@@ -512,14 +512,14 @@ class EditoastAuthorizationErrorImpersonatedUserNotFound(BaseModel):
     type: Literal["EditoastAuthorizationErrorImpersonatedUserNotFound"]
 
 
-class EditoastAuthorizationErrorUnauthorized(BaseModel):
+class EditoastAuthorizationErrorUnauthenticated(BaseModel):
     context: Annotated[
         dict[str, Any] | None,
-        Field(title="EditoastAuthorizationErrorUnauthorizedContext"),
+        Field(title="EditoastAuthorizationErrorUnauthenticatedContext"),
     ] = None
     message: str
     status: Literal[401]
-    type: Literal["EditoastAuthorizationErrorUnauthorized"]
+    type: Literal["EditoastAuthorizationErrorUnauthenticated"]
 
 
 class EditoastAuthzErrorAuthorizer(BaseModel):
@@ -4313,7 +4313,7 @@ class EditoastError(
         | EditoastAuthorizationErrorForbidden
         | EditoastAuthorizationErrorForbiddenImpersonation
         | EditoastAuthorizationErrorImpersonatedUserNotFound
-        | EditoastAuthorizationErrorUnauthorized
+        | EditoastAuthorizationErrorUnauthenticated
         | EditoastAuthzErrorAuthorizer
         | EditoastAuthzErrorDatabase
         | EditoastAuthzErrorUnknownIdentities
@@ -4476,7 +4476,7 @@ class EditoastError(
         | EditoastAuthorizationErrorForbidden
         | EditoastAuthorizationErrorForbiddenImpersonation
         | EditoastAuthorizationErrorImpersonatedUserNotFound
-        | EditoastAuthorizationErrorUnauthorized
+        | EditoastAuthorizationErrorUnauthenticated
         | EditoastAuthzErrorAuthorizer
         | EditoastAuthzErrorDatabase
         | EditoastAuthzErrorUnknownIdentities

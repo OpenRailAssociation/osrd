@@ -69,7 +69,7 @@ pub(in crate::views) async fn authentication_extraction_middleware(
                 skip,
                 "invalid authentication parameters"
             );
-            AuthorizationError::Unauthorized
+            AuthorizationError::Unauthenticated
         },
     )?;
 
@@ -217,7 +217,7 @@ pub(in crate::views) async fn authentication_validation_middleware(
         }
         crate::authentication::Mode::Skip { .. } => (None, ::authz::v2::Protected::default()),
         crate::authentication::Mode::Unauthenticated => {
-            return Err(AuthorizationError::Unauthorized.into());
+            return Err(AuthorizationError::Unauthenticated.into());
         }
     };
 

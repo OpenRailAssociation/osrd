@@ -477,7 +477,7 @@ impl Authentication {
     ) -> Result<(), AuthorizationError> {
         match self {
             Authentication::SkipAuthorization { .. } => Ok(()),
-            Authentication::Unauthenticated => Err(AuthorizationError::Unauthorized),
+            Authentication::Unauthenticated => Err(AuthorizationError::Unauthenticated),
             Authentication::Authenticated(authorizer) => f(authorizer)
                 .await
                 .map_err(Into::into)?
@@ -494,16 +494,16 @@ pub type AuthorizerError = ::authz::Error<<PgAuthDriver as ::authz::StorageDrive
 #[derive(Debug, Error, derive_more::From, EditoastError)]
 #[editoast_error(base_id = "authz")]
 pub enum AuthorizationError {
-    #[error("Unauthorized — user must be authenticated")]
+    #[error("Unauthorized (401) — user must be authenticated")]
     #[editoast_error(status = 401)]
-    Unauthorized,
-    #[error("Forbidden — user has insufficient privileges")]
+    Unauthenticated,
+    #[error("Forbidden (403) — user has insufficient privileges")]
     #[editoast_error(status = 403)]
     Forbidden,
-    #[error("Forbidden — user must be an admin to impersonate")]
+    #[error("Forbidden (403) — user must be an admin to impersonate")]
     #[editoast_error(status = 403)]
     ForbiddenImpersonation,
-    #[error("Not Found — impersonated user '{identity}' not found")]
+    #[error("Not Found (403) — impersonated user '{identity}' not found")]
     #[editoast_error(status = 403)]
     ImpersonatedUserNotFound { identity: String },
     #[error(transparent)]

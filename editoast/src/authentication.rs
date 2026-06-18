@@ -116,7 +116,7 @@ impl State {
         roles: Vec<Role>,
     ) -> Result<Self, AuthorizationError> {
         match mode {
-            Mode::Unauthenticated => Err(AuthorizationError::Unauthorized),
+            Mode::Unauthenticated => Err(AuthorizationError::Unauthenticated),
             Mode::Authenticated { .. } | Mode::Impersonating { .. } => {
                 let user = user.expect("providing the request user is required when Mode::Authenticated or Mode::Impersonating");
                 Ok(State::Authenticated { user, roles })
