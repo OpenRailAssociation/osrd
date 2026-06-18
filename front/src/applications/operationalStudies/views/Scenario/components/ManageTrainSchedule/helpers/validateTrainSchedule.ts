@@ -1,5 +1,7 @@
 import type { TrainSchedule } from 'common/api/osrdEditoastApi';
 import { Duration } from 'utils/duration';
+import { isInvalidFloatNumber } from 'utils/numbers';
+import { msToKmh } from 'utils/physics';
 
 import { MAX_TIMEWINDOW_MINUTES } from '../consts';
 
@@ -28,6 +30,9 @@ export function validateTrainSchedule(train: TrainSchedule): TrainScheduleConfEr
   }
   if (!train.train_name) {
     errors.push('noName');
+  }
+  if (isInvalidFloatNumber(msToKmh(train.initial_speed!), 1)) {
+    errors.push('invalidInitialSpeed');
   }
 
   // Only check interval and timeWindow for paced trains
