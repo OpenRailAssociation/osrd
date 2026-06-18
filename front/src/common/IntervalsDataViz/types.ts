@@ -1,7 +1,7 @@
 /**
  *  Generic type for Linear Metadata
  */
-export type LinearMetadataItem<T = { [key: string]: unknown }> = T & {
+export type LinearMetadataItem<T = { [key: string]: string | number }> = T & {
   begin: number;
   end: number;
 };
