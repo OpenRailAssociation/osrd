@@ -8,13 +8,18 @@ import { deleteScenario } from '../../utils/teardown-utils';
 import {
   COMPOSITION_CODE,
   NORTH_STATION,
+  NORTH_STATION_MAIN_CODE,
   PLACEHOLDER,
   ROCKET_SEARCH_INPUT,
   ROLLING_STOCK_NAME,
   ROLLING_STOCK_NAME_QUERY,
   SOUTH_STATION,
+  SOUTH_STATION_MAIN_CODE,
+  SOUTH_STATION_SUGGESTION,
   TRACK_NAME,
   TRAIN_NAME,
+  WEST_STATION,
+  WEST_STATION_SUGGESTION,
 } from './itinerary-modal.consts';
 
 test.describe('Itinerary Modal, Default ', { tag: ['@op', '@itinerary-modal'] }, () => {
@@ -114,6 +119,54 @@ test.describe('Itinerary Modal, Default ', { tag: ['@op', '@itinerary-modal'] },
       });
       await test.step('Check track selection and stops update', async () => {
         await itineraryModalPage.checkTrackSelectionAndStopsUpdate(1, TRACK_NAME, true);
+      });
+      await test.step('Create a train and verify presence in the timetable', async () => {
+        await itineraryModalPage.createTrain();
+        await itineraryModalPage.checkTrainPresenceInTimetable(TRAIN_NAME);
+      });
+    }
+  );
+
+  /** *************** Test 4 **************** */
+  test(
+    'Create a train by filling the itinerary form manually',
+    { tag: '@smoke' },
+    async ({ itineraryModalPage }) => {
+      await test.step('Select rolling stock and check automatic category assignment', async () => {
+        await itineraryModalPage.selectRollingStock(
+          ROLLING_STOCK_NAME_QUERY,
+          ROLLING_STOCK_NAME,
+          PLACEHOLDER
+        );
+        await itineraryModalPage.selectCompositionCode(COMPOSITION_CODE);
+        await itineraryModalPage.fillTrainName(TRAIN_NAME);
+      });
+      await test.step('Search first operational point by name and check suggestions list', async () => {
+        await itineraryModalPage.fillPathStepByName(0, WEST_STATION, WEST_STATION_SUGGESTION);
+      });
+      await test.step('Select first operational point from suggestions and check its value', async () => {
+        await itineraryModalPage.selectFirstOpSuggestion();
+        await itineraryModalPage.checkPathStepValue(0, WEST_STATION);
+      });
+      await test.step('Search for second operational point by trigram and check suggestions list', async () => {
+        await itineraryModalPage.fillPathStepByName(
+          1,
+          SOUTH_STATION_MAIN_CODE,
+          SOUTH_STATION_SUGGESTION
+        );
+      });
+      await test.step('Select second operational point from suggestions and check its value', async () => {
+        await itineraryModalPage.selectFirstOpSuggestion();
+        await itineraryModalPage.checkPathStepValue(1, SOUTH_STATION);
+      });
+      await test.step('Insert an intermediate operational point between the two existing steps', async () => {
+        await itineraryModalPage.insertIntermediatePathStep(1, NORTH_STATION_MAIN_CODE, 1);
+      });
+      await test.step('Check valid pathfinding result and itinerary displayed on map', async () => {
+        await itineraryModalPage.checkMapUpdate(3);
+      });
+      await test.step('Select track and update stop', async () => {
+        await itineraryModalPage.checkTrackSelectionAndStopsUpdate(1, TRACK_NAME, false);
       });
       await test.step('Create a train and verify presence in the timetable', async () => {
         await itineraryModalPage.createTrain();

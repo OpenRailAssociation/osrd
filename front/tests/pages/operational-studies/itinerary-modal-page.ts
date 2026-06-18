@@ -231,5 +231,34 @@ class ItineraryModalPage {
     await expect(this.timetableItemName).toBeVisible();
     await expect(this.timetableItemName).toHaveText(name);
   }
+
+  async fillPathStepByName(index: number, searchValue: string, expectedSuggestionText: string) {
+    await this.comboBox.nth(index).click();
+    await this.comboBox.nth(index).fill(searchValue);
+    await expect(this.opSuggestion.first()).toBeVisible();
+    await expect(this.opSuggestion.first()).toHaveText(expectedSuggestionText);
+  }
+
+  async selectFirstOpSuggestion() {
+    await this.opSuggestion.first().click();
+  }
+
+  async checkPathStepValue(position: number, expectedValue: string) {
+    await expect(this.comboBox.nth(position)).toHaveValue(expectedValue);
+  }
+
+  async insertIntermediatePathStep(
+    pathStepGapIndex: number,
+    searchValue: string,
+    comboboxIndex: number
+  ) {
+    await this.pathStepGap.nth(pathStepGapIndex).hover();
+    await expect(this.addPathStepButton).toBeVisible();
+    await this.addPathStepButton.click();
+    await this.comboBox.nth(comboboxIndex).click();
+    await this.comboBox.nth(comboboxIndex).fill(searchValue);
+    await expect(this.opSuggestion.first()).toBeVisible();
+    await this.opSuggestion.first().click();
+  }
 }
 export default ItineraryModalPage;
