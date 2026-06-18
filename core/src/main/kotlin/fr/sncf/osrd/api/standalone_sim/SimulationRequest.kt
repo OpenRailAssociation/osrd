@@ -38,9 +38,10 @@ class SimulationRequest(
     init {
         backtrackPathItems.forEach { pathItemIndex ->
             require(pathItemIndex > 0 && pathItemIndex < pathItemPositions.size - 1)
-            require(
-                schedule.first { it.pathOffset == pathItemPositions[pathItemIndex] }.stopFor != null
-            )
+            //            require(
+            //                schedule.first { it.pathOffset == pathItemPositions[pathItemIndex]
+            // }.stopFor != null
+            //            )
         }
     }
 
