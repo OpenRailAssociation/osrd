@@ -264,15 +264,17 @@ impl Request {
                 _ => panic!("Unexpected pathfinding result"),
             })?;
 
+        let len = &self.steps.len();
         Ok(track_offsets
             .iter()
             .zip(&self.steps)
+            .enumerate()
             .map(
-                |(track_offset, path_item)| core_client::stdcm::STDCMPathItem {
+                |(i, (track_offset, path_item))| core_client::stdcm::STDCMPathItem {
                     stop_duration: path_item.duration,
                     path_item: core_client::pathfinding::PathItem {
                         locations: track_offset.clone(),
-                        can_backtrack: Some(false),
+                        can_backtrack: Some(i > 0 && i < len - 1),
                     },
                     step_timing_data: path_item.timing_data.as_ref().map(|timing_data| {
                         core_client::stdcm::StepTimingData {
