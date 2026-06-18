@@ -10,6 +10,7 @@ use crate::views::timetable::simulation::SimulationResponseSuccess;
 use crate::views::timetable::simulation::train_simulation_ordered_batch;
 use editoast_models::Infra;
 use editoast_models::LevelCrossingModel;
+use editoast_models::Timetable;
 use editoast_models::TrainSchedule;
 use editoast_models::train_schedule::OccurrenceId;
 
@@ -33,6 +34,7 @@ use schemas::infra::LevelCrossing;
 use schemas::infra::TrackOffset;
 use schemas::primitives::Identifier;
 use schemas::primitives::TimeWindow;
+use schemas::timetable_type::TimetableType;
 use serde::Deserialize;
 use serde::Serialize;
 use std::collections::HashMap;
@@ -48,9 +50,15 @@ enum LevelCrossingError {
     #[error("{count} train(s) could not be found")]
     #[editoast_error(status = 404)]
     TrainBatchNotFound { count: usize },
-    #[error("Infra '{infra_id}', could not be found")]
+    #[error("Infra '{infra_id}' could not be found")]
     #[editoast_error(status = 404)]
     InfraNotFound { infra_id: i64 },
+    #[error("Timetable '{timetable_id}' could not be found")]
+    #[editoast_error(status = 404)]
+    TimetableNotFound { timetable_id: i64 },
+    #[error("Hourly timetables are not supported")]
+    #[editoast_error(status = 422)]
+    UnsupportedTimetableType,
     #[error(transparent)]
     #[editoast_error(status = 500)]
     Database(#[from] editoast_models::Error),
@@ -111,6 +119,15 @@ pub(in crate::views) async fn occupancy(
     .await?;
 
     let conn = &mut db_pool.get().await?;
+
+    // Check timetable type
+    let timetable = Timetable::retrieve_or_fail(conn.clone(), timetable_id, || {
+        LevelCrossingError::TimetableNotFound { timetable_id }
+    })
+    .await?;
+    if timetable.timetable_type.0 == TimetableType::Hourly {
+        return Err(LevelCrossingError::UnsupportedTimetableType.into());
+    }
 
     // Load infra + level_crossings + trains
     let infra = Infra::retrieve_or_fail(conn.clone(), infra_id, || {
@@ -358,6 +375,7 @@ fn find_pedal_position(
 mod tests {
     use super::*;
     use crate::fixtures::create_fast_rolling_stock;
+    use crate::fixtures::create_hourly_timetable_with_train_schedule_set;
     use crate::fixtures::create_small_infra;
     use crate::fixtures::create_timetable_with_train_schedule_set;
     use crate::views::test_app::test_app;
@@ -637,5 +655,30 @@ mod tests {
                 .unwrap_or(0),
             0
         );
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn test_level_crossing_occupancy_rejects_hourly_timetable() {
+        let app = test_app!()
+            .skip_authz()
+            .core_client(MockingClient::new().into())
+            .build();
+        let db_pool = app.db_pool();
+        let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
+        let (timetable, _train_schedule_set) =
+            create_hourly_timetable_with_train_schedule_set(&mut db_pool.get_ok()).await;
+
+        let response = app
+            .post("/level_crossing_occupancy")
+            .json(&LevelCrossingOccupancyForm {
+                train_ids: vec![],
+                level_crossing_ids: vec![],
+                infra_id: small_infra.id,
+                timetable_id: timetable.id,
+                electrical_profile_set_id: None,
+            })
+            .await;
+
+        response.assert_status_unprocessable_entity();
     }
 }

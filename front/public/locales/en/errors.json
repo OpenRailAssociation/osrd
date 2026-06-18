@@ -125,7 +125,9 @@
       "Database": "Internal error (database)",
       "InfraNotFound": "Infrastructure '{{infra_id}}' could not be found.",
       "LevelCrossingBatchNotFound": "'{{count}}' level crossing(s) could not be found.",
-      "TrainBatchNotFound": "'{{count}}' paced train(s) could not be found."
+      "TimetableNotFound": "Timetable '{{timetable_id}}' could not be found.",
+      "TrainBatchNotFound": "'{{count}}' paced train(s) could not be found.",
+      "UnsupportedTimetableType": "Hourly timetables are not supported."
     },
     "macro_node": {
       "Database": "Internal error",

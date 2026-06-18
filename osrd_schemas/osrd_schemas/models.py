@@ -1012,6 +1012,20 @@ class EditoastLevelCrossingErrorLevelCrossingBatchNotFound(BaseModel):
     type: Literal["editoast:level_crossing:LevelCrossingBatchNotFound"]
 
 
+class EditoastLevelCrossingErrorTimetableNotFoundContext(BaseModel):
+    timetable_id: int
+
+
+class EditoastLevelCrossingErrorTimetableNotFound(BaseModel):
+    context: Annotated[
+        EditoastLevelCrossingErrorTimetableNotFoundContext | None,
+        Field(title="EditoastLevelCrossingErrorTimetableNotFoundContext"),
+    ] = None
+    message: str
+    status: Literal[404]
+    type: Literal["editoast:level_crossing:TimetableNotFound"]
+
+
 class EditoastLevelCrossingErrorTrainBatchNotFoundContext(BaseModel):
     count: int
 
@@ -1024,6 +1038,16 @@ class EditoastLevelCrossingErrorTrainBatchNotFound(BaseModel):
     message: str
     status: Literal[404]
     type: Literal["editoast:level_crossing:TrainBatchNotFound"]
+
+
+class EditoastLevelCrossingErrorUnsupportedTimetableType(BaseModel):
+    context: Annotated[
+        dict[str, Any] | None,
+        Field(title="EditoastLevelCrossingErrorUnsupportedTimetableTypeContext"),
+    ] = None
+    message: str
+    status: Literal[422]
+    type: Literal["editoast:level_crossing:UnsupportedTimetableType"]
 
 
 class EditoastLinesErrorsLineNotFoundContext(BaseModel):
@@ -4477,7 +4501,9 @@ class EditoastError(
         | EditoastLevelCrossingErrorDatabase
         | EditoastLevelCrossingErrorInfraNotFound
         | EditoastLevelCrossingErrorLevelCrossingBatchNotFound
+        | EditoastLevelCrossingErrorTimetableNotFound
         | EditoastLevelCrossingErrorTrainBatchNotFound
+        | EditoastLevelCrossingErrorUnsupportedTimetableType
         | EditoastLinesErrorsLineNotFound
         | EditoastListErrorsErrorsWrongErrorTypeProvided
         | EditoastMacroNodeErrorDatabase
@@ -4641,7 +4667,9 @@ class EditoastError(
         | EditoastLevelCrossingErrorDatabase
         | EditoastLevelCrossingErrorInfraNotFound
         | EditoastLevelCrossingErrorLevelCrossingBatchNotFound
+        | EditoastLevelCrossingErrorTimetableNotFound
         | EditoastLevelCrossingErrorTrainBatchNotFound
+        | EditoastLevelCrossingErrorUnsupportedTimetableType
         | EditoastLinesErrorsLineNotFound
         | EditoastListErrorsErrorsWrongErrorTypeProvided
         | EditoastMacroNodeErrorDatabase
