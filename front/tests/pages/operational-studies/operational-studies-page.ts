@@ -36,6 +36,8 @@ class OperationalStudiesPage extends ScenarioTimetableSection {
   private readonly simulationSettingsTab: Locator;
   private readonly timesAndStopsTab: Locator;
   private readonly categorySelector: Locator;
+  private readonly openItineraryModalButton: Locator;
+  private readonly itineraryModalTab: Locator;
 
   constructor(page: Page) {
     super(page);
@@ -64,6 +66,8 @@ class OperationalStudiesPage extends ScenarioTimetableSection {
     this.initialSpeedInput = page.getByTestId('initial-speed-input');
     this.trainScheduleTagsInput = page.getByTestId('chips-input');
     this.categorySelector = page.getByTestId('category-selector-select');
+    this.openItineraryModalButton = page.getByTestId('scenarios-add-train-schedule-button');
+    this.itineraryModalTab = page.getByTestId('itinerary-modal-form');
   }
   // TODO: This function must be modified after we drop the old itinerary interface
   // Click on the button to add a scenario train schedule.

@@ -196,6 +196,7 @@ const ManageTrainScheduleLeftPanel = ({
           className="scenario-timetable-manage-train-schedule-body"
           role="button"
           tabIndex={0}
+          data-testid="open-itinerary-modal-button"
           onClick={() => setItineraryModalIsOpen(true)}
         >
           <button

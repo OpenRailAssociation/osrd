@@ -333,6 +333,7 @@ const PathStepItem = ({
         'is-invalid': isInvalidAndIsEditing,
         'unknown-track': isUnknownTrack,
       })}
+      data-testid={isTrailingPlaceHolder ? 'trailing-placeholder' : 'path-step-wrapper'}
     >
       <div
         className={cx('path-step', {
@@ -366,9 +367,11 @@ const PathStepItem = ({
             onDelete();
           }}
         >
-          <span className="counter">{!isTrailingPlaceHolder && index}</span>
+          <span className="counter" data-testId="path-step-counter">
+            {!isTrailingPlaceHolder && index}
+          </span>
           {!isOnlyStep && (
-            <span className="remove-path-step-icon">
+            <span className="remove-path-step-icon" data-testid="delete-path-step-button">
               <X />
             </span>
           )}
@@ -408,6 +411,7 @@ const PathStepItem = ({
             >
               <ComboBox
                 id={`pathStep-name-${pathStep.id}`}
+                data-testid="path-step-combo-box"
                 value={comboBoxValue}
                 numberOfSuggestionsToShow={numberOfSuggestionsToShow}
                 suggestions={visibleSuggestions}
@@ -510,6 +514,7 @@ const PathStepItem = ({
                   }}
                   small
                   narrow
+                  data-testid="track-name"
                 />
               </div>
             )}
@@ -525,6 +530,7 @@ const PathStepItem = ({
             toggleType(option);
           }}
           small
+          data-testid="stop-pass-segmented-control"
         />
         <div className="map-interactions">
           <button

@@ -42,6 +42,7 @@ export const ListElementComponent = ({
         'op-suggestion--selected': isSelected,
         'op-suggestion--name-hovered': isNameHovered,
       })}
+      data-testid={'op-suggestion'}
       role="button"
       tabIndex={0}
       onMouseDown={(e) => {

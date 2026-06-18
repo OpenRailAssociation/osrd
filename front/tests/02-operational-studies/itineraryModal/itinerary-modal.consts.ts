@@ -1,0 +1,14 @@
+export const ROLLING_STOCK_NAME_QUERY = 'FAST';
+export const ROLLING_STOCK_NAME = 'FAST_RS_E2E';
+export const COMPOSITION_CODE = 'AR120';
+export const TRAIN_NAME = 'Test train';
+export const ROCKET_SEARCH_INPUT = 'NS SS';
+export const NORTH_STATION = 'North_station BV';
+export const SOUTH_STATION = 'South_station BV';
+export const WEST_STATION = 'West_station BV';
+export const TRACK_NAME = 'V1';
+export const WEST_STATION_SUGGESTION = 'WSWest_stationBV';
+export const SOUTH_STATION_SUGGESTION = 'SSSouth_stationBV';
+export const SOUTH_STATION_MAIN_CODE = 'SS';
+export const NORTH_STATION_MAIN_CODE = 'NS';
+export const PLACEHOLDER = '__PLACEHOLDER__';

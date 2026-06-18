@@ -176,6 +176,7 @@ const ItineraryModalFormHeader = ({
             getOptionLabel={(option) => option.label}
             getOptionValue={(option) => option.id}
             onChange={handleCategoryChange}
+            data-testid="itinerary-modal-category"
           ></Select>
         </div>
       </div>
@@ -193,6 +194,8 @@ const ItineraryModalFormHeader = ({
             onSelectSuggestion={handleRollingStockSelect}
             resetSuggestions={resetRollingStockSuggestions}
             onChange={handleRollingStockInputChange}
+            data-testid="itinerary-modal-rolling-stock"
+            testIdPrefix="rolling-stock-combobox"
           />
         </div>
         <div className="composition-code-select">
@@ -210,6 +213,7 @@ const ItineraryModalFormHeader = ({
                 speedLimitTag: e,
               });
             }}
+            data-testid="itinerary-modal-composition-code"
           ></Select>
         </div>
         <div className="train-name-input">
@@ -217,6 +221,7 @@ const ItineraryModalFormHeader = ({
             narrow
             small
             id="itinerary-modal-train-schedule-name"
+            data-testid="itinerary-modal-train-name"
             label={t('itineraryModal.trainName')}
             value={modalFormState.name}
             title={modalFormState.name}

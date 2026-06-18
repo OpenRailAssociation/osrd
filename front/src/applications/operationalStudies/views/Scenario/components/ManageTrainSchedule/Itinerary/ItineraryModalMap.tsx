@@ -404,6 +404,7 @@ const ItineraryModalMap = ({
               <PathStepMarker
                 key={step.id}
                 id={step.id}
+                testId="path-step-marker"
                 markerIndicator={(index + 1).toString()}
                 name={name}
                 coordinates={coordinates}
