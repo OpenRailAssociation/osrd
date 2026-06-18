@@ -1966,6 +1966,20 @@ class EditoastTimetableErrorInfraNotFound(BaseModel):
     type: Literal["editoast:timetable:InfraNotFound"]
 
 
+class EditoastTimetableErrorInvalidPeriodContext(BaseModel):
+    timetable_period: int
+
+
+class EditoastTimetableErrorInvalidPeriod(BaseModel):
+    context: Annotated[
+        EditoastTimetableErrorInvalidPeriodContext | None,
+        Field(title="EditoastTimetableErrorInvalidPeriodContext"),
+    ] = None
+    message: str
+    status: Literal[422]
+    type: Literal["editoast:timetable:InvalidPeriod"]
+
+
 class EditoastTimetableErrorNotFoundContext(BaseModel):
     timetable_id: int
 
@@ -4540,6 +4554,7 @@ class EditoastError(
         | EditoastTemporarySpeedLimitErrorNameAlreadyUsed
         | EditoastTimetableErrorDatabase
         | EditoastTimetableErrorInfraNotFound
+        | EditoastTimetableErrorInvalidPeriod
         | EditoastTimetableErrorNotFound
         | EditoastTimetableErrorParseError
         | EditoastTimetableErrorTimeout
@@ -4703,6 +4718,7 @@ class EditoastError(
         | EditoastTemporarySpeedLimitErrorNameAlreadyUsed
         | EditoastTimetableErrorDatabase
         | EditoastTimetableErrorInfraNotFound
+        | EditoastTimetableErrorInvalidPeriod
         | EditoastTimetableErrorNotFound
         | EditoastTimetableErrorParseError
         | EditoastTimetableErrorTimeout

@@ -269,6 +269,7 @@
       "Database": "Erreur interne (base de données)",
       "InfraNotFound": "Infrastructure '{{infra_id}}' non trouvée",
       "InfraNotLoaded": "L'infrastructure '{{infra_id}}' n'est pas chargée",
+      "InvalidPeriod": "La période d'une trame doit être inférieure à 24h",
       "NotFound": "Grille horaire '{{timetable_id}}' non trouvée",
       "ParseError": "Impossible de parser train_id : '{{train_id}}'",
       "Timeout": "Le serveur n'a pas répondu à temps",

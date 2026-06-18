@@ -11,7 +11,6 @@ use std::collections::BTreeMap;
 use std::collections::HashMap;
 use std::collections::HashSet;
 use std::sync::Arc;
-use std::time::Duration;
 
 use authz;
 use axum::Extension;
@@ -21,6 +20,7 @@ use axum::extract::Query;
 use axum::extract::State;
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
+use chrono::Duration;
 use common::units::millisecond;
 use common::units::quantities::Acceleration;
 use common::units::quantities::Length;
@@ -71,6 +71,9 @@ use crate::views::AuthenticationExt;
 use crate::views::path::operational_point_cache::OperationalPointCache;
 use crate::views::timetable::conflicts::Conflict;
 use crate::views::timetable::conflicts::build_conflict_core_request;
+use crate::views::timetable::conflicts::build_cyclic_occurrence_requirements;
+use crate::views::timetable::conflicts::compute_hourly_pattern_period;
+use crate::views::timetable::conflicts::populate_timetable;
 use crate::views::timetable::conflicts::retrieve_trains;
 use crate::views::timetable::simulation::SimulationResponseSuccess;
 use editoast_models::Infra;
@@ -100,6 +103,9 @@ enum TimetableError {
     #[error("Request timed out")]
     #[editoast_error(status = 504)]
     Timeout,
+    #[error("Hourly timetable period is '{timetable_period}' h but should be under 24h")]
+    #[editoast_error(status = 422)]
+    InvalidPeriod { timetable_period: i64 },
 }
 
 /// Creation result for a Timetable
@@ -315,8 +321,23 @@ pub(in crate::views) async fn conflicts(
     })
     .await?;
 
-    let trains = retrieve_trains(conn.clone(), timetable_id).await?;
-    let train_schedules_ids = trains.iter().map(|t| t.id).collect::<Vec<_>>();
+    let (timetable_type, trains) = retrieve_trains(conn.clone(), timetable_id).await?;
+
+    let timetable_period = match timetable_type {
+        TimetableType::Calendar => None,
+        TimetableType::Hourly => compute_hourly_pattern_period(&trains),
+    };
+    // Reject a timetable period longer than 24h: an hourly timetable is not meant to span more than a day
+    if let Some(timetable_period) = timetable_period
+        && timetable_period > Duration::hours(24)
+    {
+        return Err(TimetableError::InvalidPeriod {
+            timetable_period: timetable_period.num_hours(),
+        }
+        .into());
+    }
+
+    let train_schedules_ids = trains.iter().map(|t| t.id).collect_vec();
 
     let mut exceptions =
         editoast_models::TrainScheduleException::retrieve_exceptions_by_train_schedules(
@@ -343,7 +364,21 @@ pub(in crate::views) async fn conflicts(
     // Flatten paced trains occurrences
     let (occurrence_ids, occurrence_trains): (Vec<_>, Vec<_>) = train_schedules_with_exceptions
         .iter()
-        .flat_map(|(ts, exceptions)| ts.iter_occurrences(exceptions))
+        .flat_map(|(ts, exceptions)| {
+            let single_period_occurrences = ts.iter_occurrences(exceptions).collect();
+            match timetable_period {
+                None => single_period_occurrences,
+                Some(period) => {
+                    // For hourly timetable, occurrences must be duplicated to cover the timetable period (ex: a 1h mission within a 2h period)
+                    let time_window_ms = ts
+                        .time_window
+                        .expect("all time_window are defined when timetable_period exists")
+                        .num_milliseconds();
+                    let repetition = (period.num_milliseconds() / time_window_ms) as usize;
+                    populate_timetable(single_period_occurrences, repetition, time_window_ms)
+                }
+            }
+        })
         .unzip();
 
     let occurrence_simulations: Vec<_> = train_simulation_ordered_batch(
@@ -382,6 +417,15 @@ pub(in crate::views) async fn conflicts(
                     simulation.final_output.routing_requirements.clone(),
                 ),
             ))
+        })
+        .flat_map(|(train_id, train_requirements)| match timetable_period {
+            None => vec![(train_id, train_requirements)],
+            Some(period) => build_cyclic_occurrence_requirements(
+                train_id,
+                train_requirements.spacing_requirements,
+                train_requirements.routing_requirements,
+                period,
+            ),
         });
 
     let (trains_ids_map, conflict_detection_request) =
@@ -615,7 +659,7 @@ pub(in crate::views) async fn get_local_track_names(
     })
     .await?;
 
-    timeout(Duration::from_secs(240), async move {
+    timeout(std::time::Duration::from_secs(240), async move {
         let conn = &mut db_pool.get().await?;
 
         Timetable::exists_or_fail(conn, timetable_id, || TimetableError::NotFound {
@@ -1076,6 +1120,7 @@ mod tests {
 
     use super::*;
     use crate::error::InternalError;
+    use crate::fixtures::create_hourly_timetable_with_train_schedule_set;
     use crate::fixtures::create_small_infra;
     use crate::fixtures::create_timetable;
     use crate::fixtures::create_timetable_with_simple_paced_train;
@@ -1293,6 +1338,43 @@ mod tests {
         let routing = &result.routing_requirements[0];
         assert_eq!(routing.begin_time, 30_012);
         assert_eq!(routing.zones[0].end_time, 30_015);
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn conflicts_hourly_rejects_period_over_24h() {
+        let app = test_app!().skip_authz().build();
+        let pool = app.db_pool();
+
+        let infra = create_small_infra(&mut pool.get_ok()).await;
+        let (timetable, train_schedule_set) =
+            create_hourly_timetable_with_train_schedule_set(&mut pool.get_ok()).await;
+
+        // Period = 5 * 7 = 35h.
+        for time_window in [5, 7] {
+            let mut base = simple_paced_train_base();
+            base.train_occurrence.start_time = units::millisecond::i64::new(0);
+            base.paced.as_mut().unwrap().time_window =
+                Duration::hours(time_window).try_into().unwrap();
+            base.paced.as_mut().unwrap().interval = Duration::hours(1).try_into().unwrap();
+            TrainScheduleChangeset::from(base)
+                .train_schedule_set_id(train_schedule_set.id)
+                .create(&mut pool.get_ok())
+                .await
+                .expect("Failed to create paced train");
+        }
+
+        let response: InternalError = app
+            .get(
+                format!(
+                    "/timetable/{}/conflicts?infra_id={}",
+                    timetable.id, infra.id
+                )
+                .as_str(),
+            )
+            .await
+            .assert_status(StatusCode::UNPROCESSABLE_ENTITY)
+            .json();
+        assert_eq!(response.error_type, "editoast:timetable:InvalidPeriod");
     }
 
     fn create_physics_consist() -> PhysicsConsistParameters {
