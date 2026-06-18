@@ -19,6 +19,7 @@ import type {
 } from 'applications/editor/tools/trackEdition/types';
 import { injectGeometry, removeInvalidRanges } from 'applications/editor/tools/trackEdition/utils';
 import type { ExtendedEditorContextType } from 'applications/editor/types';
+import type { InfraObject } from 'common/api/osrdEditoastApi';
 import { useInfraID } from 'common/osrdContext';
 import { save } from 'reducers/editor/thunkActions';
 import { useAppDispatch } from 'store';
@@ -100,8 +101,7 @@ const TrackEditionLeftPanel = () => {
           },
         }}
         onSubmit={async (savedEntity) => {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const res: any = await dispatch(
+          const res = (await dispatch(
             save(
               infraID,
               track.properties.id !== NEW_ENTITY_ID
@@ -115,7 +115,7 @@ const TrackEditionLeftPanel = () => {
                   }
                 : { create: [injectGeometry(savedEntity)] }
             )
-          );
+          )) as Extract<InfraObject, { obj_type: 'TrackSection' }>[];
           const { railjson } = res[0];
           const savedTrack = {
             objType: 'TrackSection',
