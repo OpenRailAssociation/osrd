@@ -6349,7 +6349,7 @@ components:
         status:
           type: integer
           enum:
-          - 403
+          - 404
         type:
           type: string
           enum:
