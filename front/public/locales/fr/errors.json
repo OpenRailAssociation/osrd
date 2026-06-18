@@ -35,7 +35,7 @@
       "GrantsApiMisuse": "Mauvaise utilisation de l'API d'autorisation",
       "ImpersonatedUserNotFound": "Utilisateur usurpé inconnu",
       "NoSuchUser": "Utilisateur inconnu",
-      "Unauthorized": "Utilisateur non authentifié",
+      "Unauthenticated": "Utilisateur non authentifié",
       "UnknownIdentities": "Identités inconnues '{{identities}}'",
       "UnknownResource": "Ressource inconnue",
       "UnknownResourceType": "Type de ressource inconnu",

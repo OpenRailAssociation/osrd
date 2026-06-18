@@ -6354,7 +6354,7 @@ components:
           type: string
           enum:
           - editoast:authz:ImpersonatedUserNotFound
-    EditoastAuthorizationErrorUnauthorized:
+    EditoastAuthorizationErrorUnauthenticated:
       type: object
       required:
       - type
@@ -6363,7 +6363,7 @@ components:
       properties:
         context:
           type: object
-          title: EditoastAuthorizationErrorUnauthorizedContext
+          title: EditoastAuthorizationErrorUnauthenticatedContext
         message:
           type: string
         status:
@@ -6373,7 +6373,7 @@ components:
         type:
           type: string
           enum:
-          - editoast:authz:Unauthorized
+          - editoast:authz:Unauthenticated
     EditoastAuthzErrorAuthorizer:
       type: object
       required:
@@ -6992,7 +6992,7 @@ components:
       - $ref: '#/components/schemas/EditoastAuthorizationErrorForbidden'
       - $ref: '#/components/schemas/EditoastAuthorizationErrorForbiddenImpersonation'
       - $ref: '#/components/schemas/EditoastAuthorizationErrorImpersonatedUserNotFound'
-      - $ref: '#/components/schemas/EditoastAuthorizationErrorUnauthorized'
+      - $ref: '#/components/schemas/EditoastAuthorizationErrorUnauthenticated'
       - $ref: '#/components/schemas/EditoastAuthzErrorAuthorizer'
       - $ref: '#/components/schemas/EditoastAuthzErrorDatabase'
       - $ref: '#/components/schemas/EditoastAuthzErrorUnknownIdentities'
