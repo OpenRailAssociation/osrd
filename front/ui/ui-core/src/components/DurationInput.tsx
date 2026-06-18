@@ -8,7 +8,7 @@ type UnitConfig = {
   key: string;
   label: string;
   msPerUnit: number;
-  digits: number;
+  digits?: number;
 };
 
 export type UnitProps = 'h' | 'm' | 's' | 'ms' | UnitConfig;
@@ -57,9 +57,14 @@ function normalizeUnits(units: UnitProps[], padChar: string, max: number): UnitS
   configs.sort((a, b) => b.msPerUnit - a.msPerUnit);
   return configs.map((unit, idx) => {
     const prev = idx > 0 ? configs[idx - 1] : null;
+    const digits = prev
+      ? unit.digits
+      : max < Infinity
+        ? String(Math.floor(max / unit.msPerUnit)).length
+        : undefined;
     return {
       ...unit,
-      digits: prev ? unit.digits : String(Math.floor(max / unit.msPerUnit)).length,
+      digits,
       max: prev ? Math.floor(prev.msPerUnit / unit.msPerUnit) : Infinity,
       padChar,
     };
@@ -70,7 +75,7 @@ type FormattedValues = Record<string, string>;
 
 function toUnitField(ms: number, unit: UnitSetting): [string, string] {
   const value = Math.floor(ms / (unit.msPerUnit || 1)) % unit.max;
-  return [unit.key, String(value || unit.padChar).padStart(unit.digits, unit.padChar)];
+  return [unit.key, String(value || unit.padChar).padStart(unit.digits ?? 0, unit.padChar)];
 }
 
 function toFormattedValues(units: UnitSetting[], ms: number): FormattedValues {
@@ -90,9 +95,10 @@ function useDurationInput({
   value,
   onChange,
   padChar,
-  max = 99 * 3_600_000, // 99 HOURS
+  max,
   containerRef,
-}: Omit<DurationInputProps, 'id'> & {
+}: Omit<DurationInputProps, 'id' | 'max'> & {
+  max: number;
   containerRef: React.RefObject<HTMLDivElement | null>;
 }) {
   const fields = useMemo(() => normalizeUnits(units, padChar, max), [units, padChar, max]);
@@ -173,7 +179,7 @@ function useDurationInput({
       }
 
       const ms = toTotalMilliseconds(fields, formattedValues);
-      const clamped = Math.min(max, ms);
+      const clamped = Math.min(max ?? ms, ms);
       const next = toFormattedValues(fields, clamped);
 
       setFormattedValues(next);
@@ -216,7 +222,7 @@ const UnitField = function UnitField({
   tabIndex,
 }: UnitFieldProps) {
   const { label, digits, padChar } = setting;
-  const placeholder = padChar.repeat(digits);
+  const placeholder = padChar.repeat(digits ?? 2);
 
   return (
     <span className="unit-field">
@@ -257,7 +263,7 @@ const DurationInput = ({
   onChange,
   padChar = '0',
   small = false,
-  max,
+  max = Infinity,
   label,
   hint,
   ...rest
