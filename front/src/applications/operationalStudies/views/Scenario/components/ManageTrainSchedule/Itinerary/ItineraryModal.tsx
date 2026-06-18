@@ -665,9 +665,14 @@ const ItineraryModal = ({
 
   return (
     <dialog ref={modalRef} className="itinerary-modal" data-testid="itinerary-modal">
-      <div className="itinerary-modal-form" onClick={handleOutsideMapClick} role="presentation">
+      <div
+        className="itinerary-modal-form"
+        data-testid="itinerary-modal-form"
+        onClick={handleOutsideMapClick}
+        role="presentation"
+      >
         {mapSelectionStepId && <div className="map-selection-form-overlay" />}
-        <div className="itinerary-modal-form-header">
+        <div className="itinerary-modal-form-header" data-testid="itinerary-modal-form-header">
           <ItineraryModalFormHeader
             modalFormState={modalFormState}
             onModalFormStateChange={setModalFormState}
@@ -679,7 +684,7 @@ const ItineraryModal = ({
             isNameEmpty={isNameEmpty}
           />
         </div>
-        <div className="itinerary-modal-form-body">
+        <div className="itinerary-modal-form-body" data-testid="itinerary-modal-form-body">
           {categoryWarning && <Banner message={categoryWarning} closeable />}
           {rollingStockMessage && <Banner type="info" message={rollingStockMessage} />}
           {(hasInvalidPathStepDisplay || invalidTrackSteps.length > 0) && (
@@ -759,6 +764,7 @@ const ItineraryModal = ({
 
                       <div
                         className="path-step-gap-hitbox"
+                        data-testId="path-step-gap"
                         onPointerEnter={() => setHoveredGapIndex(i)}
                         onPointerLeave={() => setHoveredGapIndex(null)}
                       >
@@ -766,6 +772,7 @@ const ItineraryModal = ({
                           <button
                             type="button"
                             className="add-pathitem"
+                            data-testId="add-path-step-button"
                             onClick={() => handleAddIntermediateStep(i)}
                           >
                             <Plus iconColor="var(--white100)" />
@@ -915,7 +922,7 @@ const ItineraryModal = ({
             </button>
           </div>
         </div>
-        <div className="itinerary-modal-form-footer">
+        <div className="itinerary-modal-form-footer" data-testid="itinerary-modal-form-footer">
           <Button
             label={t('cancel')}
             variant="Cancel"
@@ -932,6 +939,7 @@ const ItineraryModal = ({
             variant="Primary"
             size="medium"
             onClick={submitItinerary}
+            dataTestID="itinerary-modal-next-button"
           />
         </div>
       </div>
@@ -950,6 +958,7 @@ const ItineraryModal = ({
         className={cx('itinerary-modal-map', {
           'map-selection-active': mapSelectionStepId !== null,
         })}
+        data-testid="itinerary-modal-map"
       >
         <ItineraryModalMap
           pathSteps={pathSteps}

@@ -4,6 +4,7 @@ import testWithLogging from './logging-fixture';
 import HomePage from './pages/home-page';
 import GetManchetteComponent from './pages/operational-studies/get-manchette-component';
 import ImportExportPage from './pages/operational-studies/import-export-page';
+import ItineraryModalPage from './pages/operational-studies/itinerary-modal-page';
 import NGEPage from './pages/operational-studies/nge-page';
 import OperationalStudiesPage from './pages/operational-studies/operational-studies-page';
 import PacedTrainSection from './pages/operational-studies/paced-train-section';
@@ -35,6 +36,7 @@ type Fixtures = {
   projectPage: ProjectPage;
   studyPage: StudyPage;
   scenarioPage: ScenarioPage;
+  itineraryModalPage: ItineraryModalPage;
   routeTab: RouteTab;
   pacedTrainSection: PacedTrainSection;
   timesAndStopsTab: TimesAndStopsTab;
@@ -97,6 +99,9 @@ const test = testWithLogging.extend<Fixtures>({
   },
   scenarioPage: async ({ page }, use) => {
     await use(new ScenarioPage(page));
+  },
+  itineraryModalPage: async ({ page }, use) => {
+    await use(new ItineraryModalPage(page));
   },
   routeTab: async ({ page }, use) => {
     await use(new RouteTab(page));
