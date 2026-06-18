@@ -24,6 +24,7 @@ class VisitedNodesTests {
             identifier = DummyEdgeIdentifier(1),
             waypointIndex = 1,
             startOffset = 0.meters,
+            null,
         )
 
     @Test
