@@ -53,6 +53,17 @@ pub async fn create_timetable_with_train_schedule_set(
     (timetable, train_schedule_set)
 }
 
+/// Returns a tuple of (timetable, train_schedule_set) for an hourly timetable
+pub async fn create_hourly_timetable_with_train_schedule_set(
+    conn: &mut DbConnection,
+) -> (Timetable, TrainScheduleSet) {
+    // The train schedule set type must match the timetable type (DB constraint).
+    let timetable = create_hourly_timetable(conn).await;
+    let train_schedule_set = create_hourly_train_schedule_set(conn).await;
+    let _ = link_train_schedule_set_to_timetable(conn, train_schedule_set.id, timetable.id).await;
+    (timetable, train_schedule_set)
+}
+
 pub async fn create_timetable_with_simple_paced_train(
     conn: &mut DbConnection,
 ) -> (Timetable, editoast_models::TrainSchedule) {
@@ -75,6 +86,27 @@ pub async fn create_train_schedule_set(conn: &mut DbConnection) -> TrainSchedule
         .create(conn)
         .await
         .expect("Failed to create train schedule set")
+}
+
+pub async fn create_hourly_timetable(conn: &mut DbConnection) -> Timetable {
+    Timetable::changeset()
+        .timetable_type(editoast_models::timetable_type::TimetableType(
+            schemas::timetable_type::TimetableType::Hourly,
+        ))
+        .create(conn)
+        .await
+        .expect("Failed to create hourly timetable")
+}
+
+pub async fn create_hourly_train_schedule_set(conn: &mut DbConnection) -> TrainScheduleSet {
+    TrainScheduleSet::changeset()
+        .timetable_type(editoast_models::timetable_type::TimetableType(
+            schemas::timetable_type::TimetableType::Hourly,
+        ))
+        .name(None)
+        .create(conn)
+        .await
+        .expect("Failed to create hourly train schedule set")
 }
 
 pub async fn create_catalog_entry_with_name(conn: &mut DbConnection, name: &str) -> CatalogEntry {

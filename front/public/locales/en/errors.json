@@ -269,6 +269,7 @@
       "Database": "Internal error (database)",
       "InfraNotFound": "Infrastructure '{{infra_id}}' does not exist",
       "InfraNotLoaded": "Infrastructure '{{infra_id}}' is not loaded",
+      "InvalidPeriod": "Hourly timetable period should be under 24h",
       "NotFound": "Timetable '{{timetable_id}}' could not be found",
       "ParseError": "Failed to parse train_id: '{{train_id}}'",
       "Timeout": "Request timed out",

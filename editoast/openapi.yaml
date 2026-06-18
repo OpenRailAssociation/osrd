@@ -7121,6 +7121,7 @@ components:
       - $ref: '#/components/schemas/EditoastTemporarySpeedLimitErrorNameAlreadyUsed'
       - $ref: '#/components/schemas/EditoastTimetableErrorDatabase'
       - $ref: '#/components/schemas/EditoastTimetableErrorInfraNotFound'
+      - $ref: '#/components/schemas/EditoastTimetableErrorInvalidPeriod'
       - $ref: '#/components/schemas/EditoastTimetableErrorNotFound'
       - $ref: '#/components/schemas/EditoastTimetableErrorParseError'
       - $ref: '#/components/schemas/EditoastTimetableErrorTimeout'
@@ -9251,6 +9252,31 @@ components:
           type: string
           enum:
           - editoast:timetable:InfraNotFound
+    EditoastTimetableErrorInvalidPeriod:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          title: EditoastTimetableErrorInvalidPeriodContext
+          required:
+          - timetable_period
+          properties:
+            timetable_period:
+              type: integer
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 422
+        type:
+          type: string
+          enum:
+          - editoast:timetable:InvalidPeriod
     EditoastTimetableErrorNotFound:
       type: object
       required:
