@@ -322,18 +322,7 @@ const usePathfinding = ({
           return;
         }
 
-        let error: string;
-        if (pathfindingResult.failed_status === 'internal_error') {
-          const translationKey = pathfindingResult.core_error.type.startsWith('core:')
-            ? pathfindingResult.core_error.type.replace('core:', '')
-            : pathfindingResult.core_error.type;
-          error = t(`coreErrors.${translationKey}`, {
-            defaultValue: pathfindingResult.core_error.message,
-          });
-        } else {
-          error = t(`pathfindingErrors.${pathfindingResult.error_type}`);
-        }
-        setError(error);
+        setError(t(`pathfindingErrors.${pathfindingResult.error_type}`));
       } catch (e) {
         if (isObject(e)) {
           let error;

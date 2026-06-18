@@ -12,7 +12,6 @@ use utoipa::ToSchema;
 
 use crate::AsCoreRequest;
 use crate::Json;
-use crate::RawError;
 use crate::WorkerKey;
 
 #[derive(Debug, Hash, Serialize)]
@@ -110,9 +109,6 @@ pub enum PathfindingCoreResult {
     NotEnoughPathItems,
     RollingStockNotFound {
         rolling_stock_name: String,
-    },
-    InternalError {
-        core_error: RawError,
     },
 }
 
