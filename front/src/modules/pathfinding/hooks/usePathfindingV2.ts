@@ -127,18 +127,7 @@ const usePathfindingV2 = () => {
         return;
       }
 
-      let error: string;
-      if (pathfindingResult.failed_status === 'internal_error') {
-        const translationKey = pathfindingResult.core_error.type.startsWith('core:')
-          ? pathfindingResult.core_error.type.replace('core:', '')
-          : pathfindingResult.core_error.type;
-        error = t(`coreErrors.${translationKey}`, {
-          defaultValue: pathfindingResult.core_error.message,
-        });
-      } else {
-        error = t(`pathfindingErrors.${pathfindingResult.error_type}`);
-      }
-      setPathfindingError(error);
+      setPathfindingError(t(`pathfindingErrors.${pathfindingResult.error_type}`));
       setPathProperties(undefined);
     },
     [infraId]

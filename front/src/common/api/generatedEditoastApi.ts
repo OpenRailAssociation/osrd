@@ -3748,25 +3748,13 @@ export type CorePathfindingNotFound =
       incompatible_constraints: CoreIncompatibleConstraints;
       relaxed_constraints_path: CorePathfindingResultSuccess;
     };
-export type InternalError = {
-  context: {
-    [key: string]: unknown;
-  };
-  message: string;
-  status?: number;
-  type: string;
-};
 export type PathfindingFailure =
   | (CorePathfindingInputError & {
       failed_status: 'pathfinding_input_error';
     })
   | (CorePathfindingNotFound & {
       failed_status: 'pathfinding_not_found';
-    })
-  | {
-      core_error: InternalError;
-      failed_status: 'internal_error';
-    };
+    });
 export type PathfindingResult =
   | (CorePathfindingResultSuccess & {
       status: 'success';
@@ -4748,6 +4736,14 @@ export type StdcmProgressionEvent = {
   best_travel_time: number;
   point: GeoJsonPoint;
 };
+export type InternalError = {
+  context: {
+    [key: string]: unknown;
+  };
+  message: string;
+  status?: number;
+  type: string;
+};
 export type SimulationResponse =
   | (SimulationResponseSuccess & {
       status: 'success';
@@ -5110,10 +5106,6 @@ export type SimulationSummaryResult =
   | (CorePathfindingNotFound & {
       status: 'pathfinding_not_found';
     })
-  | {
-      core_error: InternalError;
-      status: 'pathfinding_failure';
-    }
   | {
       error_type: string;
       status: 'simulation_failed';
