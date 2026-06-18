@@ -91,5 +91,46 @@ class ItineraryModalPage {
     await expect(this.comboBox).toHaveValue('');
     await expect(this.comboBox).toHaveCount(1);
   }
+
+  // When using the modal for the first time, only one empty pathStepItem is rendered.
+  // We can either add a previous empty one by clicking the add pathstep above the first item,
+  // either filling the first pathstepItem to create a new pathStepItem below it.
+
+  async fillFirstPathStep(searchValue: string, expectedComboBoxCount: number) {
+    await this.comboBox.click();
+    await this.comboBox.fill(searchValue);
+    await expect(this.opSuggestion.first()).toBeVisible();
+    await this.comboBox.press('Enter');
+    await expect(this.comboBox).toHaveCount(expectedComboBoxCount);
+  }
+
+  async fillLastPathStep(searchValue: string, expectedComboBoxCount: number) {
+    await this.comboBox.last().click();
+    await this.comboBox.last().fill(searchValue);
+    await expect(this.opSuggestion.first()).toBeVisible();
+    await this.comboBox.last().press('Enter');
+    await expect(this.comboBox).toHaveCount(expectedComboBoxCount);
+  }
+
+  async addEmptyIntermediateRow(gapIndex: number, expectedComboBoxCount: number) {
+    await this.pathStepGap.nth(gapIndex).hover();
+    await expect(this.addPathStepButton).toBeVisible();
+    await this.addPathStepButton.click();
+    await expect(this.comboBox).toHaveCount(expectedComboBoxCount);
+  }
+
+  async checkTrailingPlaceholder() {
+    await expect(this.trailingPlaceholderCombobox).toBeVisible();
+    await expect(this.trailingPlaceholderCombobox).toHaveValue('');
+  }
+
+  async deleteNumberedRow(counterIndex: number, expectedComboBoxCount: number) {
+    await this.pathStepCounter.nth(counterIndex).click();
+    await expect(this.comboBox).toHaveCount(expectedComboBoxCount);
+  }
+
+  async checkPathStepCounterText(index: number, expectedText: string) {
+    await expect(this.pathStepCounter.nth(index)).toHaveText(expectedText);
+  }
 }
 export default ItineraryModalPage;
