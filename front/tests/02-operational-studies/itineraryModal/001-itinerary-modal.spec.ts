@@ -55,4 +55,24 @@ test.describe('Itinerary Modal, Default ', { tag: ['@op', '@itinerary-modal'] },
       //TODO test on "Default control visibility"
     }
   );
+
+  /** *************** Test 2 **************** */
+  test('Add and remove empty itinerary rows', { tag: '@smoke' }, async ({ itineraryModalPage }) => {
+    await test.step('Add itinerary rows', async () => {
+      await itineraryModalPage.fillFirstPathStep('NS', 2);
+      await itineraryModalPage.fillLastPathStep('SS', 3);
+      await itineraryModalPage.addEmptyIntermediateRow(0, 4);
+      await itineraryModalPage.addEmptyIntermediateRow(2, 5);
+      await itineraryModalPage.checkPathStepCounterText(2, '3');
+    });
+    await test.step('Check trailing placeholder', async () => {
+      await itineraryModalPage.checkTrailingPlaceholder();
+    });
+    await test.step('Delete numbered rows', async () => {
+      await itineraryModalPage.deleteNumberedRow(0, 4);
+      await itineraryModalPage.deleteNumberedRow(1, 3);
+      await itineraryModalPage.deleteNumberedRow(0, 2);
+      await itineraryModalPage.checkTrailingPlaceholder();
+    });
+  });
 });
