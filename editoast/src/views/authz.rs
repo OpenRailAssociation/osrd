@@ -1255,8 +1255,8 @@ mod tests {
     }
 
     // TODO rewrite the test and check which users have grants on which resources.
-    // Currently the test only checks the number of users with a grant on the resouces, which is a
-    // weak asssertion.
+    // Currently the test only checks the number of users with a grant on the resources, which is a
+    // weak assertion.
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn users_grants_for_resource_id_test() {
         let app = test_app!().build();
