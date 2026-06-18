@@ -2837,11 +2837,6 @@ class Zones(BaseModel):
     """
 
 
-class PathfindingFailureInternalError(BaseModel):
-    core_error: InternalError
-    failed_status: Literal["internal_error"]
-
-
 class PathfindingOutput(BaseModel):
     detectors: list[Identifier]
     switches_directions: dict[str, str]
@@ -3418,15 +3413,6 @@ class SummaryResponseSuccess(BaseModel):
     """
     Travel time in ms
     """
-
-
-class SummaryResponsePathfindingFailure(BaseModel):
-    """
-    An error has occurred during pathfinding
-    """
-
-    core_error: InternalError
-    status: Literal["pathfinding_failure"]
 
 
 class SummaryResponseSimulationFailed(BaseModel):
@@ -6379,9 +6365,7 @@ class SimDebugData(BaseModel):
 
 class ResponsePathfindingFailed(BaseModel):
     pathfinding_failed: (
-        PathfindingFailurePathfindingInputError
-        | PathfindingFailurePathfindingNotFound
-        | PathfindingFailureInternalError
+        PathfindingFailurePathfindingInputError | PathfindingFailurePathfindingNotFound
     )
     status: Literal["pathfinding_failed"]
 
@@ -6433,7 +6417,6 @@ class TrainScheduleSimulationSummaryResult(BaseModel):
         str,
         SummaryResponseSuccess
         | SummaryResponsePathfindingNotFound
-        | SummaryResponsePathfindingFailure
         | SummaryResponseSimulationFailed
         | SummaryResponsePathfindingInputError,
     ]
@@ -6443,7 +6426,6 @@ class TrainScheduleSimulationSummaryResult(BaseModel):
     train_schedule: (
         SummaryResponseSuccess
         | SummaryResponsePathfindingNotFound
-        | SummaryResponsePathfindingFailure
         | SummaryResponseSimulationFailed
         | SummaryResponsePathfindingInputError
     )

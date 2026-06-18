@@ -229,7 +229,6 @@
         "not_found_in_blocks": "Missing block",
         "not_found_in_routes": "Missing route",
         "not_found_in_tracks": "Missing track",
-        "pathfinding_failure": "Pathfinding failed",
         "pathfinding_not_found": "Pathfinding not found",
         "rolling_stock_not_found": "RS not found",
         "simulation_failed": "Simulation failed",
@@ -480,8 +479,6 @@
     "pathfindingDone": "Pathfinding done.",
     "pathfindingError": "An error occurred in pathfinding: {{errorMessage}}.",
     "pathfindingErrors": {
-      "incompatible_constraints": "Incompatible constraints",
-      "invalid_path_items": "Waypoint not found",
       "not_enough_path_items": "Missing parameters for pathfinding: Departure, Arrival, Rolling stock",
       "not_found_in_blocks": "Missing block",
       "not_found_in_routes": "Missing route",

@@ -291,8 +291,6 @@ pub enum SummaryResponse {
     },
     /// Pathfinding not found
     PathfindingNotFound(PathfindingNotFound),
-    /// An error has occurred during pathfinding
-    PathfindingFailure { core_error: InternalError },
     /// An error has occurred during computing
     SimulationFailed { error_type: String },
     /// InputError
@@ -349,9 +347,6 @@ impl From<PathfindingFailure> for SummaryResponse {
             }
             PathfindingFailure::PathfindingNotFound(pathfinding_not_found) => {
                 SummaryResponse::PathfindingNotFound(pathfinding_not_found)
-            }
-            PathfindingFailure::InternalError { core_error } => {
-                SummaryResponse::PathfindingFailure { core_error }
             }
         }
     }

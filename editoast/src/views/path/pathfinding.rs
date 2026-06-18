@@ -33,7 +33,6 @@ use tracing::info;
 use utoipa::ToSchema;
 
 use crate::AppState;
-use crate::error::InternalError;
 use crate::error::Result;
 use crate::views::AuthenticationExt;
 use crate::views::path::PathfindingError;
@@ -202,11 +201,6 @@ impl From<PathfindingCoreResult> for PathfindingResult {
                     PathfindingInputError::RollingStockNotFound { rolling_stock_name },
                 ))
             }
-            PathfindingCoreResult::InternalError { core_error } => {
-                PathfindingResult::Failure(PathfindingFailure::InternalError {
-                    core_error: core_error.into(),
-                })
-            }
         }
     }
 }
@@ -219,9 +213,6 @@ pub enum PathfindingFailure {
     PathfindingInputError(PathfindingInputError),
     #[educe(Default)]
     PathfindingNotFound(PathfindingNotFound),
-    InternalError {
-        core_error: InternalError,
-    },
 }
 
 /// Compute a pathfinding
@@ -373,18 +364,9 @@ async fn pathfinding_blocks_batch(
         .collect();
 
     for (path_result, hash) in computed_paths.into_iter().zip(to_compute_hashes) {
-        let result = match path_result {
-            Ok(path) => {
-                to_cache.push((hash, Box::new(path.clone().into())));
-                Arc::new(path.into())
-            }
-            // TODO: only make HTTP status code errors non-fatal
-            Err(core_error) => Arc::new(PathfindingResult::Failure(
-                PathfindingFailure::InternalError {
-                    core_error: core_error.into(),
-                },
-            )),
-        };
+        let path = path_result?;
+        to_cache.push((hash, Box::new(path.clone().into())));
+        let result: Arc<PathfindingResult> = Arc::new(path.into());
         hash_to_path_indexes[hash]
             .iter()
             .for_each(|index| pathfinding_results[*index] = result.clone());
@@ -485,13 +467,7 @@ pub(in crate::views) async fn single_pathfinding_request(
         [path] => path.data.clone(),
         _ => Err(core_client::Error::BrokenPipe),
     };
-    let result = match result {
-        Ok(path) => path.into(),
-        Err(core_error) => PathfindingResult::Failure(PathfindingFailure::InternalError {
-            core_error: core_error.into(),
-        }),
-    };
-    Ok(result)
+    Ok(result?.into())
 }
 
 #[derive(Debug, Clone)]
