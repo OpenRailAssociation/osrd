@@ -99,6 +99,51 @@ async function handleSingleOccurrenceDrag({
   });
 }
 
+/** all mode: move the model and every start_time exception by the same offset. */
+async function handleAllOccurrencesDrag({
+  setTrainScheduleProjections,
+  handleTrainDragInTrackOccupancy,
+  updateTrainScheduleDepartureTime,
+  draggedTrain,
+  replaceProjection,
+  draggedTrainId,
+  newDepartureTime,
+  initialDepartureTime,
+  stopPanning,
+  originalPacedExceptions,
+}: DragContext & { draggedTrainId: OccurrenceId }) {
+  if (!draggedTrain.paced) return;
+
+  // initialDepartureTime is the model departure at drag start, so the offset is absolute
+  // (no per-frame accumulation). The exceptions are shifted from their captured originals.
+  const offset = newDepartureTime.getTime() - initialDepartureTime.getTime();
+  const baseExceptions = originalPacedExceptions ?? draggedTrain.paced.exceptions;
+  const newTrainData: TrainSpaceTimeData = {
+    ...draggedTrain,
+    departureTime: newDepartureTime,
+    paced: { ...draggedTrain.paced, exceptions: shiftPacedExceptions(baseExceptions, offset) },
+  };
+
+  await handleTrainDragInTrackOccupancy({
+    draggedTrainId,
+    stopPanning: false,
+    initialDepartureTime,
+    newTrainData,
+  });
+  setTrainScheduleProjections(replaceProjection(newTrainData));
+
+  if (!stopPanning) return;
+
+  // updateTrainScheduleDepartureTime in 'all' mode also persists the shifted exceptions.
+  await updateTrainScheduleDepartureTime(draggedTrainId, newDepartureTime, 'all');
+  await handleTrainDragInTrackOccupancy({
+    draggedTrainId,
+    stopPanning: true,
+    initialDepartureTime,
+    newTrainData,
+  });
+}
+
 /** compliant mode & non-paced trains: move the model departure. */
 async function handleModelDrag({
   setTrainScheduleProjections,
@@ -172,6 +217,9 @@ export default function createHandleTrainDrag({
 
     if (panelSelectionMode === 'single' && isOccurrenceId(draggedTrainId)) {
       return handleSingleOccurrenceDrag({ ...context, draggedTrainId });
+    }
+    if (panelSelectionMode === 'all' && isOccurrenceId(draggedTrainId)) {
+      return handleAllOccurrencesDrag({ ...context, draggedTrainId });
     }
     return handleModelDrag({ ...context, draggedTrainId });
   };
