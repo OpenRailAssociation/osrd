@@ -57,6 +57,20 @@ function upsertAndSort(
   return sortBy(Object.values({ ...keyBy(prev, 'id'), ...keyBy(arr, 'id') }), 'start_time');
 }
 
+/**
+ * In 'all' mode the whole paced train moves, so every start_time exception is shifted by the same
+ * offset as the model departure. Returns undefined when there is nothing to shift.
+ */
+function computeShiftedExceptions(
+  trainSchedule: TrainScheduleResponse,
+  newDeparture: Date,
+  panelSelectionMode?: PanelSelectionMode
+): PacedTrainException[] | undefined {
+  if (panelSelectionMode !== 'all' || !trainSchedule.paced) return undefined;
+  const offset = newDeparture.getTime() - trainSchedule.start_time;
+  return shiftPacedExceptions(trainSchedule.paced.exceptions, offset);
+}
+
 const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetableId: number) => {
   const dispatch = useAppDispatch();
 
@@ -201,21 +215,28 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
   }, []);
 
   const setTrainScheduleDepartureTime = useCallback(
-    (trainScheduleId: number, newDeparture: Date, _panelSelectionMode?: PanelSelectionMode) => {
+    (trainScheduleId: number, newDeparture: Date, panelSelectionMode?: PanelSelectionMode) => {
+      const trainSchedule = trainSchedules?.find((train) => train.id === trainScheduleId);
+      const shiftedExceptions = trainSchedule
+        ? computeShiftedExceptions(trainSchedule, newDeparture, panelSelectionMode)
+        : undefined;
+
       setTrainSchedules((prev) => {
         const prevTrainSchedule = prev?.find((train) => train.id === trainScheduleId);
         if (!prevTrainSchedule) {
           return prev;
         }
-        const updatedTrainSchedule = {
-          ...prevTrainSchedule,
-          start_time: newDeparture.getTime(),
-        };
+        const updatedTrainSchedule = withPacedExceptions(
+          { ...prevTrainSchedule, start_time: newDeparture.getTime() },
+          shiftedExceptions
+        );
         return upsertAndSort(prev, updatedTrainSchedule);
       });
 
-      updateSimulatedTrainScheduleDepartureTime(trainScheduleId, newDeparture);
-      updateProjectedTrainScheduleDepartureTime(trainScheduleId, newDeparture);
+      // Pass shiftedExceptions to both so that exception occurrences (timetable + space-time chart)
+      // immediately reflect the shifted start_time without waiting for a full re-simulation.
+      updateSimulatedTrainScheduleDepartureTime(trainScheduleId, newDeparture, shiftedExceptions);
+      updateProjectedTrainScheduleDepartureTime(trainScheduleId, newDeparture, shiftedExceptions);
     },
     [trainSchedules]
   );
@@ -301,11 +322,27 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
         return;
       }
 
-      // Update the model start_time.
+      // 'all' mode: the whole paced train moves — shift every start_time exception by the same offset.
+      const shiftedExceptions = computeShiftedExceptions(
+        trainSchedule,
+        newDeparture,
+        panelSelectionMode
+      );
+
+      // Update the model start_time. The train schedule PUT ignores paced.exceptions, so shifted
+      // exceptions are persisted through their own endpoint below.
       await updateTrainSchedule({
         id: trainSchedule.id,
         trainSchedule: { ...trainSchedule, start_time: newDeparture.getTime() },
       }).unwrap();
+
+      if (shiftedExceptions) {
+        const exceptionsToShift = shiftedExceptions.filter(
+          // filter out null/undefined ids, which can happen if the exception is deleted because it was re-aligned on the model.
+          (exc) => exc.start_time && exc.id !== null && exc.id !== undefined
+        );
+        await updateExceptions(dispatch, exceptionsToShift, trainSchedule.id);
+      }
 
       setTrainScheduleDepartureTime(editoastId, newDeparture, panelSelectionMode);
     },
