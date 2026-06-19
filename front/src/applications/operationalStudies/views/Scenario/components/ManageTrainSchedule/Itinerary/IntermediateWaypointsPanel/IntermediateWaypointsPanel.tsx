@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 
 import { useTranslation } from 'react-i18next';
 
@@ -56,6 +56,14 @@ const IntermediateWaypointsPanel = ({
     [pathProperties, pathSteps, positionByStepId]
   );
 
+  const [collapsedStepIds, setCollapsedStepIds] = useState<Set<string>>(new Set());
+  const toggleGroup = (stepId: string) =>
+    setCollapsedStepIds((prev) => {
+      const next = new Set(prev);
+      if (!next.delete(stepId)) next.add(stepId);
+      return next;
+    });
+
   return (
     <aside
       className="intermediate-waypoints-panel"
@@ -74,6 +82,8 @@ const IntermediateWaypointsPanel = ({
               group={group}
               requestedLabel={getRequestedLabel(group.requestedStep)}
               onAdd={(op) => onAddWaypoint(op, group.requestedStep.id)}
+              expanded={!collapsedStepIds.has(group.requestedStep.id)}
+              onToggle={() => toggleGroup(group.requestedStep.id)}
             />
           ))}
         </div>

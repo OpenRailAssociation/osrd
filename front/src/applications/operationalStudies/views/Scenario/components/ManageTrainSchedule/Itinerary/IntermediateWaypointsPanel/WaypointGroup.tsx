@@ -1,5 +1,3 @@
-import { useState } from 'react';
-
 import { ChevronDown, ChevronUp } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
 
@@ -12,19 +10,20 @@ type WaypointGroupProps = {
   group: WaypointGroupType;
   requestedLabel: string;
   onAdd: (op: CoreOperationalPointOnPath) => void;
-  defaultExpanded?: boolean;
+  expanded: boolean;
+  onToggle: () => void;
 };
 
 const WaypointGroup = ({
   group,
   requestedLabel,
   onAdd,
-  defaultExpanded = true,
+  expanded,
+  onToggle,
 }: WaypointGroupProps) => {
   const { t } = useTranslation('operational-studies', {
     keyPrefix: 'manageTrainSchedule.itineraryModal.intermediateWaypointsPanel',
   });
-  const [expanded, setExpanded] = useState(defaultExpanded);
 
   const hasIntermediates = group.intermediates.length > 0;
 
@@ -35,7 +34,7 @@ const WaypointGroup = ({
           <button
             type="button"
             className="intermediate-waypoints-panel__group-toggle"
-            onClick={() => setExpanded((v) => !v)}
+            onClick={onToggle}
             aria-expanded={expanded}
             aria-label={expanded ? t('collapseGroup') : t('expandGroup')}
           >
