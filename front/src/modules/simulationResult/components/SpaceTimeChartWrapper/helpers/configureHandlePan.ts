@@ -136,6 +136,7 @@ export function configureHandlePan({
       if (!isPanning) {
         setDraggingState(undefined);
         setDragOffsetMs(null);
+        setPreviousPanning(false);
       }
 
       await handleTrainDrag({
