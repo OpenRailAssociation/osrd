@@ -2,10 +2,12 @@ import { useRef, useEffect, useCallback, useState } from 'react';
 
 import type {
   LightRollingStockWithLiveries,
+  PacedTrainException,
   TrainScheduleSimulationSummaryResult,
   TrainScheduleResponse,
 } from 'common/api/osrdEditoastApi';
 import formatTrainScheduleSummaries from 'modules/simulationResult/helpers/formatTrainScheduleSummaries';
+import { withPacedExceptions } from 'modules/trainSchedule/helpers/pacedTrain';
 import type { TrainScheduleWithDetails } from 'modules/trainSchedule/types';
 import { useAppDispatch } from 'store';
 
@@ -107,16 +109,32 @@ export default function useLazySimulateTrains({
   }, []);
 
   const updateSimulatedTrainScheduleDepartureTime = useCallback(
-    (id: number, newDeparture: Date) => {
+    (id: number, newDeparture: Date, shiftedExceptions?: PacedTrainException[]) => {
       setSimulatedTrainsById((prev) => {
         const result = prev.get(id);
         if (!result) {
           return prev;
         }
         const next = new Map(prev);
-        next.set(id, {
-          ...result,
-          startTime: newDeparture,
+        next.set(
+          id,
+          withPacedExceptions({ ...result, startTime: newDeparture }, shiftedExceptions)
+        );
+        return next;
+      });
+    },
+    []
+  );
+
+  const updateSimulatedTrainExceptions = useCallback(
+    (trainScheduleId: number, updatedExceptions: PacedTrainException[]) => {
+      setSimulatedTrainsById((prev) => {
+        const existing = prev.get(trainScheduleId);
+        if (!existing?.paced) return prev;
+        const next = new Map(prev);
+        next.set(trainScheduleId, {
+          ...existing,
+          paced: { ...existing.paced, exceptions: updatedExceptions },
         });
         return next;
       });
@@ -129,6 +147,7 @@ export default function useLazySimulateTrains({
     simulateTrainSchedules,
     removeSimulatedTrainSchedules,
     updateSimulatedTrainScheduleDepartureTime,
+    updateSimulatedTrainExceptions,
     isTrainSimulationLoading,
   };
 }

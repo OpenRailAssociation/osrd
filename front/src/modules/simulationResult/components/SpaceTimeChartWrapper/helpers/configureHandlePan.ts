@@ -6,27 +6,53 @@ import {
   type SpaceTimeChartProps,
 } from '@osrd-project/ui-charts';
 
+import type { SimulatedException } from 'modules/trainSchedule/types';
 import type { TrainId } from 'reducers/osrdconf/types';
 import { updateSelectedTrain } from 'reducers/simulationResults';
+import type { SelectionSource } from 'reducers/simulationResults/types';
 import type { AppDispatch } from 'store';
-import { Duration, subtractDurationFromDate } from 'utils/duration';
 import {
   extractEditoastIdFromPacedTrainId,
-  extractOccurrenceIndexFromOccurrenceId,
   extractPacedTrainIdFromOccurrenceId,
+  isOccurrenceId,
   isTrainId,
 } from 'utils/trainId';
 
 import type { IndividualTrainProjection, TrainSpaceTimeData } from '../../../types';
-import { isIndividualOccurrenceProjection } from './utils';
+import type { PanelSelectionMode } from '../CurveSelectionSidePanel';
+import canDragHoveredTrain from './canDragHoveredTrain';
 import { parseOccupancyZonePathId, type OccupancyZoneReference } from './zones';
+
+/** Magnetic snap radius (in pixels) used to align a dragged occurrence onto the cadence grid. */
+const SNAP_DISTANCE_PX = 8;
 
 type DraggingState =
   | {
       draggedTrain: IndividualTrainProjection;
       initialDepartureTime: Date;
+      /** Original exceptions captured at drag start — used to compute shifts without accumulation */
+      originalPacedExceptions?: SimulatedException[];
+      /** Cadence grid (model start + k × interval) a 'single'-mode occurrence snaps onto. */
+      pacedGrid?: { startTimeMs: number; intervalMs: number };
     }
   | undefined;
+
+/**
+ * Snap a candidate time onto the nearest cadence grid line (`startTimeMs + k × intervalMs`)
+ * when it is within `SNAP_DISTANCE_PX` pixels of it. `timeScale` is the chart scale in ms/px,
+ * so the snap radius stays constant on screen whatever the zoom. Returns the candidate
+ * unchanged when there is no grid or it is too far from a line.
+ */
+const snapToCadenceGrid = (
+  candidateMs: number,
+  grid: { startTimeMs: number; intervalMs: number } | undefined,
+  timeScale: number
+): number => {
+  if (!grid || grid.intervalMs <= 0) return candidateMs;
+  const k = Math.round((candidateMs - grid.startTimeMs) / grid.intervalMs);
+  const gridMs = grid.startTimeMs + k * grid.intervalMs;
+  return Math.abs(candidateMs - gridMs) <= SNAP_DISTANCE_PX * timeScale ? gridMs : candidateMs;
+};
 
 type ConfigureHandlePanParams = {
   spaceTimeChartOnPan?: SpaceTimeChartProps['onPan'];
@@ -35,8 +61,12 @@ type ConfigureHandlePanParams = {
     initialDepartureTime: Date;
     newDepartureTime: Date;
     stopPanning: boolean;
+    panelSelectionMode: PanelSelectionMode;
+    originalPacedExceptions?: SimulatedException[];
   }) => Promise<void>;
   selectedTrainId?: TrainId;
+  selectedTrainBy?: SelectionSource;
+  panelSelectionMode: PanelSelectionMode;
   projectedTrains: IndividualTrainProjection[];
   draggingState: DraggingState;
   setDraggingState: (s: DraggingState) => void;
@@ -57,6 +87,8 @@ export function configureHandlePan({
   spaceTimeChartOnPan,
   handleTrainDrag,
   selectedTrainId,
+  selectedTrainBy,
+  panelSelectionMode,
   projectedTrains,
   draggingState,
   setDraggingState,
@@ -79,33 +111,22 @@ export function configureHandlePan({
 
     // If dragging
     if (draggingState) {
-      const { draggedTrain, initialDepartureTime } = draggingState;
+      const { draggedTrain, initialDepartureTime, originalPacedExceptions, pacedGrid } =
+        draggingState;
 
-      if (draggedTrain.id !== selectedTrainId) {
+      // In 'all' mode, selectedTrainId is a PacedTrainId — don't overwrite it with the occurrence id
+      if (draggedTrain.id !== selectedTrainId && panelSelectionMode !== 'all') {
         dispatch(updateSelectedTrain({ id: draggedTrain.id, by: 'std' }));
       }
 
-      const timeDiff = payload.data.time - payload.initialData.time;
-
-      let newDepartureTime = new Date(initialDepartureTime.getTime() + timeDiff);
-
-      // if the dragged train is an occurrence, we need to update the first occurrence because the others are based on it
-      if (
-        isIndividualOccurrenceProjection(draggedTrain) &&
-        (draggedTrain.type !== 'exception' || !draggedTrain.exception.start_time)
-      ) {
-        const occurrencesIndex = extractOccurrenceIndexFromOccurrenceId(draggedTrain.id);
-        const pacedTrainId = extractEditoastIdFromPacedTrainId(
-          extractPacedTrainIdFromOccurrenceId(draggedTrain.id)
-        );
-        const pacedTrain = trainScheduleProjections.find(({ id }) => id === pacedTrainId);
-        if (pacedTrain?.paced) {
-          newDepartureTime = subtractDurationFromDate(
-            newDepartureTime,
-            new Duration({ milliseconds: occurrencesIndex * pacedTrain.paced.interval.ms })
-          );
-        }
-      }
+      // Snap onto the cadence grid (single mode) so an occurrence can be re-aligned — and made
+      // conforming — without pixel-perfect aiming.
+      const snappedMs = snapToCadenceGrid(
+        initialDepartureTime.getTime() + payload.data.time - payload.initialData.time,
+        pacedGrid,
+        payload.context.timeScale
+      );
+      const newDepartureTime = new Date(snappedMs);
 
       // stop dragging if necessary
       if (!isPanning) {
@@ -117,6 +138,8 @@ export function configureHandlePan({
         initialDepartureTime,
         newDepartureTime,
         stopPanning: !isPanning,
+        panelSelectionMode,
+        originalPacedExceptions,
       });
       return;
     }
@@ -142,14 +165,46 @@ export function configureHandlePan({
         return;
       }
 
-      // disable start time exception for now
-      const isStartTimeException = train.type === 'exception' && !!train.exception.start_time;
-      if (isStartTimeException) return;
+      // Gate: drag is only allowed when the selected train has blue curves (by === 'std')
+      if (
+        selectedTrainBy === 'std' &&
+        canDragHoveredTrain({ panelSelectionMode, hoveredTrain: train, selectedTrainId })
+      ) {
+        let initialDepartureTime = train.departureTime;
+        let originalPacedExceptions: SimulatedException[] | undefined;
+        let pacedGrid: { startTimeMs: number; intervalMs: number } | undefined;
+        if (isOccurrenceId(hoveredTrainId)) {
+          const editoastId = extractEditoastIdFromPacedTrainId(
+            extractPacedTrainIdFromOccurrenceId(hoveredTrainId)
+          );
+          const modelTrain = trainScheduleProjections.find((t) => t.id === editoastId);
+          if (modelTrain) {
+            // 'all' and 'compliant' move the whole model: anchor on the model departure so
+            // handleTrainDrag receives the model's absolute new departure (no frame accumulation).
+            if (panelSelectionMode !== 'single') {
+              initialDepartureTime = modelTrain.departureTime;
+            }
+            // 'single' and 'all' shift exceptions: capture their pre-drag values as a stable base.
+            if (panelSelectionMode !== 'compliant') {
+              originalPacedExceptions = modelTrain.paced?.exceptions;
+            }
+            // 'single' snaps the occurrence onto the model's cadence grid.
+            if (panelSelectionMode === 'single' && modelTrain.paced) {
+              pacedGrid = {
+                startTimeMs: modelTrain.departureTime.getTime(),
+                intervalMs: modelTrain.paced.interval.ms,
+              };
+            }
+          }
+        }
 
-      setDraggingState({
-        draggedTrain: train,
-        initialDepartureTime: train.departureTime,
-      });
+        setDraggingState({
+          draggedTrain: train,
+          initialDepartureTime,
+          originalPacedExceptions,
+          pacedGrid,
+        });
+      }
     }
 
     if (occupancyZoneDragAndDrop) {
@@ -173,7 +228,7 @@ export function configureHandlePan({
       }
     }
 
-    // if no hovered train, we pan normally
+    // if no hovered train (or drag not started), we pan normally
     spaceTimeChartOnPan?.(payload);
 
     if (isPanning !== previousPanning) {

@@ -10,6 +10,7 @@ import useSimulationResults from 'applications/operationalStudies/hooks/useSimul
 import type { Board } from 'applications/operationalStudies/types';
 import { type Conflict, type TrainScheduleResponse } from 'common/api/osrdEditoastApi';
 import SimulationWarpedMap from 'common/Map/WarpedMap/SimulationWarpedMap';
+import type { PanelSelectionMode } from 'modules/simulationResult/components/SpaceTimeChartWrapper/CurveSelectionSidePanel';
 import createHandleTrainDrag from 'modules/simulationResult/components/SpaceTimeChartWrapper/helpers/createHandleTrainDrag';
 import SpaceTimeChartWrapper, {
   MANCHETTE_WITH_SPACE_TIME_CHART_DEFAULT_HEIGHT,
@@ -24,7 +25,7 @@ import TimeStopsTableWrapper from 'modules/timesStops/TimeStopsTableWrapper';
 import TrainHeader from 'modules/trainHeader/TrainHeader';
 import { findExceptionWithOccurrenceId } from 'modules/trainSchedule/helpers/pacedTrain';
 import type { TrainScheduleWithDetails } from 'modules/trainSchedule/types';
-import type { TrainScheduleToEditData } from 'reducers/osrdconf/types';
+import type { TrainId, TrainScheduleToEditData } from 'reducers/osrdconf/types';
 import { toggleDisplayOnlyPathSteps, updateSelectedTrain } from 'reducers/simulationResults';
 import {
   getDisplayOnlyPathSteps,
@@ -54,7 +55,11 @@ type SimulationResultsProps = {
   trainSchedules: TrainScheduleResponse[];
   conflicts?: Conflict[];
   activeBoards: Set<Board>;
-  updateTrainScheduleDepartureTime: (trainId: number, newDepartureTime: Date) => Promise<void>;
+  updateTrainScheduleDepartureTime: (
+    draggedTrainId: TrainId,
+    newDepartureTime: Date,
+    panelSelectionMode?: PanelSelectionMode
+  ) => Promise<void>;
   upsertTrainSchedules: (trainSchedules: TrainScheduleResponse[]) => void;
   setDisplayTrainScheduleManagement: (type: string) => void;
   setTrainScheduleToEditData: (trainScheduleToEditData?: TrainScheduleToEditData) => void;
@@ -116,7 +121,7 @@ const SimulationResults = ({
 
   useEffect(() => {
     setTrainScheduleProjections(projectionData?.projectedTrains || []);
-  }, [projectionData]);
+  }, [projectionData?.projectedTrains]);
 
   useEffect(() => {
     if (simulationResults?.pathProperties && isScrollingToTimeStopsTable) {

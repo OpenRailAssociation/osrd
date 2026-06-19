@@ -115,11 +115,13 @@ type SpaceTimeChartWrapperBaseProps = {
     newDepartureTime,
     initialDepartureTime,
     stopPanning,
+    panelSelectionMode,
   }: {
     draggedTrainId: TrainId;
     initialDepartureTime: Date;
     newDepartureTime: Date;
     stopPanning: boolean;
+    panelSelectionMode: PanelSelectionMode;
   }) => Promise<void>;
   height?: number;
   onTrainClick?: (trainId: TrainId) => void;
@@ -479,6 +481,8 @@ const SpaceTimeChartWrapper = ({
       spaceTimeChartOnPan: spaceTimeChartProps.onPan,
       handleTrainDrag,
       selectedTrainId,
+      selectedTrainBy,
+      panelSelectionMode,
       projectedTrains,
       draggingState,
       setDraggingState,
@@ -497,6 +501,8 @@ const SpaceTimeChartWrapper = ({
     [
       spaceTimeChartProps.onPan,
       handleTrainDrag,
+      selectedTrainBy,
+      panelSelectionMode,
       draggingState,
       hoveredItem,
       previousPanning,

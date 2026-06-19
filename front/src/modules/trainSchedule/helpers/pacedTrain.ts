@@ -50,6 +50,26 @@ export const CHANGE_GROUP_KEYS: (keyof PacedTrainException)[] = [
 export const hasNoChangeGroups = (exception: PacedTrainException) =>
   CHANGE_GROUP_KEYS.every((key) => !(key in exception));
 
+export function shiftPacedExceptions(
+  exceptions: PacedTrainException[],
+  timeDiffMs: number
+): PacedTrainException[] {
+  return exceptions.map((exc) =>
+    exc.start_time ? { ...exc, start_time: { value: exc.start_time.value + timeDiffMs } } : exc
+  );
+}
+
+/**
+ * Return `train` with its paced exceptions replaced by `exceptions`. No-op (returns `train`
+ * unchanged) when there is nothing to apply: `exceptions` is undefined or the train is not paced.
+ */
+export const withPacedExceptions = <
+  T extends { paced?: { exceptions: PacedTrainException[] } | null },
+>(
+  train: T,
+  exceptions: PacedTrainException[] | undefined
+): T => (exceptions && train.paced ? { ...train, paced: { ...train.paced, exceptions } } : train);
+
 export const isPacedTrain = (
   trainSchedule: TrainScheduleResponse
 ): trainSchedule is PacedTrainResponseWithPaced => !!trainSchedule.paced;

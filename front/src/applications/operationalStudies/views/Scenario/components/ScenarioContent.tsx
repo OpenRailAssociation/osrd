@@ -14,8 +14,9 @@ import Conflicts from 'modules/conflict/components/Conflicts';
 import useConflictsFilter from 'modules/conflict/hooks/useConflictsFilter';
 import ScenarioLoaderMessage from 'modules/scenario/components/ScenarioLoaderMessage';
 import ChronogramWrapper from 'modules/simulationResult/components/Chronogram/ChronogramWrapper';
+import type { PanelSelectionMode } from 'modules/simulationResult/components/SpaceTimeChartWrapper/CurveSelectionSidePanel';
 import { setFailure } from 'reducers/main';
-import type { TrainScheduleToEditData } from 'reducers/osrdconf/types';
+import type { TrainId, TrainScheduleToEditData } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 import { usePrevious } from 'utils/hooks/state';
@@ -132,8 +133,12 @@ const ScenarioContent = ({ activeBoards, toggleBoard }: ScenarioContentProps) =>
   );
 
   const updateTrainScheduleDepartureTimeWithNge = useCallback(
-    async (trainScheduleId: number, newDeparture: Date) => {
-      await updateTrainScheduleDepartureTime(trainScheduleId, newDeparture);
+    async (
+      draggedTrainId: TrainId,
+      newDeparture: Date,
+      panelSelectionMode?: PanelSelectionMode
+    ) => {
+      await updateTrainScheduleDepartureTime(draggedTrainId, newDeparture, panelSelectionMode);
       refreshNge();
     },
     [updateTrainScheduleDepartureTime, refreshNge]

@@ -4,14 +4,39 @@ import { skipToken } from '@reduxjs/toolkit/query';
 import { keyBy, sortBy } from 'lodash';
 
 import {
+  buildOccurrenceExceptionData,
+  updatePacedTrainExceptionsList,
+} from 'applications/operationalStudies/views/Scenario/components/ManageTrainSchedule/helpers/buildPacedTrainException';
+import {
   osrdEditoastApi,
+  type PacedTrainException,
   type ScenarioWithDetails,
+  type TrainSchedule,
   type TrainScheduleResponse,
 } from 'common/api/osrdEditoastApi';
 import { useRollingStockContext } from 'common/RollingStockContext';
+import type { PanelSelectionMode } from 'modules/simulationResult/components/SpaceTimeChartWrapper/CurveSelectionSidePanel';
 import useLazyProjectTrains from 'modules/simulationResult/components/SpaceTimeChartWrapper/useLazyProjectTrains';
 import { formatPacedTrainWithDetails } from 'modules/trainSchedule/helpers/formatTrainScheduleWithDetails';
+import {
+  extractOccurrenceDetailsFromPacedTrain,
+  findExceptionWithOccurrenceId,
+  getOccurrenceTrainName,
+  isPacedTrain,
+  shiftPacedExceptions,
+  withPacedExceptions,
+} from 'modules/trainSchedule/helpers/pacedTrain';
+import {
+  syncOccurrenceException,
+  updateExceptions,
+} from 'modules/trainSchedule/helpers/updateTrainScheduleHelpers';
+import type { TrainId } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
+import {
+  extractEditoastIdFromPacedTrainId,
+  extractPacedTrainIdFromOccurrenceId,
+  isOccurrenceId,
+} from 'utils/trainId';
 import { mapBy } from 'utils/types';
 
 import useAutoSelectTrainIds from './useAutoSelectTrainIds';
@@ -23,6 +48,14 @@ type ScenarioBroadcastMessage =
   | { type: 'upsertTrainSchedules'; trainSchedules: TrainScheduleResponse[] }
   | { type: 'removeTrainSchedules'; trainScheduleIds: number[] }
   | { type: 'setTrainScheduleDepartureTime'; trainScheduleId: number; newDeparture: Date };
+
+function upsertAndSort(
+  prev: TrainScheduleResponse[] | undefined,
+  updates: TrainScheduleResponse | TrainScheduleResponse[]
+): TrainScheduleResponse[] {
+  const arr = Array.isArray(updates) ? updates : [updates];
+  return sortBy(Object.values({ ...keyBy(prev, 'id'), ...keyBy(arr, 'id') }), 'start_time');
+}
 
 const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetableId: number) => {
   const dispatch = useAppDispatch();
@@ -64,6 +97,7 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
     projectTrainSchedules,
     removeProjectedTrainSchedules,
     updateProjectedTrainScheduleDepartureTime,
+    updateProjectedTrainExceptions,
   } = useLazyProjectTrains({
     infraId,
     timetableId: scenario.timetable_id,
@@ -82,6 +116,7 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
     isTrainSimulationLoading,
     removeSimulatedTrainSchedules,
     updateSimulatedTrainScheduleDepartureTime,
+    updateSimulatedTrainExceptions,
   } = useLazySimulateTrains({
     infraId,
     timetableId,
@@ -141,12 +176,7 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
   };
 
   const upsertTrainSchedules = useCallback((trainSchedulesToUpsert: TrainScheduleResponse[]) => {
-    setTrainSchedules((prev) =>
-      sortBy(
-        Object.values({ ...keyBy(prev, 'id'), ...keyBy(trainSchedulesToUpsert, 'id') }),
-        'start_time'
-      )
-    );
+    setTrainSchedules((prev) => upsertAndSort(prev, trainSchedulesToUpsert));
 
     removeSimulatedTrainSchedules(trainSchedulesToUpsert.map((trainSchedule) => trainSchedule.id));
     removeProjectedTrainSchedules(trainSchedulesToUpsert.map((trainSchedule) => trainSchedule.id));
@@ -171,46 +201,54 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
   }, []);
 
   const setTrainScheduleDepartureTime = useCallback(
-    (trainScheduleId: number, newDeparture: Date) => {
+    (trainScheduleId: number, newDeparture: Date, _panelSelectionMode?: PanelSelectionMode) => {
       setTrainSchedules((prev) => {
-        const trainSchedule = prev?.find((train) => train.id === trainScheduleId);
-        if (!trainSchedule) {
+        const prevTrainSchedule = prev?.find((train) => train.id === trainScheduleId);
+        if (!prevTrainSchedule) {
           return prev;
         }
         const updatedTrainSchedule = {
-          ...trainSchedule,
+          ...prevTrainSchedule,
           start_time: newDeparture.getTime(),
         };
-        const newTrainSchedulesById = {
-          ...keyBy(prev, 'id'),
-          ...keyBy([updatedTrainSchedule], 'id'),
-        };
-        return sortBy(Object.values(newTrainSchedulesById), 'start_time');
+        return upsertAndSort(prev, updatedTrainSchedule);
       });
 
       updateSimulatedTrainScheduleDepartureTime(trainScheduleId, newDeparture);
       updateProjectedTrainScheduleDepartureTime(trainScheduleId, newDeparture);
     },
-    []
+    [trainSchedules]
   );
 
-  /** Update only departure time of a train schedule */
+  /**
+   * Move a train (or one of its occurrences) to a new departure time, depending on the panel mode:
+   * - 'single': create / update / delete the dragged occurrence's start_time exception
+   * - 'all': shift the model and every start_time exception by the same offset
+   * - 'compliant' / non-paced: shift the model departure
+   */
   const updateTrainScheduleDepartureTime = useCallback(
-    async (trainScheduleId: number, newDeparture: Date) => {
-      const trainSchedule = trainSchedules?.find((train) => train.id === trainScheduleId);
+    async (
+      draggedTrainId: TrainId,
+      newDeparture: Date,
+      panelSelectionMode?: PanelSelectionMode
+    ) => {
+      const editoastId = extractEditoastIdFromPacedTrainId(
+        isOccurrenceId(draggedTrainId)
+          ? extractPacedTrainIdFromOccurrenceId(draggedTrainId)
+          : draggedTrainId
+      );
+      const trainSchedule = trainSchedules?.find((train) => train.id === editoastId);
       if (!trainSchedule) {
-        throw new Error(`Train schedule "${trainScheduleId}" not found`);
+        throw new Error(`Train schedule "${editoastId}" not found`);
       }
 
+      // Update the model start_time.
       await updateTrainSchedule({
         id: trainSchedule.id,
-        trainSchedule: {
-          ...trainSchedule,
-          start_time: newDeparture.getTime(),
-        },
+        trainSchedule: { ...trainSchedule, start_time: newDeparture.getTime() },
       }).unwrap();
 
-      setTrainScheduleDepartureTime(trainScheduleId, newDeparture);
+      setTrainScheduleDepartureTime(editoastId, newDeparture, panelSelectionMode);
     },
     [trainSchedules]
   );
@@ -238,11 +276,23 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
   );
 
   const updateTrainScheduleDepartureTimeWithBroadcast = useCallback(
-    async (trainScheduleId: number, newDeparture: Date) => {
-      await updateTrainScheduleDepartureTime(trainScheduleId, newDeparture);
+    async (
+      draggedTrainId: TrainId,
+      newDeparture: Date,
+      panelSelectionMode?: PanelSelectionMode
+    ) => {
+      await updateTrainScheduleDepartureTime(draggedTrainId, newDeparture, panelSelectionMode);
+      // 'single' only changes one occurrence's exception, not the model departure: nothing to
+      // broadcast as a departure-time change (other tabs reconcile via tag invalidation).
+      if (panelSelectionMode === 'single') return;
+      const editoastId = extractEditoastIdFromPacedTrainId(
+        isOccurrenceId(draggedTrainId)
+          ? extractPacedTrainIdFromOccurrenceId(draggedTrainId)
+          : draggedTrainId
+      );
       broadcastScenarioMessage({
         type: 'setTrainScheduleDepartureTime',
-        trainScheduleId,
+        trainScheduleId: editoastId,
         newDeparture,
       });
     },
