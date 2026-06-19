@@ -70,6 +70,7 @@ type ConfigureHandlePanParams = {
   projectedTrains: IndividualTrainProjection[];
   draggingState: DraggingState;
   setDraggingState: (s: DraggingState) => void;
+  setDragOffsetMs: (ms: number | null) => void;
   hoveredItem: HoveredItem | null;
   previousPanning: boolean;
   setPreviousPanning: (v: boolean) => void;
@@ -92,6 +93,7 @@ export function configureHandlePan({
   projectedTrains,
   draggingState,
   setDraggingState,
+  setDragOffsetMs,
   hoveredItem,
   previousPanning,
   setPreviousPanning,
@@ -128,9 +130,12 @@ export function configureHandlePan({
       );
       const newDepartureTime = new Date(snappedMs);
 
+      setDragOffsetMs(snappedMs - initialDepartureTime.getTime());
+
       // stop dragging if necessary
       if (!isPanning) {
         setDraggingState(undefined);
+        setDragOffsetMs(null);
       }
 
       await handleTrainDrag({
