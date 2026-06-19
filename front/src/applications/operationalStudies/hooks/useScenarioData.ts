@@ -220,6 +220,24 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
     [trainSchedules]
   );
 
+  /** Update paced train exceptions in local state without re-simulating. Used after drag-created exceptions. */
+  const upsertTrainScheduleExceptions = useCallback(
+    (trainScheduleId: number, updatedExceptions: PacedTrainException[]) => {
+      setTrainSchedules((prev) => {
+        const train = prev?.find((t) => t.id === trainScheduleId);
+        if (!train?.paced) return prev;
+        const updated: TrainScheduleResponse = {
+          ...train,
+          paced: { ...train.paced, exceptions: updatedExceptions },
+        };
+        return upsertAndSort(prev, updated);
+      });
+      updateSimulatedTrainExceptions(trainScheduleId, updatedExceptions);
+      updateProjectedTrainExceptions(trainScheduleId, updatedExceptions);
+    },
+    []
+  );
+
   /**
    * Move a train (or one of its occurrences) to a new departure time, depending on the panel mode:
    * - 'single': create / update / delete the dragged occurrence's start_time exception
@@ -242,6 +260,47 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
         throw new Error(`Train schedule "${editoastId}" not found`);
       }
 
+      // 'single' mode: create / update / delete the dragged occurrence's exception. We reuse the
+      // same diff helpers as the times-stops table, so the "exception re-aligned on the model"
+      // detection (which drops the start_time override) stays consistent across the app.
+      if (
+        panelSelectionMode === 'single' &&
+        isOccurrenceId(draggedTrainId) &&
+        isPacedTrain(trainSchedule)
+      ) {
+        const existingException = findExceptionWithOccurrenceId(
+          trainSchedule.paced.exceptions,
+          draggedTrainId
+        );
+        const { paced: _paced, ...occurrenceBaseTrain } = trainSchedule;
+        const updatedOccurrence: TrainSchedule = {
+          ...extractOccurrenceDetailsFromPacedTrain(occurrenceBaseTrain, existingException),
+          train_name: getOccurrenceTrainName(trainSchedule, draggedTrainId),
+          start_time: newDeparture.getTime(),
+        };
+
+        const {
+          generatedException,
+          existingException: exceptionToSync,
+          occurrenceIndex,
+        } = buildOccurrenceExceptionData(trainSchedule, updatedOccurrence, draggedTrainId);
+        const finalException = await syncOccurrenceException(
+          dispatch,
+          generatedException,
+          exceptionToSync,
+          occurrenceIndex,
+          editoastId,
+          timetableId
+        );
+        const updatedExceptions = updatePacedTrainExceptionsList(
+          trainSchedule.paced.exceptions,
+          finalException,
+          draggedTrainId
+        );
+        upsertTrainScheduleExceptions(editoastId, updatedExceptions);
+        return;
+      }
+
       // Update the model start_time.
       await updateTrainSchedule({
         id: trainSchedule.id,
@@ -250,7 +309,7 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
 
       setTrainScheduleDepartureTime(editoastId, newDeparture, panelSelectionMode);
     },
-    [trainSchedules]
+    [trainSchedules, dispatch, timetableId, upsertTrainScheduleExceptions]
   );
 
   const upsertTrainSchedulesWithBroadcast = useCallback(
