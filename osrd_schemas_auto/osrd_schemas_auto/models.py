@@ -6318,7 +6318,7 @@ class RailJson(BaseModel):
     """
     `TrackSection`` is a segment of rail between switches that serves as a bidirectional path for trains, and can be defined as the longest possible stretch of track within a rail infrastructure.
     """
-    version: str
+    version: str | None = "3.5.3"
     """
     The version of the RailJSON format. Defaults to the current version.
     """
