@@ -12687,6 +12687,7 @@ components:
         version:
           type: string
           description: The version of the RailJSON format. Defaults to the current version.
+          default: 3.5.3
       additionalProperties: false
     ReceptionSignal:
       type: string

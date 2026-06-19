@@ -18,6 +18,10 @@ use super::TrackSection;
 
 pub const RAILJSON_VERSION: &str = "3.5.3";
 
+pub fn default_railjson_version() -> String {
+    RAILJSON_VERSION.to_string()
+}
+
 /// An infrastructure description in the RailJson format
 #[derive(Deserialize, Educe, Serialize, Clone, Debug, ToSchema)]
 #[educe(Default)]
@@ -25,6 +29,7 @@ pub const RAILJSON_VERSION: &str = "3.5.3";
 pub struct RailJson {
     /// The version of the RailJSON format. Defaults to the current version.
     #[educe(Default = RAILJSON_VERSION.to_string())]
+    #[schema(default = default_railjson_version)]
     pub version: String,
     /// Operational point is also known in French as "Point Remarquable" (PR). One `OperationalPoint` is a **collection** of points (`OperationalPointParts`) of interest.
     pub operational_points: Vec<OperationalPoint>,
