@@ -687,6 +687,7 @@ const SpaceTimeChartWrapper = ({
           ref={spaceTimeChartRef}
           data-testid="space-time-chart-container"
           className="space-time-chart-container"
+          style={{ cursor: draggingState ? 'ew-resize' : undefined }}
         >
           <SpaceTimeChartToolbar
             xZoom={xZoom}
