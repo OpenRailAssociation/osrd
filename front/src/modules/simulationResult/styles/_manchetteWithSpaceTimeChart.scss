@@ -1,3 +1,23 @@
+.drag-tooltip {
+  position: fixed;
+  width: 83px;
+  height: 32px;
+  transform: translateX(-50%);
+  box-shadow: 0 4px 6px -2px var(--black28);
+  border-radius: 10px;
+  opacity: 0.85;
+  background-color: var(--black100);
+  color: var(--white100);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 14px;
+  font-weight: 400;
+  pointer-events: none;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .space-time-chart-container {
   position: relative;
   overflow: hidden;

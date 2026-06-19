@@ -174,6 +174,11 @@ const buildCurveHover = (
   }
   return undefined;
 };
+function formatDragOffset(ms: number): string {
+  const sign = ms >= 0 ? '+' : '-';
+  const minutes = Math.round(Math.abs(ms) / 60_000);
+  return `${sign} ${minutes} min`;
+}
 
 const SpaceTimeChartWrapper = ({
   operationalPoints,
@@ -210,6 +215,15 @@ const SpaceTimeChartWrapper = ({
   const [draggingOccupancyZoneRef, setDraggingOccupancyZoneRef] =
     useState<OccupancyZoneReference | null>(null);
   const [dragOverTrackId, setDragOverTrackId] = useState<string | undefined>();
+  const [dragOffsetMs, setDragOffsetMs] = useState<number | null>(null);
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) =>
+      setMousePosition({ x: e.clientX, y: e.clientY + 15 });
+    document.addEventListener('mousemove', handleMouseMove);
+    return () => document.removeEventListener('mousemove', handleMouseMove);
+  }, []);
 
   const [panelSelectionMode, setPanelSelectionMode] = useState<PanelSelectionMode>('compliant');
   const [lastClickedOccurrenceId, setLastClickedOccurrenceId] = useState<OccurrenceId>();
@@ -486,6 +500,7 @@ const SpaceTimeChartWrapper = ({
       projectedTrains,
       draggingState,
       setDraggingState,
+      setDragOffsetMs,
       hoveredItem,
       previousPanning,
       setPreviousPanning,
@@ -772,6 +787,15 @@ const SpaceTimeChartWrapper = ({
           handleXZoom(Number(e.target.value));
         }}
       />
+      {draggingState &&
+        dragOffsetMs !== null &&
+        createPortal(
+          // tooltip following the cursor with the drag's time offset
+          <div className="drag-tooltip" style={{ left: mousePosition.x, top: mousePosition.y }}>
+            {formatDragOffset(dragOffsetMs)}
+          </div>,
+          document.body
+        )}
     </div>
     /* TODO use margin or absolute to align with handle */
   );
