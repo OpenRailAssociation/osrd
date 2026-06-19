@@ -99,6 +99,39 @@ async function handleSingleOccurrenceDrag({
   });
 }
 
+/** compliant mode & non-paced trains: move the model departure. */
+async function handleModelDrag({
+  setTrainScheduleProjections,
+  handleTrainDragInTrackOccupancy,
+  updateTrainScheduleDepartureTime,
+  draggedTrain,
+  replaceProjection,
+  draggedTrainId,
+  newDepartureTime,
+  initialDepartureTime,
+  stopPanning,
+}: DragContext & { draggedTrainId: TrainId }) {
+  const newTrainData: TrainSpaceTimeData = { ...draggedTrain, departureTime: newDepartureTime };
+
+  await handleTrainDragInTrackOccupancy({
+    draggedTrainId,
+    stopPanning: false,
+    initialDepartureTime,
+    newTrainData,
+  });
+  setTrainScheduleProjections(replaceProjection(newTrainData));
+
+  if (!stopPanning) return;
+
+  await updateTrainScheduleDepartureTime(draggedTrainId, newDepartureTime);
+  await handleTrainDragInTrackOccupancy({
+    draggedTrainId,
+    stopPanning: true,
+    initialDepartureTime,
+    newTrainData,
+  });
+}
+
 export default function createHandleTrainDrag({
   trainScheduleProjections,
   ...deps
@@ -140,5 +173,6 @@ export default function createHandleTrainDrag({
     if (panelSelectionMode === 'single' && isOccurrenceId(draggedTrainId)) {
       return handleSingleOccurrenceDrag({ ...context, draggedTrainId });
     }
+    return handleModelDrag({ ...context, draggedTrainId });
   };
 }
