@@ -10,9 +10,11 @@ import upsertNewProjectedTrains from 'applications/operationalStudies/helpers/up
 import type {
   OperationalPointReference,
   CoreTrainPath,
+  PacedTrainException,
   TrainScheduleResponse,
 } from 'common/api/osrdEditoastApi';
 import type { TrainSpaceTimeData } from 'modules/simulationResult/types';
+import { withPacedExceptions } from 'modules/trainSchedule/helpers/pacedTrain';
 import { getProjectionType, getIsSimulationEnabled } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
 
@@ -122,30 +124,60 @@ const useLazyProjectTrains = ({
   }, []);
 
   const updateProjectedTrainScheduleDepartureTime = useCallback(
-    (id: number, newDeparture: Date) => {
+    (id: number, newDeparture: Date, shiftedExceptions?: PacedTrainException[]) => {
       setProjectedTrainsById((prev) => {
         const result = prev.get(id);
         if (!result) {
           return prev;
         }
         const next = new Map(prev);
-        next.set(id, {
-          ...result,
-          departureTime: newDeparture,
-        });
+        next.set(
+          id,
+          withPacedExceptions({ ...result, departureTime: newDeparture }, shiftedExceptions)
+        );
         return next;
       });
       // Update the train schedule in the reference map
       // This is necessary to keep the reference up-to-date for future projections
       // and to ensure that the projected trains are correctly updated
       // when the projection type changes
-      let trainSchedule = trainSchedulesByIdRef.current.get(id);
+      const trainSchedule = trainSchedulesByIdRef.current.get(id);
       if (trainSchedule) {
-        trainSchedule = {
+        trainSchedulesByIdRef.current.set(
+          id,
+          withPacedExceptions(
+            { ...trainSchedule, start_time: newDeparture.getTime() },
+            shiftedExceptions
+          )
+        );
+      }
+    },
+    []
+  );
+
+  /**
+   * Update a paced train's exceptions in the projected state (and in the reference map used for
+   * future projections) without re-projecting. Mirrors updateProjectedTrainScheduleDepartureTime
+   * for the exception-only path (single-mode occurrence drag), so a later re-seed of the chart
+   * doesn't revert the occurrence to its pre-drag position.
+   */
+  const updateProjectedTrainExceptions = useCallback(
+    (id: number, updatedExceptions: PacedTrainException[]) => {
+      setProjectedTrainsById((prev) => {
+        const result = prev.get(id);
+        if (!result?.paced) {
+          return prev;
+        }
+        const next = new Map(prev);
+        next.set(id, { ...result, paced: { ...result.paced, exceptions: updatedExceptions } });
+        return next;
+      });
+      const trainSchedule = trainSchedulesByIdRef.current.get(id);
+      if (trainSchedule?.paced) {
+        trainSchedulesByIdRef.current.set(id, {
           ...trainSchedule,
-          start_time: newDeparture.getTime(),
-        };
-        trainSchedulesByIdRef.current.set(id, trainSchedule);
+          paced: { ...trainSchedule.paced, exceptions: updatedExceptions },
+        });
       }
     },
     []
@@ -156,6 +188,7 @@ const useLazyProjectTrains = ({
     projectTrainSchedules,
     removeProjectedTrainSchedules,
     updateProjectedTrainScheduleDepartureTime,
+    updateProjectedTrainExceptions,
     allTrainsProjected,
   };
 };
