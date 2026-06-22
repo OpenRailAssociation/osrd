@@ -9,10 +9,11 @@ import {
   useManchetteWithSpaceTimeChart,
   WaypointComponent,
   TRACK_HEIGHT_CONTAINER,
+  type CurveStyle,
   type OccupancyZone,
   type Track,
   isInteractiveWaypoint,
-  type OccupancyZonePickingElement,
+  isOccupancyPickingElement,
   isPointPickingElement,
   isSegmentPickingElement,
   BASE_WAYPOINT_HEIGHT,
@@ -33,12 +34,28 @@ import {
  * TrackOccupancyDiagram layer when selecting an operational point.
  */
 
+const SELECTED_OCCUPANCY_COLOR = '#1844ef';
+
+const getOccupancyCurveStyle = (color: string, isSelected: boolean): CurveStyle =>
+  isSelected
+    ? {
+        color: SELECTED_OCCUPANCY_COLOR,
+        opacity: 1,
+        thickness: 5,
+        outline: { offset: 0, color: SELECTED_OCCUPANCY_COLOR },
+        label: {
+          color,
+          fontWeight: 600,
+          background: { color: '#ffffff', border: color },
+        },
+      }
+    : { color, opacity: 1 };
+
 /**
  * This component shows how to use the useManchetteWithSpaceTimeChart hook with track-occupancy
  * diagrams:
  */
 const TrackOccupancyDiagramWithinSpaceTimeChartWrapper = ({ height = 561 }: { height: number }) => {
-  // TODO: Restore trains selection from GOV
   const [selectedTrain, setSelectedTrain] = useState<string>();
   const [selectedWaypoint, setSelectedWaypoint] = useState<undefined | string>(
     OPERATIONAL_POINTS[2].id
@@ -63,7 +80,7 @@ const TrackOccupancyDiagramWithinSpaceTimeChartWrapper = ({ height = 561 }: { he
         pathId: path.id,
         trackId: tracks[i % tracks.length].id, // (i.e. pick some random track)
         trainName: 'foobar',
-        color: path.color,
+        curveStyle: getOccupancyCurveStyle(path.color, path.id === selectedTrain),
       })
     );
 
@@ -77,7 +94,6 @@ const TrackOccupancyDiagramWithinSpaceTimeChartWrapper = ({ height = 561 }: { he
             position={operationalPoint.position}
             tracks={tracks}
             occupancyZones={occupancyZones}
-            selectedPathId={selectedTrain}
             onClose={() => setSelectedWaypoint(undefined)}
             topPadding={BASE_WAYPOINT_HEIGHT}
           />
@@ -98,7 +114,7 @@ const TrackOccupancyDiagramWithinSpaceTimeChartWrapper = ({ height = 561 }: { he
         ),
       },
     ];
-  }, [paths, selectedTrain, selectedWaypoint, operationalPoints]);
+  }, [paths, selectedWaypoint, operationalPoints, selectedTrain]);
 
   const { manchetteProps, spaceTimeChartProps, handleScroll } = useManchetteWithSpaceTimeChart({
     waypoints: operationalPoints.map((op) => ({
@@ -135,26 +151,18 @@ const TrackOccupancyDiagramWithinSpaceTimeChartWrapper = ({ height = 561 }: { he
             className="inset-0 absolute h-full"
             {...spaceTimeChartProps}
             onClick={({ hoveredItem }) => {
-              // Handle clicking the occupancyZone items (on the TrackOccupancyCanvas layer):
+              const element = hoveredItem?.element;
+              if (!element) return setSelectedTrain(undefined);
+              // Occupancy zones (TOD) and path items (STD) are both picked on the 'paths'
+              // layer, so they're distinguished by element type, not by layer.
               if (
-                hoveredItem?.layer === 'overlay' &&
-                hoveredItem.element.type === 'occupancyZone'
+                isOccupancyPickingElement(element) ||
+                isPointPickingElement(element) ||
+                isSegmentPickingElement(element)
               ) {
-                const newId = (hoveredItem.element as OccupancyZonePickingElement).pathId;
+                const newId = element.pathId;
                 setSelectedTrain(newId === selectedTrain ? undefined : newId);
-              }
-
-              // Handle clicking the path items (on the Path layers):
-              else if (
-                hoveredItem?.layer === 'paths' &&
-                (isPointPickingElement(hoveredItem.element) ||
-                  isSegmentPickingElement(hoveredItem.element))
-              ) {
-                const newId = hoveredItem.element.pathId;
-                setSelectedTrain(newId === selectedTrain ? undefined : newId);
-              }
-              // Handle clicking the stage:
-              else {
+              } else {
                 setSelectedTrain(undefined);
               }
             }}

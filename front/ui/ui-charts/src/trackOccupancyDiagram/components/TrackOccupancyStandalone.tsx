@@ -77,7 +77,6 @@ const TrackOccupancyStandalone = ({
             topPadding={BASE_WAYPOINT_HEIGHT * 1.5}
             occupancyZones={occupancyZones}
             draggingOccupancyZones={draggingOccupancyZones}
-            selectedPathId={selectedPathId}
             onDragOver={handleDragOver}
             hideBorders
           />
@@ -87,15 +86,7 @@ const TrackOccupancyStandalone = ({
         ),
       },
     ],
-    [
-      height,
-      tracks,
-      occupancyZones,
-      draggingOccupancyZones,
-      selectedPathId,
-      highlightedTrackId,
-      handleDragOver,
-    ]
+    [height, tracks, occupancyZones, draggingOccupancyZones, highlightedTrackId, handleDragOver]
   );
 
   /**
