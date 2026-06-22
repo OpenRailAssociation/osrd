@@ -42,6 +42,15 @@ export const defaultFilterSuggestions = <T>(
     .map(({ suggestion }) => suggestion);
 };
 
+/**
+ * Create relevant props for a basic combo box with suggestions, ready to be spread in a `ComboBox`
+ * component. Suggestions are filtered and ordered using a very simple algorithm: options with
+ * a labels that starts with the query are shown first, and other options that contains the query
+ * follows, trimming spaces, accents and ignoring case.
+ *
+ * The second parameter, `getSuggestionLabel`, should be stable to prevent rerender and useless
+ * recomputations (see `useCallback`).
+ */
 const useDefaultComboBox = <T>(suggestions: T[], getSuggestionLabel: (suggestion: T) => string) => {
   const [query, setQuery] = useState('');
 
