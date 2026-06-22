@@ -35,7 +35,7 @@ jobs:
       output_method: ${{ steps.bake-metadata.outputs.output_method }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Make bake metadata
         id: bake-metadata
