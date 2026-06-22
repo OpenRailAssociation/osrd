@@ -187,38 +187,38 @@ describe('useSimulationResults', () => {
   it('should return a valid simulation result for a standard train', async () => {
     const { result } = renderUseSimulationResults();
 
-    await waitFor(() => expect(result.current.results?.isValid).toBe(true));
-
-    expect(getTrainPath).toHaveBeenCalledWith({
-      id: PACED_TRAIN_ID,
-      infraId: INFRA_ID,
-      exceptionId: undefined,
-    });
-    expect(getTrainSimulation).toHaveBeenCalledWith({
-      id: PACED_TRAIN_ID,
-      infraId: INFRA_ID,
-      electricalProfileSetId: ELECTRICAL_PROFILE_SET_ID,
-      exceptionId: undefined,
-    });
-    expect(getRollingStockNameByRollingStockName).toHaveBeenCalledWith({
-      rollingStockName: ROLLING_STOCK_NAME,
-    });
-    expect(postInfraByInfraIdPathProperties).toHaveBeenCalledWith({
-      infraId: INFRA_ID,
-      pathPropertiesInput: { track_section_ranges: trackSectionRanges },
-    });
-
-    expect(result.current).toEqual({
-      results: {
-        isValid: true,
-        train: expectedTrain,
-        rollingStock,
-        simulation: simulationSuccess,
-        path: pathfindingSuccess,
-        pathProperties: preparedPathPropertiesWithElectrification,
-        powerRestrictions: [],
-      },
-      isSimulationDataLoading: false,
+    await waitFor(() => {
+      expect(result.current.results?.isValid).toBe(true);
+      expect(getTrainPath).toHaveBeenCalledWith({
+        id: PACED_TRAIN_ID,
+        infraId: INFRA_ID,
+        exceptionId: undefined,
+      });
+      expect(getTrainSimulation).toHaveBeenCalledWith({
+        id: PACED_TRAIN_ID,
+        infraId: INFRA_ID,
+        electricalProfileSetId: ELECTRICAL_PROFILE_SET_ID,
+        exceptionId: undefined,
+      });
+      expect(getRollingStockNameByRollingStockName).toHaveBeenCalledWith({
+        rollingStockName: ROLLING_STOCK_NAME,
+      });
+      expect(postInfraByInfraIdPathProperties).toHaveBeenCalledWith({
+        infraId: INFRA_ID,
+        pathPropertiesInput: { track_section_ranges: trackSectionRanges },
+      });
+      expect(result.current).toEqual({
+        results: {
+          isValid: true,
+          train: expectedTrain,
+          rollingStock,
+          simulation: simulationSuccess,
+          path: pathfindingSuccess,
+          pathProperties: preparedPathPropertiesWithElectrification,
+          powerRestrictions: [],
+        },
+        isSimulationDataLoading: false,
+      });
     });
   });
 
@@ -272,19 +272,20 @@ describe('useSimulationResults', () => {
 
       const { result } = renderUseSimulationResults();
 
-      await waitFor(() => expect(result.current.isSimulationDataLoading).toBe(false));
-      expect(result.current.results).toBeUndefined();
-
-      expect(getTrainPath).toHaveBeenCalledWith({
-        id: OCCURRENCE_ID,
-        infraId: INFRA_ID,
-        exceptionId: undefined,
-      });
-      expect(getTrainSimulation).toHaveBeenCalledWith({
-        id: OCCURRENCE_ID,
-        infraId: INFRA_ID,
-        electricalProfileSetId: ELECTRICAL_PROFILE_SET_ID,
-        exceptionId: undefined,
+      await waitFor(() => {
+        expect(result.current.isSimulationDataLoading).toBe(false);
+        expect(result.current.results).toBeUndefined();
+        expect(getTrainPath).toHaveBeenCalledWith({
+          id: OCCURRENCE_ID,
+          infraId: INFRA_ID,
+          exceptionId: undefined,
+        });
+        expect(getTrainSimulation).toHaveBeenCalledWith({
+          id: OCCURRENCE_ID,
+          infraId: INFRA_ID,
+          electricalProfileSetId: ELECTRICAL_PROFILE_SET_ID,
+          exceptionId: undefined,
+        });
       });
     });
 
@@ -304,28 +305,29 @@ describe('useSimulationResults', () => {
 
       const { result } = renderUseSimulationResults();
 
-      await waitFor(() => expect(result.current.results?.isValid).toBe(true));
-
-      expect(getTrainPath).toHaveBeenCalledWith({
-        id: OCCURRENCE_ID,
-        infraId: INFRA_ID,
-        exceptionId,
-      });
-      expect(getTrainSimulation).toHaveBeenCalledWith({
-        id: OCCURRENCE_ID,
-        infraId: INFRA_ID,
-        electricalProfileSetId: ELECTRICAL_PROFILE_SET_ID,
-        exceptionId,
-      });
-      expect(result.current.results).toMatchObject({
-        isValid: true,
-        train: {
+      await waitFor(() => {
+        expect(result.current.results?.isValid).toBe(true);
+        expect(getTrainPath).toHaveBeenCalledWith({
           id: OCCURRENCE_ID,
-          start_time: 32400000,
-          // occurrence name derived from the paced train name 'Train 1': the trailing
-          // number is bumped by 2 * occurrenceIndex (1 + 2*1)
-          train_name: 'Train 3',
-        },
+          infraId: INFRA_ID,
+          exceptionId,
+        });
+        expect(getTrainSimulation).toHaveBeenCalledWith({
+          id: OCCURRENCE_ID,
+          infraId: INFRA_ID,
+          electricalProfileSetId: ELECTRICAL_PROFILE_SET_ID,
+          exceptionId,
+        });
+        expect(result.current.results).toMatchObject({
+          isValid: true,
+          train: {
+            id: OCCURRENCE_ID,
+            start_time: 32400000,
+            // occurrence name derived from the paced train name 'Train 1': the trailing
+            // number is bumped by 2 * occurrenceIndex (1 + 2*1)
+            train_name: 'Train 3',
+          },
+        });
       });
     });
 
@@ -355,26 +357,27 @@ describe('useSimulationResults', () => {
 
       const { result } = renderUseSimulationResults();
 
-      await waitFor(() => expect(result.current.results?.isValid).toBe(true));
-
-      expect(getTrainPath).toHaveBeenCalledWith({
-        id: ADDED_EXCEPTION_ID,
-        infraId: INFRA_ID,
-        exceptionId,
-      });
-      expect(getTrainSimulation).toHaveBeenCalledWith({
-        id: ADDED_EXCEPTION_ID,
-        infraId: INFRA_ID,
-        electricalProfileSetId: ELECTRICAL_PROFILE_SET_ID,
-        exceptionId,
-      });
-      expect(result.current.results).toMatchObject({
-        isValid: true,
-        train: {
+      await waitFor(() => {
+        expect(result.current.results?.isValid).toBe(true);
+        expect(getTrainPath).toHaveBeenCalledWith({
           id: ADDED_EXCEPTION_ID,
-          start_time: 32400000,
-          train_name: 'Train 1/+',
-        },
+          infraId: INFRA_ID,
+          exceptionId,
+        });
+        expect(getTrainSimulation).toHaveBeenCalledWith({
+          id: ADDED_EXCEPTION_ID,
+          infraId: INFRA_ID,
+          electricalProfileSetId: ELECTRICAL_PROFILE_SET_ID,
+          exceptionId,
+        });
+        expect(result.current.results).toMatchObject({
+          isValid: true,
+          train: {
+            id: ADDED_EXCEPTION_ID,
+            start_time: 32400000,
+            train_name: 'Train 1/+',
+          },
+        });
       });
     });
 
