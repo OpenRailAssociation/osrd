@@ -121,10 +121,12 @@ function applyFieldsToTrain(
 
   return {
     ...train,
-    ...fields,
     train_name: fields.train_name || train.train_name,
+    speed_limit_tag: fields.speed_limit_tag,
+    constraint_distribution: fields.constraint_distribution,
     comfort: fields.comfort === null ? undefined : fields.comfort,
     category: fields.category === null ? undefined : fields.category,
+    labels: fields.labels,
     rolling_stock_name: fields.rolling_stock_name,
     paced,
     options: {
