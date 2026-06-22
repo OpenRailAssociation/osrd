@@ -125,7 +125,7 @@ const AddOrEditScenarioModal = ({ editionMode = false, scenario }: AddOrEditScen
 
   const initialValuesRef = useRef<ScenarioForm | null>(null);
 
-  const modalRef = useRef<HTMLDivElement | null>(null);
+  const modalRef = useRef<HTMLFormElement | null>(null);
 
   // Restore the scenario's infra in the global state when the edition modal is closed
   // without saving (cancel, close button or click outside).
@@ -160,7 +160,8 @@ const AddOrEditScenarioModal = ({ editionMode = false, scenario }: AddOrEditScen
   const invalidFields = checkScenarioFields(currentScenario);
   const hasErrors = Object.values(invalidFields).some((field) => field);
 
-  const createScenario = async () => {
+  const createScenario = async (event: React.SubmitEvent<HTMLFormElement>) => {
+    event.preventDefault();
     if (!currentScenario.infra_id || hasErrors) {
       setDisplayErrors(true);
     } else if (projectId && studyId && currentScenario && currentScenario.name) {
@@ -286,7 +287,12 @@ const AddOrEditScenarioModal = ({ editionMode = false, scenario }: AddOrEditScen
   useModalFocusTrap(modalRef, handleClose);
 
   return (
-    <div data-testid="scenario-edition-modal" className="scenario-edition-modal" ref={modalRef}>
+    <form
+      data-testid="scenario-edition-modal"
+      className="scenario-edition-modal"
+      ref={modalRef}
+      onSubmit={createScenario}
+    >
       {clickedOutside && (
         <div className="confirm-modal">
           <div className="confirm-modal-content">
@@ -421,12 +427,7 @@ const AddOrEditScenarioModal = ({ editionMode = false, scenario }: AddOrEditScen
               {t('main.scenarioModificationTitle')}
             </button>
           ) : (
-            <button
-              data-testid="create-scenario"
-              className="btn btn-sm btn-primary"
-              type="button"
-              onClick={createScenario}
-            >
+            <button data-testid="create-scenario" className="btn btn-sm btn-primary" type="submit">
               <span className="mr-2">
                 <FaPlus />
               </span>
@@ -435,7 +436,7 @@ const AddOrEditScenarioModal = ({ editionMode = false, scenario }: AddOrEditScen
           )}
         </div>
       </ModalFooterSNCF>
-    </div>
+    </form>
   );
 };
 
