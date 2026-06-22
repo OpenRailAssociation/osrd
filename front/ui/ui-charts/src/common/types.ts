@@ -31,6 +31,8 @@ export type CurveOutline = {
   color: string;
   /** Thickness of the outline */
   width?: number;
+  /** Opacity of the outline, e.g. the TOD halo. */
+  opacity?: number;
   /** Won't be used most of the time, color will be used */
   backgroundColor?: string;
 };
@@ -46,6 +48,10 @@ export type CurveStyle = {
   opacity: number;
   level?: PathLevel;
   outline?: CurveOutline;
+  /** TOD occupancy bar height in px. */
+  thickness?: number;
+  /** Border drawn around the TOD occupancy bar. */
+  border?: { color: string; width: number };
   label?: {
     background?: { color: string; opacity?: number; border?: string };
     color?: string;

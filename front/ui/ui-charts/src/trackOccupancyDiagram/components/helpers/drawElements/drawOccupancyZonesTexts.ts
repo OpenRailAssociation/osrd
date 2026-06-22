@@ -7,19 +7,18 @@ const BREAKPOINTS = {
   small: 4,
 };
 const STROKE_WIDTH = 4;
-const X_BACKGROUND_PADDING = 4;
-const X_INITIAL_POSITION_OFFSET = 8;
+const X_BACKGROUND_PADDING = 2;
+const X_INITIAL_POSITION_OFFSET = 4;
 const X_MEDIUM_POSITION_OFFSET_BACKGROUND = 12;
-const Y_INITIAL_POSITION_OFFSET = 5;
-const Y_INITIAL_POSITION_OFFSET_BACKGROUND = 18;
-const X_SELECTED_MEDIUM_PADDING = 8;
+const Y_INITIAL_POSITION_OFFSET = 20;
+const Y_INITIAL_POSITION_OFFSET_BACKGROUND = 16;
+const Y_TEXT_CENTERING_OFFSET = 1;
 const X_THROUGHTRAIN_OFFSET = 4;
-const Y_MEDIUM_POSITION_OFFSET_BACKGROUND = 28;
-const Y_MEDIUM_POSITION_OFFSET = 14;
+const Y_MEDIUM_POSITION_OFFSET = 24;
 const ROTATE_VALUE = (-30 * Math.PI) / 180;
 
 const { SANS, MONO } = FONTS;
-const { WHITE_100, GREY_50, GREY_60, GREY_80, SELECTION_20 } = COLORS;
+const { GREY_50, GREY_60, GREY_80 } = COLORS;
 
 export const drawOccupancyZonesTexts = ({
   ctx,
@@ -28,7 +27,6 @@ export const drawOccupancyZonesTexts = ({
   departureTimePixel,
   yPosition,
   isThroughTrain,
-  isSelected,
 }: {
   ctx: CanvasRenderingContext2D;
   zone: OccupancyZone;
@@ -36,9 +34,8 @@ export const drawOccupancyZonesTexts = ({
   departureTimePixel: number;
   yPosition: number;
   isThroughTrain: boolean;
-  isSelected?: boolean;
 }) => {
-  const labelStyle = zone.curveStyle?.label;
+  const labelStyle = zone.curveStyle.label;
   const labelFontWeight = labelStyle?.fontWeight ?? 400;
 
   const zoneOccupancyLength = departureTimePixel - arrivalTimePixel - STROKE_WIDTH;
@@ -48,7 +45,7 @@ export const drawOccupancyZonesTexts = ({
 
   ctx.font = MONO;
   const originTextLength = ctx.measureText(zone.originStation || '--').width;
-  ctx.font = `${labelFontWeight} 12px IBM Plex Mono`;
+  ctx.font = `${labelFontWeight} 12px IBM Plex Sans`;
   const nameTextLength = ctx.measureText(zone.trainName).width;
 
   const { xOriginTrainName, yOriginTrainName } = isBelowBreakpoint('medium')
@@ -68,37 +65,33 @@ export const drawOccupancyZonesTexts = ({
   const xArrivalPosition = isBelowBreakpoint('small') ? 'right' : 'center';
   const xDeparturePosition = isBelowBreakpoint('small') ? 'left' : 'center';
 
+  const hasLabelBackground = !!labelStyle?.background;
   const textStroke = {
-    color: isSelected ? 'transparent' : WHITE_100,
+    color: 'transparent',
     width: STROKE_WIDTH,
   };
 
-  // train name
-  if (isSelected) {
-    const { xSelectedTrainNameBackground, ySelectedTrainNameBackground } = isBelowBreakpoint(
-      'medium'
-    )
-      ? {
-          xSelectedTrainNameBackground: xOriginTrainName - X_SELECTED_MEDIUM_PADDING,
-          ySelectedTrainNameBackground: yPosition - Y_MEDIUM_POSITION_OFFSET_BACKGROUND,
-        }
-      : {
-          xSelectedTrainNameBackground: arrivalTimePixel,
-          ySelectedTrainNameBackground: yPosition - Y_INITIAL_POSITION_OFFSET_BACKGROUND,
-        };
-
+  // train name background
+  if (hasLabelBackground) {
     ctx.save();
-    ctx.translate(xSelectedTrainNameBackground, ySelectedTrainNameBackground);
+    ctx.translate(xOriginTrainName, yOriginTrainName);
     ctx.rotate(ROTATE_VALUE);
-    ctx.fillStyle = labelStyle?.background?.color || SELECTION_20;
+    ctx.fillStyle = labelStyle!.background!.color;
     ctx.beginPath();
     ctx.roundRect(
       -X_BACKGROUND_PADDING,
-      0,
+      -Y_INITIAL_POSITION_OFFSET_BACKGROUND / 2 - Y_TEXT_CENTERING_OFFSET,
       nameTextLength + X_BACKGROUND_PADDING * 2,
-      Y_INITIAL_POSITION_OFFSET_BACKGROUND
+      Y_INITIAL_POSITION_OFFSET_BACKGROUND,
+      2
     );
     ctx.fill();
+    ctx.globalAlpha = 1;
+    if (labelStyle?.background?.border) {
+      ctx.strokeStyle = labelStyle.background.border;
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    }
     ctx.restore();
   }
 
@@ -108,12 +101,10 @@ export const drawOccupancyZonesTexts = ({
     x: xOriginTrainName,
     y: yOriginTrainName,
     color: labelStyle?.color || GREY_50,
-    font: `${labelFontWeight} 12px IBM Plex Mono`,
+    font: `${labelFontWeight} 12px IBM Plex Sans`,
     rotateAngle: ROTATE_VALUE,
-    stroke: {
-      color: WHITE_100,
-      width: STROKE_WIDTH,
-    },
+    yPosition: 'middle',
+    stroke: textStroke,
   });
 
   // arrival minutes & departure minutes
@@ -155,7 +146,7 @@ export const drawOccupancyZonesTexts = ({
     color: GREY_60,
     xPosition: 'right',
     yPosition: 'bottom',
-    font: MONO,
+    font: `${labelFontWeight} 10px IBM Plex Mono`,
     stroke: textStroke,
   });
 
@@ -167,7 +158,7 @@ export const drawOccupancyZonesTexts = ({
     color: GREY_60,
     xPosition: 'left',
     yPosition: 'bottom',
-    font: MONO,
+    font: `${labelFontWeight} 10px IBM Plex Mono`,
     stroke: textStroke,
   });
 };

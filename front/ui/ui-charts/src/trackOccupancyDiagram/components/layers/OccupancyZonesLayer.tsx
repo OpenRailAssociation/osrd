@@ -31,7 +31,6 @@ type RenderingInstruction =
   | {
       type: 'occupancyZone';
       zone: OccupancyZone;
-      isSelected: boolean;
       offsetY: number;
       trailingText?: string;
     }
@@ -56,13 +55,11 @@ const OccupancyZonesLayer = ({
   occupancyZones,
   position,
   topPadding,
-  selectedPathId,
 }: {
   tracks: Track[];
   occupancyZones: OccupancyZone[];
   position: number;
   topPadding: number;
-  selectedPathId?: string;
 }) => {
   const instructionsToDraw = useMemo(() => {
     const instructions: RenderingInstruction[] = [];
@@ -110,7 +107,6 @@ const OccupancyZonesLayer = ({
             type: 'occupancyZone',
             zone,
             offsetY: trackY + yPosition,
-            isSelected: zone.pathId === selectedPathId,
             trailingText: zone.trailingText,
           });
 
@@ -134,7 +130,6 @@ const OccupancyZonesLayer = ({
             type: 'occupancyZone',
             zone,
             offsetY: trackY + yPosition,
-            isSelected: zone.pathId === selectedPathId,
           });
 
           zoneCounter++;
@@ -165,9 +160,9 @@ const OccupancyZonesLayer = ({
     });
 
     return sortBy(instructions, (instruction) =>
-      instruction.type === 'occupancyZone' && instruction.isSelected ? 0 : 1
+      instruction.type === 'occupancyZone' && instruction.zone.curveStyle.outline ? 0 : 1
     );
-  }, [occupancyZones, selectedPathId, topPadding, tracks]);
+  }, [occupancyZones, topPadding, tracks]);
 
   const drawingFunction = useCallback<DrawingFunction<SpaceTimeChartContextType>>(
     (ctx, stcContext) => {
@@ -178,7 +173,6 @@ const OccupancyZonesLayer = ({
               zone: instruction.zone,
               position,
               yOffset: instruction.offsetY,
-              isSelected: instruction.isSelected,
             });
             if (instruction.trailingText) {
               drawZoneTrailingText(ctx, stcContext, {

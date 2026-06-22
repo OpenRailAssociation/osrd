@@ -1,32 +1,21 @@
 import { getCrispLineCoordinate } from '../../../../common/helpers/time';
-import { PATH_COLOR_DEFAULT } from '../../../../manchette/consts';
 import type { SpaceTimeChartContextType } from '../../../../spaceTimeChart';
 import { OCCUPANCY_ZONE_Y_START, OCCUPANCY_ZONE_HEIGHT, FONTS, COLORS } from '../../../lib/consts';
 import type { OccupancyZone } from '../../../lib/types';
 import { drawOccupancyZonesTexts } from './drawOccupancyZonesTexts';
 
 const { SANS, MONO } = FONTS;
-const { REMAINING_TRAINS_BACKGROUND, WHITE_100, SELECTION_20 } = COLORS;
+const { REMAINING_TRAINS_BACKGROUND, WHITE_100 } = COLORS;
 const REMAINING_TRAINS_WIDTH = 70;
 const REMAINING_TRAINS_HEIGHT = 24;
 const REMAINING_TEXT_OFFSET = 12;
-const X_BACKGROUND_PADDING = 4;
-const X_TROUGHTRAIN_BACKGROUND_PADDING = 8;
 const BACKGROUND_HEIGHT = 40;
-const SELECTED_TRAIN_ID_GRADIANT = 2;
 const PATH_SIZE_DEFAULT = 1;
 const LABEL_OFFSET_X = 10;
 const LABEL_OFFSET_Y = 50;
-
-const drawDefaultZone = (
-  ctx: CanvasRenderingContext2D,
-  { x, y, width }: { x: number; y: number; width: number }
-) => {
-  ctx.beginPath();
-  ctx.rect(x, y, width, OCCUPANCY_ZONE_HEIGHT);
-  ctx.fill();
-  ctx.stroke();
-};
+const OCCUPANCY_OUTLINE_THICKNESS = 4;
+const OCCUPANCY_OUTLINE_X_PADDING = 3;
+const OCCUPANCY_OUTLINE_OPACITY = 0.15;
 
 const ARROW_OFFSET_X = 1;
 const ARROW_OFFSET_Y = 1.5;
@@ -95,24 +84,18 @@ export const drawOccupationZone = (
     zone,
     yOffset,
     position,
-    isSelected,
   }: {
     zone: OccupancyZone;
     yOffset: number;
     position: number;
-    isSelected?: boolean;
   }
 ) => {
-  const { color: curveColor = PATH_COLOR_DEFAULT, outline = { color: WHITE_100, width: 0.5 } } =
-    zone.curveStyle || {};
+  const { color: curveColor, outline, border, thickness } = zone.curveStyle;
 
   const curveWidth = zone.connectorStyle?.width ?? PATH_SIZE_DEFAULT;
 
   const isThroughTrain = zone.startTime === zone.endTime;
 
-  ctx.fillStyle = curveColor;
-  ctx.strokeStyle = outline.color;
-  ctx.lineWidth = outline.width ?? 0.5;
   ctx.lineJoin = 'round';
   ctx.lineCap = 'round';
   ctx.font = MONO;
@@ -124,38 +107,51 @@ export const drawOccupationZone = (
   const arrivalTimePixel = getTimePixel(zone.startTime);
   const departureTimePixel = getTimePixel(zone.endTime);
 
-  if (isSelected) {
-    const extraWidth = isThroughTrain ? X_TROUGHTRAIN_BACKGROUND_PADDING : X_BACKGROUND_PADDING;
-    const originTextLength = ctx.measureText(zone.originStation || '--').width;
-    const destinationTextLength = ctx.measureText(zone.destinationStation || '--').width;
-
-    ctx.fillStyle = SELECTION_20;
-    ctx.beginPath();
-    ctx.roundRect(
-      arrivalTimePixel - originTextLength - extraWidth,
-      y - BACKGROUND_HEIGHT / 2,
-      departureTimePixel -
-        arrivalTimePixel +
-        originTextLength +
-        destinationTextLength +
-        extraWidth * 2,
-      BACKGROUND_HEIGHT,
-      SELECTED_TRAIN_ID_GRADIANT
-    );
-    ctx.fill();
-  }
-
-  ctx.fillStyle = curveColor;
-  ctx.strokeStyle = outline.color;
-  ctx.lineWidth = outline.width ?? 0.5;
   if (isThroughTrain) {
+    ctx.fillStyle = curveColor;
+    ctx.strokeStyle = WHITE_100;
+    ctx.lineWidth = 0.5;
     drawThroughTrain(ctx, arrivalTimePixel, y);
   } else {
-    drawDefaultZone(ctx, {
-      x: arrivalTimePixel,
-      y,
-      width: departureTimePixel - arrivalTimePixel,
-    });
+    const zoneWidth = departureTimePixel - arrivalTimePixel;
+    const yCenter = y + OCCUPANCY_ZONE_HEIGHT / 2;
+    // Bar is 3px by default, raised to 5px for the active selection.
+    const barHeight = thickness ?? OCCUPANCY_ZONE_HEIGHT;
+
+    // Highlight halo behind the bar, only when selected.
+    if (outline) {
+      // Extend the occupancy by the halo thickness (outline.width) on both sides.
+      const haloHeight = barHeight + (outline.width ?? OCCUPANCY_OUTLINE_THICKNESS) * 2;
+      ctx.save();
+      ctx.globalAlpha = outline.opacity ?? OCCUPANCY_OUTLINE_OPACITY;
+      ctx.fillStyle = outline.color;
+      ctx.beginPath();
+      ctx.roundRect(
+        arrivalTimePixel - OCCUPANCY_OUTLINE_X_PADDING,
+        yCenter - haloHeight / 2,
+        zoneWidth + OCCUPANCY_OUTLINE_X_PADDING * 2,
+        haloHeight,
+        2
+      );
+      ctx.fill();
+      ctx.restore();
+    }
+
+    // Occupancy bar.
+    ctx.fillStyle = curveColor;
+    ctx.beginPath();
+    ctx.rect(arrivalTimePixel, yCenter - barHeight / 2, zoneWidth, barHeight);
+    ctx.fill();
+    if (border) {
+      // When hovering, add a border around the occupancy
+      ctx.strokeStyle = border.color;
+      ctx.lineWidth = border.width;
+      ctx.stroke();
+    } else if (!outline) {
+      ctx.strokeStyle = WHITE_100;
+      ctx.lineWidth = 0.5;
+      ctx.stroke();
+    }
   }
 
   // Draw dashed lines linking trains tracks occupancy to their paths on the SpaceTimeChart (when relevant):
@@ -183,7 +179,6 @@ export const drawOccupationZone = (
     departureTimePixel,
     isThroughTrain,
     yPosition: y,
-    isSelected,
   });
 };
 
