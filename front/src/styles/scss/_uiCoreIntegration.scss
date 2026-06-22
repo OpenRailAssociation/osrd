@@ -28,26 +28,6 @@ img {
   color: black;
 }
 
-// __________________ Calendar Picker  __________________
-.ui-date-picker .calendar-picker {
-  top: auto !important;
-  left: auto !important;
-  z-index: 1;
-}
-
-// __________________ Common Time/Tolerance Picker  __________________
-
-.ui-time-picker,
-.ui-tolerance-picker {
-  .modal-overlay {
-    position: relative !important;
-  }
-  .modal-content {
-    width: auto;
-    z-index: 1;
-  }
-}
-
 // __________________ Select  __________________
 // TODO Remove this after the fix in the ui-core
 .ui-select {

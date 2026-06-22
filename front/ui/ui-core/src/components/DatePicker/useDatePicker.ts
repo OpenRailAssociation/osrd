@@ -1,6 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
 
-import { useModalPosition } from '../../hooks/useModalPosition';
 import useOutsideClick from '../../hooks/useOutsideClick';
 import type { StatusWithMessage } from '../StatusMessage';
 import type { DatePickerProps } from './DatePicker';
@@ -11,8 +10,6 @@ import {
   formatValueToSlot,
   isWithinInterval,
 } from './utils';
-
-const MODAL_VERTICAL_OFFSET = 3;
 
 // Regex for "xx/xx/xx"
 const SINGLE_DATE_REGEX = /^\d{2}\/\d{2}\/\d{2}$/;
@@ -36,11 +33,6 @@ export default function useDatePicker(datePickerProps: DatePickerProps) {
       return;
     setShowPicker(false);
   });
-  const { calculatePosition, modalPosition } = useModalPosition(
-    inputRef,
-    calendarPickerRef,
-    MODAL_VERTICAL_OFFSET
-  );
 
   const handleInputClick = () => {
     if (isRangeMode) {
@@ -93,10 +85,6 @@ export default function useDatePicker(datePickerProps: DatePickerProps) {
   };
 
   useEffect(() => {
-    if (showPicker) calculatePosition();
-  }, [showPicker, calculatePosition]);
-
-  useEffect(() => {
     const newInput = formatInputValue(datePickerProps);
     if (newInput !== inputValue) {
       // we only set the input value if it has changed
@@ -115,7 +103,6 @@ export default function useDatePicker(datePickerProps: DatePickerProps) {
     inputValue,
     statusWithMessage,
     selectedSlot,
-    modalPosition,
     inputRef,
     calendarPickerRef,
     setShowPicker,
