@@ -173,7 +173,13 @@ export type StudyCardDetails = SearchResultItemStudy | StudyWithScenarios;
 
 export type ScenarioCardDetails = SearchResultItemScenario | ScenarioWithDetails;
 
-export type CategoryColors = { base: string; strong: string; surface: string };
+export type CategoryColors = {
+  base: string;
+  strong: string;
+  surface: string;
+  // Soft accent (palette shade 30), e.g. the GOV hover outline
+  soft: string;
+};
 
 export type ItineraryPathProperties = PathProperties & {
   length: number;

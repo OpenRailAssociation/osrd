@@ -5,8 +5,6 @@ import {
   TrackOccupancyCanvas,
   TrackOccupancyManchette,
   WaypointComponent,
-  type HoveredItem,
-  type OccupancyZone,
   type SplitPoint,
   type Track,
 } from '@osrd-project/ui-charts';
@@ -14,18 +12,20 @@ import { keyBy, sortBy } from 'lodash';
 
 import type { CategoryColors } from 'applications/operationalStudies/types';
 import { Spinner } from 'common/Loaders';
+import getPathStyleV2 from 'modules/simulationResult/helpers/getPathStyleV2';
 import type { TrainId } from 'reducers/osrdconf/types';
+import type { SelectedTrain } from 'reducers/simulationResults/types';
 import { extractTrainScheduleIdFromOccurrenceId, isOccurrenceId } from 'utils/trainId';
 
-import getPathStyle from './helpers/getPathStyle';
-import { parseOccupancyZonePathId, formatOccupancyZonePathId } from './helpers/zones';
+import type { PanelSelectionMode } from './CurveSelectionSidePanel';
+import type { MovableOccupancyZone } from './helpers/zones';
 
 type OccupancyZonesLayers = {
   waypointId: string;
   operationalPointId: string;
   operationalPointPosition: number;
   operationalPointName?: string;
-  zones?: OccupancyZone[];
+  zones?: MovableOccupancyZone[];
   tracks?: Track[];
   loading?: boolean;
 };
@@ -35,34 +35,47 @@ type Path = {
   label: string;
   points: { time: number; position: number }[];
   colors: CategoryColors;
+  isSimulated?: boolean;
 };
 
-export function buildSplitPoints(
-  occupancyZonesLayers: OccupancyZonesLayers[] | undefined,
-  paths: Path[],
-  hoveredItem: HoveredItem | null,
-  isDragging: boolean,
-  activeWaypointRef?: React.RefObject<HTMLDivElement | null>,
-  selectedTrainId?: TrainId,
-  onCloseOccupancyLayer?: (waypointId: string) => void,
-  handleWaypointClick?: (waypointId: string) => void,
-  activeWaypointId?: string,
-  hoveredTrainIdForChart?: TrainId,
-  hoveredTrainId?: TrainId,
-  isDraggingOccupancyZoneId?: (waypointId: string, trainId: TrainId) => boolean,
-  activeTrackId?: string,
-  onTrackDragOver?: (trackId: string | undefined) => void
-): SplitPoint[] {
+type BuildSplitPointsProps = {
+  occupancyZonesLayers: OccupancyZonesLayers[] | undefined;
+  paths: Path[];
+  activeWaypointRef?: React.RefObject<HTMLDivElement | null>;
+  selectedTrain?: SelectedTrain;
+  panelMode?: PanelSelectionMode;
+  onCloseOccupancyLayer?: (waypointId: string) => void;
+  handleWaypointClick?: (waypointId: string) => void;
+  activeWaypointId?: string;
+  hoveredTrainIdForChart?: TrainId;
+  isDraggingOccupancyZoneId?: (waypointId: string, trainId: TrainId) => boolean;
+  activeTrackId?: string;
+  onTrackDragOver?: (trackId: string | undefined) => void;
+};
+
+export function buildSplitPoints({
+  occupancyZonesLayers,
+  paths,
+  activeWaypointRef,
+  selectedTrain,
+  panelMode,
+  onCloseOccupancyLayer,
+  handleWaypointClick,
+  activeWaypointId,
+  hoveredTrainIdForChart,
+  isDraggingOccupancyZoneId,
+  activeTrackId,
+  onTrackDragOver,
+}: BuildSplitPointsProps): SplitPoint[] {
   if (!occupancyZonesLayers?.length) return [];
 
   const pathsById = keyBy(paths, ({ id }) => id);
 
-  const countZonesByTrainScheduleId = (zones: OccupancyZone[] = []) => {
+  const countZonesByTrainScheduleId = (zones: MovableOccupancyZone[] = []) => {
     const counts = new Map<TrainId, Map<string, number>>();
     for (const zone of zones) {
-      const { trainId } = parseOccupancyZonePathId(zone.pathId);
-      if (isOccurrenceId(trainId)) {
-        const trainScheduleId = extractTrainScheduleIdFromOccurrenceId(trainId);
+      if (isOccurrenceId(zone.trainId)) {
+        const trainScheduleId = extractTrainScheduleIdFromOccurrenceId(zone.trainId);
         const trainScheduleIdCounts = counts.get(trainScheduleId) ?? new Map();
         trainScheduleIdCounts.set(zone.trackId, (trainScheduleIdCounts.get(zone.trackId) ?? 0) + 1);
         counts.set(trainScheduleId, trainScheduleIdCounts);
@@ -84,35 +97,50 @@ export function buildSplitPoints(
       tracks,
       loading,
     }) => {
-      const occupancyZones = (zones || []).map((zone) => {
-        const baseZones = zones ?? [];
-        const zonesCountByTrainScheduleId = countZonesByTrainScheduleId(baseZones);
-        const { trainId } = parseOccupancyZonePathId(zone.pathId);
+      const baseZones = zones ?? [];
+      const zonesCountByTrainScheduleId = countZonesByTrainScheduleId(baseZones);
 
-        const isHovered = hoveredTrainIdForChart === trainId;
-        const isSelected = selectedTrainId === trainId;
+      const occupancyZones = baseZones.flatMap((zone) => {
+        const isHovered = hoveredTrainIdForChart === zone.trainId;
         let totalOccurrencesOnTrack = 0;
-        if (isOccurrenceId(trainId)) {
-          const trainScheduleId = extractTrainScheduleIdFromOccurrenceId(trainId);
+        if (isOccurrenceId(zone.trainId)) {
+          const trainScheduleId = extractTrainScheduleIdFromOccurrenceId(zone.trainId);
           totalOccurrencesOnTrack =
             zonesCountByTrainScheduleId.get(trainScheduleId)?.get(zone.trackId) ?? 0;
         }
-        const path = pathsById[trainId];
-        if (!path) return zone;
-        const style = getPathStyle(hoveredItem, path, isDragging, selectedTrainId, hoveredTrainId);
-        return {
-          ...zone,
-          trailingText:
-            isHovered && totalOccurrencesOnTrack > 1
-              ? `+${Math.max(0, totalOccurrencesOnTrack - 1)}`
+
+        const path = pathsById[zone.trainId];
+        // No matching curve on the STD (e.g. a disabled occurrence): skip this zone instead of
+        // showing it in the TOD without a curveStyle.
+        if (!path) return [];
+
+        const curveStyle = getPathStyleV2(
+          {
+            chart: 'tod',
+            train: { id: zone.trainId, exceptionType: zone.exceptionType },
+            selection: selectedTrain,
+            panelMode,
+            hover: hoveredTrainIdForChart
+              ? {
+                  trainId: hoveredTrainIdForChart,
+                  from: 'tod',
+                  exceptionType: zone.exceptionType,
+                }
               : undefined,
-          curveStyle: {
-            ...zone.curveStyle,
-            color: style.color,
-            width: isSelected || isHovered ? 2 : undefined,
-            opacity: 1,
           },
-        };
+          { colors: path.colors, isSimulated: path.isSimulated }
+        );
+
+        return [
+          {
+            ...zone,
+            trailingText:
+              isHovered && totalOccurrencesOnTrack > 1
+                ? `+${Math.max(0, totalOccurrencesOnTrack - 1)}`
+                : undefined,
+            curveStyle,
+          },
+        ];
       });
 
       const waypoint = {
@@ -127,16 +155,11 @@ export function buildSplitPoints(
         onClick: handleWaypointClick,
       };
 
-      const selectedPathId = selectedTrainId
-        ? formatOccupancyZonePathId({ waypointId, trainId: selectedTrainId })
-        : undefined;
-
-      const isDraggingOccupancyZone = (zone: OccupancyZone) => {
+      const isDraggingOccupancyZone = (zone: MovableOccupancyZone) => {
         if (!isDraggingOccupancyZoneId) {
           return false;
         }
-        const { trainId } = parseOccupancyZonePathId(zone.pathId);
-        return isDraggingOccupancyZoneId(waypointId, trainId);
+        return isDraggingOccupancyZoneId(waypointId, zone.trainId);
       };
 
       return {
@@ -149,7 +172,6 @@ export function buildSplitPoints(
             tracks={tracks || []}
             occupancyZones={occupancyZones.filter((zone) => !isDraggingOccupancyZone(zone))}
             draggingOccupancyZones={occupancyZones.filter(isDraggingOccupancyZone)}
-            selectedPathId={selectedPathId}
             onClose={() => onCloseOccupancyLayer?.(waypointId)}
             onDragOver={onTrackDragOver}
             topPadding={BASE_WAYPOINT_HEIGHT}

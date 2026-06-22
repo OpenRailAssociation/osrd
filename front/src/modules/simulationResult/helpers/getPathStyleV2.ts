@@ -16,7 +16,7 @@ const getPathStyleV2 = (
   // the rest out to put the focus on the click target.
   const outOfSelection =
     state === 'none' && !!input.selection && input.selection.by !== 'timetable';
-  return getCurveStyle(state, train, { hovered, outOfSelection });
+  return getCurveStyle(state, train, { hovered, outOfSelection, chart: input.chart });
 };
 
 export default getPathStyleV2;

@@ -5,6 +5,7 @@ import { useSubCategoryContext } from 'common/SubCategoryContext';
 import isMainCategory from 'modules/rollingStock/helpers/category';
 
 import { DEFAULT_TRAIN_PATH_COLORS, TRAIN_MAIN_CATEGORY_PATH_COLORS } from '../consts';
+import getSubCategoryColors from '../helpers/getSubCategoryColors';
 import type { CategoryColors } from '../types';
 
 const useCategoryColors = (category: TrainCategory | null | undefined) => {
@@ -21,11 +22,7 @@ const useCategoryColors = (category: TrainCategory | null | undefined) => {
     }
 
     if (category && !isMainCategory(category) && currentSubCategory) {
-      return {
-        base: currentSubCategory.color || DEFAULT_TRAIN_PATH_COLORS.base,
-        strong: currentSubCategory.hovered_color || DEFAULT_TRAIN_PATH_COLORS.strong,
-        surface: currentSubCategory.background_color || DEFAULT_TRAIN_PATH_COLORS.surface,
-      };
+      return getSubCategoryColors(currentSubCategory);
     }
 
     return DEFAULT_TRAIN_PATH_COLORS;

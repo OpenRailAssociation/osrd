@@ -4,6 +4,7 @@ import {
   DEFAULT_TRAIN_PATH_COLORS,
   TRAIN_MAIN_CATEGORY_PATH_COLORS,
 } from 'applications/operationalStudies/consts';
+import getSubCategoryColors from 'applications/operationalStudies/helpers/getSubCategoryColors';
 import type { CategoryColors } from 'applications/operationalStudies/types';
 import type { SubCategory } from 'common/api/osrdEditoastApi';
 import isMainCategory from 'modules/rollingStock/helpers/category';
@@ -59,11 +60,7 @@ const formatSpaceTimeCurves = (
           (option) => option.code === category.sub_category_code
         );
         if (currentSubCategory) {
-          colors = {
-            base: currentSubCategory.color,
-            strong: currentSubCategory.hovered_color,
-            surface: currentSubCategory.background_color,
-          };
+          colors = getSubCategoryColors(currentSubCategory);
         }
       }
     }

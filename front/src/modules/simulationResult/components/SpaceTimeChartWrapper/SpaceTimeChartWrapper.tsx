@@ -18,8 +18,8 @@ import {
   isPointPickingElement,
   isInteractiveWaypoint,
   isOccupancyPickingElement,
-  type Track,
   type OccupancyZone,
+  type Track,
 } from '@osrd-project/ui-charts';
 import { Slider } from '@osrd-project/ui-core';
 import cx from 'classnames';
@@ -82,6 +82,7 @@ import { getOccupancyBlocks } from './helpers/utils';
 import {
   parseOccupancyZonePathId,
   formatOccupancyZonePathId,
+  type MovableOccupancyZone,
   type OccupancyZoneReference,
 } from './helpers/zones';
 import ProjectionLoadingMessage from './ProjectionLoadingMessage';
@@ -100,7 +101,7 @@ type SpaceTimeChartWrapperBaseProps = {
     operationalPointId: string;
     operationalPointPosition: number;
     operationalPointName?: string;
-    zones?: OccupancyZone[];
+    zones?: MovableOccupancyZone[];
     tracks?: Track[];
     loading?: boolean;
   }[];
@@ -368,35 +369,31 @@ const SpaceTimeChartWrapper = ({
 
   const splitPoints = useMemo<SplitPoint[]>(
     () =>
-      buildSplitPoints(
-        trackOccupancyDiagramsData,
+      buildSplitPoints({
+        occupancyZonesLayers: trackOccupancyDiagramsData,
         paths,
-        hoveredItem,
-        !!draggingState,
         activeWaypointRef,
-        selectedTrainId,
+        selectedTrain: selection,
+        panelMode: panelSelectionMode,
         onCloseOccupancyLayer,
         handleWaypointClick,
         activeWaypointId,
         hoveredTrainIdForChart,
-        hoveredTrainId,
         isDraggingOccupancyZoneId,
-        dragOverTrackId,
-        setDragOverTrackId
-      ),
+        activeTrackId: dragOverTrackId,
+        onTrackDragOver: setDragOverTrackId,
+      }),
     [
       trackOccupancyDiagramsData,
       paths,
-      hoveredItem,
-      draggingState,
       subCategories,
       trainSchedulesWithDetails,
-      selectedTrainId,
+      selection,
+      panelSelectionMode,
       onCloseOccupancyLayer,
       handleWaypointClick,
       activeWaypointRef,
       hoveredTrainIdForChart,
-      hoveredTrainId,
       isDraggingOccupancyZoneId,
       dragOverTrackId,
       setDragOverTrackId,
@@ -565,6 +562,8 @@ const SpaceTimeChartWrapper = ({
 
   const handlePanelModeChange = (mode: PanelSelectionMode) => {
     setPanelSelectionMode(mode);
+
+    const by = selectedTrainBy === 'tod' ? 'tod' : 'std';
     if (mode === 'single') {
       const singleId =
         lastClickedOccurrenceId ??
@@ -572,55 +571,61 @@ const SpaceTimeChartWrapper = ({
           ? getFirstActiveOccurrenceId(selectedTrain, selectedTrainScheduleId)
           : undefined);
       if (singleId) {
-        dispatch(updateSelectedTrain({ id: singleId, by: 'std' }));
+        dispatch(updateSelectedTrain({ id: singleId, by }));
       }
       return;
     }
     if (selectedTrainScheduleId) {
-      dispatch(updateSelectedTrain({ id: selectedTrainScheduleId, by: 'std' }));
+      dispatch(updateSelectedTrain({ id: selectedTrainScheduleId, by }));
     }
   };
 
+  const commitSelection = (id: TrainId, by: 'std' | 'tod', panelMode: PanelSelectionMode) => {
+    if (selectedTrainId === id && selectedTrainBy === by) return;
+    if (isOccurrenceId(id)) setLastClickedOccurrenceId(id);
+    setPanelSelectionMode(panelMode);
+    dispatch(updateSelectedTrain({ id, by }));
+  };
+
   const handleClick: SpaceTimeChartProps['onClick'] = ({ event }) => {
+    if (draggingState) return;
+
+    const element = hoveredItem?.element;
+
     if (
-      !draggingState &&
-      selectedTrainId &&
-      (!hoveredItem ||
-        (!isSegmentPickingElement(hoveredItem.element) &&
-          !isPointPickingElement(hoveredItem.element)))
+      !element ||
+      (!isSegmentPickingElement(element) &&
+        !isPointPickingElement(element) &&
+        !isOccupancyPickingElement(element))
     ) {
-      dispatch(updateSelectedTrain({ id: selectedTrainId, by: 'timetable' }));
+      // Click outside any train → deselect (return to timetable selection).
+      if (selectedTrainId) dispatch(updateSelectedTrain({ id: selectedTrainId, by: 'timetable' }));
       return;
     }
-    if (
-      !draggingState &&
-      hoveredItem &&
-      (isSegmentPickingElement(hoveredItem.element) || isPointPickingElement(hoveredItem.element))
-    ) {
-      const clickedTrainId = hoveredItem.element.pathId;
+
+    // click on any STD curve
+    if (isSegmentPickingElement(element) || isPointPickingElement(element)) {
+      const clickedTrainId = element.pathId;
       if (isTrainId(clickedTrainId)) {
-        const { exception: clickedException } = findTrainScheduleAndException(
+        const { exception } = findTrainScheduleAndException(
           trainSchedulesWithDetails ?? [],
           clickedTrainId
         );
-        const isStartTimeException = !!clickedException?.start_time;
-
         // By default selecting an occurrence selects its whole paced train; alt-click (or
         // clicking a start_time exception) isolates the single occurrence.
-        const idToDispatch =
-          !event.altKey && !isStartTimeException
-            ? extractTrainScheduleIdFromTrainId(clickedTrainId)
-            : clickedTrainId;
-
+        const isolate = event.altKey || !!exception?.start_time;
+        const id = isolate ? clickedTrainId : extractTrainScheduleIdFromTrainId(clickedTrainId);
         setLastClickedOccurrenceId(isOccurrenceId(clickedTrainId) ? clickedTrainId : undefined);
-
-        if (selectedTrainId !== idToDispatch || selectedTrainBy !== 'std') {
-          // idToDispatch is an occurrence only on alt-click or a start_time exception:
-          // isolate it in the panel.
-          setPanelSelectionMode(isOccurrenceId(idToDispatch) ? 'single' : 'compliant');
-          dispatch(updateSelectedTrain({ id: idToDispatch, by: 'std' }));
-        }
+        commitSelection(id, 'std', isOccurrenceId(id) ? 'single' : 'compliant');
       }
+      return;
+    }
+
+    // Click on a TOD occupancy zone.
+    if (isOccupancyPickingElement(element)) {
+      const { trainId } = parseOccupancyZonePathId(element.pathId);
+      const { exception } = findTrainScheduleAndException(trainSchedulesWithDetails ?? [], trainId);
+      commitSelection(trainId, 'tod', exception?.path_and_schedule ? 'single' : 'compliant');
     }
   };
 
