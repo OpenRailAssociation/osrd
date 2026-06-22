@@ -1,34 +1,30 @@
-.ui-input-modal-overlay {
+.input-modal {
+  background-color: var(--color-white-100);
+  border-radius: 0.5rem;
+  box-shadow:
+    0px 1px 0px rgba(255, 255, 255, 1) inset,
+    0px 4px 7px -3px rgba(24, 68, 239, 0.19),
+    0px 1px 3px rgba(49, 46, 43, 0.2);
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 1000;
+  width: fit-content;
+  transform: translateX(-50%);
 
-  .modal-content {
-    background-color: var(--color-white-100);
-    border-radius: 0.5rem;
-    box-shadow:
-      0px 1px 0px rgba(255, 255, 255, 1) inset,
-      0px 4px 7px -3px rgba(24, 68, 239, 0.19),
-      0px 1px 3px rgba(49, 46, 43, 0.2);
+  &::backdrop {
+    background-color: transparent;
+  }
+
+  .close-button {
     position: absolute;
-    width: fit-content;
+    top: 16px;
+    right: 16px;
+    color: var(--color-grey-50);
 
-    .close-button {
-      position: absolute;
-      top: 16px;
-      right: 16px;
-      color: var(--color-grey-50);
+    &:hover {
+      color: var(--color-grey-90);
+    }
 
-      &:hover {
-        color: var(--color-grey-90);
-      }
-
-      &:active {
-        color: var(--color-grey-20);
-      }
+    &:active {
+      color: var(--color-grey-20);
     }
   }
 }

@@ -10,10 +10,6 @@ import useCalendarPicker from './useCalendarPicker';
 export type CalendarPickerPrivateProps = {
   selectedSlot?: CalendarSlot;
   onDayClick: (day: Date) => void;
-  modalPosition: {
-    top: number;
-    left: number;
-  };
   calendarPickerRef: React.RefObject<HTMLDivElement | null>;
   selectableSlot?: CalendarSlot;
 };
@@ -31,7 +27,6 @@ const CalendarPicker = ({
   selectableSlot,
   numberOfMonths = 1,
   onDayClick,
-  modalPosition,
   calendarPickerRef,
 }: CalendarPickerProps) => {
   const {
@@ -49,7 +44,7 @@ const CalendarPicker = ({
   });
 
   return (
-    <div ref={calendarPickerRef} className="calendar-picker" style={modalPosition}>
+    <div ref={calendarPickerRef} className="calendar-picker">
       {showNavigationBtn && (
         <span
           className={cx('calendar-navigation-btn', 'previous', {
