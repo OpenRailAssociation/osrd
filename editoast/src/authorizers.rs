@@ -209,6 +209,41 @@ macro_rules! impossible {
 }
 pub(crate) use impossible;
 
+use crate::views::AuthorizationError;
+use crate::views::AuthorizerError;
+
+/// Ensures the issuer holds a privilege satisfying `required`.
+/// `protected` is an operation yielding the set of privileges the issuer holds on a resource.
+/// Access is granted when the operation is authorized and the issuer holds a privilege equal to `required`.
+pub async fn require<T, I, U>(
+    authorizer: &U,
+    protected: Protected<I>,
+    required: &T,
+) -> Result<(), AuthorizationError>
+where
+    T: PartialEq,
+    I: IntoIterator<Item = T>,
+    U: Authorizer<Error = Error>,
+{
+    let access = authorizer.authorize(protected).await.map_err(|e| match e {
+        Error::Database(error) => {
+            AuthorizationError::AuthError(AuthorizerError::Storage(error.into()))
+        }
+        Error::OpenFga(error) => error.into(),
+    })?;
+    let Ok(privileges) = access.access().await? else {
+        return Err(AuthorizationError::Forbidden);
+    };
+    if privileges
+        .into_iter()
+        .any(|privilege| privilege == *required)
+    {
+        Ok(())
+    } else {
+        Err(AuthorizationError::Forbidden)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use authz::InfraGrant;
