@@ -1,6 +1,6 @@
-import { waitFor } from '@testing-library/react';
+import { cleanup, waitFor } from '@testing-library/react';
 import { renderHookWithStore } from 'store/__tests__';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, afterEach, describe, expect, it, vi } from 'vitest';
 
 import { mockOsrdEditoastEndpoints } from 'common/api/__mocks__/osrdEditoastApi';
 import type {
@@ -162,6 +162,10 @@ describe('useSimulationResults', () => {
     getTrainSimulation.mockResolvedValue({ data: simulationSuccess });
     getRollingStockNameByRollingStockName.mockResolvedValue({ data: rollingStock });
     postInfraByInfraIdPathProperties.mockResolvedValue({ data: rawPathProperties });
+  });
+
+  afterEach(() => {
+    cleanup();
   });
 
   describe('when no train can be resolved', () => {
