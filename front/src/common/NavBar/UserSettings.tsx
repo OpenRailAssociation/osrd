@@ -56,7 +56,8 @@ const UserSettings = () => {
     if (!impersonatedUser) getUserList(inputValue);
   }, [inputValue, impersonatedUser]);
 
-  const userComboBoxDefaultProps = useDefaultComboBox(userList, (subject) => subject.name);
+  const getSubjectName = useCallback((subject: SearchResultItemUser) => subject.name, []);
+  const userComboBoxDefaultProps = useDefaultComboBox(userList, getSubjectName);
 
   const handleSubjectSelection = useCallback(
     (subject: SearchResultItemUser | undefined) => {

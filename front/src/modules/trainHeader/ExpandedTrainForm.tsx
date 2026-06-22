@@ -193,10 +193,10 @@ const ExpandedTrainForm = ({
 
   const { filteredRollingStockList: rollingStocks } = useFilterRollingStock();
 
-  const getRollingStockLabel = (rs: LightRollingStockWithLiveries) => {
+  const getRollingStockLabel = useCallback((rs: LightRollingStockWithLiveries) => {
     const secondPart = rs.metadata?.series || rs.metadata?.reference || '';
     return secondPart ? `${rs.name} - ${secondPart}` : rs.name;
-  };
+  }, []);
 
   const {
     suggestions: rollingStockSuggestions,
