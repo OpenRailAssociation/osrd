@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import {
   ComboBox,
@@ -62,10 +62,10 @@ const ItineraryModalFormHeader = ({
   const { rollingStock } = useStoreDataForRollingStockSelector({
     rollingStockId: modalFormState.rollingStockId,
   });
-  const getRollingStockLabel = (rs: LightRollingStockWithLiveries) => {
+  const getRollingStockLabel = useCallback((rs: LightRollingStockWithLiveries) => {
     const secondPart = rs.metadata?.series || rs.metadata?.reference || '';
     return secondPart ? `${rs.name} - ${secondPart}` : rs.name;
-  };
+  }, []);
 
   const { filteredRollingStockList: fullRollingStockList } = useFilterRollingStock();
 

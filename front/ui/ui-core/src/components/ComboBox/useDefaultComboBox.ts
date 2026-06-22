@@ -38,8 +38,7 @@ const useDefaultComboBox = <T>(suggestions: T[], getSuggestionLabel: (suggestion
 
   const filteredSuggestions = useMemo(
     () => defaultFilterSuggestions(getSuggestionLabel, suggestions, query),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [suggestions, query]
+    [suggestions, query, getSuggestionLabel]
   );
 
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {

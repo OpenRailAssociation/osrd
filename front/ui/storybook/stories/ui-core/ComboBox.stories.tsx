@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 
 import { ComboBox, useDefaultComboBox } from '@osrd-project/ui-core';
 import type { Meta, StoryObj } from '@storybook/react-vite';
@@ -28,7 +28,7 @@ const useComboBoxStory = (initialSuggestions: Suggestion[]) => {
   const [allSuggestions, setAllSuggestions] = useState<Suggestion[]>(initialSuggestions);
   const [value, setValue] = useState<Suggestion>();
 
-  const getSuggestionLabel = (suggestion: Suggestion) => suggestion.label;
+  const getSuggestionLabel = useCallback((suggestion: Suggestion) => suggestion.label, []);
   const comboBoxDefaultProps = useDefaultComboBox(allSuggestions, getSuggestionLabel);
 
   const onAddCustomValue = (customLabel: string) => {

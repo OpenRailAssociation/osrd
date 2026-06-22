@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
 import { Input, ComboBox, useDefaultComboBox, Select } from '@osrd-project/ui-core';
 import { skipToken } from '@reduxjs/toolkit/query';
@@ -151,15 +151,16 @@ const StdcmConsist = ({
     isDebugMode,
   });
 
-  const getLabel = (rs: LightRollingStockWithLiveries) => {
+  const getLabel = useCallback((rs: LightRollingStockWithLiveries) => {
     const secondPart = rs.metadata?.series || rs.metadata?.reference || '';
     return secondPart ? `${rs.name} - ${secondPart}` : rs.name;
-  };
+  }, []);
 
   const rollingStockComboBoxDefaultProps = useDefaultComboBox(rollingStocks, getLabel);
+  const getTowedRollingStockName = useCallback((trs: TowedRollingStock) => trs.name, []);
   const towedRollingStockComboBoxDefaultProps = useDefaultComboBox(
     towedRollingStocks,
-    (trs: TowedRollingStock) => trs.name
+    getTowedRollingStockName
   );
 
   const handleRollingStockSelect = (option?: LightRollingStockWithLiveries) => {
