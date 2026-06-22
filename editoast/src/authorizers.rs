@@ -280,6 +280,7 @@ mod tests {
     use authz::InfraPrivilege;
     use authz::Role;
     use authz::RollingStockGrant;
+    use authz::RollingStockPrivilege;
     use authz::v2::Actor;
     use authz::v2::Check;
     use authz::v2::Protected;
@@ -436,6 +437,48 @@ mod tests {
         assert_eq!(authorize(&user_authorizer, check).await, Err(check));
     }
 
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn existing_rolling_stock() {
+        let openfga = openfga().await;
+        let pool = DbConnectionPoolV2::for_tests();
+        let user = create_user(&pool, "user").await;
+        let rolling_stock = authz::RollingStock(
+            create_fast_rolling_stock(&mut pool.get_ok(), "rolling_stock")
+                .await
+                .id,
+        );
+        let system = SystemAuthorizer {
+            openfga: &openfga,
+            conn: pool.get_ok(),
+        };
+        let user_authorizer = UserAuthorizer::new(user, vec![Role::Admin], &openfga, pool.get_ok());
+
+        assert_eq!(
+            authorize(&system, Check::RollingStockExists(rolling_stock)).await,
+            Ok(())
+        );
+        assert_eq!(
+            authorize(&user_authorizer, Check::RollingStockExists(rolling_stock)).await,
+            Ok(())
+        );
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn missing_rolling_stock() {
+        let openfga = openfga().await;
+        let pool = DbConnectionPoolV2::for_tests();
+        let user = create_user(&pool, "user").await;
+        let system = SystemAuthorizer {
+            openfga: &openfga,
+            conn: pool.get_ok(),
+        };
+        let user_authorizer = UserAuthorizer::new(user, vec![Role::Admin], &openfga, pool.get_ok());
+
+        let check = Check::RollingStockExists(authz::RollingStock(i64::MAX));
+        assert_eq!(authorize(&system, check).await, Err(check));
+        assert_eq!(authorize(&user_authorizer, check).await, Err(check));
+    }
+
     #[rstest]
     #[case::has_role(Check::HasRole(Actor::Issuer, Role::Admin))]
     #[case::has_infra_privilege(Check::HasInfraPrivilege(
@@ -540,35 +583,36 @@ mod tests {
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn user_authorizer_subject_effective_rolling_stock_grant_is_not() {
+    async fn user_authorizer_issuer_rolling_stock_privilege() {
         let openfga = openfga().await;
         let pool = DbConnectionPoolV2::for_tests();
-        let issuer = create_user(&pool, "issuer").await;
-        let target = create_user(&pool, "target").await;
+        let owner = create_user(&pool, "owner").await;
+        let no_grant = create_user(&pool, "no-grant").await;
         let rolling_stock = authz::RollingStock(
             create_fast_rolling_stock(&mut pool.get_ok(), "rolling_stock")
                 .await
                 .id,
         );
         openfga
-            .write_tuples(&[authz::RollingStock::owner().tuple(&target, &rolling_stock)])
+            .write_tuples(&[authz::RollingStock::owner().tuple(&owner, &rolling_stock)])
             .await
             .unwrap();
-        let user_authorizer = UserAuthorizer::new(issuer, vec![], &openfga, pool.get_ok());
 
-        let check = Check::SubjectEffectiveRollingStockGrantIsNot(
-            RollingStockGrant::Owner,
-            authz::Subject::User(target),
-            rolling_stock,
-        );
-        assert_eq!(authorize(&user_authorizer, check).await, Err(check));
-
-        let check = Check::SubjectEffectiveRollingStockGrantIsNot(
-            RollingStockGrant::Writer,
-            authz::Subject::User(target),
+        let user_authorizer = UserAuthorizer::new(owner, vec![], &openfga, pool.get_ok());
+        let check = Check::HasRollingStockPrivilege(
+            Actor::Issuer,
+            RollingStockPrivilege::CanDelete,
             rolling_stock,
         );
         assert_eq!(authorize(&user_authorizer, check).await, Ok(()));
+
+        let user_authorizer = UserAuthorizer::new(no_grant, vec![], &openfga, pool.get_ok());
+        let check = Check::HasRollingStockPrivilege(
+            Actor::Issuer,
+            RollingStockPrivilege::CanShareRead,
+            rolling_stock,
+        );
+        assert_eq!(authorize(&user_authorizer, check).await, Err(check));
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -712,6 +756,38 @@ mod tests {
             let expected = ok.then_some(()).ok_or(check);
             assert_eq!(result, expected);
         }
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn user_authorizer_user_rolling_stock_privilege() {
+        let openfga = openfga().await;
+        let pool = DbConnectionPoolV2::for_tests();
+        let issuer = create_user(&pool, "issuer").await;
+        let target = create_user(&pool, "target").await;
+        let rolling_stock = authz::RollingStock(
+            create_fast_rolling_stock(&mut pool.get_ok(), "rolling_stock")
+                .await
+                .id,
+        );
+        openfga
+            .write_tuples(&[authz::RollingStock::writer().tuple(&target, &rolling_stock)])
+            .await
+            .unwrap();
+        let user_authorizer = UserAuthorizer::new(issuer, vec![], &openfga, pool.get_ok());
+
+        let check = Check::HasRollingStockPrivilege(
+            Actor::User(target),
+            RollingStockPrivilege::CanWrite,
+            rolling_stock,
+        );
+        assert_eq!(authorize(&user_authorizer, check).await, Ok(()));
+
+        let check = Check::HasRollingStockPrivilege(
+            Actor::User(target),
+            RollingStockPrivilege::CanDelete,
+            rolling_stock,
+        );
+        assert_eq!(authorize(&user_authorizer, check).await, Err(check));
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
