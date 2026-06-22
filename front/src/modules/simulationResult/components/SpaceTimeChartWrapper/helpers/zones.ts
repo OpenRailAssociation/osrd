@@ -8,13 +8,14 @@ import type { TrainId } from 'reducers/osrdconf/types';
 import { Duration } from 'utils/duration';
 import { isTrainId } from 'utils/trainId';
 
-import type { BaseTrainProjection } from '../../../types';
+import type { BaseTrainProjection, CurveStyleExceptionType } from '../../../types';
 
-export type MovableOccupancyZone = OccupancyZone & {
+export type MovableOccupancyZone = Omit<OccupancyZone, 'curveStyle'> & {
+  curveStyle?: OccupancyZone['curveStyle'];
   dbStartTime: number;
   dbEndTime: number;
   trainId: TrainId;
-  isStartTimeException?: boolean;
+  exceptionType?: CurveStyleExceptionType;
 };
 
 export type OccupancyZoneReference = {
@@ -121,6 +122,14 @@ export function getMovableOccupancyZone(
     endDirection = 'down';
   }
 
+  let exceptionType: CurveStyleExceptionType | undefined;
+
+  if (exception?.path_and_schedule !== undefined) {
+    exceptionType = 'path_and_schedule';
+  } else if (exception?.start_time !== undefined) {
+    exceptionType = 'start_time';
+  }
+
   return {
     trackId,
     pathId: formatOccupancyZonePathId({ waypointId, trainId }),
@@ -132,6 +141,6 @@ export function getMovableOccupancyZone(
     trainName,
     dbStartTime: occupationStartTime,
     dbEndTime: occupationEndTime,
-    isStartTimeException: exception?.start_time !== undefined,
+    exceptionType,
   };
 }

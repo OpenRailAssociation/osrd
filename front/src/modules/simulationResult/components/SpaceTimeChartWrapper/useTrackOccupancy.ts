@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import type { OccupancyZone, Track } from '@osrd-project/ui-charts';
+import type { Track } from '@osrd-project/ui-charts';
 import type { TFunction } from 'i18next';
 import { forEach, fromPairs, isEmpty, isEqual, isFunction, keyBy, noop, uniqBy } from 'lodash';
 import { useTranslation } from 'react-i18next';
@@ -25,6 +25,7 @@ import { mapBy } from 'utils/types';
 
 import { usePrevious } from '../../../../utils/hooks/state';
 import type { BaseTrainProjection, PathOperationalPoint, TrainSpaceTimeData } from '../../types';
+import { EXCEPTION_SUFFIX } from './helpers/makeProjectedTrains';
 import { NO_TRACK_SPECIFIED_SYMBOL, sortTracks } from './helpers/sortTracks';
 import { batchFetchTrackOccupancy } from './helpers/utils';
 import { getMovableOccupancyZone, type MovableOccupancyZone } from './helpers/zones';
@@ -38,7 +39,7 @@ export type DeployedWaypoint = {
   operationalPointId: string;
   operationalPointPosition: number;
   operationalPointName?: string;
-  zones?: OccupancyZone[];
+  zones?: MovableOccupancyZone[];
   tracks?: Track[];
   loading?: boolean;
 };
@@ -266,7 +267,7 @@ const useTrackOccupancy = ({
                 trainScheduleId,
                 occupation.exception_id
               );
-              trainName = exception.train_name?.value ?? `${train.name}/+`;
+              trainName = (exception.train_name?.value ?? `${train.name}/+`) + EXCEPTION_SUFFIX;
               startTime = new Date(exception.start_time.value);
             } else {
               trainId = formatTrainScheduleIdToIndexedOccurrenceId(
@@ -275,6 +276,7 @@ const useTrackOccupancy = ({
               );
               trainName =
                 exception?.train_name?.value ?? computeOccurrenceName(train.name, occupation.index);
+              if (exception) trainName += EXCEPTION_SUFFIX;
 
               startTime = exception?.start_time
                 ? new Date(exception.start_time.value)
@@ -486,7 +488,7 @@ const useTrackOccupancy = ({
             if (
               isOccurrenceId(zone.trainId) &&
               extractTrainScheduleIdFromOccurrenceId(zone.trainId) === draggedTrainScheduleId &&
-              !zone.isStartTimeException
+              zone.exceptionType !== 'start_time'
             ) {
               impactedPathOperationalPointIDs.add(waypointId);
               const offset = newTrainData.departureTime.getTime() - initialDepartureTime.getTime();
