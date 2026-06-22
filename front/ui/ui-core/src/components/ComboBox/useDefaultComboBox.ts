@@ -1,32 +1,41 @@
 import { useMemo, useState } from 'react';
 
-const normalizeString = (str: string) => str.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+/**
+ * Removes the accents and lowercases the input.
+ */
+export const normalizeString = (str: string) =>
+  str
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase();
 
-const defaultFilterSuggestions = <T>(
-  getSuggestionLabel: (suggestion: T) => string,
-  suggestions: T[],
+/**
+ * Filter the options, keeping only the one that have a suggestion label that contain
+ * the query, and sorting them so the one that starts with the query come first.
+ */
+export const defaultFilterSuggestions = <T>(
+  labels: { label: string; suggestion: T }[],
   query: string
 ) => {
-  const input = normalizeString(query).trim().toLowerCase();
+  const input = normalizeString(query).trim();
   if (!input) {
-    return suggestions;
+    return labels.map(({ suggestion }) => suggestion);
   }
 
-  const getSuggestionScore = (suggestion: T) => {
-    const suggestionLabel = normalizeString(getSuggestionLabel(suggestion).toLowerCase());
-    if (suggestionLabel.startsWith(input)) {
+  const getSuggestionScore = (label: string) => {
+    if (label.startsWith(input)) {
       return 2;
     }
-    if (suggestionLabel.includes(input)) {
+    if (label.includes(input)) {
       return 1;
     }
     return 0;
   };
 
-  return suggestions
-    .map((suggestion) => ({
+  return labels
+    .map(({ label, suggestion }) => ({
       suggestion,
-      score: getSuggestionScore(suggestion),
+      score: getSuggestionScore(label),
     }))
     .filter(({ score }) => score > 0)
     .sort(({ score: scoreA }, { score: scoreB }) => scoreB - scoreA)
@@ -36,9 +45,18 @@ const defaultFilterSuggestions = <T>(
 const useDefaultComboBox = <T>(suggestions: T[], getSuggestionLabel: (suggestion: T) => string) => {
   const [query, setQuery] = useState('');
 
+  const labels = useMemo(
+    () =>
+      suggestions.map((suggestion: T) => ({
+        label: normalizeString(getSuggestionLabel(suggestion)),
+        suggestion,
+      })),
+    [suggestions, getSuggestionLabel]
+  );
+
   const filteredSuggestions = useMemo(
-    () => defaultFilterSuggestions(getSuggestionLabel, suggestions, query),
-    [suggestions, query, getSuggestionLabel]
+    () => defaultFilterSuggestions(labels, query),
+    [labels, query]
   );
 
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
