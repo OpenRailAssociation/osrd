@@ -19,36 +19,34 @@
     cursor: pointer;
   }
 
-  .ui-input-modal-overlay {
-    .tolerance-picker-section {
-      display: flex;
-      gap: 16px;
-      align-items: center;
+  .tolerance-picker-section {
+    display: flex;
+    gap: 16px;
+    align-items: center;
 
-      .tolerance-grid {
-        display: grid;
-        grid-template-columns: repeat(6, 1fr);
-        grid-template-areas:
-          'a1 a1 a1 a1 a1 a1'
-          'a2 a3 a4 a5 a6 a7'
-          'a8 a9 a10 a11 . .'
-          'a12 a13 a14 a15 . .'
-          'a16 a17 a18 a19 . .';
-        grid-auto-rows: 32px;
-        grid-gap: 10px;
-      }
+    .tolerance-grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      grid-template-areas:
+        'a1 a1 a1 a1 a1 a1'
+        'a2 a3 a4 a5 a6 a7'
+        'a8 a9 a10 a11 . .'
+        'a12 a13 a14 a15 . .'
+        'a16 a17 a18 a19 . .';
+      grid-auto-rows: 32px;
+      grid-gap: 10px;
+    }
 
-      .tolerance-grid.minus-tolerance {
-        direction: rtl;
-      }
+    .tolerance-grid.minus-tolerance {
+      direction: rtl;
+    }
 
-      .tolerance-grid.plus-tolerance {
-        direction: ltr;
-      }
+    .tolerance-grid.plus-tolerance {
+      direction: ltr;
     }
   }
 
-  .modal-content {
+  .input-modal {
     padding: 1.25rem;
   }
 
