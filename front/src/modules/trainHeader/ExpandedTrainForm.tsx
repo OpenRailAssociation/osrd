@@ -29,6 +29,7 @@ import useFilterRollingStock from 'modules/rollingStock/hooks/useFilterRollingSt
 import type { Train } from 'reducers/osrdconf/types';
 import { Duration } from 'utils/duration';
 import { usePrevious } from 'utils/hooks/state';
+import { kmhToMs } from 'utils/physics';
 import { findExceptionInPacedTrainByOccurenceId } from 'utils/trainExceptions';
 import { isOccurrenceId } from 'utils/trainId';
 import { createFixedSelectOptions, createStandardSelectOptions } from 'utils/uiCoreHelpers';
@@ -78,7 +79,7 @@ function computeInitialSpeedError(
   const floatInitialSpeed = Number.parseFloat(initialSpeed);
   if (!isFinite(floatInitialSpeed) || floatInitialSpeed < 0) return 'INVALID_NUMBER';
   if (Math.round(floatInitialSpeed * 10) / 10 !== floatInitialSpeed) return 'ROUNDING';
-  if (rollingStock && floatInitialSpeed > rollingStock?.max_speed) return 'TOO_HIGH';
+  if (rollingStock && kmhToMs(floatInitialSpeed) > rollingStock.max_speed) return 'TOO_HIGH';
   return null;
 }
 
