@@ -1,0 +1,41 @@
+name: Load built images
+description: >
+  On fork PRs the build jobs export their images as artifacts instead of
+  pushing them to the registry. This action downloads those artifacts and
+  `docker load`s them. On non-fork runs the images come from the registry,
+  so it is a no-op. The calling job must `actions/checkout` first (required
+  to resolve this local action) and pass the build job's `output_method`.
+inputs:
+  output-method:
+    description: >
+      The `output_method` output of any build-images job in this run
+      ('artifact' on fork PRs, 'registry' otherwise). It is identical across
+      all build jobs, so any one of them can be passed here.
+    required: true
+  artifact-pattern:
+    description: >
+      Glob matching the image artifacts to download, e.g.
+      "images-{core,editoast,osrdyne}". Passed to download-artifact's `pattern`.
+    required: true
+  tarballs:
+    description: >
+      Space-separated list of image tarballs to `docker load`, e.g.
+      "osrd-core.tar osrd-editoast.tar osrd-osrdyne.tar".
+    required: true
+runs:
+  using: composite
+  steps:
+    - name: Download built images
+      if: inputs.output-method == 'artifact'
+      uses: actions/download-artifact@v8
+      with:
+        pattern: ${{ inputs.artifact-pattern }}
+        merge-multiple: true
+        path: .
+    - name: Load built images
+      if: inputs.output-method == 'artifact'
+      shell: bash
+      run: |
+        for tarball in ${{ inputs.tarballs }}; do
+          docker load --input "./$tarball"
+        done

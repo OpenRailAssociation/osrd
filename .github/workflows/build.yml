@@ -720,35 +720,14 @@ jobs:
       - build-osrdyne
       # Note: we don't need the front-tests image for integration tests, as they only run backend tests.
     steps:
-      # TODO: check if we can deduplicate the base steps from integration_tests_quality
-      # https://www.jameskerr.blog/posts/sharing-steps-in-github-action-workflows/
       - name: Checkout
         uses: actions/checkout@v6
-      - name: Download built editoast image
-        if: needs.build-editoast.outputs.output_method == 'artifact'
-        uses: actions/download-artifact@v8
+      - name: Download and load built images
+        uses: ./.github/actions/load-built-images
         with:
-          name: images-editoast
-          path: .
-      - name: Download built core image
-        if: needs.build-core.outputs.output_method == 'artifact'
-        uses: actions/download-artifact@v8
-        with:
-          name: images-core
-          path: .
-      - name: Download built osrdyne image
-        if: needs.build-osrdyne.outputs.output_method == 'artifact'
-        uses: actions/download-artifact@v8
-        with:
-          name: images-osrdyne
-          path: .
-      - name: Load built images
-        if: needs.build-core.outputs.output_method == 'artifact' || needs.build-editoast.outputs.output_method == 'artifact' || needs.build-osrdyne.outputs.output_method == 'artifact'
-        run: |
-
-          docker load --input ./osrd-core.tar
-          docker load --input ./osrd-editoast.tar
-          docker load --input ./osrd-osrdyne.tar
+          output-method: ${{ needs.build-core.outputs.output_method }}
+          artifact-pattern: images-{core,editoast,osrdyne}
+          tarballs: osrd-core.tar osrd-editoast.tar osrd-osrdyne.tar
       - name: Set up 'uv'
         uses: astral-sh/setup-uv@v8.2.0
         with:
@@ -802,31 +781,12 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
-      - name: Download built editoast image
-        if: needs.build-editoast.outputs.output_method == 'artifact'
-        uses: actions/download-artifact@v8
+      - name: Download and load built images
+        uses: ./.github/actions/load-built-images
         with:
-          name: images-editoast
-          path: .
-      - name: Download built core image
-        if: needs.build-core.outputs.output_method == 'artifact'
-        uses: actions/download-artifact@v8
-        with:
-          name: images-core
-          path: .
-      - name: Download built osrdyne image
-        if: needs.build-osrdyne.outputs.output_method == 'artifact'
-        uses: actions/download-artifact@v8
-        with:
-          name: images-osrdyne
-          path: .
-      - name: Load built images
-        if: needs.build-core.outputs.output_method == 'artifact' || needs.build-editoast.outputs.output_method == 'artifact' || needs.build-osrdyne.outputs.output_method == 'artifact'
-        run: |
-          set +e
-          docker load --input ./osrd-core.tar
-          docker load --input ./osrd-editoast.tar
-          docker load --input ./osrd-osrdyne.tar
+          output-method: ${{ needs.build-core.outputs.output_method }}
+          artifact-pattern: images-{core,editoast,osrdyne}
+          tarballs: osrd-core.tar osrd-editoast.tar osrd-osrdyne.tar
       - name: Start the stack
         run: |
           export TAG='${{ needs.build-core.outputs.stable_version }}'
@@ -840,56 +800,26 @@ jobs:
 
   end_to_end_tests:
     runs-on: ubuntu-latest
-    name: End to end tests
+    name: End to end tests (shard ${{ matrix.shard }})
     needs:
       - build-core
       - build-editoast
       - build-osrdyne
       - build-gateway
       - build-front
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4]
     steps:
-      # TODO: check if we can deduplicate the base steps from integration_tests_quality
-      # https://www.jameskerr.blog/posts/sharing-steps-in-github-action-workflows/
       - name: Checkout
         uses: actions/checkout@v6
-      - name: Download built front-tests image
-        if: needs.build-front.outputs.output_method == 'artifact'
-        uses: actions/download-artifact@v8
+      - name: Download and load built images
+        uses: ./.github/actions/load-built-images
         with:
-          name: images-front
-          path: .
-      - name: Download built editoast image
-        if: needs.build-editoast.outputs.output_method == 'artifact'
-        uses: actions/download-artifact@v8
-        with:
-          name: images-editoast
-          path: .
-      - name: Download built core image
-        if: needs.build-core.outputs.output_method == 'artifact'
-        uses: actions/download-artifact@v8
-        with:
-          name: images-core
-          path: .
-      - name: Download built gateway-front image
-        if: needs.build-gateway.outputs.output_method == 'artifact'
-        uses: actions/download-artifact@v8
-        with:
-          name: images-gateway
-          path: .
-      - name: Download built osrdyne image
-        if: needs.build-osrdyne.outputs.output_method == 'artifact'
-        uses: actions/download-artifact@v8
-        with:
-          name: images-osrdyne
-          path: .
-      - name: Load built images
-        if: needs.build-front.outputs.output_method == 'artifact' || needs.build-editoast.outputs.output_method == 'artifact' || needs.build-core.outputs.output_method == 'artifact' || needs.build-gateway.outputs.output_method == 'artifact' || needs.build-osrdyne.outputs.output_method == 'artifact'
-        run: |
-          docker load --input ./osrd-front-tests.tar
-          docker load --input ./osrd-editoast.tar
-          docker load --input ./osrd-core.tar
-          docker load --input ./osrd-gateway-front.tar
-          docker load --input ./osrd-osrdyne.tar
+          output-method: ${{ needs.build-core.outputs.output_method }}
+          artifact-pattern: images-{front,editoast,core,gateway,osrdyne}
+          tarballs: osrd-front-tests.tar osrd-editoast.tar osrd-core.tar osrd-gateway-front.tar osrd-osrdyne.tar
 
       - name: Detect Playwright version
         id: detect_playwright_version
@@ -939,19 +869,34 @@ jobs:
             echo "Running Playwright tests on Chromium only"
           fi
               # Run Playwright tests
+          # Each shard runs a disjoint subset of the tests and emits a blob
+          # report, which is merged back together in end_to_end_tests_report.
+          mkdir -p front/blob-report
           docker run --init --name=playwright-test --net=host \
             -e CI=true \
             -e PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 \
             --ipc=host \
             -v "$PWD/front/test-results:/app/front/test-results" \
-            osrd-playwright:latest npx playwright test $TEST_PROJECT
+            -v "$PWD/front/blob-report:/app/front/blob-report" \
+            osrd-playwright:latest \
+            npx playwright test $TEST_PROJECT \
+              --shard=${{ matrix.shard }}/${{ strategy.job-total }} \
+              --reporter=blob
           exit $(docker wait playwright-test)
+
+      - name: Upload blob report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: blob-report-${{ matrix.shard }}
+          path: front/blob-report
+          retention-days: 1
 
       - name: Upload media artifact
         if: always()
         uses: actions/upload-artifact@v7
         with:
-          name: playwright-media
+          name: playwright-media-${{ matrix.shard }}
           path: |
             front/test-results/**/video.webm
             front/test-results/**/*.png
@@ -961,26 +906,9 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v7
         with:
-          name: playwright-traces
+          name: playwright-traces-${{ matrix.shard }}
           path: front/test-results/**/trace.zip
           retention-days: 30
-
-      - name: Generate GitHub Summary
-        if: always()
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITHUB_REPOSITORY: ${{ github.repository }}
-          GITHUB_RUN_ID: ${{ github.run_id }}
-        run: |
-          set -eo pipefail
-          docker run --init --name=build-report --net=host \
-            --ipc=host \
-            -e GITHUB_TOKEN="$GITHUB_TOKEN" \
-            -e GITHUB_REPOSITORY="$GITHUB_REPOSITORY" \
-            -e GITHUB_RUN_ID="$GITHUB_RUN_ID" \
-            -v "$PWD/front/test-results:/app/front/test-results" \
-            osrd-playwright:latest npx tsx /app/front/tests/reporter/generate-github-summary.ts /app/front/test-results/personalized-report.json /app/front/test-results/summary.md
-          cat front/test-results/summary.md >> $GITHUB_STEP_SUMMARY
 
       - name: Save container logs
         run: docker compose logs > container-logs
@@ -989,9 +917,74 @@ jobs:
       - uses: actions/upload-artifact@v7
         if: always()
         with:
-          name: e2e-container-logs
+          name: e2e-container-logs-${{ matrix.shard }}
           path: container-logs
           retention-days: 30
+
+  end_to_end_tests_report:
+    runs-on: ubuntu-latest
+    name: End to end tests report
+    if: always()
+    needs:
+      - build-front
+      - end_to_end_tests
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Download and load built images
+        uses: ./.github/actions/load-built-images
+        with:
+          output-method: ${{ needs.build-front.outputs.output_method }}
+          artifact-pattern: images-front
+          tarballs: osrd-front-tests.tar
+
+      - name: Detect Playwright version
+        id: detect_playwright_version
+        run: |
+          PLAYWRIGHT_VERSION=$(cd front && npm list --package-lock-only --pattern playwright --json | jq -r '.dependencies["@playwright/test"].version' | sort -u)
+          if [ "$(echo "$PLAYWRIGHT_VERSION" | wc -l)" -ne 1 ]; then
+              echo "Error: Zero or multiple playwright versions found: $PLAYWRIGHT_VERSION" >&2
+              exit 1
+          fi
+          echo "Detected Playwright version: $PLAYWRIGHT_VERSION"
+          echo "PLAYWRIGHT_VERSION=$PLAYWRIGHT_VERSION" >> $GITHUB_ENV
+
+      - name: Build Playwright container
+        run: |
+          docker build --build-arg PLAYWRIGHT_VERSION=v$PLAYWRIGHT_VERSION \
+            --build-arg FRONT_TESTS_IMAGE=${{ fromJSON(needs.build-front.outputs.stable_tags).front-tests }} \
+            -t osrd-playwright:latest \
+            - <docker/Dockerfile.playwright-ci
+
+      - name: Download blob reports from all shards
+        uses: actions/download-artifact@v8
+        with:
+          pattern: blob-report-*
+          path: front/all-blob-reports
+          merge-multiple: true
+
+      - name: Merge reports and generate GitHub Summary
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_RUN_ID: ${{ github.run_id }}
+        run: |
+          set -eo pipefail
+          # Replay the merged blob reports through the custom personalized
+          # reporter to rebuild personalized-report.json, then feed it to the
+          # existing GitHub summary generator.
+          docker run --init --name=merge-report --net=host \
+            --ipc=host \
+            -e GITHUB_TOKEN="$GITHUB_TOKEN" \
+            -e GITHUB_REPOSITORY="$GITHUB_REPOSITORY" \
+            -e GITHUB_RUN_ID="$GITHUB_RUN_ID" \
+            -v "$PWD/front/all-blob-reports:/app/front/all-blob-reports" \
+            -v "$PWD/front/test-results:/app/front/test-results" \
+            osrd-playwright:latest \
+            sh -c "npx playwright merge-reports --reporter=./tests/reporter/generate-personalized-report.ts ./all-blob-reports \
+              && npx tsx /app/front/tests/reporter/generate-github-summary.ts /app/front/test-results/personalized-report.json /app/front/test-results/summary.md"
+          cat front/test-results/summary.md >> $GITHUB_STEP_SUMMARY
 
   check_reuse_compliance:
     runs-on: ubuntu-latest
