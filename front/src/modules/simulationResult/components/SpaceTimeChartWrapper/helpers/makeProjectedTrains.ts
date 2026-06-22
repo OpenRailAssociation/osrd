@@ -9,7 +9,7 @@ import {
   extractOccurrenceIndexFromOccurrenceId,
 } from 'utils/trainId';
 
-const EXCEPTION_SUFFIX = '≠';
+export const EXCEPTION_SUFFIX = '≠';
 
 /**
  * Turns trainSpaceTimeData (unique trains + pacedTrains) into individual train projection.
