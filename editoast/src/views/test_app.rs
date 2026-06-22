@@ -432,6 +432,24 @@ impl TestApp {
         )
     }
 
+    pub async fn assert_rolling_stock_grant(
+        &self,
+        rolling_stock_id: i64,
+        subject_id: i64,
+        expected_grant: Option<RollingStockGrant>,
+    ) {
+        let subject = self.authz_subject(subject_id);
+        let actual_grant = self
+            .openfga()
+            .rolling_stock_effective_grant(subject, authz::RollingStock(rolling_stock_id))
+            .await;
+        pretty_assertions::assert_eq!(
+            actual_grant,
+            expected_grant,
+            "Rolling stock grant for subject '{subject_id}' on rolling stock '{rolling_stock_id}' does not match"
+        );
+    }
+
     #[track_caller]
     pub fn assert_infra_grant(
         &self,
