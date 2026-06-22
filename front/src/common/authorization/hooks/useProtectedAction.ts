@@ -32,6 +32,7 @@ const useNotifyUnauthorized = () => {
  * It checks if the user has the required privileges to perform the action.
  * If the user does not have the required privileges, it dispatches a failure message.
  */
+// TODO: This hook logic is planned for refactoring. Review and update the associated test afterward.
 export const useCheckProtectedAction = () => {
   const notifyUnauthorized = useNotifyUnauthorized();
 
