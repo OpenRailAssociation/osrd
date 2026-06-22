@@ -988,27 +988,8 @@ mod tests {
     use crate::fixtures::create_empty_infra;
     use crate::fixtures::create_fast_rolling_stock;
     use crate::fixtures::create_small_infra;
-    use crate::views::test_app::TestApp;
     use crate::views::test_app::TestRequestExt as _;
     use crate::views::test_app::test_app;
-
-    fn set_grant_request(
-        app: &TestApp,
-        subject_id: i64,
-        infra_id: i64,
-        grant: InfraGrant,
-    ) -> axum_test::TestRequest {
-        app.post("/authz/grants").json(&json!({
-            "grant": [
-                {
-                    "subject_id": subject_id,
-                    "resource_type": ResourceType::Infra,
-                    "resource_id": infra_id,
-                    "grant": grant
-                }
-            ]
-        }))
-    }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn me_privileges() {
@@ -1577,7 +1558,15 @@ mod tests {
             .create()
             .await;
 
-        set_grant_request(&app, owner.id, infra.id, InfraGrant::Writer)
+        app.post("/authz/grants")
+            .json(&json!({
+                "grant": [{
+                    "subject_id": owner.id,
+                    "resource_type": ResourceType::Infra,
+                    "resource_id": infra.id,
+                    "grant": InfraGrant::Writer
+                }]
+            }))
             .by_user(admin.as_ref())
             .await
             .assert_status(StatusCode::CREATED);
@@ -1604,13 +1593,29 @@ mod tests {
             .create()
             .await;
 
-        set_grant_request(&app, bob.id, infra.id, InfraGrant::Owner)
+        app.post("/authz/grants")
+            .json(&json!({
+                "grant": [{
+                    "subject_id": bob.id,
+                    "resource_type": ResourceType::Infra,
+                    "resource_id": infra.id,
+                    "grant": InfraGrant::Owner
+                }]
+            }))
             .by_user(admin.as_ref())
             .await
             .assert_status(StatusCode::CREATED);
         app.assert_infra_grant(infra.id, bob.id, Some(InfraGrant::Owner));
 
-        set_grant_request(&app, bob.id, infra.id, InfraGrant::Writer)
+        app.post("/authz/grants")
+            .json(&json!({
+                "grant": [{
+                    "subject_id": bob.id,
+                    "resource_type": ResourceType::Infra,
+                    "resource_id": infra.id,
+                    "grant": InfraGrant::Writer
+                }]
+            }))
             .by_user(admin.as_ref())
             .await
             .assert_status(StatusCode::CREATED);
@@ -1628,7 +1633,15 @@ mod tests {
             .create()
             .await;
 
-        set_grant_request(&app, owner.id, infra.id, InfraGrant::Writer)
+        app.post("/authz/grants")
+            .json(&json!({
+                "grant": [{
+                    "subject_id": owner.id,
+                    "resource_type": ResourceType::Infra,
+                    "resource_id": infra.id,
+                    "grant": InfraGrant::Writer
+                }]
+            }))
             .by_user(owner.as_ref())
             .await
             .assert_status_forbidden();
@@ -1650,7 +1663,15 @@ mod tests {
             .create()
             .await;
 
-        set_grant_request(&app, jerry.id, infra.id, InfraGrant::Writer)
+        app.post("/authz/grants")
+            .json(&json!({
+                "grant": [{
+                    "subject_id": jerry.id,
+                    "resource_type": ResourceType::Infra,
+                    "resource_id": infra.id,
+                    "grant": InfraGrant::Writer
+                }]
+            }))
             .by_user(tom.as_ref())
             .await
             .assert_status_forbidden();
@@ -1672,13 +1693,29 @@ mod tests {
             .create()
             .await;
 
-        set_grant_request(&app, target.id, infra.id, InfraGrant::Writer)
+        app.post("/authz/grants")
+            .json(&json!({
+                "grant": [{
+                    "subject_id": target.id,
+                    "resource_type": ResourceType::Infra,
+                    "resource_id": infra.id,
+                    "grant": InfraGrant::Writer
+                }]
+            }))
             .by_user(owner.as_ref())
             .await
             .assert_status(StatusCode::CREATED);
         app.assert_infra_grant(infra.id, target.id, Some(InfraGrant::Writer));
 
-        set_grant_request(&app, target.id, infra.id, InfraGrant::Reader)
+        app.post("/authz/grants")
+            .json(&json!({
+                "grant": [{
+                    "subject_id": target.id,
+                    "resource_type": ResourceType::Infra,
+                    "resource_id": infra.id,
+                    "grant": InfraGrant::Reader
+                }]
+            }))
             .by_user(owner.as_ref())
             .await
             .assert_status(StatusCode::CREATED);
@@ -1695,7 +1732,15 @@ mod tests {
             .create()
             .await;
 
-        set_grant_request(&app, writer.id, infra.id, InfraGrant::Reader)
+        app.post("/authz/grants")
+            .json(&json!({
+                "grant": [{
+                    "subject_id": writer.id,
+                    "resource_type": ResourceType::Infra,
+                    "resource_id": infra.id,
+                    "grant": InfraGrant::Reader
+                }]
+            }))
             .by_user(writer.as_ref())
             .await
             .assert_status(StatusCode::CREATED);
@@ -1712,7 +1757,15 @@ mod tests {
             .create()
             .await;
 
-        set_grant_request(&app, writer.id, infra.id, InfraGrant::Owner)
+        app.post("/authz/grants")
+            .json(&json!({
+                "grant": [{
+                    "subject_id": writer.id,
+                    "resource_type": ResourceType::Infra,
+                    "resource_id": infra.id,
+                    "grant": InfraGrant::Owner
+                }]
+            }))
             .by_user(writer.as_ref())
             .await
             .assert_status_forbidden();
@@ -1734,7 +1787,15 @@ mod tests {
             .create()
             .await;
 
-        set_grant_request(&app, reader.id, infra.id, InfraGrant::Writer)
+        app.post("/authz/grants")
+            .json(&json!({
+                "grant": [{
+                    "subject_id": reader.id,
+                    "resource_type": ResourceType::Infra,
+                    "resource_id": infra.id,
+                    "grant": InfraGrant::Writer
+                }]
+            }))
             .by_user(writer.as_ref())
             .await
             .assert_status(StatusCode::CREATED);
@@ -1756,7 +1817,15 @@ mod tests {
             .create()
             .await;
 
-        set_grant_request(&app, reader.id, infra.id, InfraGrant::Owner)
+        app.post("/authz/grants")
+            .json(&json!({
+                "grant": [{
+                    "subject_id": reader.id,
+                    "resource_type": ResourceType::Infra,
+                    "resource_id": infra.id,
+                    "grant": InfraGrant::Owner
+                }]
+            }))
             .by_user(writer.as_ref())
             .await
             .assert_status_forbidden();
@@ -1783,11 +1852,27 @@ mod tests {
             .create()
             .await;
 
-        set_grant_request(&app, equal.id, infra.id, InfraGrant::Reader)
+        app.post("/authz/grants")
+            .json(&json!({
+                "grant": [{
+                    "subject_id": equal.id,
+                    "resource_type": ResourceType::Infra,
+                    "resource_id": infra.id,
+                    "grant": InfraGrant::Reader
+                }]
+            }))
             .by_user(writer.as_ref())
             .await
             .assert_status_forbidden();
-        set_grant_request(&app, higher.id, infra.id, InfraGrant::Writer)
+        app.post("/authz/grants")
+            .json(&json!({
+                "grant": [{
+                    "subject_id": higher.id,
+                    "resource_type": ResourceType::Infra,
+                    "resource_id": infra.id,
+                    "grant": InfraGrant::Writer
+                }]
+            }))
             .by_user(writer.as_ref())
             .await
             .assert_status_forbidden();
