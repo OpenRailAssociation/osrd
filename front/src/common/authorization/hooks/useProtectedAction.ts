@@ -54,7 +54,7 @@ export const useCheckProtectedAction = () => {
   return actionWrapper;
 };
 
-type UseProtectedActionParams = {
+export type UseProtectedActionParams = {
   resourceId?: number;
   resourceType: ResourceType;
   privileges: Privilege[];
