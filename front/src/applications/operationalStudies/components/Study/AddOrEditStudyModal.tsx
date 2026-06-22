@@ -84,7 +84,7 @@ const AddOrEditStudyModal = ({ editionMode, study, scenarios }: AddOrEditStudyMo
 
   const initialValuesRef = useRef<StudyForm | null>(null);
 
-  const modalRef = useRef<HTMLDivElement | null>(null);
+  const modalRef = useRef<HTMLFormElement | null>(null);
 
   const { clickedOutside, setHasChanges, resetClickedOutside } = useModalOutsideClick(modalRef);
 
@@ -106,7 +106,8 @@ const AddOrEditStudyModal = ({ editionMode, study, scenarios }: AddOrEditStudyMo
   const invalidFields = checkStudyFields(currentStudy);
   const hasErrors = Object.values(invalidFields).some((field) => field);
 
-  const createStudy = () => {
+  const createStudy = (event: React.SubmitEvent<HTMLFormElement>) => {
+    event.preventDefault();
     if (hasErrors) {
       setDisplayErrors(true);
     } else {
@@ -211,7 +212,12 @@ const AddOrEditStudyModal = ({ editionMode, study, scenarios }: AddOrEditStudyMo
   }
 
   return (
-    <div data-testid="study-edition-modal" className="study-edition-modal" ref={modalRef}>
+    <form
+      data-testid="study-edition-modal"
+      className="study-edition-modal"
+      ref={modalRef}
+      onSubmit={createStudy}
+    >
       {clickedOutside && (
         <div className="confirm-modal">
           <div className="confirm-modal-content">
@@ -498,8 +504,7 @@ const AddOrEditStudyModal = ({ editionMode, study, scenarios }: AddOrEditStudyMo
             <button
               data-testid="create-study"
               className="btn btn-primary"
-              type="button"
-              onClick={createStudy}
+              type="submit"
               disabled={!isExpectedEndDateValid || !isActualEndDateValid}
             >
               <span className="mr-2">
@@ -510,7 +515,7 @@ const AddOrEditStudyModal = ({ editionMode, study, scenarios }: AddOrEditStudyMo
           )}
         </div>
       </ModalFooterSNCF>
-    </div>
+    </form>
   );
 };
 

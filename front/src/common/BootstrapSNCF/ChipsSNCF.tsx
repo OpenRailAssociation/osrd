@@ -67,6 +67,7 @@ export default function ChipsSNCF({
     if (e.key === 'Enter' && e.target) {
       if (!tags.includes(e.target.value)) addTag(e.target.value);
       setChipInputValue('');
+      e.preventDefault();
     }
   };
 

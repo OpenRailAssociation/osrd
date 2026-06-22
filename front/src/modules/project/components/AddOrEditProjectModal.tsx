@@ -84,7 +84,7 @@ export default function AddOrEditProjectModal({
 
   const initialValuesRef = useRef<ProjectForm | null>(null);
 
-  const modalRef = useRef<HTMLDivElement | null>(null);
+  const modalRef = useRef<HTMLFormElement | null>(null);
 
   const { clickedOutside, setHasChanges, resetClickedOutside } = useModalOutsideClick(modalRef);
 
@@ -126,7 +126,8 @@ export default function AddOrEditProjectModal({
   const invalidFields = checkProjectFields(currentProject);
   const hasError = Object.values(invalidFields).some((fieldIsInvalid) => fieldIsInvalid);
 
-  const createProject = async () => {
+  const createProject = async (event: React.SubmitEvent<HTMLFormElement>) => {
+    event.preventDefault();
     if (hasError) {
       setDisplayErrors(true);
     } else {
@@ -256,7 +257,7 @@ export default function AddOrEditProjectModal({
   useModalFocusTrap(modalRef, closeModal);
 
   return (
-    <div className="project-edition-modal" ref={modalRef}>
+    <form className="project-edition-modal" ref={modalRef} onSubmit={createProject}>
       {clickedOutside && (
         <div className="confirm-modal">
           <div className="confirm-modal-content">
@@ -464,12 +465,7 @@ export default function AddOrEditProjectModal({
               {t('project.projectModifyButton')}
             </button>
           ) : (
-            <button
-              data-testid="create-project"
-              className="btn btn-primary"
-              type="button"
-              onClick={createProject}
-            >
+            <button data-testid="create-project" className="btn btn-primary" type="submit">
               <span className="mr-2">
                 <FaPlus />
               </span>
@@ -478,6 +474,6 @@ export default function AddOrEditProjectModal({
           )}
         </div>
       </ModalFooterSNCF>
-    </div>
+    </form>
   );
 }

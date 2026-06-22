@@ -5,7 +5,7 @@ import { useEffect } from 'react';
  * + expose input mode (keyboard vs pointer) via documentElement dataset
  */
 export default function useModalFocusTrap(
-  modalRef: React.RefObject<HTMLDivElement | HTMLDialogElement | null>,
+  modalRef: React.RefObject<HTMLElement | null>,
   closeModal: () => void,
   { focusOnFirstElement = false } = {}
 ) {
