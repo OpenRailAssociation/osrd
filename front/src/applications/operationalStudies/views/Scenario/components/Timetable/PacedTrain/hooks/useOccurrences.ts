@@ -17,6 +17,16 @@ import {
   formatPacedTrainIdToIndexedOccurrenceId,
 } from 'utils/trainId';
 
+/**
+ * This hook computes the occurrences of a paced train based on its exceptions and the number of occurrences defined by the paced train
+ * interval and time window. It also enriches the occurrences with the corresponding exception data when it exists (e.g. disabled, rolling
+ * stock change, start time change...).
+ *
+ * @param pacedTrain the paced train with details
+ * @param rollingStockList the list of rolling stock with their liveries, used to enrich the occurrence rolling stock when there is a change
+ * defined in the exception
+ * @returns the occurrences of the paced train with their details and the count of occurrences (taking into account the disabled exceptions)
+ */
 const useOccurrences = (
   pacedTrain: PacedTrainWithPacedWithDetails,
   rollingStockList: LightRollingStockWithLiveries[] | null
