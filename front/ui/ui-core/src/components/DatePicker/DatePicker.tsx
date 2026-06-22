@@ -38,7 +38,6 @@ export const DatePicker = (props: DatePickerProps) => {
     statusWithMessage,
     selectedSlot,
     showPicker,
-    modalPosition,
     inputRef,
     calendarPickerRef,
     setShowPicker,
@@ -79,16 +78,13 @@ export const DatePicker = (props: DatePickerProps) => {
         onClose={() => setShowPicker(false)}
         testIdPrefix="modal"
       >
-        <div className="calendar-picker-wrapper">
-          <CalendarPicker
-            {...props.calendarPickerProps}
-            selectedSlot={selectedSlot}
-            onDayClick={handleDayClick}
-            modalPosition={modalPosition}
-            calendarPickerRef={calendarPickerRef}
-            selectableSlot={selectableSlot}
-          />
-        </div>
+        <CalendarPicker
+          {...props.calendarPickerProps}
+          selectedSlot={selectedSlot}
+          onDayClick={handleDayClick}
+          calendarPickerRef={calendarPickerRef}
+          selectableSlot={selectableSlot}
+        />
       </InputModal>
     </div>
   );
