@@ -124,4 +124,15 @@ impl State {
             Mode::Skip { .. } => Ok(State::Skip { user, roles }),
         }
     }
+
+    /// The authenticated user if authorization is **not** skipped
+    ///
+    /// If this function returns a user, then it is subject to permissions,
+    /// otherwise they likely can be bypassed.
+    pub fn regular_user(&self) -> Option<authz::User> {
+        match self {
+            State::Authenticated { user, .. } => Some(*user),
+            State::Skip { .. } => None,
+        }
+    }
 }
