@@ -381,9 +381,8 @@ const ExpandedTrainForm = ({
                     small
                     units={['m']}
                     padChar="0"
-                    max={3_600_000}
                     label={t('manageTrainSchedule.trainHeader.form.serviceCadence')}
-                    value={fields.service_cadence ?? 0}
+                    value={fields.service_cadence ?? 1_800_000} // 30m
                     onChange={(ms) => onFieldImmediateChange('service_cadence', ms)}
                   />
                 </div>
