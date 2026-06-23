@@ -242,12 +242,15 @@ const ExpandedTrainForm = ({
   const onFieldImmediateChange = useCallback(
     (fieldName: keyof TrainFieldsState, newValue: TrainFieldsState[typeof fieldName]) => {
       const newFields = { ...fields, [fieldName]: newValue };
-      const updatedTrain = applyFieldsToTrain(newFields, train, selectedRollingStock);
-      onPersistTrain(updatedTrain);
+
+      if (fieldsFromTrain[fieldName] !== newValue) {
+        const updatedTrain = applyFieldsToTrain(newFields, train, selectedRollingStock);
+        onPersistTrain(updatedTrain);
+      }
 
       setFields(newFields);
     },
-    [fields, train, onPersistTrain]
+    [fields, train, fieldsFromTrain, onPersistTrain]
   );
 
   const constraintDistributionsOptions: { id: ConstraintDistribution; label: string }[] = useMemo(
