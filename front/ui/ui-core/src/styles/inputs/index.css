@@ -5,7 +5,7 @@
 @import './fieldWrapper.css';
 @import './hint.css';
 @import './input.css';
-@import './input-modal.css';
+@import './input-popover.css';
 @import './label.css';
 @import './passwordInput.css';
 @import './radioButton.css';
