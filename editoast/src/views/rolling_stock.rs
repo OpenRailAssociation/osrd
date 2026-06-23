@@ -3,6 +3,10 @@ pub(in crate::views) mod towed;
 
 type RollingStockForm = schemas::RollingStock<schemas::rolling_stock::RollingResistancePerWeight>;
 
+use authz::RollingStockPrivilege;
+use authz::v2::rolling_stock_privileges;
+use axum::Extension;
+
 use std::io::Cursor;
 use std::sync::Arc;
 
@@ -36,6 +40,7 @@ use thiserror::Error;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
 
+use crate::AppState;
 use crate::error::InternalError;
 use crate::error::Result;
 
@@ -180,9 +185,22 @@ pub struct RollingStockNameParam {
     )
 )]
 pub(in crate::views) async fn get(
-    State(db_pool): State<Arc<DbConnectionPoolV2>>,
+    State(AppState {
+        openfga, db_pool, ..
+    }): State<AppState>,
+    Extension(authn_state): Extension<crate::authentication::State>,
     Path(rolling_stock_id): Path<i64>,
 ) -> Result<Json<RollingStockWithLiveries>> {
+    if let Some(user) = authn_state.user() {
+        let authorizer = authn_state.authorizer(&openfga);
+        crate::authorizers::require(
+            &authorizer,
+            rolling_stock_privileges(user, authz::RollingStock(rolling_stock_id)),
+            &RollingStockPrivilege::CanRead,
+        )
+        .await?;
+    }
+
     let rolling_stock = retrieve_existing_rolling_stock(
         &mut db_pool.get().await?,
         RollingStockKey::Id(rolling_stock_id),
@@ -204,7 +222,10 @@ pub(in crate::views) async fn get(
     )
 )]
 pub(in crate::views) async fn get_by_name(
-    State(db_pool): State<Arc<DbConnectionPoolV2>>,
+    State(AppState {
+        openfga, db_pool, ..
+    }): State<AppState>,
+    Extension(authn_state): Extension<crate::authentication::State>,
     Path(rolling_stock_name): Path<String>,
 ) -> Result<Json<RollingStockWithLiveries>> {
     let rolling_stock = retrieve_existing_rolling_stock(
@@ -212,6 +233,17 @@ pub(in crate::views) async fn get_by_name(
         RollingStockKey::Name(rolling_stock_name),
     )
     .await?;
+
+    if let Some(user) = authn_state.user() {
+        let authorizer = authn_state.authorizer(&openfga);
+        crate::authorizers::require(
+            &authorizer,
+            rolling_stock_privileges(user, authz::RollingStock(rolling_stock.id)),
+            &RollingStockPrivilege::CanRead,
+        )
+        .await?;
+    }
+
     let rolling_stock_with_liveries =
         RollingStockWithLiveries::try_fetch(&mut db_pool.get().await?, rolling_stock).await?;
     Ok(Json(rolling_stock_with_liveries))
@@ -689,6 +721,7 @@ pub mod tests {
     use crate::fixtures::simple_paced_train_changeset;
     use crate::views::test_app;
     use crate::views::test_app::TestApp;
+    use crate::views::test_app::TestRequestExt;
     use models::rolling_stock::RollingStock;
 
     impl TestApp {
@@ -1012,21 +1045,72 @@ pub mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn get_rolling_stock_by_id() {
         // GIVEN
-        let app = test_app!().skip_authz().build();
+        let app = test_app!().build();
         let db_pool = app.db_pool();
 
         let rs_name = "fast_rolling_stock_name";
         let fast_rolling_stock = create_fast_rolling_stock(&mut db_pool.get_ok(), rs_name).await;
 
+        // a user with the role to reach the endpoint and a read grant on the rolling stock
+        let user = app
+            .user("authorized", "Authorized")
+            .with_roles([Role::OperationalStudies])
+            .with_rolling_stock_grant(fast_rolling_stock.id, authz::RollingStockGrant::Reader)
+            .create()
+            .await;
+
         // WHEN
         let raw_response = app
             .rolling_stock_get_by_id_request(fast_rolling_stock.id)
+            .by_user(&user.info)
             .await;
 
         // THEN
         let response: RollingStock = raw_response.assert_status_ok().json();
 
         assert_eq!(response, fast_rolling_stock);
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn get_rolling_stock_by_id_with_privilege_and_no_roles() {
+        let app = test_app!().build();
+        let db_pool = app.db_pool();
+
+        let fast_rolling_stock =
+            create_fast_rolling_stock(&mut db_pool.get_ok(), "fast_rolling_stock_name").await;
+
+        // a user that does not have the role to reach the endpoint but has a read grant on the rolling stock
+        let user = app
+            .user("unauthorized", "Unauthorized")
+            .with_rolling_stock_grant(fast_rolling_stock.id, authz::RollingStockGrant::Reader)
+            .create()
+            .await;
+
+        app.rolling_stock_get_by_id_request(fast_rolling_stock.id)
+            .by_user(&user.info)
+            .await
+            .assert_status_forbidden();
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn get_rolling_stock_by_id_without_permission() {
+        let app = test_app!().build();
+        let db_pool = app.db_pool();
+
+        let fast_rolling_stock =
+            create_fast_rolling_stock(&mut db_pool.get_ok(), "fast_rolling_stock_name").await;
+
+        // a user that has the role to reach the endpoint but no read grant on the rolling stock
+        let user = app
+            .user("unauthorized", "Unauthorized")
+            .with_roles([Role::OperationalStudies])
+            .create()
+            .await;
+
+        app.rolling_stock_get_by_id_request(fast_rolling_stock.id)
+            .by_user(&user.info)
+            .await
+            .assert_status_forbidden();
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]

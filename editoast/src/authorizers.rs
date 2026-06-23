@@ -285,7 +285,6 @@ pub struct Error(#[from] pub authz::v2::OpenFgaError);
 /// Ensures the issuer holds a privilege satisfying `required`.
 /// `protected` is an operation yielding the set of privileges the issuer holds on a resource.
 /// Access is granted when the operation is authorized and the issuer holds a privilege equal to `required`.
-#[expect(unused)]
 pub async fn require<I, U>(
     authorizer: &U,
     protected: Protected<I>,
