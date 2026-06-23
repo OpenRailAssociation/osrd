@@ -2,6 +2,8 @@ use std::convert::Infallible;
 use std::ops::Not as _;
 
 use authz::ProjectGrant;
+use crate::views::AuthorizationError;
+use crate::views::AuthorizerError;
 use authz::v2::Access;
 use authz::v2::Actor;
 use authz::v2::Authorizer;
@@ -332,6 +334,38 @@ macro_rules! impossible {
     };
 }
 pub(crate) use impossible;
+
+/// Ensures the issuer holds a privilege satisfying `required`.
+/// `protected` is an operation yielding the set of privileges the issuer holds on a resource.
+/// Access is granted when the operation is authorized and the issuer holds a privilege equal to `required`.
+pub async fn require<I, U>(
+    authorizer: &U,
+    protected: Protected<I>,
+    required: &<I as IntoIterator>::Item,
+) -> Result<(), AuthorizationError>
+where
+    I: IntoIterator,
+    <I as IntoIterator>::Item: PartialEq,
+    U: Authorizer<Error = Error>,
+{
+    let access = authorizer.authorize(protected).await.map_err(|e| match e {
+        Error::Database(error) => {
+            AuthorizationError::AuthError(AuthorizerError::Storage(error.into()))
+        }
+        Error::OpenFga(error) => error.into(),
+    })?;
+    let Ok(privileges) = access.access().await? else {
+        return Err(AuthorizationError::Forbidden);
+    };
+    if privileges
+        .into_iter()
+        .any(|privilege| privilege == *required)
+    {
+        Ok(())
+    } else {
+        Err(AuthorizationError::Forbidden)
+    }
+}
 
 #[cfg(test)]
 mod tests {
