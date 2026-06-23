@@ -136,11 +136,10 @@ impl DocumentedRouter {
         });
         let method_router = if let Some(required_role) = required_role {
             method_router.route_layer(axum::middleware::from_fn(
-                move |Extension(roles): Extension<Vec<authz::Role>>,
-                      Extension(authn): Extension<crate::authentication::Mode>,
+                move |Extension(authn_state): Extension<crate::authentication::State>,
                       req: axum::extract::Request,
                       next: axum::middleware::Next| {
-                    verify_role(required_role, roles, authn, req, next)
+                    verify_role(required_role, authn_state, req, next)
                 },
             ))
         } else {
@@ -172,25 +171,25 @@ impl DocumentedRouter {
 #[tracing::instrument(name = "role verification", skip_all, fields(?required_role, decision = tracing::field::Empty))]
 async fn verify_role(
     required_role: authz::Role,
-    roles: Vec<authz::Role>,
-    authn: crate::authentication::Mode,
+    authn_state: crate::authentication::State,
     req: axum::extract::Request,
     next: axum::middleware::Next,
 ) -> axum::response::Response {
-    match (authn, roles) {
-        (crate::authentication::Mode::Skip { .. }, _) => {
+    use crate::authentication::State;
+    match authn_state {
+        State::Skip => {
             tracing::Span::current().record("decision", "skip");
             next.run(req).await
         }
-        (_, roles) if roles.contains(&required_role) => {
+        State::Authenticated { roles, .. } if roles.contains(&required_role) => {
             tracing::Span::current().record("decision", "allow");
             next.run(req).await
         }
-        (_, roles) if roles.contains(&authz::Role::Admin) => {
+        State::Authenticated { roles, .. } if roles.contains(&authz::Role::Admin) => {
             tracing::Span::current().record("decision", "admin");
             next.run(req).await
         }
-        _ => {
+        State::Authenticated { .. } => {
             tracing::Span::current().record("decision", "deny");
             crate::error::InternalError::from(AuthorizationError::Forbidden).into_response()
         }

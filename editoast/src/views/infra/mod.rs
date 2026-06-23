@@ -43,6 +43,7 @@ use super::AuthenticationExt;
 use super::pagination::PaginationStats;
 use crate::AppState;
 use crate::Arc;
+use crate::authorizers::UserAuthorizer;
 use crate::error::Result;
 use crate::generated_data::InfraGeneratedData as _;
 use crate::generated_data::operational_point::OperationalPointLayer;
@@ -194,22 +195,16 @@ pub(in crate::views) async fn list(
     State(AppState {
         db_pool, regulator, ..
     }): State<AppState>,
-    Extension(user): Extension<Option<authz::User>>,
-    Extension(roles): Extension<Vec<authz::Role>>,
     Extension(authn): Extension<crate::authentication::State>,
     Query(pagination): Query<PaginationQueryParams<1000>>,
 ) -> Result<Json<InfraListResponse>> {
     let conn = &mut db_pool.get().await?;
     let default_settings = pagination.into_selection_settings();
-    let settings = match (user, authn) {
-        (_, crate::authentication::State::Skip { .. }) => default_settings,
-        (Some(user), _) => {
-            let authorizer = crate::authorizers::UserAuthorizer::new(
-                user,
-                roles.clone(),
-                regulator.openfga(),
-                conn.clone(),
-            );
+    let settings = match authn {
+        crate::authentication::State::Skip => default_settings,
+        crate::authentication::State::Authenticated { user, roles } => {
+            let authorizer =
+                UserAuthorizer::new(user, roles.clone(), regulator.openfga(), conn.clone());
             let authorized_infras = authorizer
                 .authorize(authz::v2::infra_list(user, InfraPrivilege::CanRead))
                 .await?
@@ -228,7 +223,6 @@ pub(in crate::views) async fn list(
                 }
             }
         }
-        (None, _) => return Err(AuthorizationError::Unauthenticated)?,
     };
     let (infras, stats) =
         Infra::list_paginated(conn, settings.order_by(move || Infra::ID.asc())).await?;
