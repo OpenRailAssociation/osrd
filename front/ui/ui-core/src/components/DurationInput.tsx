@@ -158,7 +158,12 @@ function useDurationInput({
 
       if (!input) return;
 
-      if (e.key === 'ArrowRight' && input.selectionStart === input.value.length) {
+      const cursorAtTheEnd = input.selectionStart === input.value.length;
+      const keyFirstLetter = setting.key.at(0)?.toLowerCase();
+      if (
+        (e.key === 'ArrowRight' || e.key === ':' || e.key.toLowerCase() === keyFirstLetter) &&
+        cursorAtTheEnd
+      ) {
         e.preventDefault();
         focusNext(setting.key);
       }
