@@ -2,7 +2,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 
 import Input, { type InputProps } from '../Input';
-import Modal from '../InputModal';
+import Popover from '../InputPopover';
 import { type StatusWithMessage } from '../StatusMessage';
 import { TOLERANCE_RANGES } from './consts';
 import ToleranceRangeGrid from './ToleranceRangeGrid';
@@ -75,7 +75,7 @@ const TolerancePicker = ({
         />
       </div>
 
-      <Modal
+      <Popover
         testIdPrefix="modal"
         inputRef={inputRef}
         isOpen={showPicker}
@@ -96,7 +96,7 @@ const TolerancePicker = ({
             toleranceSign="plus"
           />
         </div>
-      </Modal>
+      </Popover>
     </div>
   );
 };
