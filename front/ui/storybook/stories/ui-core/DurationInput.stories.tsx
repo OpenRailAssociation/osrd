@@ -9,6 +9,10 @@ const meta: Meta<typeof DurationInput> = {
     units: ['h', 'm', 's'],
     value: 0,
     padChar: '0',
+    max: undefined,
+  },
+  argTypes: {
+    max: { control: 'number', type: { name: 'number', required: false } },
   },
   title: 'Core/DurationInput',
   tags: ['autodocs'],
