@@ -158,11 +158,7 @@ pub(in crate::views) async fn authentication_validation_middleware(
     }
 
     let (user, roles_prot) = match &authn {
-        crate::authentication::Mode::Authenticated { identity, name }
-        | crate::authentication::Mode::Skip {
-            identity: Some(identity),
-            name: Some(name),
-        } => {
+        crate::authentication::Mode::Authenticated { identity, name } => {
             let conn = db_pool.get().await?;
             conn.transaction(async |conn| {
                 let user =
@@ -215,7 +211,7 @@ pub(in crate::views) async fn authentication_validation_middleware(
             })
             .await?
         }
-        crate::authentication::Mode::Skip { .. } => (None, ::authz::v2::Protected::default()),
+        crate::authentication::Mode::Skip => (None, ::authz::v2::Protected::default()),
         crate::authentication::Mode::Unauthenticated => {
             return Err(AuthorizationError::Unauthenticated.into());
         }
@@ -236,21 +232,12 @@ pub(in crate::views) async fn authentication_validation_middleware(
     span.record("user.roles", tracing::field::debug(&roles));
     span.record("user.is_admin", roles.contains(&Role::Admin));
 
-    let authz_user = user
-        .as_ref()
-        .map(|editoast_models::User { id, .. }| ::authz::User(*id));
+    let authz_user = user.iter().map(|user| authz::User(user.id)).next();
     let state = crate::authentication::State::try_new(authn, authz_user, roles.clone())?;
     span.record("authz.state", tracing::field::debug(&state));
-
     req.extensions_mut().insert(state);
-    // TODO: the following extensions are kept for the handlers and middlewares that
-    // haven't been migrated to `authentication::State` yet. To be removed in a follow-up PR.
-    let user_id = user.as_ref().map(|editoast_models::User { id, .. }| *id);
-    req.extensions_mut().insert(roles);
-    // for `fga` queries and `authz` interface
-    req.extensions_mut().insert(user_id.map(::authz::User));
-    // database model, also carries the user name
     req.extensions_mut().insert(user);
+    req.extensions_mut().remove::<crate::authentication::Mode>();
     Ok(next.run(req).await)
 }
 

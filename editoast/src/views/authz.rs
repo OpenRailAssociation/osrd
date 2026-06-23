@@ -3,7 +3,6 @@ use std::collections::HashSet;
 use std::sync::Arc;
 
 use crate::authorizers::SystemAuthorizer;
-use crate::authorizers::UserAuthorizer;
 use crate::authorizers::impossible;
 use crate::error::Result;
 use crate::views::Authentication;
@@ -131,28 +130,23 @@ pub(in crate::views) struct WhoamiResponse {
     ))
 )]
 pub(in crate::views) async fn whoami(
-    Extension(roles): Extension<Vec<authz::Role>>,
-    Extension(user): Extension<Option<editoast_models::User>>,
-    Extension(authn): Extension<crate::authentication::Mode>,
+    Extension(authn_state): Extension<crate::authentication::State>,
+    State(AppState { db_pool, .. }): State<AppState>,
 ) -> Result<Json<WhoamiResponse>> {
-    let skip = matches!(authn, crate::authentication::Mode::Skip { .. });
-    if let Some(editoast_models::User { id, name }) = user {
-        let mut roles = HashSet::from_iter(roles);
-        // Authorization is skipped by header, but identity headers are provided so we could fetch
-        // the user's roles, though Admin may be lacking.
-        if skip {
-            roles.insert(Role::Admin);
+    match authn_state {
+        crate::authentication::State::Skip => Err(AuthorizationError::Unauthenticated)?,
+        crate::authentication::State::Authenticated { user, roles } => {
+            let conn = db_pool.get().await?;
+            let user = editoast_models::User::retrieve(conn, user.0)
+                .await?
+                .expect("user stored in the authorization middleware extension should exist");
+            let roles = HashSet::from_iter(roles);
+            Ok(Json(WhoamiResponse {
+                id: user.id,
+                name: user.name,
+                roles,
+            }))
         }
-        Ok(Json(WhoamiResponse { id, name, roles }))
-    } else if skip {
-        // TODO: don't return -1 and a hardcoded name, return a different schema instead, requires frontend changes
-        Ok(Json(WhoamiResponse {
-            id: -1,
-            name: "OSRD user".to_string(),
-            roles: HashSet::from([Role::Admin]),
-        }))
-    } else {
-        Err(AuthorizationError::Forbidden.into())
     }
 }
 
@@ -168,17 +162,17 @@ pub(in crate::views) async fn whoami(
     ))
 )]
 pub(in crate::views) async fn user_groups(
-    Extension(roles): Extension<Vec<Role>>,
-    Extension(user): Extension<Option<authz::User>>,
+    Extension(authn_state): Extension<crate::authentication::State>,
     State(AppState {
         regulator, db_pool, ..
     }): State<AppState>,
 ) -> Result<Json<Vec<Group>>> {
-    let user = user.ok_or(AuthorizationError::Unauthenticated)?;
-    let user_authorizer =
-        UserAuthorizer::new(user, roles, regulator.openfga(), db_pool.get().await?);
+    let user = authn_state
+        .regular_user()
+        .ok_or(AuthorizationError::Unauthenticated)?;
+    let authorizer = authn_state.authorizer(regulator.openfga(), db_pool.get().await?);
     let user_groups = authz::v2::user_groups(user)
-        .authorize(&user_authorizer)
+        .authorize(&authorizer)
         .await?
         .access()
         .await?
@@ -388,126 +382,123 @@ pub(in crate::views) async fn user_privileges(
     State(AppState {
         db_pool, regulator, ..
     }): State<AppState>,
-    Extension(user): Extension<Option<authz::User>>,
-    Extension(roles): Extension<Vec<Role>>,
-    Extension(authn): Extension<crate::authentication::Mode>,
+    Extension(authn_state): Extension<crate::authentication::State>,
     Json(resources_ids): Json<HashMap<ResourceType, Vec<i64>>>,
 ) -> Result<Json<HashMap<ResourceType, Vec<ResourcePrivileges>>>> {
-    if matches!(authn, crate::authentication::Mode::Unauthenticated) {
-        return Err(AuthorizationError::Unauthenticated.into());
-    }
-
     let mut result = HashMap::<_, Vec<_>>::new();
     let mut conn = db_pool.get().await?;
-
-    if let Some(user) = user {
-        let resources = resources_ids.into_iter().flat_map(|(resource_type, ids)| {
-            ids.into_iter().map(move |id| match resource_type {
-                ResourceType::Infra => Resource::Infra(authz::Infra(id)),
-                ResourceType::RollingStock => Resource::RollingStock(authz::RollingStock(id)),
-            })
-        });
-        let protected_privileges = resources.map(|resource| match resource {
-            resource @ Resource::Infra(infra) => v2::infra_privileges(user, infra)
-                .collect_into::<HashSet<StandardPrivilege>>()
-                .zip(v2::Protected::value(resource)),
-            resource @ Resource::RollingStock(rolling_stock) => {
-                v2::rolling_stock_privileges(user, rolling_stock)
+    match &authn_state {
+        crate::authentication::State::Authenticated { user, .. } => {
+            let resources = resources_ids.into_iter().flat_map(|(resource_type, ids)| {
+                ids.into_iter().map(move |id| match resource_type {
+                    ResourceType::Infra => Resource::Infra(authz::Infra(id)),
+                    ResourceType::RollingStock => Resource::RollingStock(authz::RollingStock(id)),
+                })
+            });
+            let protected_privileges = resources.map(|resource| match resource {
+                resource @ Resource::Infra(infra) => v2::infra_privileges(*user, infra)
                     .collect_into::<HashSet<StandardPrivilege>>()
-                    .zip(v2::Protected::value(resource))
-            }
-        });
-        let authorizer =
-            crate::authorizers::UserAuthorizer::new(user, roles, regulator.openfga(), conn);
-        let accesses = authorizer.authorize_all(protected_privileges).await?;
-        for access in v2::Access::access_all(accesses).await? {
-            match access {
-                Ok((privileges, resource)) => {
-                    result
-                        .entry(resource.get_type())
-                        .or_default()
-                        .push(ResourcePrivileges {
-                            resource_id: resource.id(),
-                            privileges,
-                        });
+                    .zip(v2::Protected::value(resource)),
+                resource @ Resource::RollingStock(rolling_stock) => {
+                    v2::rolling_stock_privileges(*user, rolling_stock)
+                        .collect_into::<HashSet<StandardPrivilege>>()
+                        .zip(v2::Protected::value(resource))
                 }
-                Err(Check::InfraExists(_)) | Err(Check::RollingStockExists(_)) => {
-                    // not an error under the target API
-                    // (though maybe we should revisit it?)
-                }
-                Err(Check::HasInfraPrivilege(Actor::Issuer, InfraPrivilege::CanRead, infra)) => {
-                    result
-                        .entry(ResourceType::Infra)
-                        .or_default()
-                        .push(ResourcePrivileges {
-                            resource_id: *infra,
-                            privileges: HashSet::new(),
-                        });
-                }
-                Err(Check::HasRollingStockPrivilege(
-                    Actor::Issuer,
-                    RollingStockPrivilege::CanRead,
-                    rolling_stock,
-                )) => {
-                    result.entry(ResourceType::RollingStock).or_default().push(
-                        ResourcePrivileges {
-                            resource_id: *rolling_stock,
-                            privileges: HashSet::new(),
-                        },
-                    );
-                }
-                Err(Check::SubjectExists(authz::Subject::User(_))) => {
-                    panic!("race condition: user deleted");
-                }
-                Err(check @ Check::HasInfraPrivilege(_, _, _))
-                | Err(check @ Check::HasRollingStockPrivilege(_, _, _))
-                | Err(check) => {
-                    impossible!(check)
+            });
+            let authorizer = authn_state.authorizer(regulator.openfga(), conn);
+            let accesses = authorizer.authorize_all(protected_privileges).await?;
+            for access in v2::Access::access_all(accesses).await? {
+                match access {
+                    Ok((privileges, resource)) => {
+                        result
+                            .entry(resource.get_type())
+                            .or_default()
+                            .push(ResourcePrivileges {
+                                resource_id: resource.id(),
+                                privileges,
+                            });
+                    }
+                    Err(Check::InfraExists(_)) | Err(Check::RollingStockExists(_)) => {
+                        // not an error under the target API
+                        // (though maybe we should revisit it?)
+                    }
+                    Err(Check::HasInfraPrivilege(
+                        Actor::Issuer,
+                        InfraPrivilege::CanRead,
+                        infra,
+                    )) => {
+                        result
+                            .entry(ResourceType::Infra)
+                            .or_default()
+                            .push(ResourcePrivileges {
+                                resource_id: *infra,
+                                privileges: HashSet::new(),
+                            });
+                    }
+                    Err(Check::HasRollingStockPrivilege(
+                        Actor::Issuer,
+                        RollingStockPrivilege::CanRead,
+                        rolling_stock,
+                    )) => {
+                        result.entry(ResourceType::RollingStock).or_default().push(
+                            ResourcePrivileges {
+                                resource_id: *rolling_stock,
+                                privileges: HashSet::new(),
+                            },
+                        );
+                    }
+                    Err(Check::SubjectExists(authz::Subject::User(_))) => {
+                        panic!("race condition: user deleted");
+                    }
+                    Err(check @ Check::HasInfraPrivilege(_, _, _))
+                    | Err(check @ Check::HasRollingStockPrivilege(_, _, _))
+                    | Err(check) => {
+                        impossible!(check)
+                    }
                 }
             }
         }
-    } else {
-        // Authorization is skipped by header, everyone has full access
-        debug_assert!(matches!(authn, crate::authentication::Mode::Skip { .. }));
-
-        let privileges = HashSet::from([
-            StandardPrivilege::CanRead,
-            StandardPrivilege::CanShareRead,
-            StandardPrivilege::CanWrite,
-            StandardPrivilege::CanShareWrite,
-            StandardPrivilege::CanDelete,
-            StandardPrivilege::CanShareOwnership,
-            StandardPrivilege::CanRevoke,
-        ]);
-        for (resource_type, ids) in resources_ids {
-            let existing_ids: Vec<i64> = match resource_type {
-                ResourceType::Infra => Infra::retrieve_batch_unchecked::<_, Vec<_>>(&mut conn, ids)
-                    .await?
-                    .into_iter()
-                    .map(|i| i.id)
-                    .collect(),
-                ResourceType::RollingStock => {
-                    RollingStock::retrieve_batch_unchecked::<_, Vec<_>>(&mut conn, ids)
-                        .await?
-                        .into_iter()
-                        .map(|rs| rs.id)
-                        .collect()
-                }
-            };
-            result
-                .entry(resource_type)
-                .or_default()
-                .extend(
-                    existing_ids
-                        .into_iter()
-                        .map(|resource_id| ResourcePrivileges {
-                            resource_id,
-                            privileges: privileges.clone(),
-                        }),
-                );
+        crate::authentication::State::Skip => {
+            let privileges = HashSet::from([
+                StandardPrivilege::CanRead,
+                StandardPrivilege::CanShareRead,
+                StandardPrivilege::CanWrite,
+                StandardPrivilege::CanShareWrite,
+                StandardPrivilege::CanDelete,
+                StandardPrivilege::CanShareOwnership,
+                StandardPrivilege::CanRevoke,
+            ]);
+            for (resource_type, ids) in resources_ids {
+                let existing_ids: Vec<i64> = match resource_type {
+                    ResourceType::Infra => {
+                        Infra::retrieve_batch_unchecked::<_, Vec<_>>(&mut conn, ids)
+                            .await?
+                            .into_iter()
+                            .map(|i| i.id)
+                            .collect()
+                    }
+                    ResourceType::RollingStock => {
+                        RollingStock::retrieve_batch_unchecked::<_, Vec<_>>(&mut conn, ids)
+                            .await?
+                            .into_iter()
+                            .map(|rs| rs.id)
+                            .collect()
+                    }
+                };
+                result
+                    .entry(resource_type)
+                    .or_default()
+                    .extend(
+                        existing_ids
+                            .into_iter()
+                            .map(|resource_id| ResourcePrivileges {
+                                resource_id,
+                                privileges: privileges.clone(),
+                            }),
+                    );
+            }
         }
     }
-
     Ok(Json(result))
 }
 
@@ -537,15 +528,13 @@ pub(in crate::views) async fn user_grants(
     State(AppState {
         db_pool, regulator, ..
     }): State<AppState>,
-    Extension(roles): Extension<Vec<authz::Role>>,
-    Extension(user): Extension<Option<authz::User>>,
+    Extension(authn_state): Extension<crate::authentication::State>,
     Json(body): Json<HashMap<ResourceType, Vec<i64>>>,
 ) -> Result<Json<HashMap<ResourceType, Vec<UserResourceGrant>>>> {
-    let Some(user) = user else {
-        return Err(AuthorizationError::Unauthenticated.into());
-    };
-    let authorizer = UserAuthorizer::new(user, roles, regulator.openfga(), db_pool.get().await?);
-
+    let user = authn_state
+        .regular_user()
+        .ok_or(AuthorizationError::Unauthenticated)?;
+    let authorizer = authn_state.authorizer(regulator.openfga(), db_pool.get().await?);
     let mut response = HashMap::<_, Vec<UserResourceGrant>>::new();
     // TODO build all protected at once, zip them and batch send them with `authorize_all`
     for (resource_type, ids) in &body {
@@ -634,25 +623,16 @@ pub(in crate::views) struct SubjectGrant {
     ),
 )]
 pub(in crate::views) async fn resource_granted_users(
-    Extension(user): Extension<Option<authz::User>>,
-    Extension(roles): Extension<Vec<authz::Role>>,
+    Extension(authn_state): Extension<crate::authentication::State>,
     State(AppState {
         db_pool, regulator, ..
     }): State<AppState>,
     Path(ResourceTypeParam { resource_type }): Path<ResourceTypeParam>,
     Path(ResourceIdParam { resource_id }): Path<ResourceIdParam>,
 ) -> Result<Json<Vec<SubjectGrant>>> {
-    let Some(user) = user else {
-        return Err(AuthorizationError::Unauthenticated.into());
-    };
     let conn = db_pool.get().await?;
     let openfga = regulator.openfga();
-    let authorizer = UserAuthorizer {
-        user,
-        roles,
-        openfga,
-        conn,
-    };
+    let authorizer = authn_state.authorizer(openfga, conn);
     // Ask OpenFGA about grants on the resource
     let ((readers, writers), owners) = match resource_type {
         ResourceType::Infra => {
@@ -837,7 +817,7 @@ pub(in crate::views) async fn update_grants(
         db_pool, regulator, ..
     }): State<AppState>,
     Extension(auth): AuthenticationExt,
-    Extension(authenticated_user): Extension<crate::authentication::State>,
+    Extension(authn_state): Extension<crate::authentication::State>,
     Json(body): Json<BodyUpdateGrants>,
 ) -> Result<impl IntoResponse> {
     // Fetch subjects from the database and determine whether they're a user or a group.
@@ -924,8 +904,7 @@ pub(in crate::views) async fn update_grants(
                 .map(|r| r.into_protected(&subjects))
                 .process_results(|iter| authz::v2::Protected::from_iter(iter))?;
 
-            let authorizer =
-                authenticated_user.authorizer(regulator.openfga(), db_pool.get().await?);
+            let authorizer = authn_state.authorizer(regulator.openfga(), db_pool.get().await?);
 
             match prot.authorize(&authorizer).await?.access().await? {
                 Ok(_) => Ok(StatusCode::NO_CONTENT),
@@ -1836,49 +1815,6 @@ mod tests {
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn whoami_skip_with_user_info() {
-        let app = test_app!().build();
-        let user = app
-            .user("bob", "Bob")
-            .with_roles([Role::Admin])
-            .create()
-            .await;
-
-        let user_data = app
-            .get("/authz/me")
-            .by_user(user.as_ref())
-            .skip_authz()
-            .await
-            .assert_status_ok()
-            .json::<WhoamiResponse>();
-
-        assert_eq!(
-            user_data,
-            WhoamiResponse {
-                id: user.id,
-                name: "Bob".to_string(),
-                roles: HashSet::from([Role::Admin]),
-            }
-        );
-    }
-
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn whoami_skip_with_unprivileged_user_info() {
-        let app = test_app!().build();
-        let user = app.user("test", "test").create().await;
-
-        let WhoamiResponse { roles, .. } = app
-            .get("/authz/me")
-            .by_user(user.as_ref())
-            .skip_authz()
-            .await
-            .assert_status_ok()
-            .json::<WhoamiResponse>();
-
-        assert_eq!(roles, HashSet::from([Role::Admin]));
-    }
-
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn users_info() {
         let app = test_app!().build();
         let admin = app
@@ -2001,24 +1937,6 @@ mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn user_groups_skip_authz() {
         let app = test_app!().build();
-        let user = app.user("test", "test").create().await;
-        let group = app.group("group").with_members([&user]).create().await;
-
-        // With a user in the request
-        let groups = app
-            .get("/authz/me/groups")
-            .by_user(user.as_ref())
-            .skip_authz()
-            .await
-            .assert_status_ok()
-            .json::<Vec<Group>>();
-        assert_eq!(
-            groups,
-            vec![editoast_models::Group {
-                id: group.id,
-                name: "group".to_owned(),
-            }]
-        );
 
         // Without a user in the request
         app.get("/authz/me/groups")

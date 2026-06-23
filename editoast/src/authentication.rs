@@ -23,10 +23,7 @@ pub enum Mode {
         impersonator_name: String,
         impersonated_identity: String,
     },
-    Skip {
-        identity: Option<String>,
-        name: Option<String>,
-    },
+    Skip,
 }
 
 #[derive(Debug, Default)]
@@ -43,10 +40,11 @@ impl Mode {
         let authn = match params {
             AuthenticationParameters {
                 skip: true,
-                identity,
-                name,
-                ..
-            } => Self::Skip { identity, name },
+                identity: None,
+                name: None,
+                impersonate: None,
+            } => Self::Skip,
+            AuthenticationParameters { skip: true, .. } => return Err(params),
             AuthenticationParameters {
                 impersonate: Some(impersonated_identity),
                 identity: Some(impersonator_identity),
@@ -76,19 +74,30 @@ impl Mode {
 
 #[derive(Debug, Clone)]
 pub enum State {
-    Skip {
-        #[expect(unused)]
-        user: Option<authz::User>,
-        #[expect(unused)]
-        roles: Vec<Role>,
-    },
-    Authenticated {
-        user: authz::User,
-        roles: Vec<Role>,
-    },
+    Skip,
+    Authenticated { user: authz::User, roles: Vec<Role> },
 }
 
 impl State {
+    /// The authenticated user if authorization is **not** skipped
+    ///
+    /// If this function returns a user, then it is subject to permissions,
+    /// otherwise they likely can be bypassed.
+    pub fn regular_user(&self) -> Option<authz::User> {
+        match self {
+            State::Skip => None,
+            State::Authenticated { user, .. } => Some(*user),
+        }
+    }
+
+    pub fn roles(&self) -> &[Role] {
+        static EMPTY_ROLES: [Role; 0] = [];
+        match self {
+            State::Skip => &EMPTY_ROLES,
+            State::Authenticated { roles, .. } => roles,
+        }
+    }
+
     pub fn authorizer<'a>(
         &self,
         openfga: &'a fga::Client,
@@ -98,7 +107,7 @@ impl State {
             State::Authenticated { user, roles } => {
                 itertools::Either::Left(UserAuthorizer::new(*user, roles.clone(), openfga, conn))
             }
-            State::Skip { .. } => itertools::Either::Right(SystemAuthorizer {
+            State::Skip => itertools::Either::Right(SystemAuthorizer {
                 openfga,
                 conn: conn.clone(),
             }),
@@ -121,7 +130,7 @@ impl State {
                 let user = user.expect("providing the request user is required when Mode::Authenticated or Mode::Impersonating");
                 Ok(State::Authenticated { user, roles })
             }
-            Mode::Skip { .. } => Ok(State::Skip { user, roles }),
+            Mode::Skip => Ok(State::Skip),
         }
     }
 }
