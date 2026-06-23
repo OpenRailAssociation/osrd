@@ -3,7 +3,7 @@ import React, { useState, useRef, useCallback } from 'react';
 import cx from 'classnames';
 
 import Input, { type InputProps } from './Input';
-import InputModal from './InputModal';
+import InputPopover from './InputPopover';
 
 export type TimePickerProps = Omit<
   InputProps,
@@ -152,7 +152,7 @@ const TimePicker = ({
         ref={inputRef}
         step={displaySeconds ? 1 : 60}
       />
-      <InputModal
+      <InputPopover
         inputRef={inputRef}
         isOpen={isModalOpen}
         onClose={closeModal}
@@ -214,7 +214,7 @@ const TimePicker = ({
             </>
           )}
         </div>
-      </InputModal>
+      </InputPopover>
     </div>
   );
 };
