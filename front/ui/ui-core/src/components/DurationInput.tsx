@@ -55,13 +55,15 @@ function normalizeUnits(units: UnitProps[], padChar: string, max: number): UnitS
   });
 
   configs.sort((a, b) => b.msPerUnit - a.msPerUnit);
-  return configs.map((unit, idx) => {
+
+  return configs.map((unit, idx): UnitSetting => {
     const prev = idx > 0 ? configs[idx - 1] : null;
     const digits = prev
       ? unit.digits
       : max < Infinity
         ? String(Math.floor(max / unit.msPerUnit)).length
         : undefined;
+
     return {
       ...unit,
       digits,
@@ -74,7 +76,7 @@ function normalizeUnits(units: UnitProps[], padChar: string, max: number): UnitS
 type FormattedValues = Record<string, string>;
 
 function toUnitField(ms: number, unit: UnitSetting): [string, string] {
-  const value = Math.floor(ms / (unit.msPerUnit || 1)) % unit.max;
+  const value = Math.floor(ms / (unit.msPerUnit || 1)) % (unit.max ?? Infinity);
   return [unit.key, String(value || unit.padChar).padStart(unit.digits ?? 0, unit.padChar)];
 }
 
@@ -179,7 +181,7 @@ function useDurationInput({
       }
 
       const ms = toTotalMilliseconds(fields, formattedValues);
-      const clamped = Math.min(max ?? ms, ms);
+      const clamped = max ? Math.min(max, ms) : ms;
       const next = toFormattedValues(fields, clamped);
 
       setFormattedValues(next);
