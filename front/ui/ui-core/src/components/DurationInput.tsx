@@ -152,6 +152,15 @@ function useDurationInput({
     [focusNext]
   );
 
+  const submitChange = useCallback(() => {
+    const ms = toTotalMilliseconds(fields, formattedValues);
+    const clamped = max ? Math.min(max, ms) : ms;
+    const next = toFormattedValues(fields, clamped);
+
+    setFormattedValues(next);
+    onChange?.(toTotalMilliseconds(fields, next));
+  }, [fields, formattedValues, max, onChange]);
+
   const handleKeyDown = useCallback(
     (setting: UnitSetting, e: React.KeyboardEvent<HTMLInputElement>) => {
       const input = e.currentTarget;
@@ -172,8 +181,12 @@ function useDurationInput({
         e.preventDefault();
         focusPrevious(setting.key);
       }
+
+      if (e.key === 'Enter') {
+        submitChange();
+      }
     },
-    [focusNext, focusPrevious]
+    [focusNext, focusPrevious, submitChange]
   );
 
   const handleFocus = useCallback((setting: UnitSetting) => focusField(setting.key), [focusField]);
@@ -185,14 +198,9 @@ function useDurationInput({
         return;
       }
 
-      const ms = toTotalMilliseconds(fields, formattedValues);
-      const clamped = max ? Math.min(max, ms) : ms;
-      const next = toFormattedValues(fields, clamped);
-
-      setFormattedValues(next);
-      onChange?.(toTotalMilliseconds(fields, next));
+      submitChange();
     },
-    [fields, containerRef.current, formattedValues, max, onChange]
+    [containerRef.current, submitChange]
   );
 
   return {
