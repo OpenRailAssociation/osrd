@@ -103,6 +103,7 @@ const useLazyProjectTrains = ({
     };
   }, [
     infraId,
+    timetableId,
     electricalProfileSetId,
     projectionType,
     path,
