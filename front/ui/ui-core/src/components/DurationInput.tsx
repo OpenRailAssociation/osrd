@@ -233,7 +233,7 @@ const UnitField = function UnitField({
         type="text"
         inputMode="numeric"
         style={{
-          width: `${digits}ch`,
+          width: digits ? `${digits ?? 2}ch` : `${value.length || 1}ch`,
         }}
         tabIndex={tabIndex}
         value={value}
