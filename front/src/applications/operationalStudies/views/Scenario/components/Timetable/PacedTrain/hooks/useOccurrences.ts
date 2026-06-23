@@ -10,12 +10,33 @@ import {
   getOccurrencesNb,
   computeIndexedOccurrenceStartTime,
 } from 'modules/trainSchedule/helpers/pacedTrain';
-import type { Occurrence, PacedTrainWithPacedWithDetails } from 'modules/trainSchedule/types';
+import type {
+  Occurrence,
+  PacedTrainWithPacedWithDetails,
+  SimulatedException,
+} from 'modules/trainSchedule/types';
 import {
   formatEditoastIdToPacedTrainId,
   formatPacedTrainIdToExceptionId,
   formatPacedTrainIdToIndexedOccurrenceId,
 } from 'utils/trainId';
+
+export const returnOccurrenceExceptionRollingStock = ({
+  exception,
+  rollingStock,
+  rollingStockList,
+}: {
+  exception: SimulatedException | undefined;
+  rollingStock: LightRollingStockWithLiveries | undefined;
+  rollingStockList: LightRollingStockWithLiveries[] | null;
+}) => {
+  let occurrenceRollingStock = rollingStock;
+  if (exception?.rolling_stock && rollingStockList) {
+    const rollingStockName = exception.rolling_stock.rolling_stock_name;
+    occurrenceRollingStock = rollingStockList.find((rs) => rs.name === rollingStockName);
+  }
+  return occurrenceRollingStock;
+};
 
 /**
  * This hook computes the occurrences of a paced train based on its exceptions and the number of occurrences defined by the paced train
@@ -54,11 +75,11 @@ const useOccurrences = (
 
       const correspondingException = findExceptionWithOccurrenceId(exceptions, occurrenceId);
 
-      let occurrenceRollingStock = rollingStock;
-      if (correspondingException?.rolling_stock && rollingStockList) {
-        const rollingStockName = correspondingException.rolling_stock.rolling_stock_name;
-        occurrenceRollingStock = rollingStockList.find((rs) => rs.name === rollingStockName);
-      }
+      const occurrenceRollingStock = returnOccurrenceExceptionRollingStock({
+        exception: correspondingException,
+        rollingStock,
+        rollingStockList,
+      });
 
       const startTime = correspondingException?.start_time
         ? new Date(correspondingException.start_time.value)
@@ -102,11 +123,11 @@ const useOccurrences = (
     exceptions.forEach((exception) => {
       if (exception.occurrence_index !== undefined || !exception.start_time) return;
 
-      let occurrenceRollingStock = rollingStock;
-      if (exception.rolling_stock && rollingStockList) {
-        const rollingStockName = exception.rolling_stock.rolling_stock_name;
-        occurrenceRollingStock = rollingStockList.find((rs) => rs.name === rollingStockName);
-      }
+      const occurrenceRollingStock = returnOccurrenceExceptionRollingStock({
+        exception,
+        rollingStock,
+        rollingStockList,
+      });
 
       const startTime = new Date(exception.start_time.value);
 
