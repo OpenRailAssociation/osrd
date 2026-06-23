@@ -2,7 +2,8 @@ import { renderHook, type RenderHookOptions, type RenderHookResult } from '@test
 import { Provider } from 'react-redux';
 import { beforeEach } from 'vitest';
 
-import { createStore, type Store } from 'store';
+import type { RootState } from 'reducers';
+import { createStore, createStoreWithoutMiddleware, type Store } from 'store';
 
 // Create a fresh store before each test, so that tests don't inherit any state
 // from previous tests (e.g. rtk-query's cache isn't polluted with a previous
@@ -26,13 +27,14 @@ beforeEach(() => {
  */
 export function renderHookWithStore<Result, Props>(
   render: (initialProps: Props) => Result,
-  options?: RenderHookOptions<Props>
+  options?: RenderHookOptions<Props>,
+  rootState?: Partial<RootState>
 ): RenderHookResult<Result, Props> {
+  const activeStore = rootState ? createStoreWithoutMiddleware(rootState) : store;
   return renderHook(render, {
     ...options,
     wrapper: ({ children }) => {
-      const inner = <Provider store={store}>{children}</Provider>;
-
+      const inner = <Provider store={activeStore}>{children}</Provider>;
       // If the user has provided their own wrapper, wrap the wrapper! 🕺
       const Wrapper = options?.wrapper;
       return Wrapper ? <Wrapper>{inner}</Wrapper> : inner;
