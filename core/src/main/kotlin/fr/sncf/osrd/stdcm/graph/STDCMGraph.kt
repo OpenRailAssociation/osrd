@@ -143,7 +143,15 @@ class STDCMGraph(
                 explorer = node.infraExplorer,
             )
         val explorer = node.infraExplorer.clone()
-        if (node.locationOnEdge != null) {
+        if (
+            node.locationOnEdge != null &&
+                explorer.getBacktrackLocationsInRange().none {
+                    it == explorer.getCurrentBlockRange().pathEnd
+                }
+        ) {
+            // If we're at a non-backtracking stop in the middle of an edge, we want to generate the
+            // rest of the edge on the rest of the block, starting at the stop and ending at the end
+            // of the block.
             val backtrackingLocation = explorer.getBacktrackingLocationInLookahead()
             visitedNodesParameters.fingerprint =
                 VisitedNodes.Fingerprint(
