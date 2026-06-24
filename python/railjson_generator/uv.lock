@@ -422,7 +422,7 @@ requires-dist = [
 [package.metadata.requires-dev]
 dev = [
     { name = "pyright", specifier = "~=1.1.410" },
-    { name = "ruff", specifier = "~=0.15.17" },
+    { name = "ruff", specifier = "~=0.15.18" },
 ]
 
 [[package]]
