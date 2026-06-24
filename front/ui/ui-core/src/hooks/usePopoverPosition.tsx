@@ -32,9 +32,14 @@ export const usePopoverPosition = (
   }, [inputRef, popoverRef, verticalOffset]);
 
   useEffect(() => {
-    const handleResize = () => calculatePosition();
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    const handleResizeScroll = () => calculatePosition();
+    window.addEventListener('resize', handleResizeScroll);
+    // TODO: Get rid of this as soon as we can, using CSS native anchoring
+    window.addEventListener('scroll', handleResizeScroll, true);
+    return () => {
+      window.removeEventListener('resize', handleResizeScroll);
+      window.removeEventListener('scroll', handleResizeScroll, true);
+    };
   }, [calculatePosition]);
 
   return { popoverPosition, calculatePosition };
