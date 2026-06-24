@@ -363,6 +363,7 @@
     "errorMessages": {
       "error": "Une erreur est survenue",
       "hardErrorInfra": "L'infrastructure comporte des erreurs et ne peut être utilisée sans être corrigée au préalable.",
+      "intervalTooHigh": "La cadence de la mission doit être inférieure à 730 heures (un mois)",
       "intervalTooLow": "La cadence de la mission doit être supérieure d'au moins une minute",
       "invalidInitialSpeed": "La vitesse initiale doit être arrondie au dixième",
       "mandatoryField": "Champ obligatoire",
