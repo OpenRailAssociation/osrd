@@ -203,14 +203,14 @@ fn get_geo_json_sql_query(table_name: &str, view: &View) -> String {
         ",
         on_field = view.on_field,
         data_expr = view.data_expr,
-        exclude_fields = &view
+        exclude_fields = view
             .exclude_fields
             .iter()
             .map(|field| format!("- '{field}'"))
             .collect::<Vec<_>>()
             .join(" "),
         joins = view.joins.join(" "),
-        where_condition = &view
+        where_condition = view
             .where_expr
             .iter()
             .map(|field| format!("AND ({field})"))

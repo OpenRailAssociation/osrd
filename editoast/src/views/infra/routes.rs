@@ -273,7 +273,7 @@ pub(in crate::views) async fn get_routes_nodes(
         filtered_routes
             .iter()
             .fold(HashMap::new(), |mut acc, route| {
-                for (node_id, _) in node_states.iter() {
+                for node_id in node_states.keys() {
                     let node_direction = route
                         .switches_directions
                         .get(&node_id.clone().into())

@@ -54,15 +54,15 @@ pub async fn import_rolling_stock(
                     .unwrap();
                 println!(
                     "   ↳ ✅ Rolling stock {}[{}] saved! (forced update)",
-                    &rolling_stock_name.bold(),
-                    &rolling_stock.id,
+                    rolling_stock_name.bold(),
+                    rolling_stock.id,
                 );
             }
             (Some(existing_rolling_stock), false) => {
                 println!(
                     "   ↳ ⚠️  Rolling stock {}[{}] already existing! (try use \"--force\" to update it)",
-                    &rolling_stock_name.bold(),
-                    &existing_rolling_stock.id,
+                    rolling_stock_name.bold(),
+                    existing_rolling_stock.id,
                 );
             }
             _ => {
@@ -73,8 +73,8 @@ pub async fn import_rolling_stock(
                     .await?;
                 println!(
                     "   ↳ ✅ Rolling stock {}[{}] saved!",
-                    &rolling_stock_name.bold(),
-                    &rolling_stock.id,
+                    rolling_stock_name.bold(),
+                    rolling_stock.id,
                 );
             }
         };
@@ -106,8 +106,8 @@ pub async fn import_towed_rolling_stock(
             .await?;
         println!(
             "✅ Towed rolling stock {}[{}] saved!",
-            &towed_rolling_stock.name.bold(),
-            &towed_rolling_stock.id
+            towed_rolling_stock.name.bold(),
+            towed_rolling_stock.id
         );
     }
     Ok(())
