@@ -82,6 +82,16 @@ function computeInitialSpeedError(
   return null;
 }
 
+type ServiceCadenceError = 'TOO_LOW' | 'TOO_HIGH' | null;
+
+const ONE_MONTH_IN_MS = 2_628_000_000;
+
+function computeServiceCadenceError(serviceCadence?: number): ServiceCadenceError {
+  if (!serviceCadence) return 'TOO_LOW';
+  if (serviceCadence >= ONE_MONTH_IN_MS) return 'TOO_HIGH';
+  return null;
+}
+
 function getFieldsFromTrain(train: Train): TrainFieldsState {
   return {
     train_name: train.train_name,
@@ -110,9 +120,10 @@ function applyFieldsToTrain(
   const paced = train.paced
     ? {
         exceptions: train.paced.exceptions,
-        interval: fields.service_changed_confirmed
-          ? new Duration({ milliseconds: fields.service_cadence }).toISOString()
-          : train.paced.interval,
+        interval:
+          fields.service_changed_confirmed && !computeServiceCadenceError(fields.service_cadence)
+            ? new Duration({ milliseconds: fields.service_cadence }).toISOString()
+            : train.paced.interval,
         time_window: fields.service_changed_confirmed
           ? new Duration({ milliseconds: fields.service_window }).toISOString()
           : train.paced.time_window,
@@ -326,6 +337,11 @@ const ExpandedTrainForm = ({
     [fields.initial_speed, selectedRollingStock, computeInitialSpeedError]
   );
 
+  const serviceCadenceError = useMemo(
+    () => computeServiceCadenceError(fields.service_cadence),
+    [fields.service_cadence]
+  );
+
   const erroneousFields = useMemo(
     () => !fields.train_name || !fields.initial_speed || !!initialSpeedError,
     [fields.train_name, fields.initial_speed, initialSpeedError]
@@ -386,6 +402,17 @@ const ExpandedTrainForm = ({
                     label={t('manageTrainSchedule.trainHeader.form.serviceCadence')}
                     value={fields.service_cadence ?? 1_800_000} // 30m
                     onChange={(ms) => onFieldImmediateChange('service_cadence', ms)}
+                    statusWithMessage={
+                      serviceCadenceError
+                        ? {
+                            status: 'error',
+                            message:
+                              serviceCadenceError === 'TOO_HIGH'
+                                ? t('manageTrainSchedule.errorMessages.intervalTooHigh')
+                                : t('manageTrainSchedule.errorMessages.intervalTooLow'),
+                          }
+                        : undefined
+                    }
                   />
                 </div>
                 <div className="train-service-window">

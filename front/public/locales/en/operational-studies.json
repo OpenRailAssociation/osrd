@@ -363,6 +363,7 @@
     "errorMessages": {
       "error": "An error has occurred",
       "hardErrorInfra": "The infrastructure contains errors and cannot be used without first being corrected.",
+      "intervalTooHigh": "The cadence of the service must be less than 730 hours (one month)",
       "intervalTooLow": "The cadence of the service has to be at least one minute",
       "invalidInitialSpeed": "The initial speed must be rounded to the nearest tenth",
       "mandatoryField": "Required field",
