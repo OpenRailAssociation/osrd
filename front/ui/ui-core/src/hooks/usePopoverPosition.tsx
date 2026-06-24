@@ -32,7 +32,6 @@ export const usePopoverPosition = (
   }, [inputRef, popoverRef, verticalOffset]);
 
   useEffect(() => {
-    calculatePosition();
     const handleResize = () => calculatePosition();
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
