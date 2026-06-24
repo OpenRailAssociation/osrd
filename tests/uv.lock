@@ -840,7 +840,7 @@ requires-dist = [
     { name = "osrd-schemas", editable = "../python/osrd_schemas" },
     { name = "osrd-schemas-auto", editable = "../osrd_schemas_auto" },
     { name = "pyright", marker = "extra == 'check'", specifier = "~=1.1.410" },
-    { name = "pytest", marker = "extra == 'check'", specifier = "~=9.0.3" },
+    { name = "pytest", marker = "extra == 'check'", specifier = "~=9.1.1" },
     { name = "pytest-cov", marker = "extra == 'check'", specifier = "~=7.1.0" },
     { name = "ruff", marker = "extra == 'check'", specifier = "~=0.15.17" },
 ]
