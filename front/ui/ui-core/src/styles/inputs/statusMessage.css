@@ -11,7 +11,7 @@
   .status-message {
     letter-spacing: 0;
     text-align: left;
-    line-height: 1.5rem;
+    line-height: 1.5;
     @apply font-semibold;
 
     &.info {
