@@ -188,6 +188,7 @@ data class SpacingResourceGenerator(
      *   infra, but doing so would make stdcm vulnerable to data error.
      */
     fun processUpdate(callbacks: IncrementalRequirementCallbacks): List<SpacingRequirement>? {
+        return listOf()
         val simulatedLength = callbacks.currentPathOffset
         val signalsToProcess = pendingSignals.takeWhile { it.sightOffset <= simulatedLength }
         val signalEndOffsets = mutableMapOf<LogicalSignalId, Offset<PhysicsPath>>()
