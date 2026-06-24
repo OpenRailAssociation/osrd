@@ -40,8 +40,8 @@ export const expectedOutputsCellsData: TimesStopsTableRow[] = [
     powerRestriction: '',
     margin: {
       requestedTheoretical: '1min/100km',
-      computedTheoretical: '00m09s',
-      real: '04m13s',
+      computedTheoretical: '00m08s',
+      real: '04m12s',
       difference: '+04m04s',
     },
     timeFromAboveWaypoint: '',

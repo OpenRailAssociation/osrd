@@ -26,20 +26,15 @@ class SimulationSettingsTab {
     await expect(this.electricalProfilesSwitch).not.toBeChecked();
   }
 
-  async activateLinearMargin() {
-    await expect(this.linearMarginSwitch).toBeVisible();
-    await this.linearMarginSwitch.click();
-  }
-
-  // Validate that the Mareco Margin switch is ON
-  async checkMarecoMargin() {
-    await expect(this.marecoMarginSwitch).toBeVisible();
-    await expect(this.marecoMarginSwitch).toBeChecked();
-  }
-
   async activateMarecoMargin() {
     await expect(this.marecoMarginSwitch).toBeVisible();
     await this.marecoMarginSwitch.click();
+    await expect(this.marecoMarginSwitch).toBeChecked();
+  }
+
+  async checkLinearMargin() {
+    await expect(this.linearMarginSwitch).toBeVisible();
+    await expect(this.linearMarginSwitch).toBeChecked();
   }
 
   async selectSpeedLimitTagOption(speedLimitTag: string) {

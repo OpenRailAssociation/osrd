@@ -119,7 +119,7 @@ test.describe('Simulation settings tab', { tag: ['@op', '@simulation-settings-ta
     await test.step('Activate electrical profiles + Mareco margin', async () => {
       await operationalStudiesPage.openSimulationSettingsTab();
       await simulationSettingsTab.checkElectricalProfile();
-      await simulationSettingsTab.checkMarecoMargin();
+      await simulationSettingsTab.activateMarecoMargin();
     });
 
     await test.step('Create unique train and verify (electrical profile ON)', async () => {
@@ -184,7 +184,7 @@ test.describe('Simulation settings tab', { tag: ['@op', '@simulation-settings-ta
     await test.step('Enable Mareco margin + speed limit tag (HLP), disable electrical profile', async () => {
       await operationalStudiesPage.openSimulationSettingsTab();
       await simulationSettingsTab.deactivateElectricalProfile();
-      await simulationSettingsTab.checkMarecoMargin();
+      await simulationSettingsTab.activateMarecoMargin();
       await simulationSettingsTab.selectSpeedLimitTagOption('E32C');
     });
 
@@ -226,7 +226,7 @@ test.describe('Simulation settings tab', { tag: ['@op', '@simulation-settings-ta
   });
 
   /** *************** Test 3 **************** */
-  test('Activate linear and mareco margin', async ({
+  test('Check default linear margin and activate mareco margin', async ({
     browserName,
     timesAndStopsTab,
     operationalStudiesPage,
@@ -257,10 +257,10 @@ test.describe('Simulation settings tab', { tag: ['@op', '@simulation-settings-ta
       }
     });
 
-    await test.step('Enable Linear margin (electrical OFF)', async () => {
+    await test.step('Deactivate electrical profile', async () => {
       await operationalStudiesPage.openSimulationSettingsTab();
       await simulationSettingsTab.deactivateElectricalProfile();
-      await simulationSettingsTab.activateLinearMargin();
+      await simulationSettingsTab.checkLinearMargin();
     });
 
     await test.step('Create unique train and verify (Linear)', async () => {
@@ -335,10 +335,9 @@ test.describe('Simulation settings tab', { tag: ['@op', '@simulation-settings-ta
         }
       });
 
-      await test.step('Enable Linear margin + electrical profile + speed limit tag', async () => {
+      await test.step('Enable electrical profile + speed limit tag', async () => {
         await operationalStudiesPage.openSimulationSettingsTab();
         await simulationSettingsTab.checkElectricalProfile();
-        await simulationSettingsTab.activateLinearMargin();
         await simulationSettingsTab.selectSpeedLimitTagOption('E32C');
       });
 

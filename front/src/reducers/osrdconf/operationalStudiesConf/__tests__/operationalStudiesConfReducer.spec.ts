@@ -22,7 +22,7 @@ const baseTrainScheduleWithSummary: TrainScheduleWithSummaries = {
   id: 1,
   name: 'train1',
   train_schedule_set_id: 1000,
-  constraint_distribution: 'MARECO',
+  constraint_distribution: 'STANDARD',
   rollingStockName: 'rollingStock1',
   rollingStock: { id: 1, name: 'rollingStock1' } as LightRollingStockWithLiveries,
   path: [
