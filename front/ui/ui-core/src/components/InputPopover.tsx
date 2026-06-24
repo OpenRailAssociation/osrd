@@ -34,7 +34,7 @@ const InputPopover = ({
       popoverRef.current.showPopover();
       calculatePosition();
     }
-  }, [isOpen, modalRef, calculatePosition]);
+  }, [isOpen, calculatePosition]);
 
   useOutsideClick(popoverRef, onClose);
 
