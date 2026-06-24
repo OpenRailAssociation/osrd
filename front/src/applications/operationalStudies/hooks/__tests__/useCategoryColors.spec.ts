@@ -60,6 +60,7 @@ describe('useCategoryColors', () => {
       base: '#ff0000',
       strong: '#cc0000',
       surface: '#ffe0e0',
+      soft: '#ff6b43',
     });
     expect(result.current.currentSubCategory).toEqual(mockSubCategories[0]);
   });
