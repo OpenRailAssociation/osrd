@@ -6,7 +6,7 @@
   grid-template-columns: repeat(3, minmax(200px, 1fr)) 1fr [end-column];
 
   /* Useful to align some non-field element with other fields  */
-  --non-field-padding: 32px 13px 16px 16px;
+  --non-field-spacing: 32px 13px 16px 16px;
 
   :where(& > *) {
     grid-column: 1 / end-column;
@@ -45,13 +45,16 @@
     }
 
     .loose-field {
+      align-self: start;
       align-content: center;
-      padding: var(--non-field-padding);
+      margin: var(--non-field-spacing);
     }
 
     .actions {
-      place-self: end end;
-      padding: var(--non-field-padding);
+      min-height: 28px;
+      place-self: start end;
+      align-content: center;
+      margin: var(--non-field-spacing);
       grid-row: 3;
       grid-column: end-column;
     }
@@ -91,7 +94,6 @@
     color: var(--info60);
     font-weight: 600;
     margin: 16px 14px 0 16px;
-    align-self: center;
     height: 28px;
     display: flex;
     align-items: center;
@@ -121,9 +123,15 @@
       margin-bottom: unset;
     }
 
+    .train-paced-kind {
+      margin-top: 32px;
+    }
+
     .actions {
-      align-self: center;
-      padding: var(--non-field-padding);
+      align-self: start;
+      align-content: center;
+      min-height: 28px;
+      margin: var(--non-field-spacing);
     }
   }
 
@@ -146,7 +154,7 @@
 
     .actions {
       place-self: center start;
-      padding: var(--non-field-padding);
+      padding: var(--non-field-spacing);
     }
   }
 
