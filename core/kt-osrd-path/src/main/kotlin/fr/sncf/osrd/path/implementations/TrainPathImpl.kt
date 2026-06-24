@@ -67,8 +67,7 @@ data class TrainPathImpl(
                 require(range.objectEnd <= objectLength(range.value))
                 previousRange = range
             }
-            require(list.first().pathBegin == Offset.zero<TrainPath>())
-            require(list.last().pathEnd == getLength())
+            require(list.last().pathEnd - list.first().pathBegin == getLength().distance)
         }
         routes?.let {
             if (!routes.isEmpty()) checkRangeList(routes) { rawInfra.getRouteLength(it) }
@@ -86,11 +85,16 @@ data class TrainPathImpl(
     override fun subPath(
         from: Offset<PhysicsPath>?,
         to: Offset<PhysicsPath>?,
+        resetOffsets: Boolean,
         includeExactStart: Boolean,
         includeExactEnd: Boolean,
     ): TrainPath {
         val fromDist = from ?: Offset(0.meters)
         val toDist = to ?: getLength()
+        var subpathBacktrackLocations = backtrackLocations.filter { it.cast() in fromDist..toDist }
+        if (resetOffsets) {
+            subpathBacktrackLocations = subpathBacktrackLocations.map { Offset(it - fromDist) }
+        }
         return TrainPathImpl(
             rawInfra = rawInfra,
             blockInfra = blockInfra,
@@ -98,7 +102,7 @@ data class TrainPathImpl(
                 routes?.subRange(
                     fromDist,
                     toDist,
-                    resetOffsets = true,
+                    resetOffsets = resetOffsets,
                     includeExactStart = includeExactStart,
                     includeExactEnd = includeExactEnd,
                 ),
@@ -106,7 +110,7 @@ data class TrainPathImpl(
                 blocks.subRange(
                     fromDist,
                     toDist,
-                    resetOffsets = true,
+                    resetOffsets = resetOffsets,
                     includeExactStart = includeExactStart,
                     includeExactEnd = includeExactEnd,
                 ),
@@ -114,13 +118,13 @@ data class TrainPathImpl(
                 chunks.subRange(
                     fromDist,
                     toDist,
-                    resetOffsets = true,
+                    resetOffsets = resetOffsets,
                     includeExactStart = includeExactStart,
                     includeExactEnd = includeExactEnd,
                 ),
             electricalProfileMapping = electricalProfileMapping,
             haveApproximateBlocks = haveApproximateBlocks,
-            backtrackLocations = backtrackLocations.filter { it.cast() in fromDist..toDist },
+            backtrackLocations = subpathBacktrackLocations,
         )
     }
 
@@ -290,7 +294,7 @@ data class TrainPathImpl(
     }
 
     override fun getLength(): Length<PhysicsPath> {
-        return blocks.last().pathEnd
+        return Length(blocks.last().pathEnd - blocks.first().pathBegin)
     }
 
     override fun getTrackLocationAtOffset(pathOffset: Offset<PhysicsPath>): TrackLocation {

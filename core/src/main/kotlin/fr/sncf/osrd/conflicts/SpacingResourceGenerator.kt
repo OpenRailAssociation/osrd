@@ -37,6 +37,7 @@ import fr.sncf.osrd.utils.units.Speed
 import fr.sncf.osrd.utils.units.metersPerSecond
 import fr.sncf.osrd.utils.units.toOffset
 import kotlin.collections.iterator
+import kotlin.comparisons.compareBy
 import kotlin.math.max
 import kotlin.math.min
 import mu.KotlinLogging
@@ -80,17 +81,20 @@ data class SpacingResourceGenerator(
     val blockInfra: BlockInfra,
     val loadedSignalInfra: LoadedSignalInfra,
     val simulator: SignalingSimulator,
+    val startOffset: Offset<PhysicsPath>,
     // TODO: Required for ETCS (STDCM doesn't provide it currently, will have to eventually)
     val context: EnvelopeSimContext? = null,
 ) {
     constructor(
         fullInfra: FullInfra,
+        startOffset: Offset<PhysicsPath>,
         context: EnvelopeSimContext? = null,
     ) : this(
         fullInfra.rawInfra,
         fullInfra.blockInfra,
         fullInfra.loadedSignalInfra,
         fullInfra.signalingSimulator,
+        startOffset,
         context,
     )
 
@@ -107,8 +111,11 @@ data class SpacingResourceGenerator(
     // but data for the same zone in different directions can't be merged
     private val ongoingZoneRequirements = mutableMapOf<ZonePathId, OngoingZoneRequirement>()
 
-    private var isPathComplete: Boolean = false
-    private var reachedFirstSignal: Boolean = false
+    // True if either the path is complete, i.e. the destination has been seen, and the sub-path
+    // ends at this destination, or the sub-path ends at a backtracking.
+    // False otherwise.
+    private var isSubPathComplete: Boolean = false
+    private var reachedSubPathFirstSignal: Boolean = false
 
     /**
      * Add a new segment of the path. The ranges must cover the same range of `Offset<PhysicsPath>`,
@@ -118,34 +125,38 @@ data class SpacingResourceGenerator(
         newBlockRanges: List<BlockRange>,
         newRouteRanges: List<RouteRange>,
         newStops: List<PathStop>,
-        isPathComplete: Boolean,
+        isSubPathComplete: Boolean,
     ) {
         // Some assertions on the inputs
         val previousPathEnd = getCurrentPathEndOffset()
         val newPathEnd = newBlockRanges.last().pathEnd
         val emptyPathExtension = previousPathEnd == newPathEnd
-        require(!this.isPathComplete || emptyPathExtension)
-        require(newBlockRanges[0].pathBegin == previousPathEnd)
-        require(newRouteRanges[0].pathBegin == previousPathEnd)
+        require(!this.isSubPathComplete || emptyPathExtension)
+        require(newBlockRanges.first().pathBegin == previousPathEnd)
+        require(newRouteRanges.first().pathBegin == previousPathEnd)
         require(newPathEnd == newRouteRanges.last().pathEnd)
         require(newStops.all { it.pathOffset in previousPathEnd..newPathEnd })
 
-        this.isPathComplete = isPathComplete
+        this.isSubPathComplete = isSubPathComplete
         if (emptyPathExtension) return
 
         val newZoneRanges =
             newBlockRanges.mapSubObjects(blockInfra::getBlockZonePaths, rawInfra::getZonePathLength)
         require(newPathEnd == newZoneRanges.last().pathEnd)
+        // TODO: iterate until the end of the newRoute instead to require what's after the
+        //   backtracking or after the end.
+        //   Maybe also under train queue during start or backtracking.
         val signals =
             newBlockRanges.mapPointObjects(
                 blockInfra::getBlockSignals,
                 blockInfra::getSignalsPositions,
             )
 
-        if (!reachedFirstSignal) {
+        if (!reachedSubPathFirstSignal) {
             // We should rely on signaling to generate zone requirements, but that excludes zones
             // before the first signal. We add them manually here.
-            reachedFirstSignal = signals.isNotEmpty()
+            // TODO: use the start of the sub-path as minRequiredOffset?
+            reachedSubPathFirstSignal = signals.isNotEmpty()
             for (zoneRange in newZoneRanges) {
                 ongoingZoneRequirements.getOrPut(zoneRange.value) {
                     OngoingZoneRequirement(zoneRange.pathBegin, zoneRange.pathEnd)
@@ -162,7 +173,7 @@ data class SpacingResourceGenerator(
                 continue // block transition signals are listed on either block
             val physicalSignal = loadedSignalInfra.getPhysicalSignal(signal)
             val sightDistance = rawInfra.getSignalSightDistance(physicalSignal)
-            val sightOffset = max(Offset.zero(), pathOffset - sightDistance)
+            val sightOffset = max(startOffset, pathOffset - sightDistance)
             val sigSystemId = loadedSignalInfra.getSignalingSystem(signal)
             val isCurveBased = simulator.sigModuleManager.isCurveBased(sigSystemId)
             if (
@@ -222,14 +233,21 @@ data class SpacingResourceGenerator(
     /** Clone all the underlying values. Can be used to explore branching paths. */
     fun clone(): SpacingResourceGenerator {
         val res =
-            SpacingResourceGenerator(rawInfra, blockInfra, loadedSignalInfra, simulator, context)
+            SpacingResourceGenerator(
+                rawInfra,
+                blockInfra,
+                loadedSignalInfra,
+                simulator,
+                startOffset,
+                context,
+            )
         res.blockRanges.addAll(blockRanges)
         res.routeRanges.addAll(routeRanges)
         res.zoneRanges.addAll(zoneRanges)
         res.closedSignalStops.addAll(closedSignalStops)
         res.pendingSignals.addAll(pendingSignals)
-        res.isPathComplete = isPathComplete
-        res.reachedFirstSignal = reachedFirstSignal
+        res.isSubPathComplete = isSubPathComplete
+        res.reachedSubPathFirstSignal = reachedSubPathFirstSignal
         for ((zone, data) in ongoingZoneRequirements) res.ongoingZoneRequirements[zone] =
             data.copy()
         return res
@@ -237,7 +255,7 @@ data class SpacingResourceGenerator(
 
     /** Returns the current end of the processed path. */
     fun getCurrentPathEndOffset(): Offset<PhysicsPath> {
-        return blockRanges.lastOrNull()?.pathEnd ?: Offset.zero()
+        return blockRanges.lastOrNull()?.pathEnd ?: startOffset
     }
 
     /**
@@ -344,7 +362,7 @@ data class SpacingResourceGenerator(
     ): SignalingTrainState? {
         val nextSignalOffset =
             pendingSignals.map { it.offset }.firstOrNull { it > signalData.offset }
-                ?: if (isPathComplete) callbacks.currentPathOffset else return null
+                ?: if (isSubPathComplete) callbacks.currentPathOffset else return null
         val maxSpeedInSignalArea =
             callbacks.maxSpeedInRange(signalData.sightOffset, nextSignalOffset)
         class SignalingTrainStateImpl(override val speed: Speed) : SignalingTrainState
@@ -366,7 +384,7 @@ data class SpacingResourceGenerator(
         // Check if more path is needed for a valid solution
         // (i.e. the zone after the end of the path is still required)
         val lastZoneIndex = zoneRanges.lastIndex + 1
-        if (!isPathComplete) {
+        if (!isSubPathComplete) {
             if (
                 isZoneIndexRequiredForSignal(
                     simulationData,
@@ -430,6 +448,7 @@ data class SpacingResourceGenerator(
                 )!!
         ) lowerBound++
         val firstNonRequiredZoneIndex = lowerBound
+        if (firstNonRequiredZoneIndex == 0) return zoneRanges[firstNonRequiredZoneIndex].pathBegin
         return zoneRanges[firstNonRequiredZoneIndex - 1].pathEnd
     }
 
@@ -477,6 +496,8 @@ data class SpacingResourceGenerator(
                 ZoneStatus.OCCUPIED,
                 firstZone = firstZone,
             )
+
+        if (!simulatedSignalStates.containsKey(signal)) return false
         val signalState = simulatedSignalStates[signal]!!
 
         return simulator.sigModuleManager.isConstraining(
@@ -577,4 +598,42 @@ fun <T> ArrayDeque<T>.removeWhile(f: (T) -> Boolean) {
     while (isNotEmpty() && f(this[0])) {
         removeFirst()
     }
+}
+
+/**
+ * Sort requirements, and merge requirements which are on the same zone and have intersecting time
+ * intervals.
+ */
+fun sortAndMergeRequirements(
+    spacingRequirements: List<SpacingRequirement>
+): List<SpacingRequirement> {
+    val sortedRequirements: List<SpacingRequirement> =
+        spacingRequirements.sortedWith(compareBy({ it.zone.index }, { it.beginTime }))
+    val resultRequirements = mutableListOf<SpacingRequirement>()
+    sortedRequirements.forEach { spacingRequirement ->
+        val prevSpacingRequirement = resultRequirements.lastOrNull()
+        if (prevSpacingRequirement == null) {
+            resultRequirements.add(spacingRequirement)
+            return@forEach
+        }
+        if (
+            spacingRequirement.zone == prevSpacingRequirement.zone &&
+                spacingRequirement.beginTime <= prevSpacingRequirement.endTime &&
+                spacingRequirement.isComplete == prevSpacingRequirement.isComplete
+        ) {
+            resultRequirements[resultRequirements.size - 1] =
+                SpacingRequirement(
+                    prevSpacingRequirement.zone,
+                    prevSpacingRequirement.beginTime,
+                    spacingRequirement.endTime,
+                    prevSpacingRequirement.isComplete,
+                )
+        } else {
+            resultRequirements.add(spacingRequirement)
+        }
+    }
+    resultRequirements.sortWith(
+        compareBy({ it.beginTime }, { it.endTime }, { it.zone.index }, { it.isComplete })
+    )
+    return resultRequirements
 }

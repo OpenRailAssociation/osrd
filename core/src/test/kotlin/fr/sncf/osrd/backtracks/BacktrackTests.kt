@@ -3,6 +3,7 @@ package fr.sncf.osrd.backtracks
 import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.api.RJSRoutingRequirement
 import fr.sncf.osrd.api.RJSRoutingZoneRequirement
+import fr.sncf.osrd.api.RJSSpacingRequirement
 import fr.sncf.osrd.api.RangeValues
 import fr.sncf.osrd.api.SignalCriticalPosition
 import fr.sncf.osrd.api.path_properties.makePathPropResponse
@@ -746,6 +747,46 @@ class BacktrackTests {
                 ),
             ),
             resp.finalOutput.routingRequirements,
+        )
+        assertEquals(
+            listOf(
+                RJSSpacingRequirement(
+                    "zone.[det.a1:INCREASING, det.a2:DECREASING]",
+                    0.seconds,
+                    126.463.seconds,
+                ),
+                RJSSpacingRequirement(
+                    "zone.[det.a2:INCREASING, det.a3:DECREASING]",
+                    108.618.seconds,
+                    182.153.seconds,
+                ),
+                RJSSpacingRequirement(
+                    "zone.[det.a3:INCREASING, det.b3:INCREASING, det.c1:DECREASING]",
+                    108.618.seconds,
+                    224.235.seconds,
+                ),
+                RJSSpacingRequirement(
+                    "zone.[det.c1:INCREASING, det.c2:DECREASING]",
+                    108.618.seconds,
+                    533.269.seconds,
+                ),
+                RJSSpacingRequirement(
+                    "zone.[det.a3:INCREASING, det.b3:INCREASING, det.c1:DECREASING]",
+                    506.655.seconds,
+                    580.905.seconds,
+                ),
+                RJSSpacingRequirement(
+                    "zone.[det.b2:INCREASING, det.b3:DECREASING]",
+                    506.655.seconds,
+                    637.857.seconds,
+                ),
+                RJSSpacingRequirement(
+                    "zone.[det.b1:INCREASING, det.b2:DECREASING]",
+                    506.655.seconds,
+                    finalTime,
+                ),
+            ),
+            resp.finalOutput.spacingRequirements,
         )
     }
 

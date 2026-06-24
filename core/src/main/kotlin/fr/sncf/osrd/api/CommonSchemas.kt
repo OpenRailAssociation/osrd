@@ -105,7 +105,7 @@ data class RJSRoutingZoneRequirement(
     @Json(name = "end_time") val endTime: TimeDelta,
 )
 
-class RJSSpacingRequirement(
+data class RJSSpacingRequirement(
     val zone: String,
     @Json(name = "begin_time") val beginTime: TimeDelta,
     @Json(name = "end_time") val endTime: TimeDelta,
