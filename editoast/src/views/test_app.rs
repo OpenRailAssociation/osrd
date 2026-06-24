@@ -217,7 +217,7 @@ impl TestAppBuilder {
         );
 
         let store_name =
-            fga::test_utilities::sanitize_store_name_length(&format!("authz@{}", &self.test_name));
+            fga::test_utilities::sanitize_store_name_length(&format!("authz@{}", self.test_name));
         let fga_connection_settings = fga::client::ConnectionSettings::new(
             Url::parse("http://localhost:8091").unwrap(),
             Limits::default(),

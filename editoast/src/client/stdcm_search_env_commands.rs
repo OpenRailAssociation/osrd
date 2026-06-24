@@ -319,8 +319,6 @@ mod tests {
     use crate::fixtures::create_work_schedule_group;
     use crate::fixtures::simple_paced_train_changeset;
 
-    use editoast_models::prelude::*;
-
     use super::*;
     use chrono::DateTime;
     use chrono::Utc;

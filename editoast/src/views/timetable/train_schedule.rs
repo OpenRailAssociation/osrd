@@ -1790,7 +1790,7 @@ mod tests {
     use core_client::simulation::SpeedLimitProperties;
     use database::DbConnectionPoolV2;
     use editoast_models::TrainScheduleException;
-    use editoast_models::prelude::*;
+
     use editoast_models::rolling_stock::TrainMainCategory;
     use editoast_models::timetable::Timetable;
     use pretty_assertions::assert_eq;

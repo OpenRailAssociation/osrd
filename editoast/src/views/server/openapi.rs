@@ -242,7 +242,7 @@ impl OpenApiRoot {
     // Remove the operation_id that defaults to the endpoint function name
     // so that it doesn't override the RTK methods names.
     fn remove_operation_id(openapi: &mut utoipa::openapi::OpenApi) {
-        for (_, endpoint) in openapi.paths.paths.iter_mut() {
+        for endpoint in openapi.paths.paths.values_mut() {
             for operation in path_item_operations_mut(endpoint) {
                 operation.operation_id = None;
             }

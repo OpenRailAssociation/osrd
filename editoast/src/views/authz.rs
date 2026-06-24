@@ -275,7 +275,8 @@ pub(in crate::views) async fn users_info(
         if !missing_identities.is_empty() {
             return Err(AuthzError::UnknownIdentities {
                 identities: missing_identities,
-            })?;
+            }
+            .into());
         }
     }
 
