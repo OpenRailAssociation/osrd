@@ -155,7 +155,7 @@ function useDurationInput({
 
   const submitChange = useCallback(() => {
     const ms = toTotalMilliseconds(fields, formattedValues);
-    const clamped = max ? Math.min(max, ms) : ms;
+    const clamped = Math.min(max, ms);
     const next = toFormattedValues(fields, clamped);
 
     setFormattedValues(next);
