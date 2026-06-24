@@ -414,3 +414,14 @@ where
         }
     }
 }
+
+/// Wraps [`unreachable!`] with a message specific to impossible checks
+#[macro_export]
+macro_rules! impossible {
+    ($check:expr) => {
+        unreachable!(
+            "impossible check {:?} — if this occurs, some authz::Protected check handling has been overlooked", $check
+        )
+    };
+}
+pub use impossible;
