@@ -73,6 +73,7 @@ const createVirtualOp = (
     weight,
     country_code: '??',
     is_passenger_station: false,
+    opRef,
   };
 };
 
@@ -207,7 +208,10 @@ const usePathProjection = (
         pathfinding,
         path: pathUsedForProjection,
         geometry: pathProperties.geometry,
-        operationalPoints,
+        operationalPoints: operationalPoints.map((op, index) => ({
+          ...op,
+          opRef: pathfindingOpRefs[index],
+        })),
         operationalPointReferences: pathfindingOpRefs,
         projectingOnSimulatedPathException,
         operationalPointDistances,
@@ -245,6 +249,7 @@ const usePathProjection = (
           secondary_code: matchedOp.secondary_code,
           uic: matchedOp.uic,
           weight,
+          opRef,
         });
       } else {
         // NOT MATCHED: Point doesn't exist in infrastructure (e.g., NGE point)

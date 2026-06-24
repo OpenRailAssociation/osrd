@@ -9,6 +9,7 @@ import type {
 import type {
   PacedTrainException,
   CoreSignalUpdate,
+  PathItemLocation,
   PathProperties,
   RollingStockWithLiveries,
   SimulationResponseSuccess,
@@ -37,6 +38,7 @@ export type EditoastPathOperationalPoint = NonNullable<
 export type PathOperationalPoint = Omit<EditoastPathOperationalPoint, 'id' | 'part'> & {
   waypointId: string;
   opId: string | null;
+  location: PathItemLocation;
 };
 
 // Space Time Chart

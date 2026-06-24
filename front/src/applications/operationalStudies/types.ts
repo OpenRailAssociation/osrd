@@ -190,7 +190,9 @@ export type ItineraryPathProperties = PathProperties & {
 export type PathProjectionResultOperationalPoint = Omit<
   PathProperties['operational_points'][number],
   'part'
->;
+> & {
+  opRef: OperationalPointReference;
+};
 
 export type PathProjectionResult = {
   path: PathItem[];

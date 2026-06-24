@@ -37,9 +37,13 @@ const useGetProjectedTrainOperationalPoints = ({
     const getOperationalPoints = async () => {
       let operationalPointsWithUniqueIds: PathOperationalPoint[] =
         projectedOperationalPoints?.map((op, i) => ({
-          ...omit(op, 'id'),
+          ...omit(op, ['id', 'opRef']),
           waypointId: `${op.id}-${op.position}-${i}`,
           opId: op.id,
+          location: {
+            type: 'operational_point_part_reference' as const,
+            operational_point: op.opRef,
+          },
         })) || [];
 
       operationalPointsWithUniqueIds =
