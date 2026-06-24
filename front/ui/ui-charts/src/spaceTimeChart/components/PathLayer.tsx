@@ -3,7 +3,6 @@ import { useCallback } from 'react';
 import { flatten, inRange } from 'lodash';
 
 import { hexToRgb, indexToColor } from '../../common/helpers/colors';
-import { getCrispLineCoordinate } from '../../common/helpers/time';
 import { useDraw, usePicking } from '../../common/hooks/useCanvas';
 import type {
   CurveStyle,
@@ -262,7 +261,10 @@ export const PathLayer = ({
             // (i.e. when there's only one space pixel):
             const rawPixels = getSpacePixels(getSpacePixel, position);
             if (rawPixels.length === 1) {
-              const spacePixel = getCrispLineCoordinate(rawPixels[0], ctx.lineWidth);
+              // Use the raw coordinate so the pause sits exactly on the
+              // curve. Adjusting it for sharper rendering would move the
+              // pause, and one side would look thicker than the other.
+              const spacePixel = rawPixels[0];
               ctx.beginPath();
               if (!swapAxis) {
                 ctx.moveTo(getTimePixel(prevTime), spacePixel);
