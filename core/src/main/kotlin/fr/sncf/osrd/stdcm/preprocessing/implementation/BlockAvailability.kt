@@ -33,7 +33,6 @@ class BlockAvailability(
         endOffset: Offset<PhysicsPath>,
         startTime: Double,
     ): BlockAvailabilityInterface.Availability {
-        return BlockAvailabilityInterface.Available(Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY)
         var timeShift = 0.0
         val conflictCauses = mutableListOf<BlockAvailabilityInterface.ConflictCause>()
         var firstConflictOffset: Offset<PhysicsPath>? = null

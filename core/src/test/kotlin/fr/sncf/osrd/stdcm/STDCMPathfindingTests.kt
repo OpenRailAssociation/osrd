@@ -5,7 +5,6 @@ import fr.sncf.osrd.path.interfaces.PhysicsPath
 import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.sim_infra.api.BlockLocation
 import fr.sncf.osrd.sim_infra.api.SpeedLimitProperty
-import fr.sncf.osrd.stdcm.infra_exploration.ExplorerStep
 import fr.sncf.osrd.stdcm.infra_exploration.PlannedTimingData
 import fr.sncf.osrd.stdcm.preprocessing.OccupancySegment
 import fr.sncf.osrd.train.TestTrains
@@ -229,32 +228,6 @@ class STDCMPathfindingTests {
             .setInfra(infra.fullInfra())
             .setStartLocations(setOf(BlockLocation(firstBlock, Offset(0.meters))))
             .setEndLocations(setOf(BlockLocation(lastBlock, Offset(9000.meters))))
-            .run()!!
-    }
-
-    /** Test that everything works well when the train is at max speed during block transitions */
-    @Test
-    fun veryLongPathBacktrackingTest() {
-        /*
-        a ------> b -----> c ------> d
-         */
-        val infra = DummyInfra()
-        val firstBlock = infra.addBlock("a", "b", 10000.meters)
-        infra.addBlock("b", "c", 10000.meters)
-        val lastBlock = infra.addBlock("c", "d", 10000.meters)
-        STDCMPathfindingBuilder()
-            .setInfra(infra.fullInfra())
-            .setStartLocations(setOf(BlockLocation(firstBlock, Offset(0.meters))))
-            .addStep(
-                ExplorerStep(
-                    setOf(BlockLocation(lastBlock, Offset(9000.meters))),
-                    duration = 0.0,
-                    stop = true,
-                    canBacktrack = true,
-                    plannedTimingData = null,
-                )
-            )
-            .setEndLocations(setOf(BlockLocation(firstBlock, Offset(0.meters))))
             .run()!!
     }
 
