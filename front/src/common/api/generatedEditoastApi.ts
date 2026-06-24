@@ -4365,6 +4365,15 @@ export type SearchResultItem =
   | SearchResultItemScenario
   | SearchResultItemTrainSchedule
   | SearchResultItemUser;
+export type SearchObjectType =
+  | 'track'
+  | 'signal'
+  | 'project'
+  | 'study'
+  | 'scenario'
+  | 'trainschedule'
+  | 'operationalpoint'
+  | 'user';
 export type SearchQuery = boolean | number | number | string | object;
 export type SearchPayload = {
   /** Whether to return the SQL query instead of executing it
@@ -4372,7 +4381,7 @@ export type SearchPayload = {
     Only available in debug builds. */
   dry?: boolean;
   /** The object kind to query - run `editoast search list` to get all possible values */
-  object: string;
+  object: SearchObjectType;
   /** The query to run */
   query: SearchQuery;
 };

@@ -4,6 +4,7 @@ import { omit } from 'lodash';
 import {
   osrdEditoastApi,
   type MacroNodeResponse,
+  type SearchPayload,
   type SearchResultItemOperationalPoint,
   type SubCategory,
   type TrainCategory,
@@ -268,7 +269,7 @@ export const fetchStationSecondaryCode = async (
   infraId: number,
   dispatch: AppDispatch
 ) => {
-  const searchPayload = {
+  const searchPayload: SearchPayload = {
     object: 'operationalpoint',
     query: ['and', ['=', ['infra_id'], infraId], ['=', ['main_code'], trigram]],
   };

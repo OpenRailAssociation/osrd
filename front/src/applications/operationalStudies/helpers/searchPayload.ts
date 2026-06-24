@@ -1,3 +1,4 @@
+import type { SearchPayload } from 'common/api/osrdEditoastApi';
 import { toUpper } from 'utils/strings';
 
 export const tokenClause = (token: string) => [
@@ -17,7 +18,10 @@ export const searchQuery = (debouncedTrimmedInput: string) => [
   ['search', ['secondary_code'], debouncedTrimmedInput],
 ];
 
-export const largePayload = (infraId: number | undefined, debouncedTrimmedInput: string) => ({
+export const largePayload = (
+  infraId: number | undefined,
+  debouncedTrimmedInput: string
+): SearchPayload => ({
   object: 'operationalpoint',
   query: [
     'and',
@@ -26,7 +30,10 @@ export const largePayload = (infraId: number | undefined, debouncedTrimmedInput:
   ],
 });
 
-export const exactTrigramPayload = (infraId: number | undefined, firstTokenUpper: string) => ({
+export const exactTrigramPayload = (
+  infraId: number | undefined,
+  firstTokenUpper: string
+): SearchPayload => ({
   object: 'operationalpoint',
   query: [
     'and',
@@ -35,7 +42,10 @@ export const exactTrigramPayload = (infraId: number | undefined, firstTokenUpper
   ],
 });
 
-export const multiPayloadFromTokens = (infraId: number | undefined, tokens: string[]) => {
+export const multiPayloadFromTokens = (
+  infraId: number | undefined,
+  tokens: string[]
+): SearchPayload => {
   const multiQuery = buildMultiTokenQuery(tokens);
   return {
     object: 'operationalpoint',

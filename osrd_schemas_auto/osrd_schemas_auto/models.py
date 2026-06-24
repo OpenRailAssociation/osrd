@@ -3136,6 +3136,21 @@ class ScheduleItem(BaseModel):
     stop_for: timedelta | None = None
 
 
+class SearchObjectType(Enum):
+    """
+    Object type for query search
+    """
+
+    track = "track"
+    signal = "signal"
+    project = "project"
+    study = "study"
+    scenario = "scenario"
+    trainschedule = "trainschedule"
+    operationalpoint = "operationalpoint"
+    user = "user"
+
+
 class SearchResultItemOperationalPointTrackSections(BaseModel):
     position: float
     track: str
@@ -5127,7 +5142,7 @@ class SearchPayload(BaseModel):
 
     Only available in debug builds.
     """
-    object: str
+    object: SearchObjectType
     """
     The object kind to query - run `editoast search list` to get all possible values
     """

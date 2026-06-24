@@ -6,6 +6,7 @@ import { useSelector } from 'react-redux';
 
 import type {
   PathItem,
+  SearchPayload,
   SearchQuery,
   SearchResultItemOperationalPoint,
   SearchResultItemTrainSchedule,
@@ -80,7 +81,7 @@ const useLinkedTrainSearch = () => {
             ] as SearchQuery);
 
       try {
-        const payloadOP = {
+        const payloadOP: SearchPayload = {
           object: 'operationalpoint',
           query: pathItemQuery,
         };

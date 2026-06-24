@@ -4,7 +4,7 @@ import bbox from '@turf/bbox';
 import { useTranslation } from 'react-i18next';
 
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import type { BoundingBox, SearchResultItemTrack } from 'common/api/osrdEditoastApi';
+import type { BoundingBox, SearchPayload, SearchResultItemTrack } from 'common/api/osrdEditoastApi';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { computeBBoxViewport } from 'common/Map/WarpedMap/core/helpers';
 import { useInfraID } from 'common/osrdContext';
@@ -43,7 +43,7 @@ const MapSearchLine = ({
       ['search', ['line_name'], debouncedSearchTerm],
       ['like', ['to_string', ['line_code']], `%${debouncedSearchTerm}%`],
     ];
-    const payload = {
+    const payload: SearchPayload = {
       object: 'track',
       query: ['and', searchQuery, infraID !== undefined ? ['=', ['infra_id'], infraID] : true],
     };

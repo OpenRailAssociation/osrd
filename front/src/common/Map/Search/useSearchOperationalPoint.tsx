@@ -3,7 +3,11 @@ import { useState, useMemo, useCallback } from 'react';
 import { skipToken } from '@reduxjs/toolkit/query';
 import { useSelector } from 'react-redux';
 
-import { type SearchResultItemOperationalPoint, osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import {
+  type SearchResultItemOperationalPoint,
+  osrdEditoastApi,
+  type SearchPayload,
+} from 'common/api/osrdEditoastApi';
 import { useInfraID } from 'common/osrdContext';
 import { setFailure } from 'reducers/main';
 import { getOperationalPoints } from 'reducers/osrdconf/stdcmConf/selectors';
@@ -58,7 +62,7 @@ export default function useSearchOperationalPoint({
     async (searchQuery: string) => {
       if (!infraID) return [];
 
-      const payload = {
+      const payload: SearchPayload = {
         object: 'operationalpoint',
         query: [
           'and',

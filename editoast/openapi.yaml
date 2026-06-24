@@ -13513,6 +13513,18 @@ components:
               If `None`, `reception_signal` must be `Open`.
               `Some("PT0S")` means the train stops for 0 seconds.
       additionalProperties: false
+    SearchObjectType:
+      type: string
+      description: Object type for query search
+      enum:
+      - track
+      - signal
+      - project
+      - study
+      - scenario
+      - trainschedule
+      - operationalpoint
+      - user
     SearchPayload:
       type: object
       description: The payload of a search request
@@ -13527,7 +13539,7 @@ components:
 
             Only available in debug builds.
         object:
-          type: string
+          $ref: '#/components/schemas/SearchObjectType'
           description: The object kind to query - run `editoast search list` to get all possible values
         query:
           $ref: '#/components/schemas/SearchQuery'
