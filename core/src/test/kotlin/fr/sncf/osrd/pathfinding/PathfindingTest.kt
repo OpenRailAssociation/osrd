@@ -20,6 +20,7 @@ import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.OffsetRange
 import fr.sncf.osrd.utils.units.meters
+import java.util.stream.Stream
 import kotlin.test.assertEquals
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
@@ -27,6 +28,9 @@ import org.assertj.core.api.AssertionsForClassTypes
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.Arguments
+import org.junit.jupiter.params.provider.MethodSource
 
 fun getPathfindingBlockRequest(
     rs: RollingStock,
@@ -607,6 +611,60 @@ class PathfindingTest : ApiTest() {
         val response = PathfindingBlocksEndpoint(infraManager).act(RqFake(requestBody))
         val parsed = pathfindingResponseAdapter.fromJson(response.body())!!
         return parsed
+    }
+}
+
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+class PathfindingAllowedTrackSectionsTest {
+    // tiny_infra path: foo_b -> foo_to_bar -> bar_a
+    private val infra = Helpers.fullInfraFromFile("tiny_infra/infra.json")
+    private val waypointsStart = listOf(TrackLocation("ne.micro.foo_b", Offset(50.meters)))
+    private val waypointsEnd = listOf(TrackLocation("ne.micro.bar_a", Offset(100.meters)))
+    private val pathItems = listOf(PathItem(waypointsStart, false), PathItem(waypointsEnd, false))
+
+    private fun makeRequest(allowedTrackSections: Set<String> = emptySet()) =
+        PathfindingBlockRequest(
+            rollingStockLoadingGauge = TestTrains.REALISTIC_FAST_TRAIN.loadingGaugeType,
+            rollingStockIsThermal = TestTrains.REALISTIC_FAST_TRAIN.isThermal,
+            rollingStockSupportedElectrifications =
+                TestTrains.REALISTIC_FAST_TRAIN.modeNames.filterNot { it == "thermal" },
+            rollingStockSupportedSignalingSystems =
+                TestTrains.REALISTIC_FAST_TRAIN.supportedSignalingSystems.toList(),
+            rollingStockMaximumSpeed = TestTrains.REALISTIC_FAST_TRAIN.maxSpeed,
+            rollingStockLength = TestTrains.REALISTIC_FAST_TRAIN.length,
+            timeout = null,
+            infra = "tiny_infra/infra.json",
+            expectedVersion = 1,
+            pathItems = pathItems,
+            allowedTrackSections = allowedTrackSections,
+        )
+
+    private fun successCases(): Stream<Arguments> =
+        Stream.of(
+            Arguments.of(emptySet<String>()),
+            Arguments.of(setOf("ne.micro.foo_b", "ne.micro.foo_to_bar", "ne.micro.bar_a")),
+        )
+
+    @ParameterizedTest
+    @MethodSource("successCases")
+    fun allowedTrackSectionsSucceeds(allowedTrackSections: Set<String>) {
+        checkPathfindingSuccess(
+            runPathfinding(infra, makeRequest(allowedTrackSections)),
+            10250.meters,
+        )
+    }
+
+    @Test
+    fun allowedTrackSectionsFailsWhenRequiredTrackExcluded() {
+        // omit foo_to_bar
+        assertThatThrownBy {
+                runPathfinding(infra, makeRequest(setOf("ne.micro.foo_b", "ne.micro.bar_a")))
+            }
+            .isExactlyInstanceOf(NoPathFoundException::class.java)
+            .satisfies({ e ->
+                assertThat((e as NoPathFoundException).response)
+                    .isExactlyInstanceOf(NotFoundInBlocks::class.java)
+            })
     }
 }
 

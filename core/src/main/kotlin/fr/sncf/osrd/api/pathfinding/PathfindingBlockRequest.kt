@@ -25,6 +25,9 @@ class PathfindingBlockRequest(
 
     // One set of location by step, each step must be reached in order
     @Json(name = "path_items") val pathItems: List<PathItem>,
+
+    // Set of authorized track section ids, empty set means no restriction
+    @Json(name = "allowed_track_sections") val allowedTrackSections: Set<String> = emptySet(),
 )
 
 val pathfindingRequestAdapter: JsonAdapter<PathfindingBlockRequest> =
