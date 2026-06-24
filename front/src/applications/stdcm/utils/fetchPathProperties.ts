@@ -61,6 +61,10 @@ const fetchPathProperties = async (
         ...omit(op, 'id'),
         waypointId: `${op.id}-${op.position}-${index}`,
         opId: op.id,
+        location: {
+          type: 'operational_point_part_reference' as const,
+          operational_point: { type: 'id' as const, operational_point: op.id },
+        },
       })
     );
 

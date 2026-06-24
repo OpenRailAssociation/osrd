@@ -63,6 +63,7 @@ export function upsertMapWaypointsInOperationalPoints(
                 ...baseFormattedStep,
                 waypointId: step.id,
                 opId: null,
+                location,
               }
             : {
                 ...baseFormattedStep,

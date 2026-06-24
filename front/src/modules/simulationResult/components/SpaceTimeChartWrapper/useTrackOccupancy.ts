@@ -55,23 +55,10 @@ function extractStationLabel(
   return stationLabel.label;
 }
 
-function getOperationalPointReference(
+function getTrackOccupancyOperationalPointReference(
   op: PathOperationalPoint | undefined
 ): OperationalPointReference | undefined {
-  if (!op) return undefined;
-  // Normalize empty string ch to null — virtual OPs store ch as '' when the original
-  // secondary_code was null (see usePathProjection createVirtualOp), and passing ''
-  // to the backend would filter for OPs with an empty secondary_code rather than any.
-  const secondaryCode = op.secondary_code || null;
-  const mainCode = op.main_code;
-  if (mainCode) return { type: 'trigram', trigram: mainCode, secondary_code: secondaryCode };
-  const uic = op.uic;
-  if (uic) return { type: 'uic', uic, secondary_code: secondaryCode };
-  // Only use the opId when it refers to a real infra OP. Virtual OPs (unrecognised, created
-  // by usePathProjection when pathfinding fails) have a synthetic id like "virtual_op_Zürich"
-  if (op.opId && !op.opId.startsWith('virtual_op'))
-    return { type: 'id', operational_point: op.opId };
-  return undefined;
+  return op && op.location.type !== 'track_offset' ? op.location.operational_point : undefined;
 }
 
 /**
@@ -383,7 +370,7 @@ const useTrackOccupancy = ({
           Array.from(trainScheduleProjectionsById.keys()),
           (ids) =>
             fetchTrackOccupancy(
-              getOperationalPointReference(waypoint),
+              getTrackOccupancyOperationalPointReference(waypoint),
               waypointId,
               Object.fromEntries(ids.map((id) => [id, trainScheduleProjectionsById.get(id)!]))
             ),
@@ -431,7 +418,9 @@ const useTrackOccupancy = ({
 
         // refresh zones when reopening waypoint, if TOD was closed.
         if (!currentSelected && newSelected) {
-          const opRef = getOperationalPointReference(pathOpsByWaypointId.get(waypointId));
+          const opRef = getTrackOccupancyOperationalPointReference(
+            pathOpsByWaypointId.get(waypointId)
+          );
           if (!opRef) return;
 
           const trains = Object.fromEntries(Array.from(trainScheduleProjectionsById.entries()));
@@ -505,7 +494,7 @@ const useTrackOccupancy = ({
         await Promise.all(
           [...impactedPathOperationalPointIDs].map(async (waypointId) => {
             const newZones = await fetchTrackOccupancy(
-              getOperationalPointReference(pathOpsByWaypointId.get(waypointId)),
+              getTrackOccupancyOperationalPointReference(pathOpsByWaypointId.get(waypointId)),
               waypointId,
               {
                 [draggedTrainId]: newTrainData,
@@ -611,7 +600,7 @@ const useTrackOccupancy = ({
       waypointId: string;
       reference: OperationalPointReference;
     }>((op) => {
-      const reference = getOperationalPointReference(op);
+      const reference = getTrackOccupancyOperationalPointReference(op);
       if (!reference) return [];
       return [{ waypointId: op.waypointId, reference }];
     });
@@ -678,7 +667,7 @@ const useTrackOccupancy = ({
     if (addedTrainIDs.size || modifiedTrainIDs.size) {
       forEach(pathOperationalPointsState, async (_, waypointId) => {
         const newZones = await fetchTrackOccupancy(
-          getOperationalPointReference(pathOpsByWaypointId.get(waypointId)),
+          getTrackOccupancyOperationalPointReference(pathOpsByWaypointId.get(waypointId)),
           waypointId,
           Object.fromEntries(
             [...addedTrainIDs, ...modifiedTrainIDs].map((id) => [
