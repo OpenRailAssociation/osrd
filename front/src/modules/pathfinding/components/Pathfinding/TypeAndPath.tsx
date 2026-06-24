@@ -10,6 +10,7 @@ import { useManageTrainScheduleContext } from 'applications/operationalStudies/h
 import type {
   PathItem,
   PostSearchApiArg,
+  SearchPayload,
   SearchResultItemOperationalPoint,
 } from 'common/api/osrdEditoastApi';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
@@ -100,7 +101,7 @@ const TypeAndPath = ({ setDisplayTypeAndPath, isInNewModal = false }: TypeAndPat
   const searchOperationalPoints = async () => {
     const searchQuery = ['or', ['search', ['name'], debouncedSearchTerm]];
 
-    const payload = {
+    const payload: SearchPayload = {
       object: 'operationalpoint',
       query: ['and', searchQuery, infraId !== undefined ? ['=', ['infra_id'], infraId] : true],
     };

@@ -230,6 +230,8 @@ use search::query_into_sql;
 use serde::Deserialize;
 use serde::Serialize;
 use serde_json::value::Value as JsonValue;
+use strum::Display;
+use strum::FromRepr;
 use utoipa::ToSchema;
 
 use crate::error::Result;
@@ -260,6 +262,20 @@ enum SearchQuery {
     Array(Vec<Option<SearchQuery>>),
 }
 
+/// Object type for query search
+#[derive(Debug, Clone, ToSchema, Deserialize, FromRepr, Display)]
+#[serde(rename_all = "lowercase")]
+enum SearchObjectType {
+    Track,
+    Signal,
+    Project,
+    Study,
+    Scenario,
+    TrainSchedule,
+    OperationalPoint,
+    User,
+}
+
 /// The payload of a search request
 #[derive(Debug, Clone, Deserialize, ToSchema)]
 #[schema(example = json!({
@@ -268,7 +284,7 @@ enum SearchQuery {
 }))]
 pub struct SearchPayload {
     /// The object kind to query - run `editoast search list` to get all possible values
-    object: String,
+    object: SearchObjectType,
     /// The query to run
     #[schema(value_type = SearchQuery)]
     query: JsonValue,
@@ -343,17 +359,15 @@ pub(in crate::views) async fn search(
     Query(PaginationQueryParams { page, page_size }): Query<PaginationQueryParams<1000>>,
     Json(SearchPayload { object, query, dry }): Json<SearchPayload>,
 ) -> Result<Json<serde_json::Value>> {
-    let required_role = match object.as_str() {
-        "track" | "signal" | "project" | "study" | "scenario" => {
-            Some(authz::Role::OperationalStudies)
-        }
-        "trainschedule" | "operationalpoint" | "user" => None,
-        _ => {
-            return Err(SearchApiError::ObjectType {
-                object_type: object.to_owned(),
-            }
-            .into());
-        }
+    let required_role = match object {
+        SearchObjectType::Track
+        | SearchObjectType::Signal
+        | SearchObjectType::Project
+        | SearchObjectType::Study
+        | SearchObjectType::Scenario => Some(authz::Role::OperationalStudies),
+        SearchObjectType::TrainSchedule
+        | SearchObjectType::OperationalPoint
+        | SearchObjectType::User => None,
     };
 
     if let Some(required_role) = required_role
@@ -365,8 +379,10 @@ pub(in crate::views) async fn search(
     }
 
     let search_config =
-        SearchConfigFinder::find(&object).ok_or_else(|| SearchApiError::ObjectType {
-            object_type: object.to_owned(),
+        SearchConfigFinder::find(object.to_string().to_lowercase()).ok_or_else(|| {
+            SearchApiError::ObjectType {
+                object_type: object.to_string(),
+            }
         })?;
     let offset = (page - 1) * page_size;
     let (sql, bindings) = query_into_sql(
