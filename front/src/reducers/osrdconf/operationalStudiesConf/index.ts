@@ -25,7 +25,7 @@ export const operationalStudiesInitialConf: OperationalStudiesConfState = {
   category: null,
   // Corresponds to origin and destination not defined
   pathSteps: [null, null],
-  constraintDistribution: 'MARECO',
+  constraintDistribution: 'STANDARD',
   usingElectricalProfiles: true,
   usingSpeedLimits: true,
   stopsAtEndOfBlock: false,
