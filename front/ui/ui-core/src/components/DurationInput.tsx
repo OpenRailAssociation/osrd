@@ -2,7 +2,7 @@ import React, { useCallback, useMemo, useRef, useState } from 'react';
 
 import cx from 'classnames';
 
-import FieldWrapper from './FieldWrapper';
+import FieldWrapper, { type FieldWrapperProps } from './FieldWrapper';
 
 type UnitConfig = {
   key: string;
@@ -28,6 +28,7 @@ export type DurationInputProps = {
   small?: boolean;
   hint?: string;
   label?: string;
+  statusWithMessage?: FieldWrapperProps['statusWithMessage'];
 } & Omit<React.ComponentPropsWithoutRef<'div'>, 'onChange'>;
 
 const PRESETS: Record<string, Omit<UnitConfig, 'key'>> = {
@@ -281,6 +282,7 @@ const DurationInput = ({
   max = Infinity,
   label,
   hint,
+  statusWithMessage,
   ...rest
 }: DurationInputProps) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -302,7 +304,13 @@ const DurationInput = ({
   });
 
   return (
-    <FieldWrapper id={id} label={label} hint={hint} small={small}>
+    <FieldWrapper
+      id={id}
+      label={label}
+      hint={hint}
+      small={small}
+      statusWithMessage={statusWithMessage}
+    >
       <div
         ref={containerRef}
         className={cx('ui-duration-input', { small })}
