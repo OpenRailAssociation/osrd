@@ -14,7 +14,7 @@ import {
 import type { AppDispatch } from 'store';
 import { formatEditoastIdToPacedTrainId } from 'utils/trainId';
 
-import { getOcurrencesIds, isPacedTrainBase } from './pacedTrain';
+import { getOccurrencesIds, isPacedTrainBase } from './pacedTrain';
 
 export async function fetchTrainSchedule(
   id: number,
@@ -190,7 +190,7 @@ export async function syncAndUpdatePacedTrain(
     dispatch(
       unsetTrainIdsMatchingMissingOccurrencesOf({
         pacedTrainId,
-        occurrencesPresent: getOcurrencesIds(pacedTrain, pacedTrainId),
+        occurrencesPresent: getOccurrencesIds(pacedTrain, pacedTrainId),
       })
     );
   }

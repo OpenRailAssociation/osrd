@@ -603,7 +603,7 @@ pub(in crate::views) async fn get_path(
         })
         .await?;
 
-    let train_occurence = match exception_id {
+    let train_occurrence = match exception_id {
         Some(exception_id) => {
             let exception =
                 TrainScheduleException::retrieve_or_fail(conn.clone(), exception_id, || {
@@ -615,7 +615,7 @@ pub(in crate::views) async fn get_path(
         None => train_schedule.into_train_occurrence(),
     };
 
-    let rolling_stock_name = train_occurence.rolling_stock_name().to_owned();
+    let rolling_stock_name = train_occurrence.rolling_stock_name().to_owned();
     let Some(consist) = RollingStock::retrieve(conn.clone(), rolling_stock_name.clone())
         .await?
         .map(schemas::RollingStock::from)
@@ -627,7 +627,7 @@ pub(in crate::views) async fn get_path(
         return Ok(Json(PathfindingResult::Failure(failure)));
     };
 
-    let path_items = train_occurence
+    let path_items = train_occurrence
         .path()
         .iter()
         .map(|item| &item.location)
@@ -650,7 +650,7 @@ pub(in crate::views) async fn get_path(
     };
 
     let pathfinding_train = core_task::PathfindingTrain {
-        consist: build_pathfinding_consist(&consist, train_occurence.speed_limit_tag().cloned()),
+        consist: build_pathfinding_consist(&consist, train_occurrence.speed_limit_tag().cloned()),
         constraints,
     };
     let result =

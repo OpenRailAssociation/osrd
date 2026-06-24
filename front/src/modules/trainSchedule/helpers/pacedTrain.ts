@@ -302,7 +302,7 @@ export const hasChangeGroups = (exception: SimulatedException): boolean =>
 export const hasExceptions = (exception: SimulatedException): boolean =>
   exception.disabled === true || hasChangeGroups(exception);
 
-export const getOcurrencesIds = (pacedTrain: PacedTrainWithPaced, pacedTrainId: PacedTrainId) => {
+export const getOccurrencesIds = (pacedTrain: PacedTrainWithPaced, pacedTrainId: PacedTrainId) => {
   const occurrencesIds: OccurrenceId[] = pacedTrain.paced.exceptions
     .filter((exception) => exception.occurrence_index === undefined) // Indexed exceptions follow the regular indexed occurrence id pattern
     // TODO_EXCEPTION: remove `!` when using TrainSchedulingException type
