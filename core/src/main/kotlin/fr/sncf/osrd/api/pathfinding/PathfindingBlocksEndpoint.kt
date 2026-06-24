@@ -4,6 +4,7 @@ import fr.sncf.osrd.api.ExceptionHandler
 import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.api.InfraProvider
 import fr.sncf.osrd.api.TrackLocation
+import fr.sncf.osrd.api.stdcm.parseTrackSectionIds
 import fr.sncf.osrd.cli.Request
 import fr.sncf.osrd.cli.Response
 import fr.sncf.osrd.cli.RsJson
@@ -121,6 +122,7 @@ fun runPathfinding(infra: FullInfra, request: PathfindingBlockRequest): Pathfind
         targets.add(ExplorerStep(allStarts, canBacktrack = step.canBacktrack))
     }
     if (targets.size < 2) throw NoPathFoundException(NotEnoughPathItems())
+    val allowedTrackSectionIds = parseTrackSectionIds(infra, request.allowedTrackSections)
     val constraints =
         initConstraintsFromRSProps(
             infra,
@@ -128,6 +130,7 @@ fun runPathfinding(infra: FullInfra, request: PathfindingBlockRequest): Pathfind
             request.rollingStockLoadingGauge,
             request.rollingStockSupportedElectrifications,
             request.rollingStockSupportedSignalingSystems,
+            allowedTrackSectionIds,
         )
 
     // Compute the paths from the entry waypoint to the exit waypoint
