@@ -8,7 +8,6 @@ import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface
 import fr.sncf.osrd.utils.units.Distance.Companion.fromMeters
 import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
-import fr.sncf.osrd.utils.units.meters
 import kotlin.math.min
 
 /** This class handles the creation of new edges, handling the many optional parameters. */
@@ -21,17 +20,27 @@ internal constructor(
     private val graph: STDCMGraph,
     /** Previous node, used to compute the final path */
     private var prevNode: STDCMNode,
-    /** Start offset on the given block */
-    private var startOffset: Offset<Block> = Offset(0.meters),
-    /** Envelope to use on the edge, if unspecified we try to go at maximum allowed speed */
-    private var envelope: Envelope? = null,
-
     /**
      * Infra explorer with the new envelope for the current edge. Keeping one instance is important
      * for the resource generator caches. This is the instance that must be used for next edges
      */
     private var explorerWithNewEnvelope: InfraExplorerWithEnvelope? = null,
 ) {
+    /** Start offset on the given block */
+    private var startOffset: Offset<Block> =
+        // Staying on the same block means intermediate stop without backtracking: restart from
+        // previous node's location
+        if (
+            prevNode.locationOnEdge != null &&
+                prevNode.infraExplorer.getCurrentBlock() == infraExplorer.getCurrentBlock()
+        )
+            prevNode.locationOnEdge!!
+        // In any other case (start, end of block, backtracking): (re)start from blockRange's begin
+        else infraExplorer.getCurrentBlockRange().objectBegin
+
+    /** Envelope to use on the edge, if unspecified we try to go at maximum allowed speed */
+    private var envelope: Envelope? = null
+
     /**
      * Sets the envelope to use on the edge, if unspecified we try to go at maximum allowed speed
      */
@@ -235,15 +244,10 @@ internal constructor(
     companion object {
         fun fromNode(
             graph: STDCMGraph,
-            node: STDCMNode,
+            prevNode: STDCMNode,
             infraExplorer: InfraExplorerWithEnvelope,
         ): STDCMEdgeBuilder {
-            val builder = STDCMEdgeBuilder(infraExplorer, graph, node)
-            if (node.locationOnEdge != null) {
-                builder.startOffset = node.locationOnEdge
-            }
-            builder.prevNode = node
-            return builder
+            return STDCMEdgeBuilder(infraExplorer, graph, prevNode)
         }
     }
 }
