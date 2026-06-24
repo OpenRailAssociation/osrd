@@ -192,8 +192,6 @@ data class ExplorerStep(
     val plannedTimingData: PlannedTimingData? = null,
 )
 
-data class TrainPathCacheKey(val blockId: BlockId, val backtrackLocation: Offset<Block>?)
-
 /**
  * Init all InfraExplorers starting at the given location. The last of `stops` are used to identify
  * when the incremental path is complete. `constraints` are used to determine if a block can be
@@ -211,7 +209,7 @@ fun initInfraExplorers(
     val infraExplorers = mutableListOf<InfraExplorer>()
     val block = location.edge
     val pathProps = buildTrainPathFromBlock(rawInfra, blockInfra, block, listOf())
-    val blockToPathProperties = mutableMapOf(TrainPathCacheKey(block, null) to pathProps)
+    val blockToPathProperties = mutableMapOf(block to pathProps)
     val routes = blockInfra.routesOnBlock(rawInfra, block)
 
     routes.forEach { route ->
@@ -246,7 +244,7 @@ private class InfraExplorerImpl(
     private var routes: AppendOnlyLinkedList<RouteRange>,
     private var blockRoutes: AppendOnlyMap<BlockId, RouteId>,
     private var lastTrack: TrackSectionId?,
-    private var trainPathCache: MutableMap<TrainPathCacheKey, TrainPath>,
+    private var trainPathCache: MutableMap<BlockId, TrainPath>,
     private var currentIndex: Int = 0, // /!\ currentBlockRange should be updated simultaneously /!\
     private var currentBlockRange: BlockRange? = null,
     private var stepTracker: StepTracker,
@@ -262,26 +260,11 @@ private class InfraExplorerImpl(
         // We also can't set a first route for sure in initInfraExplorer, but we set the first cache
         // entry.
         // So we have to correct that here now that we now which route we're on.
-        val blockRange = getCurrentBlockRange()
-        val blockBacktrackLocations =
-            getBacktrackLocationsInRange(blockRange.pathBegin, blockRange.pathEnd).map {
-                Offset<Block>(it.distance - blockRange.objectAbsolutePathStart.distance)
-            }
-
-        assert(blockBacktrackLocations.size <= 1)
-        val trainPathCacheKey =
-            TrainPathCacheKey(getCurrentBlock(), blockBacktrackLocations.firstOrNull())
-
+        val currentBlock = getCurrentBlock()
         val path =
-            trainPathCache.getOrElse(trainPathCacheKey) {
-                val res =
-                    buildTrainPathFromBlock(
-                        rawInfra,
-                        blockInfra,
-                        getCurrentBlock(),
-                        blockBacktrackLocations,
-                    )
-                trainPathCache[trainPathCacheKey] = res
+            trainPathCache.getOrElse(currentBlock) {
+                val res = buildTrainPathFromBlock(rawInfra, blockInfra, currentBlock, listOf())
+                trainPathCache[currentBlock] = res
                 res
             }
         val route = blockRoutes[getCurrentBlock()]!!
@@ -291,9 +274,10 @@ private class InfraExplorerImpl(
         val blockLength = blockInfra.getBlockLength(getCurrentBlock())
         val endOffset: Offset<Block> = if (length == null) blockLength else offset.plus(length)
         if (offset.distance == 0.meters && endOffset == blockLength) {
+            // Edge takes up the whole path.
             return pathWithRoutes
         }
-        // In that case, start of the block is start of the travelled path
+        // Edge takes part of the path: return corresponding sub-path.
         return pathWithRoutes.subPath(offset.cast(), endOffset.cast())
     }
 
