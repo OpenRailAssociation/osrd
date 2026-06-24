@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import type { PacedTrainWithPaced } from 'applications/operationalStudies/types';
 import type { Train } from 'reducers/osrdconf/types';
 import { useDateTimeLocale } from 'utils/date';
-import { findExceptionInPacedTrainByOccurenceId } from 'utils/trainExceptions';
+import { findExceptionInPacedTrainByOccurrenceId } from 'utils/trainExceptions';
 import { isOccurrenceId } from 'utils/trainId';
 
 import {
@@ -33,24 +33,24 @@ const CollapsedTrainOverview = ({
   const dateTimeLocale = useDateTimeLocale();
 
   const pacedTrain = train.paced ? (train as PacedTrainWithPaced) : null;
-  const occurenceId = isOccurrenceId(train.id) ? train.id : null;
+  const occurrenceId = isOccurrenceId(train.id) ? train.id : null;
   const exception =
-    occurenceId && pacedTrain
-      ? findExceptionInPacedTrainByOccurenceId(occurenceId, pacedTrain)
+    occurrenceId && pacedTrain
+      ? findExceptionInPacedTrainByOccurrenceId(occurrenceId, pacedTrain)
       : null;
 
   return (
     <div className="train-header collapsed-train-summary">
       {pacedTrain && (
         <div className="train-kind-header">
-          {occurenceId
+          {occurrenceId
             ? t('manageTrainSchedule.trainHeader.serviceOccurrence')
             : t('manageTrainSchedule.trainHeader.serviceModelTrain')}
           {exception && ' ≠'}
         </div>
       )}
       <div className="train-metadata">
-        {pacedTrain && !occurenceId && (
+        {pacedTrain && !occurrenceId && (
           <div className="train-service-cadence">
             {getServiceInterval(pacedTrain)}’ — {getServiceWindow(pacedTrain)}’
           </div>

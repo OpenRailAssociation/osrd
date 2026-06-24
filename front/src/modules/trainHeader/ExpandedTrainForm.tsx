@@ -29,7 +29,7 @@ import useFilterRollingStock from 'modules/rollingStock/hooks/useFilterRollingSt
 import type { Train } from 'reducers/osrdconf/types';
 import { Duration } from 'utils/duration';
 import { usePrevious } from 'utils/hooks/state';
-import { findExceptionInPacedTrainByOccurenceId } from 'utils/trainExceptions';
+import { findExceptionInPacedTrainByOccurrenceId } from 'utils/trainExceptions';
 import { isOccurrenceId } from 'utils/trainId';
 import { createFixedSelectOptions, createStandardSelectOptions } from 'utils/uiCoreHelpers';
 
@@ -191,10 +191,10 @@ const ExpandedTrainForm = ({
   } = useDefaultComboBox(rollingStocks, getRollingStockLabel);
 
   const pacedTrain = train.paced ? (train as PacedTrainWithPaced) : null;
-  const occurenceId = isOccurrenceId(train.id) ? train.id : null;
+  const occurrenceId = isOccurrenceId(train.id) ? train.id : null;
   const exception =
-    occurenceId && pacedTrain
-      ? findExceptionInPacedTrainByOccurenceId(occurenceId, pacedTrain)
+    occurrenceId && pacedTrain
+      ? findExceptionInPacedTrainByOccurrenceId(occurrenceId, pacedTrain)
       : null;
 
   const fieldsFromTrain = useMemo(() => getFieldsFromTrain(train), [train]);
@@ -209,7 +209,7 @@ const ExpandedTrainForm = ({
   );
 
   // Reset fields values if they changed outside of the form (e.g., because it was an
-  // exception and the user reverted it back to an occurence through the train list)
+  // exception and the user reverted it back to an occurrence through the train list)
   // NOTE: The setter is called outside a useEffect purposefully, as suggested in React's
   // documentation: https://react.dev/reference/react/useState#storing-information-from-previous-renders
   const originalFields = usePrevious(fieldsFromTrain);
@@ -362,7 +362,7 @@ const ExpandedTrainForm = ({
       {pacedTrain && (
         <div className="train-service">
           {toggleBand}
-          {occurenceId ? (
+          {occurrenceId ? (
             <div className="train-occurrence">
               <div className="train-paced-kind">
                 {t('manageTrainSchedule.trainHeader.serviceOccurrence')}
