@@ -1,6 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
 
-import useOutsideClick from '../../hooks/useOutsideClick';
 import type { StatusWithMessage } from '../StatusMessage';
 import type { DatePickerProps } from './DatePicker';
 import {
@@ -22,17 +21,6 @@ export default function useDatePicker(datePickerProps: DatePickerProps) {
   const [statusWithMessage, setStatusWithMessage] = useState<StatusWithMessage>();
   const calendarPickerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-
-  useOutsideClick(calendarPickerRef, (e) => {
-    // Do not close the picker if any children in input wrapper is clicked.
-    // This wrapper include, the input itself, the trailing content (which contains the calendar icon) and the leading content
-    if (
-      inputRef.current &&
-      inputRef.current.parentElement?.parentElement?.contains(e.target as Node)
-    )
-      return;
-    setShowPicker(false);
-  });
 
   const handleInputClick = () => {
     if (isRangeMode) {
