@@ -2,7 +2,7 @@ import { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'r
 
 import { Pencil, Trash } from '@osrd-project/ui-icons';
 import cx from 'classnames';
-import { sortBy } from 'lodash';
+import { isEqual, sortBy } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { FaPlus } from 'react-icons/fa';
 import { GiElectric } from 'react-icons/gi';
@@ -24,7 +24,7 @@ import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import SelectImprovedSNCF from 'common/BootstrapSNCF/SelectImprovedSNCF';
 import TextareaSNCF from 'common/BootstrapSNCF/TextareaSNCF';
-import { useInfraID } from 'common/osrdContext';
+import { useInfraActions, useInfraID } from 'common/osrdContext';
 import { InfraSelectorModal } from 'modules/infra/components/InfraSelector';
 import DeleteItemsModal from 'modules/project/components/DeleteItemsModal';
 import { setFailure, setSuccess } from 'reducers/main';
@@ -69,6 +69,9 @@ const AddOrEditScenarioModal = ({ editionMode = false, scenario }: AddOrEditScen
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const infraID = useInfraID();
+  const { updateInfraID } = useInfraActions();
+
+  const originalInfraIdRef = useRef(scenario?.infra_id);
 
   const [currentScenario, setCurrentScenario] = useState<ScenarioForm>(scenario || emptyScenario);
 
@@ -123,6 +126,15 @@ const AddOrEditScenarioModal = ({ editionMode = false, scenario }: AddOrEditScen
   const initialValuesRef = useRef<ScenarioForm | null>(null);
 
   const modalRef = useRef<HTMLDivElement | null>(null);
+
+  // Restore the scenario's infra in the global state when the edition modal is closed
+  // without saving (cancel, close button or click outside).
+  const handleClose = useCallback(() => {
+    if (editionMode && originalInfraIdRef.current !== undefined) {
+      dispatch(updateInfraID(originalInfraIdRef.current));
+    }
+    closeModal();
+  }, [editionMode, dispatch, updateInfraID, closeModal]);
 
   const { clickedOutside, setHasChanges, resetClickedOutside } = useModalOutsideClick(modalRef);
 
@@ -266,10 +278,12 @@ const AddOrEditScenarioModal = ({ editionMode = false, scenario }: AddOrEditScen
   }, [scenario]);
 
   useEffect(() => {
-    setCurrentScenario({ ...currentScenario, infra_id: infraID });
+    const updated = { ...currentScenario, infra_id: infraID };
+    setCurrentScenario(updated);
+    setHasChanges(!isEqual(updated, initialValuesRef.current));
   }, [infraID]);
 
-  useModalFocusTrap(modalRef, closeModal);
+  useModalFocusTrap(modalRef, handleClose);
 
   return (
     <div data-testid="scenario-edition-modal" className="scenario-edition-modal" ref={modalRef}>
@@ -278,20 +292,21 @@ const AddOrEditScenarioModal = ({ editionMode = false, scenario }: AddOrEditScen
           <div className="confirm-modal-content">
             <ConfirmModal
               title={t('common.leaveEditionMode', { ns: 'translation' })}
+              onConfirm={handleClose}
               onCancel={resetClickedOutside}
               withCloseButton={false}
             />
           </div>
         </div>
       )}
-      <ModalHeaderSNCF withCloseButton withBorderBottom>
+      <ModalHeaderSNCF withCloseButton withBorderBottom closePortalModal={handleClose}>
         <h1 className="scenario-edition-modal-title">
           {editionMode ? t('main.scenarioModificationTitle') : t('main.scenarioCreationTitle')}
         </h1>
       </ModalHeaderSNCF>
       <ModalBodySNCF>
         <div className="row">
-          <div className={editionMode ? 'col-lg-12' : 'col-lg-6'}>
+          <div className="col-lg-6">
             <div className="scenario-edition-modal-name">
               <InputSNCF
                 id="scenarioInputName"
@@ -363,18 +378,16 @@ const AddOrEditScenarioModal = ({ editionMode = false, scenario }: AddOrEditScen
               color="teal"
             />
           </div>
-          {!editionMode && (
-            <div className="col-lg-6">
-              <div
-                className={cx('scenario-edition-modal-infraselector', {
-                  'scenario-edition-modal-infraselector-missing':
-                    displayErrors && !currentScenario.infra_id,
-                })}
-              >
-                <InfraSelectorModal onlySelectionMode />
-              </div>
+          <div className="col-lg-6">
+            <div
+              className={cx('scenario-edition-modal-infraselector', {
+                'scenario-edition-modal-infraselector-missing':
+                  displayErrors && !currentScenario.infra_id,
+              })}
+            >
+              <InfraSelectorModal onlySelectionMode />
             </div>
-          )}
+          </div>
         </div>
       </ModalBodySNCF>
       <ModalFooterSNCF>
@@ -392,7 +405,7 @@ const AddOrEditScenarioModal = ({ editionMode = false, scenario }: AddOrEditScen
               {t('main.scenarioDeleteButton')}
             </button>
           )}
-          <button className="btn btn-sm btn-secondary mr-2" type="button" onClick={closeModal}>
+          <button className="btn btn-sm btn-secondary mr-2" type="button" onClick={handleClose}>
             {t('main.scenarioCancel')}
           </button>
           {editionMode ? (
@@ -405,7 +418,7 @@ const AddOrEditScenarioModal = ({ editionMode = false, scenario }: AddOrEditScen
               <span className="mr-2">
                 <Pencil />
               </span>
-              {t('main.scenarioModifyButton')}
+              {t('main.scenarioModificationTitle')}
             </button>
           ) : (
             <button

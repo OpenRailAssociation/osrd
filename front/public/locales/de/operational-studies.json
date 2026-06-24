@@ -202,7 +202,6 @@
     "scenarioDescriptionInvalid": "Die Beschreibung darf 1.024 Zeichen nicht überschreiten.",
     "scenarioDescriptionPlaceholder": "Kurzbeschreibung des Szenarios",
     "scenarioModificationTitle": "Szenario bearbeiten",
-    "scenarioModifyButton": "Sichern",
     "scenarioName": "Szenarioname",
     "scenarioNameInvalid": "Der Szenarioname darf 128 Zeichen nicht überschreiten.",
     "scenarioTags": "Tags",

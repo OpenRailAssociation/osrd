@@ -199,7 +199,6 @@
     "scenarioDescriptionInvalid": "La description pour le scénario ne doit pas dépasser 1024 caractères",
     "scenarioDescriptionPlaceholder": "Courte description du scénario",
     "scenarioModificationTitle": "Modifier le scénario",
-    "scenarioModifyButton": "Enregistrer",
     "scenarioName": "Nom du scénario",
     "scenarioNameInvalid": "Vous devez renseigner un nom pour le scénario qui ne dépasse pas 128 caractères",
     "scenarioTags": "Étiquettes",
