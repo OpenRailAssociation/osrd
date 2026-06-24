@@ -368,17 +368,16 @@ mod tests {
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn rolling_stock_list_filters_authorized_rolling_stocks() {
+    async fn rolling_stock_list_user_only_sees_its_related_rolling_stocks() {
         let app = test_app!().build();
         let db_pool = app.db_pool();
-        let rolling_stock_grant =
-            create_fast_rolling_stock(&mut db_pool.get_ok(), "fast_rolling_stock_grant").await;
-        let rolling_stock_no_grant =
-            create_fast_rolling_stock(&mut db_pool.get_ok(), "fast_rolling_stock_no_grant").await;
-        // Regular user with the correct roles should see only the rolling stock he is associated with:
+        let rs_1 = create_fast_rolling_stock(&mut db_pool.get_ok(), "rs_1").await;
+        let rs_2 = create_fast_rolling_stock(&mut db_pool.get_ok(), "rs_2").await;
+        let _rs_no_grant = create_fast_rolling_stock(&mut db_pool.get_ok(), "rs_no_grant").await;
         let user = app
             .user("user_identity", "user_name")
-            .with_rolling_stock_grant(rolling_stock_grant.id, RollingStockGrant::Reader)
+            .with_rolling_stock_grant(rs_1.id, RollingStockGrant::Reader)
+            .with_rolling_stock_grant(rs_2.id, RollingStockGrant::Reader)
             .create()
             .await;
         let response: LightRollingStockWithLiveriesCountList = app
@@ -393,10 +392,15 @@ mod tests {
                 .iter()
                 .map(|rolling_stock| rolling_stock.rolling_stock.id)
                 .collect::<Vec<_>>(),
-            vec![rolling_stock_grant.id]
+            vec![rs_1.id, rs_2.id]
         );
-        // TODO: separate in two tests (admins_can_list_all_rolling_stocks and user_can_list_their_rolling_stocks)
-        // An admin should see all the rolling stocks:
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn rolling_stock_list_admin_can_see_unrelated_rolling_stock() {
+        let app = test_app!().build();
+        let db_pool = app.db_pool();
+        let rs_no_grant = create_fast_rolling_stock(&mut db_pool.get_ok(), "rs_no_grant").await;
         let admin = app
             .user("admin", "admin")
             .with_roles([Role::Admin])
@@ -414,7 +418,7 @@ mod tests {
                 .iter()
                 .map(|rolling_stock| rolling_stock.rolling_stock.id)
                 .collect::<Vec<_>>(),
-            vec![rolling_stock_grant.id, rolling_stock_no_grant.id]
+            vec![rs_no_grant.id]
         );
     }
 

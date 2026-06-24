@@ -1017,30 +1017,39 @@ pub mod tests {
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn infra_list_filters_authorized_infras() {
+    async fn infra_list_user_only_sees_its_related_infras() {
         let app = test_app!().build();
         let db_pool = app.db_pool();
-        let infra = create_small_infra(&mut db_pool.get_ok()).await;
-        let infra_no_grant = create_small_infra(&mut db_pool.get_ok()).await;
-
-        // Regular user with the correct roles should see only the infra he is associated with:
+        let infra_1 = create_small_infra(&mut db_pool.get_ok()).await;
+        let infra_2 = create_small_infra(&mut db_pool.get_ok()).await;
+        let _infra_no_grant = create_small_infra(&mut db_pool.get_ok()).await;
         let user = app
             .user("user_identity", "user_name")
-            .with_infra_grant(infra.id, InfraGrant::Reader)
+            .with_infra_grant(infra_1.id, InfraGrant::Reader)
+            .with_infra_grant(infra_2.id, InfraGrant::Reader)
             .create()
             .await;
         let response: InfraListResponse = app
             .get("/infra/")
             .by_user(user.as_ref())
             .await
-            .assert_status(StatusCode::OK)
+            .assert_status_ok()
             .json();
         assert_eq!(
-            response.results.iter().map(|infra| infra.id).collect_vec(),
-            vec![infra.id]
+            response
+                .results
+                .iter()
+                .map(|infra| infra.id)
+                .collect::<Vec<_>>(),
+            vec![infra_1.id, infra_2.id]
         );
+    }
 
-        // An admin should see all the infras:
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn infra_list_admin_can_see_unrelated_infra() {
+        let app = test_app!().build();
+        let db_pool = app.db_pool();
+        let infra_no_grant = create_small_infra(&mut db_pool.get_ok()).await;
         let admin = app
             .user("admin", "admin")
             .with_roles([Role::Admin])
@@ -1050,11 +1059,15 @@ pub mod tests {
             .get("/infra/")
             .by_user(admin.as_ref())
             .await
-            .assert_status(StatusCode::OK)
+            .assert_status_ok()
             .json();
         assert_eq!(
-            response.results.iter().map(|infra| infra.id).collect_vec(),
-            vec![infra.id, infra_no_grant.id]
+            response
+                .results
+                .iter()
+                .map(|infra| infra.id)
+                .collect::<Vec<_>>(),
+            vec![infra_no_grant.id]
         );
     }
 
