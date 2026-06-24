@@ -42,7 +42,6 @@ import fr.sncf.osrd.utils.units.TimeDelta
 import fr.sncf.osrd.utils.units.meters
 import fr.sncf.osrd.utils.units.metersPerSecond
 import fr.sncf.osrd.utils.units.seconds
-import kotlin.math.min
 
 // Reserve clear track with a margin for the reaction time of the driver
 const val CLOSED_SIGNAL_RESERVATION_MARGIN = 20.0
@@ -91,11 +90,49 @@ fun runScheduleMetadataExtractor(
         getSignalCriticalPositions(fullInfra, envelopeWithStops, trainPath, closedSignalStops)
 
     val envelopeAdapter =
-        IncrementalRequirementEnvelopeAdapter(rollingStocks, envelopeWithStops, true)
-    val spacingGenerator = SpacingResourceGenerator(fullInfra, context)
-    spacingGenerator.extendPath(trainPath.getBlocks(), trainPath.getRoutes(), pathStops, true)
-    // as the provided path is complete, the resource generator should never return NotEnoughPath
-    val spacingRequirements = spacingGenerator.processUpdate(envelopeAdapter)!!
+        IncrementalRequirementEnvelopeAdapter(rollingStocks, envelopeWithStops, true) // , false)
+
+    // Generate spacing resources just as if a succession of trains (splitting on backtracking)
+    val spacingRequirements = mutableListOf<SpacingRequirement>()
+    val subpathExtremities =
+        listOf(Offset<PhysicsPath>(0.meters)) +
+            trainPath.getBacktrackLocations() +
+            listOf(Offset(trainPath.length.meters))
+    for ((subpathBegin, subpathEnd) in subpathExtremities.zipWithNext()) {
+        val subpath =
+            trainPath.subPath(
+                subpathBegin,
+                subpathEnd,
+                resetOffsets = false,
+                includeExactStart = true,
+                includeExactEnd = true,
+            )
+        val blockRanges = subpath.getBlocks().toMutableList()
+        if (blockRanges.size > 1 && blockRanges.first().length == 0.meters) {
+            blockRanges.removeFirst()
+        }
+        if (blockRanges.size > 1 && blockRanges.last().length == 0.meters) {
+            blockRanges.removeLast()
+        }
+        val routeRanges = subpath.getRoutes().toMutableList()
+        if (routeRanges.size > 1 && routeRanges.first().length == 0.meters) {
+            routeRanges.removeFirst()
+        }
+        if (routeRanges.size > 1 && routeRanges.last().length == 0.meters) {
+            routeRanges.removeLast()
+        }
+
+        val spacingGenerator = SpacingResourceGenerator(fullInfra, subpathBegin, context)
+        spacingGenerator.extendPath(
+            blockRanges,
+            routeRanges,
+            pathStops.filter { it.pathOffset in subpathBegin..subpathEnd },
+            true,
+        )
+        // as the provided path is complete, the resource generator should never return
+        // NotEnoughPath
+        spacingRequirements.addAll(spacingGenerator.processUpdate(envelopeAdapter)!!)
+    }
 
     val routingRequirements =
         routingRequirements(
@@ -117,7 +154,7 @@ fun runScheduleMetadataExtractor(
         reportTrain.pathItemTimes,
         signalCriticalPositions,
         zoneUpdates,
-        spacingRequirements.map { it.toRJS(rawInfra) },
+        sortAndMergeRequirements(spacingRequirements).map { it.toRJS(rawInfra) },
         routingRequirements.map { it.toRJS(rawInfra) },
     )
 }

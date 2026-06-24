@@ -38,6 +38,7 @@ interface TrainPath : PhysicsPath, PathProperties {
     fun subPath(
         from: Offset<PhysicsPath>?,
         to: Offset<PhysicsPath>?,
+        resetOffsets: Boolean = true,
         includeExactStart: Boolean = true,
         includeExactEnd: Boolean = true,
     ): TrainPath

@@ -109,7 +109,7 @@ class SpacingResourceGeneratorTest {
                 )
                 .map { it.mapValue(infra.rawInfra.getZonePathZone(it.value)) }
         val length = blockRanges.last().pathEnd
-        val spacingResourceGenerator = SpacingResourceGenerator(infra, null)
+        val spacingResourceGenerator = SpacingResourceGenerator(infra, Offset(0.meters), null)
         spacingResourceGenerator.extendPath(blockRanges, routeRanges, listOf(), true)
         resourceUseOnSingleCall =
             spacingResourceGenerator.processUpdate(makeCallbacks(length, true))!!
@@ -119,7 +119,7 @@ class SpacingResourceGeneratorTest {
     fun testDifferentPathLengths() {
         // Only the first block has a simulation (not marked as complete), the path moves forward
         // one block at a time.
-        val automaton = SpacingResourceGenerator(infra, null)
+        val automaton = SpacingResourceGenerator(infra, Offset(0.meters), null)
         val callbacks = makeCallbacks(blockRanges[0].pathEnd, false)
         val res = mutableListOf<List<SpacingRequirement>?>()
         for (i in blockRanges.indices) {
@@ -147,7 +147,7 @@ class SpacingResourceGeneratorTest {
     fun testWithIncrementalSimulationUpdates() {
         // The path is complete right from the start, the simulation moves forward one block at a
         // time
-        val automaton = SpacingResourceGenerator(infra, null)
+        val automaton = SpacingResourceGenerator(infra, Offset(0.meters), null)
         automaton.extendPath(blockRanges, routeRanges, listOf(), isPathComplete = true)
         val res = mutableListOf<List<SpacingRequirement>>()
         for (i in blockRanges.indices) {
@@ -172,7 +172,7 @@ class SpacingResourceGeneratorTest {
         // increments.
         // This isn't a realistic way to use the API, but it's an easy way to look for incomplete
         // resource use.
-        val automaton = SpacingResourceGenerator(infra, null)
+        val automaton = SpacingResourceGenerator(infra, Offset(0.meters), null)
         automaton.extendPath(blockRanges, routeRanges, listOf(), isPathComplete = true)
         val res = mutableListOf<List<SpacingRequirement>>()
         for (length in 2500..2510) { // Along the second block, no resource should be freed there
@@ -203,7 +203,7 @@ class SpacingResourceGeneratorTest {
         // The rolling stock is longer than the train path, every resource use should be incomplete
         val length = blockRanges.last().pathEnd - 1.meters
         val callbacks = makeCallbacks(length, false, rollingStock = TestTrains.VERY_LONG_FAST_TRAIN)
-        val automaton = SpacingResourceGenerator(infra, null)
+        val automaton = SpacingResourceGenerator(infra, Offset(0.meters), null)
         automaton.extendPath(blockRanges, routeRanges, listOf(), isPathComplete = true)
         val res = automaton.processUpdate(callbacks)!!
         for (requirement in res) {
@@ -214,7 +214,7 @@ class SpacingResourceGeneratorTest {
 
     @Test
     fun testRequiredPathLength() {
-        val automaton = SpacingResourceGenerator(infra, null)
+        val automaton = SpacingResourceGenerator(infra, Offset(0.meters), null)
         val callbacks = makeCallbacks(blockRanges[0].pathEnd, false)
         val blockRanges = blockRanges.subList(0, 3)
         val routeRanges = routeRanges.subRange(Offset.zero(), blockRanges.last().pathEnd)
@@ -240,7 +240,7 @@ class SpacingResourceGeneratorTest {
         val stops = listOf(TrainStop(stopOffset.meters, stopDuration, SHORT_SLIP_STOP))
 
         // Build path
-        val automaton = SpacingResourceGenerator(infra, null)
+        val automaton = SpacingResourceGenerator(infra, Offset(0.meters), null)
         automaton.extendPath(
             blockRanges,
             routeRanges,
@@ -307,6 +307,7 @@ private fun makeCallbacks(
         distanceRangeMapOf(DistanceRangeMap.RangeMapEntry(0.meters, length.distance, rollingStock)),
         withStops,
         complete,
+        Offset(withStops.endPos.meters),
         infiniteLastStop,
     )
 }

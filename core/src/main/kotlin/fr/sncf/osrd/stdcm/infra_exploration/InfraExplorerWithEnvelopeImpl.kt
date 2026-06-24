@@ -4,6 +4,7 @@ import fr.sncf.osrd.api.ConsistSchedule
 import fr.sncf.osrd.conflicts.IncrementalRequirementEnvelopeAdapter
 import fr.sncf.osrd.conflicts.SpacingRequirement
 import fr.sncf.osrd.conflicts.SpacingResourceGenerator
+import fr.sncf.osrd.conflicts.sortAndMergeRequirements
 import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.envelope.EnvelopeConcat
 import fr.sncf.osrd.envelope.EnvelopeConcat.LocatedEnvelopeInterpolate
@@ -29,7 +30,7 @@ import java.lang.ref.SoftReference
 data class InfraExplorerWithEnvelopeImpl(
     private val infraExplorer: InfraExplorer,
     private val envelopes: AppendOnlyLinkedList<LocatedEnvelopeInterpolate>,
-    private val spacingRequirementAutomaton: SpacingResourceGenerator,
+    private val spacingRequirementAutomatons: MutableList<SpacingResourceGenerator>,
     private val consistSchedule: ConsistSchedule,
     private var stopTimeData: List<StopTimeData> = listOf(),
 
@@ -45,7 +46,7 @@ data class InfraExplorerWithEnvelopeImpl(
             InfraExplorerWithEnvelopeImpl(
                 explorer,
                 envelopes.shallowCopy(),
-                spacingRequirementAutomaton.clone(),
+                spacingRequirementAutomatons.map { it.clone() }.toMutableList(),
                 consistSchedule,
                 stopTimeData,
                 spacingRequirementsCache,
@@ -101,10 +102,10 @@ data class InfraExplorerWithEnvelopeImpl(
     }
 
     override fun withReplacedEnvelope(envelope: Envelope): InfraExplorerWithEnvelope {
-        val spacingRequirementAutomaton = spacingRequirementAutomaton.clone()
         return copy(
             envelopes = appendOnlyLinkedListOf(LocatedEnvelopeInterpolate(envelope, 0.0, 0.0)),
-            spacingRequirementAutomaton = spacingRequirementAutomaton,
+            spacingRequirementAutomatons =
+                spacingRequirementAutomatons.map { it.clone() }.toMutableList(),
             spacingRequirementsCache = null,
             envelopeCache = null,
         )
@@ -164,59 +165,191 @@ data class InfraExplorerWithEnvelopeImpl(
             // This case can happen when we start right at the end of a block
             return listOf()
         }
+        val lookaheadEndOffset = getLookaheadEndOffset()
+        val nextBacktracking =
+            infraExplorer
+                .getStepTracker()
+                .iterateSeenStepsBackwards()
+                .takeWhile { it.travelledPathOffset >= lookaheadEndOffset }
+                .lastOrNull { it.isBacktracking }
+                ?.travelledPathOffset ?: Offset(Double.POSITIVE_INFINITY.meters)
+        val cappedSimulatedOffset = Offset<PhysicsPath>(getFullEnvelope().endPos.meters)
+        //            Offset.min(Offset(getFullEnvelope().endPos.meters), nextBacktracking)
 
-        val lastPathEndOffset = spacingRequirementAutomaton.getCurrentPathEndOffset()
-        spacingRequirementAutomaton.extendPath(
-            infraExplorer.getBlocksInRange(lastPathEndOffset),
-            infraExplorer.getRoutesInRange(lastPathEndOffset),
-            infraExplorer.getStopsInRange(lastPathEndOffset),
-            isPathComplete,
-        )
+        val lastPathEndOffset = spacingRequirementAutomatons.last().getCurrentPathEndOffset()
 
-        // Path is complete and has been completely simulated
-        val simulationComplete = isPathComplete && getLookahead().isEmpty()
-        val spacingRequirementAutomatonCallbacks =
-            IncrementalRequirementEnvelopeAdapter(
-                getFullRollingStockRangeMap(),
-                getFullEnvelope(),
-                simulationComplete,
-                endAtStop(),
+        // Generate spacing resources just as if a succession of trains (splitting on backtracking)
+        val updatedRequirements = mutableListOf<SpacingRequirement>()
+        val backtrackingLocations = infraExplorer.getBacktrackLocationsInRange(lastPathEndOffset)
+
+        val subpathExtremities = backtrackingLocations.toMutableList()
+        if (backtrackingLocations.firstOrNull() != lastPathEndOffset) {
+            subpathExtremities.addFirst(lastPathEndOffset)
+        }
+        if (
+            backtrackingLocations.lastOrNull() != lookaheadEndOffset && subpathExtremities.size < 2
+        ) {
+            subpathExtremities.addLast(lookaheadEndOffset)
+        }
+
+        for ((subpathBegin, subpathEnd) in subpathExtremities.zipWithNext()) {
+            val endAtBacktracking = (subpathEnd in backtrackingLocations)
+            val isSubpathComplete = if (endAtBacktracking) true else isPathComplete
+            val blockRanges =
+                infraExplorer.getBlocksInRange(subpathBegin, subpathEnd).toMutableList()
+            if (blockRanges.size > 1 && blockRanges.first().length == 0.meters) {
+                blockRanges.removeFirst()
+            }
+            if (blockRanges.size > 1 && blockRanges.last().length == 0.meters) {
+                blockRanges.removeLast()
+            }
+            val routeRanges =
+                infraExplorer.getRoutesInRange(subpathBegin, subpathEnd).toMutableList()
+            if (routeRanges.size > 1 && routeRanges.first().length == 0.meters) {
+                routeRanges.removeFirst()
+            }
+            if (routeRanges.size > 1 && routeRanges.last().length == 0.meters) {
+                routeRanges.removeLast()
+            }
+
+            val spacingRequirementAutomaton =
+                if (subpathBegin in backtrackingLocations) {
+                    val subSpacingAutomaton =
+                        spacingRequirementAutomatons
+                            .asReversed()
+                            .asSequence()
+                            .takeWhile { it.startOffset >= subpathBegin }
+                            .firstOrNull { it.startOffset == subpathBegin }
+                    if (subSpacingAutomaton != null) subSpacingAutomaton
+                    else {
+                        require(spacingRequirementAutomatons.last().startOffset < subpathBegin)
+                        val firstAutomaton = spacingRequirementAutomatons.first()
+                        spacingRequirementAutomatons.add(
+                            SpacingResourceGenerator(
+                                firstAutomaton.rawInfra,
+                                firstAutomaton.blockInfra,
+                                firstAutomaton.loadedSignalInfra,
+                                firstAutomaton.simulator,
+                                subpathBegin,
+                                firstAutomaton.context,
+                            )
+                        )
+                        spacingRequirementAutomatons.last()
+                    }
+                } else {
+                    spacingRequirementAutomatons.asReversed().first {
+                        it.startOffset <= subpathBegin
+                    }
+                }
+
+            spacingRequirementAutomaton.extendPath(
+                blockRanges,
+                routeRanges,
+                infraExplorer.getStopsInRange(subpathBegin, subpathEnd),
+                isSubpathComplete,
             )
-        val updatedRequirements =
-            spacingRequirementAutomaton.processUpdate(spacingRequirementAutomatonCallbacks)
-                ?: throw BlockAvailabilityInterface.NotEnoughLookaheadError()
-        spacingRequirementsCache = SoftReference(updatedRequirements)
-        return updatedRequirements
-    }
-
-    override fun getFullSpacingRequirements(): List<SpacingRequirement> {
-        val simulationComplete = isPathComplete && getLookahead().isEmpty()
-        // We need a new automaton to get the resource uses over the whole path, and not just since
-        // the last update
-        val newAutomaton =
-            SpacingResourceGenerator(
-                spacingRequirementAutomaton.rawInfra,
-                spacingRequirementAutomaton.blockInfra,
-                spacingRequirementAutomaton.loadedSignalInfra,
-                spacingRequirementAutomaton.simulator,
-                spacingRequirementAutomaton.context,
-            )
-        newAutomaton.extendPath(
-            infraExplorer.getBlocksInRange(),
-            infraExplorer.getRoutesInRange(),
-            infraExplorer.getStopsInRange(),
-            isPathComplete,
-        )
-        val res =
-            newAutomaton.processUpdate(
+            // Subpath is complete and has been completely simulated
+            val subSimulationComplete =
+                (endAtBacktracking && subpathEnd == cappedSimulatedOffset) ||
+                    (isPathComplete && getLookahead().isEmpty())
+            val spacingRequirementAutomatonCallbacks =
                 IncrementalRequirementEnvelopeAdapter(
                     getFullRollingStockRangeMap(),
                     getFullEnvelope(),
-                    simulationComplete,
-                    endAtStop(),
+                    subSimulationComplete,
+                    if (endAtBacktracking) Offset.min(subpathEnd, cappedSimulatedOffset)
+                    else cappedSimulatedOffset,
+                    endAtBacktracking || endAtStop(),
                 )
-            ) ?: throw BlockAvailabilityInterface.NotEnoughLookaheadError()
+            updatedRequirements.addAll(
+                spacingRequirementAutomaton.processUpdate(spacingRequirementAutomatonCallbacks)
+                    ?: throw BlockAvailabilityInterface.NotEnoughLookaheadError()
+            )
+        }
+        val res = sortAndMergeRequirements(updatedRequirements)
+        spacingRequirementsCache = SoftReference(res)
         return res
+    }
+
+    override fun getFullSpacingRequirements(): List<SpacingRequirement> {
+        val spacingRequirements = mutableListOf<SpacingRequirement>()
+
+        val lookaheadEndOffset = getLookaheadEndOffset()
+        val nextBacktracking =
+            infraExplorer
+                .getStepTracker()
+                .iterateSeenStepsBackwards()
+                .takeWhile { it.travelledPathOffset >= lookaheadEndOffset }
+                .lastOrNull { it.isBacktracking }
+                ?.travelledPathOffset ?: Offset(Double.POSITIVE_INFINITY.meters)
+        val cappedSimulatedOffset = Offset<PhysicsPath>(getFullEnvelope().endPos.meters)
+        //            Offset.min(Offset(getFullEnvelope().endPos.meters), nextBacktracking)
+
+        // We need a new automaton to get the resource uses over the whole path, and not just since
+        // the last update
+        val firstAutomaton = spacingRequirementAutomatons.first()
+
+        val backtrackingLocations = infraExplorer.getBacktrackLocationsInRange()
+
+        val subpathExtremities = mutableListOf(Offset<PhysicsPath>(0.meters))
+        subpathExtremities.addAll(backtrackingLocations)
+        if (backtrackingLocations.lastOrNull() != lookaheadEndOffset)
+            subpathExtremities.addLast(lookaheadEndOffset)
+
+        for ((subpathBegin, subpathEnd) in subpathExtremities.zipWithNext()) {
+            val endAtBacktracking = (subpathEnd in backtrackingLocations)
+            val isSubpathComplete = if (endAtBacktracking) true else isPathComplete
+            val subSimulationComplete =
+                (endAtBacktracking && subpathEnd == cappedSimulatedOffset) ||
+                    (isPathComplete && getLookahead().isEmpty())
+
+            val blockRanges =
+                infraExplorer.getBlocksInRange(subpathBegin, subpathEnd).toMutableList()
+            if (blockRanges.size > 1 && blockRanges.first().length == 0.meters) {
+                blockRanges.removeFirst()
+            }
+            if (blockRanges.size > 1 && blockRanges.last().length == 0.meters) {
+                blockRanges.removeLast()
+            }
+            val routeRanges =
+                infraExplorer.getRoutesInRange(subpathBegin, subpathEnd).toMutableList()
+            if (routeRanges.size > 1 && routeRanges.first().length == 0.meters) {
+                routeRanges.removeFirst()
+            }
+            if (routeRanges.size > 1 && routeRanges.last().length == 0.meters) {
+                routeRanges.removeLast()
+            }
+
+            val newAutomaton =
+                SpacingResourceGenerator(
+                    firstAutomaton.rawInfra,
+                    firstAutomaton.blockInfra,
+                    firstAutomaton.loadedSignalInfra,
+                    firstAutomaton.simulator,
+                    subpathBegin,
+                    firstAutomaton.context,
+                )
+            newAutomaton.extendPath(
+                blockRanges,
+                routeRanges,
+                infraExplorer.getStopsInRange(subpathBegin, subpathEnd),
+                isSubpathComplete,
+            )
+            spacingRequirements.addAll(
+                newAutomaton.processUpdate(
+                    IncrementalRequirementEnvelopeAdapter(
+                        getFullRollingStockRangeMap(),
+                        getFullEnvelope(),
+                        subSimulationComplete,
+                        if (endAtBacktracking) Offset.min(subpathEnd, cappedSimulatedOffset)
+                        else cappedSimulatedOffset,
+                        endAtBacktracking || endAtStop(),
+                    )
+                ) ?: throw BlockAvailabilityInterface.NotEnoughLookaheadError()
+            )
+        }
+
+        return sortAndMergeRequirements(spacingRequirements)
     }
 
     override fun moveForward(): InfraExplorerWithEnvelope {
@@ -235,7 +368,7 @@ data class InfraExplorerWithEnvelopeImpl(
         return InfraExplorerWithEnvelopeImpl(
             infraExplorer.clone(),
             envelopes.shallowCopy(),
-            spacingRequirementAutomaton.clone(),
+            spacingRequirementAutomatons.map { it.clone() }.toMutableList(),
             consistSchedule,
             stopTimeData,
             spacingRequirementsCache,
