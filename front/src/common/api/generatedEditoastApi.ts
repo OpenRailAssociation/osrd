@@ -3387,9 +3387,10 @@ export type PatchOperation =
       op: 'test';
     });
 export type Operation =
-  | (InfraObject & {
+  | {
       operation_type: 'CREATE';
-    })
+      payload: InfraObject;
+    }
   | ({
       obj_id: string;
       obj_type: ObjectType;
@@ -3474,11 +3475,12 @@ export type InfraErrorType =
       error_type: 'unused_port';
       port_name: string;
     };
-export type InfraError = InfraErrorType & {
+export type InfraError = {
   field: string | null;
   is_warning: boolean;
   obj_id: string;
   obj_type: ObjectType;
+  sub_type: InfraErrorType;
 };
 export type BoundingBox = {
   max_lat: number;

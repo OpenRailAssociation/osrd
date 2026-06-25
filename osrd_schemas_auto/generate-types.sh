@@ -20,4 +20,6 @@ uv run datamodel-codegen \
     --set-default-enum-member \
     --enum-field-as-literal one \
     --use-annotated \
-    --use-double-quotes
+    --use-double-quotes \
+    --allow-remote-refs \
+    --formatters black isort

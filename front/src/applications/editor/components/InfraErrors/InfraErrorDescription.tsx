@@ -7,8 +7,8 @@ import type { InfraError } from 'common/api/osrdEditoastApi';
  */
 const InfraErrorDescription = ({ error }: { error: InfraError }) => {
   const { t } = useTranslation();
-  const i18nKey = `Editor.infra-errors.error-type.${error.error_type}.description`;
-  return t(i18nKey, error);
+  const i18nKey = `Editor.infra-errors.error-type.${error.sub_type.error_type}.description`;
+  return t(i18nKey, error.sub_type);
 };
 
 export default InfraErrorDescription;

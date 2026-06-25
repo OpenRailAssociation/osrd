@@ -7,7 +7,7 @@ from datetime import date, timedelta
 from enum import Enum
 from typing import Annotated, Any, Literal
 
-from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, RootModel
+from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, RootModel, constr
 
 
 class PowerRestriction(BaseModel):
@@ -408,7 +408,7 @@ class EditoastAppHealthErrorCore(BaseModel):
     ] = None
     message: str
     status: Literal[400]
-    type: Literal["EditoastAppHealthErrorCore"]
+    type: Literal["editoast:app_health:Core"]
 
 
 class EditoastAppHealthErrorDatabase(BaseModel):
@@ -417,7 +417,7 @@ class EditoastAppHealthErrorDatabase(BaseModel):
     ] = None
     message: str
     status: Literal[400]
-    type: Literal["EditoastAppHealthErrorDatabase"]
+    type: Literal["editoast:app_health:Database"]
 
 
 class EditoastAppHealthErrorOpenfga(BaseModel):
@@ -426,7 +426,7 @@ class EditoastAppHealthErrorOpenfga(BaseModel):
     ] = None
     message: str
     status: Literal[400]
-    type: Literal["EditoastAppHealthErrorOpenfga"]
+    type: Literal["editoast:app_health:Openfga"]
 
 
 class EditoastAppHealthErrorTimeout(BaseModel):
@@ -435,7 +435,7 @@ class EditoastAppHealthErrorTimeout(BaseModel):
     ] = None
     message: str
     status: Literal[400]
-    type: Literal["EditoastAppHealthErrorTimeout"]
+    type: Literal["editoast:app_health:Timeout"]
 
 
 class EditoastAppHealthErrorValkey(BaseModel):
@@ -444,7 +444,7 @@ class EditoastAppHealthErrorValkey(BaseModel):
     ] = None
     message: str
     status: Literal[400]
-    type: Literal["EditoastAppHealthErrorValkey"]
+    type: Literal["editoast:app_health:Valkey"]
 
 
 class EditoastAttachedErrorTrackNotFoundContext(BaseModel):
@@ -458,7 +458,7 @@ class EditoastAttachedErrorTrackNotFound(BaseModel):
     ] = None
     message: str
     status: Literal[404]
-    type: Literal["EditoastAttachedErrorTrackNotFound"]
+    type: Literal["editoast:attached:TrackNotFound"]
 
 
 class EditoastAuthorizationErrorAuthError(BaseModel):
@@ -467,7 +467,7 @@ class EditoastAuthorizationErrorAuthError(BaseModel):
     ] = None
     message: str
     status: Literal[500]
-    type: Literal["EditoastAuthorizationErrorAuthError"]
+    type: Literal["editoast:authz:AuthError"]
 
 
 class EditoastAuthorizationErrorDbError(BaseModel):
@@ -476,7 +476,7 @@ class EditoastAuthorizationErrorDbError(BaseModel):
     ] = None
     message: str
     status: Literal[500]
-    type: Literal["EditoastAuthorizationErrorDbError"]
+    type: Literal["editoast:authz:DbError"]
 
 
 class EditoastAuthorizationErrorForbidden(BaseModel):
@@ -485,7 +485,7 @@ class EditoastAuthorizationErrorForbidden(BaseModel):
     ] = None
     message: str
     status: Literal[403]
-    type: Literal["EditoastAuthorizationErrorForbidden"]
+    type: Literal["editoast:authz:Forbidden"]
 
 
 class EditoastAuthorizationErrorForbiddenImpersonation(BaseModel):
@@ -495,7 +495,7 @@ class EditoastAuthorizationErrorForbiddenImpersonation(BaseModel):
     ] = None
     message: str
     status: Literal[403]
-    type: Literal["EditoastAuthorizationErrorForbiddenImpersonation"]
+    type: Literal["editoast:authz:ForbiddenImpersonation"]
 
 
 class EditoastAuthorizationErrorImpersonatedUserNotFoundContext(BaseModel):
@@ -509,7 +509,7 @@ class EditoastAuthorizationErrorImpersonatedUserNotFound(BaseModel):
     ] = None
     message: str
     status: Literal[404]
-    type: Literal["EditoastAuthorizationErrorImpersonatedUserNotFound"]
+    type: Literal["editoast:authz:ImpersonatedUserNotFound"]
 
 
 class EditoastAuthorizationErrorUnauthenticated(BaseModel):
@@ -519,7 +519,7 @@ class EditoastAuthorizationErrorUnauthenticated(BaseModel):
     ] = None
     message: str
     status: Literal[401]
-    type: Literal["EditoastAuthorizationErrorUnauthenticated"]
+    type: Literal["editoast:authz:Unauthenticated"]
 
 
 class EditoastAuthzErrorAuthorizer(BaseModel):
@@ -528,7 +528,7 @@ class EditoastAuthzErrorAuthorizer(BaseModel):
     ] = None
     message: str
     status: Literal[500]
-    type: Literal["EditoastAuthzErrorAuthorizer"]
+    type: Literal["editoast:authz:Authorizer"]
 
 
 class EditoastAuthzErrorDatabase(BaseModel):
@@ -537,7 +537,7 @@ class EditoastAuthzErrorDatabase(BaseModel):
     ] = None
     message: str
     status: Literal[500]
-    type: Literal["EditoastAuthzErrorDatabase"]
+    type: Literal["editoast:authz:Database"]
 
 
 class EditoastAuthzErrorUnknownIdentitiesContext(BaseModel):
@@ -551,7 +551,7 @@ class EditoastAuthzErrorUnknownIdentities(BaseModel):
     ] = None
     message: str
     status: Literal[404]
-    type: Literal["EditoastAuthzErrorUnknownIdentities"]
+    type: Literal["editoast:authz:UnknownIdentities"]
 
 
 class EditoastAuthzErrorUnknownResourceContext(BaseModel):
@@ -565,7 +565,7 @@ class EditoastAuthzErrorUnknownResource(BaseModel):
     ] = None
     message: str
     status: Literal[404]
-    type: Literal["EditoastAuthzErrorUnknownResource"]
+    type: Literal["editoast:authz:UnknownResource"]
 
 
 class EditoastAuthzErrorUnknownSubjectContext(BaseModel):
@@ -579,7 +579,7 @@ class EditoastAuthzErrorUnknownSubject(BaseModel):
     ] = None
     message: str
     status: Literal[404]
-    type: Literal["EditoastAuthzErrorUnknownSubject"]
+    type: Literal["editoast:authz:UnknownSubject"]
 
 
 class EditoastAuthzErrorUnknownUserContext(BaseModel):
@@ -593,11 +593,11 @@ class EditoastAuthzErrorUnknownUser(BaseModel):
     ] = None
     message: str
     status: Literal[404]
-    type: Literal["EditoastAuthzErrorUnknownUser"]
+    type: Literal["editoast:authz:UnknownUser"]
 
 
 class EditoastAutoFixesEditoastErrorConflictingFixesOnSameObjectContext(BaseModel):
-    fixes: list
+    fixes: list[Any]
     object: dict[str, Any]
 
 
@@ -610,7 +610,7 @@ class EditoastAutoFixesEditoastErrorConflictingFixesOnSameObject(BaseModel):
     ] = None
     message: str
     status: Literal[500]
-    type: Literal["EditoastAutoFixesEditoastErrorConflictingFixesOnSameObject"]
+    type: Literal["editoast:auto_fixes:ConflictingFixesOnSameObject"]
 
 
 class EditoastAutoFixesEditoastErrorFixTrialFailure(BaseModel):
@@ -620,7 +620,7 @@ class EditoastAutoFixesEditoastErrorFixTrialFailure(BaseModel):
     ] = None
     message: str
     status: Literal[500]
-    type: Literal["EditoastAutoFixesEditoastErrorFixTrialFailure"]
+    type: Literal["editoast:auto_fixes:FixTrialFailure"]
 
 
 class EditoastAutoFixesEditoastErrorMaximumIterationReached(BaseModel):
@@ -630,7 +630,7 @@ class EditoastAutoFixesEditoastErrorMaximumIterationReached(BaseModel):
     ] = None
     message: str
     status: Literal[500]
-    type: Literal["EditoastAutoFixesEditoastErrorMaximumIterationReached"]
+    type: Literal["editoast:auto_fixes:MaximumIterationReached"]
 
 
 class EditoastAutoFixesEditoastErrorMissingErrorObject(BaseModel):
@@ -640,7 +640,7 @@ class EditoastAutoFixesEditoastErrorMissingErrorObject(BaseModel):
     ] = None
     message: str
     status: Literal[500]
-    type: Literal["EditoastAutoFixesEditoastErrorMissingErrorObject"]
+    type: Literal["editoast:auto_fixes:MissingErrorObject"]
 
 
 class EditoastCacheOperationErrorDuplicateIdsProvidedContext(BaseModel):
@@ -655,7 +655,7 @@ class EditoastCacheOperationErrorDuplicateIdsProvided(BaseModel):
     ] = None
     message: str
     status: Literal[404]
-    type: Literal["EditoastCacheOperationErrorDuplicateIdsProvided"]
+    type: Literal["editoast:cache_operation:DuplicateIdsProvided"]
 
 
 class EditoastCacheOperationErrorObjectNotFoundContext(BaseModel):
@@ -670,7 +670,7 @@ class EditoastCacheOperationErrorObjectNotFound(BaseModel):
     ] = None
     message: str
     status: Literal[404]
-    type: Literal["EditoastCacheOperationErrorObjectNotFound"]
+    type: Literal["editoast:cache_operation:ObjectNotFound"]
 
 
 class EditoastCatalogEntryErrorDatabase(BaseModel):
@@ -679,7 +679,7 @@ class EditoastCatalogEntryErrorDatabase(BaseModel):
     ] = None
     message: str
     status: Literal[500]
-    type: Literal["EditoastCatalogEntryErrorDatabase"]
+    type: Literal["editoast:catalog_entry:Database"]
 
 
 class EditoastCatalogEntryErrorNotFoundContext(BaseModel):
@@ -693,7 +693,7 @@ class EditoastCatalogEntryErrorNotFound(BaseModel):
     ] = None
     message: str
     status: Literal[404]
-    type: Literal["EditoastCatalogEntryErrorNotFound"]
+    type: Literal["editoast:catalog_entry:NotFound"]
 
 
 class EditoastCoreErrorBrokenPipe(BaseModel):
@@ -702,7 +702,7 @@ class EditoastCoreErrorBrokenPipe(BaseModel):
     ] = None
     message: str
     status: Literal[500]
-    type: Literal["EditoastCoreErrorBrokenPipe"]
+    type: Literal["editoast:coreclient:BrokenPipe"]
 
 
 class EditoastCoreErrorCoreResponseFormatErrorContext(BaseModel):
@@ -716,7 +716,7 @@ class EditoastCoreErrorCoreResponseFormatError(BaseModel):
     ] = None
     message: str
     status: Literal[500]
-    type: Literal["EditoastCoreErrorCoreResponseFormatError"]
+    type: Literal["editoast:coreclient:CoreResponseFormatError"]
 
 
 class EditoastCoreErrorMqClientError(BaseModel):
@@ -725,7 +725,7 @@ class EditoastCoreErrorMqClientError(BaseModel):
     ] = None
     message: str
     status: Literal[500]
-    type: Literal["EditoastCoreErrorMqClientError"]
+    type: Literal["editoast:coreclient:MqClientError"]
 
 
 class EditoastCoreErrorUnparsableErrorOutput(BaseModel):
@@ -735,7 +735,7 @@ class EditoastCoreErrorUnparsableErrorOutput(BaseModel):
     ] = None
     message: str
     status: Literal[400]
-    type: Literal["EditoastCoreErrorUnparsableErrorOutput"]
+    type: Literal["editoast:coreclient:UnparsableErrorOutput"]
 
 
 class EditoastDatabaseAccessErrorDatabaseAccessError(BaseModel):
@@ -745,11 +745,11 @@ class EditoastDatabaseAccessErrorDatabaseAccessError(BaseModel):
     ] = None
     message: str
     status: Literal[500]
-    type: Literal["EditoastDatabaseAccessErrorDatabaseAccessError"]
+    type: Literal["editoast:DatabaseAccessError"]
 
 
 class EditoastDelimitedAreaErrorInvalidLocationsContext(BaseModel):
-    invalid_locations: list
+    invalid_locations: list[Any]
 
 
 class EditoastDelimitedAreaErrorInvalidLocations(BaseModel):
@@ -759,7 +759,7 @@ class EditoastDelimitedAreaErrorInvalidLocations(BaseModel):
     ] = None
     message: str
     status: Literal[400]
-    type: Literal["EditoastDelimitedAreaErrorInvalidLocations"]
+    type: Literal["editoast:delimited_area:InvalidLocations"]
 
 
 class EditoastDocumentErrorsDatabase(BaseModel):
@@ -768,7 +768,7 @@ class EditoastDocumentErrorsDatabase(BaseModel):
     ] = None
     message: str
     status: Literal[500]
-    type: Literal["EditoastDocumentErrorsDatabase"]
+    type: Literal["editoast:document:Database"]
 
 
 class EditoastDocumentErrorsNotFoundContext(BaseModel):
@@ -782,7 +782,7 @@ class EditoastDocumentErrorsNotFound(BaseModel):
     ] = None
     message: str
     status: Literal[404]
-    type: Literal["EditoastDocumentErrorsNotFound"]
+    type: Literal["editoast:document:NotFound"]
 
 
 class EditoastEditionErrorInfraIsLockedContext(BaseModel):
@@ -796,7 +796,7 @@ class EditoastEditionErrorInfraIsLocked(BaseModel):
     ] = None
     message: str
     status: Literal[400]
-    type: Literal["EditoastEditionErrorInfraIsLocked"]
+    type: Literal["editoast:infra:edition:InfraIsLocked"]
 
 
 class EditoastEditionErrorSplitTrackSectionBadOffsetContext(BaseModel):
@@ -812,7 +812,7 @@ class EditoastEditionErrorSplitTrackSectionBadOffset(BaseModel):
     ] = None
     message: str
     status: Literal[400]
-    type: Literal["EditoastEditionErrorSplitTrackSectionBadOffset"]
+    type: Literal["editoast:infra:edition:SplitTrackSectionBadOffset"]
 
 
 class EditoastElectricalProfilesErrorDatabase(BaseModel):
@@ -822,7 +822,7 @@ class EditoastElectricalProfilesErrorDatabase(BaseModel):
     ] = None
     message: str
     status: Literal[500]
-    type: Literal["EditoastElectricalProfilesErrorDatabase"]
+    type: Literal["editoast:electrical_profiles:Database"]
 
 
 class EditoastElectricalProfilesErrorNotFoundContext(BaseModel):
@@ -836,7 +836,7 @@ class EditoastElectricalProfilesErrorNotFound(BaseModel):
     ] = None
     message: str
     status: Literal[404]
-    type: Literal["EditoastElectricalProfilesErrorNotFound"]
+    type: Literal["editoast:electrical_profiles:NotFound"]
 
 
 class EditoastFontErrorsFileNotFoundContext(BaseModel):
@@ -850,7 +850,7 @@ class EditoastFontErrorsFileNotFound(BaseModel):
     ] = None
     message: str
     status: Literal[404]
-    type: Literal["EditoastFontErrorsFileNotFound"]
+    type: Literal["editoast:fonts:FileNotFound"]
 
 
 class EditoastGeometryErrorUnexpectedGeometryContext(BaseModel):
@@ -865,7 +865,7 @@ class EditoastGeometryErrorUnexpectedGeometry(BaseModel):
     ] = None
     message: str
     status: Literal[404]
-    type: Literal["EditoastGeometryErrorUnexpectedGeometry"]
+    type: Literal["editoast:geometry:UnexpectedGeometry"]
 
 
 class EditoastGetObjectsErrorsDuplicateIdsProvided(BaseModel):
@@ -875,7 +875,7 @@ class EditoastGetObjectsErrorsDuplicateIdsProvided(BaseModel):
     ] = None
     message: str
     status: Literal[400]
-    type: Literal["EditoastGetObjectsErrorsDuplicateIdsProvided"]
+    type: Literal["editoast:infra:objects:DuplicateIdsProvided"]
 
 
 class EditoastGetObjectsErrorsObjectIdNotFoundContext(BaseModel):
@@ -889,7 +889,7 @@ class EditoastGetObjectsErrorsObjectIdNotFound(BaseModel):
     ] = None
     message: str
     status: Literal[400]
-    type: Literal["EditoastGetObjectsErrorsObjectIdNotFound"]
+    type: Literal["editoast:infra:objects:ObjectIdNotFound"]
 
 
 class EditoastIconErrorsFileNotFoundContext(BaseModel):
@@ -903,7 +903,7 @@ class EditoastIconErrorsFileNotFound(BaseModel):
     ] = None
     message: str
     status: Literal[404]
-    type: Literal["EditoastIconErrorsFileNotFound"]
+    type: Literal["editoast:icons:FileNotFound"]
 
 
 class EditoastInfraApiErrorDatabase(BaseModel):
@@ -912,7 +912,7 @@ class EditoastInfraApiErrorDatabase(BaseModel):
     ] = None
     message: str
     status: Literal[500]
-    type: Literal["EditoastInfraApiErrorDatabase"]
+    type: Literal["editoast:infra:Database"]
 
 
 class EditoastInfraApiErrorNotFoundContext(BaseModel):
@@ -926,11 +926,11 @@ class EditoastInfraApiErrorNotFound(BaseModel):
     ] = None
     message: str
     status: Literal[404]
-    type: Literal["EditoastInfraApiErrorNotFound"]
+    type: Literal["editoast:infra:NotFound"]
 
 
 class EditoastLayersErrorLayerNotFoundContext(BaseModel):
-    expected_names: list
+    expected_names: list[Any]
     layer_name: str
 
 
@@ -941,11 +941,11 @@ class EditoastLayersErrorLayerNotFound(BaseModel):
     ] = None
     message: str
     status: Literal[404]
-    type: Literal["EditoastLayersErrorLayerNotFound"]
+    type: Literal["editoast:layers:LayerNotFound"]
 
 
 class EditoastLayersErrorViewNotFoundContext(BaseModel):
-    expected_names: list
+    expected_names: list[Any]
     view_name: str
 
 
@@ -956,7 +956,7 @@ class EditoastLayersErrorViewNotFound(BaseModel):
     ] = None
     message: str
     status: Literal[404]
-    type: Literal["EditoastLayersErrorViewNotFound"]
+    type: Literal["editoast:layers:ViewNotFound"]
 
 
 class EditoastLevelCrossingErrorDatabase(BaseModel):
@@ -965,7 +965,7 @@ class EditoastLevelCrossingErrorDatabase(BaseModel):
     ] = None
     message: str
     status: Literal[500]
-    type: Literal["EditoastLevelCrossingErrorDatabase"]
+    type: Literal["editoast:level_crossing:Database"]
 
 
 class EditoastLevelCrossingErrorInfraNotFoundContext(BaseModel):
@@ -979,7 +979,7 @@ class EditoastLevelCrossingErrorInfraNotFound(BaseModel):
     ] = None
     message: str
     status: Literal[404]
-    type: Literal["EditoastLevelCrossingErrorInfraNotFound"]
+    type: Literal["editoast:level_crossing:InfraNotFound"]
 
 
 class EditoastLevelCrossingErrorLevelCrossingBatchNotFoundContext(BaseModel):
@@ -993,7 +993,7 @@ class EditoastLevelCrossingErrorLevelCrossingBatchNotFound(BaseModel):
     ] = None
     message: str
     status: Literal[404]
-    type: Literal["EditoastLevelCrossingErrorLevelCrossingBatchNotFound"]
+    type: Literal["editoast:level_crossing:LevelCrossingBatchNotFound"]
 
 
 class EditoastLevelCrossingErrorTrainBatchNotFoundContext(BaseModel):
@@ -1007,7 +1007,7 @@ class EditoastLevelCrossingErrorTrainBatchNotFound(BaseModel):
     ] = None
     message: str
     status: Literal[404]
-    type: Literal["EditoastLevelCrossingErrorTrainBatchNotFound"]
+    type: Literal["editoast:level_crossing:TrainBatchNotFound"]
 
 
 class EditoastLinesErrorsLineNotFoundContext(BaseModel):
@@ -1021,7 +1021,7 @@ class EditoastLinesErrorsLineNotFound(BaseModel):
     ] = None
     message: str
     status: Literal[400]
-    type: Literal["EditoastLinesErrorsLineNotFound"]
+    type: Literal["editoast:infra:lines:LineNotFound"]
 
 
 class EditoastListErrorsErrorsWrongErrorTypeProvided(BaseModel):
@@ -1031,7 +1031,7 @@ class EditoastListErrorsErrorsWrongErrorTypeProvided(BaseModel):
     ] = None
     message: str
     status: Literal[400]
-    type: Literal["EditoastListErrorsErrorsWrongErrorTypeProvided"]
+    type: Literal["editoast:infra:errors:WrongErrorTypeProvided"]
 
 
 class EditoastMacroNodeErrorDatabase(BaseModel):
@@ -1040,7 +1040,7 @@ class EditoastMacroNodeErrorDatabase(BaseModel):
     ] = None
     message: str
     status: Literal[500]
-    type: Literal["EditoastMacroNodeErrorDatabase"]
+    type: Literal["editoast:macro_node:Database"]
 
 
 class EditoastMacroNodeErrorNotFoundContext(BaseModel):
@@ -1054,7 +1054,7 @@ class EditoastMacroNodeErrorNotFound(BaseModel):
     ] = None
     message: str
     status: Literal[404]
-    type: Literal["EditoastMacroNodeErrorNotFound"]
+    type: Literal["editoast:macro_node:NotFound"]
 
 
 class EditoastMacroNodeErrorScenarioNotFoundContext(BaseModel):
@@ -1068,7 +1068,7 @@ class EditoastMacroNodeErrorScenarioNotFound(BaseModel):
     ] = None
     message: str
     status: Literal[404]
-    type: Literal["EditoastMacroNodeErrorScenarioNotFound"]
+    type: Literal["editoast:macro_node:ScenarioNotFound"]
 
 
 class EditoastMacroNoteErrorDatabase(BaseModel):
@@ -1077,7 +1077,7 @@ class EditoastMacroNoteErrorDatabase(BaseModel):
     ] = None
     message: str
     status: Literal[500]
-    type: Literal["EditoastMacroNoteErrorDatabase"]
+    type: Literal["editoast:macro_note:Database"]
 
 
 class EditoastMacroNoteErrorNotFoundContext(BaseModel):
@@ -1091,7 +1091,7 @@ class EditoastMacroNoteErrorNotFound(BaseModel):
     ] = None
     message: str
     status: Literal[404]
-    type: Literal["EditoastMacroNoteErrorNotFound"]
+    type: Literal["editoast:macro_note:NotFound"]
 
 
 class EditoastMacroNoteErrorScenarioNotFoundContext(BaseModel):
@@ -1105,7 +1105,7 @@ class EditoastMacroNoteErrorScenarioNotFound(BaseModel):
     ] = None
     message: str
     status: Literal[404]
-    type: Literal["EditoastMacroNoteErrorScenarioNotFound"]
+    type: Literal["editoast:macro_note:ScenarioNotFound"]
 
 
 class EditoastModelError(BaseModel):
@@ -1114,7 +1114,7 @@ class EditoastModelError(BaseModel):
     ] = None
     message: str
     status: Literal[500]
-    type: Literal["EditoastModelError"]
+    type: Literal["editoast:model:ModelError"]
 
 
 class EditoastOperationErrorEmptyId(BaseModel):
@@ -1123,7 +1123,7 @@ class EditoastOperationErrorEmptyId(BaseModel):
     ] = None
     message: str
     status: Literal[400]
-    type: Literal["EditoastOperationErrorEmptyId"]
+    type: Literal["editoast:operation:EmptyId"]
 
 
 class EditoastOperationErrorInvalidPatchContext(BaseModel):
@@ -1137,7 +1137,7 @@ class EditoastOperationErrorInvalidPatch(BaseModel):
     ] = None
     message: str
     status: Literal[400]
-    type: Literal["EditoastOperationErrorInvalidPatch"]
+    type: Literal["editoast:operation:InvalidPatch"]
 
 
 class EditoastOperationErrorModifyId(BaseModel):
@@ -1146,7 +1146,7 @@ class EditoastOperationErrorModifyId(BaseModel):
     ] = None
     message: str
     status: Literal[400]
-    type: Literal["EditoastOperationErrorModifyId"]
+    type: Literal["editoast:operation:ModifyId"]
 
 
 class EditoastOperationErrorObjectNotFoundContext(BaseModel):
@@ -1161,7 +1161,7 @@ class EditoastOperationErrorObjectNotFound(BaseModel):
     ] = None
     message: str
     status: Literal[404]
-    type: Literal["EditoastOperationErrorObjectNotFound"]
+    type: Literal["editoast:operation:ObjectNotFound"]
 
 
 class EditoastOperationalPointProjectionErrorInvalidNumberOfDistancesContext(BaseModel):
@@ -1178,7 +1178,7 @@ class EditoastOperationalPointProjectionErrorInvalidNumberOfDistances(BaseModel)
     ] = None
     message: str
     status: Literal[422]
-    type: Literal["EditoastOperationalPointProjectionErrorInvalidNumberOfDistances"]
+    type: Literal["editoast:operationalPointProjection:InvalidNumberOfDistances"]
 
 
 class EditoastOperationalPointProjectionErrorInvalidNumberOfRefs(BaseModel):
@@ -1190,7 +1190,7 @@ class EditoastOperationalPointProjectionErrorInvalidNumberOfRefs(BaseModel):
     ] = None
     message: str
     status: Literal[422]
-    type: Literal["EditoastOperationalPointProjectionErrorInvalidNumberOfRefs"]
+    type: Literal["editoast:operationalPointProjection:InvalidNumberOfRefs"]
 
 
 class EditoastPathfindingErrorDatabase(BaseModel):
@@ -1199,7 +1199,7 @@ class EditoastPathfindingErrorDatabase(BaseModel):
     ] = None
     message: str
     status: Literal[500]
-    type: Literal["EditoastPathfindingErrorDatabase"]
+    type: Literal["editoast:pathfinding:Database"]
 
 
 class EditoastPathfindingErrorInfraNotFoundContext(BaseModel):
@@ -1213,7 +1213,7 @@ class EditoastPathfindingErrorInfraNotFound(BaseModel):
     ] = None
     message: str
     status: Literal[404]
-    type: Literal["EditoastPathfindingErrorInfraNotFound"]
+    type: Literal["editoast:pathfinding:InfraNotFound"]
 
 
 class EditoastPathfindingViewErrorsEndingTrackLocationNotFound(BaseModel):
@@ -1223,7 +1223,7 @@ class EditoastPathfindingViewErrorsEndingTrackLocationNotFound(BaseModel):
     ] = None
     message: str
     status: Literal[400]
-    type: Literal["EditoastPathfindingViewErrorsEndingTrackLocationNotFound"]
+    type: Literal["editoast:infra:pathfinding:EndingTrackLocationNotFound"]
 
 
 class EditoastPathfindingViewErrorsInvalidNumberOfPathsContext(BaseModel):
@@ -1238,7 +1238,7 @@ class EditoastPathfindingViewErrorsInvalidNumberOfPaths(BaseModel):
     ] = None
     message: str
     status: Literal[400]
-    type: Literal["EditoastPathfindingViewErrorsInvalidNumberOfPaths"]
+    type: Literal["editoast:infra:pathfinding:InvalidNumberOfPaths"]
 
 
 class EditoastPathfindingViewErrorsStartingTrackLocationNotFound(BaseModel):
@@ -1250,7 +1250,7 @@ class EditoastPathfindingViewErrorsStartingTrackLocationNotFound(BaseModel):
     ] = None
     message: str
     status: Literal[400]
-    type: Literal["EditoastPathfindingViewErrorsStartingTrackLocationNotFound"]
+    type: Literal["editoast:infra:pathfinding:StartingTrackLocationNotFound"]
 
 
 class EditoastProjectErrorDatabase(BaseModel):
@@ -1259,7 +1259,7 @@ class EditoastProjectErrorDatabase(BaseModel):
     ] = None
     message: str
     status: Literal[500]
-    type: Literal["EditoastProjectErrorDatabase"]
+    type: Literal["editoast:project:Database"]
 
 
 class EditoastProjectErrorImageErrorContext(BaseModel):
@@ -1273,7 +1273,7 @@ class EditoastProjectErrorImageError(BaseModel):
     ] = None
     message: str
     status: Literal[400]
-    type: Literal["EditoastProjectErrorImageError"]
+    type: Literal["editoast:project:ImageError"]
 
 
 class EditoastProjectErrorImageNotFoundContext(BaseModel):
@@ -1287,7 +1287,7 @@ class EditoastProjectErrorImageNotFound(BaseModel):
     ] = None
     message: str
     status: Literal[400]
-    type: Literal["EditoastProjectErrorImageNotFound"]
+    type: Literal["editoast:project:ImageNotFound"]
 
 
 class EditoastProjectErrorNotFoundContext(BaseModel):
@@ -1301,7 +1301,7 @@ class EditoastProjectErrorNotFound(BaseModel):
     ] = None
     message: str
     status: Literal[404]
-    type: Literal["EditoastProjectErrorNotFound"]
+    type: Literal["editoast:project:NotFound"]
 
 
 class EditoastRailJsonErrorUnsupportedVersionContext(BaseModel):
@@ -1316,7 +1316,7 @@ class EditoastRailJsonErrorUnsupportedVersion(BaseModel):
     ] = None
     message: str
     status: Literal[400]
-    type: Literal["EditoastRailJsonErrorUnsupportedVersion"]
+    type: Literal["editoast:railjson:UnsupportedVersion"]
 
 
 class EditoastRollingStockErrorBasePowerClassEmpty(BaseModel):
@@ -1326,7 +1326,7 @@ class EditoastRollingStockErrorBasePowerClassEmpty(BaseModel):
     ] = None
     message: str
     status: Literal[400]
-    type: Literal["EditoastRollingStockErrorBasePowerClassEmpty"]
+    type: Literal["editoast:rollingstocks:BasePowerClassEmpty"]
 
 
 class EditoastRollingStockErrorCannotCreateCompoundImage(BaseModel):
@@ -1336,7 +1336,7 @@ class EditoastRollingStockErrorCannotCreateCompoundImage(BaseModel):
     ] = None
     message: str
     status: Literal[500]
-    type: Literal["EditoastRollingStockErrorCannotCreateCompoundImage"]
+    type: Literal["editoast:rollingstocks:CannotCreateCompoundImage"]
 
 
 class EditoastRollingStockErrorCannotReadImage(BaseModel):
@@ -1346,7 +1346,7 @@ class EditoastRollingStockErrorCannotReadImage(BaseModel):
     ] = None
     message: str
     status: Literal[500]
-    type: Literal["EditoastRollingStockErrorCannotReadImage"]
+    type: Literal["editoast:rollingstocks:CannotReadImage"]
 
 
 class EditoastRollingStockErrorDatabase(BaseModel):
@@ -1355,7 +1355,7 @@ class EditoastRollingStockErrorDatabase(BaseModel):
     ] = None
     message: str
     status: Literal[500]
-    type: Literal["EditoastRollingStockErrorDatabase"]
+    type: Literal["editoast:rollingstocks:Database"]
 
 
 class EditoastRollingStockErrorIsLockedContext(BaseModel):
@@ -1369,12 +1369,12 @@ class EditoastRollingStockErrorIsLocked(BaseModel):
     ] = None
     message: str
     status: Literal[409]
-    type: Literal["EditoastRollingStockErrorIsLocked"]
+    type: Literal["editoast:rollingstocks:IsLocked"]
 
 
 class EditoastRollingStockErrorIsUsedContext(BaseModel):
     rolling_stock_id: int
-    usage: list
+    usage: list[Any]
 
 
 class EditoastRollingStockErrorIsUsed(BaseModel):
@@ -1384,7 +1384,7 @@ class EditoastRollingStockErrorIsUsed(BaseModel):
     ] = None
     message: str
     status: Literal[409]
-    type: Literal["EditoastRollingStockErrorIsUsed"]
+    type: Literal["editoast:rollingstocks:IsUsed"]
 
 
 class EditoastRollingStockErrorKeyNotFoundContext(BaseModel):
@@ -1398,7 +1398,7 @@ class EditoastRollingStockErrorKeyNotFound(BaseModel):
     ] = None
     message: str
     status: Literal[404]
-    type: Literal["EditoastRollingStockErrorKeyNotFound"]
+    type: Literal["editoast:rollingstocks:KeyNotFound"]
 
 
 class EditoastRollingStockErrorLiveryMultipartError(BaseModel):
@@ -1408,7 +1408,7 @@ class EditoastRollingStockErrorLiveryMultipartError(BaseModel):
     ] = None
     message: str
     status: Literal[400]
-    type: Literal["EditoastRollingStockErrorLiveryMultipartError"]
+    type: Literal["editoast:rollingstocks:LiveryMultipartError"]
 
 
 class EditoastRollingStockErrorNameAlreadyUsedContext(BaseModel):
@@ -1422,7 +1422,7 @@ class EditoastRollingStockErrorNameAlreadyUsed(BaseModel):
     ] = None
     message: str
     status: Literal[400]
-    type: Literal["EditoastRollingStockErrorNameAlreadyUsed"]
+    type: Literal["editoast:rollingstocks:NameAlreadyUsed"]
 
 
 class EditoastRoundTripsErrorDatabase(BaseModel):
@@ -1431,7 +1431,7 @@ class EditoastRoundTripsErrorDatabase(BaseModel):
     ] = None
     message: str
     status: Literal[500]
-    type: Literal["EditoastRoundTripsErrorDatabase"]
+    type: Literal["editoast:round_trips:Database"]
 
 
 class EditoastRoundTripsErrorDuplicateTrainIds(BaseModel):
@@ -1441,7 +1441,7 @@ class EditoastRoundTripsErrorDuplicateTrainIds(BaseModel):
     ] = None
     message: str
     status: Literal[400]
-    type: Literal["EditoastRoundTripsErrorDuplicateTrainIds"]
+    type: Literal["editoast:round_trips:DuplicateTrainIds"]
 
 
 class EditoastRoundTripsErrorTimetableNotFoundContext(BaseModel):
@@ -1455,7 +1455,7 @@ class EditoastRoundTripsErrorTimetableNotFound(BaseModel):
     ] = None
     message: str
     status: Literal[404]
-    type: Literal["EditoastRoundTripsErrorTimetableNotFound"]
+    type: Literal["editoast:round_trips:TimetableNotFound"]
 
 
 class EditoastScenarioErrorDatabase(BaseModel):
@@ -1464,7 +1464,7 @@ class EditoastScenarioErrorDatabase(BaseModel):
     ] = None
     message: str
     status: Literal[500]
-    type: Literal["EditoastScenarioErrorDatabase"]
+    type: Literal["editoast:scenario:Database"]
 
 
 class EditoastScenarioErrorInfraNotFoundContext(BaseModel):
@@ -1478,7 +1478,7 @@ class EditoastScenarioErrorInfraNotFound(BaseModel):
     ] = None
     message: str
     status: Literal[404]
-    type: Literal["EditoastScenarioErrorInfraNotFound"]
+    type: Literal["editoast:scenario:InfraNotFound"]
 
 
 class EditoastScenarioErrorNotFoundContext(BaseModel):
@@ -1492,7 +1492,7 @@ class EditoastScenarioErrorNotFound(BaseModel):
     ] = None
     message: str
     status: Literal[404]
-    type: Literal["EditoastScenarioErrorNotFound"]
+    type: Literal["editoast:scenario:NotFound"]
 
 
 class EditoastScenarioErrorStudyNotFoundContext(BaseModel):
@@ -1506,7 +1506,7 @@ class EditoastScenarioErrorStudyNotFound(BaseModel):
     ] = None
     message: str
     status: Literal[404]
-    type: Literal["EditoastScenarioErrorStudyNotFound"]
+    type: Literal["editoast:scenario:StudyNotFound"]
 
 
 class EditoastScenarioErrorTimetableNotFoundContext(BaseModel):
@@ -1520,7 +1520,7 @@ class EditoastScenarioErrorTimetableNotFound(BaseModel):
     ] = None
     message: str
     status: Literal[404]
-    type: Literal["EditoastScenarioErrorTimetableNotFound"]
+    type: Literal["editoast:scenario:TimetableNotFound"]
 
 
 class EditoastSearchApiErrorObjectTypeContext(BaseModel):
@@ -1534,7 +1534,7 @@ class EditoastSearchApiErrorObjectType(BaseModel):
     ] = None
     message: str
     status: Literal[400]
-    type: Literal["EditoastSearchApiErrorObjectType"]
+    type: Literal["editoast:search:ObjectType"]
 
 
 class EditoastSearchApiErrorSearchEngineError(BaseModel):
@@ -1544,7 +1544,7 @@ class EditoastSearchApiErrorSearchEngineError(BaseModel):
     ] = None
     message: str
     status: Literal[400]
-    type: Literal["EditoastSearchApiErrorSearchEngineError"]
+    type: Literal["editoast:search:SearchEngineError"]
 
 
 class EditoastSimilarTrainsErrorDatabase(BaseModel):
@@ -1553,7 +1553,7 @@ class EditoastSimilarTrainsErrorDatabase(BaseModel):
     ] = None
     message: str
     status: Literal[500]
-    type: Literal["EditoastSimilarTrainsErrorDatabase"]
+    type: Literal["editoast:timetable:similar_trains:Database"]
 
 
 class EditoastSimilarTrainsErrorEmptyTrainsTraffic(BaseModel):
@@ -1563,7 +1563,7 @@ class EditoastSimilarTrainsErrorEmptyTrainsTraffic(BaseModel):
     ] = None
     message: str
     status: Literal[400]
-    type: Literal["EditoastSimilarTrainsErrorEmptyTrainsTraffic"]
+    type: Literal["editoast:timetable:similar_trains:EmptyTrainsTraffic"]
 
 
 class EditoastSimilarTrainsErrorInvalidPath(BaseModel):
@@ -1573,7 +1573,7 @@ class EditoastSimilarTrainsErrorInvalidPath(BaseModel):
     ] = None
     message: str
     status: Literal[400]
-    type: Literal["EditoastSimilarTrainsErrorInvalidPath"]
+    type: Literal["editoast:timetable:similar_trains:InvalidPath"]
 
 
 class EditoastSimilarTrainsErrorRollingStockNotFoundContext(BaseModel):
@@ -1587,7 +1587,7 @@ class EditoastSimilarTrainsErrorRollingStockNotFound(BaseModel):
     ] = None
     message: str
     status: Literal[400]
-    type: Literal["EditoastSimilarTrainsErrorRollingStockNotFound"]
+    type: Literal["editoast:timetable:similar_trains:RollingStockNotFound"]
 
 
 class EditoastSimilarTrainsErrorSpeedLimitNotFoundContext(BaseModel):
@@ -1601,7 +1601,7 @@ class EditoastSimilarTrainsErrorSpeedLimitNotFound(BaseModel):
     ] = None
     message: str
     status: Literal[400]
-    type: Literal["EditoastSimilarTrainsErrorSpeedLimitNotFound"]
+    type: Literal["editoast:timetable:similar_trains:SpeedLimitNotFound"]
 
 
 class EditoastSpriteErrorsFileNotFoundContext(BaseModel):
@@ -1615,7 +1615,7 @@ class EditoastSpriteErrorsFileNotFound(BaseModel):
     ] = None
     message: str
     status: Literal[404]
-    type: Literal["EditoastSpriteErrorsFileNotFound"]
+    type: Literal["editoast:sprites:FileNotFound"]
 
 
 class EditoastSpriteErrorsUnknownSignalingSystemContext(BaseModel):
@@ -1629,7 +1629,7 @@ class EditoastSpriteErrorsUnknownSignalingSystem(BaseModel):
     ] = None
     message: str
     status: Literal[404]
-    type: Literal["EditoastSpriteErrorsUnknownSignalingSystem"]
+    type: Literal["editoast:sprites:UnknownSignalingSystem"]
 
 
 class EditoastStdcmDebugErrorJsonParseErrorContext(BaseModel):
@@ -1644,7 +1644,7 @@ class EditoastStdcmDebugErrorJsonParseError(BaseModel):
     ] = None
     message: str
     status: Literal[500]
-    type: Literal["EditoastStdcmDebugErrorJsonParseError"]
+    type: Literal["editoast:stdcm_debug:JsonParseError"]
 
 
 class EditoastStdcmDebugErrorS3ErrorContext(BaseModel):
@@ -1659,7 +1659,7 @@ class EditoastStdcmDebugErrorS3Error(BaseModel):
     ] = None
     message: str
     status: Literal[500]
-    type: Literal["EditoastStdcmDebugErrorS3Error"]
+    type: Literal["editoast:stdcm_debug:S3Error"]
 
 
 class EditoastStdcmDebugErrorS3NotConfigured(BaseModel):
@@ -1669,7 +1669,7 @@ class EditoastStdcmDebugErrorS3NotConfigured(BaseModel):
     ] = None
     message: str
     status: Literal[503]
-    type: Literal["EditoastStdcmDebugErrorS3NotConfigured"]
+    type: Literal["editoast:stdcm_debug:S3NotConfigured"]
 
 
 class EditoastStdcmErrorBatchRollingStockNotFoundContext(BaseModel):
@@ -1683,7 +1683,7 @@ class EditoastStdcmErrorBatchRollingStockNotFound(BaseModel):
     ] = None
     message: str
     status: Literal[404]
-    type: Literal["EditoastStdcmErrorBatchRollingStockNotFound"]
+    type: Literal["editoast:stdcm:BatchRollingStockNotFound"]
 
 
 class EditoastStdcmErrorDatabase(BaseModel):
@@ -1692,7 +1692,7 @@ class EditoastStdcmErrorDatabase(BaseModel):
     ] = None
     message: str
     status: Literal[400]
-    type: Literal["EditoastStdcmErrorDatabase"]
+    type: Literal["editoast:stdcm:Database"]
 
 
 class EditoastStdcmErrorInfraNotFoundContext(BaseModel):
@@ -1706,7 +1706,7 @@ class EditoastStdcmErrorInfraNotFound(BaseModel):
     ] = None
     message: str
     status: Literal[400]
-    type: Literal["EditoastStdcmErrorInfraNotFound"]
+    type: Literal["editoast:stdcm:InfraNotFound"]
 
 
 class EditoastStdcmErrorInvalidConsistLengthContext(BaseModel):
@@ -1721,7 +1721,7 @@ class EditoastStdcmErrorInvalidConsistLength(BaseModel):
     ] = None
     message: str
     status: Literal[400]
-    type: Literal["EditoastStdcmErrorInvalidConsistLength"]
+    type: Literal["editoast:stdcm:InvalidConsistLength"]
 
 
 class EditoastStdcmErrorInvalidConsistMassContext(BaseModel):
@@ -1736,7 +1736,7 @@ class EditoastStdcmErrorInvalidConsistMass(BaseModel):
     ] = None
     message: str
     status: Literal[400]
-    type: Literal["EditoastStdcmErrorInvalidConsistMass"]
+    type: Literal["editoast:stdcm:InvalidConsistMass"]
 
 
 class EditoastStdcmErrorInvalidConsistMaxSpeedContext(BaseModel):
@@ -1751,11 +1751,11 @@ class EditoastStdcmErrorInvalidConsistMaxSpeed(BaseModel):
     ] = None
     message: str
     status: Literal[400]
-    type: Literal["EditoastStdcmErrorInvalidConsistMaxSpeed"]
+    type: Literal["editoast:stdcm:InvalidConsistMaxSpeed"]
 
 
 class EditoastStdcmErrorInvalidPathItemsContext(BaseModel):
-    items: list
+    items: list[Any]
 
 
 class EditoastStdcmErrorInvalidPathItems(BaseModel):
@@ -1765,7 +1765,7 @@ class EditoastStdcmErrorInvalidPathItems(BaseModel):
     ] = None
     message: str
     status: Literal[400]
-    type: Literal["EditoastStdcmErrorInvalidPathItems"]
+    type: Literal["editoast:stdcm:InvalidPathItems"]
 
 
 class EditoastStdcmErrorTimetableNotFoundContext(BaseModel):
@@ -1779,7 +1779,7 @@ class EditoastStdcmErrorTimetableNotFound(BaseModel):
     ] = None
     message: str
     status: Literal[404]
-    type: Literal["EditoastStdcmErrorTimetableNotFound"]
+    type: Literal["editoast:stdcm:TimetableNotFound"]
 
 
 class EditoastStdcmErrorTowedRollingStockNotFoundContext(BaseModel):
@@ -1793,7 +1793,7 @@ class EditoastStdcmErrorTowedRollingStockNotFound(BaseModel):
     ] = None
     message: str
     status: Literal[400]
-    type: Literal["EditoastStdcmErrorTowedRollingStockNotFound"]
+    type: Literal["editoast:stdcm:TowedRollingStockNotFound"]
 
 
 class EditoastStdcmErrorTrainSimulationFail(BaseModel):
@@ -1803,7 +1803,7 @@ class EditoastStdcmErrorTrainSimulationFail(BaseModel):
     ] = None
     message: str
     status: Literal[400]
-    type: Literal["EditoastStdcmErrorTrainSimulationFail"]
+    type: Literal["editoast:stdcm:TrainSimulationFail"]
 
 
 class EditoastStdcmSearchEnvErrorDatabase(BaseModel):
@@ -1812,7 +1812,7 @@ class EditoastStdcmSearchEnvErrorDatabase(BaseModel):
     ] = None
     message: str
     status: Literal[500]
-    type: Literal["EditoastStdcmSearchEnvErrorDatabase"]
+    type: Literal["editoast:stdcm_search_env:Database"]
 
 
 class EditoastStdcmSearchEnvErrorNotFoundContext(BaseModel):
@@ -1826,7 +1826,7 @@ class EditoastStdcmSearchEnvErrorNotFound(BaseModel):
     ] = None
     message: str
     status: Literal[404]
-    type: Literal["EditoastStdcmSearchEnvErrorNotFound"]
+    type: Literal["editoast:stdcm_search_env:NotFound"]
 
 
 class EditoastStudyErrorDatabase(BaseModel):
@@ -1835,7 +1835,7 @@ class EditoastStudyErrorDatabase(BaseModel):
     ] = None
     message: str
     status: Literal[500]
-    type: Literal["EditoastStudyErrorDatabase"]
+    type: Literal["editoast:study:Database"]
 
 
 class EditoastStudyErrorNotFoundContext(BaseModel):
@@ -1849,7 +1849,7 @@ class EditoastStudyErrorNotFound(BaseModel):
     ] = None
     message: str
     status: Literal[404]
-    type: Literal["EditoastStudyErrorNotFound"]
+    type: Literal["editoast:study:NotFound"]
 
 
 class EditoastStudyErrorProjectNotFoundContext(BaseModel):
@@ -1863,7 +1863,7 @@ class EditoastStudyErrorProjectNotFound(BaseModel):
     ] = None
     message: str
     status: Literal[404]
-    type: Literal["EditoastStudyErrorProjectNotFound"]
+    type: Literal["editoast:study:ProjectNotFound"]
 
 
 class EditoastSubCategoryErrorCodeAlreadyUsedContext(BaseModel):
@@ -1877,7 +1877,7 @@ class EditoastSubCategoryErrorCodeAlreadyUsed(BaseModel):
     ] = None
     message: str
     status: Literal[400]
-    type: Literal["EditoastSubCategoryErrorCodeAlreadyUsed"]
+    type: Literal["editoast:sub_categories:CodeAlreadyUsed"]
 
 
 class EditoastSubCategoryErrorDatabase(BaseModel):
@@ -1886,7 +1886,7 @@ class EditoastSubCategoryErrorDatabase(BaseModel):
     ] = None
     message: str
     status: Literal[500]
-    type: Literal["EditoastSubCategoryErrorDatabase"]
+    type: Literal["editoast:sub_categories:Database"]
 
 
 class EditoastSubCategoryErrorNotFoundContext(BaseModel):
@@ -1900,7 +1900,7 @@ class EditoastSubCategoryErrorNotFound(BaseModel):
     ] = None
     message: str
     status: Literal[404]
-    type: Literal["EditoastSubCategoryErrorNotFound"]
+    type: Literal["editoast:sub_categories:NotFound"]
 
 
 class EditoastTemporarySpeedLimitErrorDatabase(BaseModel):
@@ -1910,7 +1910,7 @@ class EditoastTemporarySpeedLimitErrorDatabase(BaseModel):
     ] = None
     message: str
     status: Literal[500]
-    type: Literal["EditoastTemporarySpeedLimitErrorDatabase"]
+    type: Literal["editoast:temporary_speed_limit:Database"]
 
 
 class EditoastTemporarySpeedLimitErrorNameAlreadyUsedContext(BaseModel):
@@ -1924,7 +1924,7 @@ class EditoastTemporarySpeedLimitErrorNameAlreadyUsed(BaseModel):
     ] = None
     message: str
     status: Literal[400]
-    type: Literal["EditoastTemporarySpeedLimitErrorNameAlreadyUsed"]
+    type: Literal["editoast:temporary_speed_limit:NameAlreadyUsed"]
 
 
 class EditoastTimetableErrorDatabase(BaseModel):
@@ -1933,7 +1933,7 @@ class EditoastTimetableErrorDatabase(BaseModel):
     ] = None
     message: str
     status: Literal[500]
-    type: Literal["EditoastTimetableErrorDatabase"]
+    type: Literal["editoast:timetable:Database"]
 
 
 class EditoastTimetableErrorInfraNotFoundContext(BaseModel):
@@ -1947,7 +1947,7 @@ class EditoastTimetableErrorInfraNotFound(BaseModel):
     ] = None
     message: str
     status: Literal[404]
-    type: Literal["EditoastTimetableErrorInfraNotFound"]
+    type: Literal["editoast:timetable:InfraNotFound"]
 
 
 class EditoastTimetableErrorNotFoundContext(BaseModel):
@@ -1961,7 +1961,7 @@ class EditoastTimetableErrorNotFound(BaseModel):
     ] = None
     message: str
     status: Literal[404]
-    type: Literal["EditoastTimetableErrorNotFound"]
+    type: Literal["editoast:timetable:NotFound"]
 
 
 class EditoastTimetableErrorParseErrorContext(BaseModel):
@@ -1975,7 +1975,7 @@ class EditoastTimetableErrorParseError(BaseModel):
     ] = None
     message: str
     status: Literal[500]
-    type: Literal["EditoastTimetableErrorParseError"]
+    type: Literal["editoast:timetable:ParseError"]
 
 
 class EditoastTimetableErrorTimeout(BaseModel):
@@ -1984,7 +1984,7 @@ class EditoastTimetableErrorTimeout(BaseModel):
     ] = None
     message: str
     status: Literal[504]
-    type: Literal["EditoastTimetableErrorTimeout"]
+    type: Literal["editoast:timetable:Timeout"]
 
 
 class EditoastTimetableErrorTrainScheduleSetsNotFoundContext(BaseModel):
@@ -1998,7 +1998,7 @@ class EditoastTimetableErrorTrainScheduleSetsNotFound(BaseModel):
     ] = None
     message: str
     status: Literal[404]
-    type: Literal["EditoastTimetableErrorTrainScheduleSetsNotFound"]
+    type: Literal["editoast:timetable:TrainScheduleSetsNotFound"]
 
 
 class EditoastTowedRollingStockErrorDatabase(BaseModel):
@@ -2008,7 +2008,7 @@ class EditoastTowedRollingStockErrorDatabase(BaseModel):
     ] = None
     message: str
     status: Literal[500]
-    type: Literal["EditoastTowedRollingStockErrorDatabase"]
+    type: Literal["editoast:towedrollingstocks:Database"]
 
 
 class EditoastTowedRollingStockErrorIdNotFoundContext(BaseModel):
@@ -2022,7 +2022,7 @@ class EditoastTowedRollingStockErrorIdNotFound(BaseModel):
     ] = None
     message: str
     status: Literal[404]
-    type: Literal["EditoastTowedRollingStockErrorIdNotFound"]
+    type: Literal["editoast:towedrollingstocks:IdNotFound"]
 
 
 class EditoastTowedRollingStockErrorIsLockedContext(BaseModel):
@@ -2036,7 +2036,7 @@ class EditoastTowedRollingStockErrorIsLocked(BaseModel):
     ] = None
     message: str
     status: Literal[409]
-    type: Literal["EditoastTowedRollingStockErrorIsLocked"]
+    type: Literal["editoast:towedrollingstocks:IsLocked"]
 
 
 class EditoastTrainScheduleErrorBatchNotFoundContext(BaseModel):
@@ -2050,7 +2050,7 @@ class EditoastTrainScheduleErrorBatchNotFound(BaseModel):
     ] = None
     message: str
     status: Literal[404]
-    type: Literal["EditoastTrainScheduleErrorBatchNotFound"]
+    type: Literal["editoast:train_schedule:BatchNotFound"]
 
 
 class EditoastTrainScheduleErrorDatabase(BaseModel):
@@ -2059,7 +2059,7 @@ class EditoastTrainScheduleErrorDatabase(BaseModel):
     ] = None
     message: str
     status: Literal[500]
-    type: Literal["EditoastTrainScheduleErrorDatabase"]
+    type: Literal["editoast:train_schedule:Database"]
 
 
 class EditoastTrainScheduleErrorExceptionNotFoundContext(BaseModel):
@@ -2073,7 +2073,7 @@ class EditoastTrainScheduleErrorExceptionNotFound(BaseModel):
     ] = None
     message: str
     status: Literal[404]
-    type: Literal["EditoastTrainScheduleErrorExceptionNotFound"]
+    type: Literal["editoast:train_schedule:ExceptionNotFound"]
 
 
 class EditoastTrainScheduleErrorInfraNotFoundContext(BaseModel):
@@ -2087,7 +2087,7 @@ class EditoastTrainScheduleErrorInfraNotFound(BaseModel):
     ] = None
     message: str
     status: Literal[404]
-    type: Literal["EditoastTrainScheduleErrorInfraNotFound"]
+    type: Literal["editoast:train_schedule:InfraNotFound"]
 
 
 class EditoastTrainScheduleErrorNotFoundContext(BaseModel):
@@ -2101,7 +2101,7 @@ class EditoastTrainScheduleErrorNotFound(BaseModel):
     ] = None
     message: str
     status: Literal[404]
-    type: Literal["EditoastTrainScheduleErrorNotFound"]
+    type: Literal["editoast:train_schedule:NotFound"]
 
 
 class EditoastTrainScheduleErrorPathfindingFailedContext(BaseModel):
@@ -2115,7 +2115,7 @@ class EditoastTrainScheduleErrorPathfindingFailed(BaseModel):
     ] = None
     message: str
     status: Literal[404]
-    type: Literal["EditoastTrainScheduleErrorPathfindingFailed"]
+    type: Literal["editoast:train_schedule:PathfindingFailed"]
 
 
 class EditoastTrainScheduleErrorRollingStockNotFoundContext(BaseModel):
@@ -2129,7 +2129,7 @@ class EditoastTrainScheduleErrorRollingStockNotFound(BaseModel):
     ] = None
     message: str
     status: Literal[404]
-    type: Literal["EditoastTrainScheduleErrorRollingStockNotFound"]
+    type: Literal["editoast:train_schedule:RollingStockNotFound"]
 
 
 class EditoastTrainScheduleErrorSimulationFailedContext(BaseModel):
@@ -2143,7 +2143,7 @@ class EditoastTrainScheduleErrorSimulationFailed(BaseModel):
     ] = None
     message: str
     status: Literal[404]
-    type: Literal["EditoastTrainScheduleErrorSimulationFailed"]
+    type: Literal["editoast:train_schedule:SimulationFailed"]
 
 
 class EditoastTrainScheduleErrorTrainScheduleSetNotFoundContext(BaseModel):
@@ -2157,7 +2157,7 @@ class EditoastTrainScheduleErrorTrainScheduleSetNotFound(BaseModel):
     ] = None
     message: str
     status: Literal[404]
-    type: Literal["EditoastTrainScheduleErrorTrainScheduleSetNotFound"]
+    type: Literal["editoast:train_schedule:TrainScheduleSetNotFound"]
 
 
 class EditoastTrainScheduleExceptionErrorBatchNotFoundContext(BaseModel):
@@ -2171,7 +2171,7 @@ class EditoastTrainScheduleExceptionErrorBatchNotFound(BaseModel):
     ] = None
     message: str
     status: Literal[404]
-    type: Literal["EditoastTrainScheduleExceptionErrorBatchNotFound"]
+    type: Literal["editoast:train_schedule_exception:BatchNotFound"]
 
 
 class EditoastTrainScheduleExceptionErrorDatabase(BaseModel):
@@ -2181,7 +2181,7 @@ class EditoastTrainScheduleExceptionErrorDatabase(BaseModel):
     ] = None
     message: str
     status: Literal[400]
-    type: Literal["EditoastTrainScheduleExceptionErrorDatabase"]
+    type: Literal["editoast:train_schedule_exception:Database"]
 
 
 class EditoastTrainScheduleExceptionErrorInvalidOccurrenceIndexContext(BaseModel):
@@ -2198,7 +2198,7 @@ class EditoastTrainScheduleExceptionErrorInvalidOccurrenceIndex(BaseModel):
     ] = None
     message: str
     status: Literal[400]
-    type: Literal["EditoastTrainScheduleExceptionErrorInvalidOccurrenceIndex"]
+    type: Literal["editoast:train_schedule_exception:InvalidOccurrenceIndex"]
 
 
 class EditoastTrainScheduleExceptionErrorNotFoundContext(BaseModel):
@@ -2212,7 +2212,7 @@ class EditoastTrainScheduleExceptionErrorNotFound(BaseModel):
     ] = None
     message: str
     status: Literal[404]
-    type: Literal["EditoastTrainScheduleExceptionErrorNotFound"]
+    type: Literal["editoast:train_schedule_exception:NotFound"]
 
 
 class EditoastTrainScheduleExceptionErrorNotPacedTrainContext(BaseModel):
@@ -2226,7 +2226,7 @@ class EditoastTrainScheduleExceptionErrorNotPacedTrain(BaseModel):
     ] = None
     message: str
     status: Literal[400]
-    type: Literal["EditoastTrainScheduleExceptionErrorNotPacedTrain"]
+    type: Literal["editoast:train_schedule_exception:NotPacedTrain"]
 
 
 class EditoastTrainScheduleExceptionErrorOccurrenceIndexAlreadyUsedContext(BaseModel):
@@ -2242,7 +2242,7 @@ class EditoastTrainScheduleExceptionErrorOccurrenceIndexAlreadyUsed(BaseModel):
     ] = None
     message: str
     status: Literal[400]
-    type: Literal["EditoastTrainScheduleExceptionErrorOccurrenceIndexAlreadyUsed"]
+    type: Literal["editoast:train_schedule_exception:OccurrenceIndexAlreadyUsed"]
 
 
 class EditoastTrainScheduleExceptionErrorTimetableNotFoundContext(BaseModel):
@@ -2256,7 +2256,7 @@ class EditoastTrainScheduleExceptionErrorTimetableNotFound(BaseModel):
     ] = None
     message: str
     status: Literal[404]
-    type: Literal["EditoastTrainScheduleExceptionErrorTimetableNotFound"]
+    type: Literal["editoast:train_schedule_exception:TimetableNotFound"]
 
 
 class EditoastTrainScheduleExceptionErrorTrainScheduleNotFoundContext(BaseModel):
@@ -2270,7 +2270,7 @@ class EditoastTrainScheduleExceptionErrorTrainScheduleNotFound(BaseModel):
     ] = None
     message: str
     status: Literal[404]
-    type: Literal["EditoastTrainScheduleExceptionErrorTrainScheduleNotFound"]
+    type: Literal["editoast:train_schedule_exception:TrainScheduleNotFound"]
 
 
 class EditoastTrainScheduleSetErrorDatabase(BaseModel):
@@ -2280,7 +2280,7 @@ class EditoastTrainScheduleSetErrorDatabase(BaseModel):
     ] = None
     message: str
     status: Literal[500]
-    type: Literal["EditoastTrainScheduleSetErrorDatabase"]
+    type: Literal["editoast:train_schedule_set:Database"]
 
 
 class EditoastTrainScheduleSetErrorNotFoundContext(BaseModel):
@@ -2294,7 +2294,7 @@ class EditoastTrainScheduleSetErrorNotFound(BaseModel):
     ] = None
     message: str
     status: Literal[404]
-    type: Literal["EditoastTrainScheduleSetErrorNotFound"]
+    type: Literal["editoast:train_schedule_set:NotFound"]
 
 
 class EditoastWorkScheduleErrorDatabase(BaseModel):
@@ -2303,7 +2303,7 @@ class EditoastWorkScheduleErrorDatabase(BaseModel):
     ] = None
     message: str
     status: Literal[500]
-    type: Literal["EditoastWorkScheduleErrorDatabase"]
+    type: Literal["editoast:work_schedule:Database"]
 
 
 class EditoastWorkScheduleErrorNameAlreadyUsedContext(BaseModel):
@@ -2317,7 +2317,7 @@ class EditoastWorkScheduleErrorNameAlreadyUsed(BaseModel):
     ] = None
     message: str
     status: Literal[400]
-    type: Literal["EditoastWorkScheduleErrorNameAlreadyUsed"]
+    type: Literal["editoast:work_schedule:NameAlreadyUsed"]
 
 
 class EditoastWorkScheduleErrorWorkScheduleGroupNotFoundContext(BaseModel):
@@ -2331,7 +2331,7 @@ class EditoastWorkScheduleErrorWorkScheduleGroupNotFound(BaseModel):
     ] = None
     message: str
     status: Literal[404]
-    type: Literal["EditoastWorkScheduleErrorWorkScheduleGroupNotFound"]
+    type: Literal["editoast:work_schedule:WorkScheduleGroupNotFound"]
 
 
 class EditoastWorkerLoadErrorDatabase(BaseModel):
@@ -2340,7 +2340,7 @@ class EditoastWorkerLoadErrorDatabase(BaseModel):
     ] = None
     message: str
     status: Literal[500]
-    type: Literal["EditoastWorkerLoadErrorDatabase"]
+    type: Literal["editoast:worker_load:Database"]
 
 
 class EditoastWorkerLoadErrorFetchStatusError(BaseModel):
@@ -2350,7 +2350,7 @@ class EditoastWorkerLoadErrorFetchStatusError(BaseModel):
     ] = None
     message: str
     status: Literal[500]
-    type: Literal["EditoastWorkerLoadErrorFetchStatusError"]
+    type: Literal["editoast:worker_load:FetchStatusError"]
 
 
 class EditoastWorkerLoadErrorInfraNotFoundContext(BaseModel):
@@ -2364,7 +2364,7 @@ class EditoastWorkerLoadErrorInfraNotFound(BaseModel):
     ] = None
     message: str
     status: Literal[404]
-    type: Literal["EditoastWorkerLoadErrorInfraNotFound"]
+    type: Literal["editoast:worker_load:InfraNotFound"]
 
 
 class EditoastWorkerLoadErrorTimetableNotFoundContext(BaseModel):
@@ -2378,7 +2378,7 @@ class EditoastWorkerLoadErrorTimetableNotFound(BaseModel):
     ] = None
     message: str
     status: Literal[404]
-    type: Literal["EditoastWorkerLoadErrorTimetableNotFound"]
+    type: Literal["editoast:worker_load:TimetableNotFound"]
 
 
 class EffortCurve(BaseModel):
@@ -2401,9 +2401,9 @@ class EffortCurveConditions(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
-    comfort: Comfort | None = None
-    electrical_profile_level: str | None = None
-    power_restriction_code: str | None = None
+    comfort: Comfort | None
+    electrical_profile_level: str | None
+    power_restriction_code: str | None
 
 
 class Electrification(BaseModel):
@@ -2426,7 +2426,7 @@ class Identifier(RootModel[str]):
 
 class Infra(BaseModel):
     created: AwareDatetime
-    generated_version: int | None = None
+    generated_version: int | None
     id: int
     locked: bool
     modified: AwareDatetime
@@ -2701,7 +2701,7 @@ class PaginationStats(BaseModel):
     """
     The current page number
     """
-    next: Annotated[int | None, Field(ge=1)] = None
+    next: Annotated[int | None, Field(ge=1)]
     """
     The next page number, if any
     """
@@ -2713,7 +2713,7 @@ class PaginationStats(BaseModel):
     """
     The number of items per page
     """
-    previous: Annotated[int | None, Field(ge=1)] = None
+    previous: Annotated[int | None, Field(ge=1)]
     """
     The previous page number, if any
     """
@@ -2837,10 +2837,78 @@ class Zones(BaseModel):
     """
 
 
+class PathfindingFailurePathfindingInputError1(BaseModel):
+    failed_status: Literal["pathfinding_input_error"]
+
+
+class PathfindingFailurePathfindingInputError3(
+    PathfindingInputErrorNotEnoughPathItems, PathfindingFailurePathfindingInputError1
+):
+    pass
+
+
+class PathfindingFailurePathfindingInputError4(
+    PathfindingInputErrorRollingStockNotFound, PathfindingFailurePathfindingInputError1
+):
+    pass
+
+
+class PathfindingFailurePathfindingInputError5(
+    PathfindingInputErrorZeroLengthPath, PathfindingFailurePathfindingInputError1
+):
+    pass
+
+
+class PathfindingFailurePathfindingNotFound1(BaseModel):
+    failed_status: Literal["pathfinding_not_found"]
+
+
+class PathfindingFailurePathfindingNotFound4(
+    PathfindingNotFoundNotFoundInTracks, PathfindingFailurePathfindingNotFound1
+):
+    pass
+
+
 class PathfindingOutput(BaseModel):
     detectors: list[Identifier]
-    switches_directions: dict[str, str]
+    switches_directions: dict[constr(min_length=1, max_length=255), str]
     track_ranges: list[DirectionalTrackRange]
+
+
+class PathfindingFailurePathfindingInputError7(BaseModel):
+    failed_status: Literal["pathfinding_input_error"]
+
+
+class PathfindingFailurePathfindingInputError9(
+    PathfindingInputErrorNotEnoughPathItems, PathfindingFailurePathfindingInputError7
+):
+    pass
+
+
+class PathfindingFailurePathfindingInputError10(
+    PathfindingInputErrorRollingStockNotFound, PathfindingFailurePathfindingInputError7
+):
+    pass
+
+
+class PathfindingFailurePathfindingInputError11(
+    PathfindingInputErrorZeroLengthPath, PathfindingFailurePathfindingInputError7
+):
+    pass
+
+
+class PathfindingFailurePathfindingNotFound7(BaseModel):
+    failed_status: Literal["pathfinding_not_found"]
+
+
+class PathfindingFailurePathfindingNotFound10(
+    PathfindingNotFoundNotFoundInTracks, PathfindingFailurePathfindingNotFound7
+):
+    pass
+
+
+class PathfindingResultFailure1(BaseModel):
+    status: Literal["failure"]
 
 
 class PathfindingTrackLocationInput(BaseModel):
@@ -3011,7 +3079,7 @@ class RollingStockLivery(BaseModel):
     A livery has a compound_image_id field which refers to a document. The separated images of the livery also have
     a image_id field which refers to a document.
 
-    /!\ Its compound image is not deleted by cascade if the livery is removed.
+    /!\\ Its compound image is not deleted by cascade if the livery is removed.
 
     """
 
@@ -3141,7 +3209,7 @@ class SearchResultItemProject(BaseModel):
 
     description: str
     id: Annotated[int, Field(ge=0)]
-    image: Annotated[int | None, Field(ge=0)] = None
+    image: Annotated[int | None, Field(ge=0)]
     last_modification: AwareDatetime
     name: str
     studies_count: Annotated[int, Field(ge=0)]
@@ -3154,7 +3222,7 @@ class SearchResultItemScenario(BaseModel):
     """
 
     description: str
-    electrical_profile_set_id: Annotated[int | None, Field(ge=0)] = None
+    electrical_profile_set_id: Annotated[int | None, Field(ge=0)]
     id: Annotated[int, Field(ge=0)]
     infra_id: Annotated[int, Field(ge=0)]
     infra_name: str
@@ -3170,16 +3238,16 @@ class SearchResultItemStudy(BaseModel):
     A search result item for a query with `object = "study"`
     """
 
-    budget: Annotated[int | None, Field(ge=0)] = None
-    business_code: str | None = None
-    description: str | None = None
+    budget: Annotated[int | None, Field(ge=0)]
+    business_code: str | None
+    description: str | None
     id: Annotated[int, Field(ge=0)]
     last_modification: AwareDatetime
     name: str
     project_id: Annotated[int, Field(ge=0)]
     scenarios_count: Annotated[int, Field(ge=0)]
-    service_code: str | None = None
-    study_type: str | None = None
+    service_code: str | None
+    study_type: str | None
     tags: list[str]
 
 
@@ -3224,14 +3292,14 @@ class Sign(BaseModel):
 
 class ConditionalParameter(BaseModel):
     on_route: Annotated[str, Field(min_length=1)]
-    parameters: dict[str, str]
+    parameters: dict[constr(min_length=1), str]
 
 
 class LogicalSignal(BaseModel):
     conditional_parameters: list[ConditionalParameter]
-    default_parameters: dict[str, str]
+    default_parameters: dict[constr(min_length=1), str]
     next_signaling_systems: list[str]
-    settings: dict[str, str]
+    settings: dict[constr(min_length=1), str]
     signaling_system: str
 
 
@@ -3408,6 +3476,22 @@ class SummaryResponseSuccess(BaseModel):
     """
 
 
+class SummaryResponsePathfindingNotFound1(BaseModel):
+    """
+    Pathfinding not found
+    """
+
+    status: Literal["pathfinding_not_found"]
+
+
+class SummaryResponsePathfindingNotFound4(
+    PathfindingNotFoundNotFoundInTracks, SummaryResponsePathfindingNotFound1
+):
+    """
+    Pathfinding not found
+    """
+
+
 class SummaryResponseSimulationFailed(BaseModel):
     """
     An error has occurred during computing
@@ -3415,6 +3499,38 @@ class SummaryResponseSimulationFailed(BaseModel):
 
     error_type: str
     status: Literal["simulation_failed"]
+
+
+class SummaryResponsePathfindingInputError1(BaseModel):
+    """
+    InputError
+    """
+
+    status: Literal["pathfinding_input_error"]
+
+
+class SummaryResponsePathfindingInputError3(
+    PathfindingInputErrorNotEnoughPathItems, SummaryResponsePathfindingInputError1
+):
+    """
+    InputError
+    """
+
+
+class SummaryResponsePathfindingInputError4(
+    PathfindingInputErrorRollingStockNotFound, SummaryResponsePathfindingInputError1
+):
+    """
+    InputError
+    """
+
+
+class SummaryResponsePathfindingInputError5(
+    PathfindingInputErrorZeroLengthPath, SummaryResponsePathfindingInputError1
+):
+    """
+    InputError
+    """
 
 
 class Slope(BaseModel):
@@ -3530,7 +3646,7 @@ class StdcmResponseInternalError(BaseModel):
 
 
 class StdcmSearchEnvironment(BaseModel):
-    allowed_tracks: dict[str, Any] | None = None
+    allowed_tracks: dict[str, list[str]] | None
     """
     Map of a key (ex. loading gauge) with their allowed track section ids.
     """
@@ -3568,7 +3684,7 @@ class StdcmSearchEnvironment(BaseModel):
 
 
 class StdcmSearchEnvironmentCreateForm(BaseModel):
-    allowed_tracks: dict[str, Any] | None = None
+    allowed_tracks: dict[str, list[str]] | None = None
     electrical_profile_set_id: int | None = None
     enabled_from: AwareDatetime
     enabled_until: AwareDatetime
@@ -3584,7 +3700,7 @@ class StdcmSearchEnvironmentCreateForm(BaseModel):
 
 
 class StdcmSearchEnvironmentResponse(BaseModel):
-    allowed_tracks: dict[str, Any] | None = None
+    allowed_tracks: dict[str, list[str]] | None
     """
     Map of a gauge with their authorized track section ids.
     None means no zones restrictions.
@@ -3663,7 +3779,7 @@ class SwitchType(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
-    groups: dict[str, list[SwitchPortConnection]]
+    groups: dict[constr(min_length=1, max_length=255), list[SwitchPortConnection]]
     id: Annotated[str, Field(max_length=255, min_length=1)]
     ports: list[Port]
 
@@ -3873,7 +3989,7 @@ class TrainScheduleSetUpdateForm(BaseModel):
 
 
 class Version(BaseModel):
-    git_describe: str | None = None
+    git_describe: str | None
 
 
 class WaypointBufferStop(BaseModel):
@@ -4080,9 +4196,7 @@ class SendLastMinuteRequestResponse(BaseModel):
     status: Annotated[str, Field(title="Status")]
     message: Annotated[str, Field(title="Message")]
     request_identifier: Annotated[str, Field(title="Request Identifier")]
-    created_request_url: Annotated[str | None, Field(title="Created Request URL")] = (
-        None
-    )
+    created_request_url: Annotated[str | None, Field(title="Created Request URL")]
 
 
 class SendLastMinuteRequestAuthorizedGetResponse(BaseModel):
@@ -4650,7 +4764,7 @@ class EnergyStorage(BaseModel):
         extra="forbid",
     )
     capacity: float
-    refill_law: RefillLaw | None = None
+    refill_law: RefillLaw | None
     soc: Annotated[float, Field(ge=0.0, le=1.0)]
     soc_max: Annotated[float, Field(ge=0.0, le=1.0)]
     soc_min: Annotated[float, Field(ge=0.0, le=1.0)]
@@ -4921,11 +5035,67 @@ class PathItemLocationOperationalPointPartReference(OperationalPointPartReferenc
     type: Literal["operational_point_part_reference"]
 
 
+class PathItemLocation(
+    RootModel[
+        PathItemLocationTrackOffset | PathItemLocationOperationalPointPartReference
+    ]
+):
+    root: PathItemLocationTrackOffset | PathItemLocationOperationalPointPartReference
+    """
+    The location of a path waypoint
+    """
+
+
 class PathPropertiesInput(BaseModel):
     track_section_ranges: list[CoreTrackRange]
     """
     List of track sections
     """
+
+
+class Item(BaseModel):
+    index: Annotated[int, Field(ge=0)]
+    path_item: (
+        PathItemLocationTrackOffset | PathItemLocationOperationalPointPartReference
+    )
+    """
+    The location of a path waypoint
+    """
+
+
+class PathfindingInputErrorInvalidPathItems1(BaseModel):
+    error_type: Literal["invalid_path_items"]
+    items: list[Item]
+
+
+class PathfindingFailurePathfindingInputError2(
+    PathfindingInputErrorInvalidPathItems1, PathfindingFailurePathfindingInputError1
+):
+    pass
+
+
+class PathfindingNotFoundNotFoundInBlocks(BaseModel):
+    error_type: Literal["not_found_in_blocks"]
+    length: Annotated[int, Field(ge=0)]
+    track_section_ranges: list[CoreTrackRange]
+
+
+class PathfindingNotFoundNotFoundInRoutes(BaseModel):
+    error_type: Literal["not_found_in_routes"]
+    length: Annotated[int, Field(ge=0)]
+    track_section_ranges: list[CoreTrackRange]
+
+
+class PathfindingFailurePathfindingNotFound2(
+    PathfindingNotFoundNotFoundInBlocks, PathfindingFailurePathfindingNotFound1
+):
+    pass
+
+
+class PathfindingFailurePathfindingNotFound3(
+    PathfindingNotFoundNotFoundInRoutes, PathfindingFailurePathfindingNotFound1
+):
+    pass
 
 
 class PathfindingInput(BaseModel):
@@ -4988,6 +5158,50 @@ class PathfindingItem(BaseModel):
     The associated location
     """
     timing_data: StepTimingData | None = None
+
+
+class PathfindingInputErrorInvalidPathItems2(BaseModel):
+    error_type: Literal["invalid_path_items"]
+    items: list[Item]
+
+
+class PathfindingFailurePathfindingInputError8(
+    PathfindingInputErrorInvalidPathItems2, PathfindingFailurePathfindingInputError7
+):
+    pass
+
+
+class PathfindingFailurePathfindingInputError6(
+    RootModel[
+        PathfindingFailurePathfindingInputError8
+        | PathfindingFailurePathfindingInputError9
+        | PathfindingFailurePathfindingInputError10
+        | PathfindingFailurePathfindingInputError11
+    ]
+):
+    root: Annotated[
+        PathfindingFailurePathfindingInputError8
+        | PathfindingFailurePathfindingInputError9
+        | PathfindingFailurePathfindingInputError10
+        | PathfindingFailurePathfindingInputError11,
+        Field(title="PathfindingFailurePathfindingInputError"),
+    ]
+
+
+class PathfindingFailurePathfindingNotFound8(
+    PathfindingNotFoundNotFoundInBlocks, PathfindingFailurePathfindingNotFound7
+):
+    pass
+
+
+class PathfindingFailurePathfindingNotFound9(
+    PathfindingNotFoundNotFoundInRoutes, PathfindingFailurePathfindingNotFound7
+):
+    pass
+
+
+class PathfindingResultFailure2(PathfindingResultFailure1):
+    pass
 
 
 class Project(BaseModel):
@@ -5070,7 +5284,7 @@ class Route(BaseModel):
     exit_point: WaypointBufferStop | WaypointDetector
     id: Annotated[str, Field(max_length=255, min_length=1)]
     release_detectors: list[ReleaseDetector]
-    switches_directions: dict[str, str]
+    switches_directions: dict[constr(min_length=1, max_length=255), str]
 
 
 class Scenario(BaseModel):
@@ -5134,7 +5348,7 @@ class SearchPayload(BaseModel):
     The object kind to query - run `editoast search list` to get all possible values
     """
     query: Annotated[
-        bool | float | int | str | dict[str, Any],
+        dict[str, Any] | bool | float | int | str,
         Field(
             examples=[
                 [
@@ -5147,6 +5361,52 @@ class SearchPayload(BaseModel):
     ]
     """
     The query to run
+    """
+
+
+class SearchResultItemSearchResultItemTrack(RootModel[SearchResultItemTrack]):
+    root: Annotated[
+        SearchResultItemTrack, Field(title="SearchResultItemSearchResultItemTrack")
+    ]
+    """
+    A search result item that depends on the query's `object`
+    """
+
+
+class SearchResultItemSearchResultItemProject(RootModel[SearchResultItemProject]):
+    root: Annotated[
+        SearchResultItemProject, Field(title="SearchResultItemSearchResultItemProject")
+    ]
+    """
+    A search result item that depends on the query's `object`
+    """
+
+
+class SearchResultItemSearchResultItemStudy(RootModel[SearchResultItemStudy]):
+    root: Annotated[
+        SearchResultItemStudy, Field(title="SearchResultItemSearchResultItemStudy")
+    ]
+    """
+    A search result item that depends on the query's `object`
+    """
+
+
+class SearchResultItemSearchResultItemScenario(RootModel[SearchResultItemScenario]):
+    root: Annotated[
+        SearchResultItemScenario,
+        Field(title="SearchResultItemSearchResultItemScenario"),
+    ]
+    """
+    A search result item that depends on the query's `object`
+    """
+
+
+class SearchResultItemSearchResultItemUser(RootModel[SearchResultItemUser]):
+    root: Annotated[
+        SearchResultItemUser, Field(title="SearchResultItemSearchResultItemUser")
+    ]
+    """
+    A search result item that depends on the query's `object`
     """
 
 
@@ -5228,6 +5488,35 @@ class SimulationResponseSuccess(BaseModel):
     provisional: CoreReportTrain
     """
     Simulation that takes into account the regularity margins
+    """
+
+
+class SummaryResponsePathfindingNotFound2(
+    PathfindingNotFoundNotFoundInBlocks, SummaryResponsePathfindingNotFound1
+):
+    """
+    Pathfinding not found
+    """
+
+
+class SummaryResponsePathfindingNotFound3(
+    PathfindingNotFoundNotFoundInRoutes, SummaryResponsePathfindingNotFound1
+):
+    """
+    Pathfinding not found
+    """
+
+
+class PathfindingInputErrorInvalidPathItems3(BaseModel):
+    error_type: Literal["invalid_path_items"]
+    items: list[Item]
+
+
+class SummaryResponsePathfindingInputError2(
+    PathfindingInputErrorInvalidPathItems3, SummaryResponsePathfindingInputError1
+):
+    """
+    InputError
     """
 
 
@@ -5410,16 +5699,6 @@ class CoreIncompatibleConstraints(BaseModel):
     incompatible_signaling_system_ranges: list[CoreIncompatibleOffsetRangeWithValue]
 
 
-class Item(BaseModel):
-    index: Annotated[int, Field(ge=0)]
-    path_item: (
-        PathItemLocationTrackOffset | PathItemLocationOperationalPointPartReference
-    )
-    """
-    The location of a path waypoint
-    """
-
-
 class PathfindingInputErrorInvalidPathItems(BaseModel):
     error_type: Literal["invalid_path_items"]
     items: list[Item]
@@ -5439,18 +5718,6 @@ class CorePathfindingInputError(
         | PathfindingInputErrorRollingStockNotFound
         | PathfindingInputErrorZeroLengthPath
     )
-
-
-class PathfindingNotFoundNotFoundInBlocks(BaseModel):
-    error_type: Literal["not_found_in_blocks"]
-    length: Annotated[int, Field(ge=0)]
-    track_section_ranges: list[CoreTrackRange]
-
-
-class PathfindingNotFoundNotFoundInRoutes(BaseModel):
-    error_type: Literal["not_found_in_routes"]
-    length: Annotated[int, Field(ge=0)]
-    track_section_ranges: list[CoreTrackRange]
 
 
 class CorePathfindingResultSuccess(BaseModel):
@@ -5593,48 +5860,6 @@ class InfraErrorTypeOverlappingSwitches(BaseModel):
     reference: ObjectRef
 
 
-class InfraErrorType(
-    RootModel[
-        InfraErrorTypeDuplicatedGroup
-        | InfraErrorTypeEmptyObject
-        | InfraErrorTypeInvalidGroup
-        | InfraErrorTypeInvalidReference
-        | InfraErrorTypeInvalidRoute
-        | InfraErrorTypeInvalidSwitchPorts
-        | InfraErrorTypeMissingRoute
-        | InfraErrorTypeMissingBufferStop
-        | InfraErrorTypeNodeEndpointsNotUnique
-        | InfraErrorTypeObjectOutOfPath
-        | InfraErrorTypeOddBufferStopLocation
-        | InfraErrorTypeOutOfRange
-        | InfraErrorTypeOverlappingElectrifications
-        | InfraErrorTypeOverlappingSpeedSections
-        | InfraErrorTypeOverlappingSwitches
-        | InfraErrorTypeUnknownPortName
-        | InfraErrorTypeUnusedPort
-    ]
-):
-    root: (
-        InfraErrorTypeDuplicatedGroup
-        | InfraErrorTypeEmptyObject
-        | InfraErrorTypeInvalidGroup
-        | InfraErrorTypeInvalidReference
-        | InfraErrorTypeInvalidRoute
-        | InfraErrorTypeInvalidSwitchPorts
-        | InfraErrorTypeMissingRoute
-        | InfraErrorTypeMissingBufferStop
-        | InfraErrorTypeNodeEndpointsNotUnique
-        | InfraErrorTypeObjectOutOfPath
-        | InfraErrorTypeOddBufferStopLocation
-        | InfraErrorTypeOutOfRange
-        | InfraErrorTypeOverlappingElectrifications
-        | InfraErrorTypeOverlappingSpeedSections
-        | InfraErrorTypeOverlappingSwitches
-        | InfraErrorTypeUnknownPortName
-        | InfraErrorTypeUnusedPort
-    )
-
-
 class InfraObjectDetector(BaseModel):
     obj_type: Literal["Detector"]
     railjson: Detector
@@ -5656,7 +5881,7 @@ class InfraObjectLevelCrossing(BaseModel):
 
 
 class LightRollingStock(BaseModel):
-    base_power_class: str | None = None
+    base_power_class: str | None
     effort_curves: LightEffortCurves
     id: int
     length: float
@@ -5673,7 +5898,7 @@ class LightRollingStock(BaseModel):
     """
     Velocity in m·s⁻¹
     """
-    metadata: RollingStockMetadata | None = None
+    metadata: RollingStockMetadata | None
     name: str
     other_categories: list[TrainMainCategory]
     power_restrictions: dict[str, str]
@@ -5802,12 +6027,49 @@ class PathItem(BaseModel):
     """
 
 
-class PathfindingFailurePathfindingInputError(BaseModel):
-    failed_status: Literal["pathfinding_input_error"]
+class PathfindingNotFoundIncompatibleConstraints(BaseModel):
+    error_type: Literal["incompatible_constraints"]
+    incompatible_constraints: CoreIncompatibleConstraints
+    relaxed_constraints_path: CorePathfindingResultSuccess
+
+
+class PathfindingFailurePathfindingNotFound5(
+    PathfindingNotFoundIncompatibleConstraints, PathfindingFailurePathfindingNotFound1
+):
+    pass
 
 
 class PathfindingResultSuccess(CorePathfindingResultSuccess):
     status: Literal["success"]
+
+
+class PathfindingFailurePathfindingNotFound11(
+    PathfindingNotFoundIncompatibleConstraints, PathfindingFailurePathfindingNotFound7
+):
+    pass
+
+
+class PathfindingFailurePathfindingNotFound6(
+    RootModel[
+        PathfindingFailurePathfindingNotFound8
+        | PathfindingFailurePathfindingNotFound9
+        | PathfindingFailurePathfindingNotFound10
+        | PathfindingFailurePathfindingNotFound11
+    ]
+):
+    root: Annotated[
+        PathfindingFailurePathfindingNotFound8
+        | PathfindingFailurePathfindingNotFound9
+        | PathfindingFailurePathfindingNotFound10
+        | PathfindingFailurePathfindingNotFound11,
+        Field(title="PathfindingFailurePathfindingNotFound"),
+    ]
+
+
+class PathfindingResult(
+    RootModel[PathfindingResultSuccess | PathfindingResultFailure2]
+):
+    root: PathfindingResultSuccess | PathfindingResultFailure2
 
 
 class RelatedOperationalPointPart(OperationalPointPart):
@@ -5815,7 +6077,7 @@ class RelatedOperationalPointPart(OperationalPointPart):
 
 
 class RollingStock(BaseModel):
-    base_power_class: str | None = None
+    base_power_class: str | None
     comfort_acceleration: float
     """
     Acceleration in m·s⁻²
@@ -5825,7 +6087,7 @@ class RollingStock(BaseModel):
     Acceleration in m·s⁻²
     """
     effort_curves: EffortCurves
-    electrical_power_startup_time: float | None = None
+    electrical_power_startup_time: float | None
     """
     Duration in s
     """
@@ -5848,13 +6110,13 @@ class RollingStock(BaseModel):
     """
     Velocity in m·s⁻¹
     """
-    metadata: RollingStockMetadata | None = None
+    metadata: RollingStockMetadata | None
     name: str
     other_categories: list[TrainMainCategory]
     power_restrictions: dict[str, str]
     primary_category: TrainMainCategory
     railjson_version: str
-    raise_pantograph_time: float | None = None
+    raise_pantograph_time: float | None
     """
     Duration in s
     """
@@ -5882,7 +6144,7 @@ class RollingStockCategoryChangeGroup(BaseModel):
 
 
 class RollingStockForm(BaseModel):
-    base_power_class: Annotated[str | None, Field(examples=["5"])] = None
+    base_power_class: Annotated[str | None, Field(examples=["5"])]
     comfort_acceleration: float
     """
     Acceleration in m·s⁻²
@@ -5963,6 +6225,27 @@ class ScenarioResponse(Scenario):
     train_schedules_count: int
 
 
+class SearchResultItemSearchResultItemOperationalPoint(
+    RootModel[SearchResultItemOperationalPoint]
+):
+    root: Annotated[
+        SearchResultItemOperationalPoint,
+        Field(title="SearchResultItemSearchResultItemOperationalPoint"),
+    ]
+    """
+    A search result item that depends on the query's `object`
+    """
+
+
+class SearchResultItemSearchResultItemSignal(RootModel[SearchResultItemSignal]):
+    root: Annotated[
+        SearchResultItemSignal, Field(title="SearchResultItemSearchResultItemSignal")
+    ]
+    """
+    A search result item that depends on the query's `object`
+    """
+
+
 class SearchResultItemTrainSchedule(BaseModel):
     """
     A search result item for a query with `object = "trainschedule"`
@@ -6023,12 +6306,26 @@ class ResponseSuccess(SimulationResponseSuccess):
     status: Literal["success"]
 
 
-class SummaryResponsePathfindingInputError(BaseModel):
-    """
-    InputError
-    """
+class ResponsePathfindingFailed(BaseModel):
+    pathfinding_failed: (
+        PathfindingFailurePathfindingInputError2
+        | PathfindingFailurePathfindingInputError3
+        | PathfindingFailurePathfindingInputError4
+        | PathfindingFailurePathfindingInputError5
+        | PathfindingFailurePathfindingNotFound2
+        | PathfindingFailurePathfindingNotFound3
+        | PathfindingFailurePathfindingNotFound4
+        | PathfindingFailurePathfindingNotFound5
+    )
+    status: Literal["pathfinding_failed"]
 
-    status: Literal["pathfinding_input_error"]
+
+class SummaryResponsePathfindingNotFound5(
+    PathfindingNotFoundIncompatibleConstraints, SummaryResponsePathfindingNotFound1
+):
+    """
+    Pathfinding not found
+    """
 
 
 class SpeedSection(BaseModel):
@@ -6039,7 +6336,7 @@ class SpeedSection(BaseModel):
     id: Annotated[str, Field(max_length=255, min_length=1)]
     on_routes: list[OnRoute] | None = None
     speed_limit: float | None = None
-    speed_limit_by_tag: dict[str, float]
+    speed_limit_by_tag: dict[constr(min_length=1), float]
     track_ranges: list[ApplicableDirectionsTrackRange]
 
 
@@ -6050,6 +6347,27 @@ class StdcmResponseSuccess(BaseModel):
     status: Literal["success"]
 
 
+class StdcmResponsePreprocessingSimulationError(BaseModel):
+    error: ResponseSuccess | ResponsePathfindingFailed | ResponseSimulationFailed
+    status: Literal["preprocessing_simulation_error"]
+
+
+class StdcmResponse(
+    RootModel[
+        StdcmResponseSuccess
+        | StdcmResponsePathNotFound
+        | StdcmResponsePreprocessingSimulationError
+        | StdcmResponseInternalError
+    ]
+):
+    root: (
+        StdcmResponseSuccess
+        | StdcmResponsePathNotFound
+        | StdcmResponsePreprocessingSimulationError
+        | StdcmResponseInternalError
+    )
+
+
 class Switch(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
@@ -6057,7 +6375,7 @@ class Switch(BaseModel):
     extensions: SwitchExtensions | None = None
     group_change_delay: float
     id: Annotated[str, Field(max_length=255, min_length=1)]
-    ports: dict[str, TrackEndpoint]
+    ports: dict[constr(min_length=1, max_length=255), TrackEndpoint]
     switch_type: Annotated[str, Field(max_length=255, min_length=1)]
 
 
@@ -6072,6 +6390,37 @@ class TrackSectionModel(BaseModel):
     length: float
     loading_gauge_limits: list[LoadingGaugeLimit] | None = None
     slopes: list[Slope]
+
+
+class TrainScheduleSimulationSummaryResult(BaseModel):
+    exceptions: dict[
+        str,
+        SummaryResponseSuccess
+        | SummaryResponseSimulationFailed
+        | SummaryResponsePathfindingNotFound2
+        | SummaryResponsePathfindingNotFound3
+        | SummaryResponsePathfindingNotFound4
+        | SummaryResponsePathfindingNotFound5
+        | SummaryResponsePathfindingInputError2
+        | SummaryResponsePathfindingInputError3
+        | SummaryResponsePathfindingInputError4
+        | SummaryResponsePathfindingInputError5,
+    ]
+    """
+    The key is the `exception_id`
+    """
+    train_schedule: (
+        SummaryResponseSuccess
+        | SummaryResponseSimulationFailed
+        | SummaryResponsePathfindingNotFound2
+        | SummaryResponsePathfindingNotFound3
+        | SummaryResponsePathfindingNotFound4
+        | SummaryResponsePathfindingNotFound5
+        | SummaryResponsePathfindingInputError2
+        | SummaryResponsePathfindingInputError3
+        | SummaryResponsePathfindingInputError4
+        | SummaryResponsePathfindingInputError5
+    )
 
 
 class CoreOperationalPointOnPath(BaseModel):
@@ -6102,16 +6451,10 @@ class CoreOperationalPointOnPath(BaseModel):
     secondary_code: SecondaryCode | None = None
     secondary_name: SecondaryName | None = None
     uic: Annotated[int | None, Field(ge=0)] = None
-    weight: Annotated[int | None, Field(ge=0, le=100)] = None
+    weight: Annotated[int | None, Field(ge=0, le=100)]
     """
     Importance of the operational point
     """
-
-
-class PathfindingNotFoundIncompatibleConstraints(BaseModel):
-    error_type: Literal["incompatible_constraints"]
-    incompatible_constraints: CoreIncompatibleConstraints
-    relaxed_constraints_path: CorePathfindingResultSuccess
 
 
 class CorePathfindingNotFound(
@@ -6140,10 +6483,29 @@ class GeoJsonMultiPolygon(RootModel[MultiPolygonGeometry]):
 
 
 class InfraError(BaseModel):
-    field: str | None = None
+    field: str | None
     is_warning: bool
     obj_id: str
     obj_type: ObjectType
+    sub_type: (
+        InfraErrorTypeDuplicatedGroup
+        | InfraErrorTypeEmptyObject
+        | InfraErrorTypeInvalidGroup
+        | InfraErrorTypeInvalidReference
+        | InfraErrorTypeInvalidRoute
+        | InfraErrorTypeInvalidSwitchPorts
+        | InfraErrorTypeMissingRoute
+        | InfraErrorTypeMissingBufferStop
+        | InfraErrorTypeNodeEndpointsNotUnique
+        | InfraErrorTypeObjectOutOfPath
+        | InfraErrorTypeOddBufferStopLocation
+        | InfraErrorTypeOutOfRange
+        | InfraErrorTypeOverlappingElectrifications
+        | InfraErrorTypeOverlappingSpeedSections
+        | InfraErrorTypeOverlappingSwitches
+        | InfraErrorTypeUnknownPortName
+        | InfraErrorTypeUnusedPort
+    )
 
 
 class InfraObjectTrackSection(BaseModel):
@@ -6243,18 +6605,6 @@ class PathProperties(BaseModel):
     """
 
 
-class PathfindingFailurePathfindingNotFound(BaseModel):
-    failed_status: Literal["pathfinding_not_found"]
-
-
-class PathfindingResultFailure(BaseModel):
-    status: Literal["failure"]
-
-
-class PathfindingResult(RootModel[PathfindingResultSuccess | PathfindingResultFailure]):
-    root: PathfindingResultSuccess | PathfindingResultFailure
-
-
 class RailJson(BaseModel):
     """
     An infrastructure description in the RailJson format
@@ -6311,7 +6661,7 @@ class RailJson(BaseModel):
     """
     `TrackSection`` is a segment of rail between switches that serves as a bidirectional path for trains, and can be defined as the longest possible stretch of track within a rail infrastructure.
     """
-    version: str | None = "3.5.3"
+    version: str = "3.5.3"
     """
     The version of the RailJSON format. Defaults to the current version.
     """
@@ -6332,27 +6682,39 @@ class RelatedOperationalPoint(BaseModel):
     weight: Annotated[int | None, Field(ge=0)] = None
 
 
+class SearchResultItemSearchResultItemTrainSchedule(
+    RootModel[SearchResultItemTrainSchedule]
+):
+    root: Annotated[
+        SearchResultItemTrainSchedule,
+        Field(title="SearchResultItemSearchResultItemTrainSchedule"),
+    ]
+    """
+    A search result item that depends on the query's `object`
+    """
+
+
 class SearchResultItem(
     RootModel[
-        SearchResultItemTrack
-        | SearchResultItemOperationalPoint
-        | SearchResultItemSignal
-        | SearchResultItemProject
-        | SearchResultItemStudy
-        | SearchResultItemScenario
-        | SearchResultItemTrainSchedule
-        | SearchResultItemUser
+        SearchResultItemSearchResultItemTrack
+        | SearchResultItemSearchResultItemOperationalPoint
+        | SearchResultItemSearchResultItemSignal
+        | SearchResultItemSearchResultItemProject
+        | SearchResultItemSearchResultItemStudy
+        | SearchResultItemSearchResultItemScenario
+        | SearchResultItemSearchResultItemTrainSchedule
+        | SearchResultItemSearchResultItemUser
     ]
 ):
     root: (
-        SearchResultItemTrack
-        | SearchResultItemOperationalPoint
-        | SearchResultItemSignal
-        | SearchResultItemProject
-        | SearchResultItemStudy
-        | SearchResultItemScenario
-        | SearchResultItemTrainSchedule
-        | SearchResultItemUser
+        SearchResultItemSearchResultItemTrack
+        | SearchResultItemSearchResultItemOperationalPoint
+        | SearchResultItemSearchResultItemSignal
+        | SearchResultItemSearchResultItemProject
+        | SearchResultItemSearchResultItemStudy
+        | SearchResultItemSearchResultItemScenario
+        | SearchResultItemSearchResultItemTrainSchedule
+        | SearchResultItemSearchResultItemUser
     )
     """
     A search result item that depends on the query's `object`
@@ -6370,42 +6732,6 @@ class SimDebugData(BaseModel):
     zone_locations: list[SimDebugZoneLocation]
 
 
-class ResponsePathfindingFailed(BaseModel):
-    pathfinding_failed: (
-        PathfindingFailurePathfindingInputError | PathfindingFailurePathfindingNotFound
-    )
-    status: Literal["pathfinding_failed"]
-
-
-class SummaryResponsePathfindingNotFound(BaseModel):
-    """
-    Pathfinding not found
-    """
-
-    status: Literal["pathfinding_not_found"]
-
-
-class StdcmResponsePreprocessingSimulationError(BaseModel):
-    error: ResponseSuccess | ResponsePathfindingFailed | ResponseSimulationFailed
-    status: Literal["preprocessing_simulation_error"]
-
-
-class StdcmResponse(
-    RootModel[
-        StdcmResponseSuccess
-        | StdcmResponsePathNotFound
-        | StdcmResponsePreprocessingSimulationError
-        | StdcmResponseInternalError
-    ]
-):
-    root: (
-        StdcmResponseSuccess
-        | StdcmResponsePathNotFound
-        | StdcmResponsePreprocessingSimulationError
-        | StdcmResponseInternalError
-    )
-
-
 class TrainScheduleExceptionChangeGroups(BaseModel):
     constraint_distribution: ConstraintDistributionChangeGroup | None = None
     initial_speed: InitialSpeedChangeGroup | None = None
@@ -6419,25 +6745,6 @@ class TrainScheduleExceptionChangeGroups(BaseModel):
     train_name: TrainNameChangeGroup | None = None
 
 
-class TrainScheduleSimulationSummaryResult(BaseModel):
-    exceptions: dict[
-        str,
-        SummaryResponseSuccess
-        | SummaryResponsePathfindingNotFound
-        | SummaryResponseSimulationFailed
-        | SummaryResponsePathfindingInputError,
-    ]
-    """
-    The key is the `exception_id`
-    """
-    train_schedule: (
-        SummaryResponseSuccess
-        | SummaryResponsePathfindingNotFound
-        | SummaryResponseSimulationFailed
-        | SummaryResponsePathfindingInputError
-    )
-
-
 class InfraObjectNeutralSection(BaseModel):
     obj_type: Literal["NeutralSection"]
     railjson: NeutralSection
@@ -6446,38 +6753,6 @@ class InfraObjectNeutralSection(BaseModel):
 class InfraObjectOperationalPoint(BaseModel):
     obj_type: Literal["OperationalPoint"]
     railjson: OperationalPoint
-
-
-class InfraObject(
-    RootModel[
-        InfraObjectTrackSection
-        | InfraObjectSignal
-        | InfraObjectNeutralSection
-        | InfraObjectSpeedSection
-        | InfraObjectSwitch
-        | InfraObjectSwitchType
-        | InfraObjectDetector
-        | InfraObjectBufferStop
-        | InfraObjectRoute
-        | InfraObjectOperationalPoint
-        | InfraObjectElectrification
-        | InfraObjectLevelCrossing
-    ]
-):
-    root: (
-        InfraObjectTrackSection
-        | InfraObjectSignal
-        | InfraObjectNeutralSection
-        | InfraObjectSpeedSection
-        | InfraObjectSwitch
-        | InfraObjectSwitchType
-        | InfraObjectDetector
-        | InfraObjectBufferStop
-        | InfraObjectRoute
-        | InfraObjectOperationalPoint
-        | InfraObjectElectrification
-        | InfraObjectLevelCrossing
-    )
 
 
 class InfraObjectWithGeometry(BaseModel):
@@ -6498,6 +6773,20 @@ class InfraObjectWithGeometry(BaseModel):
 
 class OperationCreate(BaseModel):
     operation_type: Literal["CREATE"]
+    payload: (
+        InfraObjectTrackSection
+        | InfraObjectSignal
+        | InfraObjectNeutralSection
+        | InfraObjectSpeedSection
+        | InfraObjectSwitch
+        | InfraObjectSwitchType
+        | InfraObjectDetector
+        | InfraObjectBufferStop
+        | InfraObjectRoute
+        | InfraObjectOperationalPoint
+        | InfraObjectElectrification
+        | InfraObjectLevelCrossing
+    )
 
 
 class Operation(RootModel[OperationCreate | OperationUpdate | OperationDelete]):

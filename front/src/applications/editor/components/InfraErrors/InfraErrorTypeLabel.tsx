@@ -7,7 +7,7 @@ import type { InfraError } from 'common/api/osrdEditoastApi';
  */
 const InfraErrorTypeLabel = ({ error }: { error: InfraError }) => {
   const { t } = useTranslation();
-  return t(`Editor.infra-errors.error-type.${error.error_type}.name`);
+  return t(`Editor.infra-errors.error-type.${error.sub_type.error_type}.name`);
 };
 
 export default InfraErrorTypeLabel;
