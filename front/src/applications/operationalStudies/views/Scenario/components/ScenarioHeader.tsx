@@ -35,8 +35,13 @@ const ScenarioHeader = ({ activeBoards, toggleBoard }: ScenarioHeaderProps) => {
   const { username, impersonatedUser, impersonate } = useAuth();
   const { openModal } = useModal();
   const navigate = useNavigate();
-  const { scenario } = useScenarioContext();
+  const { scenario, timetableId, infraId } = useScenarioContext();
   const { t } = useTranslation('operational-studies');
+
+  const { totalConflictsCount } = osrdEditoastApi.endpoints.getTimetableByIdConflicts.useQueryState(
+    { id: timetableId, infraId },
+    { selectFromResult: ({ data }) => ({ totalConflictsCount: data?.length ?? 0 }) }
+  );
 
   const [isTruncated, setIsTruncated] = useState({
     scenarioName: false,
@@ -153,6 +158,9 @@ const ScenarioHeader = ({ activeBoards, toggleBoard }: ScenarioHeaderProps) => {
                   }
                 >
                   {t(`boards.${board}`)}
+                  {board === 'conflicts' && totalConflictsCount > 0 && (
+                    <span>·{totalConflictsCount}</span>
+                  )}
                 </button>
                 {index < BOARDS.length - 1 && <div className="inactive-area" />}
               </Fragment>
