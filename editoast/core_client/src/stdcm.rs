@@ -32,8 +32,8 @@ pub struct Request {
     // Pathfinding inputs
     /// List of waypoints. Each waypoint is a list of track offset.
     pub path_items: Vec<STDCMPathItem>,
-    /// Set of authorized track section ids for the current request
-    pub allowed_track_sections: Option<HashSet<String>>,
+    /// Set of authorized track section ids, empty means no restriction
+    pub allowed_track_sections: HashSet<String>,
 
     // Simulation inputs
     /// The comfort of the train

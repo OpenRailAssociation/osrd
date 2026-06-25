@@ -195,7 +195,8 @@ data class STDCMPathfindingBuilder(
         }
         val blockAvailabilityAdapter =
             blockAvailability ?: DummyBlockAvailability(infra!!.blockInfra, unavailableTimes)
-        val consistSchedule = ConsistSchedule(rollingStocks, boundaries, infra!!, null, steps.size)
+        val consistSchedule =
+            ConsistSchedule(rollingStocks, boundaries, infra!!, emptySet(), steps.size)
         return findPath(
             infra!!,
             consistSchedule,

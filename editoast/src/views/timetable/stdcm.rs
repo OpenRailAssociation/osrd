@@ -667,7 +667,7 @@ mod tests {
             time_gap_before: 35000,
             time_gap_after: 35000,
             margin: Some(MarginValue::MinPer100Km(4.5)),
-            allowed_track_sections: None,
+            allowed_track_sections: HashSet::new(),
             consist_schedule,
         }
     }

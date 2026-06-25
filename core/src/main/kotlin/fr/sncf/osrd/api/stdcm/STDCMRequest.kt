@@ -57,7 +57,7 @@ class STDCMRequest(
     @Json(name = "temporary_speed_limits")
     val temporarySpeedLimits: Collection<STDCMTemporarySpeedLimit>,
     @Json(name = "work_schedules") val workSchedules: Collection<WorkSchedule> = listOf(),
-    @Json(name = "allowed_track_sections") val allowedTrackSections: Set<String>?,
+    @Json(name = "allowed_track_sections") val allowedTrackSections: Set<String> = emptySet(),
 )
 
 data class STDCMTemporarySpeedLimit(

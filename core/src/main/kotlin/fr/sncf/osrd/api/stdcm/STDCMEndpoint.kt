@@ -598,11 +598,8 @@ private fun parseSimulationScheduleItems(
     )
 }
 
-fun parseTrackSectionIds(infra: FullInfra, trackSectionNames: Set<String>?): Set<TrackSectionId>? {
-    return trackSectionNames
-        ?.mapNotNull { infra.rawInfra.getTrackSectionFromName(it) }
-        ?.toSet()
-        ?.takeIf { it.isNotEmpty() }
+fun parseTrackSectionIds(infra: FullInfra, trackSectionNames: Set<String>): Set<TrackSectionId> {
+    return trackSectionNames.mapNotNull { infra.rawInfra.getTrackSectionFromName(it) }.toSet()
 }
 
 private fun progressCallback(
