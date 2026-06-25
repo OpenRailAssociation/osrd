@@ -467,12 +467,23 @@ pub(in crate::views) struct RollingStockLockedUpdateForm {
     )
 )]
 pub(in crate::views) async fn update_locked(
-    State(db_pool): State<Arc<DbConnectionPoolV2>>,
+    State(AppState {
+        openfga, db_pool, ..
+    }): State<AppState>,
+    Extension(authn_state): Extension<crate::authentication::State>,
     Path(rolling_stock_id): Path<i64>,
     Json(RollingStockLockedUpdateForm { locked }): Json<RollingStockLockedUpdateForm>,
 ) -> Result<impl IntoResponse> {
     let conn = &mut db_pool.get().await?;
-
+    if let Some(user) = authn_state.user() {
+        let authorizer = authn_state.authorizer(&openfga);
+        crate::authorizers::require(
+            &authorizer,
+            rolling_stock_privileges(user, authz::RollingStock(rolling_stock_id)),
+            &RollingStockPrivilege::CanWrite,
+        )
+        .await?;
+    };
     RollingStock::changeset()
         .locked(locked)
         .update_or_fail(conn, rolling_stock_id, || RollingStockError::KeyNotFound {
@@ -1553,16 +1564,23 @@ pub mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn patch_lock_rolling_stock_successfully() {
-        let app = test_app!().skip_authz().build();
+        let app = test_app!().build();
         let db_pool = app.db_pool();
 
         let rs_name = "fast_rolling_stock_name";
         let fast_rolling_stock = create_fast_rolling_stock(&mut db_pool.get_ok(), rs_name).await;
 
+        let user = app
+            .user("authorized", "Authorized")
+            .with_roles([Role::OperationalStudies])
+            .with_rolling_stock_grant(fast_rolling_stock.id, authz::RollingStockGrant::Owner)
+            .create()
+            .await;
         assert!(!fast_rolling_stock.locked);
 
         app.patch(format!("/rolling_stock/{}/locked", fast_rolling_stock.id).as_str())
             .json(&json!({ "locked": true }))
+            .by_user(user.as_ref())
             .await
             .assert_status_no_content();
 
@@ -1577,7 +1595,7 @@ pub mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn patch_unlock_rolling_stock_successfully() {
-        let app = test_app!().skip_authz().build();
+        let app = test_app!().build();
         let db_pool = app.db_pool();
 
         let locked_rs_name = "locked_fast_rolling_stock_name";
@@ -1592,8 +1610,19 @@ pub mod tests {
             .expect("Failed to create rolling stock");
         assert!(locked_fast_rolling_stock.locked);
 
+        let user = app
+            .user("authorized", "Authorized")
+            .with_roles([Role::OperationalStudies])
+            .with_rolling_stock_grant(
+                locked_fast_rolling_stock.id,
+                authz::RollingStockGrant::Owner,
+            )
+            .create()
+            .await;
+
         app.patch(format!("/rolling_stock/{}/locked", locked_fast_rolling_stock.id).as_str())
             .json(&json!({ "locked": false }))
+            .by_user(user.as_ref())
             .await
             .assert_status_no_content();
 
@@ -1603,6 +1632,132 @@ pub mod tests {
                 .expect("Failed to retrieve rolling stock")
                 .expect("Rolling stock not found");
 
+        assert!(!fast_rolling_stock.locked);
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn patch_locked_rolling_stock_without_sufficient_grant() {
+        // GIVEN
+        let app = test_app!().build();
+        let db_pool = app.db_pool();
+
+        let fast_rolling_stock =
+            create_fast_rolling_stock(&mut db_pool.get_ok(), "unauthorized_rolling_stock").await;
+        assert!(!fast_rolling_stock.locked);
+
+        // A user with the OperationalStudies role but only a read grant on the rolling stock
+        let user = app
+            .user("reader", "Reader")
+            .with_roles([Role::OperationalStudies])
+            .with_rolling_stock_grant(fast_rolling_stock.id, authz::RollingStockGrant::Reader)
+            .create()
+            .await;
+
+        // WHEN
+        app.patch(format!("/rolling_stock/{}/locked", fast_rolling_stock.id).as_str())
+            .json(&json!({ "locked": true }))
+            .by_user(user.as_ref())
+            .await
+            .assert_status_forbidden();
+
+        // THEN the locked flag should not have changed
+        let fast_rolling_stock: RollingStock =
+            RollingStock::retrieve(db_pool.get_ok(), fast_rolling_stock.id)
+                .await
+                .expect("Failed to retrieve rolling stock")
+                .expect("Rolling stock not found");
+        assert!(!fast_rolling_stock.locked);
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn patch_locked_rolling_stock_as_admin_without_grant() {
+        // GIVEN
+        let app = test_app!().build();
+        let db_pool = app.db_pool();
+
+        let fast_rolling_stock =
+            create_fast_rolling_stock(&mut db_pool.get_ok(), "admin_locked_rolling_stock").await;
+        assert!(!fast_rolling_stock.locked);
+
+        // An admin holds no grant on the rolling stock but can still lock it
+        let admin = app
+            .user("admin", "Admin")
+            .with_roles([Role::Admin])
+            .create()
+            .await;
+
+        // WHEN
+        app.patch(format!("/rolling_stock/{}/locked", fast_rolling_stock.id).as_str())
+            .json(&json!({ "locked": true }))
+            .by_user(admin.as_ref())
+            .await
+            .assert_status_no_content();
+
+        // THEN
+        let fast_rolling_stock: RollingStock =
+            RollingStock::retrieve(db_pool.get_ok(), fast_rolling_stock.id)
+                .await
+                .expect("Failed to retrieve rolling stock")
+                .expect("Rolling stock not found");
+        assert!(fast_rolling_stock.locked);
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn patch_locked_rolling_stock_with_skip_authz_without_grant() {
+        // GIVEN
+        let app = test_app!().skip_authz().build();
+        let db_pool = app.db_pool();
+
+        let fast_rolling_stock =
+            create_fast_rolling_stock(&mut db_pool.get_ok(), "skip_authz_locked_rolling_stock")
+                .await;
+        assert!(!fast_rolling_stock.locked);
+
+        // WHEN (no grant set up, authorization is skipped)
+        app.patch(format!("/rolling_stock/{}/locked", fast_rolling_stock.id).as_str())
+            .json(&json!({ "locked": true }))
+            .await
+            .assert_status_no_content();
+
+        // THEN
+        let fast_rolling_stock: RollingStock =
+            RollingStock::retrieve(db_pool.get_ok(), fast_rolling_stock.id)
+                .await
+                .expect("Failed to retrieve rolling stock")
+                .expect("Rolling stock not found");
+        assert!(fast_rolling_stock.locked);
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn patch_locked_rolling_stock_without_operational_studies_role() {
+        // GIVEN
+        let app = test_app!().build();
+        let db_pool = app.db_pool();
+
+        let fast_rolling_stock =
+            create_fast_rolling_stock(&mut db_pool.get_ok(), "missing_role_rolling_stock").await;
+        assert!(!fast_rolling_stock.locked);
+
+        // A user with a write grant but lacking the OperationalStudies role
+        let user = app
+            .user("writer", "Writer")
+            .with_rolling_stock_grant(fast_rolling_stock.id, authz::RollingStockGrant::Writer)
+            .create()
+            .await;
+
+        // WHEN
+        app.patch(format!("/rolling_stock/{}/locked", fast_rolling_stock.id).as_str())
+            .json(&json!({ "locked": true }))
+            .by_user(&user.info)
+            .await
+            .assert_status_forbidden();
+
+        // THEN the locked flag should not have changed
+        let fast_rolling_stock: RollingStock =
+            RollingStock::retrieve(db_pool.get_ok(), fast_rolling_stock.id)
+                .await
+                .expect("Failed to retrieve rolling stock")
+                .expect("Rolling stock not found");
         assert!(!fast_rolling_stock.locked);
     }
 
