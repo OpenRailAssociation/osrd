@@ -116,7 +116,7 @@ test.describe('Paced train exceptions', { tag: ['@op', '@paced-trains', '@except
       });
 
       await test.step('Update departure time and submit edit', async () => {
-        await operationalStudiesPage.setTrainScheduleStartTime('12:00');
+        await operationalStudiesPage.setTrainScheduleStartTime('12:00', '2024-10-17');
         await operationalStudiesPage.submitTrainScheduleEdit();
         await operationalStudiesPage.checkToastHasBeenLaunched(
           frTranslations.timetable.pacedTrainUpdated
@@ -126,21 +126,12 @@ test.describe('Paced train exceptions', { tag: ['@op', '@paced-trains', '@except
       await test.step('Verify all occurrences (4 occurrences including 1 added exception)', async () => {
         await pacedTrainSection.verifyOccurrenceDetails(
           {
-            name: `${editedPacedTrainData.train_name}/+`,
-            startTime: '21:00',
-            arrivalTime: '21:03',
-            rollingStock: fastRollingStockName,
-          },
-          0
-        );
-        await pacedTrainSection.verifyOccurrenceDetails(
-          {
             name: `${editedPacedTrainData.train_name} 1`,
             startTime: '12:00',
             arrivalTime: '12:07',
             rollingStock: slowRollingStockName,
           },
-          1
+          0
         );
         await pacedTrainSection.verifyOccurrenceDetails(
           {
@@ -149,13 +140,22 @@ test.describe('Paced train exceptions', { tag: ['@op', '@paced-trains', '@except
             arrivalTime: '13:03',
             rollingStock: fastRollingStockName,
           },
-          2
+          1
         );
         await pacedTrainSection.verifyOccurrenceDetails(
           {
             name: `${editedPacedTrainData.train_name} 5`,
             startTime: '14:00',
             arrivalTime: '14:03',
+            rollingStock: fastRollingStockName,
+          },
+          2
+        );
+        await pacedTrainSection.verifyOccurrenceDetails(
+          {
+            name: `${editedPacedTrainData.train_name}/+`,
+            startTime: '21:00',
+            arrivalTime: '21:03',
             rollingStock: fastRollingStockName,
           },
           3
@@ -172,7 +172,7 @@ test.describe('Paced train exceptions', { tag: ['@op', '@paced-trains', '@except
             name: `${editedPacedTrainData.train_name} 1`,
             startTime: '12:00',
             arrivalTime: '12:03',
-            rollingStock: editedPacedTrainData.rolling_stock_name,
+            rollingStock: fastRollingStockName,
           },
           0
         );
@@ -181,7 +181,7 @@ test.describe('Paced train exceptions', { tag: ['@op', '@paced-trains', '@except
             name: `${editedPacedTrainData.train_name} 3`,
             startTime: '13:00',
             arrivalTime: '13:03',
-            rollingStock: editedPacedTrainData.rolling_stock_name,
+            rollingStock: fastRollingStockName,
           },
           1
         );
@@ -190,7 +190,7 @@ test.describe('Paced train exceptions', { tag: ['@op', '@paced-trains', '@except
             name: `${editedPacedTrainData.train_name} 5`,
             startTime: '14:00',
             arrivalTime: '14:03',
-            rollingStock: editedPacedTrainData.rolling_stock_name,
+            rollingStock: fastRollingStockName,
           },
           2
         );

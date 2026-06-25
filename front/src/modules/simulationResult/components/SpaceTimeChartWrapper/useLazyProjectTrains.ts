@@ -10,7 +10,7 @@ import upsertNewProjectedTrains from 'applications/operationalStudies/helpers/up
 import type {
   OperationalPointReference,
   CoreTrainPath,
-  PacedTrainException,
+  TrainScheduleException,
   TrainScheduleResponse,
 } from 'common/api/osrdEditoastApi';
 import type { TrainSpaceTimeData } from 'modules/simulationResult/types';
@@ -124,7 +124,7 @@ const useLazyProjectTrains = ({
   }, []);
 
   const updateProjectedTrainScheduleDepartureTime = useCallback(
-    (id: number, newDeparture: Date, shiftedExceptions?: PacedTrainException[]) => {
+    (id: number, newDeparture: Date, shiftedExceptions?: TrainScheduleException[]) => {
       setProjectedTrainsById((prev) => {
         const result = prev.get(id);
         if (!result) {
@@ -162,7 +162,7 @@ const useLazyProjectTrains = ({
    * doesn't revert the occurrence to its pre-drag position.
    */
   const updateProjectedTrainExceptions = useCallback(
-    (id: number, updatedExceptions: PacedTrainException[]) => {
+    (id: number, updatedExceptions: TrainScheduleException[]) => {
       setProjectedTrainsById((prev) => {
         const result = prev.get(id);
         if (!result?.paced) {

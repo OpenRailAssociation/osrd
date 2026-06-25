@@ -45,8 +45,8 @@ const useFilterTrainSchedules = (
         trainSchedules.reduce<string[]>((acc, trainSchedule) => {
           if (isPacedTrainWithDetails(trainSchedule)) {
             trainSchedule.paced.exceptions.forEach((exception) => {
-              if (exception.speed_limit_tag) {
-                acc.push(extractTagCode(exception.speed_limit_tag.value));
+              if (exception.change_groups.speed_limit_tag) {
+                acc.push(extractTagCode(exception.change_groups.speed_limit_tag.value));
               }
             });
           }
@@ -158,17 +158,19 @@ const useFilterTrainSchedules = (
 
         const { paced, ...modelTrain } = trainSchedule;
         const exceptionItems = paced.exceptions.map((exception) => {
-          const rollingStock = exception.rolling_stock
-            ? rollingStocks?.find((rs) => rs.name === exception.rolling_stock?.rolling_stock_name)
+          const rollingStock = exception.change_groups.rolling_stock
+            ? rollingStocks?.find(
+                (rs) => rs.name === exception.change_groups.rolling_stock?.rolling_stock_name
+              )
             : undefined;
           return {
-            name: exception.train_name?.value ?? modelTrain.name,
-            category: exception.rolling_stock_category
-              ? exception.rolling_stock_category.value
+            name: exception.change_groups.train_name?.value ?? modelTrain.name,
+            category: exception.change_groups.rolling_stock_category
+              ? exception.change_groups.rolling_stock_category.value
               : modelTrain.category,
-            labels: exception.labels?.value ?? [],
-            speedLimitTag: exception.speed_limit_tag
-              ? (exception.speed_limit_tag.value ?? null)
+            labels: exception.change_groups.labels?.value ?? [],
+            speedLimitTag: exception.change_groups.speed_limit_tag
+              ? (exception.change_groups.speed_limit_tag.value ?? null)
               : modelTrain.speedLimitTag,
             rollingStock,
             summary: exception.summary,

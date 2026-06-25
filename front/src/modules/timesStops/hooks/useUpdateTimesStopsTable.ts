@@ -109,9 +109,13 @@ const useUpdateTimesStopsTable = (
   );
 
   const persistTrain = async (train: TrainScheduleResponse): Promise<'updated'> => {
+    // Exceptions are handled separately, we don't want to send them when updating a train schedule
+    const trainSchedulePayload = train.paced
+      ? { ...train, paced: { ...train.paced, exceptions: [] } }
+      : train;
     await updateTrainSchedule({
       id: train.id,
-      trainSchedule: train,
+      trainSchedule: trainSchedulePayload,
     }).unwrap();
     upsertTrainSchedules([train]);
     return 'updated';

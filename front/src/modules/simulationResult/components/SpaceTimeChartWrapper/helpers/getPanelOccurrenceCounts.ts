@@ -30,7 +30,7 @@ const getPanelOccurrenceCounts = (
       active += 1;
     }
     // Any active exception that overrides the chart's relevant field is non-compliant.
-    if (exception[exceptionType]) nonCompliant += 1;
+    if (exception.change_groups[exceptionType]) nonCompliant += 1;
   }
 
   return { compliant: active - nonCompliant, all: active };

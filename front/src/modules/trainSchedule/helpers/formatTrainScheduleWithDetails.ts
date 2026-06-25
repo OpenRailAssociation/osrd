@@ -94,8 +94,7 @@ export const formatPacedTrainWithDetails = (
   let simulatedExceptions: SimulatedException[] = [];
   if (pacedTrainSummary) {
     paced.exceptions.forEach((exception) => {
-      // TODO_EXCEPTION: remove `!` when using TrainSchedulingException type
-      const simulationSummary = pacedTrainSummary.exceptions[exception.id!];
+      const simulationSummary = pacedTrainSummary.exceptions[exception.id];
 
       let summary: SimulationSummary | undefined;
       if (simulationSummary) {

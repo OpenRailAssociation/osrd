@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 
-import type { PacedTrainException } from 'common/api/osrdEditoastApi';
+import type { TrainScheduleException } from 'common/api/osrdEditoastApi';
 import type { IndividualTrainProjection } from 'modules/simulationResult/types';
 import type { OccurrenceId, PacedTrainId, TrainId } from 'reducers/osrdconf/types';
 
@@ -12,7 +12,10 @@ const OCC_1_0 = 'indexedoccurrence_1_0' as OccurrenceId;
 const OCC_1_1 = 'indexedoccurrence_1_1' as OccurrenceId;
 const OCC_2_0 = 'indexedoccurrence_2_0' as OccurrenceId;
 
-const train = (id: TrainId, exception?: Partial<PacedTrainException>): IndividualTrainProjection =>
+const train = (
+  id: TrainId,
+  exception?: Partial<TrainScheduleException>
+): IndividualTrainProjection =>
   ({ id, ...(exception ? { exception } : {}) }) as IndividualTrainProjection;
 
 describe('canDragHoveredTrain', () => {
@@ -67,7 +70,9 @@ describe('canDragHoveredTrain', () => {
       expect(
         canDragHoveredTrain({
           panelSelectionMode: 'compliant',
-          hoveredTrain: train(OCC_1_0, { path_and_schedule: { value: 'foo' } as never }),
+          hoveredTrain: train(OCC_1_0, {
+            change_groups: { path_and_schedule: { value: 'foo' } as never },
+          }),
           selectedTrainId: PACED_1,
         })
       ).toBe(true);
@@ -77,7 +82,7 @@ describe('canDragHoveredTrain', () => {
       expect(
         canDragHoveredTrain({
           panelSelectionMode: 'compliant',
-          hoveredTrain: train(OCC_1_0, { start_time: { value: 1000 } as never }),
+          hoveredTrain: train(OCC_1_0, { change_groups: { start_time: { value: 1000 } as never } }),
           selectedTrainId: PACED_1,
         })
       ).toBe(false);

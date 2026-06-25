@@ -592,7 +592,7 @@ const SpaceTimeChartWrapper = ({
           trainSchedulesWithDetails ?? [],
           clickedTrainId
         );
-        const isStartTimeException = !!clickedException?.start_time;
+        const isStartTimeException = !!clickedException?.change_groups.start_time;
 
         // By default selecting an occurrence selects its whole paced train; alt-click (or
         // clicking a start_time exception) isolates the single occurrence.

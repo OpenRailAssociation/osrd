@@ -110,7 +110,6 @@ const OccurrenceItem = ({
     setIsMenuOpen(false);
   };
 
-  // TODO exceptions : add action to menu buttons
   const menuItems: Record<string, OSRDMenuItem> = {
     disable: {
       title: t('occurrenceMenu.disable'),
@@ -168,7 +167,6 @@ const OccurrenceItem = ({
     },
   };
 
-  // TODO exceptions : filter menu items depending on the occurrence status
   const filteredMenuItems = useMemo(() => {
     const { disable, enable, delete: deleteItem, edit, restore, project } = menuItems;
 

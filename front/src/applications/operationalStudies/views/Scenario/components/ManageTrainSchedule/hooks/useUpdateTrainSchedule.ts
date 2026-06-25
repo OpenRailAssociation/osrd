@@ -8,8 +8,8 @@ import {
 } from 'applications/operationalStudies/views/Scenario/components/ManageTrainSchedule/helpers/buildPacedTrainException';
 import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/views/Scenario/consts';
 import type {
-  PacedTrainException,
   TrainSchedule,
+  TrainScheduleException,
   TrainScheduleResponse,
 } from 'common/api/osrdEditoastApi';
 import { findExceptionWithOccurrenceId } from 'modules/trainSchedule/helpers/pacedTrain';
@@ -133,12 +133,12 @@ export async function updateTrainSchedule({
   // ========== user is editing the whole paced train or transforming from an unique train ==========
   const originalPacedExceptions = originalPacedTrain.paced?.exceptions ?? [];
 
-  const newAddedExceptions: PacedTrainException[] = addedExceptions.map(
-    ({ startTime: exStartTime }) => ({
-      key: '', // TODO : remove this when the key will be removed from the model
+  const newAddedExceptions = addedExceptions.map(({ startTime: exStartTime }) => ({
+    change_groups: {
       start_time: { value: exStartTime.getTime() },
-    })
-  );
+    },
+    disabled: false,
+  }));
 
   // Converting a unique train into a paced train:
   // syncAndUpdatePacedTrain must be called first to make the train a paced train on the backend
@@ -155,23 +155,13 @@ export async function updateTrainSchedule({
   }
 
   // Create new added exceptions (shared for both unique→paced conversion and paced train update)
-  let createdExceptions: PacedTrainException[] = [];
+  let createdExceptions: TrainScheduleException[] = [];
   if (newAddedExceptions.length > 0) {
-    const created = await createExceptions(
+    createdExceptions = await createExceptions(
       dispatch,
       newAddedExceptions,
       trainScheduleId,
       timetableId
-    );
-
-    // TODO: remove this part when the back will be done inserting the new exception format in TrainSchedule
-    createdExceptions = created.map(
-      ({ change_groups, train_schedule_id: _, timetable_id: __, ...rest }) => ({
-        ...change_groups,
-        ...rest,
-        // TODO_EXCEPTION: remove this when drop key in the model
-        key: '',
-      })
     );
   }
 
@@ -193,8 +183,7 @@ export async function updateTrainSchedule({
 
   // ========== user is converting a paced train to a unique train ==========
   if (!updatedTrainSchedule.paced) {
-    // TODO_EXCEPTION: remove `!` when using TrainScheduleException type
-    const exceptionsToDelete = (originalPacedTrain.paced?.exceptions ?? []).map((e) => e.id!);
+    const exceptionsToDelete = (originalPacedTrain.paced?.exceptions ?? []).map((e) => e.id);
     if (exceptionsToDelete.length > 0) {
       await deleteExceptions(dispatch, exceptionsToDelete);
     }

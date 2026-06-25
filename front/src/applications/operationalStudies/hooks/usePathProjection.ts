@@ -100,7 +100,7 @@ const usePathProjection = (
   const dispatch = useAppDispatch();
 
   let rawPacedTrainId: number | undefined;
-  let exceptionId: number | undefined | null;
+  let exceptionId: number | undefined;
   if (trainIdUsedForProjection) {
     if (isPacedTrainId(trainIdUsedForProjection)) {
       rawPacedTrainId = extractEditoastIdFromPacedTrainId(trainIdUsedForProjection);
@@ -111,9 +111,8 @@ const usePathProjection = (
     }
   }
 
-  // TODO_EXCEPTION: remove `!` when using TrainSchedulingException type
   const pacedArg = rawPacedTrainId
-    ? { id: rawPacedTrainId, infraId, exceptionId: exceptionId! }
+    ? { id: rawPacedTrainId, infraId, exceptionId: exceptionId }
     : skipToken;
   const basePacedArg = exceptionId ? { id: rawPacedTrainId!, infraId } : skipToken;
 
@@ -146,7 +145,7 @@ const usePathProjection = (
       )
     );
     const exception = getExceptionFromOccurrenceId(trainSchedulesById, trainIdUsedForProjection);
-    return exception?.path_and_schedule?.path ?? pacedTrain?.path;
+    return exception?.change_groups.path_and_schedule?.path ?? pacedTrain?.path;
   }, [trainIdUsedForProjection, trainSchedulesById]);
 
   const opRefs = useMemo(() => {

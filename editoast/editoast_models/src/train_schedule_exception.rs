@@ -4,7 +4,6 @@ use std::ops::DerefMut;
 use database::DbConnection;
 use editoast_derive::Model;
 use itertools::Itertools;
-use schemas::paced_train::PacedTrainException;
 use schemas::train_schedule_exception::TrainScheduleExceptionChangeGroups;
 
 use crate::prelude::*;
@@ -15,7 +14,6 @@ use crate::prelude::*;
 #[model(gen(ops = crud, batch_ops = cd, list))]
 pub struct TrainScheduleException {
     pub id: i64,
-    pub key: Option<String>,
     pub timetable_id: i64,
     pub train_schedule_id: i64,
     pub occurrence_index: Option<i64>,
@@ -26,11 +24,10 @@ pub struct TrainScheduleException {
 
 #[cfg(any(test, feature = "testing"))]
 impl TrainScheduleException {
-    pub fn fixture_created(key: &str, occurrence_index: Option<i64>) -> Self {
+    pub fn fixture_created(occurrence_index: Option<i64>) -> Self {
         Self {
             id: 1,
             disabled: false,
-            key: Some(key.into()),
             occurrence_index,
             timetable_id: 1,
             train_schedule_id: 1,
@@ -38,11 +35,10 @@ impl TrainScheduleException {
         }
     }
 
-    pub fn fixture_modified(key: &str, occurrence_index: i64) -> Self {
+    pub fn fixture_modified(occurrence_index: i64) -> Self {
         Self {
             id: 1,
             disabled: false,
-            key: Some(key.into()),
             occurrence_index: Some(occurrence_index),
             timetable_id: 1,
             train_schedule_id: 1,
@@ -55,7 +51,6 @@ impl From<TrainScheduleException> for schemas::TrainScheduleException {
     fn from(train_schedule_exception: TrainScheduleException) -> Self {
         Self {
             id: train_schedule_exception.id,
-            key: train_schedule_exception.key,
             timetable_id: train_schedule_exception.timetable_id,
             train_schedule_id: train_schedule_exception.train_schedule_id,
             occurrence_index: train_schedule_exception.occurrence_index,
@@ -108,25 +103,5 @@ impl TrainScheduleException {
         .await?;
 
         Ok(deleted)
-    }
-}
-
-impl From<TrainScheduleException> for PacedTrainException {
-    fn from(train_schedule_exception: TrainScheduleException) -> Self {
-        let exception_type = match train_schedule_exception.occurrence_index {
-            Some(occurrence_index) => schemas::paced_train::ExceptionType::Modified {
-                occurrence_index: occurrence_index as usize,
-            },
-            None => schemas::paced_train::ExceptionType::Created {},
-        };
-        Self {
-            id: Some(train_schedule_exception.id),
-            key: train_schedule_exception
-                .key
-                .unwrap_or_else(|| train_schedule_exception.id.to_string()),
-            exception_type,
-            disabled: train_schedule_exception.disabled,
-            change_groups: train_schedule_exception.change_groups,
-        }
     }
 }

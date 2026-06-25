@@ -1,6 +1,6 @@
 import { compact } from 'lodash';
 
-import type { PacedTrainException, TrainSchedule } from 'common/api/osrdEditoastApi';
+import type { TrainScheduleException, TrainSchedule } from 'common/api/osrdEditoastApi';
 import { isPacedTrainBase } from 'modules/trainSchedule/helpers/pacedTrain';
 import type { PacedTrainWithDetails } from 'modules/trainSchedule/types';
 import type { OperationalStudiesConfState, OccurrenceId } from 'reducers/osrdconf/types';
@@ -91,7 +91,7 @@ export function formatOccurrenceException(
   originalPacedTrain: PacedTrainWithDetails,
   occurrenceId: OccurrenceId
 ): {
-  generatedException: Omit<PacedTrainException, 'key' | 'occurrence_index'>;
+  generatedException: Omit<TrainScheduleException, 'occurrence_index'>;
   occurrenceIndex: number | undefined;
 } {
   const originalTrainSchedule = formatPacedTrainWithDetailsToTrainSchedule(originalPacedTrain);

@@ -1,6 +1,6 @@
 import type {
-  PacedTrainException,
   Tags,
+  TrainScheduleException,
   TrainScheduleExceptionChangeGroups,
 } from 'common/api/osrdEditoastApi';
 
@@ -310,7 +310,7 @@ export type PacedTrainOptions = {
 };
 
 export type ExceptionFormat =
-  | PacedTrainException
+  | TrainScheduleException
   | {
       change_groups: TrainScheduleExceptionChangeGroups;
       disabled?: boolean;

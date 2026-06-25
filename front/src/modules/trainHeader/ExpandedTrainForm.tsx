@@ -456,11 +456,11 @@ const ExpandedTrainForm = ({
                   />
                   <div className="train-extra-occurrences-list">
                     {extraOccurrences
-                      .filter((occurrence) => occurrence.start_time?.value)
+                      .filter((occurrence) => occurrence.change_groups.start_time?.value)
                       .map((occurrence) => (
                         <ExtraOccurrenceRow
-                          key={`${occurrence.id}-${occurrence.key}`}
-                          startTime={new Date(occurrence.start_time!.value)}
+                          key={occurrence.id}
+                          startTime={new Date(occurrence.change_groups.start_time!.value)}
                           onDelete={() => {
                             // TODO_EXCEPTION: remove this when the exception migration will be done
                             if (occurrence.id !== null && occurrence.id !== undefined) {

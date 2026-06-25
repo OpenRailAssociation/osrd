@@ -135,14 +135,12 @@ pub async fn create_train_schedule_exception(
     timetable_id: i64,
     train_schedule_id: i64,
     occurrence_index: Option<i64>,
-    key: Option<String>,
     change_groups: Option<TrainScheduleExceptionChangeGroups>,
 ) -> TrainScheduleException {
     TrainScheduleException::changeset()
         .timetable_id(timetable_id)
         .train_schedule_id(train_schedule_id)
         .occurrence_index(occurrence_index)
-        .key(key)
         .disabled(false)
         .change_groups(
             change_groups.unwrap_or_else(|| TrainScheduleExceptionChangeGroups {

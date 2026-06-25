@@ -143,7 +143,7 @@ const PacedTrainItem = ({
     const pacedTrainTrackOffsets = pacedTrain.path.filter(
       (step) => step.location.type === 'track_offset'
     );
-    const exceptionTrackOffsets = exception?.path_and_schedule?.path?.filter(
+    const exceptionTrackOffsets = exception?.change_groups.path_and_schedule?.path?.filter(
       (step) => step.location.type === 'track_offset'
     );
     const isTrackOffsetsException = // This will affect the manchette even if the computed projection path is not affected
@@ -204,16 +204,11 @@ const PacedTrainItem = ({
   };
 
   const deleteAllExceptions = async () => {
-    // TODO_EXCEPTION: remove filter when using TrainScheduleException type
-    const allIds = pacedTrain.paced.exceptions
-      .filter((e) => typeof e.id === 'number')
-      .map((e) => e.id!);
-
-    if (allIds.length > 0) {
-      await deleteExceptions(dispatch, allIds);
+    const exceptionIds = pacedTrain.paced.exceptions.map((e) => e.id);
+    if (exceptionIds.length > 0) {
+      await deleteExceptions(dispatch, exceptionIds);
     }
 
-    // Use pacedTrain as the source for train_schedule_set_id and id
     const updatedPacedTrainPayload = formatPacedTrainWithDetailsToTrainSchedule({
       ...pacedTrain,
       paced: { ...pacedTrain.paced, exceptions: [] },
@@ -283,22 +278,6 @@ const PacedTrainItem = ({
           )
         : [];
 
-    // TODO : remove this part when the back will be done inserting the new exception format in TrainSchedule
-    const formattedExceptions = newExceptions.map((exceptionNewModel) => {
-      const {
-        change_groups,
-        train_schedule_id: _train_schedule_id,
-        timetable_id: _timetable_id,
-        ...restExceptions
-      } = exceptionNewModel;
-      return {
-        ...change_groups,
-        ...restExceptions,
-        // TODO_EXCEPTION: remove this when drop key in the model
-        key: '',
-      };
-    });
-
     // We add the new exceptions to the duplicate paced train, so they contain their new exception ids
     upsertTrainSchedules([
       {
@@ -306,7 +285,7 @@ const PacedTrainItem = ({
         ...(formattedPacedTrainResponse.paced && {
           paced: {
             ...formattedPacedTrainResponse.paced,
-            exceptions: formattedExceptions,
+            exceptions: newExceptions,
           },
         }),
       },
