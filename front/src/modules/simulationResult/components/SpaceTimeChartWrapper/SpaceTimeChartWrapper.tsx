@@ -600,15 +600,13 @@ const SpaceTimeChartWrapper = ({
           !event.altKey && !isStartTimeException
             ? extractPacedTrainIdFromTrainId(clickedTrainId)
             : clickedTrainId;
+
+        setLastClickedOccurrenceId(isOccurrenceId(clickedTrainId) ? clickedTrainId : undefined);
+
         if (selectedTrainId !== idToDispatch || selectedTrainBy !== 'std') {
-          if (isOccurrenceId(idToDispatch)) {
-            // idToDispatch is an occurrence only on alt-click or a start_time exception:
-            // isolate it in the panel.
-            setLastClickedOccurrenceId(idToDispatch);
-            setPanelSelectionMode('single');
-          } else {
-            setPanelSelectionMode('compliant');
-          }
+          // idToDispatch is an occurrence only on alt-click or a start_time exception:
+          // isolate it in the panel.
+          setPanelSelectionMode(isOccurrenceId(idToDispatch) ? 'single' : 'compliant');
           dispatch(updateSelectedTrain({ id: idToDispatch, by: 'std' }));
         }
       }
