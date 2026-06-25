@@ -311,6 +311,6 @@ class Pathfinding(
     }
 
     companion object {
-        const val TIMEOUT = 180.0
+        const val TIMEOUT = 900.0
     }
 }

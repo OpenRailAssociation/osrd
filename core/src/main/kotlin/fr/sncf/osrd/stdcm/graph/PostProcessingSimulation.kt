@@ -118,6 +118,7 @@ fun buildFinalEnvelope(
         )
     require(concatenateAndShiftEnvelopes(maxSpeedEnvelopes).continuous)
     val maxIterations = edges.size * 2 // just to avoid infinite loops on bugs or edge cases
+    var lastSim: FinalEnvelopeResult? = null
     repeat(maxIterations) {
         try {
             val newEnvelope =
@@ -131,6 +132,7 @@ fun buildFinalEnvelope(
                         comfort,
                     )
                 )
+            lastSim = FinalEnvelopeResult(newEnvelope, allowanceRanges)
             val conflictOffset =
                 findConflictOffsets(newEnvelope, blockAvailability, edges, updatedTimeData)
                     ?: return FinalEnvelopeResult(newEnvelope, allowanceRanges)
@@ -193,10 +195,22 @@ fun buildFinalEnvelope(
                 // For example when the train stops during/after a coasting.
                 postProcessingLogger.warn("Impossible simulation")
                 return@repeat
-            } else throw e
+            } else {
+                postProcessingLogger.error("PEB fail other OSRD error")
+                if (lastSim != null) return lastSim
+                throw e
+            }
+        } catch (e: Exception) {
+            postProcessingLogger.error("PEB fail other exception")
+            if (lastSim != null) return lastSim
+            throw e
         }
     }
-    throw RuntimeException("Failed to compute a standard allowance that wouldn't cause conflicts")
+    postProcessingLogger.error("PEB fail after max iteration")
+    if (lastSim != null) return lastSim
+    throw RuntimeException(
+        "Failed to compute a standard allowance that wouldn't cause conflicts PEB"
+    )
 }
 
 /** Initialize all fixed points at stop locations, including stop durations. */
