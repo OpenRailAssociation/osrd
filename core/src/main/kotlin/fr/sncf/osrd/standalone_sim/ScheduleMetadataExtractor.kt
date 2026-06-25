@@ -90,7 +90,7 @@ fun runScheduleMetadataExtractor(
         getSignalCriticalPositions(fullInfra, envelopeWithStops, trainPath, closedSignalStops)
 
     val envelopeAdapter =
-        IncrementalRequirementEnvelopeAdapter(rollingStocks, envelopeWithStops, true)
+        IncrementalRequirementEnvelopeAdapter(rollingStocks, envelopeWithStops, true) // , false)
     val spacingGenerator = SpacingResourceGenerator(fullInfra, context)
 
     // Generate spacing resources just as if a succession of trains (splitting on backtracking)
@@ -108,9 +108,23 @@ fun runScheduleMetadataExtractor(
                 includeExactStart = true,
                 includeExactEnd = true,
             )
+        val blockRanges = subpath.getBlocks().toMutableList()
+        if (blockRanges.size > 1 && blockRanges.first().length == 0.meters) {
+            blockRanges.removeFirst()
+        }
+        if (blockRanges.size > 1 && blockRanges.last().length == 0.meters) {
+            blockRanges.removeLast()
+        }
+        val routeRanges = subpath.getRoutes().toMutableList()
+        if (routeRanges.size > 1 && routeRanges.first().length == 0.meters) {
+            routeRanges.removeFirst()
+        }
+        if (routeRanges.size > 1 && routeRanges.last().length == 0.meters) {
+            routeRanges.removeLast()
+        }
         spacingGenerator.extendPath(
-            subpath.getBlocks(),
-            subpath.getRoutes(),
+            blockRanges,
+            routeRanges,
             pathStops.filter { it.pathOffset in subpathBegin..subpathEnd },
             true,
             subpath.getBacktrackLocations(),
