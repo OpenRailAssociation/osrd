@@ -127,9 +127,9 @@ pub(crate) struct Request {
     #[serde(default)]
     #[schema(value_type = Option<String>, example = json!(["5%", "2min/100km"]))]
     pub(crate) margin: Option<MarginValue>,
-    /// Set of authorized track section ids for the current loading gauge,
-    /// None value means no zone restriction.
-    pub(crate) allowed_track_sections: Option<HashSet<String>>,
+    /// Set of authorized track section ids, empty means no restriction
+    #[serde(default)]
+    pub(crate) allowed_track_sections: HashSet<String>,
     pub(crate) consist_schedule: ConsistSchedule,
 }
 

@@ -3545,14 +3545,10 @@ paths:
               - consist_schedule
               properties:
                 allowed_track_sections:
-                  type:
-                  - array
-                  - 'null'
+                  type: array
                   items:
                     type: string
-                  description: |-
-                    Set of authorized track section ids for the current loading gauge,
-                    None value means no zone restriction.
+                  description: Set of authorized track section ids, empty means no restriction
                   uniqueItems: true
                 comfort:
                   $ref: '#/components/schemas/Comfort'

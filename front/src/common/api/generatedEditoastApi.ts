@@ -2497,9 +2497,8 @@ export type PostTimetableByIdStdcmApiArg = {
   /** The infra id */
   infra: number;
   body: {
-    /** Set of authorized track section ids for the current loading gauge,
-        None value means no zone restriction. */
-    allowed_track_sections?: string[] | null;
+    /** Set of authorized track section ids, empty means no restriction */
+    allowed_track_sections?: string[];
     comfort: Comfort;
     consist_schedule: ConsistSchedule;
     electrical_profile_set_id?: number | null;

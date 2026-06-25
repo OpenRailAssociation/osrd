@@ -50,7 +50,7 @@ class InfraExplorerWithEnvelopeTests {
                         listOf(REALISTIC_FAST_TRAIN),
                         listOf(),
                         fullInfra,
-                        null,
+                        emptySet(),
                         nbSteps,
                     ),
             )

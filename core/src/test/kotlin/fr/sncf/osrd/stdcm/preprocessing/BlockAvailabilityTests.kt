@@ -127,7 +127,7 @@ class BlockAvailabilityTests {
             initInfraExplorerWithEnvelope(
                     infra,
                     BlockLocation(blocks[0], startOffset),
-                    ConsistSchedule(listOf(rollingStock), listOf(), infra, null, totalSteps),
+                    ConsistSchedule(listOf(rollingStock), listOf(), infra, emptySet(), totalSteps),
                     steps,
                 )
                 .find { filterExplorer(it) }!!

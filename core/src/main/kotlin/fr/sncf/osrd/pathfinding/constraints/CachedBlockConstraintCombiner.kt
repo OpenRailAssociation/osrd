@@ -59,7 +59,7 @@ class CachedBlockConstraintCombiner(val functions: List<PathfindingConstraint> =
 fun initConstraints(
     fullInfra: FullInfra,
     rollingStock: RollingStock,
-    allowedTrackSections: Set<TrackSectionId>? = null,
+    allowedTrackSections: Set<TrackSectionId> = emptySet(),
 ): List<PathfindingConstraint> {
     return initConstraintsFromRSProps(
         fullInfra,
@@ -77,7 +77,7 @@ fun initConstraintsFromRSProps(
     rollingStockLoadingGauge: RJSLoadingGaugeType,
     rollingStockSupportedElectrification: List<String>,
     rollingStockSupportedSignalingSystems: List<String>,
-    allowedTrackSections: Set<TrackSectionId>? = null,
+    allowedTrackSections: Set<TrackSectionId> = emptySet(),
 ): List<PathfindingConstraint> {
     val res = mutableListOf<PathfindingConstraint>()
     if (!rollingStockIsThermal) {
@@ -95,7 +95,7 @@ fun initConstraintsFromRSProps(
             infra.signalingSimulator.sigModuleManager.findSignalingSystem(it)
         }
     res.add(SignalingSystemConstraints(infra.blockInfra, listOf(sigSystemIds)))
-    if (allowedTrackSections != null)
+    if (allowedTrackSections.isNotEmpty())
         res.add(TrackSectionConstraints(infra.blockInfra, infra.rawInfra, allowedTrackSections))
     return res
 }

@@ -33,7 +33,7 @@ data class ConsistSchedule(
         operator fun invoke(
             consistSchedule: RequestConsistSchedule,
             infra: FullInfra,
-            allowedTrackSections: Set<TrackSectionId>? = null,
+            allowedTrackSections: Set<TrackSectionId> = emptySet(),
             totalSteps: Int,
         ): ConsistSchedule {
             val boundaries = consistSchedule.boundaries
@@ -58,7 +58,7 @@ data class ConsistSchedule(
             rollingStocks: List<RollingStock>,
             boundaries: List<Int>,
             infra: FullInfra,
-            allowedTrackSections: Set<TrackSectionId>? = null,
+            allowedTrackSections: Set<TrackSectionId> = emptySet(),
             totalSteps: Int,
         ): ConsistSchedule {
             // Input validation:

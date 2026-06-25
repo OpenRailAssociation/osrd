@@ -321,7 +321,7 @@ class ConsistChangeTests {
         val requestConsistSchedule =
             RequestConsistSchedule(listOf(1, 3, 6), listOf(consist1, consist2, consist1, consist3))
         val infra = Helpers.fullInfraFromFile("small_infra/infra.json")
-        val consistSchedule = ConsistSchedule(requestConsistSchedule, infra, null, nbSteps)
+        val consistSchedule = ConsistSchedule(requestConsistSchedule, infra, emptySet(), nbSteps)
         val expected = listOf(100.0, 200.0, 200.0, 100.0, 100.0, 100.0, 300.0, 300.0)
         assertEquals(expected, consistSchedule.rollingStocks.map { it.length })
     }
@@ -359,7 +359,8 @@ class ConsistChangeTests {
                 listOf(shorterConsist, longerConsist, shorterConsist),
             )
         val infra = Helpers.fullInfraFromFile("small_infra/infra.json")
-        val consistShortLongShort = ConsistSchedule(requestShortLongShort, infra, null, nbSteps)
+        val consistShortLongShort =
+            ConsistSchedule(requestShortLongShort, infra, emptySet(), nbSteps)
         val pathItems =
             listOf(
                 STDCMPathItem(
@@ -391,7 +392,8 @@ class ConsistChangeTests {
                 consistShortLongShort.rollingStocks.map { it.length },
             )
         val requestSingleShortTrain = RequestConsistSchedule(emptyList(), listOf(shorterConsist))
-        val consistSingleShortTrain = ConsistSchedule(requestSingleShortTrain, infra, null, nbSteps)
+        val consistSingleShortTrain =
+            ConsistSchedule(requestSingleShortTrain, infra, emptySet(), nbSteps)
         val stepsSingleShortTrain =
             parseSteps(
                 infra,
