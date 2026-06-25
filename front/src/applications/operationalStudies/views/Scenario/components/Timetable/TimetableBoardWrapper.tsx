@@ -238,7 +238,7 @@ const TimetableBoardWrapper = ({
         dispatch(setFailure(castErrorToFailure(e)));
       }
     }
-  }, [sandboxId]);
+  }, [sandboxId, subCategories]);
 
   const handleCut = useCallback(
     async (event: ClipboardEvent) => {
