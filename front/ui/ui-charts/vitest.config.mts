@@ -4,6 +4,6 @@ export default defineConfig({
   mode: 'benchmark',
   test: {
     include: ['**/*.spec.ts'],
-    environment: 'jsdom',
+    environment: 'happy-dom',
   },
 });
