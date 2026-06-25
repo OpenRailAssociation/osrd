@@ -515,10 +515,26 @@ async fn parse_multipart_content(
     )
 )]
 pub(in crate::views) async fn create_livery(
-    State(db_pool): State<Arc<DbConnectionPoolV2>>,
+    State(AppState {
+        regulator, db_pool, ..
+    }): State<AppState>,
+    Extension(authn_state): Extension<crate::authentication::State>,
     Path(rolling_stock_id): Path<i64>,
     form: Multipart,
 ) -> Result<Json<schemas::rolling_stock::RollingStockLivery>> {
+    match &authn_state {
+        crate::authentication::State::Skip { .. } => (),
+        crate::authentication::State::Authenticated { user, .. } => {
+            let authorizer = authn_state.authorizer(regulator.openfga(), db_pool.get().await?);
+            crate::authorizers::require(
+                &authorizer,
+                authz::v2::rolling_stock_privileges(*user, authz::RollingStock(rolling_stock_id)),
+                &RollingStockPrivilege::CanWrite,
+            )
+            .await?;
+        }
+    };
+
     let conn = &mut db_pool.get().await?;
 
     let (name, images) = parse_multipart_content(form)
@@ -1553,5 +1569,36 @@ pub mod tests {
                 .expect("Failed to check if rolling stock exists");
 
         assert!(!rolling_stock_exists);
+    }
+
+    mod post_rolling_stock_livery {
+        mod authorization {
+            #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+            async fn authorized_grant_levels() {
+                todo!()
+            }
+
+            #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+            async fn admin_is_authorized() {
+                todo!()
+            }
+
+            #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+            async fn skip_authz_is_authorized() {
+                todo!()
+            }
+
+            #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+            async fn unauthorized_grant_levels() {
+                todo!()
+            }
+
+            #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+            async fn roles_dont_provide_authorization() {
+                todo!()
+            }
+        }
+
+        // TODO Add tests
     }
 }
