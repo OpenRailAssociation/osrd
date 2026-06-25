@@ -494,6 +494,7 @@ pub(in crate::views) async fn update_locked(
     Ok(StatusCode::NO_CONTENT)
 }
 
+// TODO delete that struct: it is used to document the API and is wrong
 #[derive(ToSchema)]
 #[allow(unused)] // Schema only
 struct RollingStockLiveryCreateForm {
@@ -551,11 +552,25 @@ async fn parse_multipart_content(
         (status = 404, description = "The requested rolling stock was not found"),
     )
 )]
+// TODO update openapi: the request body description is wrong
 pub(in crate::views) async fn create_livery(
-    State(db_pool): State<Arc<DbConnectionPoolV2>>,
+    State(AppState {
+        regulator, db_pool, ..
+    }): State<AppState>,
+    Extension(authn_state): Extension<crate::authentication::State>,
     Path(rolling_stock_id): Path<i64>,
     form: Multipart,
 ) -> Result<Json<schemas::rolling_stock::RollingStockLivery>> {
+    if let Some(user) = authn_state.regular_user() {
+        let authorizer = authn_state.authorizer(regulator.openfga());
+        crate::authorizers::require(
+            &authorizer,
+            authz::v2::rolling_stock_privileges(user, authz::RollingStock(rolling_stock_id)),
+            &RollingStockPrivilege::CanWrite,
+        )
+        .await?;
+    }
+
     let conn = &mut db_pool.get().await?;
 
     let (name, images) = parse_multipart_content(form)
@@ -2042,5 +2057,168 @@ pub mod tests {
                 .expect("Failed to check if rolling stock exists");
 
         assert!(!rolling_stock_exists);
+    }
+
+    mod post_rolling_stock_livery {
+        use super::*;
+
+        const DATA: &[u8] = &[
+            // PNG Signature (8 bytes)
+            0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, // IHDR Chunk (Image Header)
+            0x00, 0x00, 0x00, 0x0D, // Chunk Length
+            0x49, 0x48, 0x44, 0x52, // "IHDR"
+            0x00, 0x00, 0x00, 0x02, // Width: 2 pixels
+            0x00, 0x00, 0x00, 0x02, // Height: 2 pixels
+            0x08, // Bit depth: 8
+            0x02, // Color type: Truecolor (RGB)
+            0x00, // Compression method: 0 (deflate)
+            0x00, // Filter method: 0
+            0x00, // Interlace method: 0 (no interlace)
+            0xFD, 0xD4, 0x9A, 0x73, // CRC
+            // IDAT Chunk (Image Data)
+            0x00, 0x00, 0x00, 0x13, // Chunk Length
+            0x49, 0x44, 0x41, 0x54, // "IDAT"
+            0x78, 0x01, // zlib compression header
+            0x63, 0x64, 0x60, 0xF8, 0xCF, 0xC0, 0xC0, 0xC0, 0x04, 0xC4, 0x40, 0x00, 0x00, 0x0B,
+            0x1F, 0x01, // Compressed image data
+            0x03, 0xD5, 0xA9, 0x3F, 0xA9, // CRC
+            // IEND Chunk (Image End)
+            0x00, 0x00, 0x00, 0x00, // Chunk Length
+            0x49, 0x45, 0x4E, 0x44, // "IEND"
+            0xAE, 0x42, 0x60, 0x82, // CRC
+        ];
+
+        mod authorization {
+            use axum_test::multipart::MultipartForm;
+            use axum_test::multipart::Part;
+            use pretty_assertions::assert_eq;
+            use rstest::rstest;
+
+            use super::*;
+
+            fn valid_request_body() -> MultipartForm {
+                let part_name = Part::text(Uuid::new_v4().to_string());
+                let part_images = Part::bytes(DATA)
+                    .file_name(Uuid::new_v4().to_string())
+                    .mime_type("image/bpm");
+                MultipartForm::new()
+                    .add_part("name", part_name)
+                    .add_part("images", part_images)
+            }
+
+            #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+            async fn authorized_grant_level() {
+                let app = test_app!().build();
+                let rolling_stock_id =
+                    create_fast_rolling_stock(&mut app.db_pool().get_ok(), "rolling stock")
+                        .await
+                        .id;
+                let grant = RollingStockGrant::Writer;
+                let user = app
+                    .user(Uuid::new_v4().to_string(), "name")
+                    .with_rolling_stock_grant(rolling_stock_id, grant)
+                    .with_roles([Role::OperationalStudies])
+                    .create()
+                    .await;
+                app.post(&format!("/rolling_stock/{rolling_stock_id}/livery"))
+                    .multipart(valid_request_body())
+                    .by_user(user.as_ref())
+                    .await
+                    .assert_status_ok();
+            }
+
+            #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+            async fn reader_and_no_grant_are_forbidden() {
+                let app = test_app!().build();
+                let rolling_stock_id =
+                    create_fast_rolling_stock(&mut app.db_pool().get_ok(), "rolling stock")
+                        .await
+                        .id;
+                let user_no_grant = app
+                    .user(Uuid::new_v4().to_string(), "name")
+                    .with_roles([Role::OperationalStudies])
+                    .create()
+                    .await;
+                let user_reader = app
+                    .user(Uuid::new_v4().to_string(), "name")
+                    .with_roles([Role::OperationalStudies])
+                    .with_rolling_stock_grant(rolling_stock_id, RollingStockGrant::Reader)
+                    .create()
+                    .await;
+                app.post(&format!("/rolling_stock/{rolling_stock_id}/livery"))
+                    .multipart(valid_request_body())
+                    .by_user(user_no_grant.as_ref())
+                    .await
+                    .assert_status_forbidden();
+                app.post(&format!("/rolling_stock/{rolling_stock_id}/livery"))
+                    .multipart(valid_request_body())
+                    .by_user(user_reader.as_ref())
+                    .await
+                    .assert_status_forbidden();
+            }
+
+            #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+            async fn admin_is_authorized_without_grant() {
+                let app = test_app!().build();
+                let rolling_stock_id =
+                    create_fast_rolling_stock(&mut app.db_pool().get_ok(), "rolling stock")
+                        .await
+                        .id;
+                let user = app
+                    .user(Uuid::new_v4().to_string(), "name")
+                    .with_roles([Role::Admin])
+                    .create()
+                    .await;
+                app.post(&format!("/rolling_stock/{rolling_stock_id}/livery"))
+                    .multipart(valid_request_body())
+                    .by_user(user.as_ref())
+                    .await
+                    .assert_status_ok();
+            }
+
+            #[rstest]
+            #[case::admin(Role::Admin, StatusCode::OK)]
+            #[case::operational_studies(Role::OperationalStudies, StatusCode::OK)]
+            #[case::stdcm(Role::Stdcm, StatusCode::FORBIDDEN)]
+            #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+            async fn need_operational_studies_or_admin_role_and_grant(
+                #[case] role: Role,
+                #[case] expected_status_code: StatusCode,
+            ) {
+                let app = test_app!().build();
+                let rolling_stock_id =
+                    create_fast_rolling_stock(&mut app.db_pool().get_ok(), "rolling stock")
+                        .await
+                        .id;
+                let user = app
+                    .user(Uuid::new_v4().to_string(), "name")
+                    .with_roles([role])
+                    .with_rolling_stock_grant(rolling_stock_id, RollingStockGrant::Writer)
+                    .create()
+                    .await;
+                let response = app
+                    .post(&format!("/rolling_stock/{rolling_stock_id}/livery"))
+                    .multipart(valid_request_body())
+                    .by_user(user.as_ref())
+                    .await;
+                assert_eq!(response.status_code(), expected_status_code);
+            }
+
+            #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+            async fn skip_authz_is_authorized() {
+                let app = test_app!().build();
+                let rolling_stock_id =
+                    create_fast_rolling_stock(&mut app.db_pool().get_ok(), "rolling stock")
+                        .await
+                        .id;
+                app.post(&format!("/rolling_stock/{rolling_stock_id}/livery"))
+                    .multipart(valid_request_body())
+                    .skip_authz()
+                    .await
+                    .assert_status_ok();
+            }
+        }
+
+        // TODO Add tests
     }
 }
