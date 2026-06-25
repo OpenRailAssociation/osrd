@@ -309,6 +309,7 @@ private fun makeCallbacks(
         distanceRangeMapOf(DistanceRangeMap.RangeMapEntry(0.meters, length.distance, rollingStock)),
         withStops,
         complete,
+        Offset(withStops.endPos.meters),
         infiniteLastStop,
     )
 }
