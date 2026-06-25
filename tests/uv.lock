@@ -842,7 +842,7 @@ requires-dist = [
     { name = "pyright", marker = "extra == 'check'", specifier = "~=1.1.410" },
     { name = "pytest", marker = "extra == 'check'", specifier = "~=9.1.1" },
     { name = "pytest-cov", marker = "extra == 'check'", specifier = "~=7.1.0" },
-    { name = "ruff", marker = "extra == 'check'", specifier = "~=0.15.17" },
+    { name = "ruff", marker = "extra == 'check'", specifier = "~=0.15.18" },
 ]
 provides-extras = ["check"]
 
