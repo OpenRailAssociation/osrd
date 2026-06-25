@@ -10525,25 +10525,26 @@ components:
           type: integer
           format: int64
     InfraError:
-      allOf:
-      - $ref: '#/components/schemas/InfraErrorType'
-      - type: object
-        required:
-        - obj_id
-        - obj_type
-        - field
-        - is_warning
-        properties:
-          field:
-            type:
-            - string
-            - 'null'
-          is_warning:
-            type: boolean
-          obj_id:
-            type: string
-          obj_type:
-            $ref: '#/components/schemas/ObjectType'
+      type: object
+      required:
+      - obj_id
+      - obj_type
+      - field
+      - is_warning
+      - sub_type
+      properties:
+        field:
+          type:
+          - string
+          - 'null'
+        is_warning:
+          type: boolean
+        obj_id:
+          type: string
+        obj_type:
+          $ref: '#/components/schemas/ObjectType'
+        sub_type:
+          $ref: '#/components/schemas/InfraErrorType'
     InfraErrorType:
       oneOf:
       - type: object
@@ -11548,17 +11549,18 @@ components:
           description: Train schedule
     Operation:
       oneOf:
-      - allOf:
-        - $ref: '#/components/schemas/InfraObject'
-        - type: object
-          required:
-          - operation_type
-          properties:
-            operation_type:
-              type: string
-              enum:
-              - CREATE
+      - type: object
         title: OperationCreate
+        required:
+        - operation_type
+        - payload
+        properties:
+          operation_type:
+            type: string
+            enum:
+            - CREATE
+          payload:
+            $ref: '#/components/schemas/InfraObject'
       - allOf:
         - type: object
           required:

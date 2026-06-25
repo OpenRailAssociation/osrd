@@ -17,7 +17,6 @@ pub struct InfraError {
     #[schema(required)]
     pub field: Option<String>,
     pub is_warning: bool,
-    #[serde(flatten)]
     pub sub_type: InfraErrorType,
 }
 

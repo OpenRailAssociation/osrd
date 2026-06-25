@@ -6,7 +6,7 @@ authors = [{ name = "OSRD Contributors", email = "contact@osrd.fr" }]
 requires-python = ">= 3.11"
 
 dependencies = [
-  "datamodel-code-generator==0.35.0",
+  "datamodel-code-generator==0.62.0",
   "geojson-pydantic ~= 2.1.1",
   "openapi-pydantic==0.5.1",
   "pydantic >= 2.12.2",
@@ -23,3 +23,8 @@ build-backend = "poetry.core.masonry.api"
 [tool.pyright]
 include = ["osrd_schemas_auto"]
 exclude = ["**/__pycache__"]
+
+# datamodel-code-generator emits constr() in dict key positions (e.g. dict[constr(min_length=1), str]).
+# This is valid Python (PEP 3107) and understood by Pydantic at runtime, but not PEP 484 compliant
+# (constr() is a function call, not a static type expression). Pyright correctly rejects it.
+reportInvalidTypeForm = "none"
