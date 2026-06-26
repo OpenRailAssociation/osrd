@@ -2,7 +2,7 @@ from typing import Dict, List
 
 from pydantic import BaseModel, Field
 
-from .infra import TrackRange
+from .models import TrackRange
 
 
 class ElectricalProfile(BaseModel):
