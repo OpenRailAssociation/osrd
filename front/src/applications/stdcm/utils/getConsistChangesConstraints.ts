@@ -40,6 +40,7 @@ type LaunchSegmentedPathfindingOptions = {
   rollingStock: LightRollingStock;
   loadingGauge?: LoadingGaugeType;
   speedLimitByTag?: string | null;
+  allowedTrackSections?: string[];
 };
 
 type GetLightRollingStockById = ReturnType<
@@ -113,6 +114,7 @@ export const launchSegmentedPathfinding = async ({
   rollingStock,
   loadingGauge,
   speedLimitByTag,
+  allowedTrackSections,
 }: LaunchSegmentedPathfindingOptions): Promise<PathfindingResult | undefined> => {
   let pathfindingResult: PathfindingResult | undefined;
 
@@ -137,6 +139,7 @@ export const launchSegmentedPathfinding = async ({
       pathSteps: segmentSteps,
       loadingGauge: segmentLoadingGauge,
       speedLimitByTag: segmentSpeedLimitByTag,
+      allowedTrackSections,
     });
 
     if (payload === null) {

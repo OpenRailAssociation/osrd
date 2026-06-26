@@ -15,6 +15,7 @@ import {
   getStdcmPathSteps,
   getLoadingGauge,
   getStdcmSpeedLimitByTag,
+  getTrackSectionIdsByLoadingGauge,
 } from 'reducers/osrdconf/stdcmConf/selectors';
 import type { StdcmPathStep } from 'reducers/osrdconf/types';
 
@@ -41,6 +42,7 @@ const useStaticPathfinding = (workerStatus: WorkerStatus, infra: Infra | undefin
   const speedLimitByTag = useSelector(getStdcmSpeedLimitByTag);
   const rollingStock = useStdcmLightRollingStock();
   const loadingGauge = useSelector(getLoadingGauge);
+  const trackSectionIdsByLoadingGauge = useSelector(getTrackSectionIdsByLoadingGauge);
 
   const [pathfinding, setPathfinding] = useState<PathfindingResult>();
   const [showPathfindingStatusMessage, setShowPathfindingStatusMessage] = useState(false);
@@ -93,6 +95,11 @@ const useStaticPathfinding = (workerStatus: WorkerStatus, infra: Infra | undefin
 
       setShowPathfindingStatusMessage(true);
 
+      const allowedTrackSections =
+        trackSectionIdsByLoadingGauge && loadingGauge
+          ? trackSectionIdsByLoadingGauge[loadingGauge]
+          : undefined;
+
       const pathfindingResult = await launchSegmentedPathfinding({
         pathSegmentsIndexes,
         stdcmPathSteps,
@@ -103,6 +110,7 @@ const useStaticPathfinding = (workerStatus: WorkerStatus, infra: Infra | undefin
         rollingStock,
         loadingGauge,
         speedLimitByTag,
+        allowedTrackSections,
       });
 
       setPathfinding(pathfindingResult);
@@ -118,6 +126,7 @@ const useStaticPathfinding = (workerStatus: WorkerStatus, infra: Infra | undefin
     rollingStock,
     speedLimitByTag,
     loadingGauge,
+    trackSectionIdsByLoadingGauge,
     infra,
     workerStatus,
     consistChanges,
