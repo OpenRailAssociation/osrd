@@ -323,7 +323,7 @@ dependencies = [
  "fga",
  "fga_migrations",
  "futures 0.3.32",
- "itertools",
+ "itertools 0.15.0",
  "pretty_assertions",
  "rstest",
  "serde",
@@ -759,7 +759,7 @@ dependencies = [
 name = "common"
 version = "0.1.0"
 dependencies = [
- "itertools",
+ "itertools 0.15.0",
  "opentelemetry",
  "opentelemetry_sdk",
  "rangemap",
@@ -885,7 +885,7 @@ dependencies = [
  "geos",
  "hostname",
  "http",
- "itertools",
+ "itertools 0.15.0",
  "lapin",
  "opentelemetry",
  "ordered-float",
@@ -915,7 +915,7 @@ dependencies = [
  "educe",
  "futures 0.3.32",
  "http",
- "itertools",
+ "itertools 0.15.0",
  "ordered-float",
  "pretty_assertions",
  "rangemap",
@@ -1402,7 +1402,7 @@ dependencies = [
  "headers",
  "image",
  "inventory",
- "itertools",
+ "itertools 0.15.0",
  "json-patch",
  "linkme",
  "object_store",
@@ -1473,7 +1473,7 @@ dependencies = [
  "futures 0.3.32",
  "futures-util",
  "geos",
- "itertools",
+ "itertools 0.15.0",
  "mvt",
  "openssl",
  "opentelemetry-semantic-conventions",
@@ -1692,7 +1692,7 @@ dependencies = [
  "fga_derive",
  "futures 0.3.32",
  "futures-util",
- "itertools",
+ "itertools 0.15.0",
  "reqwest 0.13.4",
  "serde",
  "serde_json",
@@ -1726,7 +1726,7 @@ dependencies = [
  "fga",
  "futures 0.3.32",
  "indexmap",
- "itertools",
+ "itertools 0.15.0",
  "opentelemetry-otlp",
  "serde",
  "serde_json",
@@ -2715,6 +2715,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "itertools"
+version = "0.15.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8b4baf93f58d4425749ca49a51c50ebab072c5df6994d08fed93541c331481dc"
+dependencies = [
+ "either",
+]
+
+[[package]]
 name = "itoa"
 version = "1.0.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3247,7 +3256,7 @@ dependencies = [
  "http-body-util",
  "humantime",
  "hyper",
- "itertools",
+ "itertools 0.14.0",
  "md-5 0.10.6",
  "parking_lot",
  "percent-encoding",
@@ -3426,7 +3435,7 @@ dependencies = [
  "clap",
  "geo-types",
  "geos",
- "itertools",
+ "itertools 0.15.0",
  "osm4routing",
  "rstest",
  "schemas",
@@ -3767,7 +3776,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "27c6023962132f4b30eb4c172c91ce92d933da334c59c23cddee82358ddafb0b"
 dependencies = [
  "anyhow",
- "itertools",
+ "itertools 0.14.0",
  "proc-macro2",
  "quote",
  "syn",
@@ -3913,7 +3922,7 @@ dependencies = [
  "once_cell",
  "socket2",
  "tracing",
- "windows-sys 0.52.0",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]
@@ -4445,7 +4454,7 @@ checksum = "94143f37725109f92c262ed2cf5e59bce7498c01bcc1502d7b9afe439a4e9f49"
 name = "search"
 version = "0.1.0"
 dependencies = [
- "itertools",
+ "itertools 0.15.0",
  "serde",
  "serde_json",
  "strum",
@@ -4861,7 +4870,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "32497e9a4c7b38532efcdebeef879707aa9f794296a4f0244f6f69e9bc8574bd"
 dependencies = [
  "fastrand",
- "getrandom 0.3.4",
+ "getrandom 0.4.2",
  "once_cell",
  "rustix 1.1.4",
  "windows-sys 0.61.2",
