@@ -87,7 +87,7 @@
     "react-markdown": "^10.1.0",
     "react-redux": "^9.3.0",
     "react-rnd": "^10.5.3",
-    "react-router-dom": "^7.17.0",
+    "react-router-dom": "^7.18.0",
     "react-select": "^5.10.1",
     "react-tether": "^3.0.3",
     "redux": "^5.0.1",
