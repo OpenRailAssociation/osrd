@@ -614,7 +614,7 @@ const SpaceTimeChartWrapper = ({
 
   const handleKeyDown: React.KeyboardEventHandler<HTMLDivElement> = (e) => {
     if (e.code === 'KeyS') {
-      if (!selectedPacedTrainId) return;
+      if (!selectedPacedTrainId || selectedTrainBy !== 'std') return;
       e.preventDefault();
       const currentIndex = PANEL_SELECTION_MODES.indexOf(panelSelectionMode);
       const nextMode = PANEL_SELECTION_MODES[(currentIndex + 1) % PANEL_SELECTION_MODES.length];
