@@ -4934,6 +4934,10 @@ class PathfindingInput(BaseModel):
     and a list of path waypoints
     """
 
+    allowed_track_sections: list[str] | None = None
+    """
+    Set of authorized track section ids, empty means no restriction
+    """
     path_items: list[
         PathItemLocationTrackOffset | PathItemLocationOperationalPointPartReference
     ]

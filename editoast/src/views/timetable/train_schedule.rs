@@ -1,3 +1,4 @@
+use std::collections::BTreeSet;
 use std::collections::HashMap;
 use std::collections::HashSet;
 use std::iter::Extend as _;
@@ -647,6 +648,7 @@ pub(in crate::views) async fn get_path(
             .into_iter()
             .map(core_task::PathItemAlternatives::from_iter)
             .collect(),
+        allowed_track_sections: BTreeSet::new(),
     };
 
     let pathfinding_train = core_task::PathfindingTrain {
