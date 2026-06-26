@@ -12,7 +12,7 @@ import type {
   StdcmPathProperties,
 } from 'applications/stdcm/types';
 import { StdcmStopTypes } from 'applications/stdcm/types';
-import type { SimulationResponseSuccess } from 'common/api/osrdEditoastApi';
+import { osrdEditoastApi, type SimulationResponseSuccess } from 'common/api/osrdEditoastApi';
 import {
   osrdRailwayManagerApi,
   type RmiLoadingGaugeType,
@@ -118,6 +118,9 @@ const SendToRailwayManagerModal = ({
   const dateTimeLocale = useDateTimeLocale();
   const railwayManagerUrl = useSelector(getRailwayManagerInterfaceUrl);
   const dispatch = useAppDispatch();
+
+  const { data: userGroups } = osrdEditoastApi.endpoints.getAuthzMeGroups.useQuery();
+  const railwayCompanyName = userGroups?.[0]?.name;
 
   const DEFAULT_TRAIN_CATEGORY = { value: '', label: t('modal.noCategory') };
   const stdcmData = stdcmResults.results;
@@ -367,7 +370,10 @@ const SendToRailwayManagerModal = ({
 
   return (
     <div className="send-to-railway-manager">
-      <h2>{t('modal.newRailManagerRequest')}</h2>
+      <header className="modal-header">
+        <h2>{t('modal.newRailManagerRequest')}</h2>
+        {railwayCompanyName && <span className="railway-company-name">{railwayCompanyName}</span>}
+      </header>
       <div className="modal-contents">
         <p>{t('modal.verifyParameters')}</p>
         <section className="convoy-section">
