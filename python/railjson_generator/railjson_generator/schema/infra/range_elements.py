@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
-from osrd_schemas_auto import infra, models
+from osrd_schemas_auto import models
 
 from .direction import ApplicableDirection, Direction
 
@@ -65,7 +65,7 @@ class TrackRange(RangeElement):
     track: "TrackSection"
 
     def to_rjs(self):
-        return infra.TrackRange(track=self.track.id, begin=self.begin, end=self.end)
+        return models.TrackRange(track=self.track.id, begin=self.begin, end=self.end)
 
 
 @dataclass

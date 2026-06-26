@@ -98,7 +98,7 @@ class Link(Switch):
     A: Optional[TrackEndpoint] = None
     B: Optional[TrackEndpoint] = None
 
-    PORT_NAMES = LINK.ports
+    PORT_NAMES = [p.root for p in LINK.ports]
     SWITCH_TYPE = LINK.id
 
 
@@ -108,7 +108,7 @@ class PointSwitch(Switch):
     B1: Optional[TrackEndpoint] = None
     B2: Optional[TrackEndpoint] = None
 
-    PORT_NAMES = POINT_SWITCH.ports
+    PORT_NAMES = [p.root for p in POINT_SWITCH.ports]
     SWITCH_TYPE = POINT_SWITCH.id
 
 
@@ -119,7 +119,7 @@ class Crossing(Switch):
     A2: Optional[TrackEndpoint] = None
     B2: Optional[TrackEndpoint] = None
 
-    PORT_NAMES = CROSSING.ports
+    PORT_NAMES = [p.root for p in CROSSING.ports]
     SWITCH_TYPE = CROSSING.id
 
 
@@ -130,7 +130,7 @@ class DoubleSlipSwitch(Switch):
     B1: Optional[TrackEndpoint] = None
     B2: Optional[TrackEndpoint] = None
 
-    PORT_NAMES = DOUBLE_SLIP_SWITCH.ports
+    PORT_NAMES = [p.root for p in DOUBLE_SLIP_SWITCH.ports]
     SWITCH_TYPE = DOUBLE_SLIP_SWITCH.id
 
 
@@ -141,5 +141,5 @@ class SingleSlipSwitch(Switch):
     B1: Optional[TrackEndpoint] = None
     B2: Optional[TrackEndpoint] = None
 
-    PORT_NAMES = SINGLE_SLIP_SWITCH.ports
+    PORT_NAMES = [p.root for p in SINGLE_SLIP_SWITCH.ports]
     SWITCH_TYPE = SINGLE_SLIP_SWITCH.id

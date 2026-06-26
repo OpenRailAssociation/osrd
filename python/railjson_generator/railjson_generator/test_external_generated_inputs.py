@@ -1,4 +1,4 @@
-from osrd_schemas_auto import external_generated_inputs, infra
+from osrd_schemas_auto import external_generated_inputs, models
 
 from railjson_generator.external_generated_inputs import (
     ElectricalProfile,
@@ -26,7 +26,7 @@ class TestElectricalProfile:
         assert ep.to_rjs() == external_generated_inputs.ElectricalProfile(
             value="value",
             power_class="power_class",
-            track_ranges=[infra.TrackRange(track=track.id, begin=0, end=1)],
+            track_ranges=[models.TrackRange(track=track.id, begin=0, end=1)],
         )
 
 
@@ -52,7 +52,7 @@ class TestExternalGeneratedInputs:
                 external_generated_inputs.ElectricalProfile(
                     value="value",
                     power_class="power_class",
-                    track_ranges=[infra.TrackRange(track=track.id, begin=0, end=1)],
+                    track_ranges=[models.TrackRange(track=track.id, begin=0, end=1)],
                 )
             ],
             level_order={"25000V": ["25000V", "22500V", "20000V"]},
