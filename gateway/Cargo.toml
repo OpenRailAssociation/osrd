@@ -47,7 +47,7 @@ awc = { version = "3", features = ["rustls-0_23"] } # the http / ws client
 bytestring = "1"
 ipnet = "2.12"
 percent-encoding = "2.3"
-phf = "0.13"
+phf = "0.14"
 regex = "1.12.3"
 
 # actix_auth
