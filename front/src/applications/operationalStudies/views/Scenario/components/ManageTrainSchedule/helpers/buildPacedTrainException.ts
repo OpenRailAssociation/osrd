@@ -328,10 +328,10 @@ export function checkChangeGroups(
 
       // If the exception is now empty, we don't want to keep it anymore in the list
       // We check explicitly for change group keys to avoid false positives from
-      // metadata fields like 'id', 'disabled', 'summary', etc.
+      // metadata fields like 'id', 'summary', etc.
       const hasChangedGroup = CHANGE_GROUP_KEYS.some((key) => key in updatedException);
 
-      if (hasChangedGroup) {
+      if (hasChangedGroup || updatedException.disabled) {
         acc.exceptions.push(updatedException);
         if (!isEqual(updatedException, exception)) {
           acc.modifiedExceptions.push(updatedException);
