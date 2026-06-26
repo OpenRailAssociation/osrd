@@ -9,6 +9,7 @@ use schemas::train_schedule::TrainScheduleOptions;
 
 use std::borrow::Borrow;
 use std::cmp::Ordering;
+use std::collections::BTreeSet;
 use std::collections::HashMap;
 use std::hash::Hash;
 use std::sync::Arc;
@@ -194,6 +195,7 @@ impl SimulationTrain {
             parameters,
             path_constraints: PathfindingConstraints {
                 path_items: Vec::new(),
+                allowed_track_sections: BTreeSet::new(),
             },
             schedule_item_to_index: HashMap::default(),
         }

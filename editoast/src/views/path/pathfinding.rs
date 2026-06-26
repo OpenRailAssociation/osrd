@@ -68,6 +68,9 @@ pub(in crate::views) struct PathfindingInput {
     /// Stop the train at the next block-delimiting signal,
     /// staying in the same block and keeping the tail on the initial position
     stops_at_end_of_block: Option<bool>,
+    /// Set of authorized track section ids, empty means no restriction
+    #[serde(default)]
+    allowed_track_sections: BTreeSet<String>,
 }
 
 impl PathfindingInput {
@@ -96,6 +99,7 @@ impl PathfindingInput {
                 .collect(),
             speed_limit_tag: train_schedule.speed_limit_tag().cloned(),
             stops_at_end_of_block: Some(train_schedule.options().stops_at_end_of_block()),
+            allowed_track_sections: BTreeSet::new(),
         }
     }
 
@@ -415,6 +419,7 @@ fn build_pathfinding_request(
         rolling_stock_length: pathfinding_input.rolling_stock_length,
         speed_limit_tag: pathfinding_input.speed_limit_tag.clone(),
         stops_at_end_of_block: pathfinding_input.stops_at_end_of_block,
+        allowed_track_sections: pathfinding_input.allowed_track_sections.clone(),
     })
 }
 
@@ -436,6 +441,7 @@ fn build_pathfinding_train(
             .into_iter()
             .map(core_task::PathItemAlternatives::from_iter)
             .collect(),
+        allowed_track_sections: pathfinding_input.allowed_track_sections.clone(),
     };
 
     Ok(core_task::PathfindingTrain {
@@ -552,6 +558,7 @@ pub mod tests {
             rolling_stock_length: 26.0.into(),
             speed_limit_tag: None,
             stops_at_end_of_block: None,
+            allowed_track_sections: BTreeSet::new(),
             path_items,
         }
     }

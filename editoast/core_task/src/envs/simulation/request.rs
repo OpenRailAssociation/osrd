@@ -149,6 +149,7 @@ impl Task for core_client::simulation::Request {
 
 #[cfg(test)]
 mod tests {
+    use std::collections::BTreeSet;
     use std::sync::Arc;
 
     use core_client::mocking::MockingClient;
@@ -189,6 +190,7 @@ mod tests {
             Arc::new(pathfinding::test_data::consist(1)),
             Arc::new(crate::PathfindingConstraints {
                 path_items: path_items.clone(),
+                allowed_track_sections: BTreeSet::new(),
             }),
         );
 
@@ -292,6 +294,7 @@ mod tests {
             Arc::new(pathfinding::test_data::consist(1)),
             Arc::new(crate::PathfindingConstraints {
                 path_items: path_items.clone(),
+                allowed_track_sections: BTreeSet::new(),
             }),
         );
 
@@ -443,7 +446,10 @@ mod tests {
         let core_env = CoreEnv::new_mock(MockingClient::new());
         let pf_input = pathfinding::PathfindingKey(
             Arc::new(pathfinding::test_data::consist(1)),
-            Arc::new(crate::PathfindingConstraints { path_items: vec![] }),
+            Arc::new(crate::PathfindingConstraints {
+                path_items: vec![],
+                allowed_track_sections: BTreeSet::new(),
+            }),
         );
 
         let mut builder = SimulationTrain::new(

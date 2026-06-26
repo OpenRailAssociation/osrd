@@ -174,6 +174,8 @@ pub struct PathfindingConsist {
 pub struct PathfindingConstraints {
     /// An ordered list of waypoints the resulting path must pass through
     pub path_items: Vec<PathItemAlternatives>,
+    /// Set of authorized track section ids, empty means no restriction
+    pub allowed_track_sections: BTreeSet<String>,
 }
 
 /// A set of [TrackOffset]
@@ -396,6 +398,7 @@ fn build_request(
         rolling_stock_length: consist.length,
         speed_limit_tag: consist.speed_limit_tag.clone(),
         stops_at_end_of_block: Some(false),
+        allowed_track_sections: constraints.allowed_track_sections.clone(),
     }
 }
 
@@ -449,6 +452,7 @@ pub(crate) mod test_data {
                 ]),
                 PathItemAlternatives::from_iter([TrackOffset::new("tr2", 200)]),
             ],
+            allowed_track_sections: BTreeSet::new(),
         }
     }
 

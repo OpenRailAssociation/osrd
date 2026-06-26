@@ -40,6 +40,8 @@ pub struct PathfindingRequest {
     /// Stops the train at a new stop position: near next block-delimiting signal,
     /// staying in the same block and keeping the tail on the initial position
     pub stops_at_end_of_block: Option<bool>,
+    /// Set of authorized track section ids, empty means no restriction
+    pub allowed_track_sections: BTreeSet<String>,
 }
 
 #[derive(Debug, Clone, Serialize, PartialEq, Deserialize, ToSchema, Hash)]

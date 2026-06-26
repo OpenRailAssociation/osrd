@@ -12243,6 +12243,12 @@ components:
       - rolling_stock_maximum_speed
       - rolling_stock_length
       properties:
+        allowed_track_sections:
+          type: array
+          items:
+            type: string
+          description: Set of authorized track section ids, empty means no restriction
+          uniqueItems: true
         path_items:
           type: array
           items:

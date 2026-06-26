@@ -3769,6 +3769,8 @@ export type PathfindingResult =
       status: 'failure';
     });
 export type PathfindingInput = {
+  /** Set of authorized track section ids, empty means no restriction */
+  allowed_track_sections?: string[];
   /** List of waypoints given to the pathfinding */
   path_items: PathItemLocation[];
   /** Can the rolling stock run on non-electrified tracks */
