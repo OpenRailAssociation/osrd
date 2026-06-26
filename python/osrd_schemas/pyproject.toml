@@ -8,7 +8,7 @@ requires-python = ">= 3.11"
 dependencies = ["geojson-pydantic ~= 2.1.1", "pydantic>=2.13.4"]
 
 [project.optional-dependencies]
-check = ["pyright ~= 1.1.410", "ruff ~= 0.15.17"]
+check = ["pyright ~= 1.1.410", "ruff~=0.15.20"]
 
 [build-system]
 requires = ["poetry-core>=2.4.1"]
