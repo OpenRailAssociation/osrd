@@ -319,10 +319,22 @@ pub(in crate::views) async fn create(
     )
 )]
 pub(in crate::views) async fn update(
-    State(db_pool): State<Arc<DbConnectionPoolV2>>,
+    State(AppState {
+        openfga, db_pool, ..
+    }): State<AppState>,
+    Extension(authn_state): Extension<crate::authentication::State>,
     Path(rolling_stock_id): Path<i64>,
     Json(rolling_stock_form): Json<RollingStockForm>,
 ) -> Result<Json<RollingStockWithLiveries>> {
+    if let Some(user) = authn_state.user() {
+        let authorizer = authn_state.authorizer(&openfga);
+        crate::authorizers::require(
+            &authorizer,
+            rolling_stock_privileges(user, authz::RollingStock(rolling_stock_id)),
+            &RollingStockPrivilege::CanWrite,
+        )
+        .await?;
+    }
     let new_rolling_stock = db_pool
         .get()
         .await?
@@ -703,6 +715,7 @@ async fn create_compound_image(
 
 #[cfg(test)]
 pub mod tests {
+    use authz::RollingStockGrant;
     use itertools::Itertools;
     use models::rolling_stock::TrainMainCategory;
     use pretty_assertions::assert_eq;
@@ -1154,26 +1167,32 @@ pub mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn update_unlocked_rolling_stock() {
         // GIVEN
-        let app = test_app!().skip_authz().build();
+        let app = test_app!().build();
         let db_pool = app.db_pool();
 
         let rs_name = "fast_rolling_stock_name";
 
         let fast_rolling_stock = create_fast_rolling_stock(&mut db_pool.get_ok(), rs_name).await;
 
+        let user = app
+            .user("writer", "Writer")
+            .with_roles([Role::OperationalStudies])
+            .with_rolling_stock_grant(fast_rolling_stock.id, RollingStockGrant::Writer)
+            .create()
+            .await;
+
         let mut rolling_stock_form: RollingStockForm = fast_rolling_stock.clone().into();
         let updated_rs_name = "updated_fast_rolling_stock_name";
         rolling_stock_form.name = updated_rs_name.to_string();
 
         // WHEN
-        let raw_response = app
-            .put(format!("/rolling_stock/{}", fast_rolling_stock.id).as_str())
+        app.put(format!("/rolling_stock/{}", fast_rolling_stock.id).as_str())
+            .by_user(user.as_ref())
             .json(&&rolling_stock_form)
-            .await;
+            .await
+            .assert_status_ok();
 
         // THEN
-        raw_response.assert_status_ok();
-
         let updated_rolling_stock: RollingStock =
             RollingStock::retrieve(db_pool.get_ok(), fast_rolling_stock.id)
                 .await
@@ -1188,9 +1207,146 @@ pub mod tests {
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn update_rolling_stock_with_new_categories() {
+    async fn update_rolling_stock_without_authorization() {
+        let app = test_app!().build();
+        let db_pool = app.db_pool();
+
+        let fast_rolling_stock =
+            create_fast_rolling_stock(&mut db_pool.get_ok(), "unauthorized_rolling_stock").await;
+
+        // A user with the OperationalStudies role but only a read grant on the rolling stock
+        let user = app
+            .user("reader", "Reader")
+            .with_roles([Role::OperationalStudies])
+            .with_rolling_stock_grant(fast_rolling_stock.id, RollingStockGrant::Reader)
+            .create()
+            .await;
+
+        let mut rolling_stock_form: RollingStockForm = fast_rolling_stock.clone().into();
+        rolling_stock_form.name = "should_not_be_updated".to_string();
+
+        app.put(format!("/rolling_stock/{}", fast_rolling_stock.id).as_str())
+            .by_user(user.as_ref())
+            .json(&&rolling_stock_form)
+            .await
+            .assert_status_forbidden();
+
+        // The rolling stock should not have been modified
+        let rolling_stock: RollingStock =
+            RollingStock::retrieve(db_pool.get_ok(), fast_rolling_stock.id)
+                .await
+                .expect("Failed to retrieve rolling stock")
+                .expect("Rolling stock not found");
+
+        assert_eq!(rolling_stock.name, fast_rolling_stock.name);
+        assert_eq!(rolling_stock.version, fast_rolling_stock.version);
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn update_rolling_stock_as_admin_without_grant() {
+        // GIVEN
+        let app = test_app!().build();
+        let db_pool = app.db_pool();
+
+        let fast_rolling_stock =
+            create_fast_rolling_stock(&mut db_pool.get_ok(), "admin_updated_rolling_stock").await;
+
+        // An admin holds no grant on the rolling stock but can still update it
+        let admin = app
+            .user("admin", "Admin")
+            .with_roles([Role::Admin])
+            .create()
+            .await;
+
+        let mut rolling_stock_form: RollingStockForm = fast_rolling_stock.clone().into();
+        let updated_rs_name = "updated_by_admin";
+        rolling_stock_form.name = updated_rs_name.to_string();
+
+        // WHEN
+        app.put(format!("/rolling_stock/{}", fast_rolling_stock.id).as_str())
+            .by_user(admin.as_ref())
+            .json(&&rolling_stock_form)
+            .await
+            .assert_status_ok();
+
+        // THEN
+        let updated_rolling_stock: RollingStock =
+            RollingStock::retrieve(db_pool.get_ok(), fast_rolling_stock.id)
+                .await
+                .expect("Failed to retrieve rolling stock")
+                .expect("Rolling stock not found");
+        assert_eq!(updated_rolling_stock.name, updated_rs_name);
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn update_rolling_stock_with_skip_authz_without_grant() {
         // GIVEN
         let app = test_app!().skip_authz().build();
+        let db_pool = app.db_pool();
+
+        let fast_rolling_stock =
+            create_fast_rolling_stock(&mut db_pool.get_ok(), "skip_authz_updated_rolling_stock")
+                .await;
+
+        let mut rolling_stock_form: RollingStockForm = fast_rolling_stock.clone().into();
+        let updated_rs_name = "updated_with_skip_authz";
+        rolling_stock_form.name = updated_rs_name.to_string();
+
+        // WHEN (no grant set up, authorization is skipped)
+        app.put(format!("/rolling_stock/{}", fast_rolling_stock.id).as_str())
+            .json(&&rolling_stock_form)
+            .await
+            .assert_status_ok();
+
+        // THEN
+        let updated_rolling_stock: RollingStock =
+            RollingStock::retrieve(db_pool.get_ok(), fast_rolling_stock.id)
+                .await
+                .expect("Failed to retrieve rolling stock")
+                .expect("Rolling stock not found");
+        assert_eq!(updated_rolling_stock.name, updated_rs_name);
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn update_rolling_stock_without_operational_studies_role() {
+        // GIVEN
+        let app = test_app!().build();
+        let db_pool = app.db_pool();
+
+        let fast_rolling_stock =
+            create_fast_rolling_stock(&mut db_pool.get_ok(), "missing_role_rolling_stock").await;
+
+        // A user with the right write grant but lacking the OperationalStudies role
+        let user = app
+            .user("writer", "Writer")
+            .with_rolling_stock_grant(fast_rolling_stock.id, RollingStockGrant::Writer)
+            .create()
+            .await;
+
+        let mut rolling_stock_form: RollingStockForm = fast_rolling_stock.clone().into();
+        rolling_stock_form.name = "should_not_be_updated".to_string();
+
+        // WHEN
+        app.put(format!("/rolling_stock/{}", fast_rolling_stock.id).as_str())
+            .by_user(user.as_ref())
+            .json(&&rolling_stock_form)
+            .await
+            .assert_status_forbidden();
+
+        // THEN the rolling stock should not have been modified
+        let rolling_stock: RollingStock =
+            RollingStock::retrieve(db_pool.get_ok(), fast_rolling_stock.id)
+                .await
+                .expect("Failed to retrieve rolling stock")
+                .expect("Rolling stock not found");
+        assert_eq!(rolling_stock.name, fast_rolling_stock.name);
+        assert_eq!(rolling_stock.version, fast_rolling_stock.version);
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn update_rolling_stock_with_new_categories() {
+        // GIVEN
+        let app = test_app!().build();
         let db_pool = app.db_pool();
 
         let fast_rolling_stock =
@@ -1210,10 +1366,18 @@ pub mod tests {
         let other_categories = vec![schemas::rolling_stock::TrainMainCategory::RegionalTrain];
         rolling_stock_form.other_categories = other_categories;
 
+        let user = app
+            .user("writer", "Writer")
+            .with_roles([Role::OperationalStudies])
+            .with_rolling_stock_grant(fast_rolling_stock.id, RollingStockGrant::Writer)
+            .create()
+            .await;
+
         // WHEN
         let raw_response = app
             .put(format!("/rolling_stock/{}", fast_rolling_stock.id).as_str())
             .json(&&rolling_stock_form)
+            .by_user(user.as_ref())
             .await;
 
         // THEN
@@ -1241,12 +1405,19 @@ pub mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn update_rolling_stock_categories_should_fail_when_invalid() {
         // GIVEN
-        let app = test_app!().skip_authz().build();
+        let app = test_app!().build();
         let db_pool = app.db_pool();
 
         let fast_rolling_stock =
             create_fast_rolling_stock(&mut db_pool.get_ok(), "fast_rolling_stock_with_categories")
                 .await;
+
+        let user = app
+            .user("writer", "Writer")
+            .with_roles([Role::OperationalStudies])
+            .with_rolling_stock_grant(fast_rolling_stock.id, RollingStockGrant::Writer)
+            .create()
+            .await;
 
         let mut rolling_stock_form: RollingStockForm = fast_rolling_stock.clone().into();
         let primary_category =
@@ -1259,6 +1430,7 @@ pub mod tests {
         let raw_response = app
             .put(format!("/rolling_stock/{}", fast_rolling_stock.id).as_str())
             .json(&&rolling_stock_form)
+            .by_user(user.as_ref())
             .await;
 
         // THEN
@@ -1280,13 +1452,19 @@ pub mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn update_rolling_stock_failure_name_already_used() {
         // GIVEN
-        let app = test_app!().skip_authz().build();
+        let app = test_app!().build();
         let db_pool = app.db_pool();
 
         let first_rs_name = "first_fast_rolling_stock_name";
         let first_fast_rolling_stock =
             create_fast_rolling_stock(&mut db_pool.get_ok(), first_rs_name).await;
 
+        let user = app
+            .user("writer", "Writer")
+            .with_roles([Role::OperationalStudies])
+            .with_rolling_stock_grant(first_fast_rolling_stock.id, RollingStockGrant::Writer)
+            .create()
+            .await;
         let second_rs_name = "second_fast_rolling_stock_name";
         let second_fast_rolling_stock =
             create_rolling_stock_with_energy_sources(&mut db_pool.get_ok(), second_rs_name).await;
@@ -1297,6 +1475,7 @@ pub mod tests {
         let raw_response = app
             .put(format!("/rolling_stock/{}", first_fast_rolling_stock.id).as_str())
             .json(&second_fast_rolling_stock_form)
+            .by_user(user.as_ref())
             .await;
 
         // THEN
@@ -1311,7 +1490,7 @@ pub mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn update_locked_rolling_stock_fails() {
         // GIVEN
-        let app = test_app!().skip_authz().build();
+        let app = test_app!().build();
         let db_pool = app.db_pool();
 
         let locked_rs_name = "locked_fast_rolling_stock_name";
@@ -1325,6 +1504,13 @@ pub mod tests {
             .await
             .expect("Failed to create rolling stock");
 
+        let user = app
+            .user("writer", "Writer")
+            .with_roles([Role::OperationalStudies])
+            .with_rolling_stock_grant(locked_fast_rolling_stock.id, RollingStockGrant::Writer)
+            .create()
+            .await;
+
         let mut second_fast_rolling_stock_form: RollingStockForm =
             schemas::fixtures::fast_rolling_stock();
         second_fast_rolling_stock_form.name = "second_fast_rolling_stock_name".to_owned();
@@ -1333,6 +1519,7 @@ pub mod tests {
         let raw_response = app
             .put(format!("/rolling_stock/{}", locked_fast_rolling_stock.id).as_str())
             .json(&second_fast_rolling_stock_form)
+            .by_user(user.as_ref())
             .await;
 
         // THEN
