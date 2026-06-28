@@ -394,10 +394,23 @@ pub(in crate::views) struct DeleteRollingStockQueryParams {
     )
 )]
 pub(in crate::views) async fn delete(
-    State(db_pool): State<Arc<DbConnectionPoolV2>>,
+    State(AppState {
+        regulator, db_pool, ..
+    }): State<AppState>,
+    Extension(authn_state): Extension<crate::authentication::State>,
     Path(rolling_stock_id): Path<i64>,
     Query(DeleteRollingStockQueryParams { force }): Query<DeleteRollingStockQueryParams>,
 ) -> Result<impl IntoResponse> {
+    if let Some(user) = authn_state.regular_user() {
+        let authorizer = authn_state.authorizer(regulator.openfga(), db_pool.get().await?);
+        crate::authorizers::require(
+            &authorizer,
+            rolling_stock_privileges(user, authz::RollingStock(rolling_stock_id)),
+            &RollingStockPrivilege::CanDelete,
+        )
+        .await?;
+    }
+
     let conn = &mut db_pool.get().await?;
 
     let rolling_stock = RollingStock::retrieve_or_fail(conn.clone(), rolling_stock_id, || {
@@ -1619,7 +1632,7 @@ pub mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn delete_locked_rolling_stock_fails() {
         // GIVEN
-        let app = test_app!().skip_authz().build();
+        let app = test_app!().build();
         let db_pool = app.db_pool();
 
         let locked_rs_name = "locked_fast_rolling_stock_name";
@@ -1633,9 +1646,16 @@ pub mod tests {
             .await
             .expect("Failed to create rolling stock");
 
+        let user = app
+            .user("owner", "Owner")
+            .with_roles([Role::OperationalStudies])
+            .with_rolling_stock_grant(locked_fast_rolling_stock.id, RollingStockGrant::Owner)
+            .create()
+            .await;
         // WHEN
         let raw_response = app
             .delete(format!("/rolling_stock/{}", locked_fast_rolling_stock.id).as_str())
+            .by_user(&user.info)
             .await;
 
         // THEN
@@ -1654,16 +1674,24 @@ pub mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn delete_unlocked_unused_rolling_stock_succeeds() {
         // GIVEN
-        let app = test_app!().skip_authz().build();
+        let app = test_app!().build();
         let db_pool = app.db_pool();
 
         let rs_name = "fast_rolling_stock_name";
         let fast_rolling_stock = create_fast_rolling_stock(&mut db_pool.get_ok(), rs_name).await;
         assert!(!fast_rolling_stock.locked);
 
+        let user = app
+            .user("owner", "Owner")
+            .with_roles([Role::OperationalStudies])
+            .with_rolling_stock_grant(fast_rolling_stock.id, RollingStockGrant::Owner)
+            .create()
+            .await;
+
         // WHEN
         let raw_response = app
             .delete(format!("/rolling_stock/{}", fast_rolling_stock.id).as_str())
+            .by_user(&user.info)
             .await;
 
         // THEN
@@ -1674,6 +1702,124 @@ pub mod tests {
                 .await
                 .expect("Failed to check if rolling stock exists");
         assert!(!rolling_stock_exists);
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn delete_rolling_stock_without_authorization() {
+        // GIVEN
+        let app = test_app!().build();
+        let db_pool = app.db_pool();
+
+        let fast_rolling_stock =
+            create_fast_rolling_stock(&mut db_pool.get_ok(), "unauthorized_rolling_stock").await;
+
+        // A user with the OperationalStudies role but only a write grant on the rolling stock
+        // (delete requires an owner/delete grant)
+        let user = app
+            .user("writer", "Writer")
+            .with_roles([Role::OperationalStudies])
+            .with_rolling_stock_grant(fast_rolling_stock.id, RollingStockGrant::Writer)
+            .create()
+            .await;
+
+        // WHEN
+        let raw_response = app
+            .delete(format!("/rolling_stock/{}", fast_rolling_stock.id).as_str())
+            .by_user(user.as_ref())
+            .await;
+
+        // THEN
+        raw_response.assert_status_forbidden();
+
+        // The rolling stock should still exist
+        let rolling_stock_exists =
+            RollingStock::exists(&mut db_pool.get_ok(), fast_rolling_stock.id)
+                .await
+                .expect("Failed to check if rolling stock exists");
+        assert!(rolling_stock_exists);
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn delete_rolling_stock_as_admin_without_grant() {
+        // GIVEN
+        let app = test_app!().build();
+        let db_pool = app.db_pool();
+
+        let fast_rolling_stock =
+            create_fast_rolling_stock(&mut db_pool.get_ok(), "admin_deleted_rolling_stock").await;
+
+        // An admin holds no grant on the rolling stock but can still delete it
+        let admin = app
+            .user("admin", "Admin")
+            .with_roles([Role::Admin])
+            .create()
+            .await;
+
+        // WHEN
+        app.delete(format!("/rolling_stock/{}", fast_rolling_stock.id).as_str())
+            .by_user(admin.as_ref())
+            .await
+            .assert_status_no_content();
+
+        // THEN
+        let rolling_stock_exists =
+            RollingStock::exists(&mut db_pool.get_ok(), fast_rolling_stock.id)
+                .await
+                .expect("Failed to check if rolling stock exists");
+        assert!(!rolling_stock_exists);
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn delete_rolling_stock_with_skip_authz_without_user() {
+        // GIVEN
+        let app = test_app!().skip_authz().build();
+        let db_pool = app.db_pool();
+
+        let fast_rolling_stock =
+            create_fast_rolling_stock(&mut db_pool.get_ok(), "skip_authz_deleted_rolling_stock")
+                .await;
+
+        // WHEN (no grant set up, authorization is skipped)
+        app.delete(format!("/rolling_stock/{}", fast_rolling_stock.id).as_str())
+            .await
+            .assert_status_no_content();
+
+        // THEN
+        let rolling_stock_exists =
+            RollingStock::exists(&mut db_pool.get_ok(), fast_rolling_stock.id)
+                .await
+                .expect("Failed to check if rolling stock exists");
+        assert!(!rolling_stock_exists);
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn delete_rolling_stock_without_operational_studies_role() {
+        // GIVEN
+        let app = test_app!().build();
+        let db_pool = app.db_pool();
+
+        let fast_rolling_stock =
+            create_fast_rolling_stock(&mut db_pool.get_ok(), "missing_role_rolling_stock").await;
+
+        // A user with an owner grant but lacking the OperationalStudies role
+        let user = app
+            .user("owner", "Owner")
+            .with_rolling_stock_grant(fast_rolling_stock.id, RollingStockGrant::Owner)
+            .create()
+            .await;
+
+        // WHEN
+        app.delete(format!("/rolling_stock/{}", fast_rolling_stock.id).as_str())
+            .by_user(user.as_ref())
+            .await
+            .assert_status_forbidden();
+
+        // THEN the rolling stock should still exist
+        let rolling_stock_exists =
+            RollingStock::exists(&mut db_pool.get_ok(), fast_rolling_stock.id)
+                .await
+                .expect("Failed to check if rolling stock exists");
+        assert!(rolling_stock_exists);
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
