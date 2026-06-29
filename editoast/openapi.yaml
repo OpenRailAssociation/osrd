@@ -5780,7 +5780,13 @@ components:
         begin_time:
           type: integer
           format: int64
-          description: Time in ms
+          description: |-
+            Time in ms since a reference point that depends on which struct embeds this one:
+            - in `TrainRequirements` & `TrainRequirementsById` (conflict detection & timetable
+              requirements): a request-wide origin shared by all trains, `work_schedules` and the
+              response (`1970-01-01T00:00:00Z` for calendar timetables, the timetable start for
+              hourly ones);
+            - in `CompleteReportTrain` (simulation results): the train's own `start_time`.
           minimum: 0
         route:
           type: string
@@ -5800,7 +5806,13 @@ components:
         end_time:
           type: integer
           format: int64
-          description: Time in ms
+          description: |-
+            Time in ms since a reference point that depends on which struct embeds this one:
+            - in `TrainRequirements` & `TrainRequirementsById` (conflict detection & timetable
+              requirements): a request-wide origin shared by all trains, `work_schedules` and the
+              response (`1970-01-01T00:00:00Z` for calendar timetables, the timetable start for
+              hourly ones);
+            - in `CompleteReportTrain` (simulation results): the train's own `start_time`.
           minimum: 0
         entry_detector:
           type: string
@@ -5929,10 +5941,18 @@ components:
         begin_time:
           type: integer
           format: int64
+          description: |-
+            Time in ms since a reference point that depends on which struct embeds this one:
+            - in `TrainRequirements` & `TrainRequirementsById` (conflict detection & timetable
+              requirements): a request-wide origin shared by all trains, `work_schedules` and the
+              response (`1970-01-01T00:00:00Z` for calendar timetables, the timetable start for
+              hourly ones);
+            - in `CompleteReportTrain` (simulation results): the train's own `start_time`.
           minimum: 0
         end_time:
           type: integer
           format: int64
+          description: 'Time in ms: see begin_time'
           minimum: 0
         zone:
           type: string
@@ -5996,7 +6016,6 @@ components:
       required:
       - train_id
       - train_name
-      - start_time
       - spacing_requirements
       - routing_requirements
       properties:
@@ -6008,18 +6027,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/CoreSpacingRequirement'
-        start_time:
-          type: integer
-          format: int64
-          description: |-
-            Start time for the given train: elapsed ms since an implicit 'request base time'.
-            `start_time` acts as a reference point for all time values in the spacing and routing
-            requirements for this train (values expressed as an offset).
-
-            The implicit 'request base time' is the same over the whole request
-            (`trains_requirements` and `work_schedules`) and response.
-            Example: `1970-01-01T00:00:00Z` for calendar timetables; the timetable start for hourly
-            timetables.
         train_id:
           type: string
         train_name:

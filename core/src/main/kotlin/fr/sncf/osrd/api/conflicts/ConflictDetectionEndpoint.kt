@@ -2,8 +2,8 @@ package fr.sncf.osrd.api.conflicts
 
 import fr.sncf.osrd.api.ExceptionHandler
 import fr.sncf.osrd.api.InfraProvider
+import fr.sncf.osrd.api.convertWorkScheduleMap
 import fr.sncf.osrd.api.parseTrainsRequirements
-import fr.sncf.osrd.api.parseWorkSchedulesRequest
 import fr.sncf.osrd.cli.Request
 import fr.sncf.osrd.cli.Response
 import fr.sncf.osrd.cli.RsJson
@@ -15,7 +15,6 @@ import fr.sncf.osrd.conflicts.Conflict
 import fr.sncf.osrd.conflicts.Requirements
 import fr.sncf.osrd.conflicts.detectConflicts
 import fr.sncf.osrd.sim_infra.api.RawSignalingInfra
-import fr.sncf.osrd.utils.units.TimeDelta
 import fr.sncf.osrd.utils.units.seconds
 
 class ConflictDetectionEndpoint(private val infraManager: InfraProvider) : Take {
@@ -34,19 +33,20 @@ class ConflictDetectionEndpoint(private val infraManager: InfraProvider) : Take 
 
             val infra = infraManager.getInfra(request.infra, request.expectedVersion)
 
-            var minStartTime = request.trainsRequirements.values.minBy { it.startTime }.startTime
             val requirements = mutableListOf<Requirements>()
             if (request.workSchedules != null) {
-                minStartTime = minOf(minStartTime, request.workSchedules.startTime)
                 val convertedWorkSchedules =
-                    parseWorkSchedulesRequest(infra.rawInfra, request.workSchedules, minStartTime)
+                    convertWorkScheduleMap(
+                        infra.rawInfra,
+                        request.workSchedules.workScheduleRequirements,
+                    )
                 requirements.addAll(convertedWorkSchedules)
             }
             val trainRequirements =
-                parseTrainsRequirements(infra.rawInfra, request.trainsRequirements, minStartTime)
+                parseTrainsRequirements(infra.rawInfra, request.trainsRequirements)
             requirements.addAll(trainRequirements)
             val conflicts = detectConflicts(requirements)
-            val res = makeConflictDetectionResponse(infra.rawInfra, conflicts, minStartTime)
+            val res = makeConflictDetectionResponse(infra.rawInfra, conflicts)
 
             RsJson(RsWithBody(conflictResponseAdapter.toJson(res)))
         } catch (ex: Throwable) {
@@ -58,20 +58,19 @@ class ConflictDetectionEndpoint(private val infraManager: InfraProvider) : Take 
 private fun makeConflictDetectionResponse(
     infra: RawSignalingInfra,
     conflicts: Collection<Conflict>,
-    referenceTime: TimeDelta,
 ): ConflictDetectionResponse {
     return ConflictDetectionResponse(
         conflicts.map {
             ConflictResponse(
                 it.trainIds,
                 it.workScheduleIds,
-                referenceTime + it.startTime.seconds,
+                it.startTime.seconds,
                 (it.endTime - it.startTime).seconds,
                 it.conflictType,
                 it.requirements.map { requirement ->
                     ConflictRequirement(
                         infra.getZoneName(requirement.zone),
-                        referenceTime + requirement.startTime.seconds,
+                        requirement.startTime.seconds,
                         (requirement.endTime - requirement.startTime).seconds,
                     )
                 },

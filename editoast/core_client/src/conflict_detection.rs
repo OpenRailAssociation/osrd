@@ -26,16 +26,6 @@ pub struct ConflictDetectionRequest {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TrainRequirements {
-    /// Start time for the given train: elapsed ms since an implicit 'request base time'.
-    /// `start_time` acts as a reference point for all time values in the spacing and routing
-    /// requirements for this train (values expressed as time delta).
-    ///
-    /// The implicit 'request base time' is the same over the whole request
-    /// (`trains_requirements` and `work_schedules`) and response.
-    /// Example: `1970-01-01T00:00:00Z` for calendar timetables; the timetable start for hourly
-    /// timetables.
-    #[serde(with = "common::units::millisecond::i64")]
-    pub start_time: Offset,
     pub spacing_requirements: Vec<SpacingRequirement>,
     pub routing_requirements: Vec<RoutingRequirement>,
 }
@@ -47,33 +37,12 @@ pub struct TrainRequirementsById {
     pub train_id: String,
     /// ID that can be used to find the train in tools other than OSRD. Used in debug traces.
     pub train_name: String,
-    /// Start time for the given train: elapsed ms since an implicit 'request base time'.
-    /// `start_time` acts as a reference point for all time values in the spacing and routing
-    /// requirements for this train (values expressed as an offset).
-    ///
-    /// The implicit 'request base time' is the same over the whole request
-    /// (`trains_requirements` and `work_schedules`) and response.
-    /// Example: `1970-01-01T00:00:00Z` for calendar timetables; the timetable start for hourly
-    /// timetables.
-    #[serde(with = "common::units::millisecond::i64")]
-    #[schema(value_type = i64)]
-    pub start_time: Offset,
     pub spacing_requirements: Vec<SpacingRequirement>,
     pub routing_requirements: Vec<RoutingRequirement>,
 }
 
 #[derive(Debug, Serialize)]
 pub struct WorkSchedulesRequest {
-    /// Start time for the work schedules: elapsed ms since the implicit 'request base time'.
-    /// `start_time` acts as a reference point for all time values in the work schedule
-    /// requirements (values expressed as an offset).
-    ///
-    /// The implicit 'request base time' is the same over the whole request
-    /// (`trains_requirements` and `work_schedules`) and response.
-    /// Example: `1970-01-01T00:00:00Z` for calendar timetables; the timetable start for hourly
-    /// timetables.
-    #[serde(with = "common::units::millisecond::i64")]
-    pub start_time: Offset,
     pub work_schedule_requirements: HashMap<String, WorkSchedule>,
 }
 

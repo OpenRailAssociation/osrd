@@ -1,14 +1,10 @@
 package fr.sncf.osrd.api
 
 import fr.sncf.osrd.api.conflicts.TrainRequirementsRequest
-import fr.sncf.osrd.api.conflicts.WorkSchedulesRequest
 import fr.sncf.osrd.conflicts.*
 import fr.sncf.osrd.sim_infra.api.RawInfra
 import fr.sncf.osrd.sim_infra.api.RawSignalingInfra
 import fr.sncf.osrd.utils.LogAggregator
-import fr.sncf.osrd.utils.units.Duration
-import fr.sncf.osrd.utils.units.TimeDelta
-import fr.sncf.osrd.utils.units.seconds
 import io.opentelemetry.api.trace.SpanKind
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.slf4j.Logger
@@ -20,15 +16,13 @@ val requirementsParserLogger: Logger = LoggerFactory.getLogger("RequirementsPars
 fun parseTrainsRequirements(
     infra: RawInfra,
     trainsRequirements: Map<String, TrainRequirementsRequest>,
-    referenceTime: TimeDelta,
 ): List<Requirements> {
     val res = mutableListOf<Requirements>()
     for ((id, trainRequirements) in trainsRequirements) {
-        val delta = trainRequirements.startTime - referenceTime
         val spacingRequirements =
-            parseSpacingRequirements(infra, trainRequirements.spacingRequirements, delta)
+            parseSpacingRequirements(infra, trainRequirements.spacingRequirements)
         val routingRequirements =
-            parseRoutingRequirements(infra, trainRequirements.routingRequirements, delta)
+            parseRoutingRequirements(infra, trainRequirements.routingRequirements)
         res.add(
             Requirements(
                 RequirementId(id, RequirementType.TRAIN),
@@ -43,7 +37,6 @@ fun parseTrainsRequirements(
 fun parseSpacingRequirements(
     infra: RawInfra,
     spacingRequirements: Collection<RJSSpacingRequirement>,
-    timeToAdd: TimeDelta = Duration.ZERO,
 ): List<SpacingRequirement> {
     val res = mutableListOf<SpacingRequirement>()
     for (spacingRequirement in spacingRequirements) {
@@ -51,8 +44,8 @@ fun parseSpacingRequirements(
             SpacingRequirement.fromRJS(
                 RJSSpacingRequirement(
                     spacingRequirement.zone,
-                    spacingRequirement.beginTime + timeToAdd,
-                    spacingRequirement.endTime + timeToAdd,
+                    spacingRequirement.beginTime,
+                    spacingRequirement.endTime,
                 ),
                 infra,
             )
@@ -64,7 +57,6 @@ fun parseSpacingRequirements(
 fun parseRoutingRequirements(
     infra: RawSignalingInfra,
     routingRequirements: Collection<RJSRoutingRequirement>,
-    timeToAdd: TimeDelta = Duration.ZERO,
 ): List<RoutingRequirement> {
     val res = mutableListOf<RoutingRequirement>()
     for (routingRequirement in routingRequirements) {
@@ -72,14 +64,14 @@ fun parseRoutingRequirements(
             RoutingRequirement.fromRJS(
                 RJSRoutingRequirement(
                     routingRequirement.route,
-                    routingRequirement.beginTime + timeToAdd,
+                    routingRequirement.beginTime,
                     routingRequirement.zones.map {
                         RJSRoutingZoneRequirement(
                             it.zone,
                             it.entryDetector,
                             it.exitDetector,
                             it.switches,
-                            it.endTime + timeToAdd,
+                            it.endTime,
                         )
                     },
                 ),
@@ -90,15 +82,6 @@ fun parseRoutingRequirements(
     return res
 }
 
-fun parseWorkSchedulesRequest(
-    infra: RawSignalingInfra,
-    workSchedulesRequest: WorkSchedulesRequest,
-    referenceTime: TimeDelta,
-): Collection<Requirements> {
-    val delta = workSchedulesRequest.startTime - referenceTime
-    return convertWorkScheduleMap(infra, workSchedulesRequest.workScheduleRequirements, delta)
-}
-
 /**
  * Convert work schedules into timetable spacing requirements, taking work schedule ids into
  * account.
@@ -106,15 +89,12 @@ fun parseWorkSchedulesRequest(
 fun convertWorkScheduleMap(
     rawInfra: RawSignalingInfra,
     workSchedules: Map<String, WorkSchedule>,
-    timeToAdd: TimeDelta = 0.seconds,
 ): Collection<Requirements> {
     val res = mutableListOf<Requirements>()
     val logAggregator = LogAggregator({ requirementsParserLogger.warn(it) })
     for (entry in workSchedules) {
         val workScheduleRequirements = mutableListOf<RJSSpacingRequirement>()
-        workScheduleRequirements.addAll(
-            convertWorkSchedule(rawInfra, entry.value, timeToAdd, logAggregator)
-        )
+        workScheduleRequirements.addAll(convertWorkSchedule(rawInfra, entry.value, logAggregator))
         res.add(
             Requirements(
                 RequirementId(entry.key, RequirementType.WORK_SCHEDULE),
@@ -131,13 +111,12 @@ fun convertWorkScheduleMap(
 fun convertWorkScheduleCollection(
     rawInfra: RawSignalingInfra,
     workSchedules: Collection<WorkSchedule>,
-    timeToAdd: TimeDelta = 0.seconds,
 ): List<Requirements> {
     val logAggregator = LogAggregator({ requirementsParserLogger.warn(it) })
     val res = mutableListOf<Requirements>()
     for (workSchedule in workSchedules) {
         val workSchedulesRequirements =
-            convertWorkSchedule(rawInfra, workSchedule, timeToAdd, logAggregator).map {
+            convertWorkSchedule(rawInfra, workSchedule, logAggregator).map {
                 SpacingRequirement.fromRJS(it, rawInfra)
             }
         res.add(
@@ -154,7 +133,6 @@ fun convertWorkScheduleCollection(
 private fun convertWorkSchedule(
     rawInfra: RawSignalingInfra,
     workSchedule: WorkSchedule,
-    timeToAdd: TimeDelta = 0.seconds,
     logAggregator: LogAggregator,
 ): Collection<RJSSpacingRequirement> {
     val res = mutableListOf<RJSSpacingRequirement>()
@@ -181,8 +159,8 @@ private fun convertWorkSchedule(
             res.add(
                 RJSSpacingRequirement(
                     rawInfra.getZoneName(zone),
-                    workSchedule.startTime + timeToAdd,
-                    workSchedule.endTime + timeToAdd,
+                    workSchedule.startTime,
+                    workSchedule.endTime,
                 )
             )
         }

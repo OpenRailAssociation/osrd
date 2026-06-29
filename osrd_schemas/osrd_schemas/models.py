@@ -271,7 +271,12 @@ class CoreReportTrain(BaseModel):
 class CoreRoutingZoneRequirement(BaseModel):
     end_time: Annotated[int, Field(ge=0)]
     """
-    Time in ms
+    Time in ms since a reference point that depends on which struct embeds this one:
+    - in `TrainRequirements` & `TrainRequirementsById` (conflict detection & timetable
+      requirements): a request-wide origin shared by all trains, `work_schedules` and the
+      response (`1970-01-01T00:00:00Z` for calendar timetables, the timetable start for
+      hourly ones);
+    - in `CompleteReportTrain` (simulation results): the train's own `start_time`.
     """
     entry_detector: str
     exit_detector: str
@@ -355,7 +360,18 @@ class CoreSimpleEnvelope(BaseModel):
 
 class CoreSpacingRequirement(BaseModel):
     begin_time: Annotated[int, Field(ge=0)]
+    """
+    Time in ms since a reference point that depends on which struct embeds this one:
+    - in `TrainRequirements` & `TrainRequirementsById` (conflict detection & timetable
+      requirements): a request-wide origin shared by all trains, `work_schedules` and the
+      response (`1970-01-01T00:00:00Z` for calendar timetables, the timetable start for
+      hourly ones);
+    - in `CompleteReportTrain` (simulation results): the train's own `start_time`.
+    """
     end_time: Annotated[int, Field(ge=0)]
+    """
+    Time in ms: see begin_time
+    """
     zone: str
 
 
@@ -4323,7 +4339,12 @@ class CoreIncompatibleOffsetRangeWithValue(BaseModel):
 class CoreRoutingRequirement(BaseModel):
     begin_time: Annotated[int, Field(ge=0)]
     """
-    Time in ms
+    Time in ms since a reference point that depends on which struct embeds this one:
+    - in `TrainRequirements` & `TrainRequirementsById` (conflict detection & timetable
+      requirements): a request-wide origin shared by all trains, `work_schedules` and the
+      response (`1970-01-01T00:00:00Z` for calendar timetables, the timetable start for
+      hourly ones);
+    - in `CompleteReportTrain` (simulation results): the train's own `start_time`.
     """
     route: str
     zones: list[CoreRoutingZoneRequirement]
@@ -4376,17 +4397,6 @@ class CoreTrainPath(BaseModel):
 class CoreTrainRequirementsById(BaseModel):
     routing_requirements: list[CoreRoutingRequirement]
     spacing_requirements: list[CoreSpacingRequirement]
-    start_time: int
-    """
-    Start time for the given train: elapsed ms since an implicit 'request base time'.
-    `start_time` acts as a reference point for all time values in the spacing and routing
-    requirements for this train (values expressed as an offset).
-
-    The implicit 'request base time' is the same over the whole request
-    (`trains_requirements` and `work_schedules`) and response.
-    Example: `1970-01-01T00:00:00Z` for calendar timetables; the timetable start for hourly
-    timetables.
-    """
     train_id: str
     train_name: str
     """

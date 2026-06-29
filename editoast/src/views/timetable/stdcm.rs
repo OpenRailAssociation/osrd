@@ -41,7 +41,6 @@ use schemas::train_schedule::ScheduleItem;
 use schemas::train_schedule::TrainOccurrence;
 use serde::Deserialize;
 use serde::Serialize;
-use std::cmp::max;
 use std::collections::HashSet;
 use std::pin::pin;
 use std::sync::Arc;
@@ -543,21 +542,16 @@ pub fn as_core_work_schedule(
     earliest_departure_time: DateTime<Utc>,
     latest_simulation_end: DateTime<Utc>,
 ) -> Option<core_client::stdcm::WorkSchedule> {
-    let search_window_duration =
-        (latest_simulation_end - earliest_departure_time).num_milliseconds() as u64;
-
-    let start_time =
-        elapsed_time_since_ms(&work_schedule.start_date_time, &earliest_departure_time);
-    let end_time = elapsed_time_since_ms(&work_schedule.end_date_time, &earliest_departure_time);
-
-    if end_time == 0 || start_time >= search_window_duration {
+    if work_schedule.end_date_time <= earliest_departure_time
+        || work_schedule.start_date_time >= latest_simulation_end
+    {
         return None;
     }
 
     Some(core_client::stdcm::WorkSchedule {
         obj_id: work_schedule.obj_id.clone(),
-        start_time,
-        end_time,
+        start_time: work_schedule.start_date_time.timestamp_millis() as u64,
+        end_time: work_schedule.end_date_time.timestamp_millis() as u64,
         track_ranges: work_schedule
             .track_ranges
             .iter()
@@ -568,10 +562,6 @@ pub fn as_core_work_schedule(
             })
             .collect(),
     })
-}
-
-fn elapsed_time_since_ms(time: &DateTime<Utc>, since: &DateTime<Utc>) -> u64 {
-    max(0, (*time - since).num_milliseconds()) as u64
 }
 
 #[cfg(test)]

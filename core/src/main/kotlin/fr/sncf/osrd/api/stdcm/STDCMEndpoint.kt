@@ -500,31 +500,29 @@ fun getRequirements(
 ): RequirementsWithMetadata {
     val requirements = mutableMapOf<ZoneId, TreeRangeSet<Double>>()
     val metadata = mutableMapOf<ZoneId, MutableList<STDCMTimetableData.DetailedRequirement>>()
-    for (convertedWorkSchedule in
-        convertWorkScheduleCollection(infra.rawInfra, request.workSchedules)) {
-        for (spacingReq in convertedWorkSchedule.spacingRequirements) {
-            val set = requirements.computeIfAbsent(spacingReq.zone) { TreeRangeSet.create() }
-            set.add(Range.closedOpen(spacingReq.beginTime, spacingReq.endTime))
-            metadata
-                .computeIfAbsent(spacingReq.zone) { mutableListOf() }
-                .add(
-                    STDCMTimetableData.DetailedRequirement(
-                        spacingReq.beginTime,
-                        spacingReq.endTime,
-                        convertedWorkSchedule.id,
-                    )
-                )
-        }
-    }
 
-    val trainRequirements = runBlocking { timetableCacheManager.get(infra, request.timetableId) }
-    // Cached requirements are relative to EPOCH. Add time diff with request start time
-    // to these requirements.
+    // Train and work schedule requirements are both relative to EPOCH.
+    // Shift them into the search window.
     val searchWindowBeginEpoch = request.startTime.durationSinceEpoch()
     val searchWindowEndEpoch =
         searchWindowBeginEpoch +
             request.maximumDepartureDelay!!.seconds +
             request.maximumRunTime.seconds
+
+    for (convertedWorkSchedule in
+        convertWorkScheduleCollection(infra.rawInfra, request.workSchedules)) {
+        for (spacingReq in convertedWorkSchedule.spacingRequirements) {
+            val begin = spacingReq.beginTime - searchWindowBeginEpoch
+            val end = spacingReq.endTime - searchWindowBeginEpoch
+            val set = requirements.computeIfAbsent(spacingReq.zone) { TreeRangeSet.create() }
+            set.add(Range.closedOpen(begin, end))
+            metadata
+                .computeIfAbsent(spacingReq.zone) { mutableListOf() }
+                .add(STDCMTimetableData.DetailedRequirement(begin, end, convertedWorkSchedule.id))
+        }
+    }
+
+    val trainRequirements = runBlocking { timetableCacheManager.get(infra, request.timetableId) }
     for ((zoneId, rangeSet) in trainRequirements.zoneUses) {
         val setBuilder = requirements.computeIfAbsent(zoneId) { TreeRangeSet.create() }
         for (range in rangeSet.asRanges()) {
