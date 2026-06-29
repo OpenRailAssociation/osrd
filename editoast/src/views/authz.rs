@@ -131,15 +131,12 @@ pub(in crate::views) struct WhoamiResponse {
 )]
 pub(in crate::views) async fn whoami(
     Extension(authn_state): Extension<crate::authentication::State>,
-    State(AppState { db_pool, .. }): State<AppState>,
+    Extension(user): Extension<Option<editoast_models::User>>,
 ) -> Result<Json<WhoamiResponse>> {
     match authn_state {
         crate::authentication::State::Skip => Err(AuthorizationError::Unauthenticated)?,
-        crate::authentication::State::Authenticated { user, roles } => {
-            let conn = db_pool.get().await?;
-            let user = editoast_models::User::retrieve(conn, user.0)
-                .await?
-                .expect("user stored in the authorization middleware extension should exist");
+        crate::authentication::State::Authenticated { roles, .. } => {
+            let user = user.expect("the user was authenticated and should therefore exist");
             let roles = HashSet::from_iter(roles);
             Ok(Json(WhoamiResponse {
                 id: user.id,
