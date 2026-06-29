@@ -91,9 +91,12 @@ pub struct StepTimingData {
 pub struct WorkSchedule {
     /// Unique identifier for the work schedule
     pub obj_id: String,
-    /// Start time as a time delta from the stdcm start time in ms
+    /// Time in ms since a request-wide origin (`1970-01-01T00:00:00Z` for calendar timetables,
+    /// the timetable start for hourly ones). This origin is shared by :
+    /// - the `start_time` in STDCM `Request`(all since `1970-01-01T00:00:00Z`)
+    /// - all train requirements and work schedules in conflicts detection
     pub start_time: u64,
-    /// End time as a time delta from the stdcm start time in ms
+    /// Time in ms: see start_time.
     pub end_time: u64,
     /// List of unavailable track ranges
     pub track_ranges: Vec<UndirectedTrackRange>,

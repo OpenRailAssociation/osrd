@@ -21,6 +21,7 @@ use axum::extract::Query;
 use axum::extract::State;
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
+use common::units::millisecond;
 use common::units::quantities::Acceleration;
 use common::units::quantities::Length;
 use common::units::quantities::Mass;
@@ -31,6 +32,8 @@ use core_client::conflict_detection::TrainRequirements;
 use core_client::conflict_detection::TrainRequirementsById;
 use core_client::simulation::CompleteReportTrain;
 use core_client::simulation::PhysicsConsist;
+use core_client::simulation::RoutingRequirement;
+use core_client::simulation::SpacingRequirement;
 use database::DbConnectionPoolV2;
 use editoast_derive::EditoastError;
 use editoast_models::TrainScheduleException;
@@ -373,11 +376,11 @@ pub(in crate::views) async fn conflicts(
             }
             Some((
                 train_id,
-                TrainRequirements {
-                    start_time: train_schedule.start_time(),
-                    spacing_requirements: simulation.final_output.spacing_requirements.clone(),
-                    routing_requirements: simulation.final_output.routing_requirements.clone(),
-                },
+                make_requirements_absolute(
+                    train_schedule.start_time(),
+                    simulation.final_output.spacing_requirements.clone(),
+                    simulation.final_output.routing_requirements.clone(),
+                ),
             ))
         });
 
@@ -522,15 +525,48 @@ fn build_trains_requirements(
                 }) => Some(final_output),
                 _ => None,
             }?;
+            let train_requirements = make_requirements_absolute(
+                start_time,
+                spacing_requirements.clone(),
+                routing_requirements.clone(),
+            );
             Some(TrainRequirementsById {
                 train_id: train_id.to_string(),
-                start_time,
-                spacing_requirements,
-                routing_requirements,
+                spacing_requirements: train_requirements.spacing_requirements,
+                routing_requirements: train_requirements.routing_requirements,
                 train_name,
             })
         },
     )
+}
+
+/// Add the start_time of the occurrence into every requirement time
+fn make_requirements_absolute(
+    start_time: Offset,
+    spacing_requirements: Vec<SpacingRequirement>,
+    routing_requirements: Vec<RoutingRequirement>,
+) -> TrainRequirements {
+    let start_ms = millisecond::i64::from(start_time) as u64;
+    TrainRequirements {
+        spacing_requirements: spacing_requirements
+            .into_iter()
+            .map(|mut requirement| {
+                requirement.begin_time += start_ms;
+                requirement.end_time += start_ms;
+                requirement
+            })
+            .collect(),
+        routing_requirements: routing_requirements
+            .into_iter()
+            .map(|mut requirement| {
+                requirement.begin_time += start_ms;
+                for zone in &mut requirement.zones {
+                    zone.end_time += start_ms;
+                }
+                requirement
+            })
+            .collect(),
+    }
 }
 
 #[derive(Deserialize, ToSchema, Eq, PartialEq)]
@@ -1028,6 +1064,7 @@ mod tests {
     use axum::http::StatusCode;
     use chrono::Duration;
     use common::units;
+    use core_client::simulation::RoutingZoneRequirement;
     use editoast_models::train_schedule::TrainScheduleChangeset;
     use pretty_assertions::assert_eq;
     use schemas::fixtures::simple_rolling_stock;
@@ -1215,6 +1252,47 @@ mod tests {
             .assert_status_not_found()
             .json();
         assert_eq!(&response.error_type, "editoast:timetable:NotFound")
+    }
+
+    #[test]
+    fn test_make_requirements_absolute() {
+        let start_time = millisecond::i64::new(30_000);
+
+        let spacing_requirement = SpacingRequirement {
+            zone: "ZONE_1".to_string(),
+            begin_time: 0,
+            end_time: 7,
+        };
+        let routing_requirement = RoutingRequirement {
+            route: "ZONE_2".to_string(),
+            begin_time: 12,
+            zones: vec![RoutingZoneRequirement {
+                zone: "ZONE_3".to_string(),
+                entry_detector: "D_1".to_string(),
+                exit_detector: "D_2".to_string(),
+                switches: {
+                    let mut map = HashMap::new();
+                    map.insert("S_1".to_string(), "S_2".to_string());
+                    map
+                },
+                end_time: 15,
+            }],
+        };
+
+        let result = make_requirements_absolute(
+            start_time,
+            vec![spacing_requirement],
+            vec![routing_requirement],
+        );
+
+        // Every time is shifted by 30_000 ms (30s).
+        let spacing = &result.spacing_requirements[0];
+        assert_eq!(spacing.begin_time, 30_000);
+        assert_eq!(spacing.end_time, 30_007);
+
+        let routing = &result.routing_requirements[0];
+        assert_eq!(routing.begin_time, 30_012);
+        assert_eq!(routing.zones[0].end_time, 30_015);
     }
 
     fn create_physics_consist() -> PhysicsConsistParameters {

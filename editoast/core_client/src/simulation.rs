@@ -190,9 +190,14 @@ pub struct SignalCriticalPosition {
 #[schema(as = CoreSpacingRequirement)]
 pub struct SpacingRequirement {
     pub zone: String,
-    // Time in ms
+    /// Time in ms since a reference point that depends on which struct embeds this one:
+    /// - in `TrainRequirements` & `TrainRequirementsById` (conflict detection & timetable
+    ///   requirements): a request-wide origin shared by all trains, `work_schedules` and the
+    ///   response (`1970-01-01T00:00:00Z` for calendar timetables, the timetable start for
+    ///   hourly ones);
+    /// - in `CompleteReportTrain` (simulation results): the train's own `start_time`.
     pub begin_time: u64,
-    // Time in ms
+    /// Time in ms: see begin_time
     pub end_time: u64,
 }
 
@@ -200,7 +205,12 @@ pub struct SpacingRequirement {
 #[schema(as = CoreRoutingRequirement)]
 pub struct RoutingRequirement {
     pub route: String,
-    /// Time in ms
+    /// Time in ms since a reference point that depends on which struct embeds this one:
+    /// - in `TrainRequirements` & `TrainRequirementsById` (conflict detection & timetable
+    ///   requirements): a request-wide origin shared by all trains, `work_schedules` and the
+    ///   response (`1970-01-01T00:00:00Z` for calendar timetables, the timetable start for
+    ///   hourly ones);
+    /// - in `CompleteReportTrain` (simulation results): the train's own `start_time`.
     pub begin_time: u64,
     pub zones: Vec<RoutingZoneRequirement>,
 }
@@ -212,7 +222,12 @@ pub struct RoutingZoneRequirement {
     pub entry_detector: String,
     pub exit_detector: String,
     pub switches: HashMap<String, String>,
-    /// Time in ms
+    /// Time in ms since a reference point that depends on which struct embeds this one:
+    /// - in `TrainRequirements` & `TrainRequirementsById` (conflict detection & timetable
+    ///   requirements): a request-wide origin shared by all trains, `work_schedules` and the
+    ///   response (`1970-01-01T00:00:00Z` for calendar timetables, the timetable start for
+    ///   hourly ones);
+    /// - in `CompleteReportTrain` (simulation results): the train's own `start_time`.
     pub end_time: u64,
 }
 

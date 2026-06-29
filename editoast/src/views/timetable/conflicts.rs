@@ -131,155 +131,91 @@ pub(super) fn build_conflict_core_request(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use common::units;
     use core_client::simulation::RoutingRequirement;
     use core_client::simulation::RoutingZoneRequirement;
     use core_client::simulation::SpacingRequirement;
-    use pretty_assertions::assert_eq;
-    use schemas::fixtures::ms_since_epoch;
+
+    fn spacing(zone: &str, begin_time: u64, end_time: u64) -> SpacingRequirement {
+        SpacingRequirement {
+            zone: zone.to_string(),
+            begin_time,
+            end_time,
+        }
+    }
+
+    fn routing(route: &str, begin_time: u64, end_time: u64) -> RoutingRequirement {
+        RoutingRequirement {
+            route: route.to_string(),
+            begin_time,
+            zones: vec![RoutingZoneRequirement {
+                zone: format!("{route}_ZONE"),
+                entry_detector: "D_1".to_string(),
+                exit_detector: "D_2".to_string(),
+                switches: HashMap::new(),
+                end_time,
+            }],
+        }
+    }
 
     // Build one train schedule and one paced train with 2 occurrences
     // then check that the function 'build_conflict_core_request'
     // produce something coherent
     #[test]
     fn build_coherent_conflict_core_request() {
-        // Given
         let infra = Infra::default();
         let ts_id = 13;
-        let ts_start_time = ms_since_epoch("2025-01-01T08:00:00Z");
-
-        let spacing_requirement = SpacingRequirement {
-            zone: "ZONE_1".to_string(),
-            begin_time: 0,
-            end_time: 7,
-        };
-        let routing_requirement = RoutingRequirement {
-            route: "ZONE_2".to_string(),
-            begin_time: 12,
-            zones: vec![RoutingZoneRequirement {
-                zone: "ZONE_3".to_string(),
-                entry_detector: "D_1".to_string(),
-                exit_detector: "D_2".to_string(),
-                switches: {
-                    let mut map = HashMap::new();
-                    map.insert("S_1".to_string(), "S_2".to_string());
-                    map
-                },
-                end_time: 15,
-            }],
-        };
         let paced_train_id = 42;
-        let paced_start_time = ms_since_epoch("2025-01-01T09:00:00Z");
-        let paced_interval = units::second::new(3600.0);
 
-        let train_ids = vec![
-            OccurrenceId::new_base(paced_train_id, 0),
-            OccurrenceId::new_base(paced_train_id, 1),
-            OccurrenceId::new_base(ts_id, 0),
+        let train_schedule = OccurrenceId::new_base(ts_id, 0);
+        let paced_occurrence_0 = OccurrenceId::new_base(paced_train_id, 0);
+        let paced_occurrence_1 = OccurrenceId::new_base(paced_train_id, 1);
+
+        let train_schedule_requirements = TrainRequirements {
+            spacing_requirements: vec![spacing("TS_ZONE", 0, 7)],
+            routing_requirements: vec![routing("TS_ROUTE", 12, 15)],
+        };
+        let paced_occurrence_0_requirements = TrainRequirements {
+            spacing_requirements: vec![spacing("PACED_ZONE", 0, 7)],
+            routing_requirements: vec![routing("PACED_ROUTE", 12, 15)],
+        };
+        // Same mission as occurrence 0, one period later.
+        let paced_occurrence_1_requirements = TrainRequirements {
+            spacing_requirements: vec![spacing("PACED_ZONE", 3_600_000, 3_600_007)],
+            routing_requirements: vec![routing("PACED_ROUTE", 3_600_012, 3_600_015)],
+        };
+
+        let items = vec![
+            (
+                paced_occurrence_0.clone(),
+                paced_occurrence_0_requirements.clone(),
+            ),
+            (
+                paced_occurrence_1.clone(),
+                paced_occurrence_1_requirements.clone(),
+            ),
+            (train_schedule.clone(), train_schedule_requirements.clone()),
         ];
 
-        let requirements = vec![
-            TrainRequirements {
-                start_time: paced_start_time,
-                spacing_requirements: vec![spacing_requirement.clone()],
-                routing_requirements: vec![routing_requirement.clone()],
-            },
-            TrainRequirements {
-                start_time: paced_start_time + paced_interval,
-                spacing_requirements: vec![spacing_requirement.clone()],
-                routing_requirements: vec![routing_requirement.clone()],
-            },
-            TrainRequirements {
-                start_time: ts_start_time,
-                spacing_requirements: vec![spacing_requirement.clone()],
-                routing_requirements: vec![routing_requirement.clone()],
-            },
-        ];
-
-        // When
         let (trains_ids_map, conflict_core_request) =
-            build_conflict_core_request(infra, train_ids.into_iter().zip(requirements));
+            build_conflict_core_request(infra, items.into_iter());
 
-        // Then (assert the train schedule)
         assert_eq!(conflict_core_request.trains_requirements.len(), 3);
 
-        let simple_ts_train_core_id = trains_ids_map
-            .iter()
-            .find_map(|(core_id, train_id)| match train_id {
-                OccurrenceId::Base {
-                    train_schedule_id, ..
-                } if *train_schedule_id == ts_id => Some(core_id),
-                _ => None,
-            })
-            .unwrap();
+        let assert_requirements = |occurrence: &OccurrenceId, expected: &TrainRequirements| {
+            let core_id = trains_ids_map
+                .iter()
+                .find_map(|(core_id, mapped)| (mapped == occurrence).then_some(core_id))
+                .expect("occurrence should be mapped to a core id");
+            let actual = conflict_core_request
+                .trains_requirements
+                .get(core_id)
+                .expect("core id should carry requirements");
+            assert_eq!(actual.spacing_requirements, expected.spacing_requirements);
+            assert_eq!(actual.routing_requirements, expected.routing_requirements);
+        };
 
-        let simple_requirements = conflict_core_request
-            .trains_requirements
-            .get(simple_ts_train_core_id)
-            .unwrap();
-        assert_eq!(simple_requirements.start_time, ts_start_time);
-        assert_eq!(
-            simple_requirements.spacing_requirements,
-            vec![spacing_requirement.clone()]
-        );
-        assert_eq!(
-            simple_requirements.routing_requirements,
-            vec![routing_requirement.clone()]
-        );
-
-        // Then (assert the paced train, first occurrence)
-        let paced_0_train_core_id = trains_ids_map
-            .iter()
-            .find_map(|(core_id, train_id)| match train_id {
-                OccurrenceId::Base {
-                    train_schedule_id,
-                    index,
-                    ..
-                } if *train_schedule_id == paced_train_id && *index == 0 => Some(core_id),
-                _ => None,
-            })
-            .unwrap();
-        let paced_0_requirements = conflict_core_request
-            .trains_requirements
-            .get(paced_0_train_core_id)
-            .unwrap();
-        assert_eq!(paced_0_requirements.start_time, paced_start_time);
-        assert_eq!(
-            paced_0_requirements.spacing_requirements,
-            vec![spacing_requirement.clone()]
-        );
-        assert_eq!(
-            paced_0_requirements.routing_requirements,
-            vec![routing_requirement.clone()]
-        );
-
-        // Then (assert the paced train, second occurrence)
-        let paced_1_train_core_id = trains_ids_map
-            .iter()
-            .find_map(|(core_id, train_id)| match train_id {
-                OccurrenceId::Base {
-                    train_schedule_id,
-                    index,
-                    ..
-                } if *train_schedule_id == paced_train_id && *index == 1 => Some(core_id),
-                _ => None,
-            })
-            .unwrap();
-        let paced_1_requirements = conflict_core_request
-            .trains_requirements
-            .get(paced_1_train_core_id)
-            .unwrap();
-        assert_eq!(
-            paced_1_requirements.start_time,
-            paced_start_time + paced_interval
-        );
-        assert_eq!(
-            paced_1_requirements.spacing_requirements,
-            vec![spacing_requirement]
-        );
-        assert_eq!(
-            paced_1_requirements.routing_requirements,
-            vec![routing_requirement]
-        );
+        assert_requirements(&train_schedule, &train_schedule_requirements);
+        assert_requirements(&paced_occurrence_0, &paced_occurrence_0_requirements);
+        assert_requirements(&paced_occurrence_1, &paced_occurrence_1_requirements);
     }
 }

@@ -169,12 +169,7 @@ class TimetableDownloader(
             val trainRequirementsById = fetchTrainRequirements(infraId, timetableId)
             trainRequirementsById.collect { trainRequirementById ->
                 for (rjsRequirement in trainRequirementById.spacingRequirements) {
-                    val requirement =
-                        SpacingRequirement.fromRJSWithAddedTime(
-                            rjsRequirement,
-                            infra,
-                            trainRequirementById.startTime.seconds,
-                        )
+                    val requirement = SpacingRequirement.fromRJS(rjsRequirement, infra)
                     val set = zoneUses.computeIfAbsent(requirement.zone) { TreeRangeSet.create() }
                     set.add(Range.closedOpen(requirement.beginTime, requirement.endTime))
                     detailedRequirements

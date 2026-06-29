@@ -4445,7 +4445,12 @@ export type CoreReportTrain = {
   times: number[];
 };
 export type CoreRoutingZoneRequirement = {
-  /** Time in ms */
+  /** Time in ms since a reference point that depends on which struct embeds this one:
+    - in `TrainRequirements` & `TrainRequirementsById` (conflict detection & timetable
+      requirements): a request-wide origin shared by all trains, `work_schedules` and the
+      response (`1970-01-01T00:00:00Z` for calendar timetables, the timetable start for
+      hourly ones);
+    - in `CompleteReportTrain` (simulation results): the train's own `start_time`. */
   end_time: number;
   entry_detector: string;
   exit_detector: string;
@@ -4455,7 +4460,12 @@ export type CoreRoutingZoneRequirement = {
   zone: string;
 };
 export type CoreRoutingRequirement = {
-  /** Time in ms */
+  /** Time in ms since a reference point that depends on which struct embeds this one:
+    - in `TrainRequirements` & `TrainRequirementsById` (conflict detection & timetable
+      requirements): a request-wide origin shared by all trains, `work_schedules` and the
+      response (`1970-01-01T00:00:00Z` for calendar timetables, the timetable start for
+      hourly ones);
+    - in `CompleteReportTrain` (simulation results): the train's own `start_time`. */
   begin_time: number;
   route: string;
   zones: CoreRoutingZoneRequirement[];
@@ -4469,7 +4479,14 @@ export type CoreSignalCriticalPosition = {
   time: number;
 };
 export type CoreSpacingRequirement = {
+  /** Time in ms since a reference point that depends on which struct embeds this one:
+    - in `TrainRequirements` & `TrainRequirementsById` (conflict detection & timetable
+      requirements): a request-wide origin shared by all trains, `work_schedules` and the
+      response (`1970-01-01T00:00:00Z` for calendar timetables, the timetable start for
+      hourly ones);
+    - in `CompleteReportTrain` (simulation results): the train's own `start_time`. */
   begin_time: number;
+  /** Time in ms: see begin_time */
   end_time: number;
   zone: string;
 };
@@ -4741,15 +4758,6 @@ export type Conflict = {
 export type CoreTrainRequirementsById = {
   routing_requirements: CoreRoutingRequirement[];
   spacing_requirements: CoreSpacingRequirement[];
-  /** Start time for the given train: elapsed ms since an implicit 'request base time'.
-    `start_time` acts as a reference point for all time values in the spacing and routing
-    requirements for this train (values expressed as an offset).
-    
-    The implicit 'request base time' is the same over the whole request
-    (`trains_requirements` and `work_schedules`) and response.
-    Example: `1970-01-01T00:00:00Z` for calendar timetables; the timetable start for hourly
-    timetables. */
-  start_time: number;
   train_id: string;
   /** ID that can be used to find the train in tools other than OSRD. Used in debug traces. */
   train_name: string;

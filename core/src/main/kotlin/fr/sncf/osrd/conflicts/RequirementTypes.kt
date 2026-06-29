@@ -31,19 +31,6 @@ data class SpacingRequirement(
                 true,
             )
         }
-
-        fun fromRJSWithAddedTime(
-            input: RJSSpacingRequirement,
-            infra: RawInfra,
-            addedTime: Double,
-        ): SpacingRequirement {
-            return SpacingRequirement(
-                infra.getZoneFromName(input.zone),
-                input.beginTime.seconds + addedTime,
-                input.endTime.seconds + addedTime,
-                true,
-            )
-        }
     }
 }
 
