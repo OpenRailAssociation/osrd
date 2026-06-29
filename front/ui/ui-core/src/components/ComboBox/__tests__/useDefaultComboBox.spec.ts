@@ -80,12 +80,13 @@ function mockChangeEvent(value: string): ChangeEvent<HTMLInputElement> {
 }
 
 describe('useDefaultComboBox', () => {
-  it('should offer suggestions props for basic combo box', () => {
-    const GREEN = { id: '1-green', label: 'Green' };
-    const RED = { id: '2-red', label: 'Red' };
-    const ORANGE = { id: '3-orange', label: 'Orange' };
+  const GREEN = { id: '1-green', label: 'Green' };
+  const RED = { id: '2-red', label: 'Red' };
+  const ORANGE = { id: '3-orange', label: 'Orange' };
 
-    const SUGGESTIONS = [GREEN, RED, ORANGE];
+  const SUGGESTIONS = [GREEN, RED, ORANGE];
+
+  it('should offer suggestions props for basic combo box', () => {
     const { result } = renderHook(() => useDefaultComboBox(SUGGESTIONS, (color) => color.label));
 
     expect(result.current.suggestions).toEqual([GREEN, RED, ORANGE]);
@@ -116,6 +117,22 @@ describe('useDefaultComboBox', () => {
 
     act(() => {
       result.current.onChange(mockChangeEvent(' '));
+    });
+
+    expect(result.current.suggestions).toEqual([GREEN, RED, ORANGE]);
+  });
+
+  it('should reset suggestions using the relevant method', () => {
+    const { result } = renderHook(() => useDefaultComboBox(SUGGESTIONS, (color) => color.label));
+
+    act(() => {
+      result.current.onChange(mockChangeEvent('red'));
+    });
+
+    expect(result.current.suggestions).toEqual([RED]);
+
+    act(() => {
+      result.current.resetSuggestions();
     });
 
     expect(result.current.suggestions).toEqual([GREEN, RED, ORANGE]);
