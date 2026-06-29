@@ -84,7 +84,7 @@
     "endStop": "arrivée",
     "for": "pour",
     "formattedDate": "le {{date}} à {{time}}",
-    "formattedDateScenario": "Fiche de simulation générée le {{date}} à {{time}}",
+    "formattedDateScenario": "Fiche de tracé générée le {{date}} à {{time}}",
     "from": "du",
     "length": "longueur",
     "loadingGauge": "gabarit",
@@ -225,7 +225,7 @@
     },
     "stopCalculation": "Arrêter"
   },
-  "simulationSheet": "Fiche de simulation",
+  "simulationSheet": "Fiche de tracé",
   "stdcmErrors": {
     "incompatibleConstraintsDetails": {
       "incompatibleElectrical_one": "- {{count}} erreur d'électrification",
