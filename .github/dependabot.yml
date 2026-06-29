@@ -96,7 +96,6 @@ updates:
       - dependency-name: "@osrd-project/netzgrafik-frontend"
   - package-ecosystem: "uv"
     directories:
-      - "python/osrd_schemas"
       - "python/railjson_generator"
     schedule:
       interval: "daily"
