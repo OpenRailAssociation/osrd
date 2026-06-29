@@ -85,6 +85,7 @@ enum ColumnType {
     TextualSearchString,
     Boolean,
     Null,
+    DateTime,
     Sequence(Box<ColumnType>),
 }
 
@@ -120,6 +121,11 @@ impl ColumnType {
             }
             "boolean" | "bool" => Some(ColumnType::Boolean),
             "null" => Some(ColumnType::Null),
+            "timestamptz"
+            | "timestamp with time zone"
+            | "timestamp"
+            | "timestamp without time zone"
+            | "datetime" => Some(ColumnType::DateTime),
             // handles VARCHAR(240), NUMERIC(4, 2), etc.
             prefix if prefix.contains('(') => {
                 let (prefix, _) = prefix.split_once('(').unwrap();
@@ -151,6 +157,9 @@ impl ColumnType {
             }
             ColumnType::Null => {
                 quote! { search::TypeSpec::Type(search::AstType::Null) }
+            }
+            ColumnType::DateTime => {
+                quote! { search::TypeSpec::Type(search::AstType::DateTime) }
             }
             ColumnType::Sequence(ct) => {
                 let ts = ct.to_type_spec();

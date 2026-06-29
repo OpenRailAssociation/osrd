@@ -757,7 +757,8 @@ pub(super) struct SearchResultItemScenario {
 #[search(
     table = "train_schedule",
     column(name = "train_schedule_set_id", data_type = "integer"),
-    column(name = "train_name", data_type = "string")
+    column(name = "train_name", data_type = "string"),
+    column(name = "start_time", data_type = "integer")
 )]
 /// A search result item for a query with `object = "trainschedule"`
 pub(super) struct SearchResultItemTrainSchedule {
@@ -876,6 +877,55 @@ pub mod tests {
                 "object": "trainschedule",
                 "query": ["and", ["=", ["train_name"], train_name],
                                  ["=", ["train_schedule_set_id"], train_schedule_set.id]],
+            }))
+            .await
+            .assert_status_ok()
+            .json();
+
+        assert_eq!(response.len(), 0);
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn search_trainschedule_start_time_range() {
+        let app = test_app!().skip_authz().build();
+        let pool = app.db_pool();
+
+        let train_schedule_set = create_train_schedule_set(&mut pool.get_ok()).await;
+        // Fixture train has start_time = 2023-12-21T08:51:30Z
+        let train = create_simple_paced_train(&mut pool.get_ok(), train_schedule_set.id).await;
+
+        let day_start = DateTime::parse_from_rfc3339("2023-12-21T00:00:00Z")
+            .unwrap()
+            .timestamp_millis();
+        let next_day = DateTime::parse_from_rfc3339("2023-12-22T00:00:00Z")
+            .unwrap()
+            .timestamp_millis();
+
+        let response: Vec<SearchResultItemTrainSchedule> = app
+            .post("/search")
+            .json(&json!({
+                "object": "trainschedule",
+                "query": ["and",
+                    ["=", ["train_schedule_set_id"], train.train_schedule_set_id],
+                    [">=", ["start_time"], day_start],
+                    ["<",  ["start_time"], next_day],
+                ],
+            }))
+            .await
+            .assert_status_ok()
+            .json();
+
+        assert_eq!(response.len(), 1);
+        assert_eq!(response[0].train_name, train.train_name);
+
+        let response: Vec<SearchResultItemTrainSchedule> = app
+            .post("/search")
+            .json(&json!({
+                "object": "trainschedule",
+                "query": ["and",
+                    ["=", ["train_schedule_set_id"], train.train_schedule_set_id],
+                    [">=", ["start_time"], next_day],
+                ],
             }))
             .await
             .assert_status_ok()
