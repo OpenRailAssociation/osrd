@@ -367,23 +367,6 @@ wheels = [
 ]
 
 [[package]]
-name = "osrd-schemas"
-version = "0.11.2"
-source = { editable = "../osrd_schemas" }
-dependencies = [
-    { name = "geojson-pydantic" },
-    { name = "pydantic" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "geojson-pydantic", specifier = "~=2.1.1" },
-    { name = "pydantic", specifier = ">=2.13.4" },
-    { name = "pyright", marker = "extra == 'check'", specifier = "~=1.1.410" },
-    { name = "ruff", marker = "extra == 'check'", specifier = "~=0.15.20" },
-]
-
-[[package]]
 name = "osrd-schemas-auto"
 version = "0.1.0"
 source = { editable = "../../osrd_schemas_auto" }
@@ -709,7 +692,6 @@ name = "railjson-generator"
 version = "0.6.0"
 source = { editable = "." }
 dependencies = [
-    { name = "osrd-schemas" },
     { name = "osrd-schemas-auto" },
 ]
 
@@ -723,7 +705,6 @@ check = [
 
 [package.metadata]
 requires-dist = [
-    { name = "osrd-schemas", editable = "../osrd_schemas" },
     { name = "osrd-schemas-auto", editable = "../../osrd_schemas_auto" },
     { name = "pyright", marker = "extra == 'check'", specifier = "~=1.1.410" },
     { name = "pytest", marker = "extra == 'check'", specifier = "~=9.1.1" },

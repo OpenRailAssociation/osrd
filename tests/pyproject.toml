@@ -6,7 +6,7 @@ authors = [{ name = "OSRD Contributors", email = "<contact@osrd.fr>" }]
 requires-python = ">=3.11"
 
 dependencies = [
-  "osrd-schemas",
+  "osrd-schemas-auto",
   "pytest-cov~=7.1.0",
   "pytest~=9.1.1",
   "railjson-generator",
@@ -19,10 +19,10 @@ check = ["pyright~=1.1.410", "ruff~=0.15.20"]
 [tool.pyright]
 include = ["conftest.py", "fuzzer", "infra-scripts", "tests"]
 exclude = ["**/__pycache__"]
-extraPaths = ["../python/osrd_schemas", "../python/railjson_generator"]
+extraPaths = ["../osrd_schemas_auto", "../python/railjson_generator"]
 
 [tool.uv.sources]
-osrd_schemas = { path = "../python/osrd_schemas/", editable = true }
+osrd-schemas-auto = { path = "../osrd_schemas_auto/", editable = true }
 railjson_generator = { path = "../python/railjson_generator/", editable = true }
 
 [tool.pytest.ini_options]

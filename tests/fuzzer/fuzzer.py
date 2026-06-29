@@ -14,7 +14,7 @@ from typing import TypeVar
 # TODO: we may want to use more qualified imports
 import conftest
 from requests import Session
-from osrd_schemas.switch_type import builtin_node_types
+from osrd_schemas_auto.switch_type import builtin_node_types
 from requests import Response, Timeout
 
 from tests.scenario import Scenario

@@ -257,28 +257,6 @@ jobs:
         run: |
           uv --directory tests/ run pyright
 
-  check_osrd_schema:
-    runs-on: ubuntu-latest
-    name: Check osrd schema
-    steps:
-      - uses: actions/checkout@v7
-      - name: Set up 'uv'
-        uses: astral-sh/setup-uv@v8.2.0
-        with:
-          python-version: "3.11"
-          enable-cache: true
-          cache-suffix: ${{ github.job }}
-      - name: Install dependencies
-        run: |
-          uv --directory python/osrd_schemas/ sync --extra check --locked
-      - name: Ruff
-        run: |
-          uv --directory python/osrd_schemas/ run ruff check --output-format github
-          uv --directory python/osrd_schemas/ run ruff format --check
-      - name: Pyright
-        run: |
-          uv --directory python/osrd_schemas/ run pyright
-
   check_toml:
     runs-on: ubuntu-latest
     name: Check toml

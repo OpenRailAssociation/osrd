@@ -9,7 +9,7 @@ https://osrd.fr/en/docs/explanation/models/data-models-full-example/
 from typing import NamedTuple
 from collections.abc import Mapping
 
-from osrd_schemas.infra import LoadingGaugeType
+from osrd_schemas_auto.infra import LoadingGaugeType
 from railjson_generator import (
     ApplicableDirection,
     ExternalGeneratedInputs,
