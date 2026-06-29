@@ -7,6 +7,7 @@ import fr.sncf.osrd.path.interfaces.TrainPath
 import fr.sncf.osrd.railjson.schema.geom.RJSLineString
 import fr.sncf.osrd.sim_infra.api.NeutralSection
 import fr.sncf.osrd.sim_infra.api.RawSignalingInfra
+import fr.sncf.osrd.sim_infra.api.TrackSectionId
 import fr.sncf.osrd.utils.DistanceRangeMap
 import fr.sncf.osrd.utils.DistanceRangeMapImpl
 import fr.sncf.osrd.utils.from
@@ -21,6 +22,7 @@ fun makePathPropResponse(pathProperties: TrainPath, rawInfra: RawSignalingInfra)
         makeGeographic(pathProperties),
         makeOperationalPoints(pathProperties, rawInfra),
         makeZones(pathProperties, rawInfra),
+        makeGeometricProjection(pathProperties, rawInfra),
     )
 }
 
@@ -147,4 +149,37 @@ private fun makeElectrificationMap(
         }
     }
     return res
+}
+
+private fun makeGeometricProjection(
+    pathProperties: TrainPath,
+    rawInfra: RawSignalingInfra,
+): GeometricProjection {
+    val trackSections = pathProperties.getTrackRanges()
+    println(trackSections)
+    trackSections.forEach { println(rawInfra.getTrackSectionName(it.value.value)) }
+
+    fun getTrackSectionGeometricLength(trackSection: TrackSectionId): Double {
+        val chunks = rawInfra.getTrackSectionChunks(trackSection)
+        return chunks
+            .map { rawInfra.getTrackChunkGeom(it).length }
+            .reduce { acc, length -> acc + length }
+    }
+
+    val trackSectionsLengths = trackSections.map { it.objectLength }
+    val trackSectionGeomLengths =
+        trackSections.map { getTrackSectionGeometricLength(it.value.value) }
+    val geomOffsets = mutableListOf<Long>(0)
+    val topoOffsets = mutableListOf<Long>(0)
+
+    trackSections.forEachIndexed { i, range ->
+        val topoDistance = range.length
+        topoOffsets.addLast(topoOffsets.last() + topoDistance.millimeters)
+        val geomDistanceInMillimeters =
+            (topoDistance / trackSectionsLengths[i].distance * trackSectionGeomLengths[i] * 1000)
+                .toInt()
+        geomOffsets.addLast(geomOffsets.last() + geomDistanceInMillimeters)
+    }
+
+    return GeometricProjection(topoOffsets, geomOffsets)
 }

@@ -56,6 +56,8 @@ interface TrainPath : PhysicsPath, PathProperties {
     fun getZonePaths(): List<ZonePathRange>
 
     fun getZoneRanges(): List<ZoneRange>
+
+    fun getTrackRanges(): List<DirTrackRange>
     // To be expanded as needed with other linear objects
 }
 
