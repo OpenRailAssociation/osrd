@@ -12,6 +12,7 @@ use axum::extract::Json;
 use axum::extract::Path;
 use axum::extract::State;
 use common::geometry::GeoJsonLineString;
+use core_client::path_properties::GeometryProjection;
 use core_client::path_properties::OperationalPointOnPath;
 use core_client::path_properties::PathPropertiesRequest;
 use core_client::path_properties::PropertyElectrificationValues;
@@ -56,6 +57,8 @@ pub(in crate::views) struct PathProperties {
     /// Zones along the path
     #[schema(inline)]
     zones: PropertyZoneValues,
+    /// Curve to map topologic offset to geometric offset on the path
+    geom_projection: GeometryProjection,
 }
 
 impl From<core_client::path_properties::PathPropertiesResponse> for PathProperties {
@@ -67,6 +70,7 @@ impl From<core_client::path_properties::PathPropertiesResponse> for PathProperti
             geometry: response.geometry,
             operational_points: response.operational_points,
             zones: response.zones,
+            geom_projection: response.geom_projection,
         }
     }
 }
@@ -123,6 +127,7 @@ pub(in crate::views) async fn post(
 mod tests {
     use axum::http::StatusCode;
     use core_client::mocking::MockingClient;
+    use core_client::path_properties::GeometryProjection;
     use core_client::path_properties::OperationalPointOnPath;
     use core_client::path_properties::PropertyElectrificationValue;
     use core_client::path_properties::PropertyElectrificationValues;
@@ -150,6 +155,7 @@ mod tests {
             ]])),
             operational_points: vec![OperationalPointOnPath::new_test("1", 0, "1")],
             zones: PropertyZoneValues::new(vec![0, 1], vec!["Zone 1".into()]),
+            geom_projection: GeometryProjection::new(vec![0, 1], vec![0, 0]),
         }
     }
 
