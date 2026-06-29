@@ -1,5 +1,6 @@
 pub(in crate::views) mod attached;
 pub(in crate::views) mod auto_fixes;
+pub(in crate::views) mod bounding_box;
 pub(in crate::views) mod delimited_area;
 pub(in crate::views) mod edition;
 pub(in crate::views) mod errors;

@@ -1,5 +1,6 @@
 use geos::geojson::Geometry;
 use geos::geojson::Value::LineString;
+use geos::geojson::Value::Polygon;
 use serde::Deserialize;
 use serde::Serialize;
 use std::iter::FromIterator;
@@ -60,8 +61,16 @@ impl BoundingBox {
                     *points.get(1).expect("invalid point"),
                 )
             }))),
+            Polygon(segments) => Ok(Self::from_iter(segments.into_iter().flat_map(|list| {
+                list.into_iter().map(|points| {
+                    (
+                        *points.first().expect("invalid point"),
+                        *points.get(1).expect("invalid point"),
+                    )
+                })
+            }))),
             value => Err(GeometryError::UnexpectedGeometry {
-                expected: "LineString".to_owned(),
+                expected: "LineString or Polygon".to_owned(),
                 actual: value.to_string(),
             }),
         }

@@ -137,6 +137,7 @@ fn service_router() -> server::router::DocumentedRouter {
                             .route("/", delete!(infra::delete))
                             .route("/", put!(infra::put))
                             .route("/auto_fixes", get!(infra::auto_fixes::list_auto_fixes))
+                            .route("/bbox", get!(infra::bounding_box::get_infra_bbox))
                             .route("/clone", post!(infra::clone))
                             .route(
                                 "/delimited_area",

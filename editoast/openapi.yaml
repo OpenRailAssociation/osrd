@@ -971,6 +971,25 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Operation'
+  /infra/{infra_id}/bbox:
+    get:
+      tags:
+      - infra
+      parameters:
+      - name: infra_id
+        in: path
+        description: An existing infra ID
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: The Bounding Box of the infra
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BoundingBox'
   /infra/{infra_id}/clone:
     post:
       tags:

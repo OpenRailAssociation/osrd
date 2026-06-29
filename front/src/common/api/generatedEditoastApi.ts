@@ -325,6 +325,13 @@ const injectedRtkApi = api
         query: (queryArg) => ({ url: `/infra/${queryArg.infraId}/auto_fixes` }),
         providesTags: ['infra'],
       }),
+      getInfraByInfraIdBbox: build.query<
+        GetInfraByInfraIdBboxApiResponse,
+        GetInfraByInfraIdBboxApiArg
+      >({
+        query: (queryArg) => ({ url: `/infra/${queryArg.infraId}/bbox` }),
+        providesTags: ['infra'],
+      }),
       postInfraByInfraIdClone: build.mutation<
         PostInfraByInfraIdCloneApiResponse,
         PostInfraByInfraIdCloneApiArg
@@ -1826,6 +1833,12 @@ export type GetInfraByInfraIdAttachedAndTrackIdApiArg = {
 export type GetInfraByInfraIdAutoFixesApiResponse =
   /** status 200 The list of suggested operations */ Operation[];
 export type GetInfraByInfraIdAutoFixesApiArg = {
+  /** An existing infra ID */
+  infraId: number;
+};
+export type GetInfraByInfraIdBboxApiResponse =
+  /** status 200 The Bounding Box of the infra */ BoundingBox;
+export type GetInfraByInfraIdBboxApiArg = {
   /** An existing infra ID */
   infraId: number;
 };
@@ -3405,6 +3418,12 @@ export type Operation =
     } & {
       operation_type: 'DELETE';
     });
+export type BoundingBox = {
+  max_lat: number;
+  max_lon: number;
+  min_lat: number;
+  min_lon: number;
+};
 export type ObjectRef = {
   obj_id: string;
   type: ObjectType;
@@ -3480,12 +3499,6 @@ export type InfraError = InfraErrorType & {
   is_warning: boolean;
   obj_id: string;
   obj_type: ObjectType;
-};
-export type BoundingBox = {
-  max_lat: number;
-  max_lon: number;
-  min_lat: number;
-  min_lon: number;
 };
 export type GeoJsonPoint = {
   coordinates: GeoJsonPointValue;
