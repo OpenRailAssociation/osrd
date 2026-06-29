@@ -2,6 +2,7 @@ use anyhow::anyhow;
 use anyhow::bail;
 use authz;
 use authz::Group;
+use authz::impossible;
 use authz::v2::Authorizer;
 use authz::v2::Check;
 use clap::Args;
@@ -13,7 +14,6 @@ use std::collections::HashSet;
 use std::sync::Arc;
 
 use crate::authorizers::SystemAuthorizer;
-use crate::authorizers::impossible;
 
 use super::openfga_config::OpenfgaConfig;
 

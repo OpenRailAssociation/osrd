@@ -16,7 +16,33 @@ use crate::v2::Actor;
 use crate::v2::Check;
 use crate::v2::Protected;
 use crate::v2::ResourcesList;
+use crate::v2::impossible;
 use crate::v2::subject_roles;
+
+struct InfraDirectGrantChecks {
+    failed_check: Check,
+}
+
+impl TryFrom<Check> for InfraDirectGrantChecks {
+    type Error = String; // TODO PR
+
+    fn try_from(check: Check) -> Result<Self, Self::Error> {
+        todo!()
+    }
+    //
+    // fn from(check: Check) -> Self {
+    //     match check {
+    //         failed_check @ Check::SubjectExists(_) => Self { failed_check },
+    //         failed_check @ Check::InfraExists(_) => Self { failed_check },
+    //         _ => {
+    //             // Authorizer returned a check that is not compatible with `infra_direct_grant`
+    //             impossible!(check)
+    //         }
+    //     }
+    // }
+}
+
+pub trait ProtectedChecks: TryFrom<Check> {}
 
 /// Returns the *direct grant* a subject has on an [Infra], if any
 ///

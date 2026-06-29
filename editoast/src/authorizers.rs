@@ -199,16 +199,6 @@ pub enum Error {
     OpenFga(#[from] authz::v2::OpenFgaError),
 }
 
-/// Wraps [`unreachable!`] with a message specific to impossible checks
-macro_rules! impossible {
-    ($check:expr) => {
-        unreachable!(
-            "impossible check {:?} — if this occurs, some authz::Protected check handling has been overlooked", $check
-        )
-    };
-}
-pub(crate) use impossible;
-
 #[cfg(test)]
 mod tests {
     use authz::InfraGrant;

@@ -4,7 +4,6 @@ use std::sync::Arc;
 
 use crate::authorizers::SystemAuthorizer;
 use crate::authorizers::UserAuthorizer;
-use crate::authorizers::impossible;
 use crate::error::Result;
 use crate::views::Authentication;
 use crate::views::authz::resources::Resource;
@@ -17,6 +16,7 @@ use ::authz::Role;
 use authz::Authorization;
 use authz::RollingStockGrant;
 use authz::RollingStockPrivilege;
+use authz::impossible;
 use authz::v2;
 use authz::v2::Actor;
 use authz::v2::Authorizer;

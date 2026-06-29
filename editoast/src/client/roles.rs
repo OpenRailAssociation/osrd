@@ -8,6 +8,7 @@ use authz;
 use authz::Role;
 use authz::identity::GroupInfo;
 use authz::identity::UserInfo;
+use authz::impossible;
 use authz::v2::Authorizer;
 use authz::v2::Check;
 use clap::Args;
@@ -21,7 +22,6 @@ use strum::IntoEnumIterator;
 use tracing::info;
 
 use crate::authorizers::SystemAuthorizer;
-use crate::authorizers::impossible;
 
 use super::openfga_config::OpenfgaConfig;
 
