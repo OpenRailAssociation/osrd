@@ -191,6 +191,12 @@ impl<T> Protected<T> {
     }
 }
 
+impl Protected<()> {
+    pub fn check(check: Check) -> Self {
+        Protected::<()>::default().with_check_iter([check])
+    }
+}
+
 impl<T: Send + 'static> Protected<T> {
     /// A [Protected] value that always succeeds with the provided value
     pub fn value(t: T) -> Self {
