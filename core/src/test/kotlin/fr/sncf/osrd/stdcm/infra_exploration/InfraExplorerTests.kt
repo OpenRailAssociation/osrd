@@ -146,14 +146,13 @@ class InfraExplorerTests {
         )
 
         // extend lookahead twice, current block a->b, lookahead b->c1->d->e and b->c2->d->e
-        val extendedUntilEnd =
-            firstExplorerExtended.map { explorer ->
-                val extendedOnce = explorer.cloneAndExtendLookahead()
-                assertEquals(1, extendedOnce.size)
-                val extendedTwice = extendedOnce.first().cloneAndExtendLookahead()
-                assertEquals(1, extendedTwice.size)
-                extendedTwice.first()
-            }
+        val extendedUntilEnd = firstExplorerExtended.map { explorer ->
+            val extendedOnce = explorer.cloneAndExtendLookahead()
+            assertEquals(1, extendedOnce.size)
+            val extendedTwice = extendedOnce.first().cloneAndExtendLookahead()
+            assertEquals(1, extendedTwice.size)
+            extendedTwice.first()
+        }
         // The current block still hasn't moved
         assertEquals(extendedUntilEnd[0].getCurrentBlock(), extendedUntilEnd[1].getCurrentBlock())
         // The lookahead now ends with the same block, but the lookahead differ, it should not be

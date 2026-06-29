@@ -193,7 +193,8 @@ class STDCMPostProcessing(private val graph: STDCMGraph) {
                         offset.meters,
                         timeData.stopTimeData[stopIndex++].currentDuration,
                         // TODO: forward and use receptionSignal param from request
-                        if (isTimeStrictlyPositive(prevNode.stopDuration)) SHORT_SLIP_STOP else OPEN,
+                        if (isTimeStrictlyPositive(prevNode.stopDuration)) SHORT_SLIP_STOP
+                        else OPEN,
                     )
                 )
             offset += edge.length.distance

@@ -122,8 +122,9 @@ class WorkerCommand : CliCommand {
         )
 
         val httpClient = OkHttpClient.Builder().readTimeout(120, TimeUnit.SECONDS).build()
-        val valkeyConnection =
-            VALKEY_URL?.let { RedisClient.create(it).connect(ByteArrayCodec.INSTANCE) }
+        val valkeyConnection = VALKEY_URL?.let {
+            RedisClient.create(it).connect(ByteArrayCodec.INSTANCE)
+        }
         val s3Context = makeS3Context()
 
         val infraId = WORKER_KEY.split("-").first()

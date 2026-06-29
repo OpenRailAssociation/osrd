@@ -105,10 +105,9 @@ class ETCSBrakingCurvesEndpoint(
                 )
             val stopBrakingCurves = etcsSimulator.computeStopBrakingCurves(mrsp, etcsStops)
             val etcsSignals = getTravelledPathSignals(infra, trainPath, ETCS_LEVEL2.id)
-            val etcsSignalsOnPath =
-                etcsSignals.filter {
-                    it.offset > Offset.zero() && it.offset <= trainPath.getLength()
-                }
+            val etcsSignalsOnPath = etcsSignals.filter {
+                it.offset > Offset.zero() && it.offset <= trainPath.getLength()
+            }
             val etcsSignalOffsets = etcsSignalsOnPath.map { it.offset }
             val areEtcsSignalRouteDelimiters = etcsSignalsOnPath.map { it.isRouteDelimiter }
             val etcsSpacingConflictEoas =

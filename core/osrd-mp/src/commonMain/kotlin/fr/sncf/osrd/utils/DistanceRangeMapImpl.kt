@@ -65,8 +65,9 @@ data class DistanceRangeMapImpl<T>(
         class PriorityQueue<T>(private val comparison: (T, T) -> Int) {
             private val inner = mutableListOf<T>()
 
-            private fun binarySearch(element: T): Int =
-                inner.binarySearch { comparison(it, element) }
+            private fun binarySearch(element: T): Int = inner.binarySearch {
+                comparison(it, element)
+            }
 
             fun contains(element: T): Boolean = binarySearch(element) >= 0
 

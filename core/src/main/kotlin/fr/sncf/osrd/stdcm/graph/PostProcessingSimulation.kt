@@ -577,8 +577,9 @@ private fun handlePostProcessingConflict(
         )
         postProcessingLogger.info("(reset of fixed time points)")
         val scaleFactor = 1.2
-        val newRollingStock =
-            consistChanges.map { it.copy(rollingStock = it.rollingStock.scalePower(scaleFactor)) }
+        val newRollingStock = consistChanges.map {
+            it.copy(rollingStock = it.rollingStock.scalePower(scaleFactor))
+        }
         return buildFinalEnvelope(
             graph,
             edges,

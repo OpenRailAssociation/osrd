@@ -45,11 +45,10 @@ protected constructor(
 
     /** Returns the number of used slots */
     override val size
-        get() =
-            useMap.sumOf {
-                val res: Int = if (it) 1 else 0
-                res
-            }
+        get() = useMap.sumOf {
+            val res: Int = if (it) 1 else 0
+            res
+        }
 
     /** Returns whether there are no used slots */
     override fun isEmpty(): Boolean {

@@ -195,11 +195,10 @@ protected constructor(
 
         // build an array of (range, baseTime) in order to sort the array rangeOrder by ascending
         // base time
-        val baseTimes =
-            ranges.map { range ->
-                val baseTime = envelopeRegion.getTimeBetween(range.beginPos, range.endPos)
-                RangeBaseTime(range, baseTime)
-            }
+        val baseTimes = ranges.map { range ->
+            val baseTime = envelopeRegion.getTimeBetween(range.beginPos, range.endPos)
+            RangeBaseTime(range, baseTime)
+        }
 
         // the order in which the ranges should be computed
         // ranges are computed with increasing baseTime values

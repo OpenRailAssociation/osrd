@@ -246,8 +246,9 @@ private fun processPathfindingResponse(
     val trainPath = explorer.buildFullPath(infra.rawInfra, infra.blockInfra)
     val seenSteps = explorer.getStepTracker().getSeenSteps().toList()
     val stepOffsets = seenSteps.map { it.travelledPathOffset }
-    val backtrackIndexes =
-        seenSteps.mapIndexedNotNull { index, step -> if (step.isBacktracking) index else null }
+    val backtrackIndexes = seenSteps.mapIndexedNotNull { index, step ->
+        if (step.isBacktracking) index else null
+    }
     return ProcessedPathfindingResponse(trainPath, stepOffsets, backtrackIndexes)
 }
 

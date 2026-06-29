@@ -71,8 +71,9 @@ class SpacingResourceGeneratorTest {
                 },
                 allDetectors.first { det -> infra.rawInfra.getDetectorName(det).equals("bf.b1") },
             )
-        val firstDetector =
-            allDetectors.first { det -> infra.rawInfra.getDetectorName(det).equals("det.a1.nf") }
+        val firstDetector = allDetectors.first { det ->
+            infra.rawInfra.getDetectorName(det).equals("det.a1.nf")
+        }
         val blocks =
             mutableListOf(
                 infra.blockInfra

@@ -75,8 +75,9 @@ class BlockAvailabilityTests {
                 allDetectors.first { det -> infra.rawInfra.getDetectorName(det) == "det.b1.nf" },
                 allDetectors.first { det -> infra.rawInfra.getDetectorName(det) == "bf.b1" },
             )
-        val firstDetector =
-            allDetectors.first { det -> infra.rawInfra.getDetectorName(det) == "det.a1.nf" }
+        val firstDetector = allDetectors.first { det ->
+            infra.rawInfra.getDetectorName(det) == "det.a1.nf"
+        }
         blocks =
             mutableListOf(
                 infra.blockInfra
