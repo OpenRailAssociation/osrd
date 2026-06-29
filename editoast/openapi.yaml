@@ -12009,10 +12009,10 @@ components:
       type: object
       description: A location on the path of a train
       required:
-      - id
+      - key
       - location
       properties:
-        id:
+        key:
           oneOf:
           - type: string
             minLength: 1

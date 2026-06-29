@@ -97,7 +97,7 @@ pub fn path_item_respect_times<T: TrainScheduleLike>(
         .path()
         .iter()
         .enumerate()
-        .map(|(i, path_item)| (&path_item.id, i))
+        .map(|(i, path_item)| (&path_item.key, i))
         .collect();
 
     let mut res = vec![true; path_item_times_final.len()];
@@ -140,7 +140,7 @@ pub fn path_item_respect_margins<T: TrainScheduleLike>(
         .path()
         .iter()
         .enumerate()
-        .map(|(i, path_item)| (&path_item.id, i))
+        .map(|(i, path_item)| (&path_item.key, i))
         .collect();
 
     let mut res = vec![true; path_item_times_final.len()];
@@ -148,7 +148,7 @@ pub fn path_item_respect_margins<T: TrainScheduleLike>(
     train_schedule
         .path()
         .first() // unconditionally include, will filter later down
-        .map(|first_path_item| &first_path_item.id)
+        .map(|first_path_item| &first_path_item.key)
         .into_iter()
         .chain(
             train_schedule
@@ -164,24 +164,24 @@ pub fn path_item_respect_margins<T: TrainScheduleLike>(
             train_schedule
                 .path()
                 .last() // unconditionally include, will filter later down
-                .map(|last_path_item| &last_path_item.id),
+                .map(|last_path_item| &last_path_item.key),
         )
         .tuple_windows()
-        .for_each(|(prev_path_item_id, path_item_id)| {
-            if prev_path_item_id == path_item_id {
+        .for_each(|(prev_path_item_key, path_item_key)| {
+            if prev_path_item_key == path_item_key {
                 // Because we unconditionally iterate over the first and last item of the path,
                 // in case they are not present in the train schedule, we might end up with
                 // prev_path_item and path_item being the same, so we filter this case here.
                 return;
             }
 
-            let path_item_index = path_item_id_to_index[path_item_id];
+            let path_item_index = path_item_id_to_index[path_item_key];
             let path_item_time_final =
                 i64::try_from(path_item_times_final[path_item_index]).unwrap();
             let path_item_time_provisional =
                 i64::try_from(path_item_times_provisional[path_item_index]).unwrap();
 
-            let prev_path_item_index = path_item_id_to_index[prev_path_item_id];
+            let prev_path_item_index = path_item_id_to_index[prev_path_item_key];
             let prev_path_item_time_final =
                 i64::try_from(path_item_times_final[prev_path_item_index]).unwrap();
             let prev_path_item_time_provisional =
@@ -692,9 +692,9 @@ pub fn build_simulation_train(
         .iter()
         .map(|schedule_item @ ScheduleItem { at, .. }| (at, schedule_item))
         .collect::<HashMap<_, _>>();
-    for (track_offsets, PathItem { id, .. }) in track_offsets.iter().zip(path) {
-        let (at, simulation_schedule_item) = match schedule_map.get(id) {
-            None => (id, core_task::ScheduleItem::pass_by()),
+    for (track_offsets, PathItem { key, .. }) in track_offsets.iter().zip(path) {
+        let (at, simulation_schedule_item) = match schedule_map.get(key) {
+            None => (key, core_task::ScheduleItem::pass_by()),
             Some(ScheduleItem {
                 at,
                 arrival,
@@ -719,8 +719,8 @@ pub fn build_simulation_train(
         path.len() >= 2,
         "there should be at least 2 path items for a train schedule"
     );
-    let at_origin = path.first().map(|path_item| &path_item.id);
-    let at_destination = path.last().map(|path_item| &path_item.id);
+    let at_origin = path.first().map(|path_item| &path_item.key);
+    let at_destination = path.last().map(|path_item| &path_item.key);
     debug_assert_eq!(
         margins.boundaries.len() + 1,
         margins.values.len(),
@@ -790,7 +790,7 @@ pub fn build_path_items_to_position<'t>(
 
     path_items
         .iter()
-        .map(|p| &p.id)
+        .map(|p| &p.key)
         .zip(path_item_positions.iter().copied())
         .collect()
 }
@@ -814,11 +814,11 @@ pub fn build_sim_schedule_items(
         .iter()
         .zip(is_backtracking)
         .map(
-            |(path_item, is_backtracking)| match schedule_items.get(&path_item.id) {
+            |(path_item, is_backtracking)| match schedule_items.get(&path_item.key) {
                 None => match is_backtracking {
                     true => unreachable!(),
                     _ => SimulationScheduleItem {
-                        path_offset: path_items_to_position[&path_item.id],
+                        path_offset: path_items_to_position[&path_item.key],
                         arrival: None,
                         stop_details: None,
                     },

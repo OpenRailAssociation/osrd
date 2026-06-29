@@ -92,7 +92,7 @@ fn extract_occupancy_context_without_simulation<'a>(
         train_schedule
             .schedule
             .iter()
-            .find(|schedule| schedule.at.0 == train_schedule.path[idx].id.0)
+            .find(|schedule| schedule.at.0 == train_schedule.path[idx].key.0)
     });
 
     OccupancyContext {
@@ -356,7 +356,7 @@ pub mod tests {
             start_time,
             path: vec![
                 PathItem {
-                    id: "path_item_1".into(),
+                    key: "path_item_1".into(),
                     location: PathItemLocation::OperationalPointPartReference(
                         OperationalPointPartReference {
                             operational_point: OperationalPointReference::Id {
@@ -367,7 +367,7 @@ pub mod tests {
                     ),
                 },
                 PathItem {
-                    id: "path_item_2".into(),
+                    key: "path_item_2".into(),
                     location: PathItemLocation::OperationalPointPartReference(
                         OperationalPointPartReference {
                             operational_point: OperationalPointReference::Id {
@@ -378,7 +378,7 @@ pub mod tests {
                     ),
                 },
                 PathItem {
-                    id: "path_item_3".into(),
+                    key: "path_item_3".into(),
                     location: PathItemLocation::OperationalPointPartReference(
                         OperationalPointPartReference {
                             operational_point: OperationalPointReference::Id {
@@ -484,7 +484,7 @@ pub mod tests {
     ) {
         let path = vec![
             PathItem {
-                id: "p1".into(),
+                key: "p1".into(),
                 location: PathItemLocation::OperationalPointPartReference(
                     OperationalPointPartReference {
                         operational_point: OperationalPointReference::Id {
@@ -495,7 +495,7 @@ pub mod tests {
                 ),
             },
             PathItem {
-                id: "p2".into(),
+                key: "p2".into(),
                 location: PathItemLocation::OperationalPointPartReference(
                     OperationalPointPartReference {
                         operational_point: OperationalPointReference::Id {

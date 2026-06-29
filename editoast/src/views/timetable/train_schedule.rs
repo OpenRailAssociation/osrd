@@ -1650,9 +1650,9 @@ fn find_track_occupancy_unknown_operational_point(
                     let is_first_path_item = train_schedule
                         .path
                         .first()
-                        .is_some_and(|first| first.id == path_item.id);
+                        .is_some_and(|first| first.key == path_item.key);
                     let time_window = schedule_per_path_item
-                        .get(&path_item.id)
+                        .get(&path_item.key)
                         .and_then(|schedule_item| {
                             let duration = schedule_item.stop_for.unwrap_or_default();
                             let arrival_time = if is_first_path_item {
@@ -1847,13 +1847,13 @@ mod tests {
     use editoast_models::train_schedule::TrainScheduleChangeset;
 
     pub fn new_op_with_trigram_and_local_track_name(
-        id: &str,
+        key: &str,
         trigram: &str,
         secondary_code: Option<NonBlankString>,
         local_track_name: Option<NonBlankString>,
     ) -> PathItem {
         PathItem {
-            id: id.into(),
+            key: key.into(),
             location: PathItemLocation::OperationalPointPartReference(
                 OperationalPointPartReference {
                     operational_point: OperationalPointReference::Trigram {
@@ -3228,7 +3228,7 @@ mod tests {
         #[case] local_track_name: Option<NonBlankString>,
     ) {
         let first_path_item = PathItem {
-            id: "Mid_West_station".into(),
+            key: "Mid_West_station".into(),
             location: PathItemLocation::OperationalPointPartReference(
                 OperationalPointPartReference {
                     operational_point: OperationalPointReference::Id {
@@ -3298,7 +3298,7 @@ mod tests {
             secondary_code: None,
         };
         let path_item = PathItem {
-            id: "item_1".into(),
+            key: "item_1".into(),
             location: PathItemLocation::OperationalPointPartReference(
                 OperationalPointPartReference {
                     operational_point: op_ref.clone(),
@@ -3336,7 +3336,7 @@ mod tests {
             secondary_code: None,
         };
         let path_item = PathItem {
-            id: "item_1".into(),
+            key: "item_1".into(),
             location: PathItemLocation::OperationalPointPartReference(
                 OperationalPointPartReference {
                     operational_point: op_ref.clone(),
@@ -3379,7 +3379,7 @@ mod tests {
             start_time,
             path: vec![
                 PathItem {
-                    id: "item_1".into(),
+                    key: "item_1".into(),
                     location: PathItemLocation::OperationalPointPartReference(
                         OperationalPointPartReference {
                             operational_point: op_ref.clone(),

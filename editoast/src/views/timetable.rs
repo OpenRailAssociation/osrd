@@ -1703,7 +1703,7 @@ mod tests {
         let mut train_schedule_base_2 = simple_paced_train_base();
         train_schedule_base_2.train_occurrence.path = vec![
             PathItem {
-                id: "Mid_West_station".into(),
+                key: "Mid_West_station".into(),
                 location: PathItemLocation::OperationalPointPartReference(
                     OperationalPointPartReference {
                         operational_point: OperationalPointReference::Id {
@@ -1714,7 +1714,7 @@ mod tests {
                 ),
             },
             PathItem {
-                id: "Mid_East_station".into(),
+                key: "Mid_East_station".into(),
                 location: PathItemLocation::OperationalPointPartReference(
                     OperationalPointPartReference {
                         operational_point: OperationalPointReference::Id {

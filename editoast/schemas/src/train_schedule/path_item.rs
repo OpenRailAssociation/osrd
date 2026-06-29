@@ -12,19 +12,19 @@ pub struct PathItem {
     /// The unique identifier of the path item.
     /// This is used to reference path items in the train schedule.
     #[schema(inline)]
-    pub id: NonBlankString,
+    pub key: NonBlankString,
     pub location: PathItemLocation,
 }
 
 #[cfg(feature = "testing")]
 impl PathItem {
-    pub fn new_operational_point(id: &str) -> Self {
+    pub fn new_operational_point(key: &str) -> Self {
         Self {
-            id: id.into(),
+            key: key.into(),
             location: PathItemLocation::OperationalPointPartReference(
                 OperationalPointPartReference {
                     operational_point: OperationalPointReference::Id {
-                        operational_point: id.into(),
+                        operational_point: key.into(),
                     },
                     local_track_name: None,
                 },
