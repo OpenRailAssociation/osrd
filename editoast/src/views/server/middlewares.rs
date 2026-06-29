@@ -232,7 +232,9 @@ pub(in crate::views) async fn authentication_validation_middleware(
     span.record("user.roles", tracing::field::debug(&roles));
     span.record("user.is_admin", roles.contains(&Role::Admin));
 
-    let authz_user = user.iter().map(|user| authz::User(user.id)).next();
+    let authz_user = user
+        .as_ref()
+        .map(|editoast_models::User { id, .. }| ::authz::User(*id));
     let state = crate::authentication::State::try_new(authn, authz_user, roles.clone())?;
     span.record("authz.state", tracing::field::debug(&state));
     req.extensions_mut().insert(state);
