@@ -1,5 +1,6 @@
 export const ROLLING_STOCK_NAME_QUERY = 'FAST';
 export const ROLLING_STOCK_NAME = 'FAST_RS_E2E';
+export const ROLLING_STOCK_DEFAULT_CATEGORY = 'main:FREIGHT_TRAIN';
 export const COMPOSITION_CODE = 'AR120';
 export const TRAIN_NAME = 'Test train';
 export const ROCKET_SEARCH_INPUT = 'NS SS';

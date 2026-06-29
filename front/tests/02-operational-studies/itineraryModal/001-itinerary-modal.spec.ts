@@ -11,6 +11,7 @@ import {
   NORTH_STATION_MAIN_CODE,
   PLACEHOLDER,
   ROCKET_SEARCH_INPUT,
+  ROLLING_STOCK_DEFAULT_CATEGORY,
   ROLLING_STOCK_NAME,
   ROLLING_STOCK_NAME_QUERY,
   SOUTH_STATION,
@@ -100,7 +101,7 @@ test.describe('Itinerary Modal, Default ', { tag: ['@op', '@itinerary-modal'] },
         await itineraryModalPage.selectRollingStock(
           ROLLING_STOCK_NAME_QUERY,
           ROLLING_STOCK_NAME,
-          PLACEHOLDER
+          ROLLING_STOCK_DEFAULT_CATEGORY
         );
         await itineraryModalPage.selectCompositionCode(COMPOSITION_CODE);
         await itineraryModalPage.fillTrainName(TRAIN_NAME);
@@ -136,7 +137,7 @@ test.describe('Itinerary Modal, Default ', { tag: ['@op', '@itinerary-modal'] },
         await itineraryModalPage.selectRollingStock(
           ROLLING_STOCK_NAME_QUERY,
           ROLLING_STOCK_NAME,
-          PLACEHOLDER
+          ROLLING_STOCK_DEFAULT_CATEGORY
         );
         await itineraryModalPage.selectCompositionCode(COMPOSITION_CODE);
         await itineraryModalPage.fillTrainName(TRAIN_NAME);

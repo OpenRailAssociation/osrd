@@ -94,11 +94,11 @@ const ItineraryModalFormHeader = ({
   const handleRollingStockSelect = (label?: string) => {
     const rs = fullRollingStockList.find((r) => getRollingStockLabel(r) === label);
     if (rs) {
-      onModalFormStateChange({
-        ...modalFormState,
-        rollingStockId: rs.id,
-        rollingStockName: rs.name,
-      });
+      const newFormState = { ...modalFormState, rollingStockId: rs.id, rollingStockName: rs.name };
+      if (!modalFormState.category && rs.primary_category) {
+        newFormState.category = { main_category: rs.primary_category };
+      }
+      onModalFormStateChange(newFormState);
     } else {
       // Custom value or empty
       onModalFormStateChange({
