@@ -265,7 +265,7 @@ function getSumUpContent(
       const { voltage } = electrificationSection.properties;
       subtexts.push(
         <>
-          <span className={(classes.muted, 'mr-2')}>
+          <span className={cx(classes.muted, 'mr-2')}>
             {t('Editor.tools.select-items.linked-to-n-lines', {
               count: electrificationSection.properties.track_ranges?.length || 0,
             }).toString()}
