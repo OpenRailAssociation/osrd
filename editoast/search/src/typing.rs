@@ -39,6 +39,7 @@ pub enum AstType {
     Integer,
     Float,
     String,
+    DateTime,
 }
 
 /// Allows combining [AstType]s in order to express more complex types

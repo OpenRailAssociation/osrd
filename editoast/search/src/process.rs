@@ -94,6 +94,15 @@ impl QueryContext {
 /// - = : (int | null) -> (int | null) -> (bool | null)
 /// - = : (float | null) -> (float | null) -> (bool | null)
 /// - = : (string | null) -> (string | null) -> (bool | null)
+/// - = : (datetime | null) -> (datetime | null) -> (bool | null)
+/// - < : (int | null) -> (int | null) -> (bool | null)
+/// - <= : (int | null) -> (int | null) -> (bool | null)
+/// - > : (int | null) -> (int | null) -> (bool | null)
+/// - >= : (int | null) -> (int | null) -> (bool | null)
+/// - < : (datetime | null) -> (datetime | null) -> (bool | null)
+/// - <= : (datetime | null) -> (datetime | null) -> (bool | null)
+/// - > : (datetime | null) -> (datetime | null) -> (bool | null)
+/// - >= : (datetime | null) -> (datetime | null) -> (bool | null)
 /// - like : string -> (string | null) -> (bool | null)
 /// - ilike : string -> (string | null) -> (bool | null)
 /// - search : string -> (string | null) -> bool
@@ -101,6 +110,7 @@ impl QueryContext {
 /// - to_string : (int | null) -> string
 /// - to_string : (float | null) -> string
 /// - to_string : (string | null) -> string
+/// - datetime : string -> datetime
 /// - list : variadic string -> string list
 /// - contains : string list -> string list -> bool
 pub fn create_processing_context() -> QueryContext {
@@ -141,8 +151,40 @@ pub fn create_processing_context() -> QueryContext {
             eq.clone(),
         );
     context.def_function_2::<dsl::Nullable<dsl::Ersatz<dsl::String>>, dsl::Nullable<dsl::Ersatz<dsl::String>>, dsl::Sql<dsl::Boolean>>(
+            "=", eq.clone(),
+        );
+    context.def_function_2::<dsl::Nullable<dsl::Ersatz<dsl::DateTime>>, dsl::Nullable<dsl::Ersatz<dsl::DateTime>>, dsl::Sql<dsl::Boolean>>(
             "=", eq,
         );
+    let cmp = |op: &'static str| {
+        Rc::new(move |left: Option<TypedAst>, right: Option<TypedAst>| {
+            Ok(SqlQuery::infix(op, left, right))
+        })
+    };
+    context.def_function_2::<dsl::Nullable<dsl::Ersatz<dsl::Integer>>, dsl::Nullable<dsl::Ersatz<dsl::Integer>>, dsl::Sql<dsl::Boolean>>(
+        "<", cmp("<"),
+    );
+    context.def_function_2::<dsl::Nullable<dsl::Ersatz<dsl::Integer>>, dsl::Nullable<dsl::Ersatz<dsl::Integer>>, dsl::Sql<dsl::Boolean>>(
+        "<=", cmp("<="),
+    );
+    context.def_function_2::<dsl::Nullable<dsl::Ersatz<dsl::Integer>>, dsl::Nullable<dsl::Ersatz<dsl::Integer>>, dsl::Sql<dsl::Boolean>>(
+        ">", cmp(">"),
+    );
+    context.def_function_2::<dsl::Nullable<dsl::Ersatz<dsl::Integer>>, dsl::Nullable<dsl::Ersatz<dsl::Integer>>, dsl::Sql<dsl::Boolean>>(
+        ">=", cmp(">="),
+    );
+    context.def_function_2::<dsl::Nullable<dsl::Ersatz<dsl::DateTime>>, dsl::Nullable<dsl::Ersatz<dsl::DateTime>>, dsl::Sql<dsl::Boolean>>(
+        "<", cmp("<"),
+    );
+    context.def_function_2::<dsl::Nullable<dsl::Ersatz<dsl::DateTime>>, dsl::Nullable<dsl::Ersatz<dsl::DateTime>>, dsl::Sql<dsl::Boolean>>(
+        "<=", cmp("<="),
+    );
+    context.def_function_2::<dsl::Nullable<dsl::Ersatz<dsl::DateTime>>, dsl::Nullable<dsl::Ersatz<dsl::DateTime>>, dsl::Sql<dsl::Boolean>>(
+        ">", cmp(">"),
+    );
+    context.def_function_2::<dsl::Nullable<dsl::Ersatz<dsl::DateTime>>, dsl::Nullable<dsl::Ersatz<dsl::DateTime>>, dsl::Sql<dsl::Boolean>>(
+        ">=", cmp(">="),
+    );
     context.def_function_2::<dsl::Ersatz<dsl::String>, dsl::Nullable<dsl::String>, dsl::Sql<dsl::Nullable<dsl::Boolean>>>(
             "like",
             Rc::new(|string, pattern| {
@@ -199,6 +241,10 @@ pub fn create_processing_context() -> QueryContext {
     context.def_function_1::<dsl::Nullable<dsl::Ersatz<dsl::Float>>, dsl::Sql<dsl::String>>(
         "to_string",
         to_string.clone(),
+    );
+    context.def_function_1::<dsl::Ersatz<dsl::String>, dsl::Sql<dsl::DateTime>>(
+        "datetime",
+        Rc::new(|s: TypedAst| Ok(SqlQuery::cast(s, "TIMESTAMPTZ"))),
     );
     context.def_function(
         "list",
@@ -464,5 +510,102 @@ mod tests {
         assert!(try_eval(json!(["not", true, false])).is_err());
         assert!(try_eval(json!(["like", "test"])).is_err());
         assert!(try_eval(json!(["like", "test", null, null])).is_err());
+    }
+
+    #[test]
+    fn test_integer_comparisons() {
+        let mut env = create_processing_context();
+        env.columns_type
+            .insert("start_time".into(), AstType::Integer.into());
+
+        let eval_int = |q: serde_json::Value| {
+            let expr = SearchAst::build_ast(q).unwrap();
+            env.evaluate_ast(&expr).unwrap()
+        };
+
+        // Basic integer comparisons should produce SQL expressions
+        assert!(matches!(
+            eval_int(json!(["<", ["start_time"], 1000000])),
+            TypedAst::Sql(_, _)
+        ));
+        assert!(matches!(
+            eval_int(json!(["<=", ["start_time"], 1000000])),
+            TypedAst::Sql(_, _)
+        ));
+        assert!(matches!(
+            eval_int(json!([">", ["start_time"], 0])),
+            TypedAst::Sql(_, _)
+        ));
+        assert!(matches!(
+            eval_int(json!([">=", ["start_time"], 0])),
+            TypedAst::Sql(_, _)
+        ));
+
+        // Range query: start_time within [start, end]
+        let range_query = json!([
+            "and",
+            [">=", ["start_time"], 1700000000000_i64],
+            ["<", ["start_time"], 1700086400000_i64]
+        ]);
+        assert!(matches!(eval_int(range_query), TypedAst::Sql(_, _)));
+
+        // Type errors: integer comparisons should reject non-integer
+        let expr = SearchAst::build_ast(json!(["<", ["start_time"], "2024-01-01"])).unwrap();
+        assert!(env.evaluate_ast(&expr).is_err());
+    }
+
+    #[test]
+    fn test_datetime_function_and_comparisons() {
+        let mut env = create_processing_context();
+        env.columns_type
+            .insert("last_modification".into(), AstType::DateTime.into());
+
+        let eval_dt = |q: serde_json::Value| {
+            let expr = SearchAst::build_ast(q).unwrap();
+            env.evaluate_ast(&expr).unwrap()
+        };
+
+        // datetime() converts a string literal to a timestamptz cast
+        let result = eval_dt(json!(["datetime", "2024-01-01T00:00:00Z"]));
+        assert!(matches!(result, TypedAst::Sql(_, _)));
+        if let TypedAst::Sql(sql, spec) = result {
+            assert!(spec.is_supertype_spec(&AstType::DateTime.into()));
+            // Should render as a TIMESTAMPTZ cast
+            assert!(sql.to_string().contains("TIMESTAMPTZ"));
+        }
+
+        // datetime() with null → type error (non-nullable string required)
+        let null_expr = SearchAst::build_ast(json!(["datetime", null])).unwrap();
+        assert!(env.evaluate_ast(&null_expr).is_err());
+
+        // Datetime column comparisons
+        assert!(matches!(
+            eval_dt(json!([
+                "=",
+                ["last_modification"],
+                ["datetime", "2024-01-01T00:00:00Z"]
+            ])),
+            TypedAst::Sql(_, _)
+        ));
+        assert!(matches!(
+            eval_dt(json!([
+                ">=",
+                ["last_modification"],
+                ["datetime", "2024-01-01T00:00:00Z"]
+            ])),
+            TypedAst::Sql(_, _)
+        ));
+        assert!(matches!(
+            eval_dt(json!([
+                "<",
+                ["last_modification"],
+                ["datetime", "2024-02-01T00:00:00Z"]
+            ])),
+            TypedAst::Sql(_, _)
+        ));
+
+        // Type error: comparing a datetime column with a raw integer should fail
+        let expr = SearchAst::build_ast(json!(["=", ["last_modification"], 42])).unwrap();
+        assert!(env.evaluate_ast(&expr).is_err());
     }
 }

@@ -130,6 +130,7 @@ fn sql_type(spec: &TypeSpec) -> Option<String> {
         TypeSpec::Type(AstType::Integer) => Some("INTEGER".to_owned()),
         TypeSpec::Type(AstType::Float) => Some("NUMERIC".to_owned()),
         TypeSpec::Type(AstType::String) => Some("TEXT".to_owned()),
+        TypeSpec::Type(AstType::DateTime) => Some("TIMESTAMPTZ".to_owned()),
         _ => None,
     }
 }

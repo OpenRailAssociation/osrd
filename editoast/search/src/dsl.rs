@@ -118,6 +118,8 @@ pub struct Integer;
 pub struct Float;
 /// Represents [TypedAst::String] and maps to [std::string::String]
 pub struct String;
+/// Represents a timestamptz (datetime) column.
+pub struct DateTime;
 /// Represents [TypedAst::Sql]. As an argument, checks that the value typechecks
 /// and exposes the [SqlQuery]. As a return value, wraps the [SqlQuery] into a
 /// [TypedAst::Sql] with `T::type_spec()`
@@ -229,6 +231,24 @@ impl Type for String {
 
     fn from_return(value: Self::ReturnType) -> Result<TypedAst, ProcessingError> {
         Ok(TypedAst::String(value))
+    }
+}
+
+impl Type for DateTime {
+    type ArgType = TypedAst; // NOTE: should theoretically be a chrono::DateTime
+    type ReturnType = SqlQuery; // NOTE: likewise
+
+    fn type_spec() -> TypeSpec {
+        TypeSpec::Type(AstType::DateTime)
+    }
+
+    fn into_arg(value: TypedAst) -> Result<Self::ArgType, ProcessingError> {
+        Self::typecheck(&value)?;
+        Ok(value)
+    }
+
+    fn from_return(value: Self::ReturnType) -> Result<TypedAst, ProcessingError> {
+        Ok(TypedAst::Sql(Box::new(value), Self::type_spec()))
     }
 }
 
