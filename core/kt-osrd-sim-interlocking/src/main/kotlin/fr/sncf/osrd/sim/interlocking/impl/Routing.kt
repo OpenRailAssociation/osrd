@@ -35,20 +35,21 @@ internal class RoutingSimImpl<InfraT>(
         route: RouteId,
         pathZones: Array<ZoneId>,
         handles: List<ZoneReservationId>,
-    ): Job =
-        scope.launch {
-            val releaseZones = infra.getRouteReleaseZones(route)
-            var lastReleasedZone = -1
-            for (zoneIndex in releaseZones) {
-                // wait for the release zone to be pending release
-                reservationSim.awaitPendingRelease(pathZones[zoneIndex], handles[zoneIndex])
+    ): Job = scope.launch {
+        val releaseZones = infra.getRouteReleaseZones(route)
+        var lastReleasedZone = -1
+        for (zoneIndex in releaseZones) {
+            // wait for the release zone to be pending release
+            reservationSim.awaitPendingRelease(pathZones[zoneIndex], handles[zoneIndex])
 
-                // release all zones before and including this one
-                for (releasedZone in lastReleasedZone + 1 until zoneIndex + 1) reservationSim
-                    .release(pathZones[releasedZone], handles[releasedZone])
-                lastReleasedZone = zoneIndex
-            }
+            // release all zones before and including this one
+            for (releasedZone in lastReleasedZone + 1 until zoneIndex + 1) reservationSim.release(
+                pathZones[releasedZone],
+                handles[releasedZone],
+            )
+            lastReleasedZone = zoneIndex
         }
+    }
 
     override suspend fun call(route: RouteId, train: TrainId): DynIdx<RouteCallHandle> {
         val path = infra.getRoutePath(route)

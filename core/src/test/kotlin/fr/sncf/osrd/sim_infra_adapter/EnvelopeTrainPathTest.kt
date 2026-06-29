@@ -416,7 +416,11 @@ class EnvelopeTrainPathTest {
                             2_650.meters,
                             Electrified("1500V"),
                         ),
-                        DistanceRangeMap.RangeMapEntry(2_650.meters, 3_100.meters, NonElectrified()),
+                        DistanceRangeMap.RangeMapEntry(
+                            2_650.meters,
+                            3_100.meters,
+                            NonElectrified(),
+                        ),
                     ),
                 ),
             )

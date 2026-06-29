@@ -414,7 +414,10 @@ class BacktrackTests {
                     ZoneId(6u),
                     listOf(ZoneOccupation(Offset(13100.meters), Offset(16500.meters))),
                 ),
-                Pair(ZoneId(5u), listOf(ZoneOccupation(Offset(16100.meters), Offset(19100.meters)))),
+                Pair(
+                    ZoneId(5u),
+                    listOf(ZoneOccupation(Offset(16100.meters), Offset(19100.meters))),
+                ),
             ),
             getZoneOccupations(zoneOccupationChangeEvents),
         )
@@ -461,7 +464,10 @@ class BacktrackTests {
                 Pair(ZoneId(3u), listOf(ZoneOccupation(Offset(5900.meters), Offset(10100.meters)))),
                 Pair(ZoneId(7u), listOf(ZoneOccupation(Offset(7900.meters), Offset(8100.meters)))),
                 Pair(ZoneId(6u), listOf(ZoneOccupation(Offset(9700.meters), Offset(13100.meters)))),
-                Pair(ZoneId(5u), listOf(ZoneOccupation(Offset(12700.meters), Offset(15700.meters)))),
+                Pair(
+                    ZoneId(5u),
+                    listOf(ZoneOccupation(Offset(12700.meters), Offset(15700.meters))),
+                ),
             ),
             getZoneOccupations(zoneOccupationChangeEvents),
         )
@@ -508,7 +514,10 @@ class BacktrackTests {
                     ZoneId(6u),
                     listOf(ZoneOccupation(Offset(10500.meters), Offset(13900.meters))),
                 ),
-                Pair(ZoneId(5u), listOf(ZoneOccupation(Offset(13500.meters), Offset(16800.meters)))),
+                Pair(
+                    ZoneId(5u),
+                    listOf(ZoneOccupation(Offset(13500.meters), Offset(16800.meters))),
+                ),
             ),
             getZoneOccupations(zoneOccupationChangeEvents),
         )

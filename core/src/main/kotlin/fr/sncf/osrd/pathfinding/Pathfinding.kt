@@ -83,16 +83,15 @@ class Pathfinding(
     val rollingStockMaxSpeed: Double,
     val rollingStockLength: Distance,
 ) {
-    private val targets =
-        inputTargets.mapIndexed { index, it ->
-            ExplorerStep(
-                it.locations,
-                it.duration,
-                it.stop,
-                if (index > 0 && index < inputTargets.size - 1) it.canBacktrack else false,
-                it.plannedTimingData,
-            )
-        }
+    private val targets = inputTargets.mapIndexed { index, it ->
+        ExplorerStep(
+            it.locations,
+            it.duration,
+            it.stop,
+            if (index > 0 && index < inputTargets.size - 1) it.canBacktrack else false,
+            it.plannedTimingData,
+        )
+    }
 
     init {
         checkParameters(inputTargets)
@@ -165,10 +164,9 @@ class Pathfinding(
     private val queue = PriorityQueue<Step>()
 
     fun runPathfinding(timeout: Double = TIMEOUT): InfraExplorer? {
-        val constraintCombiner =
-            constraints?.let {
-                CachedBlockConstraintCombiner.getCachedConstraintCombiner(fullInfra, it)
-            }
+        val constraintCombiner = constraints?.let {
+            CachedBlockConstraintCombiner.getCachedConstraintCombiner(fullInfra, it)
+        }
         val startTime = Instant.now()
 
         // When exploring a block (last block range of the route here), the decision to try to

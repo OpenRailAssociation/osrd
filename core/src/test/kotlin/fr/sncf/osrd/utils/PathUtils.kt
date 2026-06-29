@@ -26,19 +26,18 @@ fun pathFromTracks(
     electricalProfileMapping: ElectricalProfileMapping? = null,
     routeNames: List<String>? = null,
 ): TrainPath {
-    val partialTrackRanges =
-        trackNames.map { trackName ->
-            val track =
-                rawInfra.getTrackSectionFromName(trackName)
-                    ?: throw newUnknownTrackSectionError(trackName)
-            val trackLength = rawInfra.getTrackSectionLength(track)
-            PartialDirTrackRange(
-                DirTrackSectionId(track, dir),
-                Offset.zero(),
-                trackLength.forceDirected(),
-                trackLength.forceDirected(),
-            )
-        }
+    val partialTrackRanges = trackNames.map { trackName ->
+        val track =
+            rawInfra.getTrackSectionFromName(trackName)
+                ?: throw newUnknownTrackSectionError(trackName)
+        val trackLength = rawInfra.getTrackSectionLength(track)
+        PartialDirTrackRange(
+            DirTrackSectionId(track, dir),
+            Offset.zero(),
+            trackLength.forceDirected(),
+            trackLength.forceDirected(),
+        )
+    }
     val trackRanges = buildRangeList(partialTrackRanges)
     return buildTrainPathFromTracks(
         rawInfra,

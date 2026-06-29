@@ -650,8 +650,9 @@ private class InfraExplorerImpl(
             val lastRouteBlocks = blockInfra.getRouteBlocks(rawInfra, headRestartRoute)
             if (lastRouteBlocks.isEmpty()) return@forEach
 
-            val headRestartBlockLocation =
-                headRestartBlockLocations.firstOrNull { it.edge in lastRouteBlocks }
+            val headRestartBlockLocation = headRestartBlockLocations.firstOrNull {
+                it.edge in lastRouteBlocks
+            }
             if (headRestartBlockLocation == null) {
                 logger.warn(
                     "Route ${rawInfra.getRouteName(headRestartRoute)} has no block listed in restart locations"

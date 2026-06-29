@@ -368,15 +368,14 @@ fun makeBlockAvailability(
     var spacingRequirements = inputSpacingRequirements
     if (gridMarginAfterTrain != 0.0 || gridMarginBeforeTrain != 0.0) {
         // The margin expected *after* the new train is added *before* the other train resource uses
-        spacingRequirements =
-            spacingRequirements.map {
-                SpacingRequirement(
-                    it.zone,
-                    it.beginTime - gridMarginAfterTrain,
-                    it.endTime + gridMarginBeforeTrain,
-                    it.isComplete,
-                )
-            }
+        spacingRequirements = spacingRequirements.map {
+            SpacingRequirement(
+                it.zone,
+                it.beginTime - gridMarginAfterTrain,
+                it.endTime + gridMarginBeforeTrain,
+                it.isComplete,
+            )
+        }
     }
     val requirements =
         listOf(

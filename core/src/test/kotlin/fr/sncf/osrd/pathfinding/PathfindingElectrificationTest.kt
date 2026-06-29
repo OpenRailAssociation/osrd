@@ -237,8 +237,9 @@ class PathfindingElectrificationTest : ApiTest() {
         // Set voltage to 25000V everywhere except for trackSectionToBlock
         val trackSectionToBlock = normalTracks.first { trackName -> trackName.startsWith("TD") }
 
-        val voltagePartialTrackRanges =
-            voltageAllTrackRanges.filter { it.trackSectionID != trackSectionToBlock }
+        val voltagePartialTrackRanges = voltageAllTrackRanges.filter {
+            it.trackSectionID != trackSectionToBlock
+        }
         val voltagePartialElectrification =
             RJSElectrification("25000V_elec", "25000V", voltagePartialTrackRanges)
         val rjsInfraPartialElectrifiedTrack =

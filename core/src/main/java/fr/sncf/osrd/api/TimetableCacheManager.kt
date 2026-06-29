@@ -54,14 +54,13 @@ data class STDCMTimetableData(
     data class SerializableMap(val detailedRequirements: Map<UInt, List<DetailedRequirement>>) {
         fun toSTDCMRequirements(): STDCMTimetableData {
             val detailedRequirements = detailedRequirements.mapKeys { ZoneId(it.key) }
-            val zoneUses =
-                detailedRequirements.mapValues { (_, requirements) ->
-                    val map = TreeRangeSet.create<Double>()
-                    for (req in requirements) map.add(Range.closed(req.from, req.to))
-                    // ImmutableRangeSet has a faster lookup than TreeRangeSet, but
-                    // can't handle overlapping ranges on build
-                    ImmutableRangeSet.copyOf(map)
-                }
+            val zoneUses = detailedRequirements.mapValues { (_, requirements) ->
+                val map = TreeRangeSet.create<Double>()
+                for (req in requirements) map.add(Range.closed(req.from, req.to))
+                // ImmutableRangeSet has a faster lookup than TreeRangeSet, but
+                // can't handle overlapping ranges on build
+                ImmutableRangeSet.copyOf(map)
+            }
             return STDCMTimetableData(zoneUses, detailedRequirements)
         }
     }

@@ -83,10 +83,9 @@ fun runScheduleMetadataExtractor(
     val zoneOccupationChangeEvents =
         zoneOccupationChangeEvents(trainPath, envelopeWithStops, rollingStocks)
 
-    val zoneUpdates =
-        zoneOccupationChangeEvents.map {
-            ZoneUpdate(rawInfra.getZoneName(it.zone), it.time, it.offset, it.isEntry)
-        }
+    val zoneUpdates = zoneOccupationChangeEvents.map {
+        ZoneUpdate(rawInfra.getZoneName(it.zone), it.time, it.offset, it.isEntry)
+    }
 
     val pathStops =
         schedule
@@ -235,12 +234,9 @@ fun makeSimpleReportTrain(
             }
     val envelopeStopWrapper = EnvelopeStopWrapper(envelope, stops)
 
-    val pathItemTimes =
-        schedule.map { item: SimulationScheduleItem ->
-            TimeDelta.fromSeconds(
-                envelopeStopWrapper.interpolateArrivalAt((item.pathOffset.meters))
-            )
-        }
+    val pathItemTimes = schedule.map { item: SimulationScheduleItem ->
+        TimeDelta.fromSeconds(envelopeStopWrapper.interpolateArrivalAt((item.pathOffset.meters)))
+    }
 
     // Iterate over the points and simplify the results
     val points = envelopeStopWrapper.iteratePoints()

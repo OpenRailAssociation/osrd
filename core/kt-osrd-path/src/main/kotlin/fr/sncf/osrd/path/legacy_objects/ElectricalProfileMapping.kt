@@ -50,10 +50,9 @@ class ElectricalProfileMapping {
         for (entry in mapping.entries) {
             val powerClass = entry.key
             val byTrackMapping = entry.value
-            res[powerClass] =
-                path.getRangeMapFromUndirected { chunkId ->
-                    getProfilesOnChunk(infra, chunkId, byTrackMapping)
-                }
+            res[powerClass] = path.getRangeMapFromUndirected { chunkId ->
+                getProfilesOnChunk(infra, chunkId, byTrackMapping)
+            }
         }
         return res
     }

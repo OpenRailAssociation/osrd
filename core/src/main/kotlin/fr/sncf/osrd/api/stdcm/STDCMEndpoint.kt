@@ -320,7 +320,8 @@ class STDCMEndpoint(
                 provisional = simpleReportTrain,
                 finalOutput = reportTrain,
                 mrsp = makeMRSPResponse(speedLimits),
-                electricalProfiles = buildSTDCMElectricalProfiles(path, path.rollingStocks, comfort),
+                electricalProfiles =
+                    buildSTDCMElectricalProfiles(path, path.rollingStocks, comfort),
             )
         }
 
@@ -331,29 +332,28 @@ class STDCMEndpoint(
             comfort: Comfort,
         ): RangeValues<ElectricalProfileValue> {
             var currentOffset = 0.0.meters
-            val electricalProfiles =
-                rollingStocks.map {
-                    val electrificationMap =
-                        path.trainPath
-                            .subPath(Offset(it.lower), Offset(it.upper))
-                            .getElectrificationMap(
-                                it.value.basePowerClass,
-                                offsetRangeMapOf(),
-                                it.value.powerRestrictions,
-                                false,
-                            )
-                    val curvesAndConditions =
-                        it.value.mapTractiveEffortCurves(electrificationMap, comfort)
-                    val electrificationRanges =
-                        ElectrificationRange.from(
-                            curvesAndConditions.conditions,
-                            electrificationMap,
+            val electricalProfiles = rollingStocks.map {
+                val electrificationMap =
+                    path.trainPath
+                        .subPath(Offset(it.lower), Offset(it.upper))
+                        .getElectrificationMap(
+                            it.value.basePowerClass,
+                            offsetRangeMapOf(),
+                            it.value.powerRestrictions,
+                            false,
                         )
-                    val electricalProfiles =
-                        makeElectricalProfiles(electrificationRanges).shifted(currentOffset)
-                    currentOffset = it.upper
-                    electricalProfiles
-                }
+                val curvesAndConditions =
+                    it.value.mapTractiveEffortCurves(electrificationMap, comfort)
+                val electrificationRanges =
+                    ElectrificationRange.from(
+                        curvesAndConditions.conditions,
+                        electrificationMap,
+                    )
+                val electricalProfiles =
+                    makeElectricalProfiles(electrificationRanges).shifted(currentOffset)
+                currentOffset = it.upper
+                electricalProfiles
+            }
             return electricalProfiles.reduce { acc, newRange ->
                 RangeValues(
                     internalBoundaries = acc.internalBoundaries + newRange.internalBoundaries,

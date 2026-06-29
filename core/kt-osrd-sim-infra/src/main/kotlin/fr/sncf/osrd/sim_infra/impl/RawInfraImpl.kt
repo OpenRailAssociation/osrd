@@ -216,17 +216,16 @@ class RawInfraImpl(
     private val detectorNameMap: HashMap<String, DetectorId> = HashMap()
     private val cachePerDirTrackChunk = IdxMap<DirTrackChunkId, MutableList<TrackChunkSignal>>()
     private val cachePerZonePath: StaticPool<ZonePath, ZonePathCache>
-    private val trackChunksBounds =
-        trackSectionPool.map {
-            val chunkCount = it.chunks.size
-            val bounds = MutableOffsetArray<TrackSection>(chunkCount + 1) { Offset.zero() }
-            var curOffset = Offset<TrackSection>(Distance.ZERO)
-            for (i in 0 until chunkCount) {
-                curOffset += getTrackChunkLength(it.chunks[i]).distance
-                bounds[i + 1] = curOffset
-            }
-            bounds.immutableCopyOf()
+    private val trackChunksBounds = trackSectionPool.map {
+        val chunkCount = it.chunks.size
+        val bounds = MutableOffsetArray<TrackSection>(chunkCount + 1) { Offset.zero() }
+        var curOffset = Offset<TrackSection>(Distance.ZERO)
+        for (i in 0 until chunkCount) {
+            curOffset += getTrackChunkLength(it.chunks[i]).distance
+            bounds[i + 1] = curOffset
         }
+        bounds.immutableCopyOf()
+    }
     private val chunkToZoneMap =
         zonePathPool
             .flatMap { zonePathId ->
@@ -352,77 +351,74 @@ class RawInfraImpl(
         }
 
         // for each zone, precompute its length and the offset of signals
-        cachePerZonePath =
-            zonePathPool.map {
-                var zonePathLength = Length<ZonePath>(0.meters)
-                val signals = mutableStaticIdxArrayListOf<PhysicalSignal>()
-                val signalPositions = mutableOffsetArrayListOf<ZonePath>()
-                for (dirChunk in it.chunks) {
-                    val chunkDescriptor = trackChunkPool[dirChunk.value]
-                    val chunkLength = chunkDescriptor.length
-                    val trackChunkSignals = cachePerDirTrackChunk[dirChunk]
-                    if (trackChunkSignals != null)
-                        for (chunkSignal in trackChunkSignals) {
-                            val signalZonePathOffset =
-                                zonePathLength + chunkSignal.directedOffset.distance
+        cachePerZonePath = zonePathPool.map {
+            var zonePathLength = Length<ZonePath>(0.meters)
+            val signals = mutableStaticIdxArrayListOf<PhysicalSignal>()
+            val signalPositions = mutableOffsetArrayListOf<ZonePath>()
+            for (dirChunk in it.chunks) {
+                val chunkDescriptor = trackChunkPool[dirChunk.value]
+                val chunkLength = chunkDescriptor.length
+                val trackChunkSignals = cachePerDirTrackChunk[dirChunk]
+                if (trackChunkSignals != null)
+                    for (chunkSignal in trackChunkSignals) {
+                        val signalZonePathOffset =
+                            zonePathLength + chunkSignal.directedOffset.distance
 
-                            // skip signals which are at position zero. This hack is related to the
-                            // other hack
-                            // below, and can also be removed once detectors / signals are not
-                            // allowed to be on switches,
-                            // and merging of track sections connected by links is implemented.
-                            assert(signalZonePathOffset >= Offset(0.meters))
-                            if (signalZonePathOffset.distance.millimeters == 0L) continue
+                        // skip signals which are at position zero. This hack is related to the
+                        // other hack
+                        // below, and can also be removed once detectors / signals are not
+                        // allowed to be on switches,
+                        // and merging of track sections connected by links is implemented.
+                        assert(signalZonePathOffset >= Offset(0.meters))
+                        if (signalZonePathOffset.distance.millimeters == 0L) continue
 
-                            signals.add(chunkSignal.signal)
-                            signalPositions.add(signalZonePathOffset)
-                        }
-                    zonePathLength += chunkLength.distance
-                }
+                        signals.add(chunkSignal.signal)
+                        signalPositions.add(signalZonePathOffset)
+                    }
+                zonePathLength += chunkLength.distance
+            }
 
-                // if the zone path switches to a new track section, then ends with a detector at
-                // the exact start of this track section, fetch signals on the starting chunk
-                // aligned with the zone path.
-                // This hack is required while detectors / signals are allowed to be on switches,
-                // and merging of track sections connected by links is unimplemented.
-                val lastChunkTrackSection =
-                    trackChunkPool[it.chunks[it.chunks.size - 1].value].track
-                val endDetector = it.exit
-                val endDetectorDescriptor = detectorPool[endDetector.value]
-                val endDetectorTrackSection = endDetectorDescriptor.trackSection
-                if (lastChunkTrackSection != endDetectorTrackSection) {
-                    // this case should only happen if the detector is _just_ where it shouldn't be:
-                    // on a switch
-                    assert(
-                        getDetectorTrackOffset(endDetector.value) ==
-                            when (endDetector.direction) {
-                                Direction.INCREASING -> Offset(0.meters)
-                                Direction.DECREASING ->
-                                    getTrackSectionLength(endDetectorTrackSection)
-                            }
-                    )
-
-                    // find the chunk where the extra signals may be
-                    val chunks = trackSectionPool[endDetectorTrackSection].chunks
-                    val extraTrackChunk =
+            // if the zone path switches to a new track section, then ends with a detector at
+            // the exact start of this track section, fetch signals on the starting chunk
+            // aligned with the zone path.
+            // This hack is required while detectors / signals are allowed to be on switches,
+            // and merging of track sections connected by links is unimplemented.
+            val lastChunkTrackSection = trackChunkPool[it.chunks[it.chunks.size - 1].value].track
+            val endDetector = it.exit
+            val endDetectorDescriptor = detectorPool[endDetector.value]
+            val endDetectorTrackSection = endDetectorDescriptor.trackSection
+            if (lastChunkTrackSection != endDetectorTrackSection) {
+                // this case should only happen if the detector is _just_ where it shouldn't be:
+                // on a switch
+                assert(
+                    getDetectorTrackOffset(endDetector.value) ==
                         when (endDetector.direction) {
-                            Direction.INCREASING -> chunks[0].increasing
-                            Direction.DECREASING -> chunks[chunks.size - 1].decreasing
+                            Direction.INCREASING -> Offset(0.meters)
+                            Direction.DECREASING -> getTrackSectionLength(endDetectorTrackSection)
                         }
+                )
 
-                    // add all signals touching the node
-                    val trackChunkSignals = cachePerDirTrackChunk[extraTrackChunk]
-                    if (trackChunkSignals != null) {
-                        for (signal in trackChunkSignals) {
-                            if (signal.directedOffset.distance == 0.meters) {
-                                signals.add(signal.signal)
-                                signalPositions.add(zonePathLength)
-                            }
+                // find the chunk where the extra signals may be
+                val chunks = trackSectionPool[endDetectorTrackSection].chunks
+                val extraTrackChunk =
+                    when (endDetector.direction) {
+                        Direction.INCREASING -> chunks[0].increasing
+                        Direction.DECREASING -> chunks[chunks.size - 1].decreasing
+                    }
+
+                // add all signals touching the node
+                val trackChunkSignals = cachePerDirTrackChunk[extraTrackChunk]
+                if (trackChunkSignals != null) {
+                    for (signal in trackChunkSignals) {
+                        if (signal.directedOffset.distance == 0.meters) {
+                            signals.add(signal.signal)
+                            signalPositions.add(zonePathLength)
                         }
                     }
                 }
-                ZonePathCache(zonePathLength, signals, signalPositions)
             }
+            ZonePathCache(zonePathLength, signals, signalPositions)
+        }
 
         // initialize the physical signal to logical signal map
         for (physicalSignal in physicalSignalPool) {

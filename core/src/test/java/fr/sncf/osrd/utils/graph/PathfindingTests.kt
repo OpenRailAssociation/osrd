@@ -74,7 +74,13 @@ class PathfindingTests {
                     10.meters,
                     Length(10.meters),
                 ),
-                BlockRange(block34, Offset(0.meters), Offset(20.meters), 0.meters, Length(0.meters)),
+                BlockRange(
+                    block34,
+                    Offset(0.meters),
+                    Offset(20.meters),
+                    0.meters,
+                    Length(0.meters),
+                ),
             ),
             res!!.getAllBlocks().toList(),
         )
@@ -110,7 +116,13 @@ class PathfindingTests {
                     19.meters,
                     Length(19.meters),
                 ),
-                BlockRange(block34, Offset(0.meters), Offset(19.meters), 0.meters, Length(0.meters)),
+                BlockRange(
+                    block34,
+                    Offset(0.meters),
+                    Offset(19.meters),
+                    0.meters,
+                    Length(0.meters),
+                ),
             ),
             res!!.getAllBlocks().toList(),
         )

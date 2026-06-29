@@ -53,11 +53,10 @@ fun makeSignalingSystemConstraints(
     signalingSimulator: SignalingSimulator,
     rollingStocks: Collection<RollingStock>,
 ): SignalingSystemConstraints {
-    val rsSupportedSigSystems =
-        rollingStocks.map { stock ->
-            stock.supportedSignalingSystems.mapNotNull {
-                signalingSimulator.sigModuleManager.findSignalingSystem(it)
-            }
+    val rsSupportedSigSystems = rollingStocks.map { stock ->
+        stock.supportedSignalingSystems.mapNotNull {
+            signalingSimulator.sigModuleManager.findSignalingSystem(it)
         }
+    }
     return SignalingSystemConstraints(blockInfra, rsSupportedSigSystems)
 }

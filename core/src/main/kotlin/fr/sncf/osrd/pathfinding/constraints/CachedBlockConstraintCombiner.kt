@@ -90,10 +90,9 @@ fun initConstraintsFromRSProps(
         )
     }
     res.add(LoadingGaugeConstraints(infra.blockInfra, infra.rawInfra, rollingStockLoadingGauge))
-    val sigSystemIds =
-        rollingStockSupportedSignalingSystems.mapNotNull {
-            infra.signalingSimulator.sigModuleManager.findSignalingSystem(it)
-        }
+    val sigSystemIds = rollingStockSupportedSignalingSystems.mapNotNull {
+        infra.signalingSimulator.sigModuleManager.findSignalingSystem(it)
+    }
     res.add(SignalingSystemConstraints(infra.blockInfra, listOf(sigSystemIds)))
     if (allowedTrackSections.isNotEmpty())
         res.add(TrackSectionConstraints(infra.blockInfra, infra.rawInfra, allowedTrackSections))

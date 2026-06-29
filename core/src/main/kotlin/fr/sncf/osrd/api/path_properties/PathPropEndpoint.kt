@@ -56,22 +56,21 @@ class PathPropEndpoint(private val infraManager: InfraProvider) : Take {
         trackRanges: List<DirectionalTrackRange>,
         backtrackLocations: List<Offset<PhysicsPath>>,
     ): TrainPath {
-        val partialTrackRanges =
-            trackRanges.map {
-                val track =
-                    infra.rawInfra.getTrackSectionFromName(it.trackSection)
-                        ?: throw newUnknownTrackSectionError(it.trackSection)
-                val dir = it.direction.toDirection()
-                val trackLength = infra.rawInfra.getTrackSectionLength(track)
-                val begin = it.begin.toDirected(trackLength, dir)
-                val end = it.end.toDirected(trackLength, dir)
-                PartialDirTrackRange(
-                    DirTrackSectionId(track, dir),
-                    min(begin, end),
-                    max(begin, end),
-                    trackLength.forceDirected(),
-                )
-            }
+        val partialTrackRanges = trackRanges.map {
+            val track =
+                infra.rawInfra.getTrackSectionFromName(it.trackSection)
+                    ?: throw newUnknownTrackSectionError(it.trackSection)
+            val dir = it.direction.toDirection()
+            val trackLength = infra.rawInfra.getTrackSectionLength(track)
+            val begin = it.begin.toDirected(trackLength, dir)
+            val end = it.end.toDirected(trackLength, dir)
+            PartialDirTrackRange(
+                DirTrackSectionId(track, dir),
+                min(begin, end),
+                max(begin, end),
+                trackLength.forceDirected(),
+            )
+        }
         val trackRanges = buildRangeList(partialTrackRanges)
         return buildTrainPathFromTracks(
             infra.rawInfra,
