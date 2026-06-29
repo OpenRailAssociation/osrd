@@ -18,7 +18,7 @@ const UploadFileModal = ({ handleSubmit }: UploadFileModalProps) => {
   const [selectedFile, setSelectedFile] = useState<File | undefined>(undefined);
   const inputId = useId();
 
-  const handleDrop = (event: React.DragEvent<HTMLLabelElement>) => {
+  const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault();
     const droppedFiles = event.dataTransfer.files;
     if (droppedFiles.length > 0) {
@@ -30,34 +30,30 @@ const UploadFileModal = ({ handleSubmit }: UploadFileModalProps) => {
   return (
     <>
       <ModalBodySNCF>
-        <label
-          htmlFor={inputId}
-          className="input-file"
-          onDrop={handleDrop}
-          onDragOver={(event) => event.preventDefault()}
-          data-testid="upload-file-modal-dropzone"
-        >
-          <div className="text-primary text-center">
-            <Download />
-          </div>
+        <div onDrop={handleDrop} onDragOver={(event) => event.preventDefault()}>
+          <label htmlFor={inputId} className="input-file" data-testid="upload-file-modal-dropzone">
+            <div className="text-primary text-center">
+              <Download />
+            </div>
 
-          <span className="">
-            {selectedFile ? t('selectedFile', { fileName: selectedFile.name }) : t('chooseFile')}
-          </span>
+            <span className="">
+              {selectedFile ? t('selectedFile', { fileName: selectedFile.name }) : t('chooseFile')}
+            </span>
 
-          <input
-            id={inputId}
-            type="file"
-            name="file"
-            hidden
-            accept=".json,.txt,.xml,.railml"
-            onChange={(e) =>
-              setSelectedFile(
-                e.target.files && e.target.files.length > 0 ? e.target.files[0] : undefined
-              )
-            }
-          />
-        </label>
+            <input
+              id={inputId}
+              type="file"
+              name="file"
+              hidden
+              accept=".json,.txt,.xml,.railml"
+              onChange={(e) =>
+                setSelectedFile(
+                  e.target.files && e.target.files.length > 0 ? e.target.files[0] : undefined
+                )
+              }
+            />
+          </label>
+        </div>
       </ModalBodySNCF>
       <ModalFooterSNCF>
         <div className="w-100">
