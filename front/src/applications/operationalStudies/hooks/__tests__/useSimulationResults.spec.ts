@@ -110,6 +110,7 @@ describe('useSimulationResults', () => {
     geometry: { type: 'LineString', coordinates: [] },
     operational_points: [],
     slopes: { boundaries: [], values: [0] },
+    geom_projection: { topo_offsets: [0, 1000], geom_offsets: [0, 900] },
   } as unknown as PathProperties;
 
   const preparedPathPropertiesBase = {

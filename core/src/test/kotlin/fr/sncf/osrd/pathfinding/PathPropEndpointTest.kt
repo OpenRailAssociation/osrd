@@ -5,7 +5,9 @@ import fr.sncf.osrd.api.DirectionalTrackRange
 import fr.sncf.osrd.api.RangeValues
 import fr.sncf.osrd.api.path_properties.*
 import fr.sncf.osrd.cli.RqFake
+import fr.sncf.osrd.geom.Point
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection
+import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
 import kotlin.test.assertEquals
@@ -86,6 +88,30 @@ class PathPropEndpointTest : ApiTest() {
                 ),
             )
         assertEquals(parsed.operationalPoints, oPs)
+        // Check topological distance to geometric distance projection
+        val trackTA0GeoLength = Point(49.5, -0.4).distanceAsMeters(Point(49.5, -0.365)) * 1000
+        val trackTA1GeoLength = Point(49.4999, -0.4).distanceAsMeters(Point(49.4999, -0.37)) * 1000
+        val firstTrackRangeProportion = 1950.0 / 2000.0
+        val firstTrackRangeLength = (firstTrackRangeProportion * trackTA0GeoLength).toLong()
+        val secondTrackRangeLength = trackTA1GeoLength.toLong()
+        // The repetition of the last two values is because of a null-length range
+        // on the TA3 track section
+        val geomProjection =
+            GeometricProjection(
+                listOf(
+                    Offset.zero(),
+                    Offset(1_950.meters),
+                    Offset(3_900.meters),
+                    Offset(3_900.meters),
+                ),
+                listOf(
+                    Offset.zero(),
+                    Offset(Distance(firstTrackRangeLength)),
+                    Offset(Distance(firstTrackRangeLength + secondTrackRangeLength)),
+                    Offset(Distance(firstTrackRangeLength + secondTrackRangeLength)),
+                ),
+            )
+        assertEquals(geomProjection, parsed.geomProjection)
     }
 
     @Test

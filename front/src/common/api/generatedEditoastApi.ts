@@ -3667,6 +3667,14 @@ export type InfraObjectWithGeometry = {
   obj_id: string;
   railjson: object;
 };
+export type CorePropertyGeometryProjection = {
+  /** Geometric offsets in millimeters.
+    Starts with 0 and is increasing. */
+  geom_offsets: number[];
+  /** Topological offsets in millimeters.
+    Starts with 0 and is increasing. */
+  topo_offsets: number[];
+};
 export type CoreOperationalPointOnPath = {
   country_code: string;
   /** Id of the operational point */
@@ -3715,6 +3723,8 @@ export type PathProperties = {
         }
     )[];
   };
+  /** Curve to map topologic offset to geometric offset on the path */
+  geom_projection: CorePropertyGeometryProjection;
   /** Geometry of the path */
   geometry: GeoJsonLineString;
   /** Operational points along the path */

@@ -324,7 +324,7 @@ data class TrainPathImpl(
         return distanceRangeMapOf(entries)
     }
 
-    private fun getTrackRanges(): List<DirTrackRange> {
+    override fun getTrackRanges(): List<DirTrackRange> {
         val partialTrackRanges = mutableListOf<PartialDirTrackRange>()
         for (chunkRange in chunks) {
             val dirChunkId = chunkRange.value
