@@ -128,7 +128,7 @@ const SimulationResultMap = ({
           }
 
           return {
-            id: step.id,
+            id: step.key,
             markerIndicator,
             name,
             coordinates,
@@ -152,13 +152,13 @@ const SimulationResultMap = ({
           if (!coordinates) return null;
 
           return {
-            id: step.id,
+            id: step.key,
             markerIndicator,
             name: matchedOp.name,
             coordinates,
           };
         } else {
-          const matchedOp = matchedOps.get(step.id);
+          const matchedOp = matchedOps.get(step.key);
 
           const { local_track_name } = location;
           const coordinates = local_track_name
@@ -172,7 +172,7 @@ const SimulationResultMap = ({
           }
 
           return {
-            id: step.id,
+            id: step.key,
             markerIndicator,
             name: matchedOp.name,
             coordinates,

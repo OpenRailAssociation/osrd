@@ -21,12 +21,12 @@ const computeInsertIndex = (
 ): number => {
   // Build a map of pathStepId -> opOnPathIndex from rows that are path steps
   const pathStepOpIndices = new Map(
-    allRows.filter((r) => r.pathStepId).map((r) => [r.pathStepId!, r.opOnPathIndex])
+    allRows.filter((r) => r.pathStepKey).map((r) => [r.pathStepKey!, r.opOnPathIndex])
   );
 
   // Find the first PathStep whose opOnPathIndex is greater than the edited OP's
   const foundIndex = currentPath.findIndex((step) => {
-    const opIndex = pathStepOpIndices.get(step.id);
+    const opIndex = pathStepOpIndices.get(step.key);
     return opIndex !== undefined && opIndex > editedOpIndex;
   });
 
@@ -38,16 +38,16 @@ export const upsertPathStep = (
   editedRow: TimesStopsRowNew,
   currentPath: PathItem[],
   allRows: TimesStopsRowNew[]
-): { pathStepId: string; updatedPath: PathItem[] } => {
-  if (editedRow.pathStepId) {
-    return { pathStepId: editedRow.pathStepId, updatedPath: currentPath };
+): { pathStepKey: string; updatedPath: PathItem[] } => {
+  if (editedRow.pathStepKey) {
+    return { pathStepKey: editedRow.pathStepKey, updatedPath: currentPath };
   }
 
-  const newPathStep: PathItem = { id: uuidV4(), location: editedRow.location };
+  const newPathStep: PathItem = { key: uuidV4(), location: editedRow.location };
   const insertIndex = computeInsertIndex(editedRow.opOnPathIndex, allRows, currentPath);
   const updatedPath = addElementAtIndex(currentPath, insertIndex, newPathStep);
 
-  return { pathStepId: newPathStep.id, updatedPath };
+  return { pathStepKey: newPathStep.key, updatedPath };
 };
 
 /** Compute departure from arrival and stop duration. */
@@ -143,8 +143,8 @@ export const scheduleStateToApiFields = (
   stop_for: state.stop !== null ? state.stop.toISOString() : null,
 });
 
-const getPathIndex = (pathStepId: string, path: PathItem[]) =>
-  path.findIndex((step) => step.id === pathStepId);
+const getPathIndex = (pathStepKey: string, path: PathItem[]) =>
+  path.findIndex((step) => step.key === pathStepKey);
 
 /**
  * Insert a schedule item at the correct position to maintain path order.
@@ -229,7 +229,7 @@ export const propagationToEdits = (
   rows: TimesStopsRowNew[]
 ): PendingEdit[] =>
   rows.flatMap((row) => {
-    const item = result.updatedSchedule.find((s) => s.at === row.pathStepId);
+    const item = result.updatedSchedule.find((s) => s.at === row.pathStepKey);
     if (!item?.arrival) return [];
     const newArrival = new Date(
       result.updatedStartTime.getTime() + Duration.parse(item.arrival).ms
@@ -253,19 +253,19 @@ export const propagationToEdits = (
 export const buildPowerRestrictionsFromRows = (
   rows: TimesStopsRowNew[]
 ): PowerRestrictionItem[] => {
-  const pathStepRows = rows.filter((r) => r.pathStepId);
+  const pathStepRows = rows.filter((r) => r.pathStepKey);
   const result: PowerRestrictionItem[] = [];
 
   for (let i = 0; i < pathStepRows.length - 1; i++) {
     const code = pathStepRows[i].powerRestriction;
     if (!code) continue;
 
-    const from = pathStepRows[i].pathStepId!;
+    const from = pathStepRows[i].pathStepKey!;
     let j = i + 1;
     while (j < pathStepRows.length - 1 && !pathStepRows[j].powerRestriction) {
       j++;
     }
-    const to = pathStepRows[j].pathStepId!;
+    const to = pathStepRows[j].pathStepKey!;
     result.push({ from, to, value: code });
   }
 

@@ -412,7 +412,7 @@ const SendToRailwayManagerModal = ({
                 if (!step.isVia) return null;
                 const stopType = step.consistChange ? StdcmStopTypes.CONSIST_CHANGE : step.stopType;
                 return (
-                  <li key={step.id}>
+                  <li key={step.key}>
                     {t('modal.stop', {
                       minutes: getStopDurationTime(step.stopFor),
                       stopAt: `${step.operationalPoint?.name} ${step.operationalPoint?.secondaryCode}`,

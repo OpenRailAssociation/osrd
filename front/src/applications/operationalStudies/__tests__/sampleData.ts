@@ -358,7 +358,7 @@ export const uniqueTrainHonored: TrainScheduleResponse = {
   start_time: new Date('2024-08-02T12:00:00Z').getTime(),
   path: [
     {
-      id: 'id440',
+      key: 'id440',
       location: {
         type: 'track_offset',
         track: 'TA0',
@@ -366,7 +366,7 @@ export const uniqueTrainHonored: TrainScheduleResponse = {
       },
     },
     {
-      id: 'id450',
+      key: 'id450',
       location: {
         type: 'track_offset',
         track: 'TG1',

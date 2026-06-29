@@ -14,7 +14,7 @@ import type { OccurrenceId } from 'reducers/osrdconf/types';
 import type { Duration } from 'utils/duration';
 
 export type SuggestedOP = {
-  pathStepId: string | undefined;
+  pathStepKey: string | undefined;
   opId: string | undefined;
   name: string | undefined;
   uic?: number | null;

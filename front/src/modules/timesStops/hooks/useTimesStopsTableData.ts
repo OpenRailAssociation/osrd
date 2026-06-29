@@ -49,7 +49,7 @@ const getPowerRestrictionForPathStep = (
 
 type BuildTableRowParams = {
   id: string;
-  pathStepId: string | null;
+  pathStepKey: string | null;
   opOnPathIndex: number;
   name?: string;
   secondaryCode?: string | null;
@@ -70,7 +70,7 @@ type BuildTableRowParams = {
 
 const buildTableRow = ({
   id,
-  pathStepId,
+  pathStepKey,
   opOnPathIndex,
   name,
   secondaryCode,
@@ -139,7 +139,7 @@ const buildTableRow = ({
 
   return {
     id,
-    pathStepId,
+    pathStepKey,
     stepStatus,
     opOnPathIndex,
     name: name ?? '',
@@ -248,11 +248,11 @@ const useTimesStopsTableData = (
   const allRows = useMemo(() => {
     const startDate = new Date(selectedTrain.start_time);
     const scheduleByAt = keyBy(selectedTrain.schedule, 'at');
-    const pathIdToIndex = new Map(selectedTrain.path.map((step, idx) => [step.id, idx]));
+    const pathIdToIndex = new Map(selectedTrain.path.map((step, idx) => [step.key, idx]));
 
     const pathStepRowsById = new Map(
       selectedTrain.path.map((pathStep, stepIndex) => {
-        const pathStepOp = pathStepOps.get(pathStep.id);
+        const pathStepOp = pathStepOps.get(pathStep.key);
 
         const matchingOp =
           pathStepOp ??
@@ -282,7 +282,7 @@ const useTimesStopsTableData = (
         const hasRequestedTrack =
           pathStepLocation.type === 'track_offset' || !!pathStepLocation.local_track_name;
 
-        const schedule = { ...scheduleByAt[pathStep.id] };
+        const schedule = { ...scheduleByAt[pathStep.key] };
         if (stepIndex === 0) schedule.arrival = 'PT0S'; // The first step has no stored scheduled arrival as redundant with start date
         const computedArrival =
           stablePathItemTimes?.final[stepIndex] !== undefined
@@ -311,8 +311,8 @@ const useTimesStopsTableData = (
         );
 
         const row = buildTableRow({
-          id: `path-step-${pathStep.id}`,
-          pathStepId: pathStep.id,
+          id: `path-step-${pathStep.key}`,
+          pathStepKey: pathStep.key,
           // opOnPathIndex is a placeholder here (-1), it will be replaced by opIndex when matching with operationalPointsOnPath
           opOnPathIndex: -1,
           name,
@@ -333,7 +333,7 @@ const useTimesStopsTableData = (
           margins,
         });
 
-        return [pathStep.id, row];
+        return [pathStep.key, row];
       })
     );
 
@@ -350,7 +350,7 @@ const useTimesStopsTableData = (
         );
 
         const matchingPathStepRow = matchingPathStep
-          ? pathStepRowsById.get(matchingPathStep.id)
+          ? pathStepRowsById.get(matchingPathStep.key)
           : undefined;
 
         if (matchingPathStepRow) {
@@ -388,7 +388,7 @@ const useTimesStopsTableData = (
           formattedRows.push({
             ...buildTableRow({
               id: `op-${op.id}-${op.position}`,
-              pathStepId: null,
+              pathStepKey: null,
               opOnPathIndex: opIndex,
               name: op.name,
               secondaryCode: op.secondary_code,
@@ -432,7 +432,7 @@ const useTimesStopsTableData = (
   ]);
 
   const filteredRows = useMemo(
-    () => (displayOnlyPathSteps ? allRows.filter((row) => row.pathStepId) : allRows),
+    () => (displayOnlyPathSteps ? allRows.filter((row) => row.pathStepKey) : allRows),
     [allRows, displayOnlyPathSteps]
   );
 

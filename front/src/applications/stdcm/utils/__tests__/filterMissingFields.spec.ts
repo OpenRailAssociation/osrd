@@ -8,7 +8,7 @@ import filterMissingFields from '../filterMissingFields';
 
 describe('filterMissingFields', () => {
   const makePathStep = (hasOP = true): StdcmPathStep => ({
-    id: 'step',
+    key: 'step',
     isVia: false,
     arrivalType: ArrivalTimeTypes.ASAP,
     tolerances: { before: new Duration({ seconds: 0 }), after: new Duration({ seconds: 0 }) },
@@ -25,7 +25,7 @@ describe('filterMissingFields', () => {
   });
 
   const makeViaStep = (totalMass?: number, totalLength?: number, hasOP = true): StdcmPathStep => ({
-    id: 'via',
+    key: 'via',
     isVia: true,
     stopType: StdcmStopTypes.SERVICE_STOP,
     consistChange: { totalMass, totalLength },

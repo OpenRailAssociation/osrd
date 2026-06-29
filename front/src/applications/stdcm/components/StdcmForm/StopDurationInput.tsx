@@ -52,7 +52,7 @@ const StopDurationInput = ({ pathStep }: StopDurationInputProps) => {
     if (newStopDuration?.ms !== pathStep.stopFor?.ms) {
       dispatch(
         updateStdcmPathStep({
-          id: pathStep.id,
+          key: pathStep.key,
           updates: { stopFor: newStopDuration },
         })
       );

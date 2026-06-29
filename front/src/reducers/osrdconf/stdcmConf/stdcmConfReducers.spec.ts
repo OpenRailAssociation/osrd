@@ -86,7 +86,7 @@ const stdcmPathSteps: StdcmPathStep[] = [
       name: 'Brest',
       coordinates: [48.38819835024553, -4.478289762812405],
     },
-    id: '0',
+    key: '0',
     isVia: false,
     arrivalType: ArrivalTimeTypes.PRECISE_TIME,
     tolerances: {
@@ -103,7 +103,7 @@ const stdcmPathSteps: StdcmPathStep[] = [
       name: 'Rennes',
       coordinates: [48.10326700633057, -1.6719908615098822],
     },
-    id: '1',
+    key: '1',
     isVia: true,
     stopType: StdcmStopTypes.PASSAGE_TIME,
     consistChange: undefined,
@@ -117,7 +117,7 @@ const stdcmPathSteps: StdcmPathStep[] = [
       name: 'Lemans',
       coordinates: [47.99542250806296, 0.1918181738752042],
     },
-    id: '2',
+    key: '2',
     isVia: true,
     stopType: StdcmStopTypes.PASSAGE_TIME,
     consistChange: undefined,
@@ -131,7 +131,7 @@ const stdcmPathSteps: StdcmPathStep[] = [
       name: 'Paris',
       coordinates: [48.904852473668086, 2.4369545094357736],
     },
-    id: '3',
+    key: '3',
     isVia: true,
     stopType: StdcmStopTypes.PASSAGE_TIME,
     consistChange: undefined,
@@ -145,7 +145,7 @@ const stdcmPathSteps: StdcmPathStep[] = [
       name: 'Strasbourg',
       coordinates: [48.58505541984412, 7.73387081978364],
     },
-    id: '4',
+    key: '4',
     isVia: false,
     arrivalType: ArrivalTimeTypes.PRECISE_TIME,
     tolerances: {
@@ -322,7 +322,7 @@ describe('stdcmConfReducers', () => {
         },
       };
 
-      store.dispatch(updateStdcmPathStep({ id: origin.id, updates }));
+      store.dispatch(updateStdcmPathStep({ key: origin.key, updates }));
       const state = store.getState()[stdcmConfSlice.name];
       expect(state.stdcmPathSteps.at(0)).toEqual({ ...origin, ...updates });
     });
@@ -335,7 +335,7 @@ describe('stdcmConfReducers', () => {
         stopFor: new Duration({ minutes: 1 }),
       };
 
-      store.dispatch(updateStdcmPathStep({ id: via.id, updates }));
+      store.dispatch(updateStdcmPathStep({ key: via.key, updates }));
       const state = store.getState()[stdcmConfSlice.name];
       expect(state.stdcmPathSteps.at(1)).toEqual({ ...via, ...updates });
     });
@@ -352,7 +352,7 @@ describe('stdcmConfReducers', () => {
         },
       };
 
-      store.dispatch(updateStdcmPathStep({ id: destination.id, updates }));
+      store.dispatch(updateStdcmPathStep({ key: destination.key, updates }));
       const state = store.getState()[stdcmConfSlice.name];
       expect(state.stdcmPathSteps.at(-1)).toEqual({ ...destination, ...updates });
     });

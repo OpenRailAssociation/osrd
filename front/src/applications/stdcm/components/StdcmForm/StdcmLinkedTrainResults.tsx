@@ -32,7 +32,7 @@ const StdcmLinkedTrainResults = ({
                   linkedTrainExtremity: extremityType,
                   trainName,
                   pathStep: linkedTrainResults[0][extremityType],
-                  pathStepId: id,
+                  pathStepKey: id,
                 })
               );
           }}
@@ -50,7 +50,7 @@ const StdcmLinkedTrainResults = ({
                     linkedTrainExtremity: extremityType,
                     trainName,
                     pathStep: linkedTrainResults[resultIndex][extremityType],
-                    pathStepId: id,
+                    pathStepKey: id,
                   })
                 );
               }}

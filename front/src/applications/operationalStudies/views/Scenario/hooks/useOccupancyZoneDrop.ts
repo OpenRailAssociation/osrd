@@ -84,7 +84,7 @@ function upsertPathStepTrack(
     }
 
     newPath.splice(beforeIndex, 0, {
-      id: uuidV4(),
+      key: uuidV4(),
       location: {
         type: 'operational_point_part_reference',
         operational_point: {

@@ -61,12 +61,12 @@ export function upsertMapWaypointsInOperationalPoints(
           type === 'PathOperationalPoint'
             ? {
                 ...baseFormattedStep,
-                waypointId: step.id,
+                waypointId: step.key,
                 opId: null,
               }
             : {
                 ...baseFormattedStep,
-                id: step.id,
+                id: step.key,
               };
 
         // If we can't find any op position greater than the current step position, we add it at the end

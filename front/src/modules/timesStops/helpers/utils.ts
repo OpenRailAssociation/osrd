@@ -41,7 +41,7 @@ export const formatSuggestedViasToRowVias = (
   // to move it to the first position
   const origin = pathSteps[0];
   const originIndexInOps = origin
-    ? operationalPoints.findIndex((op) => origin.id === op.pathStepId)
+    ? operationalPoints.findIndex((op) => origin.key === op.pathStepKey)
     : -1;
   if (originIndexInOps !== -1) {
     [formattedOps[0], formattedOps[originIndexInOps]] = [
@@ -52,7 +52,9 @@ export const formatSuggestedViasToRowVias = (
 
   // Ditto: destination should be last
   const dest = pathSteps[pathSteps.length - 1];
-  const destIndexInOps = dest ? operationalPoints.findIndex((op) => dest.id === op.pathStepId) : -1;
+  const destIndexInOps = dest
+    ? operationalPoints.findIndex((op) => dest.key === op.pathStepKey)
+    : -1;
   if (destIndexInOps !== -1) {
     const lastOpIndex = formattedOps.length - 1;
     [formattedOps[lastOpIndex], formattedOps[destIndexInOps]] = [
@@ -62,7 +64,7 @@ export const formatSuggestedViasToRowVias = (
   }
 
   return formattedOps.map((op, i) => {
-    const pathStep = pathSteps.find((step) => step.id === op.pathStepId);
+    const pathStep = pathSteps.find((step) => step.key === op.pathStepKey);
     const name = pathStep?.name || op.name;
     const objectToUse = tableType === TableType.Input ? pathStep : op;
 
@@ -91,7 +93,7 @@ export const formatSuggestedViasToRowVias = (
       arrival: formattedArrival,
       departure: formattedDeparture,
       onStopSignal,
-      name: name || t('timeStopTable.waypoint', { id: filteredOp.pathStepId }),
+      name: name || t('timeStopTable.waypoint', { id: filteredOp.pathStepKey }),
       shortSlipDistance,
       stopFor,
       theoreticalMargin,

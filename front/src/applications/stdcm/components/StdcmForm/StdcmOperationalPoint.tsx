@@ -14,7 +14,7 @@ type StdcmOp = NonNullable<StdcmPathStep['operationalPoint']>;
 
 type StdcmOperationalPointProps = {
   operationalPoint?: StdcmOp;
-  pathStepId: string;
+  pathStepKey: string;
   disabled?: boolean;
   onItineraryChange: () => void;
 };
@@ -45,7 +45,7 @@ const extractChCodes = (searchResults: SearchResultItemOperationalPoint[], selec
 
 const StdcmOperationalPoint = ({
   operationalPoint,
-  pathStepId,
+  pathStepKey,
   disabled,
   onItineraryChange,
 }: StdcmOperationalPointProps) => {
@@ -87,7 +87,7 @@ const StdcmOperationalPoint = ({
     const { secondaryCode: _, ...op } = selectedSuggestion ?? { secondaryCode: undefined };
     dispatch(
       updateStdcmPathStep({
-        id: pathStepId,
+        key: pathStepKey,
         updates: { operationalPoint: selectedSuggestion ? (op as StdcmOp) : undefined },
       })
     );
@@ -106,7 +106,7 @@ const StdcmOperationalPoint = ({
     if (selectedChCode) {
       dispatch(
         updateStdcmPathStep({
-          id: pathStepId,
+          key: pathStepKey,
           updates: {
             operationalPoint: selectedChCode,
           },
@@ -157,7 +157,7 @@ const StdcmOperationalPoint = ({
     <div className="location-line">
       <div className="ci-input">
         <ComboBox
-          id={`${pathStepId}-ci`}
+          id={`${pathStepKey}-ci`}
           data-testid="operational-point-ci"
           testIdPrefix="suggestions"
           label={t('trainPath.ci')}
@@ -175,7 +175,7 @@ const StdcmOperationalPoint = ({
       <div className="ch-input">
         <Select
           label={t('trainPath.ch')}
-          id={`${pathStepId}-ch`}
+          id={`${pathStepKey}-ch`}
           data-testid="operational-point-secondary-code"
           value={operationalPoint?.secondaryCode ? operationalPoint : undefined}
           onChange={handleChSelect}

@@ -24,21 +24,21 @@ const powerRestrictionReducer = {
     const { from, to, code } = action.payload;
     let newPathSteps = compact(state.pathSteps);
     let newPowerRestrictionRanges = state.powerRestriction.filter(
-      (restriction) => restriction.from !== from.id && restriction.to !== to.id
+      (restriction) => restriction.from !== from.key && restriction.to !== to.key
     );
 
     // add new pathSteps
     newPathSteps = addPathStep(newPathSteps, from);
     newPathSteps = addPathStep(newPathSteps, to);
 
-    const newPathStepsById = keyBy(newPathSteps, 'id');
+    const newPathStepsByKey = keyBy(newPathSteps, 'key');
 
     // update power restriction ranges
     if (code !== NO_POWER_RESTRICTION) {
-      newPowerRestrictionRanges.push({ from: from.id, to: to.id, value: code });
+      newPowerRestrictionRanges.push({ from: from.key, to: to.key, value: code });
       newPowerRestrictionRanges = sortBy(
         newPowerRestrictionRanges,
-        (range) => newPathStepsById[range.from]?.positionOnPath
+        (range) => newPathStepsByKey[range.from]?.positionOnPath
       );
     }
 
@@ -53,9 +53,9 @@ const powerRestrictionReducer = {
     const { cutAt } = action.payload;
     let newPathSteps = [...state.pathSteps];
 
-    const pathIds = compact(state.pathSteps).map((step) => step.id);
+    const pathKeys = compact(state.pathSteps).map((step) => step.key);
 
-    if (!pathIds.includes(cutAt.id)) {
+    if (!pathKeys.includes(cutAt.key)) {
       const cutAtIndex = newPathSteps.findIndex(
         (step) => step?.positionOnPath && step.positionOnPath > cutAt.positionOnPath!
       );
@@ -73,15 +73,15 @@ const powerRestrictionReducer = {
       } else {
         // update the power restriction ranges by splitting 1 range into 2
         const newPowerRestrictionRanges = state.powerRestriction.reduce((acc, powerRestriction) => {
-          if (powerRestriction.from === prevStep.id) {
+          if (powerRestriction.from === prevStep.key) {
             acc.push({
               ...powerRestriction,
-              to: cutAt.id,
+              to: cutAt.key,
             });
             acc.push({
               ...powerRestriction,
-              from: cutAt.id,
-              to: nextStep.id,
+              from: cutAt.key,
+              to: nextStep.key,
             });
           } else {
             acc.push(powerRestriction);
@@ -107,28 +107,28 @@ const powerRestrictionReducer = {
     let newPathSteps: PathStep[] = [...state.pathSteps];
 
     const powerRestrictionToModify = state.powerRestriction.find(
-      (restriction) => restriction.from === from.id
+      (restriction) => restriction.from === from.key
     );
 
     let newPowerRestrictionRanges: PowerRestriction[] = [];
     if (!powerRestrictionToModify) {
       // we need to remove the next range if it exists
       newPowerRestrictionRanges = state.powerRestriction.filter(
-        (restriction) => restriction.from !== prevTo.id && restriction.to !== newTo.id
+        (restriction) => restriction.from !== prevTo.key && restriction.to !== newTo.key
       );
     } else {
       // replace the previous range by the new one and remove the previous one
       for (const restriction of state.powerRestriction) {
-        if (restriction.from === from.id && restriction.to === prevTo.id) {
-          newPowerRestrictionRanges.push({ ...restriction, to: newTo.id });
-        } else if (restriction.from !== prevTo.id && restriction.to !== newTo.id) {
+        if (restriction.from === from.key && restriction.to === prevTo.key) {
+          newPowerRestrictionRanges.push({ ...restriction, to: newTo.key });
+        } else if (restriction.from !== prevTo.key && restriction.to !== newTo.key) {
           newPowerRestrictionRanges.push(restriction);
         }
       }
 
       // add the new pathStep if needed
-      const pathIds = compact(state.pathSteps).map((step) => step.id);
-      if (!pathIds.includes(newTo.id)) {
+      const pathKeys = compact(state.pathSteps).map((step) => step.key);
+      if (!pathKeys.includes(newTo.key)) {
         const newToIndex = newPathSteps.findIndex(
           (step) => step.positionOnPath && step.positionOnPath > newTo.positionOnPath!
         );
@@ -150,7 +150,7 @@ const powerRestrictionReducer = {
     const { from, to } = action.payload;
 
     const newPowerRestrictionRanges = state.powerRestriction.filter(
-      (restriction) => restriction.from !== from.id && restriction.to !== to.id
+      (restriction) => restriction.from !== from.key && restriction.to !== to.key
     );
 
     const newPathSteps = [...state.pathSteps].map((step) => step!);
@@ -187,7 +187,7 @@ const powerRestrictionReducer = {
         coveredRanges,
         firstRestriction,
         secondRestriction,
-        newFromPathStep.id
+        newFromPathStep.key
       );
 
       // clean pathSteps
@@ -226,7 +226,7 @@ const powerRestrictionReducer = {
         coveredRanges,
         firstRestriction,
         secondRestriction,
-        newEndPathStep.id
+        newEndPathStep.key
       );
 
       // clean pathSteps

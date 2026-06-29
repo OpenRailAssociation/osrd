@@ -26,7 +26,7 @@ const StdcmDestination = ({ disabled = false, onItineraryChange }: StdcmItinerar
     >
       <StdcmOperationalPoint
         operationalPoint={destination.operationalPoint}
-        pathStepId={destination.id}
+        pathStepKey={destination.key}
         disabled={disabled}
         onItineraryChange={onItineraryChange}
       />

@@ -62,14 +62,14 @@ describe('extractOccurrenceDetailsFromPacedTrain', () => {
     start_time: new Date('2024-10-15T03:00:00Z').getTime(),
     path: [
       {
-        id: 'id227',
+        key: 'id227',
         location: {
           type: 'operational_point_part_reference',
           operational_point: { uic: 6, secondary_code: 'BV', type: 'uic' },
         },
       },
       {
-        id: 'id228',
+        key: 'id228',
         location: {
           type: 'operational_point_part_reference',
           operational_point: { uic: 5, secondary_code: 'BV', type: 'uic' },
@@ -137,14 +137,14 @@ describe('extractOccurrenceDetailsFromPacedTrain', () => {
       path_and_schedule: {
         path: [
           {
-            id: 'id225',
+            key: 'id225',
             location: {
               type: 'operational_point_part_reference',
               operational_point: { uic: 6, secondary_code: 'BV', type: 'uic' },
             },
           },
           {
-            id: 'id228',
+            key: 'id228',
             location: {
               type: 'operational_point_part_reference',
               operational_point: { uic: 5, secondary_code: 'BV', type: 'uic' },

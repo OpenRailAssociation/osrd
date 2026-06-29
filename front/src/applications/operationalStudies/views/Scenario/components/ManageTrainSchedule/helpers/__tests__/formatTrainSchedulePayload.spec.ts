@@ -23,7 +23,7 @@ describe('formatTrainSchedulePayload', () => {
     },
     pathSteps: [
       {
-        id: '0-0',
+        key: '0-0',
         location: {
           type: 'operational_point_part_reference',
           operational_point: { trigram: 'WS', secondary_code: 'BV', type: 'trigram' },
@@ -37,7 +37,7 @@ describe('formatTrainSchedulePayload', () => {
         coordinates: [-0.38775000008590166, 49.50000120103261],
       },
       {
-        id: '1-1',
+        key: '1-1',
         location: {
           type: 'operational_point_part_reference',
           operational_point: { trigram: 'SS', secondary_code: 'BV', type: 'trigram' },
@@ -82,7 +82,7 @@ describe('formatTrainSchedulePayload', () => {
         },
         path: [
           {
-            id: '0-0',
+            key: '0-0',
             location: {
               type: 'operational_point_part_reference',
               operational_point: {
@@ -94,7 +94,7 @@ describe('formatTrainSchedulePayload', () => {
             },
           },
           {
-            id: '1-1',
+            key: '1-1',
             location: {
               type: 'operational_point_part_reference',
               operational_point: {

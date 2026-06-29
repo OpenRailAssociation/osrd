@@ -30,28 +30,28 @@ describe('formatPowerRestrictionRanges', () => {
           type: 'operational_point_part_reference',
           operational_point: { uic: 12345, type: 'uic', secondary_code: null },
         },
-        id: 'step1',
+        key: 'step1',
       },
       {
         location: {
           type: 'operational_point_part_reference',
           operational_point: { uic: 45686, type: 'uic' },
         },
-        id: 'step2',
+        key: 'step2',
       },
       {
         location: {
           type: 'operational_point_part_reference',
           operational_point: { uic: 93405, type: 'uic' },
         },
-        id: 'step3',
+        key: 'step3',
       },
       {
         location: {
           type: 'operational_point_part_reference',
           operational_point: { uic: 93405, type: 'uic' },
         },
-        id: 'step4',
+        key: 'step4',
       },
     ];
     const pathStepPositions = [0, 1000, 2000, 3000];

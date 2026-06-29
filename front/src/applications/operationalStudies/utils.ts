@@ -49,10 +49,10 @@ export const intermediateStopsCount = ({
 }) => {
   if (!schedule) return 0;
 
-  const originId = path.at(0)?.id;
-  const destinationId = path.at(-1)?.id;
+  const originKey = path.at(0)?.key;
+  const destinationKey = path.at(-1)?.key;
   const intermediateStops = schedule.filter(
-    (step) => step.stop_for && step.at !== originId && step.at !== destinationId
+    (step) => step.stop_for && step.at !== originKey && step.at !== destinationKey
   );
   return intermediateStops.length;
 };
@@ -236,7 +236,7 @@ export const isScheduledPointsNotHonored = (
 
 export const getPathItemByIndexDict = (trainSchedule: TrainScheduleResponse) =>
   trainSchedule.path.reduce((acc, pathItem, index) => {
-    acc[pathItem.id] = index;
+    acc[pathItem.key] = index;
     return acc;
   }, {} as Dictionary<number>);
 
@@ -362,8 +362,8 @@ export const checkRoundTripCompatible = (
       }
     }
 
-    const scheduleItemA = trainScheduleA.schedule?.find(({ at }) => at === pathItemA.id);
-    const scheduleItemB = trainScheduleB.schedule?.find(({ at }) => at === pathItemB.id);
+    const scheduleItemA = trainScheduleA.schedule?.find(({ at }) => at === pathItemA.key);
+    const scheduleItemB = trainScheduleB.schedule?.find(({ at }) => at === pathItemB.key);
 
     const isStopA = indexA === 0 || Boolean(scheduleItemA?.stop_for);
     const isStopB = indexB === 0 || Boolean(scheduleItemB?.stop_for);

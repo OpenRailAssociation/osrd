@@ -385,8 +385,8 @@ const TimesStopsTable = ({
       return <span data-testid="step-status">&nbsp;</span>;
     }
 
-    const { stepStatus, computedArrival, requestedArrival, pathStepId } = info.row.original;
-    const isPathStep = Boolean(pathStepId);
+    const { stepStatus, computedArrival, requestedArrival, pathStepKey } = info.row.original;
+    const isPathStep = Boolean(pathStepKey);
 
     const isSuccessSchedule =
       requestedArrival &&
@@ -409,10 +409,10 @@ const TimesStopsTable = ({
   };
 
   const returnOPCell = (info: CellContext<TimesStopsRowNew, string>) => {
-    const { name, secondaryCode, pathStepId } = info.row.original;
+    const { name, secondaryCode, pathStepKey } = info.row.original;
     return (
       <>
-        {pathStepId && <span className="requested-point-dot" data-testid="op-name-dot" />}
+        {pathStepKey && <span className="requested-point-dot" data-testid="op-name-dot" />}
         <span
           className="op-full-name"
           data-testid="op-full-name"
@@ -434,10 +434,10 @@ const TimesStopsTable = ({
   );
 
   const returnTrackNameCell = (info: CellContext<TimesStopsRowNew, string>) => {
-    const { pathStepId, hasRequestedTrack } = info.row.original;
+    const { pathStepKey, hasRequestedTrack } = info.row.original;
     return (
       <>
-        {pathStepId && hasRequestedTrack && (
+        {pathStepKey && hasRequestedTrack && (
           <span className="requested-point-dot" data-testid="track-name-dot" />
         )}
         <span data-testid="track-name" title={info.getValue()}>
@@ -677,7 +677,7 @@ const TimesStopsTable = ({
   );
 
   const getRowDayOffset = (row: Row<TimesStopsRowNew>): number | null => {
-    if (!row.original.pathStepId) return null;
+    if (!row.original.pathStepKey) return null;
     const arrival = row.original.computedArrival ?? row.original.requestedArrival;
     if (!arrival) return null;
     return calculateTimeDifferenceInDays(startTime, arrival);

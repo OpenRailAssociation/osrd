@@ -11,7 +11,7 @@ describe('generatePacedTrainException', () => {
   // ===========================================================================
 
   const westStationPathStep: PathItem = {
-    id: '0-0',
+    key: '0-0',
     location: {
       type: 'operational_point_part_reference',
       operational_point: { trigram: 'WS', secondary_code: 'BV', type: 'trigram' },
@@ -20,7 +20,7 @@ describe('generatePacedTrainException', () => {
   };
 
   const southStationPathStep: PathItem = {
-    id: '1-1',
+    key: '1-1',
     location: {
       type: 'operational_point_part_reference',
       operational_point: { trigram: 'SS', secondary_code: 'BV', type: 'trigram' },
@@ -190,7 +190,7 @@ describe('generatePacedTrainException', () => {
     describe('modifying path_and_schedule', () => {
       it('should detect path_and_schedule when path location and schedule change', () => {
         const modifiedSouthPathStep: PathItem = {
-          id: '1-1',
+          key: '1-1',
           location: {
             type: 'operational_point_part_reference',
             operational_point: {

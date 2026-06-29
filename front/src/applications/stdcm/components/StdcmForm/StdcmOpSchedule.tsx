@@ -76,14 +76,14 @@ const StdcmOpSchedule = ({ disabled, pathStep, opId, isOrigin = false }: StdcmOp
     newDate.setHours(hours, minutes);
     dispatch(
       updateStdcmPathStep({
-        id: pathStep.id,
+        key: pathStep.key,
         updates: { arrival: newDate },
       })
     );
   };
 
   const onArrivalTypeChange = (arrivalType: ArrivalTimeTypes) => {
-    dispatch(updateStdcmPathStep({ id: pathStep.id, updates: { arrivalType } }));
+    dispatch(updateStdcmPathStep({ key: pathStep.key, updates: { arrivalType } }));
   };
 
   return (
@@ -157,7 +157,7 @@ const StdcmOpSchedule = ({ disabled, pathStep, opId, isOrigin = false }: StdcmOp
             onToleranceChange={({ minusTolerance, plusTolerance }) => {
               dispatch(
                 updateStdcmPathStep({
-                  id: pathStep.id,
+                  key: pathStep.key,
                   updates: {
                     tolerances: {
                       before: new Duration({ seconds: minusTolerance }),

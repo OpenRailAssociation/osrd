@@ -27,7 +27,7 @@ export const formatSuggestedOperationalPoints = (
 ): SuggestedOP[] =>
   operationalPoints.map((op) => ({
     opId: op.id,
-    pathStepId: undefined,
+    pathStepKey: undefined,
     name: op.name,
     uic: op.uic,
     secondaryCode: op.secondary_code,
@@ -127,7 +127,7 @@ export const upsertPathStepsInOPs = (
         stepName = t('main.requestedDestination');
       }
       const formattedStep: SuggestedOP = {
-        pathStepId: step.id,
+        pathStepKey: step.key,
         opId: undefined,
         positionOnPath: step.positionOnPath!,
         offsetOnTrack: step.location.offset,
@@ -159,11 +159,11 @@ export const upsertPathStepsInOPs = (
         (op) => matchPathStepAndOp(step.location, op) && step.positionOnPath === op.positionOnPath
       );
       if (index < 0) {
-        throw new Error(`Could not find path step "${step.id}" in OP list`);
+        throw new Error(`Could not find path step "${step.key}" in OP list`);
       }
       updatedOPs[index] = {
         ...updatedOPs[index],
-        pathStepId: step.id,
+        pathStepKey: step.key,
         stopFor,
         arrival,
         receptionSignal,
@@ -178,7 +178,7 @@ export const pathStepMatchesOp = (
   pathStep: PathStep,
   op: Pick<
     SuggestedOP,
-    | 'pathStepId'
+    | 'pathStepKey'
     | 'opId'
     | 'uic'
     | 'secondaryCode'
@@ -191,7 +191,7 @@ export const pathStepMatchesOp = (
   withKP = false
 ) => {
   if (!matchPathStepAndOp(pathStep.location, op)) {
-    return pathStep.id === op.pathStepId;
+    return pathStep.key === op.pathStepKey;
   }
   if (
     pathStep.location.type === 'operational_point_part_reference' &&
@@ -214,7 +214,7 @@ export const isVia = (
   vias: PathStep[],
   op: Pick<
     SuggestedOP,
-    | 'pathStepId'
+    | 'pathStepKey'
     | 'opId'
     | 'uic'
     | 'secondaryCode'

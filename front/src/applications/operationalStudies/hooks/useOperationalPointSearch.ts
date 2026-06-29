@@ -33,26 +33,26 @@ export const useOperationalPointSearch = ({
   debounceMs = 300,
 }: Params) => {
   const [postSearch] = osrdEditoastApi.endpoints.postSearch.useLazyQuery();
-  const [activeStepId, setActiveStepId] = useState<string | null>(null);
-  const [draftByStepId, setDraftByStepId] = useState<Record<string, string>>({});
-  const [displayByStepId, setDisplayByStepId] = useState<Record<string, string>>({});
-  const [isEditingByStepId, setIsEditingByStepId] = useState<Record<string, boolean>>({});
-  const activeDraft = activeStepId ? (draftByStepId[activeStepId] ?? '') : '';
-  const isEditingActive = activeStepId ? (isEditingByStepId[activeStepId] ?? true) : true;
+  const [activeStepKey, setActiveStepKey] = useState<string | null>(null);
+  const [draftByStepKey, setDraftByStepKey] = useState<Record<string, string>>({});
+  const [displayByStepKey, setDisplayByStepKey] = useState<Record<string, string>>({});
+  const [isEditingByStepKey, setIsEditingByStepKey] = useState<Record<string, boolean>>({});
+  const activeDraft = activeStepKey ? (draftByStepKey[activeStepKey] ?? '') : '';
+  const isEditingActive = activeStepKey ? (isEditingByStepKey[activeStepKey] ?? true) : true;
   const rawActiveInput = isEditingActive ? activeDraft : '';
   const debouncedRawInput = useDebounce(rawActiveInput, debounceMs);
   const debouncedTrimmedInput = debouncedRawInput.trim();
   const setInputForStep = useCallback((stepId: string, value: string) => {
-    setIsEditingByStepId((prev) => ({ ...prev, [stepId]: true }));
-    setDraftByStepId((prev) => ({ ...prev, [stepId]: value }));
+    setIsEditingByStepKey((prev) => ({ ...prev, [stepId]: true }));
+    setDraftByStepKey((prev) => ({ ...prev, [stepId]: value }));
   }, []);
 
   const getInputForStep = useCallback(
     (stepId: string) => {
-      const isEditing = isEditingByStepId[stepId] ?? true;
-      return isEditing ? draftByStepId[stepId] : displayByStepId[stepId];
+      const isEditing = isEditingByStepKey[stepId] ?? true;
+      return isEditing ? draftByStepKey[stepId] : displayByStepKey[stepId];
     },
-    [draftByStepId, displayByStepId, isEditingByStepId]
+    [draftByStepKey, displayByStepKey, isEditingByStepKey]
   );
 
   const [opSuggestions, setOpSuggestions] = useState<OperationalPointSuggestion[]>([]);
@@ -63,15 +63,15 @@ export const useOperationalPointSearch = ({
 
   const reopenSuggestionsForStep = useCallback(
     (stepId: string, queryValue = '') => {
-      setActiveStepId(stepId);
+      setActiveStepKey(stepId);
 
-      setIsEditingByStepId((prev) => ({ ...prev, [stepId]: true }));
+      setIsEditingByStepKey((prev) => ({ ...prev, [stepId]: true }));
 
-      setDraftByStepId((prev) => {
+      setDraftByStepKey((prev) => {
         const currentDraft = prev[stepId] ?? '';
         if (currentDraft !== '') return prev;
 
-        const display = displayByStepId[stepId] ?? '';
+        const display = displayByStepKey[stepId] ?? '';
         const next = display !== '' ? display : queryValue;
 
         return { ...prev, [stepId]: next };
@@ -79,28 +79,28 @@ export const useOperationalPointSearch = ({
 
       setSearchTrigger((n) => n + 1);
     },
-    [displayByStepId]
+    [displayByStepKey]
   );
 
   const resetOpSuggestions = useCallback(() => setOpSuggestions([]), []);
 
   const commitSelectionForStep = useCallback((stepId: string, display: string) => {
-    setDisplayByStepId((prev) => ({ ...prev, [stepId]: display }));
-    setDraftByStepId((prev) => ({ ...prev, [stepId]: '' }));
-    setIsEditingByStepId((prev) => ({ ...prev, [stepId]: false }));
+    setDisplayByStepKey((prev) => ({ ...prev, [stepId]: display }));
+    setDraftByStepKey((prev) => ({ ...prev, [stepId]: '' }));
+    setIsEditingByStepKey((prev) => ({ ...prev, [stepId]: false }));
     setOpSuggestions([]);
   }, []);
 
   const startEditingForStep = useCallback((stepId: string) => {
-    setIsEditingByStepId((prev) => ({ ...prev, [stepId]: true }));
+    setIsEditingByStepKey((prev) => ({ ...prev, [stepId]: true }));
   }, []);
 
   const chooseChForSuggestion = useCallback(
     (stepId: string, suggestion: OperationalPointSuggestion, forcedCh?: string) => {
-      const rawInput = draftByStepId[stepId] ?? '';
+      const rawInput = draftByStepKey[stepId] ?? '';
       return selectSecondaryCode(suggestion, rawInput, forcedCh);
     },
-    [draftByStepId]
+    [draftByStepKey]
   );
 
   const formatChosenValue = useCallback(
@@ -109,7 +109,7 @@ export const useOperationalPointSearch = ({
   );
 
   useEffect(() => {
-    if (!activeStepId) return;
+    if (!activeStepKey) return;
 
     if (!debouncedTrimmedInput || debouncedTrimmedInput.length < minChars) {
       resetOpSuggestions();
@@ -189,7 +189,7 @@ export const useOperationalPointSearch = ({
       cancelled = true;
     };
   }, [
-    activeStepId,
+    activeStepKey,
     debouncedRawInput,
     debouncedTrimmedInput,
     infraId,
@@ -202,8 +202,8 @@ export const useOperationalPointSearch = ({
   ]);
 
   return {
-    activeStepId,
-    setActiveStepId,
+    activeStepKey,
+    setActiveStepKey,
     getInputForStep,
     setInputForStep,
     opSuggestions,

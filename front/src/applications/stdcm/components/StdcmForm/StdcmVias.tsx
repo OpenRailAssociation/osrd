@@ -71,12 +71,12 @@ const StdcmVias = ({
       // Disable consist change
       newConsistChange = undefined;
 
-      cleanupConsistErrors(pathStep.id);
+      cleanupConsistErrors(pathStep.key);
     }
 
     dispatch(
       updateStdcmPathStep({
-        id: pathStep.id,
+        key: pathStep.key,
         updates: {
           stopType: newStopType,
           stopFor: defaultStopTime,
@@ -157,7 +157,7 @@ const StdcmVias = ({
     const previousConsistChange = getPreviousConsistChange(index);
     dispatch(
       updateStdcmPathStep({
-        id: viaPathStep.id,
+        key: viaPathStep.key,
         updates: {
           consistChange: previousConsistChange,
         },
@@ -166,11 +166,11 @@ const StdcmVias = ({
   };
 
   const removeConsistChange = (viaPathStep: StdcmViaPathStep) => {
-    cleanupConsistErrors(viaPathStep.id);
+    cleanupConsistErrors(viaPathStep.key);
 
     dispatch(
       updateStdcmPathStep({
-        id: viaPathStep.id,
+        key: viaPathStep.key,
         updates: {
           consistChange: undefined,
         },
@@ -216,7 +216,7 @@ const StdcmVias = ({
             className={cx('stdcm-vias-bundle', {
               animated: pathStepIndex === newIntermediateOpIndex && !skipAnimation,
             })}
-            key={pathStep.id}
+            key={pathStep.key}
           >
             <StdcmDefaultCard
               className="add-via"
@@ -246,12 +246,12 @@ const StdcmVias = ({
                   <StdcmConsist
                     disabled={disabled}
                     isDebugMode={isDebugMode}
-                    onConsistErrorsChange={(errors) => handleConsistErrors(pathStep.id, errors)}
+                    onConsistErrorsChange={(errors) => handleConsistErrors(pathStep.key, errors)}
                     consist={pathStep.consistChange ?? {}}
                     onConsistChange={(newConsist) =>
                       dispatch(
                         updateStdcmPathStep({
-                          id: pathStep.id,
+                          key: pathStep.key,
                           updates: { consistChange: newConsist },
                         })
                       )
@@ -269,7 +269,7 @@ const StdcmVias = ({
                   <button
                     data-testid="delete-via-button"
                     type="button"
-                    onClick={() => deleteViaOnClick(pathStep.id)}
+                    onClick={() => deleteViaOnClick(pathStep.key)}
                   >
                     {t('translation:common.delete')}
                   </button>
@@ -283,7 +283,7 @@ const StdcmVias = ({
             >
               <StdcmOperationalPoint
                 operationalPoint={pathStep.operationalPoint}
-                pathStepId={pathStep.id}
+                pathStepKey={pathStep.key}
                 disabled={disabled}
                 onItineraryChange={onItineraryChange}
               />

@@ -87,10 +87,10 @@ export const buildSteps = (
   const schedule: TrainSchedule['schedule'] = [];
   const departureTime = steps[0].departureDate;
   for (const step of steps) {
-    const id = uuidV4();
+    const key = uuidV4();
     if (!Number.isNaN(step.uic)) {
       path.push({
-        id,
+        key,
         location: {
           type: 'operational_point_part_reference',
           operational_point: { uic: step.uic, secondary_code: step.chCode, type: 'uic' },
@@ -98,7 +98,7 @@ export const buildSteps = (
       });
     } else {
       path.push({
-        id,
+        key,
         location: {
           type: 'operational_point_part_reference',
           operational_point: { trigram: step.name, secondary_code: step.chCode, type: 'trigram' },
@@ -107,7 +107,7 @@ export const buildSteps = (
     }
     if (path.length > 1) {
       schedule.push({
-        at: id,
+        at: key,
         arrival: Duration.subtractDate(step.arrivalDate, departureTime).toISOString(),
         stop_for: step.stopFor !== undefined ? `PT${step.stopFor}S` : null,
       });

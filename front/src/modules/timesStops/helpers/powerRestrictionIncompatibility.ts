@@ -68,7 +68,7 @@ export const computeRowPowerRestrictionStatus = (
 
   for (const row of rows) {
     // 1. Update the active restriction when a path step defines one.
-    if (row.pathStepId && row.powerRestriction !== null) {
+    if (row.pathStepKey && row.powerRestriction !== null) {
       activeRestriction =
         row.powerRestriction === NO_POWER_RESTRICTION ? null : row.powerRestriction;
     }
@@ -153,7 +153,7 @@ export const computePowerRestrictionWarnings = ({
     const matchingOp = operationalPointsOnPath?.find((op) =>
       matchPathStepAndOp(pathStep.location, buildOpMatchParams(op))
     );
-    if (matchingOp) pathStepPositions.set(pathStep.id, matchingOp.position);
+    if (matchingOp) pathStepPositions.set(pathStep.key, matchingOp.position);
   });
 
   const ranges: { begin: number; end: number; value: string }[] = powerRestrictions.flatMap(

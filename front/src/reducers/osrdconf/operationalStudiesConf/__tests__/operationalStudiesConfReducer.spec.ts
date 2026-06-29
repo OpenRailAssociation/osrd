@@ -27,14 +27,14 @@ const baseTrainScheduleWithSummary: TrainScheduleWithSummaries = {
   rollingStock: { id: 1, name: 'rollingStock1' } as LightRollingStockWithLiveries,
   path: [
     {
-      id: 'id1',
+      key: 'id1',
       location: {
         type: 'operational_point_part_reference',
         operational_point: { uic: 123, type: 'uic' },
       },
     },
     {
-      id: 'id2',
+      key: 'id2',
       location: {
         type: 'operational_point_part_reference',
         operational_point: { uic: 234, type: 'uic' },
@@ -122,7 +122,7 @@ describe('simulationConfReducer', () => {
         name: 'train1',
         pathSteps: [
           {
-            id: 'id1',
+            key: 'id1',
             location: {
               type: 'operational_point_part_reference',
               operational_point: { uic: 123, type: 'uic' },
@@ -134,7 +134,7 @@ describe('simulationConfReducer', () => {
             receptionSignal: 'OPEN',
           },
           {
-            id: 'id2',
+            key: 'id2',
             location: {
               type: 'operational_point_part_reference',
               operational_point: { uic: 234, type: 'uic' },
@@ -171,7 +171,7 @@ describe('simulationConfReducer', () => {
       const store = createStore({ pathSteps });
 
       const newVia: SuggestedOP = {
-        pathStepId: undefined,
+        pathStepKey: undefined,
         opId: 'lemans',
         name: undefined,
         track: '60ca8dda-6667-11e3-81ff-01f464e0362d',
@@ -182,7 +182,7 @@ describe('simulationConfReducer', () => {
       };
 
       const insertedVia: PathStep = {
-        id: 'id1',
+        key: 'id1',
         positionOnPath: 200,
         location: {
           type: 'operational_point_part_reference',
@@ -196,7 +196,7 @@ describe('simulationConfReducer', () => {
       expect(state.pathSteps).toEqual([
         brest,
         rennes,
-        { ...insertedVia, id: state.pathSteps[2]?.id },
+        { ...insertedVia, id: state.pathSteps[2]?.key },
         paris,
         strasbourg,
       ]);
@@ -207,7 +207,7 @@ describe('simulationConfReducer', () => {
       const store = createStore({ pathSteps });
 
       const newVia: SuggestedOP = {
-        pathStepId: 'lemans',
+        pathStepKey: 'lemans',
         opId: undefined,
         name: undefined,
         track: '60ca8dda-6667-11e3-81ff-01f464e0362d',
@@ -218,7 +218,7 @@ describe('simulationConfReducer', () => {
       };
 
       const updatedVia: PathStep = {
-        id: 'lemans',
+        key: 'lemans',
         positionOnPath: 200,
         location: {
           type: 'track_offset',

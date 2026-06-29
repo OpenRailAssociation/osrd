@@ -14,7 +14,7 @@ export const canRemovePathStep = (
   powerRestrictionRanges: PowerRestriction[]
 ) => {
   const pathStepIsUsed = powerRestrictionRanges.some(
-    (restriction) => restriction.from === pathStep.id || restriction.to === pathStep.id
+    (restriction) => restriction.from === pathStep.key || restriction.to === pathStep.key
   );
   return !pathStepIsUsed && !pathStep.arrival && !pathStep.stopFor && !pathStep.theoreticalMargin;
 };
@@ -61,8 +61,8 @@ export const isRangeCovered = (
   positionMin: number,
   positionMax: number
 ): boolean => {
-  const pathStepFrom = pathSteps.find((pathStep) => pathStep.id === powerRestrictionRange.from);
-  const pathStepTo = pathSteps.find((pathStep) => pathStep.id === powerRestrictionRange.to);
+  const pathStepFrom = pathSteps.find((pathStep) => pathStep.key === powerRestrictionRange.from);
+  const pathStepTo = pathSteps.find((pathStep) => pathStep.key === powerRestrictionRange.to);
 
   if (pathStepFrom?.positionOnPath === undefined || pathStepTo?.positionOnPath === undefined) {
     throw new Error('Path step has no position on path');
@@ -72,7 +72,7 @@ export const isRangeCovered = (
 };
 
 export const addPathStep = (pathSteps: PathStep[], newPathStep: PathStep): PathStep[] => {
-  const newPathStepExists = pathSteps.some((pathStep) => pathStep.id === newPathStep.id);
+  const newPathStepExists = pathSteps.some((pathStep) => pathStep.key === newPathStep.key);
   if (!newPathStepExists) {
     const index = pathSteps.findIndex(
       (step) => step.positionOnPath && step.positionOnPath > newPathStep.positionOnPath!

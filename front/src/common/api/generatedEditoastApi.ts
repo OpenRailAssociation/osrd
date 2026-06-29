@@ -4325,7 +4325,7 @@ export type TrainScheduleOptions = {
 export type PathItem = {
   /** The unique identifier of the path item.
     This is used to reference path items in the train schedule. */
-  id: string;
+  key: string;
   location: PathItemLocation;
 };
 export type PowerRestrictionItem = {

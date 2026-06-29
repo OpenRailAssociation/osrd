@@ -31,7 +31,7 @@ export type TimesStopsRowNew = {
   /** Unique, opaque identifier for the row. Not to be confused with path step IDs or OP IDs. */
   id: string;
   /** Path step ID the row originates from, if any. null if it's an OP along the path not explicitly picked by the user. */
-  pathStepId: string | null;
+  pathStepKey: string | null;
   opOnPathIndex: number;
 
   // Schedule information
@@ -75,7 +75,7 @@ export type TimesStopsRowNew = {
 };
 
 export type TimesStopsRow = {
-  pathStepId: string | undefined;
+  pathStepKey: string | undefined;
   opId: string | undefined;
   name: string | undefined;
   secondaryCode?: string | null;

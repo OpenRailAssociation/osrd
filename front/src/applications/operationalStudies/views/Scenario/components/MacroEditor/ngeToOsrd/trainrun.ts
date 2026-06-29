@@ -158,7 +158,7 @@ const createPathItemFromNode = (
   }
   return {
     location: pathItemLocation,
-    id: `${node.id}-${index}`,
+    key: `${node.id}-${index}`,
   };
 };
 

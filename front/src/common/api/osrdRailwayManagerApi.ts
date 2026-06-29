@@ -80,7 +80,7 @@ export type Margins = {
 export type Items = {
   /** The unique identifier of the path item.
     This is used to reference path items in the train schedule. */
-  id: string;
+  key: string;
   /** The location of a path waypoint */
   location:
     | ({
@@ -185,7 +185,7 @@ export type TransformTimetableResponse = {
     path: {
       /** The unique identifier of the path item.
             This is used to reference path items in the train schedule. */
-      id: string;
+      key: string;
       /** The location of a path waypoint */
       location:
         | ({

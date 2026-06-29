@@ -508,16 +508,16 @@ const getNgeTrainrunSectionsWithNodes = (
 
         // Adding schedule
         const sourceScheduleEntry = trainSchedule.schedule!.find(
-          (entry) => entry.at === trainSchedule.path[i].id
+          (entry) => entry.at === trainSchedule.path[i].key
         );
         const targetScheduleEntry = trainSchedule.schedule!.find(
-          (entry) => entry.at === trainSchedule.path[i + 1].id
+          (entry) => entry.at === trainSchedule.path[i + 1].key
         );
         const returnSourceScheduleEntry = returnTrainSchedule?.schedule?.find(
-          (entry) => entry.at === returnTrainSchedule.path[returnIndex].id
+          (entry) => entry.at === returnTrainSchedule.path[returnIndex].key
         );
         const returnTargetScheduleEntry = returnTrainSchedule?.schedule?.find(
-          (entry) => entry.at === returnTrainSchedule.path[returnIndex - 1].id
+          (entry) => entry.at === returnTrainSchedule.path[returnIndex - 1].key
         );
 
         // Create a transition between the previous section and the one we're creating
