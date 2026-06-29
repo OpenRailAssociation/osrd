@@ -332,6 +332,14 @@ export const checkRoundTripCompatible = (
     return false;
   }
 
+  // local_track_name is ignored because we don't want to take tracks into account
+  // Only take into account uic/trigram/opId of the path items
+  const stripLocationLocalTrackName = (location: PathItemLocation) => {
+    if (location.type !== 'operational_point_part_reference') return location;
+    const { local_track_name: _, ...rest } = location;
+    return rest;
+  };
+
   for (const [indexA, opA] of trainScheduleA.pathOps.entries()) {
     const indexB = trainScheduleA.pathOps.length - indexA - 1;
     const opB = trainScheduleB.pathOps[indexB];
@@ -343,21 +351,12 @@ export const checkRoundTripCompatible = (
       return false;
     }
     if (!opA || !opB) {
-      // id is specific to each train schedule
-      // local_track_name is ignored because we don't want to take tracks into account
-      // Only take into account uic/trigram/opId of the path items
-      const opRefA = {
-        ...pathItemA,
-        id: undefined,
-        local_track_name: undefined,
-      };
-      const opRefB = {
-        ...pathItemB,
-        id: undefined,
-        local_track_name: undefined,
-      };
-
-      if (!isEqual(opRefA, opRefB)) {
+      if (
+        !isEqual(
+          stripLocationLocalTrackName(pathItemA.location),
+          stripLocationLocalTrackName(pathItemB.location)
+        )
+      ) {
         return false;
       }
     }
