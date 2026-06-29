@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
 /**
  * Removes the accents and lowercases the input.
@@ -68,13 +68,13 @@ const useDefaultComboBox = <T>(suggestions: T[], getSuggestionLabel: (suggestion
     [labels, query]
   );
 
-  const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const onChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setQuery(e.target.value);
-  };
+  }, []);
 
-  const resetSuggestions = () => {
+  const resetSuggestions = useCallback(() => {
     setQuery('');
-  };
+  }, []);
 
   return { suggestions: filteredSuggestions, onChange, resetSuggestions };
 };
