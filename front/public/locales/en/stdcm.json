@@ -84,7 +84,7 @@
     "endStop": "end",
     "for": "for",
     "formattedDate": "{{date}} at {{time}}",
-    "formattedDateScenario": "Simulation sheet generated on {{date}} at {{time}}",
+    "formattedDateScenario": "Train path sheet generated on {{date}} at {{time}}",
     "from": "from",
     "length": "length",
     "loadingGauge": "loading gauge",
@@ -225,7 +225,7 @@
     },
     "stopCalculation": "Stop"
   },
-  "simulationSheet": "Simulation sheet",
+  "simulationSheet": "Train path sheet",
   "stdcmErrors": {
     "incompatibleConstraintsDetails": {
       "incompatibleElectrical_one": "- {{count}} electrification error",
