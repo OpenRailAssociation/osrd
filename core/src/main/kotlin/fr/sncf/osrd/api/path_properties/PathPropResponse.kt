@@ -18,6 +18,7 @@ class PathPropResponse(
     val geometry: RJSLineString,
     @Json(name = "operational_points") val operationalPoints: List<OperationalPointResponse>,
     val zones: RangeValues<String>,
+    @Json(name = "geom_projection") val geomProjection: GeometricProjection,
 )
 
 interface Electrification
@@ -53,6 +54,17 @@ data class OperationalPointPartResponse(
 data class OperationalPointPartExtension(val sncf: OperationalPointPartSncfExtension?)
 
 data class OperationalPointPartSncfExtension(val kp: String)
+
+data class GeometricProjection(
+    @Json(name = "topo_offsets") val topoOffsets: List<Long>,
+    @Json(name = "geom_offsets") val geomOffsets: List<Long>,
+) {
+    init {
+        // There must be the same number of topologic boundaries and geometric boundaries
+        // and at least two of each (the beginning and the end)
+        require(topoOffsets.size == geomOffsets.size && topoOffsets.size >= 2)
+    }
+}
 
 val polymorphicElectrificationAdapter: PolymorphicJsonAdapterFactory<Electrification> =
     PolymorphicJsonAdapterFactory.of(Electrification::class.java, "type")

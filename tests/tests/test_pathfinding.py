@@ -279,4 +279,5 @@ def test_start_ws_v1_path(session: Session, small_infra: Infra):
             "boundaries": [],
             "values": ["zone.[DA2:DECREASING, buffer_stop.0:INCREASING]"],
         },
+        "geom_projection": {"topo_offsets": [0, 300000], "geom_offsets": [0, 379556]},
     }
