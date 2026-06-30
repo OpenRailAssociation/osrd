@@ -275,10 +275,7 @@ mod tests {
         ];
         for (i, layer_name) in ["track_sections", "speed_sections"].iter().enumerate() {
             let track_sections = map_layers.layers.get(*layer_name).unwrap();
-            let query = get_geo_json_sql_query(
-                &track_sections.table_name,
-                track_sections.views.get("geo").unwrap(),
-            );
+            let query = get_geo_json_sql_query(track_sections.table_name, &track_sections.geo);
             assert_eq!(expected_queries[i].trim(), query.trim());
         }
     }

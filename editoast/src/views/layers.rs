@@ -22,8 +22,8 @@ use crate::AppState;
 use crate::error::Result;
 use crate::map::get_cache_tile_key;
 use crate::map::get_view_cache_prefix;
+use editoast_models::map::ALLOWED_VIEWS;
 use editoast_models::map::GeoJsonAndData;
-use editoast_models::map::Layer;
 use editoast_models::map::MAP_LAYER_NAMES;
 use editoast_models::map::MAP_LAYERS;
 use editoast_models::map::create_and_fill_mvt_tile;
@@ -50,12 +50,10 @@ impl LayersError {
             expected_names: MAP_LAYER_NAMES.clone(),
         }
     }
-    pub fn new_view_not_found<T: AsRef<str>>(name: T, layer: &Layer) -> Self {
-        let mut expected_names: Vec<_> = layer.views.keys().cloned().collect();
-        expected_names.sort();
+    pub fn new_view_not_found<T: AsRef<str>>(name: T) -> Self {
         Self::ViewNotFound {
             view_name: name.as_ref().to_string(),
-            expected_names,
+            expected_names: ALLOWED_VIEWS.to_vec(),
         }
     }
 }
@@ -112,8 +110,8 @@ pub(in crate::views) async fn layer_view(
         None => return Err(LayersError::new_layer_not_found(layer_slug).into()),
     };
 
-    if !layer.views.contains_key(view_slug.as_str()) {
-        return Err(LayersError::new_view_not_found(view_slug, layer).into());
+    if !ALLOWED_VIEWS.contains(&view_slug.as_str()) {
+        return Err(LayersError::new_view_not_found(view_slug).into());
     }
 
     let mut root_url = config.root_url.clone();
@@ -174,10 +172,10 @@ pub(in crate::views) async fn cache_and_get_mvt_tile(
         Some(layer) => layer,
         None => return Err(LayersError::new_layer_not_found(layer_slug).into()),
     };
-    let view = match layer.views.get(view_slug.as_str()) {
-        Some(view) => view,
-        None => return Err(LayersError::new_view_not_found(view_slug, layer).into()),
-    };
+    let view = layer
+        .get_view(view_slug.as_str())
+        .ok_or_else(|| LayersError::new_view_not_found(view_slug.clone()))?;
+
     let cache_key = get_cache_tile_key(
         &get_view_cache_prefix(
             &layer_slug,
@@ -240,14 +238,10 @@ mod tests {
     use super::ViewMetadata;
     use crate::error::InternalError;
     use crate::views::test_app;
-    use editoast_models::map::MAP_LAYERS;
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn layer_error_view_not_found() {
-        let map_layers = &*MAP_LAYERS;
-        let error: InternalError =
-            LayersError::new_view_not_found("does_not_exist", &map_layers.layers["track_sections"])
-                .into();
+        let error: InternalError = LayersError::new_view_not_found("does_not_exist").into();
 
         let app = test_app!().skip_authz().build();
         let body: InternalError = app
