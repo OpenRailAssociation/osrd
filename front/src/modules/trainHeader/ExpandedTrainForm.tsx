@@ -158,6 +158,23 @@ function applyFieldsToTrain(
   };
 }
 
+function trainPayloadChanged(updatedTrain: Train, train: Train): boolean {
+  return (
+    updatedTrain.paced?.interval !== train.paced?.interval ||
+    updatedTrain.paced?.time_window !== train.paced?.time_window ||
+    updatedTrain.train_name !== train.train_name ||
+    updatedTrain.speed_limit_tag !== train.speed_limit_tag ||
+    updatedTrain.constraint_distribution !== train.constraint_distribution ||
+    updatedTrain.comfort !== train.comfort ||
+    updatedTrain.rolling_stock_name !== train.rolling_stock_name ||
+    updatedTrain.options?.use_electrical_profiles !== train.options?.use_electrical_profiles ||
+    updatedTrain.start_time !== train.start_time ||
+    updatedTrain.initial_speed !== train.initial_speed ||
+    !isEqual(updatedTrain.category, train.category) ||
+    !isEqual(updatedTrain.labels, train.labels)
+  );
+}
+
 function registerChange<K extends keyof TrainFieldsState>(
   changedValues: Partial<TrainFieldsState>,
   changedKey: K,
@@ -174,8 +191,8 @@ function extractChangesInFields(
   const changedValues: Partial<TrainFieldsState> = {};
   for (const fieldName of Object.keys(before) as (keyof TrainFieldsState)[]) {
     if (
-      after[fieldName] !== before[fieldName] &&
-      (!current || after[fieldName] !== current[fieldName])
+      !isEqual(after[fieldName], before[fieldName]) &&
+      (!current || !isEqual(after[fieldName], current[fieldName]))
     ) {
       registerChange(changedValues, fieldName, after[fieldName]);
     }
@@ -251,6 +268,17 @@ const ExpandedTrainForm = ({
     setPathChanged(false);
   }, [setPathChanged]);
 
+  const persistTrainIfNeeded = useCallback(
+    (newFields: TrainFieldsState) => {
+      const updatedTrain = applyFieldsToTrain(newFields, train, selectedRollingStock);
+
+      if (trainPayloadChanged(updatedTrain, train)) {
+        onPersistTrain(updatedTrain);
+      }
+    },
+    [train, selectedRollingStock, onPersistTrain]
+  );
+
   const onFieldChange = useCallback(
     (fieldName: keyof TrainFieldsState, newValue: TrainFieldsState[typeof fieldName]) => {
       setFields({ ...fields, [fieldName]: newValue });
@@ -260,27 +288,19 @@ const ExpandedTrainForm = ({
 
   const onFieldBlur = useCallback(
     (_fieldName: keyof TrainFieldsState) => {
-      const changes = extractChangesInFields(fieldsFromTrain, fields);
-      if (Object.keys(changes).length) {
-        const updatedTrain = applyFieldsToTrain(fields, train, selectedRollingStock);
-        onPersistTrain(updatedTrain);
-      }
+      persistTrainIfNeeded(fields);
     },
-    [train, fields, fieldsFromTrain, onPersistTrain]
+    [fields, persistTrainIfNeeded]
   );
 
   const onFieldImmediateChange = useCallback(
     (fieldName: keyof TrainFieldsState, newValue: TrainFieldsState[typeof fieldName]) => {
       const newFields = { ...fields, [fieldName]: newValue };
 
-      if (fieldsFromTrain[fieldName] !== newValue) {
-        const updatedTrain = applyFieldsToTrain(newFields, train, selectedRollingStock);
-        onPersistTrain(updatedTrain);
-      }
-
+      persistTrainIfNeeded(newFields);
       setFields(newFields);
     },
-    [fields, train, fieldsFromTrain, onPersistTrain]
+    [fields, persistTrainIfNeeded]
   );
 
   const constraintDistributionsOptions: { id: ConstraintDistribution; label: string }[] = useMemo(
