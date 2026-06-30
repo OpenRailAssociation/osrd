@@ -1,5 +1,5 @@
 [project]
-name = "osrd_schemas_auto"
+name = "osrd_schemas"
 version = "0.1.0"
 description = "Auto-generated OSRD pydantic schemas (editoast + railway manager interface openapi)"
 authors = [{ name = "OSRD Contributors", email = "contact@osrd.fr" }]
@@ -21,7 +21,7 @@ requires = ["poetry-core>=2.4.1"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.pyright]
-include = ["osrd_schemas_auto"]
+include = ["osrd_schemas"]
 exclude = ["**/__pycache__"]
 
 # datamodel-code-generator emits constr() in dict key positions (e.g. dict[constr(min_length=1), str]).

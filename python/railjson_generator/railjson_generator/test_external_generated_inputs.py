@@ -1,4 +1,4 @@
-from osrd_schemas_auto import external_generated_inputs, models
+from osrd_schemas import external_generated_inputs, models
 
 from railjson_generator.external_generated_inputs import (
     ElectricalProfile,

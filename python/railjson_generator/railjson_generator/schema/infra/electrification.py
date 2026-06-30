@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import List
 
-from osrd_schemas_auto import models
+from osrd_schemas import models
 
 from railjson_generator.schema.infra.track_section import TrackSection
 

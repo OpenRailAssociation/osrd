@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 from typing import Union
 
-from osrd_schemas_auto import models
+from osrd_schemas import models
 
 from railjson_generator.schema.infra.direction import Direction
 

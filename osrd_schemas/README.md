@@ -1,10 +1,10 @@
-# osrd_schemas_auto
+# osrd_schemas
 
 Pydantic models generated from the [Railway manager interface](../railway_manager_interface/) OpenAPI specification.
 
 ## Python models
 
-`osrd_schemas_auto/models.py` holds Pydantic models built from `../railway_manager_interface/openapi.yaml`. The file is generated. Do not edit it by hand.
+`osrd_schemas/models.py` holds Pydantic models built from `../railway_manager_interface/openapi.yaml`. The file is generated. Do not edit it by hand.
 
 ## Code generation
 
@@ -12,7 +12,7 @@ Pydantic models generated from the [Railway manager interface](../railway_manage
 
 ```bash
 just install
-./generate-types.sh > osrd_schemas_auto/models.py
+./generate-types.sh > osrd_schemas/models.py
 ```
 
 CI fails if `models.py` is out of date.

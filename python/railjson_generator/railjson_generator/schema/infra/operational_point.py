@@ -3,7 +3,7 @@ from typing import Annotated, List, Optional
 
 from pydantic import StringConstraints
 
-from osrd_schemas_auto import models
+from osrd_schemas import models
 
 NonBlankStr = Annotated[str, StringConstraints(min_length=1)]
 
