@@ -3,7 +3,10 @@ import { describe, it, expect } from 'vitest';
 import type { TrainScheduleResponse } from 'common/api/osrdEditoastApi';
 
 import type { ConflictWithTrainNames } from '../types';
-import addTrainNamesToConflicts, { filterAndReorderConflict } from '../utils';
+import addTrainNamesToConflicts, {
+  filterAndReorderConflict,
+  reorderConflictTrainsByScheduleId,
+} from '../utils';
 import { trainScheduleId, occurrenceId, conflictBase } from './sampleData';
 
 describe('addTrainNamesToConflicts', () => {
@@ -108,5 +111,52 @@ describe('filterAndReorderConflict - reordering', () => {
     expect(reordered!.trainsData[0].name).toBe('1234');
     expect(reordered!.trainsData[1].name).toBe('1236');
     expect(reordered!.trainsData[2].name).toBe('ABCD');
+  });
+});
+
+describe('reorderConflictTrainsByScheduleId', () => {
+  it('moves all occurrences of the paced train to the front', () => {
+    const conflict: ConflictWithTrainNames = {
+      ...conflictBase({
+        train_ids: [
+          { train_schedule_id: 10, type: 'base', index: 0 },
+          { train_schedule_id: 20, type: 'base', index: 1 },
+          { train_schedule_id: 20, type: 'base', index: 3 },
+          { train_schedule_id: 30, type: 'base', index: 0 },
+        ],
+      }),
+      trainsData: [
+        { name: 'Other', category: null },
+        { name: 'PT 1', category: null },
+        { name: 'PT 3', category: null },
+        { name: 'AnotherLongName', category: null },
+      ],
+    };
+
+    const reordered = reorderConflictTrainsByScheduleId(conflict, 20);
+    expect(reordered.map((train) => train.name)).toEqual([
+      'PT 1',
+      'PT 3',
+      'Other',
+      'AnotherLongName',
+    ]);
+  });
+
+  it('falls back to sorting by name length when no train matches', () => {
+    const conflict: ConflictWithTrainNames = {
+      ...conflictBase({
+        train_ids: [
+          { train_schedule_id: 10, type: 'base', index: 0 },
+          { train_schedule_id: 30, type: 'base', index: 0 },
+        ],
+      }),
+      trainsData: [
+        { name: 'LongerName', category: null },
+        { name: 'Short', category: null },
+      ],
+    };
+
+    const reordered = reorderConflictTrainsByScheduleId(conflict, 99);
+    expect(reordered.map((train) => train.name)).toEqual(['Short', 'LongerName']);
   });
 });

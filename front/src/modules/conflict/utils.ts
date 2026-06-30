@@ -113,6 +113,27 @@ export const reorderConflictTrains = (
   return [selectedTrain, ...remainingTrains];
 };
 
+export const reorderConflictTrainsByScheduleId = (
+  conflict: ConflictWithTrainNames,
+  selectedTrainScheduleId: number
+): ConflictWithTrainNames['trainsData'] => {
+  const { trainsData, train_ids: trainIds } = conflict;
+  if (!trainsData.length) return trainsData;
+
+  const selectedTrains: ConflictWithTrainNames['trainsData'] = [];
+  const otherTrains: ConflictWithTrainNames['trainsData'] = [];
+  trainsData.forEach((train, idx) => {
+    if (trainIds[idx]?.train_schedule_id === selectedTrainScheduleId) {
+      selectedTrains.push(train);
+    } else {
+      otherTrains.push(train);
+    }
+  });
+
+  otherTrains.sort((a, b) => a.name.length - b.name.length);
+  return [...selectedTrains, ...otherTrains];
+};
+
 export function filterAndReorderConflict(
   conflict: ConflictWithTrainNames,
   selectedTrainId: TrainId,
