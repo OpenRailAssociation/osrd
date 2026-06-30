@@ -27,7 +27,16 @@ internal constructor(
     private var explorerWithNewEnvelope: InfraExplorerWithEnvelope? = null,
 ) {
     /** Start offset on the given block */
-    private var startOffset: Offset<Block> = infraExplorer.getCurrentBlockRange().objectBegin
+    private var startOffset: Offset<Block> =
+        // Staying on the same block means intermediate stop without backtracking: restart from
+        // previous node's location
+        if (
+            prevNode.locationOnEdge != null &&
+                prevNode.infraExplorer.getCurrentBlock() == infraExplorer.getCurrentBlock()
+        )
+            prevNode.locationOnEdge!!
+        // In any other case (start, end of block, backtracking): (re)start from blockRange's begin
+        else infraExplorer.getCurrentBlockRange().objectBegin
     /** Envelope to use on the edge, if unspecified we try to go at maximum allowed speed */
     private var envelope: Envelope? = null
 
