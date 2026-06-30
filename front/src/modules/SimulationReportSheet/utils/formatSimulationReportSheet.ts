@@ -165,11 +165,13 @@ function formatOperationalPointWithTimesAndWeight(
     (step) => step.operationalPoint && step.operationalPoint.id === suggestedOp.opId
   );
   let stopType;
+  let consistChange;
   if (correspondingStep) {
     if (correspondingStep.isVia) {
       stopType = correspondingStep.consistChange
         ? StdcmStopTypes.CONSIST_CHANGE
         : correspondingStep.stopType;
+      consistChange = correspondingStep.consistChange;
     } else {
       stopType = StdcmStopTypes.SERVICE_STOP;
     }
@@ -184,6 +186,7 @@ function formatOperationalPointWithTimesAndWeight(
     name: suggestedOp.name,
     secondaryCode: suggestedOp.secondaryCode,
     trackName: suggestedOp.metadata?.trackName,
+    consistChange,
     stopType,
     stopRequested,
     weight: operationalPoints.find((op) => op.id === suggestedOp.opId)?.weight ?? null,
@@ -347,7 +350,13 @@ export function getOperationalPointsWithTimes({
     stopPositions,
     { positions, times, speeds, departureHour, departureMinute }
   );
-  return consolidateOvertakesToSingleSteps(formattedOpsWithAllStops);
+  const formattedConsolidatedOps = consolidateOvertakesToSingleSteps(formattedOpsWithAllStops);
+
+  return formattedConsolidatedOps.map((op) => ({
+    ...op,
+    stopType: op.duration ? op.stopType : undefined,
+    consistChange: op.duration ? op.consistChange : undefined,
+  }));
 }
 
 export const getArrivalTimes = (
