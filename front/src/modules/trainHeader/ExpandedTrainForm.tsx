@@ -27,7 +27,7 @@ import useCategoryOptions, {
 } from 'modules/rollingStock/hooks/useCategoryOptions';
 import useFilterRollingStock from 'modules/rollingStock/hooks/useFilterRollingStock';
 import type { Train } from 'reducers/osrdconf/types';
-import { Duration } from 'utils/duration';
+import { Duration, MAX_DURATION_MS } from 'utils/duration';
 import { usePrevious } from 'utils/hooks/state';
 import { kmhToMs } from 'utils/physics';
 import { findExceptionInPacedTrainByOccurrenceId } from 'utils/trainExceptions';
@@ -83,13 +83,11 @@ function computeInitialSpeedError(
   return null;
 }
 
-type ServiceCadenceError = 'TOO_LOW' | 'TOO_HIGH' | null;
+type ServiceTimingError = 'TOO_LOW' | 'TOO_HIGH' | null;
 
-const ONE_MONTH_IN_MS = 2_628_000_000;
-
-function computeServiceCadenceError(serviceCadence?: number): ServiceCadenceError {
-  if (!serviceCadence) return 'TOO_LOW';
-  if (serviceCadence >= ONE_MONTH_IN_MS) return 'TOO_HIGH';
+function computeServiceTimingError(serviceTiming?: number): ServiceTimingError {
+  if (!serviceTiming) return 'TOO_LOW';
+  if (serviceTiming > MAX_DURATION_MS) return 'TOO_HIGH';
   return null;
 }
 
@@ -122,12 +120,13 @@ function applyFieldsToTrain(
     ? {
         exceptions: train.paced.exceptions,
         interval:
-          fields.service_changed_confirmed && !computeServiceCadenceError(fields.service_cadence)
+          fields.service_changed_confirmed && !computeServiceTimingError(fields.service_cadence)
             ? new Duration({ milliseconds: fields.service_cadence }).toISOString()
             : train.paced.interval,
-        time_window: fields.service_changed_confirmed
-          ? new Duration({ milliseconds: fields.service_window }).toISOString()
-          : train.paced.time_window,
+        time_window:
+          fields.service_changed_confirmed && !computeServiceTimingError(fields.service_window)
+            ? new Duration({ milliseconds: fields.service_window }).toISOString()
+            : train.paced.time_window,
       }
     : undefined;
 
@@ -339,13 +338,29 @@ const ExpandedTrainForm = ({
   );
 
   const serviceCadenceError = useMemo(
-    () => computeServiceCadenceError(fields.service_cadence),
+    () => computeServiceTimingError(fields.service_cadence),
     [fields.service_cadence]
   );
 
+  const serviceWindowError = useMemo(
+    () => computeServiceTimingError(fields.service_window),
+    [fields.service_window]
+  );
+
   const erroneousFields = useMemo(
-    () => !fields.train_name || !fields.initial_speed || !!initialSpeedError,
-    [fields.train_name, fields.initial_speed, initialSpeedError]
+    () =>
+      !fields.train_name ||
+      !fields.initial_speed ||
+      !!initialSpeedError ||
+      !!serviceCadenceError ||
+      !!serviceWindowError,
+    [
+      fields.train_name,
+      fields.initial_speed,
+      initialSpeedError,
+      serviceCadenceError,
+      serviceWindowError,
+    ]
   );
 
   const toggleBand = (
@@ -425,6 +440,17 @@ const ExpandedTrainForm = ({
                     label={t('manageTrainSchedule.trainHeader.form.serviceWindow')}
                     value={fields.service_window ?? 2 * 3_600_000} // 2h00m
                     onChange={(ms) => onFieldImmediateChange('service_window', ms)}
+                    statusWithMessage={
+                      serviceWindowError
+                        ? {
+                            status: 'error',
+                            message:
+                              serviceWindowError === 'TOO_HIGH'
+                                ? t('manageTrainSchedule.errorMessages.timeWindowTooHigh')
+                                : t('manageTrainSchedule.errorMessages.timeWindowTooLow'),
+                          }
+                        : undefined
+                    }
                   />
                 </div>
                 <div className="actions">

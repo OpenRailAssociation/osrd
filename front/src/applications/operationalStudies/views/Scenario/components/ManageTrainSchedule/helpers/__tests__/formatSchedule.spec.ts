@@ -45,7 +45,7 @@ describe('formatSchedule', () => {
           arrival: 'PT1M',
           at: 'id332',
           reception_signal: 'OPEN',
-          stop_for: 'P0D',
+          stop_for: 'PT0S',
         },
       ]);
     });
