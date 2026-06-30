@@ -285,3 +285,141 @@ fn build_timing_data(
         arrival_time_tolerance_after: 0,
     })
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    use chrono::DateTime;
+    use chrono::NaiveTime;
+    use pretty_assertions::assert_eq;
+    use rstest::rstest;
+
+    use crate::views::timetable::stdcm::tsi::taftsi::JourneyLocationTypeCode;
+    use crate::views::timetable::stdcm::tsi::taftsi::TimingQualifierCode;
+    use crate::views::timetable::stdcm::tsi::taftsi::TypeOfInformation;
+
+    const PRM_2ND_IM: &[u8] = include_bytes!("../../tests/prm_2de_im.xml");
+
+    #[test]
+    fn parses_mock_prm() {
+        let prm = parse_xml(PRM_2ND_IM).expect("mock PRM must parse");
+
+        assert_eq!(prm.lead_ru, "0002");
+        assert_eq!(prm.coordinating_im, "0001");
+        assert_eq!(prm.type_of_information, TypeOfInformation::RequestReady);
+
+        let locations = &prm.path_information.planned_journey_locations;
+        // Only `PathInformation` locations are read; the `TrainInformation` block is intentionally ignored.
+        assert_eq!(locations.len(), 2);
+        assert_eq!(
+            locations[0].journey_location_type_code,
+            JourneyLocationTypeCode::Handover
+        );
+        assert_eq!(
+            locations[1].journey_location_type_code,
+            JourneyLocationTypeCode::Destination
+        );
+    }
+
+    #[test]
+    fn timing_qualifier_parsed_despite_namespaced_attribute() {
+        let prm = parse_xml(PRM_2ND_IM).unwrap();
+        let departure = &prm.path_information.planned_journey_locations[0];
+
+        let timing = departure
+            .timing_at_location
+            .timing
+            .as_ref()
+            .expect("the handover carries an ALD timing");
+
+        assert_eq!(timing.qualifier, TimingQualifierCode::ALD);
+        assert_eq!(timing.time, "21:30:00".parse::<NaiveTime>().unwrap());
+        assert_eq!(timing.offset, 0);
+    }
+
+    /// PlannedTrainTechnicalData contains traction/braking details (TractionDetails,
+    /// RouteClass, BrakeType…) that editoast derives from the rolling_stock_id query parameter,
+    /// so we skip them and only read the consist's weight/length/max speed.
+    /// Assert we still read the right values despite interleaved elements.
+    #[test]
+    fn reads_technical_data_through_interleaved_elements() {
+        let prm = parse_xml(PRM_2ND_IM).unwrap();
+
+        let technical_data = prm
+            .path_information
+            .planned_journey_locations
+            .iter()
+            .find_map(|loc| loc.planned_train_data.as_ref())
+            .map(|data| &data.technical_data)
+            .expect("at least one location carries technical data");
+
+        assert_eq!(technical_data.train_weight, 90.0);
+        assert_eq!(technical_data.train_length, 17.0);
+        assert_eq!(technical_data.train_max_speed, 140.0);
+    }
+
+    /// Business errors surface as TsiError::XmlParse.
+    /// One fixture per invalid PRM.
+    #[rstest]
+    #[case::wrong_message_type(
+    include_bytes!("../../tests/prm_wrong_message_type.xml"), "Invalid message type")]
+    #[case::wrong_type_of_information(
+    include_bytes!("../../tests/prm_wrong_type_of_information.xml"), "TypeOfInformation")]
+    #[case::single_location(
+    include_bytes!("../../tests/prm_single_location.xml"), "at least 2 journey locations")]
+    #[case::no_technical_data(
+    include_bytes!("../../tests/prm_no_technical_data.xml"), "no PlannedTrainTechnicalData")]
+    #[case::no_handover(
+    include_bytes!("../../tests/prm_no_handover.xml"), "Origin+Handover or Handover+Destination")]
+    #[case::wrong_departure_qualifier(
+    include_bytes!("../../tests/prm_wrong_departure_qualifier.xml"), "valid timing qualifier")]
+    #[case::missing_responsible_applicant(
+    include_bytes!("../../tests/prm_missing_responsible_applicant.xml"), "ResponsibleApplicant")]
+    #[case::missing_responsible_ru(
+    include_bytes!("../../tests/prm_missing_responsible_ru.xml"), "ResponsibleRU")]
+    fn rejects_invalid_prm(#[case] xml: &[u8], #[case] expected: &str) {
+        let err = match parse_xml(xml) {
+            Err(TsiError::XmlParse(e)) => e.to_string(),
+            other => panic!("expected an XmlParse error, got {other:?}"),
+        };
+        assert!(err.contains(expected), "unexpected error: {err}");
+    }
+
+    /// End-to-end conversion: units and timings from PRM -> STDCM request.
+    #[test]
+    fn into_stdcm_request_maps_units_and_timings() {
+        let prm = parse_xml(PRM_2ND_IM).unwrap();
+        let request = into_stdcm_request(&prm, 42).unwrap();
+
+        assert_eq!(request.steps.len(), 2);
+
+        let consist = &request.consist_schedule.values[0];
+        assert_eq!(consist.rolling_stock_id, 42);
+        assert_eq!(consist.total_mass, Some(units::kilogram::new(90_000.0))); // 90 t
+        assert_eq!(consist.total_length, Some(units::meter::new(17.0))); // 17 m
+        assert_eq!(
+            consist.max_speed,
+            Some(units::meter_per_second::new(140.0 / 3.6))
+        ); // 140 km/h
+
+        // Departure (handover): ALD 21:30:00 +02:00 -> 19:30:00 UTC ; DwellTime 2
+        // (1/10 min) -> 12_000 ms.
+        let departure = &request.steps[0];
+        let timing = departure
+            .timing_data
+            .as_ref()
+            .expect("departure step carries timing data");
+        let expected = DateTime::parse_from_rfc3339("2026-06-10T19:30:00+00:00")
+            .unwrap()
+            .to_utc();
+        assert_eq!(timing.arrival_time, expected);
+        assert_eq!(departure.duration, Some(12_000));
+
+        // Destination: no `Timing` element (only DwellTime 1) -> no timing data ;
+        // dwell 1 -> 6_000 ms.
+        let destination = &request.steps[1];
+        assert!(destination.timing_data.is_none());
+        assert_eq!(destination.duration, Some(6_000));
+    }
+}
