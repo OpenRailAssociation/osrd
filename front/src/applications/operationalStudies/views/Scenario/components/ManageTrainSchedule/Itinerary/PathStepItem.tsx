@@ -147,45 +147,47 @@ const PathStepItem = ({
 
   const trackNameSuggestions = useMemo(() => {
     const selectedSecondaryCode = selectedSecondaryCodeOption.id;
-    if (!selectedSecondaryCode || !isOpRefMetadata(pathStepMetadata)) return [];
 
-    // Combine tracks from:
-    // 1. pathStepMetadata.parts — contains both 'valid' (from infra) and 'custom' (from timetable)
-    // 2. customTracks — tracks added by the user in the current form session
-    const customTracksAsParts = customTracks.map((track) => ({
-      type: 'custom' as const,
-      trackName: track.trackName,
-    }));
+    let allTrackNames: string[];
+    if (isOpRefMetadata(pathStepMetadata)) {
+      if (!selectedSecondaryCode) return [];
+      // Combine tracks from:
+      // 1. pathStepMetadata.parts — contains both 'valid' (from infra) and 'custom' (from timetable)
+      // 2. customTracks — tracks added by the user in the current form session
+      allTrackNames = [
+        ...pathStepMetadata.parts.map((p) => p.trackName),
+        ...customTracks.map((track) => track.trackName),
+      ];
+    } else {
+      const timetableNames = pathStepMetadata?.isInvalid
+        ? (pathStepMetadata.customTrackNames ?? [])
+        : [];
+      // Combine tracks from:
+      // 1. pathStepMetadata.customTrackNames — track names used by other trains in the timetable
+      // 2. customTracks — tracks added by the user in the current form session
+      allTrackNames = [...timetableNames, ...customTracks.map((track) => track.trackName)];
+    }
 
-    // Deduplicate by trackName
-    const allTracks = [...pathStepMetadata.parts, ...customTracksAsParts];
-    const seen = new Set<string>();
-    const uniqueTracks = allTracks.filter((track) => {
-      if (seen.has(track.trackName)) return false;
-      seen.add(track.trackName);
-      return true;
-    });
+    if (allTrackNames.length === 0) return [];
 
-    const sortedSuggestions = uniqueTracks
-      .map((part, i) => ({
-        label: part.trackName,
-        id: part.type === 'valid' ? `${part.trackId}-${i}` : `custom-${part.trackName}-${i}`,
-      }))
+    const allTrackNamesSet = new Set<string>();
+    const sortedSuggestions = allTrackNames
+      // Deduplicate by trackName
+      .filter((name) => {
+        if (allTrackNamesSet.has(name)) return false;
+        allTrackNamesSet.add(name);
+        return true;
+      })
       // Sort with numbers first in ascending order, then alphabetically
       .sort((a, b) => {
-        const isANumber = !isNaN(Number(a.label));
-        const isBNumber = !isNaN(Number(b.label));
-
-        if (isANumber && isBNumber) {
-          return parseInt(a.label) - parseInt(b.label);
-        } else if (isANumber) {
-          return -1;
-        } else if (isBNumber) {
-          return 1;
-        } else {
-          return a.label.localeCompare(b.label);
-        }
-      });
+        const aIsNum = !isNaN(Number(a));
+        const bIsNum = !isNaN(Number(b));
+        if (aIsNum && bIsNum) return parseInt(a) - parseInt(b);
+        if (aIsNum) return -1;
+        if (bIsNum) return 1;
+        return a.localeCompare(b);
+      })
+      .map((name, trackIndex) => ({ label: name, id: `${name}-${trackIndex}` }));
     return [{ label: '', id: '' }, ...sortedSuggestions];
   }, [pathStepMetadata, selectedSecondaryCodeOption.id, customTracks]);
 

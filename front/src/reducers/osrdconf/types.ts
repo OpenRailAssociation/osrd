@@ -139,7 +139,7 @@ export type PathStepV2 = {
 };
 
 export type PathStepMetadata =
-  | { isInvalid: true; localTrackName?: string }
+  | { isInvalid: true; localTrackName?: string; customTrackNames?: string[] }
   | {
       type: 'trackOffset';
       isInvalid: false;
