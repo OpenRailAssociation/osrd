@@ -89,7 +89,7 @@ class Pathfinding(
                 it.locations,
                 it.duration,
                 it.stop,
-                if (index > 0 && index < inputTargets.size - 1) it.canBacktrack else false,
+                if (index > 0 && index < inputTargets.size - 1) true else false,
                 it.plannedTimingData,
             )
         }
