@@ -161,9 +161,13 @@ export const usePathStepsMetadata = (
             return;
           }
 
+          const opRefKey = getOpRefKey(location.operational_point);
+          const timetableTrackNames = localTrackNamesData?.[opRefKey] ?? [];
+
           newPathStepsMetadataById.set(pathStep.id, {
             isInvalid: true,
             localTrackName: local_track_name ?? undefined,
+            customTrackNames: timetableTrackNames.length > 0 ? timetableTrackNames : undefined,
           });
           return;
         }
