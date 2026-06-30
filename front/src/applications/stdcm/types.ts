@@ -55,6 +55,7 @@ export type StdcmResultsOperationalPoint = {
   positionOnPath: number;
   time: string | null;
   name?: string;
+  consistChange?: ConsistData;
   secondaryCode?: string | null;
   duration: Duration | null;
   stopEndTime: string;
