@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 from typing import List
 
-from osrd_schemas_auto import models
+from osrd_schemas import models
 
 from railjson_generator.schema.infra.direction import Direction
 from railjson_generator.schema.infra.range_elements import DirectionalTrackRange

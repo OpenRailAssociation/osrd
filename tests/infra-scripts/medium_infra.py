@@ -10,7 +10,7 @@ from small_infra_creator import (
     add_signal_on_ports,
     ScenarioData,
 )
-from osrd_schemas_auto.infra import LoadingGaugeType
+from osrd_schemas.infra import LoadingGaugeType
 from railjson_generator import (
     ApplicableDirection,
     ExternalGeneratedInputs,

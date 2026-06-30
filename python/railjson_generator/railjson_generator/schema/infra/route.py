@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 from typing import List, Optional
 
-from osrd_schemas_auto import models
+from osrd_schemas import models
 
 from .direction import Direction
 from .waypoint import Waypoint

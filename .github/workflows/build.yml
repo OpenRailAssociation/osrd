@@ -103,13 +103,13 @@ jobs:
           cache-suffix: ${{ github.job }}
       - name: Install dependencies
         run: |
-          uv --directory osrd_schemas_auto/ sync --locked
+          uv --directory osrd_schemas/ sync --locked
       - name: Generate models.py
         run: |
-          cd osrd_schemas_auto
+          cd osrd_schemas
           ./generate-types.sh > /tmp/generated_models.py
       - name: Ensure models.py is up to date
-        run: diff -u osrd_schemas_auto/osrd_schemas_auto/models.py /tmp/generated_models.py
+        run: diff -u osrd_schemas/osrd_schemas/models.py /tmp/generated_models.py
   check_scripts:
     runs-on: ubuntu-latest
     name: Check scripts
@@ -992,9 +992,9 @@ jobs:
       - name: REUSE Compliance Check
         uses: fsfe/reuse-action@v6
 
-  check_osrd_schemas_auto:
+  check_osrd_schemas:
     runs-on: ubuntu-latest
-    name: Check osrd_schemas_auto
+    name: Check osrd_schemas
     steps:
       - uses: actions/checkout@v7
       - name: Set up 'uv'
@@ -1003,15 +1003,15 @@ jobs:
           python-version: "3.11"
           enable-cache: true
           cache-suffix: ${{ github.job }}
-      - name: Install osrd_schemas_auto dependencies
+      - name: Install osrd_schemas dependencies
         run: |
-          uv --directory osrd_schemas_auto/ sync --all-extras --locked
+          uv --directory osrd_schemas/ sync --all-extras --locked
       - name: Pyright
         run: |
-          uv --directory osrd_schemas_auto/ run pyright
+          uv --directory osrd_schemas/ run pyright
       - name: Ruff check
         run: |
-          uv --directory osrd_schemas_auto/ run ruff check --output-format github
+          uv --directory osrd_schemas/ run ruff check --output-format github
       - name: Ruff format
         run: |
-          uv --directory osrd_schemas_auto/ run ruff format --check
+          uv --directory osrd_schemas/ run ruff format --check

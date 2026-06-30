@@ -16,8 +16,8 @@ echo "Generating the typescript client"
     npm run generate-types
 )
 
-echo "Generating osrd_schemas_auto"
+echo "Generating osrd_schemas"
 (
-    cd "${root_path}"/osrd_schemas_auto
-    ./generate-types.sh > osrd_schemas_auto/models.py
+    cd "${root_path}"/osrd_schemas
+    ./generate-types.sh > osrd_schemas/models.py
 )

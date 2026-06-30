@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
-from osrd_schemas_auto import models
+from osrd_schemas import models
 
 from .direction import ApplicableDirection, Direction
 
@@ -72,7 +72,7 @@ class TrackRange(RangeElement):
 class DirectionalTrackRange(TrackRange):
     direction: Direction
 
-    # In osrd_schemas_auto's generated models, DirectionalTrackRange no longer subclasses
+    # In osrd_schemas's generated models, DirectionalTrackRange no longer subclasses
     # TrackRange (it's a standalone model), so this override returns a type unrelated to the
     # base to_rjs (infra.TrackRange). The incompatible override is intentional.
     def to_rjs(self):  # pyright: ignore[reportIncompatibleMethodOverride]

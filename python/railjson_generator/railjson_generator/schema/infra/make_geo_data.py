@@ -1,7 +1,7 @@
 from typing import Mapping
 
 from geojson_pydantic.types import LineStringCoords
-from osrd_schemas_auto import models
+from osrd_schemas import models
 
 
 def make_geo_line(points: LineStringCoords) -> models.GeoJsonLineString:

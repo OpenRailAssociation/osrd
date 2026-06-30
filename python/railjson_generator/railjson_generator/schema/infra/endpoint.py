@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from enum import IntEnum
 from typing import TYPE_CHECKING, List, Optional, Tuple
 
-from osrd_schemas_auto import models
+from osrd_schemas import models
 
 if TYPE_CHECKING:
     from .switch import SwitchGroup

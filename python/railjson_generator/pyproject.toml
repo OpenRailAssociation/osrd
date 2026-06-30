@@ -5,7 +5,7 @@ description = ""
 authors = [{ name = "OSRD Contributors", email = "contact@osrd.fr" }]
 requires-python = ">= 3.11"
 
-dependencies = ["osrd-schemas-auto"]
+dependencies = ["osrd-schemas"]
 
 [project.optional-dependencies]
 check = [
@@ -18,10 +18,10 @@ check = [
 [tool.pyright]
 include = ["railjson_generator"]
 exclude = ["**/__pycache__"]
-extraPaths = ["../../osrd_schemas_auto"]
+extraPaths = ["../../osrd_schemas"]
 
 [tool.uv.sources]
-osrd-schemas-auto = { path = "../../osrd_schemas_auto", editable = true }
+osrd-schemas = { path = "../../osrd_schemas", editable = true }
 
 [tool.pytest.ini_options]
 addopts = "--doctest-modules"

@@ -1,8 +1,8 @@
 from dataclasses import dataclass, field
 from typing import Optional
 
-from osrd_schemas_auto import models
-from osrd_schemas_auto.switch_type import (
+from osrd_schemas import models
+from osrd_schemas.switch_type import (
     CROSSING,
     DOUBLE_SLIP_SWITCH,
     LINK,

@@ -2,7 +2,7 @@ from dataclasses import dataclass, field
 from typing import List, Optional, Tuple
 
 from geojson_pydantic.types import LineStringCoords, Position2D
-from osrd_schemas_auto import models
+from osrd_schemas import models
 from pydantic import ValidationError
 
 from railjson_generator.schema.infra.direction import ApplicableDirection, Direction

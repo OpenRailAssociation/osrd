@@ -3,8 +3,6 @@ name: api_change
 on:
   pull_request:
     paths:
-      - "editoast/schemas"
-      - "python/osrd_schemas"
       - "editoast/openapi.yaml"
 
 jobs:
@@ -15,34 +13,10 @@ jobs:
         uses: actions/checkout@v7
         with:
           fetch-depth: 0
-      - uses: dorny/paths-filter@v4.0.1
-        id: changes
-        with:
-          filters: |
-            openapi:
-              - 'editoast/openapi.yaml'
-            schemas:
-              - 'editoast/schemas/**'
-              - 'python/osrd_schemas/**'
-
-
       - name: Get reference OpenAPI
-        if: steps.changes.outputs.openapi == 'true'
         run: git show ${{ github.event.pull_request.base.sha }}:editoast/openapi.yaml > base-openapi.yaml
       - name: Get new OpenAPI
-        if: steps.changes.outputs.openapi == 'true'
         run: git show ${{ github.event.pull_request.head.sha }}:editoast/openapi.yaml > new-openapi.yaml
-      - name: Generate Schema notification
-        if: steps.changes.outputs.schemas == 'true'
-        run: |
-          # https://trstringer.com/github-actions-multiline-strings/
-          echo "SCHEMA_NOTIFICATION<<EOF" >> $GITHUB_ENV
-          echo "## Changes in Schemas" >> $GITHUB_ENV
-          echo "Dear @${{ github.event.pull_request.user.login }}, please ensure the following:" >> $GITHUB_ENV
-          echo '- [ ] changes should match in [`osrd_schemas`](https://github.com/OpenRailAssociation/osrd/tree/dev/python/osrd_schemas) and [`editoast schemas`](https://github.com/OpenRailAssociation/osrd/tree/dev/editoast/schemas)' >> $GITHUB_ENV
-          echo '- [ ] the RailJSON version in [`osrd_schemas::infra.py`](https://github.com/OpenRailAssociation/osrd/blob/a185aa62d0378f9a69576b35185229f1439c2886/python/osrd_schemas/osrd_schemas/infra.py#L11) and [editoast `schemas::infra::railjson.rs`](https://github.com/OpenRailAssociation/osrd/blob/8f66f3ba4adb3e86664d448b6b9187a2b3c3e92b/editoast/schemas/src/infra/railjson.rs#L18) should match and be bumped on any change of infra schemas (same goes for rolling-stock between [`osrd_schemas::rolling_stock.py`](https://github.com/OpenRailAssociation/osrd/blob/a185aa62d0378f9a69576b35185229f1439c2886/python/osrd_schemas/osrd_schemas/rolling_stock.py#L15) and [`editoast schemas::rolling_stock.rs`](https://github.com/OpenRailAssociation/osrd/blob/8f66f3ba4adb3e86664d448b6b9187a2b3c3e92b/editoast/schemas/src/rolling_stock.rs#L61))' >> $GITHUB_ENV
-          echo '- [ ] the version of the Python package in [`osrd_schemas::pyproject.toml`](https://github.com/OpenRailAssociation/osrd/tree/dev/python/osrd_schemas/pyproject.toml#L3) should be bumped on any change' >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
       - name: Find comment
         uses: peter-evans/find-comment@v4
         id: find-comment
@@ -59,7 +33,5 @@ jobs:
             # :warning: API changes
             This Pull Request introduces some changes in the API:
             - [ ] please own it: notify or even prepare dedicated PR(s) to consumer projects
-
-            ${{ env.SCHEMA_NOTIFICATION }}
           edit-mode: replace
-          
+
