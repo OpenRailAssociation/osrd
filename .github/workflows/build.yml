@@ -70,7 +70,7 @@ jobs:
     secrets: inherit
 
   check_dockerfiles:
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-2vcpu-ubuntu-2404
     name: Check dockerfiles
     steps:
       - name: Checkout code
@@ -90,7 +90,7 @@ jobs:
           set -euo pipefail
           find . -name 'Dockerfile*' -print0 | xargs -0 -I {} docker build --file {} --check .
   check_models_sync:
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-2vcpu-ubuntu-2404
     name: Check models.py sync
     steps:
       - name: Checkout code
@@ -111,7 +111,7 @@ jobs:
       - name: Ensure models.py is up to date
         run: diff -u osrd_schemas_auto/osrd_schemas_auto/models.py /tmp/generated_models.py
   check_scripts:
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     name: Check scripts
     steps:
       - name: Checkout code
@@ -123,7 +123,7 @@ jobs:
           ignore_names: gradlew
 
   check_generated_railjson_sync:
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     name: Check generated railjson sync
     steps:
       - uses: actions/checkout@v7
@@ -146,7 +146,7 @@ jobs:
         run: diff -r -u tests/data/infras /tmp/generated_infras
 
   check_railjson_generator:
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     name: Check railjson generator
     steps:
       - uses: actions/checkout@v7
@@ -174,7 +174,7 @@ jobs:
           uv --directory python/railjson_generator/ run pytest
 
   check_commits:
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     name: Check commits
     steps:
       - name: Checkout code
@@ -213,7 +213,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   check_final_newline:
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     name: Check final newline
     steps:
       - name: Install ripgrep
@@ -235,7 +235,7 @@ jobs:
           fi
 
   check_integration_tests:
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     name: Check integration tests
     steps:
       - name: Checkout
@@ -258,7 +258,7 @@ jobs:
           uv --directory tests/ run pyright
 
   check_osrd_schema:
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     name: Check osrd schema
     steps:
       - uses: actions/checkout@v7
@@ -280,7 +280,7 @@ jobs:
           uv --directory python/osrd_schemas/ run pyright
 
   check_toml:
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     name: Check toml
     steps:
       - name: Checkout
@@ -294,7 +294,7 @@ jobs:
         run: taplo fmt --check --diff
 
   check_infra_schema_sync:
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     name: Check infra schema sync
     steps:
       - name: Checkout
@@ -315,7 +315,7 @@ jobs:
         run: diff current_infra_en_translations.json front/public/locales/en/infraEditor.json
 
   check_front_rtk_sync:
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     name: Check front rtk sync
     needs:
       - build-front
@@ -352,7 +352,7 @@ jobs:
           git diff --exit-code front
 
   check_core:
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     name: Check core
     needs:
       - build-core
@@ -393,7 +393,7 @@ jobs:
           path: "./output/reports/spotbugs/*.xml"
 
   check_editoast_tests:
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     name: Check editoast tests
     needs:
       - build-editoast
@@ -442,7 +442,7 @@ jobs:
     # lints runs in a separate job, as it takes about 1m30 for the documentation
     # check to complete. As editoast tests take while to run, we don't want this to
     # be on the hot path
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     name: Check editoast lints
     needs:
       - build-editoast
@@ -489,7 +489,7 @@ jobs:
 
   check_editoast_openapi:
     # for the same reason as check_editoast_lints, we run this in a separate job
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     name: Check editoast openapi
     needs:
       - build-editoast
@@ -536,7 +536,7 @@ jobs:
           exit $(docker wait front-i18n-api-error)
 
   check_gateway:
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     name: Check gateway
     needs:
       - build-gateway
@@ -589,7 +589,7 @@ jobs:
           exit $(docker wait gateway-clippy)
 
   check_osrdyne:
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     name: Check osrdyne
     needs:
       - build-osrdyne
@@ -642,7 +642,7 @@ jobs:
           exit $(docker wait osrdyne-clippy)
 
   check_rust_lockfiles:
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     name: Check Rust lockfiles
     steps:
       - name: Checkout
@@ -657,7 +657,7 @@ jobs:
         run: cd osrdyne && cargo update --workspace --locked
 
   check_front:
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     name: Check front
     needs:
       - build-front
@@ -711,7 +711,7 @@ jobs:
           exit $(docker wait front-test)
 
   integration_tests:
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     name: Integration tests
     needs:
       - build-core
@@ -793,7 +793,7 @@ jobs:
           retention-days: 30
 
   getting_started:
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     name: Check Getting Started
     needs:
       - build-core
@@ -850,7 +850,7 @@ jobs:
         run: .github/scripts/check-playwright-version.sh
 
   end_to_end_tests:
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     name: End to end tests
     needs:
       - build-core
@@ -1005,7 +1005,7 @@ jobs:
           retention-days: 30
 
   check_reuse_compliance:
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     name: Check reuse compliance
     steps:
       - uses: actions/checkout@v7
@@ -1013,7 +1013,7 @@ jobs:
         uses: fsfe/reuse-action@v6
 
   check_osrd_schemas_auto:
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     name: Check osrd_schemas_auto
     steps:
       - uses: actions/checkout@v7

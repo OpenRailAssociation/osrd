@@ -31,7 +31,7 @@ env:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     steps:
       - uses: actions/checkout@v7
 
@@ -62,7 +62,7 @@ jobs:
   deploy:
     name: Deploy website
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     steps:
       - uses: OpenRailAssociation/web-deployment-action@v1.3.1
         with:
