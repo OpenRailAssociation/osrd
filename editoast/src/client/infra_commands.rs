@@ -15,7 +15,6 @@ use crate::infra_cache::InfraCache;
 use crate::map;
 use cache;
 use editoast_models::Infra;
-use editoast_models::map::MapLayers;
 use editoast_models::prelude::*;
 
 use super::ValkeyConfig;
@@ -240,14 +239,9 @@ async fn build_valkey_pool_and_invalidate_all_cache(
         app_version.unwrap_or_default(),
     );
     let mut conn = valkey.get_connection().await?;
-    map::invalidate_all(
-        &mut conn,
-        &MapLayers::default().layers.keys().cloned().collect(),
-        infra_id,
-        app_version,
-    )
-    .await
-    .map_err(|e| anyhow::anyhow!("Couldn't refresh valkey cache layers: {e}"))
+    map::invalidate_all(&mut conn, infra_id, app_version)
+        .await
+        .map_err(|e| anyhow::anyhow!("Couldn't refresh valkey cache layers: {e}"))
 }
 
 async fn batch_retrieve_infras(conn: &mut DbConnection, ids: &[u64]) -> anyhow::Result<Vec<Infra>> {

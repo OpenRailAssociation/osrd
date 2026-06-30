@@ -24,7 +24,8 @@ use crate::map::get_cache_tile_key;
 use crate::map::get_view_cache_prefix;
 use editoast_models::map::GeoJsonAndData;
 use editoast_models::map::Layer;
-use editoast_models::map::MapLayers;
+use editoast_models::map::MAP_LAYER_NAMES;
+use editoast_models::map::MAP_LAYERS;
 use editoast_models::map::create_and_fill_mvt_tile;
 
 #[derive(Debug, Error, EditoastError)]
@@ -33,22 +34,20 @@ enum LayersError {
     #[error("Layer '{}' not found. Expected one of {:?}", .layer_name, .expected_names)]
     LayerNotFound {
         layer_name: String,
-        expected_names: Vec<String>,
+        expected_names: Vec<&'static str>,
     },
     #[error("View '{}' not found. Expected one of {:?}", .view_name, .expected_names)]
     ViewNotFound {
         view_name: String,
-        expected_names: Vec<String>,
+        expected_names: Vec<&'static str>,
     },
 }
 
 impl LayersError {
-    pub fn new_layer_not_found<T: AsRef<str>>(name: T, map_layers: &MapLayers) -> Self {
-        let mut expected_names: Vec<_> = map_layers.layers.keys().cloned().collect();
-        expected_names.sort();
+    pub fn new_layer_not_found<T: AsRef<str>>(name: T) -> Self {
         Self::LayerNotFound {
             layer_name: name.as_ref().to_string(),
-            expected_names,
+            expected_names: MAP_LAYER_NAMES.clone(),
         }
     }
     pub fn new_view_not_found<T: AsRef<str>>(name: T, layer: &Layer) -> Self {
@@ -104,18 +103,16 @@ pub(in crate::views) struct ViewMetadata {
     )
 )]
 pub(in crate::views) async fn layer_view(
-    State(AppState {
-        map_layers, config, ..
-    }): State<AppState>,
+    State(AppState { config, .. }): State<AppState>,
     Path((layer_slug, view_slug)): Path<(String, String)>,
     Query(InfraQueryParam { infra: infra_id }): Query<InfraQueryParam>,
 ) -> Result<Json<ViewMetadata>> {
-    let layer = match map_layers.layers.get(&layer_slug) {
+    let layer = match MAP_LAYERS.layers.get(layer_slug.as_str()) {
         Some(layer) => layer,
-        None => return Err(LayersError::new_layer_not_found(layer_slug, &map_layers).into()),
+        None => return Err(LayersError::new_layer_not_found(layer_slug).into()),
     };
 
-    if !layer.views.contains_key(&view_slug) {
+    if !layer.views.contains_key(view_slug.as_str()) {
         return Err(LayersError::new_view_not_found(view_slug, layer).into());
     }
 
@@ -131,10 +128,13 @@ pub(in crate::views) async fn layer_view(
     Ok(Json(ViewMetadata {
         data_type: "vector".to_owned(),
         name: layer_slug.to_owned(),
-        promote_id: HashMap::from([(layer_slug, layer.id_field.clone().unwrap_or_default())]),
+        promote_id: HashMap::from([(
+            layer_slug,
+            layer.id_field.map(|s| s.to_string()).unwrap_or_default(),
+        )]),
         scheme: "xyz".to_owned(),
         tiles: vec![tiles_url_pattern],
-        attribution: layer.attribution.clone().unwrap_or_default(),
+        attribution: layer.attribution.map(|s| s.to_string()).unwrap_or_default(),
         minzoom: 5,
         maxzoom: config.map_layers_max_zoom as u64,
     }))
@@ -162,7 +162,6 @@ struct TileParams {
 )]
 pub(in crate::views) async fn cache_and_get_mvt_tile(
     State(AppState {
-        map_layers,
         db_pool,
         valkey_client,
         config,
@@ -171,11 +170,11 @@ pub(in crate::views) async fn cache_and_get_mvt_tile(
     Path((layer_slug, view_slug, z, x, y)): Path<(String, String, u64, u64, u64)>,
     Query(InfraQueryParam { infra: infra_id }): Query<InfraQueryParam>,
 ) -> Result<impl IntoResponse> {
-    let layer = match map_layers.layers.get(&layer_slug) {
+    let layer = match MAP_LAYERS.layers.get(layer_slug.as_str()) {
         Some(layer) => layer,
-        None => return Err(LayersError::new_layer_not_found(layer_slug, &map_layers).into()),
+        None => return Err(LayersError::new_layer_not_found(layer_slug).into()),
     };
-    let view = match layer.views.get(&view_slug) {
+    let view = match layer.views.get(view_slug.as_str()) {
         Some(view) => view,
         None => return Err(LayersError::new_view_not_found(view_slug, layer).into()),
     };
@@ -241,11 +240,11 @@ mod tests {
     use super::ViewMetadata;
     use crate::error::InternalError;
     use crate::views::test_app;
-    use editoast_models::map::MapLayers;
+    use editoast_models::map::MAP_LAYERS;
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn layer_error_view_not_found() {
-        let map_layers = MapLayers::default();
+        let map_layers = &*MAP_LAYERS;
         let error: InternalError =
             LayersError::new_view_not_found("does_not_exist", &map_layers.layers["track_sections"])
                 .into();

@@ -72,7 +72,6 @@ pub(in crate::views) async fn edit(
         db_pool,
         infra_caches,
         valkey_client,
-        map_layers,
         config,
         ..
     }): State<AppState>,
@@ -112,13 +111,7 @@ pub(in crate::views) async fn edit(
     .await?;
 
     let mut conn = valkey_client.get_connection().await?;
-    map::invalidate_all(
-        &mut conn,
-        &map_layers.layers.keys().cloned().collect(),
-        infra_id,
-        config.app_version.as_deref(),
-    )
-    .await?;
+    map::invalidate_all(&mut conn, infra_id, config.app_version.as_deref()).await?;
 
     Ok(Json(operation_results))
 }
@@ -139,7 +132,6 @@ pub(in crate::views) async fn split_track_section(
         db_pool,
         infra_caches,
         valkey_client,
-        map_layers,
         config,
         ..
     }): State<AppState>,
@@ -355,13 +347,7 @@ pub(in crate::views) async fn split_track_section(
     )
     .await?;
     let mut conn = valkey_client.get_connection().await?;
-    map::invalidate_all(
-        &mut conn,
-        &map_layers.layers.keys().cloned().collect(),
-        infra_id,
-        config.app_version.as_deref(),
-    )
-    .await?;
+    map::invalidate_all(&mut conn, infra_id, config.app_version.as_deref()).await?;
 
     // Return the result
     Ok(Json(
