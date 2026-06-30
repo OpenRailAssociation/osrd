@@ -14,6 +14,7 @@ import {
   isIndexedOccurrenceId,
   extractOccurrenceIndexFromOccurrenceId,
   isOccurrenceId,
+  isTrainScheduleId,
   extractEditoastIdFromTrainScheduleId,
 } from 'utils/trainId';
 
@@ -21,6 +22,7 @@ import type { ConflictWithTrainNames } from '../types';
 import addTrainNamesToConflicts, {
   filterAndReorderConflict,
   reorderConflictTrains,
+  reorderConflictTrainsByScheduleId,
 } from '../utils';
 
 const useConflictsFilter = (
@@ -82,16 +84,57 @@ const useConflictsFilter = (
   }, [conflicts, isConflictsLoading, trainSchedules]);
 
   const selectedEnrichedConflicts = useMemo(() => {
-    if (!selectedTrainName || !selectedTrainId) return [];
+    if (!selectedTrainId) return [];
+    // When a service (paced train) is selected, filter by the paced train's
+    // editoast id so that conflicts of all its occurrences are matched.
+    if (isTrainScheduleId(selectedTrainId)) {
+      const trainScheduleEditoastId = extractEditoastIdFromTrainScheduleId(selectedTrainId);
+      return enrichedConflicts
+        .filter((conflict) =>
+          conflict.train_ids.some((train) => train.train_schedule_id === trainScheduleEditoastId)
+        )
+        .map((conflict) => ({
+          ...conflict,
+          trainsData: reorderConflictTrainsByScheduleId(conflict, trainScheduleEditoastId),
+        }));
+    }
+    if (!selectedTrainName) return [];
     return enrichedConflicts
       .map((conflict) => filterAndReorderConflict(conflict, selectedTrainId, selectedTrainName))
       .filter((conflict) => conflict !== null);
   }, [enrichedConflicts, selectedTrainName, selectedTrainId]);
 
-  const selectedTrainConflictsCount = selectedEnrichedConflicts.length;
+  const selectedTrainConflictsCount = useMemo(() => {
+    if (!selectedTrainId) return 0;
+    // For a service: sum of conflicts across all its occurrences. A single conflict
+    // that involves several occurrences of the same paced train counts once per
+    // occurrence, so the total matches the sum displayed on each occurrence.
+    if (isTrainScheduleId(selectedTrainId)) {
+      const trainScheduleEditoastId = extractEditoastIdFromTrainScheduleId(selectedTrainId);
+      return enrichedConflicts.reduce(
+        (sum, conflict) =>
+          sum +
+          conflict.train_ids.filter((train) => train.train_schedule_id === trainScheduleEditoastId)
+            .length,
+        0
+      );
+    }
+    return selectedEnrichedConflicts.length;
+  }, [enrichedConflicts, selectedEnrichedConflicts, selectedTrainId]);
 
   const displayedConflicts = useMemo(() => {
     if (!showOnlySelectedTrain || !selectedTrainName) {
+      // When the selection is a paced train service, several trainsData entries
+      // may match (one per occurrence involved in the conflict): reorder by
+      // train_schedule_id so that all matching occurrences are highlighted at
+      // the front. Otherwise, reorder by the occurrence/train name.
+      if (selectedTrainId && isTrainScheduleId(selectedTrainId)) {
+        const trainScheduleEditoastId = extractEditoastIdFromTrainScheduleId(selectedTrainId);
+        return enrichedConflicts.map((conflict) => ({
+          ...conflict,
+          trainsData: reorderConflictTrainsByScheduleId(conflict, trainScheduleEditoastId),
+        }));
+      }
       return enrichedConflicts.map((conflict) => ({
         ...conflict,
         // Always put selected train first, then sort remaining by name length
@@ -99,7 +142,13 @@ const useConflictsFilter = (
       }));
     }
     return selectedEnrichedConflicts;
-  }, [enrichedConflicts, selectedEnrichedConflicts, showOnlySelectedTrain, selectedTrainName]);
+  }, [
+    enrichedConflicts,
+    selectedEnrichedConflicts,
+    showOnlySelectedTrain,
+    selectedTrainName,
+    selectedTrainId,
+  ]);
 
   return {
     showOnlySelectedTrain,
