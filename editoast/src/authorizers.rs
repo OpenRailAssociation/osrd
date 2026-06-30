@@ -6,8 +6,6 @@ use authz::v2::Authorizer;
 use authz::v2::Check;
 use authz::v2::Protected;
 use editoast_models::prelude::*;
-use futures::FutureExt as _;
-use futures::StreamExt as _;
 use futures::stream::FuturesUnordered;
 use tracing::Instrument as _;
 
@@ -24,20 +22,20 @@ pub struct SystemAuthorizer<'a> {
 
 impl SystemAuthorizer<'_> {
     #[tracing::instrument(target = "SystemAuthorizer::check", skip_all, fields(?check), ret(level = "trace"), err)]
-    async fn check<'ch>(&self, check: &'ch Check) -> Result<Option<&'ch Check>, Error> {
+    async fn check(&self, check: Check) -> Result<Option<Check>, Error> {
         let conn = &mut self.conn.clone();
         Ok(match check {
             Check::SubjectExists(authz::Subject::User(user)) => {
-                (!editoast_models::User::exists(conn, **user).await?).then_some(check)
+                (!editoast_models::User::exists(conn, *user).await?).then_some(check)
             }
             Check::SubjectExists(authz::Subject::Group(group)) => {
-                (!editoast_models::Group::exists(conn, **group).await?).then_some(check)
+                (!editoast_models::Group::exists(conn, *group).await?).then_some(check)
             }
             Check::InfraExists(infra) => {
-                (!editoast_models::Infra::exists(conn, **infra).await?).then_some(check)
+                (!editoast_models::Infra::exists(conn, *infra).await?).then_some(check)
             }
             Check::RollingStockExists(authz::RollingStock(rolling_stock_id)) => {
-                (!editoast_models::RollingStock::exists(conn, *rolling_stock_id).await?)
+                (!editoast_models::RollingStock::exists(conn, rolling_stock_id).await?)
                     .then_some(check)
             }
             // checked by UserAuthorizer
@@ -55,25 +53,37 @@ impl Authorizer for SystemAuthorizer<'_> {
     type Error = Error;
 
     #[tracing::instrument(skip_all)]
-    async fn authorize<'a, T>(
+    fn run_checks<'a, T>(
         &'a self,
         data: Protected<T>,
-    ) -> Result<Access<'a, T, Self::Rejection>, Self::Error> {
-        {
-            // scoping to tell the borrow checker that checks is consumed before returning
-            // access_authorized which takes ownership of data
-            let mut checks = data
-                .checks
-                .iter()
-                .map(|check| self.check(check).in_current_span())
-                .collect::<FuturesUnordered<_>>();
-            while let Some(result) = checks.next().await {
-                if let Some(check) = result? {
-                    return Ok(Access::Denied { rejection: *check });
-                }
-            }
-        }
-        Ok(data.access_authorized(self.openfga))
+    ) -> impl futures::stream::TryStream<
+        Ok = itertools::Either<Self::Rejection, Access<'a, T, Infallible>>,
+        Error = Self::Error,
+    > {
+        use futures::stream;
+        use futures::stream::StreamExt as _;
+        use futures::stream::TryStreamExt as _;
+        let (checks, access) = data.unpack(self.openfga);
+        let checks = checks
+            .into_iter()
+            .map(|check| self.check(check).in_current_span())
+            .collect::<FuturesUnordered<_>>();
+        checks
+            .try_filter_map(async |check| Ok(check.map(itertools::Either::Left))) // filter out passing checks
+            .chain(stream::iter(vec![Ok(itertools::Either::Right(access))]))
+            .scan(false, |failing_check, item| {
+                *failing_check =
+                    *failing_check || item.as_ref().is_ok_and(itertools::Either::is_left);
+                futures::future::ready(match &item {
+                    // if there's a failing check, we keep it
+                    Ok(itertools::Either::Left(_)) => Some(item),
+                    // we keep the access handle only if there's no failing check
+                    Ok(itertools::Either::Right(_)) if *failing_check => None,
+                    Ok(itertools::Either::Right(_)) => Some(item),
+                    // errors are forwarded
+                    Err(_) => Some(item),
+                })
+            })
     }
 }
 
@@ -99,58 +109,73 @@ impl<'c> UserAuthorizer<'c> {
         }
     }
 
-    fn actor_user<'a>(&'a self, actor: &'a Actor) -> &'a authz::User {
+    fn actor_user(&self, actor: Actor) -> authz::User {
         match actor {
-            Actor::Issuer => &self.user,
+            Actor::Issuer => self.user,
             Actor::User(user) => user,
         }
     }
 
     #[tracing::instrument(target = "UserAutorizer::check", skip_all, fields(?check, issuer = ?self.user, roles = ?self.roles), ret(level = "trace"), err)]
-    async fn check<'ch>(&self, check: &'ch Check) -> Result<Option<&'ch Check>, Error> {
+    async fn check(&self, check: Check) -> Result<Option<Check>, Error> {
+        if self.roles.contains(&authz::Role::Admin) {
+            return SystemAuthorizer {
+                openfga: self.openfga,
+                conn: self.conn.clone(),
+            }
+            .check(check)
+            .await;
+        }
         Ok(match check {
-            Check::HasRole(Actor::Issuer, role) if !self.roles.contains(role) => Some(check),
+            Check::HasRole(Actor::Issuer, role) if !self.roles.contains(&role) => Some(check),
             Check::HasRole(Actor::Issuer, _) => None,
             Check::HasRole(Actor::User(user), role) => {
-                let Ok(roles) = authz::v2::subject_roles(authz::Subject::User(*user))
+                let Ok(roles) = authz::v2::subject_roles(authz::Subject::User(user))
                     .access_authorized::<Infallible>(self.openfga)
                     .access()
                     .await?;
-                (!roles.contains(role)).then_some(check)
+                (!roles.contains(&role)).then_some(check)
             }
 
             Check::HasInfraPrivilege(actor, privilege, infra) => {
-                let Ok(privileges) = authz::v2::infra_privileges(*self.actor_user(actor), *infra)
+                let Ok(privileges) = authz::v2::infra_privileges(self.actor_user(actor), infra)
                     .access_authorized::<Infallible>(self.openfga)
                     .access()
                     .await?;
-                (!privileges.contains(privilege)).then_some(check)
+                (!privileges.contains(&privilege)).then_some(check)
             }
             Check::HasRollingStockPrivilege(actor, privilege, rolling_stock) => {
                 let Ok(privileges) =
-                    authz::v2::rolling_stock_privileges(*self.actor_user(actor), *rolling_stock)
+                    authz::v2::rolling_stock_privileges(self.actor_user(actor), rolling_stock)
                         .access_authorized::<Infallible>(self.openfga)
                         .access()
                         .await?;
-                (!privileges.contains(privilege)).then_some(check)
+                (!privileges.contains(&privilege)).then_some(check)
             }
             Check::SubjectEffectiveInfraGrantIsNot(grant, subject, infra) => {
-                let Ok(subject_grant) = authz::v2::infra_effective_grant(*subject, *infra)
+                let Ok(subject_grant) = authz::v2::infra_effective_grant(subject, infra)
                     .access_authorized::<Infallible>(self.openfga)
                     .access()
                     .await?;
-                (subject_grant == Some(*grant)).then_some(check)
+                (subject_grant == Some(grant)).then_some(check)
             }
             Check::IsNotLastInfraOwner(subject, infra) => {
-                let Ok(owners) =
-                    authz::v2::infra_granted_subjects(*infra, authz::InfraGrant::Owner)
-                        .access_authorized::<Infallible>(self.openfga)
-                        .access()
-                        .await?;
-                (owners.len() == 1 && owners.contains(subject)).then_some(check)
+                let Ok(owners) = authz::v2::infra_granted_subjects(infra, authz::InfraGrant::Owner)
+                    .access_authorized::<Infallible>(self.openfga)
+                    .access()
+                    .await?;
+                (owners.len() == 1 && owners.contains(&subject)).then_some(check)
             }
-            // checked by SystemAuthorizer
-            Check::SubjectExists(_) | Check::InfraExists(_) | Check::RollingStockExists(_) => None,
+            check @ (Check::SubjectExists(_)
+            | Check::InfraExists(_)
+            | Check::RollingStockExists(_)) => {
+                SystemAuthorizer {
+                    openfga: self.openfga,
+                    conn: self.conn.clone(),
+                }
+                .check(check)
+                .await?
+            }
         })
     }
 }
@@ -160,34 +185,37 @@ impl Authorizer for UserAuthorizer<'_> {
     type Error = Error;
 
     #[tracing::instrument(skip_all)]
-    async fn authorize<'a, T>(
+    fn run_checks<'a, T>(
         &'a self,
         data: Protected<T>,
-    ) -> Result<Access<'a, T, Self::Rejection>, Self::Error> {
-        let system_authorizer = SystemAuthorizer {
-            openfga: self.openfga,
-            conn: self.conn.clone(),
-        };
-        {
-            // scoping to tell the borrow checker that checks is consumed before returning
-            // access_authorized which takes ownership of data
-            // same thing for the system_authorizer
-            let mut checks = FuturesUnordered::new();
-            for check in &data.checks {
-                checks.push(system_authorizer.check(check).in_current_span().boxed());
-            }
-            if !self.roles.contains(&authz::Role::Admin) {
-                for check in &data.checks {
-                    checks.push(self.check(check).in_current_span().boxed());
-                }
-            }
-            while let Some(result) = checks.next().await {
-                if let Some(check) = result? {
-                    return Ok(Access::Denied { rejection: *check });
-                }
-            }
-        }
-        Ok(data.access_authorized(self.openfga))
+    ) -> impl futures::stream::TryStream<
+        Ok = itertools::Either<Self::Rejection, Access<'a, T, Infallible>>,
+        Error = Self::Error,
+    > {
+        use futures::stream;
+        use futures::stream::StreamExt as _;
+        use futures::stream::TryStreamExt as _;
+        let (checks, access) = data.unpack(self.openfga);
+        let checks = checks
+            .into_iter()
+            .map(|check| self.check(check).in_current_span())
+            .collect::<FuturesUnordered<_>>();
+        checks
+            .try_filter_map(async |check| Ok(check.map(itertools::Either::Left))) // filter out passing checks
+            .chain(stream::iter(vec![Ok(itertools::Either::Right(access))]))
+            .scan(false, |failing_check, item| {
+                *failing_check =
+                    *failing_check || item.as_ref().is_ok_and(itertools::Either::is_left);
+                futures::future::ready(match &item {
+                    // if there's a failing check, we keep it
+                    Ok(itertools::Either::Left(_)) => Some(item),
+                    // we keep the access handle only if there's no failing check
+                    Ok(itertools::Either::Right(_)) if *failing_check => None,
+                    Ok(itertools::Either::Right(_)) => Some(item),
+                    // errors are forwarded
+                    Err(_) => Some(item),
+                })
+            })
     }
 }
 
@@ -219,6 +247,8 @@ mod tests {
     use authz::v2::Protected;
     use database::DbConnectionPoolV2;
     use fga::model::Relation as _;
+    use futures::TryStreamExt as _;
+    use itertools::Either;
     use rstest::rstest;
 
     use super::*;
@@ -266,6 +296,79 @@ mod tests {
             .access()
             .await
             .unwrap()
+    }
+
+    async fn run_checks_count<A, T>(authorizer: &A, data: Protected<T>) -> (usize, usize)
+    where
+        A: Authorizer<Rejection = Check>,
+        A::Error: std::fmt::Debug,
+    {
+        let (left, right) = authorizer
+            .run_checks(data)
+            .try_fold((0, 0), async |(left, right), item| match item {
+                Either::Left(_) => Ok((left + 1, right)),
+                Either::Right(_) => Ok((left, right + 1)),
+            })
+            .await
+            .unwrap();
+
+        assert!(left + right > 0);
+        assert!(
+            (left > 0 && right == 0) || (left == 0 && right == 1),
+            "expected one or more rejections or exactly one Access handle, got {left} rejections and {right} access handles"
+        );
+        (left, right)
+    }
+
+    #[rstest]
+    #[case::pass(
+        Protected::value(()).with_check(Check::HasRole(Actor::Issuer, Role::Admin)),
+        (0, 1)
+    )]
+    #[case::fail(
+        Protected::value(())
+            .with_check(Check::user(authz::User(i64::MAX)))
+            .with_check(Check::group(authz::Group(i64::MAX))),
+        (2, 0)
+    )]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn system_authorizer_run_checks_invariant(
+        #[case] protected: Protected<()>,
+        #[case] expected: (usize, usize),
+    ) {
+        let openfga = openfga().await;
+        let pool = DbConnectionPoolV2::for_tests();
+        let system = SystemAuthorizer {
+            openfga: &openfga,
+            conn: pool.get_ok(),
+        };
+        assert_eq!(run_checks_count(&system, protected).await, expected);
+    }
+
+    #[rstest]
+    #[case::pass(
+        Protected::value(()).with_check(Check::HasRole(Actor::Issuer, Role::Stdcm)),
+        (0, 1)
+    )]
+    #[case::fail(
+        Protected::value(())
+            .with_check(Check::HasRole(Actor::Issuer, Role::Admin))
+            .with_check(Check::HasRole(Actor::Issuer, Role::OperationalStudies)),
+        (2, 0)
+    )]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn user_authorizer_run_checks_invariant(
+        #[case] protected: Protected<()>,
+        #[case] expected: (usize, usize),
+    ) {
+        let openfga = openfga().await;
+        let pool = DbConnectionPoolV2::for_tests();
+        let user = create_user(&pool, "user").await;
+        let user_authorizer = UserAuthorizer::new(user, vec![Role::Stdcm], &openfga, pool.get_ok());
+        assert_eq!(
+            run_checks_count(&user_authorizer, protected).await,
+            expected
+        );
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]

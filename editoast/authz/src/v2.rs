@@ -4,13 +4,17 @@ mod roles;
 mod rolling_stock;
 mod test_client_ext;
 
+use futures::TryStreamExt;
+use futures::stream;
 pub use group::*;
 pub use infra::*;
+use itertools::Either;
 pub use roles::*;
 pub use rolling_stock::*;
 pub use test_client_ext::TestClientExt;
 
 use std::collections::HashSet;
+use std::convert::Infallible;
 
 use futures::FutureExt;
 use futures::future::BoxFuture;
@@ -108,11 +112,33 @@ pub trait Authorizer {
     type Rejection;
     type Error;
 
+    /// Runs the checks of the [Protected], returning failing ones, or the [Access] handle if all checks pass
+    ///
+    /// INVARIANT: the stream only contains one or more [Either::Left] values or a single [Either::Right] value.
+    fn run_checks<'a, T>(
+        &'a self,
+        data: Protected<T>,
+    ) -> impl stream::TryStream<
+        Ok = Either<Self::Rejection, Access<'a, T, Infallible>>,
+        Error = Self::Error,
+    >;
+
     /// Turns a [Protected] operation into an [Access] by enforcing the necessary checks
     async fn authorize<'a, T>(
         &'a self,
         data: Protected<T>,
-    ) -> Result<Access<'a, T, Self::Rejection>, Self::Error>;
+    ) -> Result<Access<'a, T, Self::Rejection>, Self::Error> {
+        use stream::StreamExt as _;
+        use stream::TryStreamExt as _;
+        let stream = self.run_checks(data).into_stream();
+        tokio::pin!(stream);
+        match stream.next().await {
+            Some(Ok(Either::Right(Access::Authorized(fut)))) => Ok(Access::Authorized(fut)),
+            Some(Ok(Either::Left(rejection))) => Ok(Access::Denied { rejection }),
+            Some(Err(error)) => Err(error),
+            None => unreachable!(),
+        }
+    }
 
     /// Authorizes multiple [Protected] operations concurrently
     ///
@@ -154,11 +180,22 @@ impl<T> Protected<T> {
         authorizer.authorize(self).await
     }
 
-    /// Consumes the protection and produces an [Access::Authorized] without performing any check
+    /// Consumes the [Protected] and produces an [Access::Authorized] without performing any check
     ///
     /// Only use this in trusted context or in an [Authorizer] implementation after performing the necessary checks.
     pub fn access_authorized<'a, R>(self, openfga: &'a fga::Client) -> Access<'a, T, R> {
         Access::Authorized((self.op)(openfga))
+    }
+
+    /// Unpacks the [Protected] into an [Access::Authorized] and the checks that need to be performed
+    ///
+    /// Only use this in trusted context or in an [Authorizer] implementation.
+    /// Provided as [Protected::access_authorized] consumes the [Protected] and doesn't allow taking ownership
+    /// of the checks to perform beforehand.
+    ///
+    /// Note that the protected operation is not run until the future in [Access::Authorized] is first polled.
+    pub fn unpack<'a, R>(self, openfga: &'a fga::Client) -> (HashSet<Check>, Access<'a, T, R>) {
+        (self.checks, Access::Authorized((self.op)(openfga)))
     }
 
     pub fn with_check(self, check: Check) -> Self {
@@ -346,6 +383,9 @@ impl<T: fga::model::Type> ResourcesList<T> {
 pub mod special_authorizers {
     use std::convert::Infallible;
 
+    use futures::stream;
+    use itertools::Either;
+
     use crate::v2::Access;
     use crate::v2::OpenFgaError;
     use crate::v2::Protected;
@@ -361,11 +401,16 @@ pub mod special_authorizers {
         type Rejection = Infallible;
         type Error = Infallible;
 
-        async fn authorize<'a, T>(
+        fn run_checks<'a, T>(
             &'a self,
             data: Protected<T>,
-        ) -> Result<Access<'a, T, Self::Rejection>, Self::Error> {
-            Ok(data.access_authorized(self.0))
+        ) -> impl stream::TryStream<
+            Ok = Either<Self::Rejection, Access<'a, T, Infallible>>,
+            Error = Self::Error,
+        > {
+            futures::stream::once(futures::future::ok(Either::Right(
+                data.access_authorized(self.0),
+            )))
         }
     }
 
@@ -373,11 +418,14 @@ pub mod special_authorizers {
         type Rejection = super::Check;
         type Error = Infallible;
 
-        async fn authorize<'a, T>(
+        fn run_checks<'a, T>(
             &'a self,
             _data: Protected<T>,
-        ) -> Result<Access<'a, T, Self::Rejection>, Self::Error> {
-            Ok(Access::Denied { rejection: self.0 })
+        ) -> impl stream::TryStream<
+            Ok = Either<Self::Rejection, Access<'a, T, Infallible>>,
+            Error = Self::Error,
+        > {
+            futures::stream::once(futures::future::ok(Either::Left(self.0)))
         }
     }
 
@@ -390,7 +438,7 @@ pub mod special_authorizers {
     }
 }
 
-impl<L, R, Rejection, Error> Authorizer for itertools::Either<L, R>
+impl<L, R, Rejection, Error> Authorizer for Either<L, R>
 where
     L: Authorizer<Rejection = Rejection, Error = Error>,
     R: Authorizer<Rejection = Rejection, Error = Error>,
@@ -398,13 +446,23 @@ where
     type Rejection = Rejection;
     type Error = Error;
 
-    async fn authorize<'a, T>(
+    fn run_checks<'a, T>(
         &'a self,
         data: Protected<T>,
-    ) -> Result<Access<'a, T, Self::Rejection>, Self::Error> {
+    ) -> impl stream::TryStream<
+        Ok = Either<Self::Rejection, Access<'a, T, Infallible>>,
+        Error = Self::Error,
+    > {
+        use futures::stream::StreamExt as _;
         match self {
-            itertools::Either::Left(l) => l.authorize(data).await,
-            itertools::Either::Right(r) => r.authorize(data).await,
+            Either::Left(l) => {
+                let stream = l.run_checks(data);
+                stream.into_stream().left_stream()
+            }
+            Either::Right(r) => {
+                let stream = r.run_checks(data);
+                stream.into_stream().right_stream()
+            }
         }
     }
 }
