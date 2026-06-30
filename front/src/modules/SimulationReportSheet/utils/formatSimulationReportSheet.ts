@@ -261,7 +261,7 @@ export function insertMissingStopsInOperationalPointsWithTimes(
 
 // TODO : Remove this function as soon as fake takeover tracks cease to be used
 // It serves to consolidate steps of the form OVERTAKE_n_A;X, OVERTAKE_n_B;X in a single step X
-export function consolidateOvertakesToSingleSteps(
+function consolidateOvertakesToSingleSteps(
   steps: StdcmResultsOperationalPoint[]
 ): StdcmResultsOperationalPoint[] {
   function convertHHMMTimeToSeconds(time: string): number {
@@ -326,12 +326,11 @@ export function getOperationalPointsWithTimes({
     .filter((suggestedOp) => {
       // Keep if the OP is not in the exclusion list
       if (!suggestedOp.opId || !opIdsToExclude.includes(suggestedOp.opId)) return true;
-      // Keep if explicitly requested by the user (origin, destination, via point or stop)
 
+      // Keep if explicitly requested by the user (origin, destination, via point or stop)
       const isRequestedPoint = simulationPathSteps.some(
         (step) => step.operationalPoint && step.operationalPoint.id === suggestedOp.opId
       );
-
       return isRequestedPoint;
     })
     // Map operational points with their positions, times, and stop durations
@@ -354,7 +353,7 @@ export function getOperationalPointsWithTimes({
 
   return formattedConsolidatedOps.map((op) => ({
     ...op,
-    stopType: op.duration ? op.stopType : undefined,
+    stopType: op.duration || !op.stopType ? op.stopType : StdcmStopTypes.PASSAGE_TIME, // no stop duration -> stoptype = undefined or PASSAGE_TIME
     consistChange: op.duration ? op.consistChange : undefined,
   }));
 }
