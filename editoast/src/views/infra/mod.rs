@@ -117,7 +117,6 @@ pub(in crate::views) async fn refresh(
         db_pool,
         valkey_client,
         infra_caches,
-        map_layers,
         config,
         ..
     }): State<AppState>,
@@ -161,13 +160,7 @@ pub(in crate::views) async fn refresh(
 
     let mut conn = valkey_client.clone().get_connection().await?;
     for infra_id in infra_refreshed.iter() {
-        map::invalidate_all(
-            &mut conn,
-            &map_layers.layers.keys().cloned().collect(),
-            *infra_id,
-            config.app_version.as_deref(),
-        )
-        .await?;
+        map::invalidate_all(&mut conn, *infra_id, config.app_version.as_deref()).await?;
     }
 
     Ok(Json(RefreshResponse { infra_refreshed }))

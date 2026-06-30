@@ -1,4 +1,5 @@
 use deadpool_redis::redis::AsyncCommands;
+use editoast_models::map::MAP_LAYER_NAMES;
 
 use crate::error::Result;
 
@@ -69,11 +70,10 @@ async fn invalidate_full_layer_cache(
 /// Panics if fail
 pub async fn invalidate_all(
     valkey: &mut cache::Connection,
-    layers: &Vec<String>,
     infra_id: i64,
     app_version: Option<&str>,
 ) -> Result<()> {
-    for layer_name in layers {
+    for &layer_name in MAP_LAYER_NAMES.iter() {
         invalidate_full_layer_cache(valkey, infra_id, layer_name, app_version).await?;
     }
     Ok(())

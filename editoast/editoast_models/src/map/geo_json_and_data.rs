@@ -37,7 +37,7 @@ impl GeoJsonAndData {
         infra: i64,
         (x, y, z): (u64, u64, u64),
     ) -> Result<Vec<GeoJsonAndData>, database::DatabaseError> {
-        let geo_json_query = get_geo_json_sql_query(&layer.table_name, view);
+        let geo_json_query = get_geo_json_sql_query(layer.table_name, view);
         let records = sql_query(geo_json_query)
             .bind::<Integer, _>(z as i32)
             .bind::<Integer, _>(x as i32)
@@ -224,11 +224,11 @@ mod tests {
     use super::*;
     use serde_json::json;
 
-    use crate::map::MapLayers;
+    use crate::map::MAP_LAYERS;
 
     #[test]
     fn test_query_creation() {
-        let map_layers = MapLayers::default();
+        let map_layers = &*MAP_LAYERS;
         let expected_queries = [
         "
         WITH bbox AS (
