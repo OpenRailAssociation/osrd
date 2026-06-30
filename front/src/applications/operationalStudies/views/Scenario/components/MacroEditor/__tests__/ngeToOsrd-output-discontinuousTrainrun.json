@@ -103,7 +103,7 @@
         {
           "at": "6-2",
           "arrival": "PT4M",
-          "stop_for": "P0D",
+          "stop_for": "PT0S",
           "reception_signal": "OPEN"
         }
       ],
@@ -154,7 +154,7 @@
         {
           "at": "7-2",
           "arrival": "PT4M",
-          "stop_for": "P0D",
+          "stop_for": "PT0S",
           "reception_signal": "OPEN"
         }
       ],
@@ -195,7 +195,7 @@
           "arrival": "PT2M",
           "at": "11-1",
           "reception_signal": "OPEN",
-          "stop_for": "P0D"
+          "stop_for": "PT0S"
         }
       ],
       "start_time": 1750856700000,
@@ -236,7 +236,7 @@
           "arrival": "PT1M",
           "at": "10-1",
           "reception_signal": "OPEN",
-          "stop_for": "P0D"
+          "stop_for": "PT0S"
         }
       ],
       "start_time": 1750859640000,

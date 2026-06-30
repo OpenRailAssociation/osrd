@@ -90,7 +90,7 @@
         {
           "at": "6-2",
           "arrival": "PT4M",
-          "stop_for": "P0D",
+          "stop_for": "PT0S",
           "reception_signal": "OPEN"
         }
       ]

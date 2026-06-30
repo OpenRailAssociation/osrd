@@ -4,9 +4,15 @@ import duration from 'dayjs/plugin/duration.js';
 
 dayjs.extend(duration);
 
+const U32_MAX = 0xffff_ffff;
+export const I64_MAX = 9_223_372_036_854_775_807n;
+
+const MICROSECOND_IN_MS = 0.001;
 const SECOND_IN_MS = 1000;
 const MINUTE_IN_MS = 60 * SECOND_IN_MS;
 const HOUR_IN_MS = 60 * MINUTE_IN_MS;
+
+export const MAX_DURATION_MS = Number(I64_MAX) * MICROSECOND_IN_MS; // Database will not register anything above this value
 
 const UNIT_IN_MS = {
   second: SECOND_IN_MS,
@@ -39,9 +45,27 @@ export class Duration {
     return this.ms;
   }
 
+  // NOTE: As this Duration class represents a fixed-length duration (milliseconds),
+  //       not calendar units, we serialize using only fixed-size units
+  //       (hours, minutes and seconds) and prevent using months and years.
+  //       We also consider U32_MAX as a maximum value since the backend will not
+  //       be able to parse anything above this value.
   /** Format this duration as an ISO 8601 string. */
   toISOString() {
-    return dayjs.duration(this.ms).toISOString();
+    const hours = Math.min(Math.floor(this.ms / HOUR_IN_MS), U32_MAX);
+    const hoursRemain = this.ms - hours * HOUR_IN_MS;
+
+    const minutes = Math.min(Math.floor(hoursRemain / MINUTE_IN_MS), U32_MAX);
+    const minutesRemain = hoursRemain - minutes * MINUTE_IN_MS;
+
+    const seconds = Math.floor(minutesRemain / SECOND_IN_MS);
+
+    const h = hours ? `${hours}H` : '';
+    const m = minutes ? `${minutes}M` : '';
+    const s = seconds ? `${seconds}S` : '';
+
+    if (!h && !m && !s) return 'PT0S';
+    return `PT${h}${m}${s}`;
   }
 
   toJSON() {

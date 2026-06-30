@@ -192,7 +192,7 @@ describe('Scenario 2 — +30 min at OP11', () => {
 
       expect(updatedStartTime).toEqual(_18H30);
       expect(scheduleByAt['op11']?.arrival).toBe('PT30M'); // offset unchanged — only steps after OP11 are shifted
-      expect(scheduleByAt['op17']?.arrival).toBe('P1DT20M'); // 50min - 30min = 20min < 30min (OP11 offset) → midnight crossing
+      expect(scheduleByAt['op17']?.arrival).toBe('PT24H20M'); // 50min - 30min = 20min < 30min (OP11 offset) → midnight crossing
       expect(toComputedArrival(updatedStartTime, scheduleByAt['op11'].arrival!)).toEqual(_19H00);
       expect(toComputedArrival(updatedStartTime, scheduleByAt['op17'].arrival!)).toEqual(
         _18H50_MIDNIGHT_CROSSING
@@ -220,7 +220,7 @@ describe('Scenario 2 — +30 min at OP11', () => {
     it('OP17 falls before OP11 → should trigger midnight crossing to next day 18:50', () => {
       const updatedSchedule = adjustFollowingWaypointsForMidnight(_19H00, 'op11', train);
       const scheduleByAt = Object.fromEntries(updatedSchedule.map((item) => [item.at, item]));
-      expect(scheduleByAt['op17']?.arrival).toBe('P1DT50M'); // 50min < 60min (OP11 new offset) → midnight crossing (+24h to original offset)
+      expect(scheduleByAt['op17']?.arrival).toBe('PT24H50M'); // 50min < 60min (OP11 new offset) → midnight crossing (+24h to original offset)
       expect(toComputedArrival(_18H00, scheduleByAt['op17'].arrival!)).toEqual(
         _18H50_MIDNIGHT_CROSSING
       );
@@ -283,7 +283,7 @@ describe('Scenario 3 — -40 min at OP11', () => {
 
       expect(updatedStartTime).toEqual(_18H00); // start_time unchanged
       expect(scheduleByAt['op11']?.arrival).toBe('PT23H50M'); // 30min + 23h20m
-      expect(scheduleByAt['op17']?.arrival).toBe('P1DT10M'); // 50min + 23h20m = 24h10m
+      expect(scheduleByAt['op17']?.arrival).toBe('PT24H10M'); // 50min + 23h20m = 24h10m
       expect(toComputedArrival(updatedStartTime, scheduleByAt['op11'].arrival!)).toEqual(
         _17H50_MIDNIGHT_CROSSING
       );
@@ -343,7 +343,7 @@ describe('Scenario 3 — -40 min at OP11', () => {
         train
       );
       const scheduleByAt = Object.fromEntries(updatedSchedule.map((item) => [item.at, item]));
-      expect(scheduleByAt['op17']?.arrival).toBe('P1DT50M'); // 50min < 23h50m (OP11 new offset) → midnight crossing
+      expect(scheduleByAt['op17']?.arrival).toBe('PT24H50M'); // 50min < 23h50m (OP11 new offset) → midnight crossing
       expect(toComputedArrival(_18H00, scheduleByAt['op17'].arrival!)).toEqual(
         _18H50_MIDNIGHT_CROSSING
       );
@@ -376,7 +376,7 @@ describe('Scenario 4 — +40 min at origin (OP1)', () => {
   describe('propagateTime', () => {
     // atThisWaypoint at origin shifts start_time only.
     // OP11: 30min - 40min = -10min → midnight crossing → PT23H50M.
-    // OP17: 50min - 40min = 10min → midnight crossing → P1DT10M.
+    // OP17: 50min - 40min = 10min → midnight crossing → PT24H10M.
     it('atThisWaypoint — should shift start_time → 18:40, OP11 and OP17 midnight crossing, absolute times preserved', () => {
       const result = propagateTime(
         {
@@ -393,7 +393,7 @@ describe('Scenario 4 — +40 min at origin (OP1)', () => {
 
       expect(updatedStartTime).toEqual(_18H40);
       expect(scheduleByAt['op11']?.arrival).toBe('PT23H50M'); // 30min - 40min = -10min → midnight crossing
-      expect(scheduleByAt['op17']?.arrival).toBe('P1DT10M'); // 10min < PT23H50M (cascade) → midnight crossing
+      expect(scheduleByAt['op17']?.arrival).toBe('PT24H10M'); // 10min < PT23H50M (cascade) → midnight crossing
       expect(toComputedArrival(updatedStartTime, scheduleByAt['op11'].arrival!)).toEqual(
         _18H30_MIDNIGHT_CROSSING
       );
