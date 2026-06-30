@@ -95,8 +95,6 @@ pub enum Access<'a, T, R> {
     ///
     /// See [Access::access].
     Authorized(ValueFut<'a, T>),
-    /// The operation is bypassed, the operation is not run and a substitute value is provided instead
-    Bypassed { value: T, reason: &'static str },
     /// The operation is rejected, the protected operation cannot be run and a rejection reason is provided by the [Authorizer]
     Denied { rejection: R },
 }
@@ -291,10 +289,6 @@ impl<'a, T, R> Access<'a, T, R> {
         match self {
             Access::Authorized(fut) => fut.await.map(Ok),
             Access::Denied { rejection } => Ok(Err(rejection)),
-            Access::Bypassed { value, reason } => {
-                tracing::warn!(reason, "using admin bypass");
-                Ok(Ok(value))
-            }
         }
     }
 
