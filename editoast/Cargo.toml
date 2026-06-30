@@ -257,7 +257,7 @@ axum = { version = "0.8.4", default-features = false, features = [
   "multipart",
   "tracing",
 ] }
-axum-test = { version = "20.0", default-features = false }
+axum-test = { version = "21.0", default-features = false }
 core_client = { workspace = true }
 database = { workspace = true, features = ["testing"] }
 editoast_models = { workspace = true, features = ["testing"] }
