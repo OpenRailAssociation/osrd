@@ -185,15 +185,6 @@ allprojects {
         options.encoding = "UTF-8"
     }
 
-    // Remove warning on each @Json annotation
-    plugins.withId('org.jetbrains.kotlin.jvm') {
-        kotlin {
-            compilerOptions {
-                freeCompilerArgs.add("-Xannotation-default-target=param-property")
-            }
-        }
-    }
-
     spotbugs {
         ignoreFailures = false
         showStackTraces = true
