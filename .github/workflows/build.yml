@@ -821,7 +821,7 @@ jobs:
     name: Check Playwright version for nix
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - name: Install Nix
         uses: DeterminateSystems/nix-installer-action@main
       - name: Check versions of playwright
