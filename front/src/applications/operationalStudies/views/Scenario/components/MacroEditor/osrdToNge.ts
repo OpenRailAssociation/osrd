@@ -755,7 +755,7 @@ export const loadNgeDto = async (
   );
 
   const pacedTrainRoundTripsPromise = dispatch(
-    osrdEditoastApi.endpoints.getTimetableByIdRoundTripsTrainSchedules.initiate(
+    osrdEditoastApi.endpoints.getTimetableByIdRoundTrips.initiate(
       { id: timetableId },
       { subscribe: false }
     )

@@ -32,9 +32,7 @@ const postRoundTrips = async (
       roundTrips,
       formattedPacedTrains.map(({ id }) => ({ id }))
     );
-    await dispatch(
-      osrdEditoastApi.endpoints.postRoundTripsTrainSchedules.initiate(payload)
-    ).unwrap();
+    await dispatch(osrdEditoastApi.endpoints.postRoundTrips.initiate(payload)).unwrap();
   }
 };
 

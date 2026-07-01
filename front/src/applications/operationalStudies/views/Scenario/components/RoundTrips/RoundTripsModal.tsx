@@ -53,14 +53,12 @@ const RoundTripsModal = ({
   const subCategories = useSubCategoryContext();
 
   const { data: { results: pacedTrainRoundtrips } = { results: undefined } } =
-    osrdEditoastApi.endpoints.getTimetableByIdRoundTripsTrainSchedules.useQuery({
+    osrdEditoastApi.endpoints.getTimetableByIdRoundTrips.useQuery({
       id: timetableId,
     });
 
-  const [postRoundTripsTrainSchedules] =
-    osrdEditoastApi.endpoints.postRoundTripsTrainSchedules.useMutation();
-  const [deleteRoundTripsTrainSchedules] =
-    osrdEditoastApi.endpoints.postRoundTripsTrainSchedulesDelete.useMutation();
+  const [postRoundTrips] = osrdEditoastApi.endpoints.postRoundTrips.useMutation();
+  const [deleteRoundTrips] = osrdEditoastApi.endpoints.postRoundTripsDelete.useMutation();
 
   const trainSchedulesWithOps = useTrainSchedulesWithPathOps(infraId, trainSchedules);
 
@@ -136,11 +134,11 @@ const RoundTripsModal = ({
 
     const apiCalls = [];
     if (idsToDelete.length > 0) {
-      apiCalls.push(deleteRoundTripsTrainSchedules({ body: idsToDelete }));
+      apiCalls.push(deleteRoundTrips({ body: idsToDelete }));
     }
     if (roundTripsIds.length > 0 || oneWaysIds.length > 0) {
       apiCalls.push(
-        postRoundTripsTrainSchedules({
+        postRoundTrips({
           roundTrips: { round_trips: roundTripsIds, one_ways: oneWaysIds },
         })
       );
