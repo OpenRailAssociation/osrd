@@ -3,7 +3,7 @@ import { compact } from 'lodash';
 import type { PacedTrainException, TrainSchedule } from 'common/api/osrdEditoastApi';
 import { isPacedTrainBase } from 'modules/trainSchedule/helpers/pacedTrain';
 import type { PacedTrainWithDetails, TrainScheduleWithDetails } from 'modules/trainSchedule/types';
-import type { OperationalStudiesConfState, OccurrenceId } from 'reducers/osrdconf/types';
+import type { OperationalStudiesConfState, OccurrenceId, PathStep } from 'reducers/osrdconf/types';
 import { kmhToMs } from 'utils/physics';
 import { extractOccurrenceIndexFromOccurrenceId, isIndexedOccurrenceId } from 'utils/trainId';
 
@@ -11,20 +11,47 @@ import { generatePacedTrainException } from './buildPacedTrainException';
 import formatMargin from './formatMargin';
 import formatSchedule from './formatSchedule';
 
+/** Ensure the first waypoint do not have an arrival time by shifting
+ * the startTime and the arrival time of all the other waypoints.
+ *
+ * This is necessary because our backend API do not allow the first
+ * waypoint to have an arrival time.
+ */
+function normalizeFirstWaypointTimes(
+  pathSteps: PathStep[],
+  startTime: number
+): { pathSteps: PathStep[]; startTime: number } {
+  const firstArrival = pathSteps[0]?.arrival;
+  if (!firstArrival) return { pathSteps, startTime };
+
+  const shiftedPathSteps = pathSteps.map((step, index) => {
+    if (index === 0) return { ...step, arrival: null };
+    if (step.arrival) return { ...step, arrival: step.arrival.sub(firstArrival) };
+    return step;
+  });
+
+  return { pathSteps: shiftedPathSteps, startTime: startTime + firstArrival.ms };
+}
+
 export function formatTrainSchedulePayload(osrdconf: OperationalStudiesConfState): TrainSchedule {
+  const { pathSteps, startTime } = normalizeFirstWaypointTimes(
+    compact(osrdconf.pathSteps),
+    osrdconf.startTime.getTime()
+  );
+
   return {
     category: osrdconf.category,
     comfort: osrdconf.rollingStockComfort,
     constraint_distribution: osrdconf.constraintDistribution,
     initial_speed: osrdconf.initialSpeed ? kmhToMs(osrdconf.initialSpeed) : 0,
     labels: osrdconf.labels,
-    margins: formatMargin(compact(osrdconf.pathSteps)),
+    margins: formatMargin(pathSteps),
     options: {
       use_electrical_profiles: osrdconf.usingElectricalProfiles,
       use_speed_limits_for_simulation: osrdconf.usingSpeedLimits,
       stops_at_end_of_block: false,
     },
-    path: compact(osrdconf.pathSteps).map((step) => ({
+    path: pathSteps.map((step) => ({
       id: step.id,
       location: step.location,
     })),
@@ -40,9 +67,9 @@ export function formatTrainSchedulePayload(osrdconf: OperationalStudiesConfState
         : undefined,
     power_restrictions: osrdconf.powerRestriction,
     rolling_stock_name: osrdconf.rollingStockName,
-    schedule: formatSchedule(compact(osrdconf.pathSteps)),
+    schedule: formatSchedule(pathSteps),
     speed_limit_tag: osrdconf.speedLimitByTag,
-    start_time: osrdconf.startTime.getTime(),
+    start_time: startTime,
     train_name: osrdconf.name,
   };
 }
