@@ -333,6 +333,7 @@ const SimulationResults = ({
           customHeader={
             <TrainHeader
               train={simulationResults.train}
+              path={simulationResults.path}
               trainSchedulesWithDetails={trainSchedulesWithDetails}
               upsertTrainSchedules={upsertTrainSchedules}
               setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}

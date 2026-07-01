@@ -539,6 +539,7 @@
         "trainName": "Nom du train"
       },
       "itinerary": "Itinéraire",
+      "pathChanged": "L’itinéraire a été modifié suite à une modification",
       "serviceChangeWarning": {
         "cancel": "Annuler",
         "confirm": "Confirmer",
