@@ -50,7 +50,7 @@ pub(crate) fn operational_points(
                     uic: Some(identifier_uic),
                     plc: None,
                     country_code: "FR".into(),
-                    main_code: main_code.into(),
+                    main_code,
                     secondary_code: Some("BV".into()),
                     is_passenger_station: true,
                     secondary_name: Some("BV".into()),
@@ -63,14 +63,14 @@ pub(crate) fn operational_points(
 /// Find all nodes that have a `railway:ref` tag and create a mapping from their id to the value of this tag.
 fn map_node_id_to_main_code(
     pbf: &mut OsmPbfReader<std::fs::File>,
-) -> HashMap<osm4routing::osmpbfreader::NodeId, String> {
+) -> HashMap<osm4routing::osmpbfreader::NodeId, NonBlankString> {
     pbf.iter()
         .flatten()
         .filter_map(|obj| match obj {
             osm4routing::osmpbfreader::OsmObj::Node(node) => node
                 .tags
                 .get("railway:ref")
-                .map(|tag| (node.id, tag.to_string())),
+                .map(|tag| (node.id, NonBlankString::from(tag.to_string()))),
             _ => None,
         })
         .collect()
@@ -128,7 +128,10 @@ fn local_track_name_fallback(
 
 /// Get operational point main_code.
 /// Look through the nodes members of the relation and find one that has a "railway:ref" tag.
-fn main_code(relation: &Relation, node_id_to_main_code: &HashMap<NodeId, String>) -> String {
+fn main_code(
+    relation: &Relation,
+    node_id_to_main_code: &HashMap<NodeId, NonBlankString>,
+) -> NonBlankString {
     relation
         .refs
         .iter()
@@ -137,7 +140,7 @@ fn main_code(relation: &Relation, node_id_to_main_code: &HashMap<NodeId, String>
             _ => None,
         })
         .find_map(|node_id| node_id_to_main_code.get(&node_id).cloned())
-        .unwrap_or_default()
+        .unwrap_or(NonBlankString::from(Uuid::new_v4().to_string()))
 }
 
 // TODO: the generation of fake UIC and name is here as a temporary solution.
