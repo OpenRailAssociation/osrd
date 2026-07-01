@@ -133,4 +133,28 @@ describe('formatTrainSchedulePayload', () => {
       expect(newTrainSchedulePayload.rolling_stock_name).toBe('rollingStock1');
     });
   });
+
+  describe('The new origin has an arrival time (origin was deleted)', () => {
+    it('should fold the first waypoint arrival into the start time and shift the others', () => {
+      const osrdconf: OperationalStudiesConfState = {
+        ...rawOsrdconf,
+        pathSteps: [
+          { ...rawOsrdconf.pathSteps[0]!, arrival: Duration.parse('PT10M') },
+          { ...rawOsrdconf.pathSteps[1]!, arrival: Duration.parse('PT25M') },
+        ],
+      };
+
+      const payload = formatTrainSchedulePayload(osrdconf);
+
+      expect(payload.start_time).toBe(new Date('2025-06-02T12:55:00.000Z').getTime());
+      expect(payload.schedule).toEqual([
+        {
+          at: '1-1',
+          arrival: 'PT15M',
+          reception_signal: 'OPEN',
+          stop_for: undefined,
+        },
+      ]);
+    });
+  });
 });
