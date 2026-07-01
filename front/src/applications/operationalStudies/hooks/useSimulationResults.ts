@@ -141,7 +141,7 @@ const useSimulationResults = (
 
   if (pathfinding?.status !== 'success' || !rawPathProperties || !rollingStock) {
     return {
-      results: { isValid: false, train, rollingStock },
+      results: { isValid: false, train, path: pathfinding, rollingStock },
       isSimulationDataLoading,
     };
   }
@@ -160,6 +160,7 @@ const useSimulationResults = (
         isValid: false,
         train,
         rollingStock,
+        path: pathfinding,
         pathProperties,
       },
       isSimulationDataLoading,

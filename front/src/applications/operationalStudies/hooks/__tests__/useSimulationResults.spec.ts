@@ -228,17 +228,32 @@ describe('useSimulationResults', () => {
         case: 'rolling stock is missing',
         arrange: () =>
           getRollingStockNameByRollingStockName.mockResolvedValue({ error: notFoundError }),
-        expectedResults: { isValid: false, train: expectedTrain, rollingStock: undefined },
+        expectedResults: {
+          isValid: false,
+          train: expectedTrain,
+          path: pathfindingSuccess,
+          rollingStock: undefined,
+        },
       },
       {
         case: 'path properties are missing',
         arrange: () => postInfraByInfraIdPathProperties.mockResolvedValue({ error: notFoundError }),
-        expectedResults: { isValid: false, train: expectedTrain, rollingStock },
+        expectedResults: {
+          isValid: false,
+          train: expectedTrain,
+          path: pathfindingSuccess,
+          rollingStock,
+        },
       },
       {
         case: 'pathfinding has failed',
         arrange: () => getTrainPath.mockResolvedValue({ error: notFoundError }),
-        expectedResults: { isValid: false, train: expectedTrain, rollingStock },
+        expectedResults: {
+          isValid: false,
+          train: expectedTrain,
+          path: undefined,
+          rollingStock,
+        },
       },
       {
         case: 'simulation is not successful',
@@ -246,6 +261,7 @@ describe('useSimulationResults', () => {
         expectedResults: {
           isValid: false,
           train: expectedTrain,
+          path: pathfindingSuccess,
           rollingStock,
           pathProperties: preparedPathProperties,
         },

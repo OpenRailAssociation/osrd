@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import { updateTrainSchedule } from 'applications/operationalStudies/views/Scenario/components/ManageTrainSchedule/hooks/useUpdateTrainSchedule';
 import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/views/Scenario/consts';
-import type { TrainScheduleResponse } from 'common/api/osrdEditoastApi';
+import type { PathfindingResult, TrainScheduleResponse } from 'common/api/osrdEditoastApi';
 import type { PacedTrainWithDetails } from 'modules/trainSchedule/types';
 import { setFailure } from 'reducers/main';
 import { selectTrainToEdit } from 'reducers/osrdconf/operationalStudiesConf';
@@ -19,6 +19,7 @@ import { applyOccurrenceOnPacedTrain } from './utils/applyOccurrenceOnPacedTrain
 
 export type TrainHeaderProps = {
   train: Train;
+  path?: Omit<PathfindingResult, 'status'>;
   trainSchedulesWithDetails: PacedTrainWithDetails[];
   upsertTrainSchedules: (trainSchedules: TrainScheduleResponse[]) => void;
   setDisplayTrainScheduleManagement: (type: string) => void;
@@ -37,6 +38,7 @@ export type ExtraOccurrencesChanges = {
  */
 const TrainHeader = ({
   train,
+  path,
   trainSchedulesWithDetails,
   upsertTrainSchedules,
   setDisplayTrainScheduleManagement,
@@ -115,6 +117,7 @@ const TrainHeader = ({
       <ExpandedTrainForm
         key={`form-${train.id}` /* Invalidate the form's state if we select another train */}
         train={train}
+        path={path}
         onCollapse={() => {
           setExpanded(false);
         }}
