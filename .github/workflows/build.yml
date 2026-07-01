@@ -824,6 +824,8 @@ jobs:
         uses: actions/checkout@v7
       - name: Install Nix
         uses: DeterminateSystems/nix-installer-action@main
+        with:
+          summarize: false # Suppress the Nix build job summary
       - name: Check versions of playwright
         run: .github/scripts/check-playwright-version.sh
 
