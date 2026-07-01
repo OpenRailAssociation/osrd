@@ -25,6 +25,13 @@ const defaultSettings = {
   stdcmFeedbackMail: 'support_LMR@default.org',
   noInfraEdit: false,
   railwayManagerInterfaceUrl: undefined,
+  stdcmContactSections: undefined,
+};
+
+export type StdcmContactSection = {
+  title: string;
+  items: { title: string; value: string }[];
+  link?: { url: string; label: string };
 };
 
 export type DeploymentSettings = {
@@ -38,6 +45,7 @@ export type DeploymentSettings = {
   stdcmFeedbackMail?: string;
   noInfraEdit?: boolean;
   railwayManagerInterfaceUrl?: string;
+  stdcmContactSections?: Record<string, StdcmContactSection[]>;
 };
 
 type Overrides = {
@@ -47,6 +55,8 @@ type Overrides = {
   stdcm_feedback_mail?: string;
   /** Whether the options to edit the rail infrastructure should be visible to users. */
   no_infra_edit?: boolean;
+  /** Locale-keyed contact sections shown in the STDCM help module footer. */
+  stdcm_contact_sections?: Record<string, StdcmContactSection[]>;
   /** Custom names to display to users for the osrd modules. */
   names?: {
     operational_studies?: string;
@@ -114,6 +124,7 @@ export const DeploymentContextProvider = ({ children }: DeploymentContextProvide
             stdcm_feedback_mail,
             no_infra_edit,
             railway_manager_interface_url,
+            stdcm_contact_sections,
           } = overridesData;
 
           const deploySettings: DeploymentSettings = {
@@ -154,6 +165,10 @@ export const DeploymentContextProvider = ({ children }: DeploymentContextProvide
           if (railway_manager_interface_url) {
             dispatch(setRailwayManagerInterfaceUrl(railway_manager_interface_url));
             deploySettings.railwayManagerInterfaceUrl = railway_manager_interface_url;
+          }
+
+          if (stdcm_contact_sections) {
+            deploySettings.stdcmContactSections = stdcm_contact_sections;
           }
 
           setCustomizedDeploymentSetting({

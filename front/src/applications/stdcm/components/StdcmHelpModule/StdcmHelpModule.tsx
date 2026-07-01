@@ -4,6 +4,8 @@ import { ChevronRight, X } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 
+import useDeploymentSettings from 'utils/hooks/useDeploymentSettings';
+
 import HelpSection from './HelpSection';
 
 type StdcmHelpSectionProps = {
@@ -12,20 +14,20 @@ type StdcmHelpSectionProps = {
 };
 
 const StdcmHelpModule = ({ toggleHelpModule, showHelpModule }: StdcmHelpSectionProps) => {
-  const { t } = useTranslation('stdcm-help-section');
+  const { t, i18n } = useTranslation('stdcm-help-section');
 
   const [activeSection, setActiveSection] = useState<string | null>(null);
+
+  const allContactSections = useDeploymentSettings()?.stdcmContactSections;
+  const contactSections =
+    allContactSections &&
+    (allContactSections[i18n.language] ?? allContactSections.en ?? allContactSections.fr);
 
   const closeHelpModule = () => {
     setActiveSection(null);
     toggleHelpModule();
   };
   const closeHelpSection = () => setActiveSection(null);
-  const support = t('asu', { returnObjects: true }) as { title: string; value: string }[];
-  const externalSupport = t('externalSupport', { returnObjects: true }) as {
-    title: string;
-    value: string;
-  }[];
   const sections = Object.keys(t('sections', { returnObjects: true }));
   return (
     <div className={cx('stdcm__help-module', { active: showHelpModule })}>
@@ -50,48 +52,31 @@ const StdcmHelpModule = ({ toggleHelpModule, showHelpModule }: StdcmHelpSectionP
           ))}
         </div>
       </div>
-      <footer>
-        <div className="contact">
-          <h2 className="contact_title">{t('externalContact')}</h2>
-          {Array.isArray(externalSupport) &&
-            externalSupport.map((item, index) => (
-              <div key={item.title}>
-                <div className="support-info">
-                  <div className="support-info__title">{item.title}</div>
-                  <div className="support-info__content">{item.value}</div>
+      {contactSections && contactSections.length > 0 && (
+        <footer>
+          {contactSections.map((contactSection) => (
+            <div className="contact" key={contactSection.title}>
+              <h2 className="contact_title">{contactSection.title}</h2>
+              {contactSection.items.map((item, index) => (
+                <div key={item.title}>
+                  <div className="support-info">
+                    <div className="support-info__title">{item.title}</div>
+                    <div className="support-info__content">{item.value}</div>
+                  </div>
+                  {index !== contactSection.items.length - 1 && <hr />}
                 </div>
-                {index !== externalSupport.length - 1 && <hr />}
-              </div>
-            ))}
-          <div className="support__link">
-            <a href="mailto:SupportClients.SI@reseau.sncf.fr" target="_blank" rel="noreferrer">
-              {t('externalSupportEmail')}
-            </a>
-          </div>
-        </div>
-        <div className="contact">
-          <h2 className="contact_title">{t('internalContact')}</h2>
-          {Array.isArray(support) &&
-            support.map((item, index) => (
-              <div key={item.title}>
-                <div className="support-info">
-                  <div className="support-info__title">{item.title}</div>
-                  <div className="support-info__content">{item.value}</div>
+              ))}
+              {contactSection.link && (
+                <div className="support__link">
+                  <a href={contactSection.link.url} target="_blank" rel="noreferrer">
+                    {contactSection.link.label}
+                  </a>
                 </div>
-                {index !== support.length - 1 && <hr />}
-              </div>
-            ))}
-          <div className="support__link">
-            <a
-              href="https://sncfreseau.service-now.com/support_asu"
-              target="_blank"
-              rel="noreferrer"
-            >
-              {t('asuLink')}
-            </a>
-          </div>
-        </div>
-      </footer>
+              )}
+            </div>
+          ))}
+        </footer>
+      )}
       {sections.map((section) => (
         <HelpSection
           section={section}
