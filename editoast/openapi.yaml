@@ -2562,7 +2562,7 @@ paths:
                   $ref: '#/components/schemas/ScenarioReference'
         '404':
           description: The requested rolling stock was not found
-  /round_trips/train_schedules:
+  /round_trips:
     post:
       tags:
       - round_trips
@@ -2576,7 +2576,7 @@ paths:
       responses:
         '204':
           description: Round trips were successfully upserted
-  /round_trips/train_schedules/delete:
+  /round_trips/delete:
     post:
       tags:
       - round_trips
@@ -2590,7 +2590,6 @@ paths:
               items:
                 type: integer
                 format: int64
-                minimum: 0
         required: true
       responses:
         '204':
@@ -3462,12 +3461,12 @@ paths:
                       type: array
                       items:
                         $ref: '#/components/schemas/CoreTrainRequirementsById'
-  /timetable/{id}/round_trips/train_schedules:
+  /timetable/{id}/round_trips:
     get:
       tags:
       - timetable
       - round_trips
-      summary: Upsert a list of round trips / one-way of train schedules
+      summary: Paginated list of round trips / one-way of train schedules
       parameters:
       - name: id
         in: path
@@ -3495,7 +3494,7 @@ paths:
           minimum: 1
       responses:
         '200':
-          description: ''
+          description: The paginated list of round trips / one-ways
           content:
             application/json:
               schema:

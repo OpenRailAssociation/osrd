@@ -202,15 +202,13 @@ fn service_router() -> server::router::DocumentedRouter {
                             )
                             .route("/conflicts", get!(timetable::conflicts))
                             .route("/requirements", get!(timetable::requirements))
+                            .route("/round_trips", get!(round_trips::list))
                             .route("/stdcm", post!(timetable::stdcm::stdcm))
                             .nests("/train_schedules", |path| {
                                 path.route("/", get!(timetable::get_train_schedules))
                             })
                             .nests("/path_steps", |path| {
                                 path.route("/local_track_names", post!(timetable::get_local_track_names))
-                            })
-                            .nests("/round_trips", |path| {
-                                path.route("/train_schedules", get!(round_trips::list_train_schedules))
                             })
                     })
             })
@@ -266,10 +264,8 @@ fn service_router() -> server::router::DocumentedRouter {
                 })
             })
             .nests("/round_trips", |path| {
-                path.nests("/train_schedules", |path| {
-                    path.route("/", post!(round_trips::post_train_schedules))
-                        .route("/delete", post!(round_trips::delete_train_schedules))
-                })
+                path.route("/", post!(round_trips::upsert))
+                    .route("/delete", post!(round_trips::delete))
             })
             .nests("/sub_category", |path| {
                 path.route("/", get!(sub_categories::get_sub_categories))

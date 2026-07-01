@@ -95,7 +95,7 @@ fn schema_round_trips() -> RefOr<Schema> {
     request_body = RoundTrips,
     responses((status = 204, description = "Round trips were successfully upserted"))
 )]
-pub(in crate::views) async fn post_train_schedules(
+pub(in crate::views) async fn upsert(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Json(round_trips): Json<RoundTrips>,
 ) -> Result<impl IntoResponse> {
@@ -143,12 +143,12 @@ pub(in crate::views) async fn post_train_schedules(
     post, path = "",
     tag = "round_trips",
     request_body(
-        content = Vec<u64>,
+        content = Vec<i64>,
         description = "IDs of train schedules to remove from round trips or one-way."
     ),
     responses((status = 204, description = "Round trips were successfully deleted"))
 )]
-pub(in crate::views) async fn delete_train_schedules(
+pub(in crate::views) async fn delete(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Json(train_schedule_ids): Json<HashSet<i64>>,
 ) -> Result<impl IntoResponse> {
@@ -166,15 +166,15 @@ pub(in crate::views) struct RoundTripsPage {
     results: RoundTrips,
 }
 
-/// Upsert a list of round trips / one-way of train schedules
+/// Paginated list of round trips / one-way of train schedules
 #[editoast_derive::route(authz::Role::OperationalStudies)]
 #[utoipa::path(
     get, path = "",
     tags = ["timetable", "round_trips"],
     params(TimetableIdParam, PaginationQueryParams<1000>),
-    responses((status = 200, body = inline(RoundTripsPage)))
+    responses((status = 200, body = inline(RoundTripsPage), description = "The paginated list of round trips / one-ways"))
 )]
-pub(in crate::views) async fn list_train_schedules(
+pub(in crate::views) async fn list(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Path(TimetableIdParam { id: timetable_id }): Path<TimetableIdParam>,
     Query(PaginationQueryParams { page, page_size }): Query<PaginationQueryParams<1000>>,
