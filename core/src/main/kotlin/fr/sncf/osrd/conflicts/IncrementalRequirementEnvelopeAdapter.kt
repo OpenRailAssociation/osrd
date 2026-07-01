@@ -90,7 +90,7 @@ class IncrementalRequirementEnvelopeAdapter(
 
         val end = pathEndOff.meters
 
-        val trainBegin = -rollingStocks.first().value.length
+        val trainBegin = -rollingStocks.first().value.length // TODO PEB: does it break for convoy change?
         val trainEnd = 0.0
 
         if (max(trainBegin, begin) < min(trainEnd, end)) return 0.0

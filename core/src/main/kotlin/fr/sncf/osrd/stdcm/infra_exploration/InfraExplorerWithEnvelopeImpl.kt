@@ -225,7 +225,8 @@ data class InfraExplorerWithEnvelopeImpl(
                     getFullRollingStockRangeMap(),
                     getFullEnvelope(),
                     subSimulationComplete,
-                    if (endAtBacktracking) subpathEnd else cappedSimulatedOffset,
+                    if (endAtBacktracking) Offset.min(subpathEnd, cappedSimulatedOffset)
+                    else cappedSimulatedOffset,
                     endAtBacktracking || endAtStop(),
                 )
             updatedRequirements.addAll(
@@ -306,7 +307,8 @@ data class InfraExplorerWithEnvelopeImpl(
                         getFullRollingStockRangeMap(),
                         getFullEnvelope(),
                         subSimulationComplete,
-                        if (endAtBacktracking) subpathEnd else cappedSimulatedOffset,
+                        if (endAtBacktracking) Offset.min(subpathEnd, cappedSimulatedOffset)
+                        else cappedSimulatedOffset,
                         endAtBacktracking || endAtStop(),
                     )
                 ) ?: throw BlockAvailabilityInterface.NotEnoughLookaheadError()
