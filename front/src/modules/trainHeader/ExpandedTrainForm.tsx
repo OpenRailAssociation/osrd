@@ -13,10 +13,15 @@ import {
   type CalendarSlot,
 } from '@osrd-project/ui-core';
 import { ChevronUp } from '@osrd-project/ui-icons';
+import { isEqual } from 'lodash';
 import { useTranslation } from 'react-i18next';
 
 import type { PacedTrainWithPaced } from 'applications/operationalStudies/types';
-import type { LightRollingStockWithLiveries, TrainCategory } from 'common/api/osrdEditoastApi';
+import type {
+  LightRollingStockWithLiveries,
+  PathfindingResult,
+  TrainCategory,
+} from 'common/api/osrdEditoastApi';
 import type { Comfort, ConstraintDistribution } from 'common/api/osrdRailwayManagerApi';
 import Banner from 'common/Banner';
 import useSpeedLimitTags from 'common/SpeedLimitTagSelector/useSpeedLimitTags';
@@ -44,6 +49,7 @@ export const ANY_DATE_SLOT: CalendarSlot = { start: new Date(0), end: null };
 
 export type ExpandedTrainFormProps = {
   train: Train;
+  path?: Omit<PathfindingResult, 'status'>;
   onCollapse: () => void;
   onPersistTrain: (
     updatedTrain: Train,
@@ -183,6 +189,7 @@ function extractChangesInFields(
  */
 const ExpandedTrainForm = ({
   train,
+  path,
   onCollapse,
   onPersistTrain,
   onItineraryOpened,
@@ -227,6 +234,7 @@ const ExpandedTrainForm = ({
   // NOTE: The setter is called outside a useEffect purposefully, as suggested in React's
   // documentation: https://react.dev/reference/react/useState#storing-information-from-previous-renders
   const originalFields = usePrevious(fieldsFromTrain);
+  const previousPath = usePrevious(path);
   if (originalFields) {
     const changes = extractChangesInFields(originalFields, fieldsFromTrain, fields);
 
@@ -234,6 +242,15 @@ const ExpandedTrainForm = ({
       setFields({ ...fields, ...changes });
     }
   }
+
+  const [pathChanged, setPathChanged] = useState(false);
+  if (!pathChanged && previousPath !== null && !isEqual(previousPath, path)) {
+    setPathChanged(true);
+  }
+
+  const resetPathJustChanged = useCallback(() => {
+    setPathChanged(false);
+  }, [setPathChanged]);
 
   const onFieldChange = useCallback(
     (fieldName: keyof TrainFieldsState, newValue: TrainFieldsState[typeof fieldName]) => {
@@ -659,6 +676,13 @@ const ExpandedTrainForm = ({
           />
         </div>
       </div>
+      {pathChanged && (
+        <Banner
+          message={t('manageTrainSchedule.trainHeader.pathChanged')}
+          type="info"
+          onClose={resetPathJustChanged}
+        />
+      )}
       {categoryWarning && <Banner message={categoryWarning} />}
       {isServiceChangeWarningDialogVisible && (
         <ServiceChangeWarningDialog

@@ -18,6 +18,7 @@ import type {
   OperationalPointReference,
   MacroNoteForm,
   TrainScheduleResponse,
+  PathfindingResult,
 } from 'common/api/osrdEditoastApi';
 import type { RangedValue } from 'common/types';
 import type { PathOperationalPoint } from 'modules/simulationResult/types';
@@ -135,6 +136,7 @@ export type SimulationResults =
       isValid: false;
       train: Train;
       rollingStock?: RollingStockWithLiveries;
+      path?: PathfindingResult;
       pathProperties?: PathPropertiesFormatted;
     }
   | {
