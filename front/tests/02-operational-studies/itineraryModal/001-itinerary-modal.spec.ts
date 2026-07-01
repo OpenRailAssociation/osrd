@@ -7,19 +7,19 @@ import createScenario from '../../utils/scenario';
 import { deleteScenario } from '../../utils/teardown-utils';
 import {
   COMPOSITION_CODE,
-  NORTH_STATION,
+  NORTH_STATION_BV,
   NORTH_STATION_MAIN_CODE,
   PLACEHOLDER,
   ROCKET_SEARCH_INPUT,
   ROLLING_STOCK_DEFAULT_CATEGORY,
   ROLLING_STOCK_NAME,
   ROLLING_STOCK_NAME_QUERY,
-  SOUTH_STATION,
+  SOUTH_STATION_BV,
   SOUTH_STATION_MAIN_CODE,
   SOUTH_STATION_SUGGESTION,
   TRACK_NAME,
   TRAIN_NAME,
-  WEST_STATION,
+  WEST_STATION_BV,
   WEST_STATION_SUGGESTION,
 } from './itinerary-modal.consts';
 
@@ -60,7 +60,7 @@ test.describe('Itinerary Modal, Default ', { tag: ['@op', '@itinerary-modal'] },
         await itineraryModalPage.checkItineraryModalDefaultState();
       });
       await test.step('Check the header content of the itinerary modal', async () => {
-        await itineraryModalPage.checkItineraryModalHeader(PLACEHOLDER);
+        await itineraryModalPage.checkItineraryModalEmptyHeader(PLACEHOLDER);
       });
       await test.step('Default rocket search', async () => {
         await itineraryModalPage.checkItineraryModalEmptyRocket();
@@ -102,19 +102,20 @@ test.describe('Itinerary Modal, Default ', { tag: ['@op', '@itinerary-modal'] },
     { tag: '@smoke' },
     async ({ itineraryModalPage, browserName }) => {
       await test.step('Select rolling stock', async () => {
-        await itineraryModalPage.selectRollingStock(
-          ROLLING_STOCK_NAME_QUERY,
-          ROLLING_STOCK_NAME,
-          ROLLING_STOCK_DEFAULT_CATEGORY
-        );
-        await itineraryModalPage.selectCompositionCode(COMPOSITION_CODE);
-        await itineraryModalPage.fillTrainName(TRAIN_NAME);
+        await itineraryModalPage.fillRollingStock(ROLLING_STOCK_NAME_QUERY);
+        await itineraryModalPage.checkRollingStock(ROLLING_STOCK_NAME);
+        await itineraryModalPage.checkCategory(ROLLING_STOCK_DEFAULT_CATEGORY);
+        await itineraryModalPage.selectAndCheckCompositionCode(COMPOSITION_CODE);
+        await itineraryModalPage.fillAndCheckTrainName(TRAIN_NAME);
       });
       await test.step('Launch rocket search', async () => {
         await itineraryModalPage.launchRocketSearch(ROCKET_SEARCH_INPUT);
       });
       await test.step('Check itinerary rows created after rocket search', async () => {
-        await itineraryModalPage.checkRowsCreationAfterRocketSearch(NORTH_STATION, SOUTH_STATION);
+        await itineraryModalPage.checkRowsCreationAfterRocketSearch(
+          NORTH_STATION_BV,
+          SOUTH_STATION_BV
+        );
       });
       await test.step('Check path step marker presence on map', async () => {
         if (browserName === 'chromium') {
@@ -125,7 +126,7 @@ test.describe('Itinerary Modal, Default ', { tag: ['@op', '@itinerary-modal'] },
         }
       });
       await test.step('Check itinerary reverse', async () => {
-        await itineraryModalPage.checkItineraryReverse(SOUTH_STATION, NORTH_STATION);
+        await itineraryModalPage.checkItineraryReverse(SOUTH_STATION_BV, NORTH_STATION_BV);
       });
       await test.step('Check track selection and stops update', async () => {
         await itineraryModalPage.checkTrackSelectionAndStopsUpdate(1, TRACK_NAME, true);
@@ -143,20 +144,18 @@ test.describe('Itinerary Modal, Default ', { tag: ['@op', '@itinerary-modal'] },
     { tag: '@smoke' },
     async ({ itineraryModalPage, browserName }) => {
       await test.step('Select rolling stock and check automatic category assignment', async () => {
-        await itineraryModalPage.selectRollingStock(
-          ROLLING_STOCK_NAME_QUERY,
-          ROLLING_STOCK_NAME,
-          ROLLING_STOCK_DEFAULT_CATEGORY
-        );
-        await itineraryModalPage.selectCompositionCode(COMPOSITION_CODE);
-        await itineraryModalPage.fillTrainName(TRAIN_NAME);
+        await itineraryModalPage.fillRollingStock(ROLLING_STOCK_NAME_QUERY);
+        await itineraryModalPage.checkRollingStock(ROLLING_STOCK_NAME);
+        await itineraryModalPage.checkCategory(ROLLING_STOCK_DEFAULT_CATEGORY);
+        await itineraryModalPage.selectAndCheckCompositionCode(COMPOSITION_CODE);
+        await itineraryModalPage.fillAndCheckTrainName(TRAIN_NAME);
       });
       await test.step('Search first operational point by name and check suggestions list', async () => {
-        await itineraryModalPage.fillPathStepByName(0, WEST_STATION, WEST_STATION_SUGGESTION);
+        await itineraryModalPage.fillPathStepByName(0, WEST_STATION_BV, WEST_STATION_SUGGESTION);
       });
       await test.step('Select first operational point from suggestions and check its value', async () => {
         await itineraryModalPage.selectFirstOpSuggestion();
-        await itineraryModalPage.checkPathStepValue(0, WEST_STATION);
+        await itineraryModalPage.checkPathStepValue(0, WEST_STATION_BV);
       });
       await test.step('Search for second operational point by trigram and check suggestions list', async () => {
         await itineraryModalPage.fillPathStepByName(
@@ -167,7 +166,7 @@ test.describe('Itinerary Modal, Default ', { tag: ['@op', '@itinerary-modal'] },
       });
       await test.step('Select second operational point from suggestions and check its value', async () => {
         await itineraryModalPage.selectFirstOpSuggestion();
-        await itineraryModalPage.checkPathStepValue(1, SOUTH_STATION);
+        await itineraryModalPage.checkPathStepValue(1, SOUTH_STATION_BV);
       });
       await test.step('Insert an intermediate operational point between the two existing steps', async () => {
         await itineraryModalPage.insertIntermediatePathStep(1, NORTH_STATION_MAIN_CODE, 1);
