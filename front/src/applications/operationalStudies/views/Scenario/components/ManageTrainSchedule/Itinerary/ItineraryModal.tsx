@@ -663,6 +663,10 @@ const ItineraryModal = ({
     frameAllPathSteps();
   }, [pathStepsMetadataById, hasInvalidPathStep]);
 
+  const resetCategoryWarning = useCallback(() => {
+    setCategoryWarning(undefined);
+  }, [setCategoryWarning]);
+
   return (
     <dialog ref={modalRef} className="itinerary-modal" data-testid="itinerary-modal">
       <div className="itinerary-modal-form" onClick={handleOutsideMapClick} role="presentation">
@@ -679,8 +683,8 @@ const ItineraryModal = ({
             isNameEmpty={isNameEmpty}
           />
         </div>
-        <div className="itinerary-modal-form-body">
-          {categoryWarning && <Banner message={categoryWarning} closeable />}
+        <div className="itinerary-modal-form-body" data-testid="itinerary-modal-form-body">
+          {categoryWarning && <Banner message={categoryWarning} onClose={resetCategoryWarning} />}
           {rollingStockMessage && <Banner type="info" message={rollingStockMessage} />}
           {(hasInvalidPathStepDisplay || invalidTrackSteps.length > 0) && (
             <div key={`invalid-op-${bannerWiggle}`}>

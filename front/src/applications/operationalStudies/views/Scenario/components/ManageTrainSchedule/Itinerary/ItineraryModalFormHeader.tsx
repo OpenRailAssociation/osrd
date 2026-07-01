@@ -125,18 +125,6 @@ const ItineraryModalFormHeader = ({
     };
   }, [isNameBlurred, submitAttempted, isNameEmpty, t]);
 
-  // Category warning
-  const categoryWarningMessage = useMemo(() => {
-    if (!rollingStock || !modalFormState.category) return undefined;
-
-    const isMismatch = isMainCategory(modalFormState.category)
-      ? modalFormState.category.main_category !== rollingStock.primary_category &&
-        !rollingStock.other_categories.includes(modalFormState.category.main_category)
-      : currentSubCategory?.main_category !== rollingStock.primary_category;
-
-    return isMismatch ? t('categoryMismatch') : undefined;
-  }, [rollingStock, modalFormState.category, currentSubCategory, t]);
-
   const rollingStockMessage = useMemo(() => {
     if (!rollingStockValue) {
       return t('noRollingStock');
@@ -147,9 +135,20 @@ const ItineraryModalFormHeader = ({
     return isValid ? undefined : t('unknownRollingStock');
   }, [rollingStockValue, fullRollingStockList, t]);
 
+  // Category warning
   useEffect(() => {
-    onCategoryWarningChange(categoryWarningMessage);
-  }, [categoryWarningMessage]);
+    if (!rollingStock || !modalFormState.category) {
+      onCategoryWarningChange(undefined);
+      return;
+    }
+
+    const isMismatch = isMainCategory(modalFormState.category)
+      ? modalFormState.category.main_category !== rollingStock.primary_category &&
+        !rollingStock.other_categories.includes(modalFormState.category.main_category)
+      : currentSubCategory?.main_category !== rollingStock.primary_category;
+
+    onCategoryWarningChange(isMismatch ? t('categoryMismatch') : undefined);
+  }, [rollingStock, modalFormState.category, currentSubCategory, t]);
 
   useEffect(() => {
     onRollingStockMessageChange(rollingStockMessage);
