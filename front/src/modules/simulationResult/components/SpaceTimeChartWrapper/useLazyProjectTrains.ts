@@ -30,6 +30,19 @@ type UseLazyProjectTrainsOptions = {
 const DEFAULT_OP_DISTANCES: number[] = [];
 const DEFAULT_OP_REFERENCES: OperationalPointReference[] = [];
 
+/**
+ * Manages trains projection on the space-time chart.
+ *
+ * Selects which projection loader to use (track based or
+ * operational point based) depending on the current projection type and
+ * simulation state from Redux. Trains to project are queued via
+ * `projectTrainSchedules`, and results are progressively accumulated in
+ * `projectedTrainsById` during the loader `onProgress`
+ *
+ * The loader is recreated and the previous one is cancelled when
+ * projection parameters change (infra, timetable, electrical profile set,
+ * path, operational points, ...).
+ */
 const useLazyProjectTrains = ({
   infraId,
   timetableId,
