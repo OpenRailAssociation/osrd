@@ -5729,7 +5729,9 @@ components:
             The first value is always `0` (beginning of the path) and the last one is always equal to the `length` of the path in mm
     CorePropertyGeometryProjection:
       type: object
-      description: Projection to map topologic offset to geometric offset
+      description: |-
+        Projection to map topologic offset to geometric offset.
+        Both arrays are the same size
       required:
       - topo_offsets
       - geom_offsets
@@ -5740,7 +5742,9 @@ components:
             type: integer
             format: int64
             minimum: 0
-          description: Geometric offsets in millimeters
+          description: |-
+            Geometric offsets in millimeters.
+            Starts with 0 and is increasing.
           minItems: 2
         topo_offsets:
           type: array
@@ -5748,7 +5752,9 @@ components:
             type: integer
             format: int64
             minimum: 0
-          description: Topologic offsets in millimeters
+          description: |-
+            Topologic offsets in millimeters.
+            Starts with 0 and is increasing.
           minItems: 2
     CoreReportTrain:
       type: object

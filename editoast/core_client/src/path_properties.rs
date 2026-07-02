@@ -165,14 +165,17 @@ impl PropertyZoneValues {
     }
 }
 
-/// Projection to map topologic offset to geometric offset
+/// Projection to map topologic offset to geometric offset.
+/// Both arrays are the same size
 #[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
 #[schema(as = CorePropertyGeometryProjection)]
 pub struct GeometryProjection {
-    /// Topologic offsets in millimeters
+    /// Topologic offsets in millimeters.
+    /// Starts with 0 and is increasing.
     #[schema(min_items = 2)]
     topo_offsets: Vec<u64>,
-    /// Geometric offsets in millimeters
+    /// Geometric offsets in millimeters.
+    /// Starts with 0 and is increasing.
     #[schema(min_items = 2)]
     geom_offsets: Vec<u64>,
 }

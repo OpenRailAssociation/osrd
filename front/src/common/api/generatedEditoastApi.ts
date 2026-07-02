@@ -3559,9 +3559,11 @@ export type InfraObjectWithGeometry = {
   railjson: object;
 };
 export type CorePropertyGeometryProjection = {
-  /** Geometric offsets in millimeters */
+  /** Geometric offsets in millimeters.
+    Starts with 0 and is increasing. */
   geom_offsets: number[];
-  /** Topologic offsets in millimeters */
+  /** Topologic offsets in millimeters.
+    Starts with 0 and is increasing. */
   topo_offsets: number[];
 };
 export type CoreOperationalPointOnPath = {
