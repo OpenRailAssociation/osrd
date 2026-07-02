@@ -868,18 +868,11 @@ pub mod tests {
     use crate::generated_data;
     use crate::infra_cache::operation::create::apply_create_operation;
     use crate::views::test_app;
-    use crate::views::test_app::TestApp;
     use crate::views::test_app::TestRequestExt as _;
     use editoast_models::infra::DEFAULT_INFRA_VERSION;
     use editoast_models::infra_objects::get_geometry_layer_table;
     use editoast_models::infra_objects::get_table;
     use schemas::train_schedule::OperationalPointReference;
-
-    impl TestApp {
-        fn delete_infra_request(&self, infra_id: i64) -> axum_test::TestRequest {
-            self.delete(format!("/infra/{infra_id}").as_str())
-        }
-    }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn infra_clone_empty() {
@@ -981,18 +974,26 @@ pub mod tests {
     async fn infra_delete() {
         let pool = DbConnectionPoolV2::for_tests();
         let app = test_app!()
-            .skip_authz()
             .db_pool(pool)
             .core_client(CoreClient::Mocked(MockingClient::default()))
             .build();
         let db_pool = app.db_pool();
-        let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
+        let infra_id = create_empty_infra(&mut db_pool.get_ok()).await.id;
 
-        app.delete_infra_request(empty_infra.id)
+        let user = app
+            .user("user", "User")
+            .with_infra_grant(infra_id, InfraGrant::Owner)
+            .with_roles([Role::OperationalStudies])
+            .create()
+            .await;
+
+        app.delete(&format!("/infra/{infra_id}"))
+            .by_user(user.as_ref())
             .await
             .assert_status_no_content();
 
-        app.delete_infra_request(empty_infra.id)
+        app.delete(&format!("/infra/{infra_id}"))
+            .by_user(user.as_ref())
             .await
             .assert_status_not_found();
     }
