@@ -22,8 +22,8 @@ import {
   ELECTRIC_RS,
   INTERCITY_CATEGORY,
   INTERCITY_TRAIN_HEADER,
-  NORTH_STATION,
-  SOUTH_STATION,
+  NORTH_STATION_WITHOUT_SECONDARY_CODE,
+  SOUTH_STATION_WITHOUT_SECONDARY_CODE,
 } from './itinerary-modal.consts';
 
 const trains: TrainSchedule[] = readJsonFile('./tests/assets/trains/trains.json');
@@ -158,7 +158,10 @@ test.describe('Itinerary Modal, Edition ', { tag: ['@op', '@itinerary-modal'] },
           ELECTRIC_RS,
           COMPOSITION_CODE
         );
-        await itineraryModalPage.checkManchetteOriginAndDestination(NORTH_STATION, SOUTH_STATION);
+        await itineraryModalPage.checkManchetteOriginAndDestination(
+          NORTH_STATION_WITHOUT_SECONDARY_CODE,
+          SOUTH_STATION_WITHOUT_SECONDARY_CODE
+        );
       });
     }
   );

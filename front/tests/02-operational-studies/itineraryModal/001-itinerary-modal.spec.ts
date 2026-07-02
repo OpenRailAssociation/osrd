@@ -76,7 +76,7 @@ test.describe('Itinerary Modal, Default ', { tag: ['@op', '@itinerary-modal'] },
   test('Add and remove empty itinerary rows', { tag: '@smoke' }, async ({ itineraryModalPage }) => {
     await test.step('Add itinerary rows', async () => {
       await itineraryModalPage.fillFirstPathStep('NS', 2);
-      await itineraryModalPage.fillLastPathStep('SS', 3);
+      await itineraryModalPage.fillLastPathStep('SS', 3, SOUTH_STATION_SUGGESTION);
       await itineraryModalPage.addEmptyIntermediateRow(0, 4);
       await itineraryModalPage.addEmptyIntermediateRow(2, 5);
       await itineraryModalPage.checkPathStepCounterText(2, '3');
