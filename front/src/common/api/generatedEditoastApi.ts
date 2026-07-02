@@ -3775,7 +3775,7 @@ export type PathfindingInput = {
   path_items: PathItemLocation[];
   /** Can the rolling stock run on non-electrified tracks */
   rolling_stock_is_thermal: boolean;
-  /** Rolling stock length */
+  /** Rolling stock length in millimeters */
   rolling_stock_length: number;
   /** The loading gauge of the rolling stock */
   rolling_stock_loading_gauge: LoadingGaugeType;

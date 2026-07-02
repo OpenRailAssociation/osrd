@@ -20,6 +20,7 @@ import fr.sncf.osrd.utils.*
 import fr.sncf.osrd.utils.Helpers.LocationPair
 import fr.sncf.osrd.utils.Helpers.convertRouteLocationToBlockLocation
 import fr.sncf.osrd.utils.Helpers.smallInfra
+import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
 import fr.sncf.osrd.utils.units.seconds
@@ -446,7 +447,7 @@ fun makeRequirementsFromPath(
                 rollingStock.modeNames.toList(),
                 rollingStock.supportedSignalingSystems.toList(),
                 rollingStock.maxSpeed,
-                rollingStock.length,
+                Length<RollingStock>(rollingStock.length.meters),
                 null,
                 false,
                 null,

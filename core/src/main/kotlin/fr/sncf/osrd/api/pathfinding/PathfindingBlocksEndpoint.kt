@@ -109,7 +109,7 @@ fun runPathfinding(infra: FullInfra, request: PathfindingBlockRequest): Pathfind
                             findStopPositionAtEndOfBlockConsideringRollingStock(
                                 it,
                                 destinationBlock,
-                                request.rollingStockLength,
+                                request.rollingStockLength.meters,
                                 infra,
                             )
                         }
@@ -155,7 +155,7 @@ private fun computePaths(
                 constraints,
                 initialRequest.speedLimitTag,
                 initialRequest.rollingStockMaximumSpeed,
-                initialRequest.rollingStockLength.meters,
+                initialRequest.rollingStockLength.distance,
             )
             .runPathfinding()
 
@@ -209,7 +209,7 @@ private fun buildNoPathFoundException(
                     listOf(),
                     initialRequest.speedLimitTag,
                     initialRequest.rollingStockMaximumSpeed,
-                    initialRequest.rollingStockLength.meters,
+                    initialRequest.rollingStockLength.distance,
                 )
                 .runPathfinding(timeout)
         if (possiblePathWithoutErrorNoConstraints != null) {

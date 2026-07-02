@@ -938,7 +938,7 @@ mod tests {
                     "/rolling_stock_maximum_speed",
                     maximum_speed.get::<meter_per_second>(),
                 )
-                .on_body("/rolling_stock_length", length.get::<meter>())
+                .on_body("/rolling_stock_length", length.get::<millimeter>() as u64)
                 .response(StatusCode::OK)
                 .json(PathfindingResult::Success(pathfinding_result_success()))
                 .finish();
@@ -1572,7 +1572,7 @@ mod tests {
         let comfort_acceleration = units::meter_per_second_squared::new(0.2);
         core.stub("/pathfinding/blocks")
             .on_body("/rolling_stock_loading_gauge", "G1")
-            .on_body("/rolling_stock_length", length.get::<meter>())
+            .on_body("/rolling_stock_length", length.get::<millimeter>() as u64)
             .on_body(
                 "/rolling_stock_maximum_speed",
                 maximum_speed.get::<meter_per_second>(),

@@ -630,11 +630,10 @@ pub fn build_pathfinding_consist(
                 .compute_max_speed()
                 .get::<uom::si::velocity::meter_per_second>(),
         ),
-        length: OrderedFloat(
-            physics_consist_parameters
-                .compute_length()
-                .get::<uom::si::length::meter>(),
-        ),
+        length: physics_consist_parameters
+            .compute_length()
+            .get::<uom::si::length::millimeter>()
+            .round() as u64,
         speed_limit_tag,
     }
 }

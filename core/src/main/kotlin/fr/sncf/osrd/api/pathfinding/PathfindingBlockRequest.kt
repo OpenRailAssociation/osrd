@@ -6,7 +6,9 @@ import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import fr.sncf.osrd.api.PathItem
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType
+import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.utils.json.UnitAdapterFactory
+import fr.sncf.osrd.utils.units.Length
 
 class PathfindingBlockRequest(
     @Json(name = "rolling_stock_loading_gauge") val rollingStockLoadingGauge: RJSLoadingGaugeType,
@@ -16,7 +18,7 @@ class PathfindingBlockRequest(
     @Json(name = "rolling_stock_supported_signaling_systems")
     val rollingStockSupportedSignalingSystems: List<String>,
     @Json(name = "rolling_stock_maximum_speed") val rollingStockMaximumSpeed: Double,
-    @Json(name = "rolling_stock_length") val rollingStockLength: Double,
+    @Json(name = "rolling_stock_length") val rollingStockLength: Length<RollingStock>,
     @Json(name = "speed_limit_tag") val speedLimitTag: String? = null,
     @Json(name = "stops_at_end_of_block") val stopsAtEndOfBlock: Boolean? = null,
     val timeout: Double?,

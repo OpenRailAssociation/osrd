@@ -11,6 +11,7 @@ import {
 } from 'common/api/osrdEditoastApi';
 import { useRollingStockContext } from 'common/RollingStockContext';
 import type { PathStepMetadata, PathStepV2 } from 'reducers/osrdconf/types';
+import { mToMm } from 'utils/physics';
 
 const usePathfindingV2 = () => {
   const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTrainSchedule' });
@@ -66,7 +67,7 @@ const usePathfindingV2 = () => {
             (s) => s.type
           ),
           rolling_stock_maximum_speed: rollingStock.max_speed,
-          rolling_stock_length: rollingStock.length,
+          rolling_stock_length: Math.round(mToMm(rollingStock.length)),
           speed_limit_tag: speedLimitTag,
         },
       };

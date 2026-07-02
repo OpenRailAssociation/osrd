@@ -15,6 +15,7 @@ import type { SuggestedOP } from 'modules/trainSchedule/types';
 import type { PathStep } from 'reducers/osrdconf/types';
 import { addElementAtIndex } from 'utils/array';
 import { getPointOnTrackCoordinates } from 'utils/geometry';
+import { mToMm } from 'utils/physics';
 
 export const formatSuggestedOperationalPoints = (
   operationalPoints: Array<
@@ -101,7 +102,7 @@ export const getPathfindingQuery = ({
           (s) => s.type
         ),
         rolling_stock_maximum_speed: rollingStock.max_speed,
-        rolling_stock_length: rollingStock.length,
+        rolling_stock_length: Math.round(mToMm(rollingStock.length)),
         speed_limit_tag: speedLimitByTag,
         allowed_track_sections: allowedTrackSections,
       },
