@@ -221,6 +221,49 @@ impl EditoastError for json_patch::PatchError {
 }
 
 inventory::submit! {
+    crate::error::ErrorDefinition::new("editoast:authz:UnknownSubject", "UnknownSubject", "AuthzError", 404u16, r#"{}"#)
+}
+
+inventory::submit! {
+    crate::error::ErrorDefinition::new("editoast:authz:UnknownResource", "UnknownResource", "AuthzError", 404u16, r#"{}"#)
+}
+
+inventory::submit! {
+    crate::error::ErrorDefinition::new("editoast:authz:UnknownUser", "UnknownUser", "AuthzError", 401u16, r#"{}"#)
+}
+
+inventory::submit! {
+    crate::error::ErrorDefinition::new("editoast:authz:Openfga", "Openfga", "AuthzError", 500u16, r#"{}"#)
+}
+
+inventory::submit! {
+    crate::error::ErrorDefinition::new("editoast:authz:Storage", "Storage", "AuthzError", 500u16, r#"{}"#)
+}
+impl<StorageError: std::error::Error + Send + Sync> EditoastError for authz::Error<StorageError> {
+    fn get_status(&self) -> StatusCode {
+        match self {
+            authz::Error::UnknownSubject(_) | authz::Error::UnknownResource(_) => {
+                StatusCode::NOT_FOUND
+            }
+            authz::Error::UnknownUser { .. } => StatusCode::UNAUTHORIZED,
+            authz::Error::OpenFga(_) | authz::Error::Storage(_) => {
+                StatusCode::INTERNAL_SERVER_ERROR
+            }
+        }
+    }
+
+    fn get_type(&self) -> &str {
+        match self {
+            authz::Error::UnknownSubject(_) => "editoast:authz:UnknownSubject",
+            authz::Error::UnknownResource(_) => "editoast:authz:UnknownResource",
+            authz::Error::UnknownUser { .. } => "editoast:authz:UnknownUser",
+            authz::Error::OpenFga(_) => "editoast:authz:Openfga",
+            authz::Error::Storage(_) => "editoast:authz:Storage",
+        }
+    }
+}
+
+inventory::submit! {
     crate::error::ErrorDefinition::new("editoast:geometry:UnexpectedGeometry", "UnexpectedGeometry", "GeometryError", 404u16, r#"{"expected":"String","actual":"String"}"#)
 }
 impl EditoastError for schemas::errors::GeometryError {
@@ -312,12 +355,6 @@ impl From<authz::Unauthorized> for InternalError {
     fn from(authz::Unauthorized { reason }: authz::Unauthorized) -> Self {
         tracing::error!(reason, "Unauthorized operation");
         crate::views::AuthorizationError::Forbidden.into()
-    }
-}
-
-impl From<crate::views::AuthorizerError> for InternalError {
-    fn from(value: crate::views::AuthorizerError) -> Self {
-        crate::views::AuthorizationError::from(value).into()
     }
 }
 

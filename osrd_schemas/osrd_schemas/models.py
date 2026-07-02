@@ -461,15 +461,6 @@ class EditoastAttachedErrorTrackNotFound(BaseModel):
     type: Literal["editoast:attached:TrackNotFound"]
 
 
-class EditoastAuthorizationErrorAuthError(BaseModel):
-    context: Annotated[
-        dict[str, Any] | None, Field(title="EditoastAuthorizationErrorAuthErrorContext")
-    ] = None
-    message: str
-    status: Literal[500]
-    type: Literal["editoast:authz:AuthError"]
-
-
 class EditoastAuthorizationErrorDbError(BaseModel):
     context: Annotated[
         dict[str, Any] | None, Field(title="EditoastAuthorizationErrorDbErrorContext")
@@ -538,6 +529,24 @@ class EditoastAuthzErrorDatabase(BaseModel):
     message: str
     status: Literal[500]
     type: Literal["editoast:authz:Database"]
+
+
+class EditoastAuthzErrorOpenfga(BaseModel):
+    context: Annotated[
+        dict[str, Any] | None, Field(title="EditoastAuthzErrorOpenfgaContext")
+    ] = None
+    message: str
+    status: Literal[500]
+    type: Literal["editoast:authz:Openfga"]
+
+
+class EditoastAuthzErrorStorage(BaseModel):
+    context: Annotated[
+        dict[str, Any] | None, Field(title="EditoastAuthzErrorStorageContext")
+    ] = None
+    message: str
+    status: Literal[500]
+    type: Literal["editoast:authz:Storage"]
 
 
 class EditoastAuthzErrorUnknownIdentitiesContext(BaseModel):
@@ -4409,7 +4418,6 @@ class EditoastError(
         | EditoastAppHealthErrorTimeout
         | EditoastAppHealthErrorValkey
         | EditoastAttachedErrorTrackNotFound
-        | EditoastAuthorizationErrorAuthError
         | EditoastAuthorizationErrorDbError
         | EditoastAuthorizationErrorForbidden
         | EditoastAuthorizationErrorForbiddenImpersonation
@@ -4417,6 +4425,8 @@ class EditoastError(
         | EditoastAuthorizationErrorUnauthenticated
         | EditoastAuthzErrorAuthorizer
         | EditoastAuthzErrorDatabase
+        | EditoastAuthzErrorOpenfga
+        | EditoastAuthzErrorStorage
         | EditoastAuthzErrorUnknownIdentities
         | EditoastAuthzErrorUnknownResource
         | EditoastAuthzErrorUnknownSubject
@@ -4572,7 +4582,6 @@ class EditoastError(
         | EditoastAppHealthErrorTimeout
         | EditoastAppHealthErrorValkey
         | EditoastAttachedErrorTrackNotFound
-        | EditoastAuthorizationErrorAuthError
         | EditoastAuthorizationErrorDbError
         | EditoastAuthorizationErrorForbidden
         | EditoastAuthorizationErrorForbiddenImpersonation
@@ -4580,6 +4589,8 @@ class EditoastError(
         | EditoastAuthorizationErrorUnauthenticated
         | EditoastAuthzErrorAuthorizer
         | EditoastAuthzErrorDatabase
+        | EditoastAuthzErrorOpenfga
+        | EditoastAuthzErrorStorage
         | EditoastAuthzErrorUnknownIdentities
         | EditoastAuthzErrorUnknownResource
         | EditoastAuthzErrorUnknownSubject
