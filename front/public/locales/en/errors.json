@@ -35,6 +35,8 @@
       "GrantsApiMisuse": "Improper API usage",
       "ImpersonatedUserNotFound": "Unknown impersonated user",
       "NoSuchUser": "Unknown user",
+      "Openfga": "Internal error",
+      "Storage": "Internal error",
       "Unauthenticated": "Unauthenticated user",
       "UnknownIdentities": "Unknown identities '{{identities}}'",
       "UnknownResource": "Unknown resource",
