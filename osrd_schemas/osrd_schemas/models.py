@@ -5118,9 +5118,9 @@ class PathfindingInput(BaseModel):
     """
     Can the rolling stock run on non-electrified tracks
     """
-    rolling_stock_length: float
+    rolling_stock_length: Annotated[int, Field(ge=0)]
     """
-    Rolling stock length
+    Rolling stock length in millimeters
     """
     rolling_stock_loading_gauge: LoadingGaugeType
     """

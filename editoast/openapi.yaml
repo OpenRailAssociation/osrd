@@ -12258,9 +12258,10 @@ components:
           type: boolean
           description: Can the rolling stock run on non-electrified tracks
         rolling_stock_length:
-          type: number
-          format: double
-          description: Rolling stock length
+          type: integer
+          format: int64
+          description: Rolling stock length in millimeters
+          minimum: 0
         rolling_stock_loading_gauge:
           $ref: '#/components/schemas/LoadingGaugeType'
           description: The loading gauge of the rolling stock

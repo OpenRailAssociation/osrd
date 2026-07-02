@@ -163,8 +163,8 @@ pub struct PathfindingConsist {
     /// A list of supported signaling systems
     pub supported_signaling_systems: BTreeSet<String>,
     pub maximum_speed: OrderedFloat<f64>,
-    /// Consist length in meters
-    pub length: OrderedFloat<f64>,
+    /// Consist length in millimeters
+    pub length: u64,
     /// Speed limit tag to estimate maximum speed and travel time
     pub speed_limit_tag: Option<String>,
 }
@@ -463,7 +463,7 @@ pub(crate) mod test_data {
             supported_electrifications: BTreeSet::new(),
             supported_signaling_systems: BTreeSet::from(["BAPR".to_owned()]),
             maximum_speed: OrderedFloat::from(100.0),
-            length: OrderedFloat::from(id as f64),
+            length: id as u64,
             speed_limit_tag: Some("MA100".to_owned()),
         }
     }

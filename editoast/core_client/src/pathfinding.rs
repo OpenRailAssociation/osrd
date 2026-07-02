@@ -33,8 +33,8 @@ pub struct PathfindingRequest {
     pub rolling_stock_supported_signaling_systems: BTreeSet<String>,
     /// Maximum speed of the rolling stock
     pub rolling_stock_maximum_speed: OrderedFloat<f64>,
-    /// Rolling stock length in meters:
-    pub rolling_stock_length: OrderedFloat<f64>,
+    /// Rolling stock length in millimeters
+    pub rolling_stock_length: u64,
     /// Speed limit tag, used to estimate the max speed and travel time
     pub speed_limit_tag: Option<String>,
     /// Stops the train at a new stop position: near next block-delimiting signal,

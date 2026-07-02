@@ -60,9 +60,8 @@ pub(in crate::views) struct PathfindingInput {
     /// Rolling stock maximum speed
     #[schema(value_type = f64)]
     rolling_stock_maximum_speed: OrderedFloat<f64>,
-    /// Rolling stock length
-    #[schema(value_type = f64)]
-    rolling_stock_length: OrderedFloat<f64>,
+    /// Rolling stock length in millimeters
+    rolling_stock_length: u64,
     /// Speed limit tag, used to estimate the travel time
     speed_limit_tag: Option<String>,
     /// Stop the train at the next block-delimiting signal,
@@ -91,7 +90,7 @@ impl PathfindingInput {
             rolling_stock_maximum_speed: OrderedFloat(units::meter_per_second::from(
                 consist.compute_max_speed(),
             )),
-            rolling_stock_length: OrderedFloat(units::meter::from(consist.compute_length())),
+            rolling_stock_length: units::millimeter::from(consist.compute_length()).round() as u64,
             path_items: train_schedule
                 .path()
                 .iter()
@@ -555,7 +554,7 @@ pub mod tests {
                 "BAPR".into(),
             ]),
             rolling_stock_maximum_speed: 22.0.into(),
-            rolling_stock_length: 26.0.into(),
+            rolling_stock_length: 26_000,
             speed_limit_tag: None,
             stops_at_end_of_block: None,
             allowed_track_sections: BTreeSet::new(),

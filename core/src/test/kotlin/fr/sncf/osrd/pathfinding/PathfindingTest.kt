@@ -17,6 +17,7 @@ import fr.sncf.osrd.train.TestTrains
 import fr.sncf.osrd.utils.Helpers
 import fr.sncf.osrd.utils.md5
 import fr.sncf.osrd.utils.units.Distance
+import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.OffsetRange
 import fr.sncf.osrd.utils.units.meters
@@ -44,7 +45,7 @@ fun getPathfindingBlockRequest(
         rs.modeNames.filterNot { it == "thermal" },
         rs.supportedSignalingSystems.toList(),
         rs.maxSpeed,
-        rs.length,
+        Length<RollingStock>(rs.length.meters),
         null,
         stopsAtEndOfBlock,
         null,
@@ -157,7 +158,7 @@ class PathfindingTest : ApiTest() {
                     rollingStockSupportedSignalingSystems =
                         listOf("BAL", "BAPR", "TVM300", "TVM430"),
                     rollingStockMaximumSpeed = 320.0,
-                    rollingStockLength = 0.0,
+                    rollingStockLength = Length(Distance.ZERO),
                     timeout = null,
                     infra = "tiny_infra/infra.json",
                     expectedVersion = 1,
@@ -179,7 +180,7 @@ class PathfindingTest : ApiTest() {
                     rollingStockSupportedSignalingSystems = listOf("BAL"),
                     timeout = null,
                     rollingStockMaximumSpeed = 320.0,
-                    rollingStockLength = 0.0,
+                    rollingStockLength = Length(Distance.ZERO),
                     infra = "tiny_infra/infra.json",
                     expectedVersion = 1,
                     pathItems = waypoints,
@@ -224,7 +225,7 @@ class PathfindingTest : ApiTest() {
                         listOf("BAL", "BAPR", "TVM300", "TVM430"),
                     timeout = null,
                     rollingStockMaximumSpeed = 320.0,
-                    rollingStockLength = 0.0,
+                    rollingStockLength = Length(Distance.ZERO),
                     infra = "small_infra/infra.json",
                     expectedVersion = 1,
                     pathItems = waypoints,
@@ -244,7 +245,7 @@ class PathfindingTest : ApiTest() {
                     rollingStockSupportedElectrifications = listOf("nonexistent_electrification"),
                     rollingStockSupportedSignalingSystems = listOf("TVM300"),
                     rollingStockMaximumSpeed = 320.0,
-                    rollingStockLength = 0.0,
+                    rollingStockLength = Length(Distance.ZERO),
                     timeout = null,
                     infra = "small_infra/infra.json",
                     expectedVersion = 1,
@@ -631,7 +632,7 @@ class PathfindingAllowedTrackSectionsTest {
             rollingStockSupportedSignalingSystems =
                 TestTrains.REALISTIC_FAST_TRAIN.supportedSignalingSystems.toList(),
             rollingStockMaximumSpeed = TestTrains.REALISTIC_FAST_TRAIN.maxSpeed,
-            rollingStockLength = TestTrains.REALISTIC_FAST_TRAIN.length,
+            rollingStockLength = Length(TestTrains.REALISTIC_FAST_TRAIN.length.meters),
             timeout = null,
             infra = "tiny_infra/infra.json",
             expectedVersion = 1,
