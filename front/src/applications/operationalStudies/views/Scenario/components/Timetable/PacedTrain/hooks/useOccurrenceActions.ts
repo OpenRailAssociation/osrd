@@ -253,7 +253,7 @@ const useOccurrenceActions = ({
       const newExceptions = pacedTrain.paced.exceptions.filter((ex) => ex.id !== id);
       const exceptionToDelete = pacedTrain.paced.exceptions.find((ex) => ex.id === id);
 
-      if (!exceptionToDelete?.id) {
+      if (exceptionToDelete?.id === undefined || exceptionToDelete?.id === null) {
         throw new Error('Cannot delete an exception which was not found');
       }
       await deleteExceptions(dispatch, [exceptionToDelete.id]);
