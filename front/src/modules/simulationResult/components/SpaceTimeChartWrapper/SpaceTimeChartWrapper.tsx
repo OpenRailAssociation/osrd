@@ -320,9 +320,9 @@ const SpaceTimeChartWrapper = ({
     return hoveredTrainId;
   }, [hoveredItem, hoveredTrainId]);
 
-  // If we're dealing a unique train or an exception, use the ID as-is so
-  // that only this single occupancy zone gets dragged. Otherwise, we're
-  // dealing with a compliant occurrence: extract the paced train ID so
+  // If we're dealing a unique train or a path_and_schedule exception, use the
+  // ID as-is so that only this single occupancy zone gets dragged. Otherwise,
+  // we're dealing with a compliant occurrence: extract the paced train ID so
   // that all compliant occurrences get dragged.
   const draggingOccupancyZoneBaseTrainId = useMemo(() => {
     if (!draggingOccupancyZoneRef) {
@@ -330,7 +330,7 @@ const SpaceTimeChartWrapper = ({
     }
     const { trainId } = draggingOccupancyZoneRef;
     const { exception } = findTrainScheduleAndException(trainSchedulesWithDetails ?? [], trainId);
-    if (isPacedTrainId(trainId) || exception) {
+    if (isPacedTrainId(trainId) || exception?.path_and_schedule) {
       return trainId;
     } else {
       return extractPacedTrainIdFromOccurrenceId(trainId);
@@ -361,7 +361,7 @@ const SpaceTimeChartWrapper = ({
         return false;
       }
       const { exception } = findTrainScheduleAndException(trainSchedulesWithDetails ?? [], trainId);
-      return !exception;
+      return !exception?.path_and_schedule;
     },
     [draggingOccupancyZoneRef, draggingOccupancyZoneBaseTrainId, trainSchedulesWithDetails]
   );
@@ -472,17 +472,26 @@ const SpaceTimeChartWrapper = ({
     if (!draggingOccupancyZoneRef) {
       throw new Error('Got occupancy zone drop event with no dragging occupancy zone');
     }
+    if (!draggingOccupancyZoneBaseTrainId) {
+      throw new Error('Got occupancy zone drop event with no dragging base train ID');
+    }
 
-    const { waypointId, trainId } = draggingOccupancyZoneRef;
+    const { waypointId } = draggingOccupancyZoneRef;
     const waypoint = trackOccupancyDiagramsData!.find((wp) => wp.waypointId === waypointId)!;
     const draggingPathId = formatOccupancyZonePathId(draggingOccupancyZoneRef);
     const zone = waypoint.zones!.find(({ pathId }) => pathId === draggingPathId)!;
     const dragOverTrack = waypoint.tracks!.find((tr) => tr.id === dragOverTrackId);
     if (dragOverTrack && zone.trackId !== dragOverTrackId && onOccupancyZoneDrop) {
-      onOccupancyZoneDrop(waypointId, trainId, zone, dragOverTrack);
+      onOccupancyZoneDrop(waypointId, draggingOccupancyZoneBaseTrainId, zone, dragOverTrack);
     }
     setDraggingOccupancyZoneRef(null);
-  }, [trackOccupancyDiagramsData, draggingOccupancyZoneRef, dragOverTrackId, onOccupancyZoneDrop]);
+  }, [
+    trackOccupancyDiagramsData,
+    draggingOccupancyZoneRef,
+    draggingOccupancyZoneBaseTrainId,
+    dragOverTrackId,
+    onOccupancyZoneDrop,
+  ]);
 
   const isDraggingOccupancyZone = Boolean(draggingOccupancyZoneRef);
 
