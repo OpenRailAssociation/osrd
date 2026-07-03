@@ -22,6 +22,7 @@ pub(super) struct TrackOccupancy {
 
 /// Structure holding extracted data needed for track occupancy computation
 struct OccupancyContext<'a> {
+    op_id: &'a str,
     report_train: Option<&'a ReportTrain>,
     pathfinding_success: Option<&'a PathfindingResultSuccess>,
     matching_index: Option<usize>,
@@ -47,7 +48,7 @@ fn find_matching_path_item_index(
 
 /// Extracts all context needed for track occupancy computation
 fn extract_occupancy_context<'a>(
-    operational_point_id: &str,
+    operational_point_id: &'a str,
     op_cache: &OperationalPointCache,
     simulation: &'a simulation::Response,
     pathfinding: &'a PathfindingResult,
@@ -70,6 +71,7 @@ fn extract_occupancy_context<'a>(
     };
 
     OccupancyContext {
+        op_id: operational_point_id,
         report_train,
         pathfinding_success,
         ..extract_occupancy_context_without_simulation(
@@ -81,7 +83,7 @@ fn extract_occupancy_context<'a>(
 }
 
 fn extract_occupancy_context_without_simulation<'a>(
-    operational_point_id: &str,
+    operational_point_id: &'a str,
     op_cache: &OperationalPointCache,
     train_schedule: &'a schemas::TrainOccurrence,
 ) -> OccupancyContext<'a> {
@@ -96,6 +98,7 @@ fn extract_occupancy_context_without_simulation<'a>(
     });
 
     OccupancyContext {
+        op_id: operational_point_id,
         report_train: None,
         pathfinding_success: None,
         matching_index,
@@ -156,16 +159,14 @@ fn get_local_track_name(
         }
     }
 
-    if let Some(pathfinding_success) = context.pathfinding_success {
-        let path_projection = PathProjection::new(&pathfinding_success.path.track_section_ranges);
-        return operational_point_track_offsets
-            .iter()
-            .find(|to| path_projection.get_position(to).is_some())
-            .and_then(|to| op_cache.get_name_by_track(to.track.as_str()))
-            .cloned();
-    }
+    let pathfinding_success = context.pathfinding_success?;
 
-    None
+    let path_projection = PathProjection::new(&pathfinding_success.path.track_section_ranges);
+    operational_point_track_offsets
+        .iter()
+        .find(|to| path_projection.get_position(to).is_some())
+        .and_then(|to| op_cache.get_name_by_track(context.op_id.to_string(), to.track.as_str()))
+        .cloned()
 }
 
 /// Find track occupancies for a train at an operational point
@@ -336,13 +337,17 @@ pub mod tests {
             Vec::new(),
             HashMap::new(),
             HashMap::new(),
-            HashMap::new(),
-            HashSet::new(),
             HashMap::from([
+                ("op_1".to_string(), 0),
+                ("op_2".to_string(), 0),
+                ("op_3".to_string(), 0),
+            ]),
+            HashSet::new(),
+            vec![HashMap::from([
                 ("T1".into(), "V1".into()),
                 ("T2".into(), "V2".into()),
                 ("T3".into(), "V3".into()),
-            ]),
+            ])],
         );
 
         let operational_point_track_offsets = vec![TrackOffset {
@@ -544,9 +549,9 @@ pub mod tests {
             Vec::new(),
             HashMap::new(),
             HashMap::new(),
-            HashMap::new(),
+            HashMap::from([("op_2".to_string(), 0)]),
             HashSet::new(),
-            HashMap::from([("T2".into(), "V2".into())]),
+            vec![HashMap::from([("T2".into(), "V2".into())])],
         );
 
         let operational_point_track_offsets = vec![TrackOffset {
