@@ -34,7 +34,6 @@ import { Duration } from 'utils/duration';
 import { castErrorToFailure } from 'utils/error';
 
 import getPointOnPathCoordinates from '../helpers/getPointOnPathCoordinates';
-import getTrackLengthCumulativeSums from '../helpers/getTrackLengthCumulativeSums';
 import type { PathfindingState } from '../types';
 
 const initialPathfindingState = {
@@ -54,7 +53,7 @@ const usePathfinding = ({
   const speedLimitByTag = useSelector(getOperationalStudiesSpeedLimitByTag);
 
   const powerRestrictions = useSelector(getPowerRestrictions);
-  const { infraId, getTrackSectionsByIds, workerStatus } = useScenarioContext();
+  const { infraId, workerStatus } = useScenarioContext();
   const [pathfindingState, setPathfindingState] =
     useState<PathfindingState>(initialPathfindingState);
   const [pathProperties, setPathProperties] = useState<ManageTrainSchedulePathProperties>();
@@ -167,14 +166,8 @@ const usePathfinding = ({
         track_section_ranges: pathResult.path.track_section_ranges,
       },
     };
-    const { electrifications, geometry, operational_points } =
+    const { electrifications, geometry, operational_points, geom_projection } =
       await postPathProperties(pathPropertiesParams).unwrap();
-
-    const trackIds = pathResult.path.track_section_ranges.map((range) => range.track_section);
-    const trackSectionsById = await getTrackSectionsByIds(trackIds);
-    const tracksLengthCumulativeSums = getTrackLengthCumulativeSums(
-      pathResult.path.track_section_ranges
-    );
 
     const suggestedOperationalPoints: SuggestedOP[] = formatSuggestedOperationalPoints(
       operational_points,
@@ -195,12 +188,7 @@ const usePathfinding = ({
         };
       }
       const positionOnPath = pathResult.path_item_positions[validOpIndex];
-      const coordinates = getPointOnPathCoordinates(
-        trackSectionsById,
-        pathResult.path.track_section_ranges,
-        tracksLengthCumulativeSums,
-        positionOnPath
-      );
+      const coordinates = getPointOnPathCoordinates(geometry, geom_projection, positionOnPath);
       const correspondingOp = suggestedOperationalPoints.find((suggestedOp) =>
         matchPathStepAndOp(step.location, suggestedOp)
       );
@@ -235,6 +223,7 @@ const usePathfinding = ({
       length: pathResult.length,
       trackSectionRanges: pathResult.path.track_section_ranges,
       incompatibleConstraints,
+      geomProjection: geom_projection,
     });
   };
 

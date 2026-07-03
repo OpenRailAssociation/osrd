@@ -79,6 +79,10 @@ export default function commonConfBuilder() {
       suggestedOperationalPoints: [],
       length: 1169926000,
       trackSectionRanges: [],
+      geomProjection: {
+        topo_offsets: [],
+        geom_offsets: [],
+      },
     }),
   };
 }

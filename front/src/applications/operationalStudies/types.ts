@@ -73,6 +73,7 @@ export type ManageTrainSchedulePathProperties = {
   length: number;
   trackSectionRanges: NonNullable<CorePathfindingResultSuccess['path']['track_section_ranges']>;
   incompatibleConstraints?: CoreIncompatibleConstraints;
+  geomProjection: NonNullable<PathProperties['geom_projection']>;
 };
 
 export type MapPathProperties = Pick<ManageTrainSchedulePathProperties, 'length' | 'geometry'>;

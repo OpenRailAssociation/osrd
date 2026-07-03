@@ -2,7 +2,6 @@ import { sortBy } from 'lodash';
 import { v4 as uuidV4 } from 'uuid';
 
 import type { ManageTrainSchedulePathProperties } from 'applications/operationalStudies/types';
-import type { TrackSection } from 'common/api/osrdEditoastApi';
 import type { IntervalItem } from 'common/IntervalsEditor/types';
 import findTrackSectionOffset from 'modules/pathfinding/helpers/findTrackSectionOffset';
 import getPointOnPathCoordinates from 'modules/pathfinding/helpers/getPointOnPathCoordinates';
@@ -53,8 +52,7 @@ const createPathStep = (
   positionOnPathInM: number, // in meters
   tracksLengthCumulativeSums: number[],
   pathProperties: ManageTrainSchedulePathProperties,
-  pathSteps: PathStep[],
-  tracksById: Record<string, TrackSection>
+  pathSteps: PathStep[]
 ): PathStep => {
   const positionOnPath = mToMm(positionOnPathInM);
   if (
@@ -71,10 +69,9 @@ const createPathStep = (
   );
 
   const coordinates = getPointOnPathCoordinates(
-    tracksById,
-    pathProperties.trackSectionRanges,
-    tracksLengthCumulativeSums,
-    trackOffset.offset
+    pathProperties.geometry,
+    pathProperties.geomProjection,
+    positionOnPath
   );
 
   return {
@@ -92,7 +89,6 @@ export const createCutAtPathStep = (
   rangesData: IntervalItem[],
   customRanges: IntervalItem[],
   tracksLengthCumulativeSums: number[],
-  tracksById: Record<string, TrackSection>,
   setCustomRanges: (newRanges: IntervalItem[]) => void
 ): PathStep | null => {
   const intervalCut = rangesData.find(
@@ -118,9 +114,8 @@ export const createCutAtPathStep = (
   );
 
   const coordinatesAtCut = getPointOnPathCoordinates(
-    tracksById,
-    pathProperties.trackSectionRanges,
-    tracksLengthCumulativeSums,
+    pathProperties.geometry,
+    pathProperties.geomProjection,
     cutAtPosition
   );
   return {

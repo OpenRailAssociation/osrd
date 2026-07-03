@@ -1,13 +1,11 @@
-import { useEffect, useMemo, useState, type Dispatch, type SetStateAction } from 'react';
+import { useMemo, type Dispatch, type SetStateAction } from 'react';
 
 import { sortBy } from 'lodash';
 
-import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import type {
   ManageTrainSchedulePathProperties,
   PowerRestriction,
 } from 'applications/operationalStudies/types';
-import type { TrackSection } from 'common/api/osrdEditoastApi';
 import type { IntervalItem } from 'common/IntervalsEditor/types';
 import getTrackLengthCumulativeSums from 'modules/pathfinding/helpers/getTrackLengthCumulativeSums';
 import { NO_POWER_RESTRICTION } from 'modules/powerRestriction/consts';
@@ -54,10 +52,6 @@ const usePowerRestrictionsSelectorBehaviours = ({
 }: UsePowerRestrictionsSelectorBehavioursArgs) => {
   const dispatch = useAppDispatch();
 
-  const { getTrackSectionsByIds } = useScenarioContext();
-
-  const [trackSectionsById, setTrackSectionsById] = useState<Record<string, TrackSection>>({});
-
   /** Cumulative sums of the trackSections' length on path (in mm) */
   const tracksLengthCumulativeSums = useMemo(
     () => getTrackLengthCumulativeSums(pathProperties.trackSectionRanges),
@@ -75,8 +69,7 @@ const usePowerRestrictionsSelectorBehaviours = ({
       newRange,
       pathSteps,
       tracksLengthCumulativeSums,
-      pathProperties,
-      trackSectionsById
+      pathProperties
     );
 
     if (newRange.value !== NO_POWER_RESTRICTION) {
@@ -103,7 +96,6 @@ const usePowerRestrictionsSelectorBehaviours = ({
       ranges,
       customRanges,
       tracksLengthCumulativeSums,
-      trackSectionsById,
       setCustomRanges
     );
     if (cutAt) {
@@ -132,8 +124,7 @@ const usePowerRestrictionsSelectorBehaviours = ({
         newToPosition,
         pathSteps,
         tracksLengthCumulativeSums,
-        pathProperties,
-        trackSectionsById
+        pathProperties
       );
       dispatch(
         mergePowerRestrictionRanges({
@@ -229,8 +220,7 @@ const usePowerRestrictionsSelectorBehaviours = ({
       newPosition,
       pathSteps,
       tracksLengthCumulativeSums,
-      pathProperties,
-      trackSectionsById
+      pathProperties
     );
 
     const { firstRestriction, secondRestriction } = getRestrictionsToResize(
@@ -259,16 +249,6 @@ const usePowerRestrictionsSelectorBehaviours = ({
         })
       );
   };
-
-  useEffect(() => {
-    const fetchTracks = async () => {
-      const trackIds = pathProperties.trackSectionRanges.map((range) => range.track_section);
-      const tracks = await getTrackSectionsByIds(trackIds);
-      setTrackSectionsById(tracks);
-    };
-
-    if (pathProperties.trackSectionRanges) fetchTracks();
-  }, [pathProperties.trackSectionRanges]);
 
   return {
     resizeSegments,
