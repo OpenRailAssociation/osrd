@@ -1,4 +1,4 @@
-import { isEqual, omit } from 'lodash';
+import { isEqual, isUndefined, omit, omitBy } from 'lodash';
 
 import type { PacedTrain } from 'applications/operationalStudies/types';
 import type { TrainSchedule, PacedTrainException } from 'common/api/osrdEditoastApi';
@@ -20,6 +20,24 @@ import {
 } from 'utils/trainId';
 
 /**
+ * Normalizes the optional/nullable fields of a train so that "absent" and its
+ * semantic default value compare as equal, instead of tripping isEqual into
+ * reporting a phantom difference (e.g. options: undefined vs options: {}).
+ */
+function normalizeTrainForDiff(train: Omit<TrainSchedule, 'paced'>) {
+  return {
+    ...train,
+    category: train.category ?? null,
+    comfort: train.comfort ?? 'STANDARD',
+    initial_speed: train.initial_speed ?? 0,
+    labels: train.labels ?? [],
+    options: omitBy(train.options ?? {}, isUndefined),
+    power_restrictions: train.power_restrictions ?? [],
+    speed_limit_tag: train.speed_limit_tag ?? null,
+  };
+}
+
+/**
  * Compare the original paced train with the one from the occurrence update and
  * fill the original paced train exceptions property every time a field is different
  * the caller is responsible for generating the exception key and occurrence index.
@@ -32,34 +50,33 @@ export function generatePacedTrainException(
 ): Omit<PacedTrainException, 'key' | 'occurrence_index'> {
   const exception: Omit<PacedTrainException, 'key' | 'occurrence_index'> = {};
 
-  if (
-    !isEqual(originalPacedTrain.constraint_distribution, updatedOccurrence.constraint_distribution)
-  ) {
+  const original = normalizeTrainForDiff(originalPacedTrain);
+  const updated = normalizeTrainForDiff(updatedOccurrence);
+
+  if (!isEqual(original.constraint_distribution, updated.constraint_distribution)) {
     exception.constraint_distribution = {
       value: updatedOccurrence.constraint_distribution,
     };
   }
 
-  if (!isEqual(originalPacedTrain.initial_speed, updatedOccurrence.initial_speed)) {
-    exception.initial_speed = { value: updatedOccurrence.initial_speed ?? 0 };
+  if (!isEqual(original.initial_speed, updated.initial_speed)) {
+    exception.initial_speed = { value: updated.initial_speed };
   }
 
-  if (!isEqual(originalPacedTrain.labels, updatedOccurrence.labels)) {
-    exception.labels = { value: updatedOccurrence.labels ?? [] };
+  if (!isEqual(original.labels, updated.labels)) {
+    exception.labels = { value: updated.labels };
   }
 
-  if (!isEqual(originalPacedTrain.options, updatedOccurrence.options)) {
-    exception.options = { value: updatedOccurrence.options ?? {} };
+  if (!isEqual(original.options, updated.options)) {
+    exception.options = { value: updated.options };
   }
 
   // Compute first all path steps of both paced trains to compare to facilitate the comparison
   // As the front generates each path step id, between two same pathfinding, ids could be different
   // so we don't want to compare them.
-  const originalPacedTrainPathSteps = originalPacedTrain.path.map((_, i) =>
-    computeBasePathStep(originalPacedTrain, i)
-  );
-  const pacedTrainWithOccurrenceChangesPathSteps = updatedOccurrence.path.map((_, i) =>
-    computeBasePathStep(updatedOccurrence, i)
+  const originalPacedTrainPathSteps = original.path.map((_, i) => computeBasePathStep(original, i));
+  const pacedTrainWithOccurrenceChangesPathSteps = updated.path.map((_, i) =>
+    computeBasePathStep(updated, i)
   );
 
   if (
@@ -67,37 +84,32 @@ export function generatePacedTrainException(
     originalPacedTrainPathSteps.some(
       (pathStep, i) =>
         !isEqual(omit(pathStep, 'id'), omit(pacedTrainWithOccurrenceChangesPathSteps[i], 'id'))
-    )
+    ) ||
+    !isEqual(original.power_restrictions, updated.power_restrictions)
   ) {
     exception.path_and_schedule = {
-      margins: updatedOccurrence.margins ?? { boundaries: [], values: ['0%'] },
-      path: updatedOccurrence.path,
-      power_restrictions: updatedOccurrence.power_restrictions ?? [],
-      schedule: updatedOccurrence.schedule ?? [],
+      margins: updated.margins ?? { boundaries: [], values: ['0%'] },
+      path: updated.path,
+      power_restrictions: updated.power_restrictions,
+      schedule: updated.schedule ?? [],
     };
   }
 
   if (
     originalPacedTrain.rolling_stock_name !== updatedOccurrence.rolling_stock_name ||
-    !isEqual(originalPacedTrain.comfort, updatedOccurrence.comfort)
+    !isEqual(original.comfort, updated.comfort)
   ) {
     exception.rolling_stock = {
       rolling_stock_name: updatedOccurrence.rolling_stock_name,
-      comfort: updatedOccurrence.comfort ?? originalPacedTrain.comfort ?? 'STANDARD',
+      comfort: updated.comfort,
     };
   }
 
-  if (!isEqual(originalPacedTrain.category, updatedOccurrence.category)) {
+  if (!isEqual(original.category, updated.category)) {
     exception.rolling_stock_category = { value: updatedOccurrence.category };
   }
 
-  if (
-    !isEqual(
-      originalPacedTrain.speed_limit_tag ?? null,
-      // speed limit tag is instantiated with null if not present when formatting the item
-      updatedOccurrence.speed_limit_tag ?? null
-    )
-  ) {
+  if (!isEqual(original.speed_limit_tag, updated.speed_limit_tag)) {
     exception.speed_limit_tag = { value: updatedOccurrence.speed_limit_tag };
   }
 
@@ -223,6 +235,8 @@ export function checkChangeGroups(
   paced: NonNullable<TrainSchedule['paced']>,
   originalExceptions: PacedTrainException[]
 ): CheckChangeGroupsResult {
+  const normalizedUpdatedTrain = normalizeTrainForDiff(updatedTrain);
+
   return originalExceptions.reduce<CheckChangeGroupsResult>(
     (acc, exception) => {
       const updatedException = { ...exception };
@@ -235,16 +249,19 @@ export function checkChangeGroups(
 
       if (
         exception.initial_speed &&
-        isEqual(exception.initial_speed.value, updatedTrain.initial_speed)
+        isEqual(exception.initial_speed.value, normalizedUpdatedTrain.initial_speed)
       ) {
         delete updatedException.initial_speed;
       }
 
-      if (exception.labels && isEqual(exception.labels.value, updatedTrain.labels)) {
+      if (exception.labels && isEqual(exception.labels.value, normalizedUpdatedTrain.labels)) {
         delete updatedException.labels;
       }
 
-      if (exception.options && isEqual(exception.options, updatedTrain.options)) {
+      if (
+        exception.options &&
+        isEqual(omitBy(exception.options.value, isUndefined), normalizedUpdatedTrain.options)
+      ) {
         delete updatedException.options;
       }
 
@@ -262,6 +279,10 @@ export function checkChangeGroups(
           originalPacedTrainPathSteps.length === exceptionPathSteps.length &&
           originalPacedTrainPathSteps.every((pathStep, i) =>
             isEqual(omit(pathStep, 'id'), omit(exceptionPathSteps[i], 'id'))
+          ) &&
+          isEqual(
+            updatedException.path_and_schedule.power_restrictions ?? [],
+            normalizedUpdatedTrain.power_restrictions
           )
         ) {
           delete updatedException.path_and_schedule;
@@ -270,7 +291,7 @@ export function checkChangeGroups(
 
       if (
         exception.rolling_stock &&
-        isEqual(exception.rolling_stock.comfort, updatedTrain.comfort) &&
+        isEqual(exception.rolling_stock.comfort, normalizedUpdatedTrain.comfort) &&
         isEqual(exception.rolling_stock.rolling_stock_name, updatedTrain.rolling_stock_name)
       ) {
         delete updatedException.rolling_stock;
@@ -278,18 +299,14 @@ export function checkChangeGroups(
 
       if (
         exception.rolling_stock_category &&
-        isEqual(exception.rolling_stock_category.value, updatedTrain.category)
+        isEqual(exception.rolling_stock_category.value ?? null, normalizedUpdatedTrain.category)
       ) {
         delete updatedException.rolling_stock_category;
       }
 
       if (
         exception.speed_limit_tag &&
-        isEqual(
-          exception.speed_limit_tag.value ?? null,
-          // speed limit tag is instantiated with null if not present when formatting the item
-          updatedTrain.speed_limit_tag ?? null
-        )
+        isEqual(exception.speed_limit_tag.value ?? null, normalizedUpdatedTrain.speed_limit_tag)
       ) {
         delete updatedException.speed_limit_tag;
       }
