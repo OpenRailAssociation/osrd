@@ -147,6 +147,7 @@ function applyFieldsToTrain(
     rolling_stock_name: fields.rolling_stock_name,
     paced,
     options: {
+      ...train.options,
       use_electrical_profiles:
         fields?.use_electrical_profiles === null ? undefined : fields.use_electrical_profiles,
     },
