@@ -15,6 +15,10 @@ beforeEach(() => {
   store = createStore();
 });
 
+export function getTestStore(): Store {
+  return store;
+}
+
 /**
  * Renders a hook for test purposes with the Redux store in the context.
  *
