@@ -177,9 +177,6 @@ const getTimeLockDate = (
   return new Date(startDate.getTime() + offset * 60 * 1000);
 };
 
-const formatDateDifferenceFrom = (start: Date, stop: Date) =>
-  Duration.subtractDate(stop, start).toISOString();
-
 /**
  * Generate a path from a list of trainrun sections.
  */
@@ -281,14 +278,19 @@ const generateSchedule = (
     arrival = arrival || departure!;
 
     let stop_for: string | null = null;
-    if (isStopTransit)
-      stop_for = departure
-        ? formatDateDifferenceFrom(arrival, departure)
-        : Duration.zero.toISOString();
+    if (isStopTransit) {
+      if (departure) {
+        const stopForDuration = Duration.subtractDate(departure, arrival);
+        stop_for = (stopForDuration.ms < 0 ? Duration.zero : stopForDuration).toISOString();
+      } else {
+        stop_for = Duration.zero.toISOString();
+      }
+    }
 
+    const arrivalDuration = Duration.subtractDate(arrival, startDate);
     return {
       at: `${toNodeId}-${index + 1}`,
-      arrival: formatDateDifferenceFrom(startDate, arrival),
+      arrival: arrivalDuration.ms < 0 ? Duration.zero.toISOString() : arrivalDuration.toISOString(),
       stop_for,
       // Default information
       reception_signal: 'OPEN',
