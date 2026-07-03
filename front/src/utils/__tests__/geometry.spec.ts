@@ -2,8 +2,11 @@ import { point, lineString, featureCollection } from '@turf/helpers';
 import type { Feature, Point } from 'geojson';
 import { describe, it, expect } from 'vitest';
 
-import type { GeoJsonLineString as LineString } from 'common/api/osrdEditoastApi';
-import { getTangent, nearestPointOnLine } from 'utils/geometry';
+import type {
+  GeoJsonLineString as LineString,
+  CorePropertyGeometryProjection,
+} from 'common/api/osrdEditoastApi';
+import { getTangent, interpolateTopoAndGeomOffsets, nearestPointOnLine } from 'utils/geometry';
 
 import lineNorthenLatitude from './assets/line-northern-latitude.json';
 import linePointOnLeft from './assets/line-point-on-left.json';
@@ -69,5 +72,36 @@ describe('nearestPointOnLine', () => {
       const result = nearestPointOnLine(line, pt);
       expect(result).toEqual(expected);
     });
+  });
+});
+
+describe('interpolateTopoAndGeomOffsets', () => {
+  it('topological to geometric', () => {
+    const geomProjection: CorePropertyGeometryProjection = {
+      topo_offsets: [0, 300, 1000],
+      geom_offsets: [0, 200, 1600],
+    };
+    const topoOffset = 700;
+    const geomOffset = interpolateTopoAndGeomOffsets(geomProjection, 'topo_to_geom', topoOffset);
+    expect(geomOffset).toEqual(1000);
+  });
+  it('geometric to topological', () => {
+    const geomProjection: CorePropertyGeometryProjection = {
+      topo_offsets: [0, 300, 1000],
+      geom_offsets: [0, 200, 1600],
+    };
+    const geomOffset = 1000;
+    const topoOffset = interpolateTopoAndGeomOffsets(geomProjection, 'geom_to_topo', geomOffset);
+    expect(topoOffset).toEqual(700);
+  });
+  it('null-length case', () => {
+    const geomProjection: CorePropertyGeometryProjection = {
+      topo_offsets: [0, 300, 300, 1000],
+      geom_offsets: [0, 200, 800, 1600],
+    };
+    const geomOffset = interpolateTopoAndGeomOffsets(geomProjection, 'topo_to_geom', 300);
+    expect(geomOffset).toEqual(500);
+    const topoOffset = interpolateTopoAndGeomOffsets(geomProjection, 'geom_to_topo', 700);
+    expect(topoOffset).toEqual(300);
   });
 });

@@ -13,7 +13,7 @@ import type {
 } from 'geojson';
 import { minBy } from 'lodash';
 
-import type { GeoJsonLineString } from 'common/api/osrdEditoastApi';
+import type { CorePropertyGeometryProjection, GeoJsonLineString } from 'common/api/osrdEditoastApi';
 
 export function getTangent(
   tangentPoint: Position,
@@ -172,4 +172,48 @@ export function getBarycenter(coords: Position[]): Position {
   if (n === 0) throw new Error('No coordinates provided');
   const sum = coords.reduce((acc, [lon, lat]) => [acc[0] + lon, acc[1] + lat], [0, 0]);
   return [sum[0] / n, sum[1] / n];
+}
+
+// Compute geometric offset from topologic offset, or inversely
+export function interpolateTopoAndGeomOffsets(
+  geomProjection: CorePropertyGeometryProjection,
+  conversionType: 'geom_to_topo' | 'topo_to_geom',
+  inputOffset: number
+) {
+  const inputDistances =
+    conversionType === 'geom_to_topo' ? geomProjection.geom_offsets : geomProjection.topo_offsets;
+  const outputDistances =
+    conversionType === 'geom_to_topo' ? geomProjection.topo_offsets : geomProjection.geom_offsets;
+
+  const upperIndex = inputDistances.findIndex((offset) => inputOffset <= offset);
+  if (upperIndex === -1) throw new Error('Offset too high for this path');
+
+  // Edge case: the input offset has the same values as several consecutive boundaries
+  // which means it is in a null-length section
+  if (inputOffset === inputDistances[upperIndex]) {
+    let count = 1;
+    // We count the number of steps in the curve that have the same value as the input offset
+    while (
+      upperIndex + count < inputDistances.length &&
+      inputDistances[upperIndex + count] === inputOffset
+    ) {
+      count++;
+    }
+    // If we have several instances, it means we have null-length sections
+    // Then we take the middle of the output distances
+    if (count > 1) {
+      return (outputDistances[upperIndex] + outputDistances[upperIndex + count - 1]) / 2;
+    }
+  }
+
+  let outputOffset = 0;
+  if (upperIndex !== 0) {
+    const inputTrackLength = inputDistances[upperIndex] - inputDistances[upperIndex - 1];
+    const inputTrackOffset = inputOffset - inputDistances[upperIndex - 1];
+    const outputTrackLength = outputDistances[upperIndex] - outputDistances[upperIndex - 1];
+    outputOffset =
+      outputDistances[upperIndex - 1] + (inputTrackOffset / inputTrackLength) * outputTrackLength;
+  }
+
+  return outputOffset;
 }
