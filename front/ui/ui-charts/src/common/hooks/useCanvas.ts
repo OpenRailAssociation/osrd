@@ -95,7 +95,11 @@ export function useCanvas<T extends BaseChartContextType>(
       if (ctx) {
         const { width, height } = sizeRef.current;
         ctx.clearRect(0, 0, width, height);
-        set.forEach((fn) => fn(ctx, context));
+        set.forEach((fn) => {
+          // Reset alpha before each drawing function to prevent having the faded out-of-selection  from the STD
+          ctx.globalAlpha = 1;
+          fn(ctx, context);
+        });
       }
     });
   }, []);
