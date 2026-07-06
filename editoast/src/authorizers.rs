@@ -140,7 +140,11 @@ impl<'c> UserAuthorizer<'c> {
                 (!privileges.contains(privilege)).then_some(check)
             }
 
-            Check::CanAlterSubjectInfraGrant(subject @ authz::Subject::User(_), infra) => {
+            Check::CanAlterSubjectInfraGrant(
+                subject @ authz::Subject::User(_),
+                infra,
+                new_grant,
+            ) => {
                 let issuer = self.issuer();
                 let Ok((Some(issuer_grant), current_grant)) =
                     authz::v2::infra_effective_grant(issuer, *infra)
@@ -154,11 +158,14 @@ impl<'c> UserAuthorizer<'c> {
                 };
 
                 if let Some(current_grant) = current_grant {
-                    if issuer == *subject {
-                        // I can alter my own grant and self-demote;
+                    if current_grant == *new_grant {
+                        // I can do nothing (no-op);
+                        None
+                    } else if issuer == *subject {
+                        // I can also alter my own grant and self-demote;
                         None
                     } else {
-                        // but I cannot do the same thing to my equals.
+                        // but I cannot do the same thing to my equals
                         (current_grant >= issuer_grant).then_some(check)
                     }
                 } else {
@@ -166,7 +173,7 @@ impl<'c> UserAuthorizer<'c> {
                     None
                 }
             }
-            Check::CanAlterSubjectInfraGrant(authz::Subject::Group(_), _) => {
+            Check::CanAlterSubjectInfraGrant(authz::Subject::Group(_), _, _) => {
                 // The only users allowed to alter groups grants are admins who bypass this entire
                 // verification function. So if we reach here, well then... TOO BAD GAME OVER LOL
                 Some(check)
@@ -416,7 +423,8 @@ mod tests {
     ))]
     #[case::can_alter_subject_infra_grant(Check::CanAlterSubjectInfraGrant(
         authz::Subject::User(authz::User(i64::MAX)),
-        authz::Infra(i64::MAX)
+        authz::Infra(i64::MAX),
+        InfraGrant::Reader,
     ))]
     #[case::subject_effective_infra_grant_is_not(Check::SubjectEffectiveInfraGrantIsNot(
         InfraGrant::Owner,
@@ -536,41 +544,68 @@ mod tests {
 
         #[rstest]
         // a user grants another user
-        #[case::target_user_1(ISSUER_READER, USER_NOTHING, true)]
-        #[case::target_user_2(ISSUER_READER, USER_READER, false)]
-        #[case::target_user_3(ISSUER_READER, USER_WRITER, false)]
-        #[case::target_user_4(ISSUER_READER, USER_OWNER, false)]
-        #[case::target_user_5(ISSUER_WRITER, USER_NOTHING, true)]
-        #[case::target_user_6(ISSUER_WRITER, USER_READER, true)]
-        #[case::target_user_7(ISSUER_WRITER, USER_WRITER, false)]
-        #[case::target_user_8(ISSUER_WRITER, USER_OWNER, false)]
-        #[case::target_user_9(ISSUER_OWNER, USER_NOTHING, true)]
-        #[case::target_user_10(ISSUER_OWNER, USER_READER, true)]
-        #[case::target_user_11(ISSUER_OWNER, USER_WRITER, true)]
-        #[case::target_user_12(ISSUER_OWNER, USER_OWNER, false)]
+        #[case::target_user_1(ISSUER_READER, USER_NOTHING, InfraGrant::Reader, true)]
+        #[case::target_user_2(ISSUER_READER, USER_READER, InfraGrant::Reader, true)]
+        #[case::target_user_3(ISSUER_READER, USER_WRITER, InfraGrant::Reader, false)]
+        #[case::target_user_4(ISSUER_READER, USER_OWNER, InfraGrant::Reader, false)]
+        #[case::target_user_5(ISSUER_WRITER, USER_NOTHING, InfraGrant::Writer, true)]
+        #[case::target_user_6(ISSUER_WRITER, USER_READER, InfraGrant::Writer, true)]
+        #[case::target_user_7(ISSUER_WRITER, USER_WRITER, InfraGrant::Writer, true)]
+        #[case::target_user_8(ISSUER_WRITER, USER_OWNER, InfraGrant::Writer, false)]
+        #[case::target_user_9(ISSUER_OWNER, USER_NOTHING, InfraGrant::Owner, true)]
+        #[case::target_user_10(ISSUER_OWNER, USER_READER, InfraGrant::Owner, true)]
+        #[case::target_user_11(ISSUER_OWNER, USER_WRITER, InfraGrant::Owner, true)]
+        #[case::target_user_12(ISSUER_OWNER, USER_OWNER, InfraGrant::Owner, true)]
         // non-admins cannot grant groups
-        #[case::target_group_1(ISSUER_READER, GROUP_NOTHING, false)]
-        #[case::target_group_2(ISSUER_READER, GROUP_READER, false)]
-        #[case::target_group_3(ISSUER_READER, GROUP_WRITER, false)]
-        #[case::target_group_4(ISSUER_READER, GROUP_OWNER, false)]
-        #[case::target_group_5(ISSUER_WRITER, GROUP_NOTHING, false)]
-        #[case::target_group_6(ISSUER_WRITER, GROUP_READER, false)]
-        #[case::target_group_7(ISSUER_WRITER, GROUP_WRITER, false)]
-        #[case::target_group_8(ISSUER_WRITER, GROUP_OWNER, false)]
-        #[case::target_group_9(ISSUER_OWNER, GROUP_NOTHING, false)]
-        #[case::target_group_10(ISSUER_OWNER, GROUP_READER, false)]
-        #[case::target_group_11(ISSUER_OWNER, GROUP_WRITER, false)]
-        #[case::target_group_12(ISSUER_OWNER, GROUP_OWNER, false)]
+        #[case::target_group_1(ISSUER_READER, GROUP_NOTHING, InfraGrant::Reader, false)]
+        #[case::target_group_2(ISSUER_READER, GROUP_READER, InfraGrant::Reader, false)]
+        #[case::target_group_3(ISSUER_READER, GROUP_WRITER, InfraGrant::Reader, false)]
+        #[case::target_group_4(ISSUER_READER, GROUP_OWNER, InfraGrant::Reader, false)]
+        #[case::target_group_5(ISSUER_WRITER, GROUP_NOTHING, InfraGrant::Writer, false)]
+        #[case::target_group_6(ISSUER_WRITER, GROUP_READER, InfraGrant::Writer, false)]
+        #[case::target_group_7(ISSUER_WRITER, GROUP_WRITER, InfraGrant::Writer, false)]
+        #[case::target_group_8(ISSUER_WRITER, GROUP_OWNER, InfraGrant::Writer, false)]
+        #[case::target_group_9(ISSUER_OWNER, GROUP_NOTHING, InfraGrant::Owner, false)]
+        #[case::target_group_10(ISSUER_OWNER, GROUP_READER, InfraGrant::Owner, false)]
+        #[case::target_group_11(ISSUER_OWNER, GROUP_WRITER, InfraGrant::Owner, false)]
+        #[case::target_group_12(ISSUER_OWNER, GROUP_OWNER, InfraGrant::Owner, false)]
         // targeting self is allowed within privilege limits
-        #[case::target_self_1(ISSUER_READER, authz::Subject::User(ISSUER_READER), true)]
-        #[case::target_self_2(ISSUER_WRITER, authz::Subject::User(ISSUER_WRITER), true)]
-        #[case::target_self_3(ISSUER_OWNER, authz::Subject::User(ISSUER_OWNER), true)]
+        #[case::target_self_1(
+            ISSUER_READER,
+            authz::Subject::User(ISSUER_READER),
+            InfraGrant::Reader,
+            true
+        )]
+        #[case::target_self_2(
+            ISSUER_WRITER,
+            authz::Subject::User(ISSUER_WRITER),
+            InfraGrant::Writer,
+            true
+        )]
+        #[case::target_self_3(
+            ISSUER_OWNER,
+            authz::Subject::User(ISSUER_OWNER),
+            InfraGrant::Owner,
+            true
+        )]
         // a user with no grant do not have the privilege to share grants
-        #[case::unreachable(ISSUER_NOTHING, USER_NOTHING, false)]
+        #[case::unreachable(ISSUER_NOTHING, USER_NOTHING, InfraGrant::Reader, false)]
+        // noop: no changes, the issuer grant does not matter
+        #[case::noop_1(ISSUER_READER, USER_READER, InfraGrant::Reader, true)]
+        #[case::noop_2(ISSUER_WRITER, USER_READER, InfraGrant::Reader, true)]
+        #[case::noop_3(ISSUER_OWNER, USER_READER, InfraGrant::Reader, true)]
+        #[case::noop_4(ISSUER_READER, USER_WRITER, InfraGrant::Writer, true)]
+        #[case::noop_5(ISSUER_WRITER, USER_WRITER, InfraGrant::Writer, true)]
+        #[case::noop_6(ISSUER_OWNER, USER_WRITER, InfraGrant::Writer, true)]
+        #[case::noop_7(ISSUER_READER, USER_OWNER, InfraGrant::Owner, true)]
+        #[case::noop_8(ISSUER_WRITER, USER_OWNER, InfraGrant::Owner, true)]
+        #[case::noop_9(ISSUER_OWNER, USER_OWNER, InfraGrant::Owner, true)]
+        // -----
         #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
         async fn test(
             #[case] issuer: authz::User,
             #[case] target: authz::Subject,
+            #[case] grant: InfraGrant,
             #[case] ok: bool,
         ) {
             let openfga = openfga().await;
@@ -607,7 +642,7 @@ mod tests {
                 .await
                 .unwrap();
 
-            let check = Check::CanAlterSubjectInfraGrant(target, authz::Infra(1));
+            let check = Check::CanAlterSubjectInfraGrant(target, authz::Infra(1), grant);
             let result = authorize(&user_authorizer, check).await;
             let expected = ok.then_some(()).ok_or(check);
             assert_eq!(result, expected);
@@ -724,7 +759,8 @@ mod tests {
     ))]
     #[case::can_alter_subject_infra_grant(Check::CanAlterSubjectInfraGrant(
         authz::Subject::user(i64::MAX),
-        authz::Infra(i64::MAX)
+        authz::Infra(i64::MAX),
+        InfraGrant::Reader,
     ))]
     #[case::subject_effective_infra_grant_is_not(Check::SubjectEffectiveInfraGrantIsNot(
         InfraGrant::Owner,
