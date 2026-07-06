@@ -69,9 +69,10 @@ pub enum Check {
     /// The issuer must be allowed to change the subject's infra grant
     ///
     /// Ensures that the issuer cannot demote a more or equally privileged user, except themself.
+    /// No-op grant changes are allowed.
     /// IMPORTANT: it is *NOT* a replacement for [`Self::HasInfraPrivilege`] with sharing privileges (forbids illegal promotions)
     /// NOTE: groups grants are managed by admins exclusively so this check always rejects group subjects as admin checks are bypassed
-    CanAlterSubjectInfraGrant(Subject, Infra),
+    CanAlterSubjectInfraGrant(Subject, Infra, InfraGrant),
     /// The subject must not have the specified effective infra grant
     SubjectEffectiveInfraGrantIsNot(InfraGrant, Subject, Infra),
     /// The subject must not be the last direct owner of the infra

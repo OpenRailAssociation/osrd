@@ -207,7 +207,7 @@ pub fn infra_set_grant(subject: Subject, infra: Infra, new_grant: InfraGrant) ->
             share_privilege,
             infra,
         ))
-        .with_check(Check::CanAlterSubjectInfraGrant(subject, infra));
+        .with_check(Check::CanAlterSubjectInfraGrant(subject, infra, new_grant));
 
     if new_grant != InfraGrant::Owner {
         prot.with_check(Check::IsNotLastInfraOwner(subject, infra))

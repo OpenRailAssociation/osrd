@@ -1979,6 +1979,29 @@ mod tests {
             }))
             .await
             .assert_status(StatusCode::CREATED);
+
+        let other_writer = app
+            .user("spike", "Spike")
+            .with_roles([Role::OperationalStudies])
+            .with_infra_grant(infra.id, InfraGrant::Writer)
+            .create()
+            .await;
+
+        // writer can reassign another writer's grant if it is a no-op
+        app.post("/authz/grants")
+            .by_user(writer.as_ref())
+            .json(&json!({
+                "grant": [
+                    {
+                        "subject_id": other_writer.id,
+                        "resource_type": ResourceType::Infra,
+                        "resource_id": infra.id,
+                        "grant": InfraGrant::Writer
+                    }
+                ]
+            }))
+            .await
+            .assert_status(StatusCode::CREATED);
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
