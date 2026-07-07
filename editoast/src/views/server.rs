@@ -228,7 +228,7 @@ impl AppState {
             db_pool,
             infra_caches,
             core_client,
-            map_layers: &*MAP_LAYERS,
+            map_layers: MAP_LAYERS,
             speed_limit_tag_ids,
             health_check_timeout: config.health_check_timeout,
             trains_traffic: config.trains_traffic.clone(),

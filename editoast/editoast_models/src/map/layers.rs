@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 // select C.stuff from A inner join B C on C.id = C.id;
 //                       \___________________________/
 //                             a join expression
@@ -37,7 +35,7 @@ impl Layer {
 
 #[derive(Debug)]
 pub struct MapLayers {
-    pub layers: HashMap<&'static str, Layer>,
+    pub layers: phf::Map<&'static str, Layer>,
 }
 
 pub static MAP_LAYER_NAMES: std::sync::LazyLock<Vec<&'static str>> =
@@ -47,24 +45,24 @@ pub static MAP_LAYER_NAMES: std::sync::LazyLock<Vec<&'static str>> =
         names
     });
 
-pub static MAP_LAYERS: std::sync::LazyLock<MapLayers> = std::sync::LazyLock::new(|| MapLayers {
-    layers: HashMap::from([
-        ("track_sections", TRACK_SECTIONS_LAYER),
-        ("signals", SIGNALS_LAYER),
-        ("speed_sections", SPEED_SECTIONS_LAYER),
-        ("psl", PSL_LAYER),
-        ("switches", SWITCHES_LAYER),
-        ("detectors", DETECTORS_LAYER),
-        ("buffer_stops", BUFFER_STOPS_LAYER),
-        ("operational_points", OPERATIONAL_POINTS_LAYER),
-        ("electrifications", ELECTRIFICATIONS_LAYER),
-        ("psl_signs", PSL_SIGNS_LAYER),
-        ("neutral_signs", NEUTRAL_SIGNS_LAYER),
-        ("neutral_sections", NEUTRAL_SECTIONS_LAYER),
-        ("level_crossings", LEVEL_CROSSING_LAYER),
-        ("errors", ERRORS_LAYER),
-    ]),
-});
+pub const MAP_LAYERS: &MapLayers = &MapLayers {
+    layers: phf::phf_map! {
+        "track_sections" => TRACK_SECTIONS_LAYER,
+        "signals" => SIGNALS_LAYER,
+        "speed_sections" => SPEED_SECTIONS_LAYER,
+        "psl" => PSL_LAYER,
+        "switches" => SWITCHES_LAYER,
+        "detectors" => DETECTORS_LAYER,
+        "buffer_stops" => BUFFER_STOPS_LAYER,
+        "operational_points" => OPERATIONAL_POINTS_LAYER,
+        "electrifications" => ELECTRIFICATIONS_LAYER,
+        "psl_signs" => PSL_SIGNS_LAYER,
+        "neutral_signs" => NEUTRAL_SIGNS_LAYER,
+        "neutral_sections" => NEUTRAL_SECTIONS_LAYER,
+        "level_crossings" => LEVEL_CROSSING_LAYER,
+        "errors" => ERRORS_LAYER,
+    },
+};
 
 const TRACK_SECTIONS_LAYER: Layer = Layer {
     table_name: "infra_layer_track_section",
