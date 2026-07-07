@@ -25,6 +25,7 @@
 /front                                                   @openrailassociation/OSRD-Front
 /front/src/common/api/generatedEditoastApi.ts
 /front/src/common/api/osrdMiddlewareApi.ts
+/front/src/common/api/osrdRailwayManagerApi.ts
 /front/src/reducers/osrdconf/infra_schema.json
 
 # --- EDITOAST ---
