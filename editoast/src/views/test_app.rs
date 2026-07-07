@@ -48,7 +48,6 @@ use crate::views::service_router;
 use crate::views::timetable::similar_trains::trains_traffic::TrainTraffic;
 use crate::views::timetable::similar_trains::trains_traffic::TrainsTrafficPool;
 use editoast_models::PgAuthDriver;
-use editoast_models::map::MAP_LAYERS;
 use fga::client::DEFAULT_OPENFGA_MAX_CHECKS_PER_BATCH_CHECK;
 use fga::client::DEFAULT_OPENFGA_MAX_TUPLES_PER_WRITE;
 
@@ -254,7 +253,6 @@ impl TestAppBuilder {
             valkey_client: valkey,
             regulator,
             infra_caches,
-            map_layers: MAP_LAYERS,
             speed_limit_tag_ids,
             health_check_timeout: config.health_check_timeout,
             trains_traffic: config.trains_traffic.clone(),

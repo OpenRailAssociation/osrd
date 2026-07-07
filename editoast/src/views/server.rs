@@ -20,8 +20,6 @@ use core_client::mq_client;
 use dashmap::DashMap;
 use database::DbConnectionPoolV2;
 use editoast_models::PgAuthDriver;
-use editoast_models::map::MAP_LAYERS;
-use editoast_models::map::MapLayers;
 use fga::client::Limits;
 use object_store::aws::AmazonS3;
 use object_store::aws::AmazonS3Builder;
@@ -112,7 +110,6 @@ pub struct AppState {
     pub db_pool: Arc<DbConnectionPoolV2>,
     pub valkey_client: Arc<cache::Client>,
     pub infra_caches: Arc<DashMap<i64, InfraCache>>,
-    pub map_layers: &'static MapLayers,
     pub speed_limit_tag_ids: Arc<SpeedLimitTagIds>,
     pub core_client: Arc<CoreClient>,
     pub health_check_timeout: Duration,
@@ -228,7 +225,6 @@ impl AppState {
             db_pool,
             infra_caches,
             core_client,
-            map_layers: MAP_LAYERS,
             speed_limit_tag_ids,
             health_check_timeout: config.health_check_timeout,
             trains_traffic: config.trains_traffic.clone(),
