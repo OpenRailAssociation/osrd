@@ -14,7 +14,6 @@ use itertools::Itertools;
 use ordered_float::OrderedFloat;
 use schemas::infra::TrackOffset;
 use schemas::rolling_stock::LoadingGaugeType;
-use tokio::sync::Mutex;
 
 use crate::CoreEnv;
 use crate::Correlated;
@@ -62,14 +61,14 @@ where
     /// Note that the receivers implement [trait futures::stream::Stream].
     pub fn run(
         self,
-        vkconn: Arc<Mutex<cache::Connection>>,
+        vk_client: Arc<cache::Client>,
         ready_trains_tx: Option<futures::channel::mpsc::UnboundedSender<TrainSet<Train>>>,
     ) -> PathfindingRun<Train> {
         use stream::StreamExt as _;
         let runner = Arc::new(Runner::new(self));
         let run = PathfindingRun::new(&runner);
         let paths = run.paths.clone();
-        tokio::spawn(runner.clone().stream(vkconn).fold(
+        tokio::spawn(runner.clone().stream(vk_client).fold(
             (paths, runner, ready_trains_tx),
             async |(paths, runner, ready_trains_tx),
                    Correlated {
@@ -97,7 +96,7 @@ where
     /// thus transferring ownership and allow easy path mutations.
     pub fn into_stream(
         self,
-        vkconn: Arc<Mutex<cache::Connection>>,
+        vk_client: Arc<cache::Client>,
     ) -> impl stream::Stream<
         Item = Correlated<
             TrainSet<Train>,
@@ -106,7 +105,7 @@ where
     > {
         use stream::StreamExt as _;
         let runner = Arc::new(Runner::new(self));
-        runner.clone().stream(vkconn).map(
+        runner.clone().stream(vk_client).map(
             move |Correlated {
                       correlation_key: input,
                       data: path,
@@ -296,7 +295,7 @@ where
 
     pub(in crate::envs) fn stream(
         self: Arc<Self>,
-        vkconn: Arc<Mutex<cache::Connection>>,
+        vk_client: Arc<cache::Client>,
     ) -> impl stream::Stream<
         Item = Correlated<
             PathfindingKey,
@@ -313,7 +312,7 @@ where
             })
             .collect_vec();
 
-        stream::iter(requests).run(vkconn, self.core_env.client.clone())
+        stream::iter(requests).run(vk_client, self.core_env.client.clone())
     }
 }
 
@@ -513,7 +512,7 @@ mod tests {
         let mut pfenv = PathfindingEnv::<usize>::new(CoreEnv::new_mock(mock));
         pfenv.extend([(1, train(1)), (2, train(2))]);
 
-        let vk = cache::Client::new_mock(
+        let vk = Arc::new(cache::Client::new_mock(
             vec![
                 mock_mget(vec![
                     (pfenv.key(1), Some(compress_json(&path(1)))),
@@ -527,13 +526,10 @@ mod tests {
                 ),
             ],
             "",
-        );
+        ));
 
         let (tx, rx) = futures::channel::mpsc::unbounded();
-        let pfrun = pfenv.run(
-            Arc::new(Mutex::new(vk.get_connection().await.unwrap())),
-            Some(tx),
-        );
+        let pfrun = pfenv.run(vk, Some(tx));
 
         // timeout to avoid blocking the CI if something goes wrong
         let trains = tokio::time::timeout(Duration::from_secs(1), async move {
@@ -580,14 +576,11 @@ mod tests {
         let mut pfenv = PathfindingEnv::<usize>::new(CoreEnv::new_mock(mock));
         pfenv.extend([(1, train(TRAIN)), (2, train(TRAIN))]);
 
-        let vk = cache::Client::new(cache::Config::NoCache, "");
+        let vk = Arc::new(cache::Client::new(cache::Config::NoCache, ""));
 
         use futures::StreamExt as _;
         let results = tokio::time::timeout(Duration::from_secs(1), async move {
-            pfenv
-                .into_stream(Arc::new(Mutex::new(vk.get_connection().await.unwrap())))
-                .collect::<Vec<_>>()
-                .await
+            pfenv.into_stream(vk).collect::<Vec<_>>().await
         })
         .await
         .unwrap();

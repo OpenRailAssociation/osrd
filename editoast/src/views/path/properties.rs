@@ -21,7 +21,6 @@ use geos::geojson::Geometry;
 use serde::Deserialize;
 use serde::Serialize;
 use std::hash::Hash;
-use std::sync::Arc;
 use utoipa::ToSchema;
 
 use crate::AppState;
@@ -107,13 +106,12 @@ pub(in crate::views) async fn post(
     .await?;
 
     use core_task::Task as _;
-    let vkconn = valkey_client.get_connection().await?;
     let path_properties = PathPropertiesRequest {
         track_section_ranges: &path_properties_input.track_section_ranges,
         infra: infra_id,
         expected_version: infra_version,
     }
-    .run(Arc::new(tokio::sync::Mutex::new(vkconn)), core_client)
+    .run(valkey_client, core_client)
     .await?;
 
     Ok(Json(PathProperties::from(path_properties)))
