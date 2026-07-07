@@ -27,7 +27,6 @@ use schemas::train_schedule::PathItemLocation;
 use schemas::train_schedule::TrainScheduleLike;
 use serde::Deserialize;
 use serde::Serialize;
-use tokio::sync::Mutex;
 use tracing::debug;
 use tracing::info;
 use utoipa::ToSchema;
@@ -463,9 +462,8 @@ pub(in crate::views) async fn single_pathfinding_request(
     });
     pathfinding_env.extend([((), pathfinding_train)]);
 
-    let valkey_conn = Arc::new(Mutex::new(valkey_client.get_connection().await?));
     let result = match pathfinding_env
-        .into_stream(valkey_conn)
+        .into_stream(valkey_client)
         .collect::<Vec<_>>()
         .await
         .as_slice()

@@ -10,7 +10,6 @@ use std::sync::Arc;
 
 use dashmap::DashMap;
 use futures::stream;
-use tokio::sync::Mutex;
 
 use crate::CoreEnv;
 use crate::Correlated;
@@ -95,13 +94,13 @@ where
     /// TODO: `SimulationEnv::run` to be able to retrieve paths as well.
     pub fn into_stream(
         self,
-        vkconn: Arc<Mutex<cache::Connection>>,
+        vk_client: Arc<cache::Client>,
     ) -> impl stream::Stream<
         Item = Correlated<TrainSet<Train>, Result<SimulationOutput, core_client::Error>>,
     > {
         use stream::StreamExt as _;
         let runner = Arc::new(Runner::new(self));
-        runner.clone().stream(vkconn).map(
+        runner.clone().stream(vk_client).map(
             move |Correlated {
                       correlation_key: input,
                       data: sim_output,
@@ -192,7 +191,7 @@ where
 
     pub(in crate::envs) fn stream(
         self: Arc<Self>,
-        vkconn: Arc<Mutex<cache::Connection>>,
+        vk_client: Arc<cache::Client>,
     ) -> impl stream::Stream<
         Item = Correlated<SimulationKey, Result<SimulationOutput, core_client::Error>>,
     > {
@@ -204,7 +203,7 @@ where
             Correlated<SimulationKey, Result<SimulationOutput, core_client::Error>>,
         >();
 
-        tokio::spawn(self.pathfinding_runner.clone().stream(vkconn.clone()).fold(
+        tokio::spawn(self.pathfinding_runner.clone().stream(vk_client.clone()).fold(
             // a trick to "move" context into the closure but keeping it AsyncFnMut
             (self.clone(), simulate_tx, return_tx.clone()),
             async |(runner, simulate_tx, return_tx), result| {
@@ -290,7 +289,7 @@ where
         use crate::TaskStreamExt as _;
         tokio::spawn(
             simulate_rx
-                .run(vkconn, self.core_env.client.clone())
+                .run(vk_client, self.core_env.client.clone())
                 .map(move |result|
                     match result {
                         Correlated {
@@ -526,7 +525,7 @@ mod tests {
         let mut simenv = SimulationEnv::<usize>::new(CoreEnv::new_mock(mock));
         simenv.extend([(1, train(1)), (2, train(2))]);
 
-        let vk = cache::Client::new_mock(
+        let vk = Arc::new(cache::Client::new_mock(
             vec![
                 mock_mget(vec![
                     (
@@ -553,11 +552,11 @@ mod tests {
                 ),
             ],
             "",
-        );
+        ));
 
         use futures::StreamExt as _;
         let simulations = simenv
-            .into_stream(Arc::new(Mutex::new(vk.get_connection().await.unwrap())))
+            .into_stream(vk)
             .flat_map(
                 |Correlated {
                      correlation_key,

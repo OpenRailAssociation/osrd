@@ -43,7 +43,6 @@ use schemas::train_schedule::TrainScheduleLike as _;
 use serde::Deserialize;
 use serde::Serialize;
 use thiserror::Error;
-use tokio::sync::Mutex;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
 
@@ -448,7 +447,7 @@ pub(in crate::views) async fn simulation_summary(
     // Populate the simulation environment and simulate
     simulation_env.extend(simulation_trains);
     let simulations = simulation_env
-        .into_stream(Arc::new(Mutex::new(valkey_client.get_connection().await?)))
+        .into_stream(valkey_client)
         .collect::<Vec<_>>()
         .await;
 

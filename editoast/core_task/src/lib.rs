@@ -24,7 +24,6 @@ use itertools::Itertools as _;
 use itertools::izip;
 use serde::de::DeserializeOwned;
 use serde::ser::Serialize;
-use tokio::sync::Mutex;
 use tracing::Instrument;
 
 /// Interface required by [SimulationEnv] and friends for [Correlated] keys
@@ -79,14 +78,18 @@ pub trait Task: Sized + Send {
     #[expect(async_fn_in_trait)] // not for public (ie. outside editoast) use, no auto traits bounds to specify on the resulting future
     async fn run(
         self,
-        vkconn: Arc<Mutex<cache::Connection>>,
+        vk_client: Arc<cache::Client>,
         ctx: Self::Context,
     ) -> Result<Self::Output, Self::Error> {
-        let (key, cache_entry) = {
-            let mut vkconn = vkconn.lock().await;
-            let key = self.key(vkconn.app_version());
-            let entry = vkconn.json_get::<Self::Output, _>(&key).await;
-            (key, entry)
+        let key = vk_client.app_version().to_string();
+        let cache_entry = {
+            match vk_client.get_connection().await {
+                Ok(mut vkconn) => vkconn
+                    .json_get::<Self::Output, _>(&key)
+                    .await
+                    .map_err(|e| e.into()),
+                Err(e) => Err(e),
+            }
         };
         match cache_entry.unwrap_or_else(|e| {
             tracing::error!(?e, key, "cache read error — computing task output");
@@ -111,12 +114,8 @@ pub trait Task: Sized + Send {
                         tokio::spawn(
                             async move {
                                 use deadpool_redis::redis::AsyncCommands as _;
-                                if let Err(e) = vkconn
-                                    .lock()
-                                    .await
-                                    .set::<_, _, ()>(key.clone(), serialized)
-                                    .await
-                                {
+                                let mut vkconn = vk_client.get_connection().await.unwrap();
+                                if let Err(e) = vkconn.set::<_, _, ()>(&key, serialized).await {
                                     tracing::error!(?e, key, "cache write error");
                                 }
                             }
@@ -170,7 +169,7 @@ where
     /// The order of the results is not the same as the order of inputs.
     fn run(
         self,
-        vkconn: Arc<Mutex<cache::Connection>>,
+        vk_client: Arc<cache::Client>,
         ctx: T::Context,
     ) -> impl stream::Stream<
         Item = Correlated<CorrelationKey, Result<<T as Task>::Output, <T as Task>::Error>>,
@@ -187,7 +186,7 @@ where
     #[tracing::instrument(skip_all)]
     fn run(
         self,
-        vkconn: Arc<Mutex<cache::Connection>>,
+        vk_client: Arc<cache::Client>,
         ctx: <T as Task>::Context,
     ) -> impl stream::Stream<
         Item = Correlated<CorrelationKey, Result<<T as Task>::Output, <T as Task>::Error>>,
@@ -216,12 +215,13 @@ where
         let (cache_write_tx, mut cache_write_rx) =
             tokio::sync::mpsc::unbounded_channel::<(String, serde_json::Value)>();
         {
-            let vkconn = vkconn.clone();
+            let vk_client = vk_client.clone();
             // 'write_cache' task, writes input key-value pairs to cache, logging errors
             tokio::spawn(
                 async move {
                     while let Some((key, value)) = cache_write_rx.recv().await {
-                        if let Err(e) = vkconn.lock().await.json_set(key.clone(), &value).await {
+                        let mut vkconn = vk_client.get_connection().await.unwrap();
+                        if let Err(e) = vkconn.json_set(key.clone(), &value).await {
                             tracing::error!(?e, key, "task stream: cache write failure")
                         }
                     }
@@ -242,11 +242,9 @@ where
             // and sends a bunch of data to the 'aggregation' task
             tokio::spawn(
                 self.chunks(T::CACHE_READS_BATCH_SIZE)
-                    .zip(stream::repeat(vkconn.clone()))
+                    .zip(stream::repeat(vk_client.clone()))
                     .zip(stream::repeat(cache_read_tx))
-                    .for_each_concurrent(None, async move |((inputs, vkconn), cache_read_tx)| {
-                        let mut vk = vkconn.lock().await;
-
+                    .for_each_concurrent(None, async move |((inputs, vk_client), cache_read_tx)| {
                         // We sort the keys so that unit tests can predictably mock redis requests.
                         // That's because redis-test doesn't find a matching request in the list, but
                         // just pops the first one and asserts.
@@ -254,7 +252,7 @@ where
                         let inputs = inputs
                             .into_iter()
                             .map(|input| {
-                                let key = input.data.key(vk.app_version());
+                                let key = input.data.key(vk_client.app_version());
                                 (input, key)
                             })
                             .sorted_by_key(|(_, key)| key.clone())
@@ -267,14 +265,16 @@ where
                             .unzip::<_, _, Vec<_>, Vec<_>>();
                         let cache_keys = inputs
                             .iter()
-                            .map(|input| input.key(vk.app_version()))
+                            .map(|input| input.key(vk_client.app_version()))
                             .collect_vec();
 
                         // we have to clone because of json_get_bulk's API x Rust 2024 new rules
                         let keys = cache_keys.clone();
 
                         // Fetch from valkey or compute and write to valkey
-                        match vk.json_get_bulk::<T::Output, _>(keys.as_slice()).await {
+
+                        let mut vkconn = vk_client.get_connection().await.unwrap();
+                        match vkconn.json_get_bulk::<T::Output, _>(keys.as_slice()).await {
                             Ok(cached_values) => {
                                 for (value, correlation, key, input) in
                                     izip!(cached_values, correlation_keys, cache_keys, inputs)
