@@ -254,7 +254,7 @@ impl TestAppBuilder {
             valkey_client: valkey,
             regulator,
             infra_caches,
-            map_layers: &MAP_LAYERS,
+            map_layers: MAP_LAYERS,
             speed_limit_tag_ids,
             health_check_timeout: config.health_check_timeout,
             trains_traffic: config.trains_traffic.clone(),

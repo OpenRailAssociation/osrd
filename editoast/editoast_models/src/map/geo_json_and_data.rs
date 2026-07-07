@@ -228,7 +228,7 @@ mod tests {
 
     #[test]
     fn test_query_creation() {
-        let map_layers = &*MAP_LAYERS;
+        let map_layers = &MAP_LAYERS;
         let expected_queries = [
         "
         WITH bbox AS (
