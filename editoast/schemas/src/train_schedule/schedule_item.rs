@@ -37,6 +37,8 @@ pub struct ScheduleItem {
     #[serde(default)]
     #[serde_as(as = "DefaultOnNull")]
     pub reception_signal: ReceptionSignal,
+    pub reference_base_arrival: Option<PositiveDuration>,
+    pub reference_position: Option<u64>,
 }
 
 #[cfg(feature = "testing")]
@@ -47,6 +49,8 @@ impl ScheduleItem {
             arrival: None,
             stop_for: Some(PositiveDuration::new(duration)),
             reception_signal: ReceptionSignal::Open,
+            reference_base_arrival: None,
+            reference_position: None,
         }
     }
 }
@@ -93,6 +97,8 @@ mod tests {
             arrival: None,
             stop_for: None,
             reception_signal: ReceptionSignal::Stop,
+            reference_base_arrival: None,
+            reference_position: None,
         };
         let invalid_str = to_string(&schedule_item).unwrap();
         assert!(from_str::<ScheduleItem>(&invalid_str).is_err());

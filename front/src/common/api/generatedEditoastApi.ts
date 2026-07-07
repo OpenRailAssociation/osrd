@@ -4367,6 +4367,8 @@ export type ScheduleItem = {
   /** Position on the path of the schedule item. */
   at: string;
   reception_signal?: ReceptionSignal;
+  reference_base_arrival?: null | PositiveDuration;
+  reference_position?: number | null;
   stop_for?: null | PositiveDuration;
 };
 export type SearchResultItemTrainSchedule = {

@@ -77,7 +77,8 @@ export type PostSendLastMinuteRequestApiArg = {
     simulation_report_sheet: Blob;
   };
 };
-export type Interval = string;
+export type ComponentsSchemasTransformTimetableResponsePropertiesPacedTrainsItemsAllOf0PropertiesScheduleItemsPropertiesReferenceBaseArrivalOneOf1 =
+  string;
 export type ConstraintDistribution = 'STANDARD' | 'MARECO';
 export type Options = {
   stops_at_end_of_block?: boolean;
@@ -131,13 +132,15 @@ export type Items = {
       });
 };
 export type Items2 = {
-  arrival?: null | Interval;
+  arrival?: null | ComponentsSchemasTransformTimetableResponsePropertiesPacedTrainsItemsAllOf0PropertiesScheduleItemsPropertiesReferenceBaseArrivalOneOf1;
   /** Position on the path of the schedule item. */
   at: string;
   /** State of the signal where the train is received for its stop.
     For (important) details, see <https://osrd.fr/en/docs/reference/design-docs/timetable/#modifiable-fields>. */
   reception_signal?: 'OPEN' | 'STOP' | 'SHORT_SLIP_STOP';
-  stop_for?: null | Interval;
+  reference_base_arrival?: null | string;
+  reference_position?: number | null;
+  stop_for?: null | ComponentsSchemasTransformTimetableResponsePropertiesPacedTrainsItemsAllOf0PropertiesScheduleItemsPropertiesReferenceBaseArrivalOneOf1;
 };
 export type Comfort = 'STANDARD' | 'AIR_CONDITIONING' | 'HEATING';
 export type ComponentsSchemasTransformTimetableResponsePropertiesPacedTrainsItemsAllOf0PropertiesCategoryOneOf1 =
@@ -242,13 +245,15 @@ export type TransformTimetableResponse = {
     }[];
     rolling_stock_name: string;
     schedule?: {
-      arrival?: null | Interval;
+      arrival?: null | ComponentsSchemasTransformTimetableResponsePropertiesPacedTrainsItemsAllOf0PropertiesScheduleItemsPropertiesReferenceBaseArrivalOneOf1;
       /** Position on the path of the schedule item. */
       at: string;
       /** State of the signal where the train is received for its stop.
             For (important) details, see <https://osrd.fr/en/docs/reference/design-docs/timetable/#modifiable-fields>. */
       reception_signal?: 'OPEN' | 'STOP' | 'SHORT_SLIP_STOP';
-      stop_for?: null | Interval;
+      reference_base_arrival?: null | string;
+      reference_position?: number | null;
+      stop_for?: null | ComponentsSchemasTransformTimetableResponsePropertiesPacedTrainsItemsAllOf0PropertiesScheduleItemsPropertiesReferenceBaseArrivalOneOf1;
     }[];
     speed_limit_tag?: null | string;
     /** For calendar timetables: elapsed ms since 1970-01-01T00:00:00Z.
@@ -308,9 +313,9 @@ export type TransformTimetableResponse = {
         key: string;
       })[];
       /** Time between two occurrences, an ISO 8601 format is expected */
-      interval: string;
+      interval: ComponentsSchemasTransformTimetableResponsePropertiesPacedTrainsItemsAllOf0PropertiesScheduleItemsPropertiesReferenceBaseArrivalOneOf1;
       /** Duration of the paced train, an ISO 8601 format is expected */
-      time_window: Interval;
+      time_window: ComponentsSchemasTransformTimetableResponsePropertiesPacedTrainsItemsAllOf0PropertiesScheduleItemsPropertiesReferenceBaseArrivalOneOf1;
     };
   })[];
 };
