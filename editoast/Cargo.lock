@@ -1462,6 +1462,7 @@ dependencies = [
  "ordered-float",
  "pathfinding",
  "petgraph",
+ "phf 0.14.0",
  "postgis_diesel",
  "pretty_assertions",
  "profile_connection_scan",

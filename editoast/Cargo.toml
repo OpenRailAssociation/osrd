@@ -110,7 +110,7 @@ opentelemetry_sdk = { version = "0.32.0", default-features = false, features = [
   "trace",
 ] }
 ordered-float = { version = "5.3.0", features = ["serde"] }
-phf = { version = "0.14.0", features = ["macros"] }
+phf = { version = "0.14.0", features = ["macros", "serde"] }
 postgis_diesel = { version = "3.1.0", features = ["serde"] }
 postgres-openssl = "0.5.3"
 pretty_assertions = "1.4.1"
@@ -220,6 +220,7 @@ opentelemetry_sdk.workspace = true
 ordered-float.workspace = true
 pathfinding = "4.14.0"
 petgraph = "0.8.2"
+phf.workspace = true
 postgis_diesel.workspace = true
 profile_connection_scan = { path = "./profile_connection_scan" }
 rand.workspace = true

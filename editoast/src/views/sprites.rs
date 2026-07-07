@@ -32,9 +32,9 @@ enum SpriteErrors {
         (status = 200, description = "List of supported signaling systems", body = Vec<String>, example = json!(["BAL", "TVM300"])),
     ),
 )]
-pub(in crate::views) async fn signaling_systems() -> Result<Json<Vec<String>>> {
+pub(in crate::views) async fn signaling_systems() -> Result<Json<Vec<&'static str>>> {
     let sprite_configs = SpriteConfig::load();
-    let signaling_systems = sprite_configs.keys().cloned().collect();
+    let signaling_systems = sprite_configs.keys().copied().collect();
     Ok(Json(signaling_systems))
 }
 
