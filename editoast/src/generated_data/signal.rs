@@ -25,19 +25,22 @@ use crate::infra_cache::operation::CacheOperation;
 pub struct SignalLayer;
 
 /// Finds the corresponding sprite id for a given logical signal
-fn find_sprite_id(sprite_config: &SpriteConfigs, logical_signal: &LogicalSignal) -> Option<String> {
+fn find_sprite_id(
+    sprite_config: &SpriteConfigs,
+    logical_signal: &LogicalSignal,
+) -> Option<&'static str> {
     let sprite_config = sprite_config.get(&logical_signal.signaling_system)?;
-    'sprite: for conditional_sprite in &sprite_config.sprites {
-        for (cond_key, cond_value) in &conditional_sprite.conditions {
+    'sprite: for conditional_sprite in sprite_config.sprites {
+        for (&cond_key, &cond_value) in &conditional_sprite.conditions {
             match logical_signal.settings.get(cond_key) {
-                Some(value) if &value.0 == cond_value => continue,
+                Some(value) if value.0 == cond_value => continue,
                 _ => continue 'sprite,
             }
         }
         // All conditions are met
-        return Some(conditional_sprite.sprite.clone());
+        return Some(conditional_sprite.sprite);
     }
-    Some(sprite_config.default.clone())
+    Some(sprite_config.default)
 }
 
 /// Generate the signaling system and sprite fields of the layer.
@@ -57,7 +60,7 @@ async fn generate_signaling_system_and_sprite<'a, T: Iterator<Item = &'a SignalC
         };
 
         let signaling_system = &logical_signal.signaling_system;
-        let sprite_id = find_sprite_id(&sprite_configs, logical_signal);
+        let sprite_id = find_sprite_id(sprite_configs, logical_signal);
 
         group_by_sprite
             .entry((signaling_system, sprite_id))
