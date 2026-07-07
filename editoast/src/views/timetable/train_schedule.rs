@@ -3327,6 +3327,7 @@ mod tests {
                         Duration::new(120, 0).expect("Failed to parse duration"),
                     )),
                     reception_signal: ReceptionSignal::Open,
+                    ..Default::default()
                 },
                 ScheduleItem::new_with_stop(
                     "Mid_East_station",
@@ -3442,6 +3443,7 @@ mod tests {
                 arrival: Some(PositiveDuration::try_from(Duration::seconds(100)).unwrap()),
                 stop_for: Some(PositiveDuration::try_from(Duration::seconds(60)).unwrap()),
                 reception_signal: ReceptionSignal::Open,
+                ..Default::default()
             }],
             ..Default::default()
         };
@@ -3483,6 +3485,7 @@ mod tests {
                 arrival: None,
                 stop_for: None,
                 reception_signal: ReceptionSignal::Open,
+                ..Default::default()
             }],
             ..Default::default()
         };
@@ -3523,6 +3526,7 @@ mod tests {
                 arrival: Some(PositiveDuration::try_from(Duration::seconds(100)).unwrap()),
                 stop_for: Some(PositiveDuration::try_from(Duration::seconds(60)).unwrap()),
                 reception_signal: ReceptionSignal::Open,
+                ..Default::default()
             }],
             ..Default::default()
         };

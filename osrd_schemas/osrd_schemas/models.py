@@ -3362,6 +3362,8 @@ class ScheduleItem(BaseModel):
     Position on the path of the schedule item.
     """
     reception_signal: ReceptionSignal | None = None
+    reference_base_arrival: timedelta | None = None
+    reference_position: Annotated[int | None, Field(ge=0)] = None
     stop_for: timedelta | None = None
 
 

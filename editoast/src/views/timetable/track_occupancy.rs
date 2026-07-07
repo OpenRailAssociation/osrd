@@ -402,6 +402,7 @@ pub mod tests {
                         PositiveDuration::try_from(Duration::milliseconds(300000)).unwrap(),
                     ),
                     reception_signal: ReceptionSignal::Open,
+                    ..Default::default()
                 },
                 ScheduleItem {
                     at: "path_item_3".into(),
@@ -412,6 +413,7 @@ pub mod tests {
                         PositiveDuration::try_from(Duration::milliseconds(200000)).unwrap(),
                     ),
                     reception_signal: ReceptionSignal::Open,
+                    ..Default::default()
                 },
             ],
             ..Default::default()
@@ -537,6 +539,7 @@ pub mod tests {
                         .expect("Failed to parse duration"),
                 ),
                 reception_signal: ReceptionSignal::Open,
+                ..Default::default()
             }],
             ..Default::default()
         };

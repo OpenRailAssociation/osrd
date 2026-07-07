@@ -13951,6 +13951,16 @@ components:
           description: Position on the path of the schedule item.
         reception_signal:
           $ref: '#/components/schemas/ReceptionSignal'
+        reference_base_arrival:
+          oneOf:
+          - type: 'null'
+          - $ref: '#/components/schemas/PositiveDuration'
+        reference_position:
+          type:
+          - integer
+          - 'null'
+          format: int64
+          minimum: 0
         stop_for:
           oneOf:
           - type: 'null'

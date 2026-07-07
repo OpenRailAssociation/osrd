@@ -476,6 +476,7 @@ impl VirtualTrainRun {
                     arrival: None,
                     stop_for: Some(PositiveDuration::try_from(Duration::zero()).unwrap()),
                     reception_signal: ReceptionSignal::Open,
+                    ..Default::default()
                 }],
                 margins: build_single_margin(stdcm_request.margin),
                 initial_speed: 0.0,

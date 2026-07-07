@@ -287,24 +287,28 @@ impl TrainOccurrence {
                     arrival: None,
                     stop_for: Some(chrono::Duration::minutes(5).try_into().unwrap()),
                     reception_signal: ReceptionSignal::Open,
+                    ..Default::default()
                 },
                 ScheduleItem {
                     at: NonBlankString::from("b"),
                     arrival: Some(chrono::Duration::minutes(10).try_into().unwrap()),
                     stop_for: Some(chrono::Duration::minutes(5).try_into().unwrap()),
                     reception_signal: ReceptionSignal::Open,
+                    ..Default::default()
                 },
                 ScheduleItem {
                     at: NonBlankString::from("c"),
                     arrival: None,
                     stop_for: Some(chrono::Duration::minutes(5).try_into().unwrap()),
                     reception_signal: ReceptionSignal::Open,
+                    ..Default::default()
                 },
                 ScheduleItem {
                     at: NonBlankString::from("d"),
                     arrival: Some(chrono::Duration::minutes(50).try_into().unwrap()),
                     stop_for: None,
                     reception_signal: ReceptionSignal::Open,
+                    ..Default::default()
                 },
             ],
             margins: Margins {
@@ -434,12 +438,14 @@ mod tests {
                     arrival: None,
                     stop_for: None,
                     reception_signal: ReceptionSignal::Open,
+                    ..Default::default()
                 },
                 ScheduleItem {
                     at: "a".into(),
                     arrival: None,
                     stop_for: None,
                     reception_signal: ReceptionSignal::Open,
+                    ..Default::default()
                 },
             ],
             ..Default::default()
@@ -469,6 +475,7 @@ mod tests {
                 arrival: Some(Duration::minutes(5).try_into().unwrap()),
                 stop_for: None,
                 reception_signal: ReceptionSignal::Open,
+                ..Default::default()
             }],
             ..Default::default()
         };

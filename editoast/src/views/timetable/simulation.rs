@@ -719,6 +719,7 @@ pub fn build_simulation_train(
                 arrival,
                 stop_for,
                 reception_signal,
+                ..
             }) => (
                 at,
                 core_task::ScheduleItem {
