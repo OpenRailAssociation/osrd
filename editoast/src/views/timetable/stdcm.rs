@@ -14,8 +14,9 @@ use chrono::DateTime;
 use chrono::Duration;
 use chrono::Utc;
 use common::units::millisecond;
-use core_client::AsCoreProgression;
+use core_client::AsCoreStreaming;
 use core_client::CoreClient;
+use core_client::Progress;
 use core_client::pathfinding::InvalidPathItem;
 use core_client::pathfinding::PathfindingResultSuccess;
 use core_client::stdcm::ConsistConfiguration;
@@ -43,12 +44,9 @@ use serde::Deserialize;
 use serde::Serialize;
 use std::cmp::max;
 use std::collections::HashSet;
-use std::pin::pin;
 use std::sync::Arc;
 use thiserror::Error;
-use tokio::spawn;
 use tokio::sync::mpsc;
-use tracing::Instrument as _;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
 
@@ -169,7 +167,7 @@ pub(in crate::views) struct StdcmQueryParams {
     fields(
         timetable_id = id,
         infra_id = query.infra,
-        path_found,
+        path_found = tracing::field::Empty,
     )
 )]
 #[editoast_derive::route(authz::Role::Stdcm)]
@@ -360,91 +358,61 @@ pub(in crate::views) async fn stdcm(
             .collect(),
     };
 
-    let (tx, rx) = mpsc::unbounded_channel();
-
-    let stream_result_lambda = async move {
-        let (tx_updates, rx_updates) = mpsc::unbounded_channel();
-
-        let stdcm_response: tokio::task::JoinHandle<
-            Result<core_client::stdcm::Done, core_client::Error>,
-        > = spawn(async move {
-            stdcm_request
-                .fetch_updates(core_client.as_ref(), tx_updates)
-                .await
-        });
-
-        // 6. Handle STDCM Core Response
-        let result_stream =
-            tokio_stream::wrappers::UnboundedReceiverStream::new(rx_updates).map(|response| {
-                let response = response.map_err(InternalError::from);
-                match response {
-                    Ok(core_client::stdcm::InProgress {
-                        event:
-                            core_client::stdcm::ProgressionEvent {
-                                point,
-                                best_travel_time,
-                            },
-                    }) => StdcmProgression::Ongoing(StdcmProgressionEvent {
-                        point: Geometry::new(Value::Point(vec![point.lon, point.lat])),
-                        best_travel_time,
-                    }),
-                    Err(e) => {
-                        StdcmProgression::Completed(StdcmResponse::InternalError { error: e })
-                    }
-                }
-            });
-
-        let mut result_stream = pin!(result_stream);
-        while let Some(item) = result_stream.next().await {
-            if tx.send(item).is_err() {
-                break;
-            }
-        }
-
-        let stdcm_response = stdcm_response.await.map_err(InternalError::from);
-        let final_response = match stdcm_response {
-            Ok(result) => {
-                let result = result.map_err(InternalError::from);
-                let span =
-                    tracing::info_span!("response handling", "path_found" = tracing::field::Empty);
-                match result {
-                    Ok(core_client::stdcm::Done { result }) => match result {
+    let (response_tx, response_rx) = mpsc::unbounded_channel();
+    stdcm_request
+        .fetch(core_client.as_ref())
+        .await?
+        .fold(response_tx, async |tx, event| {
+            let api_event = match event {
+                Ok(Progress::Event(core_client::stdcm::InProgress {
+                    event:
+                        core_client::stdcm::ProgressionEvent {
+                            point,
+                            best_travel_time,
+                        },
+                })) => StdcmProgression::Ongoing(StdcmProgressionEvent {
+                    point: Geometry::new(Value::Point(vec![point.lon, point.lat])),
+                    best_travel_time,
+                }),
+                Ok(Progress::Final(core_client::stdcm::Done {
+                    result:
                         core_client::stdcm::Response::Success {
                             simulation,
                             path,
                             departure_time,
-                        } => {
-                            span.record("path_found", true);
-                            StdcmProgression::Completed(StdcmResponse::Success {
-                                simulation: simulation.into(),
-                                pathfinding_result: path,
-                                departure_time,
-                            })
-                        }
-                        core_client::stdcm::Response::PathNotFound => {
-                            span.record("path_found", false);
-                            StdcmProgression::Completed(StdcmResponse::PathNotFound {})
-                        }
-                    },
-                    Err(e) => {
-                        StdcmProgression::Completed(StdcmResponse::InternalError { error: e })
-                    }
+                        },
+                })) => {
+                    tracing::Span::current().record("path_found", true);
+                    StdcmProgression::Completed(StdcmResponse::Success {
+                        simulation: simulation.into(),
+                        pathfinding_result: path,
+                        departure_time,
+                    })
                 }
-            }
-            Err(e) => StdcmProgression::Completed(StdcmResponse::InternalError { error: e }),
-        };
+                Ok(Progress::Final(core_client::stdcm::Done {
+                    result: core_client::stdcm::Response::PathNotFound,
+                })) => {
+                    tracing::Span::current().record("path_found", false);
+                    StdcmProgression::Completed(StdcmResponse::PathNotFound {})
+                }
+                Err(error) => StdcmProgression::Completed(StdcmResponse::InternalError {
+                    error: error.into(),
+                }),
+            };
+            tx.send(api_event).ok();
+            tx
+        })
+        .await;
 
-        let _ = tx.send(final_response);
-    };
-    spawn(stream_result_lambda.in_current_span());
-    let stream = tokio_stream::wrappers::UnboundedReceiverStream::new(rx);
     // Set `Content-Encoding` header to `identity` to not compress the payloads
     // This made the lmr live search progress display very laggy because the compression
     // layer compresses 8KB at a time which we do not wish to wait for (8KB of core intermediate
     // payloads is about 50 of them which is a lot to wait for)
     Ok((
         [(header::CONTENT_ENCODING, "identity")],
-        StreamBodyAs::json_nl(stream),
+        StreamBodyAs::json_nl(tokio_stream::wrappers::UnboundedReceiverStream::new(
+            response_rx,
+        )),
     )
         .into_response())
 }
