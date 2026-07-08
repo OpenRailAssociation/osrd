@@ -3,7 +3,7 @@ import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
-import useScenarioData from 'applications/operationalStudies/hooks/useScenarioData';
+import useScenarioDataContext from 'applications/operationalStudies/hooks/useScenarioDataContext';
 import useScenarioTrainScheduleSet from 'applications/operationalStudies/hooks/useScenarioTrainScheduleSet';
 import type { Board } from 'applications/operationalStudies/types';
 import ManageTrainScheduleModal from 'applications/operationalStudies/views/Scenario/components/ManageTrainSchedule';
@@ -68,7 +68,7 @@ const ScenarioContent = ({ activeBoards, toggleBoard }: ScenarioContentProps) =>
     updateTrainScheduleDepartureTime,
     selectedTrainScheduleIds,
     setSelectedTrainScheduleIds,
-  } = useScenarioData(scenario, infraId, timetableId);
+  } = useScenarioDataContext();
 
   const {
     showOnlySelectedTrain,

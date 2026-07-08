@@ -1,4 +1,13 @@
-import { useCallback, useEffect, useMemo, useState, useRef } from 'react';
+import {
+  createContext,
+  useContext,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  useRef,
+  type ReactNode,
+} from 'react';
 
 import { skipToken } from '@reduxjs/toolkit/query';
 import { keyBy, sortBy } from 'lodash';
@@ -10,13 +19,14 @@ import {
 import {
   osrdEditoastApi,
   type PacedTrainException,
-  type ScenarioWithDetails,
   type TrainSchedule,
   type TrainScheduleResponse,
+  type GetTimetableByIdConflictsApiResponse,
 } from 'common/api/osrdEditoastApi';
 import { useRollingStockContext } from 'common/RollingStockContext';
 import type { PanelSelectionMode } from 'modules/simulationResult/components/SpaceTimeChartWrapper/CurveSelectionSidePanel';
 import useLazyProjectTrains from 'modules/simulationResult/components/SpaceTimeChartWrapper/useLazyProjectTrains';
+import type { ProjectionData } from 'modules/simulationResult/types';
 import { formatPacedTrainWithDetails } from 'modules/trainSchedule/helpers/formatTrainScheduleWithDetails';
 import {
   extractOccurrenceDetailsFromPacedTrain,
@@ -30,6 +40,7 @@ import {
   syncOccurrenceException,
   updateExceptions,
 } from 'modules/trainSchedule/helpers/updateTrainScheduleHelpers';
+import type { PacedTrainWithDetails } from 'modules/trainSchedule/types';
 import type { TrainId } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 import {
@@ -43,6 +54,25 @@ import useAutoSelectTrainIds from './useAutoSelectTrainIds';
 import useLazySimulateTrains from './useLazySimulateTrains';
 import usePathProjection from './usePathProjection';
 import { useScenarioContext } from './useScenarioContext';
+
+type ScenarioDataContextType = {
+  trainSchedules: TrainScheduleResponse[] | undefined;
+  trainSchedulesWithDetails: PacedTrainWithDetails[];
+  projectionData: ProjectionData | undefined;
+  conflicts: GetTimetableByIdConflictsApiResponse;
+  isConflictsLoading: boolean;
+  removeTrainSchedules: (ids: number[]) => void;
+  upsertTrainSchedules: (newTrainSchedules: TrainScheduleResponse[]) => void;
+  updateTrainScheduleDepartureTime: (
+    trainId: TrainId,
+    newDeparture: Date,
+    panelSelectionMode?: PanelSelectionMode
+  ) => Promise<void>;
+  selectedTrainScheduleIds: number[];
+  setSelectedTrainScheduleIds: (ids: number[]) => void;
+};
+
+const ScenarioDataContext = createContext<ScenarioDataContextType | null>(null);
 
 type ScenarioBroadcastMessage =
   | { type: 'upsertTrainSchedules'; trainSchedules: TrainScheduleResponse[] }
@@ -71,7 +101,7 @@ function computeShiftedExceptions(
   return shiftPacedExceptions(trainSchedule.paced.exceptions, offset);
 }
 
-const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetableId: number) => {
+export const ScenarioDataContextProvider = ({ children }: { children: ReactNode }) => {
   const dispatch = useAppDispatch();
 
   const [trainSchedules, setTrainSchedules] = useState<TrainScheduleResponse[]>();
@@ -80,7 +110,7 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
 
   const [updateTrainSchedule] = osrdEditoastApi.endpoints.putTrainSchedulesById.useMutation();
 
-  const { workerStatus } = useScenarioContext();
+  const { scenario, infraId, timetableId, workerStatus } = useScenarioContext();
   const { rollingStocks, rollingStockMap: rollingStocksByName } = useRollingStockContext();
 
   const projectionPath = usePathProjection(infraId, trainSchedulesById);
@@ -426,8 +456,8 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
     };
   }, [scenario]);
 
-  const results = useMemo(
-    () => ({
+  const context = useMemo(
+    (): ScenarioDataContextType => ({
       trainSchedulesWithDetails,
       trainSchedules,
       projectionData: projectionPath
@@ -465,7 +495,15 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
     ]
   );
 
-  return results;
+  return <ScenarioDataContext.Provider value={context}>{children}</ScenarioDataContext.Provider>;
 };
 
-export default useScenarioData;
+const useScenarioDataContext = () => {
+  const context = useContext(ScenarioDataContext);
+  if (!context) {
+    throw new Error('useScenarioDataContext must be used within a ScenarioDataContextProvider');
+  }
+  return context;
+};
+
+export default useScenarioDataContext;

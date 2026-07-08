@@ -1,6 +1,7 @@
 import { usePersistScenarioHeader } from 'applications/operationalStudies/hooks/usePersistScenarioHeader';
 import useScenario from 'applications/operationalStudies/hooks/useScenario';
 import { ScenarioContextProvider } from 'applications/operationalStudies/hooks/useScenarioContext';
+import { ScenarioDataContextProvider } from 'applications/operationalStudies/hooks/useScenarioDataContext';
 import { RollingStockContextProvider } from 'common/RollingStockContext';
 import { SubCategoryContextProvider } from 'common/SubCategoryContext';
 
@@ -26,7 +27,9 @@ const Scenario = () => {
         <ScenarioHeader activeBoards={activeBoards} toggleBoard={toggleBoard} />
         <RollingStockContextProvider>
           <SubCategoryContextProvider>
-            <ScenarioContent activeBoards={activeBoards} toggleBoard={toggleBoard} />
+            <ScenarioDataContextProvider>
+              <ScenarioContent activeBoards={activeBoards} toggleBoard={toggleBoard} />
+            </ScenarioDataContextProvider>
           </SubCategoryContextProvider>
         </RollingStockContextProvider>
       </ScenarioContextProvider>
