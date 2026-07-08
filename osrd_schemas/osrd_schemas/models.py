@@ -4345,6 +4345,10 @@ class SimulatedStep(BaseModel):
     """
     The offset in ms from the beginning of the simulation at which the step is reached.
     """
+    path_item_position: Annotated[int, Field(title="Path Item Position")]
+    """
+    The offset in mm from the beginning of the simulation at which the step is reached.
+    """
     op_id: Annotated[str, Field(title="Operational Point Identifier")]
     """
     The identifier of the operational point reached at this step
@@ -4375,56 +4379,6 @@ class SubstituteTrain(BaseModel):
     """
 
 
-class SimulationReport(BaseModel):
-    """
-    Gather information from the LMR request and data input by the user.
-    """
-
-    is_international: Annotated[
-        bool, Field(title="Is the simulated train part of an international train")
-    ]
-    rolling_stock: Annotated[str, Field(title="Rolling Stock")]
-    towed_rolling_stock: Annotated[str | None, Field(title="Towed Rolling Stock")] = (
-        None
-    )
-    loading_gauge_type: RmiLoadingGaugeType
-    speed_limit_tags: Annotated[str, Field(title="Speed Limit Tags")]
-    total_mass: Annotated[int, Field(title="Total Mass")]
-    """
-    Total mass of the train in kg
-    """
-    max_speed: Annotated[float, Field(title="Max Speed")]
-    """
-    Maximum speed in m/s
-    """
-    total_length: Annotated[int, Field(title="Total Length")]
-    """
-    Total length of the train in m
-    """
-    simulated_steps: Annotated[
-        list[SimulatedStep], Field(min_length=2, title="Simulated Steps")
-    ]
-    requested_steps: Annotated[
-        list[RequestedStep], Field(min_length=2, title="Requested Steps")
-    ]
-    departure_time: Annotated[AwareDatetime, Field(title="Departure Time")]
-    user_message: Annotated[str | None, Field(title="User Message")] = None
-    similar_train: SimilarTrain | None = None
-    anterior_train_name: Annotated[str | None, Field(title="Anterior Train Name")] = (
-        None
-    )
-    posterior_train_name: Annotated[str | None, Field(title="Posterior Train Name")] = (
-        None
-    )
-    substitute_train: SubstituteTrain | None = None
-    course_type: Annotated[str, Field(title="CourseType")]
-    statistical_category: Annotated[str, Field(title="Statistical Category")]
-    hazardous_materials: Annotated[bool | None, Field(title="Hazardous Materials")] = (
-        None
-    )
-    demand_category: Annotated[str | None, Field(title="Demand Category")] = None
-
-
 class SendLastMinuteRequestResponse(BaseModel):
     """
     Response model to validate and return when a last-minute request has been successfully sent.
@@ -4448,11 +4402,6 @@ class SendLastMinuteRequestFolderUrlGetResponse(BaseModel):
     """
     The url of the folder
     """
-
-
-class SendLastMinuteRequestPostRequest(BaseModel):
-    simulation_report: SimulationReport
-    simulation_report_sheet: bytes
 
 
 class BufferStopExtension(BaseModel):
@@ -5942,6 +5891,65 @@ class WorkSchedule(BaseModel):
     track_ranges: list[TrackRange]
     work_schedule_group_id: int
     work_schedule_type: WorkScheduleType
+
+
+class SimulationReport(BaseModel):
+    """
+    Gather information from the LMR request and data input by the user.
+    """
+
+    is_international: Annotated[
+        bool, Field(title="Is the simulated train part of an international train")
+    ]
+    rolling_stock: Annotated[str, Field(title="Rolling Stock")]
+    towed_rolling_stock: Annotated[str | None, Field(title="Towed Rolling Stock")] = (
+        None
+    )
+    loading_gauge_type: RmiLoadingGaugeType
+    speed_limit_tags: Annotated[str, Field(title="Speed Limit Tags")]
+    total_mass: Annotated[int, Field(title="Total Mass")]
+    """
+    Total mass of the train in kg
+    """
+    max_speed: Annotated[float, Field(title="Max Speed")]
+    """
+    Maximum speed in m/s
+    """
+    total_length: Annotated[int, Field(title="Total Length")]
+    """
+    Total length of the train in m
+    """
+    infra_id: Annotated[int, Field(title="Infra Id")]
+    simulated_steps: Annotated[
+        list[SimulatedStep], Field(min_length=2, title="Simulated Steps")
+    ]
+    requested_steps: Annotated[
+        list[RequestedStep], Field(min_length=2, title="Requested Steps")
+    ]
+    departure_time: Annotated[AwareDatetime, Field(title="Departure Time")]
+    user_message: Annotated[str | None, Field(title="User Message")] = None
+    similar_train: SimilarTrain | None = None
+    anterior_train_name: Annotated[str | None, Field(title="Anterior Train Name")] = (
+        None
+    )
+    posterior_train_name: Annotated[str | None, Field(title="Posterior Train Name")] = (
+        None
+    )
+    substitute_train: SubstituteTrain | None = None
+    course_type: Annotated[str, Field(title="CourseType")]
+    statistical_category: Annotated[str, Field(title="Statistical Category")]
+    hazardous_materials: Annotated[bool | None, Field(title="Hazardous Materials")] = (
+        None
+    )
+    demand_category: Annotated[str | None, Field(title="Demand Category")] = None
+    track_section_ranges: Annotated[
+        list[CoreTrackRange], Field(min_length=1, title="Track Section Ranges")
+    ]
+
+
+class SendLastMinuteRequestPostRequest(BaseModel):
+    simulation_report: SimulationReport
+    simulation_report_sheet: bytes
 
 
 class BufferStop(BaseModel):

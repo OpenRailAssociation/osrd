@@ -333,6 +333,8 @@ export type RmiLoadingGaugeType = 'GA' | 'GB';
 export type SimulatedStep = {
   /** The offset in ms from the beginning of the simulation at which the step is reached. */
   path_item_time: number;
+  /** The offset in mm from the beginning of the simulation at which the step is reached. */
+  path_item_position: number;
   /** The identifier of the operational point reached at this step */
   op_id: string;
   /** The duration in ms if a stop occurs at this operational point */
@@ -390,6 +392,7 @@ export type SimulationReport = {
   max_speed: number;
   /** Total length of the train in m */
   total_length: number;
+  infra_id: number;
   simulated_steps: SimulatedStep[];
   requested_steps: RequestedStep[];
   departure_time: string;
@@ -402,4 +405,14 @@ export type SimulationReport = {
   statistical_category: string;
   hazardous_materials?: boolean;
   demand_category?: string | null;
+  track_section_ranges: {
+    /** The beginning of the range in mm. */
+    begin: number;
+    /** The direction of the range. */
+    direction: 'START_TO_STOP' | 'STOP_TO_START';
+    /** The end of the range in mm. */
+    end: number;
+    /** The track section identifier. */
+    track_section: string;
+  }[];
 };

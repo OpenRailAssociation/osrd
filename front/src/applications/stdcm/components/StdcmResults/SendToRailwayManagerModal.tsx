@@ -21,6 +21,7 @@ import {
   type SendLastMinuteRequestResponse,
   type SimulatedStep,
 } from 'common/api/osrdRailwayManagerApi';
+import { useInfraID } from 'common/osrdContext';
 import {
   createSimilarTrainPayload,
   getStopDurationTime,
@@ -94,6 +95,7 @@ function simulatedStepsFromPathProperties(
     return {
       op_id: op.id,
       path_item_time: interp(op.position),
+      path_item_position: op.position,
       stop_for: stopFor,
     };
   });
@@ -118,6 +120,7 @@ const SendToRailwayManagerModal = ({
   const dateTimeLocale = useDateTimeLocale();
   const railwayManagerUrl = useSelector(getRailwayManagerInterfaceUrl);
   const dispatch = useAppDispatch();
+  const infraId = useInfraID();
 
   const { data: userGroups } = osrdEditoastApi.endpoints.getAuthzMeGroups.useQuery();
   const railwayCompanyName = userGroups?.[0]?.name;
@@ -323,6 +326,7 @@ const SendToRailwayManagerModal = ({
       total_mass: tToKg(consist.totalMass),
       max_speed: kmhToMs(consist.maxSpeed),
       total_length: consist.totalLength,
+      infra_id: infraId!,
       simulated_steps: simulatedStepsFromPathProperties(
         stdcmResults.pathProperties,
         stdcmResults.results.simulationPathSteps,
@@ -339,6 +343,7 @@ const SendToRailwayManagerModal = ({
       anterior_train_name: anteriorTrainName || null,
       posterior_train_name: posteriorTrainName || null,
       substitute_train,
+      track_section_ranges: stdcmData.pathfinding_result.path.track_section_ranges,
       is_international: isInternationalTrain,
     };
 
