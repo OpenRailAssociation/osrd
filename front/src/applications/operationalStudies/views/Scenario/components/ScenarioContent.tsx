@@ -1,5 +1,6 @@
 import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 
+import type { Operation, NetzgrafikDto } from '@osrd-project/netzgrafik-frontend';
 import { useTranslation } from 'react-i18next';
 
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
@@ -28,7 +29,6 @@ import MacroEditorState from './MacroEditor/MacroEditorState';
 import { handleOperation } from './MacroEditor/ngeToOsrd';
 import { loadNgeDto } from './MacroEditor/osrdToNge';
 import NGE from './NGE';
-import type { NetzgrafikDto, NGEEvent } from './NGE/types';
 import { HIDDEN_CHART_TOP_HEIGHT } from './SimulationResults/SimulationResults';
 import TimetableBoardWrapper from './Timetable/TimetableBoardWrapper';
 
@@ -158,12 +158,12 @@ const ScenarioContent = ({ activeBoards, toggleBoard }: ScenarioContentProps) =>
     }
   }, [activeBoards.has('macro'), i18n.language, refreshNge]);
 
-  const handleNGEOperation = (event: NGEEvent, netzgrafikDto: NetzgrafikDto) => {
+  const handleNGEOperation = (operation: Operation, netzgrafikDto: NetzgrafikDto) => {
     // Wait for the previous handler to complete before starting the next one
     lastNgeOperationPromise.current = lastNgeOperationPromise.current.then(async () => {
       try {
         await handleOperation({
-          event,
+          operation,
           netzgrafikDto,
           trainScheduleSetId: sandboxId,
           infraId,

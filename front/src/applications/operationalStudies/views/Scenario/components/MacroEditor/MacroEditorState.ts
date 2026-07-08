@@ -1,3 +1,4 @@
+import type { TrainrunCategory, TrainrunFrequency } from '@osrd-project/netzgrafik-frontend';
 import { sortBy } from 'lodash';
 
 import type {
@@ -5,8 +6,6 @@ import type {
   OperationalPoint,
   PathItemLocation,
 } from 'common/api/osrdEditoastApi';
-
-import type { TrainrunCategory, TrainrunFrequency } from '../NGE/types';
 
 export type NodeIndexed = Omit<MacroNodeResponse, 'id'> & {
   ngeId: number;

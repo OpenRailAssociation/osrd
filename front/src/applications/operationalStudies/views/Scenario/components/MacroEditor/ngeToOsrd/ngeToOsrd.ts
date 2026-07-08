@@ -1,11 +1,17 @@
 import type {
+  Operation,
+  NetzgrafikDto,
+  NodeDto,
+  LabelDto,
+} from '@osrd-project/netzgrafik-frontend';
+
+import type {
   TrainScheduleFromJson,
   TimetableJsonPayload,
 } from 'applications/operationalStudies/types';
 import type { MacroNodeForm, TrainScheduleResponse } from 'common/api/osrdEditoastApi';
 import type { AppDispatch } from 'store';
 
-import type { NetzgrafikDto, NGEEvent, NodeDto, LabelDto } from '../../NGE/types';
 import { DEFAULT_TRAIN_SCHEDULE_PAYLOAD, TRAINRUN_DIRECTIONS } from '../consts';
 import type MacroEditorState from '../MacroEditorState';
 import { getTrainCategoryFromTrainrunCategoryId } from '../utils';
@@ -31,7 +37,7 @@ const handleLabelOperation = async ({
   addUpsertedTrainSchedules,
   addDeletedTrainScheduleIds,
 }: {
-  type: NGEEvent['type'];
+  type: Operation['type'];
   netzgrafikDto: NetzgrafikDto;
   label: LabelDto;
   trainScheduleSetId: number;
@@ -71,7 +77,7 @@ const handleMetadataOperation = async ({
   type,
   netzgrafikDto,
 }: {
-  type: NGEEvent['type'];
+  type: Operation['type'];
   netzgrafikDto: NetzgrafikDto;
 }) => {
   switch (type) {
@@ -86,7 +92,7 @@ const handleMetadataOperation = async ({
 };
 
 export const handleOperation = async ({
-  event,
+  operation,
   netzgrafikDto,
   trainScheduleSetId,
   infraId,
@@ -95,7 +101,7 @@ export const handleOperation = async ({
   addUpsertedTrainSchedules,
   addDeletedTrainScheduleIds,
 }: {
-  event: NGEEvent;
+  operation: Operation;
   netzgrafikDto: NetzgrafikDto;
   trainScheduleSetId: number;
   infraId: number;
@@ -104,8 +110,8 @@ export const handleOperation = async ({
   addUpsertedTrainSchedules: (trainSchedules: TrainScheduleResponse[]) => void;
   addDeletedTrainScheduleIds: (trainScheduleIds: number[]) => void;
 }) => {
-  const { type } = event;
-  switch (event.objectType) {
+  const { type } = operation;
+  switch (operation.objectType) {
     case 'node':
       await handleNodeOperation({
         state,
@@ -116,14 +122,14 @@ export const handleOperation = async ({
         addUpsertedTrainSchedules,
         addDeletedTrainScheduleIds,
         type,
-        node: event.node,
+        node: operation.node,
       });
       break;
     case 'trainrun': {
       await handleTrainrunOperation({
         type,
         netzgrafikDto,
-        trainrunId: event.trainrun.id,
+        trainrunId: operation.trainrun.id,
         trainScheduleSetId,
         infraId,
         state,
@@ -137,7 +143,7 @@ export const handleOperation = async ({
       await handleLabelOperation({
         type,
         netzgrafikDto,
-        label: event.label,
+        label: operation.label,
         trainScheduleSetId,
         infraId,
         state,
@@ -150,7 +156,7 @@ export const handleOperation = async ({
       await handleNoteOperation({
         type,
         netzgrafikDto,
-        note: event.note,
+        note: operation.note,
         state,
         dispatch,
       });

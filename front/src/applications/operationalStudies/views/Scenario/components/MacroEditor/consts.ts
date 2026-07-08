@@ -1,13 +1,16 @@
+import {
+  LabelRef,
+  LinePatternRefs,
+  HaltezeitFachCategories,
+  type LabelGroupDto,
+  type TimeLockDto,
+  type TrainrunCategory,
+  type TrainrunFrequency,
+  type TrainrunTimeCategory,
+} from '@osrd-project/netzgrafik-frontend';
+
 import type { TrainMainCategory, TrainSchedule } from 'common/api/osrdEditoastApi';
 import { Duration } from 'utils/duration';
-
-import type {
-  LabelGroupDto,
-  TimeLockDto,
-  TrainrunCategory,
-  TrainrunFrequency,
-  TrainrunTimeCategory,
-} from '../NGE/types';
 
 export enum TRAINRUN_DIRECTIONS {
   FORWARD = 'forward',
@@ -31,18 +34,18 @@ export const TRAINRUN_CATEGORY_HALTEZEITEN = {
 export const TRAINRUN_LABEL_GROUP: LabelGroupDto = {
   id: 1,
   name: 'Default',
-  labelRef: 'Trainrun',
+  labelRef: LabelRef.Trainrun,
 };
 export const NODE_LABEL_GROUP: LabelGroupDto = {
   id: 2,
   name: 'Node',
-  labelRef: 'Node',
+  labelRef: LabelRef.Node,
 };
 
 export const NOTE_LABEL_GROUP: LabelGroupDto = {
   id: 3,
   name: 'Note',
-  labelRef: 'Note',
+  labelRef: LabelRef.Note,
 };
 
 /**
@@ -62,7 +65,7 @@ export const DEFAULT_TRAINRUN_FREQUENCIES: Omit<TrainrunFrequency, 'name'>[] = [
     frequency: 1440,
     offset: 0,
     shortName: '-',
-    linePatternRef: '120',
+    linePatternRef: LinePatternRefs.Freq120,
   },
   {
     id: 2,
@@ -70,7 +73,7 @@ export const DEFAULT_TRAINRUN_FREQUENCIES: Omit<TrainrunFrequency, 'name'>[] = [
     frequency: 30,
     offset: 0,
     shortName: '30',
-    linePatternRef: '30',
+    linePatternRef: LinePatternRefs.Freq30,
   },
   {
     id: 3,
@@ -78,7 +81,7 @@ export const DEFAULT_TRAINRUN_FREQUENCIES: Omit<TrainrunFrequency, 'name'>[] = [
     frequency: 60,
     offset: 0,
     shortName: '60',
-    linePatternRef: '60',
+    linePatternRef: LinePatternRefs.Freq60,
   },
   {
     id: 4,
@@ -86,7 +89,7 @@ export const DEFAULT_TRAINRUN_FREQUENCIES: Omit<TrainrunFrequency, 'name'>[] = [
     frequency: 120,
     offset: 0,
     shortName: '120',
-    linePatternRef: '120',
+    linePatternRef: LinePatternRefs.Freq120,
   },
 ];
 
@@ -117,7 +120,7 @@ export const DEFAULT_TRAINRUN_TIME_CATEGORIES: TrainrunTimeCategory[] = [
     name: 'Plain',
     dayTimeInterval: [],
     weekday: [],
-    linePatternRef: '7/24',
+    linePatternRef: LinePatternRefs.TimeCat7_24,
   },
   {
     id: 1,
@@ -126,7 +129,7 @@ export const DEFAULT_TRAINRUN_TIME_CATEGORIES: TrainrunTimeCategory[] = [
     name: 'Dash (long)',
     dayTimeInterval: [],
     weekday: [],
-    linePatternRef: 'HVZ',
+    linePatternRef: LinePatternRefs.TimeCatHVZ,
   },
   {
     id: 2,
@@ -135,7 +138,7 @@ export const DEFAULT_TRAINRUN_TIME_CATEGORIES: TrainrunTimeCategory[] = [
     name: 'Dash (short)',
     dayTimeInterval: [],
     weekday: [],
-    linePatternRef: 'ZEITWEISE',
+    linePatternRef: LinePatternRefs.TimeZeitweise,
   },
 ];
 
@@ -149,8 +152,8 @@ export const DEFAULT_TIME_LOCK: TimeLockDto = {
   time: null,
   consecutiveTime: null,
   lock: false,
-  warning: null,
-  timeFormatter: null,
+  warning: undefined,
+  timeFormatter: undefined,
 };
 
 export const DEFAULT_TRAIN_SCHEDULE_PAYLOAD: Pick<
@@ -191,7 +194,7 @@ TRAIN_MAIN_CATEGORY_TO_NGE.forEach(({ trainCategory, colorRef }, index) => {
     order: index + 1,
     name: trainCategory,
     shortName: '',
-    fachCategory: 'HaltezeitUncategorized',
+    fachCategory: HaltezeitFachCategories.Uncategorized,
     colorRef,
     minimalTurnaroundTime: 0,
     nodeHeadwayStop: 0,

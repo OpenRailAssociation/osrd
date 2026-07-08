@@ -1,3 +1,8 @@
+import type {
+  TrainrunCategory,
+  TrainrunFrequency,
+  TrainrunTimeCategory,
+} from '@osrd-project/netzgrafik-frontend';
 import type { TFunction } from 'i18next';
 import { omit } from 'lodash';
 
@@ -15,7 +20,6 @@ import { isPacedTrain } from 'modules/trainSchedule/helpers/pacedTrain';
 import type { AppDispatch } from 'store';
 import { Duration } from 'utils/duration';
 
-import type { TrainrunCategory, TrainrunFrequency, TrainrunTimeCategory } from '../NGE/types';
 import {
   CUSTOM_TRAINRUN_TIME_CATEGORY,
   DEFAULT_PACED_TRAIN_FREQUENCY_IDS,
