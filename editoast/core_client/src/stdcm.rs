@@ -15,9 +15,7 @@ use super::pathfinding::PathfindingResultSuccess;
 use super::pathfinding::TrackRange;
 use super::simulation::PhysicsConsist;
 use super::simulation::SimulationSuccess;
-use crate::AsCoreProgression;
 use crate::AsCoreStreaming;
-use crate::Json;
 use crate::WorkerKey;
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ToSchema)]
@@ -145,16 +143,14 @@ pub struct ConsistSchedule {
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
-#[serde(tag = "status", rename_all = "SCREAMING_SNAKE_CASE")]
-#[allow(clippy::large_enum_variant)]
-pub enum ProgressStatus {
-    InProgress {
-        #[serde(flatten)]
-        event: ProgressionEvent,
-    },
-    Done {
-        result: Response,
-    },
+pub struct InProgress {
+    #[serde(flatten)]
+    pub event: ProgressionEvent,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
+pub struct Done {
+    pub result: Response,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, ToSchema)]
@@ -185,28 +181,13 @@ pub enum Response {
 }
 
 impl AsCoreStreaming for Request {
-    type Response = Json<ProgressStatus>;
+    type Response = crate::Progress<InProgress, Done>;
     const URL_PATH: &'static str = "/stdcm";
 
     fn worker_key(&self) -> WorkerKey {
         WorkerKey::Timetable {
             infra_id: self.infra,
             timetable_id: self.timetable_id,
-        }
-    }
-}
-
-impl AsCoreProgression for Request {
-    type Event = ProgressionEvent;
-    type FinalResponse = Response;
-
-    /// Parse backend responses into [`Progress`] variants
-    fn parse_response(
-        response: Result<ProgressStatus, crate::Error>,
-    ) -> Result<crate::Progress<Self::Event, Self::FinalResponse>, crate::Error> {
-        match response? {
-            ProgressStatus::InProgress { event } => Ok(crate::Progress::Event(event)),
-            ProgressStatus::Done { result } => Ok(crate::Progress::Final(result)),
         }
     }
 }

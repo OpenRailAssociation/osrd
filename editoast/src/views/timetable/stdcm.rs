@@ -366,7 +366,7 @@ pub(in crate::views) async fn stdcm(
         let (tx_updates, rx_updates) = mpsc::unbounded_channel();
 
         let stdcm_response: tokio::task::JoinHandle<
-            Result<core_client::stdcm::Response, core_client::Error>,
+            Result<core_client::stdcm::Done, core_client::Error>,
         > = spawn(async move {
             stdcm_request
                 .fetch_updates(core_client.as_ref(), tx_updates)
@@ -377,11 +377,13 @@ pub(in crate::views) async fn stdcm(
         let result_stream =
             tokio_stream::wrappers::UnboundedReceiverStream::new(rx_updates).map(|response| {
                 let response = response.map_err(InternalError::from);
-
                 match response {
-                    Ok(core_client::stdcm::ProgressionEvent {
-                        point,
-                        best_travel_time,
+                    Ok(core_client::stdcm::InProgress {
+                        event:
+                            core_client::stdcm::ProgressionEvent {
+                                point,
+                                best_travel_time,
+                            },
                     }) => StdcmProgression::Ongoing(StdcmProgressionEvent {
                         point: Geometry::new(Value::Point(vec![point.lon, point.lat])),
                         best_travel_time,
@@ -406,7 +408,7 @@ pub(in crate::views) async fn stdcm(
                 let span =
                     tracing::info_span!("response handling", "path_found" = tracing::field::Empty);
                 match result {
-                    Ok(result) => match result {
+                    Ok(core_client::stdcm::Done { result }) => match result {
                         core_client::stdcm::Response::Success {
                             simulation,
                             path,
@@ -976,7 +978,7 @@ mod tests {
                     mass.get::<kilogram>() as u64,
                 )
                 .response(StatusCode::OK)
-                .json(core_client::stdcm::ProgressStatus::Done {
+                .json(core_client::stdcm::Done {
                     result: core_client::stdcm::Response::Success {
                         simulation: simulation_empty_response().success().unwrap(),
                         path: pathfinding_result_success(),
@@ -1106,7 +1108,7 @@ mod tests {
         let mut core = core_mocking_client();
         core.stub("/stdcm")
             .response(StatusCode::OK)
-            .json(core_client::stdcm::ProgressStatus::Done {
+            .json(core_client::stdcm::Done {
                 result: core_client::stdcm::Response::PathNotFound,
             })
             .finish();
@@ -1144,19 +1146,19 @@ mod tests {
         let mut core = core_mocking_client();
         core.stub("/stdcm")
             .response(StatusCode::OK)
-            .json(core_client::stdcm::ProgressStatus::InProgress {
+            .json(core_client::stdcm::InProgress {
                 event: core_client::stdcm::ProgressionEvent {
                     point: core_client::stdcm::ProgressCoordinates { lat: 0.0, lon: 0.0 },
                     best_travel_time: 1,
                 },
             })
-            .json(core_client::stdcm::ProgressStatus::InProgress {
+            .json(core_client::stdcm::InProgress {
                 event: core_client::stdcm::ProgressionEvent {
                     point: core_client::stdcm::ProgressCoordinates { lat: 1.0, lon: 1.0 },
                     best_travel_time: 5,
                 },
             })
-            .json(core_client::stdcm::ProgressStatus::Done {
+            .json(core_client::stdcm::Done {
                 result: core_client::stdcm::Response::Success {
                     simulation: simulation_empty_response().success().unwrap(),
                     path: pathfinding_result_success(),
@@ -1223,19 +1225,19 @@ mod tests {
         let mut core = core_mocking_client();
         core.stub("/stdcm")
             .response(StatusCode::OK)
-            .json(core_client::stdcm::ProgressStatus::InProgress {
+            .json(core_client::stdcm::InProgress {
                 event: core_client::stdcm::ProgressionEvent {
                     point: core_client::stdcm::ProgressCoordinates { lat: 0.0, lon: 0.0 },
                     best_travel_time: 1,
                 },
             })
-            .json(core_client::stdcm::ProgressStatus::InProgress {
+            .json(core_client::stdcm::InProgress {
                 event: core_client::stdcm::ProgressionEvent {
                     point: core_client::stdcm::ProgressCoordinates { lat: 1.0, lon: 1.0 },
                     best_travel_time: 5,
                 },
             })
-            .json(core_client::stdcm::ProgressStatus::Done {
+            .json(core_client::stdcm::Done {
                 result: core_client::stdcm::Response::PathNotFound,
             })
             .finish();
@@ -1416,7 +1418,7 @@ mod tests {
             .finish();
         core.stub("/stdcm")
             .response(StatusCode::OK)
-            .json(core_client::stdcm::ProgressStatus::Done {
+            .json(core_client::stdcm::Done {
                 result: core_client::stdcm::Response::Success {
                     simulation: simulation_empty_response().success().unwrap(),
                     path: pathfinding_result_success(),
@@ -1513,7 +1515,7 @@ mod tests {
             .finish();
         core.stub("/stdcm")
             .response(StatusCode::OK)
-            .json(core_client::stdcm::ProgressStatus::Done {
+            .json(core_client::stdcm::Done {
                 result: core_client::stdcm::Response::Success {
                     simulation: simulation_empty_response().success().unwrap(),
                     path: pathfinding_result_success(),
@@ -1637,7 +1639,7 @@ mod tests {
                 comfort_acceleration.get::<meter_per_second_squared>(),
             )
             .response(StatusCode::OK)
-            .json(core_client::stdcm::ProgressStatus::Done {
+            .json(core_client::stdcm::Done {
                 result: core_client::stdcm::Response::Success {
                     simulation: simulation_empty_response().success().unwrap(),
                     path: pathfinding_result_success(),

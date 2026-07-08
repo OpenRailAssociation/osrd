@@ -249,6 +249,8 @@ where
 }
 
 /// Results of parsing a streaming response
+#[derive(Deserialize)]
+#[serde(untagged)]
 pub enum Progress<E, F> {
     /// Intermediate event
     Event(E),
@@ -298,16 +300,25 @@ pub trait AsCoreProgression: AsCoreStreaming {
     /// Type of the final response
     type FinalResponse;
 
-    /// Converts a raw streamed response into either an event or a final response
-    ///
-    /// Implementations define how to interpret backend responses
-    fn parse_response(
-        response: Result<<Self::Response as CoreResponse>::Response, Error>,
-    ) -> Result<Progress<Self::Event, Self::FinalResponse>, Error>;
-
     /// Consumes the streaming response returned by [`Self::fetch`] and emits intermediate events through a channel
     ///
     /// The intermediate events are sent through `sender` and returns the final response
+    async fn fetch_updates(
+        &self,
+        core: &CoreClient,
+        sender: UnboundedSender<Result<Self::Event, Error>>,
+    ) -> Result<Self::FinalResponse, Error>;
+}
+
+impl<E, F, S> AsCoreProgression for S
+where
+    E: std::marker::Send + DeserializeOwned,
+    F: std::marker::Send + DeserializeOwned,
+    S: AsCoreStreaming<Response = Progress<E, F>>,
+{
+    type Event = E;
+    type FinalResponse = F;
+
     async fn fetch_updates(
         &self,
         core: &CoreClient,
@@ -317,16 +328,12 @@ pub trait AsCoreProgression: AsCoreStreaming {
         <Self::Response as CoreResponse>::Response: Send,
     {
         let mut stream = pin!(self.fetch(core).await?);
-
         while let Some(item) = stream.next().await {
-            let event = match Self::parse_response(item) {
-                Ok(result) => match result {
-                    Progress::Event(e) => Ok(e),
-                    Progress::Final(f) => {
-                        return Ok(f);
-                    }
-                },
-                Err(e) => Err(e),
+            let event = match item? {
+                Progress::Event(e) => Ok(e),
+                Progress::Final(f) => {
+                    return Ok(f);
+                }
             };
             if sender.send(event).is_err() {
                 break;
@@ -374,6 +381,17 @@ impl CoreResponse for () {
 
     fn from_bytes(_: &[u8]) -> Result<Self::Response, Error> {
         Ok(())
+    }
+}
+
+impl<E, F> CoreResponse for Progress<E, F>
+where
+    E: DeserializeOwned,
+    F: DeserializeOwned,
+{
+    type Response = Self;
+    fn from_bytes(bytes: &[u8]) -> Result<Self::Response, Error> {
+        Json::<Self>::from_bytes(bytes)
     }
 }
 
