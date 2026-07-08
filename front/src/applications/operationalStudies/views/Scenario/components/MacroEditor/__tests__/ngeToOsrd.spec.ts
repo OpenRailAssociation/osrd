@@ -1,8 +1,8 @@
 import { readFile } from 'node:fs/promises';
 
+import type { NetzgrafikDto } from '@osrd-project/netzgrafik-frontend';
 import { describe, expect, test, vi } from 'vitest';
 
-import type { NetzgrafikDto } from '../../NGE/types';
 import { convertNgeDtoToOsrd } from '../ngeToOsrd';
 
 async function readJsonFile(path: string): Promise<unknown> {

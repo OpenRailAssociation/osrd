@@ -1,4 +1,4 @@
-import type { NetzgrafikDto } from './types';
+import type { NetzgrafikDto } from '@osrd-project/netzgrafik-frontend';
 
 export const EMPTY_DTO: NetzgrafikDto = {
   nodes: [],

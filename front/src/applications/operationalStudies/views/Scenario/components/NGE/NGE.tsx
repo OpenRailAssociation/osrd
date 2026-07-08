@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 
+import type { NetzgrafikDto, Operation } from '@osrd-project/netzgrafik-frontend';
 import { useTranslation } from 'react-i18next';
 
 import { EMPTY_DTO } from './consts';
-import type { NetzgrafikDto, NGEEvent } from './types';
 
 type NGEElement = HTMLElement & {
   language: string;
@@ -12,7 +12,7 @@ type NGEElement = HTMLElement & {
 
 type NGEProps = {
   dto?: NetzgrafikDto;
-  onOperation?: (op: NGEEvent, netzgrafikDto: NetzgrafikDto) => void;
+  onOperation?: (op: Operation, netzgrafikDto: NetzgrafikDto) => void;
   onLoad?: () => void;
 };
 
@@ -81,7 +81,7 @@ const NGE = ({ dto, onOperation, onLoad }: NGEProps) => {
     if (ngeRootElement && onOperation) {
       const fnOpListener = (event: Event) => {
         const customEvent = event as CustomEvent;
-        const op = customEvent.detail as NGEEvent;
+        const op = customEvent.detail as Operation;
         if (onOperation) onOperation(op, ngeRootElement.netzgrafikDto);
       };
       ngeRootElement.addEventListener('operation', fnOpListener);

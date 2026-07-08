@@ -1,7 +1,8 @@
+import type { Operation, NetzgrafikDto, NodeDto } from '@osrd-project/netzgrafik-frontend';
+
 import type { TrainScheduleResponse } from 'common/api/osrdEditoastApi';
 import type { AppDispatch } from 'store';
 
-import type { NetzgrafikDto, NGEEvent, NodeDto } from '../../NGE/types';
 import type MacroEditorState from '../MacroEditorState';
 import type { NodeIndexed } from '../MacroEditorState';
 import {
@@ -47,7 +48,7 @@ export const handleNodeOperation = async ({
   addDeletedTrainScheduleIds,
 }: {
   state: MacroEditorState;
-  type: NGEEvent['type'];
+  type: Operation['type'];
   node: NodeDto;
   netzgrafikDto: NetzgrafikDto;
   dispatch: AppDispatch;

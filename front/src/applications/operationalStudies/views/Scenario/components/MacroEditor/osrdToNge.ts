@@ -1,3 +1,20 @@
+import {
+  Direction,
+  LabelRef,
+  LinePatternRefs,
+  HaltezeitFachCategories,
+  PortAlignment,
+  type PortDto,
+  type TimeLockDto,
+  type TrainrunDto,
+  type TrainrunSectionDto,
+  type TrainrunFrequency,
+  type NetzgrafikDto,
+  type LabelDto,
+  type TrainrunCategory,
+  type FreeFloatingTextDto,
+  type TrafficSide,
+} from '@osrd-project/netzgrafik-frontend';
 import type { TFunction } from 'i18next';
 import { uniqBy } from 'lodash';
 
@@ -20,19 +37,6 @@ import type { TrainScheduleWithPathOps } from 'reducers/osrdconf/types';
 import type { AppDispatch } from 'store';
 import { Duration, addDurationToDate } from 'utils/duration';
 
-import {
-  type PortDto,
-  type TimeLockDto,
-  type TrainrunDto,
-  type TrainrunSectionDto,
-  type TrainrunFrequency,
-  type NetzgrafikDto,
-  PortAlignment,
-  type LabelDto,
-  type TrainrunCategory,
-  type FreeFloatingTextDto,
-  type TrafficSide,
-} from '../NGE/types';
 import {
   TRAINRUN_CATEGORY_HALTEZEITEN,
   NODE_LABEL_GROUP,
@@ -73,9 +77,11 @@ const getNgeTrainrunFrequencies = (
           order: 0, // temporary order
           frequency: intervalInMinutes,
           offset: 0,
-          name: t('main.macroEditor.intervalXmin', { minutes: intervalInMinutes }),
+          name: t('main.macroEditor.intervalXmin', {
+            minutes: intervalInMinutes,
+          }),
           shortName: `${intervalInMinutes}`,
-          linePatternRef: '60',
+          linePatternRef: LinePatternRefs.Freq60,
         };
         trainrunFrequencies.push(newFrequency);
       }
@@ -259,8 +265,8 @@ export const getTrainrunCategories = (
     order: OSRD_TRAINRUN_MAIN_CATEGORY_CODE_MAPPING.size + i + 1,
     name: subCat.name,
     shortName: subCat.code,
-    fachCategory: 'HaltezeitUncategorized',
-    colorRef: 'sub_' + subCat.code,
+    fachCategory: HaltezeitFachCategories.Uncategorized,
+    colorRef: `sub_${subCat.code}`,
     minimalTurnaroundTime: 0,
     nodeHeadwayStop: 0,
     nodeHeadwayNonStop: 0,
@@ -401,7 +407,7 @@ const getNgeTrainruns = (
         labelIds: (trainSchedule.labels || []).map((l) =>
           labels.findIndex((e) => e.label === l && e.labelGroupId === TRAINRUN_LABEL_GROUP.id)
         ),
-        direction: trainSchedule.returnId ? 'round_trip' : 'one_way',
+        direction: trainSchedule.returnId ? Direction.ROUND_TRIP : Direction.ONE_WAY,
       };
     });
 
@@ -409,8 +415,8 @@ const createTimeLock = (time: Date, startTime: Date): TimeLockDto => ({
   time: time.getMinutes(),
   consecutiveTime: Duration.subtractDate(time, startTime).total('minute'),
   lock: false,
-  warning: null,
-  timeFormatter: null,
+  warning: undefined,
+  timeFormatter: undefined,
 });
 
 const createArrivalTimeLock = (scheduleItem: ScheduleItem | undefined, startTime: Date) => {
@@ -619,17 +625,17 @@ const getNgeLabels = (state: MacroEditorState): LabelDto[] =>
     ...Array.from(state.nodeLabels).map((l) => ({
       label: l,
       labelGroupId: NODE_LABEL_GROUP.id,
-      labelRef: 'Node',
+      labelRef: LabelRef.Node,
     })),
     ...Array.from(state.trainrunLabels).map((l) => ({
       label: l,
       labelGroupId: TRAINRUN_LABEL_GROUP.id,
-      labelRef: 'Trainrun',
+      labelRef: LabelRef.Trainrun,
     })),
     ...Array.from(state.noteLabels).map((l) => ({
       label: l,
       labelGroupId: NOTE_LABEL_GROUP.id,
-      labelRef: 'Note',
+      labelRef: LabelRef.Note,
     })),
   ].map((l, i) => ({ ...l, id: i }));
 

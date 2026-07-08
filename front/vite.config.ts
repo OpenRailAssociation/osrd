@@ -9,9 +9,7 @@ import checker from 'vite-plugin-checker';
 import { viteStaticCopy } from 'vite-plugin-static-copy';
 
 const require = createRequire(import.meta.url);
-const ngeBase = path.dirname(
-  require.resolve('@osrd-project/netzgrafik-frontend/dist/netzgrafik-frontend/index.html')
-);
+const ngeBase = path.dirname(require.resolve('@osrd-project/netzgrafik-frontend/index.html'));
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {

@@ -1,7 +1,12 @@
+import type {
+  FreeFloatingTextDto,
+  Operation,
+  NetzgrafikDto,
+} from '@osrd-project/netzgrafik-frontend';
+
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type { AppDispatch } from 'store';
 
-import type { FreeFloatingTextDto, NetzgrafikDto, NGEEvent } from '../../NGE/types';
 import type MacroEditorState from '../MacroEditorState';
 
 const getNoteLabelTextsFromIds = (netzgrafikDto: NetzgrafikDto, labelIds: number[]): string[] =>
@@ -77,7 +82,7 @@ export const handleNoteOperation = async ({
   state,
   dispatch,
 }: {
-  type: NGEEvent['type'];
+  type: Operation['type'];
   netzgrafikDto: NetzgrafikDto;
   note: FreeFloatingTextDto;
   state: MacroEditorState;

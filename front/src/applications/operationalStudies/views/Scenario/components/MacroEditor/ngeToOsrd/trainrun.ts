@@ -1,3 +1,11 @@
+import type {
+  NetzgrafikDto,
+  Operation,
+  TrainrunSectionDto,
+  NodeDto,
+  TimeLockDto,
+  TrainrunDto,
+} from '@osrd-project/netzgrafik-frontend';
 import { compact, uniq } from 'lodash';
 
 import {
@@ -17,14 +25,6 @@ import { Duration } from 'utils/duration';
 import { formatEditoastIdToTrainScheduleId } from 'utils/trainId';
 
 import { checkChangeGroups } from '../../ManageTrainSchedule/helpers/buildPacedTrainException';
-import type {
-  NetzgrafikDto,
-  NGEEvent,
-  TrainrunSectionDto,
-  NodeDto,
-  TimeLockDto,
-  TrainrunDto,
-} from '../../NGE/types';
 import {
   DEFAULT_TRAIN_SCHEDULE_PAYLOAD,
   DEFAULT_TIME_WINDOW,
@@ -167,8 +167,13 @@ const getTimeLockDate = (
   startTimeLock: TimeLockDto,
   startDate: Date
 ): Date | null => {
-  if (timeLock.time === null) return null;
-  const offset = timeLock.consecutiveTime! - startTimeLock.consecutiveTime!;
+  if (
+    timeLock.time === null ||
+    timeLock.consecutiveTime === null ||
+    startTimeLock.consecutiveTime === null
+  )
+    return null;
+  const offset = timeLock.consecutiveTime - startTimeLock.consecutiveTime;
   return new Date(startDate.getTime() + offset * 60 * 1000);
 };
 
@@ -665,7 +670,7 @@ export const handleTrainrunOperation = async ({
   addUpsertedTrainSchedules,
   addDeletedTrainScheduleIds,
 }: {
-  type: NGEEvent['type'];
+  type: Operation['type'];
   netzgrafikDto: NetzgrafikDto;
   trainrunId: number;
   trainScheduleSetId: number;
