@@ -4,13 +4,13 @@ import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
+import useScenarioDataContext from 'applications/operationalStudies/hooks/useScenarioDataContext';
 import BoardWrapper from 'applications/operationalStudies/views/Scenario/components/BoardWrapper';
 import type { TrainScheduleResponse } from 'common/api/osrdEditoastApi';
 import DeleteModal from 'common/BootstrapSNCF/ModalSNCF/DeleteModal';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import { useSubCategoryContext } from 'common/SubCategoryContext';
 import { deleteTrainSchedules } from 'modules/trainSchedule/helpers/updateTrainScheduleHelpers';
-import type { TrainScheduleWithDetails } from 'modules/trainSchedule/types';
 import { setFailure, setSuccess } from 'reducers/main';
 import type { TrainScheduleToEditData, TrainId } from 'reducers/osrdconf/types';
 import { updateSelectedTrain } from 'reducers/simulationResults';
@@ -28,34 +28,30 @@ const NO_TRAIN_SCHEDULES: TrainScheduleResponse[] = [];
 
 type TimetableBoardWrapperProps = {
   setDisplayTrainScheduleManagement: (mode: string) => void;
-  upsertTrainSchedules: (trainSchedules: TrainScheduleResponse[]) => void;
   setTrainScheduleToEditData: (trainScheduleToEditData?: TrainScheduleToEditData) => void;
-  removeTrainSchedules: (trainScheduleIdsToRemove: number[]) => void;
   trainScheduleToEditData?: TrainScheduleToEditData;
-  trainSchedules?: TrainScheduleResponse[];
-  trainSchedulesWithDetails: TrainScheduleWithDetails[];
   refreshNge: () => Promise<void>;
   projectingOnSimulatedPathException: boolean | undefined;
-  selectedTrainScheduleIds: number[];
-  setSelectedTrainScheduleIds: (ids: number[]) => void;
 };
 
 const TimetableBoardWrapper = ({
   setDisplayTrainScheduleManagement,
-  upsertTrainSchedules,
   setTrainScheduleToEditData,
-  removeTrainSchedules,
   trainScheduleToEditData,
-  trainSchedules = NO_TRAIN_SCHEDULES,
-  trainSchedulesWithDetails,
   refreshNge,
   projectingOnSimulatedPathException,
-  selectedTrainScheduleIds,
-  setSelectedTrainScheduleIds,
 }: TimetableBoardWrapperProps) => {
   const { openModal } = useContext(ModalContext);
 
   const { scenario, sandboxId } = useScenarioContext();
+  const {
+    upsertTrainSchedules,
+    removeTrainSchedules,
+    trainSchedules = NO_TRAIN_SCHEDULES,
+    trainSchedulesWithDetails,
+    selectedTrainScheduleIds,
+    setSelectedTrainScheduleIds,
+  } = useScenarioDataContext();
 
   const { id: selectedTrainId } = useSelector(getSelectedTrain) || {};
 
@@ -293,16 +289,10 @@ const TimetableBoardWrapper = ({
   return (
     <BoardWrapper withFooter name={computedTrainLabel()} dataTestId="timetable-board-wrapper">
       <Timetable
-        selectedTrainScheduleIds={selectedTrainScheduleIds}
-        setSelectedTrainScheduleIds={setSelectedTrainScheduleIds}
         setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
-        upsertTrainSchedules={upsertTrainSchedules}
         setTrainScheduleToEditData={setTrainScheduleToEditData}
-        removeAndUnselectTrains={removeTrainSchedules}
         handleDeleteTrainSchedules={handleDeleteTrainSchedules}
         trainScheduleToEditData={trainScheduleToEditData}
-        trainSchedules={trainSchedules}
-        trainSchedulesWithDetails={trainSchedulesWithDetails}
         refreshNge={refreshNge}
         projectingOnSimulatedPathException={projectingOnSimulatedPathException}
       />

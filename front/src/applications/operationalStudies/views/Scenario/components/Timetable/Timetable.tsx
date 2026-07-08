@@ -3,9 +3,9 @@ import { useCallback, useState } from 'react';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 
+import useScenarioDataContext from 'applications/operationalStudies/hooks/useScenarioDataContext';
 import useScenarioTrainScheduleSet from 'applications/operationalStudies/hooks/useScenarioTrainScheduleSet';
 import { osrdEditoastApi, type TrainScheduleResponse } from 'common/api/osrdEditoastApi';
-import type { TrainScheduleWithDetails } from 'modules/trainSchedule/types';
 import { setFailure } from 'reducers/main';
 import type { TrainScheduleToEditData } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
@@ -22,36 +22,33 @@ const NO_TRAIN_SCHEDULES: TrainScheduleResponse[] = [];
 
 type TimetableProps = {
   setDisplayTrainScheduleManagement: (mode: string) => void;
-  upsertTrainSchedules: (trainSchedules: TrainScheduleResponse[]) => void;
   setTrainScheduleToEditData: (trainScheduleToEditData?: TrainScheduleToEditData) => void;
-  setSelectedTrainScheduleIds: (ids: number[]) => void;
-  removeAndUnselectTrains: (trainIds: number[]) => void;
   handleDeleteTrainSchedules: () => void;
   trainScheduleToEditData?: TrainScheduleToEditData;
-  trainSchedules?: TrainScheduleResponse[];
-  trainSchedulesWithDetails: TrainScheduleWithDetails[];
   refreshNge: () => Promise<void>;
-  selectedTrainScheduleIds: number[];
   projectingOnSimulatedPathException: boolean | undefined;
 };
 
 const Timetable = ({
   setDisplayTrainScheduleManagement,
-  upsertTrainSchedules,
   setTrainScheduleToEditData,
-  setSelectedTrainScheduleIds,
-  removeAndUnselectTrains,
   handleDeleteTrainSchedules,
   trainScheduleToEditData,
-  trainSchedules = NO_TRAIN_SCHEDULES,
-  trainSchedulesWithDetails,
   refreshNge,
-  selectedTrainScheduleIds,
   projectingOnSimulatedPathException,
 }: TimetableProps) => {
   const dispatch = useAppDispatch();
 
   const { t } = useTranslation('operational-studies', { keyPrefix: 'main.timetable' });
+
+  const {
+    upsertTrainSchedules,
+    setSelectedTrainScheduleIds,
+    removeTrainSchedules: removeAndUnselectTrains,
+    trainSchedules = NO_TRAIN_SCHEDULES,
+    trainSchedulesWithDetails,
+    selectedTrainScheduleIds,
+  } = useScenarioDataContext();
 
   const [showTrainDetails, setShowTrainDetails] = useState(false);
   const [isSelectMode, setIsSelectMode] = useState(false);
