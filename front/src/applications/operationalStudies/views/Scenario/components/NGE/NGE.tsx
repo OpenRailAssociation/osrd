@@ -8,9 +8,11 @@ import { EMPTY_DTO } from './consts';
 type NGEElement = HTMLElement & {
   language: string;
   netzgrafikDto: NetzgrafikDto;
+  activeFilterSettingId: number;
 };
 
 type NGEProps = {
+  activeFilterSettingId?: number;
   dto?: NetzgrafikDto;
   onOperation?: (op: Operation, netzgrafikDto: NetzgrafikDto) => void;
   onLoad?: () => void;
@@ -35,7 +37,7 @@ const frameSrc = `
  * Abstracts away low-level NGE details. Doesn't contain any OSRD-specific
  * logic.
  */
-const NGE = ({ dto, onOperation, onLoad }: NGEProps) => {
+const NGE = ({ activeFilterSettingId, dto, onOperation, onLoad }: NGEProps) => {
   const { i18n } = useTranslation();
 
   const frameRef = useRef<HTMLIFrameElement>(null);
@@ -76,6 +78,13 @@ const NGE = ({ dto, onOperation, onLoad }: NGEProps) => {
       ngeRootElement.netzgrafikDto = dto;
     }
   }, [dto, ngeRootElement]);
+
+  useEffect(() => {
+    if (ngeRootElement && activeFilterSettingId !== undefined) {
+      // eslint-disable-next-line react-hooks-js/immutability
+      ngeRootElement.activeFilterSettingId = activeFilterSettingId;
+    }
+  }, [activeFilterSettingId, ngeRootElement]);
 
   useEffect(() => {
     if (ngeRootElement && onOperation) {
