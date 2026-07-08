@@ -11,13 +11,11 @@ use url::Url;
 use crate::connection::Connection;
 use crate::connection::ConnectionInner;
 
-#[derive(Clone)]
 pub struct Client {
     inner: ClientInner,
     app_version: ArcStr,
 }
 
-#[derive(Clone)]
 pub enum ClientInner {
     Tokio(Pool, Duration),
     /// This doesn't cache anything. It has no backend.

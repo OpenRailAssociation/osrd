@@ -208,8 +208,8 @@ impl Connection {
 
         // Store the compressed values using mset
         if !compressed_items.is_empty() {
-            span!(Level::INFO, "Sending items to Redis")
-                .in_scope(|| self.mset::<_, _, ()>(&compressed_items))
+            span!(Level::INFO, "Sending items to Valkey")
+                .in_scope(async || self.mset::<_, _, ()>(&compressed_items).await)
                 .await?;
         }
         Ok(())
@@ -225,8 +225,8 @@ impl Connection {
 
         // Fetch the values from Redis
         let values = if !keys.is_empty() {
-            span!(Level::INFO, "Fetching values from Redis")
-                .in_scope(|| self.mget::<_, Vec<Option<Vec<u8>>>>(keys))
+            span!(Level::INFO, "Fetching values from Valkey")
+                .in_scope(async || self.mget::<_, Vec<Option<Vec<u8>>>>(keys).await)
                 .await?
         } else {
             // Avoid mget to fail if keys is empty
