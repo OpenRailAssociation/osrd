@@ -158,6 +158,8 @@ data class InfraExplorerWithEnvelopeImpl(
     }
 
     override fun getSpacingRequirements(): List<SpacingRequirement> {
+        // TODO: Remove once spacing requirements are fixed for paths with backtrackings.
+        if (getBacktrackLocationsInRange().isNotEmpty()) return listOf()
         val cached = spacingRequirementsCache?.get()
         if (cached != null) return cached
         if (getFullEnvelope().endPos == 0.0) {
@@ -190,6 +192,8 @@ data class InfraExplorerWithEnvelopeImpl(
     }
 
     override fun getFullSpacingRequirements(): List<SpacingRequirement> {
+        // TODO: Remove once spacing requirements are fixed for paths with backtrackings.
+        if (getBacktrackLocationsInRange().isNotEmpty()) return listOf()
         val simulationComplete = isPathComplete && getLookahead().isEmpty()
         // We need a new automaton to get the resource uses over the whole path, and not just since
         // the last update

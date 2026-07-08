@@ -101,7 +101,11 @@ fun runScheduleMetadataExtractor(
     val spacingGenerator = SpacingResourceGenerator(fullInfra, context)
     spacingGenerator.extendPath(trainPath.getBlocks(), trainPath.getRoutes(), pathStops, true)
     // as the provided path is complete, the resource generator should never return NotEnoughPath
-    val spacingRequirements = spacingGenerator.processUpdate(envelopeAdapter)!!
+    val spacingRequirements =
+        // TODO: Remove if condition once spacing requirements are fixed for paths with
+        // backtrackings.
+        if (trainPath.getBacktrackLocations().isNotEmpty()) listOf()
+        else spacingGenerator.processUpdate(envelopeAdapter)!!
 
     val routingRequirements =
         routingRequirements(
