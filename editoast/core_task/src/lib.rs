@@ -81,15 +81,13 @@ pub trait Task: Sized + Send {
         vk_client: Arc<cache::Client>,
         ctx: Self::Context,
     ) -> Result<Self::Output, Self::Error> {
-        let key = vk_client.app_version().to_string();
-        let cache_entry = {
-            match vk_client.get_connection().await {
-                Ok(mut vkconn) => vkconn
-                    .json_get::<Self::Output, _>(&key)
-                    .await
-                    .map_err(|e| e.into()),
-                Err(e) => Err(e),
-            }
+        let key = self.key(vk_client.app_version());
+        let cache_entry = match vk_client.get_connection().await {
+            Ok(mut vkconn) => vkconn
+                .json_get::<Self::Output, _>(&key)
+                .await
+                .map_err(|e| e.into()),
+            Err(e) => Err(e),
         };
         match cache_entry.unwrap_or_else(|e| {
             tracing::error!(?e, key, "cache read error — computing task output");
