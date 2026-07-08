@@ -233,6 +233,10 @@ components:
           type: integer
           title: Path Item Time
           description: The offset in ms from the beginning of the simulation at which the step is reached.
+        path_item_position:
+          type: integer
+          title: Path Item Position
+          description: The offset in mm from the beginning of the simulation at which the step is reached.
         op_id:
           type: string
           title: Operational Point Identifier
@@ -246,6 +250,7 @@ components:
       title: Simulated Step
       required:
         - path_item_time
+        - path_item_position
         - op_id
     SimilarTrain:
       properties:
@@ -311,6 +316,9 @@ components:
           type: integer
           title: Total Length
           description: Total length of the train in m
+        infra_id:
+          type: integer
+          title: Infra Id
         simulated_steps:
           items:
             $ref: '#/components/schemas/SimulatedStep'
@@ -363,6 +371,12 @@ components:
           - type: string
           - type: 'null'
           title: Demand Category
+        track_section_ranges:
+          items:
+            $ref: '../editoast/openapi.yaml#/components/schemas/CoreTrackRange'
+          type: array
+          minItems: 1
+          title: Track Section Ranges
       type: object
       required:
       - is_international
@@ -372,11 +386,13 @@ components:
       - total_mass
       - max_speed
       - total_length
+      - infra_id
       - simulated_steps
       - requested_steps
       - departure_time
       - course_type
       - statistical_category
+      - track_section_ranges
       title: SimulationReport
       description: 'Gather information from the LMR request and data input by the
         user.'
