@@ -286,3 +286,6 @@ export const fetchStationSecondaryCode = async (
   const stationOp = searchResults.find((op) => op.is_passenger_station);
   return stationOp?.secondary_code;
 };
+
+export const localStorageFilterSettingKey = (scenarioId: number) =>
+  `scenario:${scenarioId}:filterSettingNetworkGraph`;

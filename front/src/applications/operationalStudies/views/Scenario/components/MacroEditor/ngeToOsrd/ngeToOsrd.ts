@@ -3,6 +3,7 @@ import type {
   NetzgrafikDto,
   NodeDto,
   LabelDto,
+  FilterSettingDto,
 } from '@osrd-project/netzgrafik-frontend';
 
 import type {
@@ -14,7 +15,7 @@ import type { AppDispatch } from 'store';
 
 import { DEFAULT_TRAIN_SCHEDULE_PAYLOAD, TRAINRUN_DIRECTIONS } from '../consts';
 import type MacroEditorState from '../MacroEditorState';
-import { getTrainCategoryFromTrainrunCategoryId } from '../utils';
+import { getTrainCategoryFromTrainrunCategoryId, localStorageFilterSettingKey } from '../utils';
 import { castNgeNode, handleNodeOperation } from './node';
 import { castNgeNoteToOsrd, handleNoteOperation } from './note';
 import {
@@ -83,6 +84,29 @@ const handleMetadataOperation = async ({
   switch (type) {
     case 'update': {
       localStorage.setItem('trafficSideNetworkGraph', netzgrafikDto.metadata.trafficSide!);
+      break;
+    }
+    default: {
+      break;
+    }
+  }
+};
+
+const handleFilterSettingOperation = async ({
+  type,
+  filterSetting,
+  state,
+}: {
+  type: Operation['type'];
+  filterSetting: FilterSettingDto;
+  state: MacroEditorState;
+}) => {
+  switch (type) {
+    case 'update': {
+      localStorage.setItem(
+        localStorageFilterSettingKey(state.scenarioId),
+        JSON.stringify(filterSetting)
+      );
       break;
     }
     default: {
@@ -165,6 +189,13 @@ export const handleOperation = async ({
       await handleMetadataOperation({
         type,
         netzgrafikDto,
+      });
+      break;
+    case 'filterSetting':
+      await handleFilterSettingOperation({
+        type,
+        filterSetting: operation.filterSetting,
+        state,
       });
       break;
     default:

@@ -14,6 +14,8 @@ import {
   type TrainrunCategory,
   type FreeFloatingTextDto,
   type TrafficSide,
+  type FilterSettingDto,
+  type FilterDataDto,
 } from '@osrd-project/netzgrafik-frontend';
 import type { TFunction } from 'i18next';
 import { uniqBy } from 'lodash';
@@ -53,6 +55,7 @@ import {
   getTrainrunCategoryId,
   getTrainrunFrequencyFromTrainSchedule,
   getTrainrunTimeCategoryFromFrequency,
+  localStorageFilterSettingKey,
   storeTrainPathNodes,
 } from './utils';
 
@@ -670,6 +673,12 @@ export const getNgeDto = (
     labelIds: getNoteLabelIds(note.labels, state),
   }));
 
+  const storedFilter = localStorage.getItem(localStorageFilterSettingKey(state.scenarioId));
+  const filterSettings = storedFilter ? [JSON.parse(storedFilter) as FilterSettingDto] : [];
+  const filterData: FilterDataDto = {
+    filterSettings,
+  };
+
   return {
     ...getNgeTrainrunSectionsWithNodes(state, groupedTrainSchedules, labels),
     trainruns: getNgeTrainruns(state, groupedTrainSchedules, labels),
@@ -685,9 +694,7 @@ export const getNgeDto = (
     freeFloatingTexts,
     labels,
     labelGroups: [NODE_LABEL_GROUP, TRAINRUN_LABEL_GROUP, NOTE_LABEL_GROUP],
-    filterData: {
-      filterSettings: [],
-    },
+    filterData,
   };
 };
 

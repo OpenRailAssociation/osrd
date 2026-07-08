@@ -269,7 +269,12 @@ const ScenarioContent = ({ activeBoards, toggleBoard }: ScenarioContentProps) =>
                         childClass="scenario-loader-msg"
                       />
                     )}
-                    <NGE dto={ngeDto} onOperation={handleNGEOperation} onLoad={handleNGELoad} />
+                    <NGE
+                      activeFilterSettingId={ngeDto?.filterData.filterSettings.at(0)?.id}
+                      dto={ngeDto}
+                      onOperation={handleNGEOperation}
+                      onLoad={handleNGELoad}
+                    />
                   </div>
                 </div>
               </BoardWrapper>
