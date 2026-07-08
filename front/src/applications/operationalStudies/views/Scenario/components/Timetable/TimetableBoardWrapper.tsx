@@ -37,7 +37,7 @@ type TimetableBoardWrapperProps = {
   refreshNge: () => Promise<void>;
   projectingOnSimulatedPathException: boolean | undefined;
   selectedTrainScheduleIds: number[];
-  setSelectedTrainScheduleIds: React.Dispatch<React.SetStateAction<number[]>>;
+  setSelectedTrainScheduleIds: (ids: number[]) => void;
 };
 
 const TimetableBoardWrapper = ({

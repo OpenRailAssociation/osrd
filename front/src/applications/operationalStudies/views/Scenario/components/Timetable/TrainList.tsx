@@ -34,7 +34,7 @@ type TrainListProps = {
   setDisplayTrainScheduleManagement: (mode: string) => void;
   upsertTrainSchedules: (trainSchedules: TrainScheduleResponse[]) => void;
   setTrainScheduleToEditData: (trainScheduleToEditData?: TrainScheduleToEditData) => void;
-  setSelectedTrainScheduleIds: React.Dispatch<React.SetStateAction<number[]>>;
+  setSelectedTrainScheduleIds: (ids: number[]) => void;
   removeAndUnselectTrains: (trainIds: number[]) => void;
   trainScheduleToEditData?: TrainScheduleToEditData;
   trainSchedulesWithDetails: TrainScheduleWithDetails[];
