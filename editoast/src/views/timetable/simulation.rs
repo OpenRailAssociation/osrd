@@ -93,6 +93,13 @@ pub fn path_item_respect_times<T: TrainScheduleLike>(
     path_item_times_final: &[u64],
     train_schedule: &T,
 ) -> Vec<bool> {
+    // Ensure we get meaningful panic messages instead of "index out of bounds"
+    assert_eq!(
+        path_item_times_final.len(),
+        train_schedule.path().len(),
+        "the number of path item times must be equal to the number of path items in the train schedule"
+    );
+
     let path_item_id_to_index: HashMap<&NonBlankString, usize> = train_schedule
         .path()
         .iter()
@@ -134,6 +141,18 @@ pub fn path_item_respect_margins<T: TrainScheduleLike>(
     path_item_times_provisional: &[u64],
     train_schedule: &T,
 ) -> Vec<bool> {
+    // Ensure we get meaningful panic messages instead of "index out of bounds"
+    assert_eq!(
+        path_item_times_final.len(),
+        train_schedule.path().len(),
+        "the number of path item times must be equal to the number of path items in the train schedule"
+    );
+    assert_eq!(
+        path_item_times_provisional.len(),
+        train_schedule.path().len(),
+        "the number of path item times must be equal to the number of path items in the train schedule"
+    );
+
     let margin_boundary_set = train_schedule.margins().boundaries.as_slice();
 
     let path_item_id_to_index: HashMap<&NonBlankString, usize> = train_schedule
