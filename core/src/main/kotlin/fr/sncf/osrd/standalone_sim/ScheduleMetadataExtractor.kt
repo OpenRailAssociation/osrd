@@ -91,7 +91,6 @@ fun runScheduleMetadataExtractor(
 
     val envelopeAdapter =
         IncrementalRequirementEnvelopeAdapter(rollingStocks, envelopeWithStops, true) // , false)
-    val spacingGenerator = SpacingResourceGenerator(fullInfra, context)
 
     // Generate spacing resources just as if a succession of trains (splitting on backtracking)
     val spacingRequirements = mutableListOf<SpacingRequirement>()
@@ -122,17 +121,17 @@ fun runScheduleMetadataExtractor(
         if (routeRanges.size > 1 && routeRanges.last().length == 0.meters) {
             routeRanges.removeLast()
         }
+
+        val spacingGenerator = SpacingResourceGenerator(fullInfra, subpathBegin, context)
         spacingGenerator.extendPath(
             blockRanges,
             routeRanges,
             pathStops.filter { it.pathOffset in subpathBegin..subpathEnd },
             true,
-            subpath.getBacktrackLocations(),
         )
         // as the provided path is complete, the resource generator should never return
         // NotEnoughPath
         spacingRequirements.addAll(spacingGenerator.processUpdate(envelopeAdapter)!!)
-        spacingGenerator.resetAfterbacktracking()
     }
 
     val routingRequirements =

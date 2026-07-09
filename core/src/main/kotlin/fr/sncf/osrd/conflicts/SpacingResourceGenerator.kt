@@ -34,7 +34,6 @@ import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.Offset.Companion.max
 import fr.sncf.osrd.utils.units.Offset.Companion.min
 import fr.sncf.osrd.utils.units.Speed
-import fr.sncf.osrd.utils.units.meters
 import fr.sncf.osrd.utils.units.metersPerSecond
 import fr.sncf.osrd.utils.units.toOffset
 import kotlin.collections.iterator
@@ -82,17 +81,20 @@ data class SpacingResourceGenerator(
     val blockInfra: BlockInfra,
     val loadedSignalInfra: LoadedSignalInfra,
     val simulator: SignalingSimulator,
+    val startOffset: Offset<PhysicsPath>,
     // TODO: Required for ETCS (STDCM doesn't provide it currently, will have to eventually)
     val context: EnvelopeSimContext? = null,
 ) {
     constructor(
         fullInfra: FullInfra,
+        startOffset: Offset<PhysicsPath>,
         context: EnvelopeSimContext? = null,
     ) : this(
         fullInfra.rawInfra,
         fullInfra.blockInfra,
         fullInfra.loadedSignalInfra,
         fullInfra.signalingSimulator,
+        startOffset,
         context,
     )
 
@@ -104,7 +106,6 @@ data class SpacingResourceGenerator(
     private val routeRanges = ArrayDeque<RouteRange>()
     private val zoneRanges = ArrayDeque<ZonePathRange>()
     private val closedSignalStops = ArrayDeque<PathStop>()
-    private val backtrackingLocations = mutableListOf<Offset<PhysicsPath>>()
     private val pendingSignals = ArrayDeque<PendingSignalData>()
     // It's tempting to use zone id instead of zone path ids here,
     // but data for the same zone in different directions can't be merged
@@ -112,11 +113,6 @@ data class SpacingResourceGenerator(
 
     private var isPathComplete: Boolean = false // TODO PEB: rename this
     private var reachedFirstSignal: Boolean = false // TODO PEB: rename this
-
-    fun resetAfterbacktracking() {
-        isPathComplete = false
-        reachedFirstSignal = false
-    }
 
     /**
      * Add a new segment of the path. The ranges must cover the same range of `Offset<PhysicsPath>`,
@@ -127,23 +123,7 @@ data class SpacingResourceGenerator(
         newRouteRanges: List<RouteRange>,
         newStops: List<PathStop>,
         isPathComplete: Boolean,
-        newBacktrackLocations: List<Offset<PhysicsPath>>,
     ) {
-        // add first backtracking location if extension is starting by it (and it's not already
-        // listed)
-        val firstBacktracking = newBacktrackLocations.firstOrNull()
-        if (
-            firstBacktracking != null &&
-                firstBacktracking != backtrackingLocations.lastOrNull() &&
-                firstBacktracking == newBlockRanges.first().pathBegin
-        ) {
-            // as backtracking locations are fallback for getCurrentPathEndOffset(), if possible,
-            // check that first choice is consistent
-            if (blockRanges.isNotEmpty()) {
-                require(blockRanges.last().pathEnd == newBlockRanges.first().pathBegin)
-            }
-            backtrackingLocations.add(firstBacktracking)
-        }
         // Some assertions on the inputs
         val previousPathEnd = getCurrentPathEndOffset()
         val newPathEnd = newBlockRanges.last().pathEnd
@@ -180,15 +160,6 @@ data class SpacingResourceGenerator(
             }
         }
 
-        // dedup first backtracking if it was already added previously
-        if (
-            newBacktrackLocations.isNotEmpty() &&
-                newBacktrackLocations.first() == backtrackingLocations.lastOrNull()
-        ) {
-            backtrackingLocations.addAll(newBacktrackLocations.asSequence().drop(1))
-        } else {
-            backtrackingLocations.addAll(newBacktrackLocations)
-        }
         blockRanges.addLinearObjects(newBlockRanges)
         routeRanges.addLinearObjects(newRouteRanges)
         zoneRanges.addLinearObjects(newZoneRanges)
@@ -198,9 +169,7 @@ data class SpacingResourceGenerator(
                 continue // block transition signals are listed on either block
             val physicalSignal = loadedSignalInfra.getPhysicalSignal(signal)
             val sightDistance = rawInfra.getSignalSightDistance(physicalSignal)
-            val lastBacktrackingLocation =
-                backtrackingLocations.findLast { it <= pathOffset } ?: Offset(0.meters)
-            val sightOffset = max(lastBacktrackingLocation, pathOffset - sightDistance)
+            val sightOffset = max(startOffset, pathOffset - sightDistance)
             val sigSystemId = loadedSignalInfra.getSignalingSystem(signal)
             val isCurveBased = simulator.sigModuleManager.isCurveBased(sigSystemId)
             if (
@@ -260,12 +229,18 @@ data class SpacingResourceGenerator(
     /** Clone all the underlying values. Can be used to explore branching paths. */
     fun clone(): SpacingResourceGenerator {
         val res =
-            SpacingResourceGenerator(rawInfra, blockInfra, loadedSignalInfra, simulator, context)
+            SpacingResourceGenerator(
+                rawInfra,
+                blockInfra,
+                loadedSignalInfra,
+                simulator,
+                startOffset,
+                context,
+            )
         res.blockRanges.addAll(blockRanges)
         res.routeRanges.addAll(routeRanges)
         res.zoneRanges.addAll(zoneRanges)
         res.closedSignalStops.addAll(closedSignalStops)
-        res.backtrackingLocations.addAll(backtrackingLocations)
         res.pendingSignals.addAll(pendingSignals)
         res.isPathComplete = isPathComplete
         res.reachedFirstSignal = reachedFirstSignal
@@ -276,9 +251,7 @@ data class SpacingResourceGenerator(
 
     /** Returns the current end of the processed path. */
     fun getCurrentPathEndOffset(): Offset<PhysicsPath> {
-        return blockRanges.lastOrNull()?.pathEnd
-            ?: backtrackingLocations.lastOrNull()
-            ?: Offset(0.meters)
+        return blockRanges.lastOrNull()?.pathEnd ?: startOffset
     }
 
     /**
