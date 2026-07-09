@@ -62,9 +62,9 @@ export default function useLazySimulateTrains({
       infraId,
       timetableId,
       electricalProfileSetId,
-      onProgress: (pacedTrainSummaries: Map<number, TrainScheduleSimulationSummaryResult>) => {
+      onProgress: (trainScheduleSummaries: Map<number, TrainScheduleSimulationSummaryResult>) => {
         const summaries = formatTrainScheduleSummaries(
-          pacedTrainSummaries,
+          trainScheduleSummaries,
           trainSchedulesByIdRef.current,
           rollingStocks
         );

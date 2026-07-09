@@ -12,7 +12,7 @@ type TrainSimulationLazyLoaderOptions = {
   infraId: number;
   timetableId: number;
   electricalProfileSetId?: number;
-  onProgress: (pacedTrainSummaries: Map<number, TrainScheduleSimulationSummaryResult>) => void;
+  onProgress: (trainScheduleSummaries: Map<number, TrainScheduleSimulationSummaryResult>) => void;
 };
 
 /**
@@ -67,10 +67,10 @@ export default class TrainSimulationLazyLoader {
   }
 
   async processBatch(ids: number[]) {
-    let pacedTrainPromise: Promise<PostTrainSchedulesSimulationSummaryApiResponse> =
+    let trainSchedulesPromise: Promise<PostTrainSchedulesSimulationSummaryApiResponse> =
       Promise.resolve({});
     if (ids.length > 0) {
-      pacedTrainPromise = this.options
+      trainSchedulesPromise = this.options
         .dispatch(
           osrdEditoastApi.endpoints.postTrainSchedulesSimulationSummary.initiate(
             {
@@ -87,17 +87,17 @@ export default class TrainSimulationLazyLoader {
         .unwrap();
     }
 
-    const rawPacedTrainSummaries = await pacedTrainPromise;
+    const rawTrainScheduleSummaries = await trainSchedulesPromise;
 
     if (this.cancelled) {
       return;
     }
 
-    const pacedTrainSummaries = new Map();
-    for (const [id, rawSummary] of Object.entries(rawPacedTrainSummaries ?? {})) {
-      pacedTrainSummaries.set(Number(id), rawSummary);
+    const trainScheduleSummaries = new Map();
+    for (const [id, rawSummary] of Object.entries(rawTrainScheduleSummaries ?? {})) {
+      trainScheduleSummaries.set(Number(id), rawSummary);
     }
 
-    this.options.onProgress(pacedTrainSummaries);
+    this.options.onProgress(trainScheduleSummaries);
   }
 }

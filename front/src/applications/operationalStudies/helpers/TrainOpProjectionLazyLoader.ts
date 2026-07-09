@@ -41,13 +41,12 @@ export default class TrainOpProjectionLazyLoader extends TrainProjectionLazyLoad
       return;
     }
 
-    let pacedTrainPromise: Promise<PostTrainSchedulesProjectPathOpApiResponse> = Promise.resolve(
-      {}
-    );
-    let pacedTrainOccupancyBlocksPromise: Promise<PostTrainSchedulesOccupancyBlocksApiResponse> =
+    let trainSchedulesPromise: Promise<PostTrainSchedulesProjectPathOpApiResponse> =
+      Promise.resolve({});
+    let trainScheduleOccupancyBlocksPromise: Promise<PostTrainSchedulesOccupancyBlocksApiResponse> =
       Promise.resolve({});
     if (ids.length > 0) {
-      pacedTrainPromise = this.options
+      trainSchedulesPromise = this.options
         .dispatch(
           osrdEditoastApi.endpoints.postTrainSchedulesProjectPathOp.initiate(
             {
@@ -67,7 +66,7 @@ export default class TrainOpProjectionLazyLoader extends TrainProjectionLazyLoad
         .unwrap();
 
       if (path) {
-        pacedTrainOccupancyBlocksPromise = this.options
+        trainScheduleOccupancyBlocksPromise = this.options
           .dispatch(
             osrdEditoastApi.endpoints.postTrainSchedulesOccupancyBlocks.initiate(
               {
@@ -86,8 +85,8 @@ export default class TrainOpProjectionLazyLoader extends TrainProjectionLazyLoad
       }
     }
 
-    const rawPacedTrainResults = await pacedTrainPromise;
-    const rawPacedTrainOccupancyBlocks = await pacedTrainOccupancyBlocksPromise;
+    const rawTrainScheduleResults = await trainSchedulesPromise;
+    const rawTrainScheduleOccupancyBlocks = await trainScheduleOccupancyBlocksPromise;
 
     if (this.cancelled) {
       return;
@@ -95,23 +94,23 @@ export default class TrainOpProjectionLazyLoader extends TrainProjectionLazyLoad
 
     const rawResults = new Map<number, ProjectionResult>();
 
-    for (const [id, result] of Object.entries(rawPacedTrainResults)) {
-      const pacedTrainProjectionResult: ProjectionResult = {
+    for (const [id, result] of Object.entries(rawTrainScheduleResults)) {
+      const trainScheduleProjectionResult: ProjectionResult = {
         space_time_curves: result.train_schedule,
-        signal_updates: rawPacedTrainOccupancyBlocks[id]?.train_schedule,
+        signal_updates: rawTrainScheduleOccupancyBlocks[id]?.train_schedule,
       };
 
       if (!isEmpty(result.exceptions)) {
-        pacedTrainProjectionResult.exceptions = new Map();
+        trainScheduleProjectionResult.exceptions = new Map();
         for (const [exceptionId, exception] of Object.entries(result.exceptions)) {
-          pacedTrainProjectionResult.exceptions.set(exceptionId, {
+          trainScheduleProjectionResult.exceptions.set(exceptionId, {
             space_time_curves: exception,
-            signal_updates: rawPacedTrainOccupancyBlocks[id]?.exceptions?.[exceptionId] ?? [],
+            signal_updates: rawTrainScheduleOccupancyBlocks[id]?.exceptions?.[exceptionId] ?? [],
           });
         }
       }
 
-      rawResults.set(Number(id), pacedTrainProjectionResult);
+      rawResults.set(Number(id), trainScheduleProjectionResult);
     }
 
     this.options.onProgress(rawResults);
