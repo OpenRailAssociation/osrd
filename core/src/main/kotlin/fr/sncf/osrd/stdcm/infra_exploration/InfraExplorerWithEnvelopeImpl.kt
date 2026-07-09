@@ -219,7 +219,9 @@ data class InfraExplorerWithEnvelopeImpl(
                 infraExplorer.getBacktrackLocationsInRange(subpathBegin, subpathEnd),
             )
             // Subpath is complete and has been completely simulated
-            val subSimulationComplete = isSubpathComplete && getLookahead().isEmpty()
+            val subSimulationComplete =
+                (endAtBacktracking && subpathEnd == cappedSimulatedOffset) ||
+                    (isPathComplete && getLookahead().isEmpty())
             val spacingRequirementAutomatonCallbacks =
                 IncrementalRequirementEnvelopeAdapter(
                     getFullRollingStockRangeMap(),
@@ -275,7 +277,9 @@ data class InfraExplorerWithEnvelopeImpl(
         for ((subpathBegin, subpathEnd) in subpathExtremities.zipWithNext()) {
             val endAtBacktracking = (subpathEnd in backtrackingLocations)
             val isSubpathComplete = if (endAtBacktracking) true else isPathComplete
-            val subSimulationComplete = isSubpathComplete && getLookahead().isEmpty()
+            val subSimulationComplete =
+                (endAtBacktracking && subpathEnd == cappedSimulatedOffset) ||
+                    (isPathComplete && getLookahead().isEmpty())
 
             val blockRanges =
                 infraExplorer.getBlocksInRange(subpathBegin, subpathEnd).toMutableList()

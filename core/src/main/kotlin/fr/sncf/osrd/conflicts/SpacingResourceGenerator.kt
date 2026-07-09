@@ -129,10 +129,9 @@ data class SpacingResourceGenerator(
         isPathComplete: Boolean,
         newBacktrackLocations: List<Offset<PhysicsPath>>,
     ) {
-        val newBacktrackingToProcess = newBacktrackLocations.iterator()
-        val firstBacktracking =
-            if (newBacktrackingToProcess.hasNext()) newBacktrackingToProcess.next() else null
-        // deduplicate extremities
+        // add first backtracking location if extension is starting by it (and it's not already
+        // listed)
+        val firstBacktracking = newBacktrackLocations.firstOrNull()
         if (
             firstBacktracking != null &&
                 firstBacktracking != backtrackingLocations.lastOrNull() &&
@@ -181,7 +180,15 @@ data class SpacingResourceGenerator(
             }
         }
 
-        backtrackingLocations.addAll(newBacktrackingToProcess.asSequence())
+        // dedup first backtracking if it was already added previously
+        if (
+            newBacktrackLocations.isNotEmpty() &&
+                newBacktrackLocations.first() == backtrackingLocations.lastOrNull()
+        ) {
+            backtrackingLocations.addAll(newBacktrackLocations.asSequence().drop(1))
+        } else {
+            backtrackingLocations.addAll(newBacktrackLocations)
+        }
         blockRanges.addLinearObjects(newBlockRanges)
         routeRanges.addLinearObjects(newRouteRanges)
         zoneRanges.addLinearObjects(newZoneRanges)
@@ -512,6 +519,8 @@ data class SpacingResourceGenerator(
                 ZoneStatus.OCCUPIED,
                 firstZone = firstZone,
             )
+
+        if (!simulatedSignalStates.containsKey(signal)) return false
         val signalState = simulatedSignalStates[signal]!!
 
         return simulator.sigModuleManager.isConstraining(
