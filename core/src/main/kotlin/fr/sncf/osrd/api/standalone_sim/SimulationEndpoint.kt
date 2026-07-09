@@ -77,7 +77,7 @@ class SimulationEndpoint(
                     request.options.useElectricalProfiles,
                     request.options.useSpeedLimits ?: true,
                     2.0,
-                    parseRawSimulationScheduleItems(request.schedule),
+                    dedupScheduleItems(request.schedule),
                     request.initialSpeed,
                     request.margins,
                 )

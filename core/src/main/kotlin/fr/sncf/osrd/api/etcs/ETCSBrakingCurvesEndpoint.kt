@@ -77,7 +77,7 @@ class ETCSBrakingCurvesEndpoint(
             val curvesAndConditions =
                 rollingStock.mapTractiveEffortCurves(electrificationMap, request.comfort)
             val signalingRanges = buildSignalingRanges(infra, trainPath)
-            val stops = getSimStops(parseRawSimulationScheduleItems(request.schedule))
+            val stops = getSimStops(dedupScheduleItems(request.schedule))
             val context =
                 EnvelopeSimContext(
                     rollingStock,

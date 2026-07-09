@@ -24,7 +24,7 @@ val simulationScheduleItemParserLogger = KotlinLogging.logger {}
  * - receptionSignal is the most constrained of all schedule item's receptionSignal
  * - isBacktracking is true if at least one of the items is backtracking
  */
-fun parseRawSimulationScheduleItems(
+fun dedupScheduleItems(
     rawSimulationScheduleItems: List<SimulationScheduleItem>
 ): List<SimulationScheduleItem> {
     val simulationScheduleItems = mutableListOf<SimulationScheduleItem>()
