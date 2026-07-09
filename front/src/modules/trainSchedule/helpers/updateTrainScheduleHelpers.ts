@@ -46,10 +46,14 @@ export async function createTrainSchedules(
   return newTrainSchedules;
 }
 
-async function updatePacedTrain(dispatch: AppDispatch, id: number, trainSchedule: TrainSchedule) {
+async function updateTrainSchedule(
+  dispatch: AppDispatch,
+  id: number,
+  trainSchedule: TrainSchedule
+) {
   if (trainSchedule.paced?.exceptions && trainSchedule.paced.exceptions.length > 0) {
     console.error(
-      'updatePacedTrain: exceptions should not be included in the paced field. Use exception endpoints instead.'
+      'updateTrainSchedule: exceptions should not be included in the paced field. Use exception endpoints instead.'
     );
   }
   await dispatch(
@@ -180,48 +184,48 @@ export async function syncOccurrenceException(
   return { ...exceptionToCreate, id: created.id };
 }
 
-export async function syncAndUpdatePacedTrain(
+export async function syncAndUpdateTrainSchedule(
   trainScheduleIdToUpdate: number,
-  pacedTrain: Omit<TrainScheduleResponse, 'id'>,
+  trainSchedule: Omit<TrainScheduleResponse, 'id'>,
   dispatch: AppDispatch
 ): Promise<TrainScheduleResponse> {
-  if (isPacedTrainBase(pacedTrain)) {
+  if (isPacedTrainBase(trainSchedule)) {
     const trainScheduleId = formatEditoastIdToTrainScheduleId(trainScheduleIdToUpdate);
     dispatch(
       unsetTrainIdsMatchingMissingOccurrencesOf({
         trainScheduleId,
-        occurrencesPresent: getOccurrencesIds(pacedTrain, trainScheduleId),
+        occurrencesPresent: getOccurrencesIds(trainSchedule, trainScheduleId),
       })
     );
   }
 
-  // Remove train_schedule_set_id before updating paced train as we don't want to pass it in the payload
-  const { train_schedule_set_id: _trainScheduleSetId, ...pacedTrainWithoutTrainScheduleSetId } =
-    pacedTrain;
+  // Remove train_schedule_set_id before updating train schedule as we don't want to pass it in the payload
+  const { train_schedule_set_id: _trainScheduleSetId, ...trainScheduleWithoutTrainScheduleSetId } =
+    trainSchedule;
 
   // Strip exceptions from the paced field before sending to the API
   // Exceptions have their own dedicated endpoints and should not be included in the train schedule payload
-  const trainSchedulePayload: TrainSchedule = pacedTrainWithoutTrainScheduleSetId.paced
+  const trainSchedulePayload: TrainSchedule = trainScheduleWithoutTrainScheduleSetId.paced
     ? {
-        ...pacedTrainWithoutTrainScheduleSetId,
-        paced: { ...pacedTrainWithoutTrainScheduleSetId.paced, exceptions: [] },
+        ...trainScheduleWithoutTrainScheduleSetId,
+        paced: { ...trainScheduleWithoutTrainScheduleSetId.paced, exceptions: [] },
       }
-    : pacedTrainWithoutTrainScheduleSetId;
+    : trainScheduleWithoutTrainScheduleSetId;
 
-  await updatePacedTrain(dispatch, trainScheduleIdToUpdate, trainSchedulePayload);
+  await updateTrainSchedule(dispatch, trainScheduleIdToUpdate, trainSchedulePayload);
 
-  return { ...pacedTrain, id: trainScheduleIdToUpdate };
+  return { ...trainSchedule, id: trainScheduleIdToUpdate };
 }
 
-export async function storePacedTrain(
+export async function storeTrainSchedule(
   trainScheduleIdToUpdate: number,
-  pacedTrain: Omit<TrainScheduleResponse, 'id'>,
+  trainSchedule: Omit<TrainScheduleResponse, 'id'>,
   dispatch: AppDispatch,
   upsertTrainSchedules: (trainSchedules: TrainScheduleResponse[]) => void
 ): Promise<TrainScheduleResponse> {
-  const updatedPacedTrain = await syncAndUpdatePacedTrain(
+  const updatedPacedTrain = await syncAndUpdateTrainSchedule(
     trainScheduleIdToUpdate,
-    pacedTrain,
+    trainSchedule,
     dispatch
   );
   upsertTrainSchedules([updatedPacedTrain]);

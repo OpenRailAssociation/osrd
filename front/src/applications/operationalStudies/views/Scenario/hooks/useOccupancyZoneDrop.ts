@@ -14,7 +14,7 @@ import { matchPathStepAndOp } from 'modules/pathfinding/utils';
 import type { DeployedWaypoint } from 'modules/simulationResult/components/SpaceTimeChartWrapper/useTrackOccupancy';
 import type { PathOperationalPoint } from 'modules/simulationResult/types';
 import { findTrainScheduleAndException } from 'modules/trainSchedule/helpers/pacedTrain';
-import { storePacedTrain } from 'modules/trainSchedule/helpers/updateTrainScheduleHelpers';
+import { storeTrainSchedule } from 'modules/trainSchedule/helpers/updateTrainScheduleHelpers';
 import type {
   TrainScheduleWithDetails,
   SimulatedException,
@@ -208,7 +208,7 @@ export default function useOccupancyZoneDrop({
           ...rawTrainSchedule,
           path: newPath,
         };
-        await storePacedTrain(
+        await storeTrainSchedule(
           trainSchedule.id,
           updatedTrainSchedule,
           dispatch,

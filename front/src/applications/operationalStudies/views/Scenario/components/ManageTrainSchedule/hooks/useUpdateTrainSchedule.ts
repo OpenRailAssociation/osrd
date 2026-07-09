@@ -19,8 +19,8 @@ import {
 import {
   createExceptions,
   deleteExceptions,
-  storePacedTrain,
-  syncAndUpdatePacedTrain,
+  storeTrainSchedule,
+  syncAndUpdateTrainSchedule,
   syncOccurrenceException,
   updateExceptions,
 } from 'modules/trainSchedule/helpers/updateTrainScheduleHelpers';
@@ -147,14 +147,14 @@ export async function updateTrainSchedule({
     })
   );
 
-  // Call syncAndUpdatePacedTrain to either :
+  // Call syncAndUpdateTrainSchedule to either :
   // 1. Edit a unique train
   // 2. Convert a unique train into a paced train
-  //    syncAndUpdatePacedTrain must be called first to make the train a paced train on the backend
+  //    syncAndUpdateTrainSchedule must be called first to make the train a paced train on the backend
   //    before we can create exceptions on it (there is a check in backend to prevent linking exceptions
   //    to TrainSchedule without a paced filed)
   if (!originalTrainSchedule.paced) {
-    await syncAndUpdatePacedTrain(
+    await syncAndUpdateTrainSchedule(
       trainScheduleId,
       {
         ...updatedTrainSchedule,
@@ -209,7 +209,7 @@ export async function updateTrainSchedule({
     if (exceptionsToDelete.length > 0) {
       await deleteExceptions(dispatch, exceptionsToDelete);
     }
-    await storePacedTrain(
+    await storeTrainSchedule(
       trainScheduleId,
       {
         ...updatedTrainSchedule,
@@ -262,7 +262,7 @@ export async function updateTrainSchedule({
 
   // Store the paced train with the final exceptions list
   // TODO: We should be able to not run this when we only add or delete an extra occurrence
-  await storePacedTrain(
+  await storeTrainSchedule(
     trainScheduleId,
     {
       ...updatedTrainSchedule,

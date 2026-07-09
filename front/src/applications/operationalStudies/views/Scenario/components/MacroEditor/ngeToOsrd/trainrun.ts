@@ -9,7 +9,7 @@ import {
   createTrainSchedules,
   deleteTrainSchedules,
   fetchTrainSchedule,
-  storePacedTrain,
+  storeTrainSchedule,
 } from 'modules/trainSchedule/helpers/updateTrainScheduleHelpers';
 import { updateSelectedTrain } from 'reducers/simulationResults';
 import type { AppDispatch } from 'store';
@@ -560,7 +560,7 @@ export const handleUpdateTrainSchedule = async ({
     newForwardTrainBase.paced = paced;
   }
 
-  const newForwardTrainSchedule = await storePacedTrain(
+  const newForwardTrainSchedule = await storeTrainSchedule(
     oldForwardTrainSchedule.id,
     newForwardTrainBase,
     dispatch,
@@ -617,7 +617,7 @@ export const handleUpdateTrainSchedule = async ({
       newReturnTrainBase.paced = returnPaced;
     }
 
-    newReturnTrainSchedule = await storePacedTrain(
+    newReturnTrainSchedule = await storeTrainSchedule(
       oldReturnTrainSchedule.id,
       newReturnTrainBase,
       dispatch,
