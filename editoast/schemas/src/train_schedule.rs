@@ -225,12 +225,14 @@ impl Serialize for TrainOccurrence {
 
 #[cfg(any(test, feature = "testing"))]
 impl TrainOccurrence {
+    pub const FAKE_PATH_LEN: usize = 4;
+
     pub fn fake() -> Self {
         use crate::fixtures::ms_since_epoch;
         use crate::infra::TrackOffset;
         use crate::primitives::Identifier;
 
-        Self {
+        let fake = Self {
             train_name: "ABC3615".to_string(),
             labels: vec!["choo-choo".to_string(), "tchou-tchou".to_string()],
             rolling_stock_name: "R2D2".to_string(),
@@ -328,7 +330,11 @@ impl TrainOccurrence {
                 stops_at_end_of_block: false,
             },
             category: None,
-        }
+        };
+
+        assert_eq!(Self::FAKE_PATH_LEN, fake.path.len());
+
+        fake
     }
 }
 
