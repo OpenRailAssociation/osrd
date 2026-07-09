@@ -1,5 +1,5 @@
 {
-  "paced_trains": [
+  "train_schedules": [
     {
       "train_name": "Train1",
       "labels": ["Tag-1", "SS-NS"],
