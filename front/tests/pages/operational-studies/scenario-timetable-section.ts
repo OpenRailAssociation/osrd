@@ -197,7 +197,7 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
     const pacedTrainLabel = translations.pacedTrain_other
       .split(' ')[1]
       .slice(0, totalPacedTrainCount > 1 ? undefined : -1); // "services"
-    const uniqueTrainLabel = translations.train_other
+    const uniqueTrainLabel = translations.uniqueTrain_other
       .split(' ')[1]
       .slice(0, totalUniqueTrainCount > 1 ? undefined : -1); // "trains"
 
@@ -403,8 +403,8 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
     // Rebuild the expected text for total train schedules label which has the syntax : "X/X services and Y/Y trains selected"
     const trainTypeTranslation = translations.timetable.trainType; // format "Services, trains"
     const [pacedTrains, uniqueTrains] = trainTypeTranslation.split(', '); // expect to return ["Services", "trains"]
-    const pacedTrainAndTrainCountTrad = translations.pacedTrainAndTrainCount; // finished by "selected"
-    const selectedTrad = pacedTrainAndTrainCountTrad.split(' ').at(-1); // expect to return "selected"
+    const pacedTrainAndUniqueTrainCountTrad = translations.pacedTrainAndUniqueTrainCount; // finished by "selected"
+    const selectedTrad = pacedTrainAndUniqueTrainCountTrad.split(' ').at(-1); // expect to return "selected"
     const expectedComputedLabel = `${totalPacedTrainCount}/${totalPacedTrainCount} ${pacedTrains.toLowerCase()}, ${totalUniqueTrainCount}/${totalUniqueTrainCount} ${uniqueTrains} ${selectedTrad}`;
     await expect(this.timetableTotalTrainLabel).toHaveText(expectedComputedLabel);
   }

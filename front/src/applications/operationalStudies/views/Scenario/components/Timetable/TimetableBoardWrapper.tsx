@@ -113,11 +113,11 @@ const TimetableBoardWrapper = ({
 
     const uniqueTrainLabel =
       selectedUniqueTrainIds.length > 0
-        ? t('main.trainCountSelected', {
+        ? t('main.uniqueTrainCountSelected', {
             count: selectedUniqueTrainIds.length,
             totalCount: totalUniqueTrainCount,
           })
-        : t('main.train', { count: totalUniqueTrainCount });
+        : t('main.uniqueTrain', { count: totalUniqueTrainCount });
 
     if (totalUniqueTrainCount === 0) {
       return pacedTrainLabel;
@@ -128,10 +128,10 @@ const TimetableBoardWrapper = ({
     }
 
     if (selectedUniqueTrainIds.length > 0 || selectedPacedTrainIds.length > 0) {
-      return t('main.pacedTrainAndTrainCount', {
+      return t('main.pacedTrainAndUniqueTrainCount', {
         pacedTrainCount: selectedPacedTrainIds.length,
         totalPacedTrainCount,
-        trainCount: selectedUniqueTrainIds.length,
+        uniqueTrainCount: selectedUniqueTrainIds.length,
         totalUniqueTrainCount,
       });
     }
