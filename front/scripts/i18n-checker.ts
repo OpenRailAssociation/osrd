@@ -31,7 +31,7 @@ const IGNORE_UNUSED: RegExp[] = [
   /operational-studies:main\.pacedTrainCount/,
   /operational-studies:main\.timetable\.invalid\.pathfinding_not_found/,
   /operational-studies:main\.train/,
-  /operational-studies:main\.trainCount/,
+  /operational-studies:main\.uniqueTrainCount/,
 
   // Rolling stock
   /translation:rollingStock.curves\..*/,

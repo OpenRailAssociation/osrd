@@ -24,12 +24,12 @@ const DeleteModal = ({
     }
 
     if (selectedUniqueTrainCount > 0 && selectedPacedTrainCount === 0) {
-      return t('main.timetable.deleteTrainSelectionConfirmation', {
+      return t('main.timetable.deleteUniqueTrainSelectionConfirmation', {
         selectedUniqueTrainsCount: selectedUniqueTrainCount,
       });
     }
 
-    return t('main.timetable.deletePacedTrainAndTrainSelectionConfirmation', {
+    return t('main.timetable.deletePacedTrainAndUniqueTrainSelectionConfirmation', {
       selectedPacedTrainsCount: selectedPacedTrainCount,
       selectedUniqueTrainsCount: selectedUniqueTrainCount,
     });
