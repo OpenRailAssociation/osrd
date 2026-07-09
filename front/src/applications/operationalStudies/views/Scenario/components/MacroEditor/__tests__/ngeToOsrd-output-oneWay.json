@@ -35,7 +35,7 @@
     }
   ],
   "macro_notes": [],
-  "paced_trains": [
+  "train_schedules": [
     {
       "category": "InterCity",
       "constraint_distribution": "STANDARD",

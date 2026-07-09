@@ -86,7 +86,7 @@ export const postFullImportPayload = async (
       trainSchedules,
       exceptions,
     }: { trainSchedules: TrainSchedule[]; exceptions: PacedTrainException[][] } =
-      generateTrainPayloads(timetableJsonPayload.paced_trains, subCategories);
+      generateTrainPayloads(timetableJsonPayload.train_schedules, subCategories);
 
     const newtrainschedules: TrainScheduleResponse[] = [];
 
@@ -159,7 +159,7 @@ export const postFullImportPayload = async (
       setFailure({
         name: t('failure'),
         message: t('status.invalidTrainSchedules', {
-          count: timetableJsonPayload.paced_trains.length,
+          count: timetableJsonPayload.train_schedules.length,
         }),
       })
     );

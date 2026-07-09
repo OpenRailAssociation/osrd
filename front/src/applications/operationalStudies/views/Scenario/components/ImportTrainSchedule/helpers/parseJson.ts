@@ -2,7 +2,7 @@ import type { TFunction } from 'i18next';
 import { isObject } from 'lodash';
 
 import type {
-  PacedTrainFromJson,
+  TrainScheduleFromJson,
   RoundTripsFromJson,
   TimetableJsonPayload,
 } from 'applications/operationalStudies/types';
@@ -27,8 +27,8 @@ export type RoundTripsFromJsonCompat = RoundTripsFromJson & {
  * For backward compatibility
  */
 export type TimetableJsonPayloadCompat = TimetableJsonPayload & {
-  train_schedules?: PacedTrainFromJson[];
-  trains: PacedTrainFromJson[];
+  paced_trains?: TrainScheduleFromJson[];
+  trains?: TrainScheduleFromJson[];
   round_trips?: RoundTripsFromJsonCompat;
 };
 
@@ -62,24 +62,27 @@ export const validateTimetableJsonPayload = (importedItems: unknown): TimetableJ
   }
 
   const {
+    train_schedules: importedTrainSchedules,
     paced_trains: importedPacedTrains,
     round_trips: importedRoundTrips,
     trains: importedTrains,
-    train_schedules: importedUniqueTrains,
   } = importedItems as Partial<TimetableJsonPayloadCompat>;
 
-  // TODO : For backward compatibility, can be removed in the future
+  // TODO : For backward compatibility, paced_trains and trains can be removed in the future
   const allTrains = [
     ...(Array.isArray(importedTrains) ? importedTrains : []),
-    ...(Array.isArray(importedUniqueTrains) ? importedUniqueTrains : []),
     ...(Array.isArray(importedPacedTrains) ? importedPacedTrains : []),
+    ...(Array.isArray(importedTrainSchedules) ? importedTrainSchedules : []),
   ];
 
   if (allTrains.length === 0) {
     throw new Error('Invalid timetable payload');
   }
 
-  if (importedRoundTrips?.paced_trains && allTrains.length === 0) {
+  if (
+    (importedRoundTrips?.train_schedules || importedRoundTrips?.paced_trains) &&
+    allTrains.length === 0
+  ) {
     throw new Error('Invalid round trips configuration');
   }
 
@@ -101,7 +104,7 @@ export const validateTimetableJsonPayload = (importedItems: unknown): TimetableJ
   const roundTrips = validateRoundTrips(importedRoundTrips);
 
   return {
-    paced_trains: allTrains,
+    train_schedules: allTrains,
     ...(roundTrips ? { round_trips: roundTrips } : {}),
   };
 };

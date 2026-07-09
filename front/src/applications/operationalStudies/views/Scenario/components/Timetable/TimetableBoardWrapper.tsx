@@ -236,7 +236,7 @@ const TimetableBoardWrapper = ({
         })
       );
     } catch (e) {
-      if (data && data.paced_trains) {
+      if (data && (data.train_schedules || data.paced_trains)) {
         dispatch(setFailure(castErrorToFailure(e)));
       }
     }

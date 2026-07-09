@@ -72,7 +72,7 @@ export const copyTrainSchedulesToClipboard = async (
     trainSchedules,
     selectedTimeTableIdsFromClick
   );
-  const jsonString = JSON.stringify({ paced_trains: formattedTrainSchedules });
+  const jsonString = JSON.stringify({ train_schedules: formattedTrainSchedules });
   const blob = new Blob([jsonString], { type: 'text/plain' });
   const clipboardItem = new ClipboardItem({ [blob.type]: blob });
   await navigator.clipboard.write([clipboardItem]);
@@ -121,7 +121,7 @@ function mapRoundTripsToIndexes(
 }
 
 type TimetableExportPayload = {
-  paced_trains: TrainSchedule[];
+  train_schedules: TrainSchedule[];
   round_trips?: RoundTripsFromJson;
 };
 
@@ -141,7 +141,7 @@ export const buildTimetableExportPayload = (
   );
 
   return {
-    paced_trains: formattedTrainSchedules,
+    train_schedules: formattedTrainSchedules,
     round_trips: (mappedRoundTrips?.length ?? 0) > 0 ? mappedRoundTrips : undefined,
   };
 };

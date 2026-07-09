@@ -374,7 +374,7 @@ const parseXML = async (xmlDoc: Document): Promise<TimetableJsonPayload> => {
   const updatedUniqueTrains = mapTrainNames(uniqueTrains, trains);
 
   return {
-    paced_trains: [...importedPacedTrains, ...updatedUniqueTrains],
+    train_schedules: [...importedPacedTrains, ...updatedUniqueTrains],
   };
 };
 

@@ -1,4 +1,4 @@
-import type { PacedTrainFromJson } from 'applications/operationalStudies/types';
+import type { TrainScheduleFromJson } from 'applications/operationalStudies/types';
 import type {
   TrainSchedule,
   SubCategory,
@@ -89,25 +89,25 @@ const buildLabels = (
 };
 
 export function generateTrainPayloads(
-  parsedPacedTrains: PacedTrainFromJson[],
+  parsedTrainSchedules: TrainScheduleFromJson[],
   allowedSubCategories: SubCategory[]
 ): { trainSchedules: TrainSchedule[]; exceptions: PacedTrainException[][] } {
   const trainSchedules: TrainSchedule[] = [];
   const exceptions: PacedTrainException[][] = [];
 
-  for (const pacedTrain of parsedPacedTrains) {
-    const { paced, ...trainScheduleBase } = pacedTrain;
+  for (const trainSchedule of parsedTrainSchedules) {
+    const { paced, ...trainScheduleBase } = trainSchedule;
 
     const { exceptions: pacedExceptions } = paced ?? { exceptions: [] };
 
     trainSchedules.push({
       ...trainScheduleBase,
       start_time:
-        typeof pacedTrain.start_time === 'string'
-          ? new Date(pacedTrain.start_time).getTime()
-          : pacedTrain.start_time,
-      category: checkCategory(pacedTrain.category, allowedSubCategories),
-      labels: buildLabels(pacedTrain.labels, pacedTrain.category, allowedSubCategories),
+        typeof trainSchedule.start_time === 'string'
+          ? new Date(trainSchedule.start_time).getTime()
+          : trainSchedule.start_time,
+      category: checkCategory(trainSchedule.category, allowedSubCategories),
+      labels: buildLabels(trainSchedule.labels, trainSchedule.category, allowedSubCategories),
       paced: paced
         ? { interval: paced.interval, time_window: paced.time_window, exceptions: [] }
         : undefined,
