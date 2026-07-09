@@ -450,7 +450,7 @@ Includes:
 - JSON datasets
 - Rolling stock input data
 - Timetable inputs
-- Paced train data
+- Train schedule data
 - Expected output models
 
 ---
