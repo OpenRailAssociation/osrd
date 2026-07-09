@@ -1,5 +1,5 @@
 import type {
-  PacedTrainFromJson,
+  TrainScheduleFromJson,
   TimetableJsonPayload,
 } from 'applications/operationalStudies/types';
 import type { MacroNodeForm, TrainScheduleResponse } from 'common/api/osrdEditoastApi';
@@ -197,8 +197,8 @@ export const convertNgeDtoToOsrd = (dto: NetzgrafikDto): TimetableJsonPayload =>
     });
   }
 
-  const pacedTrains: PacedTrainFromJson[] = [];
-  const pacedTrainsRoundTrips: ([number, number] | [number, null])[] = [];
+  const trainSchedules: TrainScheduleFromJson[] = [];
+  const trainSchedulesRoundTrips: ([number, number] | [number, null])[] = [];
   for (const trainrun of dto.trainruns) {
     const groupedTrainrunSections = getTrainrunSectionsByTrainrunId(dto, trainrun.id);
     const labels = getTrainrunLabels(dto, trainrun);
@@ -229,15 +229,15 @@ export const convertNgeDtoToOsrd = (dto: NetzgrafikDto): TimetableJsonPayload =>
           ...pathAndSchedule,
         };
         const paced = createPacedAttributesFromTrainrun(trainrun, dto);
-        pacedTrains.push({
+        trainSchedules.push({
           ...DEFAULT_TRAIN_SCHEDULE_PAYLOAD,
           ...commonProps,
           paced,
         });
         if (direction === TRAINRUN_DIRECTIONS.FORWARD) {
-          pacedTrainsRoundTrips.push([
-            pacedTrains.length - 1,
-            trainrun.direction === 'one_way' ? null : pacedTrains.length,
+          trainSchedulesRoundTrips.push([
+            trainSchedules.length - 1,
+            trainrun.direction === 'one_way' ? null : trainSchedules.length,
           ]);
         }
       }
@@ -247,7 +247,7 @@ export const convertNgeDtoToOsrd = (dto: NetzgrafikDto): TimetableJsonPayload =>
   return {
     macro_nodes: macroNodes,
     macro_notes: macroNotes,
-    paced_trains: pacedTrains,
-    round_trips: pacedTrainsRoundTrips,
+    train_schedules: trainSchedules,
+    round_trips: trainSchedulesRoundTrips,
   };
 };

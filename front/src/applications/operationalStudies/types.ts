@@ -45,7 +45,7 @@ export type PacedTrainResponse = PacedTrain & {
   id: number;
 };
 
-export type PacedTrainFromJson = Omit<TrainSchedule, 'start_time' | 'category'> & {
+export type TrainScheduleFromJson = Omit<TrainSchedule, 'start_time' | 'category'> & {
   start_time: string | number;
   category?: TrainCategory | string | null;
 };
@@ -53,7 +53,7 @@ export type PacedTrainFromJson = Omit<TrainSchedule, 'start_time' | 'category'> 
 export type RoundTripsFromJson = ([number, number] | [number, null])[];
 
 export type TimetableJsonPayload = {
-  paced_trains: PacedTrainFromJson[];
+  train_schedules: TrainScheduleFromJson[];
   macro_nodes?: MacroNodeForm[];
   macro_notes?: MacroNoteForm[];
   round_trips?: RoundTripsFromJson;

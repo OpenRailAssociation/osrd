@@ -43,7 +43,7 @@
       "y": 19
     }
   ],
-  "paced_trains": [
+  "train_schedules": [
     {
       "category": {
         "main_category": "INTERCITY_TRAIN"

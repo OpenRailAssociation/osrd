@@ -42,7 +42,7 @@ describe('processJsonFile', () => {
       );
       expect(importPayload).toEqual(
         expect.objectContaining({
-          paced_trains: payloadTrains.map(
+          train_schedules: payloadTrains.map(
             ({ id: _id, train_schedule_set_id: _train_schedule_set_id, ...rest }) => rest
           ),
           round_trips: [[0, 1]],
@@ -54,7 +54,7 @@ describe('processJsonFile', () => {
   describe('round trips', () => {
     it('should keep one ways when importing valid JSON', () => {
       const payload: TimetableJsonPayload = {
-        paced_trains: [train0],
+        train_schedules: [train0],
         round_trips: [[0, null]],
       };
 
@@ -68,7 +68,7 @@ describe('processJsonFile', () => {
     });
     it('should keep round trips when importing valid JSON', () => {
       const payload: TimetableJsonPayload = {
-        paced_trains: [train0, train1],
+        train_schedules: [train0, train1],
         round_trips: [[0, 1]],
       };
 
