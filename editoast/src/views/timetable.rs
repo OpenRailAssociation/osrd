@@ -1055,12 +1055,16 @@ pub(in crate::views) struct TrainScheduleSetForm {
 }
 
 #[cfg(test)]
-pub(in crate::views) fn simulation_empty_response() -> core_client::simulation::Response {
+pub(in crate::views) fn simulation_empty_response(
+    path_len: usize,
+) -> core_client::simulation::Response {
     use core_client::simulation::CompleteReportTrain;
     use core_client::simulation::ElectricalProfiles;
     use core_client::simulation::ReportTrain;
     use core_client::simulation::SimulationSuccess;
     use core_client::simulation::SpeedLimitProperties;
+
+    let path_item_times: Vec<u64> = (0..).take(path_len).collect();
 
     core_client::simulation::Response::Success(SimulationSuccess {
         base: ReportTrain {
@@ -1068,14 +1072,14 @@ pub(in crate::views) fn simulation_empty_response() -> core_client::simulation::
             times: vec![0, 30_000, 100_000],
             speeds: vec![],
             energy_consumption: 0.0,
-            path_item_times: vec![0, 1, 2, 3],
+            path_item_times: path_item_times.clone(),
         },
         provisional: ReportTrain {
             positions: vec![0, 500_000, 15_050_000],
             times: vec![0, 30_000, 100_000],
             speeds: vec![],
             energy_consumption: 0.0,
-            path_item_times: vec![0, 1, 2, 3],
+            path_item_times: path_item_times.clone(),
         },
         final_output: CompleteReportTrain {
             report_train: ReportTrain {
@@ -1083,7 +1087,7 @@ pub(in crate::views) fn simulation_empty_response() -> core_client::simulation::
                 times: vec![0, 30_000, 100_000],
                 speeds: vec![],
                 energy_consumption: 0.0,
-                path_item_times: vec![0, 1, 2, 3],
+                path_item_times: path_item_times.clone(),
             },
             signal_critical_positions: vec![],
             zone_updates: vec![],

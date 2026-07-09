@@ -605,7 +605,6 @@ mod tests {
     use crate::views::path::pathfinding::PathfindingResult;
     use crate::views::test_app::TestResponseExt as _;
     use crate::views::test_app::test_app;
-    use crate::views::timetable::simulation_empty_response;
     use crate::views::timetable::stdcm::Request;
     use crate::views::timetable::stdcm::request::ConsistSchedule;
     use crate::views::timetable::stdcm::request::PathfindingItem;
@@ -721,6 +720,10 @@ mod tests {
             path_item_positions: vec![0, 10],
             backtrack_path_items: Some(vec![]),
         }
+    }
+
+    fn simulation_empty_response() -> core_client::simulation::Response {
+        crate::views::timetable::simulation_empty_response(4)
     }
 
     fn core_mocking_client() -> MockingClient {

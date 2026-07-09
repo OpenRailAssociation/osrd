@@ -2181,7 +2181,10 @@ mod tests {
             .assert_status_ok()
             .json();
 
-        assert_eq!(response, simulation_empty_response());
+        assert_eq!(
+            response,
+            simulation_empty_response(TrainOccurrence::FAKE_PATH_LEN)
+        );
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -3017,7 +3020,7 @@ mod tests {
             .finish();
         core.stub("/standalone_simulation")
             .response(StatusCode::OK)
-            .json(simulation_empty_response())
+            .json(simulation_empty_response(path.len()))
             .finish();
         let app = test_app!().skip_authz().core_client(core.into()).build();
         let db_pool = app.db_pool();

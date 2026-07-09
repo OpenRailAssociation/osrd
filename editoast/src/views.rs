@@ -539,7 +539,8 @@ mod tests {
         pathfinding_stub.finish();
         let mut simulation_stub = core.stub("/standalone_simulation").response(StatusCode::OK);
         for _ in 0..10 {
-            simulation_stub = simulation_stub.json(simulation_empty_response());
+            // 4 path items, same as the pathfinding stub above
+            simulation_stub = simulation_stub.json(simulation_empty_response(4));
         }
         simulation_stub.finish();
         core.stub("/signal_projection")
