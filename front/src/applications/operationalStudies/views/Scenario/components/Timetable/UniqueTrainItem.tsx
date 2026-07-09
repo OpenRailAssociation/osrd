@@ -17,7 +17,7 @@ import { SkeletonLoader } from 'common/Loaders';
 import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
 import isMainCategory from 'modules/rollingStock/helpers/category';
 import {
-  createPacedTrains,
+  createTrainSchedules,
   deleteTrainSchedules,
 } from 'modules/trainSchedule/helpers/updateTrainScheduleHelpers';
 import type { TrainScheduleWithDetails } from 'modules/trainSchedule/types';
@@ -126,7 +126,7 @@ const UniqueTrainItem = ({
       };
 
       const newUniqueTrain: TrainScheduleResponse = (
-        await createPacedTrains(dispatch, trainDetail.train_schedule_set_id, [
+        await createTrainSchedules(dispatch, trainDetail.train_schedule_set_id, [
           newUniqueTrainPayload,
         ])
       )[0];

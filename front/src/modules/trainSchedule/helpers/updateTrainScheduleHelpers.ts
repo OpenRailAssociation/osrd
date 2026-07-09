@@ -31,19 +31,19 @@ export async function fetchTrainSchedule(
   return trainSchedule;
 }
 
-export async function createPacedTrains(
+export async function createTrainSchedules(
   dispatch: AppDispatch,
   trainScheduleSetId: number,
-  pacedTrains: TrainSchedule[]
+  trainSchedules: TrainSchedule[]
 ): Promise<TrainScheduleResponse[]> {
-  if (!pacedTrains.length) return [];
-  const newPacedTrains = await dispatch(
+  if (!trainSchedules.length) return [];
+  const newTrainSchedules = await dispatch(
     osrdEditoastApi.endpoints.postTrainScheduleSetsByIdTrainSchedules.initiate({
       id: trainScheduleSetId,
-      body: pacedTrains,
+      body: trainSchedules,
     })
   ).unwrap();
-  return newPacedTrains;
+  return newTrainSchedules;
 }
 
 async function updatePacedTrain(dispatch: AppDispatch, id: number, trainSchedule: TrainSchedule) {
