@@ -197,17 +197,17 @@ fun buildFinalEnvelope(
                 return@repeat
             } else {
                 postProcessingLogger.error("PEB fail other OSRD error")
-                if (lastSim != null) return lastSim
+                //if (lastSim != null) return lastSim
                 throw e
             }
         } catch (e: Exception) {
             postProcessingLogger.error("PEB fail other exception")
-            if (lastSim != null) return lastSim
+            //if (lastSim != null) return lastSim
             throw e
         }
     }
     postProcessingLogger.error("PEB fail after max iteration")
-    if (lastSim != null) return lastSim
+    //if (lastSim != null) return lastSim
     throw RuntimeException(
         "Failed to compute a standard allowance that wouldn't cause conflicts PEB"
     )

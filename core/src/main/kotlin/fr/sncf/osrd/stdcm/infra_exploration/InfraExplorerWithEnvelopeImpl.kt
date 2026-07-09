@@ -175,8 +175,8 @@ data class InfraExplorerWithEnvelopeImpl(
                 .takeWhile { it.travelledPathOffset >= lookaheadEndOffset }
                 .lastOrNull { it.isBacktracking }
                 ?.travelledPathOffset ?: Offset(Double.POSITIVE_INFINITY.meters)
-        val cappedSimulatedOffset =
-            Offset.min(Offset(getFullEnvelope().endPos.meters), nextBacktracking)
+        val cappedSimulatedOffset = Offset<PhysicsPath>(getFullEnvelope().endPos.meters)
+        //            Offset.min(Offset(getFullEnvelope().endPos.meters), nextBacktracking)
 
         val lastPathEndOffset =
             spacingRequirementAutomatons
@@ -281,8 +281,8 @@ data class InfraExplorerWithEnvelopeImpl(
                 .takeWhile { it.travelledPathOffset >= lookaheadEndOffset }
                 .lastOrNull { it.isBacktracking }
                 ?.travelledPathOffset ?: Offset(Double.POSITIVE_INFINITY.meters)
-        val cappedSimulatedOffset =
-            Offset.min(Offset(getFullEnvelope().endPos.meters), nextBacktracking)
+        val cappedSimulatedOffset = Offset<PhysicsPath>(getFullEnvelope().endPos.meters)
+        //            Offset.min(Offset(getFullEnvelope().endPos.meters), nextBacktracking)
 
         // We need a new automaton to get the resource uses over the whole path, and not just since
         // the last update
