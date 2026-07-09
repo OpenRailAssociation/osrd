@@ -4,15 +4,15 @@ import type { RoundTrips, TrainScheduleResponse } from 'common/api/osrdEditoastA
 
 import { buildTimetableExportPayload } from '../utils';
 
-const buildPacedTrain = (id: number): TrainScheduleResponse =>
+const buildTrainSchedule = (id: number): TrainScheduleResponse =>
   ({
     id,
-    train_name: `Paced ${id}`,
+    train_name: `TrainSchedule ${id}`,
   }) as TrainScheduleResponse;
 
 describe('buildTimetableExportPayload', () => {
-  it('includes forced one-way round trips for selected paced trains', () => {
-    const trainSchedules = [buildPacedTrain(12)];
+  it('includes forced one-way round trips for selected train schedules', () => {
+    const trainSchedules = [buildTrainSchedule(12)];
     const roundTrips: RoundTrips = { one_ways: [12], round_trips: [] };
 
     const payload = buildTimetableExportPayload(trainSchedules, [12], roundTrips);
@@ -21,8 +21,8 @@ describe('buildTimetableExportPayload', () => {
   });
 
   it('includes round trip indexes only when both directions are selected', () => {
-    const trainA = buildPacedTrain(21);
-    const trainB = buildPacedTrain(42);
+    const trainA = buildTrainSchedule(21);
+    const trainB = buildTrainSchedule(42);
     const roundTrips: RoundTrips = { round_trips: [[21, 42]] };
 
     const payloadWithBoth = buildTimetableExportPayload([trainA, trainB], [21, 42], roundTrips);
@@ -32,9 +32,9 @@ describe('buildTimetableExportPayload', () => {
     expect(payloadWithSingle.round_trips).toBeUndefined();
   });
 
-  it('handles paced train one-ways', () => {
-    const paced = buildPacedTrain(7);
-    const payload = buildTimetableExportPayload([paced], [7], {
+  it('handles train schedule one-ways', () => {
+    const trainSchedule = buildTrainSchedule(7);
+    const payload = buildTimetableExportPayload([trainSchedule], [7], {
       one_ways: [7],
     });
 

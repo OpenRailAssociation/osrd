@@ -67,7 +67,7 @@ describe.skip('useSimulationResults', () => {
   // What the hook produces from baseTrain after formatEditoastIdToTrainScheduleId()
   const expectedTrain = { ...baseTrain, id: TRAIN_SCHEDULE_ID };
 
-  const pacedTrainSchedule = {
+  const pacedTrain = {
     ...baseTrain,
     paced: {
       interval: PACED_INTERVAL,
@@ -146,8 +146,8 @@ describe.skip('useSimulationResults', () => {
   const renderUseSimulationResults = () =>
     renderHookWithStore(() => useSimulationResults(undefined));
 
-  const pacedScheduleWith = (exceptions: PacedTrainException[]) => ({
-    ...pacedTrainSchedule,
+  const buildPacedTrainWithCustomExceptions = (exceptions: PacedTrainException[]) => ({
+    ...pacedTrain,
     paced: { interval: PACED_INTERVAL, exceptions },
   });
 
@@ -299,7 +299,9 @@ describe.skip('useSimulationResults', () => {
 
     it('should return no results when the selected occurrence is disabled', async () => {
       mockUseSelectedTrainSchedule.mockReturnValue(
-        pacedScheduleWith([{ key: EXCEPTION_KEY, occurrence_index: 1, disabled: true }])
+        buildPacedTrainWithCustomExceptions([
+          { key: EXCEPTION_KEY, occurrence_index: 1, disabled: true },
+        ])
       );
 
       const { result } = renderUseSimulationResults();
@@ -324,7 +326,7 @@ describe.skip('useSimulationResults', () => {
     it('should build the selected occurrence from exception data and pass exceptionId to queries', async () => {
       const exceptionId = 99;
       mockUseSelectedTrainSchedule.mockReturnValue(
-        pacedScheduleWith([
+        buildPacedTrainWithCustomExceptions([
           {
             key: EXCEPTION_KEY,
             id: exceptionId,
@@ -367,7 +369,7 @@ describe.skip('useSimulationResults', () => {
       const exceptionId = 99;
       mockGetSelectedTrain.mockReturnValue({ id: ADDED_EXCEPTION_ID });
       mockUseSelectedTrainSchedule.mockReturnValue(
-        pacedScheduleWith([
+        buildPacedTrainWithCustomExceptions([
           // an indexed occurrence the hook must NOT pick
           {
             key: 'exc_indexed',
@@ -434,7 +436,9 @@ describe.skip('useSimulationResults', () => {
       'should compute the occurrence start time when $case',
       async ({ selectedId, exception, expectedStartTime }) => {
         mockGetSelectedTrain.mockReturnValue({ id: selectedId });
-        mockUseSelectedTrainSchedule.mockReturnValue(pacedScheduleWith([exception]));
+        mockUseSelectedTrainSchedule.mockReturnValue(
+          buildPacedTrainWithCustomExceptions([exception])
+        );
 
         const { result } = renderUseSimulationResults();
 

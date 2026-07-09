@@ -27,8 +27,8 @@ import type {
 } from '../types';
 import computeOccurrenceName from './computeOccurrenceName';
 
-export const isPacedTrainBase = (pacedTrain: TrainSchedule): pacedTrain is PacedTrain =>
-  !!pacedTrain.paced;
+export const isPacedTrainBase = (trainSchedule: TrainSchedule): trainSchedule is PacedTrain =>
+  !!trainSchedule.paced;
 
 export const CHANGE_GROUP_KEYS: (keyof PacedTrainException)[] = [
   'constraint_distribution',
@@ -230,17 +230,18 @@ export const getExceptionFromOccurrenceId = (
   const trainScheduleId = extractEditoastIdFromTrainScheduleId(
     extractTrainScheduleIdFromOccurrenceId(occurrenceId)
   );
-  const pacedTrain = trainSchedulesById.get(trainScheduleId);
-  if (!pacedTrain) return undefined;
-  if (!isPacedTrain(pacedTrain)) throw new Error(`No paced train found for id ${trainScheduleId}`);
+  const trainSchedule = trainSchedulesById.get(trainScheduleId);
+  if (!trainSchedule) return undefined;
+  if (!isPacedTrain(trainSchedule))
+    throw new Error(`No paced train found for id ${trainScheduleId}`);
 
   let exception: PacedTrainException | undefined;
   if (isIndexedOccurrenceId(occurrenceId)) {
     const index = extractOccurrenceIndexFromOccurrenceId(occurrenceId);
-    exception = pacedTrain.paced.exceptions.find((e) => e.occurrence_index === index);
+    exception = trainSchedule.paced.exceptions.find((e) => e.occurrence_index === index);
   } else {
     const id = extractExceptionIdFromOccurrenceId(occurrenceId);
-    exception = pacedTrain.paced.exceptions.find((e) => e.id === id);
+    exception = trainSchedule.paced.exceptions.find((e) => e.id === id);
   }
   return exception;
 };

@@ -738,30 +738,34 @@ export const loadNgeDto = async (
 
   const notes = notesResult.results;
 
-  const pacedTrainsPromise = dispatch(
+  const trainSchedulesPromise = dispatch(
     osrdEditoastApi.endpoints.getAllTimetableByIdTrainSchedules.initiate(
       { timetableId },
       { subscribe: false }
     )
   );
-  const pacedTrains = (await pacedTrainsPromise.unwrap()).filter(
-    (pacedTrain) => pacedTrain.path.length >= 2
+  const rawTrainSchedules = (await trainSchedulesPromise.unwrap()).filter(
+    (trainSchedule) => trainSchedule.path.length >= 2
   );
 
-  const trainSchedules = await fetchTrainSchedulePathOps(state.infraId, pacedTrains, dispatch);
+  const trainSchedules = await fetchTrainSchedulePathOps(
+    state.infraId,
+    rawTrainSchedules,
+    dispatch
+  );
 
   const trainSchedulesById = new Map(
     trainSchedules.map((trainSchedule) => [trainSchedule.id, trainSchedule])
   );
 
-  const pacedTrainRoundTripsPromise = dispatch(
+  const trainScheduleRoundTripsPromise = dispatch(
     osrdEditoastApi.endpoints.getTimetableByIdRoundTrips.initiate(
       { id: timetableId },
       { subscribe: false }
     )
   );
-  const { results: pacedTrainRoundTrips } = await pacedTrainRoundTripsPromise.unwrap();
-  const roundTripGroups = groupRoundTrips(trainSchedulesById, pacedTrainRoundTrips);
+  const { results: trainScheduleRoundTrips } = await trainScheduleRoundTripsPromise.unwrap();
+  const roundTripGroups = groupRoundTrips(trainSchedulesById, trainScheduleRoundTrips);
   const groupedTrainSchedules = groupCompatibleRoundTrips(roundTripGroups);
 
   const { results: subCategories } = await dispatch(

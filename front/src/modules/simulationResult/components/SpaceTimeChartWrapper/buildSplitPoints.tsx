@@ -62,10 +62,10 @@ export function buildSplitPoints(
     for (const zone of zones) {
       const { trainId } = parseOccupancyZonePathId(zone.pathId);
       if (isOccurrenceId(trainId)) {
-        const pacedTrainId = extractTrainScheduleIdFromOccurrenceId(trainId);
-        const pacedTrainIdCounts = counts.get(pacedTrainId) ?? new Map();
-        pacedTrainIdCounts.set(zone.trackId, (pacedTrainIdCounts.get(zone.trackId) ?? 0) + 1);
-        counts.set(pacedTrainId, pacedTrainIdCounts);
+        const trainScheduleId = extractTrainScheduleIdFromOccurrenceId(trainId);
+        const trainScheduleIdCounts = counts.get(trainScheduleId) ?? new Map();
+        trainScheduleIdCounts.set(zone.trackId, (trainScheduleIdCounts.get(zone.trackId) ?? 0) + 1);
+        counts.set(trainScheduleId, trainScheduleIdCounts);
       }
     }
     return counts;
@@ -86,16 +86,16 @@ export function buildSplitPoints(
     }) => {
       const occupancyZones = (zones || []).map((zone) => {
         const baseZones = zones ?? [];
-        const zonesCountByPacedTrainId = countZonesByTrainScheduleId(baseZones);
+        const zonesCountByTrainScheduleId = countZonesByTrainScheduleId(baseZones);
         const { trainId } = parseOccupancyZonePathId(zone.pathId);
 
         const isHovered = hoveredTrainIdForChart === trainId;
         const isSelected = selectedTrainId === trainId;
         let totalOccurrencesOnTrack = 0;
         if (isOccurrenceId(trainId)) {
-          const pacedTrainId = extractTrainScheduleIdFromOccurrenceId(trainId);
+          const trainScheduleId = extractTrainScheduleIdFromOccurrenceId(trainId);
           totalOccurrencesOnTrack =
-            zonesCountByPacedTrainId.get(pacedTrainId)?.get(zone.trackId) ?? 0;
+            zonesCountByTrainScheduleId.get(trainScheduleId)?.get(zone.trackId) ?? 0;
         }
         const path = pathsById[trainId];
         if (!path) return zone;

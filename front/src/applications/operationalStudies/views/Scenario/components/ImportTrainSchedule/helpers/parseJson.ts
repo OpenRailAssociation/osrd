@@ -86,19 +86,19 @@ export const validateTimetableJsonPayload = (importedItems: unknown): TimetableJ
     throw new Error('Invalid round trips configuration');
   }
 
-  const isInvalidPacedTrains = allTrains.some((pacedTrain) => {
+  const hasInvalidTrainSchedules = allTrains.some((trainSchedule) => {
     if (
-      TRAIN_SCHEDULE_COMPULSORY_KEYS.some((key) => !(key in pacedTrain)) ||
-      !Array.isArray(pacedTrain.path)
+      TRAIN_SCHEDULE_COMPULSORY_KEYS.some((key) => !(key in trainSchedule)) ||
+      !Array.isArray(trainSchedule.path)
     ) {
       return true;
     }
-    const hasInvalidSteps = pacedTrain.path.some((step) => !('id' in step));
+    const hasInvalidSteps = trainSchedule.path.some((step) => !('id' in step));
     return hasInvalidSteps;
   });
 
-  if (isInvalidPacedTrains) {
-    throw new Error('Invalid paced trains: some compulsory keys are missing');
+  if (hasInvalidTrainSchedules) {
+    throw new Error('Invalid train schedules: some compulsory keys are missing');
   }
 
   const roundTrips = validateRoundTrips(importedRoundTrips);

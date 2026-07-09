@@ -52,7 +52,7 @@ const RoundTripsModal = ({
 
   const subCategories = useSubCategoryContext();
 
-  const { data: { results: pacedTrainRoundtrips } = { results: undefined } } =
+  const { data: { results: trainScheduleRoundtrips } = { results: undefined } } =
     osrdEditoastApi.endpoints.getTimetableByIdRoundTrips.useQuery({
       id: timetableId,
     });
@@ -125,11 +125,11 @@ const RoundTripsModal = ({
   };
 
   const saveRoundTrips = async () => {
-    if (!pacedTrainRoundtrips) return;
+    if (!trainScheduleRoundtrips) return;
 
     const { idsToDelete, oneWaysIds, roundTripsIds } = buildRoundTripsPayload(
       pairingItems,
-      pacedTrainRoundtrips
+      trainScheduleRoundtrips
     );
 
     const apiCalls = [];
@@ -153,12 +153,12 @@ const RoundTripsModal = ({
   useModalFocusTrap(modalRef, closeModal);
 
   useEffect(() => {
-    if (!pacedTrainRoundtrips || trainSchedulesWithOpsById.size === 0) return;
+    if (!trainScheduleRoundtrips || trainSchedulesWithOpsById.size === 0) return;
 
-    const roundTripGroups = groupRoundTrips(trainSchedulesWithOpsById, pacedTrainRoundtrips);
+    const roundTripGroups = groupRoundTrips(trainSchedulesWithOpsById, trainScheduleRoundtrips);
 
     setPairingItems(formatPairingItems(roundTripGroups, t));
-  }, [pacedTrainRoundtrips, trainSchedulesWithOpsById]);
+  }, [trainScheduleRoundtrips, trainSchedulesWithOpsById]);
 
   useEffect(() => {
     if (roundTripsModalIsOpen) {

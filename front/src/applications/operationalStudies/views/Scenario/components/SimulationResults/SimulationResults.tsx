@@ -175,15 +175,18 @@ const SimulationResults = ({
     const selectedTrainScheduleId = extractEditoastIdFromTrainScheduleId(
       extractTrainScheduleIdFromOccurrenceId(selectedTrainId)
     );
-    const pacedTrain = trainSchedulesWithDetails.find(
-      (trainSchedule) => trainSchedule.id === selectedTrainScheduleId
+    const trainSchedule = trainSchedulesWithDetails.find(
+      (train) => train.id === selectedTrainScheduleId
     );
     // WARNING TODO: race condition here, to fix
-    // When turning a train into a service, then pacedTrain and selectedTrainId may be desynchronized.
-    if (!pacedTrain || !pacedTrain.paced) return undefined;
+    // When turning a train into a service, then trainSchedule and selectedTrainId may be desynchronized.
+    if (!trainSchedule || !trainSchedule.paced) return undefined;
 
-    const exception = findExceptionWithOccurrenceId(pacedTrain.paced.exceptions, selectedTrainId);
-    return exception?.summary ?? pacedTrain.summary;
+    const exception = findExceptionWithOccurrenceId(
+      trainSchedule.paced.exceptions,
+      selectedTrainId
+    );
+    return exception?.summary ?? trainSchedule.summary;
   }, [trainSchedulesWithDetails, selectedTrainId]);
 
   const handleTrainDrag = createHandleTrainDrag({

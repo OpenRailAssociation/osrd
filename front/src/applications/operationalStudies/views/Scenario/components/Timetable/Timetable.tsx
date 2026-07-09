@@ -66,7 +66,7 @@ const Timetable = ({
   );
 
   const [showTrainScheduleMoveDialog, setShowTrainScheduleMoveDialog] = useState(false);
-  const [pacedTrainIdsToMove, setPacedTrainIdsToMove] = useState<number[]>([]);
+  const [trainScheduleIdsToMove, setTrainScheduleIdsToMove] = useState<number[]>([]);
   const [trainScheduleSetIdSelected, setTrainScheduleSetIdSelected] = useState<number>();
 
   const { trainSchedulesByTrainScheduleSets, catalogEntries, manageTrainScheduleSet } =
@@ -107,10 +107,10 @@ const Timetable = ({
     [selectedTrainScheduleIds]
   );
 
-  const openMoveDialog = useCallback((pacedTrainIds: number[]) => {
-    if (pacedTrainIds.length === 0) return;
+  const openMoveDialog = useCallback((trainScheduleIds: number[]) => {
+    if (trainScheduleIds.length === 0) return;
 
-    setPacedTrainIdsToMove(pacedTrainIds);
+    setTrainScheduleIdsToMove(trainScheduleIds);
     setShowTrainScheduleMoveDialog(true);
   }, []);
 
@@ -119,13 +119,13 @@ const Timetable = ({
       try {
         await updateTrainSchedulesTssId({
           body: {
-            train_schedule_ids: pacedTrainIdsToMove,
+            train_schedule_ids: trainScheduleIdsToMove,
             train_schedule_set_id: trainScheduleSetId,
           },
         }).unwrap();
 
         const trainsToUpsert = trainSchedules
-          .filter((train) => pacedTrainIdsToMove.includes(train.id))
+          .filter((train) => trainScheduleIdsToMove.includes(train.id))
           .map((train) => ({
             ...train,
             train_schedule_set_id: trainScheduleSetId,
@@ -135,10 +135,10 @@ const Timetable = ({
       } catch (e) {
         dispatch(setFailure(castErrorToFailure(e)));
       } finally {
-        setPacedTrainIdsToMove([]);
+        setTrainScheduleIdsToMove([]);
       }
     },
-    [pacedTrainIdsToMove, updateTrainSchedulesTssId, dispatch]
+    [trainScheduleIdsToMove, updateTrainSchedulesTssId, dispatch]
   );
 
   return (
@@ -182,7 +182,7 @@ const Timetable = ({
           handleClickTrainScheduleSet={handleClickTrainScheduleSet}
           handleSelectTrainScheduleSet={handleSelectTrainScheduleSet}
           catalogEntries={catalogEntries}
-          moveTrainSchedule={(pacedTrainIds) => openMoveDialog(pacedTrainIds)}
+          moveTrainSchedule={(trainScheduleIds) => openMoveDialog(trainScheduleIds)}
           manageTrainScheduleSet={manageTrainScheduleSet}
           expandedTrainScheduleSetIds={expandedTrainScheduleSetIds}
           setShowTrainScheduleSetDialog={setShowTrainScheduleSetDialog}

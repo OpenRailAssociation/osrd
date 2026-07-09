@@ -94,7 +94,7 @@ describe('processJsonFile', () => {
       const invalidPayload = {
         trains: [0, 1],
         round_trips: {
-          paced_trains: [[0, 1]],
+          train_schedules: [[0, 1]],
         },
       };
 

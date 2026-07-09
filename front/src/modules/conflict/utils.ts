@@ -11,22 +11,22 @@ function getConflictTrainNames(
 ): string[] {
   const trainNames: string[] = [];
   conflict.train_ids.forEach((train) => {
-    const pacedTrain = trainMap.get(train.train_schedule_id);
-    if (!pacedTrain) return;
+    const trainSchedule = trainMap.get(train.train_schedule_id);
+    if (!trainSchedule) return;
 
     if (train.type === 'base') {
       trainNames.push(
-        pacedTrain.paced
-          ? computeOccurrenceName(pacedTrain.train_name, train.index)
-          : pacedTrain.train_name
+        trainSchedule.paced
+          ? computeOccurrenceName(trainSchedule.train_name, train.index)
+          : trainSchedule.train_name
       );
       return;
     }
 
     // The train might have been converted from paced to unique but the conflicts
     // haven't been re-fetched yet. In that case, fall back to the train name.
-    if (!isPacedTrainBase(pacedTrain)) {
-      trainNames.push(pacedTrain.train_name);
+    if (!isPacedTrainBase(trainSchedule)) {
+      trainNames.push(trainSchedule.train_name);
       return;
     }
 
@@ -34,24 +34,24 @@ function getConflictTrainNames(
       // Updated exception
       // Check if the exception has a name change group
       // Otherwise, compute the occurrence name
-      const namedException = pacedTrain.paced.exceptions.find(
+      const namedException = trainSchedule.paced.exceptions.find(
         (exception) => exception.occurrence_index === train.index && exception.train_name
       );
       trainNames.push(
         namedException
           ? namedException.train_name!.value
-          : computeOccurrenceName(pacedTrain.train_name, train.index)
+          : computeOccurrenceName(trainSchedule.train_name, train.index)
       );
     } else {
       // Added exception
       // Check if the exception has a name change group
       // Otherwise, the name is `${pacedTrainName}/+`
-      const namedException = pacedTrain.paced.exceptions.find(
+      const namedException = trainSchedule.paced.exceptions.find(
         // TODO_EXCEPTION: remove `!` when using TrainSchedulingException type
         (exception) => exception.id! === train.exception_id && exception.train_name
       );
       trainNames.push(
-        namedException ? namedException.train_name!.value : `${pacedTrain.train_name}/+`
+        namedException ? namedException.train_name!.value : `${trainSchedule.train_name}/+`
       );
     }
   });
@@ -65,8 +65,8 @@ function getConflictTrainCategories(
 ): (TrainCategory | null)[] {
   // /!\ TODO: we don't use the exceptions here to get the correct categories
   return conflict.train_ids.map((train) => {
-    const pacedTrain = trainMap.get(train.train_schedule_id);
-    return pacedTrain?.category ?? null;
+    const trainSchedule = trainMap.get(train.train_schedule_id);
+    return trainSchedule?.category ?? null;
   });
 }
 

@@ -74,7 +74,7 @@ const TimetableToolbar = ({
   const dispatch = useAppDispatch();
 
   const { infraId, timetableId } = useScenarioContext();
-  const { data: pacedTrainRoundTripsData } =
+  const { data: trainScheduleRoundTripsData } =
     osrdEditoastApi.endpoints.getTimetableByIdRoundTrips.useQuery({
       id: timetableId,
     });
@@ -101,7 +101,7 @@ const TimetableToolbar = ({
     exportTrainSchedules(
       selectedTrainScheduleIds,
       trainSchedules,
-      pacedTrainRoundTripsData?.results
+      trainScheduleRoundTripsData?.results
     );
   };
 
