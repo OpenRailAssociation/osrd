@@ -15,7 +15,7 @@ Generates a json that can be used in core to run stdcm requests,
 through the `JsonTimetableProvider` class.
 """
 )
-@click.option("--editoast-url", "-e", default="https://dev-osrd.reseau.sncf.fr/")
+@click.option("--gateway-url", "-u", default="https://demo.osrd.fr/")
 @click.option("--timetable-id", "-t", required=True, type=int)
 @click.option("--infra-id", "-i", required=True, type=int)
 @click.option("--path", "-p", default="requirements.json")
@@ -26,9 +26,9 @@ def main(*args, **kwargs):
 
 
 async def async_main(
-    editoast_url, timetable_id, infra_id, path, gateway_cookie, page_size
+    gateway_url, timetable_id, infra_id, path, gateway_cookie, page_size
 ):
-    url = f"{editoast_url}api/timetable/{timetable_id}/requirements/?page=$page&{page_size=}&{infra_id=}"
+    url = f"{gateway_url}api/timetable/{timetable_id}/requirements/?page=$page&{page_size=}&{infra_id=}"
     cookies, connector = make_connector(gateway_cookie)
     async with aiohttp.ClientSession(
         trust_env=True, raise_for_status=True, cookies=cookies, connector=connector
