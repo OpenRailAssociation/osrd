@@ -34,11 +34,13 @@ export default class TrainTrackProjectionLazyLoader extends TrainProjectionLazyL
   async processBatch(ids: number[]) {
     const { infraId, timetableId, path, electricalProfileSetId } = this.options;
 
-    let pacedTrainPromise: Promise<PostTrainSchedulesProjectPathApiResponse> = Promise.resolve({});
-    let trainSchedulesOccupancyBlocksPromise: Promise<PostTrainSchedulesOccupancyBlocksApiResponse> =
+    let trainSchedulesPromise: Promise<PostTrainSchedulesProjectPathApiResponse> = Promise.resolve(
+      {}
+    );
+    let trainScheduleOccupancyBlocksPromise: Promise<PostTrainSchedulesOccupancyBlocksApiResponse> =
       Promise.resolve({});
     if (ids.length > 0) {
-      pacedTrainPromise = this.options
+      trainSchedulesPromise = this.options
         .dispatch(
           osrdEditoastApi.endpoints.postTrainSchedulesProjectPath.initiate(
             {
@@ -55,7 +57,7 @@ export default class TrainTrackProjectionLazyLoader extends TrainProjectionLazyL
         )
         .unwrap();
 
-      trainSchedulesOccupancyBlocksPromise = this.options
+      trainScheduleOccupancyBlocksPromise = this.options
         .dispatch(
           osrdEditoastApi.endpoints.postTrainSchedulesOccupancyBlocks.initiate(
             {
@@ -73,8 +75,8 @@ export default class TrainTrackProjectionLazyLoader extends TrainProjectionLazyL
         .unwrap();
     }
 
-    const rawPacedTrainResults = await pacedTrainPromise;
-    const rawTrainSchedulesOccupancyBlocks = await trainSchedulesOccupancyBlocksPromise;
+    const rawTrainScheduleResults = await trainSchedulesPromise;
+    const rawTrainScheduleOccupancyBlocks = await trainScheduleOccupancyBlocksPromise;
 
     if (this.cancelled) {
       return;
@@ -82,23 +84,23 @@ export default class TrainTrackProjectionLazyLoader extends TrainProjectionLazyL
 
     const rawResults = new Map<number, ProjectionResult>();
 
-    for (const [id, result] of Object.entries(rawPacedTrainResults)) {
-      const pacedTrainProjectionResult: ProjectionResult = {
+    for (const [id, result] of Object.entries(rawTrainScheduleResults)) {
+      const trainScheduleProjectionResult: ProjectionResult = {
         space_time_curves: result.train_schedule,
-        signal_updates: rawTrainSchedulesOccupancyBlocks[id].train_schedule,
+        signal_updates: rawTrainScheduleOccupancyBlocks[id].train_schedule,
       };
 
       if (!isEmpty(result.exceptions)) {
-        pacedTrainProjectionResult.exceptions = new Map();
+        trainScheduleProjectionResult.exceptions = new Map();
         for (const [exceptionId, exception] of Object.entries(result.exceptions)) {
-          pacedTrainProjectionResult.exceptions.set(exceptionId, {
+          trainScheduleProjectionResult.exceptions.set(exceptionId, {
             space_time_curves: exception,
-            signal_updates: rawTrainSchedulesOccupancyBlocks[id]?.exceptions?.[exceptionId] ?? [],
+            signal_updates: rawTrainScheduleOccupancyBlocks[id]?.exceptions?.[exceptionId] ?? [],
           });
         }
       }
 
-      rawResults.set(Number(id), pacedTrainProjectionResult);
+      rawResults.set(Number(id), trainScheduleProjectionResult);
     }
 
     this.options.onProgress(rawResults);

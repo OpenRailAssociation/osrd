@@ -87,22 +87,22 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
   const projectionPath = usePathProjection(infraId, trainSchedulesById);
 
   useEffect(() => {
-    const pacedTrainsResult = dispatch(
+    const trainSchedulesResult = dispatch(
       osrdEditoastApi.endpoints.getAllTimetableByIdTrainSchedules.initiate({
         timetableId: scenario.timetable_id,
       })
     );
 
     const fetchTrainSchedules = async () => {
-      const pacedTrains = (await pacedTrainsResult.unwrap()) ?? [];
+      const trainSchedulesResponse = (await trainSchedulesResult.unwrap()) ?? [];
 
-      setTrainSchedules(sortBy(pacedTrains, 'start_time'));
+      setTrainSchedules(sortBy(trainSchedulesResponse, 'start_time'));
     };
 
     fetchTrainSchedules();
 
     return () => {
-      pacedTrainsResult.unsubscribe();
+      trainSchedulesResult.unsubscribe();
     };
   }, [scenario.timetable_id]);
 
@@ -147,7 +147,6 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
     simulatedTrainsById.size === trainSchedules.length &&
     !isTrainSimulationLoading;
 
-  // TODO Paced trains : adapt this to handle paced trains in the conflicts issue
   // TODO: investigate why RTK Query returns undefined here despite isFetching and isUninitialized being false and the API always returning a list
   const {
     data: conflictsData,
