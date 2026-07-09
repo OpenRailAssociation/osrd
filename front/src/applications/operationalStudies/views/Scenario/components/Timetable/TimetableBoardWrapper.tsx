@@ -85,9 +85,9 @@ const TimetableBoardWrapper = ({
     const trainSchedulesById = mapBy(trainSchedulesWithDetails, 'id');
     return selectedTrainScheduleIds.reduce(
       (acc, trainScheduleId) => {
-        const pacedTrain = trainSchedulesById.get(trainScheduleId);
-        if (!pacedTrain) throw new Error(`No train schedule found for id ${trainScheduleId}`);
-        if (!pacedTrain.paced) acc.selectedUniqueTrainIds.push(trainScheduleId);
+        const trainSchedule = trainSchedulesById.get(trainScheduleId);
+        if (!trainSchedule) throw new Error(`No train schedule found for id ${trainScheduleId}`);
+        if (!trainSchedule.paced) acc.selectedUniqueTrainIds.push(trainScheduleId);
         else acc.selectedPacedTrainIds.push(trainScheduleId);
         return acc;
       },

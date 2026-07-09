@@ -626,18 +626,20 @@ export const handleUpdateTrainSchedule = async ({
   } else {
     // otherwise create return
 
-    // Remove train_schedule_set_id before creating paced train as we don't want to pass it in the payload
-    const { train_schedule_set_id: _trainScheduleSetId, ...pacedTrainWithoutTrainScheduleSetId } =
-      newForwardTrainBase;
+    // Remove train_schedule_set_id before creating train schedule as we don't want to pass it in the payload
+    const {
+      train_schedule_set_id: _trainScheduleSetId,
+      ...trainScheduleWithoutTrainScheduleSetId
+    } = newForwardTrainBase;
 
-    const returnPacedTrain: TrainSchedule = {
-      ...pacedTrainWithoutTrainScheduleSetId,
+    const returnTrainSchedule: TrainSchedule = {
+      ...trainScheduleWithoutTrainScheduleSetId,
       ...returnPathAndSchedule,
       paced: returnPaced,
     };
 
     newReturnTrainSchedule = (
-      await createTrainSchedules(dispatch, trainScheduleSetId, [returnPacedTrain])
+      await createTrainSchedules(dispatch, trainScheduleSetId, [returnTrainSchedule])
     )[0];
 
     addUpsertedTrainSchedules([newReturnTrainSchedule]);

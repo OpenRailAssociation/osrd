@@ -42,7 +42,7 @@ type TrainListProps = {
   projectingOnSimulatedPathException: boolean | undefined;
   isSelectMode: boolean;
   timetableMode: TimetableMode;
-  moveTrainSchedule?: (pacedTrainIds: number[]) => void;
+  moveTrainSchedule?: (trainScheduleIds: number[]) => void;
   trainSchedulesByTrainScheduleSets: TrainSchedulesByTrainScheduleSet[] | null;
   handleClickTrainScheduleSet: (id: number) => void;
   handleSelectTrainScheduleSet: (trainIds: number[]) => void;

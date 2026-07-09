@@ -24,13 +24,13 @@ import { generateRoundTripsPayload, generateTrainPayloads } from './generatePayl
 
 const postRoundTrips = async (
   roundTrips: RoundTripsFromJson,
-  formattedPacedTrains: TrainScheduleResponse[],
+  formattedTrainSchedules: TrainScheduleResponse[],
   dispatch: AppDispatch
 ): Promise<void> => {
   if (roundTrips.length > 0) {
     const payload = generateRoundTripsPayload(
       roundTrips,
-      formattedPacedTrains.map(({ id }) => ({ id }))
+      formattedTrainSchedules.map(({ id }) => ({ id }))
     );
     await dispatch(osrdEditoastApi.endpoints.postRoundTrips.initiate(payload)).unwrap();
   }

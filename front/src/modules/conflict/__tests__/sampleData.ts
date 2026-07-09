@@ -1,42 +1,9 @@
-import type { Conflict, TrainCategory, TrainScheduleResponse } from 'common/api/osrdEditoastApi';
+import type { Conflict } from 'common/api/osrdEditoastApi';
 import type { TrainScheduleId, OccurrenceId } from 'reducers/osrdconf/types';
 
 export const trainScheduleId = (n: number) => `trainSchedule_${n}` as TrainScheduleId;
 export const occurrenceId = (paced: number, index = 0) =>
   `indexedoccurrence_${paced}_${index}` as OccurrenceId;
-
-export const uniqueTrain = ({
-  id,
-  train_name,
-  category,
-}: {
-  id: number;
-  train_name: string;
-  category?: TrainCategory | null;
-}): TrainScheduleResponse =>
-  ({
-    id,
-    train_name,
-    category: category ?? null,
-  }) as TrainScheduleResponse;
-
-export const pacedTrain = ({
-  id,
-  train_name,
-  category,
-  exceptions,
-}: {
-  id: number;
-  train_name: string;
-  category?: TrainCategory | null;
-  exceptions?: Array<{ key?: string; occurrence_index?: number; train_name?: { value: string } }>;
-}): TrainScheduleResponse =>
-  ({
-    id,
-    train_name,
-    category: category ?? null,
-    paced: { exceptions },
-  }) as TrainScheduleResponse;
 
 export const conflictBase = (partial: Partial<Conflict> = {}): Conflict => ({
   conflict_type: 'Spacing',

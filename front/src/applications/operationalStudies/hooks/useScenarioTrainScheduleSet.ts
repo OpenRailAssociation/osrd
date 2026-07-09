@@ -279,14 +279,14 @@ export default function useScenarioTrainScheduleSet(
             newIds.push(item.trainScheduleSet.id);
           }
 
-          const referencedPacedTrains = await getTrainScheduleSetTrainSchedules({
+          const referencedTrainSchedules = await getTrainScheduleSetTrainSchedules({
             id: item.trainScheduleSet.id,
           }).unwrap();
 
-          allTrainsToUpsert.push(...referencedPacedTrains);
+          allTrainsToUpsert.push(...referencedTrainSchedules);
         } else {
           // For copy imports, create a new train schedule set and copy the trains
-          const sourcePacedTrains = await getTrainScheduleSetTrainSchedules({
+          const sourceTrainSchedules = await getTrainScheduleSetTrainSchedules({
             id: item.trainScheduleSet.id,
           }).unwrap();
 
@@ -302,7 +302,7 @@ export default function useScenarioTrainScheduleSet(
 
           newIds.push(newTss.id);
 
-          const trainsWithoutIds = sourcePacedTrains.map(({ id: _id, ...train }) => ({
+          const trainsWithoutIds = sourceTrainSchedules.map(({ id: _id, ...train }) => ({
             ...train,
             train_schedule_set_id: newTss.id,
           }));

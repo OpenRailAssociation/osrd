@@ -48,19 +48,19 @@ const formatTrainSchedulesForExport = (
   trainSchedules: TrainScheduleResponse[],
   selectedTimeTableIdsFromClick: number[]
 ) => {
-  const pacedTrainIndexByEditoastId = new Map<number, number>();
+  const trainScheduleIndexByEditoastId = new Map<number, number>();
 
-  const pacedTrains = trainSchedules
+  const formattedTrainSchedules = trainSchedules
     .filter(({ id }) => selectedTimeTableIdsFromClick.includes(id))
     .reduce<TrainSchedule[]>((acc, trainSchedule) => {
-      pacedTrainIndexByEditoastId.set(trainSchedule.id, acc.length);
+      trainScheduleIndexByEditoastId.set(trainSchedule.id, acc.length);
       acc.push(omit(trainSchedule, ['id', 'train_schedule_set_id']));
       return acc;
     }, []);
 
   return {
-    formattedTrainSchedules: pacedTrains,
-    pacedTrainIndexByEditoastId,
+    formattedTrainSchedules,
+    trainScheduleIndexByEditoastId,
   };
 };
 
@@ -130,14 +130,14 @@ export const buildTimetableExportPayload = (
   selectedTimeTableIdsFromClick: number[],
   roundTrips?: RoundTrips
 ): TimetableExportPayload => {
-  const { formattedTrainSchedules, pacedTrainIndexByEditoastId } = formatTrainSchedulesForExport(
+  const { formattedTrainSchedules, trainScheduleIndexByEditoastId } = formatTrainSchedulesForExport(
     trainSchedules,
     selectedTimeTableIdsFromClick
   );
 
   const mappedRoundTrips: RoundTripsFromJson = mapRoundTripsToIndexes(
     roundTrips,
-    pacedTrainIndexByEditoastId
+    trainScheduleIndexByEditoastId
   );
 
   return {

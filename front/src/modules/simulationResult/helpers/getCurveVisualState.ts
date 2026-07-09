@@ -17,7 +17,7 @@ import { extractTrainScheduleIdFromTrainId, isOccurrenceId } from 'utils/trainId
 
 type TrainInput = CurveStyleInput['train'];
 
-const samePacedTrain = (a: TrainId, b: TrainId) =>
+const sameTrainSchedule = (a: TrainId, b: TrainId) =>
   extractTrainScheduleIdFromTrainId(a) === extractTrainScheduleIdFromTrainId(b);
 
 const getTimetableSelectionState = (
@@ -25,7 +25,7 @@ const getTimetableSelectionState = (
   selection: SelectedTrain
 ): CurveVisualState => {
   if (train.id === selection.id) return 'passivePrimary';
-  if (!samePacedTrain(train.id, selection.id)) return 'none';
+  if (!sameTrainSchedule(train.id, selection.id)) return 'none';
 
   // Selection is an occurrence; its sibling occurrences are passiveSecondary (A.2 bis).
   if (isOccurrenceId(selection.id)) return 'passiveSecondary';
@@ -48,7 +48,7 @@ const getChartSelectionState = (
   // (B.1, B.1 bis, B.4, B.4 bis, and B.3 / B.6 last clicked, plus C mirrors).
   if (train.id === selection.id) return chart === primaryChart ? 'active' : 'passivePrimary';
 
-  if (!samePacedTrain(train.id, selection.id)) return 'none';
+  if (!sameTrainSchedule(train.id, selection.id)) return 'none';
 
   // 'all' (B.5, C.5): every occurrence of the selected paced gets the same as self.
   if (panelMode === 'all') return chart === primaryChart ? 'active' : 'passivePrimary';

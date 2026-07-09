@@ -3,15 +3,15 @@ import { describe, it, expect } from 'vitest';
 import { generateRoundTripsPayload } from '../generatePayloads';
 
 describe('generateRoundTripsPayload', () => {
-  it('correctly generates payload for a mix of one-ways and round-trips paced trains', () => {
-    const pacedTrains = [{ id: 101 }, { id: 102 }, { id: 103 }];
+  it('correctly generates payload for a mix of one-ways and round-trips train schedules', () => {
+    const trainSchedules = [{ id: 101 }, { id: 102 }, { id: 103 }];
 
-    const pacedTrainIndexes: ([number, number] | [number, null])[] = [
+    const trainScheduleIndexes: ([number, number] | [number, null])[] = [
       [0, 2],
       [1, null],
     ];
 
-    const trainSchedulePayload = generateRoundTripsPayload(pacedTrainIndexes, pacedTrains);
+    const trainSchedulePayload = generateRoundTripsPayload(trainScheduleIndexes, trainSchedules);
 
     expect(trainSchedulePayload).toEqual({
       roundTrips: {
@@ -21,17 +21,17 @@ describe('generateRoundTripsPayload', () => {
     });
   });
 
-  const pacedTrains = [{ id: 7 }, { id: 8 }, { id: 9 }, { id: 15 }];
+  const trainSchedules = [{ id: 7 }, { id: 8 }, { id: 9 }, { id: 15 }];
 
-  it('correctly generates payload for only one-ways paced trains', () => {
-    const oneWayPacedIndexes: ([number, number] | [number, null])[] = [
+  it('correctly generates payload for only one-ways train schedules', () => {
+    const oneWayTrainScheduleIndexes: ([number, number] | [number, null])[] = [
       [1, null],
       [0, null],
       [2, null],
       [3, null],
     ];
 
-    const oneWayPayload = generateRoundTripsPayload(oneWayPacedIndexes, pacedTrains);
+    const oneWayPayload = generateRoundTripsPayload(oneWayTrainScheduleIndexes, trainSchedules);
 
     expect(oneWayPayload).toEqual({
       roundTrips: {
@@ -41,13 +41,16 @@ describe('generateRoundTripsPayload', () => {
     });
   });
 
-  it('correctly generates payload for only round-trips paced trains', () => {
-    const roundTripsPacedIndexes: ([number, number] | [number, null])[] = [
+  it('correctly generates payload for only round-trips train schedules', () => {
+    const roundTripsTrainScheduleIndexes: ([number, number] | [number, null])[] = [
       [1, 2],
       [0, 3],
     ];
 
-    const roundTripsPayload = generateRoundTripsPayload(roundTripsPacedIndexes, pacedTrains);
+    const roundTripsPayload = generateRoundTripsPayload(
+      roundTripsTrainScheduleIndexes,
+      trainSchedules
+    );
 
     expect(roundTripsPayload).toEqual({
       roundTrips: {
