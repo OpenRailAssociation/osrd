@@ -5,6 +5,7 @@ import com.google.common.collect.TreeRangeMap
 import fr.sncf.osrd.DriverBehaviour
 import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.api.RangeValues
+import fr.sncf.osrd.api.dedupScheduleItems
 import fr.sncf.osrd.api.standalone_sim.ElectricalProfileValue
 import fr.sncf.osrd.api.standalone_sim.MarginValue
 import fr.sncf.osrd.api.standalone_sim.SimulationScheduleItem
@@ -69,9 +70,13 @@ fun runStandaloneSimulation(
     driverBehaviour: DriverBehaviour = DriverBehaviour(),
 ): SimulationSuccess {
     if (trainPath.getLength() == Offset.zero<TrainPath>()) throw OSRDError(ZeroLengthPath)
+
+    val scheduleDeduped = dedupScheduleItems(schedule)
+
     val signalingRanges = buildSignalingRanges(infra, trainPath)
     // MRSP & SpeedLimits
-    val safetySpeedRanges = makeSafetySpeedRanges(infra, trainPath, schedule, signalingRanges)
+    val safetySpeedRanges =
+        makeSafetySpeedRanges(infra, trainPath, scheduleDeduped, signalingRanges)
     var mrsp =
         computeMRSP(
             trainPath,
@@ -109,7 +114,7 @@ fun runStandaloneSimulation(
         )
 
     // Max speed envelope
-    val simStops = getSimStops(schedule)
+    val simStops = getSimStops(scheduleDeduped)
     val maxSpeedEnvelope = maxSpeedEnvelopeFrom(context, simStops, mrsp)
 
     // Add neutral sections
@@ -136,7 +141,7 @@ fun runStandaloneSimulation(
             context,
             margins,
             constraintDistribution,
-            schedule,
+            scheduleDeduped,
         )
 
     // Extract all kinds of metadata from the simulation,
