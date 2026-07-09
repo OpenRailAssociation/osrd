@@ -74,11 +74,6 @@ export function isArrivalDateInSearchTimeWindow(
   return arrivalDate >= searchDatetimeWindow.begin && arrivalDate <= searchDatetimeWindow.end;
 }
 
-export const isEqualDate = (searchDate: Date, startDate: Date) =>
-  searchDate.getFullYear() === startDate.getFullYear() &&
-  searchDate.getMonth() === startDate.getMonth() &&
-  searchDate.getDate() === startDate.getDate();
-
 /**
  * @param start Date object
  * @param end Date object

@@ -19,7 +19,7 @@ import {
   getStdcmTimetableID,
 } from 'reducers/osrdconf/stdcmConf/selectors';
 import { useAppDispatch } from 'store';
-import { isArrivalDateInSearchTimeWindow, isEqualDate } from 'utils/date';
+import { isArrivalDateInSearchTimeWindow } from 'utils/date';
 import { Duration } from 'utils/duration';
 import { castErrorToFailure } from 'utils/error';
 
@@ -128,27 +128,35 @@ const useLinkedTrainSearch = () => {
       }
       const tssPayload = trainScheduleSets.map((tss) => ['=', ['train_schedule_set_id'], tss.id]);
 
+      const startOfDay = new Date(linkedTrainDate);
+      startOfDay.setHours(0, 0, 0, 0);
+      const endOfDay = new Date(linkedTrainDate);
+      endOfDay.setHours(23, 59, 59, 999);
+
       const results = (await postSearch({
         searchPayload: {
           object: 'trainschedule',
-          query: ['and', ['search', ['train_name'], trainNameInput], ['or', ...tssPayload]],
+          query: [
+            'and',
+            ['search', ['train_name'], trainNameInput],
+            ['or', ...tssPayload],
+            ['>=', ['start_time'], startOfDay.getTime()],
+            ['<=', ['start_time'], endOfDay.getTime()],
+          ],
         },
         pageSize: 25,
       }).unwrap()) as SearchResultItemTrainSchedule[];
-      const filteredResults = results.filter((result) =>
-        isEqualDate(linkedTrainDate, new Date(result.start_time))
-      );
 
-      if (!filteredResults.length) {
+      if (!results.length) {
         setDisplaySearchButton(true);
         setLinkedTrainResults([]);
         return;
       }
 
-      const filteredResultsSummaries = await getTrainsSummaries(filteredResults.map((r) => r.id));
+      const filteredResultsSummaries = await getTrainsSummaries(results.map((r) => r.id));
 
       const newLinkedPathResults = await Promise.all(
-        filteredResults.map(async (result) => {
+        results.map(async (result) => {
           if (!filteredResultsSummaries) return undefined;
           const resultSummary = filteredResultsSummaries[result.id].train_schedule;
           if (resultSummary.status !== 'success') return undefined;
