@@ -1,7 +1,7 @@
 package fr.sncf.osrd.standalone_sim
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
-import fr.sncf.osrd.api.parseRawSimulationScheduleItems
+import fr.sncf.osrd.api.dedupScheduleItems
 import fr.sncf.osrd.api.standalone_sim.SimulationScheduleItem
 import fr.sncf.osrd.api.standalone_sim.StopDetails
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal.OPEN
@@ -26,7 +26,7 @@ class SimulationScheduleItemsParserTests {
         simulationScheduleItems: List<SimulationScheduleItem>,
         expectedItems: List<SimulationScheduleItem>,
     ) {
-        val mergedItems = parseRawSimulationScheduleItems(simulationScheduleItems)
+        val mergedItems = dedupScheduleItems(simulationScheduleItems)
         Assertions.assertThat(mergedItems).usingRecursiveComparison().isEqualTo(expectedItems)
     }
 
