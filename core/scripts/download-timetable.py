@@ -12,12 +12,12 @@ from common import get_paginated, make_connector
 
 async def download_timetable(
     timetable_id: int,
-    editoast_url: str,
+    gateway_url: str,
     page_size: int,
     gateway_cookie: str,
     max_train_count: int,
 ) -> Dict:
-    paced_trains_url = f"{editoast_url}api/timetable/{timetable_id}/train_schedules/?page=$page&{page_size=}"
+    paced_trains_url = f"{gateway_url}api/timetable/{timetable_id}/train_schedules/?page=$page&{page_size=}"
     cookies, connector = make_connector(gateway_cookie)
     async with aiohttp.ClientSession(
         trust_env=True, raise_for_status=True, cookies=cookies, connector=connector
@@ -42,7 +42,7 @@ async def download_timetable(
 Downloads a full timetable into a json file that can be reimported in OSRD operational studies.
 """
 )
-@click.option("--editoast-url", "-e", default="https://dev-osrd.reseau.sncf.fr/")
+@click.option("--gateway-url", "-u", default="https://demo.osrd.fr/")
 @click.option("--timetable-id", "-t", required=True, type=int)
 @click.option("--path", "-p", default="timetable.json")
 @click.option("--gateway-cookie", "-c", envvar="GATEWAY_COOKIE")
@@ -56,10 +56,10 @@ Maximum number of train to export, to avoid issues with uploading large files.
 Trains are sorted by departure time before being trimmed (earliest ones are kept).
 """,
 )
-def main(editoast_url, timetable_id, path, gateway_cookie, page_size, max_train_count):
+def main(gateway_url, timetable_id, path, gateway_cookie, page_size, max_train_count):
     trains = asyncio.run(
         download_timetable(
-            timetable_id, editoast_url, page_size, gateway_cookie, max_train_count
+            timetable_id, gateway_url, page_size, gateway_cookie, max_train_count
         )
     )
     with open(path, "w", encoding="utf-8") as jsonfile:
