@@ -30,6 +30,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
+import org.junit.jupiter.params.provider.Arguments.arguments
 import org.junit.jupiter.params.provider.MethodSource
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -490,6 +491,65 @@ class StandaloneSimulationTest {
             val actual = mrspWithSafetySpeed.interpolateSpeedLeftDir(position, 1.0)
             assertEquals(expected, actual)
             position += 1.0
+        }
+    }
+
+    private fun testThroughDuplicateOP(): Stream<Arguments> =
+        Stream.of(
+            arguments(listOf(123, 587)),
+            arguments(listOf(8524, 7456, 2975)),
+            arguments(listOf(8524, 7456, 2975, 0)),
+        )
+
+    @ParameterizedTest
+    @MethodSource
+    fun testThroughDuplicateOP(stopDurations: List<Long>) {
+        val opOffset = Offset<PhysicsPath>(Distance(pathLength.distance.millimeters / 2))
+        val schedule = stopDurations.map { milliseconds ->
+            SimulationScheduleItem(
+                pathOffset = opOffset,
+                arrival = null,
+                stopDetails =
+                    StopDetails(
+                        duration = Duration(milliseconds),
+                        receptionSignal = OPEN,
+                        isBacktracking = false,
+                    ),
+            )
+        }
+
+        val res =
+            runStandaloneSimulation(
+                infra = infra,
+                trainPath = trainPath,
+                rollingStock = rollingStock,
+                comfort = Comfort.STANDARD,
+                constraintDistribution = RJSAllowanceDistribution.LINEAR,
+                speedLimitTag = null,
+                powerRestrictions = offsetRangeMapOf(),
+                useElectricalProfiles = false,
+                useSpeedLimits = false,
+                timeStep = 2.0,
+                schedule = schedule,
+                initialSpeed = 0.0,
+                margins = RangeValues(listOf(), listOf()),
+            )
+
+        assertDuplicateOPReport(res.base, schedule)
+        assertDuplicateOPReport(res.provisional, schedule)
+        assertDuplicateOPReport(res.finalOutput, schedule)
+    }
+
+    private fun assertDuplicateOPReport(
+        report: ReportTrain,
+        schedule: List<SimulationScheduleItem>,
+    ) {
+        assertEquals(schedule.size, report.pathItemTimes.size)
+        for (i in 0..schedule.size - 2) {
+            assertEquals(
+                report.pathItemTimes[i] + (schedule[i].stopDetails?.duration ?: Duration.ZERO),
+                report.pathItemTimes[i + 1],
+            )
         }
     }
 
