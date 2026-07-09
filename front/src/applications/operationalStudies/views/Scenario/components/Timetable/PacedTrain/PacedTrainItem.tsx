@@ -24,7 +24,7 @@ import isMainCategory from 'modules/rollingStock/helpers/category';
 import { getOccurrencesWorstStatus } from 'modules/trainSchedule/helpers/pacedTrain';
 import {
   createExceptions,
-  createPacedTrains,
+  createTrainSchedules,
   deleteExceptions,
   deleteTrainSchedules,
 } from 'modules/trainSchedule/helpers/updateTrainScheduleHelpers';
@@ -264,7 +264,7 @@ const PacedTrainItem = ({
     });
 
     const formattedPacedTrainResponse: TrainScheduleResponse = (
-      await createPacedTrains(dispatch, pacedTrainDetail.train_schedule_set_id, [newPacedTrain])
+      await createTrainSchedules(dispatch, pacedTrainDetail.train_schedule_set_id, [newPacedTrain])
     )[0];
     dispatch(
       updateSelectedTrain({

@@ -14,7 +14,7 @@ import {
   type TrainScheduleResponse,
 } from 'common/api/osrdEditoastApi';
 import {
-  createPacedTrains,
+  createTrainSchedules,
   createExceptions,
 } from 'modules/trainSchedule/helpers/updateTrainScheduleHelpers';
 import { setWarning, setFailure } from 'reducers/main';
@@ -93,7 +93,7 @@ export const postFullImportPayload = async (
     const BATCH_SIZE = 1000;
     const trainChunks = chunk(trainSchedules, BATCH_SIZE);
     for (const trainChunk of trainChunks) {
-      const createdTrains = await createPacedTrains(dispatch, trainScheduleSetId, trainChunk);
+      const createdTrains = await createTrainSchedules(dispatch, trainScheduleSetId, trainChunk);
       newtrainschedules.push(...createdTrains);
     }
 

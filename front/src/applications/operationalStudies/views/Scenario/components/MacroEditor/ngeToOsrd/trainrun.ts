@@ -6,7 +6,7 @@ import {
   type TrainScheduleResponse,
 } from 'common/api/osrdEditoastApi';
 import {
-  createPacedTrains,
+  createTrainSchedules,
   deleteTrainSchedules,
   fetchTrainSchedule,
   storePacedTrain,
@@ -440,7 +440,7 @@ const handleCreateTrainSchedule = async (
 
   const trainSchedulesToCreate = returnTrip ? [forwardTrip, returnTrip] : [forwardTrip];
 
-  const newTrainSchedules: TrainScheduleResponse[] = await createPacedTrains(
+  const newTrainSchedules: TrainScheduleResponse[] = await createTrainSchedules(
     dispatch,
     trainScheduleSetId,
     trainSchedulesToCreate
@@ -637,7 +637,7 @@ export const handleUpdateTrainSchedule = async ({
     };
 
     newReturnTrainSchedule = (
-      await createPacedTrains(dispatch, trainScheduleSetId, [returnPacedTrain])
+      await createTrainSchedules(dispatch, trainScheduleSetId, [returnPacedTrain])
     )[0];
 
     addUpsertedTrainSchedules([newReturnTrainSchedule]);

@@ -9,7 +9,7 @@ import {
   type TrainScheduleSet,
   type TrainScheduleResponse,
 } from 'common/api/osrdEditoastApi';
-import { createPacedTrains } from 'modules/trainSchedule/helpers/updateTrainScheduleHelpers';
+import { createTrainSchedules } from 'modules/trainSchedule/helpers/updateTrainScheduleHelpers';
 import type { TrainScheduleWithDetails } from 'modules/trainSchedule/types';
 import { useAppDispatch } from 'store';
 
@@ -209,13 +209,13 @@ export default function useScenarioTrainScheduleSet(
         });
 
       // create the trains and attach them to the new local tss
-      const createdTrains = await createPacedTrains(dispatch, newTss.id, trainsToCopy);
+      const createdTrains = await createTrainSchedules(dispatch, newTss.id, trainsToCopy);
 
       upsertTrainSchedules(createdTrains);
     },
     [
       createTrainScheduleSetMutation,
-      createPacedTrains,
+      createTrainSchedules,
       linkTrainScheduleSetToTimetable,
       timetableId,
       trainScheduleSets,
@@ -307,7 +307,7 @@ export default function useScenarioTrainScheduleSet(
             train_schedule_set_id: newTss.id,
           }));
 
-          const createdTrains = await createPacedTrains(dispatch, newTss.id, trainsWithoutIds);
+          const createdTrains = await createTrainSchedules(dispatch, newTss.id, trainsWithoutIds);
 
           allTrainsToUpsert.push(...createdTrains);
         }
@@ -330,7 +330,7 @@ export default function useScenarioTrainScheduleSet(
       trainScheduleSets,
       getTrainScheduleSetTrainSchedules,
       createTrainScheduleSetMutation,
-      createPacedTrains,
+      createTrainSchedules,
       linkTrainScheduleSetToTimetable,
       timetableId,
       upsertTrainSchedules,

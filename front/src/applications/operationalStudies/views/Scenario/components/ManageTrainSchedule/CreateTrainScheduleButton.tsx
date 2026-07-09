@@ -6,7 +6,7 @@ import { useScenarioContext } from 'applications/operationalStudies/hooks/useSce
 import type { TrainScheduleResponse } from 'common/api/osrdEditoastApi';
 import {
   createExceptions,
-  createPacedTrains,
+  createTrainSchedules,
 } from 'modules/trainSchedule/helpers/updateTrainScheduleHelpers';
 import { setFailure, setSuccess } from 'reducers/main';
 import { clearAddedExceptionsList } from 'reducers/osrdconf/operationalStudiesConf';
@@ -46,7 +46,7 @@ const CreateTrainScheduleButton = ({
 
   const isPacedTrainMode = simulationConf.editingTrainType === 'pacedTrain';
 
-  const createTrainSchedules = async () => {
+  const handleTrainSchedulesCreation = async () => {
     setIsWorking(true);
 
     try {
@@ -67,7 +67,7 @@ const CreateTrainScheduleButton = ({
       }
 
       const formattedNewTrainSchedule: TrainScheduleResponse = (
-        await createPacedTrains(dispatch, sandboxId, [newTrainSchedulePayload])
+        await createTrainSchedules(dispatch, sandboxId, [newTrainSchedulePayload])
       )[0];
       dispatch(
         updateSelectedTrain({
@@ -142,7 +142,7 @@ const CreateTrainScheduleButton = ({
       className="btn btn-primary mb-2"
       type="button"
       disabled={workerStatus !== 'READY'}
-      onClick={createTrainSchedules}
+      onClick={handleTrainSchedulesCreation}
       data-testid="create-train-schedule-button"
     >
       <span className="mr-2">
