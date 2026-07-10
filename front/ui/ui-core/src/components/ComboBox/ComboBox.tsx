@@ -3,7 +3,6 @@ import React, {
   type FocusEventHandler,
   type KeyboardEventHandler,
   type ReactNode,
-  useEffect,
   useMemo,
   useRef,
   useState,
@@ -67,7 +66,15 @@ const ComboBox = <T,>({
   ...inputProps
 }: ComboBoxProps<T>) => {
   const [activeSuggestionIndex, setActiveSuggestionIndex] = useState(-1);
-  const [inputValue, setInputValue] = useState('');
+  const suggestionLabel = value ? getSuggestionLabel(value) : '';
+  const [inputValue, setInputValue] = useState(suggestionLabel);
+
+  const [prevSuggestionLabel, setPrevSuggestionLabel] = useState(suggestionLabel);
+  if (suggestionLabel !== prevSuggestionLabel) {
+    setPrevSuggestionLabel(suggestionLabel);
+    setInputValue(suggestionLabel);
+  }
+
   const [isInputFocused, setIsInputFocused] = useState(false);
   const suggestionRefs = useRef<(HTMLLIElement | null)[]>([]);
 
@@ -91,17 +98,6 @@ const ComboBox = <T,>({
       inputRef.current?.focus();
     }
   }, [inputRef, isInputFocused]);
-
-  /* eslint-disable react-hooks/exhaustive-deps */
-  useEffect(() => {
-    if (value) {
-      // TODO: fix this lint
-      /* eslint-disable-next-line react-hooks-js/set-state-in-effect */
-      setInputValue(getSuggestionLabel(value));
-    } else {
-      setInputValue('');
-    }
-  }, [value]);
 
   const showAddCustomValue = useMemo(() => {
     if (!allowCustomValue || !inputValue.trim()) return false;
