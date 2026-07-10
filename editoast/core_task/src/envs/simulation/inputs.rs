@@ -48,7 +48,7 @@ pub struct SimulationTrainParameters {
     margins: rangemap::RangeMap<ScheduleItemIndex, MarginValue>,
 
     #[educe(Hash(method(common::units::meter_per_second::hash)))]
-    #[educe(Eq(method(common::units::meter_per_second::eq)))]
+    #[educe(PartialEq(method(common::units::meter_per_second::eq)))]
     initial_speed: uom::si::f64::Velocity,
     constraint_distribution: Distribution,
     comfort: Comfort,

@@ -76,7 +76,7 @@ diesel-async = { version = "0.9", default-features = false, features = [
 diesel_json = "0.3.0"
 editoast_derive = { path = "./editoast_derive" }
 editoast_models = { path = "./editoast_models" }
-educe = "0.6.0"
+educe = "0.7.4"
 enum-map = "2.7.3"
 fga = { path = "./fga", features = ["test_utilities"] }
 fga_migrations = { path = "./fga_migrations" }
