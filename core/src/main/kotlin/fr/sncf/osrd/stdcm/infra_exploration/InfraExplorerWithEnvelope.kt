@@ -135,9 +135,7 @@ fun initInfraExplorerWithEnvelope(
             InfraExplorerWithEnvelopeImpl(
                 explorer,
                 appendOnlyLinkedListOf(),
-                mutableMapOf(
-                    Pair(Offset(0.meters), SpacingResourceGenerator(fullInfra, Offset(0.meters)))
-                ),
+                mutableListOf(SpacingResourceGenerator(fullInfra, Offset(0.meters))),
                 consistSchedule,
             )
         }

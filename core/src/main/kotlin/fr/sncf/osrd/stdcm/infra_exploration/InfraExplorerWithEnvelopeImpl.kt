@@ -30,8 +30,7 @@ import java.lang.ref.SoftReference
 data class InfraExplorerWithEnvelopeImpl(
     private val infraExplorer: InfraExplorer,
     private val envelopes: AppendOnlyLinkedList<LocatedEnvelopeInterpolate>,
-    private val spacingRequirementAutomatons:
-        MutableMap<Offset<PhysicsPath>, SpacingResourceGenerator>,
+    private val spacingRequirementAutomatons: MutableList<SpacingResourceGenerator>,
     private val consistSchedule: ConsistSchedule,
     private var stopTimeData: List<StopTimeData> = listOf(),
 
@@ -47,7 +46,7 @@ data class InfraExplorerWithEnvelopeImpl(
             InfraExplorerWithEnvelopeImpl(
                 explorer,
                 envelopes.shallowCopy(),
-                spacingRequirementAutomatons.mapValues { it.value.clone() }.toSortedMap(),
+                spacingRequirementAutomatons.map { it.clone() }.toMutableList(),
                 consistSchedule,
                 stopTimeData,
                 spacingRequirementsCache,
@@ -103,11 +102,10 @@ data class InfraExplorerWithEnvelopeImpl(
     }
 
     override fun withReplacedEnvelope(envelope: Envelope): InfraExplorerWithEnvelope {
-        val spacingRequirementAutomatons =
-            spacingRequirementAutomatons.mapValues { it.value.clone() }.toSortedMap()
         return copy(
             envelopes = appendOnlyLinkedListOf(LocatedEnvelopeInterpolate(envelope, 0.0, 0.0)),
-            spacingRequirementAutomatons = spacingRequirementAutomatons,
+            spacingRequirementAutomatons =
+                spacingRequirementAutomatons.map { it.clone() }.toMutableList(),
             spacingRequirementsCache = null,
             envelopeCache = null,
         )
@@ -178,12 +176,7 @@ data class InfraExplorerWithEnvelopeImpl(
         val cappedSimulatedOffset = Offset<PhysicsPath>(getFullEnvelope().endPos.meters)
         //            Offset.min(Offset(getFullEnvelope().endPos.meters), nextBacktracking)
 
-        val lastPathEndOffset =
-            spacingRequirementAutomatons
-                .asSequence()
-                .maxByOrNull { it.key }!!
-                .value
-                .getCurrentPathEndOffset()
+        val lastPathEndOffset = spacingRequirementAutomatons.last().getCurrentPathEndOffset()
 
         // Generate spacing resources just as if a succession of trains (splitting on backtracking)
         val updatedRequirements = mutableListOf<SpacingRequirement>()
@@ -221,24 +214,32 @@ data class InfraExplorerWithEnvelopeImpl(
 
             val spacingRequirementAutomaton =
                 if (subpathBegin in backtrackingLocations) {
-                    val firstAutomaton = spacingRequirementAutomatons[Offset(0.meters)]!!
-                    spacingRequirementAutomatons.getOrDefault(
-                        subpathBegin,
-                        SpacingResourceGenerator(
-                            firstAutomaton.rawInfra,
-                            firstAutomaton.blockInfra,
-                            firstAutomaton.loadedSignalInfra,
-                            firstAutomaton.simulator,
-                            subpathBegin,
-                            firstAutomaton.context,
-                        ),
-                    )
+                    val subSpacingAutomaton =
+                        spacingRequirementAutomatons
+                            .asReversed()
+                            .asSequence()
+                            .takeWhile { it.startOffset >= subpathBegin }
+                            .firstOrNull { it.startOffset == subpathBegin }
+                    if (subSpacingAutomaton != null) subSpacingAutomaton
+                    else {
+                        require(spacingRequirementAutomatons.last().startOffset < subpathBegin)
+                        val firstAutomaton = spacingRequirementAutomatons.first()
+                        spacingRequirementAutomatons.add(
+                            SpacingResourceGenerator(
+                                firstAutomaton.rawInfra,
+                                firstAutomaton.blockInfra,
+                                firstAutomaton.loadedSignalInfra,
+                                firstAutomaton.simulator,
+                                subpathBegin,
+                                firstAutomaton.context,
+                            )
+                        )
+                        spacingRequirementAutomatons.last()
+                    }
                 } else {
-                    spacingRequirementAutomatons
-                        .asSequence()
-                        .filter { it.key <= subpathBegin }
-                        .maxBy { it.key }
-                        .value
+                    spacingRequirementAutomatons.asReversed().first {
+                        it.startOffset <= subpathBegin
+                    }
                 }
 
             spacingRequirementAutomaton.extendPath(
@@ -286,7 +287,7 @@ data class InfraExplorerWithEnvelopeImpl(
 
         // We need a new automaton to get the resource uses over the whole path, and not just since
         // the last update
-        val firstAutomaton = spacingRequirementAutomatons[Offset(0.meters)]!!
+        val firstAutomaton = spacingRequirementAutomatons.first()
 
         val backtrackingLocations = infraExplorer.getBacktrackLocationsInRange()
 
@@ -367,7 +368,7 @@ data class InfraExplorerWithEnvelopeImpl(
         return InfraExplorerWithEnvelopeImpl(
             infraExplorer.clone(),
             envelopes.shallowCopy(),
-            spacingRequirementAutomatons.mapValues { it.value.clone() }.toSortedMap(),
+            spacingRequirementAutomatons.map { it.clone() }.toMutableList(),
             consistSchedule,
             stopTimeData,
             spacingRequirementsCache,
