@@ -54,6 +54,11 @@ pub trait Task: Sized + Send {
     /// Choose this value based on the size of task results and acceptable latency considering all reads hit.
     const CACHE_READS_BATCH_SIZE: usize;
 
+    /// Number of cache entry write attempts per batch
+    ///
+    /// Defaults to the same value as [Self::CACHE_READS_BATCH_SIZE] but can be overridden if needed.
+    const CACHE_WRITES_BATCH_SIZE: usize = Self::CACHE_READS_BATCH_SIZE;
+
     /// Computes the cache key based on task inputs
     fn key(&self, app_version: &str) -> String;
 
@@ -217,10 +222,21 @@ where
             // 'write_cache' task, writes input key-value pairs to cache, logging errors
             tokio::spawn(
                 async move {
+                    let mut buffer = Vec::with_capacity(T::CACHE_WRITES_BATCH_SIZE);
                     while let Some((key, value)) = cache_write_rx.recv().await {
+                        buffer.push((key, value));
+                        if buffer.len() >= T::CACHE_WRITES_BATCH_SIZE {
+                            let mut vkconn = vk_client.get_connection().await.unwrap();
+                            if let Err(e) = vkconn.json_set_bulk(&buffer).await {
+                                tracing::error!(?e, "task stream: cache write failure")
+                            }
+                            buffer.clear();
+                        }
+                    }
+                    if !buffer.is_empty() {
                         let mut vkconn = vk_client.get_connection().await.unwrap();
-                        if let Err(e) = vkconn.json_set(key.clone(), &value).await {
-                            tracing::error!(?e, key, "task stream: cache write failure")
+                        if let Err(e) = vkconn.json_set_bulk(&buffer).await {
+                            tracing::error!(?e, "task stream: cache write failure")
                         }
                     }
                 }
