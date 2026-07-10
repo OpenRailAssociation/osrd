@@ -24,6 +24,7 @@ use itertools::Itertools as _;
 use itertools::izip;
 use serde::de::DeserializeOwned;
 use serde::ser::Serialize;
+use tokio_stream::wrappers::UnboundedReceiverStream;
 use tracing::Instrument;
 
 /// Interface required by [SimulationEnv] and friends for [Correlated] keys
@@ -53,6 +54,11 @@ pub trait Task: Sized + Send {
     ///
     /// Choose this value based on the size of task results and acceptable latency considering all reads hit.
     const CACHE_READS_BATCH_SIZE: usize;
+
+    /// Number of cache entry write attempts per batch
+    ///
+    /// Defaults to the same value as [Self::CACHE_READS_BATCH_SIZE] but can be overridden if needed.
+    const CACHE_WRITES_BATCH_SIZE: usize = Self::CACHE_READS_BATCH_SIZE;
 
     /// Computes the cache key based on task inputs
     fn key(&self, app_version: &str) -> String;
@@ -201,19 +207,22 @@ where
          *                                   via for_each_concurrent)
          */
 
-        let (cache_write_tx, mut cache_write_rx) =
+        let (cache_write_tx, cache_write_rx) =
             tokio::sync::mpsc::unbounded_channel::<(String, serde_json::Value)>();
         {
             let vk_client = vk_client.clone();
             // 'write_cache' task, writes input key-value pairs to cache, logging errors
             tokio::spawn(
                 async move {
-                    while let Some((key, value)) = cache_write_rx.recv().await {
-                        let mut vkconn = vk_client.get_connection().await.unwrap();
-                        if let Err(e) = vkconn.json_set(key.clone(), value).await {
-                            tracing::error!(?e, key, "task stream: cache write failure")
-                        }
-                    }
+                    UnboundedReceiverStream::new(cache_write_rx)
+                        .chunks(T::CACHE_WRITES_BATCH_SIZE)
+                        .for_each(|buffer| async {
+                            let mut vkconn = vk_client.get_connection().await.unwrap();
+                            if let Err(e) = vkconn.json_set_bulk(buffer).await {
+                                tracing::error!(?e, "task stream: cache write failure")
+                            }
+                        })
+                        .await;
                 }
                 .in_current_span(),
             );
