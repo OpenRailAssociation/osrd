@@ -416,8 +416,12 @@ impl Task for core_client::pathfinding::PathfindingRequest {
     type Error = core_client::Error;
     type Context = Arc<CoreClient>;
 
-    // Please adjust if you have more educated information (and adjust the comment 😉).
-    const CACHE_READS_BATCH_SIZE: usize = 50; // This value has been chosen this way: 🫳🎩
+    // The compressed size of a pathfinding is:
+    // - Mean: 3.5kB
+    // - 50th percentile: 1.9kB
+    // - Max: 28.8kB
+    // Therefore, we can safely batch 250 to have around 1MB of data per request.
+    const CACHE_READS_BATCH_SIZE: usize = 250;
 
     fn key(&self, app_version: &str) -> String {
         let mut hasher = DefaultHasher::new();
