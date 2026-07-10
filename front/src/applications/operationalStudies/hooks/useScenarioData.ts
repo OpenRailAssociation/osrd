@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useState, useRef } from 'react';
 import { skipToken } from '@reduxjs/toolkit/query';
 import { keyBy, sortBy } from 'lodash';
 
+import { computeShiftedExceptions } from 'applications/operationalStudies/utils';
 import {
   buildOccurrenceExceptionData,
   updatePacedTrainExceptionsList,
@@ -23,7 +24,6 @@ import {
   findExceptionWithOccurrenceId,
   getOccurrenceTrainName,
   isPacedTrain,
-  shiftPacedExceptions,
   withPacedExceptions,
 } from 'modules/trainSchedule/helpers/pacedTrain';
 import {
@@ -55,20 +55,6 @@ function upsertAndSort(
 ): TrainScheduleResponse[] {
   const arr = Array.isArray(updates) ? updates : [updates];
   return sortBy(Object.values({ ...keyBy(prev, 'id'), ...keyBy(arr, 'id') }), 'start_time');
-}
-
-/**
- * In 'all' mode the whole paced train moves, so every start_time exception is shifted by the same
- * offset as the model departure. Returns undefined when there is nothing to shift.
- */
-function computeShiftedExceptions(
-  trainSchedule: TrainScheduleResponse,
-  newDeparture: Date,
-  panelSelectionMode?: PanelSelectionMode
-): PacedTrainException[] | undefined {
-  if (panelSelectionMode !== 'all' || !trainSchedule.paced) return undefined;
-  const offset = newDeparture.getTime() - trainSchedule.start_time;
-  return shiftPacedExceptions(trainSchedule.paced.exceptions, offset);
 }
 
 const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetableId: number) => {

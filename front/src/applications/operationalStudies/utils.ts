@@ -15,9 +15,11 @@ import type {
   ScheduleItem,
   PathItem,
   TrainScheduleResponse,
+  PacedTrainException,
 } from 'common/api/osrdEditoastApi';
 import getPathVoltages from 'modules/pathfinding/helpers/getPathVoltages';
-import { isPacedTrain } from 'modules/trainSchedule/helpers/pacedTrain';
+import type { PanelSelectionMode } from 'modules/simulationResult/components/SpaceTimeChartWrapper/CurveSelectionSidePanel';
+import { isPacedTrain, shiftPacedExceptions } from 'modules/trainSchedule/helpers/pacedTrain';
 import type { SimulationSummary } from 'modules/trainSchedule/types';
 import type { TrainScheduleWithPathOps } from 'reducers/osrdconf/types';
 import { Duration } from 'utils/duration';
@@ -424,3 +426,17 @@ export const matchOpRefAndOp = (
     location.operational_point.secondary_code === op.secondary_code
   );
 };
+
+/**
+ * In 'all' mode the whole paced train moves, so every start_time exception is shifted by the same
+ * offset as the model departure. Returns undefined when there is nothing to shift.
+ */
+export function computeShiftedExceptions(
+  trainSchedule: TrainScheduleResponse,
+  newDeparture: Date,
+  panelSelectionMode?: PanelSelectionMode
+): PacedTrainException[] | undefined {
+  if (panelSelectionMode !== 'all' || !trainSchedule.paced) return undefined;
+  const offset = newDeparture.getTime() - trainSchedule.start_time;
+  return shiftPacedExceptions(trainSchedule.paced.exceptions, offset);
+}
