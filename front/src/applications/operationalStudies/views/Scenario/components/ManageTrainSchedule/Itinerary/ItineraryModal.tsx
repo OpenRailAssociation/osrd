@@ -707,7 +707,7 @@ const ItineraryModal = ({
           )}
           {!hasInvalidPathStepDisplay && invalidTrackSteps.length === 0 && pathfindingError && (
             <div key={`pathfinding-${bannerWiggle}`}>
-              <Banner type="info" message={`${pathfindingError} ${t('noComputation')}.`} />
+              <Banner type="info" message={`${pathfindingError}. ${t('noComputation')}.`} />
             </div>
           )}
           {submitAttempted &&
