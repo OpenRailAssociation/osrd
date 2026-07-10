@@ -10,13 +10,15 @@ import {
 
 import { keyBy, sortBy } from 'lodash';
 
+import { computeShiftedExceptions } from 'applications/operationalStudies/utils';
 import {
   osrdEditoastApi,
   type TrainSchedule,
   type TrainScheduleResponse,
+  type PacedTrainException,
 } from 'common/api/osrdEditoastApi';
 import type { PanelSelectionMode } from 'modules/simulationResult/components/SpaceTimeChartWrapper/CurveSelectionSidePanel';
-import type { TrainId } from 'reducers/osrdconf/types';
+import { withPacedExceptions } from 'modules/trainSchedule/helpers/pacedTrain';
 import { useAppDispatch } from 'store';
 import { mapBy } from 'utils/types';
 
@@ -31,6 +33,13 @@ function upsertAndSort(
 type TimetableContextType = {
   trainSchedules: TrainSchedule[] | undefined;
   trainSchedulesById: Map<number, TrainSchedule>;
+  removeTrainSchedules: (ids: number[]) => void;
+  upsertTrainSchedules: (newTrainSchedules: TrainScheduleResponse[]) => void;
+  setTrainScheduleDepartureTime: (
+    id: number,
+    departureTime: Date,
+    panelSelectionMode?: PanelSelectionMode
+  ) => void;
 };
 
 const TimetableContext = createContext<TimetableContextType | null>(null);
@@ -39,11 +48,11 @@ type TimetableContextProviderProps = {
   timetableId: number;
   onRemoveTrainSchedules: (ids: number[]) => void;
   onUpsertTrainSchedules: (newTrainSchedules: TrainScheduleResponse[]) => void;
-  updateTrainsDepartureTime: (
-    trainId: TrainId,
+  onSetTrainScheduleDepartureTime: (
+    id: number,
     departureTime: Date,
-    panelSelectionMode?: PanelSelectionMode
-  ) => Promise<TrainScheduleResponse>;
+    newExceptions: PacedTrainException[] | undefined
+  ) => void;
   children: ReactNode;
 };
 
@@ -51,7 +60,7 @@ export const TimetableContextProvider = ({
   timetableId,
   onRemoveTrainSchedules,
   onUpsertTrainSchedules,
-  updateTrainsDepartureTime,
+  onSetTrainScheduleDepartureTime,
   children,
 }: TimetableContextProviderProps) => {
   const dispatch = useAppDispatch();
@@ -102,32 +111,44 @@ export const TimetableContextProvider = ({
     [onUpsertTrainSchedules]
   );
 
-  const updateTrainsDepartureTimeWithUpsert = useCallback(
-    async (trainId: TrainId, departureTime: Date, panelSelectionMode?: PanelSelectionMode) => {
-      const newTrainSchedule = await updateTrainsDepartureTime(
-        trainId,
-        departureTime,
-        panelSelectionMode
-      );
-      setTrainSchedules((prev) => upsertAndSort(prev, [newTrainSchedule]));
+  const setTrainScheduleDepartureTime = useCallback(
+    (trainScheduleId: number, newDeparture: Date, panelSelectionMode?: PanelSelectionMode) => {
+      const trainSchedule = trainSchedules?.find((train) => train.id === trainScheduleId);
+      const shiftedExceptions = trainSchedule
+        ? computeShiftedExceptions(trainSchedule, newDeparture, panelSelectionMode)
+        : undefined;
+
+      setTrainSchedules((prev) => {
+        const prevTrainSchedule = prev?.find((train) => train.id === trainScheduleId);
+        if (!prevTrainSchedule) {
+          return prev;
+        }
+        const updatedTrainSchedule = withPacedExceptions(
+          { ...prevTrainSchedule, start_time: newDeparture.getTime() },
+          shiftedExceptions
+        );
+        return upsertAndSort(prev, updatedTrainSchedule);
+      });
+
+      onSetTrainScheduleDepartureTime(trainScheduleId, newDeparture, shiftedExceptions);
     },
-    [updateTrainsDepartureTime]
+    [trainSchedules]
   );
 
-  const context: TimetableContextType = useMemo(
-    () => ({
+  const context = useMemo(
+    (): TimetableContextType => ({
       trainSchedules,
       trainSchedulesById,
       removeTrainSchedules,
-      upsertTrainSchedules: updateTrainsDepartureTimeWithUpsert,
-      updateTrainsDepartureTime,
+      upsertTrainSchedules,
+      setTrainScheduleDepartureTime,
     }),
     [
       trainSchedules,
       trainSchedulesById,
       removeTrainSchedules,
       upsertTrainSchedules,
-      updateTrainsDepartureTimeWithUpsert,
+      setTrainScheduleDepartureTime,
     ]
   );
 

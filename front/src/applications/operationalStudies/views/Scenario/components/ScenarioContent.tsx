@@ -20,6 +20,7 @@ import type { TrainId, TrainScheduleToEditData } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 import { usePrevious } from 'utils/hooks/state';
+import { useTimetableContext, TimetableContextProvider } from 'applications/operationalStudies/hooks/useTimetableContext';
 
 import { MANAGE_TRAIN_SCHEDULE_TYPES } from '../consts';
 import BoardWrapper from './BoardWrapper';
@@ -42,7 +43,7 @@ const MACRO_MIN_HEIGHT = 500;
 const CHRONOGRAM_INITIAL_HEIGHT = 492;
 const CHRONOGRAM_MIN_HEIGHT = 398;
 
-const ScenarioContent = ({ activeBoards, toggleBoard }: ScenarioContentProps) => {
+const ScenarioInner = ({ activeBoards, toggleBoard }: ScenarioContentProps) => {
   const { t, i18n } = useTranslation('operational-studies');
   const dispatch = useAppDispatch();
   const { scenario, sandboxId } = useScenarioContext();
@@ -328,6 +329,14 @@ const ScenarioContent = ({ activeBoards, toggleBoard }: ScenarioContentProps) =>
         </div>
       </main>
     </EditedElementContainerProvider>
+  );
+};
+
+const ScenarioContent = (props: ScenarioContentProps) => {
+  return (
+    <TimetableContextProvider>
+      <ScenarioInner {...props}/>
+    </TimetableContextProvider>
   );
 };
 
