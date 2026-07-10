@@ -68,7 +68,7 @@ opentelemetry-javaagent = { group = 'io.opentelemetry.javaagent', name = 'opente
 
 kaml = { module = 'com.charleskorn.kaml:kaml', version = '0.104.0' } # Apache 2.0
 
-amqp-client = { module = 'com.rabbitmq:amqp-client', version = '5.32.0' }
+amqp-client = { module = 'com.rabbitmq:amqp-client', version = '5.33.0' }
 lettuce = { module = 'io.lettuce:lettuce-core', version = '7.6.0.RELEASE' } # MIT
 s3 = { module = 'software.amazon.awssdk:s3', version = '2.46.21' } # Apache 2.0
 sts = { module = 'software.amazon.awssdk:sts', version = '2.46.21' } # Apache 2.0
@@ -82,6 +82,6 @@ kotlin-serialization = { id = 'org.jetbrains.kotlin.plugin.serialization', versi
 
 # java
 spotbugs = { id = 'com.github.spotbugs', version = '6.0.9' }
-spotless = { id = 'com.diffplug.spotless', version = '8.7.0' }
+spotless = { id = 'com.diffplug.spotless', version = '8.8.0' }
 shadow = { id = 'com.gradleup.shadow', version = '9.4.3' }
 versions = { id = 'com.github.ben-manes.versions', version = '0.54.0' }
