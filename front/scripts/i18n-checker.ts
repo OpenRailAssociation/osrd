@@ -180,16 +180,18 @@ function visitCallExpression(
     keys = [keyNode.text];
   } else {
     const keyType = checker.getTypeAtLocation(keyNode);
-    if (!keyType.isUnion()) {
-      return;
-    }
-
-    keys = [];
-    for (const t of keyType.types) {
-      if (!t.isStringLiteral()) {
-        return;
+    if (keyType.isStringLiteral()) {
+      keys = [keyType.value];
+    } else if (keyType.isUnion()) {
+      keys = [];
+      for (const t of keyType.types) {
+        if (!t.isStringLiteral()) {
+          return;
+        }
+        keys.push(t.value);
       }
-      keys.push(t.value);
+    } else {
+      return;
     }
   }
 
