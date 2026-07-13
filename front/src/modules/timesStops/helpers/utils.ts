@@ -181,7 +181,7 @@ export function updateRowTimesAndMargin(
     }
   } else if (previousArrival?.time) {
     if (newRowData.arrival?.time && (arrivalChanged || stopDurationChanged)) {
-      if (newRowData.stopFor?.total('second') ?? 0 > 0) {
+      if ((newRowData.stopFor?.total('second') ?? 0) > 0) {
         newRowData.departure = {
           time: secToHoursString(
             time2sec(newRowData.arrival.time) + (newRowData.stopFor?.total('second') ?? 0)
