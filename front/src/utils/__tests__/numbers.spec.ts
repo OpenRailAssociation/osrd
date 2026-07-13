@@ -4,6 +4,7 @@ import {
   budgetFormat,
   isFloat,
   isInvalidFloatNumber,
+  lcm,
   linearScaleInterpolation,
 } from 'utils/numbers';
 import { NARROW_NO_BREAK_SPACE, NO_BREAK_SPACE } from 'utils/strings';
@@ -37,6 +38,23 @@ describe('isFloat', () => {
   it('should return false if the number is infinite', () => {
     expect(isFloat(Infinity)).toBe(false);
     expect(isFloat(-Infinity)).toBe(false);
+  });
+});
+
+describe('lcm', () => {
+  it('should compute the least common multiple of two integers', () => {
+    expect(lcm(4, 6)).toBe(12);
+    expect(lcm(3, 5)).toBe(15);
+    expect(lcm(2, 3)).toBe(6);
+  });
+
+  it('should return 0 when either operand is 0', () => {
+    expect(lcm(0, 5)).toBe(0);
+    expect(lcm(5, 0)).toBe(0);
+  });
+
+  it('should return the number itself when both operands are equal', () => {
+    expect(lcm(7, 7)).toBe(7);
   });
 });
 
