@@ -50,6 +50,10 @@
     "viaNotDefined": "Au moins une localisation n'est pas renseignée",
     "viaRollingStockMissing": "Au moins un engin de traction pour un changement de convoi n'est pas renseigné"
   },
+  "header": {
+    "errorRequestsFolder": "Impossible d'ouvrir le dossier des demandes",
+    "requests": "Demandes"
+  },
   "infrastructure": "Infra",
   "leaveAt": "Partir à {{ time }}",
   "linkedTrainDefaultCard": {
