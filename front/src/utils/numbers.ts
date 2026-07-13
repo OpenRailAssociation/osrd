@@ -28,6 +28,26 @@ export function isFloat(n: number) {
   return Number.isFinite(n) && !Number.isInteger(n);
 }
 
+/** Greatest common divisor of two integers (Euclid's algorithm). */
+function gcd(a: number, b: number): number {
+  let x = Math.abs(a);
+  let y = Math.abs(b);
+  while (y) {
+    [x, y] = [y, x % y];
+  }
+  return x;
+}
+
+/**
+ * Least common multiple of two integers.
+ * Returns 0 when either operand is 0.
+ * Uses `(a / gcd) * b` to limit the risk of intermediate overflow.
+ */
+export function lcm(a: number, b: number): number {
+  if (a === 0 || b === 0) return 0;
+  return (Math.abs(a) / gcd(a, b)) * Math.abs(b);
+}
+
 /**
  * Checks if a floating-point number has more decimal places than specified.
  * @param value the floating-point number to check.

@@ -18,6 +18,7 @@ import { useRollingStockContext } from 'common/RollingStockContext';
 import type { PanelSelectionMode } from 'modules/simulationResult/components/SpaceTimeChartWrapper/CurveSelectionSidePanel';
 import useLazyProjectTrains from 'modules/simulationResult/components/SpaceTimeChartWrapper/useLazyProjectTrains';
 import { formatPacedTrainWithDetails } from 'modules/trainSchedule/helpers/formatTrainScheduleWithDetails';
+import { computeHourlyTimetableDuration } from 'modules/trainSchedule/helpers/hourlyTimetable';
 import {
   extractOccurrenceDetailsFromPacedTrain,
   findExceptionWithOccurrenceId,
@@ -172,6 +173,14 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
   const projectedTrains = useMemo(
     () => Array.from(projectedTrainsById.values()),
     [projectedTrainsById]
+  );
+
+  const hourlyTimetableDuration = useMemo(
+    () =>
+      scenario.timetable_type === 'HOURLY'
+        ? computeHourlyTimetableDuration(trainSchedules ?? [])
+        : undefined,
+    [scenario.timetable_type, trainSchedules]
   );
 
   useAutoSelectTrainIds(trainSchedules ? trainSchedulesWithDetails : undefined);
@@ -442,6 +451,7 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
         : undefined,
       conflicts,
       isConflictsLoading,
+      hourlyTimetableDuration,
       removeTrainSchedules: removeTrainSchedulesWithBroadcast,
       upsertTrainSchedules: upsertTrainSchedulesWithBroadcast,
       updateTrainScheduleDepartureTime: updateTrainScheduleDepartureTimeWithBroadcast,
@@ -457,6 +467,7 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
       trainSchedules?.length ?? 0,
       conflicts,
       isConflictsLoading,
+      hourlyTimetableDuration,
       rollingStocks,
       removeTrainSchedulesWithBroadcast,
       upsertTrainSchedulesWithBroadcast,
