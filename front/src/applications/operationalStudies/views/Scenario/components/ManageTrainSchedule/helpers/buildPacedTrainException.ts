@@ -244,7 +244,7 @@ export function checkChangeGroups(
         delete updatedException.labels;
       }
 
-      if (exception.options && isEqual(exception.options, updatedTrain.options)) {
+      if (exception.options && isEqual(exception.options.value, updatedTrain.options)) {
         delete updatedException.options;
       }
 
