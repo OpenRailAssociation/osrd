@@ -89,6 +89,7 @@ describe('useOccurrences', () => {
         exceptions: [
           {
             key: 'occurrence_1_0',
+            id: 42,
             occurrence_index: 0,
             train_name: { value: 'Exception Train 1' },
             start_time: { value: new Date('2026-06-09T08:05:00Z').getTime() },
@@ -108,6 +109,13 @@ describe('useOccurrences', () => {
           trainName: 'Exception Train 1',
           startTime: new Date('2026-06-09T08:05:00Z'),
           disabled: false,
+          exception: {
+            id: 42,
+            exceptionChangeGroups: {
+              train_name: { value: 'Exception Train 1' },
+              start_time: { value: new Date('2026-06-09T08:05:00Z').getTime() },
+            },
+          },
         },
         occurrence2,
         occurrence3,
@@ -175,6 +183,7 @@ describe('useOccurrences', () => {
         exceptions: [
           {
             key: 'occurrence_1_0',
+            id: 42,
             occurrence_index: 0,
             disabled: true,
           },
@@ -188,7 +197,11 @@ describe('useOccurrences', () => {
 
     expect(result.current).toEqual({
       occurrencesCount: 2,
-      occurrences: [{ ...occurrence1, disabled: true }, occurrence2, occurrence3],
+      occurrences: [
+        { ...occurrence1, disabled: true, exception: { id: 42, exceptionChangeGroups: {} } },
+        occurrence2,
+        occurrence3,
+      ],
     });
   });
 
@@ -200,6 +213,7 @@ describe('useOccurrences', () => {
         exceptions: [
           {
             key: 'occurrence_1_1',
+            id: 42,
             occurrence_index: 1,
             train_name: { value: 'Exception Train RS 1' },
             rolling_stock: {
@@ -220,6 +234,16 @@ describe('useOccurrences', () => {
         {
           ...occurrence2,
           trainName: 'Exception Train RS 1',
+          exception: {
+            id: 42,
+            exceptionChangeGroups: {
+              train_name: { value: 'Exception Train RS 1' },
+              rolling_stock: {
+                rolling_stock_name: 'low-rs',
+                comfort: 'STANDARD',
+              },
+            },
+          },
         },
         occurrence3,
       ],
