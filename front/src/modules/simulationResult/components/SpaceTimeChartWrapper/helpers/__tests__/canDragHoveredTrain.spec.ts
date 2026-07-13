@@ -77,7 +77,7 @@ describe('canDragHoveredTrain', () => {
       expect(
         canDragHoveredTrain({
           panelSelectionMode: 'compliant',
-          hoveredTrain: train(OCC_1_0, { start_time: { value: 1000 } as never }),
+          hoveredTrain: train(OCC_1_0, { start_time: { value: 1000 } }),
           selectedTrainId: TRAIN_SCHEDULE_1,
         })
       ).toBe(false);
