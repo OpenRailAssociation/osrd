@@ -32,7 +32,7 @@ def _add_train(
                         "offset": 837034,
                         "track": "TA2",
                     },
-                    "id": "a",
+                    "key": "a",
                 },
                 {
                     "location": {
@@ -40,7 +40,7 @@ def _add_train(
                         "offset": 4386000,
                         "track": "TH1",
                     },
-                    "id": "b",
+                    "key": "b",
                 },
             ],
             "rolling_stock_name": rolling_stock_name,

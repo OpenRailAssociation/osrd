@@ -2,7 +2,7 @@ import type { TrainSchedule } from 'common/api/osrdEditoastApi';
 
 function getRelativeStepsTimeAndNames(trainSchedule: TrainSchedule): string {
   const stepsWithRelativeTimesAndNames = trainSchedule.schedule!.map((step) => ({
-    ...trainSchedule.path.find((pathStep) => pathStep.id === step.at),
+    ...trainSchedule.path.find((pathStep) => pathStep.key === step.at),
     arrival: step.arrival,
     stop_for: step.stop_for,
   }));

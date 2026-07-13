@@ -143,7 +143,7 @@ const useUpdateTimesStopsTable = (
       const { pathStepId, updatedPath } = upsertPathStep(update.row, selectedTrain.path, allRows);
       const currentSchedule = selectedTrain.schedule ?? [];
       const existingItemIndex = currentSchedule.findIndex((item) => item.at === pathStepId);
-      const isOrigin = pathStepId === updatedPath[0].id;
+      const isOrigin = pathStepId === updatedPath[0].key;
 
       if (update.field === 'requestedTheoreticalMargin') {
         return {

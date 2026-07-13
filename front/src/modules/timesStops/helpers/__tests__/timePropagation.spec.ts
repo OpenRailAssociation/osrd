@@ -34,7 +34,7 @@ const makeTrain = (): Train =>
   ({
     start_time: _18H00.toISOString(),
     // op1 at index 0 through op20 at index 19
-    path: Array.from({ length: 20 }, (_, i) => ({ id: `op${i + 1}`, location: {} })),
+    path: Array.from({ length: 20 }, (_, i) => ({ key: `op${i + 1}`, location: {} })),
     schedule: [
       { at: 'op11', arrival: 'PT30M' }, // arrives at 18:30
       { at: 'op17', arrival: 'PT50M' }, // arrives at 18:50

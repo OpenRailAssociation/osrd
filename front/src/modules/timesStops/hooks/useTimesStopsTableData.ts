@@ -257,16 +257,16 @@ const useTimesStopsTableData = (
         ? new Date(selectedTrain.start_time)
         : new Duration({ milliseconds: selectedTrain.start_time });
     const scheduleByAt = keyBy(selectedTrain.schedule, 'at');
-    const pathIdToIndex = new Map(selectedTrain.path.map((step, idx) => [step.id, idx]));
+    const pathIdToIndex = new Map(selectedTrain.path.map((step, idx) => [step.key, idx]));
 
     const pathStepRowsById = new Map(
       selectedTrain.path.map((pathStep, stepIndex) => {
-        const pathStepOp = pathStepOps.get(pathStep.id);
+        const pathStepOp = pathStepOps.get(pathStep.key);
 
         const matchingOp =
           pathStepOp ??
           (pathStep.location.type === 'operational_point_part_reference' && stableOPs
-            ? stableOPs.find((op) => op.pathItemId === pathStep.id)
+            ? stableOPs.find((op) => op.pathItemId === pathStep.key)
             : undefined);
 
         const name =
@@ -291,7 +291,7 @@ const useTimesStopsTableData = (
         const hasRequestedTrack =
           pathStepLocation.type === 'track_offset' || !!pathStepLocation.local_track_name;
 
-        const schedule = { ...scheduleByAt[pathStep.id] };
+        const schedule = { ...scheduleByAt[pathStep.key] };
         if (stepIndex === 0) schedule.arrival = 'PT0S'; // The first step has no stored scheduled arrival as redundant with start date
         const computedArrival =
           stablePathItemTimes?.final[stepIndex] !== undefined
@@ -320,8 +320,8 @@ const useTimesStopsTableData = (
         );
 
         const row = buildTableRow({
-          id: `path-step-${pathStep.id}`,
-          pathStepId: pathStep.id,
+          id: `path-step-${pathStep.key}`,
+          pathStepId: pathStep.key,
           // opOnPathIndex is a placeholder here (-1), it will be replaced by opIndex when matching with operationalPointsOnPath
           opOnPathIndex: -1,
           name,
@@ -342,7 +342,7 @@ const useTimesStopsTableData = (
           margins,
         });
 
-        return [pathStep.id, row];
+        return [pathStep.key, row];
       })
     );
 

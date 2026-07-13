@@ -92,7 +92,7 @@ describe('generatPathAndSchedule', () => {
 
   const expectedPath = [
     {
-      id: '7-0',
+      key: '7-0',
       location: {
         type: 'operational_point_part_reference',
         operational_point: { main_code: 'RTR', country_code: '??', type: 'domestic' },
@@ -100,7 +100,7 @@ describe('generatPathAndSchedule', () => {
       },
     },
     {
-      id: '8-1',
+      key: '8-1',
       location: {
         type: 'operational_point_part_reference',
         operational_point: { main_code: 'LTH', country_code: '??', type: 'domestic' },

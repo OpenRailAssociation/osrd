@@ -47,7 +47,7 @@ def test_conflicts_with_paced_trains(
             "options": {"use_electrical_profiles": False},
             "path": [
                 {
-                    "id": "start",
+                    "key": "start",
                     "location": {
                         "type": "track_offset",
                         "track": "TC0",
@@ -55,7 +55,7 @@ def test_conflicts_with_paced_trains(
                     },
                 },
                 {
-                    "id": "stop",
+                    "key": "stop",
                     "location": {
                         "type": "track_offset",
                         "track": "TC0",
@@ -63,7 +63,7 @@ def test_conflicts_with_paced_trains(
                     },
                 },
                 {
-                    "id": "end",
+                    "key": "end",
                     "location": {
                         "type": "track_offset",
                         "track": "TD0",
@@ -98,11 +98,11 @@ def test_conflicts_with_paced_trains(
     stopping_paced_train_payload["paced"] = {"time_window": "PT2H", "interval": "PT15M"}
     stopping_paced_train_payload["path"] = [
         {
-            "id": "start",
+            "key": "start",
             "location": {"type": "track_offset", "track": "TC1", "offset": 185000},
         },
         {
-            "id": "end",
+            "key": "end",
             "location": {"type": "track_offset", "track": "TD0", "offset": 24820000},
         },
     ]
@@ -161,7 +161,7 @@ def test_conflicts_with_reception_on_closed_signal(
             "options": {"use_electrical_profiles": False},
             "path": [
                 {
-                    "id": "start",
+                    "key": "start",
                     "location": {
                         "type": "track_offset",
                         "track": "TC0",
@@ -169,7 +169,7 @@ def test_conflicts_with_reception_on_closed_signal(
                     },
                 },
                 {
-                    "id": "stop",
+                    "key": "stop",
                     "location": {
                         "type": "track_offset",
                         "track": "TC0",
@@ -177,7 +177,7 @@ def test_conflicts_with_reception_on_closed_signal(
                     },
                 },
                 {
-                    "id": "end",
+                    "key": "end",
                     "location": {
                         "type": "track_offset",
                         "track": "TD0",
@@ -221,7 +221,7 @@ def test_conflicts_with_reception_on_closed_signal(
             "options": {"use_electrical_profiles": False},
             "path": [
                 {
-                    "id": "start",
+                    "key": "start",
                     "location": {
                         "type": "track_offset",
                         "track": "TC1",
@@ -229,7 +229,7 @@ def test_conflicts_with_reception_on_closed_signal(
                     },
                 },
                 {
-                    "id": "end",
+                    "key": "end",
                     "location": {
                         "type": "track_offset",
                         "track": "TD0",
@@ -326,11 +326,11 @@ def test_paced_train_conflicts(
         "options": {"use_electrical_profiles": False},
         "path": [
             {
-                "id": "start",
+                "key": "start",
                 "location": {"type": "track_offset", "track": "TC1", "offset": 185000},
             },
             {
-                "id": "end",
+                "key": "end",
                 "location": {
                     "type": "track_offset",
                     "track": "TD0",
@@ -406,11 +406,11 @@ def test_paced_train_with_exceptions_conflicts(
         "options": {"use_electrical_profiles": False},
         "path": [
             {
-                "id": "start",
+                "key": "start",
                 "location": {"type": "track_offset", "track": "TC1", "offset": 185000},
             },
             {
-                "id": "end",
+                "key": "end",
                 "location": {
                     "type": "track_offset",
                     "track": "TD0",
@@ -552,7 +552,7 @@ def test_scheduled_points_with_incompatible_margins(
             "options": {"use_electrical_profiles": False},
             "path": [
                 {
-                    "id": "start",
+                    "key": "start",
                     "location": {
                         "type": "track_offset",
                         "track": "TC0",
@@ -560,7 +560,7 @@ def test_scheduled_points_with_incompatible_margins(
                     },
                 },
                 {
-                    "id": "end",
+                    "key": "end",
                     "location": {
                         "type": "track_offset",
                         "track": "TD0",
@@ -618,7 +618,7 @@ def test_mrsp_sources(
             "options": {"use_electrical_profiles": False},
             "path": [
                 {
-                    "id": "start",
+                    "key": "start",
                     "location": {
                         "type": "track_offset",
                         "track": "TH0",
@@ -626,7 +626,7 @@ def test_mrsp_sources(
                     },
                 },
                 {
-                    "id": "end",
+                    "key": "end",
                     "location": {
                         "type": "track_offset",
                         "track": "TH1",

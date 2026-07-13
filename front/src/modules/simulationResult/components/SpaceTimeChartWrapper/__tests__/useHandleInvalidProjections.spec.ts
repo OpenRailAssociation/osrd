@@ -25,8 +25,8 @@ const baseProjection: TrainSpaceTimeData = {
   id: 1,
   name: 'Train 1',
   departureTime: new Date('2024-01-01'),
-  originPathItem: { id: 'origin' } as TrainSpaceTimeData['originPathItem'],
-  destinationPathItem: { id: 'destination' } as TrainSpaceTimeData['destinationPathItem'],
+  originPathItem: { key: 'origin' } as TrainSpaceTimeData['originPathItem'],
+  destinationPathItem: { key: 'destination' } as TrainSpaceTimeData['destinationPathItem'],
   spaceTimeCurves: [],
   signalUpdates: [],
 };

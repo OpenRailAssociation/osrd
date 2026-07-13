@@ -18,7 +18,7 @@
     },
     "path": [
       {
-        "id": "b4df37d0-ffe2-4166-b7b6-8c0c5a47e9b0",
+        "key": "b4df37d0-ffe2-4166-b7b6-8c0c5a47e9b0",
         "location": {
           "type": "operational_point_part_reference",
           "operational_point": {
@@ -30,7 +30,7 @@
         }
       },
       {
-        "id": "id2492",
+        "key": "id2492",
         "location": {
           "type": "track_offset",
           "track": "TD0",
@@ -38,7 +38,7 @@
         }
       },
       {
-        "id": "id2570",
+        "key": "id2570",
         "location": {
           "type": "operational_point_part_reference",
           "operational_point": {
@@ -50,7 +50,7 @@
         }
       },
       {
-        "id": "dbc7c80b-aee0-4835-8857-63863dae2ff1",
+        "key": "dbc7c80b-aee0-4835-8857-63863dae2ff1",
         "location": {
           "type": "operational_point_part_reference",
           "operational_point": {

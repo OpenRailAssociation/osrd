@@ -35,7 +35,7 @@ export const propagateStopDuration = (
     return undefined;
 
   const pathStepId = update.row.pathStepId;
-  const pathIndexById = new Map(selectedTrain.path.map((step, index) => [step.id, index]));
+  const pathIndexById = new Map(selectedTrain.path.map((step, index) => [step.key, index]));
   const editedPathIndex = pathIndexById.get(pathStepId) ?? -1;
   if (editedPathIndex < 0) return undefined;
 
