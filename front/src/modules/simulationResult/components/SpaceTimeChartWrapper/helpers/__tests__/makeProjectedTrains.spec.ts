@@ -143,106 +143,113 @@ describe('makeProjectedTrains', () => {
   });
 
   describe('paced train with 1 ADDED path exception', () => {
-    const exceptionId = 2;
-    const exception: PacedTrainException = {
-      key: exceptionId.toString(),
-      id: exceptionId,
-      path_and_schedule: {
-        margins: {
-          boundaries: [],
-          values: ['0%'],
+    const basePacedTrainProjection: TrainSpaceTimeData = {
+      name: 'auie',
+      departureTime: new Date('2025-07-09T05:30:00.000Z'),
+      originPathItem: {
+        id: 'origin',
+        location: {
+          type: 'operational_point_part_reference',
+          operational_point: { type: 'id', operational_point: 'a' },
         },
-        path: [
-          {
-            id: '3e6c78c6-89a9-462f-a0b3-1e4253cb6386',
-            location: {
-              type: 'operational_point_part_reference',
-              operational_point: {
-                uic: 11,
-                secondary_code: 'BV',
-                type: 'uic',
-              },
-            },
-          },
-          {
-            id: '00fd1b82-32ca-43fd-a46e-24b5bc6f0fd3',
-            location: {
-              type: 'operational_point_part_reference',
-              operational_point: {
-                uic: 14,
-                secondary_code: 'BV',
-                type: 'uic',
-              },
-            },
-          },
-        ],
-        power_restrictions: [],
-        schedule: [
-          {
-            at: '00fd1b82-32ca-43fd-a46e-24b5bc6f0fd3',
-            stop_for: 'P0D',
-          },
-        ],
       },
-      start_time: {
-        value: new Date('2025-07-30T14:00:00.000Z').getTime(),
+      destinationPathItem: {
+        id: 'destination',
+        location: {
+          type: 'operational_point_part_reference',
+          operational_point: { type: 'id', operational_point: 'b' },
+        },
       },
-      train_name: {
-        value: 'GE VPE +',
-      },
-    };
-
-    const exceptionProjection = {
       spaceTimeCurves: [
         {
-          positions: [0, 2408, 8726, 17630, 28475],
-          times: [0, 2000, 4000, 6000, 8000],
-        },
-        {
-          positions: [3747000, 4062674, 4370040, 5094361, 5568162],
-          times: [276550, 292849, 308849, 348849, 374849],
+          positions: [0, 2408, 8726, 17630, 40899],
+          times: [0, 2000, 4000, 6000, 10000],
         },
       ],
       signalUpdates: [],
+      id: 2564,
+      paced: {
+        timeWindow: Duration.parse('PT3H'),
+        interval: Duration.parse('PT1H'),
+        exceptions: [],
+        exceptionProjections: new Map(),
+      },
     };
 
-    const trainProjections: TrainSpaceTimeData[] = [
-      {
-        name: 'auie',
-        departureTime: new Date('2025-07-09T05:30:00.000Z'),
-        originPathItem: {
-          id: 'origin',
-          location: {
-            type: 'operational_point_part_reference',
-            operational_point: { type: 'id', operational_point: 'a' },
+    test('added path exception should use its own projection', () => {
+      const exceptionId = 2;
+      const exception: PacedTrainException = {
+        key: exceptionId.toString(),
+        id: exceptionId,
+        path_and_schedule: {
+          margins: {
+            boundaries: [],
+            values: ['0%'],
           },
+          path: [
+            {
+              id: '3e6c78c6-89a9-462f-a0b3-1e4253cb6386',
+              location: {
+                type: 'operational_point_part_reference',
+                operational_point: {
+                  uic: 11,
+                  secondary_code: 'BV',
+                  type: 'uic',
+                },
+              },
+            },
+            {
+              id: '00fd1b82-32ca-43fd-a46e-24b5bc6f0fd3',
+              location: {
+                type: 'operational_point_part_reference',
+                operational_point: {
+                  uic: 14,
+                  secondary_code: 'BV',
+                  type: 'uic',
+                },
+              },
+            },
+          ],
+          power_restrictions: [],
+          schedule: [
+            {
+              at: '00fd1b82-32ca-43fd-a46e-24b5bc6f0fd3',
+              stop_for: 'P0D',
+            },
+          ],
         },
-        destinationPathItem: {
-          id: 'destination',
-          location: {
-            type: 'operational_point_part_reference',
-            operational_point: { type: 'id', operational_point: 'b' },
-          },
+        start_time: {
+          value: new Date('2025-07-30T14:00:00.000Z').getTime(),
         },
+        train_name: {
+          value: 'GE VPE +',
+        },
+      };
+
+      const exceptionProjection = {
         spaceTimeCurves: [
           {
-            positions: [0, 2408, 8726, 17630, 40899],
-            times: [0, 2000, 4000, 6000, 10000],
+            positions: [0, 2408, 8726, 17630, 28475],
+            times: [0, 2000, 4000, 6000, 8000],
+          },
+          {
+            positions: [3747000, 4062674, 4370040, 5094361, 5568162],
+            times: [276550, 292849, 308849, 348849, 374849],
           },
         ],
         signalUpdates: [],
-        id: 2564,
+      };
+
+      const pacedTrain: TrainSpaceTimeData = {
+        ...basePacedTrainProjection,
         paced: {
-          timeWindow: Duration.parse('PT3H'),
-          interval: Duration.parse('PT1H'),
+          ...basePacedTrainProjection.paced!,
           exceptions: [exception],
           exceptionProjections: new Map([[exceptionId, exceptionProjection]]),
         },
-      },
-    ];
+      };
 
-    test('added path exception should use its own projection', () => {
-      const pacedTrain = trainProjections[0];
+      const trainProjections: TrainSpaceTimeData[] = [pacedTrain];
 
       const result = makeProjectedTrains(trainProjections);
 
