@@ -34,21 +34,21 @@ struct OccupancyContext<'a> {
 }
 
 /// Position of an operational point on a path, relative to the input path items.
-/// If the OP matches an input path item, it is located using this path item's ID,
-/// else, if the path just passes by the OP, it is located using its previous and following path items IDs
+/// If the OP matches an input path item, it is located using this path item's key,
+/// else, if the path just passes by the OP, it is located using its previous and following path items keys
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ToSchema)]
 #[serde(tag = "type", rename_all = "snake_case")]
 #[schema(title_variants)]
 pub(super) enum PathItemRelativeLocation {
     ExactPathItem {
         /// Path item ID, when the operational point matches an item in the input path
-        path_item_id: NonBlankString,
+        path_item_key: NonBlankString,
     },
     BetweenPathItems {
-        /// Previous path item ID, when the operational point is not one of the input path items
-        previous_path_item_id: NonBlankString,
-        /// Following path item ID, when the operational point is not one of the input path items
-        following_path_item_id: NonBlankString,
+        /// Previous path item key, when the operational point is not one of the input path items
+        previous_path_item_key: NonBlankString,
+        /// Following path item key, when the operational point is not one of the input path items
+        following_path_item_key: NonBlankString,
     },
 }
 
@@ -117,7 +117,7 @@ fn extract_occupancy_context_without_simulation<'a>(
         train_schedule
             .schedule
             .iter()
-            .find(|schedule| schedule.at.0 == train_schedule.path[idx].id.0)
+            .find(|schedule| schedule.at.0 == train_schedule.path[idx].key.0)
     });
 
     OccupancyContext {
@@ -200,7 +200,7 @@ fn get_path_item_relative_location<'a>(
 ) -> Option<PathItemRelativeLocation> {
     if let Some(idx) = context.matching_index {
         return Some(PathItemRelativeLocation::ExactPathItem {
-            path_item_id: train_schedule.path[idx].id.clone(),
+            path_item_key: train_schedule.path[idx].key.clone(),
         });
     }
     if let (Some(report_train), Some(pathfinding_success)) =
@@ -217,7 +217,7 @@ fn get_path_item_relative_location<'a>(
             {
                 Ok(idx) => {
                     return Some(PathItemRelativeLocation::ExactPathItem {
-                        path_item_id: train_schedule.path[idx].id.clone(),
+                        path_item_key: train_schedule.path[idx].key.clone(),
                     });
                 }
                 Err(idx) => {
@@ -225,8 +225,8 @@ fn get_path_item_relative_location<'a>(
                         panic!("The path offset is out of bound.")
                     }
                     return Some(PathItemRelativeLocation::BetweenPathItems {
-                        previous_path_item_id: train_schedule.path[idx - 1].id.clone(),
-                        following_path_item_id: train_schedule.path[idx].id.clone(),
+                        previous_path_item_key: train_schedule.path[idx - 1].key.clone(),
+                        following_path_item_key: train_schedule.path[idx].key.clone(),
                     });
                 }
             }
@@ -447,7 +447,7 @@ pub mod tests {
             start_time,
             path: vec![
                 PathItem {
-                    id: "path_item_1".into(),
+                    key: "path_item_1".into(),
                     location: PathItemLocation::OperationalPointPartReference(
                         OperationalPointPartReference {
                             operational_point: OperationalPointReference::Id {
@@ -458,7 +458,7 @@ pub mod tests {
                     ),
                 },
                 PathItem {
-                    id: "path_item_2".into(),
+                    key: "path_item_2".into(),
                     location: PathItemLocation::OperationalPointPartReference(
                         OperationalPointPartReference {
                             operational_point: OperationalPointReference::Id {
@@ -469,7 +469,7 @@ pub mod tests {
                     ),
                 },
                 PathItem {
-                    id: "path_item_3".into(),
+                    key: "path_item_3".into(),
                     location: PathItemLocation::OperationalPointPartReference(
                         OperationalPointPartReference {
                             operational_point: OperationalPointReference::Id {
@@ -568,7 +568,7 @@ pub mod tests {
                 _ => "path_item_1",
             };
             let expected_location = PathItemRelativeLocation::ExactPathItem {
-                path_item_id: expected_location_path_item.into(),
+                path_item_key: expected_location_path_item.into(),
             };
             assert_eq!(*path_item_relative_location, expected_location)
         } else {
@@ -588,7 +588,7 @@ pub mod tests {
     ) {
         let path = vec![
             PathItem {
-                id: "p1".into(),
+                key: "p1".into(),
                 location: PathItemLocation::OperationalPointPartReference(
                     OperationalPointPartReference {
                         operational_point: OperationalPointReference::Id {
@@ -599,7 +599,7 @@ pub mod tests {
                 ),
             },
             PathItem {
-                id: "p2".into(),
+                key: "p2".into(),
                 location: PathItemLocation::OperationalPointPartReference(
                     OperationalPointPartReference {
                         operational_point: OperationalPointReference::Id {
@@ -699,7 +699,7 @@ pub mod tests {
         assert_eq!(
             results[0].path_item_relative_location,
             PathItemRelativeLocation::ExactPathItem {
-                path_item_id: "op_2".into()
+                path_item_key: "op_2".into()
             }
         )
     }
@@ -729,21 +729,21 @@ pub mod tests {
         let train_schedule = schemas::TrainOccurrence {
             path: vec![
                 PathItem {
-                    id: "path_item_1".into(),
+                    key: "path_item_1".into(),
                     location: PathItemLocation::TrackOffset(TrackOffset {
                         track: "T0".into(),
                         offset: 0,
                     }),
                 },
                 PathItem {
-                    id: "path_item_2".into(),
+                    key: "path_item_2".into(),
                     location: PathItemLocation::TrackOffset(TrackOffset {
                         track: "V0".into(),
                         offset: 50,
                     }),
                 },
                 PathItem {
-                    id: "path_item_3".into(),
+                    key: "path_item_3".into(),
                     location: PathItemLocation::TrackOffset(TrackOffset {
                         track: "V0".into(),
                         offset: 100,
@@ -788,8 +788,8 @@ pub mod tests {
         assert_eq!(
             results[0].path_item_relative_location,
             PathItemRelativeLocation::BetweenPathItems {
-                previous_path_item_id: "path_item_2".into(),
-                following_path_item_id: "path_item_3".into()
+                previous_path_item_key: "path_item_2".into(),
+                following_path_item_key: "path_item_3".into()
             }
         )
     }

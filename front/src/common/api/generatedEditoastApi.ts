@@ -2789,19 +2789,19 @@ export type PostTrainSchedulesTrackOccupancyApiResponse =
       time_begin: number;
     } & {
       /** Position of an operational point on a path, relative to the input path items.
-        If the OP matches an input path item, it is located using this path item's ID,
-        else, if the path just passes by the OP, it is located using its previous and following path items IDs */
+        If the OP matches an input path item, it is located using this path item's key,
+        else, if the path just passes by the OP, it is located using its previous and following path items keys */
       path_item_relative_location:
         | {
             /** Path item ID, when the operational point matches an item in the input path */
-            path_item_id: NonBlankString;
+            path_item_key: NonBlankString;
             type: 'exact_path_item';
           }
         | {
-            /** Following path item ID, when the operational point is not one of the input path items */
-            following_path_item_id: NonBlankString;
-            /** Previous path item ID, when the operational point is not one of the input path items */
-            previous_path_item_id: NonBlankString;
+            /** Following path item key, when the operational point is not one of the input path items */
+            following_path_item_key: NonBlankString;
+            /** Previous path item key, when the operational point is not one of the input path items */
+            previous_path_item_key: NonBlankString;
             type: 'between_path_items';
           };
     })[];

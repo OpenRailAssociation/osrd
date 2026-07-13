@@ -62,7 +62,7 @@ impl<'de> Deserialize<'de> for TrainSchedule {
                     .train_occurrence
                     .path
                     .first()
-                    .is_some_and(|path_item| schedule_item.at == path_item.id)
+                    .is_some_and(|path_item| schedule_item.at == path_item.key)
             })
             .and_then(|ScheduleItem { arrival, .. }| arrival.as_deref().copied());
         if let Some(arrival) = arrival_time_on_first_path_item

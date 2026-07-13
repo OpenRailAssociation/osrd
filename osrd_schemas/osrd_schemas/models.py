@@ -6380,7 +6380,7 @@ class PathItem(BaseModel):
     A location on the path of a train
     """
 
-    id: str
+    key: str
     """
     The unique identifier of the path item.
     This is used to reference path items in the train schedule.
