@@ -30,7 +30,7 @@ pub async fn run_garbage_collector(
     Ok(())
 }
 
-/// Deletes timetables that are not referenced by any Scenario or StdcmSearchEnvironment
+/// Deletes timetables that are not referenced by any Scenario or StdcmSearchEnvironment or SearchJourneyEnvironment
 async fn clean_orphaned_timetables(db_pool: &Arc<DbConnectionPoolV2>) -> anyhow::Result<()> {
     let conn = &mut db_pool.get().await?;
 
@@ -212,6 +212,8 @@ mod tests {
     use crate::fixtures::create_empty_infra;
     use crate::fixtures::create_scenario_fixtures_set;
     use crate::fixtures::create_timetable;
+    use editoast_models::SearchJourneyEnvironment;
+    use editoast_models::search_journey_environment::fixtures::search_journey_env_fixtures;
     use editoast_models::stdcm_search_environment::StdcmSearchEnvironment;
     use editoast_models::stdcm_search_environment::fixtures::stdcm_search_env_fixtures;
 
@@ -224,15 +226,14 @@ mod tests {
         let scenario_set = create_scenario_fixtures_set(conn, "test_scenario").await;
 
         // Timetable referenced by StdcmSearchEnvironment
-        let (infra, _timetable, work_schedule_group, temp_speed_limit_group, eps) =
+        let (infra, stdcm_timetable, work_schedule_group, temp_speed_limit_group, eps) =
             stdcm_search_env_fixtures(conn).await;
-        let timetable_with_stdcm = create_timetable(conn).await;
         let _stdcm_env = StdcmSearchEnvironment::changeset()
             .infra_id(infra.id)
             .electrical_profile_set_id(Some(eps.id))
             .work_schedule_group_id(Some(work_schedule_group.id))
             .temporary_speed_limit_group_id(Some(temp_speed_limit_group.id))
-            .timetable_id(timetable_with_stdcm.id)
+            .timetable_id(stdcm_timetable.id)
             .search_window_begin(chrono::Utc::now())
             .search_window_end(chrono::Utc::now() + chrono::Duration::hours(1))
             .enabled_from(chrono::Utc::now())
@@ -240,6 +241,16 @@ mod tests {
             .create(conn)
             .await
             .expect("Failed to create StdcmSearchEnvironment");
+
+        // Timetable referenced by SearchJourneyEnvironment
+        let (infra, search_journey_timetables) = search_journey_env_fixtures(conn).await;
+        SearchJourneyEnvironment::create_with_timetables(
+            infra.id,
+            search_journey_timetables.iter().map(|t| t.id).collect(),
+            conn,
+        )
+        .await
+        .expect("Failed to create SearchJourneyEnvironment");
 
         // Orphaned timetables
         let orphaned1 = create_timetable(conn).await;
@@ -249,11 +260,18 @@ mod tests {
 
         for orphaned_id in &[orphaned1.id, orphaned2.id] {
             let found = Timetable::exists(conn, *orphaned_id).await.unwrap();
-            assert!(!found, "Timetable should not exists anymore")
+            assert!(!found, "Timetable should not exist anymore")
         }
 
-        for kept_id in &[scenario_set.timetable.id, timetable_with_stdcm.id] {
-            let found = Timetable::exists(conn, *kept_id).await.unwrap();
+        for kept_id in [scenario_set.timetable.id, stdcm_timetable.id]
+            .into_iter()
+            .chain(
+                search_journey_timetables
+                    .iter()
+                    .map(|timetable| timetable.id),
+            )
+        {
+            let found = Timetable::exists(conn, kept_id).await.unwrap();
             assert!(found, "Timetable should exist")
         }
     }

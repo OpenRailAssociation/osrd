@@ -143,6 +143,7 @@ impl Timetable {
         conn: &mut DbConnection,
     ) -> Result<usize, database::DatabaseError> {
         use database::tables::scenario::dsl as scenario_dsl;
+        use database::tables::search_journey_environment_timetable::dsl as timetable_search_journey_env_dsl;
         use database::tables::stdcm_search_environment::dsl as stdcm_dsl;
         use database::tables::timetable::dsl as timetable_dsl;
 
@@ -153,6 +154,10 @@ impl Timetable {
             .filter(diesel::dsl::not(diesel::dsl::exists(
                 stdcm_dsl::stdcm_search_environment
                     .filter(stdcm_dsl::timetable_id.eq(timetable_dsl::id)),
+            )))
+            .filter(diesel::dsl::not(diesel::dsl::exists(
+                timetable_search_journey_env_dsl::search_journey_environment_timetable
+                    .filter(timetable_search_journey_env_dsl::timetable_id.eq(timetable_dsl::id)),
             )))
             .execute(conn.write().await.deref_mut())
             .await
