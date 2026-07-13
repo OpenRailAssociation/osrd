@@ -90,7 +90,7 @@ const propagateFromEditedPoint = (
   // Delta strategy by direction:
   // - fromDeparture: compare time-of-day only
   // - toDestination: compare full date-time (can produce D+1)
-  const editedPathIndex = selectedTrain.path.findIndex((step) => step.id === editedPathStepId);
+  const editedPathIndex = selectedTrain.path.findIndex((step) => step.key === editedPathStepId);
   if (editedPathIndex < 0) return undefined;
 
   const currentStartTime = new Date(selectedTrain.start_time);
@@ -102,7 +102,7 @@ const propagateFromEditedPoint = (
   const affectedItems = Iterator.from(selectedTrain.schedule ?? [])
     .map((item) => ({
       item,
-      pathIndex: selectedTrain.path.findIndex((step) => step.id === item.at),
+      pathIndex: selectedTrain.path.findIndex((step) => step.key === item.at),
     }))
     .filter(({ item, pathIndex }) => {
       if (item.arrival === null) return false;
@@ -168,12 +168,12 @@ export const adjustFollowingWaypointsForMidnight = (
   selectedTrain: Train
 ): ScheduleItem[] => {
   const startTime = new Date(selectedTrain.start_time);
-  const editedPathIndex = selectedTrain.path.findIndex((step) => step.id === editedPathStepId);
+  const editedPathIndex = selectedTrain.path.findIndex((step) => step.key === editedPathStepId);
 
   const itemsAfterUpdatedStep = Iterator.from(selectedTrain.schedule ?? [])
     .map((item) => ({
       item,
-      pathIndex: selectedTrain.path.findIndex((step) => step.id === item.at),
+      pathIndex: selectedTrain.path.findIndex((step) => step.key === item.at),
     }))
     .filter(({ item, pathIndex }) => item.arrival && pathIndex > editedPathIndex)
     .toArray();

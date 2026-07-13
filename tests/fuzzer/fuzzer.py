@@ -530,7 +530,7 @@ def _convert_stop(stop: tuple[str, float], i: int) -> dict:
             "track": track_section,
             "offset": _to_mm(offset),
         },
-        "id": str(i),
+        "key": str(i),
     }
 
 

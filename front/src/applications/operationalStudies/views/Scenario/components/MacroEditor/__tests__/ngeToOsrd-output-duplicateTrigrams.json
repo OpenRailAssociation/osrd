@@ -60,7 +60,7 @@
             "operational_point": { "main_code": "RTR", "type": "domestic", "country_code": "??" },
             "local_track_name": null
           },
-          "id": "7-0"
+          "key": "7-0"
         },
         {
           "location": {
@@ -68,7 +68,7 @@
             "operational_point": { "main_code": "SS_2", "type": "domestic", "country_code": "??" },
             "local_track_name": null
           },
-          "id": "8-1"
+          "key": "8-1"
         },
         {
           "location": {
@@ -76,7 +76,7 @@
             "operational_point": { "main_code": "SS_1", "type": "domestic", "country_code": "??" },
             "local_track_name": null
           },
-          "id": "6-2"
+          "key": "6-2"
         }
       ],
       "start_time": 1750856400000,

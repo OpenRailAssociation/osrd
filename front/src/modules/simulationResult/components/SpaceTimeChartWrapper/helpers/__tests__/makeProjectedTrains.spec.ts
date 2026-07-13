@@ -21,7 +21,7 @@ describe('makeProjectedTrains', () => {
       path_and_schedule: {
         path: [
           {
-            id: 'a496f3a6-4eea-45f8-a83c-5472d9adcd6d',
+            key: 'a496f3a6-4eea-45f8-a83c-5472d9adcd6d',
             location: {
               type: 'operational_point_part_reference',
               operational_point: {
@@ -32,7 +32,7 @@ describe('makeProjectedTrains', () => {
             },
           },
           {
-            id: 'e18f50f3-2b40-451e-9726-e4dd29459bf0',
+            key: 'e18f50f3-2b40-451e-9726-e4dd29459bf0',
             location: {
               type: 'operational_point_part_reference',
               operational_point: {
@@ -83,14 +83,14 @@ describe('makeProjectedTrains', () => {
           exceptionProjections: new Map([[exceptionId, exceptionProjection]]),
         },
         originPathItem: {
-          id: 'origin',
+          key: 'origin',
           location: {
             type: 'operational_point_part_reference',
             operational_point: { type: 'id', operational_point: 'a' },
           },
         },
         destinationPathItem: {
-          id: 'destination',
+          key: 'destination',
           location: {
             type: 'operational_point_part_reference',
             operational_point: { type: 'id', operational_point: 'b' },
@@ -147,14 +147,14 @@ describe('makeProjectedTrains', () => {
       name: 'auie',
       departureTime: new Date('2025-07-09T05:30:00.000Z'),
       originPathItem: {
-        id: 'origin',
+        key: 'origin',
         location: {
           type: 'operational_point_part_reference',
           operational_point: { type: 'id', operational_point: 'a' },
         },
       },
       destinationPathItem: {
-        id: 'destination',
+        key: 'destination',
         location: {
           type: 'operational_point_part_reference',
           operational_point: { type: 'id', operational_point: 'b' },
@@ -188,7 +188,7 @@ describe('makeProjectedTrains', () => {
           },
           path: [
             {
-              id: '3e6c78c6-89a9-462f-a0b3-1e4253cb6386',
+              key: '3e6c78c6-89a9-462f-a0b3-1e4253cb6386',
               location: {
                 type: 'operational_point_part_reference',
                 operational_point: {
@@ -199,7 +199,7 @@ describe('makeProjectedTrains', () => {
               },
             },
             {
-              id: '00fd1b82-32ca-43fd-a46e-24b5bc6f0fd3',
+              key: '00fd1b82-32ca-43fd-a46e-24b5bc6f0fd3',
               location: {
                 type: 'operational_point_part_reference',
                 operational_point: {

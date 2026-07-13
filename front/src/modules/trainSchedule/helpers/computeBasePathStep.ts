@@ -22,8 +22,8 @@ const computeBasePathStep = (
   trainSchedule: Pick<TrainSchedule, 'path' | 'schedule' | 'margins'>,
   pathItemIndex: number
 ): PathStep => {
-  const { id, location } = trainSchedule.path[pathItemIndex];
-  const correspondingSchedule = trainSchedule.schedule?.find((schedule) => schedule.at === id);
+  const { key, location } = trainSchedule.path[pathItemIndex];
+  const correspondingSchedule = trainSchedule.schedule?.find((schedule) => schedule.at === key);
 
   const {
     arrival,
@@ -48,11 +48,11 @@ const computeBasePathStep = (
 
   let theoreticalMargin;
   if (trainSchedule.margins && pathItemIndex !== trainSchedule.path.length - 1) {
-    theoreticalMargin = findCorrespondingMargin(id, pathItemIndex, trainSchedule.margins);
+    theoreticalMargin = findCorrespondingMargin(key, pathItemIndex, trainSchedule.margins);
   }
 
   return {
-    id,
+    id: key,
     name,
     location,
     arrival: arrival ? Duration.parse(arrival) : null,

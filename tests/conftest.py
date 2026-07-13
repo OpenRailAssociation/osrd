@@ -297,7 +297,7 @@ def west_to_south_east_simulation(
                             "track": "TA2",
                             "offset": 837034,
                         },
-                        "id": "a",
+                        "key": "a",
                     },
                     {
                         "location": {
@@ -305,7 +305,7 @@ def west_to_south_east_simulation(
                             "track": "TH1",
                             "offset": 4386000,
                         },
-                        "id": "b",
+                        "key": "b",
                     },
                 ],
                 "schedule": [{"at": "b", "stop_for": "PT0S"}],
@@ -339,7 +339,7 @@ def west_to_south_east_paced_train(
                             "track": "TA2",
                             "offset": 837034,
                         },
-                        "id": "a",
+                        "key": "a",
                     },
                     {
                         "location": {
@@ -347,7 +347,7 @@ def west_to_south_east_paced_train(
                             "track": "TH1",
                             "offset": 4386000,
                         },
-                        "id": "b",
+                        "key": "b",
                     },
                 ],
                 "schedule": [{"at": "b", "stop_for": "PT0S"}],
@@ -379,11 +379,11 @@ def west_to_south_east_paced_trains(
         "path": [
             {
                 "location": {"type": "track_offset", "track": "TA2", "offset": 837034},
-                "id": "a",
+                "key": "a",
             },
             {
                 "location": {"type": "track_offset", "track": "TH1", "offset": 4386000},
-                "id": "b",
+                "key": "b",
             },
         ],
         "rolling_stock_name": fast_rolling_stock_name,
@@ -445,7 +445,7 @@ def west_to_south_east_etcs_simulation(
                             "track": "TA2",
                             "offset": 837034,
                         },
-                        "id": "a",
+                        "key": "a",
                     },
                     {
                         "location": {
@@ -453,7 +453,7 @@ def west_to_south_east_etcs_simulation(
                             "track": "TH1",
                             "offset": 4386000,
                         },
-                        "id": "b",
+                        "key": "b",
                     },
                 ],
                 "schedule": [{"at": "b", "stop_for": "PT0S"}],
@@ -480,11 +480,11 @@ def west_to_south_east_simulations(
         "path": [
             {
                 "location": {"type": "track_offset", "track": "TA2", "offset": 837034},
-                "id": "a",
+                "key": "a",
             },
             {
                 "location": {"type": "track_offset", "track": "TH1", "offset": 4386000},
-                "id": "b",
+                "key": "b",
             },
         ],
         "rolling_stock_name": fast_rolling_stock_name,

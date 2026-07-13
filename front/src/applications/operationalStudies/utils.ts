@@ -51,8 +51,9 @@ export const intermediateStopsCount = ({
 }) => {
   if (!schedule) return 0;
 
-  const originId = path.at(0)?.id;
-  const destinationId = path.at(-1)?.id;
+  // TODO (origin|destination)Id => (origin|destination)Key
+  const originId = path.at(0)?.key;
+  const destinationId = path.at(-1)?.key;
   const intermediateStops = schedule.filter(
     (step) => step.stop_for && step.at !== originId && step.at !== destinationId
   );
@@ -230,7 +231,7 @@ export const buildPathWaypointsFromRawOPs = (
 
     return {
       ...waypoint,
-      pathItemId: pathItem.id,
+      pathItemId: pathItem.key,
       location: pathItem.location,
     };
   });
@@ -253,8 +254,8 @@ export const buildPathWaypointsFromRawOPs = (
 export const sortPathOperationalPoints = (ops: PathWaypoint[], path: PathItem[]): PathWaypoint[] =>
   ops.toSorted((a, b) => {
     if (a.position !== b.position) return a.position - b.position;
-    const aPathIndex = path.findIndex((pathItem) => pathItem.id === a.pathItemId);
-    const bPathIndex = path.findIndex((pathItem) => pathItem.id === b.pathItemId);
+    const aPathIndex = path.findIndex((pathItem) => pathItem.key === a.pathItemId);
+    const bPathIndex = path.findIndex((pathItem) => pathItem.key === b.pathItemId);
     const lastIndex = path.length - 1;
     const aIsOrigin = aPathIndex === 0;
     const bIsOrigin = bPathIndex === 0;
@@ -347,7 +348,7 @@ export const isScheduledPointsNotHonored = (
 
 export const getPathItemByIndexDict = (trainSchedule: TrainScheduleResponse) =>
   trainSchedule.path.reduce((acc, pathItem, index) => {
-    acc[pathItem.id] = index;
+    acc[pathItem.key] = index;
     return acc;
   }, {} as Dictionary<number>);
 
@@ -432,7 +433,7 @@ export const checkRoundTripCompatible = (
     isPacedTrain(trainScheduleA) &&
     isPacedTrain(trainScheduleB) &&
     Duration.parse(trainScheduleA.paced.interval).ms !==
-      Duration.parse(trainScheduleB.paced.interval).ms
+    Duration.parse(trainScheduleB.paced.interval).ms
   ) {
     return false;
   }
@@ -472,8 +473,8 @@ export const checkRoundTripCompatible = (
       }
     }
 
-    const scheduleItemA = trainScheduleA.schedule?.find(({ at }) => at === pathItemA.id);
-    const scheduleItemB = trainScheduleB.schedule?.find(({ at }) => at === pathItemB.id);
+    const scheduleItemA = trainScheduleA.schedule?.find(({ at }) => at === pathItemA.key);
+    const scheduleItemB = trainScheduleB.schedule?.find(({ at }) => at === pathItemB.key);
 
     const isStopA = indexA === 0 || Boolean(scheduleItemA?.stop_for);
     const isStopB = indexB === 0 || Boolean(scheduleItemB?.stop_for);

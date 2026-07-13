@@ -55,7 +55,11 @@
         "margin": "0%",
         "consist_schedule": {
             "boundaries": [],
-            "values": [{"rolling_stock_id": 609}]
+            "values": [
+                {
+                    "rolling_stock_id": 609
+                }
+            ]
         }
     },
     "prelude": [
@@ -65,12 +69,20 @@
                     "comfort": "STANDARD",
                     "path": [
                         {
-                            "location": {"type": "track_offset", "track": "TA1", "offset": 1656637},
-                            "id": "0"
+                            "location": {
+                                "type": "track_offset",
+                                "track": "TA1",
+                                "offset": 1656637
+                            },
+                            "key": "0"
                         },
                         {
-                            "location": {"type": "track_offset", "track": "TA1", "offset": 490019},
-                            "id": "1"
+                            "location": {
+                                "type": "track_offset",
+                                "track": "TA1",
+                                "offset": 490019
+                            },
+                            "key": "1"
                         }
                     ],
                     "initial_speed": 0,
@@ -99,28 +111,52 @@
                     "comfort": "STANDARD",
                     "path": [
                         {
-                            "location": {"type": "track_offset", "track": "TE1", "offset": 1405551},
-                            "id": "0"
+                            "location": {
+                                "type": "track_offset",
+                                "track": "TE1",
+                                "offset": 1405551
+                            },
+                            "key": "0"
                         },
                         {
-                            "location": {"type": "track_offset", "track": "TE1", "offset": 1260601},
-                            "id": "1"
+                            "location": {
+                                "type": "track_offset",
+                                "track": "TE1",
+                                "offset": 1260601
+                            },
+                            "key": "1"
                         },
                         {
-                            "location": {"type": "track_offset", "track": "TE3", "offset": 1778114},
-                            "id": "2"
+                            "location": {
+                                "type": "track_offset",
+                                "track": "TE3",
+                                "offset": 1778114
+                            },
+                            "key": "2"
                         },
                         {
-                            "location": {"type": "track_offset", "track": "TD2", "offset": 826795},
-                            "id": "3"
+                            "location": {
+                                "type": "track_offset",
+                                "track": "TD2",
+                                "offset": 826795
+                            },
+                            "key": "3"
                         },
                         {
-                            "location": {"type": "track_offset", "track": "TC1", "offset": 78569},
-                            "id": "4"
+                            "location": {
+                                "type": "track_offset",
+                                "track": "TC1",
+                                "offset": 78569
+                            },
+                            "key": "4"
                         },
                         {
-                            "location": {"type": "track_offset", "track": "TA1", "offset": 751998},
-                            "id": "5"
+                            "location": {
+                                "type": "track_offset",
+                                "track": "TA1",
+                                "offset": 751998
+                            },
+                            "key": "5"
                         }
                     ],
                     "initial_speed": 0,
@@ -152,16 +188,28 @@
                     "comfort": "STANDARD",
                     "path": [
                         {
-                            "location": {"type": "track_offset", "track": "TD0", "offset": 20752922},
-                            "id": "0"
+                            "location": {
+                                "type": "track_offset",
+                                "track": "TD0",
+                                "offset": 20752922
+                            },
+                            "key": "0"
                         },
                         {
-                            "location": {"type": "track_offset", "track": "TD0", "offset": 9872052},
-                            "id": "1"
+                            "location": {
+                                "type": "track_offset",
+                                "track": "TD0",
+                                "offset": 9872052
+                            },
+                            "key": "1"
                         },
                         {
-                            "location": {"type": "track_offset", "track": "TC1", "offset": 496044},
-                            "id": "2"
+                            "location": {
+                                "type": "track_offset",
+                                "track": "TC1",
+                                "offset": 496044
+                            },
+                            "key": "2"
                         }
                     ],
                     "initial_speed": 0,
@@ -184,12 +232,20 @@
                     "comfort": "STANDARD",
                     "path": [
                         {
-                            "location": {"type": "track_offset", "track": "TC1", "offset": 605753},
-                            "id": "0"
+                            "location": {
+                                "type": "track_offset",
+                                "track": "TC1",
+                                "offset": 605753
+                            },
+                            "key": "0"
                         },
                         {
-                            "location": {"type": "track_offset", "track": "TC1", "offset": 37159},
-                            "id": "1"
+                            "location": {
+                                "type": "track_offset",
+                                "track": "TC1",
+                                "offset": 37159
+                            },
+                            "key": "1"
                         }
                     ],
                     "initial_speed": 0,
@@ -212,12 +268,20 @@
                     "comfort": "STANDARD",
                     "path": [
                         {
-                            "location": {"type": "track_offset", "track": "TD0", "offset": 7402597},
-                            "id": "0"
+                            "location": {
+                                "type": "track_offset",
+                                "track": "TD0",
+                                "offset": 7402597
+                            },
+                            "key": "0"
                         },
                         {
-                            "location": {"type": "track_offset", "track": "TD0", "offset": 108596},
-                            "id": "1"
+                            "location": {
+                                "type": "track_offset",
+                                "track": "TD0",
+                                "offset": 108596
+                            },
+                            "key": "1"
                         }
                     ],
                     "initial_speed": 0,
@@ -240,24 +304,44 @@
                     "comfort": "STANDARD",
                     "path": [
                         {
-                            "location": {"type": "track_offset", "track": "TF0", "offset": 1712},
-                            "id": "0"
+                            "location": {
+                                "type": "track_offset",
+                                "track": "TF0",
+                                "offset": 1712
+                            },
+                            "key": "0"
                         },
                         {
-                            "location": {"type": "track_offset", "track": "TF0", "offset": 462},
-                            "id": "1"
+                            "location": {
+                                "type": "track_offset",
+                                "track": "TF0",
+                                "offset": 462
+                            },
+                            "key": "1"
                         },
                         {
-                            "location": {"type": "track_offset", "track": "TE0", "offset": 308191},
-                            "id": "2"
+                            "location": {
+                                "type": "track_offset",
+                                "track": "TE0",
+                                "offset": 308191
+                            },
+                            "key": "2"
                         },
                         {
-                            "location": {"type": "track_offset", "track": "TD2", "offset": 982710},
-                            "id": "3"
+                            "location": {
+                                "type": "track_offset",
+                                "track": "TD2",
+                                "offset": 982710
+                            },
+                            "key": "3"
                         },
                         {
-                            "location": {"type": "track_offset", "track": "TD0", "offset": 18186267},
-                            "id": "4"
+                            "location": {
+                                "type": "track_offset",
+                                "track": "TD0",
+                                "offset": 18186267
+                            },
+                            "key": "4"
                         }
                     ],
                     "initial_speed": 0,
@@ -289,12 +373,20 @@
                     "comfort": "STANDARD",
                     "path": [
                         {
-                            "location": {"type": "track_offset", "track": "TA4", "offset": 34632},
-                            "id": "0"
+                            "location": {
+                                "type": "track_offset",
+                                "track": "TA4",
+                                "offset": 34632
+                            },
+                            "key": "0"
                         },
                         {
-                            "location": {"type": "track_offset", "track": "TA4", "offset": 6564},
-                            "id": "1"
+                            "location": {
+                                "type": "track_offset",
+                                "track": "TA4",
+                                "offset": 6564
+                            },
+                            "key": "1"
                         }
                     ],
                     "initial_speed": 0,
@@ -323,16 +415,28 @@
                     "comfort": "STANDARD",
                     "path": [
                         {
-                            "location": {"type": "track_offset", "track": "TD2", "offset": 1700946},
-                            "id": "0"
+                            "location": {
+                                "type": "track_offset",
+                                "track": "TD2",
+                                "offset": 1700946
+                            },
+                            "key": "0"
                         },
                         {
-                            "location": {"type": "track_offset", "track": "TD2", "offset": 116995},
-                            "id": "1"
+                            "location": {
+                                "type": "track_offset",
+                                "track": "TD2",
+                                "offset": 116995
+                            },
+                            "key": "1"
                         },
                         {
-                            "location": {"type": "track_offset", "track": "TA0", "offset": 1763343},
-                            "id": "2"
+                            "location": {
+                                "type": "track_offset",
+                                "track": "TA0",
+                                "offset": 1763343
+                            },
+                            "key": "2"
                         }
                     ],
                     "initial_speed": 0,
