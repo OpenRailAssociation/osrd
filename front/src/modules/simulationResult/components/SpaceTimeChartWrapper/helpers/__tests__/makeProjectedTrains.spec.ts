@@ -142,7 +142,7 @@ describe('makeProjectedTrains', () => {
     });
   });
 
-  describe('paced train with 1 ADDED path exception', () => {
+  describe('paced train with 1 ADDED exception', () => {
     const basePacedTrainProjection: TrainSpaceTimeData = {
       name: 'auie',
       departureTime: new Date('2025-07-09T05:30:00.000Z'),
@@ -285,6 +285,38 @@ describe('makeProjectedTrains', () => {
         type: 'exception',
         exception,
         ...exceptionProjection,
+      });
+    });
+
+    test('added exception should generate correct name', () => {
+      const exceptionStartTime = new Date('2025-07-30T14:00:00.000Z');
+      const exception: PacedTrainException = {
+        key: 'foo',
+        id: 2,
+        start_time: {
+          value: exceptionStartTime.getTime(),
+        },
+      };
+
+      const pacedTrain: TrainSpaceTimeData = {
+        ...basePacedTrainProjection,
+        paced: {
+          ...basePacedTrainProjection.paced!,
+          exceptions: [exception],
+        },
+      };
+
+      const result = makeProjectedTrains([pacedTrain]);
+
+      expect(result.length).toBe(4);
+      expect(result[3]).toEqual({
+        id: 'exception_2564_2',
+        name: 'auie/+≠',
+        departureTime: exceptionStartTime,
+        type: 'exception',
+        exception,
+        spaceTimeCurves: basePacedTrainProjection.spaceTimeCurves,
+        signalUpdates: basePacedTrainProjection.signalUpdates,
       });
     });
   });
