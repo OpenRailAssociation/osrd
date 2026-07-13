@@ -969,9 +969,8 @@ $train-category-colors: (
         display: flex;
         flex-direction: column;
         margin-top: calc(
-          30px - var(--fieldwrapper-default-padding-top) - var(
-              --fieldwrapper-default-padding-bottom
-            )
+          30px - var(--fieldwrapper-default-padding-top) -
+            var(--fieldwrapper-default-padding-bottom)
         );
         margin-bottom: calc(21px - var(--fieldwrapper-default-padding-top));
 
