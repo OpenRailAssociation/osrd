@@ -14,7 +14,7 @@
 
 @mixin maintain-ratio($ratio: 1 1) {
   @if length($ratio) < 2 or length($ratio) > 2 {
-    @warn "$ratio must be a list with two values.";
+    @warn '$ratio must be a list with two values.';
   }
 
   $width: 100%;

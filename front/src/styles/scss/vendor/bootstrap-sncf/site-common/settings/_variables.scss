@@ -883,8 +883,8 @@ $custom-select-background: $custom-select-indicator no-repeat right $custom-sele
   center / $custom-select-bg-size !default; // Used so we can have multiple background elements (e.g., arrow and feedback icon)
 
 $custom-select-feedback-icon-padding-right: calc(
-  (1em + #{2 * $custom-select-padding-y}) * 3 / 4 + #{$custom-select-padding-x +
-    $custom-select-indicator-padding}
+  (1em + #{2 * $custom-select-padding-y}) * 3 / 4 +
+    #{$custom-select-padding-x + $custom-select-indicator-padding}
 ) !default;
 $custom-select-feedback-icon-position: center right
   ($custom-select-padding-x + $custom-select-indicator-padding) !default;
@@ -983,7 +983,7 @@ $form-feedback-icon-valid: str-replace(
 ) !default;
 $form-feedback-icon-invalid-color: $form-feedback-invalid-color !default;
 $form-feedback-icon-invalid: str-replace(
-  url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='#{$form-feedback-icon-invalid-color}' viewBox='-2 -2 7 7'%3e%3cpath stroke='#{$form-feedback-icon-invalid-color}' d='M0 0l3 3m0-3L0 3'/%3e%3ccircle r='.5'/%3e%3ccircle cx='3' r='.5'/%3e%3ccircle cy='3' r='.5'/%3e%3ccircle cx='3' cy='3' r='.5'/%3e%3c/svg%3E"),
+  url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='#{$form-feedback-icon-invalid-color}' viewBox='-2 -2 7 7'%3e%3cpath stroke='#{$form-feedback-icon-invalid-color}' d='M0 0l3 3m0-3L0 3'/%3e%3ccircle r='0.5'/%3e%3ccircle cx='3' r='0.5'/%3e%3ccircle cy='3' r='0.5'/%3e%3ccircle cx='3' cy='3' r='0.5'/%3e%3c/svg%3E"),
   '#',
   '%23'
 ) !default;
