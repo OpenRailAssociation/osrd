@@ -1,0 +1,4 @@
+DROP TRIGGER IF EXISTS trigger_check_search_journey_environment_timetable_type_is_calendar ON search_journey_environment_timetable;
+DROP FUNCTION IF EXISTS check_search_journey_environment_timetable_type_is_calendar();
+DROP TABLE IF EXISTS search_journey_environment_timetable;
+DROP TABLE IF EXISTS search_journey_environment;
