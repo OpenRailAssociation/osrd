@@ -100,10 +100,10 @@ const useOccurrences = (
           : pacedTrainCategory,
         occurrenceIndex: i,
         exception:
-          // TODO_EXCEPTION: remove the second check when use TrainScheduleException type
-          correspondingException && correspondingException.id
+          correspondingException
             ? {
-                id: correspondingException.id,
+                // TODO_EXCEPTION: remove `!` when use TrainScheduleException type
+                id: correspondingException.id!,
                 exceptionChangeGroups: omit(correspondingException, [
                   // TODO_EXCEPTION: remove 'key' when use TrainScheduleException type
                   'key',
