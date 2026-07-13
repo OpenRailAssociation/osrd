@@ -40,7 +40,7 @@ const BASE_OCCURRENCE = {
   stopsCount: 5,
   category: { main_category: 'HIGH_SPEED_TRAIN' },
   rollingStock,
-  disabled: undefined,
+  disabled: false,
   exception: undefined,
   summary: undefined,
 };

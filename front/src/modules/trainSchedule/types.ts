@@ -112,11 +112,7 @@ export type ExceptionChangeGroups = Omit<
 
 export type Occurrence = {
   id: OccurrenceId;
-  /**
-   * Field present only for a regular occurrence.
-   * An added exception can only be deleted, not disabled.
-   */
-  disabled?: boolean;
+  disabled: boolean;
   category?: TrainCategory | null;
   occurrenceIndex?: number; // Optional, only if not created
   trainName: string;
