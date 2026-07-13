@@ -51,7 +51,7 @@ export const returnOccurrenceExceptionRollingStock = ({
 const useOccurrences = (
   pacedTrain: PacedTrainWithDetails,
   rollingStockList: LightRollingStockWithLiveries[] | null
-) => {
+): { occurrencesCount: number; occurrences: Occurrence[] } => {
   const {
     id,
     paced,
