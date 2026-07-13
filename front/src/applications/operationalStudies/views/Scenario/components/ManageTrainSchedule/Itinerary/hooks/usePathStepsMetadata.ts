@@ -75,7 +75,7 @@ export const usePathStepsMetadata = (
       pathSteps.reduce<TrainSchedule['path']>((acc, step) => {
         if (step.location) {
           acc.push({
-            id: step.id,
+            key: step.id,
             location: step.location,
           });
         }

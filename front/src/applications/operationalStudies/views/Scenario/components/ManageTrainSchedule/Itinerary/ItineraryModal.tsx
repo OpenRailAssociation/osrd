@@ -704,7 +704,7 @@ const ItineraryModal = ({
     if (!displayedPathProperties) return null;
     return buildPathWaypointsFromRawOPs(
       displayedPathProperties.operational_points,
-      pathfindingSteps.map((step) => ({ ...step, location: step.location! }))
+      pathfindingSteps.map((step) => ({ key: step.id, location: step.location! }))
     );
   }, [displayedPathProperties, pathfindingSteps]);
 

@@ -110,14 +110,14 @@ impl TrainScheduleExceptionChangeGroups {
                 ],
                 path: vec![
                     PathItem {
-                        id: "aa".into(),
+                        key: "aa".into(),
                         location: PathItemLocation::TrackOffset(TrackOffset {
                             offset: 300,
                             track: Identifier("TC0".to_string()),
                         }),
                     },
                     PathItem {
-                        id: "bb".into(),
+                        key: "bb".into(),
                         location: PathItemLocation::OperationalPointPartReference(
                             OperationalPointPartReference {
                                 operational_point: OperationalPointReference::Id {
@@ -128,14 +128,14 @@ impl TrainScheduleExceptionChangeGroups {
                         ),
                     },
                     PathItem {
-                        id: "cc".into(),
+                        key: "cc".into(),
                         location: PathItemLocation::TrackOffset(TrackOffset {
                             offset: 300,
                             track: Identifier("TC1".to_string()),
                         }),
                     },
                     PathItem {
-                        id: "dd".into(),
+                        key: "dd".into(),
                         location: PathItemLocation::TrackOffset(TrackOffset {
                             offset: 300,
                             track: Identifier("TC2".to_string()),

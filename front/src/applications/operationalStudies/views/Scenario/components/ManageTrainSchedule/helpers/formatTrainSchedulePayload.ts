@@ -54,7 +54,7 @@ export function formatTrainSchedulePayload(trainState: ItineraryModalTrainState)
       stops_at_end_of_block: false,
     },
     path: pathSteps.map((step) => ({
-      id: step.id,
+      key: step.id,
       location: step.location,
     })),
     paced:

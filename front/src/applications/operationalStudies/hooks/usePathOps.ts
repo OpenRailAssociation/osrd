@@ -22,7 +22,7 @@ const usePathOps = (
         path
           ?.map((pathItem) => {
             if (pathItem.location.type === 'operational_point_part_reference') {
-              return [pathItem.id, pathItem.location.operational_point] as const;
+              return [pathItem.key, pathItem.location.operational_point] as const;
             }
             return null;
           })

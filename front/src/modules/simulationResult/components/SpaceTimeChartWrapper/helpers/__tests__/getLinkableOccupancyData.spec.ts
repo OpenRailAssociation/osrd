@@ -5,8 +5,8 @@ import type { TrainSpaceTimeData } from 'modules/simulationResult/types';
 
 import getLinkableOccupancyData from '../getLinkableOccupancyData';
 
-const pathItem = (id: string): PathItem => ({
-  id,
+const pathItem = (key: string): PathItem => ({
+  key,
   location: {
     type: 'operational_point_part_reference',
     operational_point: { type: 'uic', uic: 1 },
@@ -31,7 +31,7 @@ const exception = (changeGroups: Partial<PacedTrainException>): PacedTrainExcept
 describe('getLinkableOccupancyData', () => {
   it('should mark an occupancy on the first path item as an outgoing block', () => {
     const { blockType } = getLinkableOccupancyData(
-      { type: 'exact_path_item', path_item_id: 'origin' },
+      { type: 'exact_path_item', path_item_key: 'origin' },
       TRAIN
     );
 
@@ -40,7 +40,7 @@ describe('getLinkableOccupancyData', () => {
 
   it('should mark an occupancy on the last path item as an incoming block', () => {
     const { blockType } = getLinkableOccupancyData(
-      { type: 'exact_path_item', path_item_id: 'destination' },
+      { type: 'exact_path_item', path_item_key: 'destination' },
       TRAIN
     );
 
@@ -49,7 +49,7 @@ describe('getLinkableOccupancyData', () => {
 
   it('should mark an occupancy on any other path item as a via block', () => {
     const { blockType } = getLinkableOccupancyData(
-      { type: 'exact_path_item', path_item_id: 'intermediate-stop' },
+      { type: 'exact_path_item', path_item_key: 'intermediate-stop' },
       TRAIN
     );
 
@@ -60,8 +60,8 @@ describe('getLinkableOccupancyData', () => {
     const { blockType } = getLinkableOccupancyData(
       {
         type: 'between_path_items',
-        previous_path_item_id: 'origin',
-        following_path_item_id: 'destination',
+        previous_path_item_key: 'origin',
+        following_path_item_key: 'destination',
       },
       TRAIN
     );
@@ -81,14 +81,14 @@ describe('getLinkableOccupancyData', () => {
 
     expect(
       getLinkableOccupancyData(
-        { type: 'exact_path_item', path_item_id: 'other-destination' },
+        { type: 'exact_path_item', path_item_key: 'other-destination' },
         TRAIN,
         pathException
       ).blockType
     ).toBe('incoming');
     expect(
       getLinkableOccupancyData(
-        { type: 'exact_path_item', path_item_id: 'destination' },
+        { type: 'exact_path_item', path_item_key: 'destination' },
         TRAIN,
         pathException
       ).blockType
@@ -97,7 +97,7 @@ describe('getLinkableOccupancyData', () => {
 
   it('should mark an occupancy whose schedule holds a stop as a stop', () => {
     const { isStop } = getLinkableOccupancyData(
-      { type: 'exact_path_item', path_item_id: 'destination' },
+      { type: 'exact_path_item', path_item_key: 'destination' },
       TRAIN
     );
 
@@ -106,7 +106,7 @@ describe('getLinkableOccupancyData', () => {
 
   it('should mark a stop of no duration as a stop', () => {
     const { isStop } = getLinkableOccupancyData(
-      { type: 'exact_path_item', path_item_id: 'destination' },
+      { type: 'exact_path_item', path_item_key: 'destination' },
       { ...TRAIN, schedule: [{ at: 'destination', stop_for: 'PT0S' }] }
     );
 
@@ -115,7 +115,7 @@ describe('getLinkableOccupancyData', () => {
 
   it('should not mark an arrival the train runs through as a stop', () => {
     const { isStop } = getLinkableOccupancyData(
-      { type: 'exact_path_item', path_item_id: 'destination' },
+      { type: 'exact_path_item', path_item_key: 'destination' },
       { ...TRAIN, schedule: [] }
     );
 
@@ -124,7 +124,7 @@ describe('getLinkableOccupancyData', () => {
 
   it('should mark a departure at a null initial speed as a stop, with no scheduled stop', () => {
     const { isStop } = getLinkableOccupancyData(
-      { type: 'exact_path_item', path_item_id: 'origin' },
+      { type: 'exact_path_item', path_item_key: 'origin' },
       { ...TRAIN, initialSpeed: 0 }
     );
 
@@ -133,7 +133,7 @@ describe('getLinkableOccupancyData', () => {
 
   it('should not mark a departure at speed without a stop as a stop', () => {
     const { isStop } = getLinkableOccupancyData(
-      { type: 'exact_path_item', path_item_id: 'origin' },
+      { type: 'exact_path_item', path_item_key: 'origin' },
       TRAIN
     );
 
@@ -142,7 +142,7 @@ describe('getLinkableOccupancyData', () => {
 
   it('should mark a departure at speed as a stop when its schedule holds one', () => {
     const { isStop } = getLinkableOccupancyData(
-      { type: 'exact_path_item', path_item_id: 'origin' },
+      { type: 'exact_path_item', path_item_key: 'origin' },
       { ...TRAIN, schedule: [{ at: 'origin', stop_for: 'PT10S' }] }
     );
 
@@ -151,7 +151,7 @@ describe('getLinkableOccupancyData', () => {
 
   it('should mark a departure as a stop when an exception nullifies the initial speed', () => {
     const { isStop } = getLinkableOccupancyData(
-      { type: 'exact_path_item', path_item_id: 'origin' },
+      { type: 'exact_path_item', path_item_key: 'origin' },
       TRAIN,
       exception({ initial_speed: { value: 0 } })
     );
@@ -171,7 +171,7 @@ describe('getLinkableOccupancyData', () => {
 
     expect(
       getLinkableOccupancyData(
-        { type: 'exact_path_item', path_item_id: 'destination' },
+        { type: 'exact_path_item', path_item_key: 'destination' },
         { ...TRAIN, schedule: [] },
         scheduleException
       ).isStop
@@ -180,7 +180,7 @@ describe('getLinkableOccupancyData', () => {
 
   it('should mark an occurrence disabled by its exception as inactive', () => {
     const { active } = getLinkableOccupancyData(
-      { type: 'exact_path_item', path_item_id: 'origin' },
+      { type: 'exact_path_item', path_item_key: 'origin' },
       TRAIN,
       exception({ disabled: true })
     );
@@ -190,7 +190,7 @@ describe('getLinkableOccupancyData', () => {
 
   it('should mark an occurrence without exception as active', () => {
     const { active } = getLinkableOccupancyData(
-      { type: 'exact_path_item', path_item_id: 'origin' },
+      { type: 'exact_path_item', path_item_key: 'origin' },
       TRAIN
     );
 

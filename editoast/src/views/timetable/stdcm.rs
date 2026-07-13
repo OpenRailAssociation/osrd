@@ -611,7 +611,7 @@ impl VirtualTrainRun {
                     .iter()
                     .zip(&path)
                     .map(|(stdcm_step, path_item)| ScheduleItem {
-                        at: path_item.id.clone(),
+                        at: path_item.key.clone(),
                         arrival: stdcm_step.timing_data.as_ref().map(|timing_data| {
                             PositiveDuration::try_from(
                                 timing_data
