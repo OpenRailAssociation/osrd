@@ -1,16 +1,12 @@
 import { pick } from 'lodash';
 
+import { generateBareOccurrences } from 'applications/operationalStudies/helpers/generateBareOccurrences';
 import type { IndividualTrainProjection, TrainSpaceTimeData } from 'modules/simulationResult/types';
 import computeOccurrenceName from 'modules/trainSchedule/helpers/computeOccurrenceName';
 import {
-  computeIndexedOccurrenceStartTime,
-  findExceptionWithOccurrenceId,
-  getOccurrencesNb,
-} from 'modules/trainSchedule/helpers/pacedTrain';
-import {
-  formatTrainScheduleIdToIndexedOccurrenceId,
-  formatEditoastIdToExceptionId,
   formatEditoastIdToTrainScheduleId,
+  isIndexedOccurrenceId,
+  extractOccurrenceIndexFromOccurrenceId,
 } from 'utils/trainId';
 
 const EXCEPTION_SUFFIX = '≠';
@@ -21,101 +17,66 @@ const EXCEPTION_SUFFIX = '≠';
  */
 const makeProjectedTrains = (trainScheduleProjections: TrainSpaceTimeData[]) =>
   trainScheduleProjections.flatMap<IndividualTrainProjection>((projectedTrain) => {
-    const trainScheduleId = formatEditoastIdToTrainScheduleId(projectedTrain.id);
-    if (!projectedTrain.paced) {
-      return { ...projectedTrain, id: trainScheduleId, type: 'trainSchedule' };
+    const { paced } = projectedTrain;
+    if (!paced) {
+      return {
+        ...projectedTrain,
+        id: formatEditoastIdToTrainScheduleId(projectedTrain.id),
+        type: 'trainSchedule',
+      };
     }
 
-    const occurrences: IndividualTrainProjection[] = [];
     const pacedTrainCurves = pick(projectedTrain, [
       'spaceTimeCurves',
       'signalUpdates',
       'isSimulated',
     ]);
 
-    // =========== indexed occurrences ===========
-    const occurrencesCount = getOccurrencesNb(projectedTrain.paced);
-    for (let i = 0; i < occurrencesCount; i += 1) {
-      const occurrenceId = formatTrainScheduleIdToIndexedOccurrenceId(trainScheduleId, i);
-      const correspondingException = findExceptionWithOccurrenceId(
-        projectedTrain.paced.exceptions,
-        occurrenceId
-      );
-
-      // Disabled occurrences should not be displayed
-      if (correspondingException?.disabled) continue;
-
-      if (!correspondingException) {
-        occurrences.push({
-          ...pacedTrainCurves,
-          id: occurrenceId,
-          type: 'occurrence',
-          name: computeOccurrenceName(projectedTrain.name, i),
-          departureTime: computeIndexedOccurrenceStartTime(
-            projectedTrain.departureTime,
-            projectedTrain.paced.interval,
-            i
-          ),
-        });
-        continue;
-      }
-
-      const exceptionProjection = projectedTrain.paced.exceptionProjections.get(
-        correspondingException.id! // TODO_EXCEPTION: remove `!` when using TrainSchedulingException type
-      );
-
-      const departureTime = correspondingException.start_time
-        ? new Date(correspondingException.start_time.value)
-        : computeIndexedOccurrenceStartTime(
-            projectedTrain.departureTime,
-            projectedTrain.paced.interval,
-            i
+    return generateBareOccurrences({
+      id: projectedTrain.id,
+      startTime: projectedTrain.departureTime,
+      paced,
+    })
+      .filter(({ exception }) => !exception?.disabled)
+      .map(({ id, startTime: departureTime, exception }): IndividualTrainProjection => {
+        let name = exception?.train_name?.value;
+        if (isIndexedOccurrenceId(id)) {
+          name ??= computeOccurrenceName(
+            projectedTrain.name,
+            extractOccurrenceIndexFromOccurrenceId(id)
           );
+        } else {
+          name ??= projectedTrain.name + '/+';
+        }
+        if (exception) {
+          name += EXCEPTION_SUFFIX;
+        }
 
-      const name = correspondingException?.train_name
-        ? `${correspondingException.train_name.value}${EXCEPTION_SUFFIX}`
-        : `${computeOccurrenceName(projectedTrain.name, i)}${EXCEPTION_SUFFIX}`;
+        if (exception) {
+          // TODO_EXCEPTION: remove `!` when using TrainSchedulingException type
+          const exceptionProjection = paced.exceptionProjections.get(exception.id!);
 
-      occurrences.push({
-        ...(exceptionProjection ?? pacedTrainCurves),
-        id: occurrenceId,
-        type: 'exception',
-        name,
-        departureTime,
-        exception: correspondingException,
+          return {
+            ...(exceptionProjection ?? pacedTrainCurves),
+            id,
+            type: 'exception',
+            name,
+            departureTime,
+            exception,
+          };
+        } else {
+          if (!isIndexedOccurrenceId(id)) {
+            throw new Error('Occurrence without exception must be indexed');
+          }
+          return {
+            ...pacedTrainCurves,
+            id,
+            type: 'occurrence',
+            name,
+            departureTime,
+          };
+        }
       });
-    }
-
-    // =========== added exceptions ===========
-    for (const exception of projectedTrain.paced.exceptions) {
-      if (Number.isInteger(exception.occurrence_index)) {
-        // already done in the indexed occurrences loop above
-        continue;
-      }
-
-      // Disabled occurrences should not be displayed
-      if (exception.disabled) continue;
-
-      if (!exception.start_time) throw new Error('added exception should have a start time');
-
-      const id = formatEditoastIdToExceptionId({
-        trainScheduleId: projectedTrain.id,
-        exceptionId: exception.id!, // TODO_EXCEPTION: remove `!` when using TrainSchedulingException type
-      });
-      const name = exception.train_name
-        ? `${exception.train_name.value}${EXCEPTION_SUFFIX}`
-        : `${projectedTrain.name}/+${EXCEPTION_SUFFIX}`;
-
-      occurrences.push({
-        ...(projectedTrain.paced.exceptionProjections.get(exception.id!) ?? pacedTrainCurves), // TODO_EXCEPTION: remove `!` when using TrainSchedulingException type
-        id,
-        type: 'exception',
-        name,
-        departureTime: new Date(exception.start_time.value),
-        exception,
-      });
-    }
-    return occurrences;
   });
 
 export default makeProjectedTrains;
