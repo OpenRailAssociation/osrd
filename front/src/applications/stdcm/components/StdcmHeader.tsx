@@ -1,8 +1,15 @@
 import { Bug, SignOut } from '@osrd-project/ui-icons';
+import { skipToken } from '@reduxjs/toolkit/query';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
+import { useSelector } from 'react-redux';
 
+import { osrdRailwayManagerApi } from 'common/api/osrdRailwayManagerApi';
 import useAuthz from 'common/authorization/hooks/useAuthz';
+import { setFailure } from 'reducers/main';
+import { getRailwayManagerInterfaceUrl } from 'reducers/main/mainSelector';
+import { useAppDispatch } from 'store';
+import { castErrorToFailure } from 'utils/error';
 import useAuth from 'utils/hooks/useAuth';
 import useDeploymentSettings from 'utils/hooks/useDeploymentSettings';
 
@@ -35,6 +42,31 @@ const StdcmHeader = ({
   const { t } = useTranslation(['stdcm', 'translation']);
   const { isSuperUser } = useAuthz();
   const { impersonatedUser, impersonate } = useAuth();
+  const dispatch = useAppDispatch();
+  const railwayManagerUrl = useSelector(getRailwayManagerInterfaceUrl);
+
+  const { data: sendLMRAuthorizedResponse } =
+    osrdRailwayManagerApi.endpoints.getSendLastMinuteRequestAuthorized.useQuery(
+      railwayManagerUrl ? undefined : skipToken
+    );
+
+  const requestsFolderUrl =
+    osrdRailwayManagerApi.endpoints.getSendLastMinuteRequestFolderUrl.useQuery();
+
+  const openRequestsFolder = async () => {
+    try {
+      window.open(requestsFolderUrl.data!.url, '_blank', 'noopener,noreferrer');
+    } catch (err) {
+      dispatch(
+        setFailure(
+          castErrorToFailure(err, {
+            name: t('translation:common.error'),
+            message: t('header.errorRequestsFolder'),
+          })
+        )
+      );
+    }
+  };
 
   return (
     <div className={cx('stdcm-header', impersonatedUser ? 'stdcm-header__impersonated' : 'd-flex')}>
@@ -52,6 +84,21 @@ const StdcmHeader = ({
             <Bug />
           </button>
         )}
+        {railwayManagerUrl &&
+          sendLMRAuthorizedResponse?.authorized &&
+          requestsFolderUrl.isSuccess && (
+            <button
+              data-testid="stdcm-requests-folder-button"
+              type="button"
+              aria-label={t('header.requests')}
+              className={cx('ml-4 px-3', {
+                'impersonated-bg': impersonatedUser,
+              })}
+              onClick={openRequestsFolder}
+            >
+              {t('header.requests')}
+            </button>
+          )}
         <button
           data-testid="stdcm-help-button"
           type="button"

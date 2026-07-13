@@ -50,6 +50,10 @@
     "viaNotDefined": "At least one missing operational point",
     "viaRollingStockMissing": "At least one traction engine missing for consist change"
   },
+  "header": {
+    "errorRequestsFolder": "Unable to open the requests folder",
+    "requests": "Requests"
+  },
   "infrastructure": "Infra",
   "leaveAt": "Leave at {{ time }}",
   "linkedTrainDefaultCard": {
