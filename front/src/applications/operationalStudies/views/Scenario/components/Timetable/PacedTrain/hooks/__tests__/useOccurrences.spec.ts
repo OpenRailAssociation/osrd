@@ -157,6 +157,7 @@ describe('useOccurrences', () => {
           id: 'exception_1_0',
           trainName: 'Added Exception Train',
           startTime: new Date('2026-06-09T10:00:00Z'),
+          occurrenceIndex: undefined,
           exception: {
             exceptionChangeGroups: {
               start_time: {

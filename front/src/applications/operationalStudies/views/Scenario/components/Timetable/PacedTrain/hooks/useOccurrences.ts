@@ -2,24 +2,16 @@ import { useMemo } from 'react';
 
 import { omit, sortBy } from 'lodash';
 
+import { generateBareOccurrences } from 'applications/operationalStudies/helpers/generateBareOccurrences';
 import { intermediateStopsCount } from 'applications/operationalStudies/utils';
 import { type LightRollingStockWithLiveries } from 'common/api/osrdEditoastApi';
 import computeOccurrenceName from 'modules/trainSchedule/helpers/computeOccurrenceName';
-import {
-  findExceptionWithOccurrenceId,
-  getOccurrencesNb,
-  computeIndexedOccurrenceStartTime,
-} from 'modules/trainSchedule/helpers/pacedTrain';
 import type {
   Occurrence,
   PacedTrainWithDetails,
   SimulatedException,
 } from 'modules/trainSchedule/types';
-import {
-  formatEditoastIdToTrainScheduleId,
-  formatTrainScheduleIdToExceptionId,
-  formatTrainScheduleIdToIndexedOccurrenceId,
-} from 'utils/trainId';
+import { isIndexedOccurrenceId, extractOccurrenceIndexFromOccurrenceId } from 'utils/trainId';
 
 export const returnOccurrenceExceptionRollingStock = ({
   exception,
@@ -53,7 +45,6 @@ const useOccurrences = (
   rollingStockList: LightRollingStockWithLiveries[] | null
 ): { occurrencesCount: number; occurrences: Occurrence[] } => {
   const {
-    id,
     paced,
     name,
     rollingStock,
@@ -63,48 +54,41 @@ const useOccurrences = (
   } = pacedTrain;
   const { exceptions } = paced;
 
-  const occurrencesCount = getOccurrencesNb(paced);
-
   const occurrences = useMemo(() => {
-    const computedOccurrences: Occurrence[] = [];
-    const trainScheduleId = formatEditoastIdToTrainScheduleId(id);
+    const computedOccurrences = generateBareOccurrences(pacedTrain).map(
+      ({ id, startTime, exception }): Occurrence => {
+        let occurrenceIndex: number | undefined;
+        let trainName = exception?.train_name?.value;
+        if (isIndexedOccurrenceId(id)) {
+          occurrenceIndex = extractOccurrenceIndexFromOccurrenceId(id);
+          trainName ??= computeOccurrenceName(name, occurrenceIndex);
+        } else {
+          trainName ??= `${name}/+`;
+        }
 
-    // Handle indexed occurrences
-    for (let i = 0; i < occurrencesCount; i += 1) {
-      const occurrenceId = formatTrainScheduleIdToIndexedOccurrenceId(trainScheduleId, i);
-
-      const correspondingException = findExceptionWithOccurrenceId(exceptions, occurrenceId);
-
-      const occurrenceRollingStock = returnOccurrenceExceptionRollingStock({
-        exception: correspondingException,
-        rollingStock,
-        rollingStockList,
-      });
-
-      const startTime = correspondingException?.start_time
-        ? new Date(correspondingException.start_time.value)
-        : computeIndexedOccurrenceStartTime(pacedTrain.startTime, paced.interval, i);
-
-      computedOccurrences.push({
-        id: occurrenceId,
-        trainName: correspondingException?.train_name?.value ?? computeOccurrenceName(name, i),
-        rollingStock: occurrenceRollingStock,
-        startTime,
-        stopsCount: correspondingException?.path_and_schedule
-          ? intermediateStopsCount(correspondingException.path_and_schedule)
-          : stopsCount,
-        disabled: correspondingException?.disabled ?? false,
-        // In the model, we can currently have a null category value so we need to handle this case
-        category: correspondingException?.rolling_stock_category
-          ? correspondingException.rolling_stock_category.value
-          : pacedTrainCategory,
-        occurrenceIndex: i,
-        exception:
-          correspondingException
+        return {
+          id,
+          startTime,
+          trainName,
+          occurrenceIndex,
+          rollingStock: returnOccurrenceExceptionRollingStock({
+            exception,
+            rollingStock,
+            rollingStockList,
+          }),
+          stopsCount: exception?.path_and_schedule
+            ? intermediateStopsCount(exception.path_and_schedule)
+            : stopsCount,
+          disabled: exception?.disabled ?? false,
+          category: exception?.rolling_stock_category
+            ? exception.rolling_stock_category.value
+            : pacedTrainCategory,
+          summary: exception?.summary ?? summary,
+          exception: exception
             ? {
                 // TODO_EXCEPTION: remove `!` when use TrainScheduleException type
-                id: correspondingException.id!,
-                exceptionChangeGroups: omit(correspondingException, [
+                id: exception.id!,
+                exceptionChangeGroups: omit(exception, [
                   // TODO_EXCEPTION: remove 'key' when use TrainScheduleException type
                   'key',
                   'occurrence_index',
@@ -114,54 +98,10 @@ const useOccurrences = (
                 ]),
               }
             : undefined,
+        };
+      }
+    );
 
-        summary: correspondingException?.summary ?? summary,
-      });
-    }
-
-    // Handle added exceptions
-    exceptions.forEach((exception) => {
-      if (exception.occurrence_index !== undefined || !exception.start_time) return;
-
-      const occurrenceRollingStock = returnOccurrenceExceptionRollingStock({
-        exception,
-        rollingStock,
-        rollingStockList,
-      });
-
-      const startTime = new Date(exception.start_time.value);
-
-      computedOccurrences.push({
-        // TODO_EXCEPTION: remove `!` when use TrainScheduleException type
-        id: formatTrainScheduleIdToExceptionId(trainScheduleId, Number(exception.id!)),
-        trainName: exception.train_name?.value ?? `${name}/+`,
-        rollingStock: occurrenceRollingStock,
-        startTime,
-        stopsCount: exception.path_and_schedule
-          ? intermediateStopsCount(exception.path_and_schedule)
-          : stopsCount,
-        disabled: false,
-        // In the model, we can currently have a null category value so we need to handle this case
-        category: exception.rolling_stock_category
-          ? exception.rolling_stock_category.value
-          : pacedTrainCategory,
-
-        exception: {
-          // TODO_EXCEPTION: remove `!` when use TrainScheduleException type
-          id: exception.id!,
-          exceptionChangeGroups: omit(exception, [
-            // TODO_EXCEPTION: remove 'key' when use TrainScheduleException type
-            'key',
-            'disabled',
-            'occurrence_index',
-            'summary',
-            'id',
-          ]),
-        },
-
-        summary: exception.summary ?? summary,
-      });
-    });
     return sortBy(computedOccurrences, 'startTime');
   }, [pacedTrain, rollingStockList]);
 
