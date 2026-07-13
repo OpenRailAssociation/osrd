@@ -4260,6 +4260,13 @@ class SendLastMinuteRequestAuthorizedGetResponse(BaseModel):
     """
 
 
+class SendLastMinuteRequestFolderUrlGetResponse(BaseModel):
+    url: str
+    """
+    The url of the folder
+    """
+
+
 class SendLastMinuteRequestPostRequest(BaseModel):
     simulation_report: SimulationReport
     simulation_report_sheet: bytes

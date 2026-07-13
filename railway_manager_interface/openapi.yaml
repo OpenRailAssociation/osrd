@@ -64,6 +64,24 @@ paths:
                     description: Whether the user is authenticated and authorized to send last-minute requests
                 required:
                   - authorized
+  /send_last_minute_request/folder_url:
+    get:
+      tags:
+        - lmr
+      summary: Returns the url of a folder containing the user's requests
+      responses:
+        '200':
+          description: The URL where the logged in user can find the requests they sent
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  url:
+                    type: string
+                    description: The url of the folder
+                required:
+                  - url
   /send_last_minute_request:
     post:
       tags:

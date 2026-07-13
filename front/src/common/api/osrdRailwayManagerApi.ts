@@ -27,6 +27,13 @@ const injectedRtkApi = api
         query: () => ({ url: `/send_last_minute_request/authorized` }),
         providesTags: ['lmr'],
       }),
+      getSendLastMinuteRequestFolderUrl: build.query<
+        GetSendLastMinuteRequestFolderUrlApiResponse,
+        GetSendLastMinuteRequestFolderUrlApiArg
+      >({
+        query: () => ({ url: `/send_last_minute_request/folder_url` }),
+        providesTags: ['lmr'],
+      }),
       postSendLastMinuteRequest: build.mutation<
         PostSendLastMinuteRequestApiResponse,
         PostSendLastMinuteRequestApiArg
@@ -56,6 +63,12 @@ export type GetSendLastMinuteRequestAuthorizedApiResponse =
     authorized: boolean;
   };
 export type GetSendLastMinuteRequestAuthorizedApiArg = void;
+export type GetSendLastMinuteRequestFolderUrlApiResponse =
+  /** status 200 The URL where the logged in user can find the requests they sent */ {
+    /** The url of the folder */
+    url: string;
+  };
+export type GetSendLastMinuteRequestFolderUrlApiArg = void;
 export type PostSendLastMinuteRequestApiResponse =
   /** status 200 User successfully identified, the last-minute request has been formatted and transferred. */ SendLastMinuteRequestResponse;
 export type PostSendLastMinuteRequestApiArg = {
