@@ -37,7 +37,7 @@ function buildOccupancyZone({
     ...buildOccupancyZoneTimes({ startTime, endTime }),
     curveStyle: { color: 'red', opacity: 1 },
     exceptionTypes: [],
-    pathItemRelativeLocation: { type: 'exact_path_item', path_item_id: uuidV4() },
+    pathItemRelativeLocation: { type: 'exact_path_item', path_item_key: uuidV4() },
     paced,
     blockType: 'via',
     isStop: true,

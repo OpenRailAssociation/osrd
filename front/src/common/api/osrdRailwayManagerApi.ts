@@ -93,9 +93,9 @@ export type Margins = {
   values: string[];
 };
 export type PathItem = {
-  /** The unique identifier of the path item.
+  /** The unique key of the path item.
     This is used to reference path items in the train schedule. */
-  id: string;
+  key: string;
   /** The location of a path waypoint */
   location:
     | ({
@@ -203,9 +203,9 @@ export type TransformTimetableResponse = {
       use_speed_limits_for_simulation?: boolean;
     };
     path: {
-      /** The unique identifier of the path item.
+      /** The unique key of the path item.
             This is used to reference path items in the train schedule. */
-      id: string;
+      key: string;
       /** The location of a path waypoint */
       location:
         | ({

@@ -1,64 +1,64 @@
 {
-    "id": "trainschedule-96",
-    "train_name": "notHonored",
-    "labels": [],
-    "rolling_stock_name": "TC64700",
-    "start_time": 1722600000000,
-    "path": [
-        {
-            "id": "id440",
-            "location": {
-                "type": "track_offset",
-                "track": "TA0",
-                "offset": 1299000
-            }
-        },
-        {
-            "id": "id584",
-            "location": {
-                "type": "operational_point_part_reference",
-                "operational_point": {
-                    "uic": 4,
-                    "secondary_code": "BV",
-                    "type": "uic"
-                }
-            }
-        },
-        {
-            "id": "id450",
-            "location": {
-                "type": "track_offset",
-                "track": "TG1",
-                "offset": 644000
-            }
-        }
-    ],
-    "schedule": [
-        {
-            "at": "id584",
-            "arrival": "PT300S",
-            "stop_for": null,
-            "reception_signal": "OPEN"
-        },
-        {
-            "at": "id450",
-            "arrival": null,
-            "stop_for": "P0D",
-            "reception_signal": "OPEN"
-        }
-    ],
-    "margins": {
-        "boundaries": [],
-        "values": [
-            "0%"
-        ]
+  "id": "trainschedule-96",
+  "train_name": "notHonored",
+  "labels": [],
+  "rolling_stock_name": "TC64700",
+  "start_time": 1722600000000,
+  "path": [
+    {
+      "key": "id440",
+      "location": {
+        "type": "track_offset",
+        "track": "TA0",
+        "offset": 1299000
+      }
     },
-    "initial_speed": 0,
-    "comfort": "STANDARD",
-    "constraint_distribution": "MARECO",
-    "speed_limit_tag": null,
-    "power_restrictions": [],
-    "options": {
-        "use_electrical_profiles": true
+    {
+      "key": "id584",
+      "location": {
+        "type": "operational_point_part_reference",
+        "operational_point": {
+          "uic": 4,
+          "secondary_code": "BV",
+          "type": "uic"
+        }
+      }
+    },
+    {
+      "key": "id450",
+      "location": {
+        "type": "track_offset",
+        "track": "TG1",
+        "offset": 644000
+      }
     }
+  ],
+  "schedule": [
+    {
+      "at": "id584",
+      "arrival": "PT300S",
+      "stop_for": null,
+      "reception_signal": "OPEN"
+    },
+    {
+      "at": "id450",
+      "arrival": null,
+      "stop_for": "P0D",
+      "reception_signal": "OPEN"
+    }
+  ],
+  "margins": {
+    "boundaries": [],
+    "values": [
+      "0%"
+    ]
+  },
+  "initial_speed": 0,
+  "comfort": "STANDARD",
+  "constraint_distribution": "MARECO",
+  "speed_limit_tag": null,
+  "power_restrictions": [],
+  "options": {
+    "use_electrical_profiles": true
+  }
 }

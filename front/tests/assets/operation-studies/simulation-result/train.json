@@ -18,7 +18,7 @@
     },
     "path": [
       {
-        "id": "b4df37d0-ffe2-4166-b7b6-8c0c5a47e9b0",
+        "key": "b4df37d0-ffe2-4166-b7b6-8c0c5a47e9b0",
         "location": {
           "type": "operational_point_part_reference",
           "operational_point": {
@@ -30,7 +30,7 @@
         }
       },
       {
-        "id": "id2492",
+        "key": "key2492",
         "location": {
           "type": "track_offset",
           "track": "TD0",
@@ -38,7 +38,7 @@
         }
       },
       {
-        "id": "id2570",
+        "key": "key2570",
         "location": {
           "type": "operational_point_part_reference",
           "operational_point": {
@@ -50,7 +50,7 @@
         }
       },
       {
-        "id": "dbc7c80b-aee0-4835-8857-63863dae2ff1",
+        "key": "dbc7c80b-aee0-4835-8857-63863dae2ff1",
         "location": {
           "type": "operational_point_part_reference",
           "operational_point": {
@@ -64,7 +64,7 @@
     ],
     "power_restrictions": [
       {
-        "from": "id2570",
+        "from": "key2570",
         "to": "dbc7c80b-aee0-4835-8857-63863dae2ff1",
         "value": "C1"
       }
@@ -72,12 +72,12 @@
     "rolling_stock_name": "ELECTRIC_RS_E2E",
     "schedule": [
       {
-        "at": "id2492",
+        "at": "key2492",
         "reception_signal": "SHORT_SLIP_STOP",
         "stop_for": "PT2M4S"
       },
       {
-        "at": "id2570",
+        "at": "key2570",
         "arrival": "PT2H55M54S",
         "reception_signal": "OPEN",
         "stop_for": "PT10M"

@@ -74,7 +74,7 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
   it('should add waypoints at the good position in a path with operational points', () => {
     const pathSteps: PathItem[] = [
       {
-        id: '1',
+        key: '1',
         location: {
           type: 'operational_point_part_reference',
           operational_point: {
@@ -85,7 +85,7 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
         },
       },
       {
-        id: '2',
+        key: '2',
         location: {
           type: 'track_offset',
           track: 'TA6',
@@ -93,7 +93,7 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
         },
       },
       {
-        id: '3',
+        key: '3',
         location: {
           type: 'operational_point_part_reference',
           operational_point: {
@@ -217,7 +217,7 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
   it('should add waypoints properly even when the last two come from map clicks', () => {
     const pathSteps: PathItem[] = [
       {
-        id: '1',
+        key: '1',
         location: {
           type: 'track_offset',
           track: 'TA6',
@@ -225,7 +225,7 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
         },
       },
       {
-        id: '2',
+        key: '2',
         location: {
           type: 'track_offset',
           track: 'TC0',
@@ -233,7 +233,7 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
         },
       },
       {
-        id: '3',
+        key: '3',
         location: {
           type: 'track_offset',
           track: 'TC0',
@@ -358,7 +358,7 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
   it('should add waypoints properly when there is no op on path', () => {
     const pathSteps: PathItem[] = [
       {
-        id: '1',
+        key: '1',
         location: {
           type: 'track_offset',
           track: 'TA6',
@@ -366,7 +366,7 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
         },
       },
       {
-        id: '2',
+        key: '2',
         location: {
           type: 'track_offset',
           track: 'TA6',
@@ -437,7 +437,7 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
   it('should return the same array if there is no waypoints added by map click', () => {
     const pathSteps: PathItem[] = [
       {
-        id: '1',
+        key: '1',
         location: {
           type: 'operational_point_part_reference',
           operational_point: {
@@ -448,7 +448,7 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
         },
       },
       {
-        id: '2',
+        key: '2',
         location: {
           type: 'operational_point_part_reference',
           operational_point: {
@@ -459,7 +459,7 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
         },
       },
       {
-        id: '3',
+        key: '3',
         location: {
           type: 'operational_point_part_reference',
           operational_point: {

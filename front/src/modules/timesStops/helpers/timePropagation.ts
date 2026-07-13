@@ -70,7 +70,7 @@ const propagateFromEditedPoint = (
   direction: 'fromDeparture' | 'toDestination',
   timetableType: TimetableType
 ): PropagationResult | undefined => {
-  const editedPathIndex = selectedTrain.path.findIndex((step) => step.id === editedPathStepId);
+  const editedPathIndex = selectedTrain.path.findIndex((step) => step.key === editedPathStepId);
   if (editedPathIndex < 0) return undefined;
 
   const currentStartTime = getTruncatedToSecondStartTime(selectedTrain, timetableType);
@@ -109,7 +109,7 @@ const applyAtThisPoint = (
   selectedTrain: Train,
   timetableType: TimetableType
 ): PropagationResult | undefined => {
-  const editedPathIndex = selectedTrain.path.findIndex((step) => step.id === editedPathStepId);
+  const editedPathIndex = selectedTrain.path.findIndex((step) => step.key === editedPathStepId);
   if (editedPathIndex < 0) return undefined;
 
   const editedSchedule = (selectedTrain.schedule ?? []).map((item) => {
