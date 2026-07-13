@@ -93,7 +93,7 @@ const useOccurrences = (
         stopsCount: correspondingException?.path_and_schedule
           ? intermediateStopsCount(correspondingException.path_and_schedule)
           : stopsCount,
-        disabled: correspondingException?.disabled,
+        disabled: correspondingException?.disabled ?? false,
         // In the model, we can currently have a null category value so we need to handle this case
         category: correspondingException?.rolling_stock_category
           ? correspondingException.rolling_stock_category.value
@@ -140,6 +140,7 @@ const useOccurrences = (
         stopsCount: exception.path_and_schedule
           ? intermediateStopsCount(exception.path_and_schedule)
           : stopsCount,
+        disabled: false,
         // In the model, we can currently have a null category value so we need to handle this case
         category: exception.rolling_stock_category
           ? exception.rolling_stock_category.value
