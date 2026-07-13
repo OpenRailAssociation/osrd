@@ -244,8 +244,8 @@ class TopoOffset(RootModel[int]):
 
 class CorePropertyGeometryProjection(BaseModel):
     """
-    Projection to map topologic offset to geometric offset.
-    Both arrays are the same size
+    Projection to map topological offset to geometric offset (or reversed).
+    topo_offsets and geom_offsets are the same size
     """
 
     geom_offsets: Annotated[list[GeomOffset], Field(min_length=2)]
@@ -255,7 +255,7 @@ class CorePropertyGeometryProjection(BaseModel):
     """
     topo_offsets: Annotated[list[TopoOffset], Field(min_length=2)]
     """
-    Topologic offsets in millimeters.
+    Topological offsets in millimeters.
     Starts with 0 and is increasing.
     """
 

@@ -12,6 +12,8 @@ import fr.sncf.osrd.utils.DistanceRangeMap
 import fr.sncf.osrd.utils.DistanceRangeMapImpl
 import fr.sncf.osrd.utils.from
 import fr.sncf.osrd.utils.toRangeMap
+import fr.sncf.osrd.utils.units.Distance
+import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
 
 fun makePathPropResponse(pathProperties: TrainPath, rawInfra: RawSignalingInfra): PathPropResponse {
@@ -155,31 +157,28 @@ private fun makeGeometricProjection(
     pathProperties: TrainPath,
     rawInfra: RawSignalingInfra,
 ): GeometricProjection {
-    val trackSections = pathProperties.getTrackRanges()
-    println(trackSections)
-    trackSections.forEach { println(rawInfra.getTrackSectionName(it.value.value)) }
+    val trackRanges = pathProperties.getTrackRanges()
 
-    fun getTrackSectionGeometricLength(trackSection: TrackSectionId): Double {
+    fun getTrackSectionGeometricLength(trackSection: TrackSectionId): Length<RJSLineString> {
         val chunks = rawInfra.getTrackSectionChunks(trackSection)
         return chunks
-            .map { rawInfra.getTrackChunkGeom(it).length }
-            .reduce { acc, length -> acc + length }
+            .map {
+                Length<RJSLineString>(Distance.fromMeters(rawInfra.getTrackChunkGeom(it).length))
+            }
+            .reduce { acc, length -> acc + length.distance }
     }
 
-    val trackSectionsLengths = trackSections.map { it.objectLength }
-    val trackSectionGeomLengths = trackSections.map {
-        getTrackSectionGeometricLength(it.value.value)
-    }
-    val geomOffsets = mutableListOf<Long>(0)
-    val topoOffsets = mutableListOf<Long>(0)
+    val geomOffsets = mutableListOf<Offset<RJSLineString>>(Offset.zero())
+    val topoOffsets = mutableListOf<Offset<PhysicsPath>>(Offset.zero())
 
-    trackSections.forEachIndexed { i, range ->
-        val topoDistance = range.length
-        topoOffsets.addLast(topoOffsets.last() + topoDistance.millimeters)
-        val geomDistanceInMillimeters =
-            (topoDistance / trackSectionsLengths[i].distance * trackSectionGeomLengths[i] * 1000)
-                .toInt()
-        geomOffsets.addLast(geomOffsets.last() + geomDistanceInMillimeters)
+    trackRanges.forEachIndexed { i, range ->
+        val rangeTopoLength = range.length
+        val trackSectionTopoLength = range.objectLength
+        val trackSectionGeomLength = getTrackSectionGeometricLength(range.value.value)
+        topoOffsets.addLast(topoOffsets.last() + rangeTopoLength)
+        val proportion = rangeTopoLength / trackSectionTopoLength.distance
+        val rangeGeomLength = trackSectionGeomLength.distance * proportion
+        geomOffsets.addLast(geomOffsets.last() + rangeGeomLength)
     }
 
     return GeometricProjection(topoOffsets, geomOffsets)

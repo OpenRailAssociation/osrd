@@ -3562,7 +3562,7 @@ export type CorePropertyGeometryProjection = {
   /** Geometric offsets in millimeters.
     Starts with 0 and is increasing. */
   geom_offsets: number[];
-  /** Topologic offsets in millimeters.
+  /** Topological offsets in millimeters.
     Starts with 0 and is increasing. */
   topo_offsets: number[];
 };

@@ -56,13 +56,20 @@ data class OperationalPointPartExtension(val sncf: OperationalPointPartSncfExten
 data class OperationalPointPartSncfExtension(val kp: String)
 
 data class GeometricProjection(
-    @Json(name = "topo_offsets") val topoOffsets: List<Long>,
-    @Json(name = "geom_offsets") val geomOffsets: List<Long>,
+    @Json(name = "topo_offsets") val topoOffsets: List<Offset<PhysicsPath>>,
+    @Json(name = "geom_offsets") val geomOffsets: List<Offset<RJSLineString>>,
 ) {
     init {
-        // There must be the same number of topologic boundaries and geometric boundaries
+        // There must be the same number of topological boundaries and geometric boundaries
         // and at least two of each (the beginning and the end)
-        require(topoOffsets.size == geomOffsets.size && topoOffsets.size >= 2)
+        assert(topoOffsets.size == geomOffsets.size && topoOffsets.size >= 2)
+        // Each list must start by 0
+        assert(topoOffsets[0].equals(0) && geomOffsets[0].equals(0))
+        // Each list must be increasing (not strictly)
+        for (i in 0..<(topoOffsets.size - 1)) {
+            assert(topoOffsets[i] <= topoOffsets[i + 1])
+            assert(geomOffsets[i] <= geomOffsets[i + 1])
+        }
     }
 }
 
