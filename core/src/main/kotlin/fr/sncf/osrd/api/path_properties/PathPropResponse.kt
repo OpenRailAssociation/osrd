@@ -9,6 +9,7 @@ import fr.sncf.osrd.api.RangeValues
 import fr.sncf.osrd.path.interfaces.PhysicsPath
 import fr.sncf.osrd.railjson.schema.geom.RJSLineString
 import fr.sncf.osrd.utils.json.UnitAdapterFactory
+import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Offset
 
 class PathPropResponse(
@@ -64,7 +65,7 @@ data class GeometricProjection(
         // and at least two of each (the beginning and the end)
         assert(topoOffsets.size == geomOffsets.size && topoOffsets.size >= 2)
         // Each list must start by 0
-        assert(topoOffsets[0].equals(0) && geomOffsets[0].equals(0))
+        assert(topoOffsets[0].distance == Distance.ZERO && geomOffsets[0].distance == Distance.ZERO)
         // Each list must be increasing (not strictly)
         for (i in 0..<(topoOffsets.size - 1)) {
             assert(topoOffsets[i] <= topoOffsets[i + 1])
