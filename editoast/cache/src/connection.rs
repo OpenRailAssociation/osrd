@@ -14,6 +14,7 @@ use deadpool_redis::redis::Value;
 use deadpool_redis::redis::aio::ConnectionLike;
 use futures::FutureExt;
 use futures::future;
+use itertools::Itertools;
 use serde::Deserialize;
 use serde::Serialize;
 use serde::de::DeserializeOwned;
@@ -154,7 +155,7 @@ impl Connection {
         &mut self,
         key: K,
     ) -> Result<Option<T>, RedisError> {
-        Ok(self.json_get_bulk(&[key]).await?.next().unwrap())
+        Ok(self.json_get_bulk(&[key]).await?.pop().unwrap())
     }
 
     /// Set a serializable value to valkey with expiry time
@@ -220,7 +221,7 @@ impl Connection {
     pub async fn json_get_bulk<K: Debug + ToRedisArgs + Send + Sync, T: DeserializeOwned>(
         &mut self,
         keys: &[K],
-    ) -> Result<impl Iterator<Item = Option<T>>, RedisError> {
+    ) -> Result<Vec<Option<T>>, RedisError> {
         debug!(nb_keys = keys.len());
 
         // Fetch the values from Redis
@@ -253,6 +254,7 @@ impl Connection {
                         }
                     })
                 })
+                .collect_vec()
         });
         Ok(cached_values)
     }

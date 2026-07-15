@@ -640,6 +640,7 @@ dependencies = [
  "arcstr",
  "deadpool-redis",
  "futures 0.3.32",
+ "itertools 0.15.0",
  "rand 0.10.2",
  "redis-test",
  "serde",

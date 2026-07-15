@@ -11,6 +11,7 @@ mock = ["redis-test"]
 arcstr.workspace = true
 deadpool-redis.workspace = true
 futures.workspace = true
+itertools.workspace = true
 rand.workspace = true
 redis-test = { version = "1.0.3", optional = true } # /!\ latest version's 'redis' dependency may not compatible with deadpool-redis re-export
 serde.workspace = true
