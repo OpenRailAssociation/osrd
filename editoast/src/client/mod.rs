@@ -9,6 +9,7 @@ mod postgres_config;
 pub mod roles;
 pub mod runserver;
 pub mod search_commands;
+pub mod search_journey_env_commands;
 pub mod stdcm_search_env_commands;
 mod telemetry_config;
 mod trains_traffic;
@@ -27,6 +28,7 @@ use roles::RolesCommand;
 use runserver::CoreArgs;
 use runserver::RunserverArgs;
 use search_commands::SearchCommands;
+use search_journey_env_commands::SearchJourneyEnvCommands;
 use stdcm_search_env_commands::StdcmSearchEnvCommands;
 pub use telemetry_config::TelemetryConfig;
 pub use telemetry_config::TelemetryKind;
@@ -100,6 +102,12 @@ pub enum Commands {
         so do not run this command multiple times concurrently or setup some external locking."
     )]
     Gc,
+    #[command(
+        subcommand,
+        about,
+        long_about = "Search journey environment management commands"
+    )]
+    SearchJourneyEnv(SearchJourneyEnvCommands),
 }
 
 /// Prints the OpenApi to stdout
