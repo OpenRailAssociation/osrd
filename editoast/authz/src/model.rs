@@ -215,6 +215,9 @@ impl fga::model::Type for Role {
     }
 }
 
+#[derive(fga::Type, fga::Object, derive_more::FromStr, Debug)]
+pub struct Project(pub i64);
+
 fga::relations! {
     User {
         role: Role,
@@ -249,6 +252,11 @@ fga::relations! {
         can_share_write: User,
         can_share_ownership: User,
         can_revoke: User
+    },
+    Project {
+        owner: User,
+        // Computed
+        has_access: User
     }
 }
 
