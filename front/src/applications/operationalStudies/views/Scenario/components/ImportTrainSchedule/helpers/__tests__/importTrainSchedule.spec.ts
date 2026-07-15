@@ -1,7 +1,6 @@
 import { describe, it, expect } from 'vitest';
 
-import type { CichDictValue } from 'applications/operationalStudies/types';
-import type { TrainSchedule } from 'common/api/osrdEditoastApi';
+import type { TrainSchedule, PathItemLocation } from 'common/api/osrdEditoastApi';
 
 import { buildSteps } from '../buildStepsFromOcp';
 import findMostFrequentScheduleInPacedTrain from '../findMostFrequentXmlSchedule';
@@ -9,10 +8,28 @@ import { getMostFrequentInterval } from '../parseXML';
 
 describe('buildSteps', () => {
   const parser = new DOMParser();
-  const cichDict: Map<string, CichDictValue> = new Map([
-    ['STATION0', { ciCode: 1, chCode: 'A0' }],
-    ['STATION1', { ciCode: 12345, chCode: 'A1' }],
-    ['STATION2', { ciCode: 23456, chCode: 'B2' }],
+  const ocpRefLocations: Map<string, PathItemLocation> = new Map([
+    [
+      'STATION0',
+      {
+        type: 'operational_point_part_reference',
+        operational_point: { uic: 1, secondary_code: 'A0', type: 'uic' },
+      },
+    ],
+    [
+      'STATION1',
+      {
+        type: 'operational_point_part_reference',
+        operational_point: { uic: 12345, secondary_code: 'A1', type: 'uic' },
+      },
+    ],
+    [
+      'STATION2',
+      {
+        type: 'operational_point_part_reference',
+        operational_point: { uic: 12345, secondary_code: 'B2', type: 'uic' },
+      },
+    ],
   ]);
 
   it('increments the day offset when the arrival time is before the previous departure', () => {
@@ -36,7 +53,7 @@ describe('buildSteps', () => {
 
     const ocpTTElements = Array.from(xmlDoc.getElementsByTagName('ocpTT'));
 
-    const { schedule } = buildSteps(ocpTTElements, cichDict, new Date('2025-01-01'));
+    const { schedule } = buildSteps(ocpTTElements, ocpRefLocations, new Date('2025-01-01'));
 
     expect(schedule).toHaveLength(2);
     expect(schedule[0].arrival).toBe('PT23H');
@@ -62,7 +79,7 @@ describe('buildSteps', () => {
 
     const ocpTTElements = Array.from(xmlDoc.getElementsByTagName('ocpTT'));
 
-    const { schedule } = buildSteps(ocpTTElements, cichDict, new Date('2025-01-01'));
+    const { schedule } = buildSteps(ocpTTElements, ocpRefLocations, new Date('2025-01-01'));
 
     expect(schedule).toHaveLength(2);
     expect(schedule[0].arrival).toBe('PT5M');

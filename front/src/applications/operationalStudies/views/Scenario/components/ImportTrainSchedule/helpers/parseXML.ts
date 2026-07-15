@@ -1,12 +1,12 @@
 import { omit } from 'lodash';
 import { v4 as uuidV4 } from 'uuid';
 
+import type { PacedTrain, TimetableJsonPayload } from 'applications/operationalStudies/types';
 import type {
-  CichDictValue,
-  PacedTrain,
-  TimetableJsonPayload,
-} from 'applications/operationalStudies/types';
-import type { TrainSchedule, PacedTrainException } from 'common/api/osrdEditoastApi';
+  TrainSchedule,
+  PacedTrainException,
+  PathItemLocation,
+} from 'common/api/osrdEditoastApi';
 import { addDurationToDate, Duration } from 'utils/duration';
 
 import { generatePacedTrainException } from '../../ManageTrainSchedule/helpers/buildPacedTrainException';
@@ -230,7 +230,7 @@ const reconcilePacedTrainOccurrences = (
 const parseXML = async (xmlDoc: Document): Promise<TimetableJsonPayload> => {
   const trainSchedules: TrainSchedule[] = [];
 
-  const localCichDict: Map<string, CichDictValue> = new Map();
+  const ocpRefLocations: Map<string, PathItemLocation> = new Map();
 
   const infrastructures = Array.from(xmlDoc.getElementsByTagName('infrastructure'));
 
@@ -240,11 +240,21 @@ const parseXML = async (xmlDoc: Document): Promise<TimetableJsonPayload> => {
     ocps.forEach((ocp) => {
       const id = ocp.getAttribute('id');
       const code = ocp.getAttribute('code') || ocp.getAttribute('abbrevation');
-
-      if (id && code) {
-        const { ciCode, chCode } = extractCiChCode(code);
-        localCichDict.set(id, { ciCode, chCode });
+      if (!id || !code) {
+        return;
       }
+
+      const { ciCode, chCode } = extractCiChCode(code);
+
+      //! We add 87 to the CI code to create the UIC. It is France specific and will break if used in other countries.
+      const uic = Number(`87${ciCode}`);
+
+      ocpRefLocations.set(id, {
+        type: 'operational_point_part_reference',
+        operational_point: !Number.isNaN(uic)
+          ? { uic, secondary_code: chCode, type: 'uic' }
+          : { trigram: id, secondary_code: chCode, type: 'trigram' },
+      });
     });
   });
 
@@ -284,8 +294,8 @@ const parseXML = async (xmlDoc: Document): Promise<TimetableJsonPayload> => {
 
     const firstDepartureTimeformatted = firstDepartureTime && cleanTimeFormat(firstDepartureTime);
 
-    // Build steps using the fully populated localCichDict
-    const { path, schedule } = buildSteps(ocpSteps, localCichDict, new Date(startDate));
+    // Build steps using the fully populated ocpRefLocations
+    const { path, schedule } = buildSteps(ocpSteps, ocpRefLocations, new Date(startDate));
 
     const uniqueTrain: TrainSchedule = {
       train_name: trainNumber,
