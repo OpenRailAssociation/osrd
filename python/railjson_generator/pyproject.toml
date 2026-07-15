@@ -12,7 +12,7 @@ check = [
   "pyright~=1.1.410",
   "pytest-cov~=7.1.0",
   "pytest~=9.1.1",
-  "ruff~=0.15.20",
+  "ruff~=0.15.22",
 ]
 
 [tool.pyright]
