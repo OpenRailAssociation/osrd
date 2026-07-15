@@ -28,6 +28,7 @@ use client::roles;
 use client::roles::RolesCommand;
 use client::runserver::runserver;
 use client::search_commands::*;
+use client::search_journey_env_commands::handle_search_journey_env_command;
 use client::stdcm_search_env_commands::handle_stdcm_search_env_command;
 use client::user;
 use client::user::UserCommand;
@@ -231,6 +232,9 @@ async fn run() -> anyhow::Result<()> {
         }
         Commands::Gc => {
             garbage_collector::run_garbage_collector(db_pool.into(), openfga_config).await
+        }
+        Commands::SearchJourneyEnv(subcommand) => {
+            handle_search_journey_env_command(subcommand, db_pool).await
         }
     }
 }
