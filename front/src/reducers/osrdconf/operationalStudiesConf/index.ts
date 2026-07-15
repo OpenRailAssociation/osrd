@@ -6,7 +6,7 @@ import type { SuggestedOP, TrainScheduleWithDetails } from 'modules/trainSchedul
 import { buildMapStateReducer } from 'reducers/commonMap';
 import { defaultCommonConf, buildCommonConfReducers } from 'reducers/osrdconf/osrdConfCommon';
 import type { OperationalStudiesConfState } from 'reducers/osrdconf/types';
-import { Duration } from 'utils/duration';
+import { Duration, startTimeToDate } from 'utils/duration';
 import { msToKmh } from 'utils/physics';
 
 import { upsertPathStep } from '../helpers';
@@ -73,7 +73,8 @@ export const operationalStudiesConfSlice = createSlice({
       state.pathSteps = path.map((_, index) =>
         computeBasePathStep(action.payload.trainSchedule, index)
       );
-      state.startTime = startTime;
+      // TODO Hourly timetables: keep the Duration start time in the conf state instead of a fictive date
+      state.startTime = startTimeToDate(startTime);
 
       state.name = name;
       state.category = category ?? null;

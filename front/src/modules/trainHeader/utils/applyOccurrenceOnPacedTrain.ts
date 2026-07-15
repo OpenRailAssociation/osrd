@@ -5,6 +5,7 @@ import {
 } from 'modules/trainSchedule/helpers/pacedTrain';
 import type { TrainScheduleWithDetails } from 'modules/trainSchedule/types';
 import type { OccurrenceId, Train } from 'reducers/osrdconf/types';
+import { msToStartTime } from 'utils/duration';
 
 /**
  * Apply occurrence-related properties to a paced train, so that the resulting paced train
@@ -47,7 +48,7 @@ export function applyOccurrenceOnPacedTrain(
     ...originalTrainSchedule,
     ...occurrenceProps,
     name: train_name,
-    startTime: new Date(start_time),
+    startTime: msToStartTime(start_time, originalTrainSchedule.startTime),
     speedLimitTag: speed_limit_tag ?? null,
     rollingStockName,
   };

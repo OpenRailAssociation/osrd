@@ -3,6 +3,7 @@ import { useRef, useEffect, useCallback, useState } from 'react';
 import type {
   LightRollingStockWithLiveries,
   PacedTrainException,
+  TimetableType,
   TrainScheduleSimulationSummaryResult,
   TrainScheduleResponse,
 } from 'common/api/osrdEditoastApi';
@@ -16,6 +17,7 @@ import TrainSimulationLazyLoader from '../helpers/TrainSimulationLazyLoader';
 type UseLazySimulateTrainsOptions = {
   infraId: number;
   timetableId: number;
+  timetableType: TimetableType;
   electricalProfileSetId: number | undefined;
   rollingStocks: LightRollingStockWithLiveries[] | null;
   onProgress?: (results: Map<number, TrainScheduleWithDetails>) => void;
@@ -39,6 +41,7 @@ type UseLazySimulateTrainsOptions = {
 export default function useLazySimulateTrains({
   infraId,
   timetableId,
+  timetableType,
   electricalProfileSetId,
   rollingStocks,
   onProgress,
@@ -66,7 +69,8 @@ export default function useLazySimulateTrains({
         const summaries = formatTrainScheduleSummaries(
           trainScheduleSummaries,
           trainSchedulesByIdRef.current,
-          rollingStocks
+          rollingStocks,
+          timetableType
         );
         setSimulatedTrainsById((prev) => new Map([...prev.entries(), ...summaries.entries()]));
         if (onProgressRef.current) onProgressRef.current(summaries);

@@ -21,6 +21,7 @@ import {
 } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
 import { useDateTimeLocale } from 'utils/date';
+import { startTimeToDate } from 'utils/duration';
 import { formatEditoastIdToTrainScheduleId } from 'utils/trainId';
 
 import { MANAGE_TRAIN_SCHEDULE_TYPES } from '../../consts';
@@ -118,7 +119,8 @@ const TrainList = ({
   const currentDepartureDates = useMemo(
     () =>
       trainSchedulesWithDetails.map((train) =>
-        formatDepartureDate(train.startTime, dateTimeLocale)
+        // TODO Hourly timetables: display the actual start time instead of a fictive date
+        formatDepartureDate(startTimeToDate(train.startTime), dateTimeLocale)
       ),
     [trainSchedulesWithDetails, dateTimeLocale]
   );

@@ -31,7 +31,7 @@ import {
 } from 'reducers/simulationResults';
 import { useAppDispatch } from 'store';
 import { timeToLocaleStringRounded, useDateTimeLocale } from 'utils/date';
-import { addDurationToDate, Duration } from 'utils/duration';
+import { addDurationToDate, Duration, startTimeToDate } from 'utils/duration';
 import { castErrorToFailure } from 'utils/error';
 import { formatEditoastIdToTrainScheduleId } from 'utils/trainId';
 
@@ -153,11 +153,14 @@ const UniqueTrainItem = ({
     if (!summary?.isValid) dispatch(updateProjectionType('operationalPointProjection'));
   };
 
+  // TODO Hourly timetables: display the actual start time instead of a fictive date
+  const trainStartTime = startTimeToDate(train.startTime);
+
   const arrivalTime = summary?.isValid
-    ? addDurationToDate(train.startTime, summary.duration)
+    ? addDurationToDate(trainStartTime, summary.duration)
     : undefined;
   const isAfterMidnight = arrivalTime
-    ? dayjs(arrivalTime).isAfter(train.startTime, 'day')
+    ? dayjs(arrivalTime).isAfter(trainStartTime, 'day')
     : undefined;
 
   const { category } = train;
@@ -239,9 +242,9 @@ const UniqueTrainItem = ({
               <div className="status-icon after-midnight">{isAfterMidnight && <Moon />}</div>
               <div
                 className="scenario-timetable-train-times"
-                title={train.startTime.toLocaleString(dateTimeLocale)}
+                title={trainStartTime.toLocaleString(dateTimeLocale)}
               >
-                {timeToLocaleStringRounded(train.startTime, dateTimeLocale)}
+                {timeToLocaleStringRounded(trainStartTime, dateTimeLocale)}
               </div>
               <div
                 className={cx('status-icon', {

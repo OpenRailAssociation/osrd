@@ -6,6 +6,7 @@ import {
 import type {
   LightRollingStockWithLiveries,
   SimulationSummaryResult,
+  TimetableType,
   TrainScheduleSimulationSummaryResult,
   TrainScheduleResponse,
 } from 'common/api/osrdEditoastApi';
@@ -59,9 +60,21 @@ const formatSummary = (summary?: SimulationSummaryResult): SimulationSummary | u
     : { isValid: false, invalidReason: extractInvalidReason(summary) };
 };
 
-const extractBaseTrainScheduleProps = (trainSchedule: TrainScheduleResponse) => ({
+/**
+ * Convert a start time received from the backend (a number of ms) according to the
+ * timetable type: elapsed ms since 1970-01-01T00:00:00Z (a Date) for calendar
+ * timetables, elapsed ms since the timetable start (a Duration) for hourly
+ * timetables.
+ */
+const parseStartTime = (startTime: number, timetableType: TimetableType) =>
+  timetableType === 'HOURLY' ? new Duration({ milliseconds: startTime }) : new Date(startTime);
+
+const extractBaseTrainScheduleProps = (
+  trainSchedule: TrainScheduleResponse,
+  timetableType: TimetableType
+) => ({
   name: trainSchedule.train_name,
-  startTime: new Date(trainSchedule.start_time),
+  startTime: parseStartTime(trainSchedule.start_time, timetableType),
   stopsCount: intermediateStopsCount(trainSchedule),
   rollingStockName: trainSchedule.rolling_stock_name,
   speedLimitTag: trainSchedule.speed_limit_tag ?? null,
@@ -70,6 +83,7 @@ const extractBaseTrainScheduleProps = (trainSchedule: TrainScheduleResponse) => 
 
 export const formatTrainScheduleWithDetails = (
   trainSchedule: TrainScheduleResponse,
+  timetableType: TimetableType,
   rollingStock?: LightRollingStockWithLiveries,
   trainScheduleSummary?: TrainScheduleSimulationSummaryResult
 ): TrainScheduleWithDetails => {
@@ -83,9 +97,12 @@ export const formatTrainScheduleWithDetails = (
   } = trainSchedule;
 
   if (!paced) {
+    if (timetableType === 'HOURLY') {
+      throw new Error('An hourly timetable cannot contain unique trains');
+    }
     return {
       ...trainScheduleProps,
-      ...extractBaseTrainScheduleProps(trainSchedule),
+      ...extractBaseTrainScheduleProps(trainSchedule, timetableType),
       rollingStock,
       summary: formatSummary(trainScheduleSummary?.train_schedule),
     };
@@ -116,7 +133,7 @@ export const formatTrainScheduleWithDetails = (
 
   return {
     ...trainScheduleProps,
-    ...extractBaseTrainScheduleProps(trainSchedule),
+    ...extractBaseTrainScheduleProps(trainSchedule, timetableType),
     rollingStock,
     paced: {
       timeWindow: Duration.parse(paced.time_window),

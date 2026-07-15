@@ -4,6 +4,7 @@ import type { PacedTrainException, TrainSchedule } from 'common/api/osrdEditoast
 import { isPacedTrainBase } from 'modules/trainSchedule/helpers/pacedTrain';
 import type { PacedTrainWithDetails, TrainScheduleWithDetails } from 'modules/trainSchedule/types';
 import type { OperationalStudiesConfState, OccurrenceId, PathStep } from 'reducers/osrdconf/types';
+import { startTimeToMs } from 'utils/duration';
 import { kmhToMs } from 'utils/physics';
 import { extractOccurrenceIndexFromOccurrenceId, isIndexedOccurrenceId } from 'utils/trainId';
 
@@ -102,7 +103,7 @@ export function formatTrainScheduleWithDetailsToTrainSchedule(
     rolling_stock_name: trainScheduleWithDetails.rollingStock?.name ?? '',
     schedule: trainScheduleWithDetails.schedule,
     speed_limit_tag: trainScheduleWithDetails.speed_limit_tag,
-    start_time: trainScheduleWithDetails.startTime.getTime(),
+    start_time: startTimeToMs(trainScheduleWithDetails.startTime),
     train_name: trainScheduleWithDetails.name,
   };
 }

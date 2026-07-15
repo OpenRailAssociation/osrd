@@ -135,6 +135,7 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
   } = useLazySimulateTrains({
     infraId,
     timetableId,
+    timetableType: scenario.timetable_type,
     electricalProfileSetId: scenario.electrical_profile_set_id,
     rollingStocks,
     onProgress: (summaries) => {
@@ -164,10 +165,10 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
       const simulatedTrain = simulatedTrainsById.get(trainSchedule.id);
       if (simulatedTrain) return simulatedTrain;
       const rollingStock = rollingStocksByName.get(trainSchedule.rolling_stock_name);
-      return formatTrainScheduleWithDetails(trainSchedule, rollingStock);
+      return formatTrainScheduleWithDetails(trainSchedule, scenario.timetable_type, rollingStock);
     });
     return sortBy(trains, ['startTime', 'name', 'id']);
-  }, [trainSchedules, rollingStocksByName, simulatedTrainsById]);
+  }, [trainSchedules, rollingStocksByName, simulatedTrainsById, scenario.timetable_type]);
 
   const projectedTrains = useMemo(
     () => Array.from(projectedTrainsById.values()),

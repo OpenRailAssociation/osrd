@@ -98,6 +98,40 @@ export class Duration {
   }
 }
 
+/**
+ * A start time received from the backend, converted according to the timetable type:
+ * a Date for calendar timetables, a Duration (offset from the timetable start) for
+ * hourly timetables.
+ */
+export type StartTime = Date | Duration;
+
+/**
+ * Number of ms represented by a start time: elapsed ms since 1970-01-01T00:00:00Z for
+ * calendar timetables (Date), elapsed ms since the timetable start for hourly
+ * timetables (Duration). This is the value expected by the backend in `start_time`.
+ */
+export const startTimeToMs = (startTime: StartTime): number =>
+  startTime instanceof Duration ? startTime.ms : startTime.getTime();
+
+/**
+ * Convert a number of ms expressed in the same hourly timetable as `reference` into a StartTime:
+ * a Duration (offset from the timetable start) if the reference is a Duration (hourly timetable),
+ * a Date (ms since epoch) otherwise.
+ */
+export const msToStartTime = (ms: number, reference: StartTime): StartTime =>
+  reference instanceof Duration ? new Duration({ milliseconds: ms }) : new Date(ms);
+
+/**
+ * TODO Hourly timetables: temporary helper, remove once components handle Duration start times.
+ *
+ * Components are not adapted to hourly timetables yet but still expect a Date. Since no
+ * Date is meaningful for an offset from the timetable start, deliberately return the
+ * epoch as an obviously fictive placeholder instead of a value that could pass for a
+ * real date. Each call site marks a component to migrate in a follow-up PR.
+ */
+export const startTimeToDate = (startTime: StartTime): Date =>
+  startTime instanceof Duration ? new Date(0) : startTime;
+
 export const addDurationToDate = (date: Date, dur: Duration) => new Date(date.getTime() + dur.ms);
 
 export const subtractDurationFromDate = (date: Date, dur: Duration) =>

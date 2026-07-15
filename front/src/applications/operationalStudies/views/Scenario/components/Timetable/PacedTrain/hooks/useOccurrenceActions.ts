@@ -28,6 +28,7 @@ import type { OccurrenceId } from 'reducers/osrdconf/types';
 import { updateSelectedTrain, updateTrainIdUsedForProjection } from 'reducers/simulationResults';
 import { getSelectedTrain } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
+import { msToStartTime, startTimeToMs } from 'utils/duration';
 import { extractExceptionIdFromOccurrenceId, isIndexedOccurrenceId } from 'utils/trainId';
 
 type OccurrenceActionsParams = {
@@ -102,7 +103,7 @@ const useOccurrenceActions = ({
         train_name: editedOccurrence.trainName,
         speed_limit_tag: pacedTrain.speedLimitTag,
         rolling_stock_name: editedOccurrence.rollingStock?.name || '',
-        start_time: editedOccurrence.startTime.getTime(),
+        start_time: startTimeToMs(editedOccurrence.startTime),
       };
 
       const {
@@ -117,7 +118,7 @@ const useOccurrenceActions = ({
         ...pacedTrain,
         ...occurrenceProps,
         name: train_name,
-        startTime: new Date(start_time),
+        startTime: msToStartTime(start_time, pacedTrain.startTime),
         speedLimitTag: speed_limit_tag ?? null,
         rollingStock: editedOccurrence.rollingStock,
       };

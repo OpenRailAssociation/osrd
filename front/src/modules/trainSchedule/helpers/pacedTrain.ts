@@ -5,7 +5,7 @@ import type {
   TrainScheduleResponse,
 } from 'common/api/osrdEditoastApi';
 import type { OccurrenceId, TrainScheduleId, TrainId } from 'reducers/osrdconf/types';
-import { Duration, addDurationToDate } from 'utils/duration';
+import { Duration, addDurationToDate, startTimeToMs, type StartTime } from 'utils/duration';
 import {
   extractEditoastIdFromTrainScheduleId,
   extractEditoastIdFromTrainId,
@@ -85,11 +85,31 @@ export const getOccurrencesNb = ({
 };
 
 /** startTime + index × interval */
-export const computeIndexedOccurrenceStartTime = (
+export function computeIndexedOccurrenceStartTime(
   pacedTrainStartTime: Date,
   interval: Duration,
   index: number
-) => addDurationToDate(pacedTrainStartTime, new Duration({ milliseconds: index * interval.ms }));
+): Date;
+export function computeIndexedOccurrenceStartTime(
+  pacedTrainStartTime: Duration,
+  interval: Duration,
+  index: number
+): Duration;
+export function computeIndexedOccurrenceStartTime(
+  pacedTrainStartTime: StartTime,
+  interval: Duration,
+  index: number
+): StartTime;
+export function computeIndexedOccurrenceStartTime(
+  pacedTrainStartTime: StartTime,
+  interval: Duration,
+  index: number
+): StartTime {
+  const offset = new Duration({ milliseconds: index * interval.ms });
+  return pacedTrainStartTime instanceof Duration
+    ? pacedTrainStartTime.add(offset)
+    : addDurationToDate(pacedTrainStartTime, offset);
+}
 
 /**
  * Based on an exception list and an occurrence id, find the corresponding exception
@@ -350,7 +370,7 @@ export const getFirstActiveOccurrenceId = (
   trainScheduleId: TrainScheduleId
 ): OccurrenceId | undefined => {
   const { paced } = pacedTrain;
-  const startTimeMs = pacedTrain.startTime.getTime();
+  const startTimeMs = startTimeToMs(pacedTrain.startTime);
   const intervalMs = paced.interval.ms;
 
   let bestId: OccurrenceId | undefined;
