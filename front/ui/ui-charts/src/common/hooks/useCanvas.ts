@@ -16,6 +16,7 @@ import type {
   PickingDrawingFunction,
   PickingLayerType,
   Point,
+  PickingElement,
 } from '../types';
 import { useDevicePixelRatio } from './useDevicePixelRatio';
 import { useSize } from './useSize';
@@ -59,28 +60,51 @@ export function useCanvas<T extends BaseChartContextType>(
 
   const devicePixelRatio = useDevicePixelRatio();
 
+  const pickingState = useMemo(() => {
+    const pickingElements: PickingElement[] = [];
+    const resetPickingElements = () => {
+      pickingElements.length = 0;
+    };
+    const registerPickingElement = (element: PickingElement) => {
+      pickingElements.push(element);
+      return pickingElements.length - 1;
+    };
+    return {
+      pickingElements,
+      resetPickingElements,
+      registerPickingElement,
+    };
+  }, []);
+
   /**
    * This function renders all picking layers:
    */
-  const drawPicking = useCallback((context: T, layers?: Set<LayerType>) => {
-    context.resetPickingElements();
-    PICKING_LAYERS.forEach((layer) => {
-      if (layers && !layers.has(layer)) return;
+  const drawPicking = useCallback(
+    (context: T, layers?: Set<LayerType>) => {
+      pickingState.resetPickingElements();
+      PICKING_LAYERS.forEach((layer) => {
+        if (layers && !layers.has(layer)) return;
 
-      const ctx = contextsRef.current[`${PICKING}-${layer}`];
-      const set = pickingFunctions.current[layer];
+        const ctx = contextsRef.current[`${PICKING}-${layer}`];
+        const set = pickingFunctions.current[layer];
 
-      if (ctx && ctx.canvas.width && ctx.canvas.height) {
-        const { width, height } = sizeRef.current;
-        ctx.clearRect(0, 0, width, height);
+        if (ctx && ctx.canvas.width && ctx.canvas.height) {
+          const { width, height } = sizeRef.current;
+          ctx.clearRect(0, 0, width, height);
 
-        const imageData = ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height);
-        const pickingScalingRatio = getPickingScalingRatio();
-        set.forEach((fn) => fn(imageData, context, pickingScalingRatio));
-        ctx.putImageData(imageData, 0, 0);
-      }
-    });
-  }, []);
+          const imageData = ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height);
+          const pickingScalingRatio = getPickingScalingRatio();
+          const pickingContext = {
+            ...context,
+            registerPickingElement: pickingState.registerPickingElement,
+          };
+          set.forEach((fn) => fn(imageData, pickingContext, pickingScalingRatio));
+          ctx.putImageData(imageData, 0, 0);
+        }
+      });
+    },
+    [pickingState]
+  );
 
   /**
    * This function renders all visible / rendering layers:
@@ -269,7 +293,7 @@ export function useCanvas<T extends BaseChartContextType>(
         if (a === 255) {
           const color = rgbToHex(r, g, b);
           const index = colorToIndex(color);
-          const element = chartContextRef.current.pickingElements[index];
+          const element = pickingState.pickingElements[index];
           newHoveredItem = {
             layer,
             element,
@@ -284,7 +308,7 @@ export function useCanvas<T extends BaseChartContextType>(
     if (!isEqual(newHoveredItem, hoveredItem)) {
       setHoveredItem(newHoveredItem);
     }
-  }, [position, hoveredItem]);
+  }, [position, hoveredItem, pickingState]);
 
   // Keep the canvas context up to date:
   const canvasContext = useMemo<CanvasContextType<T>>(
