@@ -1,7 +1,7 @@
 import { v4 as uuidV4 } from 'uuid';
 
 import type { CichDictValue } from 'applications/operationalStudies/types';
-import type { TrainSchedule } from 'common/api/osrdEditoastApi';
+import type { TrainSchedule, PathItemLocation } from 'common/api/osrdEditoastApi';
 import { Duration } from 'utils/duration';
 import { time2sec } from 'utils/timeManipulation';
 
@@ -57,6 +57,12 @@ export const buildSteps = (
       const uic = Number(`
         87${operationalPoint.ciCode}`); // Add 87 to the CI code to create the UIC
       const { chCode } = operationalPoint;
+      const location: PathItemLocation = {
+        type: 'operational_point_part_reference',
+        operational_point: !Number.isNaN(uic)
+          ? { uic, secondary_code: chCode, type: 'uic' }
+          : { trigram: ocpRef, secondary_code: chCode, type: 'trigram' },
+      };
 
       let stopFor: Duration | undefined;
       if (ocpType === 'stop') {
@@ -72,9 +78,7 @@ export const buildSteps = (
       }
 
       return {
-        uic,
-        chCode,
-        name: ocpRef,
+        location,
         arrivalDate,
         departureDate,
         stopFor,
@@ -87,23 +91,7 @@ export const buildSteps = (
   const departureTime = steps[0].departureDate;
   for (const step of steps) {
     const id = uuidV4();
-    if (!Number.isNaN(step.uic)) {
-      path.push({
-        id,
-        location: {
-          type: 'operational_point_part_reference',
-          operational_point: { uic: step.uic, secondary_code: step.chCode, type: 'uic' },
-        },
-      });
-    } else {
-      path.push({
-        id,
-        location: {
-          type: 'operational_point_part_reference',
-          operational_point: { trigram: step.name, secondary_code: step.chCode, type: 'trigram' },
-        },
-      });
-    }
+    path.push({ id, location: step.location });
     if (path.length > 1) {
       schedule.push({
         at: id,
