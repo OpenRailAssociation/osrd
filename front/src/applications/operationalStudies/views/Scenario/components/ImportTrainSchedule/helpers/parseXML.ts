@@ -230,8 +230,7 @@ const reconcilePacedTrainOccurrences = (
 const parseXML = async (xmlDoc: Document): Promise<TimetableJsonPayload> => {
   const trainSchedules: TrainSchedule[] = [];
 
-  // Initialize localCichDict
-  const localCichDict: Record<string, CichDictValue> = {};
+  const localCichDict: Map<string, CichDictValue> = new Map();
 
   const infrastructures = Array.from(xmlDoc.getElementsByTagName('infrastructure'));
 
@@ -244,7 +243,7 @@ const parseXML = async (xmlDoc: Document): Promise<TimetableJsonPayload> => {
 
       if (id && code) {
         const { ciCode, chCode } = extractCiChCode(code);
-        localCichDict[id] = { ciCode, chCode };
+        localCichDict.set(id, { ciCode, chCode });
       }
     });
   });
