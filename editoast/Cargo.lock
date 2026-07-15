@@ -645,6 +645,7 @@ dependencies = [
  "redis-test",
  "serde",
  "serde_json",
+ "tokio",
  "tracing",
  "url",
  "zstd",

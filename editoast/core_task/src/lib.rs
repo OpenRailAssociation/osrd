@@ -41,7 +41,7 @@ impl<T> TrainKey for T where T: Clone + Hash + Eq + Send + Sync {}
 /// - [trait TaskStreamExt] to batch tasks (requires additional [type Task::Context] bounds)
 pub trait Task: Sized + Send {
     /// Task output
-    type Output: DeserializeOwned + Serialize + Send;
+    type Output: DeserializeOwned + Serialize + Send + 'static;
     /// Computation error when running a task for cache misses
     type Error: std::error::Error + Send;
     /// Context required for task
