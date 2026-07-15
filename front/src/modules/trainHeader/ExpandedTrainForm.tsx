@@ -374,14 +374,16 @@ const ExpandedTrainForm = ({
     [fields.initial_speed, selectedRollingStock, computeInitialSpeedError]
   );
 
+  const isPacedTrain = !!pacedTrain;
+
   const serviceCadenceError = useMemo(
-    () => computeServiceTimingError(fields.service_cadence),
-    [fields.service_cadence]
+    () => (isPacedTrain ? computeServiceTimingError(fields.service_cadence) : null),
+    [isPacedTrain, fields.service_cadence]
   );
 
   const serviceWindowError = useMemo(
-    () => computeServiceTimingError(fields.service_window),
-    [fields.service_window]
+    () => (isPacedTrain ? computeServiceTimingError(fields.service_window) : null),
+    [isPacedTrain, fields.service_window]
   );
 
   const erroneousFields = useMemo(
