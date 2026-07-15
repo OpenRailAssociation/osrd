@@ -58,17 +58,16 @@ export const buildSteps = (
         87${operationalPoint.ciCode}`); // Add 87 to the CI code to create the UIC
       const { chCode } = operationalPoint;
 
-      let stopFor: number | undefined;
-
+      let stopFor: Duration | undefined;
       if (ocpType === 'stop') {
         if (arrivalTime && departureTime) {
-          stopFor = Math.round((departureDate.getTime() - arrivalDate.getTime()) / 1000);
+          stopFor = Duration.subtractDate(departureDate, arrivalDate);
         } else {
-          stopFor = 0;
+          stopFor = Duration.zero;
         }
       } else if (ocpType === 'pass') {
         if (isLastOcp) {
-          stopFor = 0;
+          stopFor = Duration.zero;
         }
       }
 
@@ -109,7 +108,7 @@ export const buildSteps = (
       schedule.push({
         at: id,
         arrival: Duration.subtractDate(step.arrivalDate, departureTime).toISOString(),
-        stop_for: step.stopFor !== undefined ? `PT${step.stopFor}S` : null,
+        stop_for: step.stopFor?.toISOString(),
       });
     }
   }

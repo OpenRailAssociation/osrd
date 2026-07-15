@@ -40,9 +40,9 @@ describe('buildSteps', () => {
 
     expect(schedule).toHaveLength(2);
     expect(schedule[0].arrival).toBe('PT23H');
-    expect(schedule[0].stop_for).toBe('PT300S');
+    expect(schedule[0].stop_for).toBe('PT5M');
     expect(schedule[1].arrival).toBe('PT24H15M');
-    expect(schedule[1].stop_for).toBe('PT300S');
+    expect(schedule[1].stop_for).toBe('PT5M');
   });
   it('does not increment the day offset when the arrival time is after the previous departure', () => {
     const xmlSteps = `  <root>
@@ -66,9 +66,9 @@ describe('buildSteps', () => {
 
     expect(schedule).toHaveLength(2);
     expect(schedule[0].arrival).toBe('PT5M');
-    expect(schedule[0].stop_for).toBe('PT300S');
+    expect(schedule[0].stop_for).toBe('PT5M');
     expect(schedule[1].arrival).toBe('PT15M');
-    expect(schedule[1].stop_for).toBe('PT300S');
+    expect(schedule[1].stop_for).toBe('PT5M');
   });
 });
 
