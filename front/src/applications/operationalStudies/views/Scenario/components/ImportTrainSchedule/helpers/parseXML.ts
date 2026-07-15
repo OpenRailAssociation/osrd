@@ -239,16 +239,16 @@ const parseXML = async (xmlDoc: Document): Promise<TimetableJsonPayload> => {
         return;
       }
 
-      const [ciCode, chCode] = code.split('/');
+      const [mainCode, secondaryCode] = code.split('/');
 
       //! We add 87 to the CI code to create the UIC. It is France specific and will break if used in other countries.
-      const uic = Number(`87${ciCode}`);
+      const uic = Number(`87${mainCode}`);
 
       ocpRefLocations.set(id, {
         type: 'operational_point_part_reference',
         operational_point: !Number.isNaN(uic)
-          ? { uic, secondary_code: chCode, type: 'uic' }
-          : { trigram: id, secondary_code: chCode, type: 'trigram' },
+          ? { uic, secondary_code: secondaryCode, type: 'uic' }
+          : { trigram: id, secondary_code: secondaryCode, type: 'trigram' },
       });
     });
   });
