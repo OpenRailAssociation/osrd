@@ -6,6 +6,7 @@ import type {
   StdcmPathProperties,
   StdcmResultsOperationalPoint,
 } from 'applications/stdcm/types';
+import type { SimulationTableRow } from 'modules/SimulationReportSheet/types';
 import { getStopDurationTime } from 'modules/SimulationReportSheet/utils/formatSimulationReportSheet';
 import { getRowStyle } from 'modules/SimulationReportSheet/utils/formatSimulationTable';
 import type { SpeedDistanceDiagramData } from 'modules/simulationResult/types';
@@ -38,7 +39,7 @@ export const formatStdcmDataForSimulationTable = (
     totalMass: `${consist.mass} t`,
   };
 
-  return operationalPointsList.map((op, index) => {
+  return operationalPointsList.map((op, index): SimulationTableRow => {
     const isFirst = index === 0;
     const isLast = index === operationalPointsList.length - 1;
     const previousOp = operationalPointsList[index - 1];
@@ -79,7 +80,7 @@ export const formatStdcmDataForSimulationTable = (
 
     return {
       name: !isPathStep && op.name === previousOp.name ? '=' : op.name || t('reportSheet.unknown'),
-      ch: op.secondaryCode,
+      secondaryCode: op.secondaryCode,
       trackName,
       endTime,
       passageStop,
