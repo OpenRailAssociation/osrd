@@ -6,9 +6,6 @@ import type { LAYERS, PICKING_LAYERS } from './consts';
 
 export type BaseChartContextType = {
   fingerprint: string;
-  pickingElements: PickingElement[];
-  resetPickingElements: () => void;
-  registerPickingElement: (element: PickingElement) => number;
   theme: { background: string };
 };
 
@@ -67,7 +64,9 @@ export type DrawingFunction<T> = (canvasContext: CanvasRenderingContext2D, stcCo
 
 export type PickingDrawingFunction<T> = (
   imageData: ImageData,
-  stcContext: T,
+  context: T & {
+    registerPickingElement: (element: PickingElement) => number;
+  },
   scalingRatio: number
 ) => void;
 

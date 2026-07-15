@@ -2,7 +2,6 @@ import React, { useEffect, useMemo, useState } from 'react';
 
 import cx from 'classnames';
 
-import type { PickingElement } from '../../common';
 import { MouseContext, TimeChartCanvasContext } from '../../common/context';
 import { getTimeToPixel, getPixelToTime } from '../../common/helpers/time';
 import { useCanvas } from '../../common/hooks/useCanvas';
@@ -97,22 +96,6 @@ export const SpaceTimeChart = (props: SpaceTimeChartProps) => {
     ]
   );
 
-  const pickingState = useMemo(() => {
-    const pickingElements: PickingElement[] = [];
-    const resetPickingElements = () => {
-      pickingElements.length = 0;
-    };
-    const registerPickingElement = (element: PickingElement) => {
-      pickingElements.push(element);
-      return pickingElements.length - 1;
-    };
-    return {
-      pickingElements,
-      resetPickingElements,
-      registerPickingElement,
-    };
-  }, []);
-
   const contextState: SpaceTimeChartContextType = useMemo(() => {
     const spaceScaleTree = spaceScalesToBinaryTree(spaceOrigin, spaceScales);
     const flatSteps = getFlatSteps(spaceScales);
@@ -139,7 +122,6 @@ export const SpaceTimeChart = (props: SpaceTimeChartProps) => {
     const getData = getPointToData(getTime, getSpace, timeAxis, spaceAxis);
 
     return {
-      ...pickingState,
       fingerprint,
       width,
       height,
@@ -172,7 +154,7 @@ export const SpaceTimeChart = (props: SpaceTimeChartProps) => {
         : fullTheme.dateCaptionsSize + fullTheme.timeCaptionsSize,
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fingerprint, pickingState]);
+  }, [fingerprint]);
 
   const mouseState = useMouseTracking(root);
   const { position, down, isHover } = mouseState;

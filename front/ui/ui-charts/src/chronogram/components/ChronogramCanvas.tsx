@@ -10,7 +10,7 @@ import { useMouseTracking } from '../../common/hooks/useMouseTracking';
 import { useSize } from '../../common/hooks/useSize';
 import { TimeCaptions } from '../../common/layers/TimeCaptions';
 import TimeGraduations from '../../common/layers/TimeGraduations';
-import type { MouseContextType, PickingElement, Point } from '../../common/types';
+import type { MouseContextType, Point } from '../../common/types';
 import { DEFAULT_THEME } from '../../spaceTimeChart/lib/consts';
 import type { DataPoint } from '../../spaceTimeChart/lib/types';
 import { ChronogramContext } from '../lib/context';
@@ -53,22 +53,6 @@ export const ChronogramCanvas = (props: ChronogramCanvasProps) => {
     [levelCrossingsOccupancies, width, height, timeOrigin, timeScale, xOffset, yOffset]
   );
 
-  const pickingState = useMemo(() => {
-    const pickingElements: PickingElement[] = [];
-    const resetPickingElements = () => {
-      pickingElements.length = 0;
-    };
-    const registerPickingElement = (element: PickingElement) => {
-      pickingElements.push(element);
-      return pickingElements.length - 1;
-    };
-    return {
-      pickingElements,
-      resetPickingElements,
-      registerPickingElement,
-    };
-  }, []);
-
   const contextState: ChronogramContextType = useMemo(() => {
     const getTimePixel = getTimeToPixel(timeOrigin, xOffset, timeScale);
     const getTime = getPixelToTime(timeOrigin, xOffset, timeScale);
@@ -82,7 +66,6 @@ export const ChronogramCanvas = (props: ChronogramCanvasProps) => {
       }) as Point;
 
     return {
-      ...pickingState,
       fingerprint,
       width,
       height,
@@ -99,7 +82,7 @@ export const ChronogramCanvas = (props: ChronogramCanvasProps) => {
       captionSize: DEFAULT_THEME.timeCaptionsSize,
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fingerprint, pickingState]);
+  }, [fingerprint]);
 
   const mouseState = useMouseTracking(root);
   const { position, down, isHover } = mouseState;
