@@ -61,13 +61,20 @@ export function useCanvas<T extends BaseChartContextType>(
   const devicePixelRatio = useDevicePixelRatio();
 
   const pickingState = useMemo(() => {
-    const pickingElements: PickingElement[] = [];
-    const resetPickingElements = () => {
-      pickingElements.length = 0;
+    const pickingElements: Record<PickingLayerType, PickingElement[]> = {
+      paths: [],
+      overlay: [],
     };
-    const registerPickingElement = (element: PickingElement) => {
-      pickingElements.push(element);
-      return pickingElements.length - 1;
+    const resetPickingElements = (layers?: Set<LayerType>) => {
+      for (const layer of PICKING_LAYERS) {
+        if (!layers || layers.has(layer)) {
+          pickingElements[layer].length = 0;
+        }
+      }
+    };
+    const registerPickingElement = (layer: PickingLayerType, element: PickingElement) => {
+      pickingElements[layer].push(element);
+      return pickingElements[layer].length - 1;
     };
     return {
       pickingElements,
@@ -81,7 +88,7 @@ export function useCanvas<T extends BaseChartContextType>(
    */
   const drawPicking = useCallback(
     (context: T, layers?: Set<LayerType>) => {
-      pickingState.resetPickingElements();
+      pickingState.resetPickingElements(layers);
       PICKING_LAYERS.forEach((layer) => {
         if (layers && !layers.has(layer)) return;
 
@@ -96,7 +103,8 @@ export function useCanvas<T extends BaseChartContextType>(
           const pickingScalingRatio = getPickingScalingRatio();
           const pickingContext = {
             ...context,
-            registerPickingElement: pickingState.registerPickingElement,
+            registerPickingElement: (elem: PickingElement) =>
+              pickingState.registerPickingElement(layer, elem),
           };
           set.forEach((fn) => fn(imageData, pickingContext, pickingScalingRatio));
           ctx.putImageData(imageData, 0, 0);
@@ -293,7 +301,7 @@ export function useCanvas<T extends BaseChartContextType>(
         if (a === 255) {
           const color = rgbToHex(r, g, b);
           const index = colorToIndex(color);
-          const element = pickingState.pickingElements[index];
+          const element = pickingState.pickingElements[layer][index];
           newHoveredItem = {
             layer,
             element,
