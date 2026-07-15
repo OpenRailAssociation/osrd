@@ -430,7 +430,7 @@ pub async fn compute_projected_train_paths<T: TrainScheduleLike>(
         .collect::<Vec<_>>();
 
     // 5. Store the projection in the cache
-    valkey_conn.json_set_bulk(&space_time_curves).await?;
+    valkey_conn.json_set_bulk(space_time_curves.clone()).await?;
 
     // 6. Build the projection response
     for (hash, space_time_curve) in space_time_curves.into_iter() {

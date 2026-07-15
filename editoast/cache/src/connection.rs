@@ -165,52 +165,50 @@ impl Connection {
 
     /// Set a serializable value to valkey with expiry time
     #[tracing::instrument(name = "cache:json_set", skip(self, value), err)]
-    pub async fn json_set<K: Debug + ToSingleRedisArg + Send + Sync, T: Serialize>(
+    pub async fn json_set<
+        K: Debug + ToSingleRedisArg + Send + Sync + 'static,
+        T: Serialize + Send + Sync + 'static,
+    >(
         &mut self,
         key: K,
-        value: &T,
+        value: T,
     ) -> Result<(), RedisError> {
-        self.json_set_bulk(&[(key, value)]).await
+        self.json_set_bulk(vec![(key, value)]).await
     }
 
     /// Set a list of serializable values to valkey
     #[tracing::instrument(name = "cache:json_set_bulk", skip(self, items), err)]
-    pub async fn json_set_bulk<K: Debug + ToRedisArgs + Send + Sync, T: Serialize>(
+    pub async fn json_set_bulk<
+        K: Debug + ToRedisArgs + Send + Sync + 'static,
+        T: Serialize + Send + Sync + 'static,
+    >(
         &mut self,
-        items: &[(K, T)],
+        items: Vec<(K, T)>,
     ) -> Result<(), RedisError> {
         // Avoid mset to fail if keys is empty
         if items.is_empty() {
             return Ok(());
         }
 
-        let compressed_items = span!(Level::INFO, "Compressing data").in_scope(|| {
-            items
-                .iter()
-                .filter_map(|(key, value)| {
-                    let mut encoder = zstd::Encoder::new(Vec::new(), 0).unwrap();
-                    // Serialize the `value` into JSON format and write it to the encoder (which compresses it).
-                    if let Err(e) = serde_json::to_writer(&mut encoder, value) {
-                        tracing::warn!(
-                            "failed to serialize value to JSON for type '{}': {e}",
-                            std::any::type_name::<T>()
-                        );
-                        return None;
-                    }
-                    // Finalize the compression process and retrieve the compressed data.
-                    match encoder.finish() {
-                        Ok(compressed_value) => Some((key, compressed_value)),
-                        Err(e) => {
-                            tracing::warn!(
-                                "failed to compress value for type '{}': {e}",
-                                std::any::type_name::<T>()
-                            );
-                            None
-                        }
-                    }
+        let handles = items
+            .into_iter()
+            .map(|(key, value)| {
+                tokio::task::spawn_blocking(move || {
+                    // Serialization and compression in two steps to avoid perf issues.
+                    // TODO: Investigate why using Streaming is slower even with BufReader in the middle.
+                    let serialized_value =
+                        serde_json::to_vec(&value).expect("Failed to serialize value to JSON");
+                    let compressed_value = zstd::encode_all(&serialized_value[..], 1)
+                        .expect("Failed to compress value with zstd");
+                    (key, compressed_value)
                 })
-                .collect::<Vec<_>>()
-        });
+                .instrument(info_span!("Serializing data"))
+            })
+            .collect_vec();
+
+        let compressed_items: Vec<(K, Vec<u8>)> = future::try_join_all(handles)
+            .await
+            .expect("Failed to join the serialization task");
 
         // Store the compressed values using mset
         if !compressed_items.is_empty() {

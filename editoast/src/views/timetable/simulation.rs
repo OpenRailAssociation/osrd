@@ -598,7 +598,7 @@ pub async fn consist_train_simulation_batch<T: TrainScheduleLike>(
         let train_indexes = &to_sim[train_hash];
         match sim_res {
             Ok(sim_res) => {
-                to_cache.push((train_hash, sim_res.clone()));
+                to_cache.push((train_hash.to_string(), sim_res.clone()));
                 let sim_res = Arc::new(simulation::Response::from(sim_res));
                 train_indexes
                     .iter()
@@ -618,7 +618,7 @@ pub async fn consist_train_simulation_batch<T: TrainScheduleLike>(
     }
 
     // Cache the simulation response
-    valkey_conn.json_set_bulk(&to_cache).await?;
+    valkey_conn.json_set_bulk(to_cache).await?;
 
     // Return the response
     Ok(simulation_results

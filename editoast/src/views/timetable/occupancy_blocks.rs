@@ -220,14 +220,14 @@ pub(super) async fn compute_occupancy_blocks<T: TrainScheduleLike>(
     // 5. Store block occupancies in the cache
     let occupancy_blocks: Vec<_> = occupancy_block_requests
         .iter()
-        .map(|(hash, _)| hash)
+        .map(|(hash, _)| hash.to_string())
         .zip(signal_updates.clone())
         .collect();
-    valkey_conn.json_set_bulk(&occupancy_blocks).await?;
+    valkey_conn.json_set_bulk(occupancy_blocks.clone()).await?;
 
     // 6. Build block occupancy response
     for (hash, occupancy_blocks) in occupancy_blocks.into_iter() {
-        let indexes = &train_hashes_to_idx[hash];
+        let indexes = &train_hashes_to_idx[&hash];
         let occupancy_blocks = Arc::new(occupancy_blocks);
         for index in indexes {
             occupancy_blocks_result[*index] = occupancy_blocks.clone();
