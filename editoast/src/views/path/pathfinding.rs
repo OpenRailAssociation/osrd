@@ -348,7 +348,7 @@ async fn pathfinding_blocks_batch(
                 hash_to_path_indexes[hash]
                     .iter()
                     .for_each(|index| pathfinding_results[*index] = arc_result.clone());
-                to_cache.push((hash, result));
+                to_cache.push((hash.to_string(), result));
             }
         }
     }
@@ -368,7 +368,7 @@ async fn pathfinding_blocks_batch(
 
     for (path_result, hash) in computed_paths.into_iter().zip(to_compute_hashes) {
         let path = path_result?;
-        to_cache.push((hash, Box::new(path.clone().into())));
+        to_cache.push((hash.to_string(), Box::new(path.clone().into())));
         let result: Arc<PathfindingResult> = Arc::new(path.into());
         hash_to_path_indexes[hash]
             .iter()
@@ -376,7 +376,7 @@ async fn pathfinding_blocks_batch(
     }
 
     debug!(nb_cached = to_cache.len(), "Caching pathfinding response");
-    valkey_conn.json_set_bulk(&to_cache).await?;
+    valkey_conn.json_set_bulk(to_cache).await?;
 
     Ok(pathfinding_results)
 }

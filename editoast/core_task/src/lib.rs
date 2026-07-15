@@ -219,7 +219,7 @@ where
                 async move {
                     while let Some((key, value)) = cache_write_rx.recv().await {
                         let mut vkconn = vk_client.get_connection().await.unwrap();
-                        if let Err(e) = vkconn.json_set(key.clone(), &value).await {
+                        if let Err(e) = vkconn.json_set(key.clone(), value).await {
                             tracing::error!(?e, key, "task stream: cache write failure")
                         }
                     }
