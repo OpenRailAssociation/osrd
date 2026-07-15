@@ -30,7 +30,7 @@ import { getTrainIdUsedForProjection } from 'reducers/simulationResults/selector
 import { useAppDispatch } from 'store';
 import { addElementAtIndex } from 'utils/array';
 import { timeToLocaleStringRounded, useDateTimeLocale } from 'utils/date';
-import { addDurationToDate } from 'utils/duration';
+import { addDurationToDate, startTimeToDate } from 'utils/duration';
 import {
   getExceptionType,
   isExceptionFromPathOrSimulation,
@@ -93,7 +93,9 @@ const OccurrenceItem = ({
 
   const trainIdUsedForProjection = useSelector(getTrainIdUsedForProjection);
 
-  const { trainName, rollingStock, startTime, disabled, exception, summary } = occurrence;
+  const { trainName, rollingStock, disabled, exception, summary } = occurrence;
+  // TODO Hourly timetables: display the actual start time instead of a fictive date
+  const startTime = startTimeToDate(occurrence.startTime);
   const exceptionChangeGroups = exception?.exceptionChangeGroups;
 
   let arrivalTime: Date | undefined;
@@ -103,7 +105,7 @@ const OccurrenceItem = ({
     isAfterMidnight = dayjs(arrivalTime).isAfter(startTime, 'day');
   }
   const isNextAfterMidnight =
-    !!nextOccurrence && dayjs(nextOccurrence.startTime).isAfter(startTime, 'day');
+    !!nextOccurrence && dayjs(startTimeToDate(nextOccurrence.startTime)).isAfter(startTime, 'day');
   const isStartTimeException = !!exceptionChangeGroups?.start_time;
 
   const closeMenu = () => {
@@ -278,7 +280,8 @@ const OccurrenceItem = ({
         {nextOccurrence && isNextAfterMidnight && (
           <ConsecutiveDayDateDisplay
             departureTime={startTime}
-            nextDepartureTime={nextOccurrence?.startTime}
+            // TODO Hourly timetables: display the actual start time instead of a fictive date
+            nextDepartureTime={startTimeToDate(nextOccurrence.startTime)}
           />
         )}
       </div>

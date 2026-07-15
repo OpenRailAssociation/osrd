@@ -1,5 +1,6 @@
 import type {
   LightRollingStockWithLiveries,
+  TimetableType,
   TrainScheduleSimulationSummaryResult,
   TrainScheduleResponse,
 } from 'common/api/osrdEditoastApi';
@@ -11,7 +12,8 @@ import { mapBy } from 'utils/types';
 const formatTrainScheduleSummaries = (
   rawTrainScheduleSummaries: Map<number, TrainScheduleSimulationSummaryResult>,
   rawTrainSchedules: Map<number, TrainScheduleResponse>,
-  rollingStocks: LightRollingStockWithLiveries[]
+  rollingStocks: LightRollingStockWithLiveries[],
+  timetableType: TimetableType
 ): Map<number, TrainScheduleWithDetails> => {
   const trainSchedules: TrainScheduleWithDetails[] = [...rawTrainScheduleSummaries].map(
     ([id, trainScheduleSummary]) => {
@@ -20,7 +22,12 @@ const formatTrainScheduleSummaries = (
         throw new Error('Missing train schedule');
       }
       const rollingStock = rollingStocks.find((rs) => rs.name === trainSchedule.rolling_stock_name);
-      return formatTrainScheduleWithDetails(trainSchedule, rollingStock, trainScheduleSummary);
+      return formatTrainScheduleWithDetails(
+        trainSchedule,
+        timetableType,
+        rollingStock,
+        trainScheduleSummary
+      );
     }
   );
   return mapBy(trainSchedules, 'id');

@@ -23,7 +23,7 @@ import type {
 } from 'modules/trainSchedule/types';
 import type { TrainId } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
-import { Duration } from 'utils/duration';
+import { Duration, startTimeToDate } from 'utils/duration';
 
 /**
  * Insert or update a path step to go through a specific track.
@@ -196,7 +196,8 @@ export default function useOccupancyZoneDrop({
       const simulationSummary = exception?.summary ?? trainSchedule.summary;
       const occupancyZoneStartOffset = Duration.subtractDate(
         occupancyZoneStartTime,
-        trainSchedule.startTime
+        // TODO Hourly timetables: use the actual start time instead of a fictive date
+        startTimeToDate(trainSchedule.startTime)
       );
       const newPath = upsertPathStepTrack(
         path,

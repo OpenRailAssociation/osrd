@@ -11,7 +11,7 @@ import type {
   TrainScheduleResponse,
 } from 'common/api/osrdEditoastApi';
 import type { OccurrenceId } from 'reducers/osrdconf/types';
-import type { Duration } from 'utils/duration';
+import type { Duration, StartTime } from 'utils/duration';
 
 export type SuggestedOP = {
   pathStepId: string | undefined;
@@ -71,7 +71,8 @@ type TrainScheduleWithSummaries = Omit<
   'train_name' | 'rolling_stock_name' | 'start_time' | 'paced'
 > & {
   name: string;
-  startTime: Date;
+  /** Date for a calendar timetable, Duration (offset from the timetable start) for a hourly timetable */
+  startTime: StartTime;
   stopsCount: number;
   rollingStockName: string;
   rollingStock?: LightRollingStockWithLiveries;
@@ -117,7 +118,8 @@ export type Occurrence = {
   occurrenceIndex?: number; // Optional, only if not created
   trainName: string;
   rollingStock?: LightRollingStockWithLiveries;
-  startTime: Date;
+  /** Date for a calendar timetable, Duration (offset from the timetable start) for a hourly timetable */
+  startTime: StartTime;
   stopsCount: number;
   exception?: { id: number; exceptionChangeGroups: ExceptionChangeGroups };
   summary?: SimulationSummary;
