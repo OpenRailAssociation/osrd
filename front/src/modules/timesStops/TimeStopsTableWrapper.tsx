@@ -115,6 +115,14 @@ const TimeStopsTableWrapper = ({
       ? pinnedState.edits
       : null;
 
+  // Clear the pinnedState as soon as real data takes over (optimisticEdits null). Otherwise it stays
+  // dormant, and resetting an exception restores the original schedule reference, reactivating the
+  // pinnedState and re-showing the stale edit.
+  // For more info, see https://react.dev/learn/you-might-not-need-an-effect#adjusting-some-state-when-a-prop-changes
+  if (pinnedState !== null && optimisticEdits === null) {
+    setPinnedState(null);
+  }
+
   // The single source of truth for what the table displays. Any derived data fed to
   // TimesStopsTable (warnings, styling, etc.) should be computed from optimisticRows,
   // not from selectedTrain, to stay in sync with the displayed values during edits.
