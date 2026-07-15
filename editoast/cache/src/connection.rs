@@ -18,8 +18,10 @@ use itertools::Itertools;
 use serde::Deserialize;
 use serde::Serialize;
 use serde::de::DeserializeOwned;
+use tracing::Instrument;
 use tracing::Level;
 use tracing::debug;
+use tracing::info_span;
 use tracing::span;
 
 pub struct Connection {
@@ -151,7 +153,10 @@ impl Connection {
 
     /// Get a deserializable value from valkey
     #[tracing::instrument(name = "cache:json_get", skip(self), err)]
-    pub async fn json_get<K: Debug + ToSingleRedisArg + Send + Sync, T: DeserializeOwned>(
+    pub async fn json_get<
+        K: Debug + ToSingleRedisArg + Send + Sync,
+        T: DeserializeOwned + Send + 'static,
+    >(
         &mut self,
         key: K,
     ) -> Result<Option<T>, RedisError> {
@@ -218,14 +223,17 @@ impl Connection {
 
     /// Get a list of deserializable value from valkey
     #[tracing::instrument(name = "cache:json_get_bulk", skip(self), err)]
-    pub async fn json_get_bulk<K: Debug + ToRedisArgs + Send + Sync, T: DeserializeOwned>(
+    pub async fn json_get_bulk<
+        K: Debug + ToRedisArgs + Send + Sync,
+        T: DeserializeOwned + Send + 'static,
+    >(
         &mut self,
         keys: &[K],
     ) -> Result<Vec<Option<T>>, RedisError> {
         debug!(nb_keys = keys.len());
 
         // Fetch the values from Redis
-        let values = if !keys.is_empty() {
+        let compressed_values = if !keys.is_empty() {
             span!(Level::INFO, "Fetching values from Valkey")
                 .in_scope(async || self.mget::<_, Vec<Option<Vec<u8>>>>(keys).await)
                 .await?
@@ -234,29 +242,36 @@ impl Connection {
             vec![]
         };
 
-        // Decompress each value if it exists
-        let cached_values = span!(Level::INFO, "Decompressing data").in_scope(|| {
-            values
-                .into_iter()
-                .map(|value| {
-                    value.and_then(|compressed_data| {
-                        let mut decoder = zstd::Decoder::new(&compressed_data[..]).unwrap();
-
-                        match serde_json::from_reader(&mut decoder) {
-                            Ok(deserialized) => Some(deserialized),
-                            Err(e) => {
-                                tracing::warn!(
-                                    "the cached value is not a valid compressed JSON data for type '{}': {e}",
-                                    std::any::type_name::<T>()
-                                );
-                                None
-                            }
-                        }
+        let handles = compressed_values
+            .into_iter()
+            .map(|v| {
+                v.map(|v| {
+                    tokio::task::spawn_blocking(move || {
+                        // Decompress and deserialize in two steps to avoid buffering issue.
+                        // TODO: Investigate why using Streaming is slower even with BufReader in the middle.
+                        let decompressed_data = zstd::decode_all(&v[..])
+                            .expect("Failed to decompress data from Valkey");
+                        serde_json::from_slice::<T>(&decompressed_data)
+                            .expect("Failed to deserialize JSON data from Valkey")
                     })
+                    .instrument(info_span!("Decompressing + Deserializing data"))
                 })
-                .collect_vec()
-        });
-        Ok(cached_values)
+            })
+            .collect_vec();
+
+        let mut results = Vec::with_capacity(handles.len());
+        for handle in handles {
+            match handle {
+                Some(handle) => {
+                    let result = handle
+                        .await
+                        .expect("Failed to join the decompression + deserialization task");
+                    results.push(Some(result));
+                }
+                None => results.push(None),
+            }
+        }
+        Ok(results)
     }
 
     /// Add one serializable member to a sorted set, or update its score if it already exists.
