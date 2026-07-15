@@ -9,11 +9,11 @@ import { getMostFrequentInterval } from '../parseXML';
 
 describe('buildSteps', () => {
   const parser = new DOMParser();
-  const cichDict: Record<string, CichDictValue> = {
-    STATION0: { ciCode: 1, chCode: 'A0' },
-    STATION1: { ciCode: 12345, chCode: 'A1' },
-    STATION2: { ciCode: 23456, chCode: 'B2' },
-  };
+  const cichDict: Map<string, CichDictValue> = new Map([
+    ['STATION0', { ciCode: 1, chCode: 'A0' }],
+    ['STATION1', { ciCode: 12345, chCode: 'A1' }],
+    ['STATION2', { ciCode: 23456, chCode: 'B2' }],
+  ]);
 
   it('increments the day offset when the arrival time is before the previous departure', () => {
     const xmlSteps = `

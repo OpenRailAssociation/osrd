@@ -9,7 +9,7 @@ export const cleanTimeFormat = (time: string): string => time.replace(/\.0$/, ''
 
 export const buildSteps = (
   ocpTTs: Element[],
-  cichDict: Record<string, CichDictValue>,
+  cichDict: Map<string, CichDictValue>,
   startDate: Date
 ): Required<Pick<TrainSchedule, 'path' | 'schedule'>> => {
   let dayOffset = 0;
@@ -32,7 +32,7 @@ export const buildSteps = (
         return null;
       }
 
-      const operationalPoint = cichDict[ocpRef];
+      const operationalPoint = cichDict.get(ocpRef)!;
 
       const currentDepartureSeconds = time2sec(departureTime);
 
