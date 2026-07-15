@@ -1,6 +1,5 @@
 import { v4 as uuidV4 } from 'uuid';
 
-import type { CichDictValue } from 'applications/operationalStudies/types';
 import type { TrainSchedule, PathItemLocation } from 'common/api/osrdEditoastApi';
 import { Duration } from 'utils/duration';
 import { time2sec } from 'utils/timeManipulation';
@@ -9,7 +8,7 @@ export const cleanTimeFormat = (time: string): string => time.replace(/\.0$/, ''
 
 export const buildSteps = (
   ocpTTs: Element[],
-  cichDict: Map<string, CichDictValue>,
+  ocpRefLocations: Map<string, PathItemLocation>,
   startDate: Date
 ): Required<Pick<TrainSchedule, 'path' | 'schedule'>> => {
   let dayOffset = 0;
@@ -32,7 +31,7 @@ export const buildSteps = (
         return null;
       }
 
-      const operationalPoint = cichDict.get(ocpRef)!;
+      const location = ocpRefLocations.get(ocpRef)!;
 
       const currentDepartureSeconds = time2sec(departureTime);
 
@@ -52,17 +51,6 @@ export const buildSteps = (
       }
 
       previousDepartureSeconds = currentDepartureSeconds;
-
-      //! We add 87 to the CI code to create the UIC. It is France specific and will break if used in other countries.
-      const uic = Number(`
-        87${operationalPoint.ciCode}`); // Add 87 to the CI code to create the UIC
-      const { chCode } = operationalPoint;
-      const location: PathItemLocation = {
-        type: 'operational_point_part_reference',
-        operational_point: !Number.isNaN(uic)
-          ? { uic, secondary_code: chCode, type: 'uic' }
-          : { trigram: ocpRef, secondary_code: chCode, type: 'trigram' },
-      };
 
       let stopFor: Duration | undefined;
       if (ocpType === 'stop') {

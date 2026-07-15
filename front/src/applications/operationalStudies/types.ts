@@ -59,11 +59,6 @@ export type TimetableJsonPayload = {
   round_trips?: RoundTripsFromJson;
 };
 
-export type CichDictValue = {
-  ciCode: number;
-  chCode?: string;
-};
-
 // Extraction of some required and non nullable properties from osrdEditoastApi's PathProperties type
 export type ManageTrainSchedulePathProperties = {
   manchetteOperationalPoints?: PathOperationalPoint[];
