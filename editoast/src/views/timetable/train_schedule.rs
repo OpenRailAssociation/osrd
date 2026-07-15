@@ -76,6 +76,7 @@ use crate::views::timetable::simulation::build_sim_power_restriction_items;
 use crate::views::timetable::simulation::build_sim_schedule_items;
 use crate::views::timetable::simulation::train_simulation_ordered_batch;
 use crate::views::timetable::track_occupancy;
+use crate::views::timetable::track_occupancy::PathItemRelativeLocation;
 use editoast_models::Infra;
 use editoast_models::TrainScheduleSet;
 use editoast_models::rolling_stock::RollingStock;
@@ -1413,6 +1414,8 @@ pub(in crate::views) struct TrackOccupancy {
     #[serde(flatten)]
     #[schema(inline)]
     time_window: TimeWindow,
+    #[schema(inline)]
+    path_item_relative_location: PathItemRelativeLocation,
 }
 
 #[derive(Debug, Serialize, ToSchema)]
@@ -1616,12 +1619,14 @@ async fn find_track_occupancy_for_known_operational_point_with_simulation(
                 move |track_occupancy::TrackOccupancy {
                           local_track_name,
                           time_window,
+                          path_item_relative_location,
                       }| {
                     (
                         local_track_name,
                         TrackOccupancy {
                             train_id: train_id.clone(),
                             time_window,
+                            path_item_relative_location,
                         },
                     )
                 },
@@ -1651,12 +1656,14 @@ fn find_track_occupancy_for_known_operational_point_without_simulation(
                 move |track_occupancy::TrackOccupancy {
                           local_track_name,
                           time_window,
+                          path_item_relative_location,
                       }| {
                     (
                         local_track_name,
                         TrackOccupancy {
                             train_id: train_id.clone(),
                             time_window,
+                            path_item_relative_location,
                         },
                     )
                 },
@@ -1721,6 +1728,9 @@ fn find_track_occupancy_unknown_operational_point(
                         TrackOccupancy {
                             train_id: train_id.clone(),
                             time_window,
+                            path_item_relative_location: PathItemRelativeLocation::ExactPathItem {
+                                path_item_id: path_item.id.clone(),
+                            },
                         },
                     ))
                 })
