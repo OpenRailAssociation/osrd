@@ -7,6 +7,9 @@ use schemas::primitives::TimeWindow;
 use schemas::train_schedule::PathItem;
 use schemas::train_schedule::PathItemLocation;
 use schemas::train_schedule::ScheduleItem;
+use serde::Deserialize;
+use serde::Serialize;
+use utoipa::ToSchema;
 
 use crate::views::path::operational_point_cache::OperationalPointCache;
 use crate::views::path::pathfinding::PathfindingResult;
@@ -18,6 +21,7 @@ use crate::views::timetable::simulation;
 pub(super) struct TrackOccupancy {
     pub(super) local_track_name: Option<NonBlankString>,
     pub(super) time_window: TimeWindow,
+    pub(super) path_item_relative_location: PathItemRelativeLocation,
 }
 
 /// Structure holding extracted data needed for track occupancy computation
@@ -27,6 +31,25 @@ struct OccupancyContext<'a> {
     pathfinding_success: Option<&'a PathfindingResultSuccess>,
     matching_index: Option<usize>,
     schedule_item: Option<&'a ScheduleItem>,
+}
+
+/// Position of an operational point on a path, relative to the input path items.
+/// If the OP matches an input path item, it is located using this path item's ID,
+/// else, if the path just passes by the OP, it is located using its previous and following path items IDs
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ToSchema)]
+#[serde(tag = "type", rename_all = "snake_case")]
+#[schema(title_variants)]
+pub(super) enum PathItemRelativeLocation {
+    ExactPathItem {
+        /// Path item ID, when the operational point matches an item in the input path
+        path_item_id: NonBlankString,
+    },
+    BetweenPathItems {
+        /// Previous path item ID, when the operational point is not one of the input path items
+        previous_path_item_id: NonBlankString,
+        /// Following path item ID, when the operational point is not one of the input path items
+        following_path_item_id: NonBlankString,
+    },
 }
 
 /// Search for the index of the first matching path item for an operational point in a given path
@@ -169,6 +192,49 @@ fn get_local_track_name(
         .cloned()
 }
 
+/// Returns the path_item_relative_location for an operational point
+fn get_path_item_relative_location<'a>(
+    context: &OccupancyContext<'a>,
+    operational_point_track_offsets: &[TrackOffset],
+    train_schedule: &schemas::TrainOccurrence,
+) -> Option<PathItemRelativeLocation> {
+    if let Some(idx) = context.matching_index {
+        return Some(PathItemRelativeLocation::ExactPathItem {
+            path_item_id: train_schedule.path[idx].id.clone(),
+        });
+    }
+    if let (Some(report_train), Some(pathfinding_success)) =
+        (context.report_train, context.pathfinding_success)
+    {
+        let path_projection = PathProjection::new(&pathfinding_success.path.track_section_ranges);
+        let path_offset = operational_point_track_offsets
+            .iter()
+            .find_map(|track_offset| path_projection.get_position(track_offset));
+        if let Some(path_offset) = path_offset {
+            match pathfinding_success
+                .path_item_positions
+                .binary_search(&path_offset)
+            {
+                Ok(idx) => {
+                    return Some(PathItemRelativeLocation::ExactPathItem {
+                        path_item_id: train_schedule.path[idx].id.clone(),
+                    });
+                }
+                Err(idx) => {
+                    if idx == 0 || idx == report_train.positions.len() {
+                        panic!("The path offset is out of bound.")
+                    }
+                    return Some(PathItemRelativeLocation::BetweenPathItems {
+                        previous_path_item_id: train_schedule.path[idx - 1].id.clone(),
+                        following_path_item_id: train_schedule.path[idx].id.clone(),
+                    });
+                }
+            }
+        }
+    }
+    None
+}
+
 /// Find track occupancies for a train at an operational point
 /// This is a generic function used by both train_schedule and paced_train modules
 pub fn find_track_occupancy_for_operational_point(
@@ -223,6 +289,12 @@ fn find_track_occupancy_for_operational_point_with_context<'a>(
         return vec![];
     };
 
+    let Some(path_item_relative_location) =
+        get_path_item_relative_location(&context, operational_point_track_offsets, train_schedule)
+    else {
+        return vec![];
+    };
+
     let stop_duration = context
         .schedule_item
         .and_then(|item| item.stop_for)
@@ -239,6 +311,7 @@ fn find_track_occupancy_for_operational_point_with_context<'a>(
             time_begin: train_schedule.start_time + millisecond::i64::new(arrival_time),
             duration: stop_duration,
         },
+        path_item_relative_location,
     }]
 }
 
