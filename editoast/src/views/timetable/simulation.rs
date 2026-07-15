@@ -567,6 +567,7 @@ pub async fn consist_train_simulation_batch<T: TrainScheduleLike>(
     let cached_results: Vec<Option<Arc<simulation::Response>>> = valkey_conn
         .json_get_bulk(&cached_simulation_hash)
         .await?
+        .into_iter()
         .map(|simulation| simulation.map(Arc::new))
         .collect();
 

@@ -391,9 +391,8 @@ pub async fn compute_projected_train_paths<T: TrainScheduleLike>(
     // 3. Retrieve cached projection
 
     let cached_projections = valkey_conn
-        .json_get_bulk(&train_hashes)
-        .await?
-        .collect::<Vec<Option<Vec<SpaceTimeCurve>>>>();
+        .json_get_bulk::<_, Vec<SpaceTimeCurve>>(&train_hashes)
+        .await?;
 
     let mut projection_request_map: HashMap<String, TrainSimulationDetails> = HashMap::new();
     let mut project_path_result: Vec<Arc<Vec<SpaceTimeCurve>>> =

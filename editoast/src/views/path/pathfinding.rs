@@ -303,6 +303,7 @@ async fn pathfinding_blocks_batch(
     let pathfinding_cached_results: Vec<Option<Arc<PathfindingResult>>> = valkey_conn
         .json_get_bulk(&hashes)
         .await?
+        .into_iter()
         .map(|result| result.map(Arc::new))
         .collect();
     let pathfinding_cached_results: HashMap<_, _> =

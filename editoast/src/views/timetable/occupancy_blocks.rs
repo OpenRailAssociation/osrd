@@ -179,9 +179,8 @@ pub(super) async fn compute_occupancy_blocks<T: TrainScheduleLike>(
 
     // 3. Retrieve cached occupancy blocks
     let cached_blocks = valkey_conn
-        .json_get_bulk(&train_hashes)
-        .await?
-        .collect::<Vec<Option<OccupancyBlocks>>>();
+        .json_get_bulk::<_, OccupancyBlocks>(&train_hashes)
+        .await?;
 
     let mut occupancy_blocks_result = vec![Arc::default(); trains_schedules.len()];
     let mut occupancy_block_requests = vec![];
