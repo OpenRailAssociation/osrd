@@ -3652,6 +3652,39 @@ paths:
                       type: string
                       enum:
                       - completed
+  /timetable/{id}/stdcm/tsi:
+    post:
+      tags:
+      - stdcm
+      summary: |-
+        This function receives a TAF-TSI PRM (PathRequestMessage) XML file,
+        converts it to a STDCM request, computes the train path and returns
+        the result as a TAF-TSI PDM (PathDetailsMessage) XML file.
+      parameters:
+      - name: id
+        in: path
+        description: timetable_id
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: infra
+        in: query
+        description: Infra id
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: rolling_stock_id
+        in: query
+        description: Rolling stock id
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: The PDM XML response
   /timetable/{id}/train_schedule_exception:
     post:
       tags:
@@ -7150,6 +7183,13 @@ components:
       - $ref: '#/components/schemas/EditoastTrainScheduleExceptionErrorTrainScheduleNotFound'
       - $ref: '#/components/schemas/EditoastTrainScheduleSetErrorDatabase'
       - $ref: '#/components/schemas/EditoastTrainScheduleSetErrorNotFound'
+      - $ref: '#/components/schemas/EditoastTsiErrorInvalidEncoding'
+      - $ref: '#/components/schemas/EditoastTsiErrorNoCompletedEvent'
+      - $ref: '#/components/schemas/EditoastTsiErrorPathNotFound'
+      - $ref: '#/components/schemas/EditoastTsiErrorResponseCollectionFailed'
+      - $ref: '#/components/schemas/EditoastTsiErrorSimulationError'
+      - $ref: '#/components/schemas/EditoastTsiErrorXmlParse'
+      - $ref: '#/components/schemas/EditoastTsiErrorXmlSerialize'
       - $ref: '#/components/schemas/EditoastWorkScheduleErrorDatabase'
       - $ref: '#/components/schemas/EditoastWorkScheduleErrorNameAlreadyUsed'
       - $ref: '#/components/schemas/EditoastWorkScheduleErrorWorkScheduleGroupNotFound'
@@ -9958,6 +9998,146 @@ components:
           type: string
           enum:
           - editoast:train_schedule_set:NotFound
+    EditoastTsiErrorInvalidEncoding:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          title: EditoastTsiErrorInvalidEncodingContext
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 400
+        type:
+          type: string
+          enum:
+          - editoast:stdcm:tsi:InvalidEncoding
+    EditoastTsiErrorNoCompletedEvent:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          title: EditoastTsiErrorNoCompletedEventContext
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 400
+        type:
+          type: string
+          enum:
+          - editoast:stdcm:tsi:NoCompletedEvent
+    EditoastTsiErrorPathNotFound:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          title: EditoastTsiErrorPathNotFoundContext
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 400
+        type:
+          type: string
+          enum:
+          - editoast:stdcm:tsi:PathNotFound
+    EditoastTsiErrorResponseCollectionFailed:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          title: EditoastTsiErrorResponseCollectionFailedContext
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 400
+        type:
+          type: string
+          enum:
+          - editoast:stdcm:tsi:ResponseCollectionFailed
+    EditoastTsiErrorSimulationError:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          title: EditoastTsiErrorSimulationErrorContext
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 400
+        type:
+          type: string
+          enum:
+          - editoast:stdcm:tsi:SimulationError
+    EditoastTsiErrorXmlParse:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          title: EditoastTsiErrorXmlParseContext
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 400
+        type:
+          type: string
+          enum:
+          - editoast:stdcm:tsi:XmlParse
+    EditoastTsiErrorXmlSerialize:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          title: EditoastTsiErrorXmlSerializeContext
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 400
+        type:
+          type: string
+          enum:
+          - editoast:stdcm:tsi:XmlSerialize
     EditoastWorkScheduleErrorDatabase:
       type: object
       required:

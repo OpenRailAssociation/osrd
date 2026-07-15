@@ -315,6 +315,15 @@
       "Database": "Internal error (database)",
       "NotFound": "Train schedule set '{{train_schedule_set_id}}' could not be found"
     },
+    "tsi": {
+      "InvalidEncoding": "The PRM payload is not valid UTF-8",
+      "NoCompletedEvent": "The path computation returned no result",
+      "PathNotFound": "No path could be found for the requested train",
+      "ResponseCollectionFailed": "Could not collect the path computation response",
+      "SimulationError": "Train simulation failed",
+      "XmlParse": "Could not parse the PRM XML payload",
+      "XmlSerialize": "Could not generate the PDM XML response"
+      },
     "url": {
       "InvalidUrl": "Invalid url '{{url}}'"
     },

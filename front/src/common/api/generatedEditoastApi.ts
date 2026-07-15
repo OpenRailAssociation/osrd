@@ -1157,6 +1157,20 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ['stdcm'],
       }),
+      postTimetableByIdStdcmTsi: build.mutation<
+        PostTimetableByIdStdcmTsiApiResponse,
+        PostTimetableByIdStdcmTsiApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/timetable/${queryArg.id}/stdcm/tsi`,
+          method: 'POST',
+          params: {
+            infra: queryArg.infra,
+            rolling_stock_id: queryArg.rollingStockId,
+          },
+        }),
+        invalidatesTags: ['stdcm'],
+      }),
       postTimetableByIdTrainScheduleException: build.mutation<
         PostTimetableByIdTrainScheduleExceptionApiResponse,
         PostTimetableByIdTrainScheduleExceptionApiArg
@@ -2523,6 +2537,15 @@ export type PostTimetableByIdStdcmApiArg = {
     time_gap_before?: number;
     work_schedule_group_id?: number | null;
   };
+};
+export type PostTimetableByIdStdcmTsiApiResponse = unknown;
+export type PostTimetableByIdStdcmTsiApiArg = {
+  /** timetable_id */
+  id: number;
+  /** Infra id */
+  infra: number;
+  /** Rolling stock id */
+  rollingStockId: number;
 };
 export type PostTimetableByIdTrainScheduleExceptionApiResponse =
   /** status 200 The train schedule exception has been created */ TrainScheduleException;

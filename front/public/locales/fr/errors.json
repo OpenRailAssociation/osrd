@@ -315,6 +315,15 @@
       "Database": "Erreur interne (base de données)",
       "NotFound": "Paquet de train '{{train_schedule_set_id}}' non trouvé"
     },
+    "tsi": {
+      "InvalidEncoding": "Le message PRM n'est pas encodé en UTF-8 valide",
+      "NoCompletedEvent": "Le calcul d'itinéraire n'a retourné aucun résultat",
+      "PathNotFound": "Aucun sillon trouvé pour le train demandé",
+      "ResponseCollectionFailed": "Impossible de récupérer la réponse du calcul d'itinéraire",
+      "SimulationError": "Échec de la simulation du train",
+      "XmlParse": "Impossible de parser la requête PRM au format XML",
+      "XmlSerialize": "Impossible de générer la réponse PDM au format XML"
+      },
     "url": {
       "InvalidUrl": "Url invalide '{{url}}'"
     },
