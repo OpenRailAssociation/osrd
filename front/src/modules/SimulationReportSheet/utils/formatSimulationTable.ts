@@ -7,6 +7,7 @@ import { addDurationToDate, Duration } from 'utils/duration';
 import { kgToT } from 'utils/physics';
 
 import styles from '../styles/SimulationReportStyleSheet';
+import type { SimulationTableRow } from '../types';
 import { getStopDurationTime } from './formatSimulationReportSheet';
 
 export const getRowStyle = (
@@ -61,7 +62,7 @@ export const formatOperationalStudiesDataForSimulationTable = (
   rollingStock: { mass: number; name: string },
   dateTimeLocale: Intl.Locale
 ) =>
-  operationalPointsList.map((step, index) => {
+  operationalPointsList.map((step, index): SimulationTableRow => {
     const isFirst = index === 0;
     const isLast = index === operationalPointsList.length - 1;
     const previousStep = operationalPointsList[index - 1];

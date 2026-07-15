@@ -106,8 +106,8 @@ const StdcmSimulationReportSheet = ({
       if (currentRow.consistChanges) {
         const updatedConsist = currentRow.consistChanges.updatedConsist;
         rowsAcc.push({
-          name: currentRow.name,
-          secondaryCode: currentRow.ch ?? '',
+          name: currentRow.name ?? '',
+          secondaryCode: currentRow.secondaryCode ?? '',
           totalLength: updatedConsist.totalLength,
           totalMass: updatedConsist.totalMass,
           rollingStockName: updatedConsist.rollingStockName,
