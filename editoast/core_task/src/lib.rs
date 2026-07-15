@@ -84,7 +84,7 @@ pub trait Task: Sized + Send {
         let key = self.key(vk_client.app_version());
         let cache_entry = match vk_client.get_connection().await {
             Ok(mut vkconn) => vkconn
-                .json_get::<Self::Output, _>(&key)
+                .json_get::<_, Self::Output>(&key)
                 .await
                 .map_err(|e| e.into()),
             Err(e) => Err(e),
@@ -272,7 +272,7 @@ where
                         // Fetch from valkey or compute and write to valkey
 
                         let mut vkconn = vk_client.get_connection().await.unwrap();
-                        match vkconn.json_get_bulk::<T::Output, _>(keys.as_slice()).await {
+                        match vkconn.json_get_bulk::<_, T::Output>(keys.as_slice()).await {
                             Ok(cached_values) => {
                                 for (value, correlation, key, input) in
                                     izip!(cached_values, correlation_keys, cache_keys, inputs)

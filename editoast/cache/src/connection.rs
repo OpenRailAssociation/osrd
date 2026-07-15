@@ -150,7 +150,7 @@ impl Connection {
 
     /// Get a deserializable value from valkey
     #[tracing::instrument(name = "cache:json_get", skip(self), err)]
-    pub async fn json_get<T: DeserializeOwned, K: Debug + ToSingleRedisArg + Send + Sync>(
+    pub async fn json_get<K: Debug + ToSingleRedisArg + Send + Sync, T: DeserializeOwned>(
         &mut self,
         key: K,
     ) -> Result<Option<T>, RedisError> {
@@ -217,7 +217,7 @@ impl Connection {
 
     /// Get a list of deserializable value from valkey
     #[tracing::instrument(name = "cache:json_get_bulk", skip(self), err)]
-    pub async fn json_get_bulk<T: DeserializeOwned, K: Debug + ToRedisArgs + Send + Sync>(
+    pub async fn json_get_bulk<K: Debug + ToRedisArgs + Send + Sync, T: DeserializeOwned>(
         &mut self,
         keys: &[K],
     ) -> Result<impl Iterator<Item = Option<T>>, RedisError> {
