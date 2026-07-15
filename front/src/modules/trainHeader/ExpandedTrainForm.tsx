@@ -706,7 +706,7 @@ const ExpandedTrainForm = ({
           <TokenInput
             small
             label={t('manageTrainSchedule.trainHeader.form.tags')}
-            tokens={train?.labels ?? []}
+            tokens={fields.labels}
             onChange={(tokens) => {
               onFieldImmediateChange('labels', tokens);
             }}

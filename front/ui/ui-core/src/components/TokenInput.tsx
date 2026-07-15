@@ -13,6 +13,15 @@ export type TokenInputProps = {
 
 const TokenInput = ({ label, tokens: initialTokens, small, onChange, onBlur }: TokenInputProps) => {
   const [tokens, setTokens] = useState(initialTokens);
+
+  // Allow to update the tokens state when an update comes from outside the component
+  // See react docs: https://react.dev/learn/you-might-not-need-an-effect#adjusting-some-state-when-a-prop-changes
+  const [prevInitialTokens, setPrevInitialTokens] = useState(initialTokens);
+  if (initialTokens !== prevInitialTokens) {
+    setPrevInitialTokens(initialTokens);
+    setTokens(initialTokens);
+  }
+
   const [newToken, setNewToken] = useState('');
   const [selectedToken, setSelectedToken] = useState<number | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
