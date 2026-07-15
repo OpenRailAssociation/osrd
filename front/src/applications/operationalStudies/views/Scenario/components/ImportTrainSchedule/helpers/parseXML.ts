@@ -13,11 +13,6 @@ import { generatePacedTrainException } from '../../ManageTrainSchedule/helpers/b
 import { buildSteps, cleanTimeFormat } from './buildStepsFromOcp';
 import findMostFrequentScheduleInPacedTrain from './findMostFrequentXmlSchedule';
 
-const extractCiChCode = (code: string) => {
-  const [ciCode, chCode] = code.split('/');
-  return { ciCode: Number(ciCode), chCode };
-};
-
 const uniqueTrainToPacedTrain = (
   uniqueTrain: TrainSchedule,
   pacedTrainId: string,
@@ -244,7 +239,7 @@ const parseXML = async (xmlDoc: Document): Promise<TimetableJsonPayload> => {
         return;
       }
 
-      const { ciCode, chCode } = extractCiChCode(code);
+      const [ciCode, chCode] = code.split('/');
 
       //! We add 87 to the CI code to create the UIC. It is France specific and will break if used in other countries.
       const uic = Number(`87${ciCode}`);
