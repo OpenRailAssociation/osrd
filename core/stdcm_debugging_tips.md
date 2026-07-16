@@ -50,7 +50,7 @@ The "trace_id" is set to "00000..." though, so each request overrides the saved 
 
 ## Reproduce request payloads
 
-`STDCM_DEBUG_DATA_FILENAME=debug_stdcm.json java -Xmx6G -ea -jar build/libs/osrd-all.jar reproduce-request --stdcm-payload-path input-payload.json --railjson infra.railjson --cbor-timetable timetable.cbor`
+`STDCM_DEBUG_DATA_FILENAME=debug_stdcm.json java -Xmx6G -ea -jar build/libs/osrd-all.jar reproduce-request --stdcm-payload-path input-payload.json --railjson infra.railjson --cache-timetable timetable.json.gz`
 
 If either the infra or timetable isn't set, we try to fetch the corresponding object(s) from the local editoast
 based on the IDs in the input payload. When reproducing a request that happened in prod, we may end up working
