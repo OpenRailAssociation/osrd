@@ -46,6 +46,7 @@ pub use infra::Infra;
 pub use infra_objects::models::*;
 pub use macro_node::MacroNode;
 pub use macro_note::MacroNote;
+pub use project::Project;
 pub use rolling_stock::RollingStock;
 pub use rolling_stock_image::RollingStockImage;
 pub use rolling_stock_livery::RollingStockLivery;
