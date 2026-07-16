@@ -141,6 +141,9 @@ pub enum PathfindingInputError {
         items: Vec<InvalidPathItem>,
     },
     NotEnoughPathItems,
+    UnauthorizedRollingStock {
+        rolling_stock_id: i64,
+    },
     RollingStockNotFound {
         rolling_stock_name: String,
     },
