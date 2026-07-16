@@ -588,45 +588,30 @@ class EditoastAuthzErrorUnknownIdentities(BaseModel):
     type: Literal["editoast:authz:UnknownIdentities"]
 
 
-class EditoastAuthzErrorUnknownResourceContext(BaseModel):
-    resource_id: int
-
-
 class EditoastAuthzErrorUnknownResource(BaseModel):
     context: Annotated[
-        EditoastAuthzErrorUnknownResourceContext | None,
-        Field(title="EditoastAuthzErrorUnknownResourceContext"),
+        dict[str, Any] | None, Field(title="EditoastAuthzErrorUnknownResourceContext")
     ] = None
     message: str
     status: Literal[404]
     type: Literal["editoast:authz:UnknownResource"]
 
 
-class EditoastAuthzErrorUnknownSubjectContext(BaseModel):
-    subject_id: int
-
-
 class EditoastAuthzErrorUnknownSubject(BaseModel):
     context: Annotated[
-        EditoastAuthzErrorUnknownSubjectContext | None,
-        Field(title="EditoastAuthzErrorUnknownSubjectContext"),
+        dict[str, Any] | None, Field(title="EditoastAuthzErrorUnknownSubjectContext")
     ] = None
     message: str
     status: Literal[404]
     type: Literal["editoast:authz:UnknownSubject"]
 
 
-class EditoastAuthzErrorUnknownUserContext(BaseModel):
-    id: int
-
-
 class EditoastAuthzErrorUnknownUser(BaseModel):
     context: Annotated[
-        EditoastAuthzErrorUnknownUserContext | None,
-        Field(title="EditoastAuthzErrorUnknownUserContext"),
+        dict[str, Any] | None, Field(title="EditoastAuthzErrorUnknownUserContext")
     ] = None
     message: str
-    status: Literal[404]
+    status: Literal[401]
     type: Literal["editoast:authz:UnknownUser"]
 
 

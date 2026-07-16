@@ -6523,11 +6523,6 @@ components:
         context:
           type: object
           title: EditoastAuthzErrorUnknownResourceContext
-          required:
-          - resource_id
-          properties:
-            resource_id:
-              type: integer
         message:
           type: string
         status:
@@ -6548,11 +6543,6 @@ components:
         context:
           type: object
           title: EditoastAuthzErrorUnknownSubjectContext
-          required:
-          - subject_id
-          properties:
-            subject_id:
-              type: integer
         message:
           type: string
         status:
@@ -6573,17 +6563,12 @@ components:
         context:
           type: object
           title: EditoastAuthzErrorUnknownUserContext
-          required:
-          - id
-          properties:
-            id:
-              type: integer
         message:
           type: string
         status:
           type: integer
           enum:
-          - 404
+          - 401
         type:
           type: string
           enum:
