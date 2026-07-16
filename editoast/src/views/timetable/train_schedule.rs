@@ -5,7 +5,9 @@ use std::iter::Extend as _;
 use std::sync::Arc;
 
 use authz;
+use authz::InfraPrivilege;
 use authz::v2;
+use authz::v2::infra_privileges;
 use axum::Extension;
 use axum::extract::Json;
 use axum::extract::Path;
@@ -767,11 +769,18 @@ pub(in crate::views) async fn simulation(
     .await?;
 
     if let authentication::State::Authenticated { user, .. } = &authn_state {
+        let authorizer = authn_state.authorizer(&openfga);
         v2::infra_privileges(*user, authz::Infra(infra_id))
             .map(async |privileges| privileges.contains(&authz::InfraPrivilege::CanRestrictedRead))
             .ok_or(AuthorizationError::Forbidden)
-            .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
+            .run::<AuthorizationError, _>(&authorizer)
             .await??;
+        crate::authorizers::require(
+            &authorizer,
+            infra_privileges(*user, authz::Infra(infra_id)),
+            &InfraPrivilege::CanRestrictedRead,
+        )
+        .await?;
     }
 
     // Retrieve train_schedule or fail
@@ -1966,6 +1975,7 @@ mod tests {
     use crate::views::path::pathfinding::PathfindingResult;
     use crate::views::test_app;
     use crate::views::test_app::TestApp;
+    use crate::views::test_app::TestRequestExt;
 
     use crate::views::tests::mocked_core_pathfinding_sim_and_proj;
     use crate::views::timetable::simulation;
@@ -2289,7 +2299,6 @@ mod tests {
 
         let core = mocked_core_pathfinding_sim_and_proj();
         let app = test_app!()
-            .skip_authz()
             .db_pool(db_pool)
             .core_client(core.into())
             .build();
@@ -2310,6 +2319,12 @@ mod tests {
             train_schedule,
             ..
         } = simulation_tests_initial_setup().await;
+        let user = app
+            .user("authorized", "authorized")
+            .with_infra_grant(infra_id, authz::InfraGrant::Reader)
+            .with_roles([authz::Role::OperationalStudies])
+            .create()
+            .await;
         let response: core_client::simulation::Response = app
             .get(
                 format!(
@@ -2318,6 +2333,7 @@ mod tests {
                 )
                 .as_str(),
             )
+            .by_user(&user.info)
             .await
             .assert_status_ok()
             .json();
@@ -2336,6 +2352,12 @@ mod tests {
             train_schedule,
             ..
         } = simulation_tests_initial_setup().await;
+        let user = app
+            .user("authorized", "authorized")
+            .with_infra_grant(infra_id, authz::InfraGrant::Reader)
+            .with_roles([authz::Role::OperationalStudies])
+            .create()
+            .await;
         let response: InternalError = app
             .get(
                 format!(
@@ -2344,6 +2366,7 @@ mod tests {
                 )
                 .as_str(),
             )
+            .by_user(&user.info)
             .await
             .assert_status_not_found()
             .json();
@@ -2363,6 +2386,12 @@ mod tests {
             exception,
             ..
         } = simulation_tests_initial_setup().await;
+        let user = app
+            .user("authorized", "authorized")
+            .with_infra_grant(infra_id, authz::InfraGrant::Reader)
+            .with_roles([authz::Role::OperationalStudies])
+            .create()
+            .await;
         let response: simulation::Response = app
             .get(
                 format!(
@@ -2371,6 +2400,7 @@ mod tests {
                 )
                 .as_str(),
             )
+            .by_user(&user.info)
             .await
             .assert_status_ok()
             .json();
@@ -2427,6 +2457,12 @@ mod tests {
             exception,
             ..
         } = simulation_tests_initial_setup().await;
+        let user = app
+            .user("authorized", "authorized")
+            .with_infra_grant(infra_id, authz::InfraGrant::Reader)
+            .with_roles([authz::Role::OperationalStudies])
+            .create()
+            .await;
 
         let mut change_group = exception.change_groups;
         change_group.rolling_stock = Some(RollingStockChangeGroup {
@@ -2449,6 +2485,7 @@ mod tests {
                 )
                 .as_str(),
             )
+            .by_user(&user.info)
             .await
             .assert_status_ok()
             .json();
@@ -2469,13 +2506,71 @@ mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn paced_train_simulation_not_found() {
         let SimulationTestsSetup { app, infra_id, .. } = simulation_tests_initial_setup().await;
+        let user = app
+            .user("authorized", "authorized")
+            .with_infra_grant(infra_id, authz::InfraGrant::Reader)
+            .with_roles([authz::Role::OperationalStudies])
+            .create()
+            .await;
         let response: InternalError = app
             .get(format!("/train_schedules/{}/simulation/?infra_id={}", 0, infra_id).as_str())
+            .by_user(&user.info)
             .await
             .assert_status_not_found()
             .json();
 
         assert_eq!(&response.error_type, "editoast:train_schedule:NotFound")
+    }
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn paced_train_simulation_with_privilege_and_no_roles() {
+        // GIVEN
+        let (app, infra_id, _timetable, train_schedule, _exception) =
+            app_infra_id_paced_train_id_for_simulation_tests().await;
+
+        // a user that does not have the role to reach the endpoint but has a read grant on the infra
+        let user = app
+            .user("unauthorized", "Unauthorized")
+            .with_infra_grant(infra_id, authz::InfraGrant::Reader)
+            .create()
+            .await;
+
+        // WHEN / THEN
+        app.get(
+            format!(
+                "/train_schedules/{}/simulation/?infra_id={infra_id}",
+                train_schedule.id
+            )
+            .as_str(),
+        )
+        .by_user(&user.info)
+        .await
+        .assert_status_forbidden();
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn paced_train_simulation_without_permission() {
+        // GIVEN
+        let (app, infra_id, _timetable, train_schedule, _exception) =
+            app_infra_id_paced_train_id_for_simulation_tests().await;
+
+        // a user that has the role to reach the endpoint but no read grant on the infra
+        let user = app
+            .user("unauthorized", "Unauthorized")
+            .with_roles([authz::Role::OperationalStudies])
+            .create()
+            .await;
+
+        // WHEN / THEN
+        app.get(
+            format!(
+                "/train_schedules/{}/simulation/?infra_id={infra_id}",
+                train_schedule.id
+            )
+            .as_str(),
+        )
+        .by_user(&user.info)
+        .await
+        .assert_status_forbidden();
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -2749,6 +2844,12 @@ mod tests {
     async fn paced_train_simulation_summary_not_found() {
         let SimulationTestsSetup { app, infra_id, .. } = simulation_tests_initial_setup().await;
         let timetable = create_timetable(&mut app.db_pool().get_ok()).await;
+        let user = app
+            .user("authorized", "authorized")
+            .with_infra_grant(infra_id, authz::InfraGrant::Reader)
+            .with_roles([authz::Role::OperationalStudies])
+            .create()
+            .await;
         let response: InternalError = app
             .post("/train_schedules/simulation_summary")
             .json(&json!({
@@ -2756,6 +2857,7 @@ mod tests {
                 "timetable_id": timetable.id,
                 "ids": vec![0],
             }))
+            .by_user(&user.info)
             .await
             .assert_status_not_found()
             .json();
@@ -3159,6 +3261,12 @@ mod tests {
             train_schedule,
             exception,
         } = simulation_tests_initial_setup().await;
+        let user = app
+            .user("authorized", "authorized")
+            .with_infra_grant(infra_id, authz::InfraGrant::Reader)
+            .with_roles([authz::Role::OperationalStudies])
+            .create()
+            .await;
         let db_pool = app.db_pool();
 
         // First remove all already generated exceptions
@@ -3213,6 +3321,7 @@ mod tests {
                     "blocks":[],
                 },
             }))
+            .by_user(&user.info)
             .await;
         let response: HashMap<i64, OccupancyBlocksTrainScheduleResult> =
             response.assert_status_ok().json();

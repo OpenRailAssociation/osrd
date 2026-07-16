@@ -395,14 +395,14 @@ pub(in crate::views) struct DeleteRollingStockQueryParams {
 )]
 pub(in crate::views) async fn delete(
     State(AppState {
-        regulator, db_pool, ..
+        openfga, db_pool, ..
     }): State<AppState>,
     Extension(authn_state): Extension<crate::authentication::State>,
     Path(rolling_stock_id): Path<i64>,
     Query(DeleteRollingStockQueryParams { force }): Query<DeleteRollingStockQueryParams>,
 ) -> Result<impl IntoResponse> {
     if let Some(user) = authn_state.user() {
-        let authorizer = authn_state.authorizer(regulator.openfga());
+        let authorizer = authn_state.authorizer(&openfga);
         crate::authorizers::require(
             &authorizer,
             rolling_stock_privileges(user, authz::RollingStock(rolling_stock_id)),
@@ -468,7 +468,7 @@ pub(in crate::views) struct RollingStockLockedUpdateForm {
 )]
 pub(in crate::views) async fn update_locked(
     State(AppState {
-        regulator, db_pool, ..
+        openfga, db_pool, ..
     }): State<AppState>,
     Extension(authn_state): Extension<crate::authentication::State>,
     Path(rolling_stock_id): Path<i64>,
@@ -476,7 +476,7 @@ pub(in crate::views) async fn update_locked(
 ) -> Result<impl IntoResponse> {
     let conn = &mut db_pool.get().await?;
     if let Some(user) = authn_state.user() {
-        let authorizer = authn_state.authorizer(regulator.openfga());
+        let authorizer = authn_state.authorizer(&openfga);
         crate::authorizers::require(
             &authorizer,
             rolling_stock_privileges(user, authz::RollingStock(rolling_stock_id)),
@@ -555,14 +555,14 @@ async fn parse_multipart_content(
 // TODO update openapi: the request body description is wrong
 pub(in crate::views) async fn create_livery(
     State(AppState {
-        regulator, db_pool, ..
+        openfga, db_pool, ..
     }): State<AppState>,
     Extension(authn_state): Extension<crate::authentication::State>,
     Path(rolling_stock_id): Path<i64>,
     form: Multipart,
 ) -> Result<Json<schemas::rolling_stock::RollingStockLivery>> {
     if let Some(user) = authn_state.user() {
-        let authorizer = authn_state.authorizer(regulator.openfga());
+        let authorizer = authn_state.authorizer(&openfga);
         crate::authorizers::require(
             &authorizer,
             authz::v2::rolling_stock_privileges(user, authz::RollingStock(rolling_stock_id)),
@@ -628,13 +628,13 @@ pub(in crate::views) async fn create_livery(
 )]
 pub(in crate::views) async fn get_usage(
     State(AppState {
-        regulator, db_pool, ..
+        openfga, db_pool, ..
     }): State<AppState>,
     Extension(authn_state): Extension<crate::authentication::State>,
     Path(rolling_stock_id): Path<i64>,
 ) -> Result<Json<Vec<ScenarioReference>>> {
     if let Some(user) = authn_state.user() {
-        let authorizer = authn_state.authorizer(regulator.openfga());
+        let authorizer = authn_state.authorizer(&openfga);
         crate::authorizers::require(
             &authorizer,
             authz::v2::rolling_stock_privileges(user, authz::RollingStock(rolling_stock_id)),
