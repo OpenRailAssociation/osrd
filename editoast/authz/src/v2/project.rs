@@ -1,5 +1,6 @@
 use std::collections::HashSet;
 
+use fga::client::UserList;
 use fga::model::Relation as _;
 use futures::FutureExt;
 
@@ -175,6 +176,48 @@ pub fn project_list(user: User) -> Protected<ResourcesList<Project>> {
         }
         .boxed()
     })
+}
+
+/// Return an operation that checks the list of subjects which have the owner grant on a project.
+pub fn project_granted_subjects(project: Project) -> Protected<Vec<Subject>> {
+    fn get_granted_users(project: Project) -> Protected<Vec<User>> {
+        Protected::new(move |openfga| {
+            async move {
+                openfga
+                    .list_users(Project::owner().query_users(&project))
+                    .await
+                    .map(|UserList { users, .. }| users)
+            }
+            .boxed()
+        })
+    }
+    fn get_granted_groups(project: Project) -> Protected<Vec<Group>> {
+        Protected::new(move |openfga| {
+            async move {
+                openfga
+                    .list_usersets(Project::owner().query_usersets(Group::member(), &project))
+                    .await
+            }
+            .boxed()
+        })
+    }
+    get_granted_users(project)
+        .zip(get_granted_groups(project))
+        .map(move |_, (users, groups)| {
+            async move {
+                Ok(users
+                    .into_iter()
+                    .map(Subject::User)
+                    .chain(groups.into_iter().map(Subject::Group))
+                    .collect())
+            }
+            .boxed()
+        })
+        .with_check(Check::HasProjectPrivilege(
+            Actor::Issuer,
+            ProjectPrivilege::HasAccess,
+            project,
+        ))
 }
 
 #[cfg(test)]
@@ -627,6 +670,49 @@ mod tests {
         ));
     }
 
+    #[tokio::test]
+    async fn project_granted_subjects_direct() {
+        let openfga = authz_client!();
+
+        openfga
+            .project_set_grant(Subject::user(1), Project(1))
+            .await;
+        openfga
+            .project_set_grant(Subject::user(2), Project(1))
+            .await;
+        openfga
+            .project_set_grant(Subject::user(3), Project(1))
+            .await;
+
+        let mut expected = vec![Subject::user(1), Subject::user(2), Subject::user(3)];
+        let mut response = openfga.project_granted_subjects(Project(1)).await;
+        expected.sort();
+        response.sort();
+
+        assert_eq!(response, expected);
+    }
+
+    #[tokio::test]
+    async fn project_granted_subjects_indirect() {
+        let openfga = authz_client!();
+
+        openfga
+            .prepare_writes()
+            .write(&Group::member().tuple(&User(1), &Group(1)))
+            .write(&Group::member().tuple(&User(2), &Group(1)))
+            .write(&Project::owner().tuple(Group::member().userset(&Group(1)), &Project(1)))
+            .execute()
+            .await
+            .unwrap();
+
+        let mut expected = vec![Subject::user(1), Subject::user(2), Subject::group(1)];
+        let mut response = openfga.project_granted_subjects(Project(1)).await;
+        expected.sort();
+        response.sort();
+
+        assert_eq!(response, expected);
+    }
+
     #[rstest::rstest]
     #[case::project_direct_grant(
         project_direct_grant(Subject::user(1), Project(1)).checks,
@@ -654,10 +740,15 @@ mod tests {
             Check::HasProjectPrivilege(Actor::Issuer, ProjectPrivilege::HasAccess, Project(1))
         ]
     )]
-    #[rstest::rstest]
     #[case::project_list(
         project_list(User(1)).checks,
         &[]
+    )]
+    #[case::project_granted_subjects(
+        project_granted_subjects(Project(1)).checks,
+        &[
+            Check::HasProjectPrivilege(Actor::Issuer, ProjectPrivilege::HasAccess, Project(1))
+        ]
     )]
     #[tokio::test]
     async fn protected_contains_expected_checks(
