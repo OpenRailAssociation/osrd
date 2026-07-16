@@ -1481,6 +1481,8 @@ const injectedRtkApi = api
           params: {
             infra_id: queryArg.infraId,
             exception_id: queryArg.exceptionId,
+            begin_index: queryArg.beginIndex,
+            end_index: queryArg.endIndex,
           },
         }),
         providesTags: ['train_schedule', 'pathfinding'],
@@ -2808,6 +2810,10 @@ export type GetTrainSchedulesByIdPathApiArg = {
   id: number;
   infraId: number;
   exceptionId?: number;
+  /** Index of the first path item of the portion to include. Defaults to the path’s first item. */
+  beginIndex?: number;
+  /** Index of the last path item of the portion to include. Defaults to the path’s last item. */
+  endIndex?: number;
 };
 export type GetTrainSchedulesByIdSimulationApiResponse =
   /** status 200 Simulation Output */ SimulationResponse;

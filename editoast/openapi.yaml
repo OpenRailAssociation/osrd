@@ -4692,7 +4692,7 @@ paths:
       tags:
       - train_schedule
       - pathfinding
-      summary: Get a path from a paced train given an infrastructure id and a paced train id
+      summary: Get a path from a train schedule given an infrastructure id and a train schedule id
       parameters:
       - name: id
         in: path
@@ -4712,6 +4712,20 @@ paths:
         schema:
           type: integer
           format: int64
+      - name: begin_index
+        in: query
+        description: Index of the first path item of the portion to include. Defaults to the path’s first item.
+        required: false
+        schema:
+          type: integer
+          minimum: 0
+      - name: end_index
+        in: query
+        description: Index of the last path item of the portion to include. Defaults to the path’s last item.
+        required: false
+        schema:
+          type: integer
+          minimum: 0
       responses:
         '200':
           description: The path
@@ -4719,6 +4733,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PathfindingResult'
+        '400':
+          description: Invalid path portion queried
         '404':
           description: Infrastructure or Train schedule not found
   /train_schedules/{id}/simulation:
@@ -7270,6 +7286,7 @@ components:
       - $ref: '#/components/schemas/EditoastTrainScheduleErrorDatabase'
       - $ref: '#/components/schemas/EditoastTrainScheduleErrorExceptionNotFound'
       - $ref: '#/components/schemas/EditoastTrainScheduleErrorInfraNotFound'
+      - $ref: '#/components/schemas/EditoastTrainScheduleErrorInvalidPathPortion'
       - $ref: '#/components/schemas/EditoastTrainScheduleErrorNotFound'
       - $ref: '#/components/schemas/EditoastTrainScheduleErrorPathfindingFailed'
       - $ref: '#/components/schemas/EditoastTrainScheduleErrorRollingStockNotFound'
@@ -9810,6 +9827,37 @@ components:
           type: string
           enum:
           - editoast:train_schedule:InfraNotFound
+    EditoastTrainScheduleErrorInvalidPathPortion:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          title: EditoastTrainScheduleErrorInvalidPathPortionContext
+          required:
+          - begin
+          - end
+          - path_items_count
+          properties:
+            begin:
+              type: integer
+            end:
+              type: integer
+            path_items_count:
+              type: integer
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 400
+        type:
+          type: string
+          enum:
+          - editoast:train_schedule:InvalidPathPortion
     EditoastTrainScheduleErrorNotFound:
       type: object
       required:

@@ -2242,6 +2242,22 @@ class EditoastTrainScheduleErrorInfraNotFound(BaseModel):
     type: Literal["editoast:train_schedule:InfraNotFound"]
 
 
+class EditoastTrainScheduleErrorInvalidPathPortionContext(BaseModel):
+    begin: int
+    end: int
+    path_items_count: int
+
+
+class EditoastTrainScheduleErrorInvalidPathPortion(BaseModel):
+    context: Annotated[
+        EditoastTrainScheduleErrorInvalidPathPortionContext | None,
+        Field(title="EditoastTrainScheduleErrorInvalidPathPortionContext"),
+    ] = None
+    message: str
+    status: Literal[400]
+    type: Literal["editoast:train_schedule:InvalidPathPortion"]
+
+
 class EditoastTrainScheduleErrorNotFoundContext(BaseModel):
     train_schedule_id: int
 
@@ -4715,6 +4731,7 @@ class EditoastError(
         | EditoastTrainScheduleErrorDatabase
         | EditoastTrainScheduleErrorExceptionNotFound
         | EditoastTrainScheduleErrorInfraNotFound
+        | EditoastTrainScheduleErrorInvalidPathPortion
         | EditoastTrainScheduleErrorNotFound
         | EditoastTrainScheduleErrorPathfindingFailed
         | EditoastTrainScheduleErrorRollingStockNotFound
@@ -4891,6 +4908,7 @@ class EditoastError(
         | EditoastTrainScheduleErrorDatabase
         | EditoastTrainScheduleErrorExceptionNotFound
         | EditoastTrainScheduleErrorInfraNotFound
+        | EditoastTrainScheduleErrorInvalidPathPortion
         | EditoastTrainScheduleErrorNotFound
         | EditoastTrainScheduleErrorPathfindingFailed
         | EditoastTrainScheduleErrorRollingStockNotFound

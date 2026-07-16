@@ -109,6 +109,15 @@ enum TrainScheduleError {
     #[error("Train schedule set '{train_schedule_set_id}', could not be found")]
     #[editoast_error(status = 404)]
     TrainScheduleSetNotFound { train_schedule_set_id: i64 },
+    #[error(
+        "Invalid path portion: start index '{begin}' and end index '{end}' are inconsistent with the path items count ('{path_items_count}')"
+    )]
+    #[editoast_error(status = 400)]
+    InvalidPathPortion {
+        begin: usize,
+        end: usize,
+        path_items_count: usize,
+    },
 
     #[error(transparent)]
     #[editoast_error(status = 500)]
@@ -557,15 +566,26 @@ pub(in crate::views) struct ExceptionQueryParam {
     exception_id: Option<i64>,
 }
 
-/// Get a path from a paced train given an infrastructure id and a paced train id
+/// Selects a portion of a train schedule’s path.
+#[derive(Debug, Default, Clone, Serialize, Deserialize, IntoParams, ToSchema)]
+#[into_params(parameter_in = Query)]
+pub(in crate::views) struct PathPortionQueryParam {
+    /// Index of the first path item of the portion to include. Defaults to the path’s first item.
+    begin_index: Option<usize>,
+    /// Index of the last path item of the portion to include. Defaults to the path’s last item.
+    end_index: Option<usize>,
+}
+
+/// Get a path from a train schedule given an infrastructure id and a train schedule id
 #[editoast_derive::route]
 #[utoipa::path(
     get, path = "",
     tags = ["train_schedule", "pathfinding"],
-    params(TrainScheduleIdParam, InfraIdQueryParam, ExceptionQueryParam),
+    params(TrainScheduleIdParam, InfraIdQueryParam, ExceptionQueryParam, PathPortionQueryParam),
     responses(
         (status = 200, description = "The path", body = PathfindingResult),
-        (status = 404, description = "Infrastructure or Train schedule not found")
+        (status = 404, description = "Infrastructure or Train schedule not found"),
+        (status = 400, description = "Invalid path portion queried")
     )
 )]
 pub(in crate::views) async fn get_path(
@@ -581,6 +601,10 @@ pub(in crate::views) async fn get_path(
     }): Path<TrainScheduleIdParam>,
     Query(InfraIdQueryParam { infra_id }): Query<InfraIdQueryParam>,
     Query(ExceptionQueryParam { exception_id }): Query<ExceptionQueryParam>,
+    Query(PathPortionQueryParam {
+        begin_index,
+        end_index,
+    }): Query<PathPortionQueryParam>,
 ) -> Result<Json<PathfindingResult>> {
     let conn = db_pool.get().await?;
 
@@ -633,14 +657,31 @@ pub(in crate::views) async fn get_path(
         .map(|item| &item.location)
         .collect_vec();
 
-    let track_offsets =
-        match OperationalPointCache::load_path_items(conn, infra.id, path_items.as_slice())
-            .await?
-            .extract_location_from_path_items(&path_items)
-        {
-            Ok(track_offsets) => track_offsets,
-            Err(err) => return Ok(Json(PathfindingResult::Failure(err))),
-        };
+    let path_items = match (begin_index, end_index) {
+        (None, None) => &path_items,
+        (begin_index, end_index) => {
+            let path_items_count = path_items.len();
+            let begin = begin_index.unwrap_or(0);
+            let end = end_index.unwrap_or(path_items_count.saturating_sub(1));
+            if begin > end || end >= path_items_count {
+                return Err(TrainScheduleError::InvalidPathPortion {
+                    begin,
+                    end,
+                    path_items_count,
+                }
+                .into());
+            }
+            &path_items[begin..=end]
+        }
+    };
+
+    let track_offsets = match OperationalPointCache::load_path_items(conn, infra.id, path_items)
+        .await?
+        .extract_location_from_path_items(path_items)
+    {
+        Ok(track_offsets) => track_offsets,
+        Err(err) => return Ok(Json(PathfindingResult::Failure(err))),
+    };
 
     let constraints = core_task::PathfindingConstraints {
         path_items: track_offsets
@@ -2726,6 +2767,90 @@ mod tests {
                 backtrack_path_items: Some(vec![]),
                 length: 1
             })
+        )
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn get_paced_train_path_with_bounds() {
+        let mut core = MockingClient::new();
+        core.stub("/pathfinding/blocks")
+            .on_body(
+                "/path_items",
+                json!([
+                    {
+                        "locations": [{ "track": "TC0", "offset": 340 }],
+                        "can_backtrack": false
+                    },
+                    {
+                        "locations": [
+                            { "track": "TC0", "offset": 550000 },
+                            { "track": "TC1", "offset": 550000 },
+                            { "track": "TC2", "offset": 450000 },
+                            { "track": "TC3", "offset": 450000 }
+                        ],
+                        "can_backtrack": false
+                    }
+                ]),
+            )
+            .response(StatusCode::OK)
+            .json(json!({
+                "path": {
+                    "blocks":[],
+                    "routes": [],
+                    "track_section_ranges": [],
+                },
+                "path_item_positions": [],
+                "backtrack_path_items": [],
+                "length": 1,
+                "status": "success"
+            }))
+            .finish();
+        let app = test_app!().skip_authz().core_client(core.into()).build();
+        let db_pool = app.db_pool();
+
+        create_fast_rolling_stock(&mut db_pool.get_ok(), "R2D2").await;
+        let train_schedule_set = create_train_schedule_set(&mut db_pool.get_ok()).await;
+        let paced_train =
+            create_simple_paced_train(&mut db_pool.get_ok(), train_schedule_set.id).await;
+        let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
+
+        app.get(&format!(
+            "/train_schedules/{}/path?infra_id={}&begin_index=1&end_index=2",
+            paced_train.id, small_infra.id
+        ))
+        .await
+        .assert_status_ok();
+    }
+
+    #[rstest]
+    #[case(2, 100)] // end_index > path_items_count
+    #[case(2, 1)] // begin_index > end_index
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn get_paced_train_path_invalid_portion(
+        #[case] begin_index: usize,
+        #[case] end_index: usize,
+    ) {
+        let app = test_app!().skip_authz().build();
+        let db_pool = app.db_pool();
+
+        create_fast_rolling_stock(&mut db_pool.get_ok(), "R2D2").await;
+        let train_schedule_set = create_train_schedule_set(&mut db_pool.get_ok()).await;
+        let paced_train =
+            create_simple_paced_train(&mut db_pool.get_ok(), train_schedule_set.id).await;
+        let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
+
+        let response: InternalError = app
+            .get(&format!(
+                "/train_schedules/{}/path?infra_id={}&begin_index={}&end_index={}",
+                paced_train.id, small_infra.id, begin_index, end_index
+            ))
+            .await
+            .assert_status_bad_request()
+            .json();
+
+        assert_eq!(
+            &response.error_type,
+            "editoast:train_schedule:InvalidPathPortion"
         )
     }
 
