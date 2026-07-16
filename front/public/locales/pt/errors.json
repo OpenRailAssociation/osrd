@@ -23,21 +23,26 @@
     "attached": {
       "TrackNotFound": "Secção de via {{track_id}} não encontrado"
     },
-    "authz": {
+    "authorization": {
       "AuthError": "Erro interno de autenticação ou de autorização, tente novamente ou contacte o suporte",
+      "DbError": "Erro interno de base de dados, tente outra vez ou contacte o suporte",
+      "Forbidden": "Acesso recusado",
+      "ForbiddenImpersonation": "Usurpação recursa"
+    },
+    "authz": {
       "Authorizer": "Erro interno",
       "Authz": "Erro interno de autenticação ou de autorização. Tente mais tarde ou contacte o suporte",
       "Database": "Erro interno (database)",
-      "DbError": "Erro interno de base de dados, tente outra vez ou contacte o suporte",
       "Driver": "Erro interno de autenticação ou autorização. Tente novamente ou contate o suporte",
-      "Forbidden": "Acesso recusado",
-      "ForbiddenImpersonation": "Usurpação recursa",
       "GrantsApiMisuse": "Utilização incorreta da API de autorização",
       "NoSuchUser": "Utilizador desconhecido",
-      "Unauthorized": "Utilizador não autenticado",
-      "UnknownIdentity": "Identidade desconhecida '{{identity}}'",
       "UnknownResource": "Recurso desconhecido",
       "UnknownResourceType": "Tipo de recurso desconhecido",
+      "UnknownSubject": "Assunto desconhecido",
+      "UnknownUser": "Utilizador desconhecido '{{id}}'"
+    },
+    "authz_legacy": {
+      "UnknownResource": "Recurso desconhecido",
       "UnknownSubject": "Assunto desconhecido",
       "UnknownUser": "Utilizador desconhecido '{{id}}'"
     },

@@ -23,22 +23,27 @@
     "attached": {
       "TrackNotFound": "Gleisabschnitt {{track_id}} nicht gefunden"
     },
-    "authz": {
+    "authorization": {
       "AuthError": "Interner Authentifizierungs-/Autorisierungsfehler, bitte erneut versuchen oder den Support kontaktieren",
+      "DbError": "Interner Datenbankfehler, bitte erneut versuchen oder den Support kontaktieren",
+      "Forbidden": "Zugriff verweigert",
+      "ForbiddenImpersonation": "Identitätswechsel verweigert",
+      "ImpersonatedUserNotFound": "Imitierter Benutzer unbekannt"
+    },
+    "authz": {
       "Authorizer": "Interner Fehler",
       "Authz": "Interner Authentifizierungs-/Autorisierungsfehler, bitte erneut versuchen oder den Support kontaktieren",
       "Database": "Interner Datenbankfehler",
-      "DbError": "Interner Datenbankfehler, bitte erneut versuchen oder den Support kontaktieren",
       "Driver": "Interner Authentifizierungs-/Autorisierungsfehler, bitte erneut versuchen oder den Support kontaktieren",
-      "Forbidden": "Zugriff verweigert",
-      "ForbiddenImpersonation": "Identitätswechsel verweigert",
       "GrantsApiMisuse": "Fehlerhafte Nutzung der Autorisierungs-API",
-      "ImpersonatedUserNotFound": "Imitierter Benutzer unbekannt",
       "NoSuchUser": "Unbekannter Benutzer",
-      "Unauthorized": "Unauthentifizierter Benutzer",
-      "UnknownIdentity": "Unbekannte Identität '{{identity}}'",
       "UnknownResource": "Unbekannte Ressource",
       "UnknownResourceType": "Unbekannter Ressourcentyp",
+      "UnknownSubject": "Unbekanntes Subjekt",
+      "UnknownUser": "Unbekannter Benutzer '{{id}}'"
+    },
+    "authz_legacy": {
+      "UnknownResource": "Unbekannte Ressource",
       "UnknownSubject": "Unbekanntes Subjekt",
       "UnknownUser": "Unbekannter Benutzer '{{id}}'"
     },

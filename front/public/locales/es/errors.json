@@ -20,16 +20,20 @@
       "Timeout": "El servicio no respondió a tiempo",
       "Valkey": "Error de Valkey"
     },
-    "authz": {
+    "authorization": {
       "AuthError": "Error interno de autenticación o de autorización; vuelva a intentarlo o contacte al personal de asistencia",
+      "DbError": "Error grave de acceso a la base de datos"
+    },
+    "authz": {
       "Authorizer": "Error interno",
       "Authz": "Error interno de autenticación o de autorización; vuelva a intentarlo o contacte al personal de asistencia",
-      "DbError": "Error grave de acceso a la base de datos",
       "GrantsApiMisuse": "Uso impropio de la API",
       "NoSuchUser": "Usuario desconocido",
-      "Unauthorized": "Usuario no autenticado",
       "UnknownResource": "Recurso desconocido",
       "UnknownResourceType": "Tipo de recurso desconocido"
+    },
+    "authz_legacy": {
+      "UnknownResource": "Recurso desconocido"
     },
     "auto_fixes": {
       "MissingErrorObject": "No se pudo encontrar el objeto del error"

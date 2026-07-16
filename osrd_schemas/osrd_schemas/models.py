@@ -492,7 +492,7 @@ class EditoastAuthorizationErrorDbError(BaseModel):
     ] = None
     message: str
     status: Literal[500]
-    type: Literal["editoast:authz:DbError"]
+    type: Literal["editoast:authorization:DbError"]
 
 
 class EditoastAuthorizationErrorForbidden(BaseModel):
@@ -501,7 +501,7 @@ class EditoastAuthorizationErrorForbidden(BaseModel):
     ] = None
     message: str
     status: Literal[403]
-    type: Literal["editoast:authz:Forbidden"]
+    type: Literal["editoast:authorization:Forbidden"]
 
 
 class EditoastAuthorizationErrorForbiddenImpersonation(BaseModel):
@@ -511,7 +511,7 @@ class EditoastAuthorizationErrorForbiddenImpersonation(BaseModel):
     ] = None
     message: str
     status: Literal[403]
-    type: Literal["editoast:authz:ForbiddenImpersonation"]
+    type: Literal["editoast:authorization:ForbiddenImpersonation"]
 
 
 class EditoastAuthorizationErrorImpersonatedUserNotFoundContext(BaseModel):
@@ -525,7 +525,7 @@ class EditoastAuthorizationErrorImpersonatedUserNotFound(BaseModel):
     ] = None
     message: str
     status: Literal[404]
-    type: Literal["editoast:authz:ImpersonatedUserNotFound"]
+    type: Literal["editoast:authorization:ImpersonatedUserNotFound"]
 
 
 class EditoastAuthorizationErrorUnauthenticated(BaseModel):
@@ -535,7 +535,7 @@ class EditoastAuthorizationErrorUnauthenticated(BaseModel):
     ] = None
     message: str
     status: Literal[401]
-    type: Literal["editoast:authz:Unauthenticated"]
+    type: Literal["editoast:authorization:Unauthenticated"]
 
 
 class EditoastAuthzErrorAuthorizer(BaseModel):
@@ -554,24 +554,6 @@ class EditoastAuthzErrorDatabase(BaseModel):
     message: str
     status: Literal[500]
     type: Literal["editoast:authz:Database"]
-
-
-class EditoastAuthzErrorOpenfga(BaseModel):
-    context: Annotated[
-        dict[str, Any] | None, Field(title="EditoastAuthzErrorOpenfgaContext")
-    ] = None
-    message: str
-    status: Literal[500]
-    type: Literal["editoast:authz:Openfga"]
-
-
-class EditoastAuthzErrorStorage(BaseModel):
-    context: Annotated[
-        dict[str, Any] | None, Field(title="EditoastAuthzErrorStorageContext")
-    ] = None
-    message: str
-    status: Literal[500]
-    type: Literal["editoast:authz:Storage"]
 
 
 class EditoastAuthzErrorUnknownIdentitiesContext(BaseModel):
@@ -628,6 +610,58 @@ class EditoastAuthzErrorUnknownUser(BaseModel):
     message: str
     status: Literal[404]
     type: Literal["editoast:authz:UnknownUser"]
+
+
+class EditoastAuthzLegacyErrorOpenfga(BaseModel):
+    context: Annotated[
+        dict[str, Any] | None, Field(title="EditoastAuthzLegacyErrorOpenfgaContext")
+    ] = None
+    message: str
+    status: Literal[500]
+    type: Literal["editoast:authz_legacy:Openfga"]
+
+
+class EditoastAuthzLegacyErrorStorage(BaseModel):
+    context: Annotated[
+        dict[str, Any] | None, Field(title="EditoastAuthzLegacyErrorStorageContext")
+    ] = None
+    message: str
+    status: Literal[500]
+    type: Literal["editoast:authz_legacy:Storage"]
+
+
+class EditoastAuthzLegacyErrorUnknownResource(BaseModel):
+    context: Annotated[
+        dict[str, Any] | None,
+        Field(title="EditoastAuthzLegacyErrorUnknownResourceContext"),
+    ] = None
+    message: str
+    status: Literal[404]
+    type: Literal["editoast:authz_legacy:UnknownResource"]
+
+
+class EditoastAuthzLegacyErrorUnknownSubject(BaseModel):
+    context: Annotated[
+        dict[str, Any] | None,
+        Field(title="EditoastAuthzLegacyErrorUnknownSubjectContext"),
+    ] = None
+    message: str
+    status: Literal[404]
+    type: Literal["editoast:authz_legacy:UnknownSubject"]
+
+
+class EditoastAuthzLegacyErrorUnknownUserContext(BaseModel):
+    id: int
+
+
+class EditoastAuthzLegacyErrorUnknownUser(BaseModel):
+    context: Annotated[
+        EditoastAuthzLegacyErrorUnknownUserContext | None,
+        Field(title="EditoastAuthzLegacyErrorUnknownUserContext"),
+    ] = None
+    message: str
+    status: Literal[401]
+    type: Literal["editoast:authz_legacy:UnknownUser"]
 
 
 class EditoastAutoFixesEditoastErrorConflictingFixesOnSameObjectContext(BaseModel):
@@ -4545,12 +4579,15 @@ class EditoastError(
         | EditoastAuthorizationErrorUnauthenticated
         | EditoastAuthzErrorAuthorizer
         | EditoastAuthzErrorDatabase
-        | EditoastAuthzErrorOpenfga
-        | EditoastAuthzErrorStorage
         | EditoastAuthzErrorUnknownIdentities
         | EditoastAuthzErrorUnknownResource
         | EditoastAuthzErrorUnknownSubject
         | EditoastAuthzErrorUnknownUser
+        | EditoastAuthzLegacyErrorOpenfga
+        | EditoastAuthzLegacyErrorStorage
+        | EditoastAuthzLegacyErrorUnknownResource
+        | EditoastAuthzLegacyErrorUnknownSubject
+        | EditoastAuthzLegacyErrorUnknownUser
         | EditoastAutoFixesEditoastErrorConflictingFixesOnSameObject
         | EditoastAutoFixesEditoastErrorFixTrialFailure
         | EditoastAutoFixesEditoastErrorMaximumIterationReached
@@ -4718,12 +4755,15 @@ class EditoastError(
         | EditoastAuthorizationErrorUnauthenticated
         | EditoastAuthzErrorAuthorizer
         | EditoastAuthzErrorDatabase
-        | EditoastAuthzErrorOpenfga
-        | EditoastAuthzErrorStorage
         | EditoastAuthzErrorUnknownIdentities
         | EditoastAuthzErrorUnknownResource
         | EditoastAuthzErrorUnknownSubject
         | EditoastAuthzErrorUnknownUser
+        | EditoastAuthzLegacyErrorOpenfga
+        | EditoastAuthzLegacyErrorStorage
+        | EditoastAuthzLegacyErrorUnknownResource
+        | EditoastAuthzLegacyErrorUnknownSubject
+        | EditoastAuthzLegacyErrorUnknownUser
         | EditoastAutoFixesEditoastErrorConflictingFixesOnSameObject
         | EditoastAutoFixesEditoastErrorFixTrialFailure
         | EditoastAutoFixesEditoastErrorMaximumIterationReached

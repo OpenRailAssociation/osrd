@@ -22,20 +22,25 @@
     "attached": {
       "TrackNotFound": "Odcinek toru {{track_id}} nie został znaleziony"
     },
-    "authz": {
+    "authorization": {
       "AuthError": "Wewnętrzny błąd autoryzacji/autentykacji. Spróbuj ponownie później lub skontaktuj się z pomocą techniczną",
-      "Authorizer": "Wewnętrzny błąd",
-      "Authz": "Wewnętrzny błąd autoryzacji/autentykacji. Spróbuj ponownie później lub skontaktuj się z pomocą techniczną",
       "DbError": "Błąd krytyczny dostępu do bazy danych",
-      "Driver": "Wewnętrzny błąd autoryzacji/autentykacji. Spróbuj ponownie później lub skontaktuj się z pomocą techniczną",
       "Forbidden": "Odmowa dostępu",
       "ForbiddenImpersonation": "Uzurpacja odrzucona",
+      "ImpersonatedUserNotFound": "Nieznany podszyty użytkownik"
+    },
+    "authz": {
+      "Authorizer": "Wewnętrzny błąd",
+      "Authz": "Wewnętrzny błąd autoryzacji/autentykacji. Spróbuj ponownie później lub skontaktuj się z pomocą techniczną",
+      "Driver": "Wewnętrzny błąd autoryzacji/autentykacji. Spróbuj ponownie później lub skontaktuj się z pomocą techniczną",
       "GrantsApiMisuse": "Nieprawidłowy sposób użycia API",
-      "ImpersonatedUserNotFound": "Nieznany podszyty użytkownik",
       "NoSuchUser": "Nieznany Użytkownik",
-      "Unauthorized": "Nieautoryzowany użytkownik",
       "UnknownResource": "Nienznany zasób",
       "UnknownResourceType": "Nieznany typ zasobu",
+      "UnknownSubject": "Nieznany Obiekt"
+    },
+    "authz_legacy": {
+      "UnknownResource": "Nienznany zasób",
       "UnknownSubject": "Nieznany Obiekt"
     },
     "auto_fixes": {
