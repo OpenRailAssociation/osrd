@@ -41,7 +41,7 @@ impl<T> TrainKey for T where T: Clone + Hash + Eq + Send + Sync {}
 /// - [trait TaskStreamExt] to batch tasks (requires additional [type Task::Context] bounds)
 pub trait Task: Sized + Send {
     /// Task output
-    type Output: DeserializeOwned + Serialize + Send + 'static;
+    type Output: DeserializeOwned + Serialize + Clone + Send + Sync + 'static;
     /// Computation error when running a task for cache misses
     type Error: std::error::Error + Send;
     /// Context required for task
@@ -100,27 +100,18 @@ pub trait Task: Sized + Send {
             None => {
                 tracing::trace!(key, "cache miss");
                 let value = self.compute(ctx).await?;
-                match serde_json::to_string(&value) {
-                    Err(e) => {
-                        tracing::error!(
-                            ?e,
-                            key,
-                            "serialization error before cache write — skipping cache write"
-                        );
-                    }
-                    Ok(serialized) => {
-                        tokio::spawn(
-                            async move {
-                                use deadpool_redis::redis::AsyncCommands as _;
-                                let mut vkconn = vk_client.get_connection().await.unwrap();
-                                if let Err(e) = vkconn.set::<_, _, ()>(&key, serialized).await {
-                                    tracing::error!(?e, key, "cache write error");
-                                }
+                {
+                    let value = value.clone();
+                    tokio::spawn(
+                        async move {
+                            let mut vkconn = vk_client.get_connection().await.unwrap();
+                            if let Err(e) = vkconn.json_set(key.clone(), value).await {
+                                tracing::error!(?e, key, "cache write error");
                             }
-                            .in_current_span(),
-                        );
-                    }
-                };
+                        }
+                        .in_current_span(),
+                    );
+                }
                 Ok(value)
             }
         }
