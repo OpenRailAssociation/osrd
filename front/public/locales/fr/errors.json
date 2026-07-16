@@ -313,6 +313,7 @@
       "Database": "Erreur interne (base de données)",
       "ExceptionNotFound": "Exception '{{exception_id}}' non trouvée",
       "InfraNotFound": "Infrastructure '{{infra_id}}' non trouvée",
+      "InvalidPathPortion": "Portion de chemin invalide : l'index de début '{{begin}}' et l'index de fin '{{end}}' sont incohérents avec le nombre d'étapes du chemin ('{{path_items_count}}')",
       "NotFound": "Circulation '{{train_schedule_id}}' non trouvée",
       "PathfindingFailed": "La recherche de chemin n'a pas abouti pour la circulation '{{train_schedule_id}}'",
       "RollingStockNotFound": "Matériel roulant '{{rolling_stock_name}}' non trouvé",
