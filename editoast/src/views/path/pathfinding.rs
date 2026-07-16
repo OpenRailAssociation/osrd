@@ -462,14 +462,9 @@ pub(in crate::views) async fn single_pathfinding_request(
     });
     pathfinding_env.extend([((), pathfinding_train)]);
 
-    let result = match pathfinding_env
-        .into_stream(valkey_client)
-        .collect::<Vec<_>>()
-        .await
-        .as_slice()
-    {
-        [path] => path.data.clone(),
-        _ => Err(core_client::Error::BrokenPipe),
+    let result = match pathfinding_env.into_stream(valkey_client).next().await {
+        Some(path) => path.data,
+        None => Err(core_client::Error::BrokenPipe),
     };
     Ok(result?.into())
 }
