@@ -26,6 +26,7 @@ use crate::v2::infra_revoke_grant;
 use crate::v2::infra_set_grant;
 use crate::v2::project::project_direct_grant;
 use crate::v2::project_effective_grant;
+use crate::v2::project_granted_subjects;
 use crate::v2::project_list;
 use crate::v2::project_privileges;
 use crate::v2::project_revoke_grant;
@@ -107,6 +108,7 @@ pub trait TestClientExt {
     async fn project_set_grant(&self, subject: Subject, project: Project) -> ();
     async fn project_privileges(&self, user: User, project: Project) -> HashSet<ProjectPrivilege>;
     async fn project_list(&self, user: User) -> ResourcesList<Project>;
+    async fn project_granted_subjects(&self, project: Project) -> Vec<Subject>;
 }
 
 impl TestClientExt for fga::Client {
@@ -349,5 +351,13 @@ impl TestClientExt for fga::Client {
     async fn project_list(&self, user: User) -> ResourcesList<Project> {
         let authorize = special_authorizers::Authorize(self);
         authorize.access_value(project_list(user)).await.unwrap()
+    }
+
+    // As thre is only the `ProjectGrant::Owner` grant available, it returns all the project's owners
+    async fn project_granted_subjects(&self, project: Project) -> Vec<Subject> {
+        special_authorizers::Authorize(self)
+            .access_value(project_granted_subjects(project))
+            .await
+            .unwrap()
     }
 }
