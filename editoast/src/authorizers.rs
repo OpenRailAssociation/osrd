@@ -40,6 +40,9 @@ impl SystemAuthorizer<'_> {
                 (!editoast_models::RollingStock::exists(conn, *rolling_stock_id).await?)
                     .then_some(check)
             }
+            Check::ProjectExists(authz::Project(project_id)) => {
+                (!editoast_models::Project::exists(conn, *project_id).await?).then_some(check)
+            }
             // checked by UserAuthorizer
             Check::HasRole(..)
             | Check::HasInfraPrivilege(..)
@@ -215,7 +218,10 @@ impl<'c> UserAuthorizer<'c> {
                 (owners.len() == 1 && owners.contains(subject)).then_some(check)
             }
             // checked by SystemAuthorizer
-            Check::SubjectExists(_) | Check::InfraExists(_) | Check::RollingStockExists(_) => None,
+            Check::SubjectExists(_)
+            | Check::InfraExists(_)
+            | Check::RollingStockExists(_)
+            | Check::ProjectExists(_) => None,
         })
     }
 }
