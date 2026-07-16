@@ -3808,6 +3808,10 @@ export type CorePathfindingInputError =
       error_type: 'not_enough_path_items';
     }
   | {
+      error_type: 'unauthorized_rolling_stock';
+      rolling_stock_id: number;
+    }
+  | {
       error_type: 'rolling_stock_not_found';
       rolling_stock_name: string;
     }
