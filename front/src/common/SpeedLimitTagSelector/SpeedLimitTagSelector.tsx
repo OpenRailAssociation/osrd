@@ -31,7 +31,7 @@ const SpeedLimitTagSelector = ({
   return (
     <div className="osrd-config-item">
       <div
-        className={cx('osrd-config-item-container', className, {
+        className={cx(className, {
           'd-flex align-items-center gap-10': condensed,
         })}
       >
