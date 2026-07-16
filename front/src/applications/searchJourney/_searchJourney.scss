@@ -1,0 +1,7 @@
+@use './styles/header';
+@use './styles/configError';
+
+.search-journey-view {
+  display: flex;
+  flex-direction: column;
+}

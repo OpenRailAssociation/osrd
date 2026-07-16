@@ -10,6 +10,7 @@ import Scenario from 'applications/operationalStudies/views/Scenario';
 import Study from 'applications/operationalStudies/views/Study';
 import HomeMap from 'applications/referenceMap/Home';
 import RollingStockEditor from 'applications/rollingStockEditor/RollingStockEditorView';
+import SearchJourneyView from 'applications/searchJourney/SearchJourneyView';
 import StdcmDebugView from 'applications/stdcm/StdcmDebugView';
 import Stdcm from 'applications/stdcm/StdcmView';
 import Error403 from 'common/authorization/components/Error403';
@@ -80,6 +81,10 @@ const router = createBrowserRouter([
   {
     path: 'rolling-stock-editor/*',
     element: <RollingStockEditor />,
+  },
+  {
+    path: 'search-journey/*',
+    element: <SearchJourneyView />,
   },
   {
     path: 'operational-studies/',

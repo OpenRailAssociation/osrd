@@ -1,0 +1,7 @@
+{
+  "appName": "Capacity Need Announcement",
+  "noConfigurationFound": {
+    "text": "Unable to retrieve the search journey environment (infra, timetables). Please try again later.",
+    "title": "No configuration found"
+  }
+}

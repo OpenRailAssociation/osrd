@@ -1,0 +1,20 @@
+.search-journey-header {
+  box-shadow: 0px 1px 0px rgba(0, 0, 0, 0.1);
+  background-color: rgb(255, 255, 255);
+  position: relative;
+  display: flex;
+  align-items: center;
+
+  .logo {
+    padding: 12px 24px;
+  }
+
+  .title {
+    color: rgb(0, 0, 0);
+    font-size: 14px;
+    text-transform: uppercase;
+    font-weight: 600;
+    text-align: left;
+    line-height: 40px;
+  }
+}
