@@ -231,6 +231,7 @@
         "pathfinding_not_found": "Chemin introuvable",
         "rolling_stock_not_found": "MR non trouvé",
         "simulation_failed": "Simulation impossible",
+        "unauthorized_rolling_stock": "Matériel roulant non autorisé",
         "zero_length_path": "L'origine et la destination sont identiques"
       },
       "invalidTrains": "Certains trains sont invalides",
@@ -491,6 +492,7 @@
       "not_found_in_tracks": "Voie manquante",
       "pathfinding_failure": "Aucun chemin trouvé",
       "rolling_stock_not_found": "Matériel roulant non trouvé",
+      "unauthorized_rolling_stock": "Vous n'êtes pas autorisé à utiliser ce matériel roulant",
       "zero_length_path": "L'origine et la destination sont identiques"
     },
     "pathfindingInProgress": "Recherche d’itinéraire en cours…",
