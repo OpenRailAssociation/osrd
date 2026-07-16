@@ -1,8 +1,8 @@
 pub(crate) mod request;
 
 use authz;
-use authz::v2;
 use authz::RollingStockPrivilege;
+use authz::v2;
 use authz::v2::Actor;
 use authz::v2::Authorizer as _;
 use authz::v2::Check;
