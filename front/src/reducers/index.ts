@@ -24,6 +24,11 @@ import referenceMapReducer, {
   referenceMapSlice,
 } from 'reducers/referenceMap';
 import type { ReferenceMapSlice, ReferenceMapState } from 'reducers/referenceMap';
+import searchJourneyReducer, {
+  searchJourneyInitialState,
+  searchJourneySlice,
+} from 'reducers/searchJourney';
+import type { SearchJourneyState } from 'reducers/searchJourney';
 import simulationReducer, {
   simulationResultsInitialState,
   simulationResultsSlice,
@@ -108,6 +113,7 @@ export type RootState = {
   [stdcmConfSlice.name]: OsrdStdcmConfState;
   [operationalStudiesConfSlice.name]: OperationalStudiesConfState;
   [simulationResultsSlice.name]: SimulationResultsState;
+  [searchJourneySlice.name]: SearchJourneyState;
   [osrdEditoastApi.reducerPath]: ReturnType<typeof osrdEditoastApi.reducer>;
   [osrdGatewayApi.reducerPath]: ReturnType<typeof osrdGatewayApi.reducer>;
   [osrdRailwayManagerApi.reducerPath]: ReturnType<typeof osrdRailwayManagerApi.reducer>;
@@ -121,6 +127,7 @@ export const rootInitialState: RootState = {
   [stdcmConfSlice.name]: stdcmConfInitialState,
   [operationalStudiesConfSlice.name]: operationalStudiesInitialConf,
   [simulationResultsSlice.name]: simulationResultsInitialState,
+  [searchJourneySlice.name]: searchJourneyInitialState,
   [osrdEditoastApi.reducerPath]: {} as ReturnType<typeof osrdEditoastApi.reducer>,
   [osrdGatewayApi.reducerPath]: {} as ReturnType<typeof osrdGatewayApi.reducer>,
   [osrdRailwayManagerApi.reducerPath]: {} as ReturnType<typeof osrdRailwayManagerApi.reducer>,
@@ -133,7 +140,8 @@ export type AnyReducerState =
   | MainState
   | OsrdStdcmConfState
   | OperationalStudiesConfState
-  | SimulationResultsState;
+  | SimulationResultsState
+  | SearchJourneyState;
 
 export const rootReducer: ReducersMapObject<RootState> = {
   [userSlice.name]: userReducer,
@@ -143,6 +151,7 @@ export const rootReducer: ReducersMapObject<RootState> = {
   [stdcmConfSlice.name]: stdcmConfReducer,
   [operationalStudiesConfSlice.name]: operationalStudiesConfReducer,
   [simulationResultsSlice.name]: simulationReducer,
+  [searchJourneySlice.name]: searchJourneyReducer,
   [osrdEditoastApi.reducerPath]: osrdEditoastApi.reducer,
   [osrdGatewayApi.reducerPath]: osrdGatewayApi.reducer,
   [osrdRailwayManagerApi.reducerPath]: osrdRailwayManagerApi.reducer,
