@@ -1,0 +1,7 @@
+{
+  "appName": "Expression de besoins",
+  "noConfigurationFound": {
+    "text": "Impossible de récupérer l'environnement de recherche d'itinéraire (infrastructure, sillons). Veuillez réessayer plus tard.",
+    "title": "Aucune configuration disponible"
+  }
+}
