@@ -15,6 +15,7 @@ import {
 } from 'utils/trainId';
 
 import {
+  computeIndexedOccurrenceStartTime,
   extractOccurrenceDetailsFromPacedTrain,
   getFirstActiveOccurrenceId,
   getOccurrencesNb,
@@ -51,6 +52,31 @@ describe('getOccurrencesNb', () => {
     expect(() =>
       getOccurrencesNb({ timeWindow: Duration.parse('PT2H'), interval: Duration.parse('PT0S') })
     ).toThrow('Interval cannot be 0');
+  });
+});
+
+describe('computeIndexedOccurrenceStartTime', () => {
+  it('should return a Date shifted by index × interval for a Date start time (calendar)', () => {
+    expect(
+      computeIndexedOccurrenceStartTime(
+        new Date('2024-10-15T03:00:00Z'),
+        Duration.parse('PT30M'),
+        2
+      )
+    ).toEqual(new Date('2024-10-15T04:00:00Z'));
+  });
+
+  it('should return a Duration shifted by index × interval for a Duration start time (trame)', () => {
+    expect(
+      computeIndexedOccurrenceStartTime(new Duration({ hours: 3 }), Duration.parse('PT30M'), 2)
+    ).toEqual(new Duration({ hours: 4 }));
+  });
+
+  it('should return the start time unchanged for index 0', () => {
+    const startTime = new Duration({ hours: 3 });
+    expect(computeIndexedOccurrenceStartTime(startTime, Duration.parse('PT30M'), 0)).toEqual(
+      startTime
+    );
   });
 });
 
