@@ -4,7 +4,12 @@ import { skipToken } from '@reduxjs/toolkit/query';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
-import { osrdEditoastApi, type TrainScheduleResponse } from 'common/api/osrdEditoastApi';
+import {
+  osrdEditoastApi,
+  type CoreOperationalPointOnPath,
+  type PathItem,
+  type TrainScheduleResponse,
+} from 'common/api/osrdEditoastApi';
 import formatPowerRestrictionRangesWithHandled from 'modules/powerRestriction/helpers/formatPowerRestrictionRangesWithHandled';
 import {
   extractOccurrenceDetailsFromPacedTrain,
@@ -23,8 +28,37 @@ import {
 } from 'utils/trainId';
 
 import type { SimulationResults } from '../types';
-import { preparePathPropertiesData } from '../utils';
+import { matchOpRefAndOp, preparePathPropertiesData } from '../utils';
 import { useScenarioContext } from './useScenarioContext';
+
+/**
+ * Sort operational points by position on the path (mm from origin).
+ * We want to ensure the following properties:
+ * - All path items specified by the user appear in-order in the OP list.
+ * - The first OP in the list is the first path item specified by the user.
+ * - The last OP in the list is the last path item specified by the user.
+ * - TODO: it doesn't order ops not at origin/destination, find a clean way to handle this case
+ */
+export const sortPathOperationalPoints = (
+  ops: CoreOperationalPointOnPath[],
+  path: PathItem[]
+): CoreOperationalPointOnPath[] =>
+  ops.toSorted((a, b) => {
+    if (a.position !== b.position) return a.position - b.position;
+    const aPathIndex = path.findIndex((pathItem) => matchOpRefAndOp(pathItem.location, a));
+    const bPathIndex = path.findIndex((pathItem) => matchOpRefAndOp(pathItem.location, b));
+    const lastIndex = path.length - 1;
+    const aIsOrigin = aPathIndex === 0;
+    const bIsOrigin = bPathIndex === 0;
+    const aIsDestination = aPathIndex === lastIndex;
+    const bIsDestination = bPathIndex === lastIndex;
+    if (aIsOrigin && !bIsOrigin) return -1;
+    if (bIsOrigin && !aIsOrigin) return 1;
+    if (aIsDestination && !bIsDestination) return 1;
+    if (bIsDestination && !aIsDestination) return -1;
+    if (aPathIndex !== -1 && bPathIndex !== -1) return aPathIndex - bPathIndex;
+    return 0;
+  });
 
 /**
  * Prepare data to be used in simulation results
@@ -132,6 +166,18 @@ const useSimulationResults = (
         : skipToken
     );
 
+  const orderedRawPathProperties = useMemo(() => {
+    if (!rawPathProperties || !train) return rawPathProperties;
+
+    return {
+      ...rawPathProperties,
+      operational_points: sortPathOperationalPoints(
+        rawPathProperties.operational_points,
+        train.path
+      ),
+    };
+  }, [rawPathProperties, train]);
+
   const isSimulationDataLoading =
     isPathfindingFetching || isSimulationFetching || isPathPropertiesFetching;
 
@@ -139,7 +185,7 @@ const useSimulationResults = (
     return { results: undefined, isSimulationDataLoading };
   }
 
-  if (pathfinding?.status !== 'success' || !rawPathProperties || !rollingStock) {
+  if (pathfinding?.status !== 'success' || !orderedRawPathProperties || !rollingStock) {
     return {
       results: { isValid: false, train, path: pathfinding, rollingStock },
       isSimulationDataLoading,
@@ -148,7 +194,7 @@ const useSimulationResults = (
 
   const pathProperties = preparePathPropertiesData(
     simulation?.status === 'success' ? simulation.electrical_profiles : undefined,
-    rawPathProperties,
+    orderedRawPathProperties,
     pathfinding,
     train.path,
     t
