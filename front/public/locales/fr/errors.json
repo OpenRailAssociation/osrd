@@ -28,24 +28,31 @@
     "attached": {
       "TrackNotFound": "Section de voie {{track_id}} non trouvée"
     },
-    "authz": {
+    "authorization": {
       "AuthError": "Erreur interne d'authentification ou d'autorisation, veuillez réessayer ou contacter le support",
+      "DbError": "Erreur interne de base de données, veuillez réessayer ou contacter le support",
+      "Forbidden": "Accès refusé",
+      "ForbiddenImpersonation": "Usurpation refusée",
+      "ImpersonatedUserNotFound": "Utilisateur usurpé inconnu",
+      "Unauthenticated": "Utilisateur non authentifié"
+    },
+    "authz": {
       "Authorizer": "Erreur interne",
       "Authz": "Erreur interne d'authentification ou d'autorisation, veuillez réessayer ou contacter le support",
       "Database": "Internal error (database)",
-      "DbError": "Erreur interne de base de données, veuillez réessayer ou contacter le support",
       "Driver": "Erreur interne d'authentification ou d'autorisation, veuillez réessayer ou contacter le support",
-      "Forbidden": "Accès refusé",
-      "ForbiddenImpersonation": "Usurpation refusée",
       "GrantsApiMisuse": "Mauvaise utilisation de l'API d'autorisation",
-      "ImpersonatedUserNotFound": "Utilisateur usurpé inconnu",
       "NoSuchUser": "Utilisateur inconnu",
-      "Openfga": "Erreur interne",
-      "Storage": "Erreur interne",
-      "Unauthenticated": "Utilisateur non authentifié",
       "UnknownIdentities": "Identités inconnues '{{identities}}'",
       "UnknownResource": "Ressource inconnue",
       "UnknownResourceType": "Type de ressource inconnu",
+      "UnknownSubject": "Sujet inconnu",
+      "UnknownUser": "Utilisateur inconnu '{{id}}'"
+    },
+    "authz_legacy": {
+      "Openfga": "Erreur interne",
+      "Storage": "Erreur interne",
+      "UnknownResource": "Ressource inconnue",
       "UnknownSubject": "Sujet inconnu",
       "UnknownUser": "Utilisateur inconnu '{{id}}'"
     },

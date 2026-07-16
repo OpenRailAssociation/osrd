@@ -246,23 +246,23 @@ impl EditoastError for json_patch::PatchError {
 }
 
 inventory::submit! {
-    crate::error::ErrorDefinition::new("editoast:authz:UnknownSubject", "UnknownSubject", "AuthzError", 404u16, r#"{}"#)
+    crate::error::ErrorDefinition::new("editoast:authz_legacy:UnknownSubject", "UnknownSubject", "AuthzLegacyError", 404u16, r#"{}"#)
 }
 
 inventory::submit! {
-    crate::error::ErrorDefinition::new("editoast:authz:UnknownResource", "UnknownResource", "AuthzError", 404u16, r#"{}"#)
+    crate::error::ErrorDefinition::new("editoast:authz_legacy:UnknownResource", "UnknownResource", "AuthzLegacyError", 404u16, r#"{}"#)
 }
 
 inventory::submit! {
-    crate::error::ErrorDefinition::new("editoast:authz:UnknownUser", "UnknownUser", "AuthzError", 401u16, r#"{}"#)
+    crate::error::ErrorDefinition::new("editoast:authz_legacy:UnknownUser", "UnknownUser", "AuthzLegacyError", 401u16, r#"{"id": "i64"}"#)
 }
 
 inventory::submit! {
-    crate::error::ErrorDefinition::new("editoast:authz:Openfga", "Openfga", "AuthzError", 500u16, r#"{}"#)
+    crate::error::ErrorDefinition::new("editoast:authz_legacy:Openfga", "Openfga", "AuthzLegacyError", 500u16, r#"{}"#)
 }
 
 inventory::submit! {
-    crate::error::ErrorDefinition::new("editoast:authz:Storage", "Storage", "AuthzError", 500u16, r#"{}"#)
+    crate::error::ErrorDefinition::new("editoast:authz_legacy:Storage", "Storage", "AuthzLegacyError", 500u16, r#"{}"#)
 }
 impl<StorageError: std::error::Error + Send + Sync> EditoastError for authz::Error<StorageError> {
     fn get_status(&self) -> StatusCode {
@@ -279,11 +279,11 @@ impl<StorageError: std::error::Error + Send + Sync> EditoastError for authz::Err
 
     fn get_type(&self) -> &str {
         match self {
-            authz::Error::UnknownSubject(_) => "editoast:authz:UnknownSubject",
-            authz::Error::UnknownResource(_) => "editoast:authz:UnknownResource",
-            authz::Error::UnknownUser { .. } => "editoast:authz:UnknownUser",
-            authz::Error::OpenFga(_) => "editoast:authz:Openfga",
-            authz::Error::Storage(_) => "editoast:authz:Storage",
+            authz::Error::UnknownSubject(_) => "editoast:authz_legacy:UnknownSubject",
+            authz::Error::UnknownResource(_) => "editoast:authz_legacy:UnknownResource",
+            authz::Error::UnknownUser { .. } => "editoast:authz_legacy:UnknownUser",
+            authz::Error::OpenFga(_) => "editoast:authz_legacy:Openfga",
+            authz::Error::Storage(_) => "editoast:authz_legacy:Storage",
         }
     }
 

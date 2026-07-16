@@ -490,7 +490,7 @@ pub use server::middlewares::AuthenticationExt;
 pub type AuthorizerError = ::authz::Error<<PgAuthDriver as ::authz::StorageDriver>::Error>;
 
 #[derive(Debug, Error, derive_more::From, EditoastError)]
-#[editoast_error(base_id = "authz")]
+#[editoast_error(base_id = "authorization")]
 pub enum AuthorizationError {
     #[error("Unauthorized (401) — user must be authenticated")]
     #[editoast_error(status = 401)]

@@ -6322,7 +6322,7 @@ components:
         type:
           type: string
           enum:
-          - editoast:authz:DbError
+          - editoast:authorization:DbError
     EditoastAuthorizationErrorForbidden:
       type: object
       required:
@@ -6342,7 +6342,7 @@ components:
         type:
           type: string
           enum:
-          - editoast:authz:Forbidden
+          - editoast:authorization:Forbidden
     EditoastAuthorizationErrorForbiddenImpersonation:
       type: object
       required:
@@ -6362,7 +6362,7 @@ components:
         type:
           type: string
           enum:
-          - editoast:authz:ForbiddenImpersonation
+          - editoast:authorization:ForbiddenImpersonation
     EditoastAuthorizationErrorImpersonatedUserNotFound:
       type: object
       required:
@@ -6387,7 +6387,7 @@ components:
         type:
           type: string
           enum:
-          - editoast:authz:ImpersonatedUserNotFound
+          - editoast:authorization:ImpersonatedUserNotFound
     EditoastAuthorizationErrorUnauthenticated:
       type: object
       required:
@@ -6407,7 +6407,7 @@ components:
         type:
           type: string
           enum:
-          - editoast:authz:Unauthenticated
+          - editoast:authorization:Unauthenticated
     EditoastAuthzErrorAuthorizer:
       type: object
       required:
@@ -6448,46 +6448,6 @@ components:
           type: string
           enum:
           - editoast:authz:Database
-    EditoastAuthzErrorOpenfga:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-          title: EditoastAuthzErrorOpenfgaContext
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 500
-        type:
-          type: string
-          enum:
-          - editoast:authz:Openfga
-    EditoastAuthzErrorStorage:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-          title: EditoastAuthzErrorStorageContext
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 500
-        type:
-          type: string
-          enum:
-          - editoast:authz:Storage
     EditoastAuthzErrorUnknownIdentities:
       type: object
       required:
@@ -6588,6 +6548,111 @@ components:
           type: string
           enum:
           - editoast:authz:UnknownUser
+    EditoastAuthzLegacyErrorOpenfga:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          title: EditoastAuthzLegacyErrorOpenfgaContext
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 500
+        type:
+          type: string
+          enum:
+          - editoast:authz_legacy:Openfga
+    EditoastAuthzLegacyErrorStorage:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          title: EditoastAuthzLegacyErrorStorageContext
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 500
+        type:
+          type: string
+          enum:
+          - editoast:authz_legacy:Storage
+    EditoastAuthzLegacyErrorUnknownResource:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          title: EditoastAuthzLegacyErrorUnknownResourceContext
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 404
+        type:
+          type: string
+          enum:
+          - editoast:authz_legacy:UnknownResource
+    EditoastAuthzLegacyErrorUnknownSubject:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          title: EditoastAuthzLegacyErrorUnknownSubjectContext
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 404
+        type:
+          type: string
+          enum:
+          - editoast:authz_legacy:UnknownSubject
+    EditoastAuthzLegacyErrorUnknownUser:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          title: EditoastAuthzLegacyErrorUnknownUserContext
+          required:
+          - id
+          properties:
+            id:
+              type: integer
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 401
+        type:
+          type: string
+          enum:
+          - editoast:authz_legacy:UnknownUser
     EditoastAutoFixesEditoastErrorConflictingFixesOnSameObject:
       type: object
       required:
@@ -7069,15 +7134,15 @@ components:
       - $ref: '#/components/schemas/EditoastAuthorizationErrorUnauthenticated'
       - $ref: '#/components/schemas/EditoastAuthzErrorAuthorizer'
       - $ref: '#/components/schemas/EditoastAuthzErrorDatabase'
-      - $ref: '#/components/schemas/EditoastAuthzErrorOpenfga'
-      - $ref: '#/components/schemas/EditoastAuthzErrorStorage'
       - $ref: '#/components/schemas/EditoastAuthzErrorUnknownIdentities'
       - $ref: '#/components/schemas/EditoastAuthzErrorUnknownResource'
-      - $ref: '#/components/schemas/EditoastAuthzErrorUnknownResource'
-      - $ref: '#/components/schemas/EditoastAuthzErrorUnknownSubject'
       - $ref: '#/components/schemas/EditoastAuthzErrorUnknownSubject'
       - $ref: '#/components/schemas/EditoastAuthzErrorUnknownUser'
-      - $ref: '#/components/schemas/EditoastAuthzErrorUnknownUser'
+      - $ref: '#/components/schemas/EditoastAuthzLegacyErrorOpenfga'
+      - $ref: '#/components/schemas/EditoastAuthzLegacyErrorStorage'
+      - $ref: '#/components/schemas/EditoastAuthzLegacyErrorUnknownResource'
+      - $ref: '#/components/schemas/EditoastAuthzLegacyErrorUnknownSubject'
+      - $ref: '#/components/schemas/EditoastAuthzLegacyErrorUnknownUser'
       - $ref: '#/components/schemas/EditoastAutoFixesEditoastErrorConflictingFixesOnSameObject'
       - $ref: '#/components/schemas/EditoastAutoFixesEditoastErrorFixTrialFailure'
       - $ref: '#/components/schemas/EditoastAutoFixesEditoastErrorMaximumIterationReached'

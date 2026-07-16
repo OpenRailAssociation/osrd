@@ -28,24 +28,31 @@
     "attached": {
       "TrackNotFound": "Track {{track_id}} not found"
     },
-    "authz": {
+    "authorization": {
       "AuthError": "Authentication/authorization internal error, try again or contact support",
+      "DbError": "Database access fatal error",
+      "Forbidden": "Access denied",
+      "ForbiddenImpersonation": "Impersonation denied",
+      "ImpersonatedUserNotFound": "Unknown impersonated user",
+      "Unauthenticated": "Unauthenticated user"
+    },
+    "authz": {
       "Authorizer": "Internal error",
       "Authz": "Authentication/authorization internal error, try again or contact support",
       "Database": "Internal error (database)",
-      "DbError": "Database access fatal error",
       "Driver": "Authentication/authorization internal error, try again or contact support",
-      "Forbidden": "Access denied",
-      "ForbiddenImpersonation": "Impersonation denied",
       "GrantsApiMisuse": "Improper API usage",
-      "ImpersonatedUserNotFound": "Unknown impersonated user",
       "NoSuchUser": "Unknown user",
-      "Openfga": "Internal error",
-      "Storage": "Internal error",
-      "Unauthenticated": "Unauthenticated user",
       "UnknownIdentities": "Unknown identities '{{identities}}'",
       "UnknownResource": "Unknown resource",
       "UnknownResourceType": "Unknown resource type",
+      "UnknownSubject": "Unknown subject",
+      "UnknownUser": "Unknown user '{{id}}'"
+    },
+    "authz_legacy": {
+      "Openfga": "Internal error",
+      "Storage": "Internal error",
+      "UnknownResource": "Unknown resource",
       "UnknownSubject": "Unknown subject",
       "UnknownUser": "Unknown user '{{id}}'"
     },
