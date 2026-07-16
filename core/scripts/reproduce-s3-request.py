@@ -54,10 +54,10 @@ def main(
         s3_cache,
     )
     payload = json.load(payload_path.open())
-    gzipped_cbor_timetable = download_s3_file(
+    gzipped_json_timetable = download_s3_file(
         s3,
         bucket,
-        f"stdcm/saved_timetables/{payload['timetable_id']}.cbor.gz",
+        f"stdcm/saved_timetables/{payload['timetable_id']}.json.gz",
         s3_cache,
     )
 
@@ -68,12 +68,12 @@ def main(
         s3_cache,
     )
     railjson_path = uncompress_gzip(gzipped_railjson_path)
-    cbor_timetable = uncompress_gzip(gzipped_cbor_timetable)
+    cache_timetable = uncompress_gzip(gzipped_json_timetable)
 
     # Copying the files in a stable place makes it easier to keep a stable IDE "run" config,
     # as the end goal is generally to debug that process in an IDE.
     payload_copy = payload_path.copy("input-payload.json")
-    timetable_copy = cbor_timetable.copy("timetable.cbor")
+    timetable_copy = cache_timetable.copy("timetable.json.gz")
     railjson_copy = railjson_path.copy("infra.railjson")
 
     command = [
@@ -87,7 +87,7 @@ def main(
         str(payload_copy.resolve()),
         "--railjson",
         str(railjson_copy.resolve()),
-        "--cbor-timetable",
+        "--cache-timetable",
         str(timetable_copy.resolve()),
     ]
 

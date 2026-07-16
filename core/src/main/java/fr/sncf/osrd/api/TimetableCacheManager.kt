@@ -6,18 +6,18 @@ import com.google.common.collect.RangeSet
 import com.google.common.collect.TreeRangeSet
 import fr.sncf.osrd.conflicts.RequirementId
 import fr.sncf.osrd.sim_infra.api.ZoneId
-import fr.sncf.osrd.utils.compress
-import fr.sncf.osrd.utils.decompress
 import io.lettuce.core.api.StatefulRedisConnection
 import io.opentelemetry.api.trace.Span
 import io.opentelemetry.api.trace.SpanKind
 import io.opentelemetry.instrumentation.annotations.WithSpan
+import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
 import java.nio.file.Files
 import java.util.concurrent.ConcurrentHashMap
+import java.util.zip.GZIPInputStream
+import java.util.zip.GZIPOutputStream
 import kotlin.io.path.Path
 import kotlin.io.path.exists
-import kotlin.io.path.readBytes
-import kotlin.io.path.writeBytes
 import kotlin.time.measureTime
 import kotlinx.coroutines.*
 import kotlinx.coroutines.future.await
@@ -25,7 +25,9 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.cbor.Cbor
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.decodeFromStream
+import kotlinx.serialization.json.encodeToStream
 import org.slf4j.LoggerFactory
 
 typealias TimetableId = Int
@@ -212,28 +214,32 @@ class TimetableCacheManager(
         generateData: suspend () -> STDCMTimetableData,
     ): STDCMTimetableData {
         if (cacheFolder == null || cacheKey == null) return generateData()
-        val filename = "$cacheKey.cbor"
+        val filename = "$cacheKey.json.gz"
         val folder = Path(cacheFolder)
         Files.createDirectories(folder)
         val file = folder.resolve(filename)
-        val cbor = Cbor {}
         val serializer = STDCMTimetableData.SerializableMap.serializer()
 
         if (file.exists()) {
             try {
-                val bytes = file.readBytes()
-                val serializableMap = cbor.decodeFromByteArray(serializer, bytes)
-                logger.debug("local timetable file cache hit at {}", file)
-                return serializableMap.toSTDCMRequirements()
+                Files.newInputStream(file).use { input ->
+                    GZIPInputStream(input).use { gzip ->
+                        val serializableMap = Json.decodeFromStream(serializer, gzip)
+                        logger.debug("local timetable file cache hit at {}", file)
+                        return serializableMap.toSTDCMRequirements()
+                    }
+                }
             } catch (e: Exception) {
                 logger.warn("failed to load valkey cached timetable data, reloading", e)
             }
         }
         val res = generateData.invoke()
         logger.info("writing timetable to local file cache at $file")
-        val serializableMap = res.toSerializable()
-        val bytes = cbor.encodeToByteArray(serializer, serializableMap)
-        file.writeBytes(bytes)
+        Files.newOutputStream(file).use { output ->
+            GZIPOutputStream(output).use { gzip ->
+                Json.encodeToStream(serializer, res.toSerializable(), gzip)
+            }
+        }
         return res
     }
 
@@ -249,7 +255,7 @@ class TimetableCacheManager(
         try {
             val async = valkeyConnection.async()
             val byteKey = key.encodeToByteArray()
-            val data = async.get(byteKey).await()?.decompress()
+            val data = async.get(byteKey).await()
 
             val cacheHit = data != null
             Span.current()?.setAttribute("cache-hit", cacheHit)
@@ -266,10 +272,16 @@ class TimetableCacheManager(
     /** Deserializes the raw bytes into timetable data. Useful for its span. */
     @WithSpan(kind = SpanKind.SERVER)
     private fun deserializeTimetable(bytes: ByteArray): STDCMTimetableData {
-        val cbor = Cbor {}
-        val serializer = STDCMTimetableData.SerializableMap.serializer()
-        val serializableMap = cbor.decodeFromByteArray(serializer, bytes)
-        return serializableMap.toSTDCMRequirements()
+        ByteArrayInputStream(bytes).use { input ->
+            GZIPInputStream(input).use { gzip ->
+                val serializableMap =
+                    Json.decodeFromStream(
+                        STDCMTimetableData.SerializableMap.serializer(),
+                        gzip,
+                    )
+                return serializableMap.toSTDCMRequirements()
+            }
+        }
     }
 
     /** Write the value to valkey, not blocking. */
@@ -280,17 +292,19 @@ class TimetableCacheManager(
         data: STDCMTimetableData,
     ) {
         val async = valkeyConnection.async()
-        val cbor = Cbor {}
-        val serializer = STDCMTimetableData.SerializableMap.serializer()
-        val serialized = cbor.encodeToByteArray(serializer, data.toSerializable()).compress()
 
-        // One day and a half. Timetables should be relevant for one day before being replaced, we
-        // keep them a little longer than that to be on the safe side.
-        val expirationMS = 36L * 60L * 60L * 1000L
-
-        async.psetex(key.encodeToByteArray(), expirationMS, serialized).exceptionally {
-            logger.warn("failed to send cached timetable to valkey: ", it)
-            null
+        ByteArrayOutputStream().use { output ->
+            GZIPOutputStream(output).use { gzip ->
+                Json.encodeToStream(
+                    STDCMTimetableData.SerializableMap.serializer(),
+                    data.toSerializable(),
+                    gzip,
+                )
+            }
+            async.set(key.encodeToByteArray(), output.toByteArray()).exceptionally {
+                logger.warn("failed to send cached timetable to valkey: ", it)
+                null
+            }
         }
     }
 
@@ -320,14 +334,17 @@ class TimetableCacheManager(
     private fun saveToS3(timetableId: TimetableId, requirements: STDCMTimetableData) {
         if (s3Context == null) return
 
-        val objectPath = "stdcm/saved_timetables/$timetableId.cbor.gz"
+        val objectPath = "stdcm/saved_timetables/$timetableId.json.gz"
         s3Context.writeFileIfMissing(objectPath) {
             try {
                 val serializable = requirements.toSerializable()
-                val cbor = Cbor {}
                 val serializer = STDCMTimetableData.SerializableMap.serializer()
-                val bytes = cbor.encodeToByteArray(serializer, serializable)
-                bytes.compress()
+                ByteArrayOutputStream().use { output ->
+                    GZIPOutputStream(output).use { gzip ->
+                        Json.encodeToStream(serializer, serializable, gzip)
+                    }
+                    output.toByteArray()
+                }
             } catch (e: Exception) {
                 logger.error("failed to save timetable to s3", e)
                 null
