@@ -241,8 +241,8 @@ const ExpandedTrainForm = ({
     train.paced?.exceptions?.filter((exp) => exp.occurrence_index === undefined) ?? [];
 
   const selectedRollingStock = useMemo(
-    () => rollingStocks.find((rs) => rs.name === fields.rolling_stock_name),
-    [fields.rolling_stock_name, rollingStocks]
+    () => rollingStocks.find((rs) => rs.name === fieldsFromTrain.rolling_stock_name),
+    [fieldsFromTrain.rolling_stock_name, rollingStocks]
   );
 
   // Reset fields values if they changed outside of the form (e.g., because it was an
