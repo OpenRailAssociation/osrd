@@ -968,7 +968,7 @@ pub mod tests {
             .assert_status_ok()
             .json();
 
-        assert_eq!(response.len(), 8);
+        assert_eq!(response.len(), 9);
         assert!(
             response
                 .iter()
@@ -1003,7 +1003,7 @@ pub mod tests {
             .assert_status_ok()
             .json();
 
-        assert_eq!(response.len(), 3);
+        assert_eq!(response.len(), 4);
         assert!(
             response
                 .iter()

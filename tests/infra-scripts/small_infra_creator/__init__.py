@@ -327,13 +327,29 @@ def create_small_infra(signaling_system: str) -> ScenarioData:
         [(-0.309, LAT_1 - LAT_LINE_SPACE), (-0.297, LAT_1 - LAT_LINE_SPACE)]
     )
     # Station
+    mid_west_tc0 = 550
+    mid_west_tc1 = 550
+    mid_west_tc2 = 450
+    mid_west_tc3 = 450
     mid_west = builder.add_operational_point(
         label="Mid_West_station", main_code="MWS", uic=8733
     )
-    mid_west.add_part(tc0, 550, "V1")
-    mid_west.add_part(tc1, 550, "V2")
-    mid_west.add_part(tc2, 450, "V3")
-    mid_west.add_part(tc3, 450, "V4")
+    mid_west.add_part(tc0, mid_west_tc0, "V1")
+    mid_west.add_part(tc1, mid_west_tc1, "V2")
+    mid_west.add_part(tc2, mid_west_tc2, "V3")
+    mid_west.add_part(tc3, mid_west_tc3, "V4")
+    # Duplicate station (to test for duplicate OPs)
+    mid_west_duplicate = builder.add_operational_point(
+        label="Mid_West_station_duplicate",
+        main_code="MWS",
+        uic=87332,
+        secondary_code="BV2",
+        secondary_name="Duplicate station",
+    )
+    mid_west_duplicate.add_part(tc0, mid_west_tc0, "V1'")
+    mid_west_duplicate.add_part(tc1, mid_west_tc1, "V2'")
+    mid_west_duplicate.add_part(tc2, mid_west_tc2, "V3'")
+    mid_west_duplicate.add_part(tc3, mid_west_tc3, "V4'")
     # ================================
     #  Around station D: Mid-East
     # ================================
