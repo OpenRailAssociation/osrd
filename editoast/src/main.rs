@@ -131,7 +131,7 @@ async fn run() -> anyhow::Result<()> {
 
     let app_version = client
         .app_version
-        .and_then(|v| if v.is_empty() { None } else { Some(v) })
+        .filter(|v| !v.is_empty())
         .or_else(|| buildid::build_id().map(to_hex_string));
 
     match client.command {
