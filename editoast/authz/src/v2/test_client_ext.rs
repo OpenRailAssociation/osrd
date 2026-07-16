@@ -25,6 +25,7 @@ use crate::v2::infra_privileges;
 use crate::v2::infra_revoke_grant;
 use crate::v2::infra_set_grant;
 use crate::v2::project::project_direct_grant;
+use crate::v2::project_effective_grant;
 use crate::v2::remove_members;
 use crate::v2::remove_roles;
 use crate::v2::rolling_stock_direct_grant;
@@ -88,6 +89,11 @@ pub trait TestClientExt {
         grant: RollingStockGrant,
     );
     async fn project_direct_grant(
+        &self,
+        subject: Subject,
+        project: Project,
+    ) -> Option<ProjectGrant>;
+    async fn project_effective_grant(
         &self,
         subject: Subject,
         project: Project,
@@ -332,6 +338,18 @@ impl TestClientExt for fga::Client {
         let authorize = special_authorizers::Authorize(self);
         authorize
             .access_value(project_direct_grant(subject, project))
+            .await
+            .unwrap()
+    }
+
+    async fn project_effective_grant(
+        &self,
+        subject: Subject,
+        project: Project,
+    ) -> Option<ProjectGrant> {
+        let authorize = special_authorizers::Authorize(self);
+        authorize
+            .access_value(project_effective_grant(subject, project))
             .await
             .unwrap()
     }
