@@ -1,11 +1,13 @@
 mod group;
 mod infra;
+mod project;
 mod roles;
 mod rolling_stock;
 mod test_client_ext;
 
 pub use group::*;
 pub use infra::*;
+pub use project::*;
 pub use roles::*;
 pub use rolling_stock::*;
 pub use test_client_ext::TestClientExt;
@@ -24,6 +26,7 @@ use crate::RollingStock;
 use crate::RollingStockGrant;
 use crate::Subject;
 use crate::User;
+use crate::model::Project;
 use crate::model::RollingStockPrivilege;
 
 pub type OpenFgaError = fga::client::Error;
@@ -89,6 +92,8 @@ pub enum Check {
     InfraExists(Infra),
     /// The rolling stock must exist in PostgreSQL
     RollingStockExists(RollingStock),
+    /// The project must exist in PostgreSQL
+    ProjectExists(Project),
 }
 
 impl Check {

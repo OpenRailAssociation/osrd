@@ -7,6 +7,8 @@ use crate::Group;
 use crate::Infra;
 use crate::InfraGrant;
 use crate::InfraPrivilege;
+use crate::Project;
+use crate::ProjectGrant;
 use crate::Role;
 use crate::RollingStock;
 use crate::RollingStockGrant;
@@ -20,6 +22,7 @@ use crate::v2::infra_granted_subjects;
 use crate::v2::infra_privileges;
 use crate::v2::infra_revoke_grant;
 use crate::v2::infra_set_grant;
+use crate::v2::project::project_direct_grant;
 use crate::v2::rolling_stock_direct_grant;
 use crate::v2::rolling_stock_effective_grant;
 use crate::v2::rolling_stock_granted_subjects;
@@ -76,6 +79,11 @@ pub trait TestClientExt {
         subject: Subject,
         grant: RollingStockGrant,
     );
+    async fn project_direct_grant(
+        &self,
+        subject: Subject,
+        project: Project,
+    ) -> Option<ProjectGrant>;
 }
 
 impl TestClientExt for fga::Client {
@@ -273,6 +281,18 @@ impl TestClientExt for fga::Client {
         let authorize = special_authorizers::Authorize(self);
         authorize
             .access_value(crate::v2::infra::infra_list(user, privilege))
+            .await
+            .unwrap()
+    }
+
+    async fn project_direct_grant(
+        &self,
+        subject: Subject,
+        project: Project,
+    ) -> Option<ProjectGrant> {
+        let authorize = special_authorizers::Authorize(self);
+        authorize
+            .access_value(project_direct_grant(subject, project))
             .await
             .unwrap()
     }
