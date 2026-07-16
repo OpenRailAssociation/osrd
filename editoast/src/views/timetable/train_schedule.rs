@@ -6,8 +6,10 @@ use std::sync::Arc;
 
 use authz;
 use authz::InfraPrivilege;
+use authz::RollingStockPrivilege;
 use authz::v2;
 use authz::v2::infra_privileges;
+use authz::v2::rolling_stock_privileges;
 use axum::Extension;
 use axum::extract::Json;
 use axum::extract::Path;
@@ -18,6 +20,7 @@ use common::units::millisecond;
 use core_client::AsCoreRequest;
 use core_client::CoreClient;
 use core_client::pathfinding::PathfindingInputError;
+use core_client::pathfinding::PathfindingInputError::UnauthorizedRollingStock;
 use core_client::pathfinding::PathfindingResultSuccess;
 use core_client::signal_projection::SignalUpdate;
 use core_client::simulation::PhysicsConsist;
@@ -804,9 +807,8 @@ pub(in crate::views) async fn simulation(
     };
 
     let rolling_stock_name = train_schedule.rolling_stock_name().to_owned();
-    let Some(consist) = RollingStock::retrieve(db_pool.get().await?, rolling_stock_name.clone())
-        .await?
-        .map(|rs| PhysicsConsistParameters::from_traction_engine(rs.into()))
+    let Some(rolling_stock) =
+        RollingStock::retrieve(db_pool.get().await?, rolling_stock_name.clone()).await?
     else {
         return Ok(Json(simulation::Response::PathfindingFailed {
             pathfinding_failed: PathfindingFailure::PathfindingInputError(
@@ -814,6 +816,38 @@ pub(in crate::views) async fn simulation(
             ),
         }));
     };
+
+    // Check user privilege on infra and rolling stock
+    // Done here because we need to retrieve the exception if it exists.
+    if let Some(user) = authn_state.user() {
+        let authorizer = authn_state.authorizer(regulator.openfga());
+        crate::authorizers::require(
+            &authorizer,
+            infra_privileges(user, authz::Infra(infra_id)),
+            &InfraPrivilege::CanRead,
+        )
+        .await?;
+        match crate::authorizers::require(
+            &authorizer,
+            rolling_stock_privileges(user, authz::RollingStock(rolling_stock.id)),
+            &RollingStockPrivilege::CanRead,
+        )
+        .await
+        {
+            Ok(()) => {}
+            Err(AuthorizationError::Forbidden) => {
+                return Ok(Json(simulation::Response::PathfindingFailed {
+                    pathfinding_failed: PathfindingFailure::PathfindingInputError(
+                        UnauthorizedRollingStock {
+                            rolling_stock_id: rolling_stock.id,
+                        },
+                    ),
+                }));
+            }
+            Err(err) => return Err(err.into()),
+        }
+    }
+    let consist = PhysicsConsistParameters::from_traction_engine(rolling_stock.into());
 
     let path_item_locations = train_schedule.locations();
     let op_cache = OperationalPointCache::load_path_items(
@@ -2255,6 +2289,7 @@ mod tests {
     struct SimulationTestsSetup {
         app: TestApp,
         infra_id: i64,
+        rolling_stock_id: i64,
         timetable: Timetable,
         train_schedule: models::TrainSchedule,
         exception: TrainScheduleException,
@@ -2305,6 +2340,7 @@ mod tests {
         SimulationTestsSetup {
             app,
             infra_id: small_infra.id,
+            rolling_stock_id: rolling_stock.id,
             timetable,
             train_schedule,
             exception,
@@ -2316,12 +2352,14 @@ mod tests {
         let SimulationTestsSetup {
             app,
             infra_id,
+            rolling_stock_id,
             train_schedule,
             ..
         } = simulation_tests_initial_setup().await;
         let user = app
             .user("authorized", "authorized")
             .with_infra_grant(infra_id, authz::InfraGrant::Reader)
+            .with_rolling_stock_grant(rolling_stock_id, authz::RollingStockGrant::Reader)
             .with_roles([authz::Role::OperationalStudies])
             .create()
             .await;
@@ -2349,12 +2387,14 @@ mod tests {
         let SimulationTestsSetup {
             app,
             infra_id,
+            rolling_stock_id,
             train_schedule,
             ..
         } = simulation_tests_initial_setup().await;
         let user = app
             .user("authorized", "authorized")
             .with_infra_grant(infra_id, authz::InfraGrant::Reader)
+            .with_rolling_stock_grant(rolling_stock_id, authz::RollingStockGrant::Reader)
             .with_roles([authz::Role::OperationalStudies])
             .create()
             .await;
@@ -2382,6 +2422,7 @@ mod tests {
         let SimulationTestsSetup {
             app,
             infra_id,
+            rolling_stock_id,
             train_schedule,
             exception,
             ..
@@ -2389,6 +2430,7 @@ mod tests {
         let user = app
             .user("authorized", "authorized")
             .with_infra_grant(infra_id, authz::InfraGrant::Reader)
+            .with_rolling_stock_grant(rolling_stock_id, authz::RollingStockGrant::Reader)
             .with_roles([authz::Role::OperationalStudies])
             .create()
             .await;
@@ -2453,6 +2495,7 @@ mod tests {
         let SimulationTestsSetup {
             app,
             infra_id,
+            rolling_stock_id,
             train_schedule,
             exception,
             ..
@@ -2460,6 +2503,7 @@ mod tests {
         let user = app
             .user("authorized", "authorized")
             .with_infra_grant(infra_id, authz::InfraGrant::Reader)
+            .with_rolling_stock_grant(rolling_stock_id, authz::RollingStockGrant::Reader)
             .with_roles([authz::Role::OperationalStudies])
             .create()
             .await;
@@ -2477,7 +2521,7 @@ mod tests {
             .expect("Fail to update exception");
 
         // WHEN
-        let response: simulation::Response = app
+        let response: InternalError = app
             .get(
                 format!(
                     "/train_schedules/{}/simulation/?infra_id={infra_id}&exception_id={}",
@@ -2487,28 +2531,28 @@ mod tests {
             )
             .by_user(&user.info)
             .await
-            .assert_status_ok()
+            .assert_status_not_found()
             .json();
 
         // THEN
         assert_eq!(
-            response,
-            simulation::Response::PathfindingFailed {
-                pathfinding_failed: PathfindingFailure::PathfindingInputError(
-                    PathfindingInputError::RollingStockNotFound {
-                        rolling_stock_name: "R2D2".into()
-                    }
-                )
-            }
+            &response.error_type,
+            "editoast:train_schedule:RollingStockNotFound"
         );
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn paced_train_simulation_not_found() {
-        let SimulationTestsSetup { app, infra_id, .. } = simulation_tests_initial_setup().await;
+        let SimulationTestsSetup {
+            app,
+            infra_id,
+            rolling_stock_id,
+            ..
+        } = simulation_tests_initial_setup().await;
         let user = app
             .user("authorized", "authorized")
             .with_infra_grant(infra_id, authz::InfraGrant::Reader)
+            .with_rolling_stock_grant(rolling_stock_id, authz::RollingStockGrant::Reader)
             .with_roles([authz::Role::OperationalStudies])
             .create()
             .await;
@@ -2524,13 +2568,20 @@ mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn paced_train_simulation_with_privilege_and_no_roles() {
         // GIVEN
-        let (app, infra_id, _timetable, train_schedule, _exception) =
-            app_infra_id_paced_train_id_for_simulation_tests().await;
+        let SimulationTestsSetup {
+            app,
+            infra_id,
+            rolling_stock_id,
+            train_schedule,
+            ..
+        } = simulation_tests_initial_setup().await;
 
         // a user that does not have the role to reach the endpoint but has a read grant on the infra
+        // and the rolling stock
         let user = app
             .user("unauthorized", "Unauthorized")
             .with_infra_grant(infra_id, authz::InfraGrant::Reader)
+            .with_rolling_stock_grant(rolling_stock_id, authz::RollingStockGrant::Reader)
             .create()
             .await;
 
@@ -2550,12 +2601,19 @@ mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn paced_train_simulation_without_permission() {
         // GIVEN
-        let (app, infra_id, _timetable, train_schedule, _exception) =
-            app_infra_id_paced_train_id_for_simulation_tests().await;
+        let SimulationTestsSetup {
+            app,
+            infra_id,
+            rolling_stock_id,
+            train_schedule,
+            ..
+        } = simulation_tests_initial_setup().await;
 
-        // a user that has the role to reach the endpoint but no read grant on the infra
+        // a user that has the role to reach the endpoint and a read grant on the rolling stock,
+        // but no read grant on the infra
         let user = app
             .user("unauthorized", "Unauthorized")
+            .with_rolling_stock_grant(rolling_stock_id, authz::RollingStockGrant::Reader)
             .with_roles([authz::Role::OperationalStudies])
             .create()
             .await;
@@ -2571,6 +2629,259 @@ mod tests {
         .by_user(&user.info)
         .await
         .assert_status_forbidden();
+    }
+
+    /// A rolling stock the user cannot read is reported as a pathfinding input error in the
+    /// response body, not as a 403: the endpoint answers about the train, not about the user.
+    fn unauthorized_rolling_stock_response(rolling_stock_id: i64) -> simulation::Response {
+        simulation::Response::PathfindingFailed {
+            pathfinding_failed: PathfindingFailure::PathfindingInputError(
+                PathfindingInputError::UnauthorizedRollingStock { rolling_stock_id },
+            ),
+        }
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn paced_train_simulation_without_rolling_stock_permission() {
+        // GIVEN
+        let SimulationTestsSetup {
+            app,
+            infra_id,
+            rolling_stock_id,
+            train_schedule,
+            ..
+        } = simulation_tests_initial_setup().await;
+
+        // a user that has the role to reach the endpoint and a read grant on the infra,
+        // but no read grant on the rolling stock
+        let user = app
+            .user("unauthorized", "Unauthorized")
+            .with_infra_grant(infra_id, authz::InfraGrant::Reader)
+            .with_roles([authz::Role::OperationalStudies])
+            .create()
+            .await;
+
+        // WHEN
+        let response: simulation::Response = app
+            .get(
+                format!(
+                    "/train_schedules/{}/simulation/?infra_id={infra_id}",
+                    train_schedule.id
+                )
+                .as_str(),
+            )
+            .by_user(&user.info)
+            .await
+            .assert_status_ok()
+            .json();
+
+        // THEN
+        assert_eq!(
+            response,
+            unauthorized_rolling_stock_response(rolling_stock_id)
+        );
+    }
+
+    const EXCEPTION_ROLLING_STOCK_NAME: &str = "exception_rolling_stock";
+
+    /// Creates a rolling stock and rewrites `exception` so it swaps the train schedule onto it.
+    async fn swap_exception_rolling_stock(
+        app: &TestApp,
+        train_schedule: &editoast_models::TrainSchedule,
+        exception: TrainScheduleException,
+    ) -> TrainScheduleException {
+        create_fast_rolling_stock(&mut app.db_pool().get_ok(), EXCEPTION_ROLLING_STOCK_NAME).await;
+
+        let mut change_groups = exception.change_groups;
+        change_groups.rolling_stock = Some(RollingStockChangeGroup {
+            rolling_stock_name: EXCEPTION_ROLLING_STOCK_NAME.into(),
+            comfort: Comfort::AirConditioning,
+        });
+        editoast_models::TrainScheduleException::changeset()
+            .change_groups(change_groups)
+            .update(&mut app.db_pool().get_ok(), train_schedule.id)
+            .await
+            .expect("Failed to update exception")
+            .expect("Failed to update exception")
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn paced_train_simulation_with_grant_on_another_rolling_stock() {
+        // GIVEN
+        let SimulationTestsSetup {
+            app,
+            infra_id,
+            rolling_stock_id,
+            train_schedule,
+            ..
+        } = simulation_tests_initial_setup().await;
+
+        let other_rolling_stock =
+            create_fast_rolling_stock(&mut app.db_pool().get_ok(), "other_rolling_stock").await;
+
+        // a user granted on another rolling stock than the one used by the train schedule
+        let user = app
+            .user("unauthorized", "Unauthorized")
+            .with_infra_grant(infra_id, authz::InfraGrant::Reader)
+            .with_rolling_stock_grant(other_rolling_stock.id, authz::RollingStockGrant::Reader)
+            .with_roles([authz::Role::OperationalStudies])
+            .create()
+            .await;
+
+        // WHEN
+        let response: simulation::Response = app
+            .get(
+                format!(
+                    "/train_schedules/{}/simulation/?infra_id={infra_id}",
+                    train_schedule.id
+                )
+                .as_str(),
+            )
+            .by_user(&user.info)
+            .await
+            .assert_status_ok()
+            .json();
+
+        // THEN
+        assert_eq!(
+            response,
+            unauthorized_rolling_stock_response(rolling_stock_id)
+        );
+    }
+
+    /// An exception can swap the rolling stock of a train schedule: privileges must be
+    /// checked against the rolling stock the exception resolves to, not the base one.
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn paced_train_exception_simulation_without_permission_on_exception_rolling_stock() {
+        // GIVEN
+        let SimulationTestsSetup {
+            app,
+            infra_id,
+            rolling_stock_id,
+            train_schedule,
+            exception,
+            ..
+        } = simulation_tests_initial_setup().await;
+
+        let exception = swap_exception_rolling_stock(&app, &train_schedule, exception).await;
+        let swapped_rolling_stock = RollingStock::retrieve(
+            app.db_pool().get_ok(),
+            EXCEPTION_ROLLING_STOCK_NAME.to_string(),
+        )
+        .await
+        .expect("Failed to retrieve rolling stock")
+        .expect("Swapped rolling stock not found");
+
+        // a user granted on the base rolling stock only, not on the one the exception swaps to
+        let user = app
+            .user("unauthorized", "Unauthorized")
+            .with_infra_grant(infra_id, authz::InfraGrant::Reader)
+            .with_rolling_stock_grant(rolling_stock_id, authz::RollingStockGrant::Reader)
+            .with_roles([authz::Role::OperationalStudies])
+            .create()
+            .await;
+
+        // WHEN
+        let response: simulation::Response = app
+            .get(
+                format!(
+                    "/train_schedules/{}/simulation/?infra_id={infra_id}&exception_id={}",
+                    train_schedule.id, exception.id
+                )
+                .as_str(),
+            )
+            .by_user(&user.info)
+            .await
+            .assert_status_ok()
+            .json();
+
+        // THEN the failure names the rolling stock the exception resolves to, not the base one
+        assert_eq!(
+            response,
+            unauthorized_rolling_stock_response(swapped_rolling_stock.id)
+        );
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn paced_train_exception_simulation_with_permission_on_exception_rolling_stock() {
+        // GIVEN
+        let SimulationTestsSetup {
+            app,
+            infra_id,
+            train_schedule,
+            exception,
+            ..
+        } = simulation_tests_initial_setup().await;
+        let exception = swap_exception_rolling_stock(&app, &train_schedule, exception).await;
+        let swapped_rolling_stock = RollingStock::retrieve(
+            app.db_pool().get_ok(),
+            EXCEPTION_ROLLING_STOCK_NAME.to_string(),
+        )
+        .await
+        .expect("Failed to retrieve rolling stock")
+        .expect("Swapped rolling stock not found");
+
+        // a user granted on the rolling stock the exception swaps to, not on the base one
+        let user = app
+            .user("authorized", "Authorized")
+            .with_infra_grant(infra_id, authz::InfraGrant::Reader)
+            .with_rolling_stock_grant(swapped_rolling_stock.id, authz::RollingStockGrant::Reader)
+            .with_roles([authz::Role::OperationalStudies])
+            .create()
+            .await;
+
+        let response: simulation::Response = app
+            .get(
+                format!(
+                    "/train_schedules/{}/simulation/?infra_id={infra_id}&exception_id={}",
+                    train_schedule.id, exception.id
+                )
+                .as_str(),
+            )
+            .by_user(&user.info)
+            .await
+            .assert_status_ok()
+            .json();
+        assert_eq!(
+            response,
+            simulation::Response::Success(SimulationResponseSuccess {
+                base: ReportTrain {
+                    positions: vec![0, 500_000, 15_050_000],
+                    times: vec![0, 30_000, 100_000],
+                    speeds: vec![],
+                    energy_consumption: 0.0,
+                    path_item_times: vec![0, 1, 2, 3]
+                },
+                provisional: ReportTrain {
+                    positions: vec![0, 500_000, 15_050_000],
+                    times: vec![0, 30_000, 100_000],
+                    speeds: vec![],
+                    energy_consumption: 0.0,
+                    path_item_times: vec![0, 1, 2, 3]
+                },
+                final_output: CompleteReportTrain {
+                    report_train: ReportTrain {
+                        positions: vec![0, 500_000, 15_050_000],
+                        times: vec![0, 30_000, 100_000],
+                        speeds: vec![],
+                        energy_consumption: 0.0,
+                        path_item_times: vec![0, 1, 2, 3]
+                    },
+                    signal_critical_positions: vec![],
+                    zone_updates: vec![],
+                    spacing_requirements: vec![],
+                    routing_requirements: vec![]
+                },
+                mrsp: SpeedLimitProperties {
+                    boundaries: vec![],
+                    values: vec![]
+                },
+                electrical_profiles: ElectricalProfiles {
+                    boundaries: vec![],
+                    values: vec![]
+                }
+            })
+        );
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -3260,6 +3571,7 @@ mod tests {
             timetable,
             train_schedule,
             exception,
+            ..
         } = simulation_tests_initial_setup().await;
         let user = app
             .user("authorized", "authorized")

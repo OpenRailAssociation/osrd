@@ -5834,6 +5834,19 @@ components:
             enum:
             - not_enough_path_items
       - type: object
+        title: PathfindingInputErrorUnauthorizedRollingStock
+        required:
+        - rolling_stock_id
+        - error_type
+        properties:
+          error_type:
+            type: string
+            enum:
+            - unauthorized_rolling_stock
+          rolling_stock_id:
+            type: integer
+            format: int64
+      - type: object
         title: PathfindingInputErrorRollingStockNotFound
         required:
         - rolling_stock_name
