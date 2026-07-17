@@ -3343,6 +3343,12 @@ class ScheduleItem(BaseModel):
     stop_for: timedelta | None = None
 
 
+class SearchJourneyEnvironmentResponse(BaseModel):
+    id: int
+    infra_id: int
+    timetable_ids: list[int]
+
+
 class SearchObjectType(Enum):
     """
     Object type for query search

@@ -16,6 +16,7 @@ pub mod projection;
 pub mod rolling_stock;
 pub mod round_trips;
 pub mod search;
+pub mod search_journey_environment;
 mod search_journeys;
 mod server;
 pub mod sprites;
@@ -310,7 +311,10 @@ fn service_router() -> server::router::DocumentedRouter {
                             .route("/level_order", get!(electrical_profiles::get_level_order))
                     })
             })
-            .route("/search_journeys", post!(search_journeys::search_journeys))
+            .nests("/search_journeys", |path| {
+                path.route("/", post!(search_journeys::search_journeys))
+                    .route("/search_environment", get!(search_journey_environment::retrieve_latest))
+            })
             //
             // operational studies
             //

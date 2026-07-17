@@ -19,6 +19,7 @@ export const addTagTypes = [
   'round_trips',
   'search',
   'search_journeys',
+  'search_journey_environment',
   'similar_trains',
   'stdcm',
   'sncf',
@@ -925,6 +926,13 @@ const injectedRtkApi = api
           body: queryArg.journeySearchQuery,
         }),
         invalidatesTags: ['search_journeys'],
+      }),
+      getSearchJourneysSearchEnvironment: build.query<
+        GetSearchJourneysSearchEnvironmentApiResponse,
+        GetSearchJourneysSearchEnvironmentApiArg
+      >({
+        query: () => ({ url: `/search_journeys/search_environment` }),
+        providesTags: ['search_journey_environment'],
       }),
       postSimilarTrains: build.mutation<PostSimilarTrainsApiResponse, PostSimilarTrainsApiArg>({
         query: (queryArg) => ({
@@ -2311,6 +2319,9 @@ export type PostSearchJourneysApiResponse =
 export type PostSearchJourneysApiArg = {
   journeySearchQuery: JourneySearchQuery;
 };
+export type GetSearchJourneysSearchEnvironmentApiResponse =
+  /** status 200 The most recent search journey environment */ SearchJourneyEnvironmentResponse;
+export type GetSearchJourneysSearchEnvironmentApiArg = void;
 export type PostSimilarTrainsApiResponse =
   /** status 200 A combination of reference train identifiers similar to the provided train */ {
     similar_trains: {
@@ -4447,6 +4458,11 @@ export type JourneySearchQuery = {
     The algorithm assumes that changing from one train to another in a stop
     always take this constant time. */
   transfer_ms: number;
+};
+export type SearchJourneyEnvironmentResponse = {
+  id: number;
+  infra_id: number;
+  timetable_ids: number[];
 };
 export type SimilarTrainWaypoint = {
   id: string;
