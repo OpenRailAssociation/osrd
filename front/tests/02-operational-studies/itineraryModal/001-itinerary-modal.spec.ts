@@ -81,6 +81,10 @@ test.describe('Itinerary Modal, Default ', { tag: ['@op', '@itinerary-modal'] },
       await itineraryModalPage.addEmptyIntermediateRow(2, 5);
       await itineraryModalPage.checkPathStepCounterText(2, '3');
     });
+    await test.step('Clear a path item field without removing the path item', async () => {
+      await itineraryModalPage.clearPathStepValue(1);
+      await itineraryModalPage.checkPathStepCounterText(2, '3');
+    });
     await test.step('Check trailing placeholder', async () => {
       await itineraryModalPage.checkTrailingPlaceholder();
     });

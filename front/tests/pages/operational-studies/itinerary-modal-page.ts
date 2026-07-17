@@ -10,6 +10,7 @@ class ItineraryModalPage {
   private readonly itineraryModalNextButton: Locator;
   private readonly createTimetableItemButton: Locator;
   private readonly comboBox: Locator;
+  private readonly pathStepWrapper: Locator;
   private readonly opSuggestion: Locator;
   private readonly pathStepGap: Locator;
   private readonly addPathStepButton: Locator;
@@ -40,6 +41,7 @@ class ItineraryModalPage {
     this.itineraryModalNextButton = page.getByTestId('itinerary-modal-next-button');
     this.createTimetableItemButton = page.getByTestId('create-train-schedule-button');
     this.comboBox = page.getByTestId('path-step-combo-box');
+    this.pathStepWrapper = page.getByTestId('path-step-wrapper');
     this.opSuggestion = page.getByTestId('op-suggestion');
     this.pathStepGap = page.getByTestId('path-step-gap');
     this.addPathStepButton = page.getByTestId('add-path-step-button');
@@ -59,6 +61,13 @@ class ItineraryModalPage {
     this.segmentedControlInputStop = page.getByTestId('segmented-control-stop');
     this.timetableItem = page.getByTestId('scenario-train-schedule');
     this.timetableItemName = this.timetableItem.getByTestId('train-name');
+  }
+
+  private getOpNameClearIcon(pathStepIndex: number): Locator {
+    return this.pathStepWrapper
+      .nth(pathStepIndex)
+      .getByTestId('path-step-op-name')
+      .getByTestId('clear-icon');
   }
 
   async checkItineraryModalDefaultState() {
@@ -127,6 +136,13 @@ class ItineraryModalPage {
   async deleteNumberedRow(counterIndex: number, expectedComboBoxCount: number) {
     await this.pathStepCounter.nth(counterIndex).click();
     await expect(this.comboBox).toHaveCount(expectedComboBoxCount);
+  }
+
+  async clearPathStepValue(pathStepIndex: number) {
+    const expectedComboBoxCount = await this.comboBox.count();
+    await this.getOpNameClearIcon(pathStepIndex).click();
+    await expect(this.comboBox).toHaveCount(expectedComboBoxCount);
+    await expect(this.comboBox.nth(pathStepIndex)).toHaveValue('');
   }
 
   async checkPathStepCounterText(index: number, expectedText: string) {
