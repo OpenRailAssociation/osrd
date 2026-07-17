@@ -71,6 +71,16 @@ open class ReportTrain(
     val times: List<TimeDelta>,
     val speeds: List<Double>,
     @Json(name = "energy_consumption") val energyConsumption: Double,
+    /**
+     * Times at which the train *arrives* at each path item.
+     *
+     * If two path items have the same position, but the first one has a stop duration, the second
+     * path item time will be offset by the stop duration of the first.
+     *
+     * For example, in a simulation going through four path items A, B, B' and C. If B and B' are at
+     * the same position, then the path item time of B' will be equal to the path item time of B
+     * plus the stop duration of B.
+     */
     @Json(name = "path_item_times") val pathItemTimes: List<TimeDelta>,
 )
 
