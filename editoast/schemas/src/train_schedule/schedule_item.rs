@@ -19,7 +19,7 @@ pub enum ReceptionSignal {
 }
 
 #[serde_as]
-#[derive(Debug, Default, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
+#[derive(Debug, Default, Clone, PartialEq, Serialize, Deserialize, ToSchema, Hash)]
 #[serde(deny_unknown_fields)]
 #[serde(remote = "Self")]
 pub struct ScheduleItem {
@@ -39,6 +39,8 @@ pub struct ScheduleItem {
     pub reception_signal: ReceptionSignal,
     pub reference_base_arrival: Option<PositiveDuration>,
     pub reference_position: Option<u64>,
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub can_backtrack: bool,
 }
 
 #[cfg(feature = "testing")]
@@ -51,6 +53,7 @@ impl ScheduleItem {
             reception_signal: ReceptionSignal::Open,
             reference_base_arrival: None,
             reference_position: None,
+            can_backtrack: false,
         }
     }
 }
@@ -99,6 +102,7 @@ mod tests {
             reception_signal: ReceptionSignal::Stop,
             reference_base_arrival: None,
             reference_position: None,
+            can_backtrack: false,
         };
         let invalid_str = to_string(&schedule_item).unwrap();
         assert!(from_str::<ScheduleItem>(&invalid_str).is_err());

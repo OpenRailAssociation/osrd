@@ -3845,6 +3845,8 @@ export type PathfindingResult =
 export type PathfindingInput = {
   /** Set of authorized track section ids, empty means no restriction */
   allowed_track_sections?: string[];
+  /** Indexes, in `path_items`, of the waypoints where the train is allowed to backtrack */
+  can_backtrack_path_items?: number[];
   /** List of waypoints given to the pathfinding */
   path_items: PathItemLocation[];
   /** Can the rolling stock run on non-electrified tracks */
@@ -4416,6 +4418,7 @@ export type ScheduleItem = {
   arrival?: null | PositiveDuration;
   /** Position on the path of the schedule item. */
   at: string;
+  can_backtrack?: boolean;
   reception_signal?: ReceptionSignal;
   reference_base_arrival?: null | PositiveDuration;
   reference_position?: number | null;

@@ -14,6 +14,7 @@ use core_client::simulation::SimulationScheduleItem;
 use core_client::simulation::SimulationSuccess;
 use core_client::simulation::SpeedLimitProperties;
 use core_client::simulation::StopDetails;
+use core_task::PathItemConstraint;
 use core_task::PathfindingConsist;
 use core_task::SimulationConsist;
 use core_task::SimulationTrain;
@@ -31,6 +32,7 @@ use schemas::train_schedule::TrainScheduleLike;
 use serde::Deserialize;
 use serde::Serialize;
 use std::collections::HashMap;
+use std::collections::HashSet;
 use std::hash::DefaultHasher;
 use std::hash::Hash;
 use std::hash::Hasher;
@@ -709,13 +711,14 @@ pub fn build_simulation_train(
         .map(|schedule_item @ ScheduleItem { at, .. }| (at, schedule_item))
         .collect::<HashMap<_, _>>();
     for (track_offsets, PathItem { id, .. }) in track_offsets.iter().zip(path) {
-        let (at, simulation_schedule_item) = match schedule_map.get(id) {
-            None => (id, core_task::ScheduleItem::pass_by()),
+        let (at, simulation_schedule_item, can_backtrack) = match schedule_map.get(id) {
+            None => (id, core_task::ScheduleItem::pass_by(), false),
             Some(ScheduleItem {
                 at,
                 arrival,
                 stop_for,
                 reception_signal,
+                can_backtrack,
                 ..
             }) => (
                 at,
@@ -724,10 +727,14 @@ pub fn build_simulation_train(
                     stop_for: stop_for.as_ref().map(|s| s.num_milliseconds() as u64),
                     reception_signal: *reception_signal,
                 },
+                *can_backtrack,
             ),
         };
         simulation_train.push_schedule_item(
-            track_offsets.iter().cloned().collect(),
+            PathItemConstraint {
+                path_item_alternatives: track_offsets.to_vec(),
+                can_backtrack,
+            },
             at.clone(),
             simulation_schedule_item,
         )
@@ -816,14 +823,35 @@ pub fn build_sim_schedule_items(
     schedule_items: &[ScheduleItem],
     path_items_to_position: &HashMap<&schemas::primitives::NonBlankString, u64>,
     path_items: &[PathItem],
-    backtrack_path_items: Option<&Vec<usize>>,
+    backtrack_path_item_indexes: Option<&Vec<usize>>,
 ) -> Vec<SimulationScheduleItem> {
+    assert_eq!(path_items_to_position.len(), path_items.len());
+
+    // assert that schedule_items are included in path_items
+    let path_item_ids: HashSet<_> = path_items.iter().map(|item| &item.id).collect();
+    assert!(
+        schedule_items
+            .iter()
+            .all(|item| path_item_ids.contains(&item.at))
+    );
+
+    // assert that backtrack_path_item_indexes are included in schedule_items
+    if let Some(backtrack_path_item_indexes) = backtrack_path_item_indexes {
+        let schedule_items_ids: HashSet<_> = schedule_items.iter().map(|item| &item.at).collect();
+        assert!(
+            backtrack_path_item_indexes
+                .iter()
+                .all(|&index| index < path_items.len()
+                    && schedule_items_ids.contains(&path_items[index].id)),
+        )
+    }
+
     let schedule_items: HashMap<_, _> = schedule_items
         .iter()
         .map(|schedule_item| (&schedule_item.at, schedule_item))
         .collect();
     let mut is_backtracking = vec![false; path_items.len()];
-    backtrack_path_items
+    backtrack_path_item_indexes
         .unwrap_or(&vec![])
         .iter()
         .for_each(|index| is_backtracking[*index] = true);
@@ -832,13 +860,14 @@ pub fn build_sim_schedule_items(
         .zip(is_backtracking)
         .map(
             |(path_item, is_backtracking)| match schedule_items.get(&path_item.id) {
-                None => match is_backtracking {
-                    true => unreachable!(),
-                    _ => SimulationScheduleItem {
-                        path_offset: path_items_to_position[&path_item.id],
-                        arrival: None,
-                        stop_details: None,
-                    },
+                None => SimulationScheduleItem {
+                    path_offset: path_items_to_position[&path_item.id],
+                    arrival: None,
+                    stop_details: is_backtracking.then(|| StopDetails {
+                        duration: 0,
+                        reception_signal: Default::default(),
+                        is_backtracking,
+                    }),
                 },
                 Some(schedule_item) => SimulationScheduleItem {
                     path_offset: path_items_to_position[&schedule_item.at],

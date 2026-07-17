@@ -50,7 +50,7 @@ pub struct PathItem {
     /// The track offsets of the path item.
     pub locations: Vec<TrackOffset>,
     /// If true, the train can backtrack at these track offsets.
-    pub can_backtrack: Option<bool>,
+    pub can_backtrack: bool,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ToSchema)]

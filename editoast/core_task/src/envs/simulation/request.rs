@@ -187,8 +187,8 @@ mod tests {
 
         let core_env = CoreEnv::new_mock(MockingClient::new());
         let path_items = vec![
-            PathItemConstraint::from_iter([]),
-            PathItemConstraint::from_iter([]),
+            PathItemConstraint::new([], false),
+            PathItemConstraint::new([], false),
         ];
         let pf_input = pathfinding::PathfindingKey(
             Arc::new(pathfinding::test_data::consist(1)),
@@ -288,11 +288,11 @@ mod tests {
 
         let core_env = CoreEnv::new_mock(MockingClient::new());
         let path_items = vec![
-            PathItemConstraint::from_iter([]),
-            PathItemConstraint::from_iter([]),
-            PathItemConstraint::from_iter([]),
-            PathItemConstraint::from_iter([]),
-            PathItemConstraint::from_iter([]),
+            PathItemConstraint::new([], false),
+            PathItemConstraint::new([], false),
+            PathItemConstraint::new([], false),
+            PathItemConstraint::new([], false),
+            PathItemConstraint::new([], false),
         ];
         let pf_input = pathfinding::PathfindingKey(
             Arc::new(pathfinding::test_data::consist(1)),
@@ -468,12 +468,12 @@ mod tests {
             ),
         );
         builder.push_schedule_item(
-            PathItemConstraint::from_iter([]),
+            PathItemConstraint::new([], false),
             NonBlankString::from("a"),
             ScheduleItem::pass_by(),
         );
         builder.push_schedule_item(
-            PathItemConstraint::from_iter([]),
+            PathItemConstraint::new([], false),
             NonBlankString::from("b"),
             ScheduleItem {
                 arrival_at: Some(300),

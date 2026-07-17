@@ -12912,6 +12912,12 @@ components:
             type: string
           description: Set of authorized track section ids, empty means no restriction
           uniqueItems: true
+        can_backtrack_path_items:
+          type: array
+          items:
+            type: integer
+            minimum: 0
+          description: Indexes, in `path_items`, of the waypoints where the train is allowed to backtrack
         path_items:
           type: array
           items:
@@ -14156,6 +14162,8 @@ components:
           - type: string
             minLength: 1
           description: Position on the path of the schedule item.
+        can_backtrack:
+          type: boolean
         reception_signal:
           $ref: '#/components/schemas/ReceptionSignal'
         reference_base_arrival:

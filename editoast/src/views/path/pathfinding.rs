@@ -20,6 +20,7 @@ use core_client::pathfinding::PathfindingRequest;
 use core_client::pathfinding::PathfindingResultSuccess;
 use database::DbConnection;
 use educe::Educe;
+use itertools::Itertools;
 use ordered_float::OrderedFloat;
 use schemas::rolling_stock::LoadingGaugeType;
 use schemas::train_schedule::PathItemLocation;
@@ -38,9 +39,12 @@ use crate::views::path::operational_point_cache::OperationalPointCache;
 use crate::views::timetable::PhysicsConsistParameters;
 use editoast_models::Infra;
 use editoast_models::prelude::*;
+use serde_with::DefaultOnNull;
+use serde_with::serde_as;
 
 /// Path input is described by some rolling stock information
 /// and a list of path waypoints
+#[serde_as]
 #[derive(Deserialize, Clone, Debug, Hash, ToSchema)]
 #[cfg_attr(test, derive(Serialize))]
 pub(in crate::views) struct PathfindingInput {
@@ -68,6 +72,10 @@ pub(in crate::views) struct PathfindingInput {
     /// Set of authorized track section ids, empty means no restriction
     #[serde(default)]
     allowed_track_sections: BTreeSet<String>,
+    /// Indexes, in `path_items`, of the waypoints where the train is allowed to backtrack
+    #[serde(default)]
+    #[serde_as(as = "DefaultOnNull")]
+    pub can_backtrack_path_items: Vec<usize>,
 }
 
 impl PathfindingInput {
@@ -93,6 +101,12 @@ impl PathfindingInput {
             speed_limit_tag: train_schedule.speed_limit_tag().cloned(),
             stops_at_end_of_block: Some(train_schedule.options().stops_at_end_of_block()),
             allowed_track_sections: BTreeSet::new(),
+            can_backtrack_path_items: train_schedule
+                .schedule()
+                .iter()
+                .enumerate()
+                .filter_map(|(idx, item)| if item.can_backtrack { Some(idx) } else { None })
+                .collect(),
         }
     }
 
@@ -314,11 +328,11 @@ async fn pathfinding_blocks_batch(
 
     // Handle miss cache:
     debug!("Extracting locations from path items");
-    let path_items: Vec<_> = pathfinding_cached_results
+    let path_items = pathfinding_cached_results
         .iter()
         .filter(|(_, res)| res.is_none())
         .flat_map(|(hash, _)| &path_request_map[*hash].path_items)
-        .collect();
+        .collect_vec();
     let op_cache = OperationalPointCache::load_path_items(conn, infra.id, &path_items).await?;
 
     debug!(
@@ -399,9 +413,10 @@ fn build_pathfinding_request(
         expected_version: infra.version,
         path_items: track_offsets
             .into_iter()
-            .map(|offsets| core_client::pathfinding::PathItem {
+            .enumerate()
+            .map(|(index, offsets)| core_client::pathfinding::PathItem {
                 locations: offsets,
-                can_backtrack: Some(false),
+                can_backtrack: pathfinding_input.can_backtrack_path_items.contains(&index),
             })
             .collect(),
         rolling_stock_loading_gauge: pathfinding_input.rolling_stock_loading_gauge,
@@ -504,6 +519,7 @@ pub mod tests {
             stops_at_end_of_block: None,
             allowed_track_sections: BTreeSet::new(),
             path_items,
+            can_backtrack_path_items: Default::default(),
         }
     }
 
