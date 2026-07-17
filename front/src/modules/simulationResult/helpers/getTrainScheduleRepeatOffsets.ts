@@ -1,4 +1,4 @@
-import type { TrainSpaceTimeData } from 'modules/simulationResult/types';
+import type { TrainSpaceTimeData, BaseTrainProjection } from 'modules/simulationResult/types';
 import { Duration } from 'utils/duration';
 
 /**
@@ -10,6 +10,11 @@ export type TimeRange = {
   start: Duration;
   end: Duration;
 };
+
+function getProjectionTravelTime(curves: BaseTrainProjection['spaceTimeCurves']): Duration {
+  const times = curves.flatMap((curve) => curve.times);
+  return new Duration({ milliseconds: Math.max(...times) - Math.min(...times) });
+}
 
 /**
  * Compute a list of time offsets a train schedule needs to be repeated on to
@@ -23,14 +28,24 @@ export type TimeRange = {
  * element, shifting the train schedule by the time offset each time.
  */
 export default function getTrainScheduleRepeatOffsets(
-  trainSchedule: Pick<TrainSpaceTimeData, 'paced'>,
+  trainSchedule: Pick<TrainSpaceTimeData, 'paced' | 'spaceTimeCurves'>,
   range: TimeRange
 ): Duration[] {
   if (!trainSchedule.paced) {
     return [Duration.zero];
   }
 
-  const effectiveRangeStart = range.start; // TODO: take travel time into account
+  let maxTravelTime = getProjectionTravelTime(trainSchedule.spaceTimeCurves);
+  for (const exceptionProjection of trainSchedule.paced.exceptionProjections.values()) {
+    const travelTime = getProjectionTravelTime(exceptionProjection.spaceTimeCurves);
+    if (travelTime > maxTravelTime) {
+      maxTravelTime = travelTime;
+    }
+  }
+
+  // Expand the range on the left side to ensure an occurrence starting before
+  // but arriving after range.start is visible
+  const effectiveRangeStart = range.start.sub(maxTravelTime);
 
   const timeWindow = trainSchedule.paced.timeWindow;
   const repeatStartIndex = Math.floor(effectiveRangeStart.ms / timeWindow.ms);
