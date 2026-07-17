@@ -1,7 +1,6 @@
 use std::str::FromStr;
-use std::sync::OnceLock;
 
-use regex::Regex;
+use regex::regex;
 use serde::Deserialize;
 use serde::Deserializer;
 use serde::Serialize;
@@ -35,14 +34,11 @@ impl From<SubCategoryColor> for String {
     }
 }
 
-static COLOR_REGEX: OnceLock<Regex> = OnceLock::new();
 impl FromStr for SubCategoryColor {
     type Err = String;
 
     fn from_str(color: &str) -> Result<Self, Self::Err> {
-        let regex =
-            COLOR_REGEX.get_or_init(|| Regex::new(r"^#[0-9a-fA-F]{6}$").expect("Invalid regex"));
-        if regex.is_match(color.trim()) {
+        if regex!(r"^#[0-9a-fA-F]{6}$").is_match(color.trim()) {
             Ok(Self(color.to_string()))
         } else {
             Err(format!(
