@@ -88,6 +88,7 @@ import {
 import ProjectionLoadingMessage from './ProjectionLoadingMessage';
 import SettingsPanel from './SettingsPanel';
 import SpaceTimeChartToolbar from './SpaceTimeChartToolbar';
+import TimeRangeObserver from './TimeRangeObserver';
 import useWaypointMenu from './useWaypointMenu';
 import WaypointsPanel from './WaypointsPanel';
 
@@ -208,6 +209,7 @@ const SpaceTimeChartWrapper = ({
   const [dragOverTrackId, setDragOverTrackId] = useState<string | undefined>();
   const [dragOffsetMs, setDragOffsetMs] = useState<number | null>(null);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const [_chartTimeRange, setChartTimeRange] = useState<{ start: number; end: number }>();
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) =>
@@ -780,6 +782,7 @@ const SpaceTimeChartWrapper = ({
                 )}
               </>
             )}
+            <TimeRangeObserver onChange={setChartTimeRange} />
           </SpaceTimeChart>
           {showCurvePanel && (
             <CurveSelectionSidePanel
