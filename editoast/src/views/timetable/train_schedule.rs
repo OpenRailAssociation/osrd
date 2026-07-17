@@ -2211,13 +2211,15 @@ mod tests {
         );
     }
 
-    async fn app_infra_id_paced_train_id_for_simulation_tests() -> (
-        TestApp,
-        i64,
-        Timetable,
-        editoast_models::TrainSchedule,
-        TrainScheduleException,
-    ) {
+    struct SimulationTestsSetup {
+        app: TestApp,
+        infra_id: i64,
+        timetable: Timetable,
+        train_schedule: editoast_models::TrainSchedule,
+        exception: TrainScheduleException,
+    }
+
+    async fn simulation_tests_initial_setup() -> SimulationTestsSetup {
         let db_pool = DbConnectionPoolV2::for_tests();
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
         let rolling_stock =
@@ -2260,13 +2262,23 @@ mod tests {
             .db_pool(db_pool)
             .core_client(core.into())
             .build();
-        (app, small_infra.id, timetable, train_schedule, exception)
+        SimulationTestsSetup {
+            app,
+            infra_id: small_infra.id,
+            timetable,
+            train_schedule,
+            exception,
+        }
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn paced_train_simulation() {
-        let (app, infra_id, _timetable, train_schedule, _exception) =
-            app_infra_id_paced_train_id_for_simulation_tests().await;
+        let SimulationTestsSetup {
+            app,
+            infra_id,
+            train_schedule,
+            ..
+        } = simulation_tests_initial_setup().await;
         let response: core_client::simulation::Response = app
             .get(
                 format!(
@@ -2287,8 +2299,12 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn paced_train_exception_simulation_with_invalid_exception_key() {
-        let (app, infra_id, _timetable, train_schedule, _exception) =
-            app_infra_id_paced_train_id_for_simulation_tests().await;
+        let SimulationTestsSetup {
+            app,
+            infra_id,
+            train_schedule,
+            ..
+        } = simulation_tests_initial_setup().await;
         let response: InternalError = app
             .get(
                 format!(
@@ -2309,8 +2325,13 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn paced_train_exception_simulation() {
-        let (app, infra_id, _timetable, train_schedule, exception) =
-            app_infra_id_paced_train_id_for_simulation_tests().await;
+        let SimulationTestsSetup {
+            app,
+            infra_id,
+            train_schedule,
+            exception,
+            ..
+        } = simulation_tests_initial_setup().await;
         let response: simulation::Response = app
             .get(
                 format!(
@@ -2368,8 +2389,13 @@ mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn paced_train_exception_simulation_with_rolling_stock_not_found() {
         // GIVEN
-        let (app, infra_id, _timetable, train_schedule, exception) =
-            app_infra_id_paced_train_id_for_simulation_tests().await;
+        let SimulationTestsSetup {
+            app,
+            infra_id,
+            train_schedule,
+            exception,
+            ..
+        } = simulation_tests_initial_setup().await;
 
         let mut change_group = exception.change_groups;
         change_group.rolling_stock = Some(RollingStockChangeGroup {
@@ -2411,8 +2437,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn paced_train_simulation_not_found() {
-        let (app, infra_id, _timetable, _train_schedule, _exception) =
-            app_infra_id_paced_train_id_for_simulation_tests().await;
+        let SimulationTestsSetup { app, infra_id, .. } = simulation_tests_initial_setup().await;
         let response: InternalError = app
             .get(format!("/train_schedules/{}/simulation/?infra_id={}", 0, infra_id).as_str())
             .await
@@ -2691,8 +2716,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn paced_train_simulation_summary_not_found() {
-        let (app, infra_id, _timetable, _paced_train_id, _exception) =
-            app_infra_id_paced_train_id_for_simulation_tests().await;
+        let SimulationTestsSetup { app, infra_id, .. } = simulation_tests_initial_setup().await;
         let timetable = create_timetable(&mut app.db_pool().get_ok()).await;
         let response: InternalError = app
             .post("/train_schedules/simulation_summary")
@@ -3097,8 +3121,13 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn paced_train_occupancy_blocks() {
-        let (app, infra_id, timetable, train_schedule, exception) =
-            app_infra_id_paced_train_id_for_simulation_tests().await;
+        let SimulationTestsSetup {
+            app,
+            infra_id,
+            timetable,
+            train_schedule,
+            exception,
+        } = simulation_tests_initial_setup().await;
         let db_pool = app.db_pool();
 
         // First remove all already generated exceptions
