@@ -82,6 +82,10 @@ updates:
         patterns:
           - "vitest"
           - "@vitest/*"
+      oxc:
+        patterns:
+          - "oxlint"
+          - "oxlint-*"
       patch:
         update-types:
           - "patch"
