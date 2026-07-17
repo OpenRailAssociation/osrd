@@ -76,10 +76,7 @@ class TimesAndStopsTab {
           await expect(signalReceptionCheckbox).toBeChecked();
 
           const shortSlipCheckbox = rowLocator.locator('input[type="checkbox"]').nth(1);
-          const isShortSlipEnabled = await shortSlipCheckbox.isEnabled();
-          if (!isShortSlipEnabled) {
-            throw new Error('The shortSlipDistance checkbox is not enabled');
-          }
+          await expect(shortSlipCheckbox).toBeEnabled();
 
           await shortSlipCheckbox.click();
           await expect(shortSlipCheckbox).toBeChecked();

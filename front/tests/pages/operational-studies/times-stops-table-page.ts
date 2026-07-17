@@ -233,11 +233,11 @@ class TimesStopsTablePage extends OpSimulationResultPage {
   }
 
   async verifyComputedArrivalChanged(row: Locator, previousText: string): Promise<void> {
-    expect(await this.getComputedArrivalText(row)).not.toBe(previousText);
+    await expect(this.computedArrival(row)).not.toHaveText(previousText);
   }
 
   async verifyComputedDepartureChanged(row: Locator, previousText: string): Promise<void> {
-    expect(await this.getComputedDepartureText(row)).not.toBe(previousText);
+    await expect(this.computedDeparture(row)).not.toHaveText(previousText);
   }
 
   async verifyComputedArrivalNotEmpty(row: Locator): Promise<void> {

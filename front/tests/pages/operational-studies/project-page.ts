@@ -68,8 +68,9 @@ class ProjectPage extends HomePage {
   }
 
   private async validateObjectives(expectedObjectives: string) {
-    const objectives = await this.projectObjectivesLabel.textContent();
-    expect(cleanText(objectives)).toContain(cleanText(expectedObjectives));
+    await expect
+      .poll(async () => cleanText(await this.projectObjectivesLabel.textContent()))
+      .toContain(cleanText(expectedObjectives));
   }
 
   async createProject(details: ProjectDetails) {

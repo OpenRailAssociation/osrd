@@ -100,8 +100,7 @@ class RollingStockSelector extends CommonPage {
   }
 
   async verifySelectedComfortMatches(expectedComfort: string): Promise<void> {
-    const selectedComfort = await this.selectedComfortType.innerText();
-    expect(selectedComfort).toMatch(new RegExp(expectedComfort, 'i'));
+    await expect(this.selectedComfortType).toHaveText(new RegExp(expectedComfort, 'i'));
   }
 
   async toggleThermalRollingStockFilter() {

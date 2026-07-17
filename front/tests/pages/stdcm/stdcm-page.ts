@@ -63,7 +63,7 @@ class STDCMPage {
 
   async verifySuggestions(expectedSuggestions: string[]) {
     await expect(this.suggestionList).toBeVisible();
-    expect(await this.suggestionItems.count()).toBe(expectedSuggestions.length);
+    await expect(this.suggestionItems).toHaveCount(expectedSuggestions.length);
     const actualSuggestions = await this.suggestionItems.allTextContents();
     expect(actualSuggestions).toEqual(expectedSuggestions);
   }
