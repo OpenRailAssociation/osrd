@@ -2826,6 +2826,19 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/JourneyProposals'
+  /search_journeys/search_environment:
+    get:
+      tags:
+      - search_journey_environment
+      responses:
+        '200':
+          description: The most recent search journey environment
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchJourneyEnvironmentResponse'
+        '204':
+          description: No search environment exists
   /similar_trains:
     post:
       tags:
@@ -13894,6 +13907,24 @@ components:
               If `None`, `reception_signal` must be `Open`.
               `Some("PT0S")` means the train stops for 0 seconds.
       additionalProperties: false
+    SearchJourneyEnvironmentResponse:
+      type: object
+      required:
+      - id
+      - infra_id
+      - timetable_ids
+      properties:
+        id:
+          type: integer
+          format: int64
+        infra_id:
+          type: integer
+          format: int64
+        timetable_ids:
+          type: array
+          items:
+            type: integer
+            format: int64
     SearchObjectType:
       type: string
       description: Object type for query search
