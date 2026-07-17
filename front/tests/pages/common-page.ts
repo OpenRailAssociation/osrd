@@ -91,8 +91,9 @@ class CommonPage {
   }
 
   async validateNumericBudget(locator: Locator, expectedBudget: string): Promise<void> {
-    const budgetText = await locator.textContent();
-    expect(budgetText?.replace(/[^0-9]/g, '')).toEqual(expectedBudget);
+    await expect
+      .poll(async () => (await locator.textContent())?.replace(/[^0-9]/g, ''))
+      .toEqual(expectedBudget);
   }
 }
 

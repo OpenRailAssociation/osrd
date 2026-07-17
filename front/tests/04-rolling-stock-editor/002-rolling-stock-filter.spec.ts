@@ -15,37 +15,50 @@ test.describe('Rolling stock editor filter', { tag: ['@rs-editor', '@filter'] },
 
     await test.step('Toggle Electric filter and verify count', async () => {
       await rollingStockEditorPage.toggleElectricRollingStockFilter();
-      expect(await rollingStockEditorPage.electricRollingStockIcons.count()).toEqual(
-        await rollingStockEditorPage.getRollingStockSearchNumber()
-      );
+      await expect
+        .poll(async () => {
+          const iconCount = await rollingStockEditorPage.electricRollingStockIcons.count();
+          const searchNumber = await rollingStockEditorPage.getRollingStockSearchNumber();
+          return iconCount === searchNumber;
+        })
+        .toBe(true);
     });
 
     await test.step('Clear Electric filter and verify initial count', async () => {
       await rollingStockEditorPage.toggleElectricRollingStockFilter();
-      expect(await rollingStockEditorPage.rollingStockList.count()).toBeGreaterThanOrEqual(
-        initialRollingStockFoundNumber
-      );
+      await expect
+        .poll(() => rollingStockEditorPage.rollingStockList.count())
+        .toBeGreaterThanOrEqual(initialRollingStockFoundNumber);
     });
 
     await test.step('Toggle Thermal filter and verify count', async () => {
       await rollingStockEditorPage.toggleThermalRollingStockFilter();
-      expect(await rollingStockEditorPage.thermalRollingStockIcons.count()).toEqual(
-        await rollingStockEditorPage.getRollingStockSearchNumber()
-      );
+      await expect
+        .poll(async () => {
+          const iconCount = await rollingStockEditorPage.thermalRollingStockIcons.count();
+          const searchNumber = await rollingStockEditorPage.getRollingStockSearchNumber();
+          return iconCount === searchNumber;
+        })
+        .toBe(true);
     });
 
     await test.step('Toggle Electric with Thermal on (dual-mode) and verify count', async () => {
       await rollingStockEditorPage.toggleElectricRollingStockFilter();
-      expect(await rollingStockEditorPage.dualModeRollingStockIcons.count()).toEqual(
-        await rollingStockEditorPage.getRollingStockSearchNumber()
-      );
+      await expect
+        .poll(async () => {
+          const iconCount = await rollingStockEditorPage.dualModeRollingStockIcons.count();
+          const searchNumber = await rollingStockEditorPage.getRollingStockSearchNumber();
+          return iconCount === searchNumber;
+        })
+        .toBe(true);
     });
 
     await test.step('Clear both filters and verify count resets', async () => {
       await rollingStockEditorPage.toggleElectricRollingStockFilter();
       await rollingStockEditorPage.toggleThermalRollingStockFilter();
-      const currentCount = await rollingStockEditorPage.rollingStockList.count();
-      expect(currentCount).toEqual(initialRollingStockFoundNumber);
+      await expect(rollingStockEditorPage.rollingStockList).toHaveCount(
+        initialRollingStockFoundNumber
+      );
     });
   });
 
@@ -56,9 +69,9 @@ test.describe('Rolling stock editor filter', { tag: ['@rs-editor', '@filter'] },
 
     await test.step('Search a specific rolling stock and verify icons', async () => {
       await rollingStockEditorPage.searchRollingStock(dualModeRollingStockName);
-      expect(
+      await expect(
         rollingStockEditorPage.page.getByTestId(`rollingstock-${dualModeRollingStockName}`)
-      ).toBeDefined();
+      ).toBeVisible();
 
       await expect(rollingStockEditorPage.thermalRollingStockFirstIcon).toBeVisible();
       await expect(rollingStockEditorPage.electricRollingStockFirstIcon).toBeVisible();
@@ -66,7 +79,7 @@ test.describe('Rolling stock editor filter', { tag: ['@rs-editor', '@filter'] },
 
     await test.step('Clear search and verify count resets', async () => {
       await rollingStockEditorPage.clearSearchRollingStock();
-      expect(await rollingStockEditorPage.rollingStockList.count()).toEqual(
+      await expect(rollingStockEditorPage.rollingStockList).toHaveCount(
         initialRollingStockFoundNumber
       );
     });
@@ -77,7 +90,7 @@ test.describe('Rolling stock editor filter', { tag: ['@rs-editor', '@filter'] },
         false
       );
       await expect(rollingStockEditorPage.noRollingStockResult).toBeVisible();
-      expect(await rollingStockEditorPage.getRollingStockSearchNumber()).toEqual(0);
+      await expect.poll(() => rollingStockEditorPage.getRollingStockSearchNumber()).toEqual(0);
     });
   });
 });

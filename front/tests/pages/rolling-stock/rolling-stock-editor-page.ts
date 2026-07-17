@@ -164,7 +164,7 @@ class RollingstockEditorPage extends RollingStockSelector {
 
   async selectLoadingGauge(value: string) {
     await this.loadingGauge.selectOption(value);
-    expect(await this.loadingGauge.inputValue()).toBe(value);
+    await expect(this.loadingGauge).toHaveValue(value);
   }
 
   async selectPrimaryCategory(value: string) {
@@ -324,8 +324,7 @@ class RollingstockEditorPage extends RollingStockSelector {
       const valueCell = row.getByRole('cell').nth(1);
       await expect(valueCell).toBeVisible();
 
-      const actualValue = await valueCell.textContent();
-      expect(actualValue?.trim()).toBe(
+      await expect(valueCell).toHaveText(
         Array.isArray(expectedValue) ? expectedValue.join(', ') : expectedValue.toString()
       );
     }

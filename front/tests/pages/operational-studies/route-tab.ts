@@ -210,8 +210,7 @@ class RouteTab {
       ''
     );
     await expect(this.missingParamMessage).toBeVisible();
-    const actualMessage = await this.missingParamMessage.innerText();
-    expect(actualMessage).toContain(expectedMessage);
+    await expect(this.missingParamMessage).toContainText(expectedMessage);
   }
 
   // Click the add buttons for the specified via names.

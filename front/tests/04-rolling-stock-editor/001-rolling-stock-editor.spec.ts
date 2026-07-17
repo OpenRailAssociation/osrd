@@ -200,7 +200,7 @@ test.describe('Rolling stock editor management', { tag: '@rs-editor' }, () => {
     await test.step('Search deleted rolling stock → expect no results', async () => {
       await rollingStockEditorPage.searchRollingStock(uniqueDeletedRollingStockName, false);
       await expect(rollingStockEditorPage.noRollingStockResult).toBeVisible();
-      expect(await rollingStockEditorPage.getRollingStockSearchNumber()).toEqual(0);
+      await expect.poll(() => rollingStockEditorPage.getRollingStockSearchNumber()).toEqual(0);
     });
   });
 });

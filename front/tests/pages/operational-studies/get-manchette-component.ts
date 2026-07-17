@@ -1,6 +1,6 @@
 import { expect, type Locator, type Page } from '@playwright/test';
 
-import { getCleanText, isGreyed, isOverflowing } from '../../utils';
+import { getCleanText, isOverflowing } from '../../utils';
 import type { Waypoint } from '../../utils/manchette';
 import type { SimulationResultsTranslations } from '../../utils/types';
 import OpSimulationResultPage from './simulation-results-page';
@@ -226,18 +226,18 @@ class GetManchetteComponent extends OpSimulationResultPage {
     await expect(this.manchetteLinearModeButton).toBeVisible();
 
     // initial state assertions
-    expect(await isGreyed(this.manchetteKmModeButton)).toBe(false);
-    expect(await isGreyed(this.manchetteLinearModeButton)).toBe(true);
+    await expect(this.manchetteKmModeButton).not.toHaveClass(/text-grey-30/);
+    await expect(this.manchetteLinearModeButton).toHaveClass(/text-grey-30/);
 
     // linear on
     await this.manchetteLinearModeButton.click();
-    expect(await isGreyed(this.manchetteLinearModeButton)).toBe(false);
-    expect(await isGreyed(this.manchetteKmModeButton)).toBe(true);
+    await expect(this.manchetteLinearModeButton).not.toHaveClass(/text-grey-30/);
+    await expect(this.manchetteKmModeButton).toHaveClass(/text-grey-30/);
 
     // back to km
     await this.manchetteKmModeButton.click();
-    expect(await isGreyed(this.manchetteKmModeButton)).toBe(false);
-    expect(await isGreyed(this.manchetteLinearModeButton)).toBe(true);
+    await expect(this.manchetteKmModeButton).not.toHaveClass(/text-grey-30/);
+    await expect(this.manchetteLinearModeButton).toHaveClass(/text-grey-30/);
   }
 
   async openWayPointMenu(index = 0, isRequestedPoint = false) {

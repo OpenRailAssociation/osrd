@@ -195,17 +195,15 @@ class SimulationResultPage {
       ? `Simulation n°${validSimulationNumber}`
       : noOutputSimulationName;
 
-    const actualSimulationName = await this.getSimulationNameLocator(simulationIndex).textContent();
-    expect(actualSimulationName).toEqual(expectedSimulationName);
+    await expect(this.getSimulationNameLocator(simulationIndex)).toHaveText(expectedSimulationName);
 
     const expectedLengthAndDuration = isResultTableVisible
       ? simulationLengthAndDuration
       : noCapacityLengthAndDuration;
 
-    const actualLengthAndDuration =
-      await this.getSimulationLengthAndDurationLocator(simulationIndex).textContent();
-
-    expect(actualLengthAndDuration).toEqual(expectedLengthAndDuration);
+    await expect(this.getSimulationLengthAndDurationLocator(simulationIndex)).toHaveText(
+      expectedLengthAndDuration ?? ''
+    );
   }
 
   async verifyFeedbackCardVisibility(): Promise<void> {
@@ -225,15 +223,17 @@ class SimulationResultPage {
     expectedBody: string,
     expectedEmail: string
   ): Promise<void> {
-    const mailtoUrl = await this.feedbackButton.getAttribute('href');
-
-    expect(mailtoUrl).toBeTruthy();
-
-    const decodedMailtoUrl = decodeURIComponent(mailtoUrl ?? '');
-
-    expect(decodedMailtoUrl).toContain(expectedEmail);
-    expect(decodedMailtoUrl).toContain(expectedSubject);
-    expect(decodedMailtoUrl).toContain(expectedBody);
+    await expect
+      .poll(async () => {
+        const mailtoUrl = await this.feedbackButton.getAttribute('href');
+        const decodedMailtoUrl = decodeURIComponent(mailtoUrl ?? '');
+        return (
+          decodedMailtoUrl.includes(expectedEmail) &&
+          decodedMailtoUrl.includes(expectedSubject) &&
+          decodedMailtoUrl.includes(expectedBody)
+        );
+      })
+      .toBe(true);
   }
 }
 

@@ -22,7 +22,7 @@ export async function fillAndCheckInputById(
 
   await input.click();
   await input.fill(`${value}`);
-  expect(await input.inputValue()).toBe(`${value}`);
+  await expect(input).toHaveValue(`${value}`);
 }
 
 /**
@@ -41,7 +41,7 @@ export async function verifyAndCheckInputById(
 ) {
   const input = isTestId ? page.getByTestId(inputId) : page.locator(`#${inputId}`);
 
-  expect(await input.inputValue()).toContain(`${expectedValue}`);
+  await expect.poll(() => input.inputValue()).toContain(`${expectedValue}`);
 }
 
 /**
@@ -165,13 +165,6 @@ export const waitForInfraStateToBeCached = async (infraId: number): Promise<void
  */
 export async function getCleanText(locator: Locator): Promise<string> {
   return ((await locator.textContent()) ?? '').trim();
-}
-
-/**
- * Check whether the element has the grey text class
- */
-export async function isGreyed(locator: Locator): Promise<boolean> {
-  return locator.evaluate((el) => el.classList.contains('text-grey-30'));
 }
 
 /**
