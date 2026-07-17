@@ -188,8 +188,8 @@ class Curve(val xs: LongArray, val ys: LongArray) {
      *
      * If the segment doesn't intersect with the curve, this function returns null.
      *
-     * If the segment intersects through several points, this function returns the point with the
-     * lowest X coordinate.
+     * If the segment intersects through several points, this function returns the point where the
+     * segment and the curve first stop intersecting.
      */
     fun intersectsAt(x1: Long, y1: Long, x2: Long, y2: Long): Vec2? {
         require(x1 < x2)
@@ -234,10 +234,23 @@ class Curve(val xs: LongArray, val ys: LongArray) {
                 val yAhi = if (vAy == vBy) vAy else vAy + (vBy - vAy) * (xhi - vAx) / (vBx - vAx)
 
                 if (yAlo == y1lo) {
-                    return@mapNotNull Vec2(xlo.raw, y1lo.raw)
+                    return@mapNotNull if (yAhi == y1hi) {
+                        // Curve and segment intersect and have the same slope on this [window],
+                        if (xhi == x2) {
+                            // this is the end of the segment
+                            Vec2(x2.raw, y2.raw)
+                        } else {
+                            // we'll return a value in one of the next windows.
+                            null
+                        }
+                    } else {
+                        // Curve and segment stopped intersecting and having the same slope.
+                        Vec2(xlo.raw, y1lo.raw)
+                    }
                 }
 
                 if ((yAlo < y1lo) == (yAhi < y1hi)) {
+                    // Curve and segment have the same slope, but don't intersect
                     return@mapNotNull null
                 }
 
