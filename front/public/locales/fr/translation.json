@@ -670,6 +670,9 @@
   "nav-bar": {
     "about": "À propos",
     "disconnect": "Déconnexion",
+    "featureFlags": {
+      "linkings": "Activer les enchaînements"
+    },
     "help": "Aide",
     "impersonation": "Se faire passer pour un utilisateur",
     "information": {
