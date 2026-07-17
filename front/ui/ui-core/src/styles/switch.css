@@ -27,6 +27,9 @@
 
   --ui-switch-transition: 200ms ease;
 
+  --ui-switch-inner-shadow-color: rgba(24, 68, 239, 0.16);
+  --ui-switch-inner-shadow: 0 2px 2px -1px var(--ui-switch-inner-shadow-color);
+
   &.size-sm {
     --ui-switch-width: 28px;
     --ui-switch-height: 18px;
@@ -61,6 +64,8 @@
 
     --ui-switch-thumb-border-checked: var(--color-primary-60);
     --ui-switch-thumb-border-hover-checked: var(--color-primary-80);
+
+    --ui-switch-inner-shadow: 0 0 0 0 transparent;
   }
 
   display: flex;
@@ -86,6 +91,7 @@
     display: flex;
     align-items: center;
     cursor: inherit;
+    flex-shrink: 0;
 
     width: var(--ui-switch-width);
     height: var(--ui-switch-height);
@@ -99,7 +105,7 @@
 
     box-shadow:
       0 1px 0 0 var(--color-white-100),
-      0 2px 2px -1px inset rgb(var(--color-primary-60) / 16%),
+      var(--ui-switch-inner-shadow) inset,
       0 1px 2px 0 inset var(--color-black-15);
 
     outline: 0 none;
@@ -121,7 +127,9 @@
       border-radius: 4px;
       box-shadow:
         0 0 0 var(--ui-switch-thumb-border-length) inset var(--color-black-50),
-        0 0 0 var(--ui-switch-thumb-inner-length) inset var(--color-grey-10);
+        0 0 0 var(--ui-switch-thumb-inner-length) inset var(--color-grey-10),
+        0 1px 2px 0 var(--color-black-10),
+        var(--ui-switch-inner-shadow);
       transition:
         margin-left 300ms ease,
         box-shadow var(--ui-switch-transition),
