@@ -26,6 +26,7 @@ import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
+import useScenario from 'applications/operationalStudies/hooks/useScenario';
 import upward from 'assets/pictures/workSchedules/ScheduledMaintenanceUp.svg';
 import { type PostWorkSchedulesProjectPathApiResponse } from 'common/api/osrdEditoastApi';
 import { useSubCategoryContext } from 'common/SubCategoryContext';
@@ -53,6 +54,7 @@ import {
   getSelectedTrain,
 } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
+import { Duration } from 'utils/duration';
 import {
   extractEditoastIdFromTrainScheduleId,
   extractExceptionIdFromOccurrenceId,
@@ -195,6 +197,7 @@ const SpaceTimeChartWrapper = ({
   const dispatch = useAppDispatch();
   const hoveredTrainId = useSelector(getHoveredTrainId);
   const isSimulationEnabled = useSelector(getIsSimulationEnabled);
+  const { scenario: { timetable_type: timetableType } = {} } = useScenario();
   const selection = useSelector(getSelectedTrain);
   const { id: selectedTrainId, by: selectedTrainBy } = selection ?? {};
 
@@ -209,7 +212,7 @@ const SpaceTimeChartWrapper = ({
   const [dragOverTrackId, setDragOverTrackId] = useState<string | undefined>();
   const [dragOffsetMs, setDragOffsetMs] = useState<number | null>(null);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-  const [_chartTimeRange, setChartTimeRange] = useState<{ start: number; end: number }>();
+  const [chartTimeRange, setChartTimeRange] = useState<{ start: number; end: number }>();
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) =>
@@ -264,9 +267,20 @@ const SpaceTimeChartWrapper = ({
     showSignalsStates: false,
   });
 
+  const repeatTimeRange = useMemo(
+    () =>
+      chartTimeRange && timetableType === 'HOURLY'
+        ? {
+            start: new Duration({ milliseconds: chartTimeRange.start }),
+            end: new Duration({ milliseconds: chartTimeRange.end }),
+          }
+        : undefined,
+    [chartTimeRange, timetableType]
+  );
+
   const projectedTrains = useMemo(
-    () => makeProjectedTrains(trainScheduleProjections),
-    [trainScheduleProjections]
+    () => makeProjectedTrains(trainScheduleProjections, repeatTimeRange),
+    [trainScheduleProjections, repeatTimeRange]
   );
 
   // Cut the spacetime chart curves if the first or last waypoints are hidden
