@@ -344,9 +344,9 @@ pub mod tests {
 
     fn make_simulation_success(path_item_times: Vec<u64>) -> simulation::Response {
         let report_train = ReportTrain {
-            positions: vec![],
-            times: vec![],
-            speeds: vec![],
+            positions: vec![0, 25, 50, 75, 100],
+            times: vec![0, 1000, 2000, 3000, 5000],
+            speeds: vec![0., 25., 20., 35., 0.],
             energy_consumption: 0.0,
             path_item_times,
         };
@@ -535,6 +535,7 @@ pub mod tests {
                         time_begin,
                         duration,
                     },
+                path_item_relative_location,
                 ..
             } = &results[0];
 
@@ -547,6 +548,16 @@ pub mod tests {
                 PositiveDuration::try_from(Duration::milliseconds(expected_stop_duration_ms))
                     .unwrap()
             );
+            let expected_location_path_item = match op_id {
+                "op_1" => "path_item_1",
+                "op_2" => "path_item_2",
+                "op_3" => "path_item_3",
+                _ => "path_item_1",
+            };
+            let expected_location = PathItemRelativeLocation::ExactPathItem {
+                path_item_id: expected_location_path_item.into(),
+            };
+            assert_eq!(*path_item_relative_location, expected_location)
         } else {
             // We expect no results in failure cases
             assert_eq!(results.len(), 0);
@@ -653,5 +664,101 @@ pub mod tests {
             results[0].time_window.time_begin,
             start_time + millisecond::i64::new(300_000)
         );
+        assert_eq!(
+            results[0].path_item_relative_location,
+            PathItemRelativeLocation::ExactPathItem {
+                path_item_id: "op_2".into()
+            }
+        )
+    }
+
+    #[test]
+    fn test_get_occupancy_location_between_path_items() {
+        // Create test data
+        let op_id = "op_1";
+        let track_section: Identifier = Identifier::from("T0");
+        let track_offset = 75;
+        let path_item_positions = vec![0, 50, 100];
+        let op_cache = OperationalPointCache::new(
+            Vec::new(),
+            HashMap::new(),
+            HashMap::new(),
+            HashMap::from([("op_1".to_string(), 0)]),
+            HashSet::new(),
+            vec![HashMap::from([("T0".into(), "V0".into())])],
+        );
+
+        let operational_point_track_offsets = vec![TrackOffset {
+            track: track_section.clone(),
+            offset: track_offset,
+        }];
+
+        // Create a train schedule with path items
+        let train_schedule = schemas::TrainOccurrence {
+            path: vec![
+                PathItem {
+                    id: "path_item_1".into(),
+                    location: PathItemLocation::TrackOffset(TrackOffset {
+                        track: "T0".into(),
+                        offset: 0,
+                    }),
+                },
+                PathItem {
+                    id: "path_item_2".into(),
+                    location: PathItemLocation::TrackOffset(TrackOffset {
+                        track: "V0".into(),
+                        offset: 50,
+                    }),
+                },
+                PathItem {
+                    id: "path_item_3".into(),
+                    location: PathItemLocation::TrackOffset(TrackOffset {
+                        track: "V0".into(),
+                        offset: 100,
+                    }),
+                },
+            ],
+            schedule: vec![
+                ScheduleItem {
+                    at: "path_item_2".into(),
+                    arrival: None,
+                    stop_for: Some(
+                        PositiveDuration::try_from(Duration::milliseconds(1000)).unwrap(),
+                    ),
+                    reception_signal: ReceptionSignal::Open,
+                    ..Default::default()
+                },
+                ScheduleItem {
+                    at: "path_item_3".into(),
+                    arrival: Some(
+                        PositiveDuration::try_from(Duration::milliseconds(5000)).unwrap(),
+                    ),
+                    stop_for: None,
+                    reception_signal: ReceptionSignal::Open,
+                    ..Default::default()
+                },
+            ],
+            ..Default::default()
+        };
+
+        let simulation = make_simulation_success(vec![0, 2000, 5000]);
+        let pathfinding = make_pathfinding_success(track_section.clone(), path_item_positions);
+        let results = find_track_occupancy_for_operational_point(
+            op_id,
+            &operational_point_track_offsets,
+            &op_cache,
+            &simulation,
+            &pathfinding,
+            &train_schedule,
+        );
+
+        assert_eq!(results.len(), 1);
+        assert_eq!(
+            results[0].path_item_relative_location,
+            PathItemRelativeLocation::BetweenPathItems {
+                previous_path_item_id: "path_item_2".into(),
+                following_path_item_id: "path_item_3".into()
+            }
+        )
     }
 }
