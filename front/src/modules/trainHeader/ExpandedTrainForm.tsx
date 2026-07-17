@@ -2,13 +2,11 @@ import { useCallback, useMemo, useState } from 'react';
 
 import {
   Button,
-  ComboBox,
   DatePicker,
   Input,
   Select,
   Switch,
   TokenInput,
-  useDefaultComboBox,
   type CalendarSlot,
 } from '@osrd-project/ui-core';
 import { isEqual } from 'lodash';
@@ -36,6 +34,7 @@ import { kmhToMs } from 'utils/physics';
 import { isOccurrenceId } from 'utils/trainId';
 import { createFixedSelectOptions, createStandardSelectOptions } from 'utils/uiCoreHelpers';
 
+import RollingStockField from './RollingStockField';
 import type { ExtraOccurrencesChanges } from './TrainHeader';
 import TrainServiceForm, { computeServiceTimingError } from './TrainServiceForm';
 
@@ -68,7 +67,7 @@ export type TrainFieldsState = {
   use_electrical_profiles: boolean | null;
   labels: string[];
   added_exception_date: Date;
-  rolling_stock_name: string;
+  rolling_stock: LightRollingStockWithLiveries | string;
   departure_date: Date;
   initial_speed: string | null;
   service_changed_confirmed: boolean;
@@ -78,17 +77,27 @@ export type InitialSpeedError = 'INVALID_NUMBER' | 'ROUNDING' | 'TOO_HIGH' | nul
 
 function computeInitialSpeedError(
   initialSpeed: string | null,
-  rollingStock?: LightRollingStockWithLiveries
+  rollingStock?: LightRollingStockWithLiveries | string
 ): InitialSpeedError {
   if (!initialSpeed) return 'INVALID_NUMBER';
   const floatInitialSpeed = Number.parseFloat(initialSpeed);
   if (!isFinite(floatInitialSpeed) || floatInitialSpeed < 0) return 'INVALID_NUMBER';
   if (Math.round(floatInitialSpeed * 10) / 10 !== floatInitialSpeed) return 'ROUNDING';
-  if (rollingStock && kmhToMs(floatInitialSpeed) > rollingStock.max_speed) return 'TOO_HIGH';
+  if (
+    rollingStock &&
+    typeof rollingStock !== 'string' &&
+    kmhToMs(floatInitialSpeed) > rollingStock.max_speed
+  )
+    return 'TOO_HIGH';
   return null;
 }
 
-function getFieldsFromTrain(train: Train): TrainFieldsState {
+function getFieldsFromTrain(
+  train: Train,
+  rollingStocks: LightRollingStockWithLiveries[]
+): TrainFieldsState {
+  const rollingStock = rollingStocks.find((rs) => rs.name === train.rolling_stock_name);
+
   return {
     train_name: train.train_name,
     speed_limit_tag: train.speed_limit_tag ?? null,
@@ -101,7 +110,7 @@ function getFieldsFromTrain(train: Train): TrainFieldsState {
     use_electrical_profiles: train?.options?.use_electrical_profiles ?? null,
     labels: train.labels ?? [],
     added_exception_date: new Date(train.start_time),
-    rolling_stock_name: train.rolling_stock_name,
+    rolling_stock: rollingStock ?? train.rolling_stock_name,
     departure_date: new Date(train.start_time),
     initial_speed:
       train.initial_speed === undefined ? null : String(Math.round(train.initial_speed * 36) / 10),
@@ -137,11 +146,10 @@ function applyFieldsToPaced(fields: TrainFieldsState, train: Train): Train['pace
     : undefined;
 }
 
-function applyFieldsToTrain(
-  fields: TrainFieldsState,
-  train: Train,
-  rollingStock?: LightRollingStockWithLiveries
-): Train {
+function applyFieldsToTrain(fields: TrainFieldsState, train: Train): Train {
+  const rollingStock = typeof fields.rolling_stock === 'object' ? fields.rolling_stock : undefined;
+  const customRollingStock = typeof fields.rolling_stock === 'string' ? fields.rolling_stock : '';
+
   return {
     ...train,
     train_name: fields.train_name || train.train_name,
@@ -150,8 +158,8 @@ function applyFieldsToTrain(
     comfort: fields.comfort === null ? undefined : fields.comfort,
     category: fields.category === null ? undefined : fields.category,
     labels: fields.labels,
-    rolling_stock_name: fields.rolling_stock_name,
     paced: applyFieldsToPaced(fields, train),
+    rolling_stock_name: rollingStock ? rollingStock.name : customRollingStock,
     options: {
       ...train.options,
       use_electrical_profiles:
@@ -224,24 +232,11 @@ const ExpandedTrainForm = ({
 
   const { filteredRollingStockList: rollingStocks } = useFilterRollingStock();
 
-  const getRollingStockLabel = useCallback((rs: LightRollingStockWithLiveries) => {
-    const secondPart = rs.metadata?.series || rs.metadata?.reference || '';
-    return secondPart ? `${rs.name} - ${secondPart}` : rs.name;
-  }, []);
-
-  const {
-    suggestions: rollingStockSuggestions,
-    onChange: onRollingStockQueryChange,
-    resetSuggestions: resetRollingStockSuggestions,
-  } = useDefaultComboBox(rollingStocks, getRollingStockLabel);
-
-  const fieldsFromTrain = useMemo(() => getFieldsFromTrain(train), [train]);
-  const [fields, setFields] = useState<TrainFieldsState>(fieldsFromTrain);
-
-  const selectedRollingStock = useMemo(
-    () => rollingStocks.find((rs) => rs.name === fields.rolling_stock_name),
-    [fields.rolling_stock_name, rollingStocks]
+  const fieldsFromTrain = useMemo(
+    () => getFieldsFromTrain(train, rollingStocks),
+    [train, rollingStocks]
   );
+  const [fields, setFields] = useState<TrainFieldsState>(fieldsFromTrain);
 
   // Reset fields values if they changed outside of the form (e.g., because it was an
   // exception and the user reverted it back to an occurrence through the train list)
@@ -268,13 +263,13 @@ const ExpandedTrainForm = ({
 
   const persistTrainIfNeeded = useCallback(
     (newFields: TrainFieldsState) => {
-      const updatedTrain = applyFieldsToTrain(newFields, train, selectedRollingStock);
+      const updatedTrain = applyFieldsToTrain(newFields, train);
 
       if (trainPayloadChanged(updatedTrain, train)) {
         onPersistTrain(updatedTrain);
       }
     },
-    [train, selectedRollingStock, onPersistTrain]
+    [train, onPersistTrain]
   );
 
   const onFieldChange = useCallback(
@@ -358,7 +353,7 @@ const ExpandedTrainForm = ({
     [fields.category, subCategories]
   );
   const isCategoryWarning = checkCategoryWarning(
-    selectedRollingStock,
+    fields.rolling_stock,
     fields.category,
     currentSubCategory
   );
@@ -367,8 +362,8 @@ const ExpandedTrainForm = ({
     : undefined;
 
   const initialSpeedError = useMemo(
-    () => computeInitialSpeedError(fields.initial_speed, selectedRollingStock),
-    [fields.initial_speed, selectedRollingStock, computeInitialSpeedError]
+    () => computeInitialSpeedError(fields.initial_speed, fields.rolling_stock),
+    [fields.initial_speed, fields.rolling_stock, computeInitialSpeedError]
   );
 
   const revertServiceChange = useCallback(() => {
@@ -483,27 +478,10 @@ const ExpandedTrainForm = ({
           />
         </div>
         <div className="train-rolling-stock">
-          <ComboBox
-            id="train-header-rolling-stock-input"
-            label={t('manageTrainSchedule.trainHeader.form.rollingStock')}
-            small
-            autoComplete="off"
-            value={
-              selectedRollingStock
-                ? getRollingStockLabel(selectedRollingStock)
-                : fields.rolling_stock_name
-            }
-            suggestions={rollingStockSuggestions.map(getRollingStockLabel)}
-            getSuggestionLabel={(s) => s}
-            onSelectSuggestion={(label) => {
-              const rs = rollingStocks.find((r) => getRollingStockLabel(r) === label);
-              if (rs) onFieldImmediateChange('rolling_stock_name', rs.name);
-            }}
-            resetSuggestions={resetRollingStockSuggestions}
-            onChange={(e) => {
-              onRollingStockQueryChange(e);
-              onFieldChange('rolling_stock_name', e.target.value);
-            }}
+          <RollingStockField
+            value={fields.rolling_stock}
+            rollingStocks={rollingStocks}
+            onFieldImmediateChange={onFieldImmediateChange}
           />
         </div>
         <div className="train-composition-code">

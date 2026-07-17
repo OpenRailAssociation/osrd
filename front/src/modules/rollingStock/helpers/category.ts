@@ -13,11 +13,11 @@ export const findSubCategory = (
     : subCategories.find((option) => option.code === category.sub_category_code);
 
 export function checkCategoryWarning(
-  rollingStock: LightRollingStock | undefined,
+  rollingStock: LightRollingStock | string | undefined,
   currentCategory: TrainCategory | null,
   currentSubCategory?: SubCategory
 ): boolean {
-  if (!rollingStock || !currentCategory) return false;
+  if (!rollingStock || typeof rollingStock === 'string' || !currentCategory) return false;
 
   if (isMainCategory(currentCategory)) {
     return (
