@@ -477,15 +477,13 @@ const useTrackOccupancy = ({
       else draggedTrainScheduleIds.current.add(draggedEditoastId);
 
       // Update actual state:
-      const draggedTrainScheduleId = formatEditoastIdToTrainScheduleId(draggedEditoastId);
       const impactedPathOperationalPointIDs = new Set<string>();
       const newState = { ...pathOperationalPointsState };
       forEach(newState, (opState, waypointId) => {
         if (opState.selected) {
           forEach(opState.zones.data, (zone) => {
             if (
-              isOccurrenceId(zone.trainId) &&
-              extractTrainScheduleIdFromOccurrenceId(zone.trainId) === draggedTrainScheduleId &&
+              toOwnerTrainScheduleId(zone.trainId) === draggedEditoastId &&
               !zone.isStartTimeException
             ) {
               impactedPathOperationalPointIDs.add(waypointId);
@@ -506,7 +504,7 @@ const useTrackOccupancy = ({
               getOperationalPointReference(pathOpsByWaypointId.get(waypointId)),
               waypointId,
               {
-                [draggedTrainId]: newTrainData,
+                [newTrainData.id]: newTrainData,
               }
             );
 
