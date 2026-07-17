@@ -24,7 +24,57 @@ interface SpeedConstraint : Constraint {
         speedCurves(context, currentState).mapNotNull { curve ->
             enactCurveDecision(context, currentState, curve)
         }
+
+    override fun truncateStep(
+        context: EnvelopeSimContext,
+        currentState: TrainState,
+        mergedState: TrainState,
+    ): TrainState =
+        speedCurves(context, currentState)
+            .asSequence()
+            .map { curve ->
+                if (
+                    curve.lerp(currentState.position.micrometers) ==
+                        currentState.speed.micrometersPerSecond
+                ) {
+                    val i =
+                        curve.firstStrictlyAfter(currentState.position.micrometers)
+                            ?: return@map mergedState
+                    val nextPosition = curve.xs[i].micrometers
+                    val nextSpeed = curve.ys[i].micrometersPerSecond
+                    if (
+                        nextPosition < mergedState.position &&
+                            arePointsAligned(
+                                currentState.position.micrometers,
+                                currentState.speed.micrometersPerSecond,
+                                nextPosition.micrometers,
+                                nextSpeed.micrometersPerSecond,
+                                mergedState.position.micrometers,
+                                mergedState.speed.micrometersPerSecond,
+                            )
+                    ) {
+                        return@map curve.advance(
+                            currentState,
+                            currentState.time + context.timeStep.seconds,
+                        )!!
+                    } else {
+                        return@map mergedState
+                    }
+                }
+
+                mergedState.truncate(currentState, curve)
+            }
+            .minByOrNull { state -> state.time } ?: mergedState
 }
+
+private fun arePointsAligned(
+    x0: Long,
+    y0: Long,
+    x1: Long,
+    y1: Long,
+    x2: Long,
+    y2: Long,
+): Boolean = if (x1 == x0 || x2 == x0) x1 == x2 else (y1 - y0) / (x1 - x0) == (y2 - y0) / (x2 - x0)
 
 fun enactCurveDecision(
     context: EnvelopeSimContext,
