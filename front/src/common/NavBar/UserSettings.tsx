@@ -1,6 +1,6 @@
 import { useCallback, useContext, useEffect, useState } from 'react';
 
-import { ComboBox, useDefaultComboBox } from '@osrd-project/ui-core';
+import { ComboBox, Switch, useDefaultComboBox } from '@osrd-project/ui-core';
 import { Gear, ShieldCheck } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
@@ -15,7 +15,7 @@ import useAuthz from 'common/authorization/hooks/useAuthz';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { ModalBodySNCF, ModalHeaderSNCF } from 'common/BootstrapSNCF/ModalSNCF';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
-import { updateUserPreferences } from 'reducers/user';
+import { FEATURE_FLAGS, updateUserPreferences } from 'reducers/user';
 import { getUserPreferences } from 'reducers/user/userSelectors';
 import { useAppDispatch } from 'store';
 import useAuth from 'utils/hooks/useAuth';
@@ -105,6 +105,23 @@ const UserSettings = () => {
         <small id="safeWordHelpBlock" className="form-text text-muted">
           {t('nav-bar.safeWordHelp')}
         </small>
+        {FEATURE_FLAGS.map((flag) => (
+          <div className="mt-4" key={flag}>
+            <Switch
+              id={`feature-flag-${flag}`}
+              label={t(`nav-bar.featureFlags.${flag}`)}
+              checked={userPreferences[flag] ?? false}
+              onChange={(event) =>
+                dispatch(
+                  updateUserPreferences({
+                    ...userPreferences,
+                    [flag]: event.target.checked,
+                  })
+                )
+              }
+            />
+          </div>
+        ))}
         {isSuperUser && !impersonatedUser && (
           <>
             <div className="font-weight-medium mb-2 mt-2">{t('nav-bar.impersonation')}</div>

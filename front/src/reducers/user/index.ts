@@ -3,8 +3,15 @@ import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import type { ApiError } from 'common/api/baseGeneratedApis';
 import type { Role } from 'common/api/osrdEditoastApi';
 
-export type UserPreferences = {
+export const FEATURE_FLAGS = ['linkings'] as const;
+export type FeatureFlag = (typeof FEATURE_FLAGS)[number];
+
+export type UserPreferences = Record<FeatureFlag, boolean> & {
   safeWord: string;
+};
+
+const defaultFeatureFlags: Record<FeatureFlag, boolean> = {
+  linkings: false,
 };
 
 export type UserState = {
@@ -34,7 +41,7 @@ export const userInitialState: UserState = {
   impersonatedUser: undefined,
   loginError: undefined,
   username: '',
-  userPreferences: { safeWord: '' },
+  userPreferences: { safeWord: '', ...defaultFeatureFlags },
   userId: -1,
   userRoles: [],
   account: {},

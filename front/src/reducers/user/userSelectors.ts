@@ -1,7 +1,7 @@
 import type { Role } from 'common/api/osrdEditoastApi';
 import { REQUIRED_USER_ROLES_FOR } from 'common/authorization/roleBaseAccessControl';
 import type { RootState } from 'reducers';
-import type { UserState } from 'reducers/user';
+import type { FeatureFlag, UserState } from 'reducers/user';
 import { makeSubSelector } from 'utils/selectors';
 
 export const getUser = (state: RootState) => state.user;
@@ -12,6 +12,7 @@ const makeUserPreferencesSelector =
 export const getIsUserLogged = makeUserSelector('isLogged');
 export const getLoginError = makeUserSelector('loginError');
 export const getUserSafeWord = makeUserPreferencesSelector('safeWord');
+export const getFeatureFlag = (flag: FeatureFlag) => makeUserPreferencesSelector(flag);
 export const getUsername = makeUserSelector('username');
 export const getUserRoles = makeUserSelector('userRoles');
 export const getUserId = makeUserSelector('userId');
