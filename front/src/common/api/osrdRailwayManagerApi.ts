@@ -137,6 +137,7 @@ export type ScheduleItem = {
   arrival?: null | ComponentsSchemasTransformTimetableResponsePropertiesPacedTrainsItemsAllOf0PropertiesScheduleItemsPropertiesReferenceBaseArrivalOneOf1;
   /** Position on the path of the schedule item. */
   at: string;
+  can_backtrack?: boolean;
   /** State of the signal where the train is received for its stop.
     For (important) details, see <https://osrd.fr/en/docs/reference/design-docs/timetable/#modifiable-fields>. */
   reception_signal?: 'OPEN' | 'STOP' | 'SHORT_SLIP_STOP';
@@ -252,6 +253,7 @@ export type TransformTimetableResponse = {
       arrival?: null | ComponentsSchemasTransformTimetableResponsePropertiesPacedTrainsItemsAllOf0PropertiesScheduleItemsPropertiesReferenceBaseArrivalOneOf1;
       /** Position on the path of the schedule item. */
       at: string;
+      can_backtrack?: boolean;
       /** State of the signal where the train is received for its stop.
             For (important) details, see <https://osrd.fr/en/docs/reference/design-docs/timetable/#modifiable-fields>. */
       reception_signal?: 'OPEN' | 'STOP' | 'SHORT_SLIP_STOP';

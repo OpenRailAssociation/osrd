@@ -58,6 +58,7 @@ fn find_matching_path_item_index(
     operational_point_id: &str,
     op_cache: &OperationalPointCache,
 ) -> Option<usize> {
+    // TODO : use more information to match: backtrack + number of times we crossed that item
     path_items.iter().position(|path_item| {
         let PathItemLocation::OperationalPointPartReference(op_ref) = &path_item.location else {
             return false;
@@ -171,6 +172,7 @@ fn get_local_track_name(
     op_cache: &OperationalPointCache,
     train_schedule: &schemas::TrainOccurrence,
 ) -> Option<NonBlankString> {
+    // TODO : use more information to match: backtrack + number of times we crossed that item
     if let Some(idx) = context.matching_index {
         let PathItemLocation::OperationalPointPartReference(op_ref) =
             &train_schedule.path[idx].location

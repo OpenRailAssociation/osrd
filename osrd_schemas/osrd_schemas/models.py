@@ -3200,6 +3200,10 @@ class PathfindingFailurePathfindingNotFound4(
     pass
 
 
+class CanBacktrackPathItem(RootModel[int]):
+    root: Annotated[int, Field(ge=0)]
+
+
 SwitchesDirectionsAdditionalProperty = TypeAliasType(
     "SwitchesDirectionsAdditionalProperty",
     Annotated[str, Field(max_length=255, min_length=1)],
@@ -3513,6 +3517,7 @@ class ScheduleItem(BaseModel):
     """
     Position on the path of the schedule item.
     """
+    can_backtrack: bool | None = None
     reception_signal: ReceptionSignal | None = None
     reference_base_arrival: timedelta | None = None
     reference_position: Annotated[int | None, Field(ge=0)] = None
@@ -5460,6 +5465,10 @@ class PathfindingInput(BaseModel):
     allowed_track_sections: list[str] | None = None
     """
     Set of authorized track section ids, empty means no restriction
+    """
+    can_backtrack_path_items: list[CanBacktrackPathItem] | None = None
+    """
+    Indexes, in `path_items`, of the waypoints where the train is allowed to backtrack
     """
     path_items: list[
         PathItemLocationTrackOffset | PathItemLocationOperationalPointPartReference

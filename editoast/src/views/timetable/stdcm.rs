@@ -455,6 +455,10 @@ impl VirtualTrainRun {
         infra: &Infra,
         consists_parameters: &[PhysicsConsistParameters],
     ) -> Result<Vec<Self>> {
+        // TODO : Remove this env var when the backtracking feature is done
+        let enable_backtrack =
+            std::env::var("ENABLE_BACKTRACK").unwrap_or_else(|_| "false".to_string()) == "true";
+
         // Doesn't matter for now, but eventually it will affect tmp speed limits
         let approx_start_time = stdcm_request.get_earliest_step_time();
         let train_schedules_with_consists = itertools::chain!(
@@ -466,21 +470,37 @@ impl VirtualTrainRun {
         .zip(consists_parameters)
         .map(|((start, end), consist)| {
             let path = convert_steps(&stdcm_request.steps[start..=end]);
-            let last_step = path.last().expect("empty step list");
-
             let train_occurrence = TrainOccurrence {
                 train_name: "".to_string(),
                 labels: vec![],
                 rolling_stock_name: consist.traction_engine.name.clone(),
                 start_time: millisecond::i64::new(approx_start_time.timestamp_millis()),
-                schedule: vec![ScheduleItem {
-                    // Make the train stop at the end
-                    at: last_step.id.clone(),
-                    arrival: None,
-                    stop_for: Some(PositiveDuration::try_from(Duration::zero()).unwrap()),
-                    reception_signal: ReceptionSignal::Open,
-                    ..Default::default()
-                }],
+                schedule: stdcm_request.steps[start..=end]
+                    .iter()
+                    .zip(&path)
+                    .map(|(stdcm_step, path_item)| ScheduleItem {
+                        at: path_item.id.clone(),
+                        arrival: stdcm_step.timing_data.as_ref().map(|timing_data| {
+                            PositiveDuration::try_from(
+                                timing_data
+                                    .arrival_time
+                                    .signed_duration_since(approx_start_time),
+                            )
+                            .unwrap()
+                        }),
+                        stop_for: stdcm_step.duration.map(|duration| {
+                            PositiveDuration::try_from(Duration::milliseconds(duration as i64))
+                                .unwrap()
+                        }),
+                        reception_signal: ReceptionSignal::Stop,
+                        can_backtrack: if enable_backtrack {
+                            stdcm_step.duration.is_some()
+                        } else {
+                            false
+                        },
+                        ..Default::default()
+                    })
+                    .collect::<Vec<ScheduleItem>>(),
                 margins: build_single_margin(stdcm_request.margin),
                 initial_speed: 0.0,
                 comfort: stdcm_request.comfort,

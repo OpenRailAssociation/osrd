@@ -659,12 +659,14 @@ pub(in crate::views) async fn get_path(
         return Ok(Json(PathfindingResult::Failure(failure)));
     };
 
-    let path_items = train_occurrence.locations();
+    // The path items are kept whole, and not only their location, to relate each of them to its
+    // schedule item below
+    let path = train_occurrence.path();
 
-    let path_items = match (begin_index, end_index) {
-        (None, None) => &path_items,
+    let path = match (begin_index, end_index) {
+        (None, None) => path,
         (begin_index, end_index) => {
-            let path_items_count = path_items.len();
+            let path_items_count = path.len();
             let begin = begin_index.unwrap_or(0);
             let end = end_index.unwrap_or(path_items_count.saturating_sub(1));
             if begin > end || end >= path_items_count {
@@ -675,22 +677,41 @@ pub(in crate::views) async fn get_path(
                 }
                 .into());
             }
-            &path_items[begin..=end]
+            &path[begin..=end]
         }
     };
 
-    let track_offsets = match OperationalPointCache::load_path_items(conn, infra.id, path_items)
+    let path_items = path
+        .iter()
+        .map(|path_item| &path_item.location)
+        .collect_vec();
+
+    let track_offsets = match OperationalPointCache::load_path_items(conn, infra.id, &path_items)
         .await?
-        .extract_location_from_path_items(path_items)
+        .extract_location_from_path_items(&path_items)
     {
         Ok(track_offsets) => track_offsets,
         Err(err) => return Ok(Json(PathfindingResult::Failure(err))),
     };
 
+    // A train can backtrack on a waypoint when its corresponding schedule item says so
+    let backtrack_path_item_ids = train_occurrence
+        .schedule()
+        .iter()
+        .filter(|schedule_item| schedule_item.can_backtrack)
+        .map(|schedule_item| &schedule_item.at)
+        .collect::<HashSet<_>>();
+
     let constraints = core_task::PathfindingConstraints {
-        path_items: track_offsets
-            .into_iter()
-            .map(core_task::PathItemConstraint::from_iter)
+        path_items: path
+            .iter()
+            .zip(track_offsets)
+            .map(
+                |(path_item, path_item_alternatives)| core_task::PathItemConstraint {
+                    path_item_alternatives,
+                    can_backtrack: backtrack_path_item_ids.contains(&path_item.id),
+                },
+            )
             .collect(),
         allowed_track_sections: BTreeSet::new(),
     };

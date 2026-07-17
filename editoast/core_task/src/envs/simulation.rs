@@ -329,6 +329,7 @@ pub(crate) mod test_data {
     use schemas::train_schedule::MarginValue;
 
     use super::*;
+    use crate::PathItemConstraint;
 
     /// We use the length field to identify it since the content doesn't matter
     pub(crate) fn path(id: usize, positions_count: u64) -> serde_json::Value {
@@ -429,12 +430,12 @@ pub(crate) mod test_data {
             ),
         );
         builder.push_schedule_item(
-            pathfinding::PathItemConstraint::from_iter([TrackOffset::new("id", id as u64)]),
+            PathItemConstraint::new([TrackOffset::new("id", id as u64)], false),
             NonBlankString::from("start"),
             ScheduleItem::pass_by(),
         );
         builder.push_schedule_item(
-            pathfinding::PathItemConstraint::from_iter([TrackOffset::new("a", 42)]),
+            PathItemConstraint::new([TrackOffset::new("a", 42)], false),
             NonBlankString::from("a"),
             ScheduleItem {
                 arrival_at: Some(1200),
@@ -443,10 +444,10 @@ pub(crate) mod test_data {
             },
         );
         builder.push_schedule_item(
-            pathfinding::PathItemConstraint::from_iter([
-                TrackOffset::new("b", 43),
-                TrackOffset::new("bis", 34),
-            ]),
+            PathItemConstraint::new(
+                [TrackOffset::new("b", 43), TrackOffset::new("bis", 34)],
+                false,
+            ),
             NonBlankString::from("b"),
             ScheduleItem {
                 arrival_at: None,
@@ -455,7 +456,7 @@ pub(crate) mod test_data {
             },
         );
         builder.push_schedule_item(
-            pathfinding::PathItemConstraint::from_iter([TrackOffset::new("finish", 44)]),
+            PathItemConstraint::new([TrackOffset::new("finish", 44)], false),
             NonBlankString::from("finish"),
             ScheduleItem {
                 arrival_at: Some(2400),
