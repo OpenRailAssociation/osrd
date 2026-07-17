@@ -177,14 +177,26 @@ class CurveTest {
 
     @Test
     fun testIntersectsAtBeforeSameSlope() {
-        val p = dummyCurve.intersectsAt(-5, 15, 5, 5)
-        assertEquals(Vec2(0, 10), p)
+        val p = dummyCurve.intersectsAt(-5, 15, 10, 0)
+        assertEquals(Vec2(10, 0), p)
     }
 
     @Test
     fun testIntersectsAtBeforeSameSlopeSimple() {
         val p = simpleCurve.intersectsAt(-5, 15, 10, 0)
         assertEquals(Vec2(0, 10), p)
+    }
+
+    @Test
+    fun testIntersectsAtBeforeSameSlopeHalf() {
+        val p = dummyCurve.intersectsAt(-5, 15, 5, 5)
+        assertEquals(Vec2(5, 5), p)
+    }
+
+    @Test
+    fun testIntersectsAtBeforeSameSlopeHalfSimple() {
+        val p = simpleCurve.intersectsAt(-5, 15, 5, 5)
+        assertEquals(Vec2(5, 5), p)
     }
 
     @Test
