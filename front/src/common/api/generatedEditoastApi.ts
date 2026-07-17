@@ -4508,8 +4508,14 @@ export type SimDebugTrainZoneRequirement = {
 export type CoreReportTrain = {
   /** Total energy consumption */
   energy_consumption: number;
-  /** Time in ms of each path item given as input of the pathfinding
-    The first value is always `0` (beginning of the path) and the last one, the total time of the simulation (end of the path) */
+  /** Time in ms at which the train *arrives* at each path item given as input of the pathfinding
+    The first value is always `0` (beginning of the path) and the last one, the total time of the simulation (end of the path)
+    
+    In case multiple path items are at the same position, the stop duration
+    of the earlier ones are added to the path item time of the next. For
+    example, if A and B are at the same position, and A has a stop duration
+    of 2s, then the path item time of B will be equal to the path item time
+    of A plus 2s. */
   path_item_times: number[];
   /** List of positions of a train
     Both positions (in mm) and times (in ms) must have the same length */
