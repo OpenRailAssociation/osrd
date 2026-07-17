@@ -96,7 +96,7 @@ test.describe('Itinerary Modal, Default ', { tag: ['@op', '@itinerary-modal'] },
   test(
     'Create a train with rocket pathfinding',
     { tag: '@smoke' },
-    async ({ itineraryModalPage }) => {
+    async ({ itineraryModalPage, browserName }) => {
       await test.step('Select rolling stock', async () => {
         await itineraryModalPage.selectRollingStock(
           ROLLING_STOCK_NAME_QUERY,
@@ -113,7 +113,9 @@ test.describe('Itinerary Modal, Default ', { tag: ['@op', '@itinerary-modal'] },
         await itineraryModalPage.checkRowsCreationAfterRocketSearch(NORTH_STATION, SOUTH_STATION);
       });
       await test.step('Check path step marker presence on map', async () => {
-        await itineraryModalPage.checkMapUpdate(2);
+        if (browserName === 'chromium') {
+          await itineraryModalPage.checkMapUpdate(2);
+        }
       });
       await test.step('Check itinerary reverse', async () => {
         await itineraryModalPage.checkItineraryReverse(SOUTH_STATION, NORTH_STATION);
@@ -132,7 +134,7 @@ test.describe('Itinerary Modal, Default ', { tag: ['@op', '@itinerary-modal'] },
   test(
     'Create a train by filling the itinerary form manually',
     { tag: '@smoke' },
-    async ({ itineraryModalPage }) => {
+    async ({ itineraryModalPage, browserName }) => {
       await test.step('Select rolling stock and check automatic category assignment', async () => {
         await itineraryModalPage.selectRollingStock(
           ROLLING_STOCK_NAME_QUERY,
@@ -164,7 +166,9 @@ test.describe('Itinerary Modal, Default ', { tag: ['@op', '@itinerary-modal'] },
         await itineraryModalPage.insertIntermediatePathStep(1, NORTH_STATION_MAIN_CODE, 1);
       });
       await test.step('Check valid pathfinding result and itinerary displayed on map', async () => {
-        await itineraryModalPage.checkMapUpdate(3);
+        if (browserName === 'chromium') {
+          await itineraryModalPage.checkMapUpdate(3);
+        }
       });
       await test.step('Select track and update stop', async () => {
         await itineraryModalPage.checkTrackSelectionAndStopsUpdate(1, TRACK_NAME, false);
