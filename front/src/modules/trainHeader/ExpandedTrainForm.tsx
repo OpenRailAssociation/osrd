@@ -32,6 +32,7 @@ import type { Train } from 'reducers/osrdconf/types';
 import { Duration } from 'utils/duration';
 import { usePrevious } from 'utils/hooks/state';
 import { kmhToMs } from 'utils/physics';
+import { isOccurrenceId } from 'utils/trainId';
 import { createFixedSelectOptions, createStandardSelectOptions } from 'utils/uiCoreHelpers';
 
 import type { ExtraOccurrencesChanges } from './TrainHeader';
@@ -39,6 +40,9 @@ import TrainServiceForm, { computeServiceTimingError } from './TrainServiceForm'
 
 // TODO: Passing `undefined` to DatePicker's selectableSlot prop should mean this
 export const ANY_DATE_SLOT: CalendarSlot = { start: new Date(0), end: null };
+
+export const DEFAULT_SERVICE_INTERVAL = new Duration({ minutes: 60 });
+export const DEFAULT_SERVICE_TIME_WINDOW = new Duration({ minutes: 120 });
 
 export type ExpandedTrainFormProps = {
   train: Train;
@@ -56,6 +60,7 @@ export type TrainFieldsState = {
   speed_limit_tag: string | null;
   constraint_distribution: ConstraintDistribution;
   comfort: Comfort | null;
+  is_unique: boolean;
   category: TrainCategory | null;
   service_cadence?: number;
   service_window?: number;
@@ -89,6 +94,7 @@ function getFieldsFromTrain(train: Train): TrainFieldsState {
     constraint_distribution: train.constraint_distribution,
     comfort: train.comfort ?? null,
     category: train.category ?? null,
+    is_unique: !train.paced,
     service_cadence: train.paced ? Duration.parse(train.paced.interval).valueOf() : undefined,
     service_window: train.paced ? Duration.parse(train.paced.time_window).valueOf() : undefined,
     use_electrical_profiles: train?.options?.use_electrical_profiles ?? null,
@@ -102,12 +108,20 @@ function getFieldsFromTrain(train: Train): TrainFieldsState {
   };
 }
 
-function applyFieldsToTrain(
-  fields: TrainFieldsState,
-  train: Train,
-  rollingStock?: LightRollingStockWithLiveries
-): Train {
-  const paced = train.paced
+function applyFieldsToPaced(fields: TrainFieldsState, train: Train): Train['paced'] {
+  if (fields.is_unique && !isOccurrenceId(train.id) && fields.service_changed_confirmed) {
+    return undefined;
+  }
+
+  if (!fields.is_unique && !train.paced) {
+    return {
+      exceptions: [],
+      interval: DEFAULT_SERVICE_INTERVAL.toISOString(),
+      time_window: DEFAULT_SERVICE_TIME_WINDOW.toISOString(),
+    };
+  }
+
+  return train.paced
     ? {
         exceptions: train.paced.exceptions,
         interval:
@@ -120,7 +134,13 @@ function applyFieldsToTrain(
             : train.paced.time_window,
       }
     : undefined;
+}
 
+function applyFieldsToTrain(
+  fields: TrainFieldsState,
+  train: Train,
+  rollingStock?: LightRollingStockWithLiveries
+): Train {
   return {
     ...train,
     train_name: fields.train_name || train.train_name,
@@ -130,7 +150,7 @@ function applyFieldsToTrain(
     category: fields.category === null ? undefined : fields.category,
     labels: fields.labels,
     rolling_stock_name: fields.rolling_stock_name,
-    paced,
+    paced: applyFieldsToPaced(fields, train),
     options: {
       use_electrical_profiles:
         fields?.use_electrical_profiles === null ? undefined : fields.use_electrical_profiles,
@@ -354,6 +374,7 @@ const ExpandedTrainForm = ({
       ...fields,
       service_cadence: fieldsFromTrain.service_cadence,
       service_window: fieldsFromTrain.service_window,
+      is_unique: fieldsFromTrain.is_unique,
     });
   }, [fields, fieldsFromTrain]);
 

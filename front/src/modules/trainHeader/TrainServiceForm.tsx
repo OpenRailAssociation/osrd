@@ -99,7 +99,8 @@ export default function TrainServiceForm({
     () =>
       !fields.service_changed_confirmed &&
       (fields.service_cadence?.valueOf() !== fieldsFromTrain.service_cadence?.valueOf() ||
-        fields.service_window?.valueOf() !== fieldsFromTrain.service_window?.valueOf()),
+        fields.service_window?.valueOf() !== fieldsFromTrain.service_window?.valueOf() ||
+        fields.is_unique !== fieldsFromTrain.is_unique),
     [train.paced, fields, fieldsFromTrain]
   );
 
@@ -124,10 +125,12 @@ export default function TrainServiceForm({
           <div className="train-schedule-kind">
             <Switch
               id="train-header-schedule-kind-toggle"
-              checked={isPacedTrain}
+              checked={!fields.is_unique}
               label={t('manageTrainSchedule.trainHeader.serviceModelTrain')}
               size="sm"
-              disabled
+              onChange={() => {
+                onFieldImmediateChange('is_unique', !fields.is_unique);
+              }}
             />
           </div>
           {isPacedTrain && (
