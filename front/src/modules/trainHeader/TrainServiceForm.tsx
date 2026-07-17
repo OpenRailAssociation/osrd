@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from 'react';
 
-import { Button, DurationInput } from '@osrd-project/ui-core';
+import { Button, DurationInput, Switch } from '@osrd-project/ui-core';
 import { ChevronUp } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
 
@@ -115,16 +115,20 @@ export default function TrainServiceForm({
         </button>
       </div>
       {occurrenceId ? (
-        <div className="train-occurrence">
-          <div className="train-paced-kind">
-            {t('manageTrainSchedule.trainHeader.serviceOccurrence')}
-            {exception && ' ≠'}
-          </div>
+        <div className="train-occurrence-tag">
+          {t('manageTrainSchedule.trainHeader.serviceOccurrence')}
+          {exception && ' ≠'}
         </div>
       ) : (
         <div className="train-service-form">
-          <div className="train-paced-kind">
-            {t('manageTrainSchedule.trainHeader.serviceModelTrain')}
+          <div className="train-schedule-kind">
+            <Switch
+              id="train-header-schedule-kind-toggle"
+              checked={isPacedTrain}
+              label={t('manageTrainSchedule.trainHeader.serviceModelTrain')}
+              size="sm"
+              disabled
+            />
           </div>
           {isPacedTrain && (
             <>
@@ -188,7 +192,7 @@ export default function TrainServiceForm({
           )}
         </div>
       )}
-      {extraOccurrencesVisible && (
+      {isPacedTrain && extraOccurrencesVisible && (
         <div className="train-extra-occurrences">
           <ExtraOccurrenceForm
             addedExceptionDate={fields.added_exception_date}
