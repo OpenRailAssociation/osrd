@@ -69,13 +69,11 @@ pub use train_schedule_set::TrainScheduleSet;
 pub use work_schedules::WorkSchedule;
 pub use work_schedules::WorkScheduleGroup;
 
-use std::sync::LazyLock;
-
 use database::DatabaseError;
 
 use diesel::result::DatabaseErrorInformation;
 use diesel::result::DatabaseErrorKind;
-use regex::Regex;
+use regex::regex;
 
 #[derive(Debug, thiserror::Error, PartialEq)]
 pub enum Error {
@@ -96,13 +94,9 @@ pub enum Error {
 }
 
 fn try_parse_unique_violation(e: &(dyn DatabaseErrorInformation + Send + Sync)) -> Option<Error> {
-    static RE: LazyLock<Regex> =
-        LazyLock::new(|| Regex::new(r#"duplicate key value violates unique constraint"#).unwrap());
-    if RE.is_match(e.message()) {
-        static RE: LazyLock<Regex> = LazyLock::new(|| {
-            Regex::new(r#"Key \(([^)]+)\)=\(([^)]+)\) already exists\."#).unwrap()
-        });
-        RE.captures(e.details().expect("PostgreSQL should provide details"))
+    if regex!(r#"duplicate key value violates unique constraint"#).is_match(e.message()) {
+        regex!(r#"Key \(([^)]+)\)=\(([^)]+)\) already exists\."#)
+            .captures(e.details().expect("PostgreSQL should provide details"))
             .map(|captures| Error::UniqueViolation {
                 constraint: e
                     .constraint_name()
@@ -117,10 +111,7 @@ fn try_parse_unique_violation(e: &(dyn DatabaseErrorInformation + Send + Sync)) 
 }
 
 fn try_parse_check_violation(e: &(dyn DatabaseErrorInformation + Send + Sync)) -> Option<Error> {
-    static RE: LazyLock<Regex> = LazyLock::new(|| {
-        Regex::new(r#"new row for relation .* violates check constraint"#).unwrap()
-    });
-    if RE.is_match(e.message()) {
+    if regex!(r#"new row for relation .* violates check constraint"#).is_match(e.message()) {
         Some(Error::CheckViolation {
             constraint: e
                 .constraint_name()
@@ -135,10 +126,9 @@ fn try_parse_check_violation(e: &(dyn DatabaseErrorInformation + Send + Sync)) -
 fn try_parse_foreign_key_violation(
     e: &(dyn DatabaseErrorInformation + Send + Sync),
 ) -> Option<Error> {
-    static RE: LazyLock<Regex> = LazyLock::new(|| {
-        Regex::new(r#"update or delete on table .* violates foreign key constraint"#).unwrap()
-    });
-    if RE.is_match(e.message()) {
+    if regex!(r#"update or delete on table .* violates foreign key constraint"#)
+        .is_match(e.message())
+    {
         Some(Error::ForeignKeyViolation {
             constraint: e
                 .constraint_name()
