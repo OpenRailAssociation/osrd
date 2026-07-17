@@ -477,7 +477,7 @@ async fn parse_multipart_content(
     post, path = "",
     tags = ["rolling_stock", "rolling_stock_livery"],
     params(RollingStockIdParam),
-    request_body = RollingStockLiveryCreateForm,
+    request_body(content = RollingStockLiveryCreateForm, content_type = "multipart/form-data"),
     responses(
         (status = 200, description = "The created rolling stock", body = RollingStockLivery),
         (status = 404, description = "The requested rolling stock was not found"),
