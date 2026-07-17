@@ -359,19 +359,17 @@ const ExpandedTrainForm = ({
 
   return (
     <div className="train-header expanded-train-form">
-      {train.paced && (
-        <TrainServiceForm
-          train={train}
-          fields={fields}
-          fieldsFromTrain={fieldsFromTrain}
-          initialSpeedError={initialSpeedError}
-          onCollapse={onCollapse}
-          onFieldChange={onFieldChange}
-          onFieldImmediateChange={onFieldImmediateChange}
-          onPersistTrain={onPersistTrain}
-          revertServiceChange={revertServiceChange}
-        />
-      )}
+      <TrainServiceForm
+        train={train}
+        fields={fields}
+        fieldsFromTrain={fieldsFromTrain}
+        initialSpeedError={initialSpeedError}
+        onCollapse={onCollapse}
+        onFieldChange={onFieldChange}
+        onFieldImmediateChange={onFieldImmediateChange}
+        onPersistTrain={onPersistTrain}
+        revertServiceChange={revertServiceChange}
+      />
       <div className="train-form">
         <div className="train-name">
           <Input

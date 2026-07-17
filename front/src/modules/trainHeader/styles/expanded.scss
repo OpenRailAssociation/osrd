@@ -3,7 +3,7 @@
   border-bottom: 1px solid var(--black25);
   font-size: 14px;
   display: grid;
-  grid-template-columns: repeat(3, minmax(200px, 1fr)) 1fr [end-column];
+  grid-template-columns: repeat(3, minmax(210px, 1fr)) 1fr [end-column];
 
   /* Useful to align some non-field element with other fields  */
   --non-field-spacing: 32px 13px 16px 16px;
@@ -81,6 +81,16 @@
       padding-inline: 16px;
     }
 
+    .train-schedule-kind {
+      padding: var(--non-field-spacing);
+      padding-block: 16px;
+      align-self: center;
+
+      label {
+        font-weight: 400;
+      }
+    }
+
     .train-service-cadence,
     .train-service-window {
       .ui-duration-input {
@@ -89,11 +99,11 @@
     }
   }
 
-  .train-paced-kind {
-    background-color: var(--black5);
+  .train-occurrence-tag {
+    background-color: var(--white50);
     color: var(--info60);
     font-weight: 600;
-    margin: 16px 14px 0 16px;
+    margin: 16px 14px 16px 16px;
     height: 28px;
     display: flex;
     align-items: center;
@@ -103,16 +113,7 @@
     border-radius: 3px;
     white-space: nowrap;
     padding-inline: 16px;
-  }
-
-  .train-occurrence {
-    display: grid;
-    grid-template-columns: subgrid;
-    padding-bottom: 16px;
-
-    .train-paced-kind {
-      background-color: var(--white50);
-    }
+    grid-column: 1;
   }
 
   .train-service-form {
@@ -121,10 +122,6 @@
 
     label {
       margin-bottom: unset;
-    }
-
-    .train-paced-kind {
-      margin-top: 32px;
     }
 
     .actions {
