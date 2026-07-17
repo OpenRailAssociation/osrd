@@ -805,7 +805,6 @@ const ItineraryModal = ({
                     }}
                     onOpClear={() => {
                       clearStep(pathStep.id);
-                      handleDeletePathStep(pathStep.id);
                     }}
                     onOpFocus={() => {
                       markEditing(pathStep.id);

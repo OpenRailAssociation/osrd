@@ -403,6 +403,7 @@ const PathStepItem = ({
               className={cx('path-step-op-name', {
                 invalid: isInvalidAndIsEditing,
               })}
+              data-testid="path-step-op-name"
               onKeyDownCapture={handleKeyDown}
               onMouseDownCapture={(e) => {
                 const target = e.target as HTMLElement | null;
