@@ -102,6 +102,10 @@ pub trait TrainScheduleLike: Clone + Send + Sync + 'static {
     fn speed_limit_tag(&self) -> Option<&String>;
     fn power_restrictions(&self) -> &[PowerRestrictionItem];
     fn options(&self) -> &TrainScheduleOptions;
+
+    fn locations(&self) -> Vec<PathItemLocation> {
+        self.path().iter().map(|pi| pi.location.clone()).collect()
+    }
 }
 
 impl TrainScheduleLike for TrainOccurrence {

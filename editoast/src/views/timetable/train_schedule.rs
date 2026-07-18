@@ -653,11 +653,7 @@ pub(in crate::views) async fn get_path(
         return Ok(Json(PathfindingResult::Failure(failure)));
     };
 
-    let path_items = train_occurrence
-        .path()
-        .iter()
-        .map(|item| &item.location)
-        .collect_vec();
+    let path_items = train_occurrence.locations();
 
     let path_items = match (begin_index, end_index) {
         (None, None) => &path_items,
@@ -782,11 +778,7 @@ pub(in crate::views) async fn simulation(
         }));
     };
 
-    let path_item_locations = train_schedule
-        .path
-        .iter()
-        .map(|p| &p.location)
-        .collect_vec();
+    let path_item_locations = train_schedule.locations();
     let op_cache = OperationalPointCache::load_path_items(
         db_pool.get().await?,
         infra.id,

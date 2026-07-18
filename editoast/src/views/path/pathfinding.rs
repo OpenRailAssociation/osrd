@@ -90,11 +90,7 @@ impl PathfindingInput {
                 consist.compute_max_speed(),
             )),
             rolling_stock_length: units::millimeter::from(consist.compute_length()).round() as u64,
-            path_items: train_schedule
-                .path()
-                .iter()
-                .map(|item| item.location.clone())
-                .collect(),
+            path_items: train_schedule.locations(),
             speed_limit_tag: train_schedule.speed_limit_tag().cloned(),
             stops_at_end_of_block: Some(train_schedule.options().stops_at_end_of_block()),
             allowed_track_sections: BTreeSet::new(),
