@@ -701,12 +701,9 @@ pub fn build_simulation_train(
         pathfinding_consist,
         simulation_train_parameters,
     );
-    let path_item_locations = path
-        .iter()
-        .map(|path_item| &path_item.location)
-        .collect_vec();
+
     let track_offsets =
-        operational_point_cache.extract_location_from_path_items(&path_item_locations)?;
+        operational_point_cache.extract_location_from_path_items(&train_occurrence.locations())?;
     let schedule_map = schedule
         .iter()
         .map(|schedule_item @ ScheduleItem { at, .. }| (at, schedule_item))
