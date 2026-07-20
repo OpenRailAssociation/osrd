@@ -30,6 +30,7 @@ pub mod timetable_type;
 pub mod towed_rolling_stock;
 pub mod train_schedule;
 pub mod train_schedule_exception;
+pub mod train_schedule_linking;
 pub mod train_schedule_set;
 pub mod work_schedules;
 
@@ -63,6 +64,7 @@ pub use timetable_train_schedule_set::TimetableTrainScheduleSet;
 pub use towed_rolling_stock::TowedRollingStock;
 pub use train_schedule::TrainSchedule;
 pub use train_schedule_exception::TrainScheduleException;
+pub use train_schedule_linking::TrainScheduleLinking;
 pub use train_schedule_set::TrainScheduleSet;
 pub use work_schedules::WorkSchedule;
 pub use work_schedules::WorkScheduleGroup;
