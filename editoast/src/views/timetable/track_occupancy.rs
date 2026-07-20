@@ -326,6 +326,7 @@ pub mod tests {
     use core_client::pathfinding::TrackRange;
     use core_client::simulation::CompleteReportTrain;
     use core_client::simulation::ReportTrain;
+    use editoast_models::OperationalPointModel;
     use pretty_assertions::assert_eq;
     use reqwest::StatusCode;
     use rstest::rstest;
@@ -406,20 +407,33 @@ pub mod tests {
             _ => (Identifier::from("T1"), 50, vec![50, 100, 150]),
         };
         let op_cache = OperationalPointCache::new(
-            Vec::new(),
+            vec![
+                OperationalPointModel {
+                    obj_id: "op_1".into(),
+                    ..Default::default()
+                },
+                OperationalPointModel {
+                    obj_id: "op_2".into(),
+                    ..Default::default()
+                },
+                OperationalPointModel {
+                    obj_id: "op_3".into(),
+                    ..Default::default()
+                },
+            ],
             HashMap::new(),
             HashMap::new(),
             HashMap::from([
                 ("op_1".to_string(), 0),
-                ("op_2".to_string(), 0),
-                ("op_3".to_string(), 0),
+                ("op_2".to_string(), 1),
+                ("op_3".to_string(), 2),
             ]),
             HashMap::new(),
-            vec![HashMap::from([
-                ("T1".into(), "V1".into()),
-                ("T2".into(), "V2".into()),
-                ("T3".into(), "V3".into()),
-            ])],
+            vec![
+                HashMap::from([("T1".into(), "V1".into())]),
+                HashMap::from([("T2".into(), "V2".into())]),
+                HashMap::from([("T3".into(), "V3".into())]),
+            ],
         );
 
         let operational_point_track_offsets = vec![TrackOffset {
@@ -596,7 +610,23 @@ pub mod tests {
                 ),
             },
         ];
-        let cache = OperationalPointCache::default();
+        let cache = OperationalPointCache::new(
+            vec![
+                OperationalPointModel {
+                    obj_id: "op_1".into(),
+                    ..Default::default()
+                },
+                OperationalPointModel {
+                    obj_id: "op_2".into(),
+                    ..Default::default()
+                },
+            ],
+            HashMap::new(),
+            HashMap::new(),
+            HashMap::from([("op_1".to_string(), 0), ("op_2".to_string(), 1)]),
+            HashMap::new(),
+            Vec::new(),
+        );
 
         assert_eq!(
             find_matching_path_item_index(&path, op_id, &cache),
@@ -632,7 +662,10 @@ pub mod tests {
         let pathfinding = make_pathfinding_success(Identifier::from("T2"), vec![0, 100]);
 
         let op_cache = OperationalPointCache::new(
-            Vec::new(),
+            vec![OperationalPointModel {
+                obj_id: "op_2".into(),
+                ..Default::default()
+            }],
             HashMap::new(),
             HashMap::new(),
             HashMap::from([("op_2".to_string(), 0)]),
