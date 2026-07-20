@@ -197,7 +197,9 @@ impl OperationalPointCache {
     pub fn get_op_ref_id(&self, op_ref: &OperationalPointReference) -> Option<String> {
         let (ops, secondary_code) = match op_ref {
             OperationalPointReference::Id { operational_point } => {
-                return Some(operational_point.0.clone());
+                return self
+                    .get_from_id(&operational_point.0)
+                    .map(|op| op.obj_id.clone());
             }
             OperationalPointReference::Trigram {
                 trigram,
