@@ -31,6 +31,7 @@ import { useMapSettings, useMapSettingsActions } from 'reducers/commonMap';
 import { updateItineraryForm } from 'reducers/osrdconf/operationalStudiesConf';
 import {
   getCategory,
+  getEditingTrainType,
   getName,
   getOperationalStudiesRollingStockID,
   getOperationalStudiesSpeedLimitByTag,
@@ -55,7 +56,7 @@ import type { FeatureInfoClick } from '../types';
 import type { OperationalPointSuggestion } from './ComboBoxCustomList/ListElementComponent';
 import { usePathStepsMetadata } from './hooks/usePathStepsMetadata';
 import IntermediateWaypointsPanel from './IntermediateWaypointsPanel/IntermediateWaypointsPanel';
-import ItineraryModalFooter from './ItineraryModalFooter';
+import ItineraryModalFooter, { type FooterTrainType } from './ItineraryModalFooter';
 import ItineraryModalFormHeader from './ItineraryModalFormHeader';
 import ItineraryModalMap from './ItineraryModalMap';
 import PathStepItem from './PathStepItem';
@@ -94,6 +95,7 @@ const ItineraryModal = ({
   const dispatch = useAppDispatch();
   const { updateViewport } = useMapSettingsActions();
   const infraId = useInfraID();
+  const editingTrainType = useSelector(getEditingTrainType);
 
   const [modalFormState, setModalFormState] = useState<ItineraryModalFormState>({
     name,
@@ -605,7 +607,7 @@ const ItineraryModal = ({
 
     launchPathfinding(reversePathSteps(updatedPathSteps), modalFormState.rollingStockId);
   };
-  const submitItinerary = () => {
+  const submitItinerary = (trainType?: FooterTrainType) => {
     setSubmitAttempted(true);
     setBannerWiggle((c) => c + 1);
     if (isNameEmpty) return;
@@ -633,6 +635,7 @@ const ItineraryModal = ({
         rollingStockName: modalFormState.rollingStockName,
         speedLimitTag: modalFormState.speedLimitTag,
         pathSteps: pathStepsFromV2,
+        trainType,
       })
     );
 
@@ -928,6 +931,7 @@ const ItineraryModal = ({
         </div>
         <ItineraryModalFooter
           mode={displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.add ? 'new' : 'edit'}
+          trainType={editingTrainType}
           onCancel={() => closeModal({ withChanges: false })}
           onSubmit={submitItinerary}
         />

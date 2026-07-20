@@ -422,7 +422,6 @@
       "alertMissingRequestedPoint": "Il faut au minimum deux points de passage pour définir un itinéraire",
       "cancel": "Annuler",
       "cancelMapSelection": "Annuler",
-      "edit": "Modifier l’itinéraire",
       "focusLocationOnMap": "Centrer la carte sur ce point remarquable",
       "frameAll": "Centrer sur tous les points de passage sur la carte",
       "intermediateWaypointsPanel": {
@@ -439,7 +438,6 @@
       "invalidOP": "Point non reconnu : ",
       "moveLocationOnMap": "Déplacer le point remarquable sur la carte",
       "movePointOnMap": "Déplacez ce point en utilisant la carte",
-      "next": "Suivant",
       "noComputation": "Il n'y aura pas de calcul pour ce train",
       "opId": "Identifiant de point",
       "opName": "Nom du point remarquable",
@@ -448,6 +446,13 @@
       "pass": "Passage",
       "requestedPoint": "Point sur la carte",
       "stop": "Arrêt",
+      "submit": {
+        "addService": "Ajouter la mission",
+        "addSingleTrain": "Ajouter le train unique",
+        "editOccurrence": "Modifier l'occurrence",
+        "editService": "Modifier la mission",
+        "editSingleTrain": "Modifier le train unique"
+      },
       "track": "Voie",
       "trainName": "Nom du train",
       "trigram": "Trigramme",

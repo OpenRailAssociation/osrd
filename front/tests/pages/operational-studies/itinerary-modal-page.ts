@@ -7,7 +7,8 @@ class ItineraryModalPage {
   private readonly rocketSearch: Locator;
   private readonly itineraryModalMap: Locator;
   private readonly itineraryModalCancelButton: Locator;
-  private readonly itineraryModalNextButton: Locator;
+  private readonly itineraryModalAddSingleTrainButton: Locator;
+  private readonly itineraryModalAddServiceTrainButton: Locator;
   private readonly createTimetableItemButton: Locator;
   private readonly comboBox: Locator;
   private readonly opSuggestion: Locator;
@@ -37,7 +38,12 @@ class ItineraryModalPage {
     this.rocketSearch = page.getByTestId('type-and-path-input');
     this.itineraryModalMap = page.getByTestId('itinerary-modal-map');
     this.itineraryModalCancelButton = page.getByTestId('close-itinerary-modal');
-    this.itineraryModalNextButton = page.getByTestId('itinerary-modal-next-button');
+    this.itineraryModalAddSingleTrainButton = page.getByTestId(
+      'itinerary-modal-add-single-train-button'
+    );
+    this.itineraryModalAddServiceTrainButton = page.getByTestId(
+      'itinerary-modal-add-service-train-button'
+    );
     this.createTimetableItemButton = page.getByTestId('create-train-schedule-button');
     this.comboBox = page.getByTestId('path-step-combo-box');
     this.opSuggestion = page.getByTestId('op-suggestion');
@@ -67,7 +73,8 @@ class ItineraryModalPage {
     await expect(this.itineraryModalFormFooter).toBeVisible();
     await expect(this.itineraryModalMap).toBeVisible();
     await expect(this.itineraryModalCancelButton).toBeVisible();
-    await expect(this.itineraryModalNextButton).toBeVisible();
+    await expect(this.itineraryModalAddSingleTrainButton).toBeVisible();
+    await expect(this.itineraryModalAddServiceTrainButton).toBeVisible();
   }
 
   async checkItineraryModalHeader(expectedText: string) {
@@ -220,8 +227,8 @@ class ItineraryModalPage {
   }
 
   async createTrain() {
-    await expect(this.itineraryModalNextButton).toBeVisible();
-    await this.itineraryModalNextButton.click();
+    await expect(this.itineraryModalAddSingleTrainButton).toBeVisible();
+    await this.itineraryModalAddSingleTrainButton.click();
     await expect(this.createTimetableItemButton).toBeVisible();
     await this.createTimetableItemButton.click();
   }
