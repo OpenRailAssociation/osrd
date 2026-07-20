@@ -131,8 +131,12 @@ impl Task for core_client::simulation::Request {
     type Error = core_client::Error;
     type Context = Arc<CoreClient>;
 
-    // Please adjust if you have more educated information (and adjust the comment 😉).
-    const CACHE_READS_BATCH_SIZE: usize = 25; // This value has been chosen this way: 🫳🎩
+    // The compressed size of a simulation is:
+    // - Mean: 18.5kB
+    // - 50th percentile: 12.4kB
+    // - Max: 163.95kB
+    // Therefore, we can safely batch 50 to have around 1MB of data per request.
+    const CACHE_READS_BATCH_SIZE: usize = 50;
 
     fn key(&self, app_version: &str) -> String {
         use std::hash::Hasher as _;

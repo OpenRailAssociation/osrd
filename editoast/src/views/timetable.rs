@@ -30,15 +30,17 @@ use common::units::quantities::Velocity;
 use core_client::AsCoreRequest;
 use core_client::conflict_detection::TrainRequirements;
 use core_client::conflict_detection::TrainRequirementsById;
-use core_client::simulation::CompleteReportTrain;
 use core_client::simulation::PhysicsConsist;
 use core_client::simulation::RoutingRequirement;
 use core_client::simulation::SpacingRequirement;
+use core_task::Correlated;
+use core_task::SimulationOutput;
 use database::DbConnectionPoolV2;
 use editoast_derive::EditoastError;
 use editoast_models::TrainScheduleException;
 use editoast_models::prelude::*;
 use editoast_models::timetable::Timetable;
+use futures::StreamExt;
 use itertools::Itertools;
 use itertools::izip;
 use schemas::RollingStock;
@@ -69,16 +71,15 @@ use crate::AppState;
 use crate::error::Result;
 use crate::views::AuthenticationExt;
 use crate::views::path::operational_point_cache::OperationalPointCache;
+use crate::views::rolling_stock::RollingStockError;
 use crate::views::timetable::conflicts::Conflict;
 use crate::views::timetable::conflicts::build_conflict_core_request;
 use crate::views::timetable::conflicts::build_cyclic_occurrence_requirements;
 use crate::views::timetable::conflicts::compute_hourly_pattern_period;
 use crate::views::timetable::conflicts::populate_timetable;
 use crate::views::timetable::conflicts::retrieve_trains;
-use crate::views::timetable::simulation::SimulationResponseSuccess;
 use editoast_models::Infra;
 use editoast_models::TrainScheduleSet;
-use editoast_models::train_schedule::OccurrenceId;
 use editoast_models::train_schedule::train_schedule_schema_from_model;
 
 #[derive(Debug, Error, EditoastError, derive_more::From)]
@@ -456,7 +457,6 @@ pub(in crate::views) async fn requirements(
         db_pool,
         valkey_client,
         core_client,
-        config,
         ..
     }): State<AppState>,
     Extension(auth): AuthenticationExt,
@@ -489,8 +489,8 @@ pub(in crate::views) async fn requirements(
     let train_schedule_sets_ids =
         Timetable::get_train_schedule_set_ids_from_timetable(timetable_id, conn).await?;
 
-    // List trains and paced trains
-    let (paced_trains, stats) = editoast_models::TrainSchedule::list_paginated(
+    // Retrieve train schedules and populate their occurrences
+    let (train_schedules, stats) = editoast_models::TrainSchedule::list_paginated(
         conn,
         page_settings
             .into_selection_settings()
@@ -506,82 +506,129 @@ pub(in crate::views) async fn requirements(
         editoast_models::TrainScheduleException::retrieve_exceptions_by_train_schedules(
             conn,
             timetable_id,
-            &paced_trains.iter().map(|pt| pt.id).collect_vec(),
+            &train_schedules.iter().map(|pt| pt.id).collect_vec(),
         )
         .await?
         .into_iter()
+        .map_into::<schemas::TrainScheduleException>()
         .into_group_map_by(|e| e.train_schedule_id);
 
-    let (occurrence_ids, occurrences): (Vec<_>, Vec<_>) = paced_trains
+    let train_occurrences = train_schedules
         .iter()
-        .flat_map(|train_schedule| {
-            let exceptions = exceptions
-                .remove(&train_schedule.id)
-                .unwrap_or_default()
-                .into_iter()
-                .map_into()
-                .collect_vec();
-            train_schedule.iter_occurrences(&exceptions).collect_vec()
+        .flat_map(|ts| {
+            let ts_exceptions = exceptions.remove(&ts.id).unwrap_or_default();
+            ts.iter_occurrences(&ts_exceptions).collect_vec()
         })
-        .unzip();
+        .collect::<HashMap<_, _>>();
 
-    let simulations = train_simulation_ordered_batch(
-        conn,
-        valkey_client.clone(),
-        core_client.clone(),
-        &occurrences,
-        &infra,
-        electrical_profile_set_id,
-        config.app_version.as_deref(),
+    // Get the physic consist parameters for the train schedules
+    let rolling_stocks_ids = train_occurrences
+        .values()
+        .map::<String, _>(|train_occurrence| train_occurrence.rolling_stock_name.to_string())
+        .collect::<HashSet<_>>();
+
+    let consists = editoast_models::RollingStock::retrieve_batch_unchecked::<_, Vec<_>>(
+        &mut conn.clone(),
+        rolling_stocks_ids,
     )
-    .await?
+    .await
+    .map_err(RollingStockError::from)?
     .into_iter()
-    .map(|(sim, _)| Arc::unwrap_or_clone(sim));
+    .map(|rolling_stock| {
+        (
+            rolling_stock.name.clone(),
+            PhysicsConsistParameters::from_traction_engine(rolling_stock.into()),
+        )
+    })
+    .collect::<HashMap<_, _>>();
 
-    let start_times = occurrences.iter().map(|ts| ts.start_time());
-    let train_names = occurrences.iter().map(|ts| ts.train_name.clone());
-    let results = build_trains_requirements(
-        occurrence_ids.into_iter(),
-        start_times,
-        simulations,
-        train_names,
-    )
-    .collect();
+    // Associate train schedules with their consist, when possible
+    let train_occurrences_with_physics_consist: HashMap<_, _> = train_occurrences
+        .into_iter()
+        .filter_map(|(occurrence_id, train_occurrence)| {
+            let rolling_stock_name = train_occurrence.rolling_stock_name.clone();
+            consists
+                .get(&rolling_stock_name)
+                .map(|consist| (occurrence_id.clone(), (train_occurrence, consist)))
+        })
+        .collect();
 
-    Ok(Json(TrainRequirementsPage { results, stats }))
-}
+    // Build the operational point cache
+    let path_items = train_occurrences_with_physics_consist
+        .values()
+        .flat_map(|(train_occurrence, _physics_consist)| &train_occurrence.path)
+        .map(|path_item| &path_item.location)
+        .collect_vec();
+    let path_item_cache =
+        OperationalPointCache::load_path_items(conn.clone(), infra.id, &path_items).await?;
 
-fn build_trains_requirements(
-    train_ids: impl Iterator<Item = OccurrenceId>,
-    start_times: impl Iterator<Item = Offset>,
-    simulations: impl Iterator<Item = simulation::Response>,
-    train_names: impl Iterator<Item = String>,
-) -> impl Iterator<Item = TrainRequirementsById> {
-    izip!(train_ids, start_times, simulations, train_names).filter_map(
-        |(train_id, start_time, sim, train_name)| {
-            let CompleteReportTrain {
-                spacing_requirements,
-                routing_requirements,
-                ..
-            } = match sim {
-                simulation::Response::Success(SimulationResponseSuccess {
-                    final_output, ..
-                }) => Some(final_output),
-                _ => None,
-            }?;
-            let train_requirements = make_requirements_absolute(
-                start_time,
-                spacing_requirements.clone(),
-                routing_requirements.clone(),
+    // Build the simulation trains for the simulation environment
+    let simulation_trains = train_occurrences_with_physics_consist
+        .iter()
+        .filter_map(
+            |(occurrence_id, (train_occurrence, physics_consist_parameters))| {
+                match simulation::build_simulation_train(
+                    train_occurrence,
+                    physics_consist_parameters,
+                    &path_item_cache,
+                ) {
+                    Ok(simulation_train) => Some((occurrence_id.clone(), simulation_train)),
+                    Err(_pathfinding_failure) => None,
+                }
+            },
+        )
+        .collect_vec();
+
+    // Init the simulation environment
+    let core_env = core_task::CoreEnv {
+        infra_id: infra.id as u64,
+        infra_version: infra.version,
+        client: core_client.clone(),
+    };
+    let mut simulation_env =
+        if let Some(electrical_profile_set_id) = electrical_profile_set_id.map(|i| i as u64) {
+            core_task::SimulationEnv::new_with_electrical_profile_set(
+                core_env,
+                electrical_profile_set_id,
+            )
+        } else {
+            core_task::SimulationEnv::new(core_env)
+        };
+
+    // Populate the simulation environment and simulate
+    simulation_env.extend(simulation_trains);
+    let mut simulations = simulation_env.into_stream(valkey_client);
+    let mut train_requirements = vec![];
+    while let Some(correlated_sim) = simulations.next().await {
+        let Correlated {
+            correlation_key: occurrence_ids,
+            data: sim,
+        } = correlated_sim;
+        let Ok(SimulationOutput::Success(sim)) = sim else {
+            continue;
+        };
+        occurrence_ids.into_iter().for_each(|occurrence_id| {
+            let (train_occurrence, _) = train_occurrences_with_physics_consist
+                .get(&occurrence_id)
+                .expect("Train occurrence should exist for the given occurrence_id");
+            let requirement = make_requirements_absolute(
+                train_occurrence.start_time(),
+                sim.final_output.spacing_requirements.clone(),
+                sim.final_output.routing_requirements.clone(),
             );
-            Some(TrainRequirementsById {
-                train_id: train_id.to_string(),
-                spacing_requirements: train_requirements.spacing_requirements,
-                routing_requirements: train_requirements.routing_requirements,
-                train_name,
-            })
-        },
-    )
+            train_requirements.push(TrainRequirementsById {
+                train_id: occurrence_id.to_string(),
+                train_name: train_occurrence.train_name.clone(),
+                spacing_requirements: requirement.spacing_requirements,
+                routing_requirements: requirement.routing_requirements,
+            });
+        });
+    }
+
+    Ok(Json(TrainRequirementsPage {
+        results: train_requirements,
+        stats,
+    }))
 }
 
 /// Add the start_time of the occurrence into every requirement time
