@@ -9,7 +9,6 @@ use editoast_models::Infra;
 use editoast_models::prelude::*;
 use itertools::Itertools;
 use profile_connection_scan::Connection;
-use schemas::primitives::ObjectType;
 use schemas::train_schedule::OperationalPointPartReference;
 use schemas::train_schedule::OperationalPointReference;
 use schemas::train_schedule::PathItemLocation;
@@ -141,9 +140,7 @@ pub(in crate::views) async fn search_journeys(
 
     let mut conn = db_pool.get().await?;
 
-    let infra =
-        Infra::retrieve_or_fail(conn.clone(), infra_id, || Error::InfraNotFound { infra_id })
-            .await?;
+    Infra::exists_or_fail(&mut conn, infra_id, || Error::InfraNotFound { infra_id }).await?;
 
     auth.check_authorization(async |authorizer| {
         authorizer
@@ -152,47 +149,50 @@ pub(in crate::views) async fn search_journeys(
     })
     .await?;
 
-    let span = tracing::info_span!("fetching operational points");
-    let operational_point_ids = infra
-        .list_objects(&mut conn, ObjectType::OperationalPoint)
-        .instrument(span)
-        .await?;
+    let mut timetables = Vec::new();
+    while let Some(ts_fut_result) = train_schedule_futs.join_next().await {
+        timetables.push(ts_fut_result??);
+    }
 
-    let path_items: Vec<PathItemLocation> = operational_point_ids
+    let op_references: Vec<&OperationalPointPartReference> = timetables
         .iter()
-        .map(|operational_point| path_item_id(operational_point))
+        .flat_map(|(_, train_schedules)| train_schedules)
+        .flat_map(|train_schedule| &train_schedule.path)
+        .filter_map(|path_item| match &path_item.location {
+            PathItemLocation::OperationalPointPartReference(op_ref) => Some(op_ref),
+            // We ignore track offsets as we can't do connections on them
+            PathItemLocation::TrackOffset(_) => None,
+        })
+        .chain([&origin, &destination])
+        .unique_by(|op_ref| &op_ref.operational_point)
+        .collect();
+
+    let path_items: Vec<PathItemLocation> = op_references
+        .iter()
+        .map(|op_ref| PathItemLocation::OperationalPointPartReference((*op_ref).clone()))
         .collect();
 
     let op_cache = OperationalPointCache::load_path_items(conn, infra_id, &path_items).await?;
 
-    let origin_op = &origin.operational_point;
-    let destination_op = &destination.operational_point;
-
-    let Some(origin_op) = op_cache.get_op_ref_id(origin_op) else {
-        return Err(Error::InvalidInput {
-            message: "origin not found in the infra",
-        })?;
-    };
-
-    let Some(destination_op) = op_cache.get_op_ref_id(destination_op) else {
-        return Err(Error::InvalidInput {
-            message: "destination not found in the infra",
-        })?;
-    };
-
-    let Some(origin_index) = operational_point_ids
+    let operational_point_ids = op_references
         .iter()
-        .position(|operational_point_id| *operational_point_id == origin_op)
+        .filter_map(|op_ref| op_cache.get_op_ref_id(&op_ref.operational_point))
+        .unique()
+        .collect_vec();
+
+    let Some(origin_index) =
+        find_op_index(&op_cache, &operational_point_ids, &origin.operational_point)
     else {
         return Err(Error::InvalidInput {
             message: "origin not found in the infra",
         })?;
     };
 
-    let Some(destination_index) = operational_point_ids
-        .iter()
-        .position(|operational_point_id| *operational_point_id == destination_op)
-    else {
+    let Some(destination_index) = find_op_index(
+        &op_cache,
+        &operational_point_ids,
+        &destination.operational_point,
+    ) else {
         return Err(Error::InvalidInput {
             message: "destination not found in the infra",
         })?;
@@ -201,9 +201,7 @@ pub(in crate::views) async fn search_journeys(
     let mut train_schedule_ids = Vec::new();
     let mut train_schedule_parts = Vec::new();
     let mut train_schedule_start_times = Vec::new();
-    while let Some(ts_fut_result) = train_schedule_futs.join_next().await {
-        let (timetable_type, train_schedules) = ts_fut_result??;
-
+    for (timetable_type, train_schedules) in timetables {
         let index_offset = train_schedule_ids.len();
 
         train_schedule_ids.extend(
@@ -232,7 +230,7 @@ pub(in crate::views) async fn search_journeys(
                 };
 
                 // avoid moving them into the filter_map closure
-                let operational_points = operational_point_ids.as_slice();
+                let operational_point_ids = operational_point_ids.as_slice();
                 let op_cache = &op_cache;
 
                 train_schedule
@@ -264,11 +262,11 @@ pub(in crate::views) async fn search_journeys(
                             return None;
                         };
 
-                        let op_id = op_cache.get_op_ref_id(&op_ref.operational_point)?;
-
-                        let op_index = operational_points
-                            .iter()
-                            .position(|operational_point| &op_id == operational_point)?;
+                        let op_index = find_op_index(
+                            op_cache,
+                            operational_point_ids,
+                            &op_ref.operational_point,
+                        )?;
 
                         Some((op_index, arrival_ms, stop_for_ms))
                     })
@@ -352,6 +350,18 @@ fn path_item_id(id: &str) -> PathItemLocation {
         },
         local_track_name: None,
     })
+}
+
+/// Find the index of an operational point reference
+fn find_op_index(
+    op_cache: &OperationalPointCache,
+    operational_point_ids: &[String],
+    op_ref: &OperationalPointReference,
+) -> Option<usize> {
+    let op_ref_id = op_cache.get_op_ref_id(op_ref)?;
+    operational_point_ids
+        .iter()
+        .position(|op_id| *op_id == op_ref_id)
 }
 
 /// Deduplicate connections that have the same trip in the given iterator.
