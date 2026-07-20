@@ -4153,6 +4153,22 @@ class TrainScheduleOptions(BaseModel):
     use_speed_limits_for_simulation: bool | None = None
 
 
+class TrainSchedulePart(BaseModel):
+    """
+    A part of a train schedule, from one step of its path to another.
+    """
+
+    from_: Annotated[int, Field(alias="from", ge=0)]
+    """
+    Index of the start path step in the train schedule's path
+    """
+    to: Annotated[int, Field(ge=0)]
+    """
+    Index of the end path step in the train schedule's path
+    """
+    train_schedule_id: int
+
+
 class TrainScheduleSet(BaseModel):
     catalog_entry_id: int | None = None
     description: str
@@ -5081,6 +5097,13 @@ class InfraPathfindingInput(BaseModel):
     starting: PathfindingTrackLocationInput
 
 
+class JourneyProposals(BaseModel):
+    journeys: list[list[TrainSchedulePart]]
+    """
+    Each journey is a list of train schedule parts.
+    """
+
+
 class LevelCrossing(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
@@ -5882,21 +5905,6 @@ class TrainCategoryMain(BaseModel):
     main_category: TrainMainCategory
 
 
-class TrainSchedulePartBound(BaseModel):
-    location: (
-        PathItemLocationTrackOffset | PathItemLocationOperationalPointPartReference
-    )
-    """
-    This location is part of the train schedule's path.
-    """
-    time_ms: Annotated[int, Field(ge=0)]
-    """
-    Scheduled time since the start of the train schedule in milliseconds.
-
-    Used to differentiate locations in case of backtracks.
-    """
-
-
 class WorkSchedule(BaseModel):
     end_date_time: AwareDatetime
     id: int
@@ -6662,16 +6670,6 @@ class TrackSectionModel(BaseModel):
     slopes: list[Slope]
 
 
-class TrainSchedulePart(BaseModel):
-    """
-    A part of a train schedule, from one location to another.
-    """
-
-    from_: Annotated[TrainSchedulePartBound, Field(alias="from")]
-    to: TrainSchedulePartBound
-    train_schedule_id: int
-
-
 class TrainScheduleSimulationSummaryResult(BaseModel):
     exceptions: dict[
         str,
@@ -6806,13 +6804,6 @@ class InfraObjectSpeedSection(BaseModel):
 class InfraObjectSwitch(BaseModel):
     obj_type: Literal["Switch"]
     railjson: Switch
-
-
-class JourneyProposals(BaseModel):
-    journeys: list[list[TrainSchedulePart]]
-    """
-    Each journey is a list of train schedule parts.
-    """
 
 
 class NeutralSection(BaseModel):

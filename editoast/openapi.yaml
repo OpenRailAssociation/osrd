@@ -16472,36 +16472,23 @@ components:
       additionalProperties: false
     TrainSchedulePart:
       type: object
-      description: A part of a train schedule, from one location to another.
+      description: A part of a train schedule, from one step of its path to another.
       required:
       - train_schedule_id
       - from
       - to
       properties:
         from:
-          $ref: '#/components/schemas/TrainSchedulePartBound'
+          type: integer
+          description: Index of the start path step in the train schedule's path
+          minimum: 0
         to:
-          $ref: '#/components/schemas/TrainSchedulePartBound'
+          type: integer
+          description: Index of the end path step in the train schedule's path
+          minimum: 0
         train_schedule_id:
           type: integer
           format: int64
-    TrainSchedulePartBound:
-      type: object
-      required:
-      - location
-      - time_ms
-      properties:
-        location:
-          $ref: '#/components/schemas/PathItemLocation'
-          description: This location is part of the train schedule's path.
-        time_ms:
-          type: integer
-          format: int32
-          description: |-
-            Scheduled time since the start of the train schedule in milliseconds.
-
-            Used to differentiate locations in case of backtracks.
-          minimum: 0
     TrainScheduleResponse:
       allOf:
       - $ref: '#/components/schemas/TrainSchedule'

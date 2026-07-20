@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::collections::HashSet;
 
 use axum::Extension;
@@ -69,29 +70,50 @@ pub(in crate::views) struct JourneySearchQuery {
     transfer_ms: u32,
 }
 
-#[derive(Debug, Clone, Serialize, ToSchema)]
-struct TrainSchedulePartBound {
-    /// This location is part of the train schedule's path.
-    location: PathItemLocation,
-
-    /// Scheduled time since the start of the train schedule in milliseconds.
-    ///
-    /// Used to differentiate locations in case of backtracks.
-    time_ms: u32,
-}
-
-/// A part of a train schedule, from one location to another.
+/// A part of a train schedule, from one step of its path to another.
 #[derive(Debug, Clone, Serialize, ToSchema)]
 struct TrainSchedulePart {
     train_schedule_id: i64,
-    from: TrainSchedulePartBound,
-    to: TrainSchedulePartBound,
+
+    /// Index of the start path step in the train schedule's path
+    from: usize,
+
+    /// Index of the end path step in the train schedule's path
+    to: usize,
 }
 
 #[derive(Debug, Clone, Serialize, ToSchema)]
 pub(in crate::views) struct JourneyProposals {
     /// Each journey is a list of train schedule parts.
     journeys: Vec<Vec<TrainSchedulePart>>,
+}
+
+/// A step of a train schedule's path that can be used in a connection
+#[derive(Clone, Copy)]
+struct ScheduleStep {
+    /// Index of the step in path.
+    path_index: usize,
+
+    /// Index of the operational point the step is located at.
+    op_index: usize,
+
+    /// Time of arrival at the path step
+    arrival_ms: u32,
+
+    /// Time of departure from the path step
+    departure_ms: u32,
+}
+
+/// A connection, along with the path steps it was built from.
+#[derive(Clone, Copy)]
+struct PathIndexedConnection {
+    connection: Connection,
+
+    /// Index in the train schedule's path of the connection departure.
+    departure_path_index: usize,
+
+    /// Index in the train schedule's path of the connection arrival.
+    arrival_path_index: usize,
 }
 
 /// Search possible journeys from A to B using train parts from the given timetables.
@@ -174,202 +196,199 @@ pub(in crate::views) async fn search_journeys(
 
     let op_cache = OperationalPointCache::load_path_items(conn, infra_id, &path_items).await?;
 
-    let operational_point_ids = op_references
+    let op_index_by_id: HashMap<String, usize> = op_references
         .iter()
         .filter_map(|op_ref| op_cache.get_op_ref_id(&op_ref.operational_point))
         .unique()
-        .collect_vec();
+        .enumerate()
+        .map(|(index, op_id)| (op_id, index))
+        .collect();
 
-    let Some(origin_index) =
-        find_op_index(&op_cache, &operational_point_ids, &origin.operational_point)
+    let Some(origin_index) = find_op_index(&op_cache, &op_index_by_id, &origin.operational_point)
     else {
         return Err(Error::InvalidInput {
             message: "origin not found in the infra",
         })?;
     };
 
-    let Some(destination_index) = find_op_index(
-        &op_cache,
-        &operational_point_ids,
-        &destination.operational_point,
-    ) else {
+    let Some(destination_index) =
+        find_op_index(&op_cache, &op_index_by_id, &destination.operational_point)
+    else {
         return Err(Error::InvalidInput {
             message: "destination not found in the infra",
         })?;
     };
 
-    let mut train_schedule_ids = Vec::new();
-    let mut train_schedule_parts = Vec::new();
-    let mut train_schedule_start_times = Vec::new();
-    for (timetable_type, train_schedules) in timetables {
-        let index_offset = train_schedule_ids.len();
+    let journeys = tokio::task::spawn_blocking(move || {
+        let mut train_schedule_ids = Vec::new();
+        let mut path_indexed_connections: Vec<PathIndexedConnection> = Vec::new();
+        for (timetable_type, train_schedules) in timetables {
+            let index_offset = train_schedule_ids.len();
 
-        train_schedule_ids.extend(
-            train_schedules
-                .iter()
-                .map(|train_schedule| train_schedule.id),
-        );
+            train_schedule_ids.extend(
+                train_schedules
+                    .iter()
+                    .map(|train_schedule| train_schedule.id),
+            );
 
-        train_schedule_start_times.extend(
-            train_schedules
-                .iter()
-                .map(|train_schedule| datetime_millis_from_midnight(train_schedule.start_time)),
-        );
-
-        train_schedule_parts.extend(train_schedules.into_iter().zip(index_offset..).flat_map(
-            |(train_schedule, train_schedule_index)| {
-                let offset_ms = match timetable_type {
-                    schemas::timetable_type::TimetableType::Calendar => {
-                        // TODO this handles badly train schedules that span longer than a day
-                        datetime_millis_from_midnight(train_schedule.start_time)
-                    }
-                    schemas::timetable_type::TimetableType::Hourly => u32::try_from(
-                        common::units::millisecond::i64::from(train_schedule.start_time),
-                    )
-                    .unwrap(),
-                };
-
-                // avoid moving them into the filter_map closure
-                let operational_point_ids = operational_point_ids.as_slice();
-                let op_cache = &op_cache;
-
-                train_schedule
-                    .path
-                    .into_iter()
-                    .enumerate()
-                    .filter_map(move |(i, path_item)| {
-                        let arrival_ms: u32;
-                        let stop_for_ms: u32;
-
-                        if i == 0 {
-                            arrival_ms = offset_ms;
-                            stop_for_ms = 0;
-                        } else {
-                            let schedule_item = train_schedule
-                                .schedule
-                                .iter()
-                                .find(|schedule_item| schedule_item.at == path_item.id)?;
-
-                            arrival_ms = offset_ms
-                                + u32::try_from(schedule_item.arrival?.num_milliseconds()).unwrap();
-                            stop_for_ms =
-                                u32::try_from(schedule_item.stop_for?.num_milliseconds()).unwrap();
-                        }
-
-                        let PathItemLocation::OperationalPointPartReference(op_ref) =
-                            path_item.location
-                        else {
-                            return None;
+            path_indexed_connections.extend(
+                train_schedules.into_iter().zip(index_offset..).flat_map(
+                    |(train_schedule, train_schedule_index)| {
+                        let offset_ms = match timetable_type {
+                            schemas::timetable_type::TimetableType::Calendar => {
+                                // TODO this handles badly train schedules that span longer than a day
+                                datetime_millis_from_midnight(train_schedule.start_time)
+                            }
+                            schemas::timetable_type::TimetableType::Hourly => u32::try_from(
+                                common::units::millisecond::i64::from(train_schedule.start_time),
+                            )
+                            .unwrap(),
                         };
 
-                        let op_index = find_op_index(
-                            op_cache,
-                            operational_point_ids,
-                            &op_ref.operational_point,
-                        )?;
+                        // avoid moving them into the filter_map closure
+                        let op_index_by_id = &op_index_by_id;
+                        let op_cache = &op_cache;
 
-                        Some((op_index, arrival_ms, stop_for_ms))
-                    })
-                    .tuple_windows()
-                    .map(
-                        move |(
-                            (start_op_index, start_op_arrival_ms, start_op_stop_for_ms),
-                            (end_op_index, end_op_arrival_ms, _end_op_stop_for_ms),
-                        )| {
-                            Connection {
-                                trip: train_schedule_index,
-                                departure: start_op_index,
-                                departure_ms: start_op_arrival_ms + start_op_stop_for_ms,
-                                arrival: end_op_index,
-                                arrival_ms: end_op_arrival_ms,
-                            }
-                        },
-                    )
-                    .filter(|connection| {
-                        // Simple filters to reduce the size of the problem.
+                        train_schedule
+                            .path
+                            .into_iter()
+                            .enumerate()
+                            .filter_map(move |(i, path_item)| {
+                                let arrival_ms: u32;
+                                let stop_for_ms: u32;
 
-                        // The connection isn't too early for the traveler to take it
-                        let departs_late_enough = (start_ms as i64 - start_tolerance as i64)
-                            <= connection.departure_ms as i64;
+                                if i == 0 {
+                                    arrival_ms = offset_ms;
+                                    stop_for_ms = 0;
+                                } else {
+                                    let schedule_item = train_schedule
+                                        .schedule
+                                        .iter()
+                                        .find(|schedule_item| schedule_item.at == path_item.id)?;
 
-                        // If the connection departs from the source OP, it
-                        // doesn't depart too late for the traveler to take it
-                        let departs_early_enough = connection.departure != origin_index
-                            || connection.departure_ms <= start_ms + start_tolerance;
+                                    arrival_ms = offset_ms
+                                        + u32::try_from(schedule_item.arrival?.num_milliseconds())
+                                            .unwrap();
+                                    stop_for_ms =
+                                        u32::try_from(schedule_item.stop_for?.num_milliseconds())
+                                            .unwrap();
+                                }
 
-                        departs_early_enough && departs_late_enough
-                    })
-            },
-        ));
-    }
+                                let PathItemLocation::OperationalPointPartReference(op_ref) =
+                                    path_item.location
+                                else {
+                                    return None;
+                                };
 
-    // Sort train schedule parts by *decreasing* departure time.
-    train_schedule_parts.sort_unstable_by(|a, b| u32::cmp(&b.departure_ms, &a.departure_ms));
+                                let op_index = find_op_index(
+                                    op_cache,
+                                    op_index_by_id,
+                                    &op_ref.operational_point,
+                                )?;
 
-    let journeys =
-        profile_connection_scan::journey_list(profile_connection_scan::JourneyListParams {
-            stop_count: operational_point_ids.len(),
-            trip_count: train_schedule_ids.len(),
-            connections: train_schedule_parts,
-            start_ms,
-            start_tolerance,
-            start: origin_index,
-            end: destination_index,
-            transfer_ms,
+                                Some(ScheduleStep {
+                                    path_index: i,
+                                    op_index,
+                                    arrival_ms,
+                                    departure_ms: arrival_ms + stop_for_ms,
+                                })
+                            })
+                            .tuple_windows()
+                            .map(move |(departure, arrival)| PathIndexedConnection {
+                                connection: Connection {
+                                    trip: train_schedule_index,
+                                    departure: departure.op_index,
+                                    departure_ms: departure.departure_ms,
+                                    arrival: arrival.op_index,
+                                    arrival_ms: arrival.arrival_ms,
+                                },
+                                departure_path_index: departure.path_index,
+                                arrival_path_index: arrival.path_index,
+                            })
+                            .filter(|path_indexed_connection| {
+                                // Simple filters to reduce the size of the problem.
+
+                                // The connection isn't too early for the traveler to take it
+                                let departs_late_enough = (start_ms as i64
+                                    - start_tolerance as i64)
+                                    <= path_indexed_connection.connection.departure_ms as i64;
+
+                                // If the connection departs from the source OP, it
+                                // doesn't depart too late for the traveler to take it
+                                let departs_early_enough =
+                                    path_indexed_connection.connection.departure != origin_index
+                                        || path_indexed_connection.connection.departure_ms
+                                            <= start_ms + start_tolerance;
+
+                                departs_early_enough && departs_late_enough
+                            })
+                    },
+                ),
+            );
+        }
+
+        // Sort train connections by *decreasing* departure time.
+        path_indexed_connections.sort_unstable_by(|a, b| {
+            u32::cmp(&b.connection.departure_ms, &a.connection.departure_ms)
         });
 
-    let journeys = journeys
-        .into_iter()
-        .map(|journey| {
-            dedup_connections(journey.into_iter())
-                .map(|connection| TrainSchedulePart {
-                    train_schedule_id: train_schedule_ids[connection.trip],
-                    from: TrainSchedulePartBound {
-                        location: path_item_id(&operational_point_ids[connection.departure]),
-                        time_ms: connection.departure_ms
-                            - train_schedule_start_times[connection.trip],
-                    },
-                    to: TrainSchedulePartBound {
-                        location: path_item_id(&operational_point_ids[connection.arrival]),
-                        time_ms: connection.arrival_ms
-                            - train_schedule_start_times[connection.trip],
-                    },
-                })
-                .collect()
-        })
-        .collect();
+        let connections = path_indexed_connections
+            .iter()
+            .map(|path_indexed_connection| path_indexed_connection.connection)
+            .collect_vec();
 
-    Ok(Json(JourneyProposals { journeys }))
-}
+        let journeys =
+            profile_connection_scan::journey_list(profile_connection_scan::JourneyListParams {
+                stop_count: op_index_by_id.len(),
+                trip_count: train_schedule_ids.len(),
+                connections,
+                start_ms,
+                start_tolerance,
+                start: origin_index,
+                end: destination_index,
+                transfer_ms,
+            });
 
-/// Make a [PathItemLocation] from an operational point identifier.
-fn path_item_id(id: &str) -> PathItemLocation {
-    PathItemLocation::OperationalPointPartReference(OperationalPointPartReference {
-        operational_point: OperationalPointReference::Id {
-            operational_point: id.into(),
-        },
-        local_track_name: None,
+        journeys
+            .into_iter()
+            .map(|journey| {
+                let path_indexed_connections = journey
+                    .into_iter()
+                    .map(|connection_id| path_indexed_connections[connection_id]);
+
+                merge_connections(path_indexed_connections)
+                    .map(|path_indexed_connection| TrainSchedulePart {
+                        train_schedule_id: train_schedule_ids
+                            [path_indexed_connection.connection.trip],
+                        from: path_indexed_connection.departure_path_index,
+                        to: path_indexed_connection.arrival_path_index,
+                    })
+                    .collect()
+            })
+            .collect()
     })
+    .instrument(tracing::info_span!("Building journeys"))
+    .await
+    .expect("Failed to build journeys");
+    Ok(Json(JourneyProposals { journeys }))
 }
 
 /// Find the index of an operational point reference
 fn find_op_index(
     op_cache: &OperationalPointCache,
-    operational_point_ids: &[String],
+    op_index_by_id: &HashMap<String, usize>,
     op_ref: &OperationalPointReference,
 ) -> Option<usize> {
     let op_ref_id = op_cache.get_op_ref_id(op_ref)?;
-    operational_point_ids
-        .iter()
-        .position(|op_id| *op_id == op_ref_id)
+    op_index_by_id.get(&op_ref_id).copied()
 }
 
-/// Deduplicate connections that have the same trip in the given iterator.
-fn dedup_connections<'a, I>(mut iter: I) -> impl Iterator<Item = Connection> + 'a
+/// Merge connections of a same trip taken in a row into a single one.
+fn merge_connections<'a, I>(mut iter: I) -> impl Iterator<Item = PathIndexedConnection> + 'a
 where
-    I: Iterator<Item = Connection> + 'a,
+    I: Iterator<Item = PathIndexedConnection> + 'a,
 {
-    let mut prev_connection: Option<Connection> = None;
+    let mut prev_connection: Option<PathIndexedConnection> = None;
 
     std::iter::from_fn(move || {
         loop {
@@ -380,9 +399,10 @@ where
 
             match &mut prev_connection {
                 Some(prev_conn) => {
-                    if prev_conn.trip == next_connection.trip {
-                        prev_conn.arrival = next_connection.arrival;
-                        prev_conn.arrival_ms = next_connection.arrival_ms;
+                    if prev_conn.connection.trip == next_connection.connection.trip {
+                        prev_conn.connection.arrival = next_connection.connection.arrival;
+                        prev_conn.connection.arrival_ms = next_connection.connection.arrival_ms;
+                        prev_conn.arrival_path_index = next_connection.arrival_path_index;
                     } else {
                         return prev_connection.replace(next_connection);
                     }

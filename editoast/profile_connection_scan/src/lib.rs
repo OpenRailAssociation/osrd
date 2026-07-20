@@ -2,7 +2,7 @@
 //! Section 4 of the linked paper.
 //!
 //! Initially ported from this implementation:
-//! https://github.com/Tristramg/csa-rust/blob/72ee6d54de6652da81bc41d53b81ab721dcef479/src/algo.rs
+//! <https://github.com/Tristramg/csa-rust/blob/72ee6d54de6652da81bc41d53b81ab721dcef479/src/algo.rs>
 //!
 //! # Definitions
 //!
@@ -36,7 +36,9 @@
 /// Milliseconds since midnight.
 type TimeOfDayMs = u32;
 
-type ConnectionId = usize;
+/// Index of a [Connection] into [`JourneyListParams::connections`].
+pub type ConnectionId = usize;
+
 type StopId = usize;
 type TripId = usize;
 
@@ -105,16 +107,16 @@ pub struct JourneyListParams {
     pub transfer_ms: u32,
 }
 
-/// This returns a list of journeys, each journey in the form of a list of connections to take.
+/// This returns a list of journeys, each journey being the list of connections to take given as their [ConnectionId].
 ///
 /// Some pre-conditions are required:
 ///
-/// - [`connections`] must be sorted by descending `departure_ms`
-/// - All connections' `trip`s must be strictly lower than [`trip_count`]
-/// - All connections' `departure`s and `arrival`s must be strictly lower than [`stop_count`]
+/// - [`JourneyListParams::connections`] must be sorted by descending `departure_ms`
+/// - All connections' `trip`s must be strictly lower than [`JourneyListParams::trip_count`]
+/// - All connections' `departure`s and `arrival`s must be strictly lower than [`JourneyListParams::stop_count`]
 ///
 /// See asserts below for more pre-conditions.
-pub fn journey_list(p: JourneyListParams) -> Vec<Vec<Connection>> {
+pub fn journey_list(p: JourneyListParams) -> Vec<Vec<ConnectionId>> {
     let JourneyListParams {
         stop_count,
         trip_count,
@@ -131,7 +133,7 @@ pub fn journey_list(p: JourneyListParams) -> Vec<Vec<Connection>> {
 
     // stop index -> profiles
     // profiles are ordered by decreasing departure_ms
-    // they are also ordered by increasing arrival_ms
+    // they are also ordered by decreasing arrival_ms since they all lie on the Pareto front
     let mut profiles: Vec<Vec<Profile>> = vec![Vec::new(); stop_count];
     profiles[end].push(Profile {
         out_connection: None,
@@ -198,7 +200,7 @@ pub fn journey_list(p: JourneyListParams) -> Vec<Vec<Connection>> {
     to_journey_list(&profiles, &connections, transfer_ms, start, end)
         .filter(|journey| {
             // TODO can filter before creating the path
-            let departure_ms = journey[0].departure_ms;
+            let departure_ms = connections[journey[0]].departure_ms;
 
             u32::abs_diff(departure_ms, start_ms) <= start_tolerance
         })
@@ -212,7 +214,7 @@ fn to_journey_list<'a>(
     transfer_ms: u32,
     start: StopId,
     end: StopId,
-) -> impl Iterator<Item = Vec<Connection>> + 'a {
+) -> impl Iterator<Item = Vec<ConnectionId>> + 'a {
     profiles[start].iter().flat_map(move |profile| {
         let Some(out_connection) = profile.out_connection else {
             return Vec::new();
@@ -222,7 +224,7 @@ fn to_journey_list<'a>(
             connections,
             transfer_ms,
             end,
-            vec![connections[out_connection]],
+            vec![out_connection],
         )
     })
 }
@@ -232,10 +234,11 @@ fn to_journey_list_rec(
     connections: &[Connection],
     transfer_ms: u32,
     end: StopId,
-    path: Vec<Connection>,
-) -> Vec<Vec<Connection>> {
-    let start: StopId = path.last().unwrap().arrival;
-    let time: TimeOfDayMs = path.last().unwrap().arrival_ms + transfer_ms;
+    path: Vec<ConnectionId>,
+) -> Vec<Vec<ConnectionId>> {
+    let last_connection = connections[*path.last().unwrap()];
+    let start: StopId = last_connection.arrival;
+    let time: TimeOfDayMs = last_connection.arrival_ms + transfer_ms;
 
     if start == end {
         return vec![path];
@@ -254,7 +257,7 @@ fn to_journey_list_rec(
 
             if path
                 .iter()
-                .any(|connection| connection.departure == next_stop)
+                .any(|connection_id| connections[*connection_id].departure == next_stop)
                 || start == next_stop
                 || out_conn.departure_ms < time
             {
@@ -262,7 +265,7 @@ fn to_journey_list_rec(
             }
 
             let mut new_path = path.clone();
-            new_path.push(out_conn);
+            new_path.push(out_conn_id);
 
             to_journey_list_rec(profiles, connections, transfer_ms, end, new_path)
         })
