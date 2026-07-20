@@ -187,7 +187,12 @@ pub enum Response {
         path: PathfindingResult,
         departure_time: DateTime<Utc>,
     },
-    PathNotFound,
+    PathNotFound {
+        most_blocking_work_schedule_ids: Vec<i64>,
+        nearest_to_destination_work_schedule_ids: Vec<i64>,
+        partial_path: Option<PathfindingResult>,
+        last_reached_operational_point: Option<LastReachedOperationalPoint>,
+    },
 }
 
 impl AsCoreRequest<Json<Response>> for Request {
