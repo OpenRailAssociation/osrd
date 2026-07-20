@@ -4446,17 +4446,11 @@ export type SearchPayload = {
   /** The query to run */
   query: SearchQuery;
 };
-export type TrainSchedulePartBound = {
-  /** This location is part of the train schedule's path. */
-  location: PathItemLocation;
-  /** Scheduled time since the start of the train schedule in milliseconds.
-    
-    Used to differentiate locations in case of backtracks. */
-  time_ms: number;
-};
 export type TrainSchedulePart = {
-  from: TrainSchedulePartBound;
-  to: TrainSchedulePartBound;
+  /** Index of the start path step in the train schedule's path */
+  from: number;
+  /** Index of the end path step in the train schedule's path */
+  to: number;
   train_schedule_id: number;
 };
 export type JourneyProposals = {
