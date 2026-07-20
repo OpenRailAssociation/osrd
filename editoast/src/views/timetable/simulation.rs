@@ -2,7 +2,6 @@ use chrono::Duration;
 use core_client::AsCoreRequest;
 use core_client::pathfinding::PathfindingInputError;
 use core_client::pathfinding::PathfindingNotFound;
-use core_client::pathfinding::PathfindingResultSuccess;
 use core_client::pathfinding::TrainPath;
 use core_client::simulation::CompleteReportTrain;
 use core_client::simulation::ElectricalProfiles;
@@ -518,7 +517,7 @@ pub async fn consist_train_simulation_batch<T: TrainScheduleLike>(
             consist,
         } = train_schedule_with_consist;
         let (path, path_item_positions, backtrack_path_items) = match pathfinding.as_ref() {
-            PathfindingResult::Success(PathfindingResultSuccess {
+            PathfindingResult::Success(core_client::pathfinding::PathfindingResult {
                 path,
                 path_item_positions,
                 backtrack_path_items,

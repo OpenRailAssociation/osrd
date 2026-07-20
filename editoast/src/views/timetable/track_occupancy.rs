@@ -1,5 +1,4 @@
 use common::units::millisecond;
-use core_client::pathfinding::PathfindingResultSuccess;
 use core_client::simulation::ReportTrain;
 use schemas::infra::TrackOffset;
 use schemas::primitives::NonBlankString;
@@ -24,7 +23,7 @@ pub(super) struct TrackOccupancy {
 struct OccupancyContext<'a> {
     op_id: &'a str,
     report_train: Option<&'a ReportTrain>,
-    pathfinding_success: Option<&'a PathfindingResultSuccess>,
+    pathfinding_success: Option<&'a core_client::pathfinding::PathfindingResult>,
     matching_index: Option<usize>,
     schedule_item: Option<&'a ScheduleItem>,
 }
@@ -293,7 +292,7 @@ pub mod tests {
         track_section: Identifier,
         path_item_positions: Vec<u64>,
     ) -> PathfindingResult {
-        PathfindingResult::Success(PathfindingResultSuccess {
+        PathfindingResult::Success(core_client::pathfinding::PathfindingResult {
             path: core_client::pathfinding::TrainPath {
                 blocks: vec![],
                 routes: vec![],

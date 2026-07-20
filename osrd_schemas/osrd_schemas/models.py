@@ -5959,7 +5959,7 @@ class CorePathfindingInputError(
     )
 
 
-class CorePathfindingResultSuccess(BaseModel):
+class CorePathfindingResult(BaseModel):
     """
     A successful pathfinding result. This is also used for STDCM response.
     """
@@ -6297,7 +6297,7 @@ class PathItem(BaseModel):
 class PathfindingNotFoundIncompatibleConstraints(BaseModel):
     error_type: Literal["incompatible_constraints"]
     incompatible_constraints: CoreIncompatibleConstraints
-    relaxed_constraints_path: CorePathfindingResultSuccess
+    relaxed_constraints_path: CorePathfindingResult
 
 
 class PathfindingFailurePathfindingNotFound5(
@@ -6306,7 +6306,7 @@ class PathfindingFailurePathfindingNotFound5(
     pass
 
 
-class PathfindingResultSuccess(CorePathfindingResultSuccess):
+class PathfindingResultSuccess(CorePathfindingResult):
     status: Literal["success"]
 
 
@@ -6609,7 +6609,7 @@ class SpeedSection(BaseModel):
 
 class StdcmResponseSuccess(BaseModel):
     departure_time: AwareDatetime
-    pathfinding_result: CorePathfindingResultSuccess
+    pathfinding_result: CorePathfindingResult
     simulation: SimulationResponseSuccess
     status: Literal["success"]
 

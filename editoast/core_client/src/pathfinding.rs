@@ -91,7 +91,7 @@ pub struct InvalidPathItem {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
 #[serde(tag = "status", rename_all = "snake_case")]
 pub enum PathfindingCoreResult {
-    Success(PathfindingResultSuccess),
+    Success(PathfindingResult),
     NotFoundInBlocks {
         track_section_ranges: Vec<TrackRange>,
         length: u64,
@@ -102,7 +102,7 @@ pub enum PathfindingCoreResult {
     },
     NotFoundInTracks,
     IncompatibleConstraints {
-        relaxed_constraints_path: Box<PathfindingResultSuccess>,
+        relaxed_constraints_path: Box<PathfindingResult>,
         incompatible_constraints: Box<IncompatibleConstraints>,
     },
     InvalidPathItems {
@@ -116,9 +116,9 @@ pub enum PathfindingCoreResult {
 
 /// A successful pathfinding result. This is also used for STDCM response.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, ToSchema)]
-#[schema(as = CorePathfindingResultSuccess)]
+#[schema(as = CorePathfindingResult)]
 #[derive(Default)]
-pub struct PathfindingResultSuccess {
+pub struct PathfindingResult {
     /// Full description of the path data
     pub path: TrainPath,
     /// Length of the path in mm
@@ -163,7 +163,7 @@ pub enum PathfindingNotFound {
     #[default]
     NotFoundInTracks,
     IncompatibleConstraints {
-        relaxed_constraints_path: Box<PathfindingResultSuccess>,
+        relaxed_constraints_path: Box<PathfindingResult>,
         incompatible_constraints: Box<IncompatibleConstraints>,
     },
 }

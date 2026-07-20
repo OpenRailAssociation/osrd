@@ -16,12 +16,12 @@ pub(super) fn build_request(
     core_env: &CoreEnv,
     electrical_profile_set_id: Option<u64>,
     SimulationKey(sim_consist, params, pathfinding::PathfindingKey(pf_consist, constraints)): &SimulationKey,
-    core_client::pathfinding::PathfindingResultSuccess {
+    core_client::pathfinding::PathfindingResult {
         path,
         path_item_positions,
         backtrack_path_items,
         ..
-    }: core_client::pathfinding::PathfindingResultSuccess,
+    }: core_client::pathfinding::PathfindingResult,
 ) -> Result<core_client::simulation::Request, ()> {
     if constraints.path_items.len() != path_item_positions.len() {
         tracing::error!(
@@ -174,7 +174,7 @@ mod tests {
             routes: Vec::new(),
             track_section_ranges: Vec::new(),
         };
-        let path_success = core_client::pathfinding::PathfindingResultSuccess {
+        let path_success = core_client::pathfinding::PathfindingResult {
             path: path.clone(),
             length: 100,
             path_item_positions: path_item_positions.clone(),
@@ -275,7 +275,7 @@ mod tests {
             routes: Vec::new(),
             track_section_ranges: Vec::new(),
         };
-        let path_success = core_client::pathfinding::PathfindingResultSuccess {
+        let path_success = core_client::pathfinding::PathfindingResult {
             path: path.clone(),
             length: 100,
             path_item_positions: path_item_positions.clone(),
@@ -436,7 +436,7 @@ mod tests {
             routes: Vec::new(),
             track_section_ranges: Vec::new(),
         };
-        let path_success = core_client::pathfinding::PathfindingResultSuccess {
+        let path_success = core_client::pathfinding::PathfindingResult {
             path,
             length: 100,
             path_item_positions: path_positions,

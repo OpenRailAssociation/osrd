@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 
 import type { PathPropertiesFormatted } from 'applications/operationalStudies/types';
 import type {
-  CorePathfindingResultSuccess,
+  CorePathfindingResult,
   ReceptionSignal,
   RollingStock,
   SimulationResponseSuccess,
@@ -34,7 +34,7 @@ type TimeStopsTableWrapperProps = {
   trainSchedulesWithDetails: TrainScheduleWithDetails[];
   upsertTrainSchedules: (trainSchedules: TrainScheduleResponse[]) => void;
   simulatedTrain?: SimulationResponseSuccess['final_output'];
-  simulatedPath?: CorePathfindingResultSuccess;
+  simulatedPath?: CorePathfindingResult;
   simulatedPathItemTimes?: Extract<SimulationSummary, { isValid: true }>['pathItemTimes'];
   simulatedPathItemRespect?: Extract<SimulationSummary, { isValid: true }>['pathItemRespect'];
   operationalPointsOnPath?: PathPropertiesFormatted['operationalPoints'];

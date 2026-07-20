@@ -1,6 +1,6 @@
 import type { TFunction } from 'i18next';
 
-import type { CorePathfindingResultSuccess, TrainSchedule } from 'common/api/osrdEditoastApi';
+import type { CorePathfindingResult, TrainSchedule } from 'common/api/osrdEditoastApi';
 import type {
   PathOperationalPoint,
   EditoastPathOperationalPoint,
@@ -14,21 +14,21 @@ const HIGHEST_PRIORITY_WEIGHT = 100;
 export function upsertMapWaypointsInOperationalPoints(
   type: 'PathOperationalPoint',
   path: TrainSchedule['path'],
-  pathItemsPositions: CorePathfindingResultSuccess['path_item_positions'],
+  pathItemsPositions: CorePathfindingResult['path_item_positions'],
   operationalPoints: PathOperationalPoint[],
   t: TFunction<'operational-studies'>
 ): PathOperationalPoint[];
 export function upsertMapWaypointsInOperationalPoints(
   type: 'EditoastPathOperationalPoint',
   path: TrainSchedule['path'],
-  pathItemsPositions: CorePathfindingResultSuccess['path_item_positions'],
+  pathItemsPositions: CorePathfindingResult['path_item_positions'],
   operationalPoints: EditoastPathOperationalPoint[],
   t: TFunction<'operational-studies'>
 ): EditoastPathOperationalPoint[];
 export function upsertMapWaypointsInOperationalPoints(
   type: 'PathOperationalPoint' | 'EditoastPathOperationalPoint',
   path: TrainSchedule['path'],
-  pathItemsPositions: CorePathfindingResultSuccess['path_item_positions'],
+  pathItemsPositions: CorePathfindingResult['path_item_positions'],
   operationalPoints: (PathOperationalPoint | EditoastPathOperationalPoint)[],
   t: TFunction<'operational-studies'>
 ): (PathOperationalPoint | EditoastPathOperationalPoint)[] {

@@ -15,7 +15,6 @@ use common::units::millisecond;
 use core_client::AsCoreRequest;
 use core_client::CoreClient;
 use core_client::pathfinding::PathfindingInputError;
-use core_client::pathfinding::PathfindingResultSuccess;
 use core_client::signal_projection::SignalUpdate;
 use core_client::simulation::PhysicsConsist;
 use core_task::Correlated;
@@ -868,12 +867,13 @@ pub(in crate::views) async fn etcs_braking_curves(
     .unwrap();
 
     // Extract simulation path
-    let pathfinding_response: PathfindingResultSuccess = match pathfinding_result.as_ref() {
-        PathfindingResult::Success(path) => path.clone(),
-        _ => {
-            return Err(TrainScheduleError::PathfindingFailed { train_schedule_id }.into());
-        }
-    };
+    let pathfinding_response: core_client::pathfinding::PathfindingResult =
+        match pathfinding_result.as_ref() {
+            PathfindingResult::Success(path) => path.clone(),
+            _ => {
+                return Err(TrainScheduleError::PathfindingFailed { train_schedule_id }.into());
+            }
+        };
 
     // Extract mrsp
     let mrsp = match simulation_result.as_ref() {
@@ -1823,7 +1823,6 @@ mod tests {
     use core_client::mocking::MockingClient;
     use core_client::pathfinding::InvalidPathItem;
     use core_client::pathfinding::PathfindingInputError;
-    use core_client::pathfinding::PathfindingResultSuccess;
     use core_client::pathfinding::TrackRange;
     use core_client::pathfinding::TrainPath;
     use core_client::simulation::CompleteReportTrain;
@@ -2757,7 +2756,7 @@ mod tests {
 
         assert_eq!(
             response,
-            PathfindingResult::Success(PathfindingResultSuccess {
+            PathfindingResult::Success(core_client::pathfinding::PathfindingResult {
                 path: TrainPath {
                     blocks: vec![],
                     routes: vec![],
@@ -2974,7 +2973,7 @@ mod tests {
 
         assert_eq!(
             response,
-            PathfindingResult::Success(PathfindingResultSuccess {
+            PathfindingResult::Success(core_client::pathfinding::PathfindingResult {
                 path: TrainPath {
                     blocks: vec![],
                     routes: vec![],
@@ -3114,8 +3113,8 @@ mod tests {
         );
     }
 
-    fn pathfinding_result_success() -> PathfindingResultSuccess {
-        PathfindingResultSuccess {
+    fn pathfinding_result_success() -> core_client::pathfinding::PathfindingResult {
+        core_client::pathfinding::PathfindingResult {
             path: TrainPath {
                 blocks: vec![],
                 routes: vec![],

@@ -3704,7 +3704,7 @@ export type CoreTrainPath = {
   /** Track section ranges, in order. */
   track_section_ranges: CoreTrackRange[];
 };
-export type CorePathfindingResultSuccess = {
+export type CorePathfindingResult = {
   /** The indexes of the path items where the train backtracks */
   backtrack_path_items?: number[] | null;
   /** Length of the path in mm */
@@ -3783,7 +3783,7 @@ export type CorePathfindingNotFound =
   | {
       error_type: 'incompatible_constraints';
       incompatible_constraints: CoreIncompatibleConstraints;
-      relaxed_constraints_path: CorePathfindingResultSuccess;
+      relaxed_constraints_path: CorePathfindingResult;
     };
 export type PathfindingFailure =
   | (CorePathfindingInputError & {
@@ -3793,7 +3793,7 @@ export type PathfindingFailure =
       failed_status: 'pathfinding_not_found';
     });
 export type PathfindingResult =
-  | (CorePathfindingResultSuccess & {
+  | (CorePathfindingResult & {
       status: 'success';
     })
   | (PathfindingFailure & {
@@ -4871,7 +4871,7 @@ export type SimulationResponse =
 export type StdcmResponse =
   | {
       departure_time: string;
-      pathfinding_result: CorePathfindingResultSuccess;
+      pathfinding_result: CorePathfindingResult;
       simulation: SimulationResponseSuccess;
       status: 'success';
     }

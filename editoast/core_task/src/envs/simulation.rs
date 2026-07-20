@@ -333,7 +333,7 @@ pub(crate) mod test_data {
     /// We use the length field to identify it since the content doesn't matter
     pub(crate) fn path(id: usize, positions_count: u64) -> serde_json::Value {
         let response = core_client::pathfinding::PathfindingCoreResult::Success(
-            core_client::pathfinding::PathfindingResultSuccess {
+            core_client::pathfinding::PathfindingResult {
                 path: core_client::pathfinding::TrainPath {
                     blocks: Vec::new(),
                     routes: Vec::new(),
