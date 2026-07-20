@@ -89,39 +89,30 @@ mod tests {
     use rstest::rstest;
 
     use crate::v2::TestClientExt as _;
-    use crate::v2::add_members;
-    use crate::v2::special_authorizers::Authorize;
 
     use super::*;
 
     #[tokio::test]
     async fn add_roles_idempotent() {
         let openfga = crate::authz_client!();
-        let authorize = Authorize(&openfga);
 
-        add_roles(
-            Subject::user(1),
-            HashSet::from_iter([Role::Admin, Role::Stdcm]),
-        )
-        .authorize(&authorize)
-        .await
-        .unwrap()
-        .unwrap_authorized()
-        .await;
+        openfga
+            .add_roles(
+                Subject::user(1),
+                HashSet::from_iter([Role::Admin, Role::Stdcm]),
+            )
+            .await;
         assert_eq!(
             openfga.subject_roles(&Subject::user(1)).await,
             HashSet::from_iter([Role::Admin, Role::Stdcm])
         );
 
-        add_roles(
-            Subject::user(1),
-            HashSet::from_iter([Role::Admin, Role::Stdcm]),
-        )
-        .authorize(&authorize)
-        .await
-        .unwrap()
-        .unwrap_authorized()
-        .await;
+        openfga
+            .add_roles(
+                Subject::user(1),
+                HashSet::from_iter([Role::Admin, Role::Stdcm]),
+            )
+            .await;
         assert_eq!(
             openfga.subject_roles(&Subject::user(1)).await,
             HashSet::from_iter([Role::Admin, Role::Stdcm])
@@ -131,31 +122,24 @@ mod tests {
     #[tokio::test]
     async fn add_roles_intersecting_calls() {
         let openfga = crate::authz_client!();
-        let authorize = Authorize(&openfga);
 
-        add_roles(
-            Subject::user(1),
-            HashSet::from_iter([Role::Admin, Role::Stdcm]),
-        )
-        .authorize(&authorize)
-        .await
-        .unwrap()
-        .unwrap_authorized()
-        .await;
+        openfga
+            .add_roles(
+                Subject::user(1),
+                HashSet::from_iter([Role::Admin, Role::Stdcm]),
+            )
+            .await;
         assert_eq!(
             openfga.subject_roles(&Subject::user(1)).await,
             HashSet::from_iter([Role::Admin, Role::Stdcm])
         );
 
-        add_roles(
-            Subject::user(1),
-            HashSet::from_iter([Role::Admin, Role::OperationalStudies]),
-        )
-        .authorize(&authorize)
-        .await
-        .unwrap()
-        .unwrap_authorized()
-        .await;
+        openfga
+            .add_roles(
+                Subject::user(1),
+                HashSet::from_iter([Role::Admin, Role::OperationalStudies]),
+            )
+            .await;
         assert_eq!(
             openfga.subject_roles(&Subject::user(1)).await,
             HashSet::from_iter([Role::Admin, Role::Stdcm, Role::OperationalStudies])
@@ -165,45 +149,35 @@ mod tests {
     #[tokio::test]
     async fn remove_roles_idempotent() {
         let openfga = crate::authz_client!();
-        let authorize = Authorize(&openfga);
 
-        add_roles(
-            Subject::user(1),
-            HashSet::from_iter([Role::Admin, Role::Stdcm]),
-        )
-        .authorize(&authorize)
-        .await
-        .unwrap()
-        .unwrap_authorized()
-        .await;
+        openfga
+            .add_roles(
+                Subject::user(1),
+                HashSet::from_iter([Role::Admin, Role::Stdcm]),
+            )
+            .await;
         assert_eq!(
             openfga.subject_roles(&Subject::user(1)).await,
             HashSet::from_iter([Role::Admin, Role::Stdcm])
         );
 
-        remove_roles(
-            Subject::user(1),
-            HashSet::from_iter([Role::Admin, Role::Stdcm]),
-        )
-        .authorize(&authorize)
-        .await
-        .unwrap()
-        .unwrap_authorized()
-        .await;
+        openfga
+            .remove_roles(
+                Subject::user(1),
+                HashSet::from_iter([Role::Admin, Role::Stdcm]),
+            )
+            .await;
         assert_eq!(
             openfga.subject_roles(&Subject::user(1)).await,
             HashSet::from_iter([])
         );
 
-        remove_roles(
-            Subject::user(1),
-            HashSet::from_iter([Role::Admin, Role::Stdcm]),
-        )
-        .authorize(&authorize)
-        .await
-        .unwrap()
-        .unwrap_authorized()
-        .await;
+        openfga
+            .remove_roles(
+                Subject::user(1),
+                HashSet::from_iter([Role::Admin, Role::Stdcm]),
+            )
+            .await;
         assert_eq!(
             openfga.subject_roles(&Subject::user(1)).await,
             HashSet::from_iter([])
@@ -213,45 +187,35 @@ mod tests {
     #[tokio::test]
     async fn remove_roles_intersecting_calls() {
         let openfga = crate::authz_client!();
-        let authorize = Authorize(&openfga);
 
-        add_roles(
-            Subject::user(1),
-            HashSet::from_iter([Role::Admin, Role::Stdcm, Role::OperationalStudies]),
-        )
-        .authorize(&authorize)
-        .await
-        .unwrap()
-        .unwrap_authorized()
-        .await;
+        openfga
+            .add_roles(
+                Subject::user(1),
+                HashSet::from_iter([Role::Admin, Role::Stdcm, Role::OperationalStudies]),
+            )
+            .await;
         assert_eq!(
             openfga.subject_roles(&Subject::user(1)).await,
             HashSet::from_iter([Role::Admin, Role::Stdcm, Role::OperationalStudies])
         );
 
-        remove_roles(
-            Subject::user(1),
-            HashSet::from_iter([Role::Admin, Role::Stdcm]),
-        )
-        .authorize(&authorize)
-        .await
-        .unwrap()
-        .unwrap_authorized()
-        .await;
+        openfga
+            .remove_roles(
+                Subject::user(1),
+                HashSet::from_iter([Role::Admin, Role::Stdcm]),
+            )
+            .await;
         assert_eq!(
             openfga.subject_roles(&Subject::user(1)).await,
             HashSet::from_iter([Role::OperationalStudies])
         );
 
-        remove_roles(
-            Subject::user(1),
-            HashSet::from_iter([Role::Admin, Role::OperationalStudies]),
-        )
-        .authorize(&authorize)
-        .await
-        .unwrap()
-        .unwrap_authorized()
-        .await;
+        openfga
+            .remove_roles(
+                Subject::user(1),
+                HashSet::from_iter([Role::Admin, Role::OperationalStudies]),
+            )
+            .await;
         assert_eq!(
             openfga.subject_roles(&Subject::user(1)).await,
             HashSet::from_iter([])
@@ -261,28 +225,18 @@ mod tests {
     #[tokio::test]
     async fn inherited_roles_from_group() {
         let openfga = crate::authz_client!();
-        let authorize = Authorize(&openfga);
 
         // 1: Admin
         // 2: nothing
         // 10: Stdcm w/ 1 & 2
-        add_roles(Subject::user(1), HashSet::from_iter([Role::Admin]))
-            .authorize(&authorize)
-            .await
-            .unwrap()
-            .unwrap_authorized()
+        openfga
+            .add_roles(Subject::user(1), HashSet::from_iter([Role::Admin]))
             .await;
-        add_roles(Subject::group(10), HashSet::from_iter([Role::Stdcm]))
-            .authorize(&authorize)
-            .await
-            .unwrap()
-            .unwrap_authorized()
+        openfga
+            .add_roles(Subject::group(10), HashSet::from_iter([Role::Stdcm]))
             .await;
-        add_members(Group(10), HashSet::from_iter([User(1), User(2)]))
-            .authorize(&authorize)
-            .await
-            .unwrap()
-            .unwrap_authorized()
+        openfga
+            .add_members(Group(10), HashSet::from_iter([User(1), User(2)]))
             .await;
 
         assert_eq!(
@@ -299,20 +253,14 @@ mod tests {
         );
 
         // 11: OperationalStudies w/ 2
-        add_roles(
-            Subject::group(11),
-            HashSet::from_iter([Role::OperationalStudies]),
-        )
-        .authorize(&authorize)
-        .await
-        .unwrap()
-        .unwrap_authorized()
-        .await;
-        add_members(Group(11), HashSet::from_iter([User(2)]))
-            .authorize(&authorize)
-            .await
-            .unwrap()
-            .unwrap_authorized()
+        openfga
+            .add_roles(
+                Subject::group(11),
+                HashSet::from_iter([Role::OperationalStudies]),
+            )
+            .await;
+        openfga
+            .add_members(Group(11), HashSet::from_iter([User(2)]))
             .await;
 
         assert_eq!(
@@ -333,15 +281,12 @@ mod tests {
         );
 
         // 11: nothing w/ 2
-        remove_roles(
-            Subject::group(11),
-            HashSet::from_iter([Role::OperationalStudies]),
-        )
-        .authorize(&authorize)
-        .await
-        .unwrap()
-        .unwrap_authorized()
-        .await;
+        openfga
+            .remove_roles(
+                Subject::group(11),
+                HashSet::from_iter([Role::OperationalStudies]),
+            )
+            .await;
 
         assert_eq!(
             openfga.subject_roles(&Subject::group(10)).await,

@@ -482,14 +482,10 @@ mod tests {
     #[tokio::test]
     async fn user_rolling_stock_direct_grant() {
         let openfga = crate::authz_client!();
-        let authorize = Authorize(&openfga);
 
         let rolling_stock_grant = async |user_id: i64| {
-            rolling_stock_direct_grant(Subject::user(user_id), RollingStock(1))
-                .authorize(&authorize)
-                .await
-                .unwrap()
-                .unwrap_authorized()
+            openfga
+                .rolling_stock_direct_grant(Subject::user(user_id), RollingStock(1))
                 .await
         };
 
@@ -518,14 +514,10 @@ mod tests {
     #[tokio::test]
     async fn group_rolling_stock_direct_grant() {
         let openfga = crate::authz_client!();
-        let authorize = Authorize(&openfga);
 
         let rolling_stock_grant = async |group_id: i64| {
-            rolling_stock_direct_grant(Subject::group(group_id), RollingStock(1))
-                .authorize(&authorize)
-                .await
-                .unwrap()
-                .unwrap_authorized()
+            openfga
+                .rolling_stock_direct_grant(Subject::group(group_id), RollingStock(1))
                 .await
         };
 
@@ -560,7 +552,6 @@ mod tests {
     #[tokio::test]
     async fn no_inference_rolling_stock_direct_grant() {
         let openfga = crate::authz_client!();
-        let authorize = Authorize(&openfga);
 
         openfga
             .prepare_writes()
@@ -580,19 +571,13 @@ mod tests {
             .unwrap();
 
         let user_direct_grant = async |user_id: i64| {
-            rolling_stock_direct_grant(Subject::user(user_id), RollingStock(1))
-                .authorize(&authorize)
-                .await
-                .unwrap()
-                .unwrap_authorized()
+            openfga
+                .rolling_stock_direct_grant(Subject::user(user_id), RollingStock(1))
                 .await
         };
         let group_direct_grant = async |group_id: i64| {
-            rolling_stock_direct_grant(Subject::group(group_id), RollingStock(1))
-                .authorize(&authorize)
-                .await
-                .unwrap()
-                .unwrap_authorized()
+            openfga
+                .rolling_stock_direct_grant(Subject::group(group_id), RollingStock(1))
                 .await
         };
 
@@ -610,7 +595,6 @@ mod tests {
     #[should_panic]
     async fn rolling_stock_direct_grant_inconsistent_state_panics() {
         let openfga = crate::authz_client!();
-        let authorize = Authorize(&openfga);
 
         openfga
             .prepare_writes()
@@ -620,11 +604,8 @@ mod tests {
             .await
             .unwrap();
 
-        rolling_stock_direct_grant(Subject::user(1), RollingStock(1))
-            .authorize(&authorize)
-            .await
-            .unwrap()
-            .unwrap_authorized()
+        openfga
+            .rolling_stock_direct_grant(Subject::user(1), RollingStock(1))
             .await;
     }
 
