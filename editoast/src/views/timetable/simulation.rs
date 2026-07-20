@@ -492,11 +492,9 @@ pub async fn consist_train_simulation_batch<T: TrainScheduleLike>(
     electrical_profile_set_id: Option<i64>,
     app_version: Option<&str>,
 ) -> Result<Vec<(Arc<simulation::Response>, Arc<PathfindingResult>)>> {
-    let mut valkey_conn = valkey_client.get_connection().await?;
-
     let pathfinding_results = pathfinding_from_train_batch(
         conn.clone(),
-        &mut valkey_conn,
+        valkey_client.clone(),
         core.clone(),
         infra,
         train_schedules_with_consists,
@@ -564,6 +562,7 @@ pub async fn consist_train_simulation_batch<T: TrainScheduleLike>(
         nb_unique_sim = to_sim.len()
     );
     let cached_simulation_hash = to_sim.keys().collect::<Vec<_>>();
+    let mut valkey_conn = valkey_client.get_connection().await?;
     let cached_results: Vec<Option<Arc<simulation::Response>>> = valkey_conn
         .json_get_bulk(&cached_simulation_hash)
         .await?
