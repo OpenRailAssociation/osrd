@@ -467,14 +467,10 @@ mod tests {
     #[tokio::test]
     async fn user_infra_direct_grant() {
         let openfga = crate::authz_client!();
-        let authorize = Authorize(&openfga);
 
         let infra_grant = async |user_id: i64| {
-            infra_direct_grant(Subject::user(user_id), Infra(1))
-                .authorize(&authorize)
-                .await
-                .unwrap()
-                .unwrap_authorized()
+            openfga
+                .infra_direct_grant(Subject::user(user_id), Infra(1))
                 .await
         };
 
@@ -497,14 +493,10 @@ mod tests {
     #[tokio::test]
     async fn group_infra_direct_grant() {
         let openfga = crate::authz_client!();
-        let authorize = Authorize(&openfga);
 
         let infra_grant = async |group_id: i64| {
-            infra_direct_grant(Subject::group(group_id), Infra(1))
-                .authorize(&authorize)
-                .await
-                .unwrap()
-                .unwrap_authorized()
+            openfga
+                .infra_direct_grant(Subject::group(group_id), Infra(1))
                 .await
         };
 
@@ -527,7 +519,6 @@ mod tests {
     #[tokio::test]
     async fn no_inference_infra_direct_grant() {
         let openfga = crate::authz_client!();
-        let authorize = Authorize(&openfga);
 
         openfga
             .prepare_writes()
@@ -543,20 +534,14 @@ mod tests {
             .unwrap();
 
         let user_direct_grant = async |user_id: i64| {
-            infra_direct_grant(Subject::user(user_id), Infra(1))
-                .authorize(&authorize)
-                .await
-                .unwrap()
-                .unwrap_authorized()
+            openfga
+                .infra_direct_grant(Subject::user(user_id), Infra(1))
                 .await
         };
 
         let group_direct_grant = async |group_id: i64| {
-            infra_direct_grant(Subject::group(group_id), Infra(1))
-                .authorize(&authorize)
-                .await
-                .unwrap()
-                .unwrap_authorized()
+            openfga
+                .infra_direct_grant(Subject::group(group_id), Infra(1))
                 .await
         };
 
@@ -574,7 +559,6 @@ mod tests {
     #[should_panic]
     async fn infra_direct_grant_inconsistent_state_panics() {
         let openfga = crate::authz_client!();
-        let authorize = Authorize(&openfga);
 
         openfga
             .prepare_writes()
@@ -584,12 +568,7 @@ mod tests {
             .await
             .unwrap();
 
-        infra_direct_grant(Subject::user(1), Infra(1))
-            .authorize(&authorize)
-            .await
-            .unwrap()
-            .unwrap_authorized()
-            .await;
+        openfga.infra_direct_grant(Subject::user(1), Infra(1)).await;
     }
 
     #[rstest::rstest]

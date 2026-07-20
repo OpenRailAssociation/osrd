@@ -14,12 +14,16 @@ use crate::Subject;
 use crate::User;
 use crate::model::RollingStockPrivilege;
 use crate::v2::ResourcesList;
+use crate::v2::add_members;
+use crate::v2::add_roles;
 use crate::v2::infra_direct_grant;
 use crate::v2::infra_effective_grant;
 use crate::v2::infra_granted_subjects;
 use crate::v2::infra_privileges;
 use crate::v2::infra_revoke_grant;
 use crate::v2::infra_set_grant;
+use crate::v2::remove_members;
+use crate::v2::remove_roles;
 use crate::v2::rolling_stock_direct_grant;
 use crate::v2::rolling_stock_effective_grant;
 use crate::v2::rolling_stock_granted_subjects;
@@ -30,8 +34,12 @@ use crate::v2::user_groups;
 
 pub trait TestClientExt {
     async fn subject_roles(&self, subject: &Subject) -> HashSet<Role>;
+    async fn add_roles(&self, subject: Subject, roles: HashSet<Role>);
+    async fn remove_roles(&self, subject: Subject, roles: HashSet<Role>);
     async fn group_members(&self, group: &Group) -> HashSet<User>;
     async fn user_groups(&self, user: User) -> HashSet<Group>;
+    async fn add_members(&self, group: Group, members: HashSet<User>);
+    async fn remove_members(&self, group: Group, members: HashSet<User>);
 
     async fn infra_effective_grant(&self, subject: Subject, infra: Infra) -> Option<InfraGrant>;
     async fn infra_direct_grant(
@@ -88,6 +96,21 @@ impl TestClientExt for fga::Client {
         .into_iter()
         .collect()
     }
+    async fn add_roles(&self, subject: Subject, roles: HashSet<Role>) {
+        let authorize = special_authorizers::Authorize(self);
+        authorize
+            .access_value(add_roles(subject, roles))
+            .await
+            .unwrap()
+    }
+
+    async fn remove_roles(&self, subject: Subject, roles: HashSet<Role>) {
+        let authorize = special_authorizers::Authorize(self);
+        authorize
+            .access_value(remove_roles(subject, roles))
+            .await
+            .unwrap()
+    }
 
     async fn group_members(&self, group: &Group) -> HashSet<User> {
         self.list_users(Group::member().query_users(group))
@@ -106,6 +129,22 @@ impl TestClientExt for fga::Client {
             .unwrap()
             .into_iter()
             .collect()
+    }
+
+    async fn add_members(&self, group: Group, members: HashSet<User>) {
+        let authorize = special_authorizers::Authorize(self);
+        authorize
+            .access_value(add_members(group, members))
+            .await
+            .unwrap()
+    }
+
+    async fn remove_members(&self, group: Group, members: HashSet<User>) {
+        let authorize = special_authorizers::Authorize(self);
+        authorize
+            .access_value(remove_members(group, members))
+            .await
+            .unwrap()
     }
 
     async fn infra_effective_grant(&self, subject: Subject, infra: Infra) -> Option<InfraGrant> {
