@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useEffectEvent, useMemo, useRef, useState } from 'react';
 
-import { Button } from '@osrd-project/ui-core';
 import { ArrowSwitch, Fold, FrameAll, Plus, Unfold } from '@osrd-project/ui-icons';
 import along from '@turf/along';
 import bbox from '@turf/bbox';
@@ -56,6 +55,7 @@ import type { FeatureInfoClick } from '../types';
 import type { OperationalPointSuggestion } from './ComboBoxCustomList/ListElementComponent';
 import { usePathStepsMetadata } from './hooks/usePathStepsMetadata';
 import IntermediateWaypointsPanel from './IntermediateWaypointsPanel/IntermediateWaypointsPanel';
+import ItineraryModalFooter from './ItineraryModalFooter';
 import ItineraryModalFormHeader from './ItineraryModalFormHeader';
 import ItineraryModalMap from './ItineraryModalMap';
 import PathStepItem from './PathStepItem';
@@ -926,26 +926,11 @@ const ItineraryModal = ({
             </button>
           </div>
         </div>
-        <div className="itinerary-modal-form-footer" data-testid="itinerary-modal-form-footer">
-          <Button
-            label={t('cancel')}
-            variant="Cancel"
-            size="medium"
-            onClick={() => closeModal({ withChanges: false })}
-            dataTestID="close-itinerary-modal"
-          />
-          <Button
-            label={
-              displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.itinerary
-                ? t('edit')
-                : t('next')
-            }
-            variant="Primary"
-            size="medium"
-            onClick={submitItinerary}
-            dataTestID="itinerary-modal-next-button"
-          />
-        </div>
+        <ItineraryModalFooter
+          mode={displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.add ? 'new' : 'edit'}
+          onCancel={() => closeModal({ withChanges: false })}
+          onSubmit={submitItinerary}
+        />
       </div>
       {waypointsPanelOpen && (
         <div className="itinerary-modal-waypoints-panel-wrapper">
