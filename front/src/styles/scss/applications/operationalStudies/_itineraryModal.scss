@@ -554,6 +554,12 @@
       margin-top: var(--footer-box-shadow-height);
       box-shadow: 0 calc(-1 * var(--footer-box-shadow-height)) 0 0 var(--black10);
     }
+
+    .itinerary-modal-submit-buttons {
+      display: flex;
+      flex-direction: row;
+      gap: 32px;
+    }
   }
 
   .itinerary-modal-waypoints-panel-wrapper {

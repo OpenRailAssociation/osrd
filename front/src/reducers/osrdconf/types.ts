@@ -48,6 +48,7 @@ export type ItineraryForm = {
   rollingStockName: string;
   speedLimitTag?: string;
   pathSteps: (PathStep | null)[];
+  trainType?: OperationalStudiesConfState['editingTrainType'];
 };
 
 export type OperationalStudiesConfState = OsrdConfState & {

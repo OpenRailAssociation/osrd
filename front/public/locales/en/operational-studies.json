@@ -422,7 +422,6 @@
       "alertMissingRequestedPoint": "At least two path steps are required to define an itinerary",
       "cancel": "Cancel",
       "cancelMapSelection": "Cancel",
-      "edit": "Edit itinerary",
       "focusLocationOnMap": "Focus the map on this operational point",
       "frameAll": "Center on all path steps on map",
       "intermediateWaypointsPanel": {
@@ -439,7 +438,6 @@
       "invalidOP": "Non recognized point: ",
       "moveLocationOnMap": "Move location on the map",
       "movePointOnMap": "Move this waypoint using the map",
-      "next": "Next",
       "noComputation": "There will be no computation for this train",
       "opId": "Operational point identifier",
       "opName": "Operational point name",
@@ -448,6 +446,13 @@
       "pass": "Pass",
       "requestedPoint": "Point on map",
       "stop": "Stop",
+      "submit": {
+        "addService": "Add service",
+        "addSingleTrain": "Add single train",
+        "editOccurrence": "Edit occurrence",
+        "editService": "Edit service",
+        "editSingleTrain": "Edit single train"
+      },
       "track": "Track",
       "trainName": "Train name",
       "trigram": "Trigram",

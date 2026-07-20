@@ -80,6 +80,10 @@ const trainSettingsReducer = {
     state.rollingStockName = action.payload.rollingStockName;
     state.speedLimitByTag = action.payload.speedLimitTag;
     state.pathSteps = action.payload.pathSteps;
+
+    if (action.payload.trainType) {
+      state.editingTrainType = action.payload.trainType;
+    }
   },
 };
 
