@@ -5078,6 +5078,12 @@ class InfraPathfindingInput(BaseModel):
     starting: PathfindingTrackLocationInput
 
 
+class LastReachedOperationalPoint(BaseModel):
+    arrival_time: AwareDatetime
+    geographic: GeoJsonPoint
+    name: str
+
+
 class LevelCrossing(BaseModel):
     model_config = ConfigDict(
         extra="forbid",

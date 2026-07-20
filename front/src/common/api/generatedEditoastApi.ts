@@ -4848,6 +4848,11 @@ export type StdcmProgressionEvent = {
   best_travel_time: number;
   point: GeoJsonPoint;
 };
+export type LastReachedOperationalPoint = {
+  arrival_time: string;
+  geographic: GeoJsonPoint;
+  name: string;
+};
 export type InternalError = {
   context: {
     [key: string]: unknown;

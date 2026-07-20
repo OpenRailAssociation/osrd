@@ -3,6 +3,8 @@ use std::collections::HashSet;
 
 use chrono::DateTime;
 use chrono::Utc;
+use common::geometry::GeoJsonPoint;
+use geos::geojson::Geometry;
 use schemas::rolling_stock::LoadingGaugeType;
 use schemas::train_schedule::Comfort;
 use schemas::train_schedule::MarginValue;
@@ -144,6 +146,15 @@ pub struct ConsistSchedule {
     pub boundaries: Vec<usize>,
     // Consist configuration for each segment
     pub values: Vec<ConsistConfiguration>,
+}
+
+// Represents the last reached operational point in a failed pathfinding result
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, ToSchema)]
+pub struct LastReachedOperationalPoint {
+    pub name: String,
+    #[schema(value_type = GeoJsonPoint)]
+    pub geographic: Geometry,
+    pub arrival_time: DateTime<Utc>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]

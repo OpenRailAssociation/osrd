@@ -11425,6 +11425,20 @@ components:
           type: array
           items:
             type: string
+    LastReachedOperationalPoint:
+      type: object
+      required:
+      - name
+      - geographic
+      - arrival_time
+      properties:
+        arrival_time:
+          type: string
+          format: date-time
+        geographic:
+          $ref: '#/components/schemas/GeoJsonPoint'
+        name:
+          type: string
     LevelCrossing:
       type: object
       required:
