@@ -23,6 +23,7 @@ const STOP_TYPE_MAPPING: Record<StdcmStopTypes, StepType> = {
   [StdcmStopTypes.SERVICE_STOP]: 'STOP',
   [StdcmStopTypes.OVERTAKE]: 'VIA',
   [StdcmStopTypes.CONSIST_CHANGE]: 'STOP',
+  [StdcmStopTypes.BACKTRACK]: 'BACKTRACK',
 };
 
 function generateRandomString(length: number): string {

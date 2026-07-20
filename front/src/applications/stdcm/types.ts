@@ -224,6 +224,7 @@ export enum StdcmStopTypes {
   SERVICE_STOP = 'serviceStop',
   OVERTAKE = 'overtake',
   CONSIST_CHANGE = 'consistChange',
+  BACKTRACK = 'backtrack',
 }
 
 export type StdcmLinkedTrainExtremity = {

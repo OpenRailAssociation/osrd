@@ -188,6 +188,7 @@
         "selectPathType": "Choisir",
         "stop": "Arrêt {{stopAt}} pour {{stopType}} — {{minutes}}",
         "stopType": {
+          "backtrack": "rebroussement",
           "consistChange": "changement de convoi",
           "driverSwitch": "relève conducteur",
           "overtake": "dépassement",
@@ -301,6 +302,7 @@
     "respectDestinationSchedule": "respecter l'horaire de la destination",
     "stopFor": "Temps d'arrêt minimum",
     "stopType": {
+      "backtrack": "rebroussement",
       "consistChange": "ch. de convoi",
       "driverSwitch": "relève conducteur",
       "overtake": "dépassement",

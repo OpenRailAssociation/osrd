@@ -204,6 +204,7 @@ components:
       - VIA
       - DRIVER_SWITCH
       - STOP
+      - BACKTRACK
       title: StepType
       description: Describes the type of step.
     RequestedStep:
