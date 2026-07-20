@@ -18,6 +18,7 @@ class OperationalPoint:
     country_code: NonBlankStr
     main_code: NonBlankStr
     secondary_code: NonBlankStr | None
+    secondary_name: NonBlankStr | None
     is_passenger_station: bool
 
     def __init__(
@@ -29,6 +30,7 @@ class OperationalPoint:
         plc: NonBlankStr | None = None,
         weight: int | None = None,
         secondary_code: NonBlankStr | None = "BV",
+        secondary_name: NonBlankStr | None = "0",
         country_code: NonBlankStr = "FR",
         is_passenger_station: bool = True,
     ):
@@ -39,6 +41,7 @@ class OperationalPoint:
         self.weight = weight
         self.id = id or label
         self.secondary_code = secondary_code
+        self.secondary_name = secondary_name
         self.plc = plc
         self.country_code = country_code
         self.is_passenger_station = is_passenger_station

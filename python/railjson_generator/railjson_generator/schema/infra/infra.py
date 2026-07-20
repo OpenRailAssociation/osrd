@@ -100,7 +100,9 @@ class Infra:
                 if op.secondary_code is not None
                 else None,
                 is_passenger_station=op.is_passenger_station,
-                secondary_name=models.SecondaryName("0"),
+                secondary_name=models.SecondaryName(op.secondary_name)
+                if op.secondary_name is not None
+                else None,
             )
             ops.append(new_op)
         return ops
