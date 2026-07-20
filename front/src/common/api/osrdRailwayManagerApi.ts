@@ -352,7 +352,7 @@ export type TimingData = {
   /** Tolerance in ms */
   arrival_time_tolerance_after: number;
 };
-export type StepType = 'VIA' | 'DRIVER_SWITCH' | 'STOP';
+export type StepType = 'VIA' | 'DRIVER_SWITCH' | 'STOP' | 'BACKTRACK';
 export type RequestedStep = {
   /** New consist to use from this step onward. Not included for the first step. */
   consist_change?: ConsistChange;

@@ -90,6 +90,7 @@ export type ViaStopTypes = {
   PASSAGE_TIME: string;
   SERVICE_STOP: string;
   DRIVER_SWITCH: string;
+  BACKTRACK: string;
 };
 
 export type ViaStopTimes = {

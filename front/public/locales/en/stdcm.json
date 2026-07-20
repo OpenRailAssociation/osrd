@@ -188,6 +188,7 @@
         "selectPathType": "Select",
         "stop": "Stop at {{stopAt}} for {{stopType}} — {{minutes}}",
         "stopType": {
+          "backtrack": "a backtrack",
           "consistChange": "a consist change",
           "driverSwitch": "a driver switch",
           "overtake": "an overtake",
@@ -301,6 +302,7 @@
     "respectDestinationSchedule": "respect the destination schedule",
     "stopFor": "Minimum stop time",
     "stopType": {
+      "backtrack": "backtrack",
       "consistChange": "consist change",
       "driverSwitch": "driver switch",
       "overtake": "overtake",

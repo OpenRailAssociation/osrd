@@ -4273,6 +4273,7 @@ class StepType(Enum):
     VIA = "VIA"
     DRIVER_SWITCH = "DRIVER_SWITCH"
     STOP = "STOP"
+    BACKTRACK = "BACKTRACK"
 
 
 class RequestedStep(BaseModel):
