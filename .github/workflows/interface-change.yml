@@ -13,6 +13,7 @@ jobs:
         uses: actions/checkout@v7.0.1
         with:
           fetch-depth: 0
+          persist-credentials: false
       - name: Get reference OpenAPI
         run: git show ${{ github.event.pull_request.base.sha }}:editoast/openapi.yaml > base-openapi.yaml
       - name: Get new OpenAPI
