@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
 import { applyPathStepWeight } from 'applications/operationalStudies/helpers/applyPathStepWeight';
-import { upsertMapWaypointsInOperationalPoints } from 'applications/operationalStudies/helpers/upsertMapWaypointsInOperationalPoints';
+import { upsertTrackOffsetPathItemsInWaypoints } from 'applications/operationalStudies/helpers/upsertTrackOffsetPathItemsInWaypoints';
 import type {
   CorePathfindingResultSuccess,
   TrainScheduleResponse,
@@ -38,7 +38,7 @@ const useGetProjectedTrainOperationalPoints = ({
       let operationalPointsWithUniqueIds =
         projectionType === 'trackProjection' && path && pathfinding
           ? // Add track offset waypoints to the waypoints
-            upsertMapWaypointsInOperationalPoints(
+            upsertTrackOffsetPathItemsInWaypoints(
               'projection',
               path,
               pathfinding.path_item_positions,

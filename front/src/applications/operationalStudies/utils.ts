@@ -26,7 +26,7 @@ import { mmToM } from 'utils/physics';
 import { SMALL_INPUT_MAX_LENGTH } from 'utils/strings';
 
 import { applyPathStepWeight } from './helpers/applyPathStepWeight';
-import { upsertMapWaypointsInOperationalPoints } from './helpers/upsertMapWaypointsInOperationalPoints';
+import { upsertTrackOffsetPathItemsInWaypoints } from './helpers/upsertTrackOffsetPathItemsInWaypoints';
 import type {
   BoundariesData,
   ElectricalBoundariesData,
@@ -232,7 +232,7 @@ export const preparePathPropertiesData = (
     };
   });
 
-  const waypointsWithTrackOffsetPathSteps = upsertMapWaypointsInOperationalPoints(
+  const waypointsWithTrackOffsetPathSteps = upsertTrackOffsetPathItemsInWaypoints(
     'path',
     trainSchedulePath,
     path_item_positions,

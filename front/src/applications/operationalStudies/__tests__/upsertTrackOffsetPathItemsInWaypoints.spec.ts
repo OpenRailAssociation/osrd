@@ -4,7 +4,7 @@ import { describe, it, expect } from 'vitest';
 import type { PathItem } from 'common/api/osrdEditoastApi';
 import type { PathWaypoint } from 'modules/simulationResult/types';
 
-import { upsertMapWaypointsInOperationalPoints } from '../helpers/upsertMapWaypointsInOperationalPoints';
+import { upsertTrackOffsetPathItemsInWaypoints } from '../helpers/upsertTrackOffsetPathItemsInWaypoints';
 
 /**
 Mocks the translation t function by stripping the namespace prefixes of the passed translation key and prefixing it with t_
@@ -106,7 +106,7 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
     ];
     const pathItemPositions = [0, 9246000, 26500000];
 
-    const operationalPointsWithAllWaypoints = upsertMapWaypointsInOperationalPoints(
+    const operationalPointsWithAllWaypoints = upsertTrackOffsetPathItemsInWaypoints(
       'path',
       pathSteps,
       pathItemPositions,
@@ -243,7 +243,7 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
     ];
     const pathItemPositions = [0, 4198000, 4402000];
 
-    const operationalPointsWithAllWaypoints = upsertMapWaypointsInOperationalPoints(
+    const operationalPointsWithAllWaypoints = upsertTrackOffsetPathItemsInWaypoints(
       'path',
       pathSteps,
       pathItemPositions,
@@ -376,7 +376,7 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
     ];
     const pathItemPositions = [0, 1748000];
 
-    const operationalPointsWithAllWaypoints = upsertMapWaypointsInOperationalPoints(
+    const operationalPointsWithAllWaypoints = upsertTrackOffsetPathItemsInWaypoints(
       'path',
       pathSteps,
       pathItemPositions,
@@ -472,7 +472,7 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
     ];
     const pathItemPositions = [0, 12050000, 26500000];
 
-    const operationalPointsWithAllWaypoints = upsertMapWaypointsInOperationalPoints(
+    const operationalPointsWithAllWaypoints = upsertTrackOffsetPathItemsInWaypoints(
       'path',
       pathSteps,
       pathItemPositions,
