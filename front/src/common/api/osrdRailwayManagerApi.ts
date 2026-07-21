@@ -162,6 +162,7 @@ export type ComponentsSchemasTransformTimetableResponsePropertiesPacedTrainsItem
     | {
         sub_category_code: string;
       };
+export type Interval = string;
 export type TransformTimetableResponse = {
   /** List of paced trains */
   paced_trains: ({
@@ -316,9 +317,9 @@ export type TransformTimetableResponse = {
         key: string;
       })[];
       /** Time between two occurrences, an ISO 8601 format is expected */
-      interval: ComponentsSchemasTransformTimetableResponsePropertiesPacedTrainsItemsAllOf0PropertiesScheduleItemsPropertiesReferenceBaseArrivalOneOf1;
+      interval: string;
       /** Duration of the paced train, an ISO 8601 format is expected */
-      time_window: ComponentsSchemasTransformTimetableResponsePropertiesPacedTrainsItemsAllOf0PropertiesScheduleItemsPropertiesReferenceBaseArrivalOneOf1;
+      time_window: Interval;
     };
   })[];
 };

@@ -1,6 +1,6 @@
 use crate::TrainScheduleExceptionChangeGroups;
 use crate::primitives::NonBlankString;
-use crate::primitives::PositiveDuration;
+use crate::primitives::StrictlyPositiveDuration;
 use crate::rolling_stock::TrainCategory;
 use crate::train_schedule::Comfort;
 use crate::train_schedule::Distribution;
@@ -26,9 +26,9 @@ use utoipa::openapi::schema::Schema;
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
 pub struct Paced {
     /// Duration of the paced train, an ISO 8601 format is expected
-    pub time_window: PositiveDuration,
+    pub time_window: StrictlyPositiveDuration,
     /// Time between two occurrences, an ISO 8601 format is expected
-    pub interval: PositiveDuration,
+    pub interval: StrictlyPositiveDuration,
     #[serde(default)]
     #[schema(required)]
     pub exceptions: Vec<PacedTrainException>,

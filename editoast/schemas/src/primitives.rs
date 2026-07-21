@@ -8,6 +8,7 @@ mod time_window;
 
 pub use bounding_box::BoundingBox;
 pub use duration::PositiveDuration;
+pub use duration::StrictlyPositiveDuration;
 pub use identifier::Identifier;
 pub use non_blank_string::NonBlankString;
 pub use object_ref::ObjectRef;
