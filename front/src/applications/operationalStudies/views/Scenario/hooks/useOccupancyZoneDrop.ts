@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 
-import type { OccupancyZone, Track } from '@osrd-project/ui-charts';
+import type { Track } from '@osrd-project/ui-charts';
 import { v4 as uuidV4 } from 'uuid';
 
 import {
@@ -11,6 +11,7 @@ import {
   type TrainScheduleResponse,
 } from 'common/api/osrdEditoastApi';
 import { matchPathStepAndOp } from 'modules/pathfinding/utils';
+import type { MovableOccupancyZone } from 'modules/simulationResult/components/SpaceTimeChartWrapper/helpers/zones';
 import type { DeployedWaypoint } from 'modules/simulationResult/components/SpaceTimeChartWrapper/useTrackOccupancy';
 import type { PathOperationalPoint } from 'modules/simulationResult/types';
 import { findTrainScheduleAndException } from 'modules/trainSchedule/helpers/pacedTrain';
@@ -173,7 +174,12 @@ export default function useOccupancyZoneDrop({
   );
 
   return useCallback(
-    async (waypointId: string, trainId: TrainId, occupancyZone: OccupancyZone, track: Track) => {
+    async (
+      waypointId: string,
+      trainId: TrainId,
+      occupancyZone: MovableOccupancyZone,
+      track: Track
+    ) => {
       const occupancyZoneStartTime = new Date(occupancyZone.startTime);
 
       const { trainSchedule, exception } = findTrainScheduleAndException(

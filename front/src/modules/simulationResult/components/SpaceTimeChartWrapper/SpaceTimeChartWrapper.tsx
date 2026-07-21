@@ -18,7 +18,6 @@ import {
   isPointPickingElement,
   isInteractiveWaypoint,
   isOccupancyPickingElement,
-  type OccupancyZone,
   type Track,
 } from '@osrd-project/ui-charts';
 import { Slider } from '@osrd-project/ui-core';
@@ -127,7 +126,7 @@ type SpaceTimeChartWrapperBaseProps = {
   onOccupancyZoneDrop?: (
     waypointId: string,
     trainId: TrainId,
-    zone: OccupancyZone,
+    zone: MovableOccupancyZone,
     track: Track
   ) => void;
   selectedProjectionId: TrainId;
