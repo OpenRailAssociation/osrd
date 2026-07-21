@@ -136,12 +136,12 @@ pub(super) fn build_conflict_core_request(
 ) -> (HashMap<Uuid, OccurrenceId>, ConflictDetectionRequest) {
     let mut trains_map: HashMap<Uuid, OccurrenceId> = HashMap::new();
 
-    let trains_requirements: HashMap<Uuid, TrainRequirements> = items
+    let trains_requirements: HashMap<String, TrainRequirements> = items
         .map(|(train_id, train_requirements)| {
             let train_id_for_core = Uuid::new_v4();
             trains_map.insert(train_id_for_core, train_id);
 
-            (train_id_for_core, train_requirements)
+            (train_id_for_core.to_string(), train_requirements)
         })
         .collect();
 
@@ -734,7 +734,7 @@ mod tests {
                 .expect("occurrence should be mapped to a core id");
             let actual = conflict_core_request
                 .trains_requirements
-                .get(core_id)
+                .get(core_id.to_string().as_str())
                 .expect("core id should carry requirements");
             assert_eq!(actual.spacing_requirements, expected.spacing_requirements);
             assert_eq!(actual.routing_requirements, expected.routing_requirements);

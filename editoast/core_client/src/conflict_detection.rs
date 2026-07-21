@@ -19,7 +19,7 @@ pub struct ConflictDetectionRequest {
     /// Infrastructure expected version
     pub expected_version: i64,
     /// List of requirements for each train schedule
-    pub trains_requirements: HashMap<Uuid, TrainRequirements>,
+    pub trains_requirements: HashMap<String, TrainRequirements>,
     /// List of work schedules
     pub work_schedules: Option<WorkSchedulesRequest>,
 }
