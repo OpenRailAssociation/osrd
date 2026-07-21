@@ -18,7 +18,7 @@ export type OccupancyZone = {
   startDirection?: 'up' | 'down';
   endDirection?: 'up' | 'down';
   trailingText?: string;
-  curveStyle?: CurveStyle;
+  curveStyle: CurveStyle;
   connectorStyle?: { width?: number; color?: string };
 };
 
