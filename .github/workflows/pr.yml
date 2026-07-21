@@ -10,8 +10,10 @@ jobs:
     name: "Label PR"
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
       - name: Label PR
-        uses: actions/labeler@v6
+        uses: actions/labeler@v7.0.0
         with:
           sync-labels: true
