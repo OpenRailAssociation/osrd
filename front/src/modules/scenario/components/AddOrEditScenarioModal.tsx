@@ -1,37 +1,35 @@
 import { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 
-import { Pencil, Trash } from '@osrd-project/ui-icons';
-import cx from 'classnames';
-import { isEqual, sortBy } from 'lodash';
+import {
+  Button,
+  ComboBox,
+  Dialog,
+  Input,
+  RadioGroup,
+  Select,
+  TextArea,
+  TokenInput,
+  useDefaultComboBox,
+} from '@osrd-project/ui-core';
+import { noop, sortBy } from 'lodash';
 import { useTranslation } from 'react-i18next';
-import { FaPlus } from 'react-icons/fa';
-import { GiElectric } from 'react-icons/gi';
-import { MdDescription, MdTitle } from 'react-icons/md';
+import { useSelector } from 'react-redux';
 import { useNavigate, useParams } from 'react-router-dom';
 
 import {
   osrdEditoastApi,
+  type Infra,
   type ScenarioPatchForm,
   type ScenarioWithDetails,
   type TimetableType,
 } from 'common/api/osrdEditoastApi';
-import ChipsSNCF from 'common/BootstrapSNCF/ChipsSNCF';
-import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
-import { ConfirmModal } from 'common/BootstrapSNCF/ModalSNCF';
-import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
-import ModalFooterSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalFooterSNCF';
-import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
-import SelectImprovedSNCF from 'common/BootstrapSNCF/SelectImprovedSNCF';
-import TextareaSNCF from 'common/BootstrapSNCF/TextareaSNCF';
-import { useInfraActions, useInfraID } from 'common/osrdContext';
-import { InfraSelectorModal } from 'modules/infra/components/InfraSelector';
 import DeleteItemsModal from 'modules/project/components/DeleteItemsModal';
 import { setFailure, setSuccess } from 'reducers/main';
+import { getFeatureFlag } from 'reducers/user/userSelectors';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 import useInputChange from 'utils/hooks/useInputChange';
-import useModalFocusTrap from 'utils/hooks/useModalFocusTrap';
 import useModalOutsideClick from 'utils/hooks/useModalOutsideClick';
 
 import { checkScenarioFields, cleanScenarioLocalStorage } from '../helpers/utils';
@@ -41,11 +39,13 @@ export type ScenarioForm = ScenarioPatchForm & {
   id?: number;
   infra_id?: number;
   electrical_profile_set_id?: number | null;
+  timetable_type?: TimetableType;
 };
 
 type AddOrEditScenarioModalProps = {
   editionMode?: boolean;
   scenario?: ScenarioWithDetails;
+  onCancel?: () => void;
 };
 
 type createScenarioParams = {
@@ -60,20 +60,32 @@ const emptyScenario: ScenarioForm = {
   electrical_profile_set_id: NaN,
   name: '',
   tags: [],
+  timetable_type: 'CALENDAR',
 };
 
-const AddOrEditScenarioModal = ({ editionMode = false, scenario }: AddOrEditScenarioModalProps) => {
+const AddOrEditScenarioModal = ({
+  editionMode = false,
+  scenario,
+  onCancel,
+}: AddOrEditScenarioModalProps) => {
   const { t } = useTranslation(['operational-studies', 'translation']);
 
   const { closeModal, openModal } = useContext(ModalContext);
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
-  const infraID = useInfraID();
-  const { updateInfraID } = useInfraActions();
+  const hourlyTimetableActivated = useSelector(getFeatureFlag('hourlyTimetables'));
 
-  const originalInfraIdRef = useRef(scenario?.infra_id);
+  const { data: infrasList } = osrdEditoastApi.endpoints.getInfra.useQuery({ pageSize: 1000 });
+  const infras = infrasList?.results ?? [];
+  const {
+    suggestions: infraSuggestions,
+    onChange: onInfraQueryChange,
+    resetSuggestions: resetInfraSuggestions,
+  } = useDefaultComboBox(infras, (s) => s.name);
+  const getInfraLabel = (infra: Infra) => infra.name;
 
   const [currentScenario, setCurrentScenario] = useState<ScenarioForm>(scenario || emptyScenario);
+  const infraValue = infras.find((infra) => infra.id === currentScenario.infra_id);
 
   const noElectricalProfileSetOption = {
     key: undefined,
@@ -125,18 +137,9 @@ const AddOrEditScenarioModal = ({ editionMode = false, scenario }: AddOrEditScen
 
   const initialValuesRef = useRef<ScenarioForm | null>(null);
 
-  const modalRef = useRef<HTMLFormElement | null>(null);
+  const modalRef = useRef<HTMLDivElement | null>(null);
 
-  // Restore the scenario's infra in the global state when the edition modal is closed
-  // without saving (cancel, close button or click outside).
-  const handleClose = useCallback(() => {
-    if (editionMode && originalInfraIdRef.current !== undefined) {
-      dispatch(updateInfraID(originalInfraIdRef.current));
-    }
-    closeModal();
-  }, [editionMode, dispatch, updateInfraID, closeModal]);
-
-  const { clickedOutside, setHasChanges, resetClickedOutside } = useModalOutsideClick(modalRef);
+  const { setHasChanges } = useModalOutsideClick(modalRef);
 
   const handleScenarioInputChange = useInputChange(
     initialValuesRef,
@@ -144,40 +147,26 @@ const AddOrEditScenarioModal = ({ editionMode = false, scenario }: AddOrEditScen
     setHasChanges
   );
 
-  const removeTag = (idx: number) => {
-    const newTags = [...(currentScenario.tags || [])];
-    newTags.splice(idx, 1);
-    setCurrentScenario({ ...currentScenario, tags: newTags });
-    handleScenarioInputChange('tags', newTags);
-  };
-
-  const addTag = (tag: string) => {
-    const newTags = [...(currentScenario.tags || []), tag];
-    setCurrentScenario({ ...currentScenario, tags: newTags });
-    handleScenarioInputChange('tags', newTags);
-  };
-
   const invalidFields = checkScenarioFields(currentScenario);
   const hasErrors = Object.values(invalidFields).some((field) => field);
 
-  const createScenario = async (event: React.SubmitEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    if (!currentScenario.infra_id || hasErrors) {
+  const createScenario = async () => {
+    if (hasErrors) {
       setDisplayErrors(true);
-    } else if (projectId && studyId && currentScenario && currentScenario.name) {
+    } else if (projectId && studyId && currentScenario.infra_id && currentScenario.name) {
       try {
-        const timetableType: TimetableType = 'CALENDAR';
+        const timetable_type = currentScenario.timetable_type || 'CALENDAR';
         // Creating a scenario requires to: create a sandbox, a timetable, link both and finally create the scenario
         const sandbox = await postTrainScheduleSets({
           trainScheduleSetForm: {
             name: null, // sandbox never has a name
             description: '',
             published: false,
-            timetable_type: timetableType,
+            timetable_type,
           },
         }).unwrap();
         const timetable = await postTimetable({
-          timetableForm: { timetable_type: timetableType },
+          timetableForm: { timetable_type },
         }).unwrap();
         await linkTrainScheduleSetToTimetable({
           id: timetable.timetable_id,
@@ -194,8 +183,9 @@ const AddOrEditScenarioModal = ({ editionMode = false, scenario }: AddOrEditScen
             electrical_profile_set_id: currentScenario.electrical_profile_set_id,
           },
         }).unwrap();
-        navigate(`projects/${projectId}/studies/${studyId}/scenarios/${newScenario.id}`);
-        closeModal();
+        navigate(
+          `/operational-studies/projects/${projectId}/studies/${studyId}/scenarios/${newScenario.id}`
+        );
       } catch (error) {
         dispatch(setFailure(castErrorToFailure(error)));
       }
@@ -223,7 +213,7 @@ const AddOrEditScenarioModal = ({ editionMode = false, scenario }: AddOrEditScen
               text: t('main.scenarioUpdatedDetails', { name: currentScenario.name }),
             })
           );
-          closeModal();
+          onCancel?.();
         })
         .catch((error) => {
           dispatch(setFailure(castErrorToFailure(error)));
@@ -233,11 +223,11 @@ const AddOrEditScenarioModal = ({ editionMode = false, scenario }: AddOrEditScen
 
   const removeScenario = () => {
     if (projectId && studyId && scenario?.id) {
-      deleteScenario({ scenarioId: scenario.id })
+      return deleteScenario({ scenarioId: scenario.id })
         .unwrap()
         .then(() => {
           cleanScenarioLocalStorage(scenario.timetable_id);
-          navigate(`projects/${projectId}/studies/${studyId}`);
+          navigate(`/operational-studies/projects/${projectId}/studies/${studyId}`);
           closeModal();
           dispatch(
             setSuccess({
@@ -256,19 +246,22 @@ const AddOrEditScenarioModal = ({ editionMode = false, scenario }: AddOrEditScen
           );
         });
     }
+    return Promise.reject(
+      new Error('Cannot delete scenario: missing project, study or scenario id')
+    );
   };
 
-  const openDeleteItemsModal = useCallback(
-    () =>
-      openModal(
-        <DeleteItemsModal
-          handleDeleteItems={removeScenario}
-          translationKey={t('scenario.confirm-delete', { count: 1 })}
-        />,
-        'sm'
-      ),
-    [openModal, removeScenario, t]
-  );
+  const openDeleteItemsModal = useCallback(() => {
+    openModal(
+      <DeleteItemsModal
+        translationKey={t('scenario.confirm-delete', { count: 1 })}
+        handleDeleteItems={() => {
+          removeScenario().then(onCancel);
+        }}
+      />,
+      'sm'
+    );
+  }, [onCancel, openModal, removeScenario, t]);
 
   useEffect(() => {
     if (scenario) {
@@ -278,165 +271,185 @@ const AddOrEditScenarioModal = ({ editionMode = false, scenario }: AddOrEditScen
     }
   }, [scenario]);
 
-  useEffect(() => {
-    const updated = { ...currentScenario, infra_id: infraID };
-    setCurrentScenario(updated);
-    setHasChanges(!isEqual(updated, initialValuesRef.current));
-  }, [infraID]);
-
-  useModalFocusTrap(modalRef, handleClose);
+  const handleOnSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (editionMode) {
+      updateScenario();
+    } else {
+      createScenario();
+    }
+  };
 
   return (
-    <form
+    <Dialog
       data-testid="scenario-edition-modal"
-      className="scenario-edition-modal"
-      ref={modalRef}
-      onSubmit={createScenario}
-    >
-      {clickedOutside && (
-        <div className="confirm-modal">
-          <div className="confirm-modal-content">
-            <ConfirmModal
-              title={t('common.leaveEditionMode', { ns: 'translation' })}
-              onConfirm={handleClose}
-              onCancel={resetClickedOutside}
-              withCloseButton={false}
+      className="scenario-add-or-edit-modal"
+      bodyClassname="scenario-add-or-edit-modal-body"
+      footerClassname="scenario-add-or-edit-modal-footer"
+      footer={
+        <>
+          {editionMode ? (
+            <Button
+              className="scenario-add-or-edit-modal-footer-left"
+              variant="Destructive"
+              type="button"
+              size="medium"
+              label={t('main.scenarioDeleteButton')}
+              dataTestID="delete-scenario"
+              onClick={() => openDeleteItemsModal()}
             />
+          ) : undefined}
+          <div className="scenario-add-or-edit-modal-footer-right">
+            <Button
+              variant="Cancel"
+              type="reset"
+              size="medium"
+              label={t('main.scenarioCancel')}
+              dataTestID="cancel-scenario"
+              onClick={() => onCancel?.()}
+            />
+            {editionMode ? (
+              <Button
+                type="submit"
+                form="form"
+                size="medium"
+                label={t('main.scenarioModificationTitle')}
+                dataTestID="update-scenario"
+                onClick={noop}
+              />
+            ) : (
+              <Button
+                type="submit"
+                form="form"
+                size="medium"
+                label={t('main.scenarioCreateButton')}
+                dataTestID="create-scenario"
+                onClick={noop}
+              />
+            )}
           </div>
-        </div>
-      )}
-      <ModalHeaderSNCF withCloseButton withBorderBottom closePortalModal={handleClose}>
+        </>
+      }
+      header={
         <h1 className="scenario-edition-modal-title">
           {editionMode ? t('main.scenarioModificationTitle') : t('main.scenarioCreationTitle')}
         </h1>
-      </ModalHeaderSNCF>
-      <ModalBodySNCF>
-        <div className="row">
-          <div className="col-lg-6">
-            <div className="scenario-edition-modal-name">
-              <InputSNCF
-                id="scenarioInputName"
-                type="text"
-                name="scenarioInputName"
-                focus
-                label={
-                  <div className="d-flex align-items-center">
-                    <span className="mr-2">
-                      <MdTitle />
-                    </span>
-                    <span className="font-weight-bold">{t('main.scenarioName')}</span>
-                  </div>
-                }
-                value={currentScenario.name || ''}
-                onChange={(e) => handleScenarioInputChange('name', e.target.value)}
-                isInvalid={displayErrors && invalidFields.name}
-                errorMsg={t('main.scenarioNameInvalid')}
-              />
-            </div>
-            <div className="scenario-edition-modal-description">
-              <TextareaSNCF
-                id="scenarioDescription"
-                label={
-                  <div className="d-flex align-items-center">
-                    <span className="mr-2">
-                      <MdDescription />
-                    </span>
-                    {t('main.scenarioDescription')}
-                  </div>
-                }
-                value={currentScenario.description || ''}
-                onChange={(e) => handleScenarioInputChange('description', e.target.value)}
-                placeholder={t('main.scenarioDescriptionPlaceholder')}
-                isInvalid={displayErrors && invalidFields.description}
-                errorMsg={t('main.scenarioDescriptionInvalid')}
-              />
-            </div>
-            {!editionMode && electricalProfilOptions.length > 1 && (
-              <div className="scenario-edition-modal-description">
-                <SelectImprovedSNCF
-                  label={
-                    <div className="d-flex align-items-center">
-                      <span className="mr-2">
-                        <GiElectric />
-                      </span>
-                      {t('main.electricalProfileSet')}
-                    </div>
+      }
+    >
+      <form id="form" className="scenario-add-or-edit-modal-form" onSubmit={handleOnSubmit}>
+        <div className="scenario-add-or-edit-modal-form-info-section">
+          <Input
+            id="scenarioInputName"
+            data-testid="scenarioInputName-input"
+            type="text"
+            name="scenarioInputName"
+            label={t('main.scenarioName')}
+            value={currentScenario.name || ''}
+            onChange={(e) => handleScenarioInputChange('name', e.target.value)}
+            statusWithMessage={
+              displayErrors && invalidFields.name
+                ? {
+                    message: t('main.scenarioNameInvalid'),
+                    status: 'error',
                   }
-                  value={selectedValue}
-                  options={electricalProfilOptions.map((e) => ({
-                    id: `${e.key}`,
-                    label: e.value,
-                  }))}
-                  onChange={(e) =>
-                    handleScenarioInputChange(
-                      'electrical_profile_set_id',
-                      e?.id ? +e.id : undefined
-                    )
+                : undefined
+            }
+          />
+
+          <TextArea
+            id="scenarioDescription"
+            data-testid="scenarioDescription-input"
+            label={t('main.scenarioDescription')}
+            value={currentScenario.description || ''}
+            onChange={(e) => handleScenarioInputChange('description', e.target.value)}
+            placeholder={t('main.scenarioDescriptionPlaceholder')}
+            statusWithMessage={
+              displayErrors && invalidFields.description
+                ? {
+                    message: t('main.scenarioDescriptionInvalid'),
+                    status: 'error',
                   }
-                />
-              </div>
-            )}
-            <ChipsSNCF
-              addTag={addTag}
-              tags={currentScenario.tags || []}
-              removeTag={removeTag}
-              title={t('main.scenarioTags')}
-              color="teal"
+                : undefined
+            }
+          />
+
+          <TokenInput
+            className="ui-feedback"
+            label={t('main.scenarioTags')}
+            tokens={currentScenario.tags || []}
+            onChange={(newTags) => handleScenarioInputChange('tags', newTags)}
+            dataTestId="scenarioTags-input"
+          />
+        </div>
+
+        {hourlyTimetableActivated && !editionMode ? (
+          <div className="scenario-add-or-edit-modal-system-hour-section">
+            <RadioGroup
+              value={currentScenario.timetable_type}
+              onChange={(timetable_type) =>
+                handleScenarioInputChange('timetable_type', timetable_type)
+              }
+              options={[
+                {
+                  id: 'HOURLY',
+                  label: t('main.scenarioTimetableTypeHourly'),
+                  value: 'HOURLY',
+                },
+                {
+                  id: 'CALENDAR',
+                  label: t('main.scenarioTimetableTypeCalendar'),
+                  value: 'CALENDAR',
+                },
+              ]}
             />
           </div>
-          <div className="col-lg-6">
-            <div
-              className={cx('scenario-edition-modal-infraselector', {
-                'scenario-edition-modal-infraselector-missing':
-                  displayErrors && !currentScenario.infra_id,
-              })}
-            >
-              <InfraSelectorModal onlySelectionMode />
-            </div>
-          </div>
-        </div>
-      </ModalBodySNCF>
-      <ModalFooterSNCF>
-        <div className="d-flex justify-content-end w-100 mt-3">
-          {editionMode && (
-            <button
-              data-testid="delete-scenario"
-              className="btn btn-sm btn-outline-danger mr-auto"
-              type="button"
-              onClick={openDeleteItemsModal}
-            >
-              <span className="mr-2">
-                <Trash />
-              </span>
-              {t('main.scenarioDeleteButton')}
-            </button>
-          )}
-          <button className="btn btn-sm btn-secondary mr-2" type="button" onClick={handleClose}>
-            {t('main.scenarioCancel')}
-          </button>
-          {editionMode ? (
-            <button
-              data-testid="update-scenario"
-              className="btn btn-sm btn-warning"
-              type="button"
-              onClick={updateScenario}
-            >
-              <span className="mr-2">
-                <Pencil />
-              </span>
-              {t('main.scenarioModificationTitle')}
-            </button>
-          ) : (
-            <button data-testid="create-scenario" className="btn btn-sm btn-primary" type="submit">
-              <span className="mr-2">
-                <FaPlus />
-              </span>
-              {t('main.scenarioCreateButton')}
-            </button>
+        ) : undefined}
+
+        <div className="scenario-add-or-edit-modal-infra-section">
+          <ComboBox
+            id="scenario-add-or-edit-modal-infra-select"
+            label={t('main.scenarioInfrastructureLabel')}
+            autoComplete="off"
+            value={infraValue || undefined}
+            suggestions={infraSuggestions}
+            getSuggestionLabel={(s) => getInfraLabel(s)}
+            onSelectSuggestion={(s) => {
+              handleScenarioInputChange('infra_id', s ? s.id : undefined);
+            }}
+            resetSuggestions={resetInfraSuggestions}
+            onChange={onInfraQueryChange}
+            data-testid="infra-combobox-input"
+            testIdPrefix="infra-combobox"
+            statusWithMessage={
+              displayErrors && invalidFields.infra_id
+                ? {
+                    message: t('main.scenarioInfraInvalid'),
+                    status: 'error',
+                  }
+                : undefined
+            }
+          />
+
+          {!editionMode && electricalProfilOptions.length > 1 && (
+            <Select
+              id="electricalProfileSet"
+              dataTestId="electrical-profile-select"
+              label={t('main.electricalProfileSet')}
+              value={selectedValue}
+              options={electricalProfilOptions.map((e) => ({
+                id: `${e.key}`,
+                label: e.value,
+              }))}
+              getOptionValue={(ep) => ep.id}
+              getOptionLabel={(ep) => ep.label}
+              onChange={(e) => {
+                handleScenarioInputChange('electrical_profile_set_id', e?.id ? +e.id : undefined);
+              }}
+            />
           )}
         </div>
-      </ModalFooterSNCF>
-    </form>
+      </form>
+    </Dialog>
   );
 };
 

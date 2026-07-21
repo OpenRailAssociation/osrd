@@ -30,9 +30,11 @@ export const checkScenarioFields = (
 ): {
   name: boolean;
   description: boolean;
+  infra_id: boolean;
 } => ({
   name: isInvalidName(scenario.name),
   description: isInvalidString(SMALL_TEXT_AREA_MAX_LENGTH, scenario.description),
+  infra_id: !scenario.infra_id,
 });
 
 /**

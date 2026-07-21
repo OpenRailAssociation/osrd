@@ -53,6 +53,7 @@ const StudyView = () => {
   const [filterChips, setFilterChips] = useState('');
   const [sortOption, setSortOption] = useState<SortOptions>('LastModifiedDesc');
   const [isLoading, setIsLoading] = useState(true);
+  const [openAddOrEditScenarioModal, setOpenAddOrEditScenarioModal] = useState(false);
 
   const { projectId, studyId } = useMemo(
     () => ({
@@ -189,9 +190,12 @@ const StudyView = () => {
           <AddNewCard
             testId="add-scenario-button"
             className="scenario-card empty"
-            modalComponent={<AddOrEditScenarioModal />}
             item="scenario"
+            onOpenModal={() => setOpenAddOrEditScenarioModal(true)}
           />
+          {openAddOrEditScenarioModal ? (
+            <AddOrEditScenarioModal onCancel={() => setOpenAddOrEditScenarioModal(false)} />
+          ) : undefined}
         </div>
         {scenariosList.map((scenario) => (
           <div
@@ -380,7 +384,10 @@ const StudyView = () => {
               'selection-mode': selectedScenarioIds.length > 0,
             })}
           >
-            {useMemo(() => displayScenariosList(), [scenariosList, selectedScenarioIds])}
+            {useMemo(
+              () => displayScenariosList(),
+              [scenariosList, selectedScenarioIds, openAddOrEditScenarioModal]
+            )}
           </div>
         </div>
       </main>

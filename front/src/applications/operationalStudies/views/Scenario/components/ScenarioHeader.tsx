@@ -1,4 +1,4 @@
-import { Fragment, useCallback, useEffect, useRef, useState } from 'react';
+import { Fragment, useEffect, useRef, useState } from 'react';
 
 import { X, ChevronDown, ChevronUp, Hubot, Person, SignOut } from '@osrd-project/ui-icons';
 import cx from 'classnames';
@@ -8,7 +8,6 @@ import { useNavigate } from 'react-router-dom';
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import type { Board } from 'applications/operationalStudies/types';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import UserActionsDropdown from 'common/NavBar/UserActionsDropdown';
 import AddAndEditScenarioModal from 'modules/scenario/components/AddOrEditScenarioModal';
 import useAuth from 'utils/hooks/useAuth';
@@ -33,7 +32,6 @@ type ScenarioHeaderProps = {
 
 const ScenarioHeader = ({ activeBoards, toggleBoard }: ScenarioHeaderProps) => {
   const { username, impersonatedUser, impersonate } = useAuth();
-  const { openModal } = useModal();
   const navigate = useNavigate();
   const { scenario, timetableId, infraId } = useScenarioContext();
   const { t } = useTranslation('operational-studies');
@@ -48,6 +46,7 @@ const ScenarioHeader = ({ activeBoards, toggleBoard }: ScenarioHeaderProps) => {
     username: false,
   });
   const [areScenarioDetailsVisible, setAreScenarioDetailsVisible] = useState(false);
+  const [openEditScenarioModal, setOpenEditScenarioModal] = useState(false);
 
   const headerRef = useRef<HTMLElement>(null);
   const scenarioNameRef = useRef<HTMLSpanElement>(null);
@@ -102,16 +101,6 @@ const ScenarioHeader = ({ activeBoards, toggleBoard }: ScenarioHeaderProps) => {
       )}
       {username}
     </span>
-  );
-
-  const openAddandEditModal = useCallback(
-    () =>
-      openModal(
-        <AddAndEditScenarioModal editionMode scenario={scenario} />,
-        'xl',
-        'no-close-modal'
-      ),
-    [openModal, scenario]
   );
 
   return (
@@ -237,7 +226,7 @@ const ScenarioHeader = ({ activeBoards, toggleBoard }: ScenarioHeaderProps) => {
               className="edit-scenario"
               type="button"
               aria-label={t('main.editScenario')}
-              onClick={openAddandEditModal}
+              onClick={() => setOpenEditScenarioModal(true)}
               title={t('main.editScenario')}
               data-testid="edit-scenario"
             >
@@ -246,6 +235,13 @@ const ScenarioHeader = ({ activeBoards, toggleBoard }: ScenarioHeaderProps) => {
           </div>
         </div>
       )}
+      {openEditScenarioModal ? (
+        <AddAndEditScenarioModal
+          editionMode
+          scenario={scenario}
+          onCancel={() => setOpenEditScenarioModal(false)}
+        />
+      ) : undefined}
     </header>
   );
 };

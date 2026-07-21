@@ -12,8 +12,9 @@ class ScenarioPage extends CommonPage {
   private readonly scenarioConfirmUpdateButton: Locator;
   private readonly scenarioNameInput: Locator;
   private readonly scenarioDescriptionInput: Locator;
-  private readonly scenarioInfraList: Locator;
-  private readonly selectedInfraName: Locator;
+  private readonly scenarioInfraInput: Locator;
+  private readonly scenarioInfraSuggestionItems: Locator;
+  private readonly scenarioTagInput: Locator;
   private readonly scenarioElectricProfileSelect: Locator;
   private readonly scenarioName: Locator;
   private readonly scenarioNameContainer: Locator;
@@ -40,9 +41,10 @@ class ScenarioPage extends CommonPage {
     this.addScenarioButton = page.getByTestId('add-scenario-button');
     this.scenarioNameInput = page.getByTestId('scenarioInputName-input');
     this.scenarioDescriptionInput = page.getByTestId('scenarioDescription-input');
-    this.scenarioInfraList = page.getByTestId('infra-list');
-    this.selectedInfraName = page.getByTestId('selected-infra-name');
-    this.scenarioElectricProfileSelect = page.getByTestId('select-toggle');
+    this.scenarioInfraInput = page.getByTestId('infra-combobox-input');
+    this.scenarioInfraSuggestionItems = page.getByTestId('infra-combobox-item');
+    this.scenarioTagInput = this.scenarioEditionModal.getByTestId('scenarioTags-input');
+    this.scenarioElectricProfileSelect = page.getByTestId('electrical-profile-select');
     this.scenarioName = page.getByTestId('scenario-name-label');
     this.scenarioNameContainer = page.getByTestId('scenario-name-container');
     this.scenarioDescription = page.getByTestId('scenario-details-description');
@@ -70,11 +72,6 @@ class ScenarioPage extends CommonPage {
   }
   private getScenarioTags(id: string): Locator {
     return this.page.getByTestId(`scenario-card-${id}`).getByTestId('scenario-card-tags');
-  }
-
-  private getElectricProfileOptionByName(name: string): Locator {
-    const list = this.page.getByRole('list');
-    return list.getByRole('button', { name });
   }
 
   async createScenario(details: ScenarioDetails) {
@@ -106,7 +103,7 @@ class ScenarioPage extends CommonPage {
     await this.scenarioDescriptionInput.fill(description);
     if (electricProfileName) await this.setScenarioElectricProfileByName(electricProfileName);
     if (infraName) await this.selectInfraByName(infraName);
-    for (const tag of tags ?? []) await this.setTag(tag);
+    for (const tag of tags ?? []) await this.setScenarioTag(tag);
   }
 
   async validateScenarioData({
@@ -144,21 +141,27 @@ class ScenarioPage extends CommonPage {
 
   async deleteScenario() {
     await this.scenarioDeleteButton.click();
-    await expect(this.scenarioDeleteButton).not.toBeVisible();
     await expect(this.scenarioConfirmDeleteButton).toBeVisible();
     await this.scenarioConfirmDeleteButton.click();
     await expect(this.scenarioConfirmDeleteButton).not.toBeVisible();
+    await expect(this.scenarioEditionModal).toBeHidden();
     await this.page.waitForURL(STUDY_URLS.detail);
   }
 
   private async selectInfraByName(infraName: string) {
-    await this.scenarioInfraList.getByText(infraName).first().click();
-    await expect(this.selectedInfraName).toHaveText(infraName);
+    await this.scenarioInfraInput.fill(infraName);
+    await this.scenarioInfraSuggestionItems.filter({ hasText: infraName }).first().click();
+    await expect(this.scenarioInfraInput).toHaveValue(infraName);
   }
 
   private async setScenarioElectricProfileByName(electricProfileName: string) {
-    await this.scenarioElectricProfileSelect.click();
-    await this.getElectricProfileOptionByName(electricProfileName).click();
+    await this.scenarioElectricProfileSelect.selectOption({ label: electricProfileName });
+  }
+
+  private async setScenarioTag(tag: string) {
+    await expect(this.scenarioTagInput).toBeVisible();
+    await this.scenarioTagInput.fill(tag);
+    await this.scenarioTagInput.press('Enter');
   }
 }
 

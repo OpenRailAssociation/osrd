@@ -9,9 +9,19 @@ export type TokenInputProps = {
   small?: boolean;
   onChange?: (tokens: string[]) => void;
   onBlur?: () => void;
+  className?: string;
+  dataTestId?: string;
 };
 
-const TokenInput = ({ label, tokens: initialTokens, small, onChange, onBlur }: TokenInputProps) => {
+const TokenInput = ({
+  label,
+  tokens: initialTokens,
+  small,
+  onChange,
+  onBlur,
+  className,
+  dataTestId,
+}: TokenInputProps) => {
   const [tokens, setTokens] = useState(initialTokens);
 
   // Allow to update the tokens state when an update comes from outside the component
@@ -41,6 +51,8 @@ const TokenInput = ({ label, tokens: initialTokens, small, onChange, onBlur }: T
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     switch (e.key) {
       case 'Enter':
+        // Prevent the keypress from submitting a surrounding form
+        e.preventDefault();
         if (newToken.trim() !== '') {
           addToken(newToken);
           setNewToken('');
@@ -61,7 +73,7 @@ const TokenInput = ({ label, tokens: initialTokens, small, onChange, onBlur }: T
   };
 
   return (
-    <div className={cx('ui-token-input-wrapper', { small })}>
+    <div className={cx('ui-token-input-wrapper', { small }, className)}>
       <label className="input-label">{label}</label>
       <div className="tokens-wrapper" onClick={focusInput}>
         {tokens.map((token, index) => (
@@ -83,6 +95,7 @@ const TokenInput = ({ label, tokens: initialTokens, small, onChange, onBlur }: T
           onKeyDown={handleKeyDown}
           onBlur={onBlur}
           className="token-input"
+          data-testid={dataTestId}
           ref={inputRef}
         />
       </div>
