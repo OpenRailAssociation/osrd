@@ -671,7 +671,8 @@
     "about": "À propos",
     "disconnect": "Déconnexion",
     "featureFlags": {
-      "linkings": "Activer les enchaînements"
+      "linkings": "Activer les enchaînements",
+      "hourlyTimetables": "Activer les trames 2h"
     },
     "help": "Aide",
     "impersonation": "Se faire passer pour un utilisateur",

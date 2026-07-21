@@ -671,7 +671,8 @@
     "about": "About",
     "disconnect": "Sign out",
     "featureFlags": {
-      "linkings": "Enable linkings"
+      "linkings": "Enable linkings",
+      "hourlyTimetables": "Enable hourly timetables"
     },
     "help": "Help",
     "impersonation": "Impersonate user",
