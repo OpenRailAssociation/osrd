@@ -25,6 +25,7 @@ import { Duration } from 'utils/duration';
 import { mmToM } from 'utils/physics';
 import { SMALL_INPUT_MAX_LENGTH } from 'utils/strings';
 
+import { applyPathStepWeight } from './helpers/applyPathStepWeight';
 import { upsertMapWaypointsInOperationalPoints } from './helpers/upsertMapWaypointsInOperationalPoints';
 import type {
   BoundariesData,
@@ -231,19 +232,21 @@ export const preparePathPropertiesData = (
     };
   });
 
-  const operationalPointsWithAllWaypoints = upsertMapWaypointsInOperationalPoints(
+  const waypointsWithTrackOffsetPathSteps = upsertMapWaypointsInOperationalPoints(
     'path',
     trainSchedulePath,
     path_item_positions,
     formattedOperationalPoints,
     t
   );
+  // Apply max weight on path steps so they are prioritized in the SDD
+  const waypointsWithPathStepWeight = applyPathStepWeight(waypointsWithTrackOffsetPathSteps);
 
   return {
     electrifications: electrificationAndProfilesRanges,
     curves: formattedCurves,
     slopes: formattedSlopes,
-    operationalPoints: operationalPointsWithAllWaypoints,
+    operationalPoints: waypointsWithPathStepWeight,
     geometry,
     voltages: voltageRanges,
   };

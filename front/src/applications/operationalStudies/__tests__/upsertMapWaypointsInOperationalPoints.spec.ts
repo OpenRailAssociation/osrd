@@ -154,7 +154,7 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
           local_track_name: 'V1',
         },
         position: 9246000,
-        weight: 100,
+        weight: null,
         location: {
           type: 'track_offset',
           track: 'TA6',
@@ -275,7 +275,7 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
           local_track_name: 'V1',
         },
         position: 0,
-        weight: 100,
+        weight: null,
         location: {
           type: 'track_offset',
           track: 'TA6',
@@ -321,7 +321,7 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
           local_track_name: 'V1',
         },
         position: 4198000,
-        weight: 100,
+        weight: null,
         location: {
           type: 'track_offset',
           track: 'TC0',
@@ -343,7 +343,7 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
           local_track_name: 'V1',
         },
         position: 4402000,
-        weight: 100,
+        weight: null,
         location: {
           type: 'track_offset',
           track: 'TC0',
@@ -400,7 +400,7 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
           local_track_name: 'V1',
         },
         position: 0,
-        weight: 100,
+        weight: null,
         location: {
           type: 'track_offset',
           track: 'TA6',
@@ -422,7 +422,7 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
           local_track_name: 'V1',
         },
         position: 1748000,
-        weight: 100,
+        weight: null,
         location: {
           type: 'track_offset',
           track: 'TA6',
