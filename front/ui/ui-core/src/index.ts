@@ -19,7 +19,7 @@ export {
   type SingleDatePickerProps,
 } from './components/DatePicker';
 export { default as Switch, SwitchProps } from './components/Switch';
-export { default as DurationInput, DurationInputProps } from './components/DurationInput';
+export { DurationInput, DurationInputProps } from './components/DurationInput';
 export { default as Input, InputProps } from './components/Input';
 export { default as PasswordInput, PasswordInputProps } from './components/PasswordInput';
 export { default as RadioButton, RadioButtonProps } from './components/RadioButton';
