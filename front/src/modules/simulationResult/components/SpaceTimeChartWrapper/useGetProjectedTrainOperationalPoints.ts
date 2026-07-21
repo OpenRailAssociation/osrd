@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
+import { applyPathStepWeight } from 'applications/operationalStudies/helpers/applyPathStepWeight';
 import { upsertMapWaypointsInOperationalPoints } from 'applications/operationalStudies/helpers/upsertMapWaypointsInOperationalPoints';
 import type {
   CorePathfindingResultSuccess,
@@ -36,7 +37,8 @@ const useGetProjectedTrainOperationalPoints = ({
     const getOperationalPoints = async () => {
       let operationalPointsWithUniqueIds =
         projectionType === 'trackProjection' && path && pathfinding
-          ? upsertMapWaypointsInOperationalPoints(
+          ? // Add track offset waypoints to the waypoints
+            upsertMapWaypointsInOperationalPoints(
               'projection',
               path,
               pathfinding.path_item_positions,
@@ -44,6 +46,8 @@ const useGetProjectedTrainOperationalPoints = ({
               t
             )
           : projectedOperationalPoints || [];
+      // Apply max weight on path steps so they are prioritized in the manchette
+      operationalPointsWithUniqueIds = applyPathStepWeight(operationalPointsWithUniqueIds);
 
       setOperationalPoints(operationalPointsWithUniqueIds);
 
