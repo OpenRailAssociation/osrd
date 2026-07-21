@@ -202,7 +202,7 @@ fn service_router() -> server::router::DocumentedRouter {
                                 "/train_schedule_exception",
                                 post!(timetable::train_schedule_exceptions::create_train_schedule_exception),
                             )
-                            .route("/conflicts", get!(timetable::conflicts))
+                            .route("/conflicts", get!(timetable::conflicts::conflicts))
                             .route("/requirements", get!(timetable::requirements))
                             .route("/round_trips", get!(round_trips::list))
                             .route("/stdcm", post!(timetable::stdcm::stdcm))

@@ -20,14 +20,12 @@ use axum::extract::Query;
 use axum::extract::State;
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
-use chrono::Duration;
 use common::units::millisecond;
 use common::units::quantities::Acceleration;
 use common::units::quantities::Length;
 use common::units::quantities::Mass;
 use common::units::quantities::Offset;
 use common::units::quantities::Velocity;
-use core_client::AsCoreRequest;
 use core_client::conflict_detection::TrainRequirements;
 use core_client::conflict_detection::TrainRequirementsById;
 use core_client::simulation::CompleteReportTrain;
@@ -69,12 +67,6 @@ use crate::AppState;
 use crate::error::Result;
 use crate::views::AuthenticationExt;
 use crate::views::path::operational_point_cache::OperationalPointCache;
-use crate::views::timetable::conflicts::Conflict;
-use crate::views::timetable::conflicts::build_conflict_core_request;
-use crate::views::timetable::conflicts::build_cyclic_occurrence_requirements;
-use crate::views::timetable::conflicts::compute_hourly_pattern_period;
-use crate::views::timetable::conflicts::populate_timetable;
-use crate::views::timetable::conflicts::retrieve_trains;
 use crate::views::timetable::simulation::SimulationResponseSuccess;
 use editoast_models::Infra;
 use editoast_models::TrainScheduleSet;
@@ -275,170 +267,6 @@ pub(in crate::views) async fn get_train_schedules(
 #[into_params(parameter_in = Query)]
 pub struct ElectricalProfileSetIdQueryParam {
     electrical_profile_set_id: Option<i64>,
-}
-
-/// Retrieve the list of conflicts of the timetable
-///
-/// The following trains are **excluded** from the result:
-/// - trains for which the simulation fails
-/// - trains for which the simulation does not respect schedule times
-#[editoast_derive::route]
-#[utoipa::path(
-    get, path = "",
-    tag = "timetable",
-    params(TimetableIdParam, InfraIdQueryParam, ElectricalProfileSetIdQueryParam),
-    responses(
-        (status = 200, description = "List of conflicts", body = Vec<Conflict>),
-    ),
-)]
-pub(in crate::views) async fn conflicts(
-    State(AppState {
-        config,
-        db_pool,
-        valkey_client,
-        core_client,
-        ..
-    }): State<AppState>,
-    Extension(auth): AuthenticationExt,
-    Path(TimetableIdParam { id: timetable_id }): Path<TimetableIdParam>,
-    Query(InfraIdQueryParam { infra_id }): Query<InfraIdQueryParam>,
-    Query(ElectricalProfileSetIdQueryParam {
-        electrical_profile_set_id,
-    }): Query<ElectricalProfileSetIdQueryParam>,
-) -> Result<Json<Vec<Conflict>>> {
-    let conn = db_pool.get().await?;
-
-    let infra = Infra::retrieve_or_fail(conn.clone(), infra_id, || TimetableError::InfraNotFound {
-        infra_id,
-    })
-    .await?;
-
-    // Check user privilege on infra
-    auth.check_authorization(async |authorizer| {
-        authorizer
-            .authorize_infra(&authz::Infra(infra_id), authz::InfraPrivilege::CanRead)
-            .await
-    })
-    .await?;
-
-    let (timetable_type, trains) = retrieve_trains(conn.clone(), timetable_id).await?;
-
-    let timetable_period = match timetable_type {
-        TimetableType::Calendar => None,
-        TimetableType::Hourly => compute_hourly_pattern_period(&trains),
-    };
-    // Reject a timetable period longer than 24h: an hourly timetable is not meant to span more than a day
-    if let Some(timetable_period) = timetable_period
-        && timetable_period > Duration::hours(24)
-    {
-        return Err(TimetableError::InvalidPeriod {
-            timetable_period: timetable_period.num_hours(),
-        }
-        .into());
-    }
-
-    let train_schedules_ids = trains.iter().map(|t| t.id).collect_vec();
-
-    let mut exceptions =
-        editoast_models::TrainScheduleException::retrieve_exceptions_by_train_schedules(
-            &mut conn.clone(),
-            timetable_id,
-            &train_schedules_ids,
-        )
-        .await?
-        .into_iter()
-        .map_into::<schemas::TrainScheduleException>()
-        .into_group_map_by(|e| e.train_schedule_id);
-
-    let train_schedules_with_exceptions: Vec<(
-        editoast_models::TrainSchedule,
-        Vec<schemas::TrainScheduleException>,
-    )> = trains
-        .into_iter()
-        .map(|ts| {
-            let ts_exceptions = exceptions.remove(&ts.id).unwrap_or_default();
-            (ts, ts_exceptions)
-        })
-        .collect();
-
-    // Flatten paced trains occurrences
-    let (occurrence_ids, occurrence_trains): (Vec<_>, Vec<_>) = train_schedules_with_exceptions
-        .iter()
-        .flat_map(|(ts, exceptions)| {
-            let single_period_occurrences = ts.iter_occurrences(exceptions).collect();
-            match timetable_period {
-                None => single_period_occurrences,
-                Some(period) => {
-                    // For hourly timetable, occurrences must be duplicated to cover the timetable period (ex: a 1h mission within a 2h period)
-                    let time_window_ms = ts
-                        .time_window
-                        .expect("all time_window are defined when timetable_period exists")
-                        .num_milliseconds();
-                    let repetition = (period.num_milliseconds() / time_window_ms) as usize;
-                    populate_timetable(single_period_occurrences, repetition, time_window_ms)
-                }
-            }
-        })
-        .unzip();
-
-    let occurrence_simulations: Vec<_> = train_simulation_ordered_batch(
-        &mut db_pool.get().await?,
-        valkey_client.clone(),
-        core_client.clone(),
-        &occurrence_trains,
-        &infra,
-        electrical_profile_set_id,
-        config.app_version.as_deref(),
-    )
-    .await?
-    .into_iter()
-    .map(|(sim, _)| sim)
-    .collect();
-
-    let request_items = izip!(occurrence_ids, occurrence_trains, occurrence_simulations)
-        .filter_map(|(train_id, train_schedule, simulation)| {
-            let simulation::Response::Success(simulation) = simulation.as_ref() else {
-                return None;
-            };
-            let respect_times = simulation::path_item_respect_times(
-                &simulation.final_output.report_train.path_item_times,
-                &train_schedule,
-            )
-            .into_iter()
-            .all(|path_item| path_item);
-            if !respect_times {
-                return None;
-            }
-            Some((
-                train_id,
-                make_requirements_absolute(
-                    train_schedule.start_time(),
-                    simulation.final_output.spacing_requirements.clone(),
-                    simulation.final_output.routing_requirements.clone(),
-                ),
-            ))
-        })
-        .flat_map(|(train_id, train_requirements)| match timetable_period {
-            None => vec![(train_id, train_requirements)],
-            Some(period) => build_cyclic_occurrence_requirements(
-                train_id,
-                train_requirements.spacing_requirements,
-                train_requirements.routing_requirements,
-                period,
-            ),
-        });
-
-    let (trains_ids_map, conflict_detection_request) =
-        build_conflict_core_request(infra, request_items);
-
-    // 3. Call core
-    let conflict_detection_response = conflict_detection_request.fetch(&core_client).await?;
-    let conflicts = conflict_detection_response.conflicts;
-    let conflicts_response: Result<Vec<Conflict>> = conflicts
-        .into_iter()
-        .map(|response| Conflict::from_core_response(response, &trains_ids_map))
-        .collect();
-    Ok(Json(conflicts_response?))
 }
 
 /// Retrieve the list of requirements of the timetable (invalid trains are ignored)
@@ -1124,7 +952,6 @@ mod tests {
 
     use super::*;
     use crate::error::InternalError;
-    use crate::fixtures::create_hourly_timetable_with_train_schedule_set;
     use crate::fixtures::create_small_infra;
     use crate::fixtures::create_timetable;
     use crate::fixtures::create_timetable_with_simple_paced_train;
@@ -1342,43 +1169,6 @@ mod tests {
         let routing = &result.routing_requirements[0];
         assert_eq!(routing.begin_time, 30_012);
         assert_eq!(routing.zones[0].end_time, 30_015);
-    }
-
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn conflicts_hourly_rejects_period_over_24h() {
-        let app = test_app!().skip_authz().build();
-        let pool = app.db_pool();
-
-        let infra = create_small_infra(&mut pool.get_ok()).await;
-        let (timetable, train_schedule_set) =
-            create_hourly_timetable_with_train_schedule_set(&mut pool.get_ok()).await;
-
-        // Period = 5 * 7 = 35h.
-        for time_window in [5, 7] {
-            let mut base = simple_paced_train_base();
-            base.train_occurrence.start_time = units::millisecond::i64::new(0);
-            base.paced.as_mut().unwrap().time_window =
-                Duration::hours(time_window).try_into().unwrap();
-            base.paced.as_mut().unwrap().interval = Duration::hours(1).try_into().unwrap();
-            TrainScheduleChangeset::from(base)
-                .train_schedule_set_id(train_schedule_set.id)
-                .create(&mut pool.get_ok())
-                .await
-                .expect("Failed to create paced train");
-        }
-
-        let response: InternalError = app
-            .get(
-                format!(
-                    "/timetable/{}/conflicts?infra_id={}",
-                    timetable.id, infra.id
-                )
-                .as_str(),
-            )
-            .await
-            .assert_status(StatusCode::UNPROCESSABLE_ENTITY)
-            .json();
-        assert_eq!(response.error_type, "editoast:timetable:InvalidPeriod");
     }
 
     fn create_physics_consist() -> PhysicsConsistParameters {
