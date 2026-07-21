@@ -1,30 +1,100 @@
-.scenario-edition-modal {
-  max-height: calc(100vh - 56px);
-  display: flex;
-  flex-direction: column;
-  .modal-body {
-    overflow-y: auto;
+.scenario-add-or-edit-modal {
+  width: 660px;
+
+  // Fix conflict with bootstrap
+  .ui-radio-button label {
+    margin-bottom: 0;
   }
-  .scenario-edition-modal-title {
-    display: flex;
+
+  &-form-info-section,
+  &-system-hour-section,
+  &-infra-section {
+    padding: 25px 34px 35px 54px;
+  }
+
+  &-infra-section,
+  &-system-hour-section {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
     align-items: center;
-    gap: 16px;
-    width: 100%;
-    img {
-      height: 32px;
+    background-color: rgb(242, 240, 228);
+  }
+
+  &-form-info-section {
+    padding-top: 15px;
+
+    .ui-feedback {
+      padding-bottom: 2px;
+
+      .ui-label-wrapper label {
+        margin-bottom: 0;
+      }
+
+      .input-label {
+        margin-bottom: 3px;
+      }
+    }
+
+    .custom-field .input,
+    .custom-field .input:focus {
+      background-color: var(--color-black-1);
     }
   }
-  .scenario-edition-modal-description {
-    margin-bottom: 16px;
-    textarea {
-      min-height: auto;
+
+  &-infra-section {
+    padding-block: 10px 16px;
+    border-top: 1px solid var(--black10);
+    border-bottom: 1px solid var(--black10);
+
+    .ui-label-wrapper label {
+      margin-bottom: 0;
+    }
+
+    .custom-field .input {
+      background-color: var(--white);
     }
   }
-  .scenario-edition-modal-infraselector {
-    &.scenario-edition-modal-infraselector-missing {
-      padding: 8px;
-      border-radius: 4px;
-      border: 2px solid var(--red);
+
+  &-system-hour-section {
+    padding-block: 30px 26px;
+    padding-inline: 70px 34px;
+    border-top: 1px solid var(--black10);
+    background-color: var(--ambientB10);
+
+    .radio-label {
+      font-family: 'IBM Plex Sans';
     }
+
+    .ui-radio-button-wrapper {
+      padding: 0;
+    }
+  }
+
+  &-footer {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+    gap: 24px;
+
+    &-left {
+      margin-right: auto;
+    }
+
+    &-right {
+      display: flex;
+      flex-direction: row;
+      gap: 16px;
+    }
+  }
+}
+
+.ui-dialog-overlay .dialog-content section.scenario-add-or-edit-modal-body {
+  padding: 0;
+  overflow: visible; // Fix ComboBox overflow
+
+  .ui-select,
+  .ui-select:focus {
+    background-color: var(--white);
   }
 }

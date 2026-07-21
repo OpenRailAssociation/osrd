@@ -10,11 +10,12 @@ import { useModal } from '../../../common/BootstrapSNCF/ModalSNCF';
 type AddNewCardProps = {
   testId: string;
   className: string;
-  modalComponent: ReactNode;
+  modalComponent?: ReactNode;
   item: 'project' | 'study' | 'scenario';
+  onOpenModal?: () => void;
 };
 
-const AddNewCard = ({ testId, className, modalComponent, item }: AddNewCardProps) => {
+const AddNewCard = ({ testId, className, modalComponent, item, onOpenModal }: AddNewCardProps) => {
   const { t } = useTranslation('operational-studies');
   const { openModal } = useModal();
 
@@ -29,9 +30,14 @@ const AddNewCard = ({ testId, className, modalComponent, item }: AddNewCardProps
       {...(!newProjectStudyScenarioAllowed && { 'aria-disabled': true })}
       role="button"
       tabIndex={0}
-      onClick={() =>
-        newProjectStudyScenarioAllowed && openModal(modalComponent, 'xl', 'no-close-modal')
-      }
+      onClick={() => {
+        if (!newProjectStudyScenarioAllowed) return;
+        if (modalComponent) {
+          openModal(modalComponent, 'xl', 'no-close-modal');
+        } else {
+          onOpenModal?.();
+        }
+      }}
     >
       <FaPlus />
       <div className="legend">{t(`${item}.create`)}</div>
