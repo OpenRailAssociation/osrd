@@ -15287,8 +15287,28 @@ components:
       - type: object
         title: StdcmResponsePathNotFound
         required:
+        - most_blocking_work_schedule_ids
+        - nearest_to_destination_work_schedule_ids
         - status
         properties:
+          last_reached_operational_point:
+            oneOf:
+            - type: 'null'
+            - $ref: '#/components/schemas/LastReachedOperationalPoint'
+          most_blocking_work_schedule_ids:
+            type: array
+            items:
+              type: integer
+              format: int64
+          nearest_to_destination_work_schedule_ids:
+            type: array
+            items:
+              type: integer
+              format: int64
+          partial_pathfinding_result:
+            oneOf:
+            - type: 'null'
+            - $ref: '#/components/schemas/CorePathfindingResult'
           status:
             type: string
             enum:

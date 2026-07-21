@@ -4881,6 +4881,10 @@ export type StdcmResponse =
       status: 'success';
     }
   | {
+      last_reached_operational_point?: null | LastReachedOperationalPoint;
+      most_blocking_work_schedule_ids: number[];
+      nearest_to_destination_work_schedule_ids: number[];
+      partial_pathfinding_result?: null | CorePathfindingResult;
       status: 'path_not_found';
     }
   | {

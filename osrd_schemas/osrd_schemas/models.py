@@ -3827,10 +3827,6 @@ class StartTimeChangeGroup(BaseModel):
     """
 
 
-class StdcmResponsePathNotFound(BaseModel):
-    status: Literal["path_not_found"]
-
-
 class StdcmResponseInternalError(BaseModel):
     error: InternalError
     status: Literal["internal_error"]
@@ -6618,6 +6614,14 @@ class StdcmResponseSuccess(BaseModel):
     pathfinding_result: CorePathfindingResult
     simulation: SimulationResponseSuccess
     status: Literal["success"]
+
+
+class StdcmResponsePathNotFound(BaseModel):
+    last_reached_operational_point: LastReachedOperationalPoint | None = None
+    most_blocking_work_schedule_ids: list[int]
+    nearest_to_destination_work_schedule_ids: list[int]
+    partial_pathfinding_result: CorePathfindingResult | None = None
+    status: Literal["path_not_found"]
 
 
 class StdcmResponsePreprocessingSimulationError(BaseModel):
