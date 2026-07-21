@@ -18,17 +18,13 @@ jobs:
         uses: actions/checkout@v7.0.1
         with:
           fetch-depth: 0
+          persist-credentials: false
 
       - uses: actions/setup-node@v7.0.0
         with:
           node-version: "24"
           registry-url: 'https://registry.npmjs.org'
-
-      - name: Cache node_modules
-        uses: actions/cache@v6.1.0
-        with:
-          path: "**/node_modules"
-          key: ${{ runner.os }}-modules-${{ hashFiles('**/package-lock.json') }}
+          package-manager-cache: false
 
       - name: Publish
         run: |
