@@ -15772,6 +15772,12 @@ components:
           format: int64
           description: The train may arrive up to this duration before the expected arrival time
           minimum: 0
+    StrictlyPositiveDuration:
+      type: string
+      format: duration
+      description: Duration in ISO 8601 format (e.g. PT2H for 2 hours)
+      examples:
+      - PT2H
     Study:
       type: object
       required:
@@ -16574,10 +16580,10 @@ components:
                   items:
                     $ref: '#/components/schemas/PacedTrainException'
                 interval:
-                  $ref: '#/components/schemas/PositiveDuration'
+                  $ref: '#/components/schemas/StrictlyPositiveDuration'
                   description: Time between two occurrences, an ISO 8601 format is expected
                 time_window:
-                  $ref: '#/components/schemas/PositiveDuration'
+                  $ref: '#/components/schemas/StrictlyPositiveDuration'
                   description: Duration of the paced train, an ISO 8601 format is expected
     TrainScheduleException:
       type: object
