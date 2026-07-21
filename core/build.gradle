@@ -230,3 +230,10 @@ tasks.register('copyOtelAgent', Copy) {
     into layout.buildDirectory.dir("libs/agent")
     rename { "opentelemetry-javaagent.jar" }
 }
+
+tasks.shadowJar {
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+    filesNotMatching("META-INF/*.kotlin_module") {
+        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    }
+}
