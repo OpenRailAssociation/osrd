@@ -37,7 +37,7 @@ pub struct SimulationEnv<Train>
 where
     Train: TrainKey + 'static,
 {
-    pathfinding_env: PathfindingEnv<Train>,
+    pub(in crate::envs) pathfinding_env: PathfindingEnv<Train>,
     inputs: SimulationInputs<Train>,
 }
 

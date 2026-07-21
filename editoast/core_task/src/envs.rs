@@ -1,3 +1,4 @@
+pub(crate) mod conflicts;
 pub(crate) mod core;
 pub(crate) mod pathfinding;
 pub(crate) mod simulation;

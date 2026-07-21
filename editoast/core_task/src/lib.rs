@@ -6,6 +6,7 @@ use std::sync::Arc;
 
 // Crate-level exports
 pub use envs::TrainSet;
+pub use envs::conflicts::ConflictsEnv;
 pub use envs::core::CoreEnv;
 pub use envs::pathfinding::PathItemConstraint;
 pub use envs::pathfinding::PathfindingConsist;

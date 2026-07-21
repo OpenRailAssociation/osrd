@@ -29,6 +29,23 @@ pub struct TrainRequirements {
     pub routing_requirements: Vec<RoutingRequirement>,
 }
 
+impl TrainRequirements {
+    pub fn shifted_by(&self, offset: Offset) -> Self {
+        Self {
+            spacing_requirements: self
+                .spacing_requirements
+                .iter()
+                .map(|req| req.shifted_by(offset))
+                .collect(),
+            routing_requirements: self
+                .routing_requirements
+                .iter()
+                .map(|req| req.shifted_by(offset))
+                .collect(),
+        }
+    }
+}
+
 // TODO: use struct in conflict detection instead of a Map<String, TrainRequirements>.
 #[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
 #[schema(as = CoreTrainRequirementsById)]

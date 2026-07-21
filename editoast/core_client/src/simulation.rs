@@ -7,6 +7,7 @@ use common::units::quantities::Acceleration;
 use common::units::quantities::Deceleration;
 use common::units::quantities::Length;
 use common::units::quantities::Mass;
+use common::units::quantities::Offset;
 use common::units::quantities::Time;
 use common::units::quantities::Velocity;
 use educe::Educe;
@@ -207,6 +208,17 @@ pub struct SpacingRequirement {
     pub end_time: u64,
 }
 
+impl SpacingRequirement {
+    pub fn shifted_by(&self, offset: Offset) -> Self {
+        use uom::si::time::millisecond;
+        Self {
+            zone: self.zone.clone(),
+            begin_time: self.begin_time + offset.get::<millisecond>() as u64,
+            end_time: self.end_time + offset.get::<millisecond>() as u64,
+        }
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
 #[schema(as = CoreRoutingRequirement)]
 pub struct RoutingRequirement {
@@ -219,6 +231,27 @@ pub struct RoutingRequirement {
     /// - in `CompleteReportTrain` (simulation results): the train's own `start_time`.
     pub begin_time: u64,
     pub zones: Vec<RoutingZoneRequirement>,
+}
+
+impl RoutingRequirement {
+    pub fn shifted_by(&self, offset: Offset) -> Self {
+        use uom::si::time::millisecond;
+        Self {
+            route: self.route.clone(),
+            begin_time: self.begin_time + offset.get::<millisecond>() as u64,
+            zones: self
+                .zones
+                .iter()
+                .map(|zone| RoutingZoneRequirement {
+                    zone: zone.zone.clone(),
+                    entry_detector: zone.entry_detector.clone(),
+                    exit_detector: zone.exit_detector.clone(),
+                    switches: zone.switches.clone(),
+                    end_time: zone.end_time + offset.get::<millisecond>() as u64,
+                })
+                .collect(),
+        }
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema)]

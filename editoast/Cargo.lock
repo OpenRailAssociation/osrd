@@ -933,6 +933,7 @@ dependencies = [
  "tokio-stream",
  "tracing",
  "tracing-opentelemetry",
+ "uom",
  "url",
  "utoipa",
  "uuid",
