@@ -6,21 +6,21 @@ import type { PathWaypoint, ProjectionWaypoint } from 'modules/simulationResult/
 /**
  * Check if the train path used waypoints added by map click and add them to the operational points
  */
-export function upsertMapWaypointsInOperationalPoints(
+export function upsertTrackOffsetPathItemsInWaypoints(
   type: 'projection',
   path: TrainSchedule['path'],
   pathItemsPositions: CorePathfindingResultSuccess['path_item_positions'],
   operationalPoints: ProjectionWaypoint[],
   t: TFunction<'operational-studies'>
 ): ProjectionWaypoint[];
-export function upsertMapWaypointsInOperationalPoints(
+export function upsertTrackOffsetPathItemsInWaypoints(
   type: 'path',
   path: TrainSchedule['path'],
   pathItemsPositions: CorePathfindingResultSuccess['path_item_positions'],
   operationalPoints: PathWaypoint[],
   t: TFunction<'operational-studies'>
 ): PathWaypoint[];
-export function upsertMapWaypointsInOperationalPoints(
+export function upsertTrackOffsetPathItemsInWaypoints(
   type: 'projection' | 'path',
   path: TrainSchedule['path'],
   pathItemsPositions: CorePathfindingResultSuccess['path_item_positions'],
