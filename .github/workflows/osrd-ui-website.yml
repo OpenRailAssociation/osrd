@@ -33,17 +33,14 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
 
       - uses: actions/setup-node@v7.0.0
         with:
           node-version: "24"
-
-      - name: Cache node_modules
-        uses: actions/cache@v6.1.0
-        with:
-          path: "**/node_modules"
-          key: ${{ runner.os }}-modules-${{ hashFiles('**/package-lock.json') }}
+          package-manager-cache: false
 
       - name: Build
         run: |
@@ -52,7 +49,7 @@ jobs:
           npm run build --workspaces --if-present
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v7.0.1
         with:
           name: ${{ env.artifact_name }}
           path: "./front/ui/storybook/storybook-static"

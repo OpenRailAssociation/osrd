@@ -74,7 +74,7 @@ jobs:
     name: Check dockerfiles
     steps:
       - name: Checkout code
-        uses: actions/checkout@v7
+        uses: actions/checkout@v7.0.1
 
       - name: Build dummy test_data and static_assets images
         run: |
@@ -94,7 +94,7 @@ jobs:
     name: Check models.py sync
     steps:
       - name: Checkout code
-        uses: actions/checkout@v7
+        uses: actions/checkout@v7.0.1
       - name: Set up 'uv'
         uses: astral-sh/setup-uv@v8.3.2
         with:
@@ -115,10 +115,10 @@ jobs:
     name: Check scripts
     steps:
       - name: Checkout code
-        uses: actions/checkout@v7
+        uses: actions/checkout@v7.0.1
 
       - name: Find and check all scripts using ShellCheck
-        uses: ludeeus/action-shellcheck@master
+        uses: ludeeus/action-shellcheck@2.0.0
         with:
           ignore_names: gradlew
 
@@ -126,7 +126,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Check generated railjson sync
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@v7.0.1
       - name: Set up 'uv'
         uses: astral-sh/setup-uv@v8.3.2
         with:
@@ -149,7 +149,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Check railjson generator
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@v7.0.1
       - name: Set up 'uv'
         uses: astral-sh/setup-uv@v8.3.2
         with:
@@ -178,10 +178,9 @@ jobs:
     name: Check commits
     steps:
       - name: Checkout code
-        uses: actions/checkout@v7
+        uses: actions/checkout@v7.0.1
         with:
           fetch-depth: 0 # Fetch all history for all branches and tags
-
       - name: Check commit names
         run: |
           # We don't have a base ref to check against if we aren't in a
@@ -219,7 +218,7 @@ jobs:
       - name: Install ripgrep
         run: sudo apt-get install -y ripgrep
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@v7.0.1
       - name: Check final newline is present
         run: |
           # search missing final newline
@@ -239,7 +238,7 @@ jobs:
     name: Check integration tests
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@v7.0.1
       - name: Set up 'uv'
         uses: astral-sh/setup-uv@v8.3.2
         with:
@@ -262,9 +261,9 @@ jobs:
     name: Check toml
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@v7.0.1
       - name: Install taplo
-        uses: baptiste0928/cargo-install@v3
+        uses: baptiste0928/cargo-install@v3.4.0
         with:
           crate: taplo-cli
           locked: true
@@ -276,7 +275,7 @@ jobs:
     name: Check infra schema sync
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@v7.0.1
       - name: Set up 'uv'
         uses: astral-sh/setup-uv@v8.3.2
         with:
@@ -300,11 +299,11 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@v7.0.1
 
       - name: Download built images
         if: needs.build-front.outputs.output_method == 'artifact'
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@v8.0.1
         with:
           name: images-front
           path: .
@@ -336,11 +335,11 @@ jobs:
       - build-core
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@v7.0.1
 
       - name: Download built images
         if: needs.build-core.outputs.output_method == 'artifact'
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@v8.0.1
         with:
           name: images-core
           path: .
@@ -377,11 +376,11 @@ jobs:
       - build-editoast
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@v7.0.1
 
       - name: Download built editoast-test image
         if: needs.build-editoast.outputs.output_method == 'artifact'
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@v8.0.1
         with:
           name: images-editoast
           path: .
@@ -426,11 +425,11 @@ jobs:
       - build-editoast
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@v7.0.1
 
       - name: Download built images
         if: needs.build-editoast.outputs.output_method == 'artifact'
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@v8.0.1
         with:
           name: images-editoast
           path: .
@@ -474,17 +473,17 @@ jobs:
       - build-front
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@v7.0.1
 
       - name: Download built editoast image
         if: needs.build-editoast.outputs.output_method == 'artifact'
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@v8.0.1
         with:
           name: images-editoast
           path: .
       - name: Download built front-tests image
         if: needs.build-front.outputs.output_method == 'artifact'
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@v8.0.1
         with:
           name: images-front
           path: .
@@ -521,11 +520,11 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@v7.0.1
 
       - name: Download built images
         if: needs.build-gateway.outputs.output_method == 'artifact'
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@v8.0.1
         with:
           name: images-gateway
           path: .
@@ -574,11 +573,11 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@v7.0.1
 
       - name: Download built images
         if: needs.build-osrdyne.outputs.output_method == 'artifact'
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@v8.0.1
         with:
           name: images-osrdyne
           path: .
@@ -624,7 +623,7 @@ jobs:
     name: Check Rust lockfiles
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@v7.0.1
       - name: Set up Rust toolchain
         run: rustup update stable && rustup default stable
       - name: Check editoast lockfile
@@ -642,11 +641,11 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@v7.0.1
 
       - name: Download built images
         if: needs.build-front.outputs.output_method == 'artifact'
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@v8.0.1
         with:
           name: images-front
           path: .
@@ -701,22 +700,22 @@ jobs:
       # TODO: check if we can deduplicate the base steps from integration_tests_quality
       # https://www.jameskerr.blog/posts/sharing-steps-in-github-action-workflows/
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@v7.0.1
       - name: Download built editoast image
         if: needs.build-editoast.outputs.output_method == 'artifact'
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@v8.0.1
         with:
           name: images-editoast
           path: .
       - name: Download built core image
         if: needs.build-core.outputs.output_method == 'artifact'
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@v8.0.1
         with:
           name: images-core
           path: .
       - name: Download built osrdyne image
         if: needs.build-osrdyne.outputs.output_method == 'artifact'
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@v8.0.1
         with:
           name: images-osrdyne
           path: .
@@ -763,7 +762,7 @@ jobs:
         run: docker compose logs > container-logs
         if: always()
 
-      - uses: actions/upload-artifact@v7
+      - uses: actions/upload-artifact@v7.0.1
         if: always()
         with:
           name: integration-container-logs
@@ -779,22 +778,22 @@ jobs:
       - build-osrdyne
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@v7.0.1
       - name: Download built editoast image
         if: needs.build-editoast.outputs.output_method == 'artifact'
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@v8.0.1
         with:
           name: images-editoast
           path: .
       - name: Download built core image
         if: needs.build-core.outputs.output_method == 'artifact'
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@v8.0.1
         with:
           name: images-core
           path: .
       - name: Download built osrdyne image
         if: needs.build-osrdyne.outputs.output_method == 'artifact'
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@v8.0.1
         with:
           name: images-osrdyne
           path: .
@@ -821,9 +820,9 @@ jobs:
     name: Check Playwright version for nix
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@v7.0.1
       - name: Install Nix
-        uses: DeterminateSystems/nix-installer-action@main
+        uses: DeterminateSystems/nix-installer-action@v22
         with:
           summarize: false # Suppress the Nix build job summary
       - name: Check versions of playwright
@@ -842,34 +841,34 @@ jobs:
       # TODO: check if we can deduplicate the base steps from integration_tests_quality
       # https://www.jameskerr.blog/posts/sharing-steps-in-github-action-workflows/
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@v7.0.1
       - name: Download built front-tests image
         if: needs.build-front.outputs.output_method == 'artifact'
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@v8.0.1
         with:
           name: images-front
           path: .
       - name: Download built editoast image
         if: needs.build-editoast.outputs.output_method == 'artifact'
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@v8.0.1
         with:
           name: images-editoast
           path: .
       - name: Download built core image
         if: needs.build-core.outputs.output_method == 'artifact'
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@v8.0.1
         with:
           name: images-core
           path: .
       - name: Download built gateway-front image
         if: needs.build-gateway.outputs.output_method == 'artifact'
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@v8.0.1
         with:
           name: images-gateway
           path: .
       - name: Download built osrdyne image
         if: needs.build-osrdyne.outputs.output_method == 'artifact'
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@v8.0.1
         with:
           name: images-osrdyne
           path: .
@@ -940,7 +939,7 @@ jobs:
 
       - name: Upload media artifact
         if: always()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v7.0.1
         with:
           name: playwright-media
           path: |
@@ -950,7 +949,7 @@ jobs:
 
       - name: Upload trace artifact
         if: always()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v7.0.1
         with:
           name: playwright-traces
           path: front/test-results/**/trace.zip
@@ -977,7 +976,7 @@ jobs:
         run: docker compose logs > container-logs
         if: always()
 
-      - uses: actions/upload-artifact@v7
+      - uses: actions/upload-artifact@v7.0.1
         if: always()
         with:
           name: e2e-container-logs
@@ -988,15 +987,15 @@ jobs:
     runs-on: ubuntu-latest
     name: Check reuse compliance
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@v7.0.1
       - name: REUSE Compliance Check
-        uses: fsfe/reuse-action@v6
+        uses: fsfe/reuse-action@v6.0.0
 
   check_osrd_schemas:
     runs-on: ubuntu-latest
     name: Check osrd_schemas
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@v7.0.1
       - name: Set up 'uv'
         uses: astral-sh/setup-uv@v8.3.2
         with:
@@ -1022,9 +1021,7 @@ jobs:
       security-events: write # Required for upload-sarif (used by zizmor-action) to upload SARIF files.
     steps:
       - name: Checkout repository
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
+        uses: actions/checkout@v7.0.1
 
       - name: Run zizmor 🌈
-        uses: zizmorcore/zizmor-action@6599ee8b7a49aef6a770f63d261d214911a7ce02 # v0.6.0
+        uses: zizmorcore/zizmor-action@v0.6.0

@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@v7.0.1
         with:
           fetch-depth: 0
       - name: Get reference OpenAPI
@@ -18,14 +18,14 @@ jobs:
       - name: Get new OpenAPI
         run: git show ${{ github.event.pull_request.head.sha }}:editoast/openapi.yaml > new-openapi.yaml
       - name: Find comment
-        uses: peter-evans/find-comment@v4
+        uses: peter-evans/find-comment@v4.0.0
         id: find-comment
         with:
           issue-number: ${{ github.event.pull_request.number }}
           comment-author: 'github-actions[bot]'
           body-includes: API changes
       - name: Create or update comment
-        uses: peter-evans/create-or-update-comment@v5
+        uses: peter-evans/create-or-update-comment@v5.0.0
         with:
           comment-id: ${{ steps.find-comment.outputs.comment-id }}
           issue-number: ${{ github.event.pull_request.number }}
