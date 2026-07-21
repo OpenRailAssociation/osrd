@@ -9,6 +9,8 @@ from typing import Annotated, Any, Literal
 
 from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, RootModel, constr
 
+from .overrides import OffsetInMs
+
 
 class PowerRestriction(BaseModel):
     model_config = ConfigDict(
@@ -3820,7 +3822,7 @@ class StandardPrivilege(Enum):
 
 
 class StartTimeChangeGroup(BaseModel):
-    value: int
+    value: OffsetInMs
     """
     For calendar timetables: elapsed ms since 1970-01-01T00:00:00Z.
     For hourly timetables: elapsed ms since the timetable start.
@@ -7148,7 +7150,7 @@ class TrainSchedule(BaseModel):
     rolling_stock_name: str
     schedule: list[ScheduleItem] | None = None
     speed_limit_tag: SpeedLimitTag | None = None
-    start_time: int
+    start_time: OffsetInMs
     """
     For calendar timetables: elapsed ms since 1970-01-01T00:00:00Z.
     For hourly timetables: elapsed ms since the timetable start.
