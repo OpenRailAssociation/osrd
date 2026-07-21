@@ -12,6 +12,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
       - name: Label PR
-        uses: actions/labeler@v6
+        uses: actions/labeler@v7
         with:
           sync-labels: true
