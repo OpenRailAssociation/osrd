@@ -3,7 +3,6 @@ use serde::Deserialize;
 use serde::Serialize;
 use std::collections::HashMap;
 use utoipa::ToSchema;
-use uuid::Uuid;
 
 use crate::AsCoreRequest;
 use crate::Json;
@@ -55,7 +54,7 @@ pub struct ConflictDetectionResponse {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Conflict {
     /// List of train schedule ids and paced train generated occurrences involved in the conflict
-    pub train_ids: Vec<Uuid>,
+    pub train_ids: Vec<String>,
     /// List of work schedule ids involved in the conflict
     pub work_schedule_ids: Vec<String>,
     /// Start of the conflict time range: elapsed ms since the implicit 'request base time'.

@@ -81,6 +81,11 @@ impl Conflict {
             .train_ids
             .into_iter()
             .map(|train_uuid| {
+                train_uuid
+                    .parse::<Uuid>()
+                    .expect("Core should return valid UUIDs when given UUIDs as train IDs")
+            })
+            .map(|train_uuid| {
                 trains_map
                     .get(&train_uuid)
                     .expect("Unreachable case encountered while parsing train IDs")
