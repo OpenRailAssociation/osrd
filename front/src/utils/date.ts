@@ -6,6 +6,7 @@ import type { TFunction } from 'i18next';
 import { useTranslation } from 'react-i18next';
 
 import type { StdcmSearchDatetimeWindow } from 'applications/stdcm/types';
+import { Duration, type StartTime } from 'utils/duration';
 
 dayjs.extend(customParseFormat);
 
@@ -41,9 +42,17 @@ export const formatLocalDate = (date: Date) => dayjs(date).local().format('YYYY-
 export const formatLocalTime = (date: Date) => dayjs(date).local().format('HH:mm:ss');
 
 /**
- * Format time to locale string rounded to the nearest minute.
+ * Format a start time to a string rounded to the nearest minute: a locale-aware clock
+ * time for a Date (calendar timetable), or an "H:mm" elapsed time for a Duration
+ * (offset from the start of an hourly timetable, which has no locale/calendar meaning).
  */
-export const timeToLocaleStringRounded = (time: Date, locale: Intl.Locale): string => {
+export const timeToLocaleStringRounded = (time: StartTime, locale: Intl.Locale): string => {
+  if (time instanceof Duration) {
+    const totalMinutes = Math.round(time.total('minute'));
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+    return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+  }
   const roundedTime = new Date(
     ...[
       time.getFullYear(),
