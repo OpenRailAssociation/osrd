@@ -41,7 +41,7 @@ $ ./assets/fonts/generate-glyphs.sh
 $ cargo build
 $ cargo run -- runserver
 # Test server is up
-$ curl -f http://localhost:8090/health
+$ curl -f -H 'x-osrd-skip-authz: true' http://localhost:8090/health 
 ```
 
 ## Tests
