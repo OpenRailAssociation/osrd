@@ -51,7 +51,7 @@ const CollapsedTrainOverview = ({
       )}
       <div className="train-metadata">
         {pacedTrain && !occurrenceId && (
-          <div className="train-service-cadence">
+          <div className="train-service-interval">
             {getServiceInterval(pacedTrain)}’ — {getServiceWindow(pacedTrain)}’
           </div>
         )}

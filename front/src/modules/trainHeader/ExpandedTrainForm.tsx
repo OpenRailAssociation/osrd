@@ -62,7 +62,7 @@ export type TrainFieldsState = {
   comfort: Comfort | null;
   is_unique: boolean;
   category: TrainCategory | null;
-  service_cadence?: number;
+  service_interval?: number;
   service_window?: number;
   use_electrical_profiles: boolean | null;
   labels: string[];
@@ -95,7 +95,7 @@ function getFieldsFromTrain(train: Train): TrainFieldsState {
     comfort: train.comfort ?? null,
     category: train.category ?? null,
     is_unique: !train.paced,
-    service_cadence: train.paced ? Duration.parse(train.paced.interval).valueOf() : undefined,
+    service_interval: train.paced ? Duration.parse(train.paced.interval).valueOf() : undefined,
     service_window: train.paced ? Duration.parse(train.paced.time_window).valueOf() : undefined,
     use_electrical_profiles: train?.options?.use_electrical_profiles ?? null,
     labels: train.labels ?? [],
@@ -125,8 +125,8 @@ function applyFieldsToPaced(fields: TrainFieldsState, train: Train): Train['pace
     ? {
         exceptions: train.paced.exceptions,
         interval:
-          fields.service_changed_confirmed && !computeServiceTimingError(fields.service_cadence)
-            ? new Duration({ milliseconds: fields.service_cadence }).toISOString()
+          fields.service_changed_confirmed && !computeServiceTimingError(fields.service_interval)
+            ? new Duration({ milliseconds: fields.service_interval }).toISOString()
             : train.paced.interval,
         time_window:
           fields.service_changed_confirmed && !computeServiceTimingError(fields.service_window)
@@ -372,7 +372,7 @@ const ExpandedTrainForm = ({
   const revertServiceChange = useCallback(() => {
     setFields({
       ...fields,
-      service_cadence: fieldsFromTrain.service_cadence,
+      service_interval: fieldsFromTrain.service_interval,
       service_window: fieldsFromTrain.service_window,
       is_unique: fieldsFromTrain.is_unique,
     });

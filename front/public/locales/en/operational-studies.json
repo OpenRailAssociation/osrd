@@ -538,7 +538,7 @@
         "invalidInitialSpeedRounding": "Initial velocity must be rounded to the first decimal",
         "recoveryMargin": "Recovery margin",
         "rollingStock": "Rolling stock",
-        "serviceCadence": "Cadence",
+        "serviceInterval": "Cadence",
         "serviceWindow": "Repeat window",
         "tags": "Tags",
         "trainCategory": "Train category",

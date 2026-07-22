@@ -69,9 +69,9 @@ export default function TrainServiceForm({
   const extraOccurrences =
     train.paced?.exceptions?.filter((exp) => exp.occurrence_index === undefined) ?? [];
 
-  const serviceCadenceError = useMemo(
-    () => (isPacedTrain ? computeServiceTimingError(fields.service_cadence) : null),
-    [isPacedTrain, fields.service_cadence]
+  const serviceIntervalError = useMemo(
+    () => (isPacedTrain ? computeServiceTimingError(fields.service_interval) : null),
+    [isPacedTrain, fields.service_interval]
   );
 
   const serviceWindowError = useMemo(
@@ -84,13 +84,13 @@ export default function TrainServiceForm({
       !fields.train_name ||
       !fields.initial_speed ||
       !!initialSpeedError ||
-      !!serviceCadenceError ||
+      !!serviceIntervalError ||
       !!serviceWindowError,
     [
       fields.train_name,
       fields.initial_speed,
       initialSpeedError,
-      serviceCadenceError,
+      serviceIntervalError,
       serviceWindowError,
     ]
   );
@@ -98,7 +98,7 @@ export default function TrainServiceForm({
   const isServiceChangeWarningDialogVisible = useMemo(
     () =>
       !fields.service_changed_confirmed &&
-      (fields.service_cadence?.valueOf() !== fieldsFromTrain.service_cadence?.valueOf() ||
+      (fields.service_interval?.valueOf() !== fieldsFromTrain.service_interval?.valueOf() ||
         fields.service_window?.valueOf() !== fieldsFromTrain.service_window?.valueOf() ||
         fields.is_unique !== fieldsFromTrain.is_unique),
     [train.paced, fields, fieldsFromTrain]
@@ -135,21 +135,21 @@ export default function TrainServiceForm({
           </div>
           {isPacedTrain && (
             <>
-              <div className="train-service-cadence">
+              <div className="train-service-interval">
                 <DurationInput
-                  id="train-header-service-cadence-input"
+                  id="train-header-service-interval-input"
                   small
                   units={['m']}
                   padChar="0"
-                  label={t('manageTrainSchedule.trainHeader.form.serviceCadence')}
-                  value={fields.service_cadence ?? 1_800_000} // 30m
-                  onChange={(ms) => onFieldImmediateChange('service_cadence', ms)}
+                  label={t('manageTrainSchedule.trainHeader.form.serviceInterval')}
+                  value={fields.service_interval ?? 1_800_000} // 30m
+                  onChange={(ms) => onFieldImmediateChange('service_interval', ms)}
                   statusWithMessage={
-                    serviceCadenceError
+                    serviceIntervalError
                       ? {
                           status: 'error',
                           message:
-                            serviceCadenceError === 'TOO_HIGH'
+                            serviceIntervalError === 'TOO_HIGH'
                               ? t('manageTrainSchedule.errorMessages.intervalTooHigh')
                               : t('manageTrainSchedule.errorMessages.intervalTooLow'),
                         }
