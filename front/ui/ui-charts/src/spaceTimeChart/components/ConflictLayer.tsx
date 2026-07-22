@@ -14,6 +14,23 @@ export type Conflict = {
   spaceEnd: number;
 };
 
+const getConflictRect = (
+  conflict: Conflict,
+  getTimePixel: (time: number) => number,
+  getSpacePixel: (space: number) => number
+) => {
+  const xStart = getTimePixel(conflict.timeStart);
+  const xEnd = getTimePixel(conflict.timeEnd);
+  const yStart = getSpacePixel(conflict.spaceStart);
+  const yEnd = getSpacePixel(conflict.spaceEnd);
+  return {
+    x: Math.min(xStart, xEnd),
+    y: Math.min(yStart, yEnd),
+    width: Math.abs(xEnd - xStart),
+    height: Math.abs(yEnd - yStart),
+  };
+};
+
 export type ConflictPickingElement = PickingElement & {
   type: 'conflict';
   conflictIndex: number;
@@ -41,10 +58,7 @@ export const ConflictLayer = ({ conflicts }: ConflictLayerProps) => {
     (ctx, { getTimePixel, getSpacePixel }) => {
       const paths = BORDERS.map(() => new Path2D());
       for (const conflict of conflicts) {
-        const x = getTimePixel(conflict.timeStart);
-        const y = getSpacePixel(conflict.spaceStart);
-        const width = getTimePixel(conflict.timeEnd) - x;
-        const height = getSpacePixel(conflict.spaceEnd) - y;
+        const { x, y, width, height } = getConflictRect(conflict, getTimePixel, getSpacePixel);
         for (let i = 0; i < BORDERS.length; i++) {
           const border = BORDERS[i].size;
           paths[i].rect(x - border, y - border, width + 2 * border, height + 2 * border);
@@ -65,10 +79,7 @@ export const ConflictLayer = ({ conflicts }: ConflictLayerProps) => {
   const drawPicking = useCallback<PickingDrawingFunction<SpaceTimeChartContextType>>(
     (imageData, { registerPickingElement, getTimePixel, getSpacePixel }, scalingRatio) => {
       for (const [conflictIndex, conflict] of conflicts.entries()) {
-        const x = getTimePixel(conflict.timeStart);
-        const y = getSpacePixel(conflict.spaceStart);
-        const width = getTimePixel(conflict.timeEnd) - x;
-        const height = getSpacePixel(conflict.spaceEnd) - y;
+        const { x, y, width, height } = getConflictRect(conflict, getTimePixel, getSpacePixel);
         const border = BORDERS[0].size;
 
         const pickingElement: ConflictPickingElement = { type: 'conflict', conflictIndex };
