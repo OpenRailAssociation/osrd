@@ -7,10 +7,10 @@ import { useSelector } from 'react-redux';
 import useEtcsBrakingCurves from 'applications/operationalStudies/hooks/useEtcsBrakingCurves';
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import useSimulationResults from 'applications/operationalStudies/hooks/useSimulationResults';
+import { useTimetableContext } from 'applications/operationalStudies/hooks/useTimetableContext';
 import type { Board } from 'applications/operationalStudies/types';
-import { type Conflict, type TrainScheduleResponse } from 'common/api/osrdEditoastApi';
+import { type Conflict } from 'common/api/osrdEditoastApi';
 import SimulationWarpedMap from 'common/Map/WarpedMap/SimulationWarpedMap';
-import type { PanelSelectionMode } from 'modules/simulationResult/components/SpaceTimeChartWrapper/CurveSelectionSidePanel';
 import createHandleTrainDrag from 'modules/simulationResult/components/SpaceTimeChartWrapper/helpers/createHandleTrainDrag';
 import SpaceTimeChartWrapper, {
   MANCHETTE_WITH_SPACE_TIME_CHART_DEFAULT_HEIGHT,
@@ -25,7 +25,7 @@ import TimeStopsTableWrapper from 'modules/timesStops/TimeStopsTableWrapper';
 import TrainHeader from 'modules/trainHeader/TrainHeader';
 import { findExceptionWithOccurrenceId } from 'modules/trainSchedule/helpers/pacedTrain';
 import type { TrainScheduleWithDetails } from 'modules/trainSchedule/types';
-import type { TrainId, TrainScheduleToEditData } from 'reducers/osrdconf/types';
+import type { TrainScheduleToEditData } from 'reducers/osrdconf/types';
 import { toggleDisplayOnlyPathSteps } from 'reducers/simulationResults';
 import {
   getDisplayOnlyPathSteps,
@@ -54,15 +54,8 @@ type SimulationResultsProps = {
   scenarioData: { name: string; infraName: string };
   projectionData: ProjectionData | undefined;
   trainSchedulesWithDetails: TrainScheduleWithDetails[];
-  trainSchedules: TrainScheduleResponse[];
   conflicts?: Conflict[];
   activeBoards: Set<Board>;
-  updateTrainScheduleDepartureTime: (
-    draggedTrainId: TrainId,
-    newDepartureTime: Date,
-    panelSelectionMode?: PanelSelectionMode
-  ) => Promise<void>;
-  upsertTrainSchedules: (trainSchedules: TrainScheduleResponse[]) => void;
   setDisplayTrainScheduleManagement: (type: string) => void;
   setTrainScheduleToEditData: (trainScheduleToEditData?: TrainScheduleToEditData) => void;
   isScrollingToTimeStopsTable: boolean;
@@ -73,11 +66,8 @@ const SimulationResults = ({
   scenarioData,
   projectionData,
   trainSchedulesWithDetails,
-  trainSchedules,
   conflicts = NO_CONFLICTS,
   activeBoards,
-  updateTrainScheduleDepartureTime,
-  upsertTrainSchedules,
   setTrainScheduleToEditData,
   setDisplayTrainScheduleManagement,
   isScrollingToTimeStopsTable,
@@ -86,6 +76,8 @@ const SimulationResults = ({
   const { t } = useTranslation('operational-studies');
   const dispatch = useAppDispatch();
   const { infraId, timetableId } = useScenarioContext();
+  const { trainSchedules, upsertTrainSchedules, updateTrainScheduleDepartureTime } =
+    useTimetableContext();
 
   const { results: simulationResults, isSimulationDataLoading } =
     useSimulationResults(trainSchedules);
