@@ -76,8 +76,7 @@ const SimulationResults = ({
   const { t } = useTranslation('operational-studies');
   const dispatch = useAppDispatch();
   const { infraId, timetableId } = useScenarioContext();
-  const { trainSchedules, upsertTrainSchedules, updateTrainScheduleDepartureTime } =
-    useTimetableContext();
+  const { upsertTrainSchedules, updateTrainScheduleDepartureTime } = useTimetableContext();
 
   const { results: simulationResults, isSimulationDataLoading } = useSimulationResults();
   const selectedTrainId = simulationResults?.train.id;
@@ -188,11 +187,9 @@ const SimulationResults = ({
   });
 
   const handleOccupancyZoneDrop = useOccupancyZoneDrop({
-    trainSchedules,
     trainSchedulesWithDetails,
     pathOperationalPoints: filteredOperationalPoints,
     deployedWaypoints,
-    upsertTrainSchedules,
   });
 
   const isEtcs = useMemo(
