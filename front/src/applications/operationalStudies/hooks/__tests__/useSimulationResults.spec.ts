@@ -1,7 +1,13 @@
+import { createElement } from 'react';
+
 import { cleanup, waitFor } from '@testing-library/react';
 import { renderHookWithStore } from 'store/__tests__';
 import { beforeEach, afterEach, describe, expect, it, vi } from 'vitest';
 
+import {
+  TimetableContext,
+  type TimetableContextType,
+} from 'applications/operationalStudies/hooks/useTimetableContext';
 import { mockOsrdEditoastEndpoints } from 'common/api/__mocks__/osrdEditoastApi';
 import type {
   PacedTrainException,
@@ -143,8 +149,18 @@ describe.skip('useSimulationResults', () => {
     voltages: [{ begin: 0, end: 1000, value: '' }],
   };
 
+  const timetableContext: TimetableContextType = {
+    trainSchedules: [],
+    removeTrainSchedules: () => {},
+    upsertTrainSchedules: () => {},
+    updateTrainScheduleDepartureTime: async () => {},
+  };
+
   const renderUseSimulationResults = () =>
-    renderHookWithStore(() => useSimulationResults(undefined));
+    renderHookWithStore(() => useSimulationResults(), {
+      wrapper: ({ children }) =>
+        createElement(TimetableContext.Provider, { value: timetableContext }, children),
+    });
 
   const buildPacedTrainWithCustomExceptions = (exceptions: PacedTrainException[]) => ({
     ...pacedTrain,

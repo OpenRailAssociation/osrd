@@ -4,7 +4,8 @@ import { skipToken } from '@reduxjs/toolkit/query';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
-import { osrdEditoastApi, type TrainScheduleResponse } from 'common/api/osrdEditoastApi';
+import { useTimetableContext } from 'applications/operationalStudies/hooks/useTimetableContext';
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import formatPowerRestrictionRangesWithHandled from 'modules/powerRestriction/helpers/formatPowerRestrictionRangesWithHandled';
 import {
   extractOccurrenceDetailsFromPacedTrain,
@@ -29,15 +30,14 @@ import { useScenarioContext } from './useScenarioContext';
 /**
  * Prepare data to be used in simulation results
  */
-const useSimulationResults = (
-  trainSchedules: TrainScheduleResponse[] | undefined
-): {
+const useSimulationResults = (): {
   results: SimulationResults | undefined;
   isSimulationDataLoading: boolean;
 } => {
   const { t } = useTranslation('operational-studies');
 
   const { infraId, electricalProfileSetId } = useScenarioContext();
+  const { trainSchedules } = useTimetableContext();
   const { id: selectedTrainId } = useSelector(getSelectedTrain) || {};
 
   const trainSchedule = useSelectedTrainSchedule(trainSchedules);
