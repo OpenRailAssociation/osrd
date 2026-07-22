@@ -232,8 +232,10 @@ tasks.register('copyOtelAgent', Copy) {
 }
 
 tasks.shadowJar {
-    duplicatesStrategy = DuplicatesStrategy.INCLUDE
-    filesNotMatching("META-INF/*.kotlin_module") {
-        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    duplicatesStrategy = DuplicatesStrategy.FAIL
+    filesMatching("META-INF/**/*") {
+        filesNotMatching("META-INF/*.kotlin_module") {
+            duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+        }
     }
 }
