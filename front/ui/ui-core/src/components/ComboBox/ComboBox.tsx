@@ -212,6 +212,7 @@ const ComboBox = <T,>({
               icon: <XCircle variant="fill" />,
               action: clearInput,
               className: 'clear-icon',
+              testId: 'clear-icon',
             },
           ]
         : []),
