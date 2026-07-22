@@ -179,8 +179,6 @@ const TrainList = ({
                 selectedTrainId === formatEditoastIdToTrainScheduleId(trainSchedule.id)
               }
               isModified={trainSchedule.id === trainScheduleToEditData?.trainScheduleId}
-              upsertUniqueTrains={upsertTrainSchedules}
-              removeTrains={removeTrainSchedules}
               selectTrainToEdit={selectTrainScheduleToEdit}
               setSelectedTrainScheduleIds={setSelectedTrainScheduleIds}
               projectionPathIsUsed={
