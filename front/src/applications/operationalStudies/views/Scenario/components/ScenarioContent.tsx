@@ -5,7 +5,6 @@ import { useTranslation } from 'react-i18next';
 
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import useScenarioData from 'applications/operationalStudies/hooks/useScenarioData';
-import useScenarioTrainScheduleSet from 'applications/operationalStudies/hooks/useScenarioTrainScheduleSet';
 import {
   TimetableContext,
   type TimetableContextType,
@@ -122,12 +121,6 @@ const ScenarioContent = ({ activeBoards, toggleBoard }: ScenarioContentProps) =>
     [upsertTrainSchedules, refreshNge]
   );
 
-  const { importTrainScheduleSets } = useScenarioTrainScheduleSet(
-    trainSchedulesWithDetails,
-    useMemo(() => trainSchedules || [], [trainSchedules]),
-    upsertTrainSchedulesWithNge
-  );
-
   const removeTrainSchedulesWithNge = useCallback(
     (trainScheduleIds: number[]) => {
       removeTrainSchedules(trainScheduleIds);
@@ -206,6 +199,7 @@ const ScenarioContent = ({ activeBoards, toggleBoard }: ScenarioContentProps) =>
         <main className="mastcontainer mastcontainer-no-mastnav scenario scenario-content-v2">
           {displayTrainScheduleManagement !== MANAGE_TRAIN_SCHEDULE_TYPES.none && (
             <ManageTrainScheduleModal
+              trainSchedulesWithDetails={trainSchedulesWithDetails}
               displayTrainScheduleManagement={displayTrainScheduleManagement}
               setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
               upsertTrainSchedules={upsertTrainSchedulesWithNge}
@@ -213,7 +207,6 @@ const ScenarioContent = ({ activeBoards, toggleBoard }: ScenarioContentProps) =>
               setTrainScheduleToEditData={setTrainScheduleToEditData}
               setCollapsedTimetableEdit={() => setCollapsedTimetableEdit(!collapsedTimetableEdit)}
               collapsedTimetableEdit={collapsedTimetableEdit}
-              importTrainScheduleSets={importTrainScheduleSets}
               closeViewAndOpenTableBoard={closeViewAndOpenTableBoard}
             />
           )}

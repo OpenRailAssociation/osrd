@@ -2,8 +2,10 @@ import { ChevronLeft, ChevronRight } from '@osrd-project/ui-icons';
 import { useDispatch } from 'react-redux';
 
 import { ManageTrainScheduleContextProvider } from 'applications/operationalStudies/hooks/useManageTrainScheduleContext';
-import type useScenarioTrainScheduleSet from 'applications/operationalStudies/hooks/useScenarioTrainScheduleSet';
+import useScenarioTrainScheduleSet from 'applications/operationalStudies/hooks/useScenarioTrainScheduleSet';
 import type { ImportTrainScheduleSetsPayload } from 'applications/operationalStudies/hooks/useScenarioTrainScheduleSet';
+import { useTimetableContext } from 'applications/operationalStudies/hooks/useTimetableContext';
+import type { TrainScheduleWithDetails } from 'modules/trainSchedule/types';
 import { setFailure } from 'reducers/main';
 import { castErrorToFailure } from 'utils/error';
 
@@ -15,26 +17,30 @@ import ManageTrainScheduleLeftPanel, {
 } from './ManageTrainScheduleLeftPanel';
 
 type ManageTrainScheduleModalProps = ManageTrainScheduleLeftPanelProps & {
+  trainSchedulesWithDetails: TrainScheduleWithDetails[];
   setCollapsedTimetableEdit: () => void;
   collapsedTimetableEdit: boolean;
-  importTrainScheduleSets: ReturnType<
-    typeof useScenarioTrainScheduleSet
-  >['importTrainScheduleSets'];
   closeViewAndOpenTableBoard: (closeView: () => void) => void;
 };
 
 const ManageTrainScheduleModal = ({
+  trainSchedulesWithDetails,
   displayTrainScheduleManagement,
   setDisplayTrainScheduleManagement,
-  upsertTrainSchedules,
   trainScheduleToEditData,
   setTrainScheduleToEditData,
   setCollapsedTimetableEdit,
   collapsedTimetableEdit,
-  importTrainScheduleSets,
   closeViewAndOpenTableBoard,
 }: ManageTrainScheduleModalProps) => {
   const dispatch = useDispatch();
+
+  const { trainSchedules, upsertTrainSchedules } = useTimetableContext();
+  const { importTrainScheduleSets } = useScenarioTrainScheduleSet(
+    trainSchedulesWithDetails,
+    trainSchedules,
+    upsertTrainSchedules
+  );
 
   const handleImportTrainScheduleSets = async (data: ImportTrainScheduleSetsPayload) => {
     try {
