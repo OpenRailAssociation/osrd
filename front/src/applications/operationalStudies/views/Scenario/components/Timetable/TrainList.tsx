@@ -8,7 +8,8 @@ import type {
   TrainSchedulesByTrainScheduleSet,
   TrainScheduleSetManager,
 } from 'applications/operationalStudies/hooks/useScenarioTrainScheduleSet';
-import type { CatalogEntry, TrainScheduleResponse } from 'common/api/osrdEditoastApi';
+import { useTimetableContext } from 'applications/operationalStudies/hooks/useTimetableContext';
+import type { CatalogEntry } from 'common/api/osrdEditoastApi';
 import { Loader } from 'common/Loaders';
 import { useSubCategoryContext } from 'common/SubCategoryContext';
 import { isPacedTrainWithDetails } from 'modules/trainSchedule/helpers/pacedTrain';
@@ -33,10 +34,8 @@ import UniqueTrainItem from './UniqueTrainItem';
 
 type TrainListProps = {
   setDisplayTrainScheduleManagement: (mode: string) => void;
-  upsertTrainSchedules: (trainSchedules: TrainScheduleResponse[]) => void;
   setTrainScheduleToEditData: (trainScheduleToEditData?: TrainScheduleToEditData) => void;
   setSelectedTrainScheduleIds: React.Dispatch<React.SetStateAction<number[]>>;
-  removeAndUnselectTrains: (trainIds: number[]) => void;
   trainScheduleToEditData?: TrainScheduleToEditData;
   trainSchedulesWithDetails: TrainScheduleWithDetails[];
   selectedTrainScheduleIds: number[];
@@ -58,10 +57,8 @@ const formatDepartureDate = (d: Date, locale: Intl.Locale) =>
 
 const TrainList = ({
   setDisplayTrainScheduleManagement,
-  upsertTrainSchedules,
   setTrainScheduleToEditData,
   setSelectedTrainScheduleIds,
-  removeAndUnselectTrains,
   trainScheduleToEditData,
   trainSchedulesWithDetails,
   selectedTrainScheduleIds,
@@ -81,6 +78,7 @@ const TrainList = ({
 
   const { workerStatus, timetableId, scenario } = useScenarioContext();
   const isHourlyTimetable = scenario.timetable_type === 'HOURLY';
+  const { upsertTrainSchedules, removeTrainSchedules } = useTimetableContext();
   const subCategories = useSubCategoryContext();
 
   const [expandedTrainScheduleIds, setExpandedTrainScheduleIds] = useState<Set<number>>(new Set());
@@ -182,7 +180,7 @@ const TrainList = ({
               }
               isModified={trainSchedule.id === trainScheduleToEditData?.trainScheduleId}
               upsertUniqueTrains={upsertTrainSchedules}
-              removeTrains={removeAndUnselectTrains}
+              removeTrains={removeTrainSchedules}
               selectTrainToEdit={selectTrainScheduleToEdit}
               setSelectedTrainScheduleIds={setSelectedTrainScheduleIds}
               projectionPathIsUsed={
@@ -205,7 +203,7 @@ const TrainList = ({
               isOnEdit={trainSchedule.id === trainScheduleToEditData?.trainScheduleId}
               selectedTrainId={selectedTrainId}
               upsertTrainSchedules={upsertTrainSchedules}
-              removePacedTrains={removeAndUnselectTrains}
+              removePacedTrains={removeTrainSchedules}
               setSelectedTrainScheduleIds={setSelectedTrainScheduleIds}
               infraIsCached={workerStatus === 'READY'}
               subCategories={subCategories}
@@ -227,7 +225,7 @@ const TrainList = ({
       isSelectMode,
       moveTrainSchedule,
       projectingOnSimulatedPathException,
-      removeAndUnselectTrains,
+      removeTrainSchedules,
       selectTrainScheduleToEdit,
       selectedTrainScheduleIds,
       selectedTrainId,
