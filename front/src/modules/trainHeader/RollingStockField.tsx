@@ -45,19 +45,14 @@ export default function RollingStockField({
       getSuggestionLabel={(s) => s}
       onSelectSuggestion={(label) => {
         const rs = rollingStocks.find((r) => getRollingStockLabel(r) === label);
-        if (rs) onFieldImmediateChange('rolling_stock', rs);
+        onFieldImmediateChange('rolling_stock', rs ?? label);
       }}
       resetSuggestions={resetRollingStockSuggestions}
       onChange={(e) => {
         onRollingStockQueryChange(e);
       }}
-      onBlur={() => {
-        const rs = rollingStocks.find((r) => getRollingStockLabel(r) === value);
-        const newValue = rs ?? value ?? '';
-
-        if (newValue !== value) {
-          onFieldImmediateChange('rolling_stock', newValue);
-        }
+      onAddCustomValue={(label) => {
+        onFieldImmediateChange('rolling_stock', label);
       }}
     />
   );

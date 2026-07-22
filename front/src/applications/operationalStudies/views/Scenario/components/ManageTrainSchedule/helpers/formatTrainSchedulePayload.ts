@@ -100,7 +100,8 @@ export function formatTrainScheduleWithDetailsToTrainSchedule(
     path: trainScheduleWithDetails.path,
     power_restrictions: trainScheduleWithDetails.power_restrictions,
     // Rollingstock is missing when just created a train from nge or with import
-    rolling_stock_name: trainScheduleWithDetails.rollingStock?.name ?? '',
+    rolling_stock_name:
+      trainScheduleWithDetails.rollingStock?.name ?? trainScheduleWithDetails.rollingStockName,
     schedule: trainScheduleWithDetails.schedule,
     speed_limit_tag: trainScheduleWithDetails.speed_limit_tag,
     start_time: startTimeToMs(trainScheduleWithDetails.startTime),
