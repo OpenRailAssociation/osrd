@@ -149,7 +149,6 @@ const Timetable = ({
         <TimetableToolbar
           filteredTrainSchedules={filteredTrainSchedules}
           timetableFilters={timetableFilters}
-          trainSchedules={trainSchedules}
           selectedTrainScheduleIds={selectedTrainScheduleIds}
           showTrainDetails={showTrainDetails}
           isSelectMode={isSelectMode}
@@ -162,7 +161,6 @@ const Timetable = ({
           handleMoveTrainSchedules={() => openMoveDialog(selectedTrainScheduleIds)}
           timetableMode={timetableMode}
           setTimetableMode={setTimetableMode}
-          upsertTrainSchedules={upsertTrainSchedules}
         />
         <TrainList
           setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
