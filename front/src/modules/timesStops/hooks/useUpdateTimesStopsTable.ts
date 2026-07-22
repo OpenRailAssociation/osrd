@@ -44,12 +44,14 @@ import {
   buildPowerRestrictionsFromRows,
   insertScheduleItemInOrder,
 } from '../helpers/cellUpdate';
+import { propagateStopDuration } from '../helpers/stopDurationPropagation';
 import { adjustFollowingWaypointsForMidnight, propagateTime } from '../helpers/timePropagation';
 import type {
   CellUpdate,
   OptimisticEdit,
   PowerRestrictionUpdate,
   PropagationMode,
+  StopPropagationMode,
   MarginValue,
   TimesStopsRowNew,
   UpdateCellStatus,
@@ -131,7 +133,10 @@ const useUpdateTimesStopsTable = (
           updatedStartTime?: Date;
         }
       | undefined => {
-      const propagatedResult = propagateTime(update, selectedTrain);
+      const propagatedResult =
+        update.field === 'stopDuration'
+          ? propagateStopDuration(update, selectedTrain)
+          : propagateTime(update, selectedTrain);
       if (propagatedResult) return { ...propagatedResult, updatedMargins: selectedTrain.margins };
 
       const { pathStepId, updatedPath } = upsertPathStep(update.row, selectedTrain.path, allRows);
@@ -215,6 +220,19 @@ const useUpdateTimesStopsTable = (
         !isOrigin
       ) {
         updatedSchedule = adjustFollowingWaypointsForMidnight(update.value, pathStepId, {
+          ...selectedTrain,
+          schedule: updatedSchedule,
+        });
+      }
+
+      // Same idea for stop duration: a longer stop can push the departure past the next stop's
+      // arrival, so following stops get bumped too — including at the origin, unlike above.
+      if (
+        update.field === 'stopDuration' &&
+        update.propagationMode === 'atThisWaypoint' &&
+        newState.departure !== null
+      ) {
+        updatedSchedule = adjustFollowingWaypointsForMidnight(newState.departure, pathStepId, {
           ...selectedTrain,
           schedule: updatedSchedule,
         });
@@ -403,8 +421,8 @@ const useUpdateTimesStopsTable = (
   );
 
   const updateStopDuration = useCallback(
-    (row: TimesStopsRowNew, durationSeconds: number | null) =>
-      updateCell({ row, field: 'stopDuration', value: durationSeconds }),
+    (row: TimesStopsRowNew, durationSeconds: number | null, propagationMode: StopPropagationMode) =>
+      updateCell({ row, field: 'stopDuration', value: durationSeconds, propagationMode }),
     [updateCell]
   );
 
