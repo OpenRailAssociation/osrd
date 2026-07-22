@@ -1076,3 +1076,5 @@ jobs:
 
       - name: Run zizmor 🌈
         uses: zizmorcore/zizmor-action@v0.6.0
+        with:
+          config: .github/zizmor.yml
