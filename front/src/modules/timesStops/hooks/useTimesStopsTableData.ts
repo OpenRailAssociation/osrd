@@ -223,13 +223,13 @@ const useTimesStopsTableData = (
   }
 
   // Only use the snapshot while a fetch is in progress (transitional invalid state).
-  const snapshot = isSimulationDataLoading ? lastSimRef.current : undefined;
-  const stableIsValid = isValid || !!snapshot;
+  const activeBundle = isValid || isSimulationDataLoading ? lastSimRef.current : null;
+  const stableIsValid = !!activeBundle;
 
-  const stableTrain = simulatedTrain ?? snapshot?.simulatedTrain;
-  const stablePathItemTimes = simulatedPathItemTimes ?? snapshot?.simulatedPathItemTimes;
-  const stablePathItemRespect = simulatedPathItemRespect ?? snapshot?.simulatedPathItemRespect;
-  const stableOPs = operationalPointsOnPath ?? snapshot?.operationalPointsOnPath;
+  const stableTrain = activeBundle?.simulatedTrain;
+  const stablePathItemTimes = activeBundle?.simulatedPathItemTimes;
+  const stablePathItemRespect = activeBundle?.simulatedPathItemRespect;
+  const stableOPs = activeBundle?.operationalPointsOnPath;
 
   const pathStepOps = usePathOps(infraId, selectedTrain.path);
 
