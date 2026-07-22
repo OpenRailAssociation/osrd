@@ -50,7 +50,7 @@ const Timetable = ({
 
   const { t } = useTranslation('operational-studies', { keyPrefix: 'main.timetable' });
 
-  const { trainSchedules, upsertTrainSchedules, removeTrainSchedules } = useTimetableContext();
+  const { trainSchedules, upsertTrainSchedules } = useTimetableContext();
 
   const [showTrainDetails, setShowTrainDetails] = useState(false);
   const [timetableMode, setTimetableMode] = useState<TimetableMode>('calendar');
@@ -164,10 +164,8 @@ const Timetable = ({
         />
         <TrainList
           setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
-          upsertTrainSchedules={upsertTrainSchedules}
           setTrainScheduleToEditData={setTrainScheduleToEditData}
           setSelectedTrainScheduleIds={setSelectedTrainScheduleIds}
-          removeAndUnselectTrains={removeTrainSchedules}
           trainScheduleToEditData={trainScheduleToEditData}
           trainSchedulesWithDetails={filteredTrainSchedules}
           selectedTrainScheduleIds={selectedTrainScheduleIds}
