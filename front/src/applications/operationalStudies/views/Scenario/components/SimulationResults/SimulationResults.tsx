@@ -79,8 +79,7 @@ const SimulationResults = ({
   const { trainSchedules, upsertTrainSchedules, updateTrainScheduleDepartureTime } =
     useTimetableContext();
 
-  const { results: simulationResults, isSimulationDataLoading } =
-    useSimulationResults(trainSchedules);
+  const { results: simulationResults, isSimulationDataLoading } = useSimulationResults();
   const selectedTrainId = simulationResults?.train.id;
 
   const timeStopsTableRef = useRef<HTMLDivElement>(null);
