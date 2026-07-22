@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 
-import { type MouseState } from '../../spaceTimeChart/lib/types';
 import { getEventPosition } from '../../spaceTimeChart/utils/events';
+import { type MouseState } from '../types';
 
 /**
  * This hook handles SpaceTimeChart mouse tracking.

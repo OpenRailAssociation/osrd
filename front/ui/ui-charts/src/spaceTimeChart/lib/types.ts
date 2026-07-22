@@ -1,11 +1,6 @@
 import type { ReactNode } from 'react';
 
-import type {
-  TimeChartContextType,
-  ChartEventHandlers,
-  HoveredItem,
-  Point,
-} from '../../common/types';
+import type { TimeChartContextType, ChartEventHandlers, Point } from '../../common/types';
 
 // GLOBAL UTILITY TYPES:
 export type Handler<P extends object> = (payload: P) => void;
@@ -90,18 +85,6 @@ export type SpaceToPixel = (position: number, fromEnd?: boolean) => number;
 export type PixelToSpace = (y: number) => number;
 export type PointToData = (point: Point) => DataPoint;
 export type DataToPoint = (data: DataPoint) => Point;
-
-// MOUSE CONTEXT:
-export type MouseState = {
-  down?: { ctrl?: boolean; shift?: boolean };
-  position: Point;
-  isHover: boolean;
-};
-
-export type MouseContextType = MouseState & {
-  data: DataPoint;
-  hoveredItem: HoveredItem | null;
-};
 
 export type LineStyle = {
   width: number;

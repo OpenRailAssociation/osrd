@@ -2,8 +2,8 @@ import React, { useContext, useMemo, useEffect } from 'react';
 
 import { X } from '@osrd-project/ui-icons';
 
+import { MouseContext } from '../../common';
 import { SpaceTimeChartContext } from '../../spaceTimeChart';
-import { MouseContext } from '../../spaceTimeChart/lib/context';
 import { CANVAS_PADDING, TRACK_HEIGHT_CONTAINER } from '../lib/consts';
 import type { OccupancyZone, Track } from '../lib/types';
 import DraggingOccupancyZonesLayer from './layers/DraggingOccupancyZonesLayer';

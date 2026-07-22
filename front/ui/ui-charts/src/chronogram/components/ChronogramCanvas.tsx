@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 
 import cx from 'classnames';
 
-import { TimeChartCanvasContext } from '../../common/context';
+import { MouseContext, TimeChartCanvasContext } from '../../common/context';
 import { getTimeToPixel, getPixelToTime } from '../../common/helpers/time';
 import { useCanvas } from '../../common/hooks/useCanvas';
 import { useMouseInteractions } from '../../common/hooks/useMouseInteractions';
@@ -10,11 +10,10 @@ import { useMouseTracking } from '../../common/hooks/useMouseTracking';
 import { useSize } from '../../common/hooks/useSize';
 import { TimeCaptions } from '../../common/layers/TimeCaptions';
 import TimeGraduations from '../../common/layers/TimeGraduations';
-import type { PickingElement, Point } from '../../common/types';
+import type { MouseContextType, PickingElement, Point } from '../../common/types';
 import { DEFAULT_THEME } from '../../spaceTimeChart/lib/consts';
-import { MouseContext } from '../../spaceTimeChart/lib/context';
 import { validateTheme } from '../../spaceTimeChart/lib/theme';
-import type { DataPoint, MouseContextType } from '../../spaceTimeChart/lib/types';
+import type { DataPoint } from '../../spaceTimeChart/lib/types';
 import { ChronogramContext } from '../lib/context';
 import type { ChronogramContextType, ChronogramCanvasProps } from '../lib/types';
 import { OccupancyBlocksLayer } from './OccupancyBlocksLayer';

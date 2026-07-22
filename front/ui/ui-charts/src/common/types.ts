@@ -154,3 +154,15 @@ export type ChartEventHandlers<T> = {
   }>;
   onHoveredChildUpdate?: Handler<{ item: HoveredItem | null; context: T }>;
 } & Omit<HTMLProps<HTMLDivElement>, 'onClick' | 'onMouseMove'>;
+
+export type MouseContextType = MouseState & {
+  data: DataPoint;
+  hoveredItem: HoveredItem | null;
+};
+
+// MOUSE CONTEXT:
+export type MouseState = {
+  down?: { ctrl?: boolean; shift?: boolean };
+  position: Point;
+  isHover: boolean;
+};

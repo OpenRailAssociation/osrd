@@ -2,7 +2,8 @@ import React, { useEffect, useMemo, useState } from 'react';
 
 import cx from 'classnames';
 
-import { TimeChartCanvasContext } from '../../common/context';
+import type { PickingElement } from '../../common';
+import { MouseContext, TimeChartCanvasContext } from '../../common/context';
 import { getTimeToPixel, getPixelToTime } from '../../common/helpers/time';
 import { useCanvas } from '../../common/hooks/useCanvas';
 import { useMouseInteractions } from '../../common/hooks/useMouseInteractions';
@@ -10,15 +11,11 @@ import { useMouseTracking } from '../../common/hooks/useMouseTracking';
 import { useSize } from '../../common/hooks/useSize';
 import { TimeCaptions } from '../../common/layers/TimeCaptions';
 import TimeGraduations from '../../common/layers/TimeGraduations';
-import type { PickingElement } from '../../common/types';
+import type { MouseContextType } from '../../common/types';
 import { DEFAULT_THEME } from '../lib/consts';
-import { MouseContext, SpaceTimeChartCanvasContext, SpaceTimeChartContext } from '../lib/context';
+import { SpaceTimeChartCanvasContext, SpaceTimeChartContext } from '../lib/context';
 import { validateTheme } from '../lib/theme';
-import {
-  type MouseContextType,
-  type SpaceTimeChartContextType,
-  type SpaceTimeChartProps,
-} from '../lib/types';
+import type { SpaceTimeChartContextType, SpaceTimeChartProps } from '../lib/types';
 import {
   getDataToPoint,
   getFlatSteps,

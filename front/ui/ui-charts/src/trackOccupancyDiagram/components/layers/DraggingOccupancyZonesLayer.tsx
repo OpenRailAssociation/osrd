@@ -1,12 +1,12 @@
 import { useCallback, useContext } from 'react';
 
+import { MouseContext } from '../../../common';
 import { useDraw } from '../../../common/hooks/useCanvas';
 import type { DrawingFunction } from '../../../common/types';
 import {
   SpaceTimeChartCanvasContext,
   type SpaceTimeChartContextType,
 } from '../../../spaceTimeChart';
-import { MouseContext } from '../../../spaceTimeChart/lib/context';
 import { COLORS } from '../../lib/consts';
 import type { OccupancyZone } from '../../lib/types';
 import { drawThroughTrain } from '../helpers/drawElements/drawOccupancyZones';
