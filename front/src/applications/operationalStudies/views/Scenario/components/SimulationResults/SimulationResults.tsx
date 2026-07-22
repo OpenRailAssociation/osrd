@@ -325,7 +325,6 @@ const SimulationResults = ({
               train={simulationResults.train}
               path={simulationResults.path}
               trainSchedulesWithDetails={trainSchedulesWithDetails}
-              upsertTrainSchedules={upsertTrainSchedules}
               setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
               setTrainScheduleToEditData={setTrainScheduleToEditData}
             />

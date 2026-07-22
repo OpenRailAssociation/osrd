@@ -3,9 +3,10 @@ import { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
+import { useTimetableContext } from 'applications/operationalStudies/hooks/useTimetableContext';
 import { updateTrainSchedule } from 'applications/operationalStudies/views/Scenario/components/ManageTrainSchedule/hooks/useUpdateTrainSchedule';
 import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/views/Scenario/consts';
-import type { PathfindingResult, TrainScheduleResponse } from 'common/api/osrdEditoastApi';
+import type { PathfindingResult } from 'common/api/osrdEditoastApi';
 import useFilterRollingStock from 'modules/rollingStock/hooks/useFilterRollingStock';
 import type { TrainScheduleWithDetails } from 'modules/trainSchedule/types';
 import { setFailure } from 'reducers/main';
@@ -22,7 +23,6 @@ export type TrainHeaderProps = {
   train: Train;
   path?: Omit<PathfindingResult, 'status'>;
   trainSchedulesWithDetails: TrainScheduleWithDetails[];
-  upsertTrainSchedules: (trainSchedules: TrainScheduleResponse[]) => void;
   setDisplayTrainScheduleManagement: (type: string) => void;
   setTrainScheduleToEditData: (trainScheduleToEditData?: TrainScheduleToEditData) => void;
 };
@@ -41,7 +41,6 @@ const TrainHeader = ({
   train,
   path,
   trainSchedulesWithDetails,
-  upsertTrainSchedules,
   setDisplayTrainScheduleManagement,
   setTrainScheduleToEditData,
 }: TrainHeaderProps) => {
@@ -50,6 +49,7 @@ const TrainHeader = ({
 
   const dispatch = useAppDispatch();
   const { timetableId } = useScenarioContext();
+  const { upsertTrainSchedules } = useTimetableContext();
   const occurrenceId = isOccurrenceId(train.id) ? train.id : undefined;
   const trainScheduleId = extractEditoastIdFromTrainId(train.id);
   const { filteredRollingStockList: rollingStocks } = useFilterRollingStock();
