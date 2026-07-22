@@ -244,10 +244,7 @@ const ScenarioContent = ({ activeBoards, toggleBoard }: ScenarioContentProps) =>
                   projectionData={projectionData}
                   conflicts={conflicts}
                   trainSchedulesWithDetails={trainSchedulesWithDetails}
-                  trainSchedules={trainSchedules ?? []}
                   activeBoards={activeBoards}
-                  updateTrainScheduleDepartureTime={updateTrainScheduleDepartureTimeWithNge}
-                  upsertTrainSchedules={upsertTrainSchedulesWithNge}
                   setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
                   setTrainScheduleToEditData={setTrainScheduleToEditData}
                   isScrollingToTimeStopsTable={isScrollingToTimeStopsTable}
