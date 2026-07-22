@@ -22,7 +22,8 @@ static OPENFGA_MIGRATIONS: LazyLock<IndexMap<&'static str, &'static str>> = Lazy
     indexmap! {
         "initial_model" => include_str!("../migrations/0_initial_model.fga"),
         "1_rolling_stock_model" => include_str!("../migrations/1_rolling_stock_model.fga"),
-        "2_can_revoke_model" => include_str!("../migrations/2_can_revoke_model.fga")
+        "2_can_revoke_model" => include_str!("../migrations/2_can_revoke_model.fga"),
+        "3_project_model" => include_str!("../migrations/3_project_model.fga")
     }
     #[cfg(test)]
     indexmap! {
