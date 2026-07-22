@@ -1,6 +1,11 @@
 import { describe, it, expect } from 'vitest';
 
-import { parseLocalDateTime, isArrivalDateInSearchTimeWindow } from 'utils/date';
+import {
+  parseLocalDateTime,
+  isArrivalDateInSearchTimeWindow,
+  timeToLocaleStringRounded,
+} from 'utils/date';
+import { Duration } from 'utils/duration';
 
 describe('parseLocalDateTime', () => {
   it('should return an iso date by passing a date without milliseconds', () => {
@@ -62,5 +67,27 @@ describe('isArrivalDateInSearchTimeWindow', () => {
       searchDatetimeWindow
     );
     expect(result).toBe(false);
+  });
+});
+
+describe('timeToLocaleStringRounded', () => {
+  const locale = new Intl.Locale('en-US');
+
+  it('should format a Duration as an elapsed H:mm time, independent of locale', () => {
+    expect(timeToLocaleStringRounded(new Duration({ hours: 8, minutes: 37 }), locale)).toEqual(
+      '08:37'
+    );
+  });
+
+  it('should round a Duration up to the nearest minute', () => {
+    expect(
+      timeToLocaleStringRounded(new Duration({ hours: 8, minutes: 37, seconds: 30 }), locale)
+    ).toEqual('08:38');
+  });
+
+  it('should not wrap a Duration exceeding 24 hours', () => {
+    expect(timeToLocaleStringRounded(new Duration({ hours: 25, minutes: 7 }), locale)).toEqual(
+      '25:07'
+    );
   });
 });

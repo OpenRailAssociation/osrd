@@ -30,7 +30,7 @@ import { getTrainIdUsedForProjection } from 'reducers/simulationResults/selector
 import { useAppDispatch } from 'store';
 import { addElementAtIndex } from 'utils/array';
 import { timeToLocaleStringRounded, useDateTimeLocale } from 'utils/date';
-import { addDurationToDate, startTimeToDate } from 'utils/duration';
+import { addDurationToStartTime } from 'utils/duration';
 import {
   getExceptionType,
   isExceptionFromPathOrSimulation,
@@ -94,18 +94,28 @@ const OccurrenceItem = ({
   const trainIdUsedForProjection = useSelector(getTrainIdUsedForProjection);
 
   const { trainName, rollingStock, disabled, exception, summary } = occurrence;
-  // TODO Hourly timetables: display the actual start time instead of a fictive date
-  const startTime = startTimeToDate(occurrence.startTime);
+  const startTime = occurrence.startTime;
   const exceptionChangeGroups = exception?.exceptionChangeGroups;
 
-  let arrivalTime: Date | undefined;
-  let isAfterMidnight = false;
-  if (summary?.isValid) {
-    arrivalTime = addDurationToDate(startTime, summary.duration);
-    isAfterMidnight = dayjs(arrivalTime).isAfter(startTime, 'day');
-  }
+  const arrivalTime = summary?.isValid
+    ? addDurationToStartTime(startTime, summary.duration)
+    : undefined;
+
+  // Crossing midnight is a calendar-timetable concept only: an hourly timetable's start
+  // time is an offset from the timetable start, not tied to any real day.
+  const startTimeAsDate = startTime instanceof Date ? startTime : undefined;
+  const arrivalTimeAsDate = arrivalTime instanceof Date ? arrivalTime : undefined;
+  const nextStartTimeAsDate =
+    nextOccurrence?.startTime instanceof Date ? nextOccurrence.startTime : undefined;
+
+  const isAfterMidnight =
+    !!startTimeAsDate &&
+    !!arrivalTimeAsDate &&
+    dayjs(arrivalTimeAsDate).isAfter(startTimeAsDate, 'day');
   const isNextAfterMidnight =
-    !!nextOccurrence && dayjs(startTimeToDate(nextOccurrence.startTime)).isAfter(startTime, 'day');
+    !!startTimeAsDate &&
+    !!nextStartTimeAsDate &&
+    dayjs(nextStartTimeAsDate).isAfter(startTimeAsDate, 'day');
   const isStartTimeException = !!exceptionChangeGroups?.start_time;
 
   const closeMenu = () => {
@@ -277,11 +287,10 @@ const OccurrenceItem = ({
           </div>
         </div>
 
-        {nextOccurrence && isNextAfterMidnight && (
+        {isNextAfterMidnight && startTimeAsDate && nextStartTimeAsDate && (
           <ConsecutiveDayDateDisplay
-            departureTime={startTime}
-            // TODO Hourly timetables: display the actual start time instead of a fictive date
-            nextDepartureTime={startTimeToDate(nextOccurrence.startTime)}
+            departureTime={startTimeAsDate}
+            nextDepartureTime={nextStartTimeAsDate}
           />
         )}
       </div>

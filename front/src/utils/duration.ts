@@ -134,6 +134,11 @@ export const startTimeToDate = (startTime: StartTime): Date =>
 
 export const addDurationToDate = (date: Date, dur: Duration) => new Date(date.getTime() + dur.ms);
 
+/** Add a duration to a start time, keeping it a Date for calendar timetables or a Duration
+ * (offset from the timetable start) for hourly timetables. */
+export const addDurationToStartTime = (startTime: StartTime, dur: Duration): StartTime =>
+  startTime instanceof Duration ? startTime.add(dur) : addDurationToDate(startTime, dur);
+
 export const subtractDurationFromDate = (date: Date, dur: Duration) =>
   new Date(date.getTime() - dur.ms);
 
