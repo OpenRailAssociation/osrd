@@ -538,7 +538,7 @@
         "invalidInitialSpeedRounding": "La vitesse initiale doit être arrondie à une décimale",
         "recoveryMargin": "Marge de régularité",
         "rollingStock": "Matériel roulant",
-        "serviceCadence": "Cadence",
+        "serviceInterval": "Cadence",
         "serviceWindow": "Plage de répétition",
         "tags": "Étiquettes",
         "trainCategory": "Catégorie de train",
