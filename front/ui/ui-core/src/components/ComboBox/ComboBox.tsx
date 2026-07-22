@@ -99,12 +99,21 @@ const ComboBox = <T,>({
     }
   }, [inputRef, isInputFocused]);
 
+  const normalizedInputValue = useMemo(() => inputValue.trim().toLowerCase(), [inputValue]);
+
+  const suggestionsByLabel = useMemo(() => {
+    const map = new Map<string, T>();
+    for (const suggestion of suggestions) {
+      map.set(getSuggestionLabel(suggestion).trim().toLowerCase(), suggestion);
+    }
+    return map;
+  }, [suggestions, getSuggestionLabel]);
+
   const showAddCustomValue = useMemo(() => {
-    if (!allowCustomValue || !inputValue.trim()) return false;
-    return !suggestions.some(
-      (s) => getSuggestionLabel(s).toLowerCase() === inputValue.trim().toLowerCase()
-    );
-  }, [allowCustomValue, inputValue, suggestions, getSuggestionLabel]);
+    if (!allowCustomValue || !normalizedInputValue) return false;
+
+    return !suggestionsByLabel.has(normalizedInputValue);
+  }, [allowCustomValue, normalizedInputValue, suggestionsByLabel]);
 
   const showSuggestions = useMemo(
     () => isInputFocused && (suggestions.length > 0 || showAddCustomValue) && !inputProps.disabled,
@@ -117,8 +126,7 @@ const ComboBox = <T,>({
     setInputValue(e.currentTarget.value);
   };
 
-  const selectSuggestion = (index: number) => {
-    const selectedSuggestion = suggestions.at(index)!;
+  const selectSuggestion = (selectedSuggestion: T) => {
     onSelectSuggestion(selectedSuggestion);
     setInputValue(getSuggestionLabel(selectedSuggestion));
     removeFocus();
@@ -136,10 +144,33 @@ const ComboBox = <T,>({
     removeFocus();
   };
 
+  const onFieldBlur = () => {
+    const exactSuggestion = suggestionsByLabel.get(normalizedInputValue);
+    if (activeSuggestionIndex === -1 && !showAddCustomValue) {
+      if (exactSuggestion) {
+        onSelectSuggestion(exactSuggestion);
+      } else {
+        onAddCustomValue?.(inputValue);
+      }
+    }
+    closeSuggestions();
+  };
+
   const totalItems = suggestions.length + (showAddCustomValue ? 1 : 0);
   const customValueIndex = showAddCustomValue ? suggestions.length : -1;
 
   const handleKeyDown: KeyboardEventHandler<HTMLInputElement> = (e) => {
+    const confirmSelected = () => {
+      if (showAddCustomValue && activeSuggestionIndex === customValueIndex) {
+        confirmCustomValue();
+      }
+
+      const suggestion = suggestions.at(activeSuggestionIndex);
+      if (suggestion) {
+        selectSuggestion(suggestion);
+      }
+    };
+
     switch (e.key) {
       case 'ArrowDown': {
         setActiveSuggestionIndex((prev) => {
@@ -159,25 +190,40 @@ const ComboBox = <T,>({
       }
       case 'Enter': {
         e.preventDefault();
-        if (activeSuggestionIndex === customValueIndex) {
-          confirmCustomValue();
-        } else if (activeSuggestionIndex >= 0) {
-          selectSuggestion(activeSuggestionIndex);
-        } else if (suggestions.length === 1) {
-          selectSuggestion(0);
+
+        if (activeSuggestionIndex >= 0) {
+          confirmSelected();
+        } else {
+          // No item selected
+
+          const exactSuggestion = suggestionsByLabel.get(normalizedInputValue);
+          if (exactSuggestion) {
+            selectSuggestion(exactSuggestion);
+          } else if (
+            suggestions.length === 1 &&
+            getSuggestionLabel(suggestions[0]).startsWith(inputValue)
+          ) {
+            selectSuggestion(suggestions[0]);
+          } else {
+            if (showAddCustomValue) {
+              confirmCustomValue();
+            } else {
+              onAddCustomValue?.(inputValue);
+            }
+          }
         }
         break;
       }
       case 'Tab': {
-        if (activeSuggestionIndex === customValueIndex) {
-          confirmCustomValue();
-        } else if (activeSuggestionIndex >= 0) {
-          selectSuggestion(activeSuggestionIndex);
+        if (activeSuggestionIndex >= 0) {
+          confirmSelected();
         }
+        onFieldBlur();
+
         break;
       }
       case 'Escape': {
-        closeSuggestions();
+        onFieldBlur();
         break;
       }
       default:
@@ -192,15 +238,11 @@ const ComboBox = <T,>({
 
   const clearInput = () => {
     setInputValue('');
-    onSelectSuggestion(undefined);
     resetSuggestions();
     focusInput();
   };
 
-  useOutsideClick(
-    showSuggestions ? wrapperRef : null, // Only trigger when the suggestions are displayed
-    closeSuggestions
-  );
+  useOutsideClick(showSuggestions || isInputFocused ? wrapperRef : null, onFieldBlur);
 
   const inputIcons = useMemo(() => {
     if (inputProps.readOnly || inputProps.disabled) return undefined;
@@ -260,6 +302,7 @@ const ComboBox = <T,>({
           className="suggestions-list"
           data-testid={testIdPrefix ? `${testIdPrefix}-list` : undefined}
           onMouseLeave={() => setActiveSuggestionIndex(-1)}
+          tabIndex={-1}
         >
           {suggestions.map((suggestion, index) => (
             <li
@@ -276,7 +319,7 @@ const ComboBox = <T,>({
                 small,
                 'suggestion-item--custom': renderListElementComponent,
               })}
-              onClick={() => selectSuggestion(index)}
+              onClick={() => selectSuggestion(suggestion)}
               onMouseEnter={() => setActiveSuggestionIndex(index)}
             >
               {renderListElementComponent
