@@ -7,6 +7,7 @@ import dayjs from 'dayjs';
 import { omit } from 'lodash';
 import { useTranslation } from 'react-i18next';
 
+import { useTimetableContext } from 'applications/operationalStudies/hooks/useTimetableContext';
 import {
   osrdEditoastApi,
   type SubCategory,
@@ -45,8 +46,6 @@ type UniqueTrainItemProps = {
   isSelected: boolean;
   isModified?: boolean;
   handleSelectTrain: (trainId: number) => void;
-  upsertUniqueTrains: (uniqueTrains: TrainScheduleResponse[]) => void;
-  removeTrains: (trainIds: number[]) => void;
   projectionPathIsUsed: boolean;
   selectTrainToEdit: (train: TrainScheduleWithDetails) => void;
   setSelectedTrainScheduleIds: React.Dispatch<React.SetStateAction<number[]>>;
@@ -62,8 +61,6 @@ const UniqueTrainItem = ({
   isSelected,
   isModified,
   handleSelectTrain,
-  upsertUniqueTrains,
-  removeTrains,
   projectionPathIsUsed,
   selectTrainToEdit,
   setSelectedTrainScheduleIds,
@@ -75,6 +72,8 @@ const UniqueTrainItem = ({
   const { t } = useTranslation('operational-studies', { keyPrefix: 'main' });
   const dateTimeLocale = useDateTimeLocale();
   const dispatch = useAppDispatch();
+
+  const { removeTrainSchedules, upsertTrainSchedules } = useTimetableContext();
 
   const [getTrainSchedule] = osrdEditoastApi.endpoints.getTrainSchedulesById.useLazyQuery();
 
@@ -89,7 +88,7 @@ const UniqueTrainItem = ({
   const deleteTrain = async () => {
     deleteTrainSchedules(dispatch, [train.id])
       .then(() => {
-        removeTrains([train.id]);
+        removeTrainSchedules([train.id]);
         setSelectedTrainScheduleIds((prev) => prev.filter((id) => id !== train.id));
         dispatch(
           setSuccess({
@@ -136,7 +135,7 @@ const UniqueTrainItem = ({
           by: 'timetable',
         })
       );
-      upsertUniqueTrains([newUniqueTrain]);
+      upsertTrainSchedules([newUniqueTrain]);
       dispatch(
         setSuccess({
           title: t('timetable.trainAdded'),
