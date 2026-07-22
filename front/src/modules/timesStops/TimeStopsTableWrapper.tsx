@@ -14,7 +14,8 @@ import { Duration, addDurationToDate } from 'utils/duration';
 
 import { computeOptimisticRow, propagationToEdits } from './helpers/cellUpdate';
 import { computePowerRestrictionWarnings } from './helpers/powerRestrictionIncompatibility';
-import { propagateTime } from './helpers/timePropagation';
+import { propagateStopDuration } from './helpers/stopDurationPropagation';
+import { ONE_DAY, propagateTime } from './helpers/timePropagation';
 import useTimesStopsTableData from './hooks/useTimesStopsTableData';
 import useUpdateTimesStopsTable from './hooks/useUpdateTimesStopsTable';
 import TimesStopsTable from './TimesStopsTable';
@@ -22,6 +23,8 @@ import {
   type CellUpdate,
   type PendingEdit,
   type PropagationMode,
+  type StopDurationUpdate,
+  type StopPropagationMode,
   type MarginValue,
   type TimesStopsRowNew,
   type UpdateCellStatus,
@@ -42,8 +45,6 @@ type TimeStopsTableWrapperProps = {
   isSimulationDataLoading?: boolean;
   rollingStock?: RollingStock;
 };
-
-const ONE_DAY = new Duration({ hours: 24 });
 
 const bumpMidnightCrossings = (rows: TimesStopsRowNew[]): TimesStopsRowNew[] => {
   let lastArrival: Date | null = null;
@@ -213,6 +214,14 @@ const TimeStopsTableWrapper = ({
       });
   };
 
+  // Origin arrival = start_time (not in schedule), so propagationToEdits misses it.
+  const computeOriginEdits = (updatedStartTime: Date): PendingEdit[] => {
+    const originRow = rows.at(0);
+    return originRow && originRow.requestedArrival?.getTime() !== updatedStartTime.getTime()
+      ? [{ rowId: originRow.id, field: 'requestedArrival', value: updatedStartTime }]
+      : [];
+  };
+
   const buildEditsForUpdate = (
     singleEdit: PendingEdit,
     update: CellUpdate & { propagationMode: PropagationMode }
@@ -221,20 +230,7 @@ const TimeStopsTableWrapper = ({
     if (!propagationResult) return [singleEdit];
 
     const propagationEdits = propagationToEdits(propagationResult, rows);
-
-    // Origin arrival = start_time (not in schedule), so propagationToEdits misses it.
-    const originRow = rows.at(0);
-    const originEdits: PendingEdit[] =
-      originRow &&
-      originRow.requestedArrival?.getTime() !== propagationResult.updatedStartTime.getTime()
-        ? [
-            {
-              rowId: originRow.id,
-              field: 'requestedArrival',
-              value: propagationResult.updatedStartTime,
-            },
-          ]
-        : [];
+    const originEdits = computeOriginEdits(propagationResult.updatedStartTime);
 
     // When editing the origin, originEdits already has the correct date.
     // singleEdit must be skipped because the typed value can carry the
@@ -248,6 +244,38 @@ const TimeStopsTableWrapper = ({
     return [
       ...originEdits,
       singleEdit,
+      ...propagationEdits.filter((e) => e.rowId !== singleEdit.rowId),
+    ];
+  };
+
+  const buildEditsForStopDurationUpdate = (
+    singleEdit: PendingEdit,
+    update: StopDurationUpdate
+  ): PendingEdit[] => {
+    const propagationResult = propagateStopDuration(update, selectedTrain);
+    if (!propagationResult) return [singleEdit];
+
+    const propagationEdits = propagationToEdits(propagationResult, rows);
+    const originEdits = computeOriginEdits(propagationResult.updatedStartTime);
+
+    const editedRowArrivalEdit = propagationEdits.find(
+      (edit): edit is PendingEdit & { field: 'requestedArrival' } =>
+        edit.rowId === singleEdit.rowId && edit.field === 'requestedArrival'
+    );
+    const editedRowEdit: PendingEdit = editedRowArrivalEdit
+      ? {
+          rowId: singleEdit.rowId,
+          field: 'stopDurationWithArrival',
+          value: {
+            stop: update.value !== null ? new Duration({ seconds: update.value }) : null,
+            arrival: editedRowArrivalEdit.value ?? propagationResult.updatedStartTime,
+          },
+        }
+      : singleEdit;
+
+    return [
+      ...originEdits,
+      editedRowEdit,
       ...propagationEdits.filter((e) => e.rowId !== singleEdit.rowId),
     ];
   };
@@ -314,17 +342,26 @@ const TimeStopsTableWrapper = ({
     );
   };
 
-  const handleStopDurationChange = (row: TimesStopsRowNew, durationSeconds: number | null) =>
+  const handleStopDurationChange = (
+    row: TimesStopsRowNew,
+    durationSeconds: number | null,
+    propagationMode: StopPropagationMode
+  ) => {
+    const singleEdit: PendingEdit = {
+      rowId: row.id,
+      field: 'stopDuration',
+      value: durationSeconds !== null ? new Duration({ seconds: durationSeconds }) : null,
+    };
     commitEdit(
-      [
-        {
-          rowId: row.id,
-          field: 'stopDuration',
-          value: durationSeconds !== null ? new Duration({ seconds: durationSeconds }) : null,
-        },
-      ],
-      () => updateStopDuration(row, durationSeconds)
+      buildEditsForStopDurationUpdate(singleEdit, {
+        row,
+        field: 'stopDuration',
+        value: durationSeconds,
+        propagationMode,
+      }),
+      () => updateStopDuration(row, durationSeconds, propagationMode)
     );
+  };
 
   const handleReceptionSignalChange = (
     row: TimesStopsRowNew,

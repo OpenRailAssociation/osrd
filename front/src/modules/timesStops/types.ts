@@ -120,6 +120,8 @@ export type PropagationMode =
   | 'atThisWaypoint'
   | 'toDestination';
 
+export type StopPropagationMode = Exclude<PropagationMode, 'shiftAllWaypoints'>;
+
 export type UpdateCellStatus = 'updated' | 'skipped';
 
 export type ArrivalUpdate = {
@@ -133,6 +135,7 @@ export type StopDurationUpdate = {
   row: TimesStopsRowNew;
   field: 'stopDuration';
   value: number | null;
+  propagationMode: StopPropagationMode;
 };
 
 export type DepartureUpdate = {
@@ -172,6 +175,7 @@ export type OptimisticEdit =
   | { field: 'requestedArrival'; value: Date | null }
   | { field: 'requestedDeparture'; value: Date | null }
   | { field: 'stopDuration'; value: Duration | null }
+  | { field: 'stopDurationWithArrival'; value: { stop: Duration | null; arrival: Date } }
   | { field: 'receptionSignal'; value: ReceptionSignal | undefined }
   | { field: 'requestedTheoreticalMargin'; value: MarginValue | null }
   | { field: 'powerRestriction'; value: string | null };

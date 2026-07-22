@@ -4,7 +4,7 @@ import { addDurationToDate, Duration } from 'utils/duration';
 
 import type { ArrivalUpdate, CellUpdate, PropagationMode } from '../types';
 
-const ONE_DAY = new Duration({ hours: 24 });
+export const ONE_DAY = new Duration({ hours: 24 });
 
 export type PropagationResult = {
   updatedPath: PathItem[];
@@ -45,7 +45,7 @@ const computeDeltaForPropagationMode = (
       ? Duration.subtractDate(truncateToSecond(newValue), truncateToSecond(oldValue))
       : null;
 
-const formatSignedDelta = (delta: Duration) => {
+export const formatSignedDelta = (delta: Duration) => {
   const sign = delta.ms >= 0 ? '+' : '-';
   const absoluteDelta = delta.abs().round('second');
   const hours = Math.floor(absoluteDelta.total('hour'));

@@ -97,6 +97,15 @@ export const applyScheduleEdit = (
       };
     }
 
+    case 'stopDurationWithArrival': {
+      const { stop: newStop, arrival: newArrival } = edit.value;
+      return {
+        arrival: newArrival,
+        stop: newStop,
+        departure: computeDeparture(newArrival, newStop),
+      };
+    }
+
     case 'requestedDeparture': {
       const newDeparture = edit.value;
       if (newDeparture === null) {
