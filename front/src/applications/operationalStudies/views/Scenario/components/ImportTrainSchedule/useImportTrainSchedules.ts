@@ -3,8 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
+import { useTimetableContext } from 'applications/operationalStudies/hooks/useTimetableContext';
 import type { TimetableJsonPayload } from 'applications/operationalStudies/types';
-import type { TrainScheduleResponse } from 'common/api/osrdEditoastApi';
 import { osrdRailwayManagerApi } from 'common/api/osrdRailwayManagerApi';
 import { useSubCategoryContext } from 'common/SubCategoryContext';
 import { setFailure, setSuccess } from 'reducers/main';
@@ -16,14 +16,11 @@ import { processJsonFile } from './helpers/parseJson';
 import locallyProcessXmlFile from './helpers/parseXML';
 import { postFullImportPayload } from './helpers/postPayloads';
 
-type ImportTrainSchedulesProps = {
-  upsertTrainSchedules: (trainSchedules: TrainScheduleResponse[]) => void;
-};
-
-const useImportTrainSchedules = ({ upsertTrainSchedules }: ImportTrainSchedulesProps) => {
+const useImportTrainSchedules = () => {
   const { t } = useTranslation('operational-studies', { keyPrefix: 'importTrains' });
   const dispatch = useAppDispatch();
   const { scenario, sandboxId } = useScenarioContext();
+  const { upsertTrainSchedules } = useTimetableContext();
 
   const subCategories = useSubCategoryContext();
   const railwayManagerUrl = useSelector(getRailwayManagerInterfaceUrl);
