@@ -135,13 +135,6 @@ const TimetableBoardWrapper = ({
   }, [totalUniqueTrainCount, totalPacedTrainCount, selectedUniqueTrainIds, selectedPacedTrainIds]);
   // --- END BOARD WRAPPER TITLE MANAGEMENT ---------------------
 
-  const removeAndUnselectTrains = useCallback(
-    (trainScheduleIds: number[]) => {
-      removeTrainSchedules(trainScheduleIds);
-    },
-    [removeTrainSchedules, setSelectedTrainScheduleIds]
-  );
-
   const handleTrainsDelete = async (
     currentSelectedTrainId?: TrainId,
     hideToast: boolean = false
@@ -165,7 +158,7 @@ const TimetableBoardWrapper = ({
         await deleteTrainSchedules(dispatch, selectedTrainScheduleIds);
       }
 
-      removeAndUnselectTrains(selectedTrainScheduleIds);
+      removeTrainSchedules(selectedTrainScheduleIds);
 
       if (trainSchedules.length - selectedTrainScheduleIds.length === 0) {
         setIsSelectMode(false);
