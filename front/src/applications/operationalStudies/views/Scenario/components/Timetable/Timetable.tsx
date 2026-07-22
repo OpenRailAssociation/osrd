@@ -4,7 +4,8 @@ import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 
 import useScenarioTrainScheduleSet from 'applications/operationalStudies/hooks/useScenarioTrainScheduleSet';
-import { osrdEditoastApi, type TrainScheduleResponse } from 'common/api/osrdEditoastApi';
+import { useTimetableContext } from 'applications/operationalStudies/hooks/useTimetableContext';
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type { TrainScheduleWithDetails } from 'modules/trainSchedule/types';
 import { setFailure } from 'reducers/main';
 import type { TrainScheduleToEditData } from 'reducers/osrdconf/types';
@@ -18,19 +19,14 @@ import TrainScheduleSetDialog from './TrainScheduleSet/TrainScheduleSetDialog';
 import type { TimetableMode } from './types';
 import useFilterTrainSchedules from './useFilterTrainSchedules';
 
-const NO_TRAIN_SCHEDULES: TrainScheduleResponse[] = [];
-
 type TimetableProps = {
   setDisplayTrainScheduleManagement: (mode: string) => void;
-  upsertTrainSchedules: (trainSchedules: TrainScheduleResponse[]) => void;
   setTrainScheduleToEditData: (trainScheduleToEditData?: TrainScheduleToEditData) => void;
   setSelectedTrainScheduleIds: React.Dispatch<React.SetStateAction<number[]>>;
-  removeAndUnselectTrains: (trainIds: number[]) => void;
   handleDeleteTrainSchedules: () => void;
   isSelectMode: boolean;
   setIsSelectMode: (isSelectMode: boolean) => void;
   trainScheduleToEditData?: TrainScheduleToEditData;
-  trainSchedules?: TrainScheduleResponse[];
   trainSchedulesWithDetails: TrainScheduleWithDetails[];
   refreshNge: () => Promise<void>;
   selectedTrainScheduleIds: number[];
@@ -39,15 +35,12 @@ type TimetableProps = {
 
 const Timetable = ({
   setDisplayTrainScheduleManagement,
-  upsertTrainSchedules,
   setTrainScheduleToEditData,
   setSelectedTrainScheduleIds,
-  removeAndUnselectTrains,
   handleDeleteTrainSchedules,
   isSelectMode,
   setIsSelectMode,
   trainScheduleToEditData,
-  trainSchedules = NO_TRAIN_SCHEDULES,
   trainSchedulesWithDetails,
   refreshNge,
   selectedTrainScheduleIds,
@@ -56,6 +49,8 @@ const Timetable = ({
   const dispatch = useAppDispatch();
 
   const { t } = useTranslation('operational-studies', { keyPrefix: 'main.timetable' });
+
+  const { trainSchedules, upsertTrainSchedules, removeTrainSchedules } = useTimetableContext();
 
   const [showTrainDetails, setShowTrainDetails] = useState(false);
   const [timetableMode, setTimetableMode] = useState<TimetableMode>('calendar');
@@ -174,7 +169,7 @@ const Timetable = ({
           upsertTrainSchedules={upsertTrainSchedules}
           setTrainScheduleToEditData={setTrainScheduleToEditData}
           setSelectedTrainScheduleIds={setSelectedTrainScheduleIds}
-          removeAndUnselectTrains={removeAndUnselectTrains}
+          removeAndUnselectTrains={removeTrainSchedules}
           trainScheduleToEditData={trainScheduleToEditData}
           trainSchedulesWithDetails={filteredTrainSchedules}
           selectedTrainScheduleIds={selectedTrainScheduleIds}
