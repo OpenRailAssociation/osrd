@@ -71,7 +71,7 @@ const TimetableToolbar = ({
   const dispatch = useAppDispatch();
 
   const { infraId, timetableId } = useScenarioContext();
-  const { trainSchedules, upsertTrainSchedules } = useTimetableContext();
+  const { trainSchedules } = useTimetableContext();
 
   const { data: trainScheduleRoundTripsData } =
     osrdEditoastApi.endpoints.getTimetableByIdRoundTrips.useQuery({
@@ -82,7 +82,7 @@ const TimetableToolbar = ({
   const [roundTripsModalIsOpen, setRoundTripsModalIsOpen] = useState(false);
 
   const { openModal, closeModal } = useContext(ModalContext);
-  const importFile = useImportTrainSchedules({ upsertTrainSchedules });
+  const importFile = useImportTrainSchedules();
 
   const toggleisSelectMode = () => {
     setIsSelectMode(!isSelectMode);
