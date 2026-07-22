@@ -76,7 +76,7 @@ const SimulationResults = ({
   const { t } = useTranslation('operational-studies');
   const dispatch = useAppDispatch();
   const { infraId, timetableId } = useScenarioContext();
-  const { upsertTrainSchedules, updateTrainScheduleDepartureTime } = useTimetableContext();
+  const { updateTrainScheduleDepartureTime } = useTimetableContext();
 
   const { results: simulationResults, isSimulationDataLoading } = useSimulationResults();
   const selectedTrainId = simulationResults?.train.id;
@@ -353,7 +353,6 @@ const SimulationResults = ({
               infraId={infraId}
               selectedTrain={simulationResults?.train}
               trainSchedulesWithDetails={trainSchedulesWithDetails}
-              upsertTrainSchedules={upsertTrainSchedules}
               isSimulationDataLoading={isSimulationDataLoading}
               operationalPointsOnPath={simulationResults.pathProperties?.operationalPoints}
               voltages={simulationResults.pathProperties?.voltages}
