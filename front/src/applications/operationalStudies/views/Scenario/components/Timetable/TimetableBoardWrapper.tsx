@@ -4,8 +4,8 @@ import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
+import { useTimetableContext } from 'applications/operationalStudies/hooks/useTimetableContext';
 import BoardWrapper from 'applications/operationalStudies/views/Scenario/components/BoardWrapper';
-import type { TrainScheduleResponse } from 'common/api/osrdEditoastApi';
 import DeleteModal from 'common/BootstrapSNCF/ModalSNCF/DeleteModal';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import { useSubCategoryContext } from 'common/SubCategoryContext';
@@ -24,15 +24,10 @@ import { postFullImportPayload } from '../ImportTrainSchedule/helpers/postPayloa
 import Timetable from './Timetable';
 import { copyTrainSchedulesToClipboard } from './utils';
 
-const NO_TRAIN_SCHEDULES: TrainScheduleResponse[] = [];
-
 type TimetableBoardWrapperProps = {
   setDisplayTrainScheduleManagement: (mode: string) => void;
-  upsertTrainSchedules: (trainSchedules: TrainScheduleResponse[]) => void;
   setTrainScheduleToEditData: (trainScheduleToEditData?: TrainScheduleToEditData) => void;
-  removeTrainSchedules: (trainScheduleIdsToRemove: number[]) => void;
   trainScheduleToEditData?: TrainScheduleToEditData;
-  trainSchedules?: TrainScheduleResponse[];
   trainSchedulesWithDetails: TrainScheduleWithDetails[];
   refreshNge: () => Promise<void>;
   projectingOnSimulatedPathException: boolean | undefined;
@@ -42,11 +37,8 @@ type TimetableBoardWrapperProps = {
 
 const TimetableBoardWrapper = ({
   setDisplayTrainScheduleManagement,
-  upsertTrainSchedules,
   setTrainScheduleToEditData,
-  removeTrainSchedules,
   trainScheduleToEditData,
-  trainSchedules = NO_TRAIN_SCHEDULES,
   trainSchedulesWithDetails,
   refreshNge,
   projectingOnSimulatedPathException,
@@ -56,6 +48,7 @@ const TimetableBoardWrapper = ({
   const { openModal } = useContext(ModalContext);
 
   const { scenario, sandboxId } = useScenarioContext();
+  const { trainSchedules, removeTrainSchedules, upsertTrainSchedules } = useTimetableContext();
 
   const { id: selectedTrainId } = useSelector(getSelectedTrain) || {};
 

@@ -225,9 +225,6 @@ const ScenarioContent = ({ activeBoards, toggleBoard }: ScenarioContentProps) =>
             <div className="scenario-sidemenu">
               <TimetableBoardWrapper
                 setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
-                upsertTrainSchedules={upsertTrainSchedulesWithNge}
-                removeTrainSchedules={removeTrainSchedulesWithNge}
-                trainSchedules={trainSchedules}
                 trainSchedulesWithDetails={trainSchedulesWithDetails}
                 setTrainScheduleToEditData={setTrainScheduleToEditData}
                 trainScheduleToEditData={trainScheduleToEditData}
