@@ -63,7 +63,7 @@
             jq
 
             # Core
-            gradle
+            gradle_9
             jdk21
 
             # Front
