@@ -1,5 +1,6 @@
 import fs from 'fs';
 
+import { StdcmStopTypes } from 'applications/stdcm/types';
 import type { Infra } from 'common/api/osrdEditoastApi';
 
 import {
@@ -19,7 +20,6 @@ import {
   STDCM_TRANSLATIONS,
   STDCM_URL,
   TRACTION_ENGINE_PREFILLED_VALUES,
-  VIA_STOP_TYPES,
   VIA_SUGGESTIONS,
 } from '../assets/constants/stdcm/stdcm-const';
 import test from '../page-object-fixture';
@@ -87,8 +87,8 @@ test.describe('STDCM Consist Change', { tag: ['@stdcm', '@stdcm-consist-change']
         ciSearchText: 'mid_west',
         expectedChValue: DEFAULT_DETAILS.chValue,
         selectedSuggestionText: VIA_SUGGESTIONS[0],
-        defaultViaType: VIA_STOP_TYPES.PASSAGE_TIME,
-        stopType: VIA_STOP_TYPES.SERVICE_STOP,
+        defaultViaType: StdcmStopTypes.PASSAGE_TIME,
+        stopType: StdcmStopTypes.SERVICE_STOP,
         stopTime: CONSIST_CHANGE_VIA_STOP_TIME,
       });
 
@@ -108,8 +108,8 @@ test.describe('STDCM Consist Change', { tag: ['@stdcm', '@stdcm-consist-change']
         ciSearchText: 'mid_east',
         expectedChValue: DEFAULT_DETAILS.chValue,
         selectedSuggestionText: VIA_SUGGESTIONS[1],
-        defaultViaType: VIA_STOP_TYPES.PASSAGE_TIME,
-        stopType: VIA_STOP_TYPES.SERVICE_STOP,
+        defaultViaType: StdcmStopTypes.PASSAGE_TIME,
+        stopType: StdcmStopTypes.SERVICE_STOP,
         stopTime: CONSIST_CHANGE_VIA_STOP_TIME,
       });
 
@@ -128,11 +128,11 @@ test.describe('STDCM Consist Change', { tag: ['@stdcm', '@stdcm-consist-change']
         CONSIST_CHANGE_UPDATED_PREFILL
       );
 
-      await viaSection.setViaStopType(2, VIA_STOP_TYPES.PASSAGE_TIME);
+      await viaSection.setViaStopType(2, StdcmStopTypes.PASSAGE_TIME);
       await consistChangeSection.verifyConsistChangeCardHidden(2);
       await consistChangeSection.verifyEditConsistButtonHidden(2);
 
-      await viaSection.setViaStopType(2, VIA_STOP_TYPES.SERVICE_STOP);
+      await viaSection.setViaStopType(2, StdcmStopTypes.SERVICE_STOP);
       await consistChangeSection.verifyConsistChangeCardHidden(2);
       await consistChangeSection.verifyEditConsistButtonVisible(2);
     });

@@ -101,13 +101,6 @@ export const VIA_STOP_TIMES = {
   },
 };
 
-export const VIA_STOP_TYPES = {
-  PASSAGE_TIME: 'passageTime',
-  SERVICE_STOP: 'serviceStop',
-  DRIVER_SWITCH: 'driverSwitch',
-  BACKTRACK: 'backtrack',
-};
-
 export const CONFLICT_ARRIVAL_TIME = '16:29';
 
 export const CONSIST_DETAILS: ConsistFields = {
