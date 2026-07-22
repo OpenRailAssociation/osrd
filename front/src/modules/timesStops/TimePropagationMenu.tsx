@@ -1,11 +1,10 @@
 import { ArrowBoth, ArrowDown, ArrowUp, Dot } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
 
-import AnchoredMenu from 'common/AnchoredMenu';
 import type { OSRDMenuItem } from 'common/OSRDMenu';
-import OSRDMenu from 'common/OSRDMenu';
 
 import { formatPropagationDeltaLabelByMode } from './helpers/timePropagation';
+import PropagationMenu from './PropagationMenu';
 import type { PropagationMode } from './types';
 
 type TimePropagationMenuProps = {
@@ -81,22 +80,12 @@ const TimePropagationMenu = ({
   ];
 
   return (
-    <AnchoredMenu
+    <PropagationMenu
+      isOpen={isOpen}
       anchorRef={anchorRef}
-      onDismiss={() => {}}
-      placement="beside"
-      focusOnFirstElement={false}
-    >
-      {isOpen && (
-        <div
-          role="presentation"
-          className="time-propagation-menu-wrapper"
-          onMouseDown={(e) => e.preventDefault()}
-        >
-          <OSRDMenu items={items} className="time-propagation-menu" />
-        </div>
-      )}
-    </AnchoredMenu>
+      items={items}
+      wrapperClassName="propagation-menu-wrapper--time"
+    />
   );
 };
 

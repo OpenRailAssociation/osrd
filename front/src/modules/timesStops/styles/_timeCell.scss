@@ -101,7 +101,7 @@
   }
 }
 
-.osrd-menu.time-propagation-menu {
+.osrd-menu.propagation-menu {
   width: fit-content;
   box-shadow:
     0 3px 5px -1px rgba(0, 0, 0, 0.16),
@@ -129,7 +129,22 @@
   }
 }
 
-.time-propagation-menu-wrapper {
-  // Align the third option ("at this waypoint") with the edited cell center.
+.propagation-menu-wrapper--time {
+  // 4 items, "at this waypoint" is the 3rd one: align it with the edited cell center.
   transform: translateY(-101px);
+}
+
+.propagation-menu-wrapper--duration {
+  // 3 items, "at this waypoint" is the 2nd one: align it with the edited cell center.
+  transform: translateY(-61px);
+}
+
+// These menus don't use the overlay's outside-click dismiss, so let clicks fall through it —
+// otherwise it blocks the clear button underneath.
+.menu-overlay:has(.propagation-menu-wrapper) {
+  pointer-events: none;
+
+  .propagation-menu-wrapper {
+    pointer-events: auto;
+  }
 }

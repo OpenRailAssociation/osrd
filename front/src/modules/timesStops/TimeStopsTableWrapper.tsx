@@ -14,6 +14,7 @@ import { Duration, addDurationToDate } from 'utils/duration';
 
 import { computeOptimisticRow, propagationToEdits } from './helpers/cellUpdate';
 import { computePowerRestrictionWarnings } from './helpers/powerRestrictionIncompatibility';
+import { propagateStopDuration } from './helpers/stopDurationPropagation';
 import { propagateTime } from './helpers/timePropagation';
 import useTimesStopsTableData from './hooks/useTimesStopsTableData';
 import useUpdateTimesStopsTable from './hooks/useUpdateTimesStopsTable';
@@ -22,6 +23,8 @@ import {
   type CellUpdate,
   type PendingEdit,
   type PropagationMode,
+  type StopDurationUpdate,
+  type StopPropagationMode,
   type MarginValue,
   type TimesStopsRowNew,
   type UpdateCellStatus,
@@ -255,6 +258,18 @@ const TimeStopsTableWrapper = ({
     ];
   };
 
+  const buildEditsForStopDurationUpdate = (
+    singleEdit: PendingEdit,
+    update: StopDurationUpdate
+  ): PendingEdit[] => {
+    const propagationResult = propagateStopDuration(update, selectedTrain);
+    if (!propagationResult) return [singleEdit];
+
+    const propagationEdits = propagationToEdits(propagationResult, rows);
+
+    return [singleEdit, ...propagationEdits.filter((e) => e.rowId !== singleEdit.rowId)];
+  };
+
   const buildEditsForMarginUpdate = (
     editedRow: TimesStopsRowNew,
     requestedMargin: MarginValue | null
@@ -317,17 +332,26 @@ const TimeStopsTableWrapper = ({
     );
   };
 
-  const handleStopDurationChange = (row: TimesStopsRowNew, durationSeconds: number | null) =>
+  const handleStopDurationChange = (
+    row: TimesStopsRowNew,
+    durationSeconds: number | null,
+    propagationMode: StopPropagationMode
+  ) => {
+    const singleEdit: PendingEdit = {
+      rowId: row.id,
+      field: 'stopDuration',
+      value: durationSeconds !== null ? new Duration({ seconds: durationSeconds }) : null,
+    };
     commitEdit(
-      [
-        {
-          rowId: row.id,
-          field: 'stopDuration',
-          value: durationSeconds !== null ? new Duration({ seconds: durationSeconds }) : null,
-        },
-      ],
-      () => updateStopDuration(row, durationSeconds)
+      buildEditsForStopDurationUpdate(singleEdit, {
+        row,
+        field: 'stopDuration',
+        value: durationSeconds,
+        propagationMode,
+      }),
+      () => updateStopDuration(row, durationSeconds, propagationMode)
     );
+  };
 
   const handleReceptionSignalChange = (
     row: TimesStopsRowNew,

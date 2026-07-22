@@ -27,7 +27,7 @@ import type { PowerRestrictionBlockInfo } from './helpers/powerRestrictionIncomp
 import { onStopSignalToReceptionSignal } from './helpers/utils';
 import MarginCell from './MarginCell';
 import TimeCell, { type TimeCellHandle } from './TimeCell';
-import type { MarginValue, PropagationMode, TimesStopsRowNew } from './types';
+import type { MarginValue, PropagationMode, StopPropagationMode, TimesStopsRowNew } from './types';
 
 declare module '@tanstack/react-table' {
   // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
@@ -49,7 +49,11 @@ declare module '@tanstack/react-table' {
       arrival: Date | null,
       propagationMode: PropagationMode
     ) => void;
-    onStopDurationChange: (row: TimesStopsRowNew, durationSeconds: number | null) => void;
+    onStopDurationChange: (
+      row: TimesStopsRowNew,
+      durationSeconds: number | null,
+      propagationMode: StopPropagationMode
+    ) => void;
     onDepartureChange: (
       row: TimesStopsRowNew,
       departure: Date | null,
@@ -107,7 +111,11 @@ type TimesStopsTableProps = {
     arrival: Date | null,
     propagationMode: PropagationMode
   ) => void;
-  onStopDurationChange: (row: TimesStopsRowNew, durationSeconds: number | null) => void;
+  onStopDurationChange: (
+    row: TimesStopsRowNew,
+    durationSeconds: number | null,
+    propagationMode: StopPropagationMode
+  ) => void;
   onDepartureChange: (
     row: TimesStopsRowNew,
     departure: Date | null,
@@ -374,8 +382,8 @@ const TimesStopsTable = ({
     <DurationCell
       ref={registerTimeCellRef(info.row.index, 'stopDuration')}
       {...info}
-      onChange={(e) =>
-        info.table.options.meta!.onStopDurationChange(info.row.original, e.target.value)
+      onCommit={(seconds, propagationMode) =>
+        info.table.options.meta!.onStopDurationChange(info.row.original, seconds, propagationMode)
       }
     />
   );

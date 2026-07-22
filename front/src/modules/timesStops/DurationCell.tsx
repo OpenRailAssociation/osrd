@@ -11,11 +11,12 @@ import {
 
 import type { CellContext } from '@tanstack/react-table';
 
-import type { Duration } from 'utils/duration';
+import { Duration } from 'utils/duration';
 
 import CellPlaceholder from './CellPlaceholder';
 import ClearButton from './ClearButton';
-import type { TimesStopsRowNew } from './types';
+import DurationPropagationMenu from './DurationPropagationMenu';
+import type { StopPropagationMode, TimesStopsRowNew } from './types';
 
 type ActiveUnit = 'h' | 'm' | 's';
 
@@ -188,7 +189,8 @@ type DurationAction =
   | { type: 'BACKSPACE' }
   | { type: 'NAVIGATE'; payload: 'left' | 'right' }
   | { type: 'SET_ACTIVE_UNIT'; payload: ActiveUnit }
-  | { type: 'EXTERNAL_VALUE_CHANGED'; payload: number };
+  | { type: 'EXTERNAL_VALUE_CHANGED'; payload: number }
+  | { type: 'CANCEL_EDITING'; payload: Duration | null };
 
 const initialState: DurationState = {
   isEditing: false,
@@ -308,6 +310,9 @@ const durationReducer = (state: DurationState, action: DurationAction): Duration
       if (state.isEditing) return state;
       return { ...state, units: secondsToUnits(action.payload) };
 
+    case 'CANCEL_EDITING':
+      return initialDurationState(action.payload);
+
     default:
       return state;
   }
@@ -376,15 +381,20 @@ const DurationCell = ({
   ...props
 }: CellContext<TimesStopsRowNew, Duration | null> &
   Omit<React.HTMLAttributes<HTMLDivElement>, 'onChange'> & {
-    onChange?: (e: { target: { value: number | null } }) => void;
+    onCommit?: (seconds: number | null, propagationMode: StopPropagationMode) => void;
     disabled?: boolean;
     ref?: React.Ref<DurationCellHandle>;
   }) => {
-  const { onChange, getValue } = props || {};
+  const { onCommit, getValue, row, table } = props || {};
   const controlledValue = getValue();
   const [state, dispatch] = useReducer(durationReducer, controlledValue, initialDurationState);
   const containerRef = useRef<HTMLDivElement>(null);
   const mouseDownRef = useRef(false);
+  // Guards onBlur against double-committing after an explicit blur() (Enter/Escape/menu-select).
+  const blurHandledRef = useRef(false);
+  const isFirstRow = row.index === 0;
+  const isLastRow = row.index === table.getRowCount() - 1;
+  const allDigitsCleared = Object.values(state.units).every((u) => isCleared(u));
 
   useImperativeHandle(
     ref,
@@ -415,21 +425,26 @@ const DurationCell = ({
   };
 
   const handleClear = () => {
-    if (controlledValue !== null) onChange?.({ target: { value: null } });
+    if (controlledValue !== null) onCommit?.(null, 'atThisWaypoint');
     dispatch({ type: 'STOP_EDITING' });
   };
 
-  const commit = () => {
-    const allCleared = Object.values(state.units).every((u) => isCleared(u));
-    if (allCleared) {
-      if (controlledValue !== null) onChange?.({ target: { value: null } });
+  const commit = (propagationMode: StopPropagationMode = 'atThisWaypoint') => {
+    if (allDigitsCleared) {
+      if (controlledValue !== null) onCommit?.(null, propagationMode);
     } else {
       const newSeconds = unitsToSeconds(state.units);
       const initialSeconds =
         controlledValue !== null ? Math.round(controlledValue.total('second')) : null;
-      if (newSeconds !== initialSeconds) onChange?.({ target: { value: newSeconds } });
+      if (newSeconds !== initialSeconds) onCommit?.(newSeconds, propagationMode);
     }
     dispatch({ type: 'STOP_EDITING' });
+  };
+
+  const handleSelectPropagationMode = (mode: StopPropagationMode) => {
+    blurHandledRef.current = true;
+    commit(mode);
+    containerRef.current?.blur();
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -438,7 +453,15 @@ const DurationCell = ({
     switch (e.key) {
       case 'Enter':
         e.preventDefault();
+        blurHandledRef.current = true;
         commit();
+        containerRef.current?.blur();
+        break;
+      case 'Escape':
+        e.preventDefault();
+        blurHandledRef.current = true;
+        dispatch({ type: 'CANCEL_EDITING', payload: controlledValue });
+        containerRef.current?.blur();
         break;
       case 'ArrowLeft':
         e.preventDefault();
@@ -462,6 +485,10 @@ const DurationCell = ({
 
   const isEdited = controlledValue !== null || Object.values(state.units).some((u) => u !== '00');
   const showPlaceholder = !state.isEditing && controlledValue === null;
+  const shouldShowPropagationMenu = state.isEditing && !state.allDigitsSelected;
+  const editedDuration = allDigitsCleared
+    ? null
+    : new Duration({ seconds: unitsToSeconds(state.units) });
 
   const handleMouseDown = () => {
     mouseDownRef.current = true;
@@ -486,6 +513,10 @@ const DurationCell = ({
         onMouseUp={handleMouseUp}
         onBlur={() => {
           mouseDownRef.current = false;
+          if (blurHandledRef.current) {
+            blurHandledRef.current = false;
+            return;
+          }
           if (state.isEditing) commit();
         }}
         onClick={() => !state.isEditing && startEditing('m')}
@@ -506,6 +537,15 @@ const DurationCell = ({
             ))}
           </>
         )}
+        <DurationPropagationMenu
+          isOpen={shouldShowPropagationMenu}
+          anchorRef={{ current: containerRef.current?.closest('td') ?? null }}
+          oldValue={controlledValue}
+          newValue={editedDuration}
+          onSelectMode={handleSelectPropagationMode}
+          disableFromDeparture={isFirstRow}
+          disableToDestination={isLastRow}
+        />
       </div>
       <ClearButton isVisible={state.isEditing} containerRef={containerRef} onClear={handleClear} />
     </>

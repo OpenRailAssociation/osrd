@@ -120,6 +120,8 @@ export type PropagationMode =
   | 'atThisWaypoint'
   | 'toDestination';
 
+export type StopPropagationMode = Exclude<PropagationMode, 'shiftAllWaypoints'>;
+
 export type UpdateCellStatus = 'updated' | 'skipped';
 
 export type ArrivalUpdate = {
@@ -133,6 +135,7 @@ export type StopDurationUpdate = {
   row: TimesStopsRowNew;
   field: 'stopDuration';
   value: number | null;
+  propagationMode: StopPropagationMode;
 };
 
 export type DepartureUpdate = {
