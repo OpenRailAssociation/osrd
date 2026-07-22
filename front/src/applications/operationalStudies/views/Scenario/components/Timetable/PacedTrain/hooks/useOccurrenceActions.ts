@@ -2,13 +2,10 @@ import { useCallback } from 'react';
 
 import { useSelector } from 'react-redux';
 
+import { useTimetableContext } from 'applications/operationalStudies/hooks/useTimetableContext';
 import { updatePacedTrainExceptionsList } from 'applications/operationalStudies/views/Scenario/components/ManageTrainSchedule/helpers/buildPacedTrainException';
 import { formatTrainScheduleWithDetailsToTrainSchedule } from 'applications/operationalStudies/views/Scenario/components/ManageTrainSchedule/helpers/formatTrainSchedulePayload';
-import type {
-  PacedTrainException,
-  TrainSchedule,
-  TrainScheduleResponse,
-} from 'common/api/osrdEditoastApi';
+import type { PacedTrainException, TrainSchedule } from 'common/api/osrdEditoastApi';
 import {
   findExceptionWithOccurrenceId,
   extractOccurrenceDetailsFromPacedTrain,
@@ -39,7 +36,6 @@ type OccurrenceActionsParams = {
     originalTrainSchedule?: PacedTrainWithDetails,
     occurrenceId?: OccurrenceId
   ) => void;
-  upsertTrainSchedules: (trainSchedules: TrainScheduleResponse[]) => void;
   timetableId: number;
 };
 
@@ -47,12 +43,12 @@ const useOccurrenceActions = ({
   pacedTrain,
   occurrences,
   selectPacedTrainToEdit,
-  upsertTrainSchedules,
   timetableId,
 }: OccurrenceActionsParams) => {
   const dispatch = useAppDispatch();
 
   const { id: selectedTrainId } = useSelector(getSelectedTrain) || {};
+  const { upsertTrainSchedules } = useTimetableContext();
 
   const upsertWithNewExceptions = useCallback(
     (newExceptions: SimulatedException[]) => {

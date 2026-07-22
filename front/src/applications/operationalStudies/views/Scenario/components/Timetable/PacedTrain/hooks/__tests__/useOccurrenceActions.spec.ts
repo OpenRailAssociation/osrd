@@ -1,6 +1,9 @@
+import { type ReactNode, createElement } from 'react';
+
 import { getTestStore, renderHookWithStore } from 'store/__tests__';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { TimetableContext } from 'applications/operationalStudies/hooks/useTimetableContext';
 import { mockOsrdEditoastEndpoints } from 'common/api/__mocks__/osrdEditoastApi';
 
 import { formatTrainScheduleWithDetailsToTrainSchedule } from '../../../../ManageTrainSchedule/helpers/formatTrainSchedulePayload';
@@ -31,9 +34,22 @@ const buildOccurrenceActionsArgs = (
   pacedTrain,
   occurrences,
   selectPacedTrainToEdit: mockSelectPacedTrainToEdit,
-  upsertTrainSchedules: mockUpsertTrainSchedules,
   timetableId: 1,
 });
+
+const timetableContextWrapper = ({ children }: { children: ReactNode }) =>
+  createElement(
+    TimetableContext.Provider,
+    {
+      value: {
+        trainSchedules: [],
+        removeTrainSchedules: () => {},
+        upsertTrainSchedules: mockUpsertTrainSchedules,
+        updateTrainScheduleDepartureTime: async () => {},
+      },
+    },
+    children
+  );
 
 describe('useOccurrenceActions', () => {
   beforeEach(() => {
@@ -41,8 +57,9 @@ describe('useOccurrenceActions', () => {
   });
 
   it('should correctly toggle the selection of one occurrence', () => {
-    const { result, rerender } = renderHookWithStore(() =>
-      useOccurrenceActions(buildOccurrenceActionsArgs())
+    const { result, rerender } = renderHookWithStore(
+      () => useOccurrenceActions(buildOccurrenceActionsArgs()),
+      { wrapper: timetableContextWrapper }
     );
     const store = getTestStore();
 
@@ -63,8 +80,9 @@ describe('useOccurrenceActions', () => {
   });
 
   it('should select occurrence for projection', () => {
-    const { result } = renderHookWithStore(() =>
-      useOccurrenceActions(buildOccurrenceActionsArgs())
+    const { result } = renderHookWithStore(
+      () => useOccurrenceActions(buildOccurrenceActionsArgs()),
+      { wrapper: timetableContextWrapper }
     );
     const store = getTestStore();
 
@@ -76,8 +94,9 @@ describe('useOccurrenceActions', () => {
   });
 
   it('should edit paced train', () => {
-    const { result } = renderHookWithStore(() =>
-      useOccurrenceActions(buildOccurrenceActionsArgs())
+    const { result } = renderHookWithStore(
+      () => useOccurrenceActions(buildOccurrenceActionsArgs()),
+      { wrapper: timetableContextWrapper }
     );
 
     result.current.editOccurrence({
@@ -108,8 +127,9 @@ describe('useOccurrenceActions', () => {
   });
 
   it('should edit paced train with exceptions', () => {
-    const { result } = renderHookWithStore(() =>
-      useOccurrenceActions(buildOccurrenceActionsArgs({ ...pacedTrainWithExceptions }))
+    const { result } = renderHookWithStore(
+      () => useOccurrenceActions(buildOccurrenceActionsArgs({ ...pacedTrainWithExceptions })),
+      { wrapper: timetableContextWrapper }
     );
 
     result.current.editOccurrence({
@@ -142,8 +162,9 @@ describe('useOccurrenceActions', () => {
   });
 
   it('should not enable an occurrence which was not disabled', async () => {
-    const { result } = renderHookWithStore(() =>
-      useOccurrenceActions(buildOccurrenceActionsArgs())
+    const { result } = renderHookWithStore(
+      () => useOccurrenceActions(buildOccurrenceActionsArgs()),
+      { wrapper: timetableContextWrapper }
     );
 
     await expect(result.current.updateOccurrenceStatus(occurrence1, 'enable')).rejects.toThrow();
@@ -160,8 +181,9 @@ describe('useOccurrenceActions', () => {
       },
     });
 
-    const { result } = renderHookWithStore(() =>
-      useOccurrenceActions(buildOccurrenceActionsArgs())
+    const { result } = renderHookWithStore(
+      () => useOccurrenceActions(buildOccurrenceActionsArgs()),
+      { wrapper: timetableContextWrapper }
     );
 
     await result.current.updateOccurrenceStatus(occurrence1, 'disabled');
@@ -194,21 +216,23 @@ describe('useOccurrenceActions', () => {
     });
 
     const [exception1] = pacedTrainWithExceptions.paced.exceptions;
-    const { result } = renderHookWithStore(() =>
-      useOccurrenceActions(
-        buildOccurrenceActionsArgs({
-          ...pacedTrainWithExceptions,
-          paced: {
-            ...pacedTrainWithExceptions.paced,
-            exceptions: [
-              {
-                ...exception1,
-                id: 100,
-              },
-            ],
-          },
-        })
-      )
+    const { result } = renderHookWithStore(
+      () =>
+        useOccurrenceActions(
+          buildOccurrenceActionsArgs({
+            ...pacedTrainWithExceptions,
+            paced: {
+              ...pacedTrainWithExceptions.paced,
+              exceptions: [
+                {
+                  ...exception1,
+                  id: 100,
+                },
+              ],
+            },
+          })
+        ),
+      { wrapper: timetableContextWrapper }
     );
 
     await result.current.updateOccurrenceStatus(occurrence1, 'disabled');
@@ -268,16 +292,18 @@ describe('useOccurrenceActions', () => {
       disabled: false,
     };
 
-    const { result } = renderHookWithStore(() =>
-      useOccurrenceActions(
-        buildOccurrenceActionsArgs({
-          ...pacedTrainSchedule,
-          paced: {
-            ...pacedTrainSchedule.paced,
-            exceptions: [noChangeException],
-          },
-        })
-      )
+    const { result } = renderHookWithStore(
+      () =>
+        useOccurrenceActions(
+          buildOccurrenceActionsArgs({
+            ...pacedTrainSchedule,
+            paced: {
+              ...pacedTrainSchedule.paced,
+              exceptions: [noChangeException],
+            },
+          })
+        ),
+      { wrapper: timetableContextWrapper }
     );
 
     await result.current.updateOccurrenceStatus(occurrence1, 'disabled');
@@ -319,14 +345,15 @@ describe('useOccurrenceActions', () => {
       },
     });
 
-    const { result, rerender } = renderHookWithStore(() =>
-      useOccurrenceActions({
-        pacedTrain: { ...pacedTrainSchedule },
-        occurrences: [{ ...occurrence1 }, { ...occurrence2 }],
-        selectPacedTrainToEdit: mockSelectPacedTrainToEdit,
-        upsertTrainSchedules: mockUpsertTrainSchedules,
-        timetableId: 1,
-      })
+    const { result, rerender } = renderHookWithStore(
+      () =>
+        useOccurrenceActions({
+          pacedTrain: { ...pacedTrainSchedule },
+          occurrences: [{ ...occurrence1 }, { ...occurrence2 }],
+          selectPacedTrainToEdit: mockSelectPacedTrainToEdit,
+          timetableId: 1,
+        }),
+      { wrapper: timetableContextWrapper }
     );
     const store = getTestStore();
 
@@ -353,21 +380,23 @@ describe('useOccurrenceActions', () => {
     });
 
     const [exception1] = pacedTrainWithExceptions.paced.exceptions;
-    const { result } = renderHookWithStore(() =>
-      useOccurrenceActions(
-        buildOccurrenceActionsArgs({
-          ...pacedTrainWithExceptions,
-          paced: {
-            ...pacedTrainWithExceptions.paced,
-            exceptions: [
-              {
-                ...exception1,
-                id: 100,
-              },
-            ],
-          },
-        })
-      )
+    const { result } = renderHookWithStore(
+      () =>
+        useOccurrenceActions(
+          buildOccurrenceActionsArgs({
+            ...pacedTrainWithExceptions,
+            paced: {
+              ...pacedTrainWithExceptions.paced,
+              exceptions: [
+                {
+                  ...exception1,
+                  id: 100,
+                },
+              ],
+            },
+          })
+        ),
+      { wrapper: timetableContextWrapper }
     );
 
     await result.current.resetOccurrenceExceptions(occurrence1.id);
@@ -399,12 +428,14 @@ describe('useOccurrenceActions', () => {
       data: [],
     });
 
-    const { result } = renderHookWithStore(() =>
-      useOccurrenceActions(
-        buildOccurrenceActionsArgs({ ...pacedTrainWithAddedException }, [
-          { ...addedExceptionOccurrence },
-        ])
-      )
+    const { result } = renderHookWithStore(
+      () =>
+        useOccurrenceActions(
+          buildOccurrenceActionsArgs({ ...pacedTrainWithAddedException }, [
+            { ...addedExceptionOccurrence },
+          ])
+        ),
+      { wrapper: timetableContextWrapper }
     );
 
     const [addedException] = pacedTrainWithAddedException.paced.exceptions;
@@ -446,8 +477,9 @@ describe('useOccurrenceActions', () => {
   });
 
   it('should not delete inexistent exceptions', async () => {
-    const { result } = renderHookWithStore(() =>
-      useOccurrenceActions(buildOccurrenceActionsArgs())
+    const { result } = renderHookWithStore(
+      () => useOccurrenceActions(buildOccurrenceActionsArgs()),
+      { wrapper: timetableContextWrapper }
     );
 
     await expect(
@@ -460,12 +492,14 @@ describe('useOccurrenceActions', () => {
       data: [],
     });
 
-    const { result } = renderHookWithStore(() =>
-      useOccurrenceActions(
-        buildOccurrenceActionsArgs({ ...pacedTrainWithAddedException }, [
-          { ...addedExceptionOccurrence },
-        ])
-      )
+    const { result } = renderHookWithStore(
+      () =>
+        useOccurrenceActions(
+          buildOccurrenceActionsArgs({ ...pacedTrainWithAddedException }, [
+            { ...addedExceptionOccurrence },
+          ])
+        ),
+      { wrapper: timetableContextWrapper }
     );
 
     await result.current.deleteAddedException(addedExceptionOccurrence.id);
@@ -498,12 +532,14 @@ describe('useOccurrenceActions', () => {
       data: [],
     });
 
-    const { result, rerender } = renderHookWithStore(() =>
-      useOccurrenceActions(
-        buildOccurrenceActionsArgs({ ...pacedTrainWithAddedException }, [
-          { ...addedExceptionOccurrence },
-        ])
-      )
+    const { result, rerender } = renderHookWithStore(
+      () =>
+        useOccurrenceActions(
+          buildOccurrenceActionsArgs({ ...pacedTrainWithAddedException }, [
+            { ...addedExceptionOccurrence },
+          ])
+        ),
+      { wrapper: timetableContextWrapper }
     );
     const store = getTestStore();
 
