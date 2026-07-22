@@ -2,12 +2,12 @@ import { useCallback, useMemo } from 'react';
 
 import { useTranslation } from 'react-i18next';
 
+import { useTimetableContext } from 'applications/operationalStudies/hooks/useTimetableContext';
 import {
   osrdEditoastApi,
   type CatalogEntry,
   type TrainSchedule,
   type TrainScheduleSet,
-  type TrainScheduleResponse,
 } from 'common/api/osrdEditoastApi';
 import { createTrainSchedules } from 'modules/trainSchedule/helpers/updateTrainScheduleHelpers';
 import type { TrainScheduleWithDetails } from 'modules/trainSchedule/types';
@@ -42,15 +42,14 @@ export type TrainScheduleSetManager = {
 };
 
 export default function useScenarioTrainScheduleSet(
-  trainSchedulesWithDetails: TrainScheduleWithDetails[],
-  trainSchedules: TrainScheduleResponse[],
-  upsertTrainSchedules: (trainSchedules: TrainScheduleResponse[]) => void
+  trainSchedulesWithDetails: TrainScheduleWithDetails[]
 ) {
   const { t } = useTranslation('operational-studies', {
     keyPrefix: 'main.timetable.trainScheduleSets.error',
   });
 
   const { timetableId } = useScenarioContext();
+  const { trainSchedules, upsertTrainSchedules } = useTimetableContext();
 
   const { currentData: trainScheduleSets } =
     osrdEditoastApi.endpoints.getTimetableByIdTrainScheduleSets.useQuery({ id: timetableId });

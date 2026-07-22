@@ -68,7 +68,7 @@ const Timetable = ({
   const [trainScheduleSetIdSelected, setTrainScheduleSetIdSelected] = useState<number>();
 
   const { trainSchedulesByTrainScheduleSets, catalogEntries, manageTrainScheduleSet } =
-    useScenarioTrainScheduleSet(trainSchedulesWithDetails, trainSchedules, upsertTrainSchedules);
+    useScenarioTrainScheduleSet(trainSchedulesWithDetails);
 
   const { filteredTrainSchedules, ...timetableFilters } =
     useFilterTrainSchedules(trainSchedulesWithDetails);
