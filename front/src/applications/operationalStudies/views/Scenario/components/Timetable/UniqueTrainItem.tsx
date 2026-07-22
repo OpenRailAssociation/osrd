@@ -31,7 +31,7 @@ import {
 } from 'reducers/simulationResults';
 import { useAppDispatch } from 'store';
 import { timeToLocaleStringRounded, useDateTimeLocale } from 'utils/date';
-import { addDurationToDate, Duration, startTimeToDate } from 'utils/duration';
+import { addDurationToDate, Duration } from 'utils/duration';
 import { castErrorToFailure } from 'utils/error';
 import { formatEditoastIdToTrainScheduleId } from 'utils/trainId';
 
@@ -153,8 +153,11 @@ const UniqueTrainItem = ({
     if (!summary?.isValid) dispatch(updateProjectionType('operationalPointProjection'));
   };
 
-  // TODO Hourly timetables: display the actual start time instead of a fictive date
-  const trainStartTime = startTimeToDate(train.startTime);
+  // An hourly timetable cannot contain unique trains (see formatTrainScheduleWithDetails).
+  if (train.startTime instanceof Duration) {
+    throw new Error('A unique train cannot have a Duration start time');
+  }
+  const trainStartTime = train.startTime;
 
   const arrivalTime = summary?.isValid
     ? addDurationToDate(trainStartTime, summary.duration)

@@ -3,6 +3,7 @@ import { X } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 
+import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import type { SubCategory, TrainMainCategory } from 'common/api/osrdEditoastApi';
 import useCategoryOptions from 'modules/rollingStock/hooks/useCategoryOptions';
 
@@ -22,6 +23,10 @@ type FilterPanelProps = {
 const FilterPanel = ({ toggleFilterPanel, timetableFilters }: FilterPanelProps) => {
   const { t } = useTranslation('operational-studies', { keyPrefix: 'main' });
   const categoryOptions = useCategoryOptions(false);
+  const { scenario } = useScenarioContext();
+  // An hourly timetable only ever contains paced trains, so the mission/single
+  // train filter would be a no-op.
+  const isHourlyTimetable = scenario.timetable_type === 'HOURLY';
 
   const {
     nameLabelFilter,
@@ -70,6 +75,28 @@ const FilterPanel = ({ toggleFilterPanel, timetableFilters }: FilterPanelProps) 
       label: option.label,
     })),
   ];
+
+  const trainCategoryFilterSelect = (
+    <Select
+      getOptionLabel={(option) => option.label}
+      getOptionValue={(option) => option.label}
+      data-testid="timetable-train-category-filter"
+      id="timetable-train-category-filter"
+      label={t('timetable.trainCategories')}
+      narrow
+      small
+      onChange={(selectedOption) => {
+        if (selectedOption) {
+          setTrainCategoryFilter(selectedOption.id);
+        }
+      }}
+      options={formattedCategoryOptions}
+      value={
+        formattedCategoryOptions.find((option) => option.id === trainCategoryFilter) ||
+        formattedCategoryOptions[0]
+      }
+    />
+  );
 
   const toggleTagSelection = (tag: string | null) => {
     setSelectedTags((prevSelectedTags) => {
@@ -129,25 +156,29 @@ const FilterPanel = ({ toggleFilterPanel, timetableFilters }: FilterPanelProps) 
               validityOptions[0]
             }
           />
-          <Select
-            getOptionLabel={(option) => option.label}
-            getOptionValue={(option) => option.value}
-            data-testid="timetable-train-type-filter"
-            id="timetable-train-type-filter"
-            label={t('timetable.trainType')}
-            narrow
-            small
-            onChange={(selectedOption) => {
-              if (selectedOption) {
-                setTrainTypeFilter(selectedOption.value);
+          {isHourlyTimetable ? (
+            trainCategoryFilterSelect
+          ) : (
+            <Select
+              getOptionLabel={(option) => option.label}
+              getOptionValue={(option) => option.value}
+              data-testid="timetable-train-type-filter"
+              id="timetable-train-type-filter"
+              label={t('timetable.trainType')}
+              narrow
+              small
+              onChange={(selectedOption) => {
+                if (selectedOption) {
+                  setTrainTypeFilter(selectedOption.value);
+                }
+              }}
+              options={trainTypeOptions}
+              value={
+                trainTypeOptions.find((option) => option.value === trainTypeFilter) ||
+                trainTypeOptions[0]
               }
-            }}
-            options={trainTypeOptions}
-            value={
-              trainTypeOptions.find((option) => option.value === trainTypeFilter) ||
-              trainTypeOptions[0]
-            }
-          />
+            />
+          )}
         </div>
         <div id="schedule-point-honored-and-rollingstock">
           <Input
@@ -184,25 +215,7 @@ const FilterPanel = ({ toggleFilterPanel, timetableFilters }: FilterPanelProps) 
               ) || scheduledPointsHonoredOptions[0]
             }
           />
-          <Select
-            getOptionLabel={(option) => option.label}
-            getOptionValue={(option) => option.label}
-            data-testid="timetable-train-category-filter"
-            id="timetable-train-category-filter"
-            label={t('timetable.trainCategories')}
-            narrow
-            small
-            onChange={(selectedOption) => {
-              if (selectedOption) {
-                setTrainCategoryFilter(selectedOption.id);
-              }
-            }}
-            options={formattedCategoryOptions}
-            value={
-              formattedCategoryOptions.find((option) => option.id === trainCategoryFilter) ||
-              formattedCategoryOptions[0]
-            }
-          />
+          {!isHourlyTimetable && trainCategoryFilterSelect}
         </div>
       </div>
       <div className="speed-limit-tag">

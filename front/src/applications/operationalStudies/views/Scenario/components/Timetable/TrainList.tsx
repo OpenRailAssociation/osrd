@@ -21,7 +21,7 @@ import {
 } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
 import { useDateTimeLocale } from 'utils/date';
-import { startTimeToDate } from 'utils/duration';
+import { Duration } from 'utils/duration';
 import { formatEditoastIdToTrainScheduleId } from 'utils/trainId';
 
 import { MANAGE_TRAIN_SCHEDULE_TYPES } from '../../consts';
@@ -79,7 +79,8 @@ const TrainList = ({
 }: TrainListProps) => {
   const dateTimeLocale = useDateTimeLocale();
 
-  const { workerStatus, timetableId } = useScenarioContext();
+  const { workerStatus, timetableId, scenario } = useScenarioContext();
+  const isHourlyTimetable = scenario.timetable_type === 'HOURLY';
   const subCategories = useSubCategoryContext();
 
   const [expandedTrainScheduleIds, setExpandedTrainScheduleIds] = useState<Set<number>>(new Set());
@@ -118,11 +119,17 @@ const TrainList = ({
 
   const currentDepartureDates = useMemo(
     () =>
-      trainSchedulesWithDetails.map((train) =>
-        // TODO Hourly timetables: display the actual start time instead of a fictive date
-        formatDepartureDate(startTimeToDate(train.startTime), dateTimeLocale)
-      ),
-    [trainSchedulesWithDetails, dateTimeLocale]
+      // Hourly timetables have no calendar date to group trains by: their start time is an
+      // offset from the timetable start, not tied to any real day.
+      isHourlyTimetable
+        ? []
+        : trainSchedulesWithDetails.map((train) => {
+            if (train.startTime instanceof Duration) {
+              throw new Error('A calendar timetable train cannot have a Duration start time');
+            }
+            return formatDepartureDate(train.startTime, dateTimeLocale);
+          }),
+    [isHourlyTimetable, trainSchedulesWithDetails, dateTimeLocale]
   );
 
   const showDepartureDates = useMemo(() => {
