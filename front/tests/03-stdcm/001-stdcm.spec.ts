@@ -1,3 +1,4 @@
+import { StdcmStopTypes } from 'applications/stdcm/types';
 import type { Infra, TowedRollingStock } from 'common/api/osrdEditoastApi';
 
 import {
@@ -20,7 +21,6 @@ import {
   TRACTION_ENGINE_PREFILLED_VALUES,
   VIA_DETAILS,
   VIA_STOP_TIMES,
-  VIA_STOP_TYPES,
   VIA_SUGGESTIONS,
 } from '../assets/constants/stdcm/stdcm-const';
 import type { ConsistFields } from '../utils/stdcm-types';
@@ -76,7 +76,7 @@ test.describe('STDCM simulation with all stops and towed rolling stock', { tag: 
       });
 
       await test.step('Add/delete default via and linked path', async () => {
-        await viaSection.addAndDeletedDefaultVia(VIA_STOP_TYPES.PASSAGE_TIME);
+        await viaSection.addAndDeletedDefaultVia(StdcmStopTypes.PASSAGE_TIME);
         await linkedTrainSection.addAndDeleteDefaultLinkedPath({
           defaultDate: DEFAULT_DETAILS.arrivalDate,
         });
@@ -135,7 +135,7 @@ test.describe('STDCM simulation with all stops and towed rolling stock', { tag: 
           await viaSection.fillAndVerifyViaDetails({
             ...viaDetail,
             expectedChValue: DEFAULT_DETAILS.chValue,
-            stopTypes: VIA_STOP_TYPES,
+            stopTypes: StdcmStopTypes,
             stopTimes: VIA_STOP_TIMES,
             suggestionTextBySearch: {
               mid_west: VIA_SUGGESTIONS[0],
@@ -246,7 +246,7 @@ test.describe('STDCM simulation with all stops and towed rolling stock', { tag: 
         viaNumber: 1,
         ciSearchText: 'mid_west',
         expectedChValue: DEFAULT_DETAILS.chValue,
-        stopTypes: VIA_STOP_TYPES,
+        stopTypes: StdcmStopTypes,
         stopTimes: VIA_STOP_TIMES,
         suggestionTextBySearch: {
           mid_west: VIA_SUGGESTIONS[0],

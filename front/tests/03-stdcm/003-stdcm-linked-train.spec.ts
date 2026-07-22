@@ -1,3 +1,4 @@
+import { StdcmStopTypes } from 'applications/stdcm/types';
 import type { Infra, TowedRollingStock } from 'common/api/osrdEditoastApi';
 
 import LINKED_TRAIN_DETAILS from '../assets/constants/stdcm/linked-train-const';
@@ -15,7 +16,6 @@ import {
   STDCM_URL,
   TOWED_ROLLING_STOCK_PREFILLED_VALUES,
   VIA_STOP_TIMES,
-  VIA_STOP_TYPES,
   VIA_SUGGESTIONS,
 } from '../assets/constants/stdcm/stdcm-const';
 import type { ConsistFields } from '../utils/stdcm-types';
@@ -84,7 +84,7 @@ test.describe('STDCM linked train simulation', { tag: ['@stdcm', '@stdcm-linked-
         viaNumber: 1,
         ciSearchText: 'nS',
         expectedChValue: DEFAULT_DETAILS.chValue,
-        stopTypes: VIA_STOP_TYPES,
+        stopTypes: StdcmStopTypes,
         stopTimes: VIA_STOP_TIMES,
         suggestionTextBySearch: {
           mid_west: VIA_SUGGESTIONS[0],
@@ -150,7 +150,7 @@ test.describe('STDCM linked train simulation', { tag: ['@stdcm', '@stdcm-linked-
 
       await newViaSection.verifyViaDetails({
         expectedCiValue: CI_SUGGESTIONS.north[1],
-        expectedViaType: VIA_STOP_TYPES.DRIVER_SWITCH,
+        expectedViaType: StdcmStopTypes.DRIVER_SWITCH,
         expectedStopTime: VIA_STOP_TIMES.driverSwitch.validInput,
       });
     });
@@ -182,7 +182,7 @@ test.describe('STDCM linked train simulation', { tag: ['@stdcm', '@stdcm-linked-
         viaNumber: 1,
         ciSearchText: 'mid_east',
         expectedChValue: DEFAULT_DETAILS.chValue,
-        stopTypes: VIA_STOP_TYPES,
+        stopTypes: StdcmStopTypes,
         stopTimes: VIA_STOP_TIMES,
         suggestionTextBySearch: {
           mid_west: VIA_SUGGESTIONS[0],

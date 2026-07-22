@@ -1,5 +1,6 @@
 import fs from 'fs';
 
+import { StdcmStopTypes } from 'applications/stdcm/types';
 import type { Infra } from 'common/api/osrdEditoastApi';
 
 import simulationSheetDetails from '../assets/constants/stdcm/simulation-sheet-const';
@@ -17,7 +18,6 @@ import {
   STDCM_WITHOUT_ALL_VIA_DATA_PATH,
   TRACTION_ENGINE_PREFILLED_VALUES,
   VIA_STOP_TIMES,
-  VIA_STOP_TYPES,
   VIA_SUGGESTIONS,
 } from '../assets/constants/stdcm/stdcm-const';
 import test from './../page-object-fixture';
@@ -93,7 +93,7 @@ test.describe('STDCM simulation sheet', { tag: ['@stdcm, @stdcm-sheet'] }, () =>
           viaNumber: 1,
           ciSearchText: 'mid_west',
           expectedChValue: DEFAULT_DETAILS.chValue,
-          stopTypes: VIA_STOP_TYPES,
+          stopTypes: StdcmStopTypes,
           stopTimes: VIA_STOP_TIMES,
           suggestionTextBySearch: {
             mid_west: VIA_SUGGESTIONS[0],
