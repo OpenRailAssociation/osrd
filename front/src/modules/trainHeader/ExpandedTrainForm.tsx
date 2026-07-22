@@ -168,7 +168,7 @@ function trainPayloadChanged(updatedTrain: Train, train: Train): boolean {
     updatedTrain.paced?.interval !== train.paced?.interval ||
     updatedTrain.paced?.time_window !== train.paced?.time_window ||
     updatedTrain.train_name !== train.train_name ||
-    updatedTrain.speed_limit_tag !== train.speed_limit_tag ||
+    (updatedTrain.speed_limit_tag ?? null) !== (train.speed_limit_tag ?? null) ||
     updatedTrain.constraint_distribution !== train.constraint_distribution ||
     updatedTrain.comfort !== train.comfort ||
     updatedTrain.rolling_stock_name !== train.rolling_stock_name ||
