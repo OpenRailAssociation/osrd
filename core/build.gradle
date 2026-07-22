@@ -35,7 +35,7 @@ dependencies {
     implementation libs.kotlin.logging
     implementation libs.kotlinx.coroutines.core
     implementation libs.kotlinx.serialization.core
-    implementation libs.kotlinx.serialization.json
+    implementation libs.kotlinx.serialization.cbor
     testImplementation libs.kotlin.test
     testImplementation libs.kotlinx.coroutines.test
 
