@@ -35,12 +35,8 @@ const ManageTrainScheduleModal = ({
 }: ManageTrainScheduleModalProps) => {
   const dispatch = useDispatch();
 
-  const { trainSchedules, upsertTrainSchedules } = useTimetableContext();
-  const { importTrainScheduleSets } = useScenarioTrainScheduleSet(
-    trainSchedulesWithDetails,
-    trainSchedules,
-    upsertTrainSchedules
-  );
+  const { upsertTrainSchedules } = useTimetableContext();
+  const { importTrainScheduleSets } = useScenarioTrainScheduleSet(trainSchedulesWithDetails);
 
   const handleImportTrainScheduleSets = async (data: ImportTrainScheduleSetsPayload) => {
     try {
