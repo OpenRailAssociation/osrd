@@ -3,12 +3,12 @@ import { useCallback } from 'react';
 import type { Track } from '@osrd-project/ui-charts';
 import { v4 as uuidV4 } from 'uuid';
 
+import { useTimetableContext } from 'applications/operationalStudies/hooks/useTimetableContext';
 import {
   osrdEditoastApi,
   type PathAndScheduleChangeGroup,
   type PathItem,
   type TrainScheduleExceptionChangeGroups,
-  type TrainScheduleResponse,
 } from 'common/api/osrdEditoastApi';
 import { matchPathStepAndOp } from 'modules/pathfinding/utils';
 import type {
@@ -104,19 +104,16 @@ function upsertPathStepTrack(
 }
 
 export default function useOccupancyZoneDrop({
-  trainSchedules,
   trainSchedulesWithDetails,
   pathOperationalPoints,
   deployedWaypoints,
-  upsertTrainSchedules,
 }: {
-  trainSchedules: TrainScheduleResponse[];
   trainSchedulesWithDetails: TrainScheduleWithDetails[];
   pathOperationalPoints: ProjectionWaypoint[];
   deployedWaypoints: DeployedWaypoint[];
-  upsertTrainSchedules: (trainSchedules: TrainScheduleResponse[]) => void;
 }) {
   const dispatch = useAppDispatch();
+  const { trainSchedules, upsertTrainSchedules } = useTimetableContext();
 
   const [putException] = osrdEditoastApi.endpoints.putTrainScheduleExceptionById.useMutation();
 
