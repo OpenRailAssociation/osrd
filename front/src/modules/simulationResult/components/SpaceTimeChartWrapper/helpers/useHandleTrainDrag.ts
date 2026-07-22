@@ -177,7 +177,7 @@ async function handleModelDrag({
   });
 }
 
-export default function createHandleTrainDrag({
+export default function useHandleTrainDrag({
   trainScheduleProjections,
   ...deps
 }: DragDeps & { trainScheduleProjections: TrainSpaceTimeData[] }) {

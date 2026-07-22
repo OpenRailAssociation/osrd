@@ -11,7 +11,7 @@ import { useTimetableContext } from 'applications/operationalStudies/hooks/useTi
 import type { Board } from 'applications/operationalStudies/types';
 import { type Conflict } from 'common/api/osrdEditoastApi';
 import SimulationWarpedMap from 'common/Map/WarpedMap/SimulationWarpedMap';
-import createHandleTrainDrag from 'modules/simulationResult/components/SpaceTimeChartWrapper/helpers/createHandleTrainDrag';
+import useHandleTrainDrag from 'modules/simulationResult/components/SpaceTimeChartWrapper/helpers/useHandleTrainDrag';
 import SpaceTimeChartWrapper, {
   MANCHETTE_WITH_SPACE_TIME_CHART_DEFAULT_HEIGHT,
 } from 'modules/simulationResult/components/SpaceTimeChartWrapper/SpaceTimeChartWrapper';
@@ -179,7 +179,7 @@ const SimulationResults = ({
     return exception?.summary ?? trainSchedule.summary;
   }, [trainSchedulesWithDetails, selectedTrainId]);
 
-  const handleTrainDrag = createHandleTrainDrag({
+  const handleTrainDrag = useHandleTrainDrag({
     trainScheduleProjections,
     setTrainScheduleProjections,
     handleTrainDragInTrackOccupancy,
