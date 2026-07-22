@@ -165,7 +165,6 @@ const PacedTrainItem = ({
     pacedTrain,
     occurrences,
     selectPacedTrainToEdit,
-    upsertTrainSchedules,
     timetableId,
   });
 
