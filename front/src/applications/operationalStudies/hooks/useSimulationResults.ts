@@ -4,7 +4,6 @@ import { skipToken } from '@reduxjs/toolkit/query';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
-import { useTimetableContext } from 'applications/operationalStudies/hooks/useTimetableContext';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import formatPowerRestrictionRangesWithHandled from 'modules/powerRestriction/helpers/formatPowerRestrictionRangesWithHandled';
 import {
@@ -37,10 +36,9 @@ const useSimulationResults = (): {
   const { t } = useTranslation('operational-studies');
 
   const { infraId, electricalProfileSetId } = useScenarioContext();
-  const { trainSchedules } = useTimetableContext();
   const { id: selectedTrainId } = useSelector(getSelectedTrain) || {};
 
-  const trainSchedule = useSelectedTrainSchedule(trainSchedules);
+  const trainSchedule = useSelectedTrainSchedule();
 
   const train: Train | undefined = useMemo(() => {
     if (!selectedTrainId || !trainSchedule) return undefined;

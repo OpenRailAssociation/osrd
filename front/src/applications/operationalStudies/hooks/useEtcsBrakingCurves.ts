@@ -13,7 +13,6 @@ import {
   type CoreEtcsCurves,
   osrdEditoastApi,
   type SimulationResponseSuccess,
-  type TrainScheduleResponse,
 } from 'common/api/osrdEditoastApi';
 import { formatSpeedCurve } from 'modules/simulationResult/components/SpeedDistanceDiagram/helpers';
 import {
@@ -53,8 +52,7 @@ const formatEtcsCurves = (etcsBrakingCurves: CoreEtcsBrakingCurvesResponse): Etc
 
 const useEtcsBrakingCurves = (
   isEtcs: boolean,
-  simulation: SimulationResponseSuccess | undefined,
-  trainSchedules: TrainScheduleResponse[] | undefined
+  simulation: SimulationResponseSuccess | undefined
 ): {
   etcsBrakingCurves: EtcsBrakingCurves | undefined;
   fetchEtcsBrakingCurves: (() => Promise<void>) | undefined;
@@ -64,7 +62,7 @@ const useEtcsBrakingCurves = (
 
   const { infraId, electricalProfileSetId } = useScenarioContext();
   const { id: selectedTrainId } = useSelector(getSelectedTrain) || {};
-  const trainSchedule = useSelectedTrainSchedule(trainSchedules);
+  const trainSchedule = useSelectedTrainSchedule();
   const exception = useMemo(() => {
     if (
       !selectedTrainId ||

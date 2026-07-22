@@ -205,8 +205,7 @@ const SimulationResults = ({
 
   const { etcsBrakingCurves, fetchEtcsBrakingCurves } = useEtcsBrakingCurves(
     isEtcs,
-    simulationResults?.isValid ? simulationResults.simulation : undefined,
-    trainSchedules
+    simulationResults?.isValid ? simulationResults.simulation : undefined
   );
 
   const prevSddDataRef = useRef(sddData);
