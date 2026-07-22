@@ -17,7 +17,8 @@ import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
-import { osrdEditoastApi, type TrainScheduleResponse } from 'common/api/osrdEditoastApi';
+import { useTimetableContext } from 'applications/operationalStudies/hooks/useTimetableContext';
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import MenuTriggerButton from 'common/MenuTriggerButton';
 import UploadFileModal from 'common/uploadFileModal';
@@ -35,7 +36,6 @@ import { exportTrainSchedules, timetableHasInvalidTrainSchedule } from './utils'
 
 type TimetableToolbarProps = {
   timetableFilters: TimetableFilters;
-  trainSchedules: TrainScheduleResponse[];
   filteredTrainSchedules: TrainScheduleWithDetails[];
   selectedTrainScheduleIds: number[];
   showTrainDetails: boolean;
@@ -49,12 +49,10 @@ type TimetableToolbarProps = {
   handleMoveTrainSchedules: () => void;
   timetableMode: TimetableMode;
   setTimetableMode: React.Dispatch<React.SetStateAction<TimetableMode>>;
-  upsertTrainSchedules: (trainSchedules: TrainScheduleResponse[]) => void;
 };
 
 const TimetableToolbar = ({
   timetableFilters,
-  trainSchedules,
   filteredTrainSchedules,
   selectedTrainScheduleIds,
   showTrainDetails,
@@ -68,12 +66,13 @@ const TimetableToolbar = ({
   handleMoveTrainSchedules,
   timetableMode,
   setTimetableMode,
-  upsertTrainSchedules,
 }: TimetableToolbarProps) => {
   const { t } = useTranslation(['operational-studies', 'translation'], { keyPrefix: 'main' });
   const dispatch = useAppDispatch();
 
   const { infraId, timetableId } = useScenarioContext();
+  const { trainSchedules, upsertTrainSchedules } = useTimetableContext();
+
   const { data: trainScheduleRoundTripsData } =
     osrdEditoastApi.endpoints.getTimetableByIdRoundTrips.useQuery({
       id: timetableId,
