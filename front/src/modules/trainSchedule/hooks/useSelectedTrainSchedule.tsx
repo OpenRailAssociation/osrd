@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 
 import { useSelector } from 'react-redux';
 
+import { useTimetableContext } from 'applications/operationalStudies/hooks/useTimetableContext';
 import type { TrainScheduleResponse } from 'common/api/osrdEditoastApi';
 import type { TrainId } from 'reducers/osrdconf/types';
 import { getSelectedTrain } from 'reducers/simulationResults/selectors';
@@ -18,15 +19,14 @@ const extractTrainScheduleId = (trainId?: TrainId) => {
   );
 };
 
-const useSelectedTrainSchedule = (
-  trainSchedules: TrainScheduleResponse[] | undefined
-): TrainScheduleResponse | undefined => {
+const useSelectedTrainSchedule = (): TrainScheduleResponse | undefined => {
   const { id: trainId } = useSelector(getSelectedTrain) || {};
+  const { trainSchedules } = useTimetableContext();
 
   const trainScheduleId = extractTrainScheduleId(trainId);
 
   return useMemo(
-    () => trainSchedules?.find((trainSchedule) => trainSchedule.id === trainScheduleId),
+    () => trainSchedules.find((trainSchedule) => trainSchedule.id === trainScheduleId),
     [trainSchedules, trainScheduleId]
   );
 };
