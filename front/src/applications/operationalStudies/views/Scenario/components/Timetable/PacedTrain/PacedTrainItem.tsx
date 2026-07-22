@@ -8,6 +8,7 @@ import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
+import { useTimetableContext } from 'applications/operationalStudies/hooks/useTimetableContext';
 import { EditedElementContainerContext } from 'applications/operationalStudies/views/Scenario/components/EditedElementContainerContext';
 import { formatTrainScheduleWithDetailsToTrainSchedule } from 'applications/operationalStudies/views/Scenario/components/ManageTrainSchedule/helpers/formatTrainSchedulePayload';
 import {
@@ -81,8 +82,6 @@ type PacedTrainItemProps = {
     originalPacedTrain?: PacedTrainWithDetails,
     occurrenceId?: OccurrenceId
   ) => void;
-  upsertTrainSchedules: (trainSchedules: TrainScheduleResponse[]) => void;
-  removePacedTrains: (pacedTrainIdsToRemove: number[]) => void;
   setSelectedTrainScheduleIds: React.Dispatch<React.SetStateAction<number[]>>;
   subCategories: SubCategory[];
   infraIsCached: boolean;
@@ -102,8 +101,6 @@ const PacedTrainItem = ({
   isOnEdit,
   selectPacedTrainToEdit,
   selectedTrainId,
-  upsertTrainSchedules,
-  removePacedTrains,
   setSelectedTrainScheduleIds,
   subCategories,
   infraIsCached,
@@ -119,6 +116,7 @@ const PacedTrainItem = ({
   const { openModal, closeModal } = useContext(ModalContext);
 
   const { rollingStocks } = useRollingStockContext();
+  const { removeTrainSchedules, upsertTrainSchedules } = useTimetableContext();
 
   const trainIdUsedForProjection = useSelector(getTrainIdUsedForProjection);
 
@@ -181,7 +179,7 @@ const PacedTrainItem = ({
   const deletePacedTrain = async () => {
     try {
       await deleteTrainSchedules(dispatch, [pacedTrain.id]);
-      removePacedTrains([pacedTrain.id]);
+      removeTrainSchedules([pacedTrain.id]);
       setSelectedTrainScheduleIds((prev) => prev.filter((id) => id !== pacedTrain.id));
       dispatch(
         setSuccess({

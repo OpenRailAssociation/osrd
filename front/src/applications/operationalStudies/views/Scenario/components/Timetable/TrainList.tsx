@@ -8,7 +8,6 @@ import type {
   TrainSchedulesByTrainScheduleSet,
   TrainScheduleSetManager,
 } from 'applications/operationalStudies/hooks/useScenarioTrainScheduleSet';
-import { useTimetableContext } from 'applications/operationalStudies/hooks/useTimetableContext';
 import type { CatalogEntry } from 'common/api/osrdEditoastApi';
 import { Loader } from 'common/Loaders';
 import { useSubCategoryContext } from 'common/SubCategoryContext';
@@ -78,7 +77,6 @@ const TrainList = ({
 
   const { workerStatus, timetableId, scenario } = useScenarioContext();
   const isHourlyTimetable = scenario.timetable_type === 'HOURLY';
-  const { upsertTrainSchedules, removeTrainSchedules } = useTimetableContext();
   const subCategories = useSubCategoryContext();
 
   const [expandedTrainScheduleIds, setExpandedTrainScheduleIds] = useState<Set<number>>(new Set());
@@ -200,8 +198,6 @@ const TrainList = ({
               handleOpenOccurrencesList={handleExpandTrainSchedule}
               isOnEdit={trainSchedule.id === trainScheduleToEditData?.trainScheduleId}
               selectedTrainId={selectedTrainId}
-              upsertTrainSchedules={upsertTrainSchedules}
-              removePacedTrains={removeTrainSchedules}
               setSelectedTrainScheduleIds={setSelectedTrainScheduleIds}
               infraIsCached={workerStatus === 'READY'}
               subCategories={subCategories}
@@ -223,7 +219,6 @@ const TrainList = ({
       isSelectMode,
       moveTrainSchedule,
       projectingOnSimulatedPathException,
-      removeTrainSchedules,
       selectTrainScheduleToEdit,
       selectedTrainScheduleIds,
       selectedTrainId,
@@ -232,7 +227,6 @@ const TrainList = ({
       trainScheduleToEditData?.trainScheduleId,
       timetableMode,
       trainIdUsedForProjection,
-      upsertTrainSchedules,
       workerStatus,
     ]
   );
