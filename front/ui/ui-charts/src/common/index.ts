@@ -13,3 +13,5 @@ export type {
   PickingElement,
   Point,
 } from './types';
+
+export { MouseContext } from './context';

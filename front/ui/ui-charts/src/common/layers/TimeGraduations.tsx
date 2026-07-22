@@ -1,10 +1,9 @@
 import { useCallback, useContext } from 'react';
 
 import { MINUTE } from '../../common/consts';
-import { TimeChartCanvasContext } from '../../common/context';
+import { MouseContext, TimeChartCanvasContext } from '../../common/context';
 import { computeVisibleTimeMarkers, getCrispLineCoordinate } from '../../common/helpers/time';
 import type { TimeChartContextType, DrawingFunction } from '../../common/types';
-import { MouseContext } from '../../spaceTimeChart/lib/context';
 import { BLACK_ALPHA_25, GREY_50 } from '../helpers/colors';
 import { useDraw } from '../hooks/useCanvas';
 
