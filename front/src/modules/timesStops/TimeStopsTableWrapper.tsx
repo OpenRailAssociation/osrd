@@ -6,7 +6,6 @@ import type {
   ReceptionSignal,
   RollingStock,
   SimulationResponseSuccess,
-  TrainScheduleResponse,
 } from 'common/api/osrdEditoastApi';
 import type { SimulationSummary, TrainScheduleWithDetails } from 'modules/trainSchedule/types';
 import type { Train } from 'reducers/osrdconf/types';
@@ -35,7 +34,6 @@ type TimeStopsTableWrapperProps = {
   isValid?: boolean;
   selectedTrain: Train;
   trainSchedulesWithDetails: TrainScheduleWithDetails[];
-  upsertTrainSchedules: (trainSchedules: TrainScheduleResponse[]) => void;
   simulatedTrain?: SimulationResponseSuccess['final_output'];
   simulatedPath?: CorePathfindingResultSuccess;
   simulatedPathItemTimes?: Extract<SimulationSummary, { isValid: true }>['pathItemTimes'];
@@ -72,7 +70,6 @@ const TimeStopsTableWrapper = ({
   isValid = false,
   selectedTrain,
   trainSchedulesWithDetails,
-  upsertTrainSchedules,
   simulatedTrain,
   simulatedPathItemTimes,
   simulatedPathItemRespect,
@@ -163,12 +160,7 @@ const TimeStopsTableWrapper = ({
     updateReceptionSignal,
     updateRequestedMargin,
     updatePowerRestrictions,
-  } = useUpdateTimesStopsTable(
-    selectedTrain,
-    rows,
-    trainSchedulesWithDetails,
-    upsertTrainSchedules
-  );
+  } = useUpdateTimesStopsTable(selectedTrain, rows, trainSchedulesWithDetails);
 
   // True if we are still waiting for fresh simulation data after a user edit.
   // Both conditions must be false before we clear the loading state:

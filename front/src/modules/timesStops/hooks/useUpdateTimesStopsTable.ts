@@ -1,6 +1,7 @@
 import { useCallback } from 'react';
 
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
+import { useTimetableContext } from 'applications/operationalStudies/hooks/useTimetableContext';
 import type { PacedTrain } from 'applications/operationalStudies/types';
 import {
   buildOccurrenceExceptionData,
@@ -82,11 +83,11 @@ const formatRequestedMargin = (requestedMargin: MarginValue | null) => {
 const useUpdateTimesStopsTable = (
   selectedTrain: Train,
   allRows: TimesStopsRowNew[],
-  trainSchedulesWithDetails: TrainScheduleWithDetails[],
-  upsertTrainSchedules: (trainSchedules: TrainScheduleResponse[]) => void
+  trainSchedulesWithDetails: TrainScheduleWithDetails[]
 ) => {
   const dispatch = useAppDispatch();
   const { timetableId } = useScenarioContext();
+  const { upsertTrainSchedules } = useTimetableContext();
   const [updateTrainSchedule] = osrdEditoastApi.endpoints.putTrainSchedulesById.useMutation();
 
   const computeUpdatedMargins = useCallback(
