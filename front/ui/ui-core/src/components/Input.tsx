@@ -43,6 +43,7 @@ type IconConfig = {
   icon: React.ReactNode;
   action: () => void;
   className?: string;
+  testId?: string;
 };
 
 export type InputProps = React.InputHTMLAttributes<HTMLInputElement> &
@@ -140,7 +141,9 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
                 key={index}
                 className={iconConfig?.className}
                 onClick={iconConfig.action}
-                data-testid={testIdPrefix ? `${testIdPrefix}-icon` : undefined}
+                data-testid={
+                  iconConfig.testId ?? (testIdPrefix ? `${testIdPrefix}-icon` : undefined)
+                }
               >
                 {iconConfig.icon}
               </span>
