@@ -1,3 +1,4 @@
+import { useTimetableContext } from 'applications/operationalStudies/hooks/useTimetableContext';
 import { updatePacedTrainExceptionsList } from 'applications/operationalStudies/views/Scenario/components/ManageTrainSchedule/helpers/buildPacedTrainException';
 import type { TrainSpaceTimeData } from 'modules/simulationResult/types';
 import {
@@ -24,16 +25,16 @@ type DragDeps = {
     initialDepartureTime: Date;
     stopPanning: boolean;
   }) => Promise<void>;
-  updateTrainScheduleDepartureTime: (
-    draggedTrainId: TrainId,
-    newDepartureTime: Date,
-    panelSelectionMode?: PanelSelectionMode
-  ) => Promise<void>;
 };
 
 /** Per-drag context shared by every mode handler. */
 type DragContext = DragDeps & {
   draggedTrain: TrainSpaceTimeData;
+  updateTrainScheduleDepartureTime: (
+    draggedTrainId: TrainId,
+    newDepartureTime: Date,
+    panelSelectionMode?: PanelSelectionMode
+  ) => Promise<void>;
   /** Returns the full projections array with the dragged train replaced by `updated`. */
   replaceProjection: (updated: TrainSpaceTimeData) => TrainSpaceTimeData[];
   newDepartureTime: Date;
@@ -181,6 +182,7 @@ export default function useHandleTrainDrag({
   trainScheduleProjections,
   ...deps
 }: DragDeps & { trainScheduleProjections: TrainSpaceTimeData[] }) {
+  const { updateTrainScheduleDepartureTime } = useTimetableContext();
   return async function handleTrainDrag({
     draggedTrainId,
     newDepartureTime,
@@ -207,6 +209,7 @@ export default function useHandleTrainDrag({
     const context: DragContext = {
       ...deps,
       draggedTrain,
+      updateTrainScheduleDepartureTime,
       replaceProjection: (updated) =>
         trainScheduleProjections.map((train) => (train.id === draggedItemId ? updated : train)),
       newDepartureTime,

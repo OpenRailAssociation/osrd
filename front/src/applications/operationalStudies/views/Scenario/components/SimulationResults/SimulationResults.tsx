@@ -7,7 +7,6 @@ import { useSelector } from 'react-redux';
 import useEtcsBrakingCurves from 'applications/operationalStudies/hooks/useEtcsBrakingCurves';
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import useSimulationResults from 'applications/operationalStudies/hooks/useSimulationResults';
-import { useTimetableContext } from 'applications/operationalStudies/hooks/useTimetableContext';
 import type { Board } from 'applications/operationalStudies/types';
 import { type Conflict } from 'common/api/osrdEditoastApi';
 import SimulationWarpedMap from 'common/Map/WarpedMap/SimulationWarpedMap';
@@ -76,7 +75,6 @@ const SimulationResults = ({
   const { t } = useTranslation('operational-studies');
   const dispatch = useAppDispatch();
   const { infraId, timetableId } = useScenarioContext();
-  const { updateTrainScheduleDepartureTime } = useTimetableContext();
 
   const { results: simulationResults, isSimulationDataLoading } = useSimulationResults();
   const selectedTrainId = simulationResults?.train.id;
@@ -183,7 +181,6 @@ const SimulationResults = ({
     trainScheduleProjections,
     setTrainScheduleProjections,
     handleTrainDragInTrackOccupancy,
-    updateTrainScheduleDepartureTime,
   });
 
   const handleOccupancyZoneDrop = useOccupancyZoneDrop({
