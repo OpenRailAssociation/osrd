@@ -62,6 +62,9 @@ services:
       OPENFGA_HTTP_ADDR: "0.0.0.0:8091"
       OPENFGA_GRPC_ADDR: "0.0.0.0:8093"
       OPENFGA_PLAYGROUND_PORT: 8092
+      OPENFGA_LIST_OBJECTS_DEADLINE: "6s"
+      OPENFGA_LIST_USERS_DEADLINE: "6s"
+      OPENFGA_REQUEST_TIMEOUT: "6s"
     command: run
     ports:
       - "8091:8091" # http
