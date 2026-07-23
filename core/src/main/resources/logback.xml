@@ -6,10 +6,11 @@
         </encoder>
     </appender>
 
-    <root level="debug">
+    <root level="DEBUG">
         <appender-ref ref="COLOR"/>
     </root>
     <logger name="io.lettuce" level="INFO"/>
     <logger name="io.netty" level="INFO"/>
     <logger name="software.amazon.awssdk" level="INFO"/>
+    <logger name="org.apache.hc.client5" level="INFO"/>
 </configuration>
