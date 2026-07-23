@@ -8,7 +8,6 @@ import {
   osrdEditoastApi,
   type SearchPayload,
 } from 'common/api/osrdEditoastApi';
-import { useInfraID } from 'common/osrdContext';
 import { setFailure } from 'reducers/main';
 import { getOperationalPoints } from 'reducers/osrdconf/stdcmConf/selectors';
 import { getIsSuperUser } from 'reducers/user/userSelectors';
@@ -22,6 +21,7 @@ import {
 } from './sortOperationalPoints';
 
 type SearchOperationalPoint = {
+  infraId: number | undefined;
   debounceDelay?: number;
   initialSearchTerm?: string;
   initialSecondaryCodeFilter?: string | null;
@@ -30,13 +30,13 @@ type SearchOperationalPoint = {
 };
 
 export default function useSearchOperationalPoint({
+  infraId,
   debounceDelay = 150,
   initialSearchTerm = '',
   initialSecondaryCodeFilter,
   isStdcm = false,
   pageSize = 1000,
-}: SearchOperationalPoint = {}) {
-  const infraID = useInfraID();
+}: SearchOperationalPoint) {
   const [searchTerm, setSearchTerm] = useState(initialSearchTerm);
   const [secondaryCodeFilter, setSecondaryCodeFilter] = useState(initialSecondaryCodeFilter);
   const [mainOperationalPointsOnly, setMainOperationalPointsOnly] = useState(false);
@@ -60,14 +60,14 @@ export default function useSearchOperationalPoint({
   /* Lazily search for operational whose main code exactly match the search query */
   const lazySearchByExactMainCode = useCallback(
     async (searchQuery: string) => {
-      if (!infraID) return [];
+      if (!infraId) return [];
 
       const payload: SearchPayload = {
         object: 'operationalpoint',
         query: [
           'and',
           ['=', ['main_code'], `${searchQuery}`],
-          ['=', ['infra_id'], infraID],
+          ['=', ['infra_id'], infraId],
           stdcmPerimeterOperationalpointsFilter,
         ],
       };
@@ -84,11 +84,11 @@ export default function useSearchOperationalPoint({
         return [];
       }
     },
-    [infraID, stdcmPerimeterOperationalpointsFilter]
+    [infraId, stdcmPerimeterOperationalpointsFilter]
   );
 
   const shouldSearchByMainCode =
-    infraID &&
+    infraId &&
     debouncedSearchTerm &&
     !Number.isInteger(+debouncedSearchTerm) &&
     debouncedSearchTerm.length < 4;
@@ -102,7 +102,7 @@ export default function useSearchOperationalPoint({
             query: [
               'and',
               ['ilike', ['main_code'], `${debouncedSearchTerm}%`],
-              ['=', ['infra_id'], infraID],
+              ['=', ['infra_id'], infraId],
               stdcmPerimeterOperationalpointsFilter,
             ],
           },
@@ -113,7 +113,7 @@ export default function useSearchOperationalPoint({
 
   /* Operational points whose name or UIC code (primary code) contain the search query */
   const { data: rawNameAndUicResults } = osrdEditoastApi.endpoints.postSearch.useQuery(
-    infraID && debouncedSearchTerm
+    infraId && debouncedSearchTerm
       ? {
           searchPayload: {
             object: 'operationalpoint',
@@ -124,7 +124,7 @@ export default function useSearchOperationalPoint({
                 ['search', ['name'], debouncedSearchTerm],
                 ['like', ['to_string', ['uic']], `%${debouncedSearchTerm}%`],
               ],
-              ['=', ['infra_id'], infraID],
+              ['=', ['infra_id'], infraId],
               stdcmPerimeterOperationalpointsFilter,
             ],
           },
