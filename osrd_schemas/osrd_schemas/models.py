@@ -4380,6 +4380,9 @@ class SimulationReport(BaseModel):
     Gather information from the LMR request and data input by the user.
     """
 
+    is_international: Annotated[
+        bool, Field(title="Is the simulated train part of an international train")
+    ]
     rolling_stock: Annotated[str, Field(title="Rolling Stock")]
     towed_rolling_stock: Annotated[str | None, Field(title="Towed Rolling Stock")] = (
         None

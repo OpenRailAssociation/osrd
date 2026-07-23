@@ -379,6 +379,7 @@ export type SubstituteTrain = {
 };
 export type CourseType = string;
 export type SimulationReport = {
+  is_international: boolean;
   rolling_stock: string;
   towed_rolling_stock?: string | null;
   loading_gauge_type: RmiLoadingGaugeType;
