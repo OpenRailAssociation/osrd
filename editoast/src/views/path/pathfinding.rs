@@ -236,63 +236,6 @@ pub(in crate::views) async fn post(
     Ok(Json(result))
 }
 
-/// Pathfinding batch computation given a list of path inputs
-async fn pathfinding_blocks_batch(
-    conn: DbConnection,
-    valkey_client: Arc<cache::Client>,
-    core: Arc<CoreClient>,
-    infra: &Infra,
-    pathfinding_inputs: &[PathfindingInput],
-    _app_version: Option<&str>, // Question: this was used in the hash, no longer relevant with core_tasks
-) -> Result<Vec<Arc<PathfindingResult>>> {
-    let mut pathfinding_env = core_task::PathfindingEnv::new(core_task::CoreEnv {
-        infra_id: infra.id as u64,
-        infra_version: infra.version,
-        client: core,
-    });
-
-    // Question: before we computed the op_cache only for requests that were cache miss
-    // Could this have a performance impact?
-    let path_items: Vec<_> = pathfinding_inputs
-        .iter()
-        .flat_map(|pf_input| &pf_input.path_items)
-        .collect();
-    let op_cache = OperationalPointCache::load_path_items(conn, infra.id, &path_items).await?;
-
-    let mut result = Vec::new();
-    let valid_pathfinding_trains = pathfinding_inputs
-        .iter()
-        .map(|path_input| build_pathfinding_train(path_input, &op_cache))
-        .enumerate()
-        .filter_map(|(index, pathfinding_train)| match pathfinding_train {
-            Ok(pathfinding_train) => Some((index, pathfinding_train)),
-            Err(err) => {
-                result.push((index, err.into()));
-                None
-            }
-        });
-    pathfinding_env.extend(valid_pathfinding_trains);
-
-    let mut stream = pathfinding_env.into_stream(valkey_client);
-    while let Some(correlated) = stream.next().await {
-        // An error in the pathfinding (bad input, no route found...) is a valid PathfindingResult
-        // So `?` corresponds to a technical error
-        // QUESTION: should we drop everything in such a situation?
-        let pf_result: Arc<PathfindingResult> = Arc::new(correlated.data?.into());
-        for index in correlated.correlation_key {
-            // Only the Arc is cloned: the actualy path data isn’t
-            result.push((index, pf_result.clone()));
-        }
-    }
-
-    // Question: the previous implementation had a lot of tracing informations, mostly to watch over the cache
-    // Is is ok if we don’t have them?
-
-    // We re-order all the results in the same order as in the input
-    result.sort_by_key(|(index, _)| *index);
-    Ok(result.into_iter().map(|(_, pf_result)| pf_result).collect())
-}
-
 fn build_pathfinding_train(
     pathfinding_input: &PathfindingInput,
     op_cache: &OperationalPointCache,
@@ -353,38 +296,55 @@ pub async fn pathfinding_from_train_batch<T: TrainScheduleLike>(
     core: Arc<CoreClient>,
     infra: &Infra,
     train_schedules_with_consists: &[TrainScheduleWithConsist<T>],
-    app_version: Option<&str>,
+    _app_version: Option<&str>, // question: this was used before for the cache, we are changing the invalidation
 ) -> Result<Vec<Arc<PathfindingResult>>> {
-    let initial_value = Arc::new(PathfindingResult::Failure(
-        PathfindingFailure::PathfindingInputError(PathfindingInputError::NotEnoughPathItems),
-    ));
-    let mut results = vec![initial_value; train_schedules_with_consists.len()];
+    let mut pathfinding_env = core_task::PathfindingEnv::new(core_task::CoreEnv {
+        infra_id: infra.id as u64,
+        infra_version: infra.version,
+        client: core,
+    });
 
-    let mut to_compute = vec![];
-    let mut to_compute_index = vec![];
-    for (
-        index,
-        TrainScheduleWithConsist {
-            train_schedule,
-            consist,
-        },
-    ) in train_schedules_with_consists.iter().enumerate()
-    {
-        // Create the path input
-        let path_input = PathfindingInput::from(consist, train_schedule);
-        to_compute.push(path_input);
-        to_compute_index.push(index);
+    // Question: before we computed the op_cache only for requests that were cache miss
+    // Could this have a performance impact?
+    let path_items: Vec<_> = train_schedules_with_consists
+        .iter()
+        .flat_map(|pf_input| pf_input.train_schedule.locations())
+        .collect();
+    let op_cache = OperationalPointCache::load_path_items(conn, infra.id, &path_items).await?;
+
+    let mut results = Vec::new();
+    let valid_pathfinding_trains = train_schedules_with_consists
+        .iter()
+        .map(|ts| PathfindingInput::from(&ts.consist, &ts.train_schedule))
+        .map(|path_input| build_pathfinding_train(&path_input, &op_cache))
+        .enumerate()
+        .filter_map(|(index, pathfinding_train)| match pathfinding_train {
+            Ok(pathfinding_train) => Some((index, pathfinding_train)),
+            Err(err) => {
+                results.push((index, err.into()));
+                None
+            }
+        });
+    pathfinding_env.extend(valid_pathfinding_trains);
+
+    let mut stream = pathfinding_env.into_stream(valkey_client);
+    while let Some(correlated) = stream.next().await {
+        // An error in the pathfinding (bad input, no route found...) is a valid PathfindingResult
+        // So `?` corresponds to a technical error
+        // QUESTION: should we drop everything in such a situation?
+        let pf_result: Arc<PathfindingResult> = Arc::new(correlated.data?.into());
+        for index in correlated.correlation_key {
+            // Only the Arc is cloned: the actualy path data isn’t
+            results.push((index, pf_result.clone()));
+        }
     }
 
-    for (index, res) in
-        pathfinding_blocks_batch(conn, valkey_client, core, infra, &to_compute, app_version)
-            .await?
-            .into_iter()
-            .enumerate()
-    {
-        results[to_compute_index[index]] = res;
-    }
-    Ok(results)
+    // Question: the previous implementation had a lot of tracing informations, mostly to watch over the cache
+    // Is is ok if we don’t have them?
+
+    // We re-order all the results in the same order as in the input
+    results.sort_by_key(|(index, _result)| *index);
+    Ok(results.into_iter().map(|(_index, result)| result).collect())
 }
 
 #[cfg(test)]
