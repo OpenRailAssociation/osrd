@@ -84,7 +84,8 @@ const StdcmHeader = ({
             <Bug />
           </button>
         )}
-        {railwayManagerUrl &&
+        {isDebugMode &&
+          railwayManagerUrl &&
           sendLMRAuthorizedResponse?.authorized &&
           requestsFolderUrl.isSuccess && (
             <button
