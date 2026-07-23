@@ -278,19 +278,14 @@ const generateSchedule = (
     arrival = arrival || departure!;
 
     let stop_for: string | null = null;
-    if (isStopTransit) {
-      if (departure) {
-        const stopForDuration = Duration.subtractDate(departure, arrival);
-        stop_for = (stopForDuration.ms < 0 ? Duration.zero : stopForDuration).toISOString();
-      } else {
-        stop_for = Duration.zero.toISOString();
-      }
-    }
+    if (isStopTransit)
+      stop_for = departure
+        ? Duration.subtractDate(arrival, departure).toISOString()
+        : Duration.zero.toISOString();
 
-    const arrivalDuration = Duration.subtractDate(arrival, startDate);
     return {
       at: `${toNodeId}-${index + 1}`,
-      arrival: arrivalDuration.ms < 0 ? Duration.zero.toISOString() : arrivalDuration.toISOString(),
+      arrival: Duration.subtractDate(startDate, arrival).toISOString(),
       stop_for,
       // Default information
       reception_signal: 'OPEN',
