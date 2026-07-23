@@ -470,13 +470,31 @@ impl VirtualTrainRun {
                 labels: vec![],
                 rolling_stock_name: consist.traction_engine.name.clone(),
                 start_time: millisecond::i64::new(approx_start_time.timestamp_millis()),
-                schedule: vec![ScheduleItem {
-                    // Make the train stop at the end
-                    at: last_step.id.clone(),
-                    arrival: None,
-                    stop_for: Some(PositiveDuration::try_from(Duration::zero()).unwrap()),
-                    reception_signal: ReceptionSignal::Open,
-                }],
+                // schedule: stdcm_request.steps[start..=end]
+                //                 .zip(&path)
+                //                 .map(|(stdcm_step, path_item)| {
+                //                     ScheduleItem {
+                //                         at: path_item.id.clone(),
+                //                         arrival: None,
+                //                         stop_for: stdcm_step.duration,
+                //                         reception_signal: ReceptionSignal::Stop
+                //                     }}),
+                schedule: path
+                                .iter().map(|(path_item)| {
+                                    ScheduleItem {
+                                        at: path_item.id.clone(),
+                                        arrival: None,
+                                        stop_for: Some(PositiveDuration::try_from(Duration::zero()).unwrap()),
+                                        reception_signal: ReceptionSignal::Stop
+                                    }}).collect(),
+
+                // schedule: vec![ScheduleItem {
+                //     // Make the train stop at the end
+                //     at: last_step.id.clone(),
+                //     arrival:  None,
+                //     stop_for: Some(PositiveDuration::try_from(Duration::zero()).unwrap()),
+                //     reception_signal: ReceptionSignal::Open,
+                // }],
                 margins: build_single_margin(stdcm_request.margin),
                 initial_speed: 0.0,
                 comfort: stdcm_request.comfort,
