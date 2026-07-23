@@ -64,6 +64,42 @@ pub fn project_effective_grant(
     .with_check(Check::ProjectExists(project))
 }
 
+pub fn project_set_grant(subject: Subject, project: Project) -> Protected<()> {
+    project_direct_grant(subject, project)
+        .map(move |openfga, grant| {
+            async move {
+                // Projects only have one grant level, the subject either has it or doesn't
+                let update = match grant {
+                    Some(ProjectGrant::Owner) => false,
+                    None => true,
+                };
+
+                if !update {
+                    return Ok(());
+                }
+
+                match subject {
+                    Subject::User(user) => {
+                        openfga
+                            .write_tuples(&[Project::owner().tuple(&user, &project)])
+                            .await
+                    }
+                    Subject::Group(group) => {
+                        openfga
+                            .write_tuples(&[
+                                Project::owner().tuple(Group::member().userset(&group), &project)
+                            ])
+                            .await
+                    }
+                }?;
+
+                Ok(())
+            }
+            .boxed()
+        })
+        .with_check(Check::CanGiveSubjectProjectGrant(subject, project))
+}
+
 #[cfg(test)]
 mod tests {
     use std::collections::HashSet;
@@ -248,6 +284,47 @@ mod tests {
     }
 
     #[rstest::rstest]
+    #[case(Subject::user(1))]
+    #[case(Subject::group(1))]
+    #[tokio::test]
+    async fn project_set_grant_ok(#[case] subject: Subject) {
+        let openfga = authz_client!();
+
+        assert_eq!(
+            openfga.project_direct_grant(subject, Project(1)).await,
+            None
+        );
+        openfga.project_set_grant(subject, Project(1)).await;
+        assert_eq!(
+            openfga.project_direct_grant(subject, Project(1)).await,
+            Some(ProjectGrant::Owner)
+        );
+    }
+
+    #[rstest::rstest]
+    #[case(Subject::user(1))]
+    #[case(Subject::group(1))]
+    #[tokio::test]
+    async fn project_set_grant_idempotent(#[case] subject: Subject) {
+        let openfga = authz_client!();
+
+        assert_eq!(
+            openfga.project_direct_grant(subject, Project(1)).await,
+            None
+        );
+        openfga.project_set_grant(subject, Project(1)).await;
+        assert_eq!(
+            openfga.project_direct_grant(subject, Project(1)).await,
+            Some(ProjectGrant::Owner)
+        );
+        openfga.project_set_grant(subject, Project(1)).await;
+        assert_eq!(
+            openfga.project_direct_grant(subject, Project(1)).await,
+            Some(ProjectGrant::Owner)
+        );
+    }
+
+    #[rstest::rstest]
     #[case::project_direct_grant(
         project_direct_grant(Subject::user(1), Project(1)).checks,
         &[
@@ -260,6 +337,14 @@ mod tests {
         &[
             Check::SubjectExists(Subject::user(1)),
             Check::ProjectExists(Project(1)),
+        ]
+    )]
+    #[case::project_set_grant(
+        project_set_grant(Subject::user(1), Project(1)).checks,
+        &[
+            Check::SubjectExists(Subject::user(1)),
+            Check::ProjectExists(Project(1)),
+            Check::CanGiveSubjectProjectGrant(Subject::user(1), Project(1))
         ]
     )]
     #[tokio::test]

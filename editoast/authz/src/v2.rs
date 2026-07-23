@@ -77,6 +77,12 @@ pub enum Check {
     /// IMPORTANT: it is *NOT* a replacement for [`Self::HasInfraPrivilege`] with sharing privileges (forbids illegal promotions)
     /// NOTE: groups grants are managed by admins exclusively so this check always rejects group subjects as admin checks are bypassed
     CanAlterSubjectInfraGrant(Subject, Infra, InfraGrant),
+    /// The issuer must be allowed to change the subject's infra grant
+    ///
+    /// No-op grant changes are allowed.
+    /// As [ProjectGrant] has only one grant level so anoyone with this grant has sharing privileges.
+    /// NOTE: groups grants are managed by admins exclusively so this check always rejects group subjects as admin checks are bypassed
+    CanGiveSubjectProjectGrant(Subject, Project),
     /// The subject must not have the specified effective infra grant
     SubjectEffectiveInfraGrantIsNot(InfraGrant, Subject, Infra),
     /// The subject must not be the last direct owner of the infra

@@ -218,8 +218,7 @@ impl fga::model::Type for Role {
 #[derive(fga::Type, fga::Object, derive_more::FromStr, Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub struct Project(pub i64);
 
-#[derive(EnumString, Serialize)]
-#[cfg_attr(test, derive(Debug, Eq, PartialEq))]
+#[derive(Clone, Copy, Debug, EnumString, Eq, Hash, PartialEq, Serialize)]
 #[serde(rename_all = "snake_case")]
 #[strum(serialize_all = "snake_case")]
 pub enum ProjectPrivilege {

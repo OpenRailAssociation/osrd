@@ -1,6 +1,7 @@
 use std::convert::Infallible;
 use std::ops::Not as _;
 
+use authz::ProjectGrant;
 use authz::v2::Access;
 use authz::v2::Actor;
 use authz::v2::Authorizer;
@@ -49,6 +50,7 @@ impl SystemAuthorizer<'_> {
             | Check::HasInfraPrivilege(..)
             | Check::HasRollingStockPrivilege(..)
             | Check::CanAlterSubjectInfraGrant(..)
+            | Check::CanGiveSubjectProjectGrant(..)
             | Check::SubjectEffectiveInfraGrantIsNot(..)
             | Check::CanAlterSubjectRollingStockGrant(..)
             | Check::SubjectEffectiveRollingStockGrantIsNot(..)
@@ -177,6 +179,26 @@ impl<'c> UserAuthorizer<'c> {
             Check::CanAlterSubjectInfraGrant(authz::Subject::Group(_), _, _) => {
                 // The only users allowed to alter groups grants are admins who bypass this entire
                 // verification function.
+                Some(check)
+            }
+
+            Check::CanGiveSubjectProjectGrant(authz::Subject::User(_), project) => {
+                // There is only one level of grant. The issuer must own a grant on the project to
+                // share it to other users.
+                let Ok(grant) = authz::v2::project_effective_grant(self.issuer(), *project)
+                    .access_authorized::<Infallible>(self.openfga)
+                    .access()
+                    .await?;
+
+                match grant {
+                    Some(ProjectGrant::Owner) => None,
+                    None => Some(check),
+                }
+            }
+            Check::CanGiveSubjectProjectGrant(authz::Subject::Group(_), _) => {
+                // The only users to allowed to alter group grants are admins who bypass this entire
+                // verification function: trying to give a grant to a group in the UserAuthorizer should
+                // always be rejected
                 Some(check)
             }
 
