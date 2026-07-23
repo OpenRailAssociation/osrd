@@ -14,7 +14,7 @@ export type Conflict = {
   spaceEnd: number;
 };
 
-const getConflictRect = (
+export const getConflictRect = (
   conflict: Conflict,
   getTimePixel: (time: number) => number,
   getSpacePixel: (space: number) => number
