@@ -34,11 +34,11 @@ OSRD also currently has the following "development process" goals:
 - **Don't merge everything ... don't merge too early**: Every feature we add increases maintenance burden and compile times.
   Only merge features that are "generally" useful.
   Don't merge major changes or new features unless we have relative consensus that the design is correct and that we have the developer capacity to support it.
-- **Thoughtful public interfaces over maximal configurability**: Symbols and apis should be private by default.
+- **Thoughtful public interfaces over maximal configurability**: Symbols and APIs should be private by default.
   Every public API should be thoughtfully and consistently designed.
   Don't expose unnecessary internal implementation details.
   Don't allow users to "shoot themselves in the foot".
-  Favor one "happy path" api over multiple apis for different use cases.
+  Favor one "happy path" API over multiple APIs for different use cases.
 - **Welcome new contributors**: Invest in new contributors.
   Help them fill knowledge and skill gaps.
 - **Civil discourse**: We need to collectively discuss ideas and the best ideas should win.
@@ -53,7 +53,7 @@ OSRD also currently has the following "development process" goals:
 
   - Most new features should have at least one minimal integration test.
   - The more complex or "core" a feature is, the more strict we are about unit tests.
-    Use your best judgement here.
+    Use your best judgment here.
     We will let you know if your pull request needs more tests.
 
 ## The OSRD Team
