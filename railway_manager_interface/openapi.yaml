@@ -282,6 +282,9 @@ components:
       title: CourseType
     SimulationReport:
       properties:
+        is_international:
+          type: boolean
+          title: Is the simulated train part of an international train
         rolling_stock:
           type: string
           title: Rolling Stock
@@ -361,6 +364,7 @@ components:
           title: Demand Category
       type: object
       required:
+      - is_international
       - rolling_stock
       - loading_gauge_type
       - speed_limit_tags
