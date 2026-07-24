@@ -10,7 +10,7 @@ use schemas::train_schedule::OperationalPointReference;
 use schemas::train_schedule::PathItemLocation;
 use std::borrow::Borrow;
 use std::collections::HashMap;
-use std::collections::HashSet;
+use tracing::error;
 
 use crate::error::Result;
 use editoast_models::OperationalPointModel;
@@ -31,7 +31,8 @@ pub struct OperationalPointCache {
     trigram_to_indices: HashMap<NonBlankString, Vec<usize>>,
     /// Maps obj_id to index in the ops Vec
     obj_id_to_index: HashMap<String, usize>,
-    track_ids: HashSet<String>,
+    /// Information about track section existence for path item tracks
+    path_item_tracks_exists: HashMap<String, bool>,
     /// For each operational point, map track section to local track name
     track_ids_to_local_track_name: Vec<HashMap<String, NonBlankString>>,
 }
@@ -70,25 +71,21 @@ impl OperationalPointCache {
         .await?;
 
         // Retrieve track information
-        let op_tracks = op_cache
-            .ops
+        let path_item_tracks = path_items
             .iter()
-            .flat_map(|op| &op.parts)
-            .map(|part| part.track.0.clone());
+            .filter_map(|item| match item.borrow() {
+                PathItemLocation::TrackOffset(TrackOffset { track, .. }) => Some(track.0.clone()),
+                _ => None,
+            })
+            .collect_vec();
 
-        let path_item_tracks = path_items.iter().filter_map(|item| match item.borrow() {
-            PathItemLocation::TrackOffset(TrackOffset { track, .. }) => Some(track.0.clone()),
-            _ => None,
-        });
-
-        let req_track_ids = op_tracks.chain(path_item_tracks).collect::<Vec<String>>();
-        let track_sections =
-            TrackSectionModel::retrieve_from_ids(&mut conn, infra_id, &req_track_ids).await?;
+        let existing_track_sections =
+            TrackSectionModel::exists_from_ids(&mut conn, infra_id, &path_item_tracks).await?;
 
         // Not all track sections may have been found.
-        let resp_track_ids = track_sections
-            .iter()
-            .map(|track| track.obj_id.clone())
+        op_cache.path_item_tracks_exists = path_item_tracks
+            .into_iter()
+            .map(|track| (track.clone(), existing_track_sections.contains(&track)))
             .collect();
 
         let track_ids_to_local_track_name = op_cache
@@ -103,7 +100,6 @@ impl OperationalPointCache {
             .collect();
 
         op_cache.track_ids_to_local_track_name = track_ids_to_local_track_name;
-        op_cache.track_ids = resp_track_ids;
         Ok(op_cache)
     }
 
@@ -164,7 +160,7 @@ impl OperationalPointCache {
             uic_to_indices,
             trigram_to_indices,
             obj_id_to_index,
-            track_ids: Default::default(),
+            path_item_tracks_exists: Default::default(),
             track_ids_to_local_track_name: Default::default(),
         })
     }
@@ -195,11 +191,6 @@ impl OperationalPointCache {
     pub fn get_name_by_track(&self, op_id: String, track_id: &str) -> Option<&NonBlankString> {
         let op_index = self.obj_id_to_index.get(&op_id)?;
         self.track_ids_to_local_track_name[*op_index].get(track_id)
-    }
-
-    /// Check if a track exists
-    pub fn track_exists(&self, track: &str) -> bool {
-        self.track_ids.contains(track)
     }
 
     /// Retrieve the operational point ID given a reference
@@ -237,7 +228,28 @@ impl OperationalPointCache {
             let path_item = path_item.borrow();
             let track_offsets = match path_item {
                 PathItemLocation::TrackOffset(track_offset) => {
-                    vec![track_offset.clone()]
+                    match self.path_item_tracks_exists.get(&track_offset.track.0) {
+                        Some(true) => {
+                            vec![track_offset.clone()]
+                        }
+                        Some(false) => {
+                            invalid_path_items.push(InvalidPathItem {
+                                index,
+                                path_item: path_item.clone(),
+                            });
+                            continue;
+                        }
+                        None => {
+                            error!(
+                                "The path item track was not part of the operational point cache."
+                            );
+                            invalid_path_items.push(InvalidPathItem {
+                                index,
+                                path_item: path_item.clone(),
+                            });
+                            continue;
+                        }
+                    }
                 }
                 PathItemLocation::OperationalPointPartReference(
                     OperationalPointPartReference {
@@ -315,17 +327,6 @@ impl OperationalPointCache {
                 }
             };
 
-            // Check if tracks exist
-            for track_offset in &track_offsets {
-                if !self.track_exists(&track_offset.track.0) {
-                    invalid_path_items.push(InvalidPathItem {
-                        index,
-                        path_item: path_item.clone(),
-                    });
-                    continue;
-                }
-            }
-
             result.push(track_offsets);
         }
 
@@ -346,7 +347,7 @@ impl OperationalPointCache {
         uic_to_indices: HashMap<u32, Vec<usize>>,
         trigram_to_indices: HashMap<NonBlankString, Vec<usize>>,
         obj_id_to_index: HashMap<String, usize>,
-        track_ids: HashSet<String>,
+        path_item_tracks_exists: HashMap<String, bool>,
         track_ids_to_local_track_name: Vec<HashMap<String, NonBlankString>>,
     ) -> Self {
         Self {
@@ -354,7 +355,7 @@ impl OperationalPointCache {
             uic_to_indices,
             trigram_to_indices,
             obj_id_to_index,
-            track_ids,
+            path_item_tracks_exists,
             track_ids_to_local_track_name,
         }
     }

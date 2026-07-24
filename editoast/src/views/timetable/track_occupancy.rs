@@ -338,7 +338,6 @@ pub mod tests {
     use schemas::train_schedule::OperationalPointReference;
     use schemas::train_schedule::ReceptionSignal;
     use std::collections::HashMap;
-    use std::collections::HashSet;
 
     use super::*;
 
@@ -415,7 +414,7 @@ pub mod tests {
                 ("op_2".to_string(), 0),
                 ("op_3".to_string(), 0),
             ]),
-            HashSet::new(),
+            HashMap::new(),
             vec![HashMap::from([
                 ("T1".into(), "V1".into()),
                 ("T2".into(), "V2".into()),
@@ -637,7 +636,7 @@ pub mod tests {
             HashMap::new(),
             HashMap::new(),
             HashMap::from([("op_2".to_string(), 0)]),
-            HashSet::new(),
+            HashMap::new(),
             vec![HashMap::from([("T2".into(), "V2".into())])],
         );
 
@@ -684,7 +683,7 @@ pub mod tests {
             HashMap::new(),
             HashMap::new(),
             HashMap::from([("op_1".to_string(), 0)]),
-            HashSet::new(),
+            HashMap::new(),
             vec![HashMap::from([("T0".into(), "V0".into())])],
         );
 
