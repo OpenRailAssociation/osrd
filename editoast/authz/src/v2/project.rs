@@ -1,9 +1,13 @@
+use std::collections::HashSet;
+
 use fga::model::Relation as _;
 use futures::FutureExt;
 
 use crate::Group;
+use crate::ProjectPrivilege;
 use crate::Role;
 use crate::Subject;
+use crate::User;
 use crate::model::Project;
 use crate::model::ProjectGrant;
 use crate::v2::Actor;
@@ -126,6 +130,32 @@ pub fn project_revoke_grant(subject: Subject, project: Project) -> Protected<boo
             .boxed()
         })
         .with_check(Check::HasRole(Actor::Issuer, Role::Admin))
+}
+
+pub fn project_privileges(user: User, project: Project) -> Protected<HashSet<ProjectPrivilege>> {
+    Protected::new(move |openfga| {
+        async move {
+            let (admin, has_access) = openfga
+                .checks((
+                    User::role().check(&Role::Admin, &user),
+                    Project::has_access().check(&user, &project),
+                ))
+                .await?;
+
+            let privilege_set = if admin || has_access {
+                HashSet::from([ProjectPrivilege::HasAccess])
+            } else {
+                Default::default()
+            };
+            Ok(privilege_set)
+        }
+        .boxed()
+    })
+    .with_check(Check::HasProjectPrivilege(
+        Actor::Issuer,
+        ProjectPrivilege::HasAccess,
+        project,
+    ))
 }
 
 #[cfg(test)]
@@ -438,15 +468,66 @@ mod tests {
             openfga.project_direct_grant(subject, Project(1)).await,
             None
         );
+
         openfga.project_set_grant(subject, Project(1)).await;
+
         assert_eq!(
             openfga.project_direct_grant(subject, Project(1)).await,
             Some(ProjectGrant::Owner)
         );
-        openfga.project_set_grant(subject, Project(1)).await;
+    }
+
+    #[tokio::test]
+    async fn project_privileges_non_admin() {
+        let openfga = authz_client!();
+        let subject = Subject::user(1);
+
         assert_eq!(
             openfga.project_direct_grant(subject, Project(1)).await,
-            Some(ProjectGrant::Owner)
+            None
+        );
+        openfga.project_set_grant(subject, Project(1)).await;
+        assert_eq!(
+            openfga.project_privileges(User(1), Project(1)).await,
+            HashSet::from_iter([ProjectPrivilege::HasAccess])
+        )
+    }
+
+    #[tokio::test]
+    async fn project_privileges_admin() {
+        let openfga = authz_client!();
+
+        assert_eq!(
+            openfga
+                .project_direct_grant(Subject::user(1), Project(1))
+                .await,
+            None
+        );
+        openfga
+            .write_tuples(&[User::role().tuple(&Role::Admin, &User(1))])
+            .await
+            .unwrap();
+        assert_eq!(
+            openfga.project_privileges(User(1), Project(1)).await,
+            HashSet::from_iter([ProjectPrivilege::HasAccess])
+        )
+    }
+
+    #[tokio::test]
+    async fn no_project_privileges() {
+        let openfga = authz_client!();
+
+        openfga
+            .project_set_grant(Subject::user(2), Project(1))
+            .await;
+
+        assert_eq!(
+            openfga.project_privileges(User(1), Project(1)).await,
+            HashSet::from_iter([])
+        );
+        assert_eq!(
+            openfga.project_privileges(User(2), Project(1)).await,
+            HashSet::from_iter([ProjectPrivilege::HasAccess])
         );
     }
 
@@ -469,6 +550,12 @@ mod tests {
         project_revoke_grant(Subject::user(1), Project(1)).checks,
         &[
             Check::HasRole(Actor::Issuer, Role::Admin),
+        ]
+    )]
+    #[case::project_privileges(
+        project_privileges(User(1), Project(1)).checks,
+        &[
+            Check::HasProjectPrivilege(Actor::Issuer, ProjectPrivilege::HasAccess, Project(1))
         ]
     )]
     #[tokio::test]

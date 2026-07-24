@@ -8,6 +8,7 @@ use crate::InfraGrant;
 use crate::InfraPrivilege;
 use crate::Project;
 use crate::ProjectGrant;
+use crate::ProjectPrivilege;
 use crate::Role;
 use crate::RollingStock;
 use crate::RollingStockGrant;
@@ -25,6 +26,7 @@ use crate::v2::infra_revoke_grant;
 use crate::v2::infra_set_grant;
 use crate::v2::project::project_direct_grant;
 use crate::v2::project_effective_grant;
+use crate::v2::project_privileges;
 use crate::v2::project_revoke_grant;
 use crate::v2::project_set_grant;
 use crate::v2::remove_members;
@@ -102,6 +104,7 @@ pub trait TestClientExt {
     ) -> Option<ProjectGrant>;
     async fn project_revoke_grant(&self, subject: Subject, project: Project) -> bool;
     async fn project_set_grant(&self, subject: Subject, project: Project) -> ();
+    async fn project_privileges(&self, user: User, project: Project) -> HashSet<ProjectPrivilege>;
 }
 
 impl TestClientExt for fga::Client {
@@ -330,6 +333,13 @@ impl TestClientExt for fga::Client {
         let authorize = special_authorizers::Authorize(self);
         authorize
             .access_value(project_set_grant(subject, project))
+            .await
+            .unwrap()
+    }
+
+    async fn project_privileges(&self, user: User, project: Project) -> HashSet<ProjectPrivilege> {
+        special_authorizers::Authorize(self)
+            .access_value(project_privileges(user, project))
             .await
             .unwrap()
     }

@@ -21,6 +21,7 @@ use crate::Infra;
 use crate::InfraGrant;
 use crate::InfraPrivilege;
 use crate::Project;
+use crate::ProjectPrivilege;
 use crate::Role;
 use crate::RollingStock;
 use crate::RollingStockGrant;
@@ -69,6 +70,8 @@ pub enum Check {
     HasInfraPrivilege(Actor, InfraPrivilege, Infra),
     /// The actor needs a rolling stock privilege to perform the operation
     HasRollingStockPrivilege(Actor, RollingStockPrivilege, RollingStock),
+    /// The actor needs the project privilege to perform the operation
+    HasProjectPrivilege(Actor, ProjectPrivilege, Project),
     /// The issuer must be allowed to change the subject's infra grant
     ///
     /// Ensures that the issuer cannot demote a more or equally privileged user, except themself.

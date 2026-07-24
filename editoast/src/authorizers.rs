@@ -114,6 +114,14 @@ impl<'c> UserAuthorizer<'c> {
                         .await?;
                 (!privileges.contains(privilege)).then_some(check)
             }
+            Check::HasProjectPrivilege(actor, privilege, project) => {
+                let Ok(privileges) =
+                    authz::v2::project_privileges(*self.actor_user(actor), *project)
+                        .access_authorized::<Infallible>(self.openfga)
+                        .access()
+                        .await?;
+                (!privileges.contains(privilege)).then_some(check)
+            }
 
             Check::CanAlterSubjectInfraGrant(
                 subject @ authz::Subject::User(_),
