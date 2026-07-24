@@ -1,3 +1,4 @@
+use std::collections::HashSet;
 use std::ops::Deref;
 use std::ops::DerefMut;
 
@@ -352,31 +353,30 @@ impl OperationalPointModel {
 }
 
 impl TrackSectionModel {
-    /// Retrieve the list of track sections that match the given (object) IDs
-    ///
-    /// Use this instead of [`TrackSectionModel::retrieve_batch_unchecked`]
-    /// when all the operational points are known to be in the same infra.
-    pub async fn retrieve_from_ids(
+    /// Checks the existence of a list of track section ids.
+    /// Returns only existing ids.
+    #[tracing::instrument(skip(conn), err)]
+    pub async fn exists_from_ids(
         conn: &mut DbConnection,
         infra_id: i64,
         ids: &[String],
-    ) -> Result<Vec<Self>, database::DatabaseError> {
+    ) -> Result<HashSet<String>, database::DatabaseError> {
         use database::tables::infra_object_track_section::dsl;
         use diesel::prelude::*;
         use diesel_async::RunQueryDsl;
 
         if ids.is_empty() {
             // We know the result of the SQL query is going to be empty, avoid sending it.
-            return Ok(Vec::new());
+            return Ok(Default::default());
         }
 
         Ok(dsl::infra_object_track_section
+            .select(dsl::obj_id)
             .filter(dsl::infra_id.eq(infra_id))
             .filter(dsl::obj_id.eq_any(ids))
-            .load(&mut conn.write().await)
+            .load::<String>(&mut conn.write().await)
             .await?
             .into_iter()
-            .map(Self::from_row)
             .collect())
     }
 }
