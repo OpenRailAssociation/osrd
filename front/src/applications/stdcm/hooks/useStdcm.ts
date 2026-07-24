@@ -60,6 +60,37 @@ const useStdcm = ({
   const currentSimulationInputs = useStdcmForm();
 
   const postTimetableByIdStdcm = osrdEditoastApi.endpoints.postTimetableByIdStdcm;
+  const getPostTimetableByIdStdcmPromise = (
+    stream: ReturnType<typeof postTimetableByIdStdcm>,
+    type: 'upstream' | 'downstream'
+  ) =>
+    new Promise<StdcmResponseWithTraceId>((resolve, reject) => {
+      // subscribe for progress point
+      stream.subscribe((event) => {
+        switch (event.event) {
+          case 'ongoing': {
+            setCurrentStdcmRequestStatus(STDCM_REQUEST_STATUS.in_progress);
+            progressPoints.current = [
+              ...progressPoints.current,
+              {
+                type,
+                geoPoint: event.data.point,
+                animationStartTime: Date.now(),
+              },
+            ];
+            break;
+          }
+          case 'error': {
+            reject(event.error);
+            break;
+          }
+          case 'completed': {
+            resolve({ ...event.data, traceId: event.traceId });
+            break;
+          }
+        }
+      });
+    });
 
   const { data: stdcmRollingStock } =
     osrdEditoastApi.endpoints.getLightRollingStockByRollingStockId.useQuery(
@@ -173,8 +204,8 @@ const useStdcm = ({
       const downstream = postTimetableByIdStdcm(payloadDownstream);
       abortRequests.current = [upstream.unsubscribe, downstream.unsubscribe];
 
-      const promiseUpstream = upstream.runAndAwaitResult();
-      const promiseDownstream = downstream.runAndAwaitResult();
+      const promiseUpstream = getPostTimetableByIdStdcmPromise(upstream, 'upstream');
+      const promiseDownstream = getPostTimetableByIdStdcmPromise(downstream, 'downstream');
 
       // Run two additional requests for alternative simulations
       const [resUp, resDown] = await Promise.all([promiseUpstream, promiseDownstream]);
@@ -225,10 +256,6 @@ const useStdcm = ({
     try {
       const { subscribe, unsubscribe } = postTimetableByIdStdcm(payload);
       abortRequests.current = [unsubscribe];
-
-      // We can receive many points at the same timestamp. To avoid displaying them at once,
-      // we track the number of nodes received at the same timestamp to be able to add a delay
-      let lastPointReceivedAt = { timestamp: Date.now(), nb: 0 };
       // Listen to events
       await subscribe(async (event) => {
         switch (event.event) {
@@ -238,17 +265,14 @@ const useStdcm = ({
           }
           case 'ongoing': {
             setCurrentStdcmRequestStatus(STDCM_REQUEST_STATUS.in_progress);
-            const now = Date.now();
-            if (now > lastPointReceivedAt.timestamp) {
-              lastPointReceivedAt = { timestamp: Date.now(), nb: 0 };
-            } else {
-              lastPointReceivedAt.nb++;
-            }
-            const newPoint = {
-              geoPoint: event.data.point,
-              animationStartTime: lastPointReceivedAt.timestamp + 10 * lastPointReceivedAt.nb,
-            };
-            progressPoints.current = [...progressPoints.current, newPoint];
+            progressPoints.current = [
+              ...progressPoints.current,
+              {
+                type: 'normal',
+                geoPoint: event.data.point,
+                animationStartTime: Date.now(),
+              },
+            ];
             break;
           }
           case 'completed': {

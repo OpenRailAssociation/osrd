@@ -259,11 +259,9 @@ export type StdcmSearchDatetimeWindow = {
 };
 
 export type StdcmProgressPoint = {
+  type: 'normal' | 'downstream' | 'upstream';
   geoPoint: GeoJsonPoint;
-  /** When the animation for this point should start. When many points
-   *  arrive at the same time, each one is delayed by a few ms so they
-   *  don't all appear together (can be in the future).
-   */
+  // When the animation for this point should start
   animationStartTime: number;
 };
 export type StdcmProgressPoints = StdcmProgressPoint[];
