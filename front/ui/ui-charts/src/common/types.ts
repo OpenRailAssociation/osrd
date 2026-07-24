@@ -166,3 +166,43 @@ export type MouseState = {
   position: Point;
   isHover: boolean;
 };
+
+type CaptionStyle = {
+  color: string;
+  font: string;
+  fontWeight?: string;
+  fontSize?: string;
+  topOffset?: number;
+  textAlign?: CanvasTextAlign;
+};
+
+type LineStyle = {
+  width: number;
+  color: string;
+  opacity?: number;
+  dashArray?: number[];
+};
+
+export type BaseChartStyles = {
+  background: string;
+  pathsStyles: {
+    fontSize: number;
+    fontFamily: string;
+  };
+};
+
+export type TimeChartStyles = {
+  breakpoints: number[]; // in pixels/minute
+  dateCaptionsStyle: CaptionStyle;
+  dateCaptionsSize: number;
+  timeCaptionsPriorities: number[][];
+  timeCaptionsStyles: Record<number, CaptionStyle>;
+  timeCaptionsSize: number;
+  timeGraduationsPriorities: number[][];
+  timeGraduationsStyles: Record<number, LineStyle>;
+  timeRanges: number[];
+};
+
+export type SpaceChartStyles = {
+  spaceGraduationsStyles: Record<number, LineStyle>;
+};

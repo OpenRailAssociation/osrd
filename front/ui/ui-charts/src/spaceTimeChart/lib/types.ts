@@ -1,6 +1,13 @@
 import type { ReactNode } from 'react';
 
-import type { TimeChartContextType, ChartEventHandlers, Point } from '../../common/types';
+import type {
+  TimeChartContextType,
+  ChartEventHandlers,
+  Point,
+  TimeChartStyles,
+  SpaceChartStyles,
+  BaseChartStyles,
+} from '../../common/types';
 
 // GLOBAL UTILITY TYPES:
 export type Handler<P extends object> = (payload: P) => void;
@@ -86,40 +93,8 @@ export type PixelToSpace = (y: number) => number;
 export type PointToData = (point: Point) => DataPoint;
 export type DataToPoint = (data: DataPoint) => Point;
 
-export type LineStyle = {
-  width: number;
-  color: string;
-  opacity?: number;
-  dashArray?: number[];
-};
-
-export type CaptionStyle = {
-  color: string;
-  font: string;
-  fontWeight?: string;
-  fontSize?: string;
-  topOffset?: number;
-  textAlign?: CanvasTextAlign;
-};
-
 // STYLES:
-export type SpaceTimeChartTheme = {
-  background: string;
-  breakpoints: number[]; // in pixels/minute
-  timeRanges: number[];
-  pathsStyles: {
-    fontSize: number;
-    fontFamily: string;
-  };
-  spaceGraduationsStyles: Record<number, LineStyle>;
-  timeCaptionsPriorities: number[][];
-  timeCaptionsStyles: Record<number, CaptionStyle>;
-  timeCaptionsSize: number;
-  timeGraduationsPriorities: number[][];
-  timeGraduationsStyles: Record<number, LineStyle>;
-  dateCaptionsStyle: CaptionStyle;
-  dateCaptionsSize: number;
-};
+export type SpaceTimeChartTheme = BaseChartStyles & TimeChartStyles & SpaceChartStyles;
 
 // CORE COMPONENT MAIN TYPES:
 export type SpaceTimeChartProps = {
