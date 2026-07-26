@@ -12,7 +12,10 @@ import type {
   StdcmSimulationInputs,
   StdcmSuccessResponse,
 } from 'applications/stdcm/types';
-import { getStopDurationTime } from 'modules/SimulationReportSheet/utils/formatSimulationReportSheet';
+import {
+  durationToHHMM,
+  getStopDurationTime,
+} from 'modules/SimulationReportSheet/utils/formatSimulationReportSheet';
 import { retainSimulation } from 'reducers/osrdconf/stdcmConf';
 import type { StdcmViaPathStep } from 'reducers/osrdconf/types';
 
@@ -94,16 +97,20 @@ const StdcmResultsTable = ({
                 : step.name || t('reportSheet.unknown')}
             </td>
             <td className={cx('ch', { 'muted-text': !isPathStep })}>{step.secondaryCode}</td>
-            <td className="stop">{isLastStep || step.stopDuration !== null ? step.time : ''}</td>
+            <td className="stop">
+              {isLastStep || step.stopDuration !== null ? durationToHHMM(step.time) : ''}
+            </td>
             <td className="stop">
               {isNotExtremity && (
                 <div className={step.stopDuration !== null ? 'stop-with-duration ml-n2' : 'stop'}>
-                  {step.stopDuration !== null ? getStopDurationTime(step.stopDuration) : step.time}
+                  {step.stopDuration !== null
+                    ? getStopDurationTime(step.stopDuration)
+                    : durationToHHMM(step.time)}
                 </div>
               )}
             </td>
             <td className="stop">
-              {isFirstStep || step.stopDuration !== null ? step.stopEndTime : ''}
+              {isFirstStep || step.stopDuration !== null ? durationToHHMM(step.stopEndTime) : ''}
             </td>
             <td className={cx('weight', { 'muted-text': !isFirstStep })}>
               {displayedMass ? `${displayedMass}t` : '='}
