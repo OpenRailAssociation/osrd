@@ -55,36 +55,36 @@ describe('insertsMissingStopsInOperationalPointsWithTimes', () => {
   const opA = {
     opId: 'A',
     positionOnPath: 0,
-    time: '10:00',
+    time: new Duration({ hours: 10 }),
     stopDuration: null,
-    stopEndTime: '10:00',
+    stopEndTime: new Duration({ hours: 10 }),
     stopRequested: false,
     weight: 10,
   };
   const opB = {
     opId: 'B',
     positionOnPath: 50,
-    time: '10:10',
+    time: new Duration({ hours: 10, minutes: 10 }),
     stopDuration: null,
-    stopEndTime: '10:10',
+    stopEndTime: new Duration({ hours: 10, minutes: 10 }),
     stopRequested: false,
     weight: 10,
   };
   const opC = {
     opId: 'C',
     positionOnPath: 100,
-    time: '10:20',
+    time: new Duration({ hours: 10, minutes: 20 }),
     stopDuration: null,
-    stopEndTime: '10:20',
+    stopEndTime: new Duration({ hours: 10, minutes: 20 }),
     stopRequested: false,
     weight: 10,
   };
   const opD = {
     opId: 'D',
     positionOnPath: 150,
-    time: '10:30',
+    time: new Duration({ hours: 10, minutes: 30 }),
     stopDuration: null,
-    stopEndTime: '10:30',
+    stopEndTime: new Duration({ hours: 10, minutes: 30 }),
     stopRequested: false,
     weight: 10,
   };
@@ -92,19 +92,19 @@ describe('insertsMissingStopsInOperationalPointsWithTimes', () => {
     ...opA,
     stopRequested: true,
     stopDuration: new Duration({ seconds: 60 }),
-    stopEndTime: '10:01',
+    stopEndTime: new Duration({ hours: 10, minutes: 1, seconds: 2 }),
   };
   const opCwStop = {
     ...opC,
     stopRequested: true,
     stopDuration: new Duration({ seconds: 180 }),
-    stopEndTime: '10:23',
+    stopEndTime: new Duration({ hours: 10, minutes: 23, seconds: 2 }),
   };
   const opDwStop = {
     ...opD,
     stopRequested: true,
     stopDuration: new Duration({ seconds: 120 }),
-    stopEndTime: '10:32',
+    stopEndTime: new Duration({ hours: 10, minutes: 32 }),
   };
   const opAwStopNotDone = { ...opA, stopRequested: true };
   const opCwStopNotDone = { ...opC, stopRequested: true };
@@ -145,7 +145,11 @@ describe('insertsMissingStopsInOperationalPointsWithTimes', () => {
       opAwStop,
       opB,
       opCwStop,
-      { ...opDwStop, stopDuration: new Duration({ seconds: 300 }), stopEndTime: '10:36' },
+      {
+        ...opDwStop,
+        stopDuration: new Duration({ seconds: 300 }),
+        stopEndTime: new Duration({ hours: 10, minutes: 35, seconds: 40 }),
+      },
     ]);
   });
 
@@ -170,8 +174,8 @@ describe('insertsMissingStopsInOperationalPointsWithTimes', () => {
         opId: 'unplanned_stop_at_75',
         positionOnPath: 75,
         stopDuration: new Duration({ seconds: 60 }),
-        time: '10:15',
-        stopEndTime: '10:16',
+        time: new Duration({ hours: 10, minutes: 15 }),
+        stopEndTime: new Duration({ hours: 10, minutes: 16 }),
         stopRequested: false,
         weight: null,
       },
@@ -180,8 +184,8 @@ describe('insertsMissingStopsInOperationalPointsWithTimes', () => {
         opId: 'unplanned_stop_at_125',
         positionOnPath: 125,
         stopDuration: new Duration({ seconds: 60 }),
-        time: '10:25',
-        stopEndTime: '10:26',
+        time: new Duration({ hours: 10, minutes: 25 }),
+        stopEndTime: new Duration({ hours: 10, minutes: 26 }),
         stopRequested: false,
         weight: null,
       },

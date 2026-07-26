@@ -7,7 +7,10 @@ import type {
   StdcmResultsOperationalPoint,
 } from 'applications/stdcm/types';
 import type { SimulationTableRow } from 'modules/SimulationReportSheet/types';
-import { getStopDurationTime } from 'modules/SimulationReportSheet/utils/formatSimulationReportSheet';
+import {
+  durationToHHMM,
+  getStopDurationTime,
+} from 'modules/SimulationReportSheet/utils/formatSimulationReportSheet';
 import { getRowStyle } from 'modules/SimulationReportSheet/utils/formatSimulationTable';
 import type { SpeedDistanceDiagramData } from 'modules/simulationResult/types';
 import { capitalizeFirstLetter } from 'utils/strings';
@@ -48,8 +51,8 @@ export const formatStdcmDataForSimulationTable = (
     const isVia = stdcmPathSteps.slice(1, -1).some((step) => step.operationalPoint!.id === op.opId);
     const isPathStep = isFirst || isVia || isLast;
 
-    const startTime = isFirst || isStop ? op.stopEndTime : '';
-    const endTime = isLast || isStop ? op.time : '';
+    const startTime = isFirst || isStop ? durationToHHMM(op.stopEndTime) : '';
+    const endTime = isLast || isStop ? durationToHHMM(op.time) : '';
     const { stopType, trackName } = op;
 
     const stopTypeLabel = stopType
@@ -59,7 +62,7 @@ export const formatStdcmDataForSimulationTable = (
     let passageStop = '';
     if (!isFirst && !isLast) {
       passageStop =
-        op.stopDuration !== null ? getStopDurationTime(op.stopDuration) : String(op.time);
+        op.stopDuration !== null ? getStopDurationTime(op.stopDuration) : dateToHHMM(op.time);
     }
 
     let consistChanges;

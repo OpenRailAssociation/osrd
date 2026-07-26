@@ -55,7 +55,7 @@ export function getStopDurationTime(duration?: Duration): string {
  * @param duration Duration object
  * @returns The duration formatted as a string in "HH:MM" format
  */
-function durationToHHMM(duration: Duration): string {
+export function durationToHHMM(duration: Duration): string {
   const totalMinutes = Math.round(duration.total('minute'));
   const hours = Math.floor(totalMinutes / 60) % 24;
   const minutes = totalMinutes % 60;
@@ -139,9 +139,9 @@ function formatMinimalOperationalPointWithTimes(
   return {
     opId: op.opId,
     positionOnPath: op.positionOnPath,
-    time: durationToHHMM(stopBegin),
+    time: stopBegin,
     stopDuration: duration,
-    stopEndTime: durationToHHMM(stopEnd),
+    stopEndTime: stopEnd,
     stopRequested: false,
     weight: null,
   };
@@ -265,22 +265,16 @@ export function insertMissingStopsInOperationalPointsWithTimes(
 function consolidateOvertakesToSingleSteps(
   steps: StdcmResultsOperationalPoint[]
 ): StdcmResultsOperationalPoint[] {
-  function convertHHMMTimeToSeconds(time: string): number {
-    const [hours, minutes] = time.split(':').map(Number);
-    return hours * 3600 + minutes * 60;
-  }
   const consolidatedSteps: StdcmResultsOperationalPoint[] = [];
   for (let i = 0; i < steps.length - 1; i += 1) {
     const [step, nextStep] = [steps[i], steps[i + 1]];
     const overtakenStepMatch = step.name?.match(/OVERTAKE[^;]*;(.*)$/);
     if (overtakenStepMatch) {
-      const stopDuration =
-        convertHHMMTimeToSeconds(nextStep.time!) - convertHHMMTimeToSeconds(step.time!);
       const consolidatedStep: StdcmResultsOperationalPoint = {
         ...step,
         name: overtakenStepMatch[1],
-        stopDuration: new Duration({ seconds: stopDuration }),
-        stopEndTime: nextStep.time!,
+        stopDuration: nextStep.time.sub(step.time),
+        stopEndTime: nextStep.time,
         stopType: StdcmStopTypes.OVERTAKE,
       };
       consolidatedSteps.push(consolidatedStep);
