@@ -56,7 +56,7 @@ describe('insertsMissingStopsInOperationalPointsWithTimes', () => {
     opId: 'A',
     positionOnPath: 0,
     time: '10:00',
-    duration: null,
+    stopDuration: null,
     stopEndTime: '10:00',
     stopRequested: false,
     weight: 10,
@@ -65,7 +65,7 @@ describe('insertsMissingStopsInOperationalPointsWithTimes', () => {
     opId: 'B',
     positionOnPath: 50,
     time: '10:10',
-    duration: null,
+    stopDuration: null,
     stopEndTime: '10:10',
     stopRequested: false,
     weight: 10,
@@ -74,7 +74,7 @@ describe('insertsMissingStopsInOperationalPointsWithTimes', () => {
     opId: 'C',
     positionOnPath: 100,
     time: '10:20',
-    duration: null,
+    stopDuration: null,
     stopEndTime: '10:20',
     stopRequested: false,
     weight: 10,
@@ -83,7 +83,7 @@ describe('insertsMissingStopsInOperationalPointsWithTimes', () => {
     opId: 'D',
     positionOnPath: 150,
     time: '10:30',
-    duration: null,
+    stopDuration: null,
     stopEndTime: '10:30',
     stopRequested: false,
     weight: 10,
@@ -91,19 +91,19 @@ describe('insertsMissingStopsInOperationalPointsWithTimes', () => {
   const opAwStop = {
     ...opA,
     stopRequested: true,
-    duration: new Duration({ seconds: 60 }),
+    stopDuration: new Duration({ seconds: 60 }),
     stopEndTime: '10:01',
   };
   const opCwStop = {
     ...opC,
     stopRequested: true,
-    duration: new Duration({ seconds: 180 }),
+    stopDuration: new Duration({ seconds: 180 }),
     stopEndTime: '10:23',
   };
   const opDwStop = {
     ...opD,
     stopRequested: true,
-    duration: new Duration({ seconds: 120 }),
+    stopDuration: new Duration({ seconds: 120 }),
     stopEndTime: '10:32',
   };
   const opAwStopNotDone = { ...opA, stopRequested: true };
@@ -145,7 +145,7 @@ describe('insertsMissingStopsInOperationalPointsWithTimes', () => {
       opAwStop,
       opB,
       opCwStop,
-      { ...opDwStop, duration: new Duration({ seconds: 300 }), stopEndTime: '10:36' },
+      { ...opDwStop, stopDuration: new Duration({ seconds: 300 }), stopEndTime: '10:36' },
     ]);
   });
 
@@ -169,7 +169,7 @@ describe('insertsMissingStopsInOperationalPointsWithTimes', () => {
       {
         opId: 'unplanned_stop_at_75',
         positionOnPath: 75,
-        duration: new Duration({ seconds: 60 }),
+        stopDuration: new Duration({ seconds: 60 }),
         time: '10:15',
         stopEndTime: '10:16',
         stopRequested: false,
@@ -179,7 +179,7 @@ describe('insertsMissingStopsInOperationalPointsWithTimes', () => {
       {
         opId: 'unplanned_stop_at_125',
         positionOnPath: 125,
-        duration: new Duration({ seconds: 60 }),
+        stopDuration: new Duration({ seconds: 60 }),
         time: '10:25',
         stopEndTime: '10:26',
         stopRequested: false,

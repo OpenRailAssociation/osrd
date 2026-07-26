@@ -44,7 +44,7 @@ export const formatStdcmDataForSimulationTable = (
     const isLast = index === operationalPointsList.length - 1;
     const previousOp = operationalPointsList[index - 1];
 
-    const isStop = op.duration !== null && !isLast;
+    const isStop = op.stopDuration !== null && !isLast;
     const isVia = stdcmPathSteps.slice(1, -1).some((step) => step.operationalPoint!.id === op.opId);
     const isPathStep = isFirst || isVia || isLast;
 
@@ -58,7 +58,8 @@ export const formatStdcmDataForSimulationTable = (
 
     let passageStop = '';
     if (!isFirst && !isLast) {
-      passageStop = op.duration !== null ? getStopDurationTime(op.duration) : String(op.time);
+      passageStop =
+        op.stopDuration !== null ? getStopDurationTime(op.stopDuration) : String(op.time);
     }
 
     let consistChanges;
@@ -95,7 +96,7 @@ export const formatStdcmDataForSimulationTable = (
       stopTypeLabel,
       stopType,
       consistChanges,
-      ...getRowStyle(op.duration, isPathStep, isFirst, isLast),
+      ...getRowStyle(op.stopDuration, isPathStep, isFirst, isLast),
     };
   });
 };

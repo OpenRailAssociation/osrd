@@ -57,7 +57,7 @@ export type StdcmResultsOperationalPoint = {
   name?: string;
   consistChange?: ConsistData;
   secondaryCode?: string | null;
-  duration: Duration | null;
+  stopDuration: Duration | null;
   stopEndTime: string;
   trackName?: string;
   stopType?: StdcmStopTypes;
