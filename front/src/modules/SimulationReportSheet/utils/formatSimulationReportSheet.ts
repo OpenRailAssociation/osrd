@@ -140,7 +140,7 @@ function formatMinimalOperationalPointWithTimes(
     opId: op.opId,
     positionOnPath: op.positionOnPath,
     time: durationToHHMM(stopBegin),
-    duration,
+    stopDuration: duration,
     stopEndTime: durationToHHMM(stopEnd),
     stopRequested: false,
     weight: null,
@@ -243,10 +243,10 @@ export function insertMissingStopsInOperationalPointsWithTimes(
       },
       train
     );
-    if (lastAddedOp.stopRequested && lastAddedOp.duration === null) {
+    if (lastAddedOp.stopRequested && lastAddedOp.stopDuration === null) {
       // If a stop was requested at the last op and no stop was performed,
       // we assume the current stop actually corresponds to the last op
-      lastAddedOp.duration = formattedStop.duration;
+      lastAddedOp.stopDuration = formattedStop.stopDuration;
       lastAddedOp.stopEndTime = formattedStop.stopEndTime;
     } else {
       // Otherwise we create a new op at the current stop, with unknown name and minimal informations
@@ -279,7 +279,7 @@ function consolidateOvertakesToSingleSteps(
       const consolidatedStep = {
         ...step,
         name: overtakenStepMatch[1],
-        duration: new Duration({ seconds: stopDuration }),
+        stopDuration: new Duration({ seconds: stopDuration }),
         stopEndTime: nextStep.time!,
         stopType: StdcmStopTypes.OVERTAKE,
         stopFor: stopDuration / 60,
@@ -354,8 +354,8 @@ export function getOperationalPointsWithTimes({
 
   return formattedConsolidatedOps.map((op) => ({
     ...op,
-    stopType: op.duration || !op.stopType ? op.stopType : StdcmStopTypes.PASSAGE_TIME, // no stop duration -> stoptype = undefined or PASSAGE_TIME
-    consistChange: op.duration ? op.consistChange : undefined,
+    stopType: op.stopDuration || !op.stopType ? op.stopType : StdcmStopTypes.PASSAGE_TIME, // no stop duration -> stoptype = undefined or PASSAGE_TIME
+    consistChange: op.stopDuration ? op.consistChange : undefined,
   }));
 }
 

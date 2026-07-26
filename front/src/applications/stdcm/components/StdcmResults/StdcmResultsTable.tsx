@@ -61,7 +61,7 @@ const StdcmResultsTable = ({
       ({ operationalPoint }) => operationalPoint && operationalPoint.id === step.opId
     );
     const shouldRenderRow =
-      isFirstStep || isRequestedPathStep || isLastStep || step.duration !== null;
+      isFirstStep || isRequestedPathStep || isLastStep || step.stopDuration !== null;
     const isPathStep = isFirstStep || isLastStep || isRequestedPathStep;
     const isNotExtremity = !isFirstStep && !isLastStep;
 
@@ -89,21 +89,21 @@ const StdcmResultsTable = ({
               {isNotExtremity &&
               !isRequestedPathStep &&
               step.name === prevStep.name &&
-              step.duration === null
+              step.stopDuration === null
                 ? '='
                 : step.name || t('reportSheet.unknown')}
             </td>
             <td className={cx('ch', { 'muted-text': !isPathStep })}>{step.secondaryCode}</td>
-            <td className="stop">{isLastStep || step.duration !== null ? step.time : ''}</td>
+            <td className="stop">{isLastStep || step.stopDuration !== null ? step.time : ''}</td>
             <td className="stop">
               {isNotExtremity && (
-                <div className={step.duration !== null ? 'stop-with-duration ml-n2' : 'stop'}>
-                  {step.duration !== null ? getStopDurationTime(step.duration) : step.time}
+                <div className={step.stopDuration !== null ? 'stop-with-duration ml-n2' : 'stop'}>
+                  {step.stopDuration !== null ? getStopDurationTime(step.stopDuration) : step.time}
                 </div>
               )}
             </td>
             <td className="stop">
-              {isFirstStep || step.duration !== null ? step.stopEndTime : ''}
+              {isFirstStep || step.stopDuration !== null ? step.stopEndTime : ''}
             </td>
             <td className={cx('weight', { 'muted-text': !isFirstStep })}>
               {displayedMass ? `${displayedMass}t` : '='}
