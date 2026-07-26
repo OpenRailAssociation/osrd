@@ -3,7 +3,9 @@ pub(in crate::views) mod towed;
 
 type RollingStockForm = schemas::RollingStock<schemas::rolling_stock::RollingResistancePerWeight>;
 
+use authz::RollingStockGrant;
 use authz::RollingStockPrivilege;
+use authz::v2;
 use authz::v2::rolling_stock_privileges;
 use axum::Extension;
 
@@ -41,6 +43,9 @@ use utoipa::IntoParams;
 use utoipa::ToSchema;
 
 use crate::AppState;
+use crate::authentication;
+use crate::authorizers::SystemAuthorizer;
+use crate::authorizers::impossible;
 use crate::error::InternalError;
 use crate::error::Result;
 
@@ -290,8 +295,11 @@ pub(in crate::views) struct PostRollingStockQueryParams {
     )
 )]
 pub(in crate::views) async fn create(
-    State(db_pool): State<Arc<DbConnectionPoolV2>>,
+    State(AppState {
+        regulator, db_pool, ..
+    }): State<AppState>,
     Query(query_params): Query<PostRollingStockQueryParams>,
+    Extension(authn_state): Extension<crate::authentication::State>,
     Json(rolling_stock_form): Json<RollingStockForm>,
 ) -> Result<Json<RollingStock>> {
     let conn = &mut db_pool.get().await?;
@@ -303,6 +311,37 @@ pub(in crate::views) async fn create(
         .create(conn)
         .await
         .map_err(RollingStockError::from)?;
+
+    if let authentication::State::Authenticated { user, .. } = &authn_state {
+        match v2::rolling_stock_set_grant(
+            authz::Subject::User(*user),
+            authz::RollingStock(rolling_stock.id),
+            RollingStockGrant::Owner,
+        )
+        .authorize(&SystemAuthorizer {
+            openfga: regulator.openfga(),
+            conn: conn.clone(),
+        })
+        .await?
+        .access()
+        .await?
+        {
+            Ok(()) => {}
+            Err(v2::Check::SubjectExists(subject)) => {
+                panic!("authenticated user should exist: {subject:?}")
+            }
+            Err(v2::Check::RollingStockExists(rolling_stock)) => {
+                panic!("rolling stock was just created: {rolling_stock:?}")
+            }
+            Err(
+                check @ (v2::Check::HasRollingStockPrivilege(..)
+                | v2::Check::CanAlterSubjectRollingStockGrant(..)),
+            ) => {
+                panic!("SystemAuthorizer should not reject rolling stock grant checks: {check:?}")
+            }
+            Err(check) => impossible!(check),
+        }
+    }
 
     Ok(Json(rolling_stock))
 }
@@ -815,8 +854,14 @@ pub mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn create_rolling_stock_successfully() {
         // GIVEN
-        let app = test_app!().skip_authz().build();
+        let app = test_app!().build();
         let db_pool = app.db_pool();
+
+        let user = app
+            .user(uuid::Uuid::new_v4().to_string(), "name")
+            .with_roles([Role::OperationalStudies])
+            .create()
+            .await;
 
         let rs_name = "fast_rolling_stock_name";
         let fast_rolling_stock_form = fast_rolling_stock_form(rs_name);
@@ -824,6 +869,7 @@ pub mod tests {
         // WHEN
         let raw_response = app
             .rolling_stock_create_request(&fast_rolling_stock_form)
+            .by_user(user.as_ref())
             .await;
 
         // THEN
@@ -833,6 +879,7 @@ pub mod tests {
             .await
             .expect("Failed to retrieve rolling stock")
             .expect("Rolling stock not found");
+        let rs_id = rolling_stock.id;
 
         assert_eq!(rolling_stock.name, rs_name);
         assert_eq!(
@@ -846,6 +893,9 @@ pub mod tests {
                 .contains("ETCS_LEVEL2"),
             false
         );
+        // Check if the issuer was added as owner to the rolling stock
+        app.assert_rolling_stock_grant(rs_id, user.id, Some(RollingStockGrant::Owner))
+            .await;
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
