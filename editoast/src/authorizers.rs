@@ -1,9 +1,9 @@
 use std::convert::Infallible;
 use std::ops::Not as _;
 
-use authz::ProjectGrant;
 use crate::views::AuthorizationError;
 use crate::views::AuthorizerError;
+use authz::ProjectGrant;
 use authz::v2::Access;
 use authz::v2::Actor;
 use authz::v2::Authorizer;
