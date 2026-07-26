@@ -809,16 +809,11 @@ pub(in crate::views) async fn simulation(
     };
 
     let rolling_stock_name = train_schedule.rolling_stock_name().to_owned();
-    let Some(rolling_stock) =
-        RollingStock::retrieve(db_pool.get().await?, rolling_stock_name.clone()).await?
-    else {
-        return Ok(Json(simulation::Response::PathfindingFailed {
-            pathfinding_failed: PathfindingFailure::PathfindingInputError(
-                PathfindingInputError::RollingStockNotFound { rolling_stock_name },
-            ),
-        }));
+    let rolling_stock =
+        RollingStock::retrieve(db_pool.get().await?, rolling_stock_name.clone()).await?;
+    let Some(rolling_stock) = rolling_stock else {
+        return Err(TrainScheduleError::RollingStockNotFound { rolling_stock_name }.into());
     };
-
     // Check user privilege on infra and rolling stock
     // Done here because we need to retrieve the exception if it exists.
     if let Some(user) = authn_state.user() {
@@ -849,6 +844,7 @@ pub(in crate::views) async fn simulation(
             Err(err) => return Err(err.into()),
         }
     }
+
     let consist = PhysicsConsistParameters::from_traction_engine(rolling_stock.into());
 
     let path_item_locations = train_schedule.locations();
