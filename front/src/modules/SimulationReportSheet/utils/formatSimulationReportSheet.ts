@@ -276,13 +276,12 @@ function consolidateOvertakesToSingleSteps(
     if (overtakenStepMatch) {
       const stopDuration =
         convertHHMMTimeToSeconds(nextStep.time!) - convertHHMMTimeToSeconds(step.time!);
-      const consolidatedStep = {
+      const consolidatedStep: StdcmResultsOperationalPoint = {
         ...step,
         name: overtakenStepMatch[1],
         stopDuration: new Duration({ seconds: stopDuration }),
         stopEndTime: nextStep.time!,
         stopType: StdcmStopTypes.OVERTAKE,
-        stopFor: stopDuration / 60,
       };
       consolidatedSteps.push(consolidatedStep);
       i += 1; // to skip the next step, as we consolidated two overtake steps in one
