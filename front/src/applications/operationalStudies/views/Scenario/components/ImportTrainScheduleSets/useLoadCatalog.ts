@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
+import type { ApiError } from 'common/api/baseGeneratedApis';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 
 import type { CatalogById, TrainScheduleSetById } from './types';
@@ -13,7 +14,7 @@ import type { CatalogById, TrainScheduleSetById } from './types';
  */
 export default function useLoadCatalog() {
   const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<Error | null>(null);
+  const [error, setError] = useState<ApiError | null>(null);
   const [data, setData] = useState<{
     catalog: CatalogById;
     trainScheduleSets: TrainScheduleSetById;
@@ -41,13 +42,17 @@ export default function useLoadCatalog() {
       const catalog: CatalogById = new Map();
       const trainScheduleSets: TrainScheduleSetById = new Map();
 
-      const catalogEntriesResult = catalogData || [];
+      const entriesTss = await Promise.all(
+        catalogData.map((catalogEntry) =>
+          getTrainScheduleSets({
+            catalogEntryId: catalogEntry.id,
+            published: true,
+          }).unwrap()
+        )
+      );
 
-      for (const catalogEntry of catalogEntriesResult) {
-        const entryTss = await getTrainScheduleSets({
-          catalogEntryId: catalogEntry.id,
-          published: true,
-        }).unwrap();
+      catalogData.forEach((catalogEntry, index) => {
+        const entryTss = entriesTss[index];
 
         if (entryTss.length > 0) {
           catalog.set(catalogEntry.id, {
@@ -59,14 +64,14 @@ export default function useLoadCatalog() {
             trainScheduleSets.set(tss.id, tss);
           }
         }
-      }
+      });
 
       setData({
         catalog,
         trainScheduleSets,
       });
     } catch (e) {
-      setError(e as Error);
+      setError(e as ApiError);
     } finally {
       setLoading(false);
     }
