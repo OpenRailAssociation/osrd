@@ -211,10 +211,10 @@
             th:last-child {
               text-transform: none;
             }
-            tbody tr:nth-child(odd) {
+            .odd-row {
               background-color: var(--ambientA10);
             }
-            tbody tr:nth-child(even) {
+            .even-row {
               background-color: var(--color-ambientA-5);
             }
             tbody tr.isPathStep {
