@@ -29,7 +29,7 @@ pub struct TrainBlockOccupancyDetails {
     pub simulation_end_time: u64,
 }
 
-async fn extract_block_occupancy_details<T: TrainScheduleLike>(
+fn extract_block_occupancy_details<T: TrainScheduleLike>(
     simulations: Vec<Arc<simulation::Response>>,
     train_schedules: &[T],
 ) -> Vec<Option<TrainBlockOccupancyDetails>> {
@@ -128,7 +128,7 @@ pub(super) async fn compute_occupancy_blocks<T: TrainScheduleLike>(
     .collect();
 
     // 2. Extracts train simulation details and computes unique hashes for projected train paths.
-    let trains_details = extract_block_occupancy_details(simulations, trains_schedules).await;
+    let trains_details = extract_block_occupancy_details(simulations, trains_schedules);
 
     // train_details might contain None. We will send to core only valid trains_details
     // This Vec allows to associate the train with the position in the array sent to core
