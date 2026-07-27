@@ -5,6 +5,12 @@ import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 
 import type { CatalogById, TrainScheduleSetById } from './types';
 
+/**
+ * Loads the train schedule set catalog for the scenario's timetable.
+ *
+ * For each catalog entry, fetches its published train schedule sets; entries with none are dropped from the result.
+ * Also exposes the set of train schedule set ids already imported into the timetable from the catalog.
+ */
 export default function useLoadCatalog() {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<Error | null>(null);
