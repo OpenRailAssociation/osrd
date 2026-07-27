@@ -5,10 +5,12 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import TrainSimulationLazyLoader from 'applications/operationalStudies/helpers/TrainSimulationLazyLoader';
 import type {
   LightRollingStockWithLiveries,
+  PacedTrainException,
   TrainScheduleResponse,
   TrainScheduleSimulationSummaryResult,
 } from 'common/api/osrdEditoastApi';
 import { simulationResultsInitialState } from 'reducers/simulationResults';
+import { Duration } from 'utils/duration';
 
 import useLazySimulateTrains, { type UseLazySimulateTrainsOptions } from '../useLazySimulateTrains';
 
@@ -46,6 +48,14 @@ describe('useLazySimulateTrains', () => {
     start_time: 0,
     train_name: 'Train 1',
     train_schedule_set_id: 1,
+  };
+
+  const mockTrainException: PacedTrainException = {
+    id: 1,
+    key: 'mockTrainException',
+    start_time: {
+      value: mockTrain.start_time + 1,
+    },
   };
 
   const mockSimulationSummaryResult: TrainScheduleSimulationSummaryResult = {
@@ -148,6 +158,36 @@ describe('useLazySimulateTrains', () => {
         result.current.updateSimulatedTrainScheduleDepartureTime(mockTrain.id, newDeparture);
       });
       expect(result.current.simulatedTrainsById.get(mockTrain.id)?.startTime).toEqual(newDeparture);
+    });
+
+    it('should not update departure time for shifted exceptions', () => {
+      const { result } = renderHookWithStore(() => useLazySimulateTrains(baseOptions));
+      act(() => {
+        result.current.simulateTrainSchedules([
+          {
+            ...mockTrain,
+            paced: {
+              time_window: 'PT1S',
+              interval: 'PT1S',
+              exceptions: [],
+            },
+          },
+        ]);
+      });
+      act(() => {
+        onProgress?.(new Map([[mockTrain.id, mockSimulationSummaryResult]]));
+      });
+
+      const newDeparture = new Date(2000, 1, 1);
+      act(() => {
+        result.current.updateSimulatedTrainScheduleDepartureTime(mockTrain.id, newDeparture, [
+          mockTrainException,
+        ]);
+      });
+      expect(result.current.simulatedTrainsById.get(mockTrain.id)?.startTime).toEqual(newDeparture);
+      expect(result.current.simulatedTrainsById.get(mockTrain.id)?.paced?.exceptions).toEqual([
+        mockTrainException,
+      ]);
     });
 
     it('should do nothing if train id is not found in the map', () => {
@@ -258,6 +298,91 @@ describe('useLazySimulateTrains', () => {
         onProgress?.(new Map());
       });
       expect(result.current.isTrainSimulationLoading).toBe(false);
+    });
+  });
+
+  describe('updateSimulatedTrainExceptions', () => {
+    it('should update exceptions for paced trains', () => {
+      const { result } = renderHookWithStore(() =>
+        useLazySimulateTrains({
+          ...baseOptions,
+          rollingStocks: [{ name: mockTrain.rolling_stock_name } as LightRollingStockWithLiveries],
+        })
+      );
+      act(() => {
+        result.current.simulateTrainSchedules([
+          {
+            ...mockTrain,
+            paced: {
+              time_window: 'PT1S',
+              interval: 'PT1S',
+              exceptions: [mockTrainException],
+            },
+          },
+        ]);
+      });
+      act(() => {
+        onProgress?.(
+          new Map([
+            [
+              mockTrain.id,
+              {
+                ...mockSimulationSummaryResult,
+                paced: {
+                  timeWindow: new Duration({}),
+                  interval: new Duration({}),
+                  exceptions: [mockTrainException],
+                },
+              },
+            ],
+          ])
+        );
+      });
+
+      act(() => {
+        result.current.updateSimulatedTrainExceptions(mockTrain.id, [
+          {
+            ...mockTrainException,
+            start_time: {
+              value: mockTrainException.start_time!.value + 2,
+            },
+          },
+        ]);
+      });
+
+      expect(result.current.simulatedTrainsById.get(mockTrain.id)?.paced?.exceptions).toEqual([
+        {
+          ...mockTrainException,
+          start_time: {
+            value: mockTrainException.start_time!.value + 2,
+          },
+        },
+      ]);
+    });
+
+    it('should ignore changes if mock Train is not paced', () => {
+      const { result } = renderHookWithStore(() => useLazySimulateTrains(baseOptions));
+
+      act(() => {
+        result.current.simulateTrainSchedules([mockTrain]);
+      });
+
+      act(() => {
+        onProgress?.(new Map([[mockTrain.id, mockSimulationSummaryResult]]));
+      });
+
+      act(() => {
+        result.current.updateSimulatedTrainExceptions(mockTrain.id, [
+          {
+            ...mockTrainException,
+            start_time: {
+              value: mockTrainException.start_time!.value + 2,
+            },
+          },
+        ]);
+      });
+
+      expect(result.current.simulatedTrainsById.get(mockTrain.id)?.paced).toBeUndefined();
     });
   });
 
