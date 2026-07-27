@@ -1,6 +1,7 @@
 import type { TFunction } from 'i18next';
 
 import type { PacedTrain } from 'applications/operationalStudies/types';
+import type { SubCategory } from 'common/api/osrdEditoastApi';
 import type { Train } from 'reducers/osrdconf/types';
 import { Duration } from 'utils/duration';
 
@@ -13,15 +14,18 @@ export const getShortDepartureDate = (train: Train, locale?: Intl.Locale) =>
       })
     : null;
 
-export const getShortCategoryName = (train: Train, t: TFunction<'translation'>): string | null =>
-  train.category && 'main_category' in train.category
-    ? t(`translation:rollingStock.shortCategoriesOptions.${train.category.main_category}`)
-    : null;
+export const getShortCategoryName = (
+  train: Train,
+  t: TFunction<'translation'>,
+  subCategories: SubCategory[]
+): string | undefined => {
+  const category = train.category;
+  if (!category) return undefined;
+  if ('main_category' in category)
+    return t(`translation:rollingStock.shortCategoriesOptions.${category.main_category}`);
+  return subCategories.find((option) => option.code === category.sub_category_code)?.name;
+};
 
-export const getCategoryName = (train: Train, t: TFunction<'translation'>): string | null =>
-  train.category && 'main_category' in train.category
-    ? t(`translation:rollingStock.categoriesOptions.${train.category.main_category}`)
-    : null;
 
 export const getComfortType = (train: Train, t: TFunction<'translation'>): string | null =>
   train.comfort ? t(`translation:rollingStock.comfortTypes.${train.comfort}`) : '';

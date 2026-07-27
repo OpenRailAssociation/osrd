@@ -3,6 +3,7 @@ import { ChevronDown } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
 
 import type { PacedTrain } from 'applications/operationalStudies/types';
+import { useSubCategoryContext } from 'common/SubCategoryContext';
 import type { Train } from 'reducers/osrdconf/types';
 import { useDateTimeLocale } from 'utils/date';
 import { findExceptionInPacedTrainByOccurrenceId } from 'utils/trainExceptions';
@@ -38,6 +39,7 @@ const CollapsedTrainOverview = ({
     occurrenceId && pacedTrain
       ? findExceptionInPacedTrainByOccurrenceId(occurrenceId, pacedTrain)
       : null;
+  const subCategories = useSubCategoryContext();
 
   return (
     <div className="train-header collapsed-train-summary">
@@ -56,7 +58,7 @@ const CollapsedTrainOverview = ({
           </div>
         )}
         <div className="train-departure-date">{getShortDepartureDate(train, dateTimeLocale)}</div>
-        <div className="train-category">{getShortCategoryName(train, t)}</div>
+        <div className="train-category">{getShortCategoryName(train, t, subCategories)}</div>
         {train.rolling_stock_name && (
           <div className="train-rolling-stock">{train.rolling_stock_name}</div>
         )}
