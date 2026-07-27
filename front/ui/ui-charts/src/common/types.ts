@@ -1,6 +1,6 @@
 import { type HTMLProps } from 'react';
 
-import type { PathLevel, SpaceTimeChartTheme } from '../spaceTimeChart';
+import type { SpaceTimeChartTheme } from '../spaceTimeChart';
 import type { DataPoint, Handler, PointToData, DataToPoint } from '../spaceTimeChart/lib/types';
 import type { LAYERS, PICKING_LAYERS } from './consts';
 
@@ -46,7 +46,6 @@ export type CurveOutline = {
 export type CurveStyle = {
   color: string;
   opacity: number;
-  level?: PathLevel;
   outline?: CurveOutline;
   /** TOD occupancy bar height in px. */
   thickness?: number;

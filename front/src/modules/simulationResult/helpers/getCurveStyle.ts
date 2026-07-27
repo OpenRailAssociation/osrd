@@ -113,7 +113,6 @@ const getBaseStyle = (state: CurveVisualState, train: TrainForStyle): CurveStyle
   const dragStyle: CurveStyle = {
     color: DRAGGED_CURVE_COLOR,
     opacity: 1,
-    level: 1,
     outline: { offset: 0, width: 1.5, color: DRAGGED_CURVE_OUTLINE_COLOR },
     label: {
       color: colors.base,
@@ -150,7 +149,6 @@ const getHoveredStyle = (state: CurveVisualState, train: TrainForStyle): CurveSt
     return {
       color: colors.strong,
       opacity: 1,
-      level: 3,
       label: hoveredLabel(colors),
       ...(isSimulated === false && { outline: INVALID_OUTLINE }),
     };
@@ -241,7 +239,6 @@ const getTodStyle = (
       return {
         color: DRAGGED_CURVE_COLOR,
         opacity: 1,
-        level: 1,
         thickness: 1.5,
         outline: { offset: 0, color: DRAGGED_CURVE_OUTLINE_COLOR },
         label: {
