@@ -2933,7 +2933,7 @@ export type PostWorkerLoadApiArg = {
     timetable_id?: number | null;
   };
 };
-export type StandardGrant = 'READER' | 'WRITER' | 'OWNER';
+export type StandardGrant = 'RESTRICTED_READER' | 'READER' | 'WRITER' | 'OWNER';
 export type ResourceType = 'infra' | 'rolling_stock';
 export type GrantBody = {
   grant: StandardGrant;
@@ -2948,6 +2948,7 @@ export type RevokeBody = {
 };
 export type Role = 'Admin' | 'Stdcm' | 'OperationalStudies';
 export type StandardPrivilege =
+  | 'can_restricted_read'
   | 'can_read'
   | 'can_share_read'
   | 'can_write'

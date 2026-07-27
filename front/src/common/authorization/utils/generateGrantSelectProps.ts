@@ -6,6 +6,8 @@ import { GRANTS_LABEL } from '../consts';
 
 function getRequiredPrivilegesToAddGrant(grant: keyof typeof GRANTS_LABEL): Privilege[] {
   switch (grant) {
+    case 'RESTRICTED_READER':
+      return ['can_share_read'];
     case 'READER':
       return ['can_share_read'];
     case 'WRITER':

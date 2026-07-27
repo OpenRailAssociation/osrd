@@ -1051,6 +1051,7 @@ mod tests {
         assert_eq!(
             privileges.remove(&infra1).unwrap(),
             HashSet::from([
+                StandardPrivilege::CanRestrictedRead,
                 StandardPrivilege::CanRead,
                 StandardPrivilege::CanShareRead,
                 StandardPrivilege::CanWrite,
@@ -1063,6 +1064,7 @@ mod tests {
         assert_eq!(
             privileges.remove(&infra2).unwrap(),
             HashSet::from([
+                StandardPrivilege::CanRestrictedRead,
                 StandardPrivilege::CanRead,
                 StandardPrivilege::CanShareRead,
                 StandardPrivilege::CanWrite,
@@ -1071,7 +1073,11 @@ mod tests {
         );
         assert_eq!(
             privileges.remove(&infra3).unwrap(),
-            HashSet::from([StandardPrivilege::CanRead, StandardPrivilege::CanShareRead])
+            HashSet::from([
+                StandardPrivilege::CanRestrictedRead,
+                StandardPrivilege::CanRead,
+                StandardPrivilege::CanShareRead
+            ])
         );
         assert_eq!(privileges.remove(&infra4).unwrap(), HashSet::from([]));
         assert!(!privileges.contains_key(&infra_unused));
@@ -1117,16 +1123,25 @@ mod tests {
             .collect::<HashMap<_, _>>();
         assert_eq!(
             privileges.remove(&infra1).unwrap(),
-            HashSet::from([StandardPrivilege::CanRead, StandardPrivilege::CanShareRead])
+            HashSet::from([
+                StandardPrivilege::CanRestrictedRead,
+                StandardPrivilege::CanRead,
+                StandardPrivilege::CanShareRead
+            ])
         );
         assert_eq!(privileges.remove(&infra2).unwrap(), HashSet::from([]));
         assert_eq!(
             privileges.remove(&infra3).unwrap(),
-            HashSet::from([StandardPrivilege::CanRead, StandardPrivilege::CanShareRead,])
+            HashSet::from([
+                StandardPrivilege::CanRestrictedRead,
+                StandardPrivilege::CanRead,
+                StandardPrivilege::CanShareRead,
+            ])
         );
         assert_eq!(
             privileges.remove(&infra4).unwrap(),
             HashSet::from([
+                StandardPrivilege::CanRestrictedRead,
                 StandardPrivilege::CanRead,
                 StandardPrivilege::CanShareRead,
                 StandardPrivilege::CanWrite,
