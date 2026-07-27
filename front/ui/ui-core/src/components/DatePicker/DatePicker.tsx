@@ -44,6 +44,7 @@ export const DatePicker = (props: DatePickerProps) => {
     handleDayClick,
     handleInputClick,
     handleInputOnChange,
+    handleBlur,
   } = useDatePicker(props);
 
   const { inputFieldWrapperClassname, ...otherInputProps } = props.inputProps;
@@ -69,6 +70,7 @@ export const DatePicker = (props: DatePickerProps) => {
           })}
           autoComplete="off"
           onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleInputOnChange(e.target.value)}
+          onBlur={handleBlur}
           statusWithMessage={statusWithMessage}
         />
       </div>
