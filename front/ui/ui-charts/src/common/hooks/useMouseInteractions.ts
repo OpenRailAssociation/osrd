@@ -39,6 +39,15 @@ type Handlers<T> = {
 /**
  * This hook handles SpaceTimeChart mouse interactions.
  * It is an internal hook, and should only be used inside SpaceTimeChart.
+ *
+ * onClick is related to mouse events, hoveredItem and position updates
+ * onZoom is related to wheel events and dom updates
+ * onMouseMove and onPan are related to dom, down and position updates
+ *
+ * @param dom The DOM element to bind the events to
+ * @param mouseContext The mouse context, containing the current position, hovered item, down ctrl and/or shift state and hover state
+ * @param handlers The event handlers to call on mouse interactions
+ * @param context The context to pass to the event handlers
  */
 export function useMouseInteractions<T extends { fingerprint: string; getData: PointToData }>(
   dom: HTMLElement | null,
