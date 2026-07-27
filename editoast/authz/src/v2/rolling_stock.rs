@@ -140,6 +140,92 @@ pub fn rolling_stock_effective_grant(
     ))
 }
 
+/// Sets the (direct) grant a subject has on an [RollingStock].
+///
+/// No transaction is setup as OpenFGA does not support them.
+pub fn rolling_stock_set_grant(
+    subject: Subject,
+    rolling_stock: RollingStock,
+    new_grant: RollingStockGrant,
+) -> Protected<()> {
+    let prot =
+        rolling_stock_revoke_grant(subject, rolling_stock).map(move |openfga, _has_revoked| {
+            async move {
+                let mut writes = openfga.prepare_writes();
+                match (subject, new_grant) {
+                    (Subject::User(user), RollingStockGrant::Reader) => {
+                        writes.push(&RollingStock::reader().tuple(&user, &rolling_stock))
+                    }
+                    (Subject::User(user), RollingStockGrant::Writer) => {
+                        writes.push(&RollingStock::writer().tuple(&user, &rolling_stock))
+                    }
+                    (Subject::User(user), RollingStockGrant::Owner) => {
+                        writes.push(&RollingStock::owner().tuple(&user, &rolling_stock))
+                    }
+                    (Subject::Group(group), RollingStockGrant::Reader) => writes.push(
+                        &RollingStock::reader()
+                            .tuple(Group::member().userset(&group), &rolling_stock),
+                    ),
+                    (Subject::Group(group), RollingStockGrant::Writer) => writes.push(
+                        &RollingStock::writer()
+                            .tuple(Group::member().userset(&group), &rolling_stock),
+                    ),
+                    (Subject::Group(group), RollingStockGrant::Owner) => writes.push(
+                        &RollingStock::owner()
+                            .tuple(Group::member().userset(&group), &rolling_stock),
+                    ),
+                };
+                writes.execute().await?;
+                Ok(())
+            }
+            .boxed()
+        });
+
+    let share_privilege = match new_grant {
+        RollingStockGrant::Reader => RollingStockPrivilege::CanShareRead,
+        RollingStockGrant::Writer => RollingStockPrivilege::CanShareWrite,
+        RollingStockGrant::Owner => RollingStockPrivilege::CanShareOwnership,
+    };
+
+    // Set grant rules:
+    // 1. Issuer must have the correct sharing privilege [HasRollingStockPrivilege]
+    // 2. Issuer is admin (may not have any direct grant on the resource)
+    //     1. *can* demote the last owner [Authorizer admin bypass]
+    //     2. can demote or promote anyone to any grant level otherwise [Authorizer admin bypass]
+    //     3. can demote or promote any group [Authorizer admin bypass]
+    // 3. Issuer is owner
+    //     1. cannot demote the last owner (including self) [IsNotLastRollingStockOwner]
+    //     2. cannot demote another owner [CanAlterSubjectRollingStockGrant]
+    //     3. can demote or promote anyone to any grant level otherwise [CanAlterSubjectRollingStockGrant]
+    //     4. **cannot** demote or promote any group [CanAlterSubjectRollingStockGrant]
+    // 4. Issuer is anything else
+    //     1. can demote self [HasRollingStockPrivilege]
+    //     2. cannot promote self [HasRollingStockPrivilege]
+    //     3. can promote anyone up to their own grant level [CanAlterSubjectRollingStockGrant + HasRollingStockPrivilege]
+    //     4. can demote anyone with a strictly lower grant level than their own [CanAlterSubjectRollingStockGrant]
+    //     5. **cannot** demote or promote any group [CanAlterSubjectRollingStockGrant]
+    let prot = prot
+        .reset_checks() // get rid of revoking-specific checks
+        .with_check(Check::SubjectExists(subject))
+        .with_check(Check::RollingStockExists(rolling_stock))
+        .with_check(Check::HasRollingStockPrivilege(
+            Actor::Issuer,
+            share_privilege,
+            rolling_stock,
+        ))
+        .with_check(Check::CanAlterSubjectRollingStockGrant(
+            subject,
+            rolling_stock,
+            new_grant,
+        ));
+
+    if new_grant != RollingStockGrant::Owner {
+        prot.with_check(Check::IsNotLastRollingStockOwner(subject, rolling_stock))
+    } else {
+        prot
+    }
+}
+
 /// Return an operation that checks the list of subjects which have the given grant on a rolling
 /// stock.
 pub fn rolling_stock_granted_subjects(
@@ -623,7 +709,7 @@ mod tests {
     ) {
         let openfga = crate::authz_client!();
         openfga
-            .give_rolling_stock_grant(RollingStock(1), subject, grant)
+            .rolling_stock_set_grant(RollingStock(1), subject, grant)
             .await;
         assert_eq!(
             openfga

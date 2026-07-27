@@ -560,7 +560,7 @@ impl<'a> UserBuilder<'a> {
             }
             for (rolling_stock_id, grant) in rolling_stock_grants.into_iter() {
                 app.openfga()
-                    .give_rolling_stock_grant(
+                    .rolling_stock_set_grant(
                         RollingStock(rolling_stock_id),
                         authz::Subject::User(authz::User(user.id)),
                         grant,
@@ -675,7 +675,7 @@ impl<'a> GroupBuilder<'a> {
             }
             for (rolling_stock_id, grant) in rolling_stock_grants.into_iter() {
                 app.openfga()
-                    .give_rolling_stock_grant(RollingStock(rolling_stock_id), subject, grant)
+                    .rolling_stock_set_grant(RollingStock(rolling_stock_id), subject, grant)
                     .await;
             }
         }
