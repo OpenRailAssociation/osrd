@@ -82,6 +82,7 @@ const GrantsManagerSubject = ({
           getOptionLabel={(option) => option.label}
           getOptionValue={(option) => option.value || ''}
           onChange={(option) => updateUserGrant(option?.value)}
+          disabled={subject.id === userId && selectProps.value?.value === 'OWNER'}
           narrow
           {...selectProps}
         />
