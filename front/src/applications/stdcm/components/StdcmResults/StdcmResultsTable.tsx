@@ -52,6 +52,7 @@ const StdcmResultsTable = ({
     totalMass: consist.totalMass!,
   };
 
+  let renderedRowIndex = 0;
   for (const [index, step] of operationalPointsList.entries()) {
     const isFirstStep = index === 0;
     const isLastStep = index === operationalPointsList.length - 1;
@@ -78,9 +79,11 @@ const StdcmResultsTable = ({
     currentConsist = step.consistChange ? step.consistChange : currentConsist;
 
     if (showAllOP || shouldRenderRow) {
+      renderedRowIndex += 1;
+      const isEvenRow = renderedRowIndex % 2 === 0;
       operationalPointRows.push(
         <Fragment key={`op-list-row-${index}`}>
-          <tr className={cx({ isPathStep })}>
+          <tr className={cx({ isPathStep, 'even-row': isEvenRow, 'odd-row': !isEvenRow })}>
             <td className={cx('index', { 'muted-text': !isPathStep })}>{index + 1}</td>
             <td className="name">
               {isNotExtremity &&
@@ -110,7 +113,7 @@ const StdcmResultsTable = ({
             </td>
           </tr>
           {step.consistChange && (
-            <tr>
+            <tr className={cx({ 'even-row': isEvenRow, 'odd-row': !isEvenRow })}>
               <td className="index">
                 <Container />
               </td>
