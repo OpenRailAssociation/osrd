@@ -186,6 +186,11 @@ impl<S: StorageDriver> Regulator<S> {
 
         // Calling openfga with the appropriate privilege check
         let check = match privilege {
+            InfraPrivilege::CanRestrictedRead => {
+                self.openfga
+                    .check(model::Infra::can_restricted_read().check(user, infra))
+                    .await?
+            }
             InfraPrivilege::CanRead => {
                 self.openfga
                     .check(model::Infra::can_read().check(user, infra))

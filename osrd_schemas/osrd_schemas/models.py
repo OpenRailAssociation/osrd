@@ -3838,12 +3838,14 @@ class SpeedSectionPslSncfExtension(BaseModel):
 
 
 class StandardGrant(Enum):
+    RESTRICTED_READER = "RESTRICTED_READER"
     READER = "READER"
     WRITER = "WRITER"
     OWNER = "OWNER"
 
 
 class StandardPrivilege(Enum):
+    can_restricted_read = "can_restricted_read"
     can_read = "can_read"
     can_share_read = "can_share_read"
     can_write = "can_write"

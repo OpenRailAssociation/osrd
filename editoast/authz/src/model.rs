@@ -103,6 +103,7 @@ pub struct Group(pub i64);
 #[strum(serialize_all = "snake_case")]
 #[allow(clippy::enum_variant_names)] // needed due to "Can" prefix
 pub enum InfraPrivilege {
+    CanRestrictedRead,
     CanRead,
     CanShareRead,
     CanWrite,
@@ -118,6 +119,7 @@ pub enum InfraPrivilege {
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 #[strum(serialize_all = "SCREAMING_SNAKE_CASE")]
 pub enum InfraGrant {
+    RestrictedReader,
     Reader,
     Writer,
     Owner,
@@ -164,6 +166,7 @@ pub struct Infra(pub i64);
 #[strum(serialize_all = "snake_case")]
 #[allow(clippy::enum_variant_names)]
 pub enum RollingStockPrivilege {
+    CanRestrictedRead,
     CanRead,
     CanShareRead,
     CanWrite,
@@ -179,6 +182,7 @@ pub enum RollingStockPrivilege {
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 #[strum(serialize_all = "SCREAMING_SNAKE_CASE")]
 pub enum RollingStockGrant {
+    RestrictedReader,
     Reader,
     Writer,
     Owner,
@@ -244,10 +248,12 @@ fga::relations! {
         member: User
     },
     Infra {
+        restricted_reader: User,
         reader: User,
         writer:User,
         owner: User,
         // Computed
+        can_restricted_read: User,
         can_read: User,
         can_write: User,
         can_delete: User,
@@ -257,6 +263,7 @@ fga::relations! {
         can_revoke: User
     },
     RollingStock {
+        restricted_reader: User,
         reader: User,
         writer: User,
         owner: User,

@@ -153,6 +153,9 @@ pub fn rolling_stock_set_grant(
             async move {
                 let mut writes = openfga.prepare_writes();
                 match (subject, new_grant) {
+                    (Subject::User(user), RollingStockGrant::RestrictedReader) => {
+                        writes.push(&RollingStock::restricted_reader().tuple(&user, &rolling_stock))
+                    }
                     (Subject::User(user), RollingStockGrant::Reader) => {
                         writes.push(&RollingStock::reader().tuple(&user, &rolling_stock))
                     }
@@ -162,6 +165,10 @@ pub fn rolling_stock_set_grant(
                     (Subject::User(user), RollingStockGrant::Owner) => {
                         writes.push(&RollingStock::owner().tuple(&user, &rolling_stock))
                     }
+                    (Subject::Group(group), RollingStockGrant::RestrictedReader) => writes.push(
+                        &RollingStock::restricted_reader()
+                            .tuple(Group::member().userset(&group), &rolling_stock),
+                    ),
                     (Subject::Group(group), RollingStockGrant::Reader) => writes.push(
                         &RollingStock::reader()
                             .tuple(Group::member().userset(&group), &rolling_stock),
@@ -182,6 +189,7 @@ pub fn rolling_stock_set_grant(
         });
 
     let share_privilege = match new_grant {
+        RollingStockGrant::RestrictedReader => RollingStockPrivilege::CanRestrictedRead,
         RollingStockGrant::Reader => RollingStockPrivilege::CanShareRead,
         RollingStockGrant::Writer => RollingStockPrivilege::CanShareWrite,
         RollingStockGrant::Owner => RollingStockPrivilege::CanShareOwnership,
@@ -239,6 +247,13 @@ pub fn rolling_stock_granted_subjects(
         Protected::new(move |openfga| {
             async move {
                 match grant {
+                    RollingStockGrant::RestrictedReader => {
+                        openfga
+                            .list_users(
+                                RollingStock::restricted_reader().query_users(&rolling_stock),
+                            )
+                            .await
+                    }
                     RollingStockGrant::Reader => {
                         openfga
                             .list_users(RollingStock::reader().query_users(&rolling_stock))
@@ -267,6 +282,14 @@ pub fn rolling_stock_granted_subjects(
         Protected::new(move |openfga| {
             async move {
                 match grant {
+                    RollingStockGrant::RestrictedReader => {
+                        openfga
+                            .list_usersets(
+                                RollingStock::restricted_reader()
+                                    .query_usersets(Group::member(), &rolling_stock),
+                            )
+                            .await
+                    }
                     RollingStockGrant::Reader => {
                         openfga
                             .list_usersets(
@@ -376,6 +399,9 @@ pub fn rolling_stock_revoke_grant(
 
             let mut delete = openfga.prepare_deletes();
             match (subject, grant) {
+                (Subject::User(user), RollingStockGrant::RestrictedReader) => {
+                    delete.push(&RollingStock::restricted_reader().tuple(&user, &rolling_stock))
+                }
                 (Subject::User(user), RollingStockGrant::Reader) => {
                     delete.push(&RollingStock::reader().tuple(&user, &rolling_stock))
                 }
@@ -385,6 +411,10 @@ pub fn rolling_stock_revoke_grant(
                 (Subject::User(user), RollingStockGrant::Owner) => {
                     delete.push(&RollingStock::owner().tuple(&user, &rolling_stock))
                 }
+                (Subject::Group(group), RollingStockGrant::RestrictedReader) => delete.push(
+                    &RollingStock::restricted_reader()
+                        .tuple(Group::member().userset(&group), &rolling_stock),
+                ),
                 (Subject::Group(group), RollingStockGrant::Reader) => delete.push(
                     &RollingStock::reader().tuple(Group::member().userset(&group), &rolling_stock),
                 ),

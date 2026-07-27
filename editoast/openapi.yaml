@@ -15252,12 +15252,14 @@ components:
     StandardGrant:
       type: string
       enum:
+      - RESTRICTED_READER
       - READER
       - WRITER
       - OWNER
     StandardPrivilege:
       type: string
       enum:
+      - can_restricted_read
       - can_read
       - can_share_read
       - can_write

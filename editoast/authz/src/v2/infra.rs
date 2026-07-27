@@ -134,6 +134,9 @@ pub fn infra_set_grant(subject: Subject, infra: Infra, new_grant: InfraGrant) ->
         async move {
             let mut writes = openfga.prepare_writes();
             match (subject, new_grant) {
+                (Subject::User(user), InfraGrant::RestrictedReader) => {
+                    writes.push(&Infra::restricted_reader().tuple(&user, &infra))
+                }
                 (Subject::User(user), InfraGrant::Reader) => {
                     writes.push(&Infra::reader().tuple(&user, &infra))
                 }
@@ -143,6 +146,9 @@ pub fn infra_set_grant(subject: Subject, infra: Infra, new_grant: InfraGrant) ->
                 (Subject::User(user), InfraGrant::Owner) => {
                     writes.push(&Infra::owner().tuple(&user, &infra))
                 }
+                (Subject::Group(group), InfraGrant::RestrictedReader) => writes.push(
+                    &Infra::restricted_reader().tuple(Group::member().userset(&group), &infra),
+                ),
                 (Subject::Group(group), InfraGrant::Reader) => {
                     writes.push(&Infra::reader().tuple(Group::member().userset(&group), &infra))
                 }
@@ -160,6 +166,7 @@ pub fn infra_set_grant(subject: Subject, infra: Infra, new_grant: InfraGrant) ->
     });
 
     let share_privilege = match new_grant {
+        InfraGrant::RestrictedReader => InfraPrivilege::CanRestrictedRead,
         InfraGrant::Reader => InfraPrivilege::CanShareRead,
         InfraGrant::Writer => InfraPrivilege::CanShareWrite,
         InfraGrant::Owner => InfraPrivilege::CanShareOwnership,
@@ -213,6 +220,9 @@ pub fn infra_revoke_grant(subject: Subject, infra: Infra) -> Protected<bool> {
 
             let mut delete = openfga.prepare_deletes();
             match (subject, grant) {
+                (Subject::User(user), InfraGrant::RestrictedReader) => {
+                    delete.push(&Infra::restricted_reader().tuple(&user, &infra))
+                }
                 (Subject::User(user), InfraGrant::Reader) => {
                     delete.push(&Infra::reader().tuple(&user, &infra))
                 }
@@ -222,6 +232,9 @@ pub fn infra_revoke_grant(subject: Subject, infra: Infra) -> Protected<bool> {
                 (Subject::User(user), InfraGrant::Owner) => {
                     delete.push(&Infra::owner().tuple(&user, &infra))
                 }
+                (Subject::Group(group), InfraGrant::RestrictedReader) => delete.push(
+                    &Infra::restricted_reader().tuple(Group::member().userset(&group), &infra),
+                ),
                 (Subject::Group(group), InfraGrant::Reader) => {
                     delete.push(&Infra::reader().tuple(Group::member().userset(&group), &infra))
                 }
@@ -260,6 +273,7 @@ pub fn infra_privileges(user: User, infra: Infra) -> Protected<HashSet<InfraPriv
         async move {
             let (
                 admin,
+                can_restricted_read,
                 can_read,
                 can_share_read,
                 can_write,
@@ -270,6 +284,7 @@ pub fn infra_privileges(user: User, infra: Infra) -> Protected<HashSet<InfraPriv
             ) = openfga
                 .checks((
                     User::role().check(&Role::Admin, &user),
+                    Infra::can_restricted_read().check(&user, &infra),
                     Infra::can_read().check(&user, &infra),
                     Infra::can_share_read().check(&user, &infra),
                     Infra::can_write().check(&user, &infra),
@@ -280,6 +295,9 @@ pub fn infra_privileges(user: User, infra: Infra) -> Protected<HashSet<InfraPriv
                 ))
                 .await?;
             let mut privileges = HashSet::new();
+            privileges.extend(
+                (admin || can_restricted_read).then_some(InfraPrivilege::CanRestrictedRead),
+            );
             privileges.extend((admin || can_read).then_some(InfraPrivilege::CanRead));
             privileges.extend((admin || can_share_read).then_some(InfraPrivilege::CanShareRead));
             privileges.extend((admin || can_write).then_some(InfraPrivilege::CanWrite));
@@ -308,6 +326,11 @@ pub fn infra_granted_subjects(infra: Infra, grant: InfraGrant) -> Protected<Vec<
         Protected::new(move |openfga| {
             async move {
                 match grant {
+                    InfraGrant::RestrictedReader => {
+                        openfga
+                            .list_users(Infra::restricted_reader().query_users(&infra))
+                            .await
+                    }
                     InfraGrant::Reader => {
                         openfga
                             .list_users(Infra::reader().query_users(&infra))
@@ -331,6 +354,13 @@ pub fn infra_granted_subjects(infra: Infra, grant: InfraGrant) -> Protected<Vec<
         Protected::new(move |openfga| {
             async move {
                 match grant {
+                    InfraGrant::RestrictedReader => {
+                        openfga
+                            .list_usersets(
+                                Infra::restricted_reader().query_usersets(Group::member(), &infra),
+                            )
+                            .await
+                    }
                     InfraGrant::Reader => {
                         openfga
                             .list_usersets(Infra::reader().query_usersets(Group::member(), &infra))
@@ -378,6 +408,11 @@ pub fn infra_list(user: User, privilege: InfraPrivilege) -> Protected<ResourcesL
                 return Ok(ResourcesList::All);
             }
             let authorized_infras = match privilege {
+                InfraPrivilege::CanRestrictedRead => {
+                    openfga
+                        .list_objects(Infra::can_restricted_read().query_objects(&user))
+                        .await?
+                }
                 InfraPrivilege::CanRead => {
                     openfga
                         .list_objects(Infra::can_read().query_objects(&user))
@@ -715,6 +750,7 @@ mod tests {
         assert_eq!(
             openfga.infra_privileges(User(1), Infra(1)).await,
             HashSet::from_iter([
+                InfraPrivilege::CanRestrictedRead,
                 InfraPrivilege::CanRead,
                 InfraPrivilege::CanShareRead,
                 InfraPrivilege::CanWrite,
@@ -738,6 +774,7 @@ mod tests {
         assert_eq!(
             openfga.infra_privileges(User(1), Infra(1)).await,
             HashSet::from_iter([
+                InfraPrivilege::CanRestrictedRead,
                 InfraPrivilege::CanRead,
                 InfraPrivilege::CanShareRead,
                 InfraPrivilege::CanWrite,

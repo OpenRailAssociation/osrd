@@ -33,6 +33,7 @@ impl Resource {
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 #[cfg_attr(test, derive(Debug, PartialEq))]
 pub(super) enum StandardGrant {
+    RestrictedReader,
     Reader,
     Writer,
     Owner,
@@ -43,6 +44,7 @@ pub(super) enum StandardGrant {
 #[strum(serialize_all = "snake_case")]
 #[allow(clippy::enum_variant_names)] // needed due to "Can" prefix
 pub(super) enum StandardPrivilege {
+    CanRestrictedRead,
     CanRead,
     CanShareRead,
     CanWrite,
@@ -57,6 +59,7 @@ macro_rules! impl_standard_privilege_from_into {
         impl From<$ty> for StandardPrivilege {
             fn from(privilege: $ty) -> Self {
                 match privilege {
+                    <$ty>::CanRestrictedRead => Self::CanRestrictedRead,
                     <$ty>::CanRead => Self::CanRead,
                     <$ty>::CanShareRead => Self::CanShareRead,
                     <$ty>::CanWrite => Self::CanWrite,
@@ -71,6 +74,7 @@ macro_rules! impl_standard_privilege_from_into {
         impl From<StandardPrivilege> for $ty {
             fn from(privilege: StandardPrivilege) -> Self {
                 match privilege {
+                    StandardPrivilege::CanRestrictedRead => Self::CanRestrictedRead,
                     StandardPrivilege::CanRead => Self::CanRead,
                     StandardPrivilege::CanShareRead => Self::CanShareRead,
                     StandardPrivilege::CanWrite => Self::CanWrite,
@@ -89,6 +93,7 @@ macro_rules! impl_standard_grant_from_into {
         impl From<$ty> for StandardGrant {
             fn from(grant: $ty) -> Self {
                 match grant {
+                    <$ty>::RestrictedReader => Self::RestrictedReader,
                     <$ty>::Reader => Self::Reader,
                     <$ty>::Writer => Self::Writer,
                     <$ty>::Owner => Self::Owner,
@@ -99,6 +104,7 @@ macro_rules! impl_standard_grant_from_into {
         impl From<StandardGrant> for $ty {
             fn from(grant: StandardGrant) -> Self {
                 match grant {
+                    StandardGrant::RestrictedReader => Self::RestrictedReader,
                     StandardGrant::Reader => Self::Reader,
                     StandardGrant::Writer => Self::Writer,
                     StandardGrant::Owner => Self::Owner,
