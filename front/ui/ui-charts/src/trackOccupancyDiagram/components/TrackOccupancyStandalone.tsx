@@ -113,7 +113,12 @@ const TrackOccupancyStandalone = ({
 
   const isDragging = Boolean(draggingOccupancyZones?.length);
 
-  const { onMouseMove } = useEdgePan({ enableY: isDragging, spaceTimeChartProps, pan });
+  const { onMouseMove } = useEdgePan({
+    enableY: isDragging,
+    hideTimeCaptions: spaceTimeChartProps.hideTimeCaptions,
+    themeTimeCaptionsSize: spaceTimeChartProps.theme?.timeCaptionsSize,
+    pan,
+  });
 
   return (
     <div className="track-occupancy-standalone flex flex-col">

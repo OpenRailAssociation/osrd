@@ -656,7 +656,8 @@ const SpaceTimeChartWrapper = ({
 
   const { onMouseMove } = useEdgePan({
     enableY: isDraggingOccupancyZone,
-    spaceTimeChartProps,
+    hideTimeCaptions: spaceTimeChartProps.hideTimeCaptions,
+    themeTimeCaptionsSize: spaceTimeChartProps.theme?.timeCaptionsSize,
     pan,
   });
 
