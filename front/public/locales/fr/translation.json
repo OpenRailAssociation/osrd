@@ -857,10 +857,10 @@
       "atThisWaypoint": "appliquer à ce point",
       "fromDeparture": "propager vers le début",
       "shiftAllWaypoints": "décaler tout le sillon",
-      "toDestination": "propager vers la fin",
       "stopDurationAtThisWaypoint": "Seulement ce point",
-      "stopDurationFromDeparture": "A partir de ce point",
-      "stopDurationToDestination": "Jusqu'à ce point"
+      "stopDurationFromDeparture": "Jusqu'à ce point",
+      "stopDurationToDestination": "A partir de ce point",
+      "toDestination": "propager vers la fin"
     },
     "realMargin": "marge réelle",
     "receptionOnClosedSignal": "signal fermé",
