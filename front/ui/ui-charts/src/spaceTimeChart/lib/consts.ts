@@ -145,4 +145,35 @@ export const DEFAULT_THEME: SpaceTimeChartTheme = {
       opacity: 0.25,
     },
   },
+  conflictsStyles: {
+    xs: {
+      fill: 'rgba(107, 0, 0, 0.1)',
+      borders: {
+        inside: 'rgba(217,28,28,1)',
+        outside: 'rgba(255, 104, 104, 0.38)',
+        secondOutside: 'rgba(217, 28, 28, 0.08)', // only for 'xs' size
+      },
+    },
+    s: {
+      fill: 'rgba(107, 0, 0, 0.1)',
+      borders: {
+        inside: 'rgba(217,28,28,1)',
+        outside: 'rgba(255, 104, 104, 0.25))',
+      },
+    },
+    m: {
+      fill: 'rgba(255, 238, 237, 1)',
+      borders: {
+        inside: 'rgba(217, 28, 28, 1)',
+        outside: 'rgba(255, 104, 104, 0.25)',
+      },
+    },
+    l: {
+      fill: 'rgba(255, 104, 104, 0.15)',
+      borders: {
+        inside: 'rgba(217, 28, 28, 1)',
+        outside: 'rgba(255, 104, 104, 0.25)',
+      },
+    },
+  },
 };

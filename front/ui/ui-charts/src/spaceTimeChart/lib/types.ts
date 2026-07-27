@@ -119,6 +119,12 @@ export type SpaceTimeChartTheme = {
   timeGraduationsStyles: Record<number, LineStyle>;
   dateCaptionsStyle: CaptionStyle;
   dateCaptionsSize: number;
+  conflictsStyles: { xs: ConflictBorder; s: ConflictBorder; m: ConflictBorder; l: ConflictBorder };
+};
+
+export type ConflictBorder = {
+  fill: string;
+  borders: Record<string, string>;
 };
 
 // CORE COMPONENT MAIN TYPES:
