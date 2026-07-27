@@ -219,7 +219,7 @@ const applyLayout = (state: MacroEditorState, trainSchedules: TrainScheduleRespo
 
   // Avoid overlaps.
   // TODO: fine-tune the parameters
-  const nicerNodes = avoidNodesOverlaps(nodes, 100, 2);
+  const nicerNodes = avoidNodesOverlaps(nodes, 200, 2);
 
   // Update positions.
   for (const n of nicerNodes) {
