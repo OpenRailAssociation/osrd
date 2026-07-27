@@ -67,7 +67,7 @@ const createVirtualOp = (
     id: virtualId,
     name: virtualName,
     uic: opRef.type === 'uic' ? opRef.uic : 0,
-    secondary_code: (opRef.type !== 'id' && opRef.secondary_code) || '',
+    secondary_code: (opRef.type !== 'id' && opRef.secondary_code) || null,
     main_code: opRef.type === 'trigram' ? opRef.trigram : '',
     position,
     weight,
