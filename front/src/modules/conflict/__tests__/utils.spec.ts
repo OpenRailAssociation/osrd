@@ -1,9 +1,11 @@
 import { describe, it, expect } from 'vitest';
 
 import type { TrainScheduleResponse } from 'common/api/osrdEditoastApi';
+import { Duration } from 'utils/duration';
 
 import type { ConflictWithTrainNames } from '../types';
 import addTrainNamesToConflicts, {
+  dedupeHourlyConflicts,
   filterAndReorderConflict,
   reorderConflictTrainsByScheduleId,
 } from '../utils';
@@ -111,6 +113,59 @@ describe('filterAndReorderConflict - reordering', () => {
     expect(reordered!.trainsData[0].name).toBe('1234');
     expect(reordered!.trainsData[1].name).toBe('1236');
     expect(reordered!.trainsData[2].name).toBe('ABCD');
+  });
+});
+
+describe('dedupeHourlyConflicts', () => {
+  const period = new Duration({ hours: 2 });
+
+  it('drops conflicts starting outside [0, period)', () => {
+    const inWindow = conflictBase({ start_time: 0 });
+    const atPeriodStart = conflictBase({ start_time: period.ms });
+    const negative = conflictBase({ start_time: -1 });
+
+    const result = dedupeHourlyConflicts([inWindow, atPeriodStart, negative], period);
+    expect(result).toEqual([inWindow]);
+  });
+
+  it('drops exact duplicates repeated across the period', () => {
+    const conflict = conflictBase({
+      start_time: 1000,
+      duration: 500,
+      train_ids: [{ train_schedule_id: 10, type: 'base', index: 0 }],
+    });
+    const duplicate = { ...conflict };
+
+    const result = dedupeHourlyConflicts([conflict, duplicate], period);
+    expect(result).toEqual([conflict]);
+  });
+
+  it('keeps conflicts with different train_ids order equivalent as duplicates', () => {
+    const conflict = conflictBase({
+      start_time: 1000,
+      train_ids: [
+        { train_schedule_id: 10, type: 'base', index: 0 },
+        { train_schedule_id: 20, type: 'base', index: 1 },
+      ],
+    });
+    const reorderedDuplicate = conflictBase({
+      start_time: 1000,
+      train_ids: [
+        { train_schedule_id: 20, type: 'base', index: 1 },
+        { train_schedule_id: 10, type: 'base', index: 0 },
+      ],
+    });
+
+    const result = dedupeHourlyConflicts([conflict, reorderedDuplicate], period);
+    expect(result).toEqual([conflict]);
+  });
+
+  it('keeps distinct conflicts', () => {
+    const first = conflictBase({ start_time: 100 });
+    const second = conflictBase({ start_time: 200 });
+
+    const result = dedupeHourlyConflicts([first, second], period);
+    expect(result).toEqual([first, second]);
   });
 });
 
