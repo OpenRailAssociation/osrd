@@ -15,7 +15,7 @@ import { Duration, addDurationToDate } from 'utils/duration';
 import { computeOptimisticRow, propagationToEdits } from './helpers/cellUpdate';
 import { computePowerRestrictionWarnings } from './helpers/powerRestrictionIncompatibility';
 import { propagateStopDuration } from './helpers/stopDurationPropagation';
-import { propagateTime } from './helpers/timePropagation';
+import { ONE_DAY, propagateTime } from './helpers/timePropagation';
 import useTimesStopsTableData from './hooks/useTimesStopsTableData';
 import useUpdateTimesStopsTable from './hooks/useUpdateTimesStopsTable';
 import TimesStopsTable from './TimesStopsTable';
@@ -45,8 +45,6 @@ type TimeStopsTableWrapperProps = {
   isSimulationDataLoading?: boolean;
   rollingStock?: RollingStock;
 };
-
-const ONE_DAY = new Duration({ hours: 24 });
 
 const bumpMidnightCrossings = (rows: TimesStopsRowNew[]): TimesStopsRowNew[] => {
   let lastArrival: Date | null = null;
@@ -219,6 +217,14 @@ const TimeStopsTableWrapper = ({
       });
   };
 
+  // Origin arrival = start_time (not in schedule), so propagationToEdits misses it.
+  const computeOriginEdits = (updatedStartTime: Date): PendingEdit[] => {
+    const originRow = rows.at(0);
+    return originRow && originRow.requestedArrival?.getTime() !== updatedStartTime.getTime()
+      ? [{ rowId: originRow.id, field: 'requestedArrival', value: updatedStartTime }]
+      : [];
+  };
+
   const buildEditsForUpdate = (
     singleEdit: PendingEdit,
     update: CellUpdate & { propagationMode: PropagationMode }
@@ -227,20 +233,7 @@ const TimeStopsTableWrapper = ({
     if (!propagationResult) return [singleEdit];
 
     const propagationEdits = propagationToEdits(propagationResult, rows);
-
-    // Origin arrival = start_time (not in schedule), so propagationToEdits misses it.
-    const originRow = rows.at(0);
-    const originEdits: PendingEdit[] =
-      originRow &&
-      originRow.requestedArrival?.getTime() !== propagationResult.updatedStartTime.getTime()
-        ? [
-            {
-              rowId: originRow.id,
-              field: 'requestedArrival',
-              value: propagationResult.updatedStartTime,
-            },
-          ]
-        : [];
+    const originEdits = computeOriginEdits(propagationResult.updatedStartTime);
 
     // When editing the origin, originEdits already has the correct date.
     // singleEdit must be skipped because the typed value can carry the
@@ -266,8 +259,13 @@ const TimeStopsTableWrapper = ({
     if (!propagationResult) return [singleEdit];
 
     const propagationEdits = propagationToEdits(propagationResult, rows);
+    const originEdits = computeOriginEdits(propagationResult.updatedStartTime);
 
-    return [singleEdit, ...propagationEdits.filter((e) => e.rowId !== singleEdit.rowId)];
+    return [
+      ...originEdits,
+      singleEdit,
+      ...propagationEdits.filter((e) => e.rowId !== singleEdit.rowId),
+    ];
   };
 
   const buildEditsForMarginUpdate = (
