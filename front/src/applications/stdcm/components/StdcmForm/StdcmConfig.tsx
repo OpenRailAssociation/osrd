@@ -247,7 +247,10 @@ const StdcmConfig = ({
 
   const removeOriginArrivalTime = () => {
     dispatch(
-      updateStdcmPathStep({ id: origin.id, updates: { arrivalType: ArrivalTimeTypes.ASAP } })
+      updateStdcmPathStep({
+        id: origin.id,
+        updates: { arrivalType: ArrivalTimeTypes.RESPECT_DESTINATION_SCHEDULE },
+      })
     );
   };
 
