@@ -12,6 +12,8 @@ import {
 
 // Regex for "xx/xx/xx"
 const SINGLE_DATE_REGEX = /^\d{2}\/\d{2}\/\d{2}$/;
+// Same as above, but each group can be one or two digits
+const FIXABLE_DATE_REGEX = /^\d{1,2}\/\d{1,2}\/\d{1,2}$/;
 
 export default function useDatePicker(datePickerProps: DatePickerProps) {
   const { value, isRangeMode, selectableSlot, errorMessages, onDateChange } = datePickerProps;
@@ -72,6 +74,22 @@ export default function useDatePicker(datePickerProps: DatePickerProps) {
     });
   };
 
+  const handleBlur = () => {
+    const isDate = SINGLE_DATE_REGEX.test(inputValue);
+    const isFixableDate = !isDate && FIXABLE_DATE_REGEX.test(inputValue);
+    if (isFixableDate) {
+      const [day, month, year] = inputValue
+        .split('/')
+        .map((s: string) => (s.length === 1 ? `0${s}` : s));
+      handleInputOnChange(`${day}/${month}/${year}`);
+    } else if (!isDate) {
+      setStatusWithMessage({
+        status: 'error',
+        message: errorMessages?.invalidInput,
+      });
+    }
+  };
+
   useEffect(() => {
     const newInput = formatInputValue(datePickerProps);
     if (newInput !== inputValue) {
@@ -97,5 +115,6 @@ export default function useDatePicker(datePickerProps: DatePickerProps) {
     handleDayClick,
     handleInputClick,
     handleInputOnChange,
+    handleBlur,
   };
 }
