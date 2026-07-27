@@ -100,7 +100,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Set up 'uv'
-        uses: astral-sh/setup-uv@v8.3.2
+        uses: astral-sh/setup-uv@v9.0.0
         with:
           python-version: "3.12"
           enable-cache: true
@@ -136,7 +136,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Set up 'uv'
-        uses: astral-sh/setup-uv@v8.3.2
+        uses: astral-sh/setup-uv@v9.0.0
         with:
           python-version: "3.11"
           enable-cache: true
@@ -161,7 +161,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Set up 'uv'
-        uses: astral-sh/setup-uv@v8.3.2
+        uses: astral-sh/setup-uv@v9.0.0
         with:
           python-version: "3.11"
           enable-cache: true
@@ -255,7 +255,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Set up 'uv'
-        uses: astral-sh/setup-uv@v8.3.2
+        uses: astral-sh/setup-uv@v9.0.0
         with:
           python-version: "3.11"
           enable-cache: true
@@ -296,7 +296,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Set up 'uv'
-        uses: astral-sh/setup-uv@v8.3.2
+        uses: astral-sh/setup-uv@v9.0.0
         with:
           python-version: "3.11"
           enable-cache: true
@@ -766,7 +766,7 @@ jobs:
           docker load --input ./osrd-editoast.tar
           docker load --input ./osrd-osrdyne.tar
       - name: Set up 'uv'
-        uses: astral-sh/setup-uv@v8.3.2
+        uses: astral-sh/setup-uv@v9.0.0
         with:
           python-version: "3.11"
           enable-cache: true
@@ -1046,7 +1046,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Set up 'uv'
-        uses: astral-sh/setup-uv@v8.3.2
+        uses: astral-sh/setup-uv@v9.0.0
         with:
           python-version: "3.11"
           enable-cache: true
