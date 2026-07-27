@@ -4,7 +4,7 @@ import { addDurationToDate, Duration } from 'utils/duration';
 
 import type { ArrivalUpdate, CellUpdate, PropagationMode } from '../types';
 
-const ONE_DAY = new Duration({ hours: 24 });
+export const ONE_DAY = new Duration({ hours: 24 });
 
 export type PropagationResult = {
   updatedPath: PathItem[];

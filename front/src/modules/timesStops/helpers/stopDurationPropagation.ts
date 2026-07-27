@@ -1,14 +1,10 @@
 import type { ScheduleItem } from 'common/api/osrdEditoastApi';
 import type { Train } from 'reducers/osrdconf/types';
-import { Duration } from 'utils/duration';
+import { Duration, subtractDurationFromDate } from 'utils/duration';
 
 import type { StopDurationUpdate } from '../types';
 import { insertScheduleItemInOrder } from './cellUpdate';
-import { formatSignedDelta, type PropagationResult } from './timePropagation';
-
-const ONE_DAY = new Duration({ hours: 24 });
-// Large enough that the day-bump comparison below never triggers when there's no arrival to anchor on.
-const NO_ANCHOR_OFFSET = new Duration({ hours: 24 * 1000 });
+import { formatSignedDelta, ONE_DAY, type PropagationResult } from './timePropagation';
 
 export const formatStopDurationDeltaLabel = (
   oldValue: Duration | null,
@@ -17,13 +13,12 @@ export const formatStopDurationDeltaLabel = (
 
 /**
  * Propagate a stop-duration edit along the path.
- * - toDestination: arrivals after the edited point shift by +delta. The edited point's own
- *   arrival is unchanged.
- * - fromDeparture: arrivals before the edited point shift by -delta, and so does the edited
- *   point's own arrival if it has one (its departure ends up unchanged).
- * A brand new stop duration propagates against an old value of 0. In both directions, steps are
- * processed in path order and any step out of order relative to the previous one is bumped by
- * +/-24h.
+ * - Edited point's own arrival: never touched.
+ * - toDestination: arrivals after, +delta.
+ * - fromDeparture: start_time, -delta too; edited point and everything before, free ride;
+ *   arrivals after, +delta to cancel the start_time shift back out.
+ * - Day crossing: +24h bump.
+ * - No previous duration: treated as 0.
  */
 export const propagateStopDuration = (
   update: StopDurationUpdate,
@@ -48,53 +43,24 @@ export const propagateStopDuration = (
   const currentSchedule = selectedTrain.schedule ?? [];
   const editedItem = currentSchedule.find((item) => item.at === pathStepId);
   const editedOffset = editedItem?.arrival ? Duration.parse(editedItem.arrival) : null;
+  const currentStartTime = new Date(selectedTrain.start_time);
 
-  const itemsWithPathIndex = currentSchedule
+  const affectedItems = currentSchedule
     .map((item) => ({
       item,
       pathIndex: selectedTrain.path.findIndex((step) => step.id === item.at),
     }))
-    .filter(({ item, pathIndex }) => !!item.arrival && pathIndex >= 0);
-
-  // A preceding stop can't be shifted before departure — clamp instead of bumping a day.
-  const clampToDeparture = (offset: Duration) => (offset.ms < 0 ? Duration.zero : offset);
-  const editedNewOffset = editedOffset !== null ? clampToDeparture(editedOffset.sub(delta)) : null;
+    .filter(({ item, pathIndex }) => !!item.arrival && pathIndex > editedPathIndex)
+    .sort((a, b) => a.pathIndex - b.pathIndex);
 
   const adjustments = new Map<string, string>();
-
-  if (update.propagationMode === 'toDestination') {
-    const affectedItems = itemsWithPathIndex
-      .filter(({ pathIndex }) => pathIndex > editedPathIndex)
-      .sort((a, b) => a.pathIndex - b.pathIndex);
-
-    let lastOffset = editedOffset ?? new Duration({ seconds: 0 });
-    for (const { item } of affectedItems) {
-      const shifted = Duration.parse(item.arrival!).add(delta);
-      const adjusted = shifted.ms < lastOffset.ms ? shifted.add(ONE_DAY) : shifted;
-      adjustments.set(item.at, adjusted.toISOString());
-      lastOffset = adjusted;
-    }
-  } else {
-    // fromDeparture: walk back toward the origin, closest point first.
-    const affectedItems = itemsWithPathIndex
-      .filter(({ pathIndex }) => pathIndex < editedPathIndex)
-      .sort((a, b) => b.pathIndex - a.pathIndex);
-
-    let lastOffset = editedNewOffset ?? NO_ANCHOR_OFFSET;
-    for (const { item } of affectedItems) {
-      const shifted = Duration.parse(item.arrival!).sub(delta);
-      const adjusted = clampToDeparture(
-        shifted.ms > lastOffset.ms ? shifted.sub(ONE_DAY) : shifted
-      );
-      adjustments.set(item.at, adjusted.toISOString());
-      lastOffset = adjusted;
-    }
+  let lastOffset = editedOffset ?? Duration.zero;
+  for (const { item } of affectedItems) {
+    const shifted = Duration.parse(item.arrival!).add(delta);
+    const adjusted = shifted.ms < lastOffset.ms ? shifted.add(ONE_DAY) : shifted;
+    adjustments.set(item.at, adjusted.toISOString());
+    lastOffset = adjusted;
   }
-
-  const editedNewArrival =
-    update.propagationMode === 'fromDeparture' && editedNewOffset !== null
-      ? editedNewOffset.toISOString()
-      : editedItem?.arrival;
 
   const shiftedSchedule = currentSchedule.map((item) =>
     adjustments.has(item.at) ? { ...item, arrival: adjustments.get(item.at) } : item
@@ -102,13 +68,7 @@ export const propagateStopDuration = (
 
   const updatedSchedule: ScheduleItem[] = editedItem
     ? shiftedSchedule.map((item) =>
-        item.at === pathStepId
-          ? {
-              ...item,
-              stop_for: newDuration.toISOString(),
-              ...(editedNewArrival ? { arrival: editedNewArrival } : {}),
-            }
-          : item
+        item.at === pathStepId ? { ...item, stop_for: newDuration.toISOString() } : item
       )
     : insertScheduleItemInOrder(
         shiftedSchedule,
@@ -116,9 +76,14 @@ export const propagateStopDuration = (
         selectedTrain.path
       );
 
+  const updatedStartTime =
+    update.propagationMode === 'fromDeparture'
+      ? subtractDurationFromDate(currentStartTime, delta)
+      : currentStartTime;
+
   return {
     updatedPath: selectedTrain.path,
     updatedSchedule,
-    updatedStartTime: new Date(selectedTrain.start_time),
+    updatedStartTime,
   };
 };
