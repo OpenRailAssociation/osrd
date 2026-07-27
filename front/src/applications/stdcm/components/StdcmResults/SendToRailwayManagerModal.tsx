@@ -134,6 +134,13 @@ const SendToRailwayManagerModal = ({
     date: stdcmData.departure_time,
   });
   const [isHazardousMaterials, setIsHazardousMaterials] = useState(false);
+  const [isInternationalTrain, setIsInternationalTrain] = useState(false);
+  const [anteriorTrainName, setAnteriorTrainName] = useState(
+    linkedTrains.anteriorTrain?.trainName ?? ''
+  );
+  const [posteriorTrainName, setPosteriorTrainName] = useState(
+    linkedTrains.posteriorTrain?.trainName ?? ''
+  );
   const [pathTypeError, setPathTypeError] = useState(false);
   const [csCodeError, setCsCodeError] = useState(false);
 
@@ -329,9 +336,10 @@ const SendToRailwayManagerModal = ({
       statistical_category: csCode,
       demand_category: trainCategory.value || null,
       hazardous_materials: isHazardousMaterials,
-      anterior_train_name: linkedTrains.anteriorTrain?.trainName || null,
-      posterior_train_name: linkedTrains.posteriorTrain?.trainName || null,
+      anterior_train_name: anteriorTrainName || null,
+      posterior_train_name: posteriorTrainName || null,
       substitute_train,
+      is_international: isInternationalTrain,
     };
 
     formData.append('simulation_report', JSON.stringify(simulationReport));
@@ -399,13 +407,6 @@ const SendToRailwayManagerModal = ({
                   year: 'numeric',
                 })}`}
               </li>
-              {linkedTrains.anteriorTrain && (
-                <span className="linked-train-infos">
-                  <li>{`${t('modal.from')} : ${linkedTrains.anteriorTrain.trainName}`}</li>
-                  <li>{linkedTrains.anteriorTrain.date}</li>
-                </span>
-              )}
-
               {firstStep && (
                 <li>
                   {t('modal.departurePoint', {
@@ -458,13 +459,6 @@ const SendToRailwayManagerModal = ({
                     arrivalAt: `${lastStep.operationalPoint?.name} ${lastStep.operationalPoint?.secondaryCode}`,
                   })}
                 </li>
-              )}
-
-              {linkedTrains.posteriorTrain && (
-                <span className="linked-train-infos">
-                  <li>{`${t('modal.for')} : ${linkedTrains.posteriorTrain.trainName}`}</li>
-                  <li>{linkedTrains.posteriorTrain.date}</li>
-                </span>
               )}
             </ul>
           </section>
@@ -573,6 +567,13 @@ const SendToRailwayManagerModal = ({
                   onChange={() => setIsHazardousMaterials(!isHazardousMaterials)}
                 />
               </div>
+              <div id="international-train">
+                <Checkbox
+                  label={t('modal.internationalTrain')}
+                  checked={isInternationalTrain}
+                  onChange={() => setIsInternationalTrain(!isInternationalTrain)}
+                />
+              </div>
             </div>
             <div className={`cs-code ${csCodeError ? 'wiggle' : ''}`}>
               <Input
@@ -610,6 +611,20 @@ const SendToRailwayManagerModal = ({
                     });
                   }
                 }}
+              />
+            </div>
+            <div className="linked-trains">
+              <Input
+                id="anterior-train"
+                value={anteriorTrainName}
+                onChange={(e) => setAnteriorTrainName(e.target.value)}
+                label={t('modal.anteriorTrain')}
+              />
+              <Input
+                id="posterior-train"
+                value={posteriorTrainName}
+                onChange={(e) => setPosteriorTrainName(e.target.value)}
+                label={t('modal.posteriorTrain')}
               />
             </div>
             <div className="comment">

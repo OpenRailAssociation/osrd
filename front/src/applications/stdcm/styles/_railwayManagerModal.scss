@@ -87,7 +87,7 @@
 
     .requested-route-content {
       background-color: var(--ambientA15);
-      padding: 14px 16px 14px 40px;
+      padding: 14px 16px 14px 20px;
       min-height: 144px;
       margin: 0;
       color: var(--grey80);
@@ -103,13 +103,6 @@
 
       .consist-change {
         padding-left: 32px;
-      }
-
-      .linked-train-infos {
-        display: flex;
-        li:last-child {
-          margin-left: 20px;
-        }
       }
     }
 
@@ -207,27 +200,31 @@
   .additional-info {
     .info-fields {
       display: flex;
+      gap: 30px;
       justify-content: space-around;
       background-color: var(--ambientA15);
       padding: 16px 40px;
+      overflow-x: auto;
 
       .left-side {
         padding-bottom: 16px;
-        padding-right: 16px;
 
         #path-type,
         #train-category {
           background-color: var(--white);
+          width: 272px;
         }
 
-        #hazardous-materials {
-          padding: 10px;
+        #hazardous-materials,
+        #international-train {
+          padding-top: 10px;
+          padding-left: 16px;
         }
       }
 
       .comment {
-        min-width: 50%;
-        padding-left: 10px;
+        width: 317px;
+        min-width: 317px;
         .text-area-wrapper {
           display: flex;
           flex: 1;
@@ -241,13 +238,18 @@
       }
 
       .cs-code {
-        padding-inline: 10px;
         input:not(#train-to-be-substituted-date),
         .ui-date-picker {
           width: 183px;
         }
         .ui-date-picker {
           margin: 0 13px 0 16px;
+        }
+      }
+
+      .linked-trains {
+        input {
+          width: 183px;
         }
       }
     }
