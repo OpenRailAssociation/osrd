@@ -859,6 +859,10 @@ pub(in crate::views) async fn update_grants(
                     resource_id: *infra,
                 }
                 .into()),
+                Err(Check::RollingStockExists(rolling_stock)) => Err(AuthzError::UnknownResource {
+                    resource_id: *rolling_stock,
+                }
+                .into()),
                 Err(Check::SubjectExists(subject)) => Err(AuthzError::UnknownSubject {
                     subject_id: subject.id(),
                 }
@@ -871,7 +875,16 @@ pub(in crate::views) async fn update_grants(
                         | InfraPrivilege::CanShareOwnership,
                         _,
                     )
+                    | Check::HasRollingStockPrivilege(
+                        Actor::Issuer,
+                        RollingStockPrivilege::CanShareRead
+                        | RollingStockPrivilege::CanShareWrite
+                        | RollingStockPrivilege::CanShareOwnership,
+                        _,
+                    )
                     | Check::CanAlterSubjectInfraGrant(..)
+                    | Check::CanAlterSubjectRollingStockGrant(..)
+                    | Check::IsNotLastRollingStockOwner(..)
                     | Check::IsNotLastInfraOwner(..),
                 ) => Err(AuthorizationError::Forbidden.into()),
                 Err(check) => impossible!(check),
@@ -930,9 +943,7 @@ impl GrantBody {
                 authz::v2::infra_set_grant(*subject, resource_id.into(), grant.into())
             }
             ResourceType::RollingStock => {
-                unreachable!(
-                    "not implemented yet, requires implementing rolling stock grants in OpenFGA and exposing them in the authorizer"
-                )
+                authz::v2::rolling_stock_set_grant(*subject, resource_id.into(), grant.into())
             }
         })
     }
@@ -1366,25 +1377,42 @@ mod tests {
         }
     }
 
-    // TODO update this test with rolling stock grants once both revoking and granting are
-    // implemented
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn grants_test() {
-        // This test starts with a user that is the owner of an infra.
-        // Then it creates a new user and adds it as a writer to the infra.
-        // Finally, it removes the new user from the infra.
-        let app = test_app!().build();
-        let db_pool = app.db_pool();
-        let openfga = app.openfga();
-        let infra = authz::Infra(create_small_infra(&mut db_pool.get_ok()).await.id);
-        let owner = app
+    #[rstest]
+    #[case::infra(
+        test_app!().build(),
+        create_fast_rolling_stock(&mut app.db_pool().get_ok(), "rolling_stock").await.id,
+        ResourceType::RollingStock,
+        app
             .user("owner", "Owner")
             .with_roles([Role::OperationalStudies])
-            .with_infra_grant(*infra, InfraGrant::Owner)
+            .with_rolling_stock_grant(resource_id, RollingStockGrant::Owner)
             .create()
-            .await;
+            .await
+        )]
+    #[case::rolling_stock(
+        test_app!().build(),
+        create_small_infra(&mut app.db_pool().get_ok()).await.id,
+        ResourceType::Infra,
+        app
+            .user("owner", "Owner")
+            .with_roles([Role::OperationalStudies])
+            .with_infra_grant(resource_id, InfraGrant::Owner)
+            .create()
+            .await
+        )]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn grants_test(
+        #[case] app: TestApp,
+        #[case] resource_id: i64,
+        #[case] resource_type: ResourceType,
+        #[case] owner: authz::identity::User,
+    ) {
+        // This test starts with a user that is the owner of resource.
+        // Then it creates a new user and adds it as a writer to the resource.
+        // Finally, it removes the new user from the resource.
+        let openfga = app.openfga();
 
-        // Create a new user and add it as a writer to the infra with the grant API
+        // Create a new user and add it as a writer to the resource with the grant API
         let writer = authz::User::from(app.user("writer", "Writer").create().await);
         app.post("/authz/grants")
             .by_user(owner.as_ref())
@@ -1392,9 +1420,9 @@ mod tests {
                 "grant": [
                     {
                         "subject_id": *writer,
-                        "resource_type": ResourceType::Infra,
-                        "resource_id": *infra,
-                        "grant": InfraGrant::Writer
+                        "resource_type": resource_type,
+                        "resource_id": resource_id,
+                        "grant": StandardGrant::Writer
                     }
                 ]
             }))
@@ -1402,28 +1430,56 @@ mod tests {
             .assert_status(StatusCode::CREATED);
 
         // Check that the new user has the good grant
-        assert_eq!(
-            openfga.infra_direct_grant(writer, infra).await,
-            Some(InfraGrant::Writer)
-        );
+        match resource_type {
+            ResourceType::Infra => assert_eq!(
+                openfga
+                    .infra_direct_grant(authz::Subject::user(writer), authz::Infra(resource_id))
+                    .await,
+                Some(InfraGrant::Writer)
+            ),
+            ResourceType::RollingStock => assert_eq!(
+                openfga
+                    .rolling_stock_direct_grant(
+                        authz::Subject::user(writer),
+                        authz::RollingStock(resource_id)
+                    )
+                    .await,
+                Some(RollingStockGrant::Writer)
+            ),
+        }
 
-        // Remove the user from the API
+        // Remove the user grant from the API
         app.post("/authz/grants")
             .by_user(owner.as_ref())
             .json(&json!({
                 "revoke": [
                     {
                         "subject_id": *writer,
-                        "resource_type": ResourceType::Infra,
-                        "resource_id": *infra
+                        "resource_type": resource_type,
+                        "resource_id": resource_id
                     }
                 ]
             }))
             .await
             .assert_status_no_content();
 
-        // Check that the new user has the good grant
-        assert_eq!(openfga.infra_direct_grant(writer, infra).await, None);
+        match resource_type {
+            ResourceType::Infra => assert_eq!(
+                openfga
+                    .infra_direct_grant(authz::Subject::user(writer), authz::Infra(resource_id))
+                    .await,
+                None
+            ),
+            ResourceType::RollingStock => assert_eq!(
+                openfga
+                    .rolling_stock_direct_grant(
+                        authz::Subject::user(writer),
+                        authz::RollingStock(resource_id)
+                    )
+                    .await,
+                None
+            ),
+        }
     }
 
     #[rstest]
@@ -1670,18 +1726,37 @@ mod tests {
         };
     }
 
+    #[rstest]
+    #[case::infra(
+        test_app!().build(),
+        create_small_infra(&mut app.db_pool().get_ok()).await.id,
+        ResourceType::Infra,
+        app
+            .user("owner", "Owner")
+            .with_infra_grant(resource_id, InfraGrant::Owner)
+            .create()
+            .await
+    )]
+    #[case::rolling_stock(
+        test_app!().build(),
+        create_fast_rolling_stock(&mut app.db_pool().get_ok(), "rolling_stock").await.id,
+        ResourceType::RollingStock,
+        app
+            .user("owner", "Owner")
+            .with_rolling_stock_grant(resource_id, RollingStockGrant::Owner)
+            .create()
+            .await
+    )]
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn admin_can_demote_last_infra_owner() {
-        let app = test_app!().build();
-        let infra = create_small_infra(&mut app.db_pool().get_ok()).await;
+    async fn admin_can_demote_last_resource_owner(
+        #[case] app: TestApp,
+        #[case] resource_id: i64,
+        #[case] resource_type: ResourceType,
+        #[case] owner: authz::identity::User,
+    ) {
         let admin = app
             .user("admin", "Admin")
             .with_roles([Role::Admin])
-            .create()
-            .await;
-        let owner = app
-            .user("owner", "Owner")
-            .with_infra_grant(infra.id, InfraGrant::Owner)
             .create()
             .await;
 
@@ -1689,34 +1764,71 @@ mod tests {
             .json(&json!({
                 "grant": [{
                     "subject_id": owner.id,
-                    "resource_type": ResourceType::Infra,
-                    "resource_id": infra.id,
-                    "grant": InfraGrant::Writer
+                    "resource_type": resource_type,
+                    "resource_id": resource_id,
+                    "grant": StandardGrant::Writer
                 }]
             }))
             .by_user(admin.as_ref())
             .await
             .assert_status(StatusCode::CREATED);
-        app.assert_infra_grant(infra.id, owner.id, Some(InfraGrant::Writer));
+        match resource_type {
+            ResourceType::Infra => {
+                app.assert_infra_grant(resource_id, owner.id, Some(InfraGrant::Writer));
+            }
+            ResourceType::RollingStock => {
+                app.assert_rolling_stock_grant(
+                    resource_id,
+                    owner.id,
+                    Some(RollingStockGrant::Writer),
+                )
+                .await;
+            }
+        }
     }
 
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn admin_can_promote_and_demote_anyone_infra_grant() {
-        let app = test_app!().build();
-        let infra = create_small_infra(&mut app.db_pool().get_ok()).await;
-        let admin = app
-            .user("admin", "Admin")
-            .with_roles([Role::Admin])
-            .create()
-            .await;
-        let alice = app
+    #[rstest]
+    #[case::infra(
+        test_app!().build(),
+        create_small_infra(&mut app.db_pool().get_ok()).await.id,
+        ResourceType::Infra,
+        app
             .user("alice", "Alice")
-            .with_infra_grant(infra.id, InfraGrant::Owner)
+            .with_infra_grant(resource_id, InfraGrant::Owner)
             .create()
-            .await;
-        let bob = app
+            .await,
+        app
             .user("bob", "Bob")
-            .with_infra_grant(infra.id, InfraGrant::Reader)
+            .with_infra_grant(resource_id, InfraGrant::Reader)
+            .create()
+            .await
+    )]
+    #[case::rolling_stock(
+        test_app!().build(),
+        create_fast_rolling_stock(&mut app.db_pool().get_ok(), "rolling_stock").await.id,
+        ResourceType::RollingStock,
+        app
+            .user("alice", "Alice")
+            .with_rolling_stock_grant(resource_id, RollingStockGrant::Owner)
+            .create()
+            .await,
+        app
+            .user("bob", "Bob")
+            .with_rolling_stock_grant(resource_id, RollingStockGrant::Reader)
+            .create()
+            .await
+    )]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn admin_can_promote_and_demote_anyone_resource_grant(
+        #[case] app: TestApp,
+        #[case] resource_id: i64,
+        #[case] resource_type: ResourceType,
+        #[case] alice: authz::identity::User,
+        #[case] bob: authz::identity::User,
+    ) {
+        let admin = app
+            .user("admin", "Admin")
+            .with_roles([Role::Admin])
             .create()
             .await;
 
@@ -1724,268 +1836,570 @@ mod tests {
             .json(&json!({
                 "grant": [{
                     "subject_id": bob.id,
-                    "resource_type": ResourceType::Infra,
-                    "resource_id": infra.id,
-                    "grant": InfraGrant::Owner
+                    "resource_type": resource_type,
+                    "resource_id": resource_id,
+                    "grant": StandardGrant::Owner
                 }]
             }))
             .by_user(admin.as_ref())
             .await
             .assert_status(StatusCode::CREATED);
-        app.assert_infra_grant(infra.id, bob.id, Some(InfraGrant::Owner));
+        match resource_type {
+            ResourceType::Infra => {
+                app.assert_infra_grant(resource_id, bob.id, Some(InfraGrant::Owner))
+            }
+            ResourceType::RollingStock => {
+                app.assert_rolling_stock_grant(resource_id, bob.id, Some(RollingStockGrant::Owner))
+                    .await
+            }
+        }
 
         app.post("/authz/grants")
             .json(&json!({
                 "grant": [{
                     "subject_id": bob.id,
-                    "resource_type": ResourceType::Infra,
-                    "resource_id": infra.id,
-                    "grant": InfraGrant::Writer
+                    "resource_type": resource_type,
+                    "resource_id": resource_id,
+                    "grant": StandardGrant::Writer
                 }]
             }))
             .by_user(admin.as_ref())
             .await
             .assert_status(StatusCode::CREATED);
-        app.assert_infra_grant(infra.id, alice.id, Some(InfraGrant::Owner));
-        app.assert_infra_grant(infra.id, bob.id, Some(InfraGrant::Writer));
+        match resource_type {
+            ResourceType::Infra => {
+                app.assert_infra_grant(resource_id, alice.id, Some(InfraGrant::Owner));
+                app.assert_infra_grant(resource_id, bob.id, Some(InfraGrant::Writer));
+            }
+            ResourceType::RollingStock => {
+                app.assert_rolling_stock_grant(
+                    resource_id,
+                    alice.id,
+                    Some(RollingStockGrant::Owner),
+                )
+                .await;
+                app.assert_rolling_stock_grant(
+                    resource_id,
+                    bob.id,
+                    Some(RollingStockGrant::Writer),
+                )
+                .await;
+            }
+        }
     }
 
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn last_owner_cannot_demote_itself() {
-        let app = test_app!().build();
-        let infra = create_small_infra(&mut app.db_pool().get_ok()).await;
-        let owner = app
+    #[rstest]
+    #[case::infra(
+        test_app!().build(),
+        create_small_infra(&mut app.db_pool().get_ok()).await.id,
+        ResourceType::Infra,
+        app
             .user("owner", "Owner")
-            .with_infra_grant(infra.id, InfraGrant::Owner)
+            .with_infra_grant(resource_id, InfraGrant::Owner)
             .create()
-            .await;
-
+            .await
+    )]
+    #[case::rolling_stock(
+        test_app!().build(),
+        create_fast_rolling_stock(&mut app.db_pool().get_ok(), "rolling_stock").await.id,
+        ResourceType::RollingStock,
+        app
+            .user("owner", "Owner")
+            .with_rolling_stock_grant(resource_id, RollingStockGrant::Owner)
+            .create()
+            .await
+    )]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn last_owner_cannot_demote_itself(
+        #[case] app: TestApp,
+        #[case] resource_id: i64,
+        #[case] resource_type: ResourceType,
+        #[case] owner: authz::identity::User,
+    ) {
         app.post("/authz/grants")
             .json(&json!({
                 "grant": [{
                     "subject_id": owner.id,
-                    "resource_type": ResourceType::Infra,
-                    "resource_id": infra.id,
-                    "grant": InfraGrant::Writer
+                    "resource_type": resource_type,
+                    "resource_id": resource_id,
+                    "grant": StandardGrant::Writer
                 }]
             }))
             .by_user(owner.as_ref())
             .await
             .assert_status_forbidden();
-        app.assert_infra_grant(infra.id, owner.id, Some(InfraGrant::Owner));
+        match resource_type {
+            ResourceType::Infra => {
+                app.assert_infra_grant(resource_id, owner.id, Some(InfraGrant::Owner))
+            }
+            ResourceType::RollingStock => {
+                app.assert_rolling_stock_grant(
+                    resource_id,
+                    owner.id,
+                    Some(RollingStockGrant::Owner),
+                )
+                .await
+            }
+        }
     }
 
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn owner_cannot_demote_another_owner() {
-        let app = test_app!().build();
-        let infra = create_small_infra(&mut app.db_pool().get_ok()).await;
-        let tom = app
+    #[rstest]
+    #[case::infra(
+        test_app!().build(),
+        create_small_infra(&mut app.db_pool().get_ok()).await.id,
+        ResourceType::Infra,
+        app
             .user("tom", "Tom")
-            .with_infra_grant(infra.id, InfraGrant::Owner)
+            .with_infra_grant(resource_id, InfraGrant::Owner)
             .create()
-            .await;
-        let jerry = app
+            .await,
+        app
             .user("jerry", "Jerry")
-            .with_infra_grant(infra.id, InfraGrant::Owner)
+            .with_infra_grant(resource_id, InfraGrant::Owner)
             .create()
-            .await;
-
+            .await,
+    )]
+    #[case::rolling_stock(
+        test_app!().build(),
+        create_fast_rolling_stock(&mut app.db_pool().get_ok(), "rolling_stock").await.id,
+        ResourceType::RollingStock,
+        app
+            .user("tom", "Tom")
+            .with_rolling_stock_grant(resource_id, RollingStockGrant::Owner)
+            .create()
+            .await,
+        app
+            .user("jerry", "Jerry")
+            .with_rolling_stock_grant(resource_id, RollingStockGrant::Owner)
+            .create()
+            .await,
+    )]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn owner_cannot_demote_another_owner(
+        #[case] app: TestApp,
+        #[case] resource_id: i64,
+        #[case] resource_type: ResourceType,
+        #[case] tom: authz::identity::User,
+        #[case] jerry: authz::identity::User,
+    ) {
         app.post("/authz/grants")
             .json(&json!({
                 "grant": [{
                     "subject_id": jerry.id,
-                    "resource_type": ResourceType::Infra,
-                    "resource_id": infra.id,
-                    "grant": InfraGrant::Writer
+                    "resource_type": resource_type,
+                    "resource_id": resource_id,
+                    "grant": StandardGrant::Writer
                 }]
             }))
             .by_user(tom.as_ref())
             .await
             .assert_status_forbidden();
-        app.assert_infra_grant(infra.id, jerry.id, Some(InfraGrant::Owner));
+        match resource_type {
+            ResourceType::Infra => {
+                app.assert_infra_grant(resource_id, jerry.id, Some(InfraGrant::Owner))
+            }
+            ResourceType::RollingStock => {
+                app.assert_rolling_stock_grant(
+                    resource_id,
+                    jerry.id,
+                    Some(RollingStockGrant::Owner),
+                )
+                .await
+            }
+        }
     }
 
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn owner_can_promote_and_demote_anyone_infra_grant() {
-        let app = test_app!().build();
-        let infra = create_small_infra(&mut app.db_pool().get_ok()).await;
-        let owner = app
+    #[rstest]
+    #[case::infra(
+        test_app!().build(),
+        create_small_infra(&mut app.db_pool().get_ok()).await.id,
+        ResourceType::Infra,
+        app
             .user("owner", "Owner")
-            .with_infra_grant(infra.id, InfraGrant::Owner)
+            .with_infra_grant(resource_id, InfraGrant::Owner)
             .create()
-            .await;
-        let target = app
+            .await,
+        app
             .user("target", "Target")
-            .with_infra_grant(infra.id, InfraGrant::Reader)
+            .with_infra_grant(resource_id, InfraGrant::Reader)
             .create()
-            .await;
-
+            .await,
+    )]
+    #[case::rolling_stock(
+        test_app!().build(),
+        create_fast_rolling_stock(&mut app.db_pool().get_ok(), "rolling_stock").await.id,
+        ResourceType::RollingStock,
+        app
+            .user("owner", "Owner")
+            .with_rolling_stock_grant(resource_id, RollingStockGrant::Owner)
+            .create()
+            .await,
+        app
+            .user("target", "Target")
+            .with_rolling_stock_grant(resource_id, RollingStockGrant::Reader)
+            .create()
+            .await,
+    )]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn owner_can_promote_and_demote_anyone_infra_grant(
+        #[case] app: TestApp,
+        #[case] resource_id: i64,
+        #[case] resource_type: ResourceType,
+        #[case] owner: authz::identity::User,
+        #[case] target: authz::identity::User,
+    ) {
         app.post("/authz/grants")
             .json(&json!({
                 "grant": [{
                     "subject_id": target.id,
-                    "resource_type": ResourceType::Infra,
-                    "resource_id": infra.id,
-                    "grant": InfraGrant::Writer
+                    "resource_type": resource_type,
+                    "resource_id": resource_id,
+                    "grant": StandardGrant::Writer
                 }]
             }))
             .by_user(owner.as_ref())
             .await
             .assert_status(StatusCode::CREATED);
-        app.assert_infra_grant(infra.id, target.id, Some(InfraGrant::Writer));
+        match resource_type {
+            ResourceType::Infra => {
+                app.assert_infra_grant(resource_id, target.id, Some(InfraGrant::Writer));
+            }
+            ResourceType::RollingStock => {
+                app.assert_rolling_stock_grant(
+                    resource_id,
+                    target.id,
+                    Some(RollingStockGrant::Writer),
+                )
+                .await;
+            }
+        }
 
         app.post("/authz/grants")
             .json(&json!({
                 "grant": [{
                     "subject_id": target.id,
-                    "resource_type": ResourceType::Infra,
-                    "resource_id": infra.id,
-                    "grant": InfraGrant::Reader
+                    "resource_type": resource_type,
+                    "resource_id": resource_id,
+                    "grant": StandardGrant::Reader
                 }]
             }))
             .by_user(owner.as_ref())
             .await
             .assert_status(StatusCode::CREATED);
-        app.assert_infra_grant(infra.id, target.id, Some(InfraGrant::Reader));
+        match resource_type {
+            ResourceType::Infra => {
+                app.assert_infra_grant(resource_id, target.id, Some(InfraGrant::Reader));
+            }
+            ResourceType::RollingStock => {
+                app.assert_rolling_stock_grant(
+                    resource_id,
+                    target.id,
+                    Some(RollingStockGrant::Reader),
+                )
+                .await
+            }
+        }
     }
 
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn writer_can_demote_self_infra_grant() {
-        let app = test_app!().build();
-        let infra = create_small_infra(&mut app.db_pool().get_ok()).await;
-        let writer = app
+    #[rstest]
+    #[case::infra(
+        test_app!().build(),
+        create_small_infra(&mut app.db_pool().get_ok()).await.id,
+        ResourceType::Infra,
+        app
             .user("writer", "Writer")
-            .with_infra_grant(infra.id, InfraGrant::Writer)
+            .with_infra_grant(resource_id, InfraGrant::Writer)
             .create()
-            .await;
-
+            .await
+    )]
+    #[case::rolling_stock(
+        test_app!().build(),
+        create_fast_rolling_stock(&mut app.db_pool().get_ok(), "rolling_stock").await.id,
+        ResourceType::RollingStock,
+        app
+            .user("writer", "Writer")
+            .with_rolling_stock_grant(resource_id, RollingStockGrant::Writer)
+            .create()
+            .await
+    )]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn writer_can_demote_self_resource_grant(
+        #[case] app: TestApp,
+        #[case] resource_id: i64,
+        #[case] resource_type: ResourceType,
+        #[case] writer: authz::identity::User,
+    ) {
         app.post("/authz/grants")
             .json(&json!({
                 "grant": [{
                     "subject_id": writer.id,
-                    "resource_type": ResourceType::Infra,
-                    "resource_id": infra.id,
-                    "grant": InfraGrant::Reader
+                    "resource_type": resource_type,
+                    "resource_id": resource_id,
+                    "grant": StandardGrant::Reader
                 }]
             }))
             .by_user(writer.as_ref())
             .await
             .assert_status(StatusCode::CREATED);
-        app.assert_infra_grant(infra.id, writer.id, Some(InfraGrant::Reader));
+        match resource_type {
+            ResourceType::Infra => {
+                app.assert_infra_grant(resource_id, writer.id, Some(InfraGrant::Reader));
+            }
+            ResourceType::RollingStock => {
+                app.assert_rolling_stock_grant(
+                    resource_id,
+                    writer.id,
+                    Some(RollingStockGrant::Reader),
+                )
+                .await;
+            }
+        }
     }
 
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn writer_cannot_promote_self_infra_grant() {
-        let app = test_app!().build();
-        let infra = create_small_infra(&mut app.db_pool().get_ok()).await;
-        let writer = app
+    #[rstest]
+    #[case::infra(
+        test_app!().build(),
+        create_small_infra(&mut app.db_pool().get_ok()).await.id,
+        ResourceType::Infra,
+        app
             .user("writer", "Writer")
-            .with_infra_grant(infra.id, InfraGrant::Writer)
+            .with_infra_grant(resource_id, InfraGrant::Writer)
             .create()
-            .await;
-
+            .await
+    )]
+    #[case::rolling_stock(
+        test_app!().build(),
+        create_fast_rolling_stock(&mut app.db_pool().get_ok(), "rolling_stock").await.id,
+        ResourceType::RollingStock,
+        app
+            .user("writer", "Writer")
+            .with_rolling_stock_grant(resource_id, RollingStockGrant::Writer)
+            .create()
+            .await
+    )]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn writer_cannot_promote_self_resource_grant(
+        #[case] app: TestApp,
+        #[case] resource_id: i64,
+        #[case] resource_type: ResourceType,
+        #[case] writer: authz::identity::User,
+    ) {
         app.post("/authz/grants")
             .json(&json!({
                 "grant": [{
                     "subject_id": writer.id,
-                    "resource_type": ResourceType::Infra,
-                    "resource_id": infra.id,
-                    "grant": InfraGrant::Owner
+                    "resource_type": resource_type,
+                    "resource_id": resource_id,
+                    "grant": StandardGrant::Owner
                 }]
             }))
             .by_user(writer.as_ref())
             .await
             .assert_status_forbidden();
-        app.assert_infra_grant(infra.id, writer.id, Some(InfraGrant::Writer));
+        match resource_type {
+            ResourceType::Infra => {
+                app.assert_infra_grant(resource_id, writer.id, Some(InfraGrant::Writer));
+            }
+            ResourceType::RollingStock => {
+                app.assert_rolling_stock_grant(
+                    resource_id,
+                    writer.id,
+                    Some(RollingStockGrant::Writer),
+                )
+                .await;
+            }
+        }
     }
 
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn writer_can_promote_another_subject_up_to_writer_infra_grant() {
-        let app = test_app!().build();
-        let infra = create_small_infra(&mut app.db_pool().get_ok()).await;
-        let writer = app
+    #[rstest]
+    #[case::infra(
+        test_app!().build(),
+        create_small_infra(&mut app.db_pool().get_ok()).await.id,
+        ResourceType::Infra,
+        app
             .user("writer", "Writer")
-            .with_infra_grant(infra.id, InfraGrant::Writer)
+            .with_infra_grant(resource_id, InfraGrant::Writer)
             .create()
-            .await;
-        let reader = app
+            .await,
+        app
             .user("reader", "Reader")
-            .with_infra_grant(infra.id, InfraGrant::Reader)
+            .with_infra_grant(resource_id, InfraGrant::Reader)
             .create()
-            .await;
-
+            .await
+    )]
+    #[case::rolling_stock(
+        test_app!().build(),
+        create_fast_rolling_stock(&mut app.db_pool().get_ok(), "rolling_stock").await.id,
+        ResourceType::RollingStock,
+        app
+            .user("writer", "Writer")
+            .with_rolling_stock_grant(resource_id, RollingStockGrant::Writer)
+            .create()
+            .await,
+        app
+            .user("reader", "Reader")
+            .with_rolling_stock_grant(resource_id, RollingStockGrant::Reader)
+            .create()
+            .await
+    )]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn writer_can_promote_another_subject_up_to_writer_infra_grant(
+        #[case] app: TestApp,
+        #[case] resource_id: i64,
+        #[case] resource_type: ResourceType,
+        #[case] writer: authz::identity::User,
+        #[case] reader: authz::identity::User,
+    ) {
         app.post("/authz/grants")
             .json(&json!({
                 "grant": [{
                     "subject_id": reader.id,
-                    "resource_type": ResourceType::Infra,
-                    "resource_id": infra.id,
-                    "grant": InfraGrant::Writer
+                    "resource_type": resource_type,
+                    "resource_id": resource_id,
+                    "grant": StandardGrant::Writer
                 }]
             }))
             .by_user(writer.as_ref())
             .await
             .assert_status(StatusCode::CREATED);
-        app.assert_infra_grant(infra.id, reader.id, Some(InfraGrant::Writer));
+        match resource_type {
+            ResourceType::Infra => {
+                app.assert_infra_grant(resource_id, reader.id, Some(InfraGrant::Writer));
+            }
+            ResourceType::RollingStock => {
+                app.assert_rolling_stock_grant(
+                    resource_id,
+                    reader.id,
+                    Some(RollingStockGrant::Writer),
+                )
+                .await;
+            }
+        }
     }
 
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn writer_cannot_promote_above_writer_infra_grant() {
-        let app = test_app!().build();
-        let infra = create_small_infra(&mut app.db_pool().get_ok()).await;
-        let writer = app
+    #[rstest]
+    #[case::infra(
+        test_app!().build(),
+        create_small_infra(&mut app.db_pool().get_ok()).await.id,
+        ResourceType::Infra,
+        app
             .user("writer", "Writer")
-            .with_infra_grant(infra.id, InfraGrant::Writer)
+            .with_infra_grant(resource_id, InfraGrant::Writer)
             .create()
-            .await;
-        let reader = app
+            .await,
+        app
             .user("reader", "Reader")
-            .with_infra_grant(infra.id, InfraGrant::Reader)
+            .with_infra_grant(resource_id, InfraGrant::Reader)
             .create()
-            .await;
-
+            .await
+    )]
+    #[case::rolling_stock(
+        test_app!().build(),
+        create_fast_rolling_stock(&mut app.db_pool().get_ok(), "rolling_stock").await.id,
+        ResourceType::RollingStock,
+        app
+            .user("writer", "Writer")
+            .with_rolling_stock_grant(resource_id, RollingStockGrant::Writer)
+            .create()
+            .await,
+        app
+            .user("reader", "Reader")
+            .with_rolling_stock_grant(resource_id, RollingStockGrant::Reader)
+            .create()
+            .await
+    )]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn writer_cannot_promote_above_writer_rolling_stock_grant(
+        #[case] app: TestApp,
+        #[case] resource_id: i64,
+        #[case] resource_type: ResourceType,
+        #[case] writer: authz::identity::User,
+        #[case] reader: authz::identity::User,
+    ) {
         app.post("/authz/grants")
             .json(&json!({
                 "grant": [{
                     "subject_id": reader.id,
-                    "resource_type": ResourceType::Infra,
-                    "resource_id": infra.id,
-                    "grant": InfraGrant::Owner
+                    "resource_type": resource_type,
+                    "resource_id": resource_id,
+                    "grant": StandardGrant::Owner
                 }]
             }))
             .by_user(writer.as_ref())
             .await
             .assert_status_forbidden();
-        app.assert_infra_grant(infra.id, reader.id, Some(InfraGrant::Reader));
+        match resource_type {
+            ResourceType::Infra => {
+                app.assert_infra_grant(resource_id, reader.id, Some(InfraGrant::Reader));
+            }
+            ResourceType::RollingStock => {
+                app.assert_rolling_stock_grant(
+                    resource_id,
+                    reader.id,
+                    Some(RollingStockGrant::Reader),
+                )
+                .await;
+            }
+        }
     }
 
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn writer_cannot_demote_equal_or_higher_infra_grant_target() {
-        let app = test_app!().build();
-        let infra = create_small_infra(&mut app.db_pool().get_ok()).await;
-        let writer = app
+    #[rstest]
+    #[case::infra(
+        test_app!().build(),
+        create_small_infra(&mut app.db_pool().get_ok()).await.id,
+        ResourceType::Infra,
+        app
             .user("writer", "Writer")
-            .with_infra_grant(infra.id, InfraGrant::Writer)
+            .with_infra_grant(resource_id, InfraGrant::Writer)
             .create()
-            .await;
-        let equal = app
+            .await,
+        app
             .user("equal", "Equal")
-            .with_infra_grant(infra.id, InfraGrant::Writer)
+            .with_infra_grant(resource_id, InfraGrant::Writer)
             .create()
-            .await;
-        let higher = app
+            .await,
+        app
             .user("higher", "Higher")
-            .with_infra_grant(infra.id, InfraGrant::Owner)
+            .with_infra_grant(resource_id, InfraGrant::Owner)
             .create()
-            .await;
-
+            .await
+    )]
+    #[case::rolling_stock(
+        test_app!().build(),
+        create_fast_rolling_stock(&mut app.db_pool().get_ok(), "rolling_stock").await.id,
+        ResourceType::RollingStock,
+        app
+            .user("writer", "Writer")
+            .with_rolling_stock_grant(resource_id, RollingStockGrant::Writer)
+            .create()
+            .await,
+        app
+            .user("equal", "Equal")
+            .with_rolling_stock_grant(resource_id, RollingStockGrant::Writer)
+            .create()
+            .await,
+        app
+            .user("higher", "Higher")
+            .with_rolling_stock_grant(resource_id, RollingStockGrant::Owner)
+            .create()
+            .await
+    )]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn writer_cannot_demote_equal_or_higher_infra_grant_target(
+        #[case] app: TestApp,
+        #[case] resource_id: i64,
+        #[case] resource_type: ResourceType,
+        #[case] writer: authz::identity::User,
+        #[case] equal: authz::identity::User,
+        #[case] higher: authz::identity::User,
+    ) {
         app.post("/authz/grants")
             .json(&json!({
                 "grant": [{
                     "subject_id": equal.id,
-                    "resource_type": ResourceType::Infra,
-                    "resource_id": infra.id,
-                    "grant": InfraGrant::Reader
+                    "resource_type": resource_type,
+                    "resource_id": resource_id,
+                    "grant": StandardGrant::Reader
                 }]
             }))
             .by_user(writer.as_ref())
@@ -1995,33 +2409,76 @@ mod tests {
             .json(&json!({
                 "grant": [{
                     "subject_id": higher.id,
-                    "resource_type": ResourceType::Infra,
-                    "resource_id": infra.id,
-                    "grant": InfraGrant::Writer
+                    "resource_type": resource_type,
+                    "resource_id": resource_id,
+                    "grant": StandardGrant::Writer
                 }]
             }))
             .by_user(writer.as_ref())
             .await
             .assert_status_forbidden();
 
-        app.assert_infra_grant(infra.id, writer.id, Some(InfraGrant::Writer));
-        app.assert_infra_grant(infra.id, equal.id, Some(InfraGrant::Writer));
-        app.assert_infra_grant(infra.id, higher.id, Some(InfraGrant::Owner));
+        match resource_type {
+            ResourceType::Infra => {
+                app.assert_infra_grant(resource_id, writer.id, Some(InfraGrant::Writer));
+                app.assert_infra_grant(resource_id, equal.id, Some(InfraGrant::Writer));
+                app.assert_infra_grant(resource_id, higher.id, Some(InfraGrant::Owner));
+            }
+            ResourceType::RollingStock => {
+                app.assert_rolling_stock_grant(
+                    resource_id,
+                    writer.id,
+                    Some(RollingStockGrant::Writer),
+                )
+                .await;
+                app.assert_rolling_stock_grant(
+                    resource_id,
+                    equal.id,
+                    Some(RollingStockGrant::Writer),
+                )
+                .await;
+                app.assert_rolling_stock_grant(
+                    resource_id,
+                    higher.id,
+                    Some(RollingStockGrant::Owner),
+                )
+                .await;
+            }
+        }
     }
 
+    #[rstest]
+    #[case::infra(
+        test_app!().build(),
+        create_small_infra(&mut app.db_pool().get_ok()).await.id,
+        ResourceType::Infra,
+        app
+            .user("alice", "Alice")
+            .with_infra_grant(resource_id, InfraGrant::Owner)
+            .create()
+            .await,
+    )]
+    #[case::rolling_stock(
+        test_app!().build(),
+        create_fast_rolling_stock(&mut app.db_pool().get_ok(), "rolling_stock").await.id,
+        ResourceType::RollingStock,
+        app
+            .user("alice", "Alice")
+            .with_rolling_stock_grant(resource_id, RollingStockGrant::Owner)
+            .create()
+            .await,
+    )]
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn admin_can_give_grants_to_groups() {
-        let app = test_app!().build();
+    async fn admin_can_give_grants_to_groups(
+        #[case] app: TestApp,
+        #[case] resource_id: i64,
+        #[case] resource_type: ResourceType,
+        #[case] alice: authz::identity::User,
+    ) {
         let openfga = app.openfga();
-        let infra = create_small_infra(&mut app.db_pool().get_ok()).await;
         let admin = app
             .user("admin", "Admin")
             .with_roles([Role::Admin])
-            .create()
-            .await;
-        let alice = app
-            .user("alice", "Alice")
-            .with_infra_grant(infra.id, InfraGrant::Owner)
             .create()
             .await;
         let bob = app.user("bob", "Bob").create().await;
@@ -2030,7 +2487,6 @@ mod tests {
             .with_members([&alice, &bob])
             .create()
             .await;
-        let infra = authz::Infra(infra.id);
         let alice_info = alice.clone();
         let alice = authz::User::from(alice);
         let bob = authz::User::from(bob);
@@ -2042,36 +2498,68 @@ mod tests {
                 "grant": [
                     {
                         "subject_id": *alice_and_bob,
-                        "resource_type": ResourceType::Infra,
-                        "resource_id": *infra,
-                        "grant": InfraGrant::Writer
+                        "resource_type": resource_type,
+                        "resource_id": resource_id,
+                        "grant": StandardGrant::Writer
                     },
                     {
                         "subject_id": *bob,
-                        "resource_type": ResourceType::Infra,
-                        "resource_id": *infra,
-                        "grant": InfraGrant::Reader
+                        "resource_type": resource_type,
+                        "resource_id": resource_id,
+                        "grant": StandardGrant::Reader
                     }
                 ]
             }))
             .await
             .assert_status(StatusCode::CREATED);
 
-        assert_eq!(
-            openfga.infra_direct_grant(alice, infra).await,
-            Some(InfraGrant::Owner)
-        ); // still owner
-        assert_eq!(
-            openfga.infra_direct_grant(alice_and_bob, infra).await,
-            Some(InfraGrant::Writer)
-        ); // direct group grant
-        assert_eq!(
-            openfga.infra_direct_grant(bob, infra).await,
-            Some(InfraGrant::Reader)
-        ); // direct user grant
-
-        app.assert_infra_grant(*infra, *bob, Some(InfraGrant::Writer)); // inherited group grant
-        app.assert_infra_grant(*infra, *alice, Some(InfraGrant::Owner)); // inherited group grant superseded by direct user grant
+        match resource_type {
+            ResourceType::Infra => {
+                let infra = authz::Infra(resource_id);
+                assert_eq!(
+                    openfga.infra_direct_grant(alice, infra).await,
+                    Some(InfraGrant::Owner)
+                ); // still owner
+                assert_eq!(
+                    openfga.infra_direct_grant(alice_and_bob, infra).await,
+                    Some(InfraGrant::Writer)
+                ); // direct group grant
+                assert_eq!(
+                    openfga.infra_direct_grant(bob, infra).await,
+                    Some(InfraGrant::Reader)
+                ); // direct user grant
+                app.assert_infra_grant(resource_id, *bob, Some(InfraGrant::Writer)); // inherited group grant
+                app.assert_infra_grant(resource_id, *alice, Some(InfraGrant::Owner)); // inherited group grant superseded by direct user grant
+            }
+            ResourceType::RollingStock => {
+                let rolling_stock = authz::RollingStock(resource_id);
+                assert_eq!(
+                    openfga
+                        .rolling_stock_direct_grant(authz::Subject::user(alice), rolling_stock)
+                        .await,
+                    Some(RollingStockGrant::Owner)
+                ); // still owner
+                assert_eq!(
+                    openfga
+                        .rolling_stock_direct_grant(
+                            authz::Subject::group(alice_and_bob),
+                            rolling_stock
+                        )
+                        .await,
+                    Some(RollingStockGrant::Writer)
+                ); // direct group grant
+                assert_eq!(
+                    openfga
+                        .rolling_stock_direct_grant(authz::Subject::user(bob), rolling_stock)
+                        .await,
+                    Some(RollingStockGrant::Reader)
+                ); // direct user grant
+                app.assert_rolling_stock_grant(resource_id, *bob, Some(RollingStockGrant::Writer))
+                    .await; // inherited group grant
+                app.assert_rolling_stock_grant(resource_id, *alice, Some(RollingStockGrant::Owner))
+                    .await; // inherited group grant superseded by direct user grant
+            }
+        }
 
         app.post("/authz/grants")
             .by_user(alice_info.as_ref())
@@ -2079,30 +2567,72 @@ mod tests {
                 "revoke": [
                     {
                         "subject_id": *alice_and_bob,
-                        "resource_type": ResourceType::Infra,
-                        "resource_id": *infra
+                        "resource_type": resource_type,
+                        "resource_id": resource_id
                     }
                 ]
             }))
             .await
             .assert_status_no_content();
 
-        assert_eq!(openfga.infra_direct_grant(alice_and_bob, infra).await, None); // group grant removed
-        assert_eq!(
-            openfga.infra_direct_grant(bob, infra).await,
-            Some(InfraGrant::Reader)
-        ); // bob's direct grant is still there
+        match resource_type {
+            ResourceType::Infra => {
+                let infra = authz::Infra(resource_id);
+                assert_eq!(openfga.infra_direct_grant(alice_and_bob, infra).await, None); // group grant removed
+                assert_eq!(
+                    openfga.infra_direct_grant(bob, infra).await,
+                    Some(InfraGrant::Reader)
+                ); // bob's direct grant is still there
+            }
+            ResourceType::RollingStock => {
+                let rolling_stock = authz::RollingStock(resource_id);
+                assert_eq!(
+                    openfga
+                        .rolling_stock_direct_grant(
+                            authz::Subject::group(alice_and_bob),
+                            rolling_stock
+                        )
+                        .await,
+                    None
+                ); // group grant removed
+                assert_eq!(
+                    openfga
+                        .rolling_stock_direct_grant(authz::Subject::user(bob), rolling_stock)
+                        .await,
+                    Some(RollingStockGrant::Reader)
+                ); // bob's direct grant is still there
+            }
+        }
     }
 
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn non_admin_forbidden_to_give_groups_any_grant() {
-        let app = test_app!().build();
-        let infra = create_small_infra(&mut app.db_pool().get_ok()).await;
-        let owner = app
+    #[rstest]
+    #[case::infra(
+        test_app!().build(),
+        create_small_infra(&mut app.db_pool().get_ok()).await.id,
+        ResourceType::Infra,
+        app
             .user("owner", "Owner")
-            .with_infra_grant(infra.id, InfraGrant::Owner)
+            .with_infra_grant(resource_id, InfraGrant::Owner)
             .create()
-            .await;
+            .await,
+    )]
+    #[case::rolling_stock(
+        test_app!().build(),
+        create_fast_rolling_stock(&mut app.db_pool().get_ok(), "rolling_stock").await.id,
+        ResourceType::RollingStock,
+        app
+            .user("owner", "Owner")
+            .with_rolling_stock_grant(resource_id, RollingStockGrant::Owner)
+            .create()
+            .await,
+    )]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn non_admin_forbidden_to_give_groups_any_grant(
+        #[case] app: TestApp,
+        #[case] resource_id: i64,
+        #[case] resource_type: ResourceType,
+        #[case] owner: authz::identity::User,
+    ) {
         let bob = app.user("bob", "Bob").create().await;
         let group = app.group("Group").with_members([&bob]).create().await;
 
@@ -2112,31 +2642,85 @@ mod tests {
                 "grant": [
                     {
                         "subject_id": group.id,
-                        "resource_type": ResourceType::Infra,
-                        "resource_id": infra.id,
-                        "grant": InfraGrant::Reader
+                        "resource_type": resource_type,
+                        "resource_id": resource_id,
+                        "grant": StandardGrant::Reader
                     }
                 ]
             }))
             .await
             .assert_status_forbidden();
 
-        app.assert_infra_grant(infra.id, bob.id, None);
-        app.assert_infra_grant(infra.id, group.id, None);
+        match resource_type {
+            ResourceType::Infra => {
+                app.assert_infra_grant(resource_id, bob.id, None);
+                app.assert_infra_grant(resource_id, group.id, None);
+            }
+            ResourceType::RollingStock => {
+                app.assert_rolling_stock_grant(resource_id, bob.id, None)
+                    .await;
+                app.assert_rolling_stock_grant(resource_id, group.id, None)
+                    .await;
+            }
+        }
     }
 
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn adding_a_grant_that_already_exists() {
-        let app = test_app!().build();
-        let db_pool = app.db_pool();
-        let infra = create_small_infra(&mut db_pool.get_ok()).await;
-        let owner = app
-            .user("tom", "Tom")
+    #[rstest]
+    #[case::infra(
+        test_app!().build(),
+        create_small_infra(&mut app.db_pool().get_ok()).await.id,
+        ResourceType::Infra,
+        app
+            .user("owner", "Owner")
             .with_roles([Role::OperationalStudies])
-            .with_infra_grant(infra.id, InfraGrant::Owner)
+            .with_infra_grant(resource_id, InfraGrant::Owner)
             .create()
-            .await;
-
+            .await,
+        app
+            .user("writer", "Writer")
+            .with_roles([Role::OperationalStudies])
+            .with_infra_grant(resource_id, InfraGrant::Writer)
+            .create()
+            .await,
+        app
+            .user("spike", "Spike")
+            .with_roles([Role::OperationalStudies])
+            .with_infra_grant(resource_id, InfraGrant::Writer)
+            .create()
+            .await,
+    )]
+    #[case::rolling_stock(
+        test_app!().build(),
+        create_fast_rolling_stock(&mut app.db_pool().get_ok(), "rolling_stock").await.id,
+        ResourceType::RollingStock,
+        app
+            .user("owner", "Owner")
+            .with_roles([Role::OperationalStudies])
+            .with_rolling_stock_grant(resource_id, RollingStockGrant::Owner)
+            .create()
+            .await,
+        app
+            .user("writer", "Writer")
+            .with_roles([Role::OperationalStudies])
+            .with_rolling_stock_grant(resource_id, RollingStockGrant::Writer)
+            .create()
+            .await,
+        app
+            .user("spike", "Spike")
+            .with_roles([Role::OperationalStudies])
+            .with_rolling_stock_grant(resource_id, RollingStockGrant::Writer)
+            .create()
+            .await,
+    )]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn adding_a_grant_that_already_exists(
+        #[case] app: TestApp,
+        #[case] resource_id: i64,
+        #[case] resource_type: ResourceType,
+        #[case] owner: authz::identity::User,
+        #[case] writer: authz::identity::User,
+        #[case] other_writer: authz::identity::User,
+    ) {
         // owner self-reassigns their own grant
         app.post("/authz/grants")
             .by_user(owner.as_ref())
@@ -2144,21 +2728,14 @@ mod tests {
                 "grant": [
                     {
                         "subject_id": owner.id,
-                        "resource_type": ResourceType::Infra,
-                        "resource_id": infra.id,
-                        "grant": InfraGrant::Owner
+                        "resource_type": resource_type,
+                        "resource_id": resource_id,
+                        "grant": StandardGrant::Owner
                     }
                 ]
             }))
             .await
             .assert_status(StatusCode::CREATED);
-
-        let writer = app
-            .user("jerry", "Jerry")
-            .with_roles([Role::OperationalStudies])
-            .with_infra_grant(infra.id, InfraGrant::Writer)
-            .create()
-            .await;
 
         // owner can reassign writer's grant
         app.post("/authz/grants")
@@ -2167,9 +2744,9 @@ mod tests {
                 "grant": [
                     {
                         "subject_id": writer.id,
-                        "resource_type": ResourceType::Infra,
-                        "resource_id": infra.id,
-                        "grant": InfraGrant::Writer
+                        "resource_type": resource_type,
+                        "resource_id": resource_id,
+                        "grant": StandardGrant::Writer
                     }
                 ]
             }))
@@ -2183,21 +2760,14 @@ mod tests {
                 "grant": [
                     {
                         "subject_id": writer.id,
-                        "resource_type": ResourceType::Infra,
-                        "resource_id": infra.id,
-                        "grant": InfraGrant::Writer
+                        "resource_type": resource_type,
+                        "resource_id": resource_id,
+                        "grant": StandardGrant::Writer
                     }
                 ]
             }))
             .await
             .assert_status(StatusCode::CREATED);
-
-        let other_writer = app
-            .user("spike", "Spike")
-            .with_roles([Role::OperationalStudies])
-            .with_infra_grant(infra.id, InfraGrant::Writer)
-            .create()
-            .await;
 
         // writer can reassign another writer's grant if it is a no-op
         app.post("/authz/grants")
@@ -2206,9 +2776,9 @@ mod tests {
                 "grant": [
                     {
                         "subject_id": other_writer.id,
-                        "resource_type": ResourceType::Infra,
-                        "resource_id": infra.id,
-                        "grant": InfraGrant::Writer
+                        "resource_type": resource_type,
+                        "resource_id": resource_id,
+                        "grant": StandardGrant::Writer
                     }
                 ]
             }))
@@ -2216,33 +2786,69 @@ mod tests {
             .assert_status(StatusCode::CREATED);
     }
 
+    #[rstest]
+    #[case::infra(
+        test_app!().build(),
+        create_small_infra(&mut app.db_pool().get_ok()).await.id,
+        ResourceType::Infra,
+    )]
+    #[case::rolling_stock(
+        test_app!().build(),
+        create_fast_rolling_stock(&mut app.db_pool().get_ok(), "rolling_stock").await.id,
+        ResourceType::RollingStock,
+    )]
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn skipped_authz_can_set_grants() {
-        let app = test_app!().build();
-        let openfga = app.openfga();
-        let db_pool = app.db_pool();
-        let infra = authz::Infra(create_small_infra(&mut db_pool.get_ok()).await.id);
+    async fn skipped_authz_can_set_grants(
+        #[case] app: TestApp,
+        #[case] resource_id: i64,
+        #[case] resource_type: ResourceType,
+    ) {
         let user = authz::User::from(app.user("user", "User").create().await);
-        app.assert_infra_grant(infra.0, user.0, None);
+        match resource_type {
+            ResourceType::Infra => {
+                app.assert_infra_grant(resource_id, user.0, None);
+            }
+            ResourceType::RollingStock => {
+                app.assert_rolling_stock_grant(resource_id, user.0, None)
+                    .await;
+            }
+        }
         app.post("/authz/grants")
             .skip_authz()
             .json(&json!({
                 "grant": [
                     {
                         "subject_id": *user,
-                        "resource_type": ResourceType::Infra,
-                        "resource_id": *infra,
-                        "grant": InfraGrant::Owner
+                        "resource_type": resource_type,
+                        "resource_id": resource_id,
+                        "grant": StandardGrant::Owner
                     }
                 ]
             }))
             .await
             .assert_status(StatusCode::CREATED);
 
-        assert_eq!(
-            openfga.infra_direct_grant(user, infra).await,
-            Some(InfraGrant::Owner)
-        );
+        match resource_type {
+            ResourceType::Infra => {
+                assert_eq!(
+                    app.openfga()
+                        .infra_direct_grant(user, authz::Infra(resource_id))
+                        .await,
+                    Some(InfraGrant::Owner)
+                );
+            }
+            ResourceType::RollingStock => {
+                assert_eq!(
+                    app.openfga()
+                        .rolling_stock_direct_grant(
+                            authz::Subject::User(user),
+                            authz::RollingStock(resource_id)
+                        )
+                        .await,
+                    Some(RollingStockGrant::Owner)
+                );
+            }
+        }
     }
 
     #[rstest]
