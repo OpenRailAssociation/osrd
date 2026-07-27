@@ -86,7 +86,7 @@ const TimeStopsTableWrapper = ({
   const preEditPathItemTimesRef = useRef<typeof simulatedPathItemTimes>(undefined);
   const isTrainSimulationPendingRef = useRef(false);
 
-  const { rows, stableIsValid } = useTimesStopsTableData(
+  const { rows, stableIsValid, allRows } = useTimesStopsTableData(
     infraId,
     isValid,
     isSimulationDataLoading,
@@ -123,9 +123,6 @@ const TimeStopsTableWrapper = ({
     setPinnedState(null);
   }
 
-  // The single source of truth for what the table displays. Any derived data fed to
-  // TimesStopsTable (warnings, styling, etc.) should be computed from optimisticRows,
-  // not from selectedTrain, to stay in sync with the displayed values during edits.
   const optimisticRows = useMemo(() => {
     let copyRows: TimesStopsRowNew[] = rows;
     if (optimisticEdits) {
@@ -149,13 +146,13 @@ const TimeStopsTableWrapper = ({
   const { blocks: powerRestrictionBlocks, warningCount: powerRestrictionWarningCount } = useMemo(
     () =>
       computePowerRestrictionWarnings({
-        rows: optimisticRows,
+        rows: allRows,
         path: selectedTrain.path,
         operationalPointsOnPath,
         voltages,
         rollingStock,
       }),
-    [optimisticRows, voltages, selectedTrain.path, operationalPointsOnPath, rollingStock]
+    [allRows, voltages, selectedTrain.path, operationalPointsOnPath, rollingStock]
   );
 
   const {
