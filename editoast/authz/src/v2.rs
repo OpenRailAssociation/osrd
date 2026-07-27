@@ -81,6 +81,13 @@ pub enum Check {
     SubjectEffectiveInfraGrantIsNot(InfraGrant, Subject, Infra),
     /// The subject must not be the last direct owner of the infra
     IsNotLastInfraOwner(Subject, Infra),
+    /// The issuer must be allowed to change the subject's rolling stock grant
+    ///
+    /// Ensures that the issuer cannot demote a more or equally privileged user, except themself.
+    /// No-op grant changes are allowed.
+    /// IMPORTANT: it is *NOT* a replacement for [`Self::HasRollingStockPrivilege`] with sharing privileges (forbids illegal promotions)
+    /// NOTE: groups grants are managed by admins exclusively so this check always rejects group subjects as admin checks are bypassed
+    CanAlterSubjectRollingStockGrant(Subject, RollingStock, RollingStockGrant),
     /// The subject must not have the specified effective rolling stock grant
     SubjectEffectiveRollingStockGrantIsNot(RollingStockGrant, Subject, RollingStock),
     /// The subject must not be the last direct owner of the rolling stock

@@ -49,6 +49,7 @@ impl SystemAuthorizer<'_> {
             | Check::HasRollingStockPrivilege(..)
             | Check::CanAlterSubjectInfraGrant(..)
             | Check::SubjectEffectiveInfraGrantIsNot(..)
+            | Check::CanAlterSubjectRollingStockGrant(..)
             | Check::SubjectEffectiveRollingStockGrantIsNot(..)
             | Check::IsNotLastInfraOwner(..)
             | Check::IsNotLastRollingStockOwner(..) => None,
@@ -190,6 +191,47 @@ impl<'c> UserAuthorizer<'c> {
                     .access()
                     .await?;
                 (subject_grant == Some(*grant)).then_some(check)
+            }
+            Check::CanAlterSubjectRollingStockGrant(
+                subject @ authz::Subject::User(_),
+                rolling_stock,
+                new_grant,
+            ) => {
+                let issuer = self.issuer();
+                let Ok((Some(issuer_grant), current_grant)) =
+                    authz::v2::rolling_stock_effective_grant(issuer, *rolling_stock)
+                        .zip(authz::v2::rolling_stock_effective_grant(
+                            *subject,
+                            *rolling_stock,
+                        ))
+                        .access_authorized::<Infallible>(self.openfga)
+                        .access()
+                        .await?
+                else {
+                    // According to the authorization model, non-Admin users must have a grant to share
+                    return Ok(Some(check));
+                };
+
+                if let Some(current_grant) = current_grant {
+                    if current_grant == *new_grant {
+                        // I can do nothing (no-op);
+                        None
+                    } else if issuer == *subject {
+                        // I can also alter my own grant and self-demote;
+                        None
+                    } else {
+                        // but I cannot do the same thing to my equals
+                        (current_grant >= issuer_grant).then_some(check)
+                    }
+                } else {
+                    // Unprivileged subjects can always be shared to.
+                    None
+                }
+            }
+            Check::CanAlterSubjectRollingStockGrant(authz::Subject::Group(_), _, _) => {
+                // The only users allowed to alter groups grants are admins who bypass this entire
+                // verification function. So if we reach here, well then... TOO BAD GAME OVER LOL
+                Some(check)
             }
             Check::SubjectEffectiveRollingStockGrantIsNot(grant, subject, rolling_stock) => {
                 let Ok(subject_grant) =
@@ -506,6 +548,11 @@ mod tests {
         authz::Subject::User(authz::User(i64::MAX)),
         authz::Infra(i64::MAX)
     ))]
+    #[case::can_alter_subject_rolling_stock_grant(Check::CanAlterSubjectRollingStockGrant(
+        authz::Subject::User(authz::User(i64::MAX)),
+        authz::RollingStock(i64::MAX),
+        RollingStockGrant::Reader,
+    ))]
     #[case::subject_effective_rolling_stock_grant_is_not(
         Check::SubjectEffectiveRollingStockGrantIsNot(
             RollingStockGrant::Owner,
@@ -758,6 +805,137 @@ mod tests {
                 .unwrap();
 
             let check = Check::CanAlterSubjectInfraGrant(target, authz::Infra(1), grant);
+            let result = authorize(&user_authorizer, check).await;
+            let expected = ok.then_some(()).ok_or(check);
+            assert_eq!(result, expected);
+        }
+    }
+
+    mod can_alter_subject_rolling_stock_grant {
+        use super::*;
+
+        const ISSUER_NOTHING: authz::User = authz::User(0);
+        const ISSUER_READER: authz::User = authz::User(1);
+        const ISSUER_WRITER: authz::User = authz::User(2);
+        const ISSUER_OWNER: authz::User = authz::User(3);
+        const USER_NOTHING: authz::Subject = authz::Subject::User(authz::User(4));
+        const USER_READER: authz::Subject = authz::Subject::User(authz::User(5));
+        const USER_WRITER: authz::Subject = authz::Subject::User(authz::User(6));
+        const USER_OWNER: authz::Subject = authz::Subject::User(authz::User(7));
+        const GROUP_NOTHING: authz::Subject = authz::Subject::Group(authz::Group(8));
+        const GROUP_READER: authz::Subject = authz::Subject::Group(authz::Group(9));
+        const GROUP_WRITER: authz::Subject = authz::Subject::Group(authz::Group(10));
+        const GROUP_OWNER: authz::Subject = authz::Subject::Group(authz::Group(11));
+
+        #[rstest]
+        // a user grants another user
+        #[case::target_user_1(ISSUER_READER, USER_NOTHING, RollingStockGrant::Reader, true)]
+        #[case::target_user_2(ISSUER_READER, USER_READER, RollingStockGrant::Reader, true)]
+        #[case::target_user_3(ISSUER_READER, USER_WRITER, RollingStockGrant::Reader, false)]
+        #[case::target_user_4(ISSUER_READER, USER_OWNER, RollingStockGrant::Reader, false)]
+        #[case::target_user_5(ISSUER_WRITER, USER_NOTHING, RollingStockGrant::Writer, true)]
+        #[case::target_user_6(ISSUER_WRITER, USER_READER, RollingStockGrant::Writer, true)]
+        #[case::target_user_7(ISSUER_WRITER, USER_WRITER, RollingStockGrant::Writer, true)]
+        #[case::target_user_8(ISSUER_WRITER, USER_OWNER, RollingStockGrant::Writer, false)]
+        #[case::target_user_9(ISSUER_OWNER, USER_NOTHING, RollingStockGrant::Owner, true)]
+        #[case::target_user_10(ISSUER_OWNER, USER_READER, RollingStockGrant::Owner, true)]
+        #[case::target_user_11(ISSUER_OWNER, USER_WRITER, RollingStockGrant::Owner, true)]
+        #[case::target_user_12(ISSUER_OWNER, USER_OWNER, RollingStockGrant::Owner, true)]
+        // non-admins cannot grant groups
+        #[case::target_group_1(ISSUER_READER, GROUP_NOTHING, RollingStockGrant::Reader, false)]
+        #[case::target_group_2(ISSUER_READER, GROUP_READER, RollingStockGrant::Reader, false)]
+        #[case::target_group_3(ISSUER_READER, GROUP_WRITER, RollingStockGrant::Reader, false)]
+        #[case::target_group_4(ISSUER_READER, GROUP_OWNER, RollingStockGrant::Reader, false)]
+        #[case::target_group_5(ISSUER_WRITER, GROUP_NOTHING, RollingStockGrant::Writer, false)]
+        #[case::target_group_6(ISSUER_WRITER, GROUP_READER, RollingStockGrant::Writer, false)]
+        #[case::target_group_7(ISSUER_WRITER, GROUP_WRITER, RollingStockGrant::Writer, false)]
+        #[case::target_group_8(ISSUER_WRITER, GROUP_OWNER, RollingStockGrant::Writer, false)]
+        #[case::target_group_9(ISSUER_OWNER, GROUP_NOTHING, RollingStockGrant::Owner, false)]
+        #[case::target_group_10(ISSUER_OWNER, GROUP_READER, RollingStockGrant::Owner, false)]
+        #[case::target_group_11(ISSUER_OWNER, GROUP_WRITER, RollingStockGrant::Owner, false)]
+        #[case::target_group_12(ISSUER_OWNER, GROUP_OWNER, RollingStockGrant::Owner, false)]
+        // targeting self is allowed within privilege limits
+        #[case::target_self_1(
+            ISSUER_READER,
+            authz::Subject::User(ISSUER_READER),
+            RollingStockGrant::Reader,
+            true
+        )]
+        #[case::target_self_2(
+            ISSUER_WRITER,
+            authz::Subject::User(ISSUER_WRITER),
+            RollingStockGrant::Writer,
+            true
+        )]
+        #[case::target_self_3(
+            ISSUER_OWNER,
+            authz::Subject::User(ISSUER_OWNER),
+            RollingStockGrant::Owner,
+            true
+        )]
+        // a user with no grant do not have the privilege to share grants
+        #[case::unreachable(ISSUER_NOTHING, USER_NOTHING, RollingStockGrant::Reader, false)]
+        // noop: no changes, the issuer grant does not matter
+        #[case::noop_1(ISSUER_READER, USER_READER, RollingStockGrant::Reader, true)]
+        #[case::noop_2(ISSUER_WRITER, USER_READER, RollingStockGrant::Reader, true)]
+        #[case::noop_3(ISSUER_OWNER, USER_READER, RollingStockGrant::Reader, true)]
+        #[case::noop_4(ISSUER_READER, USER_WRITER, RollingStockGrant::Writer, true)]
+        #[case::noop_5(ISSUER_WRITER, USER_WRITER, RollingStockGrant::Writer, true)]
+        #[case::noop_6(ISSUER_OWNER, USER_WRITER, RollingStockGrant::Writer, true)]
+        #[case::noop_7(ISSUER_READER, USER_OWNER, RollingStockGrant::Owner, true)]
+        #[case::noop_8(ISSUER_WRITER, USER_OWNER, RollingStockGrant::Owner, true)]
+        #[case::noop_9(ISSUER_OWNER, USER_OWNER, RollingStockGrant::Owner, true)]
+        // -----
+        #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+        async fn test(
+            #[case] issuer: authz::User,
+            #[case] target: authz::Subject,
+            #[case] grant: RollingStockGrant,
+            #[case] ok: bool,
+        ) {
+            let openfga = openfga().await;
+            let pool = DbConnectionPoolV2::for_tests();
+            let user_authorizer = UserAuthorizer::new(issuer, vec![], &openfga, pool.get_ok());
+
+            openfga
+                .prepare_writes()
+                .write(
+                    &authz::RollingStock::reader().tuple(&ISSUER_READER, &authz::RollingStock(1)),
+                )
+                .write(
+                    &authz::RollingStock::writer().tuple(&ISSUER_WRITER, &authz::RollingStock(1)),
+                )
+                .write(&authz::RollingStock::owner().tuple(&ISSUER_OWNER, &authz::RollingStock(1)))
+                .write(
+                    &authz::RollingStock::reader()
+                        .tuple(&authz::User(USER_READER.id()), &authz::RollingStock(1)),
+                )
+                .write(
+                    &authz::RollingStock::writer()
+                        .tuple(&authz::User(USER_WRITER.id()), &authz::RollingStock(1)),
+                )
+                .write(
+                    &authz::RollingStock::owner()
+                        .tuple(&authz::User(USER_OWNER.id()), &authz::RollingStock(1)),
+                )
+                .write(&authz::RollingStock::reader().tuple(
+                    authz::Group::member().userset(&authz::Group(GROUP_READER.id())),
+                    &authz::RollingStock(1),
+                ))
+                .write(&authz::RollingStock::writer().tuple(
+                    authz::Group::member().userset(&authz::Group(GROUP_WRITER.id())),
+                    &authz::RollingStock(1),
+                ))
+                .write(&authz::RollingStock::owner().tuple(
+                    authz::Group::member().userset(&authz::Group(GROUP_OWNER.id())),
+                    &authz::RollingStock(1),
+                ))
+                .execute()
+                .await
+                .unwrap();
+
+            let check =
+                Check::CanAlterSubjectRollingStockGrant(target, authz::RollingStock(1), grant);
             let result = authorize(&user_authorizer, check).await;
             let expected = ok.then_some(()).ok_or(check);
             assert_eq!(result, expected);
@@ -1037,6 +1215,11 @@ mod tests {
     #[case::is_not_last_infra_owner(Check::IsNotLastInfraOwner(
         authz::Subject::user(i64::MAX),
         authz::Infra(i64::MAX)
+    ))]
+    #[case::can_alter_subject_rolling_stock_grant(Check::CanAlterSubjectRollingStockGrant(
+        authz::Subject::user(i64::MAX),
+        authz::RollingStock(i64::MAX),
+        RollingStockGrant::Reader,
     ))]
     #[case::subject_effective_rolling_stock_grant_is_not(
         Check::SubjectEffectiveRollingStockGrantIsNot(
