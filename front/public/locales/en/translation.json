@@ -858,10 +858,10 @@
       "atThisWaypoint": "at this waypoint",
       "fromDeparture": "from departure",
       "shiftAllWaypoints": "shift all waypoints",
-      "toDestination": "to destination",
       "stopDurationAtThisWaypoint": "Only this point",
-      "stopDurationFromDeparture": "From this point",
-      "stopDurationToDestination": "Until this point"
+      "stopDurationFromDeparture": "Until this point",
+      "stopDurationToDestination": "From this point",
+      "toDestination": "to destination"
     },
     "realMargin": "real margin",
     "receptionOnClosedSignal": "closed signal",
