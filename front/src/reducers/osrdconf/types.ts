@@ -197,8 +197,9 @@ export type StdcmPathStep = {
   | {
       isVia: false;
       arrivalType: ArrivalTimeTypes;
-      // TODO: make arrival non nullable (/!\ store migration)
-      arrival?: Date;
+      // TODO: make arrival never undefined (/!\ store migration)
+      /** undefined represents no user defined arrival constraint, null represents an invalid constraint */
+      arrival?: Date | null;
       tolerances: { before: Duration; after: Duration };
     }
 );

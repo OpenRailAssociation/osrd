@@ -53,6 +53,15 @@ const checkStdcmConfigErrors = ({
 
   let invalidFields = getInvalidFields(consistErrors);
 
+  if (origin.isVia) throw new Error('First step can not be a via');
+  if (destination.isVia) throw new Error('Last step can not be a via');
+
+  const isOriginScheduled = origin.arrivalType === ArrivalTimeTypes.PRECISE_TIME;
+  const isDestinationScheduled = destination.arrivalType === ArrivalTimeTypes.PRECISE_TIME;
+  if (isOriginScheduled && origin.arrival === null) invalidFields.push({ fieldName: 'originDate' });
+  if (isDestinationScheduled && destination.arrival === null)
+    invalidFields.push({ fieldName: 'destinationDate' });
+
   if (!shouldCheckMandatoryFields) {
     const prevInvalid = prevFormErrors?.errorDetails?.invalidFields || [];
     invalidFields = invalidFields.filter((field) =>
@@ -68,22 +77,11 @@ const checkStdcmConfigErrors = ({
       routeErrors.push(StdcmConfigErrorTypes.ZERO_LENGTH_PATH);
     }
 
-    const isOriginRespectDestinationSchedule =
-      !origin.isVia && origin.arrivalType === ArrivalTimeTypes.RESPECT_DESTINATION_SCHEDULE;
-    const isDestinationASAP =
-      !destination.isVia && destination.arrivalType === ArrivalTimeTypes.ASAP;
-
-    if (isOriginRespectDestinationSchedule && isDestinationASAP) {
+    if (!isOriginScheduled && !isDestinationScheduled) {
       routeErrors.push(StdcmConfigErrorTypes.NO_SCHEDULED_POINT);
     }
 
-    const areBothPointsScheduled =
-      !origin.isVia &&
-      !destination.isVia &&
-      origin.arrivalType === ArrivalTimeTypes.PRECISE_TIME &&
-      destination.arrivalType === ArrivalTimeTypes.PRECISE_TIME;
-
-    if (areBothPointsScheduled) {
+    if (isOriginScheduled && isDestinationScheduled) {
       routeErrors.push(StdcmConfigErrorTypes.BOTH_POINT_SCHEDULED);
       routeErrorDetails.originTime = origin.arrival
         ? t('leaveAt', {
@@ -96,13 +94,6 @@ const checkStdcmConfigErrors = ({
           })
         : t('destinationTime');
     }
-  }
-
-  if (origin.isVia) {
-    throw new Error('First step can not be a via');
-  }
-  if (destination.isVia) {
-    throw new Error('Last step can not be a via');
   }
 
   stdcmPathSteps.forEach((step) => {

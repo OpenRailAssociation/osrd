@@ -245,7 +245,9 @@
     "incompatibleConstraints_zero": "Erreur de contrainte sur le chemin demandé",
     "infraNotLoaded": "Infrastructure en cours de chargement",
     "invalidFields": {
+      "destinationDate": "la date d'arrivée à la destination",
       "maxSpeed": "la vitesse maximale du convoi",
+      "originDate": "la date de départ à l'origine",
       "totalLength": "la longueur totale du convoi",
       "totalMass": "le poids total du convoi"
     },
