@@ -66,7 +66,7 @@ const formatSummary = (summary?: SimulationSummaryResult): SimulationSummary | u
  * timetables, elapsed ms since the timetable start (a Duration) for hourly
  * timetables.
  */
-const parseStartTime = (startTime: number, timetableType: TimetableType) =>
+export const parseStartTime = (startTime: number, timetableType: TimetableType) =>
   timetableType === 'HOURLY' ? new Duration({ milliseconds: startTime }) : new Date(startTime);
 
 const extractBaseTrainScheduleProps = (

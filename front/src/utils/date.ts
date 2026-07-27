@@ -41,6 +41,23 @@ export const formatLocalDate = (date: Date) => dayjs(date).local().format('YYYY-
  */
 export const formatLocalTime = (date: Date) => dayjs(date).local().format('HH:mm:ss');
 
+const pad = (value: number) => String(value).padStart(2, '0');
+
+/**
+ * Format a start time to a string truncated to the second: a locale-aware clock time for
+ * a Date (calendar timetable), or an "hh:mm:ss" elapsed time for a Duration (offset from
+ * the start of an hourly timetable, which has no locale/calendar meaning). Contrary to a
+ * clock time, the elapsed time does not wrap its hours at 24.
+ */
+export const timeToLocaleString = (time: StartTime, locale: Intl.Locale): string => {
+  if (!(time instanceof Duration)) return time.toLocaleTimeString(locale);
+
+  const hours = Math.floor(time.total('hour'));
+  const minutes = Math.floor(time.sub(new Duration({ hours })).total('minute'));
+  const seconds = Math.floor(time.sub(new Duration({ hours, minutes })).total('second'));
+  return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+};
+
 /**
  * Format a start time to a string rounded to the nearest minute: a locale-aware clock
  * time for a Date (calendar timetable), or an "H:mm" elapsed time for a Duration
