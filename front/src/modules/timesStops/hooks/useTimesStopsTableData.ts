@@ -177,7 +177,7 @@ const useTimesStopsTableData = (
   simulatedPathItemTimes?: Extract<SimulationSummary, { isValid: true }>['pathItemTimes'],
   simulatedPathItemRespect?: Extract<SimulationSummary, { isValid: true }>['pathItemRespect'],
   operationalPointsOnPath?: PathPropertiesFormatted['operationalPoints']
-): { rows: TimesStopsRowNew[]; stableIsValid: boolean } => {
+): { allRows: TimesStopsRowNew[]; rows: TimesStopsRowNew[]; stableIsValid: boolean } => {
   const { t } = useTranslation('operational-studies');
   const { getTrackSectionsByIds } = useScenarioContext();
   const displayOnlyPathSteps = useSelector(getDisplayOnlyPathSteps);
@@ -436,7 +436,7 @@ const useTimesStopsTableData = (
     [allRows, displayOnlyPathSteps]
   );
 
-  return { rows: filteredRows, stableIsValid };
+  return { allRows, rows: filteredRows, stableIsValid };
 };
 
 export default useTimesStopsTableData;
