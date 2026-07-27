@@ -1,3 +1,4 @@
+#![recursion_limit = "250"]
 #[macro_use]
 extern crate diesel;
 
