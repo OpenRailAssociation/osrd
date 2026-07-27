@@ -13,7 +13,7 @@ import type {
   StdcmSuccessResponse,
 } from 'applications/stdcm/types';
 import {
-  durationToHHMM,
+  dateToHHMM,
   getStopDurationTime,
 } from 'modules/SimulationReportSheet/utils/formatSimulationReportSheet';
 import { retainSimulation } from 'reducers/osrdconf/stdcmConf';
@@ -98,19 +98,19 @@ const StdcmResultsTable = ({
             </td>
             <td className={cx('ch', { 'muted-text': !isPathStep })}>{step.secondaryCode}</td>
             <td className="stop">
-              {isLastStep || step.stopDuration !== null ? durationToHHMM(step.time) : ''}
+              {isLastStep || step.stopDuration !== null ? dateToHHMM(step.time) : ''}
             </td>
             <td className="stop">
               {isNotExtremity && (
                 <div className={step.stopDuration !== null ? 'stop-with-duration ml-n2' : 'stop'}>
                   {step.stopDuration !== null
                     ? getStopDurationTime(step.stopDuration)
-                    : durationToHHMM(step.time)}
+                    : dateToHHMM(step.time)}
                 </div>
               )}
             </td>
             <td className="stop">
-              {isFirstStep || step.stopDuration !== null ? durationToHHMM(step.stopEndTime) : ''}
+              {isFirstStep || step.stopDuration !== null ? dateToHHMM(step.stopEndTime) : ''}
             </td>
             <td className={cx('weight', { 'muted-text': !isFirstStep })}>
               {displayedMass ? `${displayedMass}t` : '='}

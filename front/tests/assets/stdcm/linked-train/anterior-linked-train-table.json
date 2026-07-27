@@ -6,7 +6,7 @@
     "track": "V1",
     "endStop": "",
     "passageStop": "",
-    "startStop": "12:37",
+    "startStop": "12:38",
     "weight": "236t",
     "refEngine": "FAST_RS_E2E"
   },
@@ -15,9 +15,9 @@
     "operationalPoint": "North_station",
     "code": "BV",
     "track": "V1bis",
-    "endStop": "13:25",
+    "endStop": "13:26",
     "passageStop": "4 min",
-    "startStop": "13:30",
+    "startStop": "13:31",
     "weight": "=",
     "refEngine": "="
   },

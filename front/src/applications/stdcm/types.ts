@@ -53,12 +53,12 @@ export type SimilarTrainWithSecondaryCode = {
 export type StdcmResultsOperationalPoint = {
   opId?: string;
   positionOnPath: number;
-  time: Duration;
+  time: Date;
   name?: string;
   consistChange?: ConsistData;
   secondaryCode?: string | null;
   stopDuration: Duration | null;
-  stopEndTime: Duration;
+  stopEndTime: Date;
   trackName?: string;
   stopType?: StdcmStopTypes;
   stopRequested: boolean;

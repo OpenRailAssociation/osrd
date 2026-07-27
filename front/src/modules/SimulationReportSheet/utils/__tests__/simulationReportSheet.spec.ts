@@ -29,8 +29,7 @@ describe('getStopDurationBetweenTwoPositions', () => {
       positions: [1, 2, 2, 3, 4, 5],
       times: [0, 120000, 180000, 200000, 220000, 230000],
       speeds: [0, 0, 2, 0, 2, 0],
-      departureHour: 1,
-      departureMinute: 2,
+      departureTime: new Date(2026, 0, 1, 1, 2),
     };
     expect(getStopDurationAtPosition(1, train)).toBeNull(); // departure
     expect(getStopDurationAtPosition(2, train)).toEqual(new Duration({ milliseconds: 60000 })); // standard stop
@@ -55,36 +54,36 @@ describe('insertsMissingStopsInOperationalPointsWithTimes', () => {
   const opA = {
     opId: 'A',
     positionOnPath: 0,
-    time: new Duration({ hours: 10 }),
+    time: new Date(2026, 0, 1, 10),
     stopDuration: null,
-    stopEndTime: new Duration({ hours: 10 }),
+    stopEndTime: new Date(2026, 0, 1, 10),
     stopRequested: false,
     weight: 10,
   };
   const opB = {
     opId: 'B',
     positionOnPath: 50,
-    time: new Duration({ hours: 10, minutes: 10 }),
+    time: new Date(2026, 0, 1, 10, 10),
     stopDuration: null,
-    stopEndTime: new Duration({ hours: 10, minutes: 10 }),
+    stopEndTime: new Date(2026, 0, 1, 10, 10),
     stopRequested: false,
     weight: 10,
   };
   const opC = {
     opId: 'C',
     positionOnPath: 100,
-    time: new Duration({ hours: 10, minutes: 20 }),
+    time: new Date(2026, 0, 1, 10, 20),
     stopDuration: null,
-    stopEndTime: new Duration({ hours: 10, minutes: 20 }),
+    stopEndTime: new Date(2026, 0, 1, 10, 20),
     stopRequested: false,
     weight: 10,
   };
   const opD = {
     opId: 'D',
     positionOnPath: 150,
-    time: new Duration({ hours: 10, minutes: 30 }),
+    time: new Date(2026, 0, 1, 10, 30),
     stopDuration: null,
-    stopEndTime: new Duration({ hours: 10, minutes: 30 }),
+    stopEndTime: new Date(2026, 0, 1, 10, 30),
     stopRequested: false,
     weight: 10,
   };
@@ -92,19 +91,19 @@ describe('insertsMissingStopsInOperationalPointsWithTimes', () => {
     ...opA,
     stopRequested: true,
     stopDuration: new Duration({ seconds: 60 }),
-    stopEndTime: new Duration({ hours: 10, minutes: 1, seconds: 2 }),
+    stopEndTime: new Date(2026, 0, 1, 10, 1, 2),
   };
   const opCwStop = {
     ...opC,
     stopRequested: true,
     stopDuration: new Duration({ seconds: 180 }),
-    stopEndTime: new Duration({ hours: 10, minutes: 23, seconds: 2 }),
+    stopEndTime: new Date(2026, 0, 1, 10, 23, 2),
   };
   const opDwStop = {
     ...opD,
     stopRequested: true,
     stopDuration: new Duration({ seconds: 120 }),
-    stopEndTime: new Duration({ hours: 10, minutes: 32 }),
+    stopEndTime: new Date(2026, 0, 1, 10, 32),
   };
   const opAwStopNotDone = { ...opA, stopRequested: true };
   const opCwStopNotDone = { ...opC, stopRequested: true };
@@ -116,8 +115,7 @@ describe('insertsMissingStopsInOperationalPointsWithTimes', () => {
       positions: [0, 0, 50, 100, 100, 150, 150],
       times: [0, 60000, 600000, 1200000, 1380000, 1800000, 1920000],
       speeds: [0, 2, 2, 0, 2, 2, 0],
-      departureHour: 10,
-      departureMinute: 0,
+      departureTime: new Date(2026, 0, 1, 10),
     };
     const result = insertMissingStopsInOperationalPointsWithTimes(
       [opAwStop, opB, opCwStop, opDwStop],
@@ -133,8 +131,7 @@ describe('insertsMissingStopsInOperationalPointsWithTimes', () => {
       positions: [0, 2, 2, 50, 100, 101, 101, 150, 154, 154],
       times: [0, 2000, 62000, 600000, 1200000, 1202000, 1382000, 1800000, 1840000, 2140000],
       speeds: [0, 0, 2, 2, 2, 0, 2, 2, 2, 0],
-      departureHour: 10,
-      departureMinute: 0,
+      departureTime: new Date(2026, 0, 1, 10),
     };
     const result = insertMissingStopsInOperationalPointsWithTimes(
       [opAwStopNotDone, opB, opCwStopNotDone, opDwStopNotDone],
@@ -148,7 +145,7 @@ describe('insertsMissingStopsInOperationalPointsWithTimes', () => {
       {
         ...opDwStop,
         stopDuration: new Duration({ seconds: 300 }),
-        stopEndTime: new Duration({ hours: 10, minutes: 35, seconds: 40 }),
+        stopEndTime: new Date(2026, 0, 1, 10, 35, 40),
       },
     ]);
   });
@@ -159,8 +156,7 @@ describe('insertsMissingStopsInOperationalPointsWithTimes', () => {
       positions: [0, 50, 75, 75, 100, 125, 125, 150],
       times: [0, 600000, 900000, 960000, 1200000, 1500000, 1560000, 1800000],
       speeds: [0, 2, 0, 2, 0, 0, 2, 0],
-      departureHour: 10,
-      departureMinute: 0,
+      departureTime: new Date(2026, 0, 1, 10),
     };
     const result = insertMissingStopsInOperationalPointsWithTimes(
       [opA, opB, opCwStop, opD],
@@ -174,8 +170,8 @@ describe('insertsMissingStopsInOperationalPointsWithTimes', () => {
         opId: 'unplanned_stop_at_75',
         positionOnPath: 75,
         stopDuration: new Duration({ seconds: 60 }),
-        time: new Duration({ hours: 10, minutes: 15 }),
-        stopEndTime: new Duration({ hours: 10, minutes: 16 }),
+        time: new Date(2026, 0, 1, 10, 15),
+        stopEndTime: new Date(2026, 0, 1, 10, 16),
         stopRequested: false,
         weight: null,
       },
@@ -184,8 +180,8 @@ describe('insertsMissingStopsInOperationalPointsWithTimes', () => {
         opId: 'unplanned_stop_at_125',
         positionOnPath: 125,
         stopDuration: new Duration({ seconds: 60 }),
-        time: new Duration({ hours: 10, minutes: 25 }),
-        stopEndTime: new Duration({ hours: 10, minutes: 26 }),
+        time: new Date(2026, 0, 1, 10, 25),
+        stopEndTime: new Date(2026, 0, 1, 10, 26),
         stopRequested: false,
         weight: null,
       },
