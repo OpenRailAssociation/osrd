@@ -322,7 +322,7 @@ dependencies = [
  "derive_more",
  "fga",
  "fga_migrations",
- "futures 0.3.32",
+ "futures 0.3.33",
  "itertools 0.15.0",
  "pretty_assertions",
  "rstest",
@@ -457,7 +457,7 @@ checksum = "a12a7c0b7a2da3ac277ff5f23ed1f27fda253039bdc603234fd674de66e84571"
 dependencies = [
  "axum",
  "bytes",
- "futures 0.3.32",
+ "futures 0.3.33",
  "http",
  "http-body",
  "serde",
@@ -639,7 +639,7 @@ version = "0.1.0"
 dependencies = [
  "arcstr",
  "deadpool-redis",
- "futures 0.3.32",
+ "futures 0.3.33",
  "itertools 0.15.0",
  "rand 0.10.2",
  "redis-test",
@@ -915,7 +915,7 @@ dependencies = [
  "deadpool",
  "editoast_derive",
  "educe 0.7.4",
- "futures 0.3.32",
+ "futures 0.3.33",
  "futures-util",
  "geos",
  "hostname",
@@ -948,7 +948,7 @@ dependencies = [
  "dashmap",
  "deadpool-redis",
  "educe 0.7.4",
- "futures 0.3.32",
+ "futures 0.3.33",
  "http",
  "itertools 0.15.0",
  "ordered-float",
@@ -1182,7 +1182,7 @@ dependencies = [
  "diesel",
  "diesel-async",
  "diesel_migrations",
- "futures 0.3.32",
+ "futures 0.3.33",
  "futures-util",
  "openssl",
  "opentelemetry-semantic-conventions",
@@ -1447,7 +1447,7 @@ dependencies = [
  "fga",
  "fga_migrations",
  "flate2",
- "futures 0.3.32",
+ "futures 0.3.33",
  "futures-util",
  "geos",
  "headers",
@@ -1523,7 +1523,7 @@ dependencies = [
  "editoast_models",
  "educe 0.7.4",
  "fga",
- "futures 0.3.32",
+ "futures 0.3.33",
  "futures-util",
  "geos",
  "itertools 0.15.0",
@@ -1756,7 +1756,7 @@ dependencies = [
  "derive_more",
  "fga",
  "fga_derive",
- "futures 0.3.32",
+ "futures 0.3.33",
  "futures-util",
  "itertools 0.15.0",
  "reqwest",
@@ -1790,7 +1790,7 @@ dependencies = [
  "common",
  "derive_more",
  "fga",
- "futures 0.3.32",
+ "futures 0.3.33",
  "indexmap",
  "itertools 0.15.0",
  "opentelemetry-otlp",
@@ -1897,9 +1897,9 @@ checksum = "3a471a38ef8ed83cd6e40aa59c1ffe17db6855c18e3604d9c4ed8c08ebc28678"
 
 [[package]]
 name = "futures"
-version = "0.3.32"
+version = "0.3.33"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8b147ee9d1f6d097cef9ce628cd2ee62288d963e16fb287bd9286455b241382d"
+checksum = "a88cf1f829d945f548cf8fec32c61b1f202b6d93b45848602fc02af4b12ad218"
 dependencies = [
  "futures-channel",
  "futures-core",
@@ -1912,9 +1912,9 @@ dependencies = [
 
 [[package]]
 name = "futures-channel"
-version = "0.3.32"
+version = "0.3.33"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "07bbe89c50d7a535e539b8c17bc0b49bdb77747034daa8087407d655f3f7cc1d"
+checksum = "262590f4fe6afeb0bc83be1daa64e52657fe185690a958af7f3ad0e92085c5ae"
 dependencies = [
  "futures-core",
  "futures-sink",
@@ -1922,9 +1922,9 @@ dependencies = [
 
 [[package]]
 name = "futures-core"
-version = "0.3.32"
+version = "0.3.33"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7e3450815272ef58cec6d564423f6e755e25379b217b0bc688e295ba24df6b1d"
+checksum = "2cd50c473c80f6d7c3670a752354b8e569b1a7cbfdc0419ec88e5edad85e0dc7"
 
 [[package]]
 name = "futures-cpupool"
@@ -1938,9 +1938,9 @@ dependencies = [
 
 [[package]]
 name = "futures-executor"
-version = "0.3.32"
+version = "0.3.33"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "baf29c38818342a3b26b5b923639e7b1f4a61fc5e76102d4b1981c6dc7a7579d"
+checksum = "6754879cc9f2c66f88c6e5c35344bb0bdb0708b0352b1201815667c7eabc7458"
 dependencies = [
  "futures-core",
  "futures-task",
@@ -1949,9 +1949,9 @@ dependencies = [
 
 [[package]]
 name = "futures-io"
-version = "0.3.32"
+version = "0.3.33"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cecba35d7ad927e23624b22ad55235f2239cfa44fd10428eecbeba6d6a717718"
+checksum = "4577ecaa3c4f96589d473f679a71b596316f6641bc350038b962a5daf0085d7a"
 
 [[package]]
 name = "futures-lite"
@@ -1968,9 +1968,9 @@ dependencies = [
 
 [[package]]
 name = "futures-macro"
-version = "0.3.32"
+version = "0.3.33"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e835b70203e41293343137df5c0664546da5745f82ec9b84d40be8336958447b"
+checksum = "2d6d3cde68c518367be28956066ddfef33813991b77a55005a69dae04bf3b10b"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1979,21 +1979,21 @@ dependencies = [
 
 [[package]]
 name = "futures-sink"
-version = "0.3.32"
+version = "0.3.33"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c39754e157331b013978ec91992bde1ac089843443c49cbc7f46150b0fad0893"
+checksum = "e34418ac499d6305c2fb5ad0ed2f6ac998c5f8ca209b4510f7f94242c647e307"
 
 [[package]]
 name = "futures-task"
-version = "0.3.32"
+version = "0.3.33"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "037711b3d59c33004d3856fbdc83b99d4ff37a24768fa1be9ce3538a1cde4393"
+checksum = "b231ed28831efb4a61a08580c4bc233ec56bc009f4cd8f52da2c3cb97df0c109"
 
 [[package]]
 name = "futures-util"
-version = "0.3.32"
+version = "0.3.33"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "389ca41296e6190b48053de0321d02a77f32f8a5d2461dd38762c0593805c6d6"
+checksum = "a77a90a256fce34da66415271e30f94ee91c57b04b8a2c042d9cf3220179deaa"
 dependencies = [
  "futures-channel",
  "futures-core",
