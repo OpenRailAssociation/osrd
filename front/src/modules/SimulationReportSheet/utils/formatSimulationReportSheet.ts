@@ -12,7 +12,7 @@ import type { ConsistChange, RequestedStep, StepType } from 'common/api/osrdRail
 import { interpolateValue } from 'modules/simulationResult/helpers/utils';
 import type { SuggestedOP } from 'modules/trainSchedule/types';
 import type { StdcmPathStep } from 'reducers/osrdconf/types';
-import { Duration } from 'utils/duration';
+import { addDurationToDate, Duration } from 'utils/duration';
 import { tToKg } from 'utils/physics';
 import { capitalizeFirstLetter } from 'utils/strings';
 
@@ -52,13 +52,13 @@ export function getStopDurationTime(duration?: Duration): string {
 }
 
 /**
- * @param duration Duration object
- * @returns The duration formatted as a string in "HH:MM" format
+ * @param duration Date object
+ * @returns The date formatted as a string in "HH:MM" format
  */
-export function durationToHHMM(duration: Duration): string {
-  const totalMinutes = Math.round(duration.total('minute'));
-  const hours = Math.floor(totalMinutes / 60) % 24;
-  const minutes = totalMinutes % 60;
+export function dateToHHMM(date: Date): string {
+  const roundedDate = new Date(date.getTime() + 30000); // 30s shift so truncating returns rounded minute/hour
+  const hours = roundedDate.getHours();
+  const minutes = roundedDate.getMinutes();
   return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
 }
 
@@ -66,23 +66,21 @@ export function durationToHHMM(duration: Duration): string {
  * @property positions List of positions of a train in mm
  * @property times List of times in milliseconds corresponding to the train positions
  * @property speeds List of speeds in m/s corresponding to the train positions
- * @property departureHour Hour of the train departure (24h format)
- * @property departureMinute Minute of the train departure
+ * @property departureTime Timestamp of the train departure
  */
 type TrainSimulation = {
   positions: number[];
   times: number[];
   speeds: number[];
-  departureHour: number;
-  departureMinute: number;
+  departureTime: Date;
 };
 
 /**
  * @param position Distance from the beginning of the path in mm
  * @param train Object containing simulated train positions, times, and departure time
- * @returns The estimated time of passage at the given position in format hh:mm
+ * @returns The estimated date and time of passage at the given position
  */
-function getTimeAtPosition(position: number, train: TrainSimulation): Duration {
+function getTimeAtPosition(position: number, train: TrainSimulation): Date {
   const milliseconds = interpolateValue(
     {
       positions: train.positions,
@@ -93,11 +91,7 @@ function getTimeAtPosition(position: number, train: TrainSimulation): Duration {
     'times'
   );
   const duration = new Duration({ milliseconds });
-  const trainDeparture = new Duration({
-    hours: train.departureHour,
-    minutes: train.departureMinute,
-  });
-  return trainDeparture.add(duration);
+  return addDurationToDate(train.departureTime, duration);
 }
 
 /**
@@ -134,7 +128,7 @@ function formatMinimalOperationalPointWithTimes(
   const stopBegin = getTimeAtPosition(op.positionOnPath, train);
 
   const duration = getStopDurationAtPosition(op.positionOnPath, train);
-  const stopEnd = stopBegin.add(duration || Duration.zero);
+  const stopEnd = addDurationToDate(stopBegin, duration || Duration.zero);
 
   return {
     opId: op.opId,
@@ -273,7 +267,7 @@ function consolidateOvertakesToSingleSteps(
       const consolidatedStep: StdcmResultsOperationalPoint = {
         ...step,
         name: overtakenStepMatch[1],
-        stopDuration: nextStep.time.sub(step.time),
+        stopDuration: Duration.subtractDate(nextStep.time, step.time),
         stopEndTime: nextStep.time,
         stopType: StdcmStopTypes.OVERTAKE,
       };
@@ -313,9 +307,6 @@ export function getOperationalPointsWithTimes({
 }): StdcmResultsOperationalPoint[] {
   const { positions, times, speeds } = simulation.final_output;
 
-  const departureHour = departureTime.getHours();
-  const departureMinute = departureTime.getMinutes();
-
   const formattedOps = suggestedOperationalPoints
     .filter((suggestedOp) => {
       // Keep if the OP is not in the exclusion list
@@ -332,7 +323,7 @@ export function getOperationalPointsWithTimes({
       formatOperationalPointWithTimesAndWeight(
         suggestedOp,
         operationalPoints,
-        { positions, times, speeds, departureHour, departureMinute },
+        { positions, times, speeds, departureTime },
         simulationPathSteps
       )
     );
@@ -341,7 +332,7 @@ export function getOperationalPointsWithTimes({
   const formattedOpsWithAllStops = insertMissingStopsInOperationalPointsWithTimes(
     formattedOps,
     stopPositions,
-    { positions, times, speeds, departureHour, departureMinute }
+    { positions, times, speeds, departureTime }
   );
   const formattedConsolidatedOps = consolidateOvertakesToSingleSteps(formattedOpsWithAllStops);
 

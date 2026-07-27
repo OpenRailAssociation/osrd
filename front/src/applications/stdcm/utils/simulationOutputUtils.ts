@@ -8,7 +8,7 @@ import type {
 } from 'applications/stdcm/types';
 import type { SimulationTableRow } from 'modules/SimulationReportSheet/types';
 import {
-  durationToHHMM,
+  dateToHHMM,
   getStopDurationTime,
 } from 'modules/SimulationReportSheet/utils/formatSimulationReportSheet';
 import { getRowStyle } from 'modules/SimulationReportSheet/utils/formatSimulationTable';
@@ -51,8 +51,8 @@ export const formatStdcmDataForSimulationTable = (
     const isVia = stdcmPathSteps.slice(1, -1).some((step) => step.operationalPoint!.id === op.opId);
     const isPathStep = isFirst || isVia || isLast;
 
-    const startTime = isFirst || isStop ? durationToHHMM(op.stopEndTime) : '';
-    const endTime = isLast || isStop ? durationToHHMM(op.time) : '';
+    const startTime = isFirst || isStop ? dateToHHMM(op.stopEndTime) : '';
+    const endTime = isLast || isStop ? dateToHHMM(op.time) : '';
     const { stopType, trackName } = op;
 
     const stopTypeLabel = stopType
