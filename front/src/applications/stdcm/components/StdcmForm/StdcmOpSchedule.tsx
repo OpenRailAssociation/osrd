@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 
 import { DatePicker, Select, TimePicker, TolerancePicker } from '@osrd-project/ui-core';
 import { useTranslation } from 'react-i18next';
@@ -29,18 +29,25 @@ const StdcmOpSchedule = ({ disabled, pathStep, opId, isOrigin = false }: StdcmOp
 
   const searchDatetimeWindow = useSelector(getSearchDatetimeWindow);
 
+  // When the user inputs an invalid arrival date, we want pathStep.arrival to be null,
+  // but not erase the user input, thus inputArrivalDate is a buffer value used for the controlled inputs
+  const [inputArrival, setInputArrival] = useState<Date | undefined>(pathStep.arrival ?? undefined);
+  if (pathStep.arrival !== null && pathStep.arrival?.getTime() !== inputArrival?.getTime()) {
+    setInputArrival(pathStep.arrival);
+  }
+
   const { arrivalTimeHours, arrivalTimeMinutes } = useMemo(() => {
-    if (!pathStep.arrival) {
+    if (!inputArrival) {
       return {
         arrivalTimeHours: undefined,
         arrivalTimeMinutes: undefined,
       };
     }
     return {
-      arrivalTimeHours: pathStep.arrival.getHours(),
-      arrivalTimeMinutes: pathStep.arrival.getMinutes(),
+      arrivalTimeHours: inputArrival.getHours(),
+      arrivalTimeMinutes: inputArrival.getMinutes(),
     };
-  }, [pathStep.arrival]);
+  }, [inputArrival]);
 
   const tolerances = useMemo(
     () => ({
@@ -70,16 +77,16 @@ const StdcmOpSchedule = ({ disabled, pathStep, opId, isOrigin = false }: StdcmOp
   );
 
   const onArrivalChange = ({ date, hours, minutes }: ScheduleConstraint) => {
+    if (!date) {
+      dispatch(updateStdcmPathStep({ id: pathStep.id, updates: { arrival: null } }));
+      return;
+    }
     // We need to create a new date object to avoid mutating the original one
     // otherwise the useEffect/useMemo will not be triggered
     const newDate = new Date(date);
     newDate.setHours(hours, minutes);
-    dispatch(
-      updateStdcmPathStep({
-        id: pathStep.id,
-        updates: { arrival: newDate },
-      })
-    );
+    dispatch(updateStdcmPathStep({ id: pathStep.id, updates: { arrival: newDate } }));
+    setInputArrival(newDate);
   };
 
   const onArrivalTypeChange = (arrivalType: ArrivalTimeTypes) => {
@@ -120,9 +127,8 @@ const StdcmOpSchedule = ({ disabled, pathStep, opId, isOrigin = false }: StdcmOp
               narrow: true,
             }}
             selectableSlot={selectableSlot}
-            value={pathStep.arrival}
+            value={inputArrival}
             onDateChange={(e) => {
-              if (!e) return;
               onArrivalChange({
                 date: e,
                 hours: arrivalTimeHours || 0,

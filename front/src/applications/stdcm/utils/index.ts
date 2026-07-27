@@ -2,7 +2,7 @@ import type { PathItemLocation, PostSimilarTrainsApiResponse } from 'common/api/
 import { type MarkerInformation, MARKER_TYPE } from 'common/Map/components/ItineraryMarkers';
 import type { StdcmPathStep } from 'reducers/osrdconf/types';
 
-export const getTimesInfoFromDate = (date?: Date) =>
+export const getTimesInfoFromDate = (date?: Date | null) =>
   date
     ? {
         date,

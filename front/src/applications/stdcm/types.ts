@@ -197,7 +197,7 @@ export type MissingFields =
   | 'viaConsistTotalLength';
 
 export type InvalidFields = {
-  fieldName: 'totalMass' | 'totalLength' | 'maxSpeed';
+  fieldName: 'totalMass' | 'totalLength' | 'maxSpeed' | 'originDate' | 'destinationDate';
 };
 
 export type StdcmConfigErrors = {
@@ -213,7 +213,7 @@ export type StdcmConfigErrors = {
 };
 
 export type ScheduleConstraint = {
-  date: Date;
+  date: Date | undefined;
   hours: number;
   minutes: number;
 };

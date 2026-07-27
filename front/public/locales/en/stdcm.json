@@ -244,7 +244,9 @@
     "incompatibleConstraints_zero": "Constraint error on the requested path",
     "infraNotLoaded": "Infrastructure is loading",
     "invalidFields": {
+      "destinationDate": "the arrival date at the destination",
       "maxSpeed": "the maximum speed of the consist",
+      "originDate": "the departure date at the origin",
       "totalLength": "the total length of the consist",
       "totalMass": "the total mass of the consist"
     },
