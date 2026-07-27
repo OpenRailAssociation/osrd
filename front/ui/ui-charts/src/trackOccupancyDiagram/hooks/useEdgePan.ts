@@ -14,22 +14,26 @@ type State = {
   dy: number;
 };
 
+type UseEdgePanParams = {
+  enableY?: boolean;
+  hideTimeCaptions?: boolean;
+  themeTimeCaptionsSize: number | undefined;
+  pan: (pos: { dy: number }) => void;
+};
+
 /**
  * Pan when the mouse approaches the edge of the chart. Useful for navigating
  * the chart during drag-and-drop operations.
  */
 const useEdgePan = ({
   enableY,
-  spaceTimeChartProps,
+  hideTimeCaptions,
+  themeTimeCaptionsSize,
   pan,
-}: {
-  enableY?: boolean;
-  spaceTimeChartProps: SpaceTimeChartProps;
-  pan: (pos: { dy: number }) => void;
-}) => {
-  const timeCaptionsSize = spaceTimeChartProps.hideTimeCaptions
+}: UseEdgePanParams) => {
+  const timeCaptionsSize = hideTimeCaptions
     ? 0
-    : (spaceTimeChartProps.theme?.timeCaptionsSize ?? DEFAULT_THEME.timeCaptionsSize);
+    : (themeTimeCaptionsSize ?? DEFAULT_THEME.timeCaptionsSize);
 
   const stateRef = useRef<State>({
     intervalID: null,

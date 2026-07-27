@@ -1,7 +1,7 @@
 import { renderHook } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
-import type { SpaceTimeChartProps, SpaceTimeChartContextType } from '../../../spaceTimeChart';
+import type { SpaceTimeChartContextType } from '../../../spaceTimeChart';
 import useEdgePan, { PAN_INTERVAL_MS } from '../useEdgePan';
 
 describe('useEdgePan', () => {
@@ -10,17 +10,10 @@ describe('useEdgePan', () => {
     y += dy;
   };
 
-  const spaceTimeChartProps: SpaceTimeChartProps = {
-    operationalPoints: [],
-    spaceOrigin: 0,
-    spaceScales: [],
-    timeOrigin: 0,
-    timeScale: 1,
-  };
-
   const initialProps = {
     enableY: true,
-    spaceTimeChartProps,
+    hideTimeCaptions: false,
+    themeTimeCaptionsSize: 20,
     pan,
   };
 
