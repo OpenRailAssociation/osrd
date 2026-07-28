@@ -1,7 +1,7 @@
 import type { PathItemLocation } from 'common/api/osrdEditoastApi';
 import type { PathStep } from 'reducers/osrdconf/types';
 
-export type MarkerInformation = Pick<PathStep, 'id' | 'name' | 'coordinates' | 'metadata'> & {
+export type MarkerInformation = Pick<PathStep, 'key' | 'name' | 'coordinates' | 'metadata'> & {
   pointType: MARKER_TYPE;
   location: PathItemLocation;
   isBackTrack?: boolean;

@@ -7,10 +7,10 @@ const findCorrespondingMargin = (
   stepIndex: number,
   margins: { boundaries: string[]; values: string[] }
 ) => {
-  // The first pathStep will never have its id in boundaries
+  // The first pathStep will never have its key in boundaries
   if (stepIndex === 0) return margins.values[0] === 'none' ? undefined : margins.values[0];
 
-  const marginIndex = margins.boundaries.findIndex((boundaryId) => boundaryId === stepId);
+  const marginIndex = margins.boundaries.findIndex((boundaryKey) => boundaryKey === stepId);
 
   return marginIndex !== -1 ? margins.values[marginIndex + 1] : undefined;
 };
@@ -52,7 +52,7 @@ const computeBasePathStep = (
   }
 
   return {
-    id: key,
+    key,
     name,
     location,
     arrival: arrival ? Duration.parse(arrival) : null,
