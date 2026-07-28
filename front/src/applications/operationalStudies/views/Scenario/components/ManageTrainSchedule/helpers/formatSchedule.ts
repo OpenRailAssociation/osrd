@@ -7,7 +7,7 @@ const formatSchedule = (pathSteps: PathStep[]): TrainSchedule['schedule'] => {
   const schedules = pathSteps.map((step) => {
     if (step?.arrival || step.stopFor) {
       return {
-        at: step.id,
+        at: step.key,
         arrival: step.arrival?.toISOString() ?? undefined,
         reception_signal: step.receptionSignal,
         stop_for: step.stopFor?.toISOString() ?? undefined,
