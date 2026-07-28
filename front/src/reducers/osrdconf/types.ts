@@ -100,7 +100,7 @@ export type OsrdStdcmConfState = OsrdConfState & {
 };
 
 export type PathStep = {
-  id: string;
+  key: string;
   location: PathItemLocation;
   arrival?: Duration | null;
   stopFor?: Duration | null;

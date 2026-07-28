@@ -24,7 +24,7 @@ export const insertViaFromMap = (
 
   const { location: newLocation } = newVia;
   const newStep = {
-    id: newVia.id,
+    key: newVia.key,
     coordinates: newVia.coordinates,
     location: newLocation,
   };
@@ -67,7 +67,7 @@ export function upsertPathStep(statePathSteps: (PathStep | null)[], op: Suggeste
       'theoreticalMargin',
       'stopFor',
     ]),
-    id: uuidV4(),
+    key: uuidV4(),
     location: op.uic
       ? {
           type: 'operational_point_part_reference',
@@ -98,7 +98,7 @@ export function upsertPathStep(statePathSteps: (PathStep | null)[], op: Suggeste
 
     newVia = {
       ...newVia,
-      id: cleanPathSteps[stepIndex].id,
+      key: cleanPathSteps[stepIndex].key,
       location,
     }; // We don't need to change the id of the updated via
     statePathSteps[stepIndex] = newVia;

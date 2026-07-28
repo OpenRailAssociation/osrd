@@ -52,7 +52,7 @@ const computeBasePathStep = (
   }
 
   return {
-    id: key,
+    key: key,
     name,
     location,
     arrival: arrival ? Duration.parse(arrival) : null,

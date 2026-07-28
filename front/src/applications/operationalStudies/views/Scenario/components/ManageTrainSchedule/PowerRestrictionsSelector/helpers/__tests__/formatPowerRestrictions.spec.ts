@@ -22,11 +22,11 @@ describe('formatPowerRestrictions', () => {
     },
   ];
   const pathSteps: PathStep[] = [
-    { id: 'a', positionOnPath: mToMm(140) } as PathStep,
-    { id: 'b', positionOnPath: mToMm(180) } as PathStep,
-    { id: 'c', positionOnPath: mToMm(300) } as PathStep,
-    { id: 'd', positionOnPath: mToMm(650) } as PathStep,
-    { id: 'e', positionOnPath: mToMm(700) } as PathStep,
+    { key: 'a', positionOnPath: mToMm(140) } as PathStep,
+    { key: 'b', positionOnPath: mToMm(180) } as PathStep,
+    { key: 'c', positionOnPath: mToMm(300) } as PathStep,
+    { key: 'd', positionOnPath: mToMm(650) } as PathStep,
+    { key: 'e', positionOnPath: mToMm(700) } as PathStep,
   ];
 
   const customRanges: IntervalItem[] = [
@@ -97,7 +97,7 @@ describe('formatPowerRestrictions', () => {
     expect(() =>
       formatPowerRestrictions(
         powerRestrictions,
-        [{ id: 'a' } as PathStep, ...pathSteps.slice(1)],
+        [{ key: 'a' } as PathStep, ...pathSteps.slice(1)],
         customRanges,
         changePoints,
         pathLength

@@ -24,7 +24,7 @@ const Vias = ({ zoomToFeaturePoint }: ViasProps) => {
     <>
       {vias.map((via, index) => (
         <div
-          key={`${via.id}-${via.positionOnPath}`}
+          key={`${via.key}-${via.positionOnPath}`}
           data-testid="dropped-via-info"
           className={cx('place via', {
             'is-a-stop': via.arrival || via.stopFor,
@@ -35,7 +35,7 @@ const Vias = ({ zoomToFeaturePoint }: ViasProps) => {
           <div className="pl-1 w-100 d-flex align-items-center">
             <div
               className="flex-grow-1"
-              onClick={() => zoomToFeaturePoint(via.coordinates, via.id)}
+              onClick={() => zoomToFeaturePoint(via.coordinates, via.key)}
               role="button"
               tabIndex={0}
             >
