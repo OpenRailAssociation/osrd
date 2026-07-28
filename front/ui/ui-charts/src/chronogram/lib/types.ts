@@ -1,5 +1,4 @@
 import type { ChartEventHandlers, TimeChartContextType } from '../../common/types';
-import type { SpaceTimeChartTheme } from '../../spaceTimeChart';
 
 export type OccupancyBlock = {
   startTime: number;
@@ -31,7 +30,6 @@ export type ChronogramCanvasProps = {
   yOffset?: number;
 
   // Custom styles:
-  theme?: Partial<SpaceTimeChartTheme>;
 } & ChartEventHandlers<ChronogramContextType>;
 
 export type ChronogramProps = {
