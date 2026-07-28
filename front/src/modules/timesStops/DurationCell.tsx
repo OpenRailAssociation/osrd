@@ -38,15 +38,8 @@ const secondsToUnits = (seconds: number): Record<ActiveUnit, string> => {
   };
 };
 
-const parseUnitValue = (val: string) => {
-  if (val.startsWith(' ')) {
-    return Number(val) * 10;
-  }
-  return Number(val);
-};
-
 const unitsToSeconds = (u: Record<ActiveUnit, string>) =>
-  parseUnitValue(u.h) * 3600 + parseUnitValue(u.m) * 60 + parseUnitValue(u.s);
+  Number(u.h) * 3600 + Number(u.m) * 60 + Number(u.s);
 
 const getNextUnit = (u: ActiveUnit) => UNITS[Math.min(UNITS.length - 1, UNITS.indexOf(u) + 1)];
 const getPrevUnit = (u: ActiveUnit) => UNITS[Math.max(0, UNITS.indexOf(u) - 1)];
