@@ -285,13 +285,26 @@ mod tests {
     async fn get_railjson_requires_can_read() {
         let app = test_app!().build();
         let db_pool = app.db_pool();
-        let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
-        let user = app.user("user", "User").create().await;
+        let infra_id = create_empty_infra(&mut db_pool.get_ok()).await.id;
+        let user_reader = app
+            .user("alice", "Alice")
+            .with_infra_grant(infra_id, InfraGrant::Reader)
+            .create()
+            .await;
+        let user_restricted_reader = app
+            .user("bob", "Bob")
+            .with_infra_grant(infra_id, InfraGrant::RestrictedReader)
+            .create()
+            .await;
 
-        app.get(&format!("/infra/{}/railjson", empty_infra.id))
-            .by_user(user.as_ref())
+        app.get(&format!("/infra/{}/railjson", infra_id))
+            .by_user(user_restricted_reader.as_ref())
             .await
             .assert_status_forbidden();
+        app.get(&format!("/infra/{}/railjson", infra_id))
+            .by_user(user_reader.as_ref())
+            .await
+            .assert_status_ok();
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
