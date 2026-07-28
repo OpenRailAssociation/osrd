@@ -346,7 +346,7 @@ const PathStepItem = ({
         <button
           type="button"
           className={cx('path-step-counter', {
-            invalid: isInvalidAndIsEditing,
+            invalid: isInvalidAndIsEditing || isUnknownTrack,
             'is-only-step': isOnlyStep,
             'is-trailing-placeholder': isTrailingPlaceHolder,
             index: isIndexed,
