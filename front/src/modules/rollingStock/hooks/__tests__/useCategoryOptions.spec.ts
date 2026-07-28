@@ -7,20 +7,6 @@ import { useSubCategoryContext } from 'common/SubCategoryContext';
 import type { CategoryOptionWithId } from '../../types';
 import useCategoryOptions from '../useCategoryOptions';
 
-// TODO : use the dedicated helper when it will be available (see #16803)
-const { mockUseTranslation, tMock } = vi.hoisted(() => ({
-  mockUseTranslation: vi.fn(),
-  tMock: vi.fn((key: string) => key),
-}));
-
-vi.mock('react-i18next', () => ({
-  useTranslation: mockUseTranslation,
-}));
-
-mockUseTranslation.mockReturnValue({
-  t: tMock,
-});
-
 vi.mock('common/SubCategoryContext', () => ({
   useSubCategoryContext: vi.fn(),
 }));
@@ -46,19 +32,19 @@ const mockSubCategories: SubCategory[] = [
 
 const placeholder: CategoryOptionWithId = {
   id: 'placeholder',
-  label: tMock('rollingStock.categoriesOptions.choose'),
+  label: 'rollingStock.categoriesOptions.choose',
   category: null,
 };
 
 const options: CategoryOptionWithId[] = [
   {
     id: 'main:REGIONAL_TRAIN',
-    label: tMock('rollingStock.categoriesOptions.REGIONAL_TRAIN'),
+    label: 'rollingStock.categoriesOptions.REGIONAL_TRAIN',
     category: { main_category: 'REGIONAL_TRAIN' },
   },
   {
     id: 'main:FREIGHT_TRAIN',
-    label: tMock('rollingStock.categoriesOptions.FREIGHT_TRAIN'),
+    label: 'rollingStock.categoriesOptions.FREIGHT_TRAIN',
     category: { main_category: 'FREIGHT_TRAIN' },
   },
 ];
