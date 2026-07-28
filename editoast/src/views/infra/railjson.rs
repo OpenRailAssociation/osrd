@@ -1,7 +1,8 @@
-use std::sync::Arc;
-
 use authz::InfraGrant;
+use authz::InfraPrivilege;
+use authz::Subject;
 use authz::v2;
+use authz::v2::Authorizer as _;
 use axum::Extension;
 use axum::extract::Json;
 use axum::extract::Path;
@@ -27,10 +28,9 @@ use crate::authorizers::impossible;
 use crate::error::Result;
 use crate::generated_data::InfraGeneratedData as _;
 use crate::infra_cache::InfraCache;
-use crate::views::AuthenticationExt;
+use crate::views::AuthorizationError;
 use crate::views::infra::InfraApiError;
 use crate::views::infra::InfraIdParam;
-use database::DbConnectionPoolV2;
 use editoast_models::Infra;
 use editoast_models::prelude::*;
 use schemas::primitives::ObjectType;
@@ -48,8 +48,10 @@ use schemas::primitives::ObjectType;
 )]
 pub(in crate::views) async fn get_railjson(
     Path(infra): Path<InfraIdParam>,
-    State(db_pool): State<Arc<DbConnectionPoolV2>>,
-    Extension(auth): AuthenticationExt,
+    State(AppState {
+        db_pool, regulator, ..
+    }): State<AppState>,
+    Extension(authn_state): Extension<authentication::State>,
 ) -> Result<impl IntoResponse> {
     let infra_id = infra.infra_id;
     let infra_meta = Infra::retrieve_or_fail(db_pool.get().await?, infra_id, || {
@@ -57,13 +59,34 @@ pub(in crate::views) async fn get_railjson(
     })
     .await?;
 
-    // Check user privilege on infra
-    auth.check_authorization(async |authorizer| {
-        authorizer
-            .authorize_infra(&authz::Infra(infra_id), authz::InfraPrivilege::CanRead)
-            .await
-    })
-    .await?;
+    if let Some(user) = authn_state.regular_user() {
+        let system_authorizer = SystemAuthorizer {
+            openfga: regulator.openfga(),
+            conn: db_pool.get().await?,
+        };
+        match system_authorizer
+            .authorize(authz::v2::infra_privileges(user, authz::Infra(infra_id)))
+            .await?
+            .access()
+            .await?
+        {
+            Ok(privileges) => {
+                if !privileges.contains(&InfraPrivilege::CanRead) {
+                    return Err(AuthorizationError::Forbidden.into());
+                }
+            }
+            Err(check) => match check {
+                v2::Check::HasInfraPrivilege(..) => {
+                    unreachable!("This check should never fail with a system authorizer")
+                }
+                v2::Check::SubjectExists(Subject::User(u)) if u == user => {
+                    unreachable!("the authenticated user should exist: {user:?}")
+                }
+                v2::Check::InfraExists(infra) => Err(InfraApiError::NotFound { infra_id: *infra })?,
+                _ => impossible!(check),
+            },
+        }
+    }
 
     let futures: Vec<_> = ObjectType::iter()
         .map(|object_type| (object_type, db_pool.get()))
@@ -310,6 +333,22 @@ mod tests {
         let user = app.user("user", "User").create().await;
 
         app.get(&format!("/infra/{}/railjson", empty_infra.id))
+            .by_user(user.as_ref())
+            .await
+            .assert_status_forbidden();
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn get_railson_restricted_viewers_are_forbidden() {
+        let app = test_app!().build();
+        let db_pool = app.db_pool();
+        let infra_id = create_empty_infra(&mut db_pool.get_ok()).await.id;
+        let user = app
+            .user("user", "User")
+            .with_infra_grant(infra_id, InfraGrant::RestrictedReader)
+            .create()
+            .await;
+        app.get(&format!("/infra/{infra_id}/railjson"))
             .by_user(user.as_ref())
             .await
             .assert_status_forbidden();
