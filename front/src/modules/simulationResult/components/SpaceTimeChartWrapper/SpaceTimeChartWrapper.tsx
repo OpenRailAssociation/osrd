@@ -135,7 +135,8 @@ type SpaceTimeChartWrapperBaseProps = {
     waypointId: string,
     trainId: TrainId,
     zone: MovableOccupancyZone,
-    track: Track
+    track: Track,
+    panelSelectionMode: PanelSelectionMode
   ) => void;
   selectedProjectionId: TrainId;
   trainSchedulesWithDetails?: TrainScheduleWithDetails[];
@@ -385,22 +386,19 @@ const SpaceTimeChartWrapper = ({
 
   const hoveredLinking = linkingMode ? hoveredItem?.element : undefined;
 
-  // If we're dealing a unique train or a path_and_schedule exception, use the
-  // ID as-is so that only this single occupancy zone gets dragged. Otherwise,
-  // we're dealing with a compliant occurrence: extract the paced train ID so
-  // that all compliant occurrences get dragged.
+  // If we're dealing with a unique train, or in 'single' mode, only
+  // this single occupancy zone gets dragged. Otherwise ('compliant' or 'all' mode), extract the
+  // paced train ID so that every relevant occurrence gets dragged together.
   const draggingOccupancyZoneBaseTrainId = useMemo(() => {
     if (!draggingOccupancyZoneRef) {
       return null;
     }
     const { trainId } = draggingOccupancyZoneRef;
-    const { exception } = findTrainScheduleAndException(trainSchedulesWithDetails ?? [], trainId);
-    if (isTrainScheduleId(trainId) || exception?.path_and_schedule) {
+    if (isTrainScheduleId(trainId) || panelSelectionMode === 'single') {
       return trainId;
-    } else {
-      return extractTrainScheduleIdFromOccurrenceId(trainId);
     }
-  }, [draggingOccupancyZoneRef]);
+    return extractTrainScheduleIdFromOccurrenceId(trainId);
+  }, [draggingOccupancyZoneRef, panelSelectionMode]);
 
   const isDraggingOccupancyZoneId = useCallback(
     (waypointId: string, trainId: TrainId) => {
@@ -411,21 +409,28 @@ const SpaceTimeChartWrapper = ({
         return false;
       }
 
-      // When dragging a single occurrence, a single occupancy zone is marked
-      // as being dragged
+      // In 'single' mode, a single occupancy zone is marked as being dragged.
       if (isOccurrenceId(draggingOccupancyZoneBaseTrainId)) {
         return trainId === draggingOccupancyZoneBaseTrainId;
       }
 
-      // When dragging a paced train, mark all compliant occupancy zones as
-      // being dragged
       if (extractTrainScheduleIdFromTrainId(trainId) !== draggingOccupancyZoneBaseTrainId) {
         return false;
+      }
+      // 'all' mode drags every occurrence, exceptions included. 'compliant' only drags the
+      // ones still following the model's path.
+      if (panelSelectionMode === 'all') {
+        return true;
       }
       const { exception } = findTrainScheduleAndException(trainSchedulesWithDetails ?? [], trainId);
       return !exception?.path_and_schedule;
     },
-    [draggingOccupancyZoneRef, draggingOccupancyZoneBaseTrainId, trainSchedulesWithDetails]
+    [
+      draggingOccupancyZoneRef,
+      draggingOccupancyZoneBaseTrainId,
+      panelSelectionMode,
+      trainSchedulesWithDetails,
+    ]
   );
 
   const splitPoints = useMemo<SplitPoint[]>(
@@ -579,7 +584,13 @@ const SpaceTimeChartWrapper = ({
     const zone = waypoint.zones!.find(({ pathId }) => pathId === draggingPathId)!;
     const dragOverTrack = waypoint.tracks!.find((tr) => tr.id === dragOverTrackId);
     if (dragOverTrack && zone.trackId !== dragOverTrackId && onOccupancyZoneDrop) {
-      onOccupancyZoneDrop(waypointId, draggingOccupancyZoneBaseTrainId, zone, dragOverTrack);
+      onOccupancyZoneDrop(
+        waypointId,
+        draggingOccupancyZoneBaseTrainId,
+        zone,
+        dragOverTrack,
+        panelSelectionMode
+      );
     }
     setDraggingOccupancyZoneRef(null);
   }, [
@@ -588,6 +599,7 @@ const SpaceTimeChartWrapper = ({
     draggingOccupancyZoneBaseTrainId,
     dragOverTrackId,
     onOccupancyZoneDrop,
+    panelSelectionMode,
   ]);
 
   const isDraggingOccupancyZone = Boolean(draggingOccupancyZoneRef);

@@ -198,6 +198,7 @@ const SimulationResults = ({
     trainSchedulesWithDetails,
     pathOperationalPoints: filteredOperationalPoints,
     deployedWaypoints,
+    timetableId,
   });
 
   const isEtcs = useMemo(
