@@ -12,6 +12,7 @@ function getGrantLabel(userPrivileges: Set<Privilege>): keyof typeof GRANTS_LABE
   if (userPrivileges.has('can_delete')) return 'OWNER';
   if (userPrivileges.has('can_write')) return 'WRITER';
   if (userPrivileges.has('can_read')) return 'READER';
+  if (userPrivileges.has('can_restricted_read')) return 'RESTRICTED_READER';
   return 'NONE';
 }
 
