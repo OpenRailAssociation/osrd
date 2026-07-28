@@ -269,6 +269,7 @@ pub fn get_geometry_layer_table(object_type: &ObjectType) -> Option<&'static str
 
 impl OperationalPointModel {
     /// Retrieve a list of operational points from the database
+    #[tracing::instrument(skip(conn), err)]
     pub async fn retrieve_from_uic(
         conn: &mut DbConnection,
         infra_id: i64,
@@ -297,6 +298,7 @@ impl OperationalPointModel {
             .collect())
     }
 
+    #[tracing::instrument(skip(conn), err)]
     pub async fn retrieve_from_trigrams(
         conn: &mut DbConnection,
         infra_id: i64,
@@ -327,6 +329,7 @@ impl OperationalPointModel {
     ///
     /// Use this instead of [`OperationalPointModel::retrieve_batch_unchecked`]
     /// when all the operational points are known to be in the same infra.
+    #[tracing::instrument(skip(conn), err)]
     pub async fn retrieve_from_ids(
         conn: &mut DbConnection,
         infra_id: i64,
