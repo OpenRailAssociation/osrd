@@ -5,27 +5,35 @@ import { v4 as uuidV4 } from 'uuid';
 
 import { useTimetableContext } from 'applications/operationalStudies/hooks/useTimetableContext';
 import {
-  osrdEditoastApi,
-  type PathAndScheduleChangeGroup,
-  type PathItem,
-  type TrainScheduleExceptionChangeGroups,
-} from 'common/api/osrdEditoastApi';
+  buildOccurrenceExceptionData,
+  updatePacedTrainExceptionsList,
+} from 'applications/operationalStudies/views/Scenario/components/ManageTrainSchedule/helpers/buildPacedTrainException';
+import type { PacedTrainException, PathItem, TrainSchedule } from 'common/api/osrdEditoastApi';
 import { matchPathStepAndOp } from 'modules/pathfinding/utils';
+import type { PanelSelectionMode } from 'modules/simulationResult/components/SpaceTimeChartWrapper/CurveSelectionSidePanel';
 import type {
   MovableOccupancyZone,
   DeployedWaypoint,
 } from 'modules/simulationResult/components/SpaceTimeChartWrapper/helpers/zones';
 import type { ProjectionWaypoint } from 'modules/simulationResult/types';
-import { findTrainScheduleAndException } from 'modules/trainSchedule/helpers/pacedTrain';
-import { storeTrainSchedule } from 'modules/trainSchedule/helpers/updateTrainScheduleHelpers';
-import type {
-  TrainScheduleWithDetails,
-  SimulatedException,
-  SimulationSummary,
-} from 'modules/trainSchedule/types';
+import {
+  computeIndexedOccurrenceStartTime,
+  extractOccurrenceDetailsFromPacedTrain,
+  findTrainScheduleAndException,
+  getOccurrenceTrainName,
+  isPacedTrain,
+  withPacedExceptions,
+} from 'modules/trainSchedule/helpers/pacedTrain';
+import {
+  storeTrainSchedule,
+  syncOccurrenceException,
+  updateExceptions,
+} from 'modules/trainSchedule/helpers/updateTrainScheduleHelpers';
+import type { TrainScheduleWithDetails, SimulationSummary } from 'modules/trainSchedule/types';
 import type { TrainId } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 import { Duration, startTimeToDate } from 'utils/duration';
+import { extractOccurrenceIndexFromOccurrenceId, isOccurrenceId } from 'utils/trainId';
 
 /**
  * Insert or update a path step to go through a specific track.
@@ -107,77 +115,23 @@ export default function useOccupancyZoneDrop({
   trainSchedulesWithDetails,
   pathOperationalPoints,
   deployedWaypoints,
+  timetableId,
 }: {
   trainSchedulesWithDetails: TrainScheduleWithDetails[];
   pathOperationalPoints: ProjectionWaypoint[];
   deployedWaypoints: DeployedWaypoint[];
+  timetableId: number;
 }) {
   const dispatch = useAppDispatch();
   const { trainSchedules, upsertTrainSchedules } = useTimetableContext();
-
-  const [putException] = osrdEditoastApi.endpoints.putTrainScheduleExceptionById.useMutation();
-
-  const updateExceptionPath = useCallback(
-    async (
-      exception: SimulatedException,
-      trainSchedule: TrainScheduleWithDetails,
-      newPath: PathItem[]
-    ) => {
-      const { id, summary: _summary, occurrence_index, disabled, ...changeGroups } = exception;
-
-      // If the exception already has a path_and_schedule change group, update
-      // it. Otherwise create it (copying over the base train schedule's path
-      // and schedule).
-      const pathAndSchedule: PathAndScheduleChangeGroup = changeGroups.path_and_schedule ?? {
-        path: trainSchedule.path,
-        schedule: trainSchedule.schedule ?? [],
-        margins: trainSchedule.margins ?? {
-          boundaries: [],
-          values: [],
-        },
-        power_restrictions: trainSchedule.power_restrictions ?? [],
-      };
-      const updatedChangeGroups: TrainScheduleExceptionChangeGroups = {
-        ...changeGroups,
-        path_and_schedule: {
-          ...pathAndSchedule,
-          path: newPath,
-        },
-      };
-
-      await putException({
-        // TODO: remove this null assertion once exception migration is done
-        id: id!,
-        body: {
-          occurrence_index,
-          disabled: disabled ?? false,
-          change_groups: updatedChangeGroups,
-          train_schedule_id: trainSchedule.id,
-        },
-      }).unwrap();
-
-      const rawTrainSchedule = trainSchedules.get(trainSchedule.id)!;
-      upsertTrainSchedules([
-        {
-          ...rawTrainSchedule,
-          paced: {
-            ...rawTrainSchedule.paced!,
-            exceptions: rawTrainSchedule.paced!.exceptions.map((ex) =>
-              ex.id === id ? { ...ex, change_groups: updatedChangeGroups } : ex
-            ),
-          },
-        },
-      ]);
-    },
-    [putException, trainSchedules]
-  );
 
   return useCallback(
     async (
       waypointId: string,
       trainId: TrainId,
       occupancyZone: MovableOccupancyZone,
-      track: Track
+      track: Track,
+      panelSelectionMode: PanelSelectionMode
     ) => {
       const occupancyZoneStartTime = new Date(occupancyZone.startTime);
 
@@ -206,20 +160,84 @@ export default function useOccupancyZoneDrop({
         track.name!
       );
 
-      if (exception) {
-        await updateExceptionPath(exception, trainSchedule, newPath);
-      } else {
+      if (isOccurrenceId(trainId)) {
+        // Regarding the model: create, update, or delete this occurrence's exception.
         const rawTrainSchedule = trainSchedules.get(trainSchedule.id)!;
-        const updatedTrainSchedule = {
-          ...rawTrainSchedule,
+        if (!isPacedTrain(rawTrainSchedule)) {
+          throw new Error(`Occurrence ID references a non-paced train ${rawTrainSchedule.id}`);
+        }
+        const { paced: _paced, ...occurrenceBaseTrain } = rawTrainSchedule;
+        // Use the existing start_time override if there is one, otherwise compute this
+        // occurrence's own.
+        const occurrenceStartTime = exception?.start_time
+          ? new Date(exception.start_time.value)
+          : computeIndexedOccurrenceStartTime(
+              new Date(rawTrainSchedule.start_time),
+              Duration.parse(rawTrainSchedule.paced.interval),
+              extractOccurrenceIndexFromOccurrenceId(trainId)
+            );
+        const updatedOccurrence: TrainSchedule = {
+          ...extractOccurrenceDetailsFromPacedTrain(occurrenceBaseTrain, exception),
           path: newPath,
+          start_time: occurrenceStartTime.getTime(),
+          train_name: getOccurrenceTrainName(rawTrainSchedule, trainId),
         };
-        await storeTrainSchedule(
+        const {
+          generatedException,
+          existingException: exceptionToSync,
+          occurrenceIndex,
+        } = buildOccurrenceExceptionData(rawTrainSchedule, updatedOccurrence, trainId);
+        const finalException = await syncOccurrenceException(
+          dispatch,
+          generatedException,
+          exceptionToSync,
+          occurrenceIndex,
+          rawTrainSchedule.id,
+          timetableId
+        );
+        const updatedExceptions = updatePacedTrainExceptionsList(
+          rawTrainSchedule.paced.exceptions,
+          finalException,
+          trainId
+        );
+        upsertTrainSchedules([withPacedExceptions(rawTrainSchedule, updatedExceptions)]);
+      } else {
+        // Reassign the track on the model, every compliant occurrence follows it automatically.
+        const rawTrainSchedule = trainSchedules.get(trainSchedule.id)!;
+        const updatedModel = await storeTrainSchedule(
           trainSchedule.id,
-          updatedTrainSchedule,
+          { ...rawTrainSchedule, path: newPath },
           dispatch,
           upsertTrainSchedules
         );
+
+        // 'all' mode also forces every occurrence with its own path_and_schedule exception
+        // onto the new track.
+        if (panelSelectionMode === 'all' && isPacedTrain(rawTrainSchedule)) {
+          const updatedExceptions: PacedTrainException[] = rawTrainSchedule.paced.exceptions.map(
+            (pacedException) =>
+              pacedException.path_and_schedule
+                ? {
+                    ...pacedException,
+                    path_and_schedule: {
+                      ...pacedException.path_and_schedule,
+                      path: upsertPathStepTrack(
+                        pacedException.path_and_schedule.path,
+                        simulationSummary,
+                        operationalPoint,
+                        occupancyZoneStartOffset,
+                        track.name!
+                      ),
+                    },
+                  }
+                : pacedException
+          );
+          const exceptionsToPersist = updatedExceptions.filter((e) => e.path_and_schedule);
+          if (exceptionsToPersist.length) {
+            await updateExceptions(dispatch, exceptionsToPersist, rawTrainSchedule.id);
+            upsertTrainSchedules([withPacedExceptions(updatedModel, updatedExceptions)]);
+          }
+        }
       }
     },
     [
@@ -227,9 +245,9 @@ export default function useOccupancyZoneDrop({
       trainSchedulesWithDetails,
       pathOperationalPoints,
       deployedWaypoints,
+      timetableId,
       dispatch,
       upsertTrainSchedules,
-      updateExceptionPath,
     ]
   );
 }
