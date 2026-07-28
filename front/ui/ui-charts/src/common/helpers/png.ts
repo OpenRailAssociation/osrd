@@ -1,3 +1,5 @@
+import { WHITE_100 } from './colors';
+
 /**
  * This function captures a list of canvas layers into a PNG image, and returns a blob with the
  * PNG data if possible.
@@ -5,7 +7,7 @@
 export default async function getPNGBlob(
   canvases: Record<string, HTMLCanvasElement>,
   layers: readonly string[],
-  backgroundColor = '#fff'
+  backgroundColor = WHITE_100
 ): Promise<Blob> {
   if (!layers.length) throw Error('There must be at least one layer to capture.');
 
