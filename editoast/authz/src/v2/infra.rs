@@ -307,7 +307,7 @@ pub fn infra_privileges(user: User, infra: Infra) -> Protected<HashSet<InfraPriv
     })
     .with_check(Check::HasInfraPrivilege(
         Actor::Issuer,
-        InfraPrivilege::CanRead,
+        InfraPrivilege::CanRestrictedRead,
         infra,
     ))
 }
@@ -902,7 +902,7 @@ mod tests {
     )]
     #[case::infra_privileges(
         infra_privileges(User(1), Infra(1)).checks,
-        &[Check::HasInfraPrivilege(Actor::Issuer, InfraPrivilege::CanRead, Infra(1))]
+        &[Check::HasInfraPrivilege(Actor::Issuer, InfraPrivilege::CanRestrictedRead, Infra(1))]
     )]
     #[case::infra_privileges(
         infra_granted_subjects(Infra(1), InfraGrant::Owner).checks,

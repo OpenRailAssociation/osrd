@@ -181,7 +181,10 @@ pub(in crate::views) async fn search_journeys(
 
     auth.check_authorization(async |authorizer| {
         authorizer
-            .authorize_infra(&authz::Infra(infra_id), authz::InfraPrivilege::CanRead)
+            .authorize_infra(
+                &authz::Infra(infra_id),
+                authz::InfraPrivilege::CanRestrictedRead,
+            )
             .await
     })
     .await?;

@@ -198,7 +198,10 @@ pub(in crate::views) async fn list(
         crate::authentication::State::Authenticated { user, roles } => {
             let authorizer = UserAuthorizer::new(user, roles.clone(), regulator.openfga());
             let authorized_infras = authorizer
-                .authorize(authz::v2::infra_list(user, InfraPrivilege::CanRead))
+                .authorize(authz::v2::infra_list(
+                    user,
+                    InfraPrivilege::CanRestrictedRead,
+                ))
                 .await?
                 .access()
                 .await?
@@ -254,7 +257,10 @@ pub(in crate::views) async fn get(
     // Check user privilege on infra
     auth.check_authorization(async |authorizer| {
         authorizer
-            .authorize_infra(&authz::Infra(infra_id), authz::InfraPrivilege::CanRead)
+            .authorize_infra(
+                &authz::Infra(infra_id),
+                authz::InfraPrivilege::CanRestrictedRead,
+            )
             .await
     })
     .await?;
@@ -477,7 +483,10 @@ pub(in crate::views) async fn get_switch_types(
     // Check user privilege on infra
     auth.check_authorization(async |authorizer| {
         authorizer
-            .authorize_infra(&authz::Infra(infra_id), authz::InfraPrivilege::CanRead)
+            .authorize_infra(
+                &authz::Infra(infra_id),
+                authz::InfraPrivilege::CanRestrictedRead,
+            )
             .await
     })
     .await?;
@@ -528,7 +537,10 @@ pub(in crate::views) async fn get_speed_limit_tags(
     // Check user privilege on infra
     auth.check_authorization(async |authorizer| {
         authorizer
-            .authorize_infra(&authz::Infra(infra_id), authz::InfraPrivilege::CanRead)
+            .authorize_infra(
+                &authz::Infra(infra_id),
+                authz::InfraPrivilege::CanRestrictedRead,
+            )
             .await
     })
     .await?;
@@ -576,7 +588,10 @@ pub(in crate::views) async fn get_voltages(
     // Check user privilege on infra
     auth.check_authorization(async |authorizer| {
         authorizer
-            .authorize_infra(&authz::Infra(infra_id), authz::InfraPrivilege::CanRead)
+            .authorize_infra(
+                &authz::Infra(infra_id),
+                authz::InfraPrivilege::CanRestrictedRead,
+            )
             .await
     })
     .await?;
@@ -741,7 +756,10 @@ pub(in crate::views) async fn match_operational_points(
 ) -> Result<Json<MatchOperationalPointsResponse>> {
     auth.check_authorization(async |authorizer| {
         authorizer
-            .authorize_infra(&authz::Infra(infra_id), authz::InfraPrivilege::CanRead)
+            .authorize_infra(
+                &authz::Infra(infra_id),
+                authz::InfraPrivilege::CanRestrictedRead,
+            )
             .await
     })
     .await?;
@@ -1173,7 +1191,7 @@ pub mod tests {
             let infra_id = create_empty_infra(&mut db_pool.get_ok()).await.id;
             let user = app
                 .user("user", "User")
-                .with_infra_grant(infra_id, InfraGrant::Reader)
+                .with_infra_grant(infra_id, InfraGrant::RestrictedReader)
                 .create()
                 .await;
 
@@ -1190,6 +1208,29 @@ pub mod tests {
                 .by_user(user.as_ref())
                 .await
                 .assert_status_not_found();
+        }
+
+        #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+        async fn get_requires_can_restricted_read() {
+            let app = test_app!().build();
+            let db_pool = app.db_pool();
+            let infra_id = create_empty_infra(&mut db_pool.get_ok()).await.id;
+
+            let user_restricted_reader = app
+                .user("alice", "Alice")
+                .with_infra_grant(infra_id, InfraGrant::RestrictedReader)
+                .create()
+                .await;
+            let user_no_grant = app.user("bob", "Bob").create().await;
+
+            app.get(format!("/infra/{}", infra_id).as_str())
+                .by_user(user_restricted_reader.as_ref())
+                .await
+                .assert_status_ok();
+            app.get(format!("/infra/{}", infra_id).as_str())
+                .by_user(user_no_grant.as_ref())
+                .await
+                .assert_status_forbidden();
         }
     }
 
