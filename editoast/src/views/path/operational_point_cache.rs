@@ -10,6 +10,7 @@ use schemas::train_schedule::OperationalPointReference;
 use schemas::train_schedule::PathItemLocation;
 use std::borrow::Borrow;
 use std::collections::HashMap;
+use std::collections::HashSet;
 use tracing::error;
 
 use crate::error::Result;
@@ -389,26 +390,30 @@ impl OperationalPointCache {
 fn collect_path_item_ids(
     operational_points: &[OperationalPointReference],
 ) -> (Vec<String>, Vec<u32>, Vec<String>) {
-    let mut trigrams: Vec<String> = Vec::new();
-    let mut ops_uic: Vec<u32> = Vec::new();
-    let mut ops_id: Vec<String> = Vec::new();
+    let mut trigrams: HashSet<String> = HashSet::new();
+    let mut ops_uic: HashSet<u32> = HashSet::new();
+    let mut ops_id: HashSet<String> = HashSet::new();
 
     for item in operational_points {
         match item {
             OperationalPointReference::Trigram { trigram, .. } => {
-                trigrams.push(trigram.clone().0);
+                trigrams.insert(trigram.clone().0);
             }
             OperationalPointReference::Uic { uic, .. } => {
-                ops_uic.push(*uic);
+                ops_uic.insert(*uic);
             }
             OperationalPointReference::Id {
                 operational_point, ..
             } => {
-                ops_id.push(operational_point.clone().0);
+                ops_id.insert(operational_point.clone().0);
             }
         }
     }
-    (trigrams, ops_uic, ops_id)
+    (
+        trigrams.into_iter().collect(),
+        ops_uic.into_iter().collect(),
+        ops_id.into_iter().collect(),
+    )
 }
 
 /// Retrieve operational points from operational point uic codes
