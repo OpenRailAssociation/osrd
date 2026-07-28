@@ -345,7 +345,10 @@ pub(in crate::views) async fn simulation_summary(
     // Check user privilege on infra
     auth.check_authorization(async |authorizer| {
         authorizer
-            .authorize_infra(&authz::Infra(infra_id), authz::InfraPrivilege::CanRead)
+            .authorize_infra(
+                &authz::Infra(infra_id),
+                authz::InfraPrivilege::CanRestrictedRead,
+            )
             .await
     })
     .await?;
@@ -618,7 +621,10 @@ pub(in crate::views) async fn get_path(
     // Check user privilege on infra
     auth.check_authorization(async |authorizer| {
         authorizer
-            .authorize_infra(&authz::Infra(infra_id), authz::InfraPrivilege::CanRead)
+            .authorize_infra(
+                &authz::Infra(infra_id),
+                authz::InfraPrivilege::CanRestrictedRead,
+            )
             .await
     })
     .await?;
@@ -744,7 +750,10 @@ pub(in crate::views) async fn simulation(
     // Check user privilege on infra
     auth.check_authorization(async |authorizer| {
         authorizer
-            .authorize_infra(&authz::Infra(infra_id), authz::InfraPrivilege::CanRead)
+            .authorize_infra(
+                &authz::Infra(infra_id),
+                authz::InfraPrivilege::CanRestrictedRead,
+            )
             .await
     })
     .await?;
@@ -878,7 +887,10 @@ pub(in crate::views) async fn etcs_braking_curves(
     // Check user privilege on infra
     auth.check_authorization(async |authorizer| {
         authorizer
-            .authorize_infra(&authz::Infra(infra_id), authz::InfraPrivilege::CanRead)
+            .authorize_infra(
+                &authz::Infra(infra_id),
+                authz::InfraPrivilege::CanRestrictedRead,
+            )
             .await
     })
     .await?;
@@ -1040,7 +1052,10 @@ pub(in crate::views) async fn project_path(
 
     auth.check_authorization(async |authorizer| {
         authorizer
-            .authorize_infra(&authz::Infra(infra_id), authz::InfraPrivilege::CanRead)
+            .authorize_infra(
+                &authz::Infra(infra_id),
+                authz::InfraPrivilege::CanRestrictedRead,
+            )
             .await
     })
     .await?;
@@ -1168,7 +1183,10 @@ pub(in crate::views) async fn project_path_op(
 
     auth.check_authorization(async |authorizer| {
         authorizer
-            .authorize_infra(&authz::Infra(infra_id), authz::InfraPrivilege::CanRead)
+            .authorize_infra(
+                &authz::Infra(infra_id),
+                authz::InfraPrivilege::CanRestrictedRead,
+            )
             .await
     })
     .await?;
@@ -1346,7 +1364,10 @@ pub(in crate::views) async fn occupancy_blocks(
 ) -> Result<Json<HashMap<i64, OccupancyBlocksTrainScheduleResult>>> {
     auth.check_authorization(async |authorizer| {
         authorizer
-            .authorize_infra(&authz::Infra(infra_id), authz::InfraPrivilege::CanRead)
+            .authorize_infra(
+                &authz::Infra(infra_id),
+                authz::InfraPrivilege::CanRestrictedRead,
+            )
             .await
     })
     .await?;
@@ -1510,7 +1531,10 @@ pub(in crate::views) async fn track_occupancy(
 ) -> Result<Json<Vec<TrackSectionOccupancy>>> {
     auth.check_authorization(async |authorizer| {
         authorizer
-            .authorize_infra(&authz::Infra(infra_id), authz::InfraPrivilege::CanRead)
+            .authorize_infra(
+                &authz::Infra(infra_id),
+                authz::InfraPrivilege::CanRestrictedRead,
+            )
             .await
     })
     .await?;

@@ -54,7 +54,10 @@ pub(in crate::views) async fn get_line_bbox(
     // Check user privilege on infra
     auth.check_authorization(async |authorizer| {
         authorizer
-            .authorize_infra(&authz::Infra(infra_id), authz::InfraPrivilege::CanRead)
+            .authorize_infra(
+                &authz::Infra(infra_id),
+                authz::InfraPrivilege::CanRestrictedRead,
+            )
             .await
     })
     .await?;

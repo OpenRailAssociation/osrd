@@ -409,7 +409,7 @@ pub(in crate::views) async fn user_privileges(
                     }
                     Err(Check::HasInfraPrivilege(
                         Actor::Issuer,
-                        InfraPrivilege::CanRead,
+                        InfraPrivilege::CanRestrictedRead,
                         infra,
                     )) => {
                         result
@@ -438,6 +438,7 @@ pub(in crate::views) async fn user_privileges(
         }
         crate::authentication::State::Skip => {
             let privileges = HashSet::from([
+                StandardPrivilege::CanRestrictedRead,
                 StandardPrivilege::CanRead,
                 StandardPrivilege::CanShareRead,
                 StandardPrivilege::CanWrite,
@@ -1143,6 +1144,7 @@ mod tests {
         assert_eq!(
             privileges.remove(&infra).unwrap(),
             HashSet::from([
+                StandardPrivilege::CanRestrictedRead,
                 StandardPrivilege::CanRead,
                 StandardPrivilege::CanShareRead,
                 StandardPrivilege::CanWrite,

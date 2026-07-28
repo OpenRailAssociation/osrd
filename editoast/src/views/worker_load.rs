@@ -92,7 +92,10 @@ pub(in crate::views) async fn worker_load(
     // Check user privilege on infra
     auth.check_authorization(async |authorizer| {
         authorizer
-            .authorize_infra(&authz::Infra(infra_id), authz::InfraPrivilege::CanRead)
+            .authorize_infra(
+                &authz::Infra(infra_id),
+                authz::InfraPrivilege::CanRestrictedRead,
+            )
             .await
     })
     .await?;

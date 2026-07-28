@@ -299,7 +299,10 @@ pub(in crate::views) async fn requirements(
     // Check user privilege on infra
     auth.check_authorization(async |authorizer| {
         authorizer
-            .authorize_infra(&authz::Infra(infra_id), authz::InfraPrivilege::CanRead)
+            .authorize_infra(
+                &authz::Infra(infra_id),
+                authz::InfraPrivilege::CanRestrictedRead,
+            )
             .await
     })
     .await?;
@@ -483,7 +486,10 @@ pub(in crate::views) async fn get_local_track_names(
     // Check user privilege on infra
     auth.check_authorization(async |authorizer| {
         authorizer
-            .authorize_infra(&authz::Infra(infra_id), authz::InfraPrivilege::CanRead)
+            .authorize_infra(
+                &authz::Infra(infra_id),
+                authz::InfraPrivilege::CanRestrictedRead,
+            )
             .await
     })
     .await?;
