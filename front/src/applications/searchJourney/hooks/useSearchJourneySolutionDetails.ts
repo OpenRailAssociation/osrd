@@ -140,7 +140,7 @@ export default function useSearchJourneySolutionDetails(solution?: SearchJourney
           if (!relatedOp?.geo) return [];
           return [
             {
-              id: relatedOp.id,
+              key: relatedOp.id,
               name: relatedOp.name,
               coordinates: relatedOp.geo.coordinates as [number, number],
               pointType: stop.pointType,

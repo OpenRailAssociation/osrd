@@ -106,7 +106,7 @@ const formatPowerRestrictions = (
   changePoints: number[], // in m
   pathLength: number // in m
 ): IntervalItem[] => {
-  const pathStepById = keyBy(pathSteps, 'id');
+  const pathStepById = keyBy(pathSteps, 'key');
   const electrificationChangePoints = sortBy(changePoints, (position) => position);
 
   const results = powerRestrictionRanges.reduce(

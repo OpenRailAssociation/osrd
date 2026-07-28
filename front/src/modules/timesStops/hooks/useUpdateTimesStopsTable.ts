@@ -101,7 +101,7 @@ const useUpdateTimesStopsTable = (
       const updatedPathSteps = updatedPath.map((_, index) =>
         computeBasePathStep(baseTrainInputs, index)
       );
-      const targetedStep = updatedPathSteps.find((step) => step.id === pathStepId);
+      const targetedStep = updatedPathSteps.find((step) => step.key === pathStepId);
 
       if (!targetedStep) return selectedTrain.margins;
 

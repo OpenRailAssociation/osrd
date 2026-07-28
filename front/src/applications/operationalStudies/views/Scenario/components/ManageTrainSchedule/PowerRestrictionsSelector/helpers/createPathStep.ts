@@ -78,7 +78,7 @@ const createPathStep = (
   );
 
   return {
-    id: uuidV4(),
+    key: uuidV4(),
     positionOnPath,
     coordinates,
     location: trackOffset,
@@ -124,7 +124,7 @@ export const createCutAtPathStep = (
     cutAtPosition
   );
   return {
-    id: uuidV4(),
+    key: uuidV4(),
     positionOnPath: cutAtPosition,
     coordinates: coordinatesAtCut,
     isFromPowerRestriction: true,

@@ -633,7 +633,7 @@ const ItineraryModal = ({
     const formattedPathSteps = trainState.pathSteps
       .filter((pathStep): pathStep is PathStep => pathStep !== null)
       .map<PathStepV2>((pathStep) => ({
-        id: pathStep.id,
+        id: pathStep.key,
         location: pathStep.location,
         arrival: pathStep.arrival ?? null,
         stopFor: pathStep.stopFor ?? null,
@@ -712,7 +712,7 @@ const ItineraryModal = ({
         const metadata = metadataById.get(step.id);
 
         const baseStep = {
-          id: step.id,
+          key: step.id,
           location: step.location!,
           arrival: step.arrival,
           stopFor: step.stopFor,
