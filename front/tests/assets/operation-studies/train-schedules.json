@@ -7,7 +7,7 @@
       "start_time": 1729134000000,
       "path": [
         {
-          "key": "id227",
+          "key": "key227",
           "location": {
             "type": "operational_point_part_reference",
             "operational_point": { "uic": 8766, "secondary_code": "BV", "type": "uic" },
@@ -15,7 +15,7 @@
           }
         },
         {
-          "key": "id228",
+          "key": "key228",
           "location": {
             "type": "operational_point_part_reference",
             "operational_point": { "uic": 8755, "secondary_code": "BV", "type": "uic" },
@@ -25,7 +25,7 @@
       ],
       "schedule": [
         {
-          "at": "id228",
+          "at": "key228",
           "arrival": null,
           "stop_for": "P0D",
           "reception_signal": "OPEN"
@@ -55,7 +55,7 @@
       "start_time": 1729134900000,
       "path": [
         {
-          "key": "id477",
+          "key": "key477",
           "location": {
             "type": "operational_point_part_reference",
             "operational_point": { "uic": 8722, "secondary_code": "BV", "type": "uic" },
@@ -63,11 +63,11 @@
           }
         },
         {
-          "key": "id3522",
+          "key": "key3522",
           "location": { "type": "track_offset", "track": "TA1", "offset": 1424000 }
         },
         {
-          "key": "id498",
+          "key": "key498",
           "location": {
             "type": "operational_point_part_reference",
             "operational_point": { "uic": 8744, "secondary_code": "BV", "type": "uic" },
@@ -75,7 +75,7 @@
           }
         },
         {
-          "key": "id478",
+          "key": "key478",
           "location": {
             "type": "operational_point_part_reference",
             "operational_point": { "uic": 8788, "secondary_code": "BV", "type": "uic" },
@@ -85,18 +85,18 @@
       ],
       "schedule": [
         {
-          "at": "id498",
+          "at": "key498",
           "reception_signal": "STOP",
           "stop_for": "PT2M"
         },
         {
-          "at": "id478",
+          "at": "key478",
           "reception_signal": "OPEN",
           "stop_for": "P0D"
         }
       ],
       "margins": {
-        "boundaries": ["id478"],
+        "boundaries": ["key478"],
         "values": ["5%", "0%"]
       },
       "initial_speed": 33.333333333333336,
@@ -123,7 +123,7 @@
           "location": { "type": "track_offset", "track": "TB0", "offset": 342000 }
         },
         {
-          "key": "id765",
+          "key": "key765",
           "location": {
             "type": "operational_point_part_reference",
             "operational_point": { "uic": 8744, "secondary_code": "BV", "type": "uic" },
@@ -131,7 +131,7 @@
           }
         },
         {
-          "key": "id745",
+          "key": "key745",
           "location": {
             "type": "operational_point_part_reference",
             "operational_point": { "uic": 8777, "secondary_code": "BV", "type": "uic" },
@@ -141,13 +141,13 @@
       ],
       "schedule": [
         {
-          "at": "id765",
+          "at": "key765",
           "arrival": "PT123S",
           "stop_for": "PT120S",
           "reception_signal": "SHORT_SLIP_STOP"
         },
         {
-          "at": "id745",
+          "at": "key745",
           "arrival": null,
           "stop_for": "P0D",
           "reception_signal": "OPEN"
@@ -177,7 +177,7 @@
       "start_time": 1729157759000,
       "path": [
         {
-          "key": "id2854",
+          "key": "key2854",
           "location": {
             "type": "operational_point_part_reference",
             "operational_point": { "uic": 8733, "secondary_code": "BV", "type": "uic" },
@@ -185,7 +185,7 @@
           }
         },
         {
-          "key": "id2855",
+          "key": "key2855",
           "location": {
             "type": "operational_point_part_reference",
             "operational_point": { "uic": 8777, "secondary_code": "BV", "type": "uic" },
@@ -195,7 +195,7 @@
       ],
       "schedule": [
         {
-          "at": "id2855",
+          "at": "key2855",
           "arrival": "PT4M57S",
           "reception_signal": "OPEN",
           "stop_for": "P0D"
@@ -226,25 +226,25 @@
       "start_time": 1729160163000,
       "path": [
         {
-          "key": "id130",
+          "key": "key130",
           "location": { "type": "track_offset", "track": "TX1", "offset": 421000 }
         },
         {
-          "key": "id219",
+          "key": "key219",
           "location": { "type": "track_offset", "track": "TA6", "offset": 9199000 }
         },
         {
-          "key": "id3822",
+          "key": "key3822",
           "location": { "type": "track_offset", "track": "TD0", "offset": 10809000 }
         },
         {
-          "key": "id188",
+          "key": "key188",
           "location": { "type": "track_offset", "track": "TF1", "offset": 2486000 }
         }
       ],
       "schedule": [
         {
-          "at": "id188",
+          "at": "key188",
           "arrival": null,
           "stop_for": "P0D",
           "reception_signal": "OPEN"
@@ -272,21 +272,21 @@
       "start_time": 1729168200000,
       "path": [
         {
-          "key": "id1073",
+          "key": "key1073",
           "location": { "type": "track_offset", "track": "TA6", "offset": 6609000 }
         },
         {
-          "key": "id1136",
+          "key": "key1136",
           "location": { "type": "track_offset", "track": "TE3", "offset": 1247000 }
         },
         {
-          "key": "id1109",
+          "key": "key1109",
           "location": { "type": "track_offset", "track": "TH1", "offset": 3761000 }
         }
       ],
       "schedule": [
         {
-          "at": "id1109",
+          "at": "key1109",
           "reception_signal": "OPEN",
           "stop_for": "P0D"
         }
@@ -320,7 +320,7 @@
           }
         },
         {
-          "key": "id2659",
+          "key": "key2659",
           "location": {
             "type": "operational_point_part_reference",
             "operational_point": { "uic": 8744, "secondary_code": "BV", "type": "uic" },
@@ -328,11 +328,11 @@
           }
         },
         {
-          "key": "id2492",
+          "key": "key2492",
           "location": { "type": "track_offset", "track": "TD0", "offset": 11080000 }
         },
         {
-          "key": "id2570",
+          "key": "key2570",
           "location": {
             "type": "operational_point_part_reference",
             "operational_point": { "uic": 8733, "secondary_code": "BV", "type": "uic" },
@@ -350,12 +350,12 @@
       ],
       "schedule": [
         {
-          "at": "id2659",
+          "at": "key2659",
           "reception_signal": "SHORT_SLIP_STOP",
           "stop_for": "PT2M4S"
         },
         {
-          "at": "id2570",
+          "at": "key2570",
           "arrival": "PT2H55M54S",
           "reception_signal": "OPEN",
           "stop_for": "PT10M"
@@ -390,7 +390,7 @@
       "start_time": 1728968400000,
       "path": [
         {
-          "key": "id744",
+          "key": "key744",
           "location": {
             "type": "operational_point_part_reference",
             "operational_point": { "uic": 8733, "secondary_code": "BV", "type": "uic" },
@@ -398,7 +398,7 @@
           }
         },
         {
-          "key": "id765",
+          "key": "key765",
           "location": {
             "type": "operational_point_part_reference",
             "operational_point": { "uic": 8744, "secondary_code": "BV", "type": "uic" },
@@ -406,7 +406,7 @@
           }
         },
         {
-          "key": "id745",
+          "key": "key745",
           "location": {
             "type": "operational_point_part_reference",
             "operational_point": { "uic": 8777, "secondary_code": "BV", "type": "uic" },
@@ -416,13 +416,13 @@
       ],
       "schedule": [
         {
-          "at": "id765",
+          "at": "key765",
           "arrival": "PT123S",
           "stop_for": "PT120S",
           "reception_signal": "SHORT_SLIP_STOP"
         },
         {
-          "at": "id745",
+          "at": "key745",
           "arrival": null,
           "stop_for": "P0D",
           "reception_signal": "OPEN"
@@ -467,21 +467,21 @@
       "start_time": 1728985543000,
       "path": [
         {
-          "key": "id3807",
+          "key": "key3807",
           "location": { "type": "track_offset", "track": "TA6", "offset": 8058000 }
         },
         {
-          "key": "id3822",
+          "key": "key3822",
           "location": { "type": "track_offset", "track": "TD0", "offset": 10809000 }
         },
         {
-          "key": "id3855",
+          "key": "key3855",
           "location": { "type": "track_offset", "track": "TG2", "offset": 1686000 }
         }
       ],
       "schedule": [
         {
-          "at": "id3855",
+          "at": "key3855",
           "arrival": null,
           "stop_for": "P0D",
           "reception_signal": "OPEN"
@@ -601,7 +601,7 @@
           }
         },
         {
-          "key": "id2492",
+          "key": "key2492",
           "location": { "type": "track_offset", "track": "TD0", "offset": 11080000 }
         },
         {
@@ -611,7 +611,7 @@
       ],
       "schedule": [
         {
-          "at": "id2492",
+          "at": "key2492",
           "arrival": null,
           "stop_for": "PT300S",
           "reception_signal": "STOP"
@@ -656,11 +656,11 @@
             "path_and_schedule": {
               "path": [
                 {
-                  "key": "id2458",
+                  "key": "key2458",
                   "location": { "type": "track_offset", "track": "TG4", "offset": 1549000 }
                 },
                 {
-                  "key": "id2570",
+                  "key": "key2570",
                   "location": {
                     "type": "operational_point_part_reference",
                     "operational_point": { "uic": 8733, "secondary_code": "BV", "type": "uic" },
@@ -708,11 +708,11 @@
             "path_and_schedule": {
               "path": [
                 {
-                  "key": "id2458",
+                  "key": "key2458",
                   "location": { "type": "track_offset", "track": "TG4", "offset": 1549000 }
                 },
                 {
-                  "key": "id2659",
+                  "key": "key2659",
                   "location": {
                     "type": "operational_point_part_reference",
                     "operational_point": { "uic": 8744, "secondary_code": "BV", "type": "uic" },
@@ -720,11 +720,11 @@
                   }
                 },
                 {
-                  "key": "id2492",
+                  "key": "key2492",
                   "location": { "type": "track_offset", "track": "TD0", "offset": 11080000 }
                 },
                 {
-                  "key": "id2570",
+                  "key": "key2570",
                   "location": {
                     "type": "operational_point_part_reference",
                     "operational_point": { "uic": 8733, "secondary_code": "BV", "type": "uic" },
@@ -742,13 +742,13 @@
               ],
               "schedule": [
                 {
-                  "at": "id2659",
+                  "at": "key2659",
                   "arrival": null,
                   "stop_for": "PT124S",
                   "reception_signal": "SHORT_SLIP_STOP"
                 },
                 {
-                  "at": "id2570",
+                  "at": "key2570",
                   "arrival": "PT10554S",
                   "stop_for": "PT600S",
                   "reception_signal": "OPEN"
