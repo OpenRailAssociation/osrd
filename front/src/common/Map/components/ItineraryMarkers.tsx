@@ -12,7 +12,7 @@ import type { PathItemLocation, TrackSection } from 'common/api/osrdEditoastApi'
 import type { SuggestedOP } from 'modules/trainSchedule/types';
 import type { PathStep } from 'reducers/osrdconf/types';
 
-export type MarkerInformation = Pick<PathStep, 'id' | 'name' | 'coordinates' | 'metadata'> & {
+export type MarkerInformation = Pick<PathStep, 'key' | 'name' | 'coordinates' | 'metadata'> & {
   pointType: MARKER_TYPE;
   location: PathItemLocation;
   isBackTrack?: boolean;
@@ -75,7 +75,7 @@ const extractMarkerInformation = (
       if (!pathStep.coordinates) return null;
 
       const matchingOp = suggestedOP
-        ? suggestedOP.find((op) => op.pathStepId === pathStep.id)
+        ? suggestedOP.find((op) => op.pathStepId === pathStep.key)
         : undefined;
 
       const images = MARKER_IMAGES;
