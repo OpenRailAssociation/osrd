@@ -45,7 +45,7 @@ impl OperationalPointCache {
     /// how they were initially queried. This makes the cache API consistent:
     /// an operational point can be retrieved using any of its identifiers,
     /// not just the one used to build the cache.
-    #[tracing::instrument(skip(conn), err)]
+    #[tracing::instrument(skip(conn, path_items), err)]
     pub async fn load_path_items<L: Borrow<PathItemLocation> + std::fmt::Debug + Sync>(
         mut conn: DbConnection,
         infra_id: i64,
