@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 
 import cx from 'classnames';
 
@@ -12,7 +12,6 @@ import { TimeCaptions } from '../../common/layers/TimeCaptions';
 import TimeGraduations from '../../common/layers/TimeGraduations';
 import type { MouseContextType, PickingElement, Point } from '../../common/types';
 import { DEFAULT_THEME } from '../../spaceTimeChart/lib/consts';
-import { validateTheme } from '../../spaceTimeChart/lib/theme';
 import type { DataPoint } from '../../spaceTimeChart/lib/types';
 import { ChronogramContext } from '../lib/context';
 import type { ChronogramContextType, ChronogramCanvasProps } from '../lib/types';
@@ -25,7 +24,6 @@ export const ChronogramCanvas = (props: ChronogramCanvasProps) => {
     timeScale,
     xOffset = 0,
     yOffset = 0,
-    theme,
     onPan,
     onZoom,
     onClick, // TODO: the 3 last handlers are custom and need to be extracted but are not used for now
@@ -39,7 +37,6 @@ export const ChronogramCanvas = (props: ChronogramCanvasProps) => {
 
   const [root, setRoot] = useState<HTMLDivElement | null>(null);
   const [canvasesRoot, setCanvasesRoot] = useState<HTMLDivElement | null>(null);
-  const fullTheme = useMemo(() => ({ ...DEFAULT_THEME, ...theme }), [theme]);
   const { width, height } = useSize(root);
 
   const fingerprint = useMemo(
@@ -98,11 +95,11 @@ export const ChronogramCanvas = (props: ChronogramCanvasProps) => {
       timeScale,
       timePixelOffset: xOffset,
       yPixelOffset: yOffset,
-      theme: fullTheme,
-      captionSize: fullTheme.dateCaptionsSize + fullTheme.timeCaptionsSize,
+      theme: DEFAULT_THEME,
+      captionSize: DEFAULT_THEME.timeCaptionsSize,
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fingerprint, pickingState, fullTheme]);
+  }, [fingerprint, pickingState]);
 
   const mouseState = useMouseTracking(root);
   const { position, down, isHover } = mouseState;
@@ -122,17 +119,12 @@ export const ChronogramCanvas = (props: ChronogramCanvasProps) => {
   // Handle interactions:
   useMouseInteractions(root, mouseContext, { onPan, onZoom }, contextState);
 
-  // Check theme validity:
-  useEffect(() => {
-    validateTheme(fullTheme);
-  }, [fullTheme]);
-
   return (
     <div
       {...attr}
       ref={setRoot}
       className={cx('relative h-full', attr.className)}
-      style={{ background: fullTheme.background }}
+      style={{ background: DEFAULT_THEME.background }}
     >
       <div ref={setCanvasesRoot} className="absolute inset-0">
         <ChronogramContext.Provider value={contextState}>
