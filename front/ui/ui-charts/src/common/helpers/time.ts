@@ -1,3 +1,4 @@
+import { MINUTE } from '../consts';
 import type { TimeToPixel, PixelToTime } from '../types';
 
 /**
@@ -17,7 +18,7 @@ export function computeVisibleTimeMarkers<T extends object = { level: number }>(
   formatter: (level: number, i: number) => T = (level: number) => ({ level }) as T
 ): (T & { time: number })[] {
   const result: Record<number, T & { time: number }> = {};
-  const minTLocalOffset = new Date(minT).getTimezoneOffset() * 60 * 1000;
+  const minTLocalOffset = new Date(minT).getTimezoneOffset() * MINUTE;
 
   timeRanges.forEach((range, i) => {
     const gridlinesLevel = gridlinesLevels[i];

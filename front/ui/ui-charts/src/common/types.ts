@@ -3,7 +3,7 @@ import { type HTMLProps } from 'react';
 import type { PathLevel, SpaceTimeChartTheme } from '../spaceTimeChart';
 import type { DataPoint, Handler, PointToData, DataToPoint } from '../spaceTimeChart/lib/types';
 import type { LAYERS, PICKING_LAYERS } from './consts';
-import { type drawingMode } from './hooks/useCanvas';
+import { type CANVASMODE } from './consts';
 
 export type BaseChartContextType = {
   fingerprint: string;
@@ -73,8 +73,8 @@ export type PickingDrawingFunction<T> = (
 
 export type DrawingFunctionHandler<T> = (
   arg:
-    | { type: drawingMode.PICKING; layer: PickingLayerType; fn: PickingDrawingFunction<T> }
-    | { type: drawingMode.RENDERING; layer: LayerType; fn: DrawingFunction<T> }
+    | { type: CANVASMODE.PICKING; layer: PickingLayerType; fn: PickingDrawingFunction<T> }
+    | { type: CANVASMODE.RENDERING; layer: LayerType; fn: DrawingFunction<T> }
 ) => void;
 
 export type CanvasContextType<T> = {
