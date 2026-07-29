@@ -1,0 +1,51 @@
+---
+source: editoast_derive/src/view_error.rs
+---
+// Source
+// -----------------------------------------------------------------------------
+
+#[view_error(status = NOT_FOUND)]
+struct Tuple(String, u32);
+
+// Macro expansion
+// -----------------------------------------------------------------------------
+
+impl crate::views::error::ViewError for Tuple {
+    const LABEL: &'static str = "Tuple";
+    fn status(&self) -> axum::http::StatusCode {
+        match self {
+            Self(_0, _1) => axum::http::StatusCode::NOT_FOUND,
+        }
+    }
+    fn sub_label(&self) -> Option<&'static str> {
+        None
+    }
+    fn context(self) -> std::collections::HashMap<String, serde_json::Value> {
+        match self {
+            Self(_0, _1) => std::collections::HashMap::from([]),
+        }
+    }
+    fn responses() -> Vec<crate::views::error::OpenApiResponse> {
+        Vec::from([
+            crate::views::error::OpenApiResponse {
+                label: None,
+                message_template: None,
+                status: axum::http::StatusCode::NOT_FOUND,
+                context: Vec::from([]),
+            },
+        ])
+    }
+}
+impl utoipa::IntoResponses for Tuple {
+    fn responses() -> std::collections::BTreeMap<
+        String,
+        utoipa::openapi::RefOr<utoipa::openapi::response::Response>,
+    > {
+        <Self as crate::views::error::ViewError>::utoipa_responses().into()
+    }
+}
+impl axum::response::IntoResponse for Tuple {
+    fn into_response(self) -> axum::response::Response {
+        <Self as crate::views::error::ViewError>::into_response(self)
+    }
+}

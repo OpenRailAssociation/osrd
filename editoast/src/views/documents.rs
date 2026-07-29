@@ -25,18 +25,21 @@ use editoast_models::prelude::*;
 pub(in crate::views) enum DocumentErrors {
     #[error("Document '{document_key}' not found")]
     #[editoast_error(status = 404)]
+    #[view_error(status = NOT_FOUND, context)]
     NotFound { document_key: i64 },
     #[error(transparent)]
     #[editoast_error(status = 500)]
+    #[view_error(status = INTERNAL_SERVER_ERROR)]
     Database(#[from] editoast_models::Error),
     #[error(transparent)]
     #[editoast_error(status = 503)]
+    #[view_error(status = SERVICE_UNAVAILABLE)]
     DatabaseUnavailable(#[from] database::DatabasePoolError),
     #[error(transparent)]
     #[editoast_error(status = 403)]
+    #[view_error(status = FORBIDDEN)]
     Authorization(#[from] AuthorizationError),
 }
-
 // impl crate::views::error::ViewError for DocumentErrors {
 //     const LABEL: &'static str = "DocumentsErrors";
 

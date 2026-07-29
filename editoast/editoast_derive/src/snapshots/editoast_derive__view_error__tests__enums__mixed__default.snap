@@ -1,0 +1,91 @@
+---
+source: editoast_derive/src/view_error.rs
+---
+// Source
+// -----------------------------------------------------------------------------
+
+#[view_error]
+enum Mixed {
+    Unit,
+    NewType(String),
+    Tuple(String, u32),
+    Rich { cause: String, fix: String, incident_id: u64 },
+}
+
+// Macro expansion
+// -----------------------------------------------------------------------------
+
+impl crate::views::error::ViewError for Mixed {
+    const LABEL: &'static str = "Mixed";
+    fn status(&self) -> axum::http::StatusCode {
+        match self {
+            Self::Unit => axum::http::StatusCode::INTERNAL_SERVER_ERROR,
+            Self::NewType(_0) => axum::http::StatusCode::INTERNAL_SERVER_ERROR,
+            Self::Tuple(_0, _1) => axum::http::StatusCode::INTERNAL_SERVER_ERROR,
+            Self::Rich { cause: _cause, fix: _fix, incident_id: _incident_id } => {
+                axum::http::StatusCode::INTERNAL_SERVER_ERROR
+            }
+        }
+    }
+    fn sub_label(&self) -> Option<&'static str> {
+        match self {
+            Self::Unit => Some("Unit"),
+            Self::NewType(_0) => Some("NewType"),
+            Self::Tuple(_0, _1) => Some("Tuple"),
+            Self::Rich { cause: _cause, fix: _fix, incident_id: _incident_id } => {
+                Some("Rich")
+            }
+        }
+    }
+    fn context(self) -> std::collections::HashMap<String, serde_json::Value> {
+        match self {
+            Self::Unit => std::collections::HashMap::from([]),
+            Self::NewType(_0) => std::collections::HashMap::from([]),
+            Self::Tuple(_0, _1) => std::collections::HashMap::from([]),
+            Self::Rich { cause: _cause, fix: _fix, incident_id: _incident_id } => {
+                std::collections::HashMap::from([])
+            }
+        }
+    }
+    fn responses() -> Vec<crate::views::error::OpenApiResponse> {
+        Vec::from([
+            crate::views::error::OpenApiResponse {
+                label: Some("Unit"),
+                message_template: None,
+                status: axum::http::StatusCode::INTERNAL_SERVER_ERROR,
+                context: Vec::from([]),
+            },
+            crate::views::error::OpenApiResponse {
+                label: Some("NewType"),
+                message_template: None,
+                status: axum::http::StatusCode::INTERNAL_SERVER_ERROR,
+                context: Vec::from([]),
+            },
+            crate::views::error::OpenApiResponse {
+                label: Some("Tuple"),
+                message_template: None,
+                status: axum::http::StatusCode::INTERNAL_SERVER_ERROR,
+                context: Vec::from([]),
+            },
+            crate::views::error::OpenApiResponse {
+                label: Some("Rich"),
+                message_template: None,
+                status: axum::http::StatusCode::INTERNAL_SERVER_ERROR,
+                context: Vec::from([]),
+            },
+        ])
+    }
+}
+impl utoipa::IntoResponses for Mixed {
+    fn responses() -> std::collections::BTreeMap<
+        String,
+        utoipa::openapi::RefOr<utoipa::openapi::response::Response>,
+    > {
+        <Self as crate::views::error::ViewError>::utoipa_responses().into()
+    }
+}
+impl axum::response::IntoResponse for Mixed {
+    fn into_response(self) -> axum::response::Response {
+        <Self as crate::views::error::ViewError>::into_response(self)
+    }
+}

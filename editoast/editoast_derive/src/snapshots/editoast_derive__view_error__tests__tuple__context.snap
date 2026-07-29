@@ -1,0 +1,73 @@
+---
+source: editoast_derive/src/view_error.rs
+---
+// Source
+// -----------------------------------------------------------------------------
+
+#[view_error(context)]
+struct Tuple(String, u32);
+
+// Macro expansion
+// -----------------------------------------------------------------------------
+
+impl crate::views::error::ViewError for Tuple {
+    const LABEL: &'static str = "Tuple";
+    fn status(&self) -> axum::http::StatusCode {
+        match self {
+            Self(_0, _1) => axum::http::StatusCode::INTERNAL_SERVER_ERROR,
+        }
+    }
+    fn sub_label(&self) -> Option<&'static str> {
+        None
+    }
+    fn context(self) -> std::collections::HashMap<String, serde_json::Value> {
+        match self {
+            Self(_0, _1) => {
+                std::collections::HashMap::from([
+                    (
+                        "0".to_owned(),
+                        serde_json::to_value(_0)
+                            .expect("failed to serialize context entry 0"),
+                    ),
+                    (
+                        "1".to_owned(),
+                        serde_json::to_value(_1)
+                            .expect("failed to serialize context entry 1"),
+                    ),
+                ])
+            }
+        }
+    }
+    fn responses() -> Vec<crate::views::error::OpenApiResponse> {
+        Vec::from([
+            crate::views::error::OpenApiResponse {
+                label: None,
+                message_template: None,
+                status: axum::http::StatusCode::INTERNAL_SERVER_ERROR,
+                context: Vec::from([
+                    crate::views::error::ContextEntry {
+                        key: "0",
+                        schema: <String as utoipa::PartialSchema>::schema(),
+                    },
+                    crate::views::error::ContextEntry {
+                        key: "1",
+                        schema: <u32 as utoipa::PartialSchema>::schema(),
+                    },
+                ]),
+            },
+        ])
+    }
+}
+impl utoipa::IntoResponses for Tuple {
+    fn responses() -> std::collections::BTreeMap<
+        String,
+        utoipa::openapi::RefOr<utoipa::openapi::response::Response>,
+    > {
+        <Self as crate::views::error::ViewError>::utoipa_responses().into()
+    }
+}
+impl axum::response::IntoResponse for Tuple {
+    fn into_response(self) -> axum::response::Response {
+        <Self as crate::views::error::ViewError>::into_response(self)
+    }
+}
