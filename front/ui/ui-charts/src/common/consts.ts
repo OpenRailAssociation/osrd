@@ -24,3 +24,10 @@ export enum CANVASMODE {
   RENDERING = 'rendering'
 }
 
+
+// ========== STYLE CONSTANTS ==========
+
+
+export const FONT_SIZE = 10;
+export const FONT = 'IBM Plex Mono'
+
