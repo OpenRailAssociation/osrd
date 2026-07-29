@@ -1,4 +1,5 @@
-import { BLACK_10 } from '../../../../common/helpers/colors';
+import chroma from 'chroma-js';
+import { BLACK_10, WHITE_100 } from '../../../../common/helpers/colors';
 import type {
   DrawFunctionParams,
   SpeedLimitTagsLayerDrawFunctionParams,
@@ -10,7 +11,6 @@ import {
   LINEAR_LAYERS_BACKGROUND_COLOR,
   LINEAR_LAYERS_HEIGHTS,
   MARGINS,
-  WHITE,
 } from '../../const';
 import {
   clearCanvas,
@@ -141,7 +141,7 @@ export const drawSpeedLimitTags = ({
             iconYPosition + ICON_OFFSET,
             ICON_WIDTH,
             ICON_HEIGHT,
-            WHITE.hex()
+            chroma(WHITE_100).hex()
           );
       } else {
         ctx.fillStyle = 'white';

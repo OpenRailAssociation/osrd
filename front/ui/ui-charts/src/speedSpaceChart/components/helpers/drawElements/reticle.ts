@@ -1,3 +1,4 @@
+import chroma from 'chroma-js';
 import {
   type DrawFunctionParams,
   type EtcsBrakingCurves,
@@ -6,7 +7,7 @@ import {
   type EtcsSpeedValue,
   type LayerData,
 } from '../../../types';
-import { WHITE, BLACK, MARGINS } from '../../const';
+import { MARGINS } from '../../const';
 import {
   clearCanvas,
   binarySearch,
@@ -17,6 +18,7 @@ import {
   getCursorPosition,
   getSnappedStop,
 } from '../../utils';
+import { BLACK_100, WHITE_100 } from '../../../../common/helpers/colors';
 
 const {
   MARGIN_LEFT,
@@ -258,11 +260,11 @@ export const drawCursor = ({ ctx, width, height, store }: DrawFunctionParams) =>
 
   // DRAWING
   ctx.font = 'normal 12px IBM Plex Sans';
-  ctx.fillStyle = BLACK.hex();
+  ctx.fillStyle = chroma(BLACK_100).hex();
 
   // V & H lines
   ctx.beginPath();
-  ctx.strokeStyle = BLACK.alpha(0.4).hex();
+  ctx.strokeStyle = chroma(BLACK_100).alpha(0.4).hex();
   ctx.lineWidth = 0.5;
   ctx.moveTo(reticleX, baseReticleY);
   ctx.lineTo(reticleX, height - MARGIN_BOTTOM);
@@ -278,7 +280,7 @@ export const drawCursor = ({ ctx, width, height, store }: DrawFunctionParams) =>
   // Crosshair borders
   ctx.beginPath();
   ctx.lineWidth = 3;
-  ctx.strokeStyle = WHITE.hex();
+  ctx.strokeStyle = chroma(WHITE_100).hex();
   ctx.lineCap = 'round';
   ctx.moveTo(reticleX - RETICLE_LINE, reticleY);
   ctx.lineTo(reticleX + RETICLE_LINE, reticleY);
@@ -289,7 +291,7 @@ export const drawCursor = ({ ctx, width, height, store }: DrawFunctionParams) =>
   // Crosshair insides
   ctx.beginPath();
   ctx.lineWidth = 1;
-  ctx.strokeStyle = BLACK.hex();
+  ctx.strokeStyle = chroma(BLACK_100).hex();
   ctx.moveTo(reticleX - RETICLE_LINE, reticleY);
   ctx.lineTo(reticleX + RETICLE_LINE, reticleY);
   ctx.moveTo(reticleX, reticleY - RETICLE_LINE);
@@ -299,7 +301,7 @@ export const drawCursor = ({ ctx, width, height, store }: DrawFunctionParams) =>
   // lines along the axis
   // horizontal
   ctx.beginPath();
-  ctx.strokeStyle = BLACK.hex();
+  ctx.strokeStyle = chroma(BLACK_100).hex();
   ctx.lineCap = 'butt';
   ctx.lineWidth = 1;
   ctx.moveTo(MARGIN_LEFT, reticleY);

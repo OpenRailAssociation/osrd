@@ -1,5 +1,7 @@
+import chroma from 'chroma-js';
+import { ERROR_30, ERROR_60, WARNING_30 } from '../../../../common/helpers/colors';
 import type { DrawFunctionParams } from '../../../types';
-import { ERROR_30, ERROR_60, MARGINS, WARNING_30 } from '../../const';
+import { MARGINS } from '../../const';
 import {
   clearCanvas,
   maxPositionValue,
@@ -41,14 +43,14 @@ export const drawSpeedLimits = ({ ctx, width, height, store }: DrawFunctionParam
     // Draw vertical line joining 2 speed limits
     if (previousSpeedY !== null) {
       ctx.beginPath();
-      ctx.strokeStyle = ERROR_30.alpha(0.5).hex();
+      ctx.strokeStyle = chroma(ERROR_30).alpha(0.5).hex();
       ctx.lineWidth = 0.5;
       ctx.moveTo(previousBoundaryX, previousSpeedY);
       ctx.lineTo(previousBoundaryX, speedY);
       ctx.stroke();
     }
 
-    const speedColor = isTemporary ? WARNING_30 : ERROR_60;
+    const speedColor = isTemporary ? chroma(WARNING_30) : chroma(ERROR_60);
 
     // Draw gradient
     const gradient = ctx.createLinearGradient(0, speedY, 0, speedY - GRADIENT_HEIGHT);

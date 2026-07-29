@@ -1,13 +1,15 @@
+import chroma from 'chroma-js';
+import { BLACK_100, GREY_50, GREY_80, SKY_700 } from '../../../../common/helpers/colors';
 import type { DrawFunctionParams } from '../../../types';
-import { BLACK, GREY_50, GREY_80, LIGHT_BLUE, MARGINS } from '../../const';
-import {
-  clearCanvas,
-  positionToPosX,
-  maxPositionValue,
-  getDisplayedStops,
-  getSnappedStop,
-} from '../../utils';
-
+import { MARGINS } from '../../const';
+  import {
+    clearCanvas,
+    positionToPosX,
+    maxPositionValue,
+    getDisplayedStops,
+    getSnappedStop,
+  } from '../../utils';
+  
 const { MARGIN_LEFT, MARGIN_RIGHT, MARGIN_TOP, MARGIN_BOTTOM } = MARGINS;
 const STEP_HEIGHT = 6;
 const STEP_WIDTH = 1;
@@ -29,7 +31,7 @@ export const drawSteps = ({ ctx, width, height, store }: DrawFunctionParams) => 
   ctx.save();
   ctx.translate(leftOffset, 0);
 
-  ctx.strokeStyle = LIGHT_BLUE.alpha(0.5).hex();
+  ctx.strokeStyle = chroma(SKY_700).alpha(0.5).hex();
   ctx.lineWidth = 1;
   ctx.lineCap = 'round';
   ctx.setLineDash([1, 6]);
@@ -45,8 +47,8 @@ export const drawSteps = ({ ctx, width, height, store }: DrawFunctionParams) => 
 
   // Step rectangles
   ctx.lineWidth = 2;
-  ctx.fillStyle = GREY_50.hex();
-  ctx.strokeStyle = GREY_50.hex();
+  ctx.fillStyle = chroma(GREY_50).hex();
+  ctx.strokeStyle = chroma(GREY_50).hex();
   ctx.setLineDash([]);
 
   const snappedStop = cursor.x ? getSnappedStop(cursor.x, width, store) : null;
@@ -109,9 +111,9 @@ export const drawSteps = ({ ctx, width, height, store }: DrawFunctionParams) => 
       prevSteps.some((step) => step.position.start === position.start) ||
       nextSteps.some((step) => step.position.start === position.start)
     ) {
-      ctx.fillStyle = BLACK.hex();
+      ctx.fillStyle = chroma(BLACK_100).hex();
     } else {
-      ctx.fillStyle = GREY_80.alpha(0.2).hex();
+      ctx.fillStyle = chroma(GREY_80).alpha(0.2).hex();
     }
 
     ctx.font = 'normal 12px IBM Plex Sans';

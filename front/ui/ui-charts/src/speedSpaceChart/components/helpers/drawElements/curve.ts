@@ -1,11 +1,9 @@
+import chroma from 'chroma-js';
+import { SKY_700, SKY_900, WHITE_100 } from '../../../../common/helpers/colors';
 import type { DrawFunctionParams, EtcsBrakingCurveType, LayerData } from '../../../types';
 import {
-  BASE_SPEED_COLOR,
-  BASE_SPEED_FILL_ALPHA,
-  ECO_SPEED_COLOR,
   SPEEDS_LINEWIDTH,
   MARGINS,
-  WHITE,
   ETCS_COLOR_DICTIONARY,
   ETCS_LINEWIDTH,
   ETCS_ALPHA_DICTIONARY,
@@ -19,6 +17,10 @@ import {
 } from '../../utils';
 
 const { CURVE_MARGIN_TOP, CURVE_MARGIN_SIDES } = MARGINS;
+
+const BASE_SPEED_COLOR = chroma(SKY_700);
+const BASE_SPEED_FILL_ALPHA = 0.15;
+const ECO_SPEED_COLOR = chroma(SKY_900);
 
 const computeCurvePoints = (
   canvasConfig: { width: number; height: number },
@@ -91,7 +93,7 @@ export const drawCurve = ({ ctx, width, height, store }: DrawFunctionParams) => 
 
   // Fill eco speed curve.
   ctx.beginPath();
-  ctx.fillStyle = WHITE.hex();
+  ctx.fillStyle = chroma(WHITE_100).hex();
   ctx.globalCompositeOperation = 'destination-out';
   ecoCurvePoints.forEach(({ x, y }) => {
     ctx.lineTo(x, y);

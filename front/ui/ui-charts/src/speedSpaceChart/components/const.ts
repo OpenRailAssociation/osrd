@@ -9,6 +9,7 @@ import {
   type EtcsLayersDisplay,
   type Store,
 } from '../types';
+import { BLUE_700, CYAN_400, YELLOW_400 } from '../../common/helpers/colors';
 
 export const SLOPE_FILL_COLOR = '#CFDDCE';
 
@@ -100,38 +101,18 @@ export const ETCS_CURVE_SELECTION: Record<
   guidance: EtcsBrakingCurveType.GUI,
 };
 
-// Colors
-
-export const BLACK = chroma(0, 0, 0);
-export const ERROR_30 = chroma(255, 104, 104);
-export const ERROR_60 = chroma(217, 28, 28);
-export const GREY_50 = chroma(121, 118, 113);
-export const GREY_80 = chroma(49, 46, 43);
-export const LIGHT_BLUE = chroma(33, 112, 185);
-export const WARNING_30 = chroma(234, 167, 43);
-export const WHITE = chroma(255, 255, 255);
-export const BASE_SPEED_COLOR = chroma(17, 101, 180);
-export const ECO_SPEED_COLOR = chroma(7, 69, 128);
-const IND_COLOR = chroma(3, 222, 255);
-const PS_COLOR = chroma(0, 87, 218);
-const GUI_COLOR = chroma(255, 192, 3);
-const IND_ALPHA = 0.3;
-const PS_ALPHA = 0.24;
-const GUI_ALPHA = 0.4;
-export const BASE_SPEED_FILL_ALPHA = 0.15;
-
 // Etcs color dictionary
 export const ETCS_COLOR_DICTIONARY: EtcsColorDictionary = {
-  [EtcsBrakingCurveType.IND]: IND_COLOR,
-  [EtcsBrakingCurveType.PS]: PS_COLOR,
-  [EtcsBrakingCurveType.GUI]: GUI_COLOR,
+  [EtcsBrakingCurveType.IND]: chroma(CYAN_400),
+  [EtcsBrakingCurveType.PS]: chroma(BLUE_700),
+  [EtcsBrakingCurveType.GUI]: chroma(YELLOW_400),
 };
 
 // Etcs color transparency dictionary
 export const ETCS_ALPHA_DICTIONARY: EtcsAlphaDictionary = {
-  [EtcsBrakingCurveType.IND]: IND_ALPHA,
-  [EtcsBrakingCurveType.PS]: PS_ALPHA,
-  [EtcsBrakingCurveType.GUI]: GUI_ALPHA,
+  [EtcsBrakingCurveType.IND]: 0.3,
+  [EtcsBrakingCurveType.PS]: 0.24,
+  [EtcsBrakingCurveType.GUI]: 0.4,
 };
 
 /**
