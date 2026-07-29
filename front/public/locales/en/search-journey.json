@@ -1,7 +1,20 @@
 {
   "appName": "Capacity Need Announcement",
+  "consist": {
+    "title": "Consist"
+  },
+  "destination": {
+    "title": "Destination"
+  },
   "noConfigurationFound": {
     "text": "Unable to retrieve the search journey environment (infra, timetables). Please try again later.",
     "title": "No configuration found"
+  },
+  "origin": {
+    "title": "Origin"
+  },
+  "trainPath": {
+    "ch": "CH",
+    "ci": "CI"
   }
 }
