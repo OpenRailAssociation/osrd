@@ -66,6 +66,8 @@ pub fn project_effective_grant(
 
 #[cfg(test)]
 mod tests {
+    use std::collections::HashSet;
+
     use crate::User;
     use crate::authz_client;
     use crate::model::Project;
@@ -243,5 +245,30 @@ mod tests {
 
         assert_eq!(user_grant(2).await, Some(ProjectGrant::Owner));
         assert_eq!(group_grant(2).await, Some(ProjectGrant::Owner));
+    }
+
+    #[rstest::rstest]
+    #[case::project_direct_grant(
+        project_direct_grant(Subject::user(1), Project(1)).checks,
+        &[
+            Check::SubjectExists(Subject::user(1)),
+            Check::ProjectExists(Project(1)),
+        ]
+    )]
+    #[case::project_effective_grant(
+        project_effective_grant(Subject::user(1), Project(1)).checks,
+        &[
+            Check::SubjectExists(Subject::user(1)),
+            Check::ProjectExists(Project(1)),
+        ]
+    )]
+    #[tokio::test]
+    async fn protected_contains_expected_checks(
+        #[case] protected_checks: HashSet<Check>,
+        #[case] expected_checks: &[Check],
+    ) {
+        // Make sure that each public protected op contains its expected list of checks
+        let expected_checks = expected_checks.iter().copied().collect::<HashSet<_>>();
+        assert_eq!(expected_checks, protected_checks);
     }
 }
