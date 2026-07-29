@@ -7,16 +7,24 @@ const INDICES_TO_COLORS: Record<number, string> = {};
 
 // COLORS DEFINITIONS:
 export const BLACK_100 = 'rgb(0, 0, 0)';
-export const BLACK_ALPHA_25 = 'rgba(0, 0, 0, 0.25)';
+export const BLACK_25 = 'rgba(0, 0, 0, 0.25)';
+export const BLACK_5 = 'rgb(0, 0, 0, 0.5)';
 
 export const GREY_90 = 'rgb(31, 27, 23)';
 export const GREY_50 = 'rgb(121, 118, 113)';
 export const GREY_30 = 'rgb(182, 178, 175)';
+export const GREY_10 = '#EDEDED';
 
 export const RED_100 = 'rgb(221, 34, 34)';
 
 export const WHITE_100 = 'rgb(255, 255, 255)';
-export const WHITE_ALPHA_75 = 'rgba(255, 255, 255, 0.75)';
+export const WHITE_75 = 'rgba(255, 255, 255, 0.75)';
+
+export const SKY_700 = 'rgb(33, 112, 185)';
+
+export const AMBIANT_A10 = 'rgb(239, 243, 245)';
+export const ERROR_30 = 'rgb(255, 104, 104)';
+export const ERROR_60 = 'rgb(217, 28, 28)';
 
 /**
  * This function returns a unique hex color corresponding to the given index. The colors are
