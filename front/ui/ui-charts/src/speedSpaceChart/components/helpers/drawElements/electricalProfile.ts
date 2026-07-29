@@ -1,4 +1,5 @@
-import { BLACK_10, BLACK_20, WHITE_100 } from '../../../../common/helpers/colors';
+import { FONT_SANS } from '../../../../common/consts';
+import { BLACK_10, BLACK_100, BLACK_20, STONE_900, WHITE_100 } from '../../../../common/helpers/colors';
 import type { DrawFunctionParams } from '../../../types';
 import { LINEAR_LAYERS_BACKGROUND_COLOR, LINEAR_LAYERS_HEIGHTS, MARGINS } from '../../const';
 import {
@@ -55,7 +56,7 @@ export const drawElectricalProfile = ({ ctx, width, height, store }: DrawFunctio
     const profileWidth = xEnd - xStart;
 
     if (data.value.electricalProfile === 'neutral') {
-      ctx.fillStyle = '#1F1B17';
+      ctx.fillStyle = STONE_900;
       ctx.fillRect(xStart, topRect + 28, profileWidth, 9);
       ctx.clearRect(xStart, topRect + 31, profileWidth, 3);
     } else {
@@ -105,14 +106,14 @@ export const drawElectricalProfile = ({ ctx, width, height, store }: DrawFunctio
 
           // Draw profile name
 
-          ctx.fillStyle = '#000';
-          ctx.font = '600 14px IBM Plex Sans';
+          ctx.fillStyle = BLACK_100;
+          ctx.font = `600 14px ${FONT_SANS}`;
           ctx.textAlign = 'center';
           ctx.fillText(`${electricalProfile}`, xStart + profileWidth / 2, topLayer / 2);
 
           // Draw begin and end position
           ctx.fillStyle = 'rgb(49, 46, 43)';
-          ctx.font = '400 14px IBM Plex Sans';
+          ctx.font = `400 14px ${FONT_SANS}`;
 
           ctx.textAlign = 'right';
           ctx.fillText(
