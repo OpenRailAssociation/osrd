@@ -11,7 +11,7 @@ import {
 } from '../../common/helpers/colors';
 import { useDraw } from '../../common/hooks/useCanvas';
 import type { TimeChartContextType, DrawingFunction } from '../../common/types';
-import { CHRONOGRAM_HEADER_HEIGHT, LEVEL_CROSSING_ITEM_HEIGHT } from '../lib/const';
+import { LEVEL_CROSSING_ITEM_HEIGHT, CHRONOGRAM_HEADER_HEIGHT } from "../../common/consts";
 import { ChronogramContext } from '../lib/context';
 import type { OccupancyBlock } from '../lib/types';
 import { formatDuration } from '../utils/format';
