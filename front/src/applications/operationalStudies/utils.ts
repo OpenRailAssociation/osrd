@@ -198,14 +198,11 @@ export const matchOpRefAndWaypoint = (
  * - The last OP in the list is the last path item specified by the user.
  * - TODO: it doesn't order ops not at origin/destination, find a clean way to handle this case
  */
-export const sortPathOperationalPoints = (
-  ops: CoreOperationalPointOnPath[],
-  path: PathItem[]
-): CoreOperationalPointOnPath[] =>
+export const sortPathOperationalPoints = (ops: PathWaypoint[], path: PathItem[]): PathWaypoint[] =>
   ops.toSorted((a, b) => {
     if (a.position !== b.position) return a.position - b.position;
-    const aPathIndex = path.findIndex((pathItem) => matchOpRefAndWaypoint(pathItem.location, a));
-    const bPathIndex = path.findIndex((pathItem) => matchOpRefAndWaypoint(pathItem.location, b));
+    const aPathIndex = path.findIndex((pathItem) => pathItem.id === a.pathItemId);
+    const bPathIndex = path.findIndex((pathItem) => pathItem.id === b.pathItemId);
     const lastIndex = path.length - 1;
     const aIsOrigin = aPathIndex === 0;
     const bIsOrigin = bPathIndex === 0;
@@ -261,11 +258,15 @@ export const preparePathPropertiesData = (
     };
   });
 
+  const orderedOperationalPoints = sortPathOperationalPoints(
+    formattedOperationalPoints,
+    trainSchedulePath
+  );
   const waypointsWithTrackOffsetPathSteps = upsertTrackOffsetPathItemsInWaypoints(
     'path',
     trainSchedulePath,
     path_item_positions,
-    formattedOperationalPoints,
+    orderedOperationalPoints,
     t
   );
   // Apply max weight on path steps so they are prioritized in the SDD
