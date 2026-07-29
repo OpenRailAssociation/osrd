@@ -968,6 +968,9 @@ enum EditionError {
 
 #[cfg(test)]
 pub mod tests {
+    use authz::InfraGrant;
+    use authz::Role;
+    use authz::identity::User;
     use pretty_assertions::assert_eq;
 
     use super::*;
@@ -977,29 +980,42 @@ pub mod tests {
     use crate::views::infra::errors::query_errors;
     use crate::views::test_app;
     use crate::views::test_app::TestApp;
+    use crate::views::test_app::TestRequestExt as _;
     use editoast_models::infra::ObjectQueryable;
 
-    async fn setup_split_track_test() -> (TestApp, Infra) {
-        let app = test_app!().skip_authz().build();
+    async fn setup_split_track_test() -> (TestApp, Infra, User) {
+        let app = test_app!().build();
         let db_pool = app.db_pool();
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
+        let authorized_user = app
+            .user("user", "User")
+            .with_infra_grant(small_infra.id, InfraGrant::Writer)
+            .with_roles([Role::OperationalStudies])
+            .create()
+            .await;
 
         app.post(format!("/infra/refresh/?infras={}&force=true", small_infra.id).as_str())
+            .by_user(authorized_user.as_ref())
             .await
             .assert_status_ok();
 
-        (app, small_infra)
+        (app, small_infra, authorized_user)
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn split_track_section_should_return_404_with_bad_infra() {
-        // Init
-        let app = test_app!().skip_authz().build();
+        let app = test_app!().build();
+        let user = app
+            .user("user", "User")
+            .with_roles([Role::OperationalStudies])
+            .create()
+            .await;
 
         // Make a call with a bad infra ID
 
         // Check that we receive a 404
         app.post("/infra/123456789/split_track_section/")
+            .by_user(user.as_ref())
             .json(&json!({
                 "track": String::from("INVALID-ID"),
                 "offset": 1,
@@ -1009,16 +1025,67 @@ pub mod tests {
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn split_track_section_should_return_404_with_bad_id() {
-        // Init
-        let app = test_app!().skip_authz().build();
+    async fn edition_endpoints_require_writer_grant_and_operational_studies() {
+        let app = test_app!().build();
         let db_pool = app.db_pool();
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
+        let user_missing_writer = app
+            .user("alice", "Alice")
+            .with_infra_grant(small_infra.id, InfraGrant::Reader)
+            .with_roles([Role::OperationalStudies])
+            .create()
+            .await;
+        let user_missing_operational_studies = app
+            .user("bob", "Bob")
+            .with_infra_grant(small_infra.id, InfraGrant::Writer)
+            .create()
+            .await;
+
+        app.post(format!("/infra/{}/", small_infra.id).as_str())
+            .by_user(user_missing_writer.as_ref())
+            .json(&Vec::<Operation>::new())
+            .await
+            .assert_status_forbidden();
+        app.post(format!("/infra/{}/", small_infra.id).as_str())
+            .by_user(user_missing_operational_studies.as_ref())
+            .json(&Vec::<Operation>::new())
+            .await
+            .assert_status_forbidden();
+
+        let split_payload = json!({
+            "track": "TA0",
+            "offset": 1,
+        });
+        app.post(format!("/infra/{}/split_track_section", small_infra.id).as_str())
+            .by_user(user_missing_writer.as_ref())
+            .json(&split_payload)
+            .await
+            .assert_status_forbidden();
+        app.post(format!("/infra/{}/split_track_section", small_infra.id).as_str())
+            .by_user(user_missing_operational_studies.as_ref())
+            .json(&split_payload)
+            .await
+            .assert_status_forbidden();
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn split_track_section_should_return_404_with_bad_id() {
+        // Init
+        let app = test_app!().build();
+        let db_pool = app.db_pool();
+        let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
+        let user = app
+            .user("user", "User")
+            .with_infra_grant(small_infra.id, InfraGrant::Writer)
+            .with_roles([Role::OperationalStudies])
+            .create()
+            .await;
 
         // Make a call with a bad ID
 
         // Check that we receive a 404
         app.post(format!("/infra/{}/split_track_section", small_infra.id).as_str())
+            .by_user(user.as_ref())
             .json(&json!({
                 "track":"INVALID-ID",
                 "offset": 1,
@@ -1030,14 +1097,21 @@ pub mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn split_track_section_should_fail_with_bad_distance() {
         // Init
-        let app = test_app!().skip_authz().build();
+        let app = test_app!().build();
         let db_pool = app.db_pool();
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
+        let user = app
+            .user("user", "User")
+            .with_infra_grant(small_infra.id, InfraGrant::Writer)
+            .with_roles([Role::OperationalStudies])
+            .create()
+            .await;
 
         // Make a call with a bad distance
 
         // Check that we receive an error
         app.post(format!("/infra/{}/split_track_section", small_infra.id).as_str())
+            .by_user(user.as_ref())
             .json(&json!({
                 "track": "TA0",
                 "offset": 5000000,
@@ -1051,7 +1125,7 @@ pub mod tests {
     #[case("TD1", 15500000)]
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn split_track_section_should_work(#[case] track: &str, #[case] offset: u64) {
-        let (app, small_infra) = setup_split_track_test().await;
+        let (app, small_infra, user) = setup_split_track_test().await;
         let db_pool = app.db_pool();
 
         // Get infra errors
@@ -1060,6 +1134,7 @@ pub mod tests {
         // Make a call to split the track section
         let res: Vec<String> = app
             .post(format!("/infra/{}/split_track_section", small_infra.id).as_str())
+            .by_user(user.as_ref())
             .json(&json!({
                 "track": track,
                 "offset": offset,
@@ -1087,7 +1162,7 @@ pub mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn infra_edition_updates_modification_date() {
-        let app = test_app!().skip_authz().build();
+        let app = test_app!().build();
         let db_pool = app.db_pool();
         let mut small_infra = create_small_infra(&mut db_pool.get_ok()).await;
         let mut infra_cache = InfraCache::load(&mut db_pool.get_ok(), &small_infra)
@@ -1129,7 +1204,7 @@ pub mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn apply_edit_transaction_should_work() {
         // Init
-        let app = test_app!().skip_authz().build();
+        let app = test_app!().build();
         let db_pool = app.db_pool();
         let conn = &mut db_pool.get().await.unwrap();
 
@@ -1172,7 +1247,7 @@ pub mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn apply_edit_transaction_should_rollback() {
         // Init
-        let app = test_app!().skip_authz().build();
+        let app = test_app!().build();
         let db_pool = app.db_pool();
         let conn = &mut db_pool.get().await.unwrap();
         let mut small_infra = create_small_infra(conn).await;
@@ -1236,11 +1311,12 @@ pub mod tests {
         #[case] expected_position: f64,
         #[case] expected_track_index: usize, // 0 for left, 1 for right
     ) {
-        let (app, small_infra) = setup_split_track_test().await;
+        let (app, small_infra, user) = setup_split_track_test().await;
         let db_pool = app.db_pool();
 
         let res: Vec<String> = app
             .post(format!("/infra/{}/split_track_section", small_infra.id).as_str())
+            .by_user(user.as_ref())
             .json(&json!({
                 "track": "TD0",
                 "offset": offset,
@@ -1277,11 +1353,12 @@ pub mod tests {
         #[case] expected_position: f64,
         #[case] expected_track_index: usize, // 0 for left, 1 for right
     ) {
-        let (app, small_infra) = setup_split_track_test().await;
+        let (app, small_infra, user) = setup_split_track_test().await;
         let db_pool = app.db_pool();
 
         let res: Vec<String> = app
             .post(format!("/infra/{}/split_track_section", small_infra.id).as_str())
+            .by_user(user.as_ref())
             .json(&json!({
                 "track": "TD0",
                 "offset": 15_000_000,
@@ -1312,11 +1389,12 @@ pub mod tests {
         #[case] expected_position: f64,
         #[case] expected_track_index: usize, // 0 for left, 1 for right
     ) {
-        let (app, small_infra) = setup_split_track_test().await;
+        let (app, small_infra, user) = setup_split_track_test().await;
         let db_pool = app.db_pool();
 
         let res: Vec<String> = app
             .post(format!("/infra/{}/split_track_section", small_infra.id).as_str())
+            .by_user(user.as_ref())
             .json(&json!({
                 "track": track,
                 "offset": offset,
@@ -1345,11 +1423,12 @@ pub mod tests {
         #[case] expected_position: f64,
         #[case] expected_track_index: usize, // 0 for left, 1 for right
     ) {
-        let (app, small_infra) = setup_split_track_test().await;
+        let (app, small_infra, user) = setup_split_track_test().await;
         let db_pool = app.db_pool();
 
         let res: Vec<String> = app
             .post(format!("/infra/{}/split_track_section", small_infra.id).as_str())
+            .by_user(user.as_ref())
             .json(&json!({
                 "track": "TA6",
                 "offset": 2_000_000,
@@ -1379,11 +1458,12 @@ pub mod tests {
         #[case] expected_position: f64,
         #[case] expected_track_index: usize, // 0 for left, 1 for right
     ) {
-        let (app, small_infra) = setup_split_track_test().await;
+        let (app, small_infra, user) = setup_split_track_test().await;
         let db_pool = app.db_pool();
 
         let res: Vec<String> = app
             .post(format!("/infra/{}/split_track_section", small_infra.id).as_str())
+            .by_user(user.as_ref())
             .json(&json!({
                 "track": track,
                 "offset": offset,

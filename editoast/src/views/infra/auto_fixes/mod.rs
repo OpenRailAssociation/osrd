@@ -346,6 +346,7 @@ pub enum AutoFixesEditoastError {
 
 #[cfg(test)]
 mod tests {
+    use authz::InfraGrant;
     use pretty_assertions::assert_eq;
     use rstest::rstest;
     use schemas::infra::BufferStop;
@@ -367,6 +368,7 @@ mod tests {
     use crate::views::infra::errors::query_errors;
     use crate::views::test_app;
     use crate::views::test_app::TestApp;
+    use crate::views::test_app::TestRequestExt as _;
     use schemas::infra::ApplicableDirectionsTrackRange;
     use schemas::infra::Detector;
     use schemas::infra::Electrification;
@@ -396,13 +398,19 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn test_no_fix() {
-        let app = test_app!().skip_authz().build();
+        let app = test_app!().build();
         let db_pool = app.db_pool();
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
         let small_infra_id = small_infra.id;
+        let user = app
+            .user("user", "User")
+            .with_infra_grant(small_infra_id, InfraGrant::Reader)
+            .create()
+            .await;
 
         let operations: Vec<Operation> = app
             .auto_fixes_request(small_infra_id)
+            .by_user(user.as_ref())
             .await
             .assert_status_ok()
             .json();
@@ -411,12 +419,30 @@ mod tests {
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn list_auto_fixes_requires_can_read() {
+        let app = test_app!().build();
+        let db_pool = app.db_pool();
+        let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
+        let user = app.user("user", "User").create().await;
+
+        app.auto_fixes_request(small_infra.id)
+            .by_user(user.as_ref())
+            .await
+            .assert_status_forbidden();
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn test_fix_invalid_ref_punctual_objects() {
         // GIVEN
-        let app = test_app!().skip_authz().build();
+        let app = test_app!().build();
         let db_pool = app.db_pool();
         let mut small_infra = create_small_infra(&mut db_pool.get_ok()).await;
         let small_infra_id = small_infra.id;
+        let user = app
+            .user("user", "User")
+            .with_infra_grant(small_infra_id, InfraGrant::Reader)
+            .create()
+            .await;
         let mut infra_cache = InfraCache::load(&mut db_pool.get_ok(), &small_infra)
             .await
             .expect("Failed to get infra cache");
@@ -460,6 +486,7 @@ mod tests {
         // WHEN
         let operations: Vec<Operation> = app
             .auto_fixes_request(small_infra_id)
+            .by_user(user.as_ref())
             .await
             .assert_status_ok()
             .json();
@@ -488,10 +515,15 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn test_fix_invalid_ref_route_entry_exit() {
-        let app = test_app!().skip_authz().build();
+        let app = test_app!().build();
         let db_pool = app.db_pool();
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
         let small_infra_id = small_infra.id;
+        let user = app
+            .user("user", "User")
+            .with_infra_grant(small_infra_id, InfraGrant::Reader)
+            .create()
+            .await;
         // Remove a buffer stop
         let deletion = Operation::Delete(DeleteOperation {
             obj_id: "buffer_stop.4".to_string(),
@@ -504,6 +536,7 @@ mod tests {
 
         let operations: Vec<Operation> = app
             .auto_fixes_request(small_infra_id)
+            .by_user(user.as_ref())
             .await
             .assert_status_ok()
             .json();
@@ -716,10 +749,15 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn invalid_switch_ports() {
-        let app = test_app!().skip_authz().build();
+        let app = test_app!().build();
         let db_pool = app.db_pool();
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
         let small_infra_id = small_infra.id;
+        let user = app
+            .user("user", "User")
+            .with_infra_grant(small_infra_id, InfraGrant::Reader)
+            .create()
+            .await;
 
         let ports = HashMap::from([
             ("WRONG".into(), TrackEndpoint::new("TA1", Endpoint::End)),
@@ -742,6 +780,7 @@ mod tests {
 
         let operations: Vec<Operation> = app
             .auto_fixes_request(small_infra_id)
+            .by_user(user.as_ref())
             .await
             .assert_status_ok()
             .json();
@@ -754,10 +793,15 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn odd_buffer_stop_location() {
-        let app = test_app!().skip_authz().build();
+        let app = test_app!().build();
         let db_pool = app.db_pool();
         let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
         let empty_infra_id = empty_infra.id;
+        let user = app
+            .user("user", "User")
+            .with_infra_grant(empty_infra_id, InfraGrant::Reader)
+            .create()
+            .await;
 
         // Create an odd buffer stops (to a track endpoint linked by a switch)
         let track: InfraObject = TrackSection {
@@ -795,6 +839,7 @@ mod tests {
 
         let operations: Vec<Operation> = app
             .auto_fixes_request(empty_infra_id)
+            .by_user(user.as_ref())
             .await
             .assert_status_ok()
             .json();
@@ -807,10 +852,15 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn empty_object() {
-        let app = test_app!().skip_authz().build();
+        let app = test_app!().build();
         let db_pool = app.db_pool();
         let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
         let empty_infra_id = empty_infra.id;
+        let user = app
+            .user("user", "User")
+            .with_infra_grant(empty_infra_id, InfraGrant::Reader)
+            .create()
+            .await;
 
         let electrification: InfraObject = Electrification::default().into();
         let operational_point = OperationalPoint::default().into();
@@ -830,6 +880,7 @@ mod tests {
 
         let operations: Vec<Operation> = app
             .auto_fixes_request(empty_infra_id)
+            .by_user(user.as_ref())
             .await
             .assert_status_ok()
             .json();
@@ -849,10 +900,15 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn out_of_range_must_be_ignored() {
-        let app = test_app!().skip_authz().build();
+        let app = test_app!().build();
         let db_pool = app.db_pool();
         let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
         let empty_infra_id = empty_infra.id;
+        let user = app
+            .user("user", "User")
+            .with_infra_grant(empty_infra_id, InfraGrant::Reader)
+            .create()
+            .await;
 
         let track: InfraObject = TrackSection {
             id: "test_track".into(),
@@ -896,6 +952,7 @@ mod tests {
 
         let operations: Vec<Operation> = app
             .auto_fixes_request(empty_infra_id)
+            .by_user(user.as_ref())
             .await
             .assert_status_ok()
             .json();
@@ -914,10 +971,15 @@ mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     #[case(1250., 5)]
     async fn out_of_range_must_be_deleted(#[case] pos: f64, #[case] error_count: usize) {
-        let app = test_app!().skip_authz().build();
+        let app = test_app!().build();
         let db_pool = app.db_pool();
         let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
         let empty_infra_id = empty_infra.id;
+        let user = app
+            .user("user", "User")
+            .with_infra_grant(empty_infra_id, InfraGrant::Reader)
+            .create()
+            .await;
 
         let track: InfraObject = TrackSection {
             id: "test_track".into(),
@@ -959,6 +1021,7 @@ mod tests {
 
         let operations: Vec<Operation> = app
             .auto_fixes_request(empty_infra_id)
+            .by_user(user.as_ref())
             .await
             .assert_status_ok()
             .json();
@@ -977,10 +1040,15 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn out_of_range_must_be_updated() {
-        let app = test_app!().skip_authz().build();
+        let app = test_app!().build();
         let db_pool = app.db_pool();
         let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
         let empty_infra_id = empty_infra.id;
+        let user = app
+            .user("user", "User")
+            .with_infra_grant(empty_infra_id, InfraGrant::Reader)
+            .create()
+            .await;
 
         let track: InfraObject = TrackSection {
             id: "test_track".into(),
@@ -1017,6 +1085,7 @@ mod tests {
 
         let operations: Vec<Operation> = app
             .auto_fixes_request(empty_infra_id)
+            .by_user(user.as_ref())
             .await
             .assert_status_ok()
             .json();
@@ -1035,10 +1104,15 @@ mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn missing_track_extremity_buffer_stop_fix() {
         // GIVEN
-        let app = test_app!().skip_authz().build();
+        let app = test_app!().build();
         let db_pool = app.db_pool();
         let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
         let empty_infra_id = empty_infra.id;
+        let user = app
+            .user("user", "User")
+            .with_infra_grant(empty_infra_id, InfraGrant::Reader)
+            .create()
+            .await;
 
         let track: InfraObject = TrackSection {
             id: "track_with_no_buffer_stops".into(),
@@ -1053,6 +1127,7 @@ mod tests {
         // WHEN
         let operations: Vec<Operation> = app
             .auto_fixes_request(empty_infra_id)
+            .by_user(user.as_ref())
             .await
             .assert_status_ok()
             .json();

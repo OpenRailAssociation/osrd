@@ -153,6 +153,7 @@ pub(in crate::views) async fn list_objects_ids(
 
 #[cfg(test)]
 mod tests {
+    use authz::InfraGrant;
     use pretty_assertions::assert_eq;
 
     use schemas::primitives::Identifier;
@@ -163,17 +164,24 @@ mod tests {
     use crate::infra_cache::operation::create::apply_create_operation;
     use crate::views::infra::objects::ObjectQueryable;
     use crate::views::test_app;
+    use crate::views::test_app::TestRequestExt as _;
     use schemas::infra::Switch;
     use schemas::infra::SwitchType;
     use schemas::primitives::OSRDIdentified;
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn check_invalid_ids() {
-        let app = test_app!().skip_authz().build();
+        let app = test_app!().build();
         let db_pool = app.db_pool();
         let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
+        let user = app
+            .user("user", "User")
+            .with_infra_grant(empty_infra.id, InfraGrant::Reader)
+            .create()
+            .await;
 
         app.post(format!("/infra/{}/objects/TrackSection", empty_infra.id).as_str())
+            .by_user(user.as_ref())
             .json(&["invalid_id"])
             .await
             .assert_status_bad_request();
@@ -181,11 +189,17 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn get_objects_no_ids() {
-        let app = test_app!().skip_authz().build();
+        let app = test_app!().build();
         let db_pool = app.db_pool();
         let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
+        let user = app
+            .user("user", "User")
+            .with_infra_grant(empty_infra.id, InfraGrant::Reader)
+            .create()
+            .await;
 
         app.post(format!("/infra/{}/objects/TrackSection", empty_infra.id).as_str())
+            .by_user(user.as_ref())
             .json(&vec![""; 0])
             .await
             .assert_status_ok();
@@ -194,9 +208,14 @@ mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn get_objects_should_return_switch() {
         // GIVEN
-        let app = test_app!().skip_authz().build();
+        let app = test_app!().build();
         let db_pool = app.db_pool();
         let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
+        let user = app
+            .user("user", "User")
+            .with_infra_grant(empty_infra.id, InfraGrant::Reader)
+            .create()
+            .await;
 
         let switch = Switch {
             id: "switch_001".into(),
@@ -216,6 +235,7 @@ mod tests {
         // THEN
         let switch_object: Vec<ObjectQueryable> = app
             .post(format!("/infra/{}/objects/Switch", empty_infra.id).as_str())
+            .by_user(user.as_ref())
             .json(&vec!["switch_001"])
             .await
             .assert_status_ok()
@@ -238,11 +258,17 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn get_objects_duplicate_ids() {
-        let app = test_app!().skip_authz().build();
+        let app = test_app!().build();
         let db_pool = app.db_pool();
         let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
+        let user = app
+            .user("user", "User")
+            .with_infra_grant(empty_infra.id, InfraGrant::Reader)
+            .create()
+            .await;
 
         app.post(format!("/infra/{}/objects/TrackSection", empty_infra.id).as_str())
+            .by_user(user.as_ref())
             .json(&vec!["id"; 2])
             .await
             .assert_status_bad_request();
@@ -250,9 +276,14 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn get_switch_types() {
-        let app = test_app!().skip_authz().build();
+        let app = test_app!().build();
         let db_pool = app.db_pool();
         let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
+        let user = app
+            .user("user", "User")
+            .with_infra_grant(empty_infra.id, InfraGrant::Reader)
+            .create()
+            .await;
 
         // Add a switch type
         let switch_type = SwitchType::default();
@@ -266,6 +297,7 @@ mod tests {
 
         let switch_type_object: Vec<ObjectQueryable> = app
             .post(format!("/infra/{}/objects/SwitchType", empty_infra.id).as_str())
+            .by_user(user.as_ref())
             .json(&vec![switch_type.id.clone()])
             .await
             .assert_status_ok()
@@ -284,9 +316,14 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn test_list_ids() {
-        let app = test_app!().skip_authz().build();
+        let app = test_app!().build();
         let db_pool = app.db_pool();
         let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
+        let user = app
+            .user("user", "User")
+            .with_infra_grant(empty_infra.id, InfraGrant::Reader)
+            .create()
+            .await;
 
         // Add two switch types
         let switch_type_a = SwitchType {
@@ -307,6 +344,7 @@ mod tests {
 
         let response = app
             .get(format!("/infra/{}/objects/SwitchType/ids", empty_infra.id).as_str())
+            .by_user(user.as_ref())
             .await
             .assert_status_ok()
             .json::<JsonValue>();
@@ -323,5 +361,24 @@ mod tests {
         ids.sort();
 
         assert_eq!(ids, vec!["A", "B"]);
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn object_endpoints_require_can_read() {
+        let app = test_app!().build();
+        let db_pool = app.db_pool();
+        let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
+        let user = app.user("user", "User").create().await;
+
+        app.post(format!("/infra/{}/objects/TrackSection", empty_infra.id).as_str())
+            .by_user(user.as_ref())
+            .json(&Vec::<String>::new())
+            .await
+            .assert_status_forbidden();
+
+        app.get(format!("/infra/{}/objects/TrackSection/ids", empty_infra.id).as_str())
+            .by_user(user.as_ref())
+            .await
+            .assert_status_forbidden();
     }
 }

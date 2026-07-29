@@ -299,6 +299,7 @@ pub(in crate::views) async fn get_routes_nodes(
 
 #[cfg(test)]
 mod tests {
+    use authz::InfraGrant;
     use pretty_assertions::assert_eq;
 
     use serde_json::json;
@@ -312,6 +313,7 @@ mod tests {
     use crate::views::infra::routes::RoutesResponse;
     use crate::views::infra::routes::WaypointType;
     use crate::views::test_app;
+    use crate::views::test_app::TestRequestExt as _;
     use schemas::infra::BufferStop;
     use schemas::infra::Detector;
     use schemas::infra::Route;
@@ -385,9 +387,14 @@ mod tests {
             ),
         ];
 
-        let app = test_app!().skip_authz().build();
+        let app = test_app!().build();
         let db_pool = app.db_pool();
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
+        let user = app
+            .user("user", "User")
+            .with_infra_grant(small_infra.id, InfraGrant::Reader)
+            .create()
+            .await;
 
         fn compare_result(got: RoutesFromNodesPositions, expected: RoutesFromNodesPositions) {
             let mut got_routes = got.routes;
@@ -426,6 +433,7 @@ mod tests {
             };
             let request = app
                 .post(&format!("/infra/{}/routes/nodes", small_infra.id))
+                .by_user(user.as_ref())
                 .json(&params);
             println!("{request:?}  body:\n    {params}");
 
@@ -436,10 +444,15 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn get_routes_should_return_routes_from_buffer_stop_and_detector() {
-        let app = test_app!().skip_authz().build();
+        let app = test_app!().build();
         let db_pool = app.db_pool();
         let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
         let empty_infra_id = empty_infra.id;
+        let user = app
+            .user("user", "User")
+            .with_infra_grant(empty_infra_id, InfraGrant::Reader)
+            .create()
+            .await;
 
         let track = TrackSection {
             id: "track_001".into(),
@@ -492,6 +505,7 @@ mod tests {
         let waypoint_type = WaypointType::BufferStop;
         let routes: RoutesResponse = app
             .get(format!("/infra/{empty_infra_id}/routes/{waypoint_type}/bs_stop").as_str())
+            .by_user(user.as_ref())
             .await
             .assert_status_ok()
             .json();
@@ -508,6 +522,7 @@ mod tests {
         let waypoint_type = WaypointType::Detector;
         let routes: RoutesResponse = app
             .get(format!("/infra/{empty_infra_id}/routes/{waypoint_type}/detector_001").as_str())
+            .by_user(user.as_ref())
             .await
             .assert_status_ok()
             .json();
@@ -523,9 +538,14 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn get_routes_should_return_empty_response() {
-        let app = test_app!().skip_authz().build();
+        let app = test_app!().build();
         let db_pool = app.db_pool();
         let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
+        let user = app
+            .user("user", "User")
+            .with_infra_grant(empty_infra.id, InfraGrant::Reader)
+            .create()
+            .await;
 
         let waypoint_type = WaypointType::Detector;
         let routes: RoutesResponse = app
@@ -536,6 +556,7 @@ mod tests {
                 )
                 .as_str(),
             )
+            .by_user(user.as_ref())
             .await
             .assert_status_ok()
             .json();
@@ -547,5 +568,29 @@ mod tests {
                 ending: vec![]
             }
         );
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn route_endpoints_require_can_read() {
+        let app = test_app!().build();
+        let db_pool = app.db_pool();
+        let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
+        let user = app.user("user", "User").create().await;
+
+        app.get(format!("/infra/{}/routes/track_ranges?routes=route", empty_infra.id).as_str())
+            .by_user(user.as_ref())
+            .await
+            .assert_status_forbidden();
+
+        app.post(format!("/infra/{}/routes/nodes", empty_infra.id).as_str())
+            .by_user(user.as_ref())
+            .json(&json!({}))
+            .await
+            .assert_status_forbidden();
+
+        app.get(format!("/infra/{}/routes/Detector/detector", empty_infra.id).as_str())
+            .by_user(user.as_ref())
+            .await
+            .assert_status_forbidden();
     }
 }

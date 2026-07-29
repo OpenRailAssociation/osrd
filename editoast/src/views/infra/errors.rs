@@ -133,12 +133,19 @@ mod tests {
 
     use crate::fixtures::create_empty_infra;
     use crate::views::test_app;
+    use crate::views::test_app::TestRequestExt as _;
+    use authz::InfraGrant;
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn list_errors_get() {
-        let app = test_app!().skip_authz().build();
+        let app = test_app!().build();
         let db_pool = app.db_pool();
         let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
+        let user = app
+            .user("user", "User")
+            .with_infra_grant(empty_infra.id, InfraGrant::Reader)
+            .create()
+            .await;
 
         let error_type = "overlapping_electrifications";
         let level = "warnings";
@@ -150,7 +157,21 @@ mod tests {
             )
             .as_str(),
         )
+        .by_user(user.as_ref())
         .await
         .assert_status_ok();
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn list_errors_requires_can_read() {
+        let app = test_app!().build();
+        let db_pool = app.db_pool();
+        let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
+        let user = app.user("user", "User").create().await;
+
+        app.get(format!("/infra/{}/errors", empty_infra.id).as_str())
+            .by_user(user.as_ref())
+            .await
+            .assert_status_forbidden();
     }
 }

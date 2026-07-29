@@ -125,6 +125,8 @@ mod tests {
 
     use crate::infra_cache::operation::create::apply_create_operation;
     use crate::views::test_app;
+    use crate::views::test_app::TestRequestExt as _;
+    use authz::InfraGrant;
     use editoast_models::Infra;
     use editoast_models::prelude::*;
     use schemas::infra::Detector;
@@ -134,20 +136,25 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn get_attached_detector() {
-        let app = test_app!().skip_authz().build();
+        let app = test_app!().build();
         let pool = app.db_pool();
-
-        // Create empty infra
-        let empty_infra = Infra::changeset()
+        let infra_id = Infra::changeset()
             .name("test_infra".to_owned())
             .last_railjson_version()
             .create(&mut pool.get_ok())
             .await
-            .expect("Failed to create infra");
+            .expect("Failed to create infra")
+            .id;
+
+        let user = app
+            .user("user", "User")
+            .with_infra_grant(infra_id, InfraGrant::Reader)
+            .create()
+            .await;
 
         // Create a track and a detector on it
         let track = TrackSection::default().into();
-        apply_create_operation(&track, empty_infra.id, &mut pool.get_ok())
+        apply_create_operation(&track, infra_id, &mut pool.get_ok())
             .await
             .expect("Failed to create track object");
 
@@ -156,14 +163,49 @@ mod tests {
             ..Default::default()
         }
         .into();
-        apply_create_operation(&detector, empty_infra.id, &mut pool.get_ok())
+        apply_create_operation(&detector, infra_id, &mut pool.get_ok())
             .await
             .expect("Failed to create detector object");
 
         let response: HashMap<ObjectType, Vec<String>> = app
-            .get(format!("/infra/{}/attached/{}/", empty_infra.id, track.get_id()).as_str())
+            .get(format!("/infra/{}/attached/{}/", infra_id, track.get_id()).as_str())
+            .by_user(user.as_ref())
             .await
+            .assert_status_ok()
             .json();
         assert_eq!(response.get(&ObjectType::Detector).unwrap().len(), 1);
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn get_attached_detector_requires_can_read() {
+        let app = test_app!().build();
+        let pool = app.db_pool();
+        let infra_id = Infra::changeset()
+            .name("test_infra".to_owned())
+            .last_railjson_version()
+            .create(&mut pool.get_ok())
+            .await
+            .expect("Failed to create infra")
+            .id;
+        let track = TrackSection::default().into();
+        apply_create_operation(&track, infra_id, &mut pool.get_ok())
+            .await
+            .expect("Failed to create track object");
+
+        let user_no_grant = app.user("alice", "Alice").create().await;
+        let user_reader = app
+            .user("bob", "Bob")
+            .with_infra_grant(infra_id, InfraGrant::Reader)
+            .create()
+            .await;
+
+        app.get(format!("/infra/{}/attached/{}/", infra_id, track.get_id()).as_str())
+            .by_user(user_no_grant.as_ref())
+            .await
+            .assert_status_forbidden();
+        app.get(format!("/infra/{}/attached/{}/", infra_id, track.get_id()).as_str())
+            .by_user(user_reader.as_ref())
+            .await
+            .assert_status_ok();
     }
 }

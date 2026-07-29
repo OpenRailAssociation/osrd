@@ -81,6 +81,7 @@ pub(in crate::views) async fn get_line_bbox(
 
 #[cfg(test)]
 mod tests {
+    use authz::InfraGrant;
     use geos::geojson::Geometry;
     use pretty_assertions::assert_eq;
 
@@ -92,15 +93,21 @@ mod tests {
     use crate::fixtures::create_empty_infra;
     use crate::infra_cache::operation::create::apply_create_operation;
     use crate::views::test_app;
+    use crate::views::test_app::TestRequestExt as _;
     use schemas::infra::TrackSection;
     use schemas::infra::TrackSectionExtensions;
     use schemas::primitives::BoundingBox;
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn returns_correct_bbox_for_existing_line_code() {
-        let app = test_app!().skip_authz().build();
+        let app = test_app!().build();
         let db_pool = app.db_pool();
         let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
+        let user = app
+            .user("user", "User")
+            .with_infra_grant(empty_infra.id, InfraGrant::Reader)
+            .create()
+            .await;
 
         let line_code = 1234;
         let geometry_json = json!({
@@ -127,6 +134,7 @@ mod tests {
 
         let bounding_box: BoundingBox = app
             .get(format!("/infra/{}/lines/{line_code}/bbox/", empty_infra.id).as_str())
+            .by_user(user.as_ref())
             .await
             .assert_status_ok()
             .json();
@@ -143,9 +151,14 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn returns_bad_request_when_line_code_not_found() {
-        let app = test_app!().skip_authz().build();
+        let app = test_app!().build();
         let db_pool = app.db_pool();
         let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
+        let user = app
+            .user("user", "User")
+            .with_infra_grant(empty_infra.id, InfraGrant::Reader)
+            .create()
+            .await;
 
         let not_existing_line_code = 123456789;
         app.get(
@@ -155,7 +168,21 @@ mod tests {
             )
             .as_str(),
         )
+        .by_user(user.as_ref())
         .await
         .assert_status_bad_request();
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn get_line_bbox_requires_can_read() {
+        let app = test_app!().build();
+        let db_pool = app.db_pool();
+        let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
+        let user = app.user("user", "User").create().await;
+
+        app.get(format!("/infra/{}/lines/1/bbox/", empty_infra.id).as_str())
+            .by_user(user.as_ref())
+            .await
+            .assert_status_forbidden();
     }
 }
