@@ -22,7 +22,13 @@ const CloseButton = ({ position, onClose }: { position: number; onClose: () => v
     <button
       data-testid="close-track-occupancy-panel"
       className="close-track-occupancy-panel"
-      onClick={() => onClose()}
+      // This button is nested inside the chart, which has its own click listener. We use
+      // 'stopPropagation' because that listener would otherwise fire first and deselect the
+      // train before onClose runs.
+      onClickCapture={(e) => {
+        e.stopPropagation();
+        onClose();
+      }}
       style={{
         top: getSpacePixel(position),
       }}
