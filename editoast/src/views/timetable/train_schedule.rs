@@ -20,6 +20,7 @@ use core_client::signal_projection::SignalUpdate;
 use core_client::simulation::PhysicsConsist;
 use core_task::Correlated;
 use core_task::SimulationOutput;
+use core_task::pathfinding_request_from_consist_constraints;
 use database::DbConnection;
 use database::DbConnectionPoolV2;
 use editoast_derive::EditoastError;
@@ -55,7 +56,6 @@ use crate::views::infra::InfraIdQueryParam;
 use crate::views::path::operational_point_cache::OperationalPointCache;
 use crate::views::path::pathfinding::PathfindingFailure;
 use crate::views::path::pathfinding::PathfindingResult;
-use crate::views::path::pathfinding::single_pathfinding_request;
 use crate::views::projection::OperationalPointProjection;
 use crate::views::projection::ProjectPathForm;
 use crate::views::projection::ProjectPathOperationalPointForm;
@@ -689,13 +689,17 @@ pub(in crate::views) async fn get_path(
         allowed_track_sections: BTreeSet::new(),
     };
 
-    let pathfinding_train = core_task::PathfindingTrain {
-        consist: build_pathfinding_consist(&consist, train_occurrence.speed_limit_tag().cloned()),
-        constraints,
-    };
-    let result =
-        single_pathfinding_request(pathfinding_train, &infra, valkey_client, core_client).await?;
-    Ok(Json(result))
+    let consist = build_pathfinding_consist(&consist, train_occurrence.speed_limit_tag().cloned());
+    let pathfinding_request = pathfinding_request_from_consist_constraints(
+        infra.id,
+        infra.version,
+        &consist,
+        &constraints,
+    );
+
+    use core_task::Task as _;
+    let result = pathfinding_request.run(valkey_client, core_client).await?;
+    Ok(Json(result.into()))
 }
 
 #[derive(Debug, Default, Clone, Serialize, Deserialize, IntoParams, ToSchema)]

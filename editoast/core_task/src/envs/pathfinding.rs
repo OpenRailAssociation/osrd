@@ -370,14 +370,15 @@ where
 }
 
 // ========== Core requests ==========
-
-fn build_request(
-    core_env: &CoreEnv,
-    PathfindingKey(consist, constraints): &PathfindingKey,
+pub fn pathfinding_request_from_consist_constraints(
+    infra: i64,
+    expected_version: i64,
+    consist: &PathfindingConsist,
+    constraints: &PathfindingConstraints,
 ) -> core_client::pathfinding::PathfindingRequest {
     core_client::pathfinding::PathfindingRequest {
-        infra: core_env.infra_id as i64,
-        expected_version: core_env.infra_version,
+        infra,
+        expected_version,
         path_items: constraints
             .path_items
             .iter()
@@ -399,6 +400,15 @@ fn build_request(
         stops_at_end_of_block: Some(false),
         allowed_track_sections: constraints.allowed_track_sections.clone(),
     }
+}
+
+fn build_request(
+    core_env: &CoreEnv,
+    PathfindingKey(consist, constraints): &PathfindingKey,
+) -> core_client::pathfinding::PathfindingRequest {
+    let infra_id = core_env.infra_id as i64;
+    let version = core_env.infra_version;
+    pathfinding_request_from_consist_constraints(infra_id, version, consist, constraints)
 }
 
 impl Task for core_client::pathfinding::PathfindingRequest {
