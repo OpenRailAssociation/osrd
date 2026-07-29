@@ -11,16 +11,26 @@ import {
   ROW_INDEX_VIA_A,
   ROW_INDEX_VIA_B,
   ROW_INDEX_WAYPOINT,
+  SCENARIO_NAME_PREFIX,
   STATUS_CLASSES,
   STOP_DURATION_NONE,
   STOP_DURATION_VIA_A,
   STOP_DURATION_VIA_B,
+  myTrain,
 } from '../../assets/operation-studies/simulation-result/times-stops-table-const';
 import test from '../../page-object-fixture';
-import setupScenarioWithTrain from './times-stops-scenario-fixture';
+import setupScenarioFixture from '../../scenario-fixture';
 
 test.describe('Times Stops Table — Display', { tag: ['@op', '@times-stops'] }, () => {
-  setupScenarioWithTrain();
+  setupScenarioFixture({
+    scenarioNamePrefix: SCENARIO_NAME_PREFIX,
+    trains: myTrain,
+  });
+
+  test.beforeEach('Wait for the times-stops table', async ({ scenarioTimetableSection }) => {
+    await scenarioTimetableSection.enableOnlyTimesStopsTable();
+    await scenarioTimetableSection.verifyTimesStopsDataSheetVisibility();
+  });
 
   /** *************** Test 1 **************** */
   test('Display structure and stop data', async ({ timesStopsTablePage }) => {
