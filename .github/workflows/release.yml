@@ -44,7 +44,7 @@ jobs:
           buildkitd-flags: --debug
 
       - name: Login to ghcr.io
-        uses: docker/login-action@v4.5.0
+        uses: docker/login-action@v4.5.1
         with:
           registry: ghcr.io
           username: '$' # special user for authenticating as a gh actions worker
