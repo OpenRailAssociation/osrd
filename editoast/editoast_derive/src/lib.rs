@@ -5,6 +5,7 @@ mod error;
 mod model;
 mod route;
 mod search;
+mod view_error;
 
 use proc_macro::TokenStream;
 use syn::DeriveInput;
@@ -279,6 +280,14 @@ pub fn route(attr: TokenStream, input: TokenStream) -> TokenStream {
     let attr = proc_macro2::TokenStream::from(attr);
     let input = parse_macro_input!(input as syn::ItemFn);
     route::route(attr, &input)
+        .unwrap_or_else(darling::Error::write_errors)
+        .into()
+}
+
+#[proc_macro_derive(ViewError, attributes(view_error))]
+pub fn view_error(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
+    let input = parse_macro_input!(input as DeriveInput);
+    view_error::view_error(&input)
         .unwrap_or_else(darling::Error::write_errors)
         .into()
 }
