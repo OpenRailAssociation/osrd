@@ -193,22 +193,54 @@ export const matchOpRefAndWaypoint = (
 export const buildPathWaypointsFromRawOPs = (
   ops: CoreOperationalPointOnPath[],
   path: PathItem[]
-): PathWaypoint[] =>
-  ops.map((op) => {
-    const matchedPathItem = path.find((step) => matchOpRefAndWaypoint(step.location, op));
-    return {
+): PathWaypoint[] => {
+  let opRefPathItemsQueue = [...path].filter(
+    (pathItem) => pathItem.location.type !== 'track_offset'
+  );
+  const waypoints = ops.map((op) => {
+    const waypoint: PathWaypoint = {
       ...omit(op, 'id'),
       waypointId: `op-${op.id}-${op.position}`,
       opId: op.id,
-      pathItemId: matchedPathItem?.id ?? null,
-      location: matchedPathItem
-        ? matchedPathItem.location
-        : {
-            type: 'operational_point_part_reference',
-            operational_point: { type: 'id', operational_point: op.id },
-          },
+      pathItemId: null,
+      location: {
+        type: 'operational_point_part_reference',
+        operational_point: { type: 'id', operational_point: op.id },
+      },
+    };
+
+    // Consume remaining path steps in order. If we match a path step which
+    // isn't the first one, something went wrong: OPs on path don't go through
+    // all path items.
+    const pathItemIndex = opRefPathItemsQueue.findIndex((step) =>
+      matchOpRefAndWaypoint(step.location, op)
+    );
+    if (pathItemIndex < 0) {
+      return waypoint;
+    }
+
+    const pathItem = opRefPathItemsQueue[pathItemIndex];
+    if (pathItemIndex !== 0) {
+      console.error(
+        'Could not match path items to operational points:',
+        opRefPathItemsQueue.slice(0, pathItemIndex)
+      );
+    }
+    opRefPathItemsQueue = opRefPathItemsQueue.slice(pathItemIndex + 1);
+
+    return {
+      ...waypoint,
+      pathItemId: pathItem.id,
+      location: pathItem.location,
     };
   });
+
+  if (opRefPathItemsQueue.length > 0) {
+    console.error('Could not match path items to operational points:', opRefPathItemsQueue);
+  }
+
+  return waypoints;
+};
 
 /**
  * Sort operational points by position on the path (mm from origin).

@@ -183,6 +183,29 @@ describe('buildPathWaypointsFromRawOPs', () => {
       { opId: 'op6', pathItemId: 'step3' },
     ]);
   });
+
+  it('should populate pathItemId when some OPs are crossed multiple times', () => {
+    const ops = [
+      makeRawOp('op1'),
+      makeRawOp('op2'),
+      makeRawOp('op3'),
+      makeRawOp('op2'),
+      makeRawOp('op1'),
+    ];
+    const path = [
+      makePathItem('step1', 'op1'),
+      makePathItem('step2', 'op3'),
+      makePathItem('step3', 'op1'),
+    ];
+    const result = buildPathWaypointsFromRawOPs(ops, path);
+    expect(result.map(({ opId, pathItemId }) => ({ opId, pathItemId }))).toEqual([
+      { opId: 'op1', pathItemId: 'step1' },
+      { opId: 'op2', pathItemId: null },
+      { opId: 'op3', pathItemId: 'step2' },
+      { opId: 'op2', pathItemId: null },
+      { opId: 'op1', pathItemId: 'step3' },
+    ]);
+  });
 });
 
 describe('sortPathOperationalPoints', () => {
