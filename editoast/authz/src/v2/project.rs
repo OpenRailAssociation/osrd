@@ -13,6 +13,8 @@ use crate::model::ProjectGrant;
 use crate::v2::Actor;
 use crate::v2::Check;
 use crate::v2::Protected;
+use crate::v2::ResourcesList;
+use crate::v2::subject_roles;
 
 /// Returns the *direct grant* a subject has for a [Project].
 ///
@@ -156,6 +158,23 @@ pub fn project_privileges(user: User, project: Project) -> Protected<HashSet<Pro
         ProjectPrivilege::HasAccess,
         project,
     ))
+}
+
+/// Lists all the projects a user has access to
+pub fn project_list(user: User) -> Protected<ResourcesList<Project>> {
+    subject_roles(Subject::user(user)).map(move |openfga, roles| {
+        async move {
+            if roles.contains(&Role::Admin) {
+                return Ok(ResourcesList::All);
+            }
+
+            let authorized_projects = openfga
+                .list_objects(Project::has_access().query_objects(&user))
+                .await?;
+            Ok(ResourcesList::Privileged(authorized_projects))
+        }
+        .boxed()
+    })
 }
 
 #[cfg(test)]
@@ -531,6 +550,83 @@ mod tests {
         );
     }
 
+    async fn list(openfga: &Client, user: User) -> Vec<Project> {
+        openfga.project_list(user).await.unwrap_privileged()
+    }
+
+    #[tokio::test]
+    async fn no_project_list() {
+        let openfga = authz_client!();
+        assert!(list(&openfga, User(1)).await.is_empty());
+    }
+
+    #[tokio::test]
+    async fn project_list_direct() {
+        let openfga = authz_client!();
+
+        openfga
+            .project_set_grant(Subject::user(1), Project(1))
+            .await;
+        openfga
+            .project_set_grant(Subject::user(1), Project(2))
+            .await;
+        openfga
+            .project_set_grant(Subject::user(1), Project(3))
+            .await;
+
+        let mut projects = list(&openfga, User(1)).await;
+        let mut expected = vec![Project(1), Project(2), Project(3)];
+
+        projects.sort();
+        expected.sort();
+
+        assert_eq!(projects, expected)
+    }
+
+    #[tokio::test]
+    async fn project_list_effective() {
+        let openfga = authz_client!();
+
+        openfga
+            .write_tuples(&[
+                Group::member().tuple(&User(1), &Group(1)),
+                Group::member().tuple(&User(1), &Group(2)),
+            ])
+            .await
+            .unwrap();
+        openfga
+            .project_set_grant(Subject::group(1), Project(1))
+            .await;
+        openfga
+            .project_set_grant(Subject::group(2), Project(2))
+            .await;
+        openfga
+            .project_set_grant(Subject::group(1), Project(3))
+            .await;
+
+        let mut projects = list(&openfga, User(1)).await;
+        let mut expected = vec![Project(1), Project(2), Project(3)];
+
+        projects.sort();
+        expected.sort();
+
+        assert_eq!(projects, expected)
+    }
+
+    #[tokio::test]
+    async fn project_list_admin() {
+        let openfga = authz_client!();
+        openfga
+            .write_tuples(&[User::role().tuple(&Role::Admin, &User(1))])
+            .await
+            .unwrap();
+
+        assert!(matches!(
+            openfga.project_list(User(1)).await,
+            ResourcesList::All
+        ));
+    }
+
     #[rstest::rstest]
     #[case::project_direct_grant(
         project_direct_grant(Subject::user(1), Project(1)).checks,
@@ -557,6 +653,11 @@ mod tests {
         &[
             Check::HasProjectPrivilege(Actor::Issuer, ProjectPrivilege::HasAccess, Project(1))
         ]
+    )]
+    #[rstest::rstest]
+    #[case::project_list(
+        project_list(User(1)).checks,
+        &[]
     )]
     #[tokio::test]
     async fn protected_contains_expected_checks(
