@@ -253,13 +253,13 @@ pub(in crate::views) async fn post(
 
     let op_cache =
         OperationalPointCache::load_path_items(conn, infra.id, &path_input.path_items).await?;
-    let pathfinding_train = match build_pathfinding_train(&path_input, &op_cache) {
-        Ok(pathfinding_train) => pathfinding_train,
+    let pathfinding_request = match build_pathfinding_request(&path_input, &infra, &op_cache) {
+        Ok(pathfinding_request) => pathfinding_request,
         Err(result) => return Ok(Json(*result)),
     };
-    let result =
-        single_pathfinding_request(pathfinding_train, &infra, valkey_client, core_client).await?;
-    Ok(Json(result))
+    use core_task::Task as _;
+    let result = pathfinding_request.run(valkey_client, core_client).await?;
+    Ok(Json(result.into()))
 }
 
 /// Pathfinding batch computation given a list of path inputs
@@ -415,33 +415,6 @@ fn build_pathfinding_request(
         speed_limit_tag: pathfinding_input.speed_limit_tag.clone(),
         stops_at_end_of_block: pathfinding_input.stops_at_end_of_block,
         allowed_track_sections: pathfinding_input.allowed_track_sections.clone(),
-    })
-}
-
-fn build_pathfinding_train(
-    pathfinding_input: &PathfindingInput,
-    op_cache: &OperationalPointCache,
-) -> std::result::Result<core_task::PathfindingTrain, Box<PathfindingResult>> {
-    if pathfinding_input.path_items.len() <= 1 {
-        return Err(Box::from(PathfindingResult::Failure(
-            PathfindingFailure::PathfindingInputError(PathfindingInputError::NotEnoughPathItems),
-        )));
-    }
-    let track_offsets: Vec<Vec<schemas::infra::TrackOffset>> = op_cache
-        .extract_location_from_path_items(&pathfinding_input.path_items)
-        .map_err(PathfindingResult::Failure)?;
-
-    let constraints = core_task::PathfindingConstraints {
-        path_items: track_offsets
-            .into_iter()
-            .map(core_task::PathItemAlternatives::from_iter)
-            .collect(),
-        allowed_track_sections: pathfinding_input.allowed_track_sections.clone(),
-    };
-
-    Ok(core_task::PathfindingTrain {
-        consist: pathfinding_input.into(),
-        constraints,
     })
 }
 
