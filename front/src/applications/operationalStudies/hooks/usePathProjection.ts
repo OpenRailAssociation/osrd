@@ -28,7 +28,7 @@ import {
 } from 'utils/trainId';
 
 import type { PathProjectionResult } from '../types';
-import { matchOpRefAndWaypoint } from '../utils';
+import { buildPathWaypointsFromRawOPs } from '../utils';
 
 /**
  * Generates a display name for a virtual operational point based on available reference data.
@@ -210,23 +210,10 @@ const usePathProjection = (
         type: 'id',
       }));
 
-      const formattedOperationalPoints: ProjectionWaypoint[] = operationalPoints.map((op) => {
-        const matchedPathItem = pathUsedForProjection.find((step) =>
-          matchOpRefAndWaypoint(step.location, op)
-        );
-        return {
-          ...omit(op, ['id', 'part']),
-          waypointId: `op-${op.id}-${op.position}`,
-          opId: op.id,
-          pathItemId: matchedPathItem?.id ?? null,
-          location: matchedPathItem
-            ? matchedPathItem.location
-            : {
-                type: 'operational_point_part_reference',
-                operational_point: { type: 'id', operational_point: op.id },
-              },
-        };
-      });
+      const formattedOperationalPoints: ProjectionWaypoint[] = buildPathWaypointsFromRawOPs(
+        operationalPoints,
+        pathUsedForProjection
+      ).map((waypoint) => omit(waypoint, 'part'));
 
       operationalPoints.forEach((op, index) => {
         if (index > 0) {
