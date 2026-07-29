@@ -121,12 +121,10 @@ export function nestEntity(entity: EditorEntity, type: EditoastType): EditorEnti
 export function entityToCreateOperation(entity: EditorEntity): CreateOperation {
   return {
     operation_type: 'CREATE',
-    payload: {
-      obj_type: entity.objType,
-      railjson: {
-        ...entity.properties,
-        id: uuid(),
-      },
+    obj_type: entity.objType,
+    railjson: {
+      ...entity.properties,
+      id: uuid(),
     },
   } as CreateOperation;
 }

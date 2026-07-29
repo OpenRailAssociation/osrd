@@ -3432,10 +3432,9 @@ export type PatchOperation =
       op: 'test';
     });
 export type Operation =
-  | {
+  | (InfraObject & {
       operation_type: 'CREATE';
-      payload: InfraObject;
-    }
+    })
   | ({
       obj_id: string;
       obj_type: ObjectType;

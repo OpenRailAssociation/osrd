@@ -72,6 +72,7 @@ impl utoipa::PartialSchema for Operation {
             Create {
                 #[schema(inline)]
                 operation_type: Create,
+                #[serde(flatten)]
                 payload: Box<InfraObject>,
             },
             Update {

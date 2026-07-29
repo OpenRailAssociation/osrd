@@ -12044,18 +12044,17 @@ components:
           description: Train schedule
     Operation:
       oneOf:
-      - type: object
+      - allOf:
+        - $ref: '#/components/schemas/InfraObject'
+        - type: object
+          required:
+          - operation_type
+          properties:
+            operation_type:
+              type: string
+              enum:
+              - CREATE
         title: OperationCreate
-        required:
-        - operation_type
-        - payload
-        properties:
-          operation_type:
-            type: string
-            enum:
-            - CREATE
-          payload:
-            $ref: '#/components/schemas/InfraObject'
       - allOf:
         - type: object
           required:
