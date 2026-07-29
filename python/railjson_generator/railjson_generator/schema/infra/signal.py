@@ -1,5 +1,4 @@
 from dataclasses import dataclass, field
-from typing import Dict, List
 
 from osrd_schemas import models
 
@@ -15,7 +14,7 @@ def _signal_id():
 @dataclass
 class SignalConditionalParameters:
     on_route: str
-    parameters: Dict[str, str]
+    parameters: dict[str, str]
 
     def to_rjs(self):
         return models.ConditionalParameter(
@@ -27,10 +26,10 @@ class SignalConditionalParameters:
 @dataclass
 class LogicalSignal:
     signaling_system: str
-    next_signaling_systems: List[str] = field(default_factory=list)
-    settings: Dict[str, str] = field(default_factory=dict)
-    default_parameters: Dict[str, str] = field(default_factory=dict)
-    conditional_parameters: List[SignalConditionalParameters] = field(
+    next_signaling_systems: list[str] = field(default_factory=list)
+    settings: dict[str, str] = field(default_factory=dict)
+    default_parameters: dict[str, str] = field(default_factory=dict)
+    conditional_parameters: list[SignalConditionalParameters] = field(
         default_factory=list
     )
 
@@ -61,7 +60,7 @@ class Signal:
 
     # relevant for simulation behavior
     sight_distance: float = field(default=400)
-    logical_signals: List[LogicalSignal] = field(default_factory=list)
+    logical_signals: list[LogicalSignal] = field(default_factory=list)
 
     label: str = field(default_factory=_signal_id)
     installation_type: str = "CARRE"

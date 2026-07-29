@@ -1,6 +1,7 @@
+from collections.abc import Mapping
 from enum import Enum
 from itertools import product
-from typing import Annotated, List, Literal, Mapping, Optional, Type, Union, get_args
+from typing import Annotated, Literal, get_args
 
 from geojson_pydantic import LineString
 from pydantic import BaseModel, Field, StringConstraints, create_model, model_validator
@@ -31,7 +32,7 @@ class BufferStopReference(BaseModel):
 
 
 Waypoint = Annotated[
-    Union[DetectorReference, BufferStopReference], Field(discriminator="type")
+    DetectorReference | BufferStopReference, Field(discriminator="type")
 ]
 
 
@@ -214,15 +215,15 @@ class OperationalPoint(BaseObjectTrait):
     This class describes the operational points of the corresponding infra.
     """
 
-    parts: List[OperationalPointPart]
-    weight: Optional[int] = Field(
+    parts: list[OperationalPointPart]
+    weight: int | None = Field(
         description="represents the significance of a PR", ge=0, default=None
     )
     name: NonBlankStr = Field(description="Name of the operational point")
-    uic: Optional[int] = Field(
+    uic: int | None = Field(
         description="International Union of Railways code of the operational point"
     )
-    plc: Optional[NonBlankStr] = Field(
+    plc: NonBlankStr | None = Field(
         description="Primary Location Code : https://rne.eu/it/products/ccs/crd/"
     )
     country_code: NonBlankStr = Field(
@@ -233,7 +234,7 @@ class OperationalPoint(BaseObjectTrait):
         min_length=1,
         max_length=255,
     )
-    secondary_code: Optional[NonBlankStr] = Field(
+    secondary_code: NonBlankStr | None = Field(
         description="Optional additional code identifying a more precise location (e.g. code chantier for SNCF)",
         min_length=1,
         max_length=255,
@@ -241,7 +242,7 @@ class OperationalPoint(BaseObjectTrait):
     is_passenger_station: bool = Field(
         description="Whether or not the operational point is a passenger station"
     )
-    secondary_name: Optional[NonBlankStr] = Field(
+    secondary_name: NonBlankStr | None = Field(
         description="Human-readable name describing the secondary code"
     )
 
@@ -270,7 +271,7 @@ class LevelCrossing(BaseObjectTrait):
 
     name: NonBlankStr = Field(description="Name of the level crossing")
     short_zone_length: int = Field(description="Length of the short zone in mm", ge=0)
-    parts: List[LevelCrossingPart]
+    parts: list[LevelCrossingPart]
 
 
 class TrackEndpoint(BaseModel):
@@ -294,7 +295,7 @@ class Route(BaseObjectTrait):
         description="Direction of the route at the entry point"
     )
     exit_point: Waypoint
-    release_detectors: List[Identifier] = Field(
+    release_detectors: list[Identifier] = Field(
         description="Detector allowing the release of resources reserved from the beginning of the route until this one"
     )
     switches_directions: Mapping[Identifier, Identifier] = Field(
@@ -324,10 +325,10 @@ class SwitchType(BaseObjectTrait):
     A switch type is defined by a list of ports and groups which are the possible configurations of the switch.
     """
 
-    ports: List[Identifier] = Field(
+    ports: list[Identifier] = Field(
         min_length=1, description="List of ports. Ports map to the ends of switches"
     )
-    groups: Mapping[Identifier, List[SwitchPortConnection]] = Field(
+    groups: Mapping[Identifier, list[SwitchPortConnection]] = Field(
         description="Connection between and according ports"
     )
 
@@ -335,14 +336,14 @@ class SwitchType(BaseObjectTrait):
     def new(
         cls,
         id: Identifier,
-        ports: List[Identifier],
-        groups: Mapping[Identifier, List[SwitchPortConnection]],
+        ports: list[Identifier],
+        groups: Mapping[Identifier, list[SwitchPortConnection]],
     ):
         return cls(id=id, ports=ports, groups=groups)
 
     @classmethod
     def from_strs(
-        cls, id: str, ports: List[str], groups: Mapping[str, List[SwitchPortConnection]]
+        cls, id: str, ports: list[str], groups: Mapping[str, list[SwitchPortConnection]]
     ):
         return cls(
             id=id,
@@ -383,7 +384,7 @@ class SpeedSection(BaseObjectTrait):
     Speed sections are recognized by their identifiers and are in meters per second.
     """
 
-    speed_limit: Optional[float] = Field(
+    speed_limit: float | None = Field(
         description="Speed limit (m/s) applied by default to trains that aren't in any specified category",
         gt=0,
         default=None,
@@ -391,10 +392,10 @@ class SpeedSection(BaseObjectTrait):
     speed_limit_by_tag: Mapping[NonBlankStr, float] = Field(
         description="Speed limit (m/s) applied to trains with a given tag"
     )
-    track_ranges: List[ApplicableDirectionsTrackRange] = Field(
+    track_ranges: list[ApplicableDirectionsTrackRange] = Field(
         description="List of locations where speed section is applied"
     )
-    on_routes: Optional[List[Identifier]] = Field(
+    on_routes: list[Identifier] | None = Field(
         description="""A list of routes the speed limit is enforced on.
 When empty or None, the speed limit is enforced regardless of the route.""",
         default=None,
@@ -411,7 +412,7 @@ class Electrification(BaseObjectTrait):
     voltage: NonBlankStr = Field(
         description="Type of power supply (in Volts) used for electrification"
     )
-    track_ranges: List[ApplicableDirectionsTrackRange] = Field(
+    track_ranges: list[ApplicableDirectionsTrackRange] = Field(
         description="List of locations where the voltage is applied"
     )
 
@@ -491,13 +492,13 @@ class TrackSection(BaseObjectTrait, GeometryLineTrait):
     length: float = Field(
         description="Value of the length of the track section in meters", gt=0
     )
-    slopes: List[Slope] = Field(
+    slopes: list[Slope] = Field(
         description="List of slopes of corresponding track section"
     )
-    curves: List[Curve] = Field(
+    curves: list[Curve] = Field(
         description="List of curves of corresponding track section"
     )
-    loading_gauge_limits: List[LoadingGaugeLimit] = Field(
+    loading_gauge_limits: list[LoadingGaugeLimit] = Field(
         default_factory=list,
         description="List of loading gauge limits of corresponding track section",
     )
@@ -516,7 +517,7 @@ class LogicalSignal(BaseModel):
     """A logical signal is what displays something, whereas a physical signal is a group of logical signals"""
 
     signaling_system: str = Field(description="The signal's output signaling system")
-    next_signaling_systems: List[str] = Field(
+    next_signaling_systems: list[str] = Field(
         description="The list of allowed input signaling systems"
     )
     settings: Mapping[NonBlankStr, NonBlankStr] = Field(
@@ -525,7 +526,7 @@ class LogicalSignal(BaseModel):
     default_parameters: Mapping[NonBlankStr, NonBlankStr] = Field(
         description="A list of default parameters (in regards to routes), which are defined per signaling system"
     )
-    conditional_parameters: List[ConditionalParameter] = Field(
+    conditional_parameters: list[ConditionalParameter] = Field(
         description="A list of conditional parameters, which are defined per signaling system"
     )
 
@@ -540,7 +541,7 @@ class Signal(BaseObjectTrait, TrackLocationTrait):
     sight_distance: float = Field(
         description="Visibility distance of the signal in meters", ge=0
     )
-    logical_signals: List[LogicalSignal] = Field(
+    logical_signals: list[LogicalSignal] = Field(
         description="Logical signals bundled into this physical signal",
         default_factory=list,
     )
@@ -595,11 +596,11 @@ class NeutralSection(BaseObjectTrait):
     For more details see [the documentation](https://osrd.fr/en/docs/explanation/neutral_sections/).
     """
 
-    announcement_track_ranges: List[DirectionalTrackRange] = Field(
+    announcement_track_ranges: list[DirectionalTrackRange] = Field(
         description="List of locations where the upcoming neutral section is announced but not yet crossed",
         default_factory=list,
     )
-    track_ranges: List[DirectionalTrackRange] = Field(
+    track_ranges: list[DirectionalTrackRange] = Field(
         description="List of locations where the train cannot pull power from electrifications",
         min_length=1,
     )
@@ -622,42 +623,41 @@ class RailJsonInfra(BaseModel):
     version: RAILJSON_INFRA_VERSION_TYPE = Field(
         default=RAILJSON_INFRA_VERSION, description="Version of the schema"
     )
-    operational_points: List[OperationalPoint] = Field(
+    operational_points: list[OperationalPoint] = Field(
         description="List of operational points of the corresponding infra"
     )
-    level_crossings: List[LevelCrossing] = Field(
+    level_crossings: list[LevelCrossing] = Field(
         description="List of level crossings of the corresponding infra"
     )
-    routes: List[Route] = Field(description="Routes of the infra")
-    extended_switch_types: List[SwitchType] = Field(
+    routes: list[Route] = Field(description="Routes of the infra")
+    extended_switch_types: list[SwitchType] = Field(
         default=[],
         description="Switch types of the infra that can be added by the user",
     )
-    switches: List[Switch] = Field(description="Switches of the infra")
-    track_sections: List[TrackSection] = Field(
+    switches: list[Switch] = Field(description="Switches of the infra")
+    track_sections: list[TrackSection] = Field(
         description="Track sections of the infra"
     )
-    speed_sections: List[SpeedSection] = Field(
+    speed_sections: list[SpeedSection] = Field(
         description="Speed sections of the infra"
     )
-    electrifications: List[Electrification] = Field(
+    electrifications: list[Electrification] = Field(
         description="Electrifications of the infra"
     )
-    signals: List[Signal] = Field(description="Signals of the infra")
-    buffer_stops: List[BufferStop] = Field(description="Buffer stops of the infra")
-    detectors: List[Detector] = Field(description="Detectors of the infra")
-    neutral_sections: List[NeutralSection] = Field(
+    signals: list[Signal] = Field(description="Signals of the infra")
+    buffer_stops: list[BufferStop] = Field(description="Buffer stops of the infra")
+    detectors: list[Detector] = Field(description="Detectors of the infra")
+    neutral_sections: list[NeutralSection] = Field(
         description="Neutral sections of the infra"
     )
 
 
-for t in BaseObjectTrait.__subclasses__():
-    ALL_OBJECT_TYPES.append(t)
+ALL_OBJECT_TYPES.extend(BaseObjectTrait.__subclasses__())
 
 # Extensions
 
 
-def register_extension(object: Type[BaseModel], name):
+def register_extension(object: type[BaseModel], name):
     """
     This decorator is used to easily add an extension to an existing object.
     Example:
@@ -693,7 +693,7 @@ def register_extension(object: Type[BaseModel], name):
             )
 
         extensions_field.annotation.model_fields[name] = FieldInfo(
-            annotation=Optional[extension],  # type: ignore # This is how <type> | None is handled by pydantic
+            annotation=extension | None,  # type: ignore
             default=None,
         )
         return extension
@@ -740,19 +740,19 @@ class SignalSncfExtension(BaseModel):
 
 @register_extension(object=SpeedSection, name="psl_sncf")
 class SpeedSectionPslSncfExtension(BaseModel):
-    announcement: List[Sign] = Field(description="Precise the value(s) of the speed")
+    announcement: list[Sign] = Field(description="Precise the value(s) of the speed")
     z: Sign = Field(description="Beginning of the psl speed section")
-    r: List[Sign] = Field(description="End of the psl speed section")
+    r: list[Sign] = Field(description="End of the psl speed section")
 
 
 @register_extension(object=NeutralSection, name="neutral_sncf")
 class NeutralSectionNeutralSncfExtension(BaseModel):
-    announcement: List[Sign] = Field(
+    announcement: list[Sign] = Field(
         description="Precise that there is bp/cc neutral section"
     )
     exe: Sign = Field(description="Beginning of the bp/cc neutral section")
-    end: List[Sign] = Field(description="End of the bp/cc neutral section")
-    rev: List[Sign] = Field(description="REV of the bp/cc neutral section")
+    end: list[Sign] = Field(description="End of the bp/cc neutral section")
+    rev: list[Sign] = Field(description="REV of the bp/cc neutral section")
 
 
 @register_extension(object=BufferStop, name="sncf")
@@ -765,7 +765,7 @@ class DetectorSncfExtension(BaseModel):
     kp: str = Field(description="Kilometric point of the detector")
 
 
-def recursively_rebuild(model: Type[BaseModel]):
+def recursively_rebuild(model: type[BaseModel]):
     for field in model.model_fields.values():
         if field.annotation is None:
             continue

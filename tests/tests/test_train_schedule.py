@@ -4,7 +4,7 @@ from collections.abc import Sequence
 from typing import Any
 
 import pytest
-from requests import Session, Response
+from requests import Response, Session
 
 from tests.infra import Infra
 

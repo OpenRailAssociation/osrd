@@ -1,5 +1,4 @@
 from dataclasses import dataclass, field
-from typing import List, Optional
 
 from osrd_schemas import models
 
@@ -9,11 +8,11 @@ from .waypoint import Waypoint
 
 @dataclass
 class Route:
-    waypoints: List[Waypoint]
-    release_waypoints: List[Waypoint]
+    waypoints: list[Waypoint]
+    release_waypoints: list[Waypoint]
     entry_point_direction: Direction
     switches_directions: dict[str, str] = field(default_factory=dict)
-    label: Optional[str] = field(default=None)
+    label: str | None = field(default=None)
 
     def __hash__(self):
         return hash(self.label)

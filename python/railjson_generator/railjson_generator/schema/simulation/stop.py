@@ -1,5 +1,4 @@
 from dataclasses import dataclass, field
-from typing import Optional
 
 from railjson_generator.schema.location import Location
 
@@ -7,8 +6,8 @@ from railjson_generator.schema.location import Location
 @dataclass
 class Stop:
     duration: float
-    location: Optional[Location] = field(default=None)
-    position: Optional[float] = field(default=None)
+    location: Location | None = field(default=None)
+    position: float | None = field(default=None)
 
     def __init__(self, duration, location=None, position=None):
         self.duration = duration

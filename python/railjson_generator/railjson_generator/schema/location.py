@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Any, Dict
+from typing import Any
 
 from railjson_generator.schema.infra.direction import Direction
 from railjson_generator.schema.infra.track_section import TrackSection
@@ -10,7 +10,7 @@ class Location:
     track_section: TrackSection
     offset: float
 
-    def format(self) -> Dict[str, Any]:
+    def format(self) -> dict[str, Any]:
         """Return a summary of the location as a dictionary."""
         return {
             "track_section": self.track_section.label,
@@ -22,7 +22,7 @@ class Location:
 class DirectedLocation(Location):
     direction: Direction
 
-    def format(self) -> Dict[str, Any]:
+    def format(self) -> dict[str, Any]:
         """Return a summary of the directed location as a dictionary."""
         return {
             **super().format(),

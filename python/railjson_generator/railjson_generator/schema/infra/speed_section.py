@@ -1,5 +1,4 @@
 from dataclasses import dataclass, field
-from typing import List, Optional
 
 from osrd_schemas import models
 
@@ -18,9 +17,9 @@ def _speed_section_id():
 class SpeedSection:
     speed_limit: float
     speed_limit_by_tag: dict[str, float] = field(default_factory=dict)
-    track_ranges: List[ApplicableDirectionsTrackRange] = field(default_factory=list)
+    track_ranges: list[ApplicableDirectionsTrackRange] = field(default_factory=list)
     label: str = field(default_factory=_speed_section_id)
-    on_routes: Optional[List[str]] = None
+    on_routes: list[str] | None = None
 
     _index = 0
 

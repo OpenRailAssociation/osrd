@@ -1,5 +1,5 @@
-from typing import Any
 from collections import Counter
+from typing import Any
 
 import pytest
 from requests import Session

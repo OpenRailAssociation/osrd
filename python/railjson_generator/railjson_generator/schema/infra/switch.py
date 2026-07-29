@@ -1,5 +1,5 @@
+from collections.abc import Sequence
 from dataclasses import dataclass, field
-from typing import Optional
 
 from osrd_schemas import models
 from osrd_schemas.switch_type import (
@@ -30,7 +30,7 @@ class SwitchGroup:
 class Switch:
     _index = 0
     # overridden by subclasses
-    PORT_NAMES = []
+    PORT_NAMES: Sequence[str] = ()
     SWITCH_TYPE = ""
 
     label: str = field(default_factory=_switch_id)
@@ -95,51 +95,51 @@ class Switch:
 
 @dataclass
 class Link(Switch):
-    A: Optional[TrackEndpoint] = None
-    B: Optional[TrackEndpoint] = None
+    A: TrackEndpoint | None = None
+    B: TrackEndpoint | None = None
 
-    PORT_NAMES = [p.root for p in LINK.ports]
+    PORT_NAMES: Sequence[str] = tuple(p.root for p in LINK.ports)
     SWITCH_TYPE = LINK.id
 
 
 @dataclass
 class PointSwitch(Switch):
-    A: Optional[TrackEndpoint] = None
-    B1: Optional[TrackEndpoint] = None
-    B2: Optional[TrackEndpoint] = None
+    A: TrackEndpoint | None = None
+    B1: TrackEndpoint | None = None
+    B2: TrackEndpoint | None = None
 
-    PORT_NAMES = [p.root for p in POINT_SWITCH.ports]
+    PORT_NAMES: Sequence[str] = tuple(p.root for p in POINT_SWITCH.ports)
     SWITCH_TYPE = POINT_SWITCH.id
 
 
 @dataclass
 class Crossing(Switch):
-    A1: Optional[TrackEndpoint] = None
-    B1: Optional[TrackEndpoint] = None
-    A2: Optional[TrackEndpoint] = None
-    B2: Optional[TrackEndpoint] = None
+    A1: TrackEndpoint | None = None
+    B1: TrackEndpoint | None = None
+    A2: TrackEndpoint | None = None
+    B2: TrackEndpoint | None = None
 
-    PORT_NAMES = [p.root for p in CROSSING.ports]
+    PORT_NAMES: Sequence[str] = tuple(p.root for p in CROSSING.ports)
     SWITCH_TYPE = CROSSING.id
 
 
 @dataclass
 class DoubleSlipSwitch(Switch):
-    A1: Optional[TrackEndpoint] = None
-    A2: Optional[TrackEndpoint] = None
-    B1: Optional[TrackEndpoint] = None
-    B2: Optional[TrackEndpoint] = None
+    A1: TrackEndpoint | None = None
+    A2: TrackEndpoint | None = None
+    B1: TrackEndpoint | None = None
+    B2: TrackEndpoint | None = None
 
-    PORT_NAMES = [p.root for p in DOUBLE_SLIP_SWITCH.ports]
+    PORT_NAMES: Sequence[str] = tuple(p.root for p in DOUBLE_SLIP_SWITCH.ports)
     SWITCH_TYPE = DOUBLE_SLIP_SWITCH.id
 
 
 @dataclass
 class SingleSlipSwitch(Switch):
-    A1: Optional[TrackEndpoint] = None
-    A2: Optional[TrackEndpoint] = None
-    B1: Optional[TrackEndpoint] = None
-    B2: Optional[TrackEndpoint] = None
+    A1: TrackEndpoint | None = None
+    A2: TrackEndpoint | None = None
+    B1: TrackEndpoint | None = None
+    B2: TrackEndpoint | None = None
 
-    PORT_NAMES = [p.root for p in SINGLE_SLIP_SWITCH.ports]
+    PORT_NAMES: Sequence[str] = tuple(p.root for p in SINGLE_SLIP_SWITCH.ports)
     SWITCH_TYPE = SINGLE_SLIP_SWITCH.id

@@ -1,5 +1,4 @@
 from dataclasses import dataclass, field
-from typing import Union
 
 from osrd_schemas.train_schedule import (
     AllowanceDistribution,
@@ -27,7 +26,7 @@ class TrainSchedule:
     departure_time: float = field(default=0.0)
     initial_speed: float = field(default=0.0)
     stops: list[Stop] = field(default_factory=list)
-    allowances: list[Union[EngineeringAllowance, StandardAllowance]] = field(
+    allowances: list[EngineeringAllowance | StandardAllowance] = field(
         default_factory=list
     )
 

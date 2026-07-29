@@ -1,6 +1,5 @@
 from dataclasses import dataclass, field
 from os import PathLike
-from typing import List
 
 from osrd_schemas import external_generated_inputs
 
@@ -12,7 +11,7 @@ from railjson_generator.schema.infra.track_section import TrackSection
 class ElectricalProfile:
     value: str
     power_class: str
-    track_ranges: List[TrackRange] = field(default_factory=list)
+    track_ranges: list[TrackRange] = field(default_factory=list)
 
     def add_track_range(self, track: TrackSection, begin: float, end: float):
         """Build a track range and add it to the profile."""
@@ -29,7 +28,7 @@ class ElectricalProfile:
 
 @dataclass
 class ExternalGeneratedInputs:
-    electrical_profiles: List[ElectricalProfile] = field(default_factory=list)
+    electrical_profiles: list[ElectricalProfile] = field(default_factory=list)
 
     def add_electrical_profile(self, *args, **kwargs) -> ElectricalProfile:
         """Build an electrical profile, add it to the inputs, and return it."""

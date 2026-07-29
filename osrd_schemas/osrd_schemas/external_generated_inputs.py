@@ -1,5 +1,3 @@
-from typing import Dict, List
-
 from pydantic import BaseModel, Field
 
 from .models import TrackRange
@@ -13,7 +11,7 @@ class ElectricalProfile(BaseModel):
     power_class: str = Field(
         description="Category of rolling stock power usage this profile applies to"
     )
-    track_ranges: List[TrackRange] = Field(
+    track_ranges: list[TrackRange] = Field(
         description="List of locations where this profile is applied"
     )
 
@@ -21,10 +19,10 @@ class ElectricalProfile(BaseModel):
 class ElectricalProfileSet(BaseModel):
     """This class is used to represent a set of electrical profiles, to use in simulation along an infrastructure."""
 
-    levels: List[ElectricalProfile] = Field(
+    levels: list[ElectricalProfile] = Field(
         description="The list of electrical profiles"
     )
-    level_order: Dict[str, List[str]] = Field(
+    level_order: dict[str, list[str]] = Field(
         description="""A mapping from electrification modes to the electrical profile levels
                     in decreasing order of magnitude"""
     )

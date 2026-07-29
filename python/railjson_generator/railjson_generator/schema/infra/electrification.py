@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from typing import List
 
 from osrd_schemas import models
 
@@ -10,7 +9,7 @@ from railjson_generator.schema.infra.track_section import TrackSection
 class Electrification:
     id: str
     voltage: str
-    tracks: List[TrackSection]
+    tracks: list[TrackSection]
 
     def to_rjs(self):
         track_ranges = []

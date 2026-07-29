@@ -1,6 +1,6 @@
 import json
-
 from datetime import datetime
+
 from requests import Session
 
 

@@ -1,5 +1,4 @@
 from dataclasses import dataclass, field
-from typing import List, Optional, Tuple
 
 from geojson_pydantic.types import LineStringCoords, Position2D
 from osrd_schemas import models
@@ -36,22 +35,22 @@ class TrackSection:
     track_number: int = 0
     line_code: int = 0
     line_name: str = "placeholder_line"
-    waypoints: List[Waypoint] = field(default_factory=list)
-    signals: List[Signal] = field(default_factory=list)
-    operational_points: List[OperationalPointPart] = field(default_factory=list)
+    waypoints: list[Waypoint] = field(default_factory=list)
+    signals: list[Signal] = field(default_factory=list)
+    operational_points: list[OperationalPointPart] = field(default_factory=list)
     index: int = field(default=-1, repr=False)
-    coordinates: List[Tuple[Optional[float], Optional[float]]] = field(
+    coordinates: list[tuple[float | None, float | None]] = field(
         default_factory=lambda: [(None, None), (None, None)]
     )
-    begining_links: List[Tuple[TrackEndpoint, Optional[SwitchGroup]]] = field(
+    begining_links: list[tuple[TrackEndpoint, SwitchGroup | None]] = field(
         default_factory=list, repr=False
     )
-    end_links: List[Tuple[TrackEndpoint, Optional[SwitchGroup]]] = field(
+    end_links: list[tuple[TrackEndpoint, SwitchGroup | None]] = field(
         default_factory=list, repr=False
     )
-    slopes: List[Slope] = field(default_factory=list)
-    curves: List[Curve] = field(default_factory=list)
-    loading_gauge_limits: List[LoadingGaugeLimit] = field(default_factory=list)
+    slopes: list[Slope] = field(default_factory=list)
+    curves: list[Curve] = field(default_factory=list)
+    loading_gauge_limits: list[LoadingGaugeLimit] = field(default_factory=list)
 
     @staticmethod
     def reset_index():
@@ -64,7 +63,7 @@ class TrackSection:
         return TrackEndpoint(self, Endpoint.END)
 
     def forwards(
-        self, begin: Optional[float] = None, end: Optional[float] = None
+        self, begin: float | None = None, end: float | None = None
     ) -> ApplicableDirectionsTrackRange:
         return ApplicableDirectionsTrackRange(
             begin=begin or 0.0,
@@ -74,7 +73,7 @@ class TrackSection:
         )
 
     def backwards(
-        self, begin: Optional[float] = None, end: Optional[float] = None
+        self, begin: float | None = None, end: float | None = None
     ) -> ApplicableDirectionsTrackRange:
         return ApplicableDirectionsTrackRange(
             begin=begin or 0.0,
@@ -119,7 +118,7 @@ class TrackSection:
                 return True
         return False
 
-    def set_remaining_coords(self, coordinates: List[Tuple[float, float]]):
+    def set_remaining_coords(self, coordinates: list[tuple[float, float]]):
         """Sets values for extremities if none was already set, else only set values between extremities."""
         begin, end = 0, len(self.coordinates)
         if self.coordinates[0] != (None, None):
@@ -135,9 +134,9 @@ class TrackSection:
 
     def to_rjs(self):
         # Replace 'None' by '0.0'
-        coordinates: LineStringCoords = list(
-            map(lambda pos: Position2D(pos[0] or 0.0, pos[1] or 0.0), self.coordinates)
-        )
+        coordinates: LineStringCoords = [
+            Position2D(pos[0] or 0.0, pos[1] or 0.0) for pos in self.coordinates
+        ]
         try:
             geo_data = make_geo_lines(coordinates)
         except ValidationError:

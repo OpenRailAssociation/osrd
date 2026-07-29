@@ -1,19 +1,19 @@
 import datetime
 import json
 import random
+from collections.abc import Iterable
 from dataclasses import dataclass
 from pathlib import Path
-from collections.abc import Iterable
 
 from requests import Session
 
+import conftest
 from fuzzer.fuzzer import (
     _get_random_rolling_stock,
     _random_set_element,
     _to_ms,
     get_infra,
 )
-import conftest
 from tests.scenario import Scenario
 
 _TIMEOUT = 300
@@ -83,7 +83,7 @@ def run(
             )
         except STDCMException as e:
             if log_folder is None:
-                raise e
+                raise
             else:
                 print(e.error)
                 log_folder.mkdir(exist_ok=True)
@@ -130,15 +130,16 @@ def _build_timetable_range(
     print("building timetable time range")
     train_ids = _get_train_ids(editoast_url, scenario, session)
     train_ids = random.sample(train_ids, min(100, len(train_ids)))
-    train_times = list()
+    train_times = []
     for train_id in train_ids:
         r = session.get(f"{editoast_url}/train_schedules/{train_id}")
         r.raise_for_status()
-        start_time = datetime.datetime.fromtimestamp(r.json()["start_time"] / 1000)
-        start_time = start_time.astimezone(datetime.timezone.utc)
+        start_time = datetime.datetime.fromtimestamp(
+            r.json()["start_time"] / 1000, tz=datetime.UTC
+        )
         train_times.append(start_time)
     if not train_times:
-        t = datetime.datetime(year=2024, month=1, day=1, tzinfo=datetime.timezone.utc)
+        t = datetime.datetime(year=2024, month=1, day=1, tzinfo=datetime.UTC)
         return TimetableTimeRange(
             start=t,
             end=t,
@@ -194,8 +195,8 @@ def _test_stdcm(
             )
     except STDCMException as e:
         e.payload = stdcm_payload
-        raise e
-    except Exception as e:
+        raise
+    except Exception as e:  # noqa: BLE001
         raise STDCMException(error=str(e), payload=stdcm_payload)
     print("test PASSED")
 

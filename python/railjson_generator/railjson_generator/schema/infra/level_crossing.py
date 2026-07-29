@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from typing import List
 
 from osrd_schemas import models
 
@@ -25,7 +24,7 @@ class LevelCrossing:
     id: str
     name: str
     short_zone_length: int
-    parts: List[LevelCrossingPart]
+    parts: list[LevelCrossingPart]
 
     def add_part(
         self, track: str, position: float, pedal_upstream: int, pedal_downstream: int

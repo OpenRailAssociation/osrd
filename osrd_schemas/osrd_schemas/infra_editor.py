@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Any, List, Literal, Union
+from typing import Any, Literal
 
 from pydantic import BaseModel, Field, RootModel
 
@@ -21,7 +21,7 @@ class FlagSignalParameter(str, Enum):
 
 
 class BaseLogicalSignal(BaseModel):
-    next_signaling_systems: List[SignalingSystem] = Field(
+    next_signaling_systems: list[SignalingSystem] = Field(
         description="The list of allowed input signaling systems", default_factory=list
     )
 
@@ -44,7 +44,7 @@ class BalSystem(BaseLogicalSignal):
     signaling_system: Literal["BAL"] = Field(default="BAL")
     settings: Settings = Field(description="BAL signal settings")
     default_parameters: Parameters = Field(description="BAL signal parameters")
-    conditional_parameters: List[ConditionalParameters] = Field(
+    conditional_parameters: list[ConditionalParameters] = Field(
         description="BAL signal parameters for specific routes", default_factory=list
     )
 
@@ -68,7 +68,7 @@ class BaprSystem(BaseLogicalSignal):
     signaling_system: Literal["BAPR"] = Field(default="BAPR")
     settings: Settings = Field(description="BAPR signal settings")
     parameters: Parameters = Field(description="BAPR signal parameters")
-    conditional_parameters: List[ConditionalParameters] = Field(
+    conditional_parameters: list[ConditionalParameters] = Field(
         description="BAPR signal parameters for specific routes", default_factory=list
     )
 
@@ -91,7 +91,7 @@ class Tvm300System(BaseLogicalSignal):
     signaling_system: Literal["TVM300"] = Field(default="TVM300")
     settings: Settings = Field(description="TVM signal settings")
     default_parameters: Parameters = Field(description="TVM signal parameters")
-    conditional_parameters: List[ConditionalParameters] = Field(
+    conditional_parameters: list[ConditionalParameters] = Field(
         description="TVM signal parameters for specific routes", default_factory=list
     )
 
@@ -114,7 +114,7 @@ class Tvm430System(BaseLogicalSignal):
     signaling_system: Literal["TVM430"] = Field(default="TVM430")
     settings: Settings = Field(description="TVM signal settings")
     default_parameters: Parameters = Field(description="TVM signal parameters")
-    conditional_parameters: List[ConditionalParameters] = Field(
+    conditional_parameters: list[ConditionalParameters] = Field(
         description="TVM signal parameters for specific routes", default_factory=list
     )
 
@@ -137,7 +137,7 @@ class EtcsLevel2System(BaseLogicalSignal):
     signaling_system: Literal["ETCS_LEVEL2"] = Field(default="ETCS_LEVEL2")
     settings: Settings = Field(description="ETCS_LEVEL2 signal settings")
     default_parameters: Parameters = Field(description="ETCS_LEVEL2 signal parameters")
-    conditional_parameters: List[ConditionalParameters] = Field(
+    conditional_parameters: list[ConditionalParameters] = Field(
         description="ETCS_LEVEL2 signal parameters for specific routes",
         default_factory=list,
     )
@@ -146,13 +146,13 @@ class EtcsLevel2System(BaseLogicalSignal):
 class LimitedLogicalSignal(RootModel):
     """Limited list of logical signals. Used to generate a usable schema for the front editor"""
 
-    root: Union[BalSystem, BaprSystem, Tvm300System, Tvm430System, EtcsLevel2System] = (
+    root: BalSystem | BaprSystem | Tvm300System | Tvm430System | EtcsLevel2System = (
         Field(..., discriminator="signaling_system")
     )
 
 
 class _TmpSignal(BaseModel):
-    logical_signals: List[LimitedLogicalSignal] = Field(
+    logical_signals: list[LimitedLogicalSignal] = Field(
         description="Logical signals bundled into this physical signal",
         default_factory=list,
     )

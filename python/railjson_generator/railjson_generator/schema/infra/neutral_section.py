@@ -1,5 +1,4 @@
 from dataclasses import dataclass, field
-from typing import List
 
 from osrd_schemas import models
 
@@ -26,8 +25,8 @@ class NeutralSection:
     For more details see [the documentation](https://osrd.fr/en/docs/explanation/neutral_sections/).
     """
 
-    announcement_track_ranges: List[DirectionalTrackRange] = field(default_factory=list)
-    track_ranges: List[DirectionalTrackRange] = field(default_factory=list)
+    announcement_track_ranges: list[DirectionalTrackRange] = field(default_factory=list)
+    track_ranges: list[DirectionalTrackRange] = field(default_factory=list)
     lower_pantograph: bool = field(default=False)
     label: str = field(default_factory=_neutral_section_id)
 

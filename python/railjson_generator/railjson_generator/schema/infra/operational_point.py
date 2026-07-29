@@ -1,9 +1,8 @@
 from dataclasses import dataclass
-from typing import Annotated, List, Optional
-
-from pydantic import StringConstraints
+from typing import Annotated
 
 from osrd_schemas import models
+from pydantic import StringConstraints
 
 NonBlankStr = Annotated[str, StringConstraints(min_length=1)]
 
@@ -12,30 +11,30 @@ NonBlankStr = Annotated[str, StringConstraints(min_length=1)]
 class OperationalPoint:
     label: NonBlankStr
     id: str
-    parts: List
-    weight: Optional[int]
-    uic: Optional[int]
-    plc: Optional[NonBlankStr]
+    parts: list
+    weight: int | None
+    uic: int | None
+    plc: NonBlankStr | None
     country_code: NonBlankStr
     main_code: NonBlankStr
-    secondary_code: Optional[NonBlankStr]
+    secondary_code: NonBlankStr | None
     is_passenger_station: bool
 
     def __init__(
         self,
         label: str,
-        id: Optional[str] = None,
-        main_code: Optional[NonBlankStr] = None,
-        uic: Optional[int] = 8700,
-        plc: Optional[NonBlankStr] = None,
-        weight: Optional[int] = None,
-        secondary_code: Optional[NonBlankStr] = "BV",
+        id: str | None = None,
+        main_code: NonBlankStr | None = None,
+        uic: int | None = 8700,
+        plc: NonBlankStr | None = None,
+        weight: int | None = None,
+        secondary_code: NonBlankStr | None = "BV",
         country_code: NonBlankStr = "FR",
         is_passenger_station: bool = True,
     ):
         self.label = label
         self.main_code = main_code or label[:3].upper()
-        self.parts = list()
+        self.parts = []
         self.uic = uic
         self.weight = weight
         self.id = id or label
