@@ -5,6 +5,7 @@ import type { DrawingFunction } from '../../common/types';
 import { SpaceTimeChartCanvasContext } from '../lib/context';
 import type { SpaceTimeChartContextType } from '../lib/types';
 import { fillRect, type CanvasRect } from '../utils/canvas';
+import { BLACK_5 } from '../../common/helpers/colors';
 
 /**
  * radius 1 black dot with radius 3 white region around it
@@ -28,7 +29,7 @@ export const ZoomRect = (rect: CanvasRect) => {
   const drawZoomRect = useCallback<DrawingFunction<SpaceTimeChartContextType>>(
     (ctx, context) => {
       ctx.save();
-      ctx.fillStyle = '#0000000D'; /* black5 */
+      ctx.fillStyle = BLACK_5; /* black5 */
       const { width, height } = fillRect(ctx, rect, context);
       if (width && height) {
         ctx.lineWidth = LINE_WIDTH;

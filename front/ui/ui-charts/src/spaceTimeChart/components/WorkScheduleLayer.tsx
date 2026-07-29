@@ -1,13 +1,7 @@
 import React, { useEffect, useState } from 'react';
 
 import { PatternRect } from './PatternRect';
-
-export type WorkSchedule = {
-  type: 'TRACK' | 'CATENARY';
-  timeStart: Date;
-  timeEnd: Date;
-  spaceRanges: [number, number][];
-};
+import { WorkSchedule } from '../lib/types';
 
 type WorkScheduleLayerProps = {
   workSchedules: WorkSchedule[];

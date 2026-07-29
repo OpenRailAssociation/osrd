@@ -2,6 +2,7 @@ import React from 'react';
 
 import type { Point } from '../../common/types';
 import { Tooltip } from './Tooltip';
+import { SECOND } from '../../common/consts';
 
 export type ConflictTooltipProps = {
   position: Point;
@@ -38,7 +39,7 @@ export const ConflictTooltip = ({
     </div>
     <div className="type-and-duration">
       <div>{type}</div>
-      <div>{Math.round((timeEnd - timeStart) / 1000)}s</div>
+      <div>{Math.round((timeEnd - timeStart) / SECOND)}s</div>
     </div>
     <div className="trains">{trains.join(', ')}</div>
   </Tooltip>
