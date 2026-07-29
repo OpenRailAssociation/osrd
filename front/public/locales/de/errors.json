@@ -315,6 +315,10 @@
       "TimetableNotFound": "Fahrplan '{{timetable_id}}' nicht gefunden",
       "TrainScheduleNotFound": "Zugfahrplan '{{train_schedule_id}}' nicht gefunden"
     },
+    "train_schedule_linking": {
+      "Database": "Interner Fehler (Datenbank)",
+      "TimetableNotFound": "Fahrplan '{{timetable_id}}' nicht gefunden"
+    },
     "train_schedule_set": {
       "CatalogEntryNotFound": "Katalogeintrag '{{catalog_entry_id}}' nicht gefunden",
       "Database": "Interner Fehler (Datenbank)",

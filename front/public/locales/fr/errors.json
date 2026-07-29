@@ -330,6 +330,10 @@
       "TimetableNotFound": "Grille horaire '{{timetable_id}}' non trouvée",
       "TrainScheduleNotFound": "La circulation '{{train_schedule_id}}' n’a pas été trouvée"
     },
+    "train_schedule_linking": {
+      "Database": "Erreur interne (base de données)",
+      "TimetableNotFound": "Grille horaire '{{timetable_id}}' non trouvée"
+    },
     "train_schedule_set": {
       "CatalogEntryNotFound": "Catalogue '{{catalog_entry_id}}' non trouvé",
       "Database": "Erreur interne (base de données)",

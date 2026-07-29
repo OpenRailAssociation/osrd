@@ -32,6 +32,7 @@ export const addTagTypes = [
   'train_schedule_exceptions',
   'train_schedule_set',
   'train_schedule',
+  'linkings',
   'etcs_braking_curves',
   'work_schedules',
   'worker',
@@ -1382,6 +1383,17 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ['timetable', 'train_schedule'],
       }),
+      postTrainSchedulesLinkings: build.query<
+        PostTrainSchedulesLinkingsApiResponse,
+        PostTrainSchedulesLinkingsApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/train_schedules/linkings`,
+          method: 'POST',
+          body: queryArg.body,
+        }),
+        providesTags: ['linkings'],
+      }),
       patchTrainSchedulesMove: build.mutation<
         PatchTrainSchedulesMoveApiResponse,
         PatchTrainSchedulesMoveApiArg
@@ -2691,6 +2703,18 @@ export type DeleteTrainSchedulesApiResponse = unknown;
 export type DeleteTrainSchedulesApiArg = {
   body: {
     ids: number[];
+  };
+};
+export type PostTrainSchedulesLinkingsApiResponse =
+  /** status 200 The linkings for a given timetable and given train schedules. */ {
+    id: number;
+    source: LinkingOccurrenceId;
+    target: LinkingOccurrenceId;
+  }[];
+export type PostTrainSchedulesLinkingsApiArg = {
+  body: {
+    timetable_id: number;
+    train_schedules: number[];
   };
 };
 export type PatchTrainSchedulesMoveApiResponse = unknown;
@@ -5135,6 +5159,24 @@ export type TrainScheduleSetUpdateForm = {
   name?: string | null;
   published: boolean;
 };
+export type LinkingOccurrenceId =
+  | {
+      train_schedule_id: number;
+      train_schedule_instance_index?: number | null;
+      type: 'unique';
+    }
+  | {
+      occurrence_index: number;
+      train_schedule_id: number;
+      train_schedule_instance_index?: number | null;
+      type: 'paced_occurrence';
+    }
+  | {
+      added_exception_id: number;
+      train_schedule_id: number;
+      train_schedule_instance_index?: number | null;
+      type: 'added_exception';
+    };
 export type CoreSignalUpdate = {
   /** The labels of the new aspect */
   aspect_label: string;

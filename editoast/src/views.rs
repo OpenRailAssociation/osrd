@@ -254,6 +254,7 @@ fn service_router() -> server::router::DocumentedRouter {
                         "/project_path_op",
                         post!(timetable::train_schedule::project_path_op),
                     )
+                    .route("/linkings", post!(timetable::linkings::list))
                 .nests("/{id}", |path| {
                     path.route("/", get!(timetable::train_schedule::get_by_id))
                         .route(
