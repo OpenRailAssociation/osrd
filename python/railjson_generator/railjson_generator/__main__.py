@@ -1,10 +1,10 @@
-from importlib.machinery import ModuleSpec
 import importlib.util
 import sys
 from argparse import ArgumentParser
+from collections.abc import Iterable
+from importlib.machinery import ModuleSpec
 from pathlib import Path
 from types import ModuleType
-from typing import Iterable
 
 
 def import_module_from_path(module_name: str, file_path: Path) -> ModuleType:

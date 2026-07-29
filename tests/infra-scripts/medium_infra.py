@@ -5,11 +5,7 @@ that uses different CH codes for the same Operational Point.
 
 import sys
 from pathlib import Path
-from small_infra_creator import (
-    place_regular_signals_detectors,
-    add_signal_on_ports,
-    ScenarioData,
-)
+
 from osrd_schemas.infra import LoadingGaugeType
 from railjson_generator import (
     ApplicableDirection,
@@ -18,6 +14,11 @@ from railjson_generator import (
 )
 from railjson_generator.schema.infra.direction import Direction
 from railjson_generator.schema.infra.electrification import Electrification
+from small_infra_creator import (
+    ScenarioData,
+    add_signal_on_ports,
+    place_regular_signals_detectors,
+)
 
 
 def create_medium_infra(signaling_system: str) -> ScenarioData:

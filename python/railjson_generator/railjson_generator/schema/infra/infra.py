@@ -1,13 +1,12 @@
 from collections import defaultdict
 from dataclasses import dataclass, field
-from typing import List
 
 from osrd_schemas import models
 
 from railjson_generator.schema.infra.electrification import Electrification
+from railjson_generator.schema.infra.level_crossing import LevelCrossing
 from railjson_generator.schema.infra.neutral_section import NeutralSection
 from railjson_generator.schema.infra.operational_point import OperationalPoint
-from railjson_generator.schema.infra.level_crossing import LevelCrossing
 from railjson_generator.schema.infra.route import Route
 from railjson_generator.schema.infra.speed_section import SpeedSection
 from railjson_generator.schema.infra.switch import Switch
@@ -17,14 +16,14 @@ from railjson_generator.schema.infra.waypoint import BufferStop, Detector
 
 @dataclass
 class Infra:
-    track_sections: List[TrackSection] = field(default_factory=list)
-    switches: List[Switch] = field(default_factory=list)
-    operational_points: List[OperationalPoint] = field(default_factory=list)
-    level_crossings: List[LevelCrossing] = field(default_factory=list)
-    routes: List[Route] = field(default_factory=list)
-    speed_sections: List[SpeedSection] = field(default_factory=list)
-    electrifications: List[Electrification] = field(default_factory=list)
-    neutral_sections: List[NeutralSection] = field(default_factory=list)
+    track_sections: list[TrackSection] = field(default_factory=list)
+    switches: list[Switch] = field(default_factory=list)
+    operational_points: list[OperationalPoint] = field(default_factory=list)
+    level_crossings: list[LevelCrossing] = field(default_factory=list)
+    routes: list[Route] = field(default_factory=list)
+    speed_sections: list[SpeedSection] = field(default_factory=list)
+    electrifications: list[Electrification] = field(default_factory=list)
+    neutral_sections: list[NeutralSection] = field(default_factory=list)
 
     VERSION = "3.5.3"
 
@@ -117,8 +116,16 @@ class Infra:
             self.operational_points,
             self.routes,
             self.speed_sections,
-            sum([ts.signals for ts in self.track_sections], []),
-            sum([ts.waypoints for ts in self.track_sections], []),
+            [
+                signal
+                for track_sections in self.track_sections
+                for signal in track_sections.signals
+            ],
+            [
+                waypoint
+                for track_sections in self.track_sections
+                for waypoint in track_sections.waypoints
+            ],
         ]:
             seen_ids = set()
             for instance in instance_list:

@@ -6,8 +6,8 @@ For more information, and a diagram of this infrastructure, see:
 https://osrd.fr/en/docs/explanation/models/data-models-full-example/
 """
 
-from typing import NamedTuple
 from collections.abc import Mapping
+from typing import NamedTuple
 
 from osrd_schemas.infra import LoadingGaugeType
 from railjson_generator import (
@@ -18,8 +18,8 @@ from railjson_generator import (
 from railjson_generator.schema.infra.direction import Direction
 from railjson_generator.schema.infra.electrification import Electrification
 from railjson_generator.schema.infra.infra import Infra
-from railjson_generator.schema.infra.track_section import TrackSection
 from railjson_generator.schema.infra.switch import Switch
+from railjson_generator.schema.infra.track_section import TrackSection
 
 
 def place_regular_signals_detectors(

@@ -182,11 +182,11 @@ def test_between_trains(
 def test_work_schedules(
     small_scenario: Scenario, fast_rolling_stock: int, session: Session
 ):
-    start_time = datetime.datetime(2024, 1, 1, 14, 0, 0, tzinfo=datetime.timezone.utc)
+    start_time = datetime.datetime(2024, 1, 1, 14, 0, 0, tzinfo=datetime.UTC)
     end_time = start_time + datetime.timedelta(days=4)
     # TODO: we cannot delete work schedules for now, so let's give a unique name
     # to avoid collisions
-    now = datetime.datetime.now()
+    now = datetime.datetime.now(tz=datetime.UTC)
     work_schedules_r = session.post(
         EDITOAST_URL + "work_schedules/",
         json={
@@ -239,9 +239,7 @@ def test_work_schedules(
         if response_json.get("event") == "completed":
             data = response_json["data"]
             if data.get("status") == "success":
-                departure_time = datetime.datetime.fromisoformat(
-                    data["departure_time"].replace("Z", "+00:00")
-                )
+                departure_time = datetime.datetime.fromisoformat(data["departure_time"])
             break
     assert departure_time is not None
     assert departure_time >= end_time.astimezone(departure_time.tzinfo)
@@ -329,21 +327,13 @@ def test_max_running_time(
                    [       ] <  max running time
                    [                             ] < departure time window
     """
-    origin_start_time = datetime.datetime(
-        2024, 1, 1, 8, 0, 0, tzinfo=datetime.timezone.utc
-    )
-    origin_end_time = datetime.datetime(
-        2025, 1, 1, 8, 0, 0, tzinfo=datetime.timezone.utc
-    )
-    destination_start_time = datetime.datetime(
-        2023, 1, 1, 8, 0, 0, tzinfo=datetime.timezone.utc
-    )
-    destination_end_time = datetime.datetime(
-        2024, 1, 1, 16, 0, 0, tzinfo=datetime.timezone.utc
-    )
+    origin_start_time = datetime.datetime(2024, 1, 1, 8, 0, 0, tzinfo=datetime.UTC)
+    origin_end_time = datetime.datetime(2025, 1, 1, 8, 0, 0, tzinfo=datetime.UTC)
+    destination_start_time = datetime.datetime(2023, 1, 1, 8, 0, 0, tzinfo=datetime.UTC)
+    destination_end_time = datetime.datetime(2024, 1, 1, 16, 0, 0, tzinfo=datetime.UTC)
     # TODO: we cannot delete work schedules for now, so let's give a unique name
     # to avoid collisions
-    now = datetime.datetime.now()
+    now = datetime.datetime.now(tz=datetime.UTC)
     work_schedules_r = session.post(
         EDITOAST_URL + "work_schedules/",
         json={

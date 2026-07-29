@@ -1,11 +1,11 @@
+from collections.abc import Iterable
 from dataclasses import dataclass, field
-from typing import Iterable, Optional, Tuple
 
 from .schema.infra.endpoint import TrackEndpoint
-from .schema.infra.infra import BufferStop, Infra, Switch, Detector
+from .schema.infra.infra import BufferStop, Detector, Infra, Switch
+from .schema.infra.level_crossing import LevelCrossing
 from .schema.infra.neutral_section import NeutralSection
 from .schema.infra.operational_point import OperationalPoint
-from .schema.infra.level_crossing import LevelCrossing
 from .schema.infra.route import Route
 from .schema.infra.speed_section import SpeedSection
 from .schema.infra.switch import (
@@ -21,7 +21,7 @@ from .utils import generate_routes
 
 def _check_connections(
     endpoint: TrackEndpoint,
-    connections: Iterable[Tuple[TrackEndpoint, Optional[SwitchGroup]]],
+    connections: Iterable[tuple[TrackEndpoint, SwitchGroup | None]],
 ):
     switches = []
     for connected_endpoint, switch_group in connections:
@@ -73,7 +73,8 @@ class InfraBuilder:
 
     def add_track_section(self, *args, **kwargs) -> TrackSection:
         """Build a track section, add it to the infra, and return it."""
-        track = TrackSection(index=len(self.infra.track_sections), *args, **kwargs)
+        track = TrackSection(*args, **kwargs)
+        track.index = len(self.infra.track_sections)
         self.infra.track_sections.append(track)
         return track
 

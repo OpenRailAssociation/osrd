@@ -1,5 +1,5 @@
+from collections.abc import Sequence
 from dataclasses import dataclass, field
-from typing import Sequence, Union
 
 from railjson_generator.schema.infra.direction import Direction
 from railjson_generator.schema.location import DirectedLocation, Location
@@ -22,7 +22,7 @@ class SimulationBuilder:
 
     def add_train_schedule_group(
         self,
-        locations: Sequence[Union[Location, DirectedLocation]],
+        locations: Sequence[Location | DirectedLocation],
         *train_schedules: TrainSchedule,
     ) -> TrainScheduleGroup:
         """Create a train schedule group containing the given train schedules.

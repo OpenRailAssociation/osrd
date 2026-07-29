@@ -62,7 +62,7 @@ class LoadingGaugeLimit(RangeElement):
 
 @dataclass
 class TrackRange(RangeElement):
-    track: "TrackSection"
+    track: TrackSection
 
     def to_rjs(self):
         return models.TrackRange(track=self.track.id, begin=self.begin, end=self.end)

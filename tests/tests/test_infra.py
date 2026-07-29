@@ -1,6 +1,6 @@
+from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
 from typing import Any
-from collections.abc import Iterable, Mapping
 
 import pytest
 from requests import Session

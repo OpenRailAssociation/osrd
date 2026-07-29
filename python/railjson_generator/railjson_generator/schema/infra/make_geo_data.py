@@ -1,4 +1,4 @@
-from typing import Mapping
+from collections.abc import Mapping
 
 from geojson_pydantic.types import LineStringCoords
 from osrd_schemas import models

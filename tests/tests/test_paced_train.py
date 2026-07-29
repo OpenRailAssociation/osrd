@@ -5,12 +5,12 @@ from typing import Any
 from requests import Session
 
 from tests.infra import Infra
-from .scenario import Scenario
 
+from .scenario import Scenario
 from .services import EDITOAST_URL
 from .test_train_schedule import (
-    _get_etcs_braking_curves_train_data,
     _check_etcs_braking_curves_response,
+    _get_etcs_braking_curves_train_data,
 )
 
 

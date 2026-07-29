@@ -11,12 +11,11 @@ from functools import cache
 from pathlib import Path
 from typing import TypeVar
 
+from osrd_schemas.switch_type import builtin_node_types
+from requests import Response, Session, Timeout
+
 # TODO: we may want to use more qualified imports
 import conftest
-from requests import Session
-from osrd_schemas.switch_type import builtin_node_types
-from requests import Response, Timeout
-
 from tests.scenario import Scenario
 
 _TIMEOUT = 15
@@ -86,7 +85,7 @@ def run(
             )
         except Exception as e:
             if log_folder is None:
-                raise e
+                raise
             else:
                 print(e)
                 log_folder.mkdir(exist_ok=True)
@@ -339,7 +338,7 @@ def _make_stdcm_payload(path: list[tuple[str, float]], rolling_stock: int) -> di
     """
     res = {
         "start_time": datetime.datetime.fromtimestamp(
-            _make_random_time() / 1000, tz=datetime.timezone.utc
+            _make_random_time() / 1000, tz=datetime.UTC
         ).isoformat(),
         "maximum_departure_delay": random.randint(0, 3_600_000 * 4),
         "maximum_run_time": random.randint(3_600_000 * 5, 3_600_000 * 10),
@@ -627,7 +626,7 @@ def _make_random_time():
     Generate a random offset from epoch in ms. All values will be within the same 24h
     """
     start = datetime.datetime(
-        year=2024, month=1, day=1, tzinfo=datetime.timezone.utc
+        year=2024, month=1, day=1, tzinfo=datetime.UTC
     )  # Arbitrary date
     date = start + datetime.timedelta(seconds=(random.randint(0, 3600 * 24)))
     return int(date.timestamp() * 1000)

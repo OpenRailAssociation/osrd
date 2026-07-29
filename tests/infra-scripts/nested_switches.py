@@ -34,8 +34,8 @@ import sys
 from pathlib import Path
 
 from railjson_generator import InfraBuilder
-from railjson_generator.schema.infra.route import Route
 from railjson_generator.schema.infra.direction import Direction
+from railjson_generator.schema.infra.route import Route
 from railjson_generator.schema.infra.track_section import TrackSection
 from small_infra_creator import ScenarioData
 

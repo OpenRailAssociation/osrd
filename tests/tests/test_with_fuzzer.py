@@ -1,8 +1,8 @@
 import pytest
+from requests import Session
 
 # TODO: we should clean up the package and imports structure
 from fuzzer import fuzzer, fuzzer_stdcm_single_timetable
-from requests import Session
 
 from .scenario import Scenario
 from .services import EDITOAST_URL

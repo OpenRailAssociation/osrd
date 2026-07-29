@@ -1,7 +1,6 @@
 import json
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import List
 
 from railjson_generator.schema.simulation.train_schedule import TrainScheduleGroup
 
@@ -17,7 +16,7 @@ def register_rolling_stocks(directory_path: Path):
 
 @dataclass
 class Simulation:
-    train_schedule_groups: List[TrainScheduleGroup] = field(default_factory=list)
+    train_schedule_groups: list[TrainScheduleGroup] = field(default_factory=list)
     time_step: float = field(default=2.0)
 
     def format(self):
