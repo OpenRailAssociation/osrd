@@ -240,6 +240,7 @@ const UniqueTrainItem = ({
             <div className="train-time">
               <div className="status-icon after-midnight">{isAfterMidnight && <Moon />}</div>
               <div
+                data-testid="train-schedule-departure-time"
                 className="scenario-timetable-train-times"
                 title={trainStartTime.toLocaleString(dateTimeLocale)}
               >

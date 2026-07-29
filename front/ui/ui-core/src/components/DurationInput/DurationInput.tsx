@@ -34,6 +34,7 @@ export type DurationInputProps = {
   hint?: string;
   label?: string;
   statusWithMessage?: FieldWrapperProps['statusWithMessage'];
+  dataTestId?: string;
 } & Omit<React.ComponentPropsWithoutRef<'div'>, 'onChange'>;
 
 export const PRESETS: Record<string, Omit<UnitConfig, 'key'>> = {
@@ -230,6 +231,7 @@ type UnitFieldProps = {
   onBlur: (e: React.FocusEvent<HTMLInputElement>) => void;
   onKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) => void;
   tabIndex: number;
+  dataTestId?: string;
 };
 
 const UnitField = function UnitField({
@@ -241,6 +243,7 @@ const UnitField = function UnitField({
   onBlur,
   onKeyDown,
   tabIndex,
+  dataTestId,
 }: UnitFieldProps) {
   const { label, digits, padChar } = setting;
   const placeholder = padChar.repeat(digits ?? 2);
@@ -262,6 +265,7 @@ const UnitField = function UnitField({
         onFocus={onFocus}
         onBlur={onBlur}
         onKeyDown={onKeyDown}
+        data-testid={dataTestId}
       />
       <span aria-hidden onClick={onFocus}>
         {label}
@@ -288,6 +292,7 @@ export const DurationInput = ({
   label,
   hint,
   statusWithMessage,
+  dataTestId,
   ...rest
 }: DurationInputProps) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -339,6 +344,7 @@ export const DurationInput = ({
             onFocus={() => handleFocus(setting)}
             onBlur={(e) => handleBlur(e)}
             onKeyDown={(e) => handleKeyDown(setting, e)}
+            dataTestId={dataTestId ? `${dataTestId}-${setting.key}` : undefined}
           />
         ))}
       </div>

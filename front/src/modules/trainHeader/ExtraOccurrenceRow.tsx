@@ -20,12 +20,26 @@ function formatTimeString(date: Date) {
 }
 
 const ExtraOccurrenceRow = ({ startTime, onDelete }: ExtraOccurrenceRowProps) => (
-  <div className="train-extra-occurrence">
-    <button className="train-extra-occurrence-delete" onClick={onDelete}>
+  <div className="train-extra-occurrence" data-testid="train-header-extra-occurrence-row">
+    <button
+      className="train-extra-occurrence-delete"
+      onClick={onDelete}
+      data-testid="train-header-extra-occurrence-delete-button"
+    >
       <Trash />
     </button>
-    <div className="train-extra-occurrence-date">{formatDateString(startTime)}</div>
-    <div className="train-extra-occurrence-time">{formatTimeString(startTime)}</div>
+    <div
+      className="train-extra-occurrence-date"
+      data-testid="train-header-extra-occurrence-date-value"
+    >
+      {formatDateString(startTime)}
+    </div>
+    <div
+      className="train-extra-occurrence-time"
+      data-testid="train-header-extra-occurrence-time-value"
+    >
+      {formatTimeString(startTime)}
+    </div>
   </div>
 );
 

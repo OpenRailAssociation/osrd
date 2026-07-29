@@ -111,12 +111,17 @@ export default function TrainServiceForm({
   return (
     <div className="train-service">
       <div className="toggle-band">
-        <button className="header-toggle" onClick={() => onCollapse()} disabled={erroneousFields}>
+        <button
+          className="header-toggle"
+          onClick={() => onCollapse()}
+          disabled={erroneousFields}
+          data-testid="train-header-collapse-toggle"
+        >
           <ChevronUp />
         </button>
       </div>
       {occurrenceId ? (
-        <div className="train-occurrence-tag">
+        <div className="train-occurrence-tag" data-testid="train-header-kind">
           {t('manageTrainSchedule.trainHeader.serviceOccurrence')}
           {exception && ' ≠'}
         </div>
@@ -135,9 +140,10 @@ export default function TrainServiceForm({
           </div>
           {isPacedTrain && (
             <>
-              <div className="train-service-interval">
+              <div className="train-service-interval" data-testid="train-header-service-cadence">
                 <DurationInput
                   id="train-header-service-interval-input"
+                  dataTestId="train-header-service-cadence"
                   small
                   units={['m']}
                   padChar="0"
@@ -157,9 +163,10 @@ export default function TrainServiceForm({
                   }
                 />
               </div>
-              <div className="train-service-window">
+              <div className="train-service-window" data-testid="train-header-service-window">
                 <DurationInput
                   id="train-header-service-window-input"
+                  dataTestId="train-header-service-window"
                   small
                   units={['h', 'm']}
                   padChar="0"
@@ -189,6 +196,7 @@ export default function TrainServiceForm({
                     setExtraOccurrencesVisible(!extraOccurrencesVisible);
                   }}
                   size="small"
+                  dataTestID="train-header-extra-occurrences-toggle"
                 />
               </div>
             </>
@@ -196,7 +204,7 @@ export default function TrainServiceForm({
         </div>
       )}
       {isPacedTrain && extraOccurrencesVisible && (
-        <div className="train-extra-occurrences">
+        <div className="train-extra-occurrences" data-testid="train-header-extra-occurrences">
           <ExtraOccurrenceForm
             addedExceptionDate={fields.added_exception_date}
             setAddedExceptionDate={(newAddedExceptionDate) =>
@@ -208,7 +216,10 @@ export default function TrainServiceForm({
               });
             }}
           />
-          <div className="train-extra-occurrences-list">
+          <div
+            className="train-extra-occurrences-list"
+            data-testid="train-header-extra-occurrences-list"
+          >
             {extraOccurrences
               .filter((occurrence) => occurrence.start_time?.value)
               .map((occurrence) => (

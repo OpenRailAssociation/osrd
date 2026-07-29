@@ -42,9 +42,9 @@ const CollapsedTrainOverview = ({
   const subCategories = useSubCategoryContext();
 
   return (
-    <div className="train-header collapsed-train-summary">
+    <div className="train-header collapsed-train-summary" data-testid="train-header-collapsed">
       {pacedTrain && (
-        <div className="train-kind-header">
+        <div className="train-kind-header" data-testid="train-header-kind">
           {occurrenceId
             ? t('manageTrainSchedule.trainHeader.serviceOccurrence')
             : t('manageTrainSchedule.trainHeader.serviceModelTrain')}
@@ -53,19 +53,27 @@ const CollapsedTrainOverview = ({
       )}
       <div className="train-metadata">
         {pacedTrain && !occurrenceId && (
-          <div className="train-service-interval">
+          <div className="train-service-interval" data-testid="train-service-interval">
             {getServiceInterval(pacedTrain)}’ — {getServiceWindow(pacedTrain)}’
           </div>
         )}
-        <div className="train-departure-date">{getShortDepartureDate(train, dateTimeLocale)}</div>
-        <div className="train-category">{getShortCategoryName(train, t, subCategories)}</div>
+        <div className="train-departure-date" data-testid="train-departure-date">
+          {getShortDepartureDate(train, dateTimeLocale)}
+        </div>
+        <div className="train-category" data-testid="train-category">
+          {getShortCategoryName(train, t, subCategories)}
+        </div>
         {train.rolling_stock_name && (
-          <div className="train-rolling-stock">{train.rolling_stock_name}</div>
+          <div className="train-rolling-stock" data-testid="train-rolling-stock">
+            {train.rolling_stock_name}
+          </div>
         )}
         {train.speed_limit_tag && (
-          <div className="train-composition-code">{train.speed_limit_tag}</div>
+          <div className="train-composition-code" data-testid="train-composition-code">
+            {train.speed_limit_tag}
+          </div>
         )}
-        <div className="train-recovery-margin">
+        <div className="train-recovery-margin" data-testid="train-recovery-margin">
           {train.constraint_distribution === 'MARECO'
             ? t('manageTrainSchedule.trainHeader.allowances.mareco')
             : t('manageTrainSchedule.trainHeader.allowances.linear')}
@@ -77,9 +85,14 @@ const CollapsedTrainOverview = ({
           variant="Quiet"
           onClick={onItineraryOpened}
           size="small"
+          dataTestID="train-header-itinerary-button"
         />
       </div>
-      <button className="header-toggle" onClick={() => onExpand()}>
+      <button
+        className="header-toggle"
+        onClick={() => onExpand()}
+        data-testid="train-header-expand-toggle"
+      >
         <ChevronDown />
       </button>
     </div>
