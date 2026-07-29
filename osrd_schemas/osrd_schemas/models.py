@@ -8,6 +8,7 @@ from enum import Enum
 from typing import Annotated, Any, Literal
 
 from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, RootModel, constr
+from typing_extensions import TypeAliasType
 
 from .overrides import OffsetInMs
 
@@ -3054,9 +3055,17 @@ class PathfindingFailurePathfindingNotFound4(
     pass
 
 
+SwitchesDirectionsAdditionalProperty = TypeAliasType(
+    "SwitchesDirectionsAdditionalProperty",
+    Annotated[str, Field(max_length=255, min_length=1)],
+)
+
+
 class PathfindingOutput(BaseModel):
     detectors: list[Identifier]
-    switches_directions: dict[constr(min_length=1, max_length=255), str]
+    switches_directions: dict[
+        constr(min_length=1, max_length=255), SwitchesDirectionsAdditionalProperty
+    ]
     track_ranges: list[DirectionalTrackRange]
 
 
@@ -3483,16 +3492,31 @@ class Sign(BaseModel):
     value: str
 
 
+ParametersAdditionalProperty = TypeAliasType(
+    "ParametersAdditionalProperty", Annotated[str, Field(min_length=1)]
+)
+
+
 class ConditionalParameter(BaseModel):
     on_route: Annotated[str, Field(min_length=1)]
-    parameters: dict[constr(min_length=1), str]
+    parameters: dict[constr(min_length=1), ParametersAdditionalProperty]
+
+
+DefaultParametersAdditionalProperty = TypeAliasType(
+    "DefaultParametersAdditionalProperty", Annotated[str, Field(min_length=1)]
+)
+
+
+SettingsAdditionalProperty = TypeAliasType(
+    "SettingsAdditionalProperty", Annotated[str, Field(min_length=1)]
+)
 
 
 class LogicalSignal(BaseModel):
     conditional_parameters: list[ConditionalParameter]
-    default_parameters: dict[constr(min_length=1), str]
+    default_parameters: dict[constr(min_length=1), DefaultParametersAdditionalProperty]
     next_signaling_systems: list[str]
-    settings: dict[constr(min_length=1), str]
+    settings: dict[constr(min_length=1), SettingsAdditionalProperty]
     signaling_system: str
 
 
@@ -5511,7 +5535,9 @@ class Route(BaseModel):
     exit_point: WaypointBufferStop | WaypointDetector
     id: Annotated[str, Field(max_length=255, min_length=1)]
     release_detectors: list[ReleaseDetector]
-    switches_directions: dict[constr(min_length=1, max_length=255), str]
+    switches_directions: dict[
+        constr(min_length=1, max_length=255), SwitchesDirectionsAdditionalProperty
+    ]
 
 
 class Scenario(BaseModel):
