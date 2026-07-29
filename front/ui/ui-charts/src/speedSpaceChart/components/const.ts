@@ -9,9 +9,9 @@ import {
   type EtcsLayersDisplay,
   type Store,
 } from '../types';
-import { BLUE_700, CYAN_400, YELLOW_400 } from '../../common/helpers/colors';
+import { BLUE_700, CYAN_400, LIME_50, NEUTRAL_300, STONE_100, STONE_50, YELLOW_400 } from '../../common/helpers/colors';
 
-export const SLOPE_FILL_COLOR = '#CFDDCE';
+export const SLOPE_FILL_COLOR = NEUTRAL_300;
 
 export const RIGHT_TICK_HEIGHT_OFFSET = 2;
 
@@ -45,9 +45,9 @@ export const LINEAR_LAYERS_HEIGHTS = {
 export const LINEAR_LAYER_SEPARATOR_HEIGHT = 1;
 
 export const LINEAR_LAYERS_BACKGROUND_COLOR = {
-  FIRST: 'rgb(250, 249, 245)',
-  SECOND: 'rgb(247, 246, 238)',
-  THIRD: 'rgb(242, 240, 228)',
+  FIRST: STONE_50,
+  SECOND: STONE_100,
+  THIRD: LIME_50,
 };
 
 export const FRONT_INTERACTIVITY_LAYER_ID = '#front-interactivity-layer';
