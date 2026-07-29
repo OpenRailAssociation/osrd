@@ -9,7 +9,8 @@ import {
   transformElectricalBoundariesToRanges,
   sortPathOperationalPoints,
 } from 'applications/operationalStudies/utils';
-import type { PathItem, CoreOperationalPointOnPath } from 'common/api/osrdEditoastApi';
+import type { PathItem } from 'common/api/osrdEditoastApi';
+import type { PathWaypoint } from 'modules/simulationResult/types';
 
 import {
   boundariesDataWithNumber,
@@ -147,13 +148,14 @@ describe('isScheduledPointsNotHonored', () => {
 });
 
 describe('sortPathOperationalPoints', () => {
-  const makeOp = (id: string, position: number) => ({ id, position }) as CoreOperationalPointOnPath;
+  const makeOp = (pathItemId: string, position: number) =>
+    ({ waypointId: uuidV4(), pathItemId, position }) as PathWaypoint;
 
-  const makePathItem = (opId: string): PathItem => ({
-    id: uuidV4(),
+  const makePathItem = (id: string): PathItem => ({
+    id,
     location: {
       type: 'operational_point_part_reference',
-      operational_point: { type: 'id', operational_point: opId },
+      operational_point: { type: 'id', operational_point: uuidV4() },
     },
   });
 
@@ -161,14 +163,14 @@ describe('sortPathOperationalPoints', () => {
     const ops = [makeOp('A', 0), makeOp('B', 100), makeOp('C', 200)];
     const path = [makePathItem('A'), makePathItem('B'), makePathItem('C')];
     const result = sortPathOperationalPoints(ops, path);
-    expect(result.map((op) => op.id)).toEqual(['A', 'B', 'C']);
+    expect(result.map((op) => op.pathItemId)).toEqual(['A', 'B', 'C']);
   });
 
   it('should put the path origin first in the list when its position matches the one of other waypoints', () => {
     const ops = [makeOp('A', 0), makeOp('C', 0), makeOp('B', 0), makeOp('D', 200)];
     const path = [makePathItem('C'), makePathItem('A'), makePathItem('D')];
     const result = sortPathOperationalPoints(ops, path);
-    expect(result.map((op) => op.id)).toEqual(['C', 'A', 'B', 'D']);
+    expect(result.map((op) => op.pathItemId)).toEqual(['C', 'A', 'B', 'D']);
   });
 
   it('should sort two path items based on their index in the path if they are next to each other in ops when they are neither the origin or destination)', () => {
@@ -182,13 +184,13 @@ describe('sortPathOperationalPoints', () => {
     ];
     const path = [makePathItem('A'), makePathItem('B'), makePathItem('D'), makePathItem('F')];
     const result = sortPathOperationalPoints(ops, path);
-    expect(result.map((op) => op.id)).toEqual(['A', 'C', 'B', 'D', 'E', 'F']);
+    expect(result.map((op) => op.pathItemId)).toEqual(['A', 'C', 'B', 'D', 'E', 'F']);
   });
 
   it('should put the path destination at the end of the list when its position matches the one of other waypoints', () => {
     const ops = [makeOp('A', 0), makeOp('D', 100), makeOp('B', 100), makeOp('C', 100)];
     const path = [makePathItem('A'), makePathItem('C'), makePathItem('D')];
     const result = sortPathOperationalPoints(ops, path);
-    expect(result.map((op) => op.id)).toEqual(['A', 'B', 'C', 'D']);
+    expect(result.map((op) => op.pathItemId)).toEqual(['A', 'B', 'C', 'D']);
   });
 });

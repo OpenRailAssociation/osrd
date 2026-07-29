@@ -23,7 +23,7 @@ import {
 } from 'utils/trainId';
 
 import type { SimulationResults } from '../types';
-import { sortPathOperationalPoints, preparePathPropertiesData } from '../utils';
+import { preparePathPropertiesData } from '../utils';
 import { useScenarioContext } from './useScenarioContext';
 
 /**
@@ -132,18 +132,6 @@ const useSimulationResults = (
         : skipToken
     );
 
-  const orderedRawPathProperties = useMemo(() => {
-    if (!rawPathProperties || !train) return rawPathProperties;
-
-    return {
-      ...rawPathProperties,
-      operational_points: sortPathOperationalPoints(
-        rawPathProperties.operational_points,
-        train.path
-      ),
-    };
-  }, [rawPathProperties, train]);
-
   const isSimulationDataLoading =
     isPathfindingFetching || isSimulationFetching || isPathPropertiesFetching;
 
@@ -151,7 +139,7 @@ const useSimulationResults = (
     return { results: undefined, isSimulationDataLoading };
   }
 
-  if (pathfinding?.status !== 'success' || !orderedRawPathProperties || !rollingStock) {
+  if (pathfinding?.status !== 'success' || !rawPathProperties || !rollingStock) {
     return {
       results: { isValid: false, train, path: pathfinding, rollingStock },
       isSimulationDataLoading,
@@ -160,7 +148,7 @@ const useSimulationResults = (
 
   const pathProperties = preparePathPropertiesData(
     simulation?.status === 'success' ? simulation.electrical_profiles : undefined,
-    orderedRawPathProperties,
+    rawPathProperties,
     pathfinding,
     train.path,
     t
