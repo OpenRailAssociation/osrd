@@ -1,4 +1,6 @@
 mod args;
+mod codegen;
+
 use darling::FromDeriveInput as _;
 use darling::Result;
 use proc_macro2::TokenStream;
