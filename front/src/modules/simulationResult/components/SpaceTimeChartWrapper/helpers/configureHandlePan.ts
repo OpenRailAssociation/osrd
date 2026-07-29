@@ -36,20 +36,26 @@ type DraggingState =
   | undefined;
 
 /**
- * Snap a candidate time onto the nearest cadence grid line (`startTimeMs + k × intervalMs`)
- * when it is within `SNAP_DISTANCE_PX` pixels of it. `timeScale` is the chart scale in ms/px,
- * so the snap radius stays constant on screen whatever the zoom. Returns the candidate
- * unchanged when there is no grid or it is too far from a line.
+ * Snap a candidate departure time when it is within `SNAP_DISTANCE_PX` pixels of a magnetic line:
+ * first the nearest cadence grid line (`startTimeMs + k × intervalMs`), then the train's pre-drag
+ * departure `originMs`. The cadence keeps priority so re-aligning an occurrence onto the grid stays
+ * easy; the origin lets a drag back to the start land exactly on it, with no leftover
+ * pixel-rounding diff that would trigger a no-op PUT. `timeScale` is the chart scale in ms/px, so
+ * the snap radius stays constant on screen whatever the zoom.
  */
-const snapToCadenceGrid = (
+const snapDepartureTime = (
   candidateMs: number,
-  grid: { startTimeMs: number; intervalMs: number } | undefined,
+  originMs: number,
+  pacedGrid: { startTimeMs: number; intervalMs: number } | undefined,
   timeScale: number
 ): number => {
-  if (!grid || grid.intervalMs <= 0) return candidateMs;
-  const k = Math.round((candidateMs - grid.startTimeMs) / grid.intervalMs);
-  const gridMs = grid.startTimeMs + k * grid.intervalMs;
-  return Math.abs(candidateMs - gridMs) <= SNAP_DISTANCE_PX * timeScale ? gridMs : candidateMs;
+  const radiusMs = SNAP_DISTANCE_PX * timeScale;
+  if (pacedGrid && pacedGrid.intervalMs > 0) {
+    const k = Math.round((candidateMs - pacedGrid.startTimeMs) / pacedGrid.intervalMs);
+    const cadenceMs = pacedGrid.startTimeMs + k * pacedGrid.intervalMs;
+    if (Math.abs(candidateMs - cadenceMs) <= radiusMs) return cadenceMs;
+  }
+  return Math.abs(candidateMs - originMs) <= radiusMs ? originMs : candidateMs;
 };
 
 type ConfigureHandlePanParams = {
@@ -113,9 +119,10 @@ export function configureHandlePan({
         draggingState;
 
       // Snap onto the cadence grid (single mode) so an occurrence can be re-aligned — and made
-      // conforming — without pixel-perfect aiming.
-      const snappedMs = snapToCadenceGrid(
+      // conforming — without pixel-perfect aiming, or back onto the pre-drag departure.
+      const snappedMs = snapDepartureTime(
         initialDepartureTime.getTime() + payload.data.time - payload.initialData.time,
+        initialDepartureTime.getTime(),
         pacedGrid,
         payload.context.timeScale
       );
