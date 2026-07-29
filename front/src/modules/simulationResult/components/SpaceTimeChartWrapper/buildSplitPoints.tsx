@@ -45,6 +45,7 @@ type BuildSplitPointsProps = {
   paths: Path[];
   activeWaypointRef?: React.RefObject<HTMLDivElement | null>;
   selectedTrain?: SelectedTrain;
+  selectedWaypointId?: string;
   panelMode?: PanelSelectionMode;
   onCloseOccupancyLayer?: (waypointId: string) => void;
   handleWaypointClick?: (waypointId: string) => void;
@@ -68,6 +69,7 @@ export function buildSplitPoints({
   paths,
   activeWaypointRef,
   selectedTrain,
+  selectedWaypointId,
   panelMode,
   onCloseOccupancyLayer,
   handleWaypointClick,
@@ -119,6 +121,12 @@ export function buildSplitPoints({
       const baseZones = zones ?? [];
       const zonesCountByTrainScheduleId = countZonesByTrainScheduleId(baseZones);
 
+      // A 'tod' selection only stays 'active' on the TOD waypoint it was made from.
+      const waypointEffectiveSelection: SelectedTrain | undefined =
+        selectedTrain?.by === 'tod' && selectedWaypointId !== waypointId
+          ? { ...selectedTrain, by: 'std' }
+          : selectedTrain;
+
       let occupancyZones: (OccupancyZone & MovableOccupancyZone)[] = baseZones.flatMap((zone) => {
         const isHovered = hoveredTrainIdForChart === zone.trainId;
         let totalOccurrencesOnTrack = 0;
@@ -139,7 +147,7 @@ export function buildSplitPoints({
             train: isOccurrenceId(zone.trainId)
               ? { id: zone.trainId, relevantExceptionTypes: zone.exceptionTypes }
               : { id: zone.trainId },
-            selection: selectedTrain,
+            selection: waypointEffectiveSelection,
             panelMode,
             hover: curveHover,
           },
