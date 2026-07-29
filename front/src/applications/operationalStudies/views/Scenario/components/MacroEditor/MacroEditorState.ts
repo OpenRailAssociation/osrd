@@ -27,7 +27,9 @@ export default class MacroEditorState {
   scenarioId: number;
 
   /**
-   * Type of the timetable the trainruns are created in.
+   * Type of the scenario timetable. It drives how `start_time` is interpreted on both
+   * sides of the NGE bridge: an absolute date for `CALENDAR`, an offset from the
+   * timetable start for `HOURLY`.
    */
   timetableType: TimetableType;
 
