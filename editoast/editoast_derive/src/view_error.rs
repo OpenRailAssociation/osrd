@@ -265,7 +265,7 @@ mod tests {
                     view_error,
                     syn::parse_quote! {
                         enum Mixed {
-                            Unit, // default status code 400
+                            Unit, // default status code 500
                             #[view_error(status = INTERNAL_SERVER_ERROR)]
                             NewType(String),
                             #[view_error(status = BAD_REQUEST)]

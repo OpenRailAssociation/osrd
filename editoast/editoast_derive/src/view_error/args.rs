@@ -91,7 +91,7 @@ pub(super) struct StatusCodeArg(pub(super) syn::Ident);
 
 impl Default for StatusCodeArg {
     fn default() -> Self {
-        Self(syn::parse_quote! { INTERNAL_SERVER_ERROR }) // 500
+        Self(syn::parse_quote! { INTERNAL_SERVER_ERROR })
     }
 }
 
