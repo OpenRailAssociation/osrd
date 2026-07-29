@@ -1,3 +1,4 @@
+import { FONT_SANS } from '../../../../common/consts';
 import { BLACK_100, ERROR_60, GREY_50 } from '../../../../common/helpers/colors';
 import type { DrawFunctionParams } from '../../../types';
 import {
@@ -45,7 +46,7 @@ export const drawPowerRestrictions = ({
 
   const maxPosition = maxPositionValue(store.speeds);
 
-  ctx.font = 'normal 12px IBM Plex Sans';
+  ctx.font = `normal 12px ${FONT_SANS}`;
   ctx.fillStyle = GREY_50;
   ctx.strokeStyle = GREY_50;
   ctx.lineWidth = 1;

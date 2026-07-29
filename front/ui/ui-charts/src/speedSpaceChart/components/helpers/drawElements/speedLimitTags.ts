@@ -21,6 +21,7 @@ import {
   maxPositionValue,
   positionOnGraphScale,
 } from '../../utils';
+import { FONT_SANS } from '../../../../common/consts';
 
 const RECT_HEIGHT = 17;
 const Y_POSITION = 12;
@@ -145,7 +146,7 @@ export const drawSpeedLimitTags = ({
           );
       } else {
         ctx.fillStyle = 'white';
-        ctx.font = '600 12px "IBM Plex Sans"';
+        ctx.font = `600 12px "${FONT_SANS}"`;
         ctx.textAlign = 'left';
         ctx.textBaseline = 'middle';
         const textPosition = x + TEXT_LEFT_PADDING;

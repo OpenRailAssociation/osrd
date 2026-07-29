@@ -9,6 +9,7 @@ import { MARGINS } from '../../const';
     getDisplayedStops,
     getSnappedStop,
   } from '../../utils';
+import { FONT_SANS } from '../../../../common/consts';
   
 const { MARGIN_LEFT, MARGIN_RIGHT, MARGIN_TOP, MARGIN_BOTTOM } = MARGINS;
 const STEP_HEIGHT = 6;
@@ -116,7 +117,7 @@ export const drawSteps = ({ ctx, width, height, store }: DrawFunctionParams) => 
       ctx.fillStyle = chroma(GREY_80).alpha(0.2).hex();
     }
 
-    ctx.font = 'normal 12px IBM Plex Sans';
+    ctx.font = `normal 12px ${FONT_SANS}`;
     ctx.textAlign = 'left';
 
     // Draw the text at the origin, since the context is already transformed

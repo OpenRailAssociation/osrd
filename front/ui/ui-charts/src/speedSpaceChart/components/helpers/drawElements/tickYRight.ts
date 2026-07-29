@@ -3,6 +3,7 @@ import { GREY_50 } from '../../../../common/helpers/colors';
 import type { DrawFunctionParams } from '../../../types';
 import { MARGINS, TICK_TITLE_MARGINS, RIGHT_TICK_HEIGHT_OFFSET } from '../../const';
 import { clearCanvas, slopesValues } from '../../utils';
+import { FONT_SANS } from '../../../../common/consts';
 
 const { MARGIN_LEFT, MARGIN_TOP, MARGIN_BOTTOM, RIGHT_TICK_MARGINS } = MARGINS;
 const { Y_RIGHT_VERTICAL, Y_RIGHT_HORIZONTAL } = TICK_TITLE_MARGINS;
@@ -24,7 +25,7 @@ export const drawTickYRight = ({ ctx, width, height, store }: DrawFunctionParams
   const textOffsetX = width - MARGIN_LEFT + 10;
   const tickWidth = 6;
 
-  ctx.font = 'normal 12px IBM Plex Sans';
+  ctx.font = `normal 12px ${FONT_SANS}`;
   ctx.lineWidth = 0.5;
 
   // Calculate gradient step to avoid decimals

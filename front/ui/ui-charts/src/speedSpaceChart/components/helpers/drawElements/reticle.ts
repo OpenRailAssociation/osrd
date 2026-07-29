@@ -19,6 +19,7 @@ import {
   getSnappedStop,
 } from '../../utils';
 import { BLACK_100, WHITE_100 } from '../../../../common/helpers/colors';
+import { FONT_SANS } from '../../../../common/consts';
 
 const {
   MARGIN_LEFT,
@@ -259,7 +260,7 @@ export const drawCursor = ({ ctx, width, height, store }: DrawFunctionParams) =>
   previousGradientText = slopes.findLast(({ position }) => position.start <= cursorPosition)!.value;
 
   // DRAWING
-  ctx.font = 'normal 12px IBM Plex Sans';
+  ctx.font = `normal 12px ${FONT_SANS}`;
   ctx.fillStyle = chroma(BLACK_100).hex();
 
   // V & H lines

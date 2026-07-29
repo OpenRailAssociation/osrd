@@ -45,7 +45,7 @@ export const drawOccupancyZonesTexts = ({
 
   ctx.font = `400 12px ${FONT_MONO}`;
   const originTextLength = ctx.measureText(zone.originStation || '--').width;
-  ctx.font = `${labelFontWeight} 12px IBM Plex Sans`;
+  ctx.font = `${labelFontWeight} 12px ${FONT_SANS}`;
   const nameTextLength = ctx.measureText(zone.trainName).width;
 
   const { xOriginTrainName, yOriginTrainName } = isBelowBreakpoint('medium')
@@ -101,7 +101,7 @@ export const drawOccupancyZonesTexts = ({
     x: xOriginTrainName,
     y: yOriginTrainName,
     color: labelStyle?.color || GREY_50,
-    font: `${labelFontWeight} 12px IBM Plex Sans`,
+    font: `${labelFontWeight} 12px ${FONT_SANS}`,
     rotateAngle: ROTATE_VALUE,
     yPosition: 'middle',
     stroke: textStroke,
