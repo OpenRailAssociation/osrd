@@ -4,7 +4,7 @@ import { MINUTE } from '../../common/consts';
 import { MouseContext, TimeChartCanvasContext } from '../../common/context';
 import { computeVisibleTimeMarkers, getCrispLineCoordinate } from '../../common/helpers/time';
 import type { TimeChartContextType, DrawingFunction } from '../../common/types';
-import { BLACK_ALPHA_25, GREY_50 } from '../helpers/colors';
+import { BLACK_25, GREY_50 } from '../helpers/colors';
 import { useDraw } from '../hooks/useCanvas';
 
 const TimeGraduations = () => {
@@ -77,7 +77,7 @@ const TimeGraduations = () => {
         ctx.globalAlpha = 1;
 
         // Vertical line:
-        ctx.strokeStyle = BLACK_ALPHA_25;
+        ctx.strokeStyle = BLACK_25;
         ctx.lineWidth = 1;
         ctx.setLineDash([]);
         ctx.beginPath();
