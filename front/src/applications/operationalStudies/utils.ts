@@ -190,6 +190,26 @@ export const matchOpRefAndWaypoint = (
   );
 };
 
+export const buildPathWaypointsFromRawOPs = (
+  ops: CoreOperationalPointOnPath[],
+  path: PathItem[]
+): PathWaypoint[] =>
+  ops.map((op) => {
+    const matchedPathItem = path.find((step) => matchOpRefAndWaypoint(step.location, op));
+    return {
+      ...omit(op, 'id'),
+      waypointId: `op-${op.id}-${op.position}`,
+      opId: op.id,
+      pathItemId: matchedPathItem?.id ?? null,
+      location: matchedPathItem
+        ? matchedPathItem.location
+        : {
+            type: 'operational_point_part_reference',
+            operational_point: { type: 'id', operational_point: op.id },
+          },
+    };
+  });
+
 /**
  * Sort operational points by position on the path (mm from origin).
  * We want to ensure the following properties:
@@ -240,24 +260,10 @@ export const preparePathPropertiesData = (
 
   const voltageRanges = electricalProfiles ? getPathVoltages(electrifications, length) : [];
 
-  const formattedOperationalPoints: PathWaypoint[] = operational_points.map((op) => {
-    const matchedPathItem = trainSchedulePath.find((step) =>
-      matchOpRefAndWaypoint(step.location, op)
-    );
-    return {
-      ...omit(op, 'id'),
-      waypointId: `op-${op.id}-${op.position}`,
-      opId: op.id,
-      pathItemId: matchedPathItem?.id ?? null,
-      location: matchedPathItem
-        ? matchedPathItem.location
-        : {
-            type: 'operational_point_part_reference',
-            operational_point: { type: 'id', operational_point: op.id },
-          },
-    };
-  });
-
+  const formattedOperationalPoints = buildPathWaypointsFromRawOPs(
+    operational_points,
+    trainSchedulePath
+  );
   const orderedOperationalPoints = sortPathOperationalPoints(
     formattedOperationalPoints,
     trainSchedulePath
