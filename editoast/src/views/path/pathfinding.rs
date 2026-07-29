@@ -20,7 +20,6 @@ use core_client::pathfinding::PathfindingRequest;
 use core_client::pathfinding::PathfindingResultSuccess;
 use database::DbConnection;
 use educe::Educe;
-use futures::StreamExt;
 use ordered_float::OrderedFloat;
 use schemas::rolling_stock::LoadingGaugeType;
 use schemas::train_schedule::PathItemLocation;
@@ -416,26 +415,6 @@ fn build_pathfinding_request(
         stops_at_end_of_block: pathfinding_input.stops_at_end_of_block,
         allowed_track_sections: pathfinding_input.allowed_track_sections.clone(),
     })
-}
-
-pub(in crate::views) async fn single_pathfinding_request(
-    pathfinding_train: core_task::PathfindingTrain,
-    infra: &Infra,
-    valkey_client: Arc<cache::Client>,
-    core_client: Arc<CoreClient>,
-) -> Result<PathfindingResult> {
-    let mut pathfinding_env = core_task::PathfindingEnv::new(core_task::CoreEnv {
-        infra_id: infra.id as u64,
-        infra_version: infra.version,
-        client: core_client,
-    });
-    pathfinding_env.extend([((), pathfinding_train)]);
-
-    let result = match pathfinding_env.into_stream(valkey_client).next().await {
-        Some(path) => path.data,
-        None => Err(core_client::Error::BrokenPipe),
-    };
-    Ok(result?.into())
 }
 
 #[derive(Debug, Clone)]

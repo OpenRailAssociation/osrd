@@ -12,6 +12,7 @@ pub use envs::pathfinding::PathfindingConsist;
 pub use envs::pathfinding::PathfindingConstraints;
 pub use envs::pathfinding::PathfindingEnv;
 pub use envs::pathfinding::PathfindingTrain;
+pub use envs::pathfinding::pathfinding_request_from_consist_constraints;
 pub use envs::simulation::ScheduleItem;
 pub use envs::simulation::SimulationConsist;
 pub use envs::simulation::SimulationEnv;
