@@ -205,13 +205,16 @@ const usePathProjection = (
     if (pathfinding?.status === 'success' && pathProperties) {
       const { operational_points: operationalPoints } = pathProperties;
 
-      const pathfindingOpRefs: OperationalPointReference[] = [];
-      const formattedOperationalPoints: ProjectionWaypoint[] = [];
-      operationalPoints.forEach((op, index) => {
+      const pathfindingOpRefs: OperationalPointReference[] = operationalPoints.map((op) => ({
+        operational_point: op.id,
+        type: 'id',
+      }));
+
+      const formattedOperationalPoints: ProjectionWaypoint[] = operationalPoints.map((op) => {
         const matchedPathItem = pathUsedForProjection.find((step) =>
           matchOpRefAndWaypoint(step.location, op)
         );
-        const formattedOp: ProjectionWaypoint = {
+        return {
           ...omit(op, ['id', 'part']),
           waypointId: `op-${op.id}-${op.position}`,
           opId: op.id,
@@ -223,8 +226,9 @@ const usePathProjection = (
                 operational_point: { type: 'id', operational_point: op.id },
               },
         };
-        formattedOperationalPoints.push(formattedOp);
-        pathfindingOpRefs.push({ operational_point: op.id, type: 'id' });
+      });
+
+      operationalPoints.forEach((op, index) => {
         if (index > 0) {
           operationalPointDistances.push(op.position - operationalPoints[index - 1].position);
         }
