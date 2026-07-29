@@ -1,3 +1,4 @@
+import { BLACK_10, BLACK_20, WHITE_100 } from '../../../../common/helpers/colors';
 import type { DrawFunctionParams } from '../../../types';
 import { LINEAR_LAYERS_BACKGROUND_COLOR, LINEAR_LAYERS_HEIGHTS, MARGINS } from '../../const';
 import {
@@ -165,17 +166,17 @@ export const drawElectricalProfile = ({ ctx, width, height, store }: DrawFunctio
       const profileWidth = xEnd - xStart;
       const profileHeight = PROFILE_HEIGHT_MAX - heightLevelMax * 4;
 
-      ctx.shadowColor = 'rgba(0, 0, 0, 0.19)';
+      ctx.shadowColor = BLACK_20;
       ctx.shadowBlur = 5;
 
-      ctx.strokeStyle = '#FFF';
+      ctx.strokeStyle = WHITE_100;
       ctx.lineWidth = 2;
       ctx.strokeRect(xStart - 1, startHoverStrokeHeight - 1, profileWidth + 2, profileHeight + 2);
       ctx.stroke();
     }
   }
 
-  drawSeparatorLinearLayer(ctx, 'rgba(0,0,0,0.1)', MARGINS, width, topLayer + 1 - MARGIN_BOTTOM);
+  drawSeparatorLinearLayer(ctx, BLACK_10, MARGINS, width, topLayer + 1 - MARGIN_BOTTOM);
 
   ctx.restore();
 

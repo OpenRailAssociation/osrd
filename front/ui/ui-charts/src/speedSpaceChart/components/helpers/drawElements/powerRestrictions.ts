@@ -1,3 +1,4 @@
+import { ERROR_60, GREY_50 } from '../../../../common/helpers/colors';
 import type { DrawFunctionParams } from '../../../types';
 import {
   LINEAR_LAYERS_BACKGROUND_COLOR,
@@ -45,8 +46,8 @@ export const drawPowerRestrictions = ({
   const maxPosition = maxPositionValue(store.speeds);
 
   ctx.font = 'normal 12px IBM Plex Sans';
-  ctx.fillStyle = 'rgb(121, 118, 113)';
-  ctx.strokeStyle = 'rgb(121, 118, 113)';
+  ctx.fillStyle = GREY_50;
+  ctx.strokeStyle = GREY_50;
   ctx.lineWidth = 1;
   ctx.textAlign = 'center';
 
@@ -77,11 +78,11 @@ export const drawPowerRestrictions = ({
 
   powerRestrictions.forEach(({ position, value }, i) => {
     if (value.handled) {
-      ctx.strokeStyle = 'rgb(121, 118, 113)';
-      ctx.fillStyle = 'rgb(121, 118, 113)';
+      ctx.strokeStyle = GREY_50;
+      ctx.fillStyle = GREY_50;
     } else {
-      ctx.strokeStyle = 'rgb(217, 28, 28)';
-      ctx.fillStyle = 'rgb(217, 28, 28)';
+      ctx.strokeStyle = ERROR_60;
+      ctx.fillStyle = ERROR_60;
     }
     // Draw vertical line
     const startX = positionOnGraphScale(position.start, maxPosition, width, ratioX, MARGINS);

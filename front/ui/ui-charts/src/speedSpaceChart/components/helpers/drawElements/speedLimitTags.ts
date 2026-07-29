@@ -1,3 +1,4 @@
+import { BLACK_10 } from '../../../../common/helpers/colors';
 import type {
   DrawFunctionParams,
   SpeedLimitTagsLayerDrawFunctionParams,
@@ -65,7 +66,7 @@ export const drawSpeedLimitTags = ({
     speedLimitTagsBackgroundColor = LINEAR_LAYERS_BACKGROUND_COLOR.SECOND;
   }
 
-  drawSeparatorLinearLayer(ctx, 'rgba(0,0,0,0.1)', MARGINS, width, LINEAR_LAYER_SEPARATOR_HEIGHT);
+  drawSeparatorLinearLayer(ctx, BLACK_10, MARGINS, width, LINEAR_LAYER_SEPARATOR_HEIGHT);
   drawLinearLayerBackground(
     ctx,
     speedLimitTagsBackgroundColor,
@@ -153,7 +154,7 @@ export const drawSpeedLimitTags = ({
     }
   });
 
-  drawSeparatorLinearLayer(ctx, 'rgba(0,0,0,0.1)', MARGINS, width, marginTop);
+  drawSeparatorLinearLayer(ctx, BLACK_10, MARGINS, width, marginTop);
   ctx.restore();
 
   // prevent overlapping with margins left and right

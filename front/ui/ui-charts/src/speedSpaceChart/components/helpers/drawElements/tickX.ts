@@ -1,3 +1,4 @@
+import { GREY_50 } from '../../../../common/helpers/colors';
 import type { DrawFunctionParams } from '../../../types';
 import { MARGINS } from '../../const';
 import { clearCanvas, maxPositionValue } from '../../utils';
@@ -12,7 +13,7 @@ export const drawTickX = ({ ctx, width, height, store }: DrawFunctionParams) => 
   ctx.save();
   ctx.translate(leftOffset, 0);
 
-  ctx.strokeStyle = 'rgb(121, 118, 113)';
+  ctx.strokeStyle = GREY_50;
   ctx.lineWidth = 0.5;
   ctx.font = 'normal 12px IBM Plex Sans';
   ctx.fillStyle = 'rgb(182, 179, 175)';
