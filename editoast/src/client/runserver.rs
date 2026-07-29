@@ -52,7 +52,7 @@ pub struct S3Args {
 #[derive(Args, Debug)]
 #[command(about, long_about = "Launch the server")]
 pub struct RunserverArgs {
-    #[clap(long, env = "ROOT_URL", default_value_t = Url::parse("http://localhost:8090").unwrap())]
+    #[clap(long, env = "ROOT_URL", default_value_t = Url::parse("http://localhost:4000/api").unwrap())]
     root_url: Url,
     #[clap(long, env = "DYNAMIC_ASSETS_PATH", default_value = "./assets")]
     dynamic_assets_path: PathBuf,
