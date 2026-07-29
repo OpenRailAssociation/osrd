@@ -323,25 +323,17 @@ const ItineraryModal = ({
     [pathSteps, pathProperties, initCustomTracksEntry, setPathStepMetadata]
   );
 
-  const isStepInvalidAndIsEditing = (step: PathStepV2, metadata?: PathStepMetadata) => {
-    if (!metadata?.isInvalid) return false;
-
+  /**Return true if the path step is invalid and is not a placeholder, not being fetched and not being edited */
+  const isStepInvalidAndFinal = (step: PathStepV2, metadata?: PathStepMetadata) => {
     const query = (getInputForStep(step.id) ?? '').trim();
-    const isEditing = editingStepIdRef.current === step.id;
+    const isEditing = editingStepIdRef.current === step.id || query.length > 0;
     const isPending = pendingStepIdRef.current === step.id;
-    // A step with no location is invalid only if the user typed something and isn't currently editing
-
-    if (!step.location) {
-      return query.length > 0 && !isEditing;
-    }
-
-    // A step with a location can still be invalid (OP not found in current infra).
-    // Show the error as long as the user is not actively editing it, or if the query is empty
-    return !isEditing && !isPending && query.length === 0;
+    // if not step.location, the step is a placeholder waiting for user input
+    return !isEditing && !isPending && !!step.location && !!metadata?.isInvalid;
   };
 
   const hasInvalidPathStepDisplay = pathSteps.some((step) =>
-    isStepInvalidAndIsEditing(step, pathStepsMetadataById.get(step.id))
+    isStepInvalidAndFinal(step, pathStepsMetadataById.get(step.id))
   );
 
   const locatedStepsCount = pathSteps.filter((step) => step.location !== null).length;
@@ -764,7 +756,7 @@ const ItineraryModal = ({
             {pathSteps.map((pathStep, i) => {
               const opKey = getOpKey(pathStep.location);
               const pathStepMetadata = pathStepsMetadataById.get(pathStep.id);
-              const isInvalid = isStepInvalidAndIsEditing(pathStep, pathStepMetadata);
+              const isInvalidAndFinal = isStepInvalidAndFinal(pathStep, pathStepMetadata);
               const isMapSelecting = mapSelectionStepId === pathStep.id;
 
               const previousPathStepMetadata = pathStepsMetadataById.get(pathSteps[i - 1]?.id);
@@ -806,7 +798,7 @@ const ItineraryModal = ({
                     hidePathfindingLine={
                       i > 0 &&
                       !isTrailingPlaceholder &&
-                      (isInvalid || !!previousPathStepMetadata?.isInvalid)
+                      (isInvalidAndFinal || !!previousPathStepMetadata?.isInvalid)
                     }
                     onDelete={() => {
                       handleDeletePathStep(pathStep.id);
@@ -911,7 +903,7 @@ const ItineraryModal = ({
                     connectorLong={hoveredGapIndex === i}
                     isTrailingPlaceHolder={isTrailingPlaceholder}
                     isOnlyStep={isOnlyStep}
-                    isInvalidAndIsEditing={isInvalid}
+                    isInvalidAndFinal={isInvalidAndFinal}
                     isMapSelectionMode={isMapSelecting}
                     isDestination={i === pathSteps.length - 2}
                     onStartMapSelection={() => handleStartMapSelection(pathStep.id)}
