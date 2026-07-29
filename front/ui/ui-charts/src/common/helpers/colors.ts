@@ -30,8 +30,10 @@ export const PRIMARY_5 = 'rgb(227, 237, 252)';
 export const RED_100 = 'rgb(221, 34, 34)';
 
 export const CYAN_400 = 'rgb(3, 222, 255)';
+export const CYAN_300 = 'rgb(105, 255, 254)';
 
 export const BLUE_700 = 'rgb(0, 87, 218)';
+export const BLUE_500 = 'rgb(60, 138, 255)';
 
 export const WHITE_100 = 'rgb(255, 255, 255)';
 export const WHITE_50 = 'rgba(255, 255, 255, 0.50)';
@@ -46,6 +48,7 @@ export const STONE_900 = 'rgb(31, 27, 23)';
 export const STONE_500 = 'rgb(138, 113, 75)';
 export const STONE_100 = 'rgb(247, 246, 238)';
 export const STONE_50 = 'rgb(250, 249, 245)';
+
 
 export const LIME_50 = 'rgb(242, 240, 228)';
 export const EMERALD_100 = 'rgb(202, 237, 219)';

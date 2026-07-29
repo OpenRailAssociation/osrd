@@ -1,5 +1,5 @@
 import { FONT_SANS } from '../../../../common/consts';
-import { BLACK_10, BLACK_100, BLACK_20, STONE_900, WHITE_100 } from '../../../../common/helpers/colors';
+import { BLACK_10, BLACK_100, BLACK_20, GREY_80, STONE_900, WHITE_100 } from '../../../../common/helpers/colors';
 import type { DrawFunctionParams } from '../../../types';
 import { LINEAR_LAYERS_BACKGROUND_COLOR, LINEAR_LAYERS_HEIGHTS, MARGINS } from '../../const';
 import {
@@ -112,7 +112,7 @@ export const drawElectricalProfile = ({ ctx, width, height, store }: DrawFunctio
           ctx.fillText(`${electricalProfile}`, xStart + profileWidth / 2, topLayer / 2);
 
           // Draw begin and end position
-          ctx.fillStyle = 'rgb(49, 46, 43)';
+          ctx.fillStyle = GREY_80;
           ctx.font = `400 14px ${FONT_SANS}`;
 
           ctx.textAlign = 'right';

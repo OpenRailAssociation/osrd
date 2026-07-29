@@ -1,4 +1,6 @@
-import { GREY_50 } from '../../../../common/helpers/colors';
+import chroma from 'chroma-js';
+import { FONT_SANS } from '../../../../common/consts';
+import { GREY_30, GREY_50 } from '../../../../common/helpers/colors';
 import type { DrawFunctionParams } from '../../../types';
 import { MARGINS } from '../../const';
 import { clearCanvas, maxPositionValue } from '../../utils';
@@ -15,8 +17,8 @@ export const drawTickX = ({ ctx, width, height, store }: DrawFunctionParams) => 
 
   ctx.strokeStyle = GREY_50;
   ctx.lineWidth = 0.5;
-  ctx.font = 'normal 12px IBM Plex Sans';
-  ctx.fillStyle = 'rgb(182, 179, 175)';
+  ctx.font = `normal 12px ${FONT_SANS}`;
+  ctx.fillStyle = GREY_30;
 
   const maxPosition = maxPositionValue(store.speeds);
   const windowLength = maxPosition / store.ratioX;
@@ -94,7 +96,7 @@ export const drawTickX = ({ ctx, width, height, store }: DrawFunctionParams) => 
       // Merge opacities
       const opacity = Math.min(opacityCursor, opacityRightBorder, opacityLeftBorder);
 
-      ctx.fillStyle = `rgb(182, 179, 175, ${opacity})`;
+      ctx.fillStyle = chroma(GREY_30).alpha(opacity).hex();
       ctx.fillText(textPosition, positionX, positionY + CURVE_MARGIN_SIDES * 1.33);
     }
   }
@@ -109,7 +111,7 @@ export const drawTickX = ({ ctx, width, height, store }: DrawFunctionParams) => 
   ctx.clearRect(width - MARGIN_RIGHT, 0, width, height);
 
   // text for x axis
-  ctx.fillStyle = 'rgb(182, 179, 175)';
+  ctx.fillStyle = GREY_30;
   ctx.textAlign = 'center';
   ctx.shadowOffsetY = 0;
   ctx.shadowBlur = 0;

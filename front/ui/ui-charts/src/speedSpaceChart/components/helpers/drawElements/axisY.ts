@@ -1,3 +1,6 @@
+import chroma from 'chroma-js';
+import { FONT_SANS } from '../../../../common/consts';
+import { GREY_30, GREY_50, SKY_700 } from '../../../../common/helpers/colors';
 import type { DrawFunctionParams } from '../../../types';
 import { MARGINS, TICK_TITLE_MARGINS } from '../../const';
 import { clearCanvas, maxSpeedValue } from '../../utils';
@@ -12,10 +15,10 @@ export const drawAxisY = ({ ctx, width, height, store }: DrawFunctionParams) => 
 
   clearCanvas(ctx, width, height);
 
-  ctx.strokeStyle = 'rgb(121, 118, 113)';
+  ctx.strokeStyle = GREY_50;
   ctx.lineWidth = 0.5;
-  ctx.font = 'normal 12px IBM Plex Sans';
-  ctx.fillStyle = 'rgb(182, 178, 175)';
+  ctx.font = `normal 12px ${FONT_SANS}`;
+  ctx.fillStyle = GREY_30;
 
   // Define the tick scale depending on the max speed
   let tickScale = 5;
@@ -43,13 +46,13 @@ export const drawAxisY = ({ ctx, width, height, store }: DrawFunctionParams) => 
     const text = (i * tickScale).toString();
     const textPositionY = positionY + 4;
 
-    ctx.fillStyle = `rgb(182, 178, 175 )`;
+    ctx.fillStyle = GREY_30;
     ctx.fillText(text, TEXT_POSITION_X, textPositionY);
   }
   ctx.stroke();
 
   // Draw major lines
-  ctx.strokeStyle = 'rgba(33, 112, 185, 0.6)';
+  ctx.strokeStyle = chroma(SKY_700).alpha(0.6).hex();
   ctx.beginPath();
   ctx.lineWidth = 0.5;
   for (let i = 3; i <= nbTicks; i += 3) {
@@ -60,7 +63,7 @@ export const drawAxisY = ({ ctx, width, height, store }: DrawFunctionParams) => 
   ctx.stroke();
 
   // Draw minor lines
-  ctx.strokeStyle = 'rgba(33, 112, 185, 0.25)';
+  ctx.strokeStyle = chroma(SKY_700).alpha(0.25).hex();
   ctx.beginPath();
   for (let i = 1; i <= nbTicks; i++) {
     if (i % 3 === 0) {
@@ -77,7 +80,7 @@ export const drawAxisY = ({ ctx, width, height, store }: DrawFunctionParams) => 
   ctx.clearRect(MARGIN_LEFT - 6, height - MARGIN_BOTTOM, width, MARGIN_BOTTOM);
   ctx.clearRect(0, height - MARGIN_BOTTOM + 6, MARGIN_LEFT, MARGIN_BOTTOM);
 
-  ctx.fillStyle = 'rgb(182, 179, 175)';
+  ctx.fillStyle = GREY_30;
   ctx.textAlign = 'center';
   ctx.shadowOffsetY = 0;
   ctx.shadowBlur = 0;

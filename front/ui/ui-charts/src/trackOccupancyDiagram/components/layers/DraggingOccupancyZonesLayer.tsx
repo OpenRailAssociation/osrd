@@ -9,7 +9,7 @@ import {
 } from '../../../spaceTimeChart';
 import type { OccupancyZone } from '../../lib/types';
 import { drawThroughTrain } from '../helpers/drawElements/drawOccupancyZones';
-import { PRIMARY_50, PRIMARY_80 } from '../../../common/helpers/colors';
+import { BLUE_500, CYAN_300, PRIMARY_50, PRIMARY_80 } from '../../../common/helpers/colors';
 
 const DraggingOccupancyZonesLayer = ({ occupancyZones }: { occupancyZones: OccupancyZone[] }) => {
   const mouseContext = useContext(MouseContext);
@@ -36,14 +36,14 @@ const DraggingOccupancyZonesLayer = ({ occupancyZones }: { occupancyZones: Occup
         ctx.shadowBlur = 8;
         ctx.shadowOffsetX = 0;
         ctx.shadowOffsetY = 5;
-        ctx.shadowColor = 'rgba(60, 138, 255, 0.55)';
+        ctx.shadowColor = BLUE_500;
         ctx.fill();
         ctx.restore();
 
         // Draw shadow under the zone box
         ctx.save();
         ctx.lineWidth = 1;
-        ctx.strokeStyle = 'rgb(105, 255, 254)';
+        ctx.strokeStyle = CYAN_300;
         ctx.stroke();
         ctx.restore();
 
