@@ -111,17 +111,23 @@ mod tests {
 
     use super::*;
 
+    async fn user_direct_grant(openfga: &Client, user_id: i64) -> Option<ProjectGrant> {
+        openfga
+            .project_direct_grant(Subject::user(user_id), Project(1))
+            .await
+    }
+
+    async fn group_direct_grant(openfga: &Client, group_id: i64) -> Option<ProjectGrant> {
+        openfga
+            .project_direct_grant(Subject::group(group_id), Project(1))
+            .await
+    }
+
     #[tokio::test]
     async fn user_project_direct_grant() {
         let openfga = authz_client!();
 
-        let user_grant = async |user_id: i64| -> Option<ProjectGrant> {
-            openfga
-                .project_direct_grant(Subject::user(user_id), Project(1))
-                .await
-        };
-
-        assert_eq!(user_grant(1).await, None);
+        assert_eq!(user_direct_grant(&openfga, 1).await, None);
 
         openfga
             .prepare_writes()
@@ -130,20 +136,17 @@ mod tests {
             .await
             .unwrap();
 
-        assert_eq!(user_grant(1).await, Some(ProjectGrant::Owner));
+        assert_eq!(
+            user_direct_grant(&openfga, 1).await,
+            Some(ProjectGrant::Owner)
+        );
     }
 
     #[tokio::test]
     async fn group_project_direct_grant() {
         let openfga = authz_client!();
 
-        let group_grant = async |group_id: i64| -> Option<ProjectGrant> {
-            openfga
-                .project_direct_grant(Subject::group(group_id), Project(1))
-                .await
-        };
-
-        assert_eq!(group_grant(1).await, None);
+        assert_eq!(group_direct_grant(&openfga, 1).await, None);
 
         openfga
             .prepare_writes()
@@ -152,7 +155,10 @@ mod tests {
             .await
             .unwrap();
 
-        assert_eq!(group_grant(1).await, Some(ProjectGrant::Owner));
+        assert_eq!(
+            group_direct_grant(&openfga, 1).await,
+            Some(ProjectGrant::Owner)
+        );
     }
 
     #[tokio::test]
@@ -160,17 +166,6 @@ mod tests {
     async fn no_inference_project_direct_grant() {
         let openfga = authz_client!();
 
-        let user_grant = async |user_id: i64| -> Option<ProjectGrant> {
-            openfga
-                .project_direct_grant(Subject::user(user_id), Project(1))
-                .await
-        };
-        let group_grant = async |group_id: i64| -> Option<ProjectGrant> {
-            openfga
-                .project_direct_grant(Subject::group(group_id), Project(1))
-                .await
-        };
-
         openfga
             .prepare_writes()
             .write(&Group::member().tuple(&User(1), &Group(1)))
@@ -179,8 +174,11 @@ mod tests {
             .await
             .unwrap();
 
-        assert_eq!(user_grant(1).await, None);
-        assert_eq!(group_grant(1).await, Some(ProjectGrant::Owner));
+        assert_eq!(user_direct_grant(&openfga, 1).await, None);
+        assert_eq!(
+            group_direct_grant(&openfga, 1).await,
+            Some(ProjectGrant::Owner)
+        );
     }
 
     #[tokio::test]
@@ -188,12 +186,7 @@ mod tests {
     async fn user_project_effective_grant_direct() {
         let openfga = authz_client!();
 
-        assert_eq!(
-            openfga
-                .project_direct_grant(Subject::user(1), Project(1))
-                .await,
-            None
-        );
+        assert_eq!(user_direct_grant(&openfga, 1).await, None);
 
         openfga
             .prepare_writes()
@@ -203,11 +196,21 @@ mod tests {
             .unwrap();
 
         assert_eq!(
-            openfga
-                .project_direct_grant(Subject::user(1), Project(1))
-                .await,
+            user_direct_grant(&openfga, 1).await,
             Some(ProjectGrant::Owner)
         );
+    }
+
+    async fn user_effective_grant(openfga: &Client, user_id: i64) -> Option<ProjectGrant> {
+        openfga
+            .project_effective_grant(Subject::user(user_id), Project(1))
+            .await
+    }
+
+    async fn group_effective_grant(openfga: &Client, group_id: i64) -> Option<ProjectGrant> {
+        openfga
+            .project_effective_grant(Subject::group(group_id), Project(1))
+            .await
     }
 
     #[tokio::test]
@@ -215,20 +218,9 @@ mod tests {
     async fn project_effective_grant_inherited() {
         let openfga = authz_client!();
 
-        let user_grant = async |user_id: i64| -> Option<ProjectGrant> {
-            openfga
-                .project_effective_grant(Subject::user(user_id), Project(1))
-                .await
-        };
-        let group_grant = async |group_id: i64| -> Option<ProjectGrant> {
-            openfga
-                .project_effective_grant(Subject::group(group_id), Project(1))
-                .await
-        };
-
-        assert_eq!(user_grant(1).await, None);
-        assert_eq!(user_grant(2).await, None);
-        assert_eq!(group_grant(1).await, None);
+        assert_eq!(user_effective_grant(&openfga, 1).await, None);
+        assert_eq!(user_effective_grant(&openfga, 2).await, None);
+        assert_eq!(group_effective_grant(&openfga, 1).await, None);
 
         openfga
             .prepare_writes()
@@ -238,9 +230,15 @@ mod tests {
             .await
             .unwrap();
 
-        assert_eq!(user_grant(1).await, Some(ProjectGrant::Owner));
-        assert_eq!(user_grant(2).await, None);
-        assert_eq!(group_grant(1).await, Some(ProjectGrant::Owner));
+        assert_eq!(
+            user_effective_grant(&openfga, 1).await,
+            Some(ProjectGrant::Owner)
+        );
+        assert_eq!(user_effective_grant(&openfga, 2).await, None);
+        assert_eq!(
+            group_effective_grant(&openfga, 1).await,
+            Some(ProjectGrant::Owner)
+        );
     }
 
     #[tokio::test]
@@ -249,22 +247,11 @@ mod tests {
     async fn no_inference_project_effective_grant() {
         let openfga = authz_client!();
 
-        let user_grant = async |user_id: i64| -> Option<ProjectGrant> {
-            openfga
-                .project_effective_grant(Subject::user(user_id), Project(1))
-                .await
-        };
-        let group_grant = async |group_id: i64| -> Option<ProjectGrant> {
-            openfga
-                .project_effective_grant(Subject::group(group_id), Project(1))
-                .await
-        };
+        assert_eq!(user_effective_grant(&openfga, 1).await, None);
+        assert_eq!(group_effective_grant(&openfga, 1).await, None);
 
-        assert_eq!(user_grant(1).await, None);
-        assert_eq!(group_grant(1).await, None);
-
-        assert_eq!(user_grant(2).await, None);
-        assert_eq!(group_grant(2).await, None);
+        assert_eq!(user_effective_grant(&openfga, 2).await, None);
+        assert_eq!(group_effective_grant(&openfga, 2).await, None);
 
         openfga
             .prepare_writes()
@@ -276,11 +263,21 @@ mod tests {
             .await
             .unwrap();
 
-        assert_eq!(user_grant(1).await, Some(ProjectGrant::Owner));
-        assert_eq!(group_grant(1).await, None);
+        assert_eq!(
+            user_effective_grant(&openfga, 1).await,
+            Some(ProjectGrant::Owner)
+        );
+        assert_eq!(group_effective_grant(&openfga, 1).await, None);
 
-        assert_eq!(user_grant(2).await, Some(ProjectGrant::Owner));
-        assert_eq!(group_grant(2).await, Some(ProjectGrant::Owner));
+        assert_eq!(
+            user_effective_grant(&openfga, 2).await,
+            Some(ProjectGrant::Owner)
+        );
+        assert_eq!(
+            group_effective_grant(&openfga, 2).await,
+            Some(ProjectGrant::Owner)
+        );
+
     }
 
     #[rstest::rstest]
