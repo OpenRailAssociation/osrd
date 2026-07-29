@@ -29,5 +29,6 @@ export enum CANVASMODE {
 
 
 export const FONT_SIZE = 10;
-export const FONT = 'IBM Plex Mono'
+export const FONT_MONO = 'IBM Plex Mono'
+export const FONT_SANS = 'IBM Plex Sans'
 

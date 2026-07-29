@@ -1,4 +1,4 @@
-import { SECOND, MINUTE, HOUR, FONT_SIZE, FONT } from '../../common/consts';
+import { SECOND, MINUTE, HOUR, FONT_SIZE, FONT_MONO } from '../../common/consts';
 import { BLACK_100, SKY_700, GREY_10, GREY_30, GREY_50 } from '../../common/helpers/colors';
 import { type SpaceTimeChartTheme } from './types';
 
@@ -26,7 +26,7 @@ export const DEFAULT_THEME: SpaceTimeChartTheme = {
   ],
   pathsStyles: {
     fontSize: FONT_SIZE,
-    fontFamily: FONT,
+    fontFamily: FONT_MONO,
   },
   spaceGraduationsStyles: {
     1: {
@@ -62,24 +62,24 @@ export const DEFAULT_THEME: SpaceTimeChartTheme = {
   timeCaptionsStyles: {
     1: {
       color: GREY_50,
-      font: `12px ${FONT}, monospace';`,
+      font: `12px ${FONT_MONO}, monospace';`,
       topOffset: 12,
     },
     2: {
       color: GREY_30,
-      font: `12px ${FONT}, monospace';`,
+      font: `12px ${FONT_MONO}, monospace';`,
       topOffset: 12,
     },
     3: {
       color: GREY_30,
-      font: `10px ${FONT}, monospace';`,
+      font: `10px ${FONT_MONO}, monospace';`,
       topOffset: 6,
     },
   },
   dateCaptionsSize: 0,
   dateCaptionsStyle: {
     color: GREY_30,
-    font: `10px ${FONT}, monospace';`,
+    font: `10px ${FONT_MONO}, monospace';`,
     topOffset: 28,
     textAlign: 'left',
   },

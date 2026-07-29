@@ -1,12 +1,11 @@
-import { FONT } from '../../../../common/consts';
+import { FONT_MONO, FONT_SANS } from '../../../../common/consts';
 import { BLACK_55 } from '../../../../common/helpers/colors';
 import { getCrispLineCoordinate } from '../../../../common/helpers/time';
 import type { SpaceTimeChartContextType } from '../../../../spaceTimeChart';
-import { OCCUPANCY_ZONE_Y_START, OCCUPANCY_ZONE_HEIGHT, FONTS, COLORS } from '../../../lib/consts';
+import { OCCUPANCY_ZONE_Y_START, OCCUPANCY_ZONE_HEIGHT, COLORS } from '../../../lib/consts';
 import type { OccupancyZone } from '../../../lib/types';
 import { drawOccupancyZonesTexts } from './drawOccupancyZonesTexts';
 
-const { SANS, MONO } = FONTS;
 const { REMAINING_TRAINS_BACKGROUND, WHITE_100 } = COLORS;
 const REMAINING_TRAINS_WIDTH = 70;
 const REMAINING_TRAINS_HEIGHT = 24;
@@ -73,7 +72,7 @@ export const drawRemainingTrainsBox = (
   ctx.fill();
   ctx.stroke();
   ctx.fillStyle = WHITE_100;
-  ctx.font = SANS;
+  ctx.font = `400 12px ${FONT_SANS}`;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   ctx.fillText(`+${remainingTrainsNb} trains`, x, textY + REMAINING_TRAINS_HEIGHT / 2);
@@ -100,7 +99,7 @@ export const drawOccupationZone = (
 
   ctx.lineJoin = 'round';
   ctx.lineCap = 'round';
-  ctx.font = MONO;
+  ctx.font = `400 12px ${FONT_MONO}`;
 
   const { getTimePixel, getSpacePixel } = stcContext;
   const yStart = getCrispLineCoordinate(getSpacePixel(position), BACKGROUND_HEIGHT);
@@ -203,7 +202,7 @@ export const drawZoneTrailingText = (
   const yCenter = getSpacePixel(position) + yOffset + OCCUPANCY_ZONE_Y_START - LABEL_OFFSET_Y;
 
   ctx.save();
-  ctx.font = `600 12px ${FONT}`;
+  ctx.font = `600 12px ${FONT_MONO}`;
   ctx.textAlign = 'left';
   ctx.textBaseline = 'middle';
 

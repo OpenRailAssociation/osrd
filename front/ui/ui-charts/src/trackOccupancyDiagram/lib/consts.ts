@@ -5,11 +5,6 @@ export const OCCUPANCY_ZONE_HEIGHT = 3;
 export const MINUTES_TEXT_OFFSET = 8.5;
 export const STATION_TEXT_OFFSET = 5;
 
-export const FONTS = {
-  SANS: '400 12px IBM Plex Sans',
-  MONO: '400 10px IBM Plex Mono',
-};
-
 export const COLORS = {
   GREY_20: 'rgb(211, 209, 207)',
   GREY_50: 'rgb(121, 118, 113)',
