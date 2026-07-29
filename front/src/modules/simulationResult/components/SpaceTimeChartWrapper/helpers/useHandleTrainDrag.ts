@@ -62,22 +62,27 @@ async function handleSingleOccurrenceDrag({
   if (!draggedTrain.paced) return;
 
   const baseExceptions = originalPacedExceptions ?? draggedTrain.paced.exceptions;
-  const existingException = findExceptionWithOccurrenceId(baseExceptions, draggedTrainId);
-  const occurrenceIndex = isIndexedOccurrenceId(draggedTrainId)
-    ? extractOccurrenceIndexFromOccurrenceId(draggedTrainId)
-    : undefined;
+  const isUnchanged = newDepartureTime.getTime() === initialDepartureTime.getTime();
+  let previewExceptions = baseExceptions;
+  if (!isUnchanged) {
+    const existingException = findExceptionWithOccurrenceId(baseExceptions, draggedTrainId);
+    const occurrenceIndex = isIndexedOccurrenceId(draggedTrainId)
+      ? extractOccurrenceIndexFromOccurrenceId(draggedTrainId)
+      : undefined;
+    const previewException: SimulatedException = {
+      ...(existingException ?? { key: '', occurrence_index: occurrenceIndex }),
+      start_time: { value: newDepartureTime.getTime() },
+    };
+    previewExceptions = updatePacedTrainExceptionsList(
+      baseExceptions,
+      previewException,
+      draggedTrainId
+    );
+  }
 
-  // Live feedback: show the occurrence at the dragged position (keep its other overrides).
-  const previewException: SimulatedException = {
-    ...(existingException ?? { key: '', occurrence_index: occurrenceIndex }),
-    start_time: { value: newDepartureTime.getTime() },
-  };
   const previewTrain: TrainSpaceTimeData = {
     ...draggedTrain,
-    paced: {
-      ...draggedTrain.paced,
-      exceptions: updatePacedTrainExceptionsList(baseExceptions, previewException, draggedTrainId),
-    },
+    paced: { ...draggedTrain.paced, exceptions: previewExceptions },
   };
 
   // Register the train as "being dragged" (stopPanning: false) so the trains-update effect in
@@ -95,8 +100,11 @@ async function handleSingleOccurrenceDrag({
   if (!stopPanning) return;
 
   // On drop, updateTrainScheduleDepartureTime creates/updates/deletes the occurrence exception
-  // and reconciles the local state (timetable, simulation and projection stores).
-  await updateTrainScheduleDepartureTime(draggedTrainId, newDepartureTime, 'single');
+  // and reconciles the local state (timetable, simulation and projection stores). Skip it when
+  // the occurrence was dragged back onto its own pre-drag time — nothing actually changed.
+  if (!isUnchanged) {
+    await updateTrainScheduleDepartureTime(draggedTrainId, newDepartureTime, 'single');
+  }
   await handleTrainDragInTrackOccupancy({
     draggedTrainId,
     selectionMode: 'single',
@@ -142,8 +150,11 @@ async function handleAllOccurrencesDrag({
 
   if (!stopPanning) return;
 
-  // updateTrainScheduleDepartureTime in 'all' mode also persists the shifted exceptions.
-  await updateTrainScheduleDepartureTime(draggedTrainId, newDepartureTime, 'all');
+  // updateTrainScheduleDepartureTime in 'all' mode also persists the shifted exceptions. Skip it
+  // when the model was dragged back onto its own pre-drag departure — nothing actually changed.
+  if (offset.ms !== 0) {
+    await updateTrainScheduleDepartureTime(draggedTrainId, newDepartureTime, 'all');
+  }
   await handleTrainDragInTrackOccupancy({
     draggedTrainId,
     selectionMode: 'all',
@@ -179,7 +190,11 @@ async function handleModelDrag({
 
   if (!stopPanning) return;
 
-  await updateTrainScheduleDepartureTime(draggedTrainId, newDepartureTime);
+  // Skip the persist call when the model was dragged back onto its own pre-drag departure —
+  // nothing actually changed.
+  if (newDepartureTime.getTime() !== initialDepartureTime.getTime()) {
+    await updateTrainScheduleDepartureTime(draggedTrainId, newDepartureTime);
+  }
   await handleTrainDragInTrackOccupancy({
     draggedTrainId,
     selectionMode: 'compliant',
