@@ -330,6 +330,10 @@
       "TimetableNotFound": "Timetable '{{timetable_id}}' could not be found",
       "TrainScheduleNotFound": "Train schedule '{{train_schedule_id}}' could not be found"
     },
+    "train_schedule_linking": {
+      "Database": "Internal error (database)",
+      "TimetableNotFound": "Timetable '{{timetable_id}}' could not be found"
+    },
     "train_schedule_set": {
       "CatalogEntryNotFound": "Catalog entry '{{catalog_entry_id}}' could not be found",
       "Database": "Internal error (database)",

@@ -1,4 +1,5 @@
 pub mod conflicts;
+pub mod linkings;
 mod occupancy_blocks;
 pub mod similar_trains;
 pub mod simulation;

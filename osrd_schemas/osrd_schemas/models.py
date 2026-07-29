@@ -1162,6 +1162,29 @@ class EditoastLinesErrorsLineNotFound(BaseModel):
     type: Literal["editoast:infra:lines:LineNotFound"]
 
 
+class EditoastLinkingErrorDatabase(BaseModel):
+    context: Annotated[
+        dict[str, Any] | None, Field(title="EditoastLinkingErrorDatabaseContext")
+    ] = None
+    message: str
+    status: Literal[400]
+    type: Literal["editoast:train_schedule_linking:Database"]
+
+
+class EditoastLinkingErrorTimetableNotFoundContext(BaseModel):
+    timetable_id: int
+
+
+class EditoastLinkingErrorTimetableNotFound(BaseModel):
+    context: Annotated[
+        EditoastLinkingErrorTimetableNotFoundContext | None,
+        Field(title="EditoastLinkingErrorTimetableNotFoundContext"),
+    ] = None
+    message: str
+    status: Literal[404]
+    type: Literal["editoast:train_schedule_linking:TimetableNotFound"]
+
+
 class EditoastListErrorsErrorsWrongErrorTypeProvided(BaseModel):
     context: Annotated[
         dict[str, Any] | None,
@@ -2729,6 +2752,40 @@ class LightElectricalProfileSet(BaseModel):
 
 class LightModeEffortCurves(BaseModel):
     is_electric: bool
+
+
+class LinkingOccurrenceIdUnique(BaseModel):
+    train_schedule_id: int
+    train_schedule_instance_index: int | None = None
+    type: Literal["unique"]
+
+
+class LinkingOccurrenceIdPacedOccurrence(BaseModel):
+    occurrence_index: int
+    train_schedule_id: int
+    train_schedule_instance_index: int | None = None
+    type: Literal["paced_occurrence"]
+
+
+class LinkingOccurrenceIdAddedException(BaseModel):
+    added_exception_id: int
+    train_schedule_id: int
+    train_schedule_instance_index: int | None = None
+    type: Literal["added_exception"]
+
+
+class LinkingOccurrenceId(
+    RootModel[
+        LinkingOccurrenceIdUnique
+        | LinkingOccurrenceIdPacedOccurrence
+        | LinkingOccurrenceIdAddedException
+    ]
+):
+    root: (
+        LinkingOccurrenceIdUnique
+        | LinkingOccurrenceIdPacedOccurrence
+        | LinkingOccurrenceIdAddedException
+    )
 
 
 class LoadingGaugeType(Enum):
@@ -4666,6 +4723,8 @@ class EditoastError(
         | EditoastLevelCrossingErrorTrainBatchNotFound
         | EditoastLevelCrossingErrorUnsupportedTimetableType
         | EditoastLinesErrorsLineNotFound
+        | EditoastLinkingErrorDatabase
+        | EditoastLinkingErrorTimetableNotFound
         | EditoastListErrorsErrorsWrongErrorTypeProvided
         | EditoastMacroNodeErrorDatabase
         | EditoastMacroNodeErrorNotFound
@@ -4843,6 +4902,8 @@ class EditoastError(
         | EditoastLevelCrossingErrorTrainBatchNotFound
         | EditoastLevelCrossingErrorUnsupportedTimetableType
         | EditoastLinesErrorsLineNotFound
+        | EditoastLinkingErrorDatabase
+        | EditoastLinkingErrorTimetableNotFound
         | EditoastListErrorsErrorsWrongErrorTypeProvided
         | EditoastMacroNodeErrorDatabase
         | EditoastMacroNodeErrorNotFound
