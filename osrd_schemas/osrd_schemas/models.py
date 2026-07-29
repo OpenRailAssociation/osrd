@@ -2797,6 +2797,14 @@ class OccupancyBlocksTrainScheduleResult(BaseModel):
     """
 
 
+class OperationCreate1(BaseModel):
+    operation_type: Literal["CREATE"]
+
+
+class OperationCreate12(InfraObjectElectrification, OperationCreate1):
+    pass
+
+
 class OperationDelete(BaseModel):
     obj_id: str
     obj_type: ObjectType
@@ -5198,6 +5206,19 @@ class OccupancyBlockForm(BaseModel):
     timetable_id: int
 
 
+class InfraObjectLevelCrossing(BaseModel):
+    obj_type: Literal["LevelCrossing"]
+    railjson: LevelCrossing
+
+
+class OperationCreate7(InfraObjectSwitchType, OperationCreate1):
+    pass
+
+
+class OperationCreate13(InfraObjectLevelCrossing, OperationCreate1):
+    pass
+
+
 class OperationalPointPartExtension(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
@@ -6117,11 +6138,6 @@ class InfraObjectRoute(BaseModel):
     railjson: Route
 
 
-class InfraObjectLevelCrossing(BaseModel):
-    obj_type: Literal["LevelCrossing"]
-    railjson: LevelCrossing
-
-
 class JourneySearchQuery(BaseModel):
     destination: OperationalPointPartReference
     infra_id: int
@@ -6218,6 +6234,18 @@ class NeutralSectionExtensions(BaseModel):
         extra="forbid",
     )
     neutral_sncf: NeutralSectionNeutralSncfExtension | None = None
+
+
+class OperationCreate8(InfraObjectDetector, OperationCreate1):
+    pass
+
+
+class OperationCreate9(InfraObjectBufferStop, OperationCreate1):
+    pass
+
+
+class OperationCreate10(InfraObjectRoute, OperationCreate1):
+    pass
 
 
 class OperationUpdate(BaseModel):
@@ -6834,6 +6862,31 @@ class NeutralSection(BaseModel):
     track_ranges: list[DirectionalTrackRange]
 
 
+class InfraObjectNeutralSection(BaseModel):
+    obj_type: Literal["NeutralSection"]
+    railjson: NeutralSection
+
+
+class OperationCreate2(InfraObjectTrackSection, OperationCreate1):
+    pass
+
+
+class OperationCreate3(InfraObjectSignal, OperationCreate1):
+    pass
+
+
+class OperationCreate4(InfraObjectNeutralSection, OperationCreate1):
+    pass
+
+
+class OperationCreate5(InfraObjectSpeedSection, OperationCreate1):
+    pass
+
+
+class OperationCreate6(InfraObjectSwitch, OperationCreate1):
+    pass
+
+
 class OperationalPoint(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
@@ -7032,14 +7085,41 @@ class TrainScheduleExceptionChangeGroups(BaseModel):
     train_name: TrainNameChangeGroup | None = None
 
 
-class InfraObjectNeutralSection(BaseModel):
-    obj_type: Literal["NeutralSection"]
-    railjson: NeutralSection
-
-
 class InfraObjectOperationalPoint(BaseModel):
     obj_type: Literal["OperationalPoint"]
     railjson: OperationalPoint
+
+
+class InfraObject(
+    RootModel[
+        InfraObjectTrackSection
+        | InfraObjectSignal
+        | InfraObjectNeutralSection
+        | InfraObjectSpeedSection
+        | InfraObjectSwitch
+        | InfraObjectSwitchType
+        | InfraObjectDetector
+        | InfraObjectBufferStop
+        | InfraObjectRoute
+        | InfraObjectOperationalPoint
+        | InfraObjectElectrification
+        | InfraObjectLevelCrossing
+    ]
+):
+    root: (
+        InfraObjectTrackSection
+        | InfraObjectSignal
+        | InfraObjectNeutralSection
+        | InfraObjectSpeedSection
+        | InfraObjectSwitch
+        | InfraObjectSwitchType
+        | InfraObjectDetector
+        | InfraObjectBufferStop
+        | InfraObjectRoute
+        | InfraObjectOperationalPoint
+        | InfraObjectElectrification
+        | InfraObjectLevelCrossing
+    )
 
 
 class InfraObjectWithGeometry(BaseModel):
@@ -7058,26 +7138,44 @@ class InfraObjectWithGeometry(BaseModel):
     railjson: dict[str, Any]
 
 
-class OperationCreate(BaseModel):
-    operation_type: Literal["CREATE"]
-    payload: (
-        InfraObjectTrackSection
-        | InfraObjectSignal
-        | InfraObjectNeutralSection
-        | InfraObjectSpeedSection
-        | InfraObjectSwitch
-        | InfraObjectSwitchType
-        | InfraObjectDetector
-        | InfraObjectBufferStop
-        | InfraObjectRoute
-        | InfraObjectOperationalPoint
-        | InfraObjectElectrification
-        | InfraObjectLevelCrossing
+class OperationCreate11(InfraObjectOperationalPoint, OperationCreate1):
+    pass
+
+
+class Operation(
+    RootModel[
+        OperationUpdate
+        | OperationDelete
+        | OperationCreate2
+        | OperationCreate3
+        | OperationCreate4
+        | OperationCreate5
+        | OperationCreate6
+        | OperationCreate7
+        | OperationCreate8
+        | OperationCreate9
+        | OperationCreate10
+        | OperationCreate11
+        | OperationCreate12
+        | OperationCreate13
+    ]
+):
+    root: (
+        OperationUpdate
+        | OperationDelete
+        | OperationCreate2
+        | OperationCreate3
+        | OperationCreate4
+        | OperationCreate5
+        | OperationCreate6
+        | OperationCreate7
+        | OperationCreate8
+        | OperationCreate9
+        | OperationCreate10
+        | OperationCreate11
+        | OperationCreate12
+        | OperationCreate13
     )
-
-
-class Operation(RootModel[OperationCreate | OperationUpdate | OperationDelete]):
-    root: OperationCreate | OperationUpdate | OperationDelete
 
 
 class PacedTrainException(BaseModel):
