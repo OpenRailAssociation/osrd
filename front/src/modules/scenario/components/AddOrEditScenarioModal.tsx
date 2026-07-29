@@ -378,7 +378,7 @@ const AddOrEditScenarioModal = ({
             label={t('main.scenarioTags')}
             tokens={currentScenario.tags || []}
             onChange={(newTags) => handleScenarioInputChange('tags', newTags)}
-            dataTestId="scenarioTags-input"
+            dataTestId="scenarioTags"
           />
         </div>
 

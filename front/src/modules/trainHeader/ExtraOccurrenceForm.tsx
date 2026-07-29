@@ -19,6 +19,7 @@ const ExtraOccurrenceForm = ({
   return (
     <div className="train-add-extra-occurrence-form">
       <DatePicker
+        testIdPrefix="train-header-extra-occurrence-date"
         value={addedExceptionDate}
         onDateChange={(newDate) => {
           if (newDate) {
@@ -40,6 +41,7 @@ const ExtraOccurrenceForm = ({
       />
       <TimePicker
         id={'train-add-extra-occurrence-time'}
+        testIdPrefix="train-header-extra-occurrence-time"
         label={t('manageTrainSchedule.trainHeader.form.departureTime')}
         hours={addedExceptionDate.getHours()}
         minutes={addedExceptionDate.getMinutes()}
@@ -58,6 +60,7 @@ const ExtraOccurrenceForm = ({
       <div className="actions">
         <Button
           id={'train-add-extra-occurrence-time-add'}
+          dataTestID="train-header-extra-occurrence-add-button"
           label={t('manageTrainSchedule.trainHeader.form.add')}
           size="small"
           onClick={onCreateAddedException}

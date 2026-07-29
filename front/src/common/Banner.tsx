@@ -6,6 +6,7 @@ type BannerProps = {
   type?: BannerType;
   message?: string;
   onClose?: () => void;
+  dataTestId?: string;
 };
 
 const iconByType = {
@@ -14,15 +15,20 @@ const iconByType = {
   info: <Info variant="fill" size="lg" className="banner-icon info" />,
 };
 
-const Banner = ({ type = 'warning', message, onClose }: BannerProps) => {
+const Banner = ({ type = 'warning', message, onClose, dataTestId }: BannerProps) => {
   const icon = iconByType[type];
 
   return (
-    <div className={`banner ${type}`}>
+    <div className={`banner ${type}`} data-testid={dataTestId}>
       {icon}
       <span className={`banner-text ${type}`}>{message}</span>
       {onClose && (
-        <button className={`banner-close-button ${type}`} onClick={onClose} type="button">
+        <button
+          className={`banner-close-button ${type}`}
+          onClick={onClose}
+          type="button"
+          data-testid={dataTestId ? `${dataTestId}-close-button` : undefined}
+        >
           <X />
         </button>
       )}

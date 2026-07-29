@@ -381,7 +381,7 @@ const ExpandedTrainForm = ({
   }, [fields, fieldsFromTrain]);
 
   return (
-    <div className="train-header expanded-train-form">
+    <div className="train-header expanded-train-form" data-testid="train-header-expanded">
       <TrainServiceForm
         train={train}
         fields={fields}
@@ -394,9 +394,10 @@ const ExpandedTrainForm = ({
         revertServiceChange={revertServiceChange}
       />
       <div className="train-form">
-        <div className="train-name">
+        <div className="train-name" data-testid="train-name">
           <Input
             id="train-header-name-input"
+            testIdPrefix="train-header-name"
             small
             label={t('manageTrainSchedule.trainHeader.form.trainName')}
             value={fields.train_name}
@@ -414,6 +415,7 @@ const ExpandedTrainForm = ({
         </div>
         <div className="train-departure-date">
           <DatePicker
+            testIdPrefix="train-header-departure-date"
             value={fields.departure_date}
             isRangeMode={false}
             inputProps={{
@@ -434,9 +436,10 @@ const ExpandedTrainForm = ({
             selectableSlot={ANY_DATE_SLOT}
           />
         </div>
-        <div className="train-initial-velocity">
+        <div className="train-initial-velocity" data-testid="train-header-initial-velocity-field">
           <Input
             id="train-header-initial-velocity-input"
+            testIdPrefix="train-header-initial-velocity"
             small
             label={t('manageTrainSchedule.trainHeader.form.initialVelocity')}
             value={fields.initial_speed ?? '0'}
@@ -471,6 +474,7 @@ const ExpandedTrainForm = ({
         <div className="train-category">
           <Select
             id="train-header-category-select"
+            dataTestId="train-header-category-select"
             label={t('manageTrainSchedule.trainHeader.form.trainCategory')}
             small
             placeholder={t('translation:rollingStock.categoriesOptions.none')}
@@ -493,6 +497,7 @@ const ExpandedTrainForm = ({
         <div className="train-composition-code">
           <Select
             id="train-header-composition-code-select"
+            dataTestId="train-header-composition-code-select"
             label={t('manageTrainSchedule.trainHeader.form.compositionCode')}
             small
             placeholder={t('manageTrainSchedule.noSpeedLimitByTag')}
@@ -506,6 +511,7 @@ const ExpandedTrainForm = ({
         <div className="train-recovery-margin">
           <Select
             id="train-header-recovery-margin-select"
+            dataTestId="train-header-recovery-margin-select"
             label={t('manageTrainSchedule.trainHeader.form.recoveryMargin')}
             small
             value={selectedConstraintDistributionOption}
@@ -520,6 +526,7 @@ const ExpandedTrainForm = ({
         <div className="train-comfort">
           <Select
             id="train-header-comfort-select"
+            dataTestId="train-header-comfort-select"
             label={t('manageTrainSchedule.trainHeader.form.comfort')}
             small
             value={selectedComfortOption}
@@ -532,6 +539,7 @@ const ExpandedTrainForm = ({
         <div className="train-electric-profile loose-field">
           <Switch
             id="train-header-electric-profile-input"
+            dataTestId="train-header-electric-profile-checkbox"
             checked={fields.use_electrical_profiles ?? false}
             label={t('manageTrainSchedule.trainHeader.form.electricalProfiles')}
             onChange={(event) => {
@@ -542,6 +550,7 @@ const ExpandedTrainForm = ({
         <div className="train-tags">
           <TokenInput
             small
+            dataTestId="train-header-tags"
             label={t('manageTrainSchedule.trainHeader.form.tags')}
             tokens={fields.labels}
             onChange={(tokens) => {
@@ -556,6 +565,7 @@ const ExpandedTrainForm = ({
             variant="Quiet"
             onClick={onItineraryOpened}
             size="small"
+            dataTestID="train-header-itinerary-button"
           />
         </div>
       </div>
@@ -564,9 +574,12 @@ const ExpandedTrainForm = ({
           message={t('manageTrainSchedule.trainHeader.pathChanged')}
           type="info"
           onClose={resetPathJustChanged}
+          dataTestId="train-header-path-changed-banner"
         />
       )}
-      {categoryWarning && <Banner message={categoryWarning} />}
+      {categoryWarning && (
+        <Banner message={categoryWarning} dataTestId="train-header-category-warning-banner" />
+      )}
     </div>
   );
 };

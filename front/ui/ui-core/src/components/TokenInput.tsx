@@ -73,7 +73,7 @@ const TokenInput = ({
   };
 
   return (
-    <div className={cx('ui-token-input-wrapper', { small }, className)}>
+    <div className={cx('ui-token-input-wrapper', { small }, className)} data-testid={dataTestId}>
       <label className="input-label">{label}</label>
       <div className="tokens-wrapper" onClick={focusInput}>
         {tokens.map((token, index) => (
@@ -81,9 +81,14 @@ const TokenInput = ({
             key={`${token}-${index}`}
             onClick={() => setSelectedToken(index)}
             className={cx('token-item-wrapper', { selected: selectedToken === index })}
+            data-testid={dataTestId ? `${dataTestId}-token` : undefined}
           >
             <span className="token-label">{token}</span>
-            <span className="token-close-btn" onClick={() => removeToken(index)}>
+            <span
+              className="token-close-btn"
+              onClick={() => removeToken(index)}
+              data-testid={dataTestId ? `${dataTestId}-token-remove` : undefined}
+            >
               <X size={small ? 'sm' : 'lg'} />
             </span>
           </div>
@@ -95,8 +100,8 @@ const TokenInput = ({
           onKeyDown={handleKeyDown}
           onBlur={onBlur}
           className="token-input"
-          data-testid={dataTestId}
           ref={inputRef}
+          data-testid={dataTestId ? `${dataTestId}-input` : undefined}
         />
       </div>
     </div>

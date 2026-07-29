@@ -36,7 +36,8 @@ export default function RollingStockField({
 
   return (
     <ComboBox
-      id="train-header-rolling-stock-input"
+      id="train-header-rolling-stock"
+      testIdPrefix="train-header-rolling-stock"
       label={t('manageTrainSchedule.trainHeader.form.rollingStock')}
       small
       autoComplete="off"

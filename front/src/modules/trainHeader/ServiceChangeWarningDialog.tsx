@@ -17,12 +17,25 @@ export const ServiceChangeWarningDialog = ({
   const { t } = useTranslation(['operational-studies'], {
     keyPrefix: 'manageTrainSchedule.trainHeader.serviceChangeWarning',
   });
-  const header = useCallback(() => <h5>{t('header')}</h5>, [t]);
+  const header = useCallback(
+    () => <h5 data-testid="train-header-service-change-header">{t('header')}</h5>,
+    [t]
+  );
   const footer = useCallback(
     () => (
       <div className="buttons">
-        <Button variant="Cancel" label={t('cancel')} onClick={onCancel} />
-        <Button variant="Destructive" label={t('confirm')} onClick={onConfirm} />
+        <Button
+          variant="Cancel"
+          label={t('cancel')}
+          onClick={onCancel}
+          dataTestID="train-header-service-change-cancel-button"
+        />
+        <Button
+          variant="Destructive"
+          label={t('confirm')}
+          onClick={onConfirm}
+          dataTestID="train-header-service-change-confirm-button"
+        />
       </div>
     ),
     [onCancel, onConfirm, t]
@@ -30,7 +43,10 @@ export const ServiceChangeWarningDialog = ({
 
   return (
     <Dialog header={header()} footer={footer()}>
-      <p className="service-change-warning-explanations">
+      <p
+        className="service-change-warning-explanations"
+        data-testid="train-header-service-change-explanations"
+      >
         {t('explanations', { count: exceptionsCount })}
       </p>
     </Dialog>
