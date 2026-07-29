@@ -371,9 +371,34 @@ const SpaceTimeChartWrapper = ({
     }));
   }, [waypointsPanelData, operationalPoints]);
 
+  // Revert a 'tod' selection back to the 'std' one when the waypoint is closed.
+  const closeTodSelectionIfWaypoint = useCallback(
+    (waypointId: string) => {
+      if (selectedTrainId && selectedTrainBy === 'tod' && selectedTrainWaypointId === waypointId) {
+        setSelectedTrainWaypointId(undefined);
+        dispatch(updateSelectedTrain({ id: selectedTrainId, by: 'std' }));
+      }
+    },
+    [selectedTrainId, selectedTrainBy, selectedTrainWaypointId, dispatch]
+  );
+
+  const handleCloseOccupancyLayer = useCallback(
+    (waypointId: string) => {
+      closeTodSelectionIfWaypoint(waypointId);
+      onCloseOccupancyLayer?.(waypointId);
+    },
+    [closeTodSelectionIfWaypoint, onCloseOccupancyLayer]
+  );
+
   const { waypointMenu, activeWaypointId, handleWaypointClick } = useWaypointMenu(
     activeWaypointRef,
-    waypointsPanelData
+    waypointsPanelData && {
+      ...waypointsPanelData,
+      toggleDeployedWaypoint: (waypointId: string, deployed?: boolean) => {
+        if (!deployed) handleCloseOccupancyLayer(waypointId);
+        waypointsPanelData.toggleDeployedWaypoint(waypointId, deployed);
+      },
+    }
   );
 
   const hoveredTrainIdForChart = useMemo(() => {
@@ -449,7 +474,7 @@ const SpaceTimeChartWrapper = ({
         selectedTrain: selection,
         selectedWaypointId: selectedTrainWaypointId,
         panelMode: panelSelectionMode,
-        onCloseOccupancyLayer,
+        onCloseOccupancyLayer: handleCloseOccupancyLayer,
         handleWaypointClick,
         activeWaypointId,
         hoveredTrainIdForChart,
@@ -473,7 +498,7 @@ const SpaceTimeChartWrapper = ({
       selection,
       selectedTrainWaypointId,
       panelSelectionMode,
-      onCloseOccupancyLayer,
+      handleCloseOccupancyLayer,
       handleWaypointClick,
       activeWaypointRef,
       hoveredTrainIdForChart,
