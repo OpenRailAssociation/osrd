@@ -11,8 +11,10 @@ import { compact, uniq } from 'lodash';
 import {
   type TrainSchedule,
   type PathItemLocation,
+  type TimetableType,
   type TrainScheduleResponse,
 } from 'common/api/osrdEditoastApi';
+import { parseStartTime } from 'modules/trainSchedule/helpers/formatTrainScheduleWithDetails';
 import { getDefaultPacedTrainTimeWindow } from 'modules/trainSchedule/helpers/pacedTrain';
 import {
   createTrainSchedules,
@@ -22,7 +24,7 @@ import {
 } from 'modules/trainSchedule/helpers/updateTrainScheduleHelpers';
 import { updateSelectedTrain } from 'reducers/simulationResults';
 import type { AppDispatch } from 'store';
-import { Duration } from 'utils/duration';
+import { Duration, startTimeToMs, type StartTime } from 'utils/duration';
 import { formatEditoastIdToTrainScheduleId } from 'utils/trainId';
 
 import { checkChangeGroups } from '../../ManageTrainSchedule/helpers/buildPacedTrainException';
@@ -161,23 +163,21 @@ const createPathItemFromNode = (
   };
 };
 
-const getTimeLockDate = (
+const getTimeLockTimeOffset = (
   timeLock: TimeLockDto,
-  startTimeLock: TimeLockDto,
-  startDate: Date
-): Date | null => {
+  startTimeLock: TimeLockDto
+): Duration | null => {
   if (
     timeLock.time === null ||
     timeLock.consecutiveTime === null ||
     startTimeLock.consecutiveTime === null
   )
     return null;
-  const offset = timeLock.consecutiveTime - startTimeLock.consecutiveTime;
-  return new Date(startDate.getTime() + offset * 60 * 1000);
+  const offset = new Duration({
+    minutes: timeLock.consecutiveTime - startTimeLock.consecutiveTime,
+  });
+  return offset;
 };
-
-const formatDateDifferenceFrom = (start: Date, stop: Date) =>
-  Duration.subtractDate(stop, start).toISOString();
 
 /**
  * Generate a path from a list of trainrun sections.
@@ -204,19 +204,40 @@ export const generatePath = (
 };
 
 /**
- * Calculate the start date of a trainrun.
+ * Calculate the start time of a trainrun and return it as either a Date for calendar timetable
+ * or a Duration from the start of the timetable for hourly ones, clamping paced train start times to their intervals for hourly timetables.
  */
-const calculateStartDate = (
+const calculateStartTime = (
   trainrunSections: TrainrunSectionDto[],
-  baseDate: Date,
-  trainrunDirection: TRAINRUN_DIRECTIONS = TRAINRUN_DIRECTIONS.FORWARD
-): Date => {
+  baseStartTime: StartTime,
+  trainrunDirection: TRAINRUN_DIRECTIONS = TRAINRUN_DIRECTIONS.FORWARD,
+  paced: TrainSchedule['paced']
+): StartTime => {
   // The departure time of the first section is guaranteed to be non-null
   const startTimeLock =
     trainrunDirection === TRAINRUN_DIRECTIONS.BACKWARD
       ? trainrunSections[0].targetDeparture
       : trainrunSections[0].sourceDeparture;
-  const startDate = new Date(baseDate);
+
+  if (baseStartTime instanceof Duration) {
+    const startTime = new Duration({
+      hours: Math.floor(baseStartTime.total('hour')),
+      minutes: startTimeLock.time!,
+    });
+    if (!paced) return startTime;
+    /*In an hourly timetable the start time is an offset from the timetable start, and the
+     * database enforces `0 <= start_time < interval <= time_window` on every paced train of an
+     * hourly train schedule set. NGE only knows a minute within the hour, so a trainrun can
+     * land past its own interval — typically the return trip of a round trip departing at :59
+     * while the interval is 30 min.
+     *
+     * Taking the offset modulo the interval designates the very same occurrence: with a train
+     * every 30 min, departing at :59 and departing at :29 are the same train.*/
+    const intervalMs = Duration.parse(paced.interval).ms;
+    return new Duration({ milliseconds: startTime.ms % intervalMs });
+  }
+
+  const startDate = new Date(baseStartTime);
   startDate.setMinutes(startTimeLock.time!, 0, 0);
   return startDate;
 };
@@ -229,7 +250,6 @@ const calculateStartDate = (
 const generateSchedule = (
   trainrunSections: TrainrunSectionDto[],
   nodes: NodeDto[],
-  startDate: Date,
   trainrunDirection: TRAINRUN_DIRECTIONS
 ): TrainSchedule['schedule'] => {
   const isForward = trainrunDirection === TRAINRUN_DIRECTIONS.FORWARD;
@@ -251,13 +271,13 @@ const generateSchedule = (
       ? firstSection.sourceDeparture
       : firstSection.targetDeparture;
 
-    let arrival = getTimeLockDate(arrivalTimeLock, trainrunStartTimeLock, startDate);
-    let departure: Date | null = null;
+    let arrival = getTimeLockTimeOffset(arrivalTimeLock, trainrunStartTimeLock);
+    let departure: Duration | null = null;
     if (nextSection) {
       const nextDepartureTimeLock = isForward
         ? nextSection.sourceDeparture
         : nextSection.targetDeparture;
-      departure = getTimeLockDate(nextDepartureTimeLock, trainrunStartTimeLock, startDate);
+      departure = getTimeLockTimeOffset(nextDepartureTimeLock, trainrunStartTimeLock);
     }
 
     if (!arrival && !departure) {
@@ -279,16 +299,13 @@ const generateSchedule = (
     // If missing arrival time, default to a zero stop duration
     arrival = arrival || departure!;
 
-    let stop_for: string | null = null;
-    if (isStopTransit)
-      stop_for = departure
-        ? formatDateDifferenceFrom(arrival, departure)
-        : Duration.zero.toISOString();
+    let stop_for: Duration | null = null;
+    if (isStopTransit) stop_for = departure ? departure.sub(arrival) : Duration.zero;
 
     return {
       at: `${toNodeId}-${index + 1}`,
-      arrival: formatDateDifferenceFrom(startDate, arrival),
-      stop_for,
+      arrival: arrival.toISOString(),
+      stop_for: stop_for?.toISOString() ?? null,
       // Default information
       reception_signal: 'OPEN',
     };
@@ -321,6 +338,9 @@ export const getTrainrunLabels = (netzgrafikDto: NetzgrafikDto, trainrun: Trainr
     )
   );
 
+export const defaultBaseStartTime = (timetableType: TimetableType): StartTime =>
+  timetableType === 'HOURLY' ? Duration.zero : new Date();
+
 /**
  * Generate start time, path and schedule from a trainrun. If the trainrun is
  * backward, the sections are reversed.
@@ -328,8 +348,9 @@ export const getTrainrunLabels = (netzgrafikDto: NetzgrafikDto, trainrun: Trainr
 export const generatePathAndSchedule = (
   trainrunSections: TrainrunSectionDto[],
   nodes: NodeDto[],
-  baseDate?: Date,
+  baseStartTime: StartTime,
   trainrunDirection: TRAINRUN_DIRECTIONS = TRAINRUN_DIRECTIONS.FORWARD,
+  paced: TrainSchedule['paced'],
   state?: MacroEditorState
 ) => {
   let sections = trainrunSections;
@@ -337,10 +358,10 @@ export const generatePathAndSchedule = (
     sections = [...trainrunSections].reverse();
   }
 
-  const startDate = calculateStartDate(sections, baseDate ?? new Date(), trainrunDirection);
+  const startTime = calculateStartTime(sections, baseStartTime, trainrunDirection, paced);
   const path = generatePath(sections, nodes, trainrunDirection, state);
-  const schedule = generateSchedule(sections, nodes, startDate, trainrunDirection);
-  return { start_time: startDate.getTime(), path, schedule };
+  const schedule = generateSchedule(sections, nodes, trainrunDirection);
+  return { start_time: startTimeToMs(startTime), path, schedule };
 };
 
 // Populate secondary code when user did not specified one
@@ -406,19 +427,29 @@ const handleCreateTrainSchedule = async (
   const trainrunSections = getContinuousTrainrunSectionsByTrainrunId(netzgrafikDto, trainrun.id);
   const labels = getTrainrunLabels(netzgrafikDto, trainrun);
 
+  const baseStartTime = defaultBaseStartTime(state.timetableType);
+
+  const paced = createPacedAttributesFromTrainrun(
+    trainrun,
+    netzgrafikDto,
+    getDefaultPacedTrainTimeWindow(state.timetableType)
+  );
+
   const pathAndSchedule = generatePathAndSchedule(
     trainrunSections,
     netzgrafikDto.nodes,
-    undefined,
+    baseStartTime,
     TRAINRUN_DIRECTIONS.FORWARD,
+    paced,
     state
   );
 
   const returnPathAndSchedule = generatePathAndSchedule(
     trainrunSections,
     netzgrafikDto.nodes,
-    undefined,
+    baseStartTime,
     TRAINRUN_DIRECTIONS.BACKWARD,
+    paced,
     state
   );
 
@@ -432,12 +463,6 @@ const handleCreateTrainSchedule = async (
     trainrun.categoryId
   );
 
-  const paced = createPacedAttributesFromTrainrun(
-    trainrun,
-    netzgrafikDto,
-    getDefaultPacedTrainTimeWindow(state.timetableType)
-  );
-
   const forwardTrip: TrainSchedule = {
     ...DEFAULT_TRAIN_SCHEDULE_PAYLOAD,
     paced,
@@ -448,7 +473,12 @@ const handleCreateTrainSchedule = async (
   };
 
   const returnTrip =
-    trainrun.direction === 'round_trip' ? { ...forwardTrip, ...returnPathAndSchedule } : undefined;
+    trainrun.direction === 'round_trip'
+      ? {
+          ...forwardTrip,
+          ...returnPathAndSchedule,
+        }
+      : undefined;
 
   const trainSchedulesToCreate = returnTrip ? [forwardTrip, returnTrip] : [forwardTrip];
 
@@ -533,11 +563,18 @@ export const handleUpdateTrainSchedule = async ({
   const oldForwardTrainSchedule = await fetchTrainSchedule(trainScheduleIds[0], dispatch);
   const trainrunSections = getContinuousTrainrunSectionsByTrainrunId(netzgrafikDto, trainrun.id);
   const labels = getTrainrunLabels(netzgrafikDto, trainrun);
+  const baseStartTime = parseStartTime(oldForwardTrainSchedule.start_time, state.timetableType);
+  const paced = createPacedAttributesFromTrainrun(
+    trainrun,
+    netzgrafikDto,
+    getDefaultPacedTrainTimeWindow(state.timetableType)
+  );
   const forwardPathAndSchedule = generatePathAndSchedule(
     trainrunSections,
     netzgrafikDto.nodes,
-    new Date(oldForwardTrainSchedule.start_time),
+    baseStartTime,
     TRAINRUN_DIRECTIONS.FORWARD,
+    paced,
     state
   );
   await populateSecondaryCodesInPath(forwardPathAndSchedule.path, infraId, dispatch);
@@ -547,12 +584,6 @@ export const handleUpdateTrainSchedule = async ({
   const category = getTrainCategoryFromTrainrunCategoryId(
     state.trainrunCategories,
     trainrun.categoryId
-  );
-
-  const paced = createPacedAttributesFromTrainrun(
-    trainrun,
-    netzgrafikDto,
-    getDefaultPacedTrainTimeWindow(state.timetableType)
   );
 
   const newForwardTrainBase: Omit<TrainScheduleResponse, 'id'> = {
@@ -599,8 +630,9 @@ export const handleUpdateTrainSchedule = async ({
   const returnPathAndSchedule = generatePathAndSchedule(
     trainrunSections,
     netzgrafikDto.nodes,
-    new Date(oldForwardTrainSchedule.start_time),
+    baseStartTime,
     TRAINRUN_DIRECTIONS.BACKWARD,
+    paced,
     state
   );
 

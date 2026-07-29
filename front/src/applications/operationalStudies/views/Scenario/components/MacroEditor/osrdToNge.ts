@@ -34,10 +34,11 @@ import {
   type MacroNoteResponse,
   type TrainScheduleResponse,
 } from 'common/api/osrdEditoastApi';
+import { parseStartTime } from 'modules/trainSchedule/helpers/formatTrainScheduleWithDetails';
 import { isPacedTrain } from 'modules/trainSchedule/helpers/pacedTrain';
 import type { TrainScheduleWithPathOps } from 'reducers/osrdconf/types';
 import type { AppDispatch } from 'store';
-import { Duration, addDurationToDate } from 'utils/duration';
+import { Duration, addDurationToStartTime, type StartTime } from 'utils/duration';
 
 import {
   TRAINRUN_CATEGORY_HALTEZEITEN,
@@ -412,32 +413,34 @@ const getNgeTrainruns = (
       };
     });
 
-const createTimeLock = (time: Date, startTime: Date): TimeLockDto => ({
-  time: time.getMinutes(),
-  consecutiveTime: Duration.subtractDate(time, startTime).total('minute'),
+const startTimeMinuteOfHour = (startTime: StartTime) =>
+  startTime instanceof Duration
+    ? Math.floor(startTime.total('minute')) % 60
+    : startTime.getMinutes();
+
+export const createTimeLock = (time: Duration, startTime: StartTime): TimeLockDto => ({
+  time: startTimeMinuteOfHour(addDurationToStartTime(startTime, time)),
+  consecutiveTime: time.total('minute'),
   lock: false,
   warning: undefined,
   timeFormatter: undefined,
 });
 
-const createArrivalTimeLock = (scheduleItem: ScheduleItem | undefined, startTime: Date) => {
+const createArrivalTimeLock = (scheduleItem: ScheduleItem | undefined, startTime: StartTime) => {
   if (!scheduleItem?.arrival) {
     return { ...DEFAULT_TIME_LOCK };
   }
   const arrival = Duration.parse(scheduleItem.arrival);
-  return createTimeLock(addDurationToDate(startTime, arrival), startTime);
+  return createTimeLock(arrival, startTime);
 };
 
-const createDepartureTimeLock = (scheduleItem: ScheduleItem | undefined, startTime: Date) => {
+const createDepartureTimeLock = (scheduleItem: ScheduleItem | undefined, startTime: StartTime) => {
   if (!scheduleItem?.arrival) {
     return { ...DEFAULT_TIME_LOCK };
   }
   const arrival = Duration.parse(scheduleItem.arrival);
   const stopFor = scheduleItem.stop_for ? Duration.parse(scheduleItem.stop_for) : Duration.zero;
-  return createTimeLock(
-    addDurationToDate(addDurationToDate(startTime, arrival), stopFor),
-    startTime
-  );
+  return createTimeLock(arrival.add(stopFor), startTime);
 };
 
 /**
@@ -489,8 +492,10 @@ const getNgeTrainrunSectionsWithNodes = (
         return node!.path_item_key;
       });
 
-      const startTime = new Date(trainSchedule.start_time);
-      const returnStartTime = returnTrainSchedule ? new Date(returnTrainSchedule.start_time) : null;
+      const startTime = parseStartTime(trainSchedule.start_time, state.timetableType);
+      const returnStartTime = returnTrainSchedule
+        ? parseStartTime(returnTrainSchedule.start_time, state.timetableType)
+        : null;
 
       // OSRD describes the path in terms of nodes, NGE describes it in terms
       // of sections between nodes. Iterate over path items two-by-two to
@@ -537,7 +542,7 @@ const getNgeTrainrunSectionsWithNodes = (
 
         let sourceDeparture;
         if (i === 0) {
-          sourceDeparture = createTimeLock(startTime, startTime);
+          sourceDeparture = createTimeLock(Duration.zero, startTime);
         } else {
           sourceDeparture = createDepartureTimeLock(sourceScheduleEntry, startTime);
         }
@@ -547,12 +552,12 @@ const getNgeTrainrunSectionsWithNodes = (
         let targetDeparture = { ...DEFAULT_TIME_LOCK };
         if (returnStartTime) {
           if (returnIndex === 1) {
-            targetDeparture = createTimeLock(returnStartTime, returnStartTime);
+            targetDeparture = createTimeLock(Duration.zero, returnStartTime);
           } else {
             targetDeparture = createDepartureTimeLock(returnTargetScheduleEntry, returnStartTime);
           }
         } else if (returnIndex === 1) {
-          targetDeparture = createTimeLock(startTime, startTime);
+          targetDeparture = createTimeLock(Duration.zero, startTime);
         }
 
         let sourceArrival = { ...DEFAULT_TIME_LOCK };
