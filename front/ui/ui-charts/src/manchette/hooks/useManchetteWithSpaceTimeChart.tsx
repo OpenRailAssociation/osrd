@@ -52,7 +52,7 @@ export type ManchetteWithSpaceTimeChartOptions = {
   enableTimeZoom: boolean;
 };
 
-export const DEFAULT_MANCHETTE_WITH_SPACE_TIME_CHART_OPTIONS: ManchetteWithSpaceTimeChartOptions = {
+const DEFAULT_MANCHETTE_WITH_SPACE_TIME_CHART_OPTIONS: ManchetteWithSpaceTimeChartOptions = {
   displayTimeCaptions: true,
   enableTimePan: true,
   enableSpacePan: true,

@@ -1,3 +1,4 @@
+import { PATH_COLOR_DEFAULT } from '../consts';
 import type { ChartPath, ChartPoint } from '../types';
 
 const positions = [
@@ -21,8 +22,6 @@ const times = [
   3727370, 3744455, 3824258, 3838480, 3854480, 3868480, 3876480, 3884480, 3890480, 3898480, 3906480,
   3914480, 3922480, 3926480, 3930480, 3934480, 3938480, 3942480, 3944480, 3946480,
 ];
-
-const PATH_COLOR_DEFAULT = '#8A714B';
 
 const buildPoints = (departureISO: string): ChartPoint[] => {
   const t0 = +new Date(departureISO);
