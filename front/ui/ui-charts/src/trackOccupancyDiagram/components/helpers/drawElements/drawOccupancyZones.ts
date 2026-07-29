@@ -1,4 +1,5 @@
 import { FONT } from '../../../../common/consts';
+import { BLACK_55 } from '../../../../common/helpers/colors';
 import { getCrispLineCoordinate } from '../../../../common/helpers/time';
 import type { SpaceTimeChartContextType } from '../../../../spaceTimeChart';
 import { OCCUPANCY_ZONE_Y_START, OCCUPANCY_ZONE_HEIGHT, FONTS, COLORS } from '../../../lib/consts';
@@ -215,12 +216,12 @@ export const drawZoneTrailingText = (
   const x = xEnd;
   const yTop = yCenter - boxH / 2;
 
-  ctx.fillStyle = 'rgba(0,0,0,0.55)';
+  ctx.fillStyle = BLACK_55;
   ctx.beginPath();
   ctx.roundRect(x, yTop, boxW, boxH, radius);
   ctx.fill();
 
-  ctx.fillStyle = '#FFFFFF';
+  ctx.fillStyle = WHITE_100;
   ctx.fillText(trailingText, x + paddingX, yCenter + 0.5);
   ctx.restore();
 };
