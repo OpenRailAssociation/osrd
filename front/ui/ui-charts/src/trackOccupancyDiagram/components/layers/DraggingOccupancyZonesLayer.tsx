@@ -7,9 +7,9 @@ import {
   SpaceTimeChartCanvasContext,
   type SpaceTimeChartContextType,
 } from '../../../spaceTimeChart';
-import { COLORS } from '../../lib/consts';
 import type { OccupancyZone } from '../../lib/types';
 import { drawThroughTrain } from '../helpers/drawElements/drawOccupancyZones';
+import { PRIMARY_50, PRIMARY_80 } from '../../../common/helpers/colors';
 
 const DraggingOccupancyZonesLayer = ({ occupancyZones }: { occupancyZones: OccupancyZone[] }) => {
   const mouseContext = useContext(MouseContext);
@@ -32,7 +32,7 @@ const DraggingOccupancyZonesLayer = ({ occupancyZones }: { occupancyZones: Occup
 
         // Draw zone box
         ctx.save();
-        ctx.fillStyle = COLORS.PRIMARY_80;
+        ctx.fillStyle = PRIMARY_80;
         ctx.shadowBlur = 8;
         ctx.shadowOffsetX = 0;
         ctx.shadowOffsetY = 5;
@@ -51,7 +51,7 @@ const DraggingOccupancyZonesLayer = ({ occupancyZones }: { occupancyZones: Occup
         ctx.save();
         ctx.lineWidth = 1.5;
         ctx.lineCap = 'round';
-        ctx.strokeStyle = COLORS.PRIMARY_50;
+        ctx.strokeStyle = PRIMARY_50;
         ctx.setLineDash([0, 4]);
         const verticalLineSpacing = zone.startTime === zone.endTime ? 7 : 2.5;
         ctx.beginPath();

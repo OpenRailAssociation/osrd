@@ -1,5 +1,7 @@
 import { FONT_MONO, FONT_SANS } from '../../../../common/consts';
-import { MINUTES_TEXT_OFFSET, STATION_TEXT_OFFSET, COLORS } from '../../../lib/consts';
+import { MINUTES_TEXT_OFFSET, STATION_TEXT_OFFSET } from '../../../lib/consts';
+import { GREY_50, GREY_60, GREY_80 } from '../../../../common/helpers/colors';
+
 import type { OccupancyZone } from '../../../lib/types';
 import { drawText } from '../../utils';
 
@@ -17,8 +19,6 @@ const Y_TEXT_CENTERING_OFFSET = 1;
 const X_THROUGHTRAIN_OFFSET = 4;
 const Y_MEDIUM_POSITION_OFFSET = 24;
 const ROTATE_VALUE = (-30 * Math.PI) / 180;
-
-const { GREY_50, GREY_60, GREY_80 } = COLORS;
 
 export const drawOccupancyZonesTexts = ({
   ctx,

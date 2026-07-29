@@ -1,12 +1,11 @@
 import { FONT_MONO, FONT_SANS } from '../../../../common/consts';
-import { BLACK_55 } from '../../../../common/helpers/colors';
+import { BLACK_55, BLACK_70, WHITE_100 } from '../../../../common/helpers/colors';
 import { getCrispLineCoordinate } from '../../../../common/helpers/time';
 import type { SpaceTimeChartContextType } from '../../../../spaceTimeChart';
-import { OCCUPANCY_ZONE_Y_START, OCCUPANCY_ZONE_HEIGHT, COLORS } from '../../../lib/consts';
+import { OCCUPANCY_ZONE_Y_START, OCCUPANCY_ZONE_HEIGHT } from '../../../lib/consts';
 import type { OccupancyZone } from '../../../lib/types';
 import { drawOccupancyZonesTexts } from './drawOccupancyZonesTexts';
 
-const { REMAINING_TRAINS_BACKGROUND, WHITE_100 } = COLORS;
 const REMAINING_TRAINS_WIDTH = 70;
 const REMAINING_TRAINS_HEIGHT = 24;
 const REMAINING_TEXT_OFFSET = 12;
@@ -23,6 +22,8 @@ const ARROW_OFFSET_Y = 1.5;
 const ARROW_WIDTH = 4.5;
 const ARROW_TOP_Y = 3.5;
 const ARROW_BOTTOM_Y = 6.5;
+
+const REMAINING_TRAINS_BACKGROUND_COLOR = BLACK_70;
 
 export const drawThroughTrain = (ctx: CanvasRenderingContext2D, x: number, y: number) => {
   // Through trains are materialized by converging arrows like the following ones
@@ -66,7 +67,7 @@ export const drawRemainingTrainsBox = (
   const y = getSpacePixel(position) + yOffset;
   const textY = y + OCCUPANCY_ZONE_Y_START - REMAINING_TEXT_OFFSET;
 
-  ctx.fillStyle = REMAINING_TRAINS_BACKGROUND;
+  ctx.fillStyle = REMAINING_TRAINS_BACKGROUND_COLOR;
   ctx.beginPath();
   ctx.rect(x - REMAINING_TRAINS_WIDTH / 2, textY, REMAINING_TRAINS_WIDTH, REMAINING_TRAINS_HEIGHT);
   ctx.fill();
