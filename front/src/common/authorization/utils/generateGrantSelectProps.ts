@@ -77,7 +77,7 @@ const generateGrantSelectProps = ({
   if (userPrivileges.has('can_share_ownership') === false) {
     const filteredOptions = allowedOptions.filter((_, index) => index >= subjectValueIndex);
     return {
-      value: filteredOptions[subjectValueIndex],
+      value: allowedOptions[subjectValueIndex],
       options: filteredOptions,
       // readonly if there is only one option left and it is already selected
       readOnly: filteredOptions.length === 1,
