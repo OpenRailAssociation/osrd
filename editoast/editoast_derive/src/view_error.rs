@@ -1,9 +1,11 @@
+mod args;
+use darling::FromDeriveInput as _;
 use darling::Result;
 use proc_macro2::TokenStream;
 use syn::DeriveInput;
 
 pub fn view_error(input: &DeriveInput) -> Result<TokenStream> {
-    let _ = input;
+    let _ = args::Args::from_derive_input(input)?;
     todo!()
 }
 
