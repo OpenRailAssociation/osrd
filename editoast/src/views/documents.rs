@@ -8,6 +8,7 @@ use axum::http::header::CACHE_CONTROL;
 use axum::http::header::CONTENT_TYPE;
 use axum::response::IntoResponse;
 use editoast_derive::EditoastError;
+use editoast_derive::ViewError;
 use serde::Serialize;
 use std::sync::Arc;
 use thiserror::Error;
@@ -19,7 +20,7 @@ use database::DbConnectionPoolV2;
 use editoast_models::Document;
 use editoast_models::prelude::*;
 
-#[derive(Error, Debug, EditoastError)]
+#[derive(Error, Debug, EditoastError, ViewError)]
 #[editoast_error(base_id = "document")]
 pub(in crate::views) enum DocumentErrors {
     #[error("Document '{document_key}' not found")]
@@ -36,78 +37,78 @@ pub(in crate::views) enum DocumentErrors {
     Authorization(#[from] AuthorizationError),
 }
 
-impl crate::views::error::ViewError for DocumentErrors {
-    const LABEL: &'static str = "DocumentsErrors";
+// impl crate::views::error::ViewError for DocumentErrors {
+//     const LABEL: &'static str = "DocumentsErrors";
 
-    fn responses() -> Vec<super::error::OpenApiResponse> {
-        Vec::from([
-            super::error::OpenApiResponse {
-                label: Some("NotFound"),
-                message_template: Some("Document '{document_key}' not found"),
-                status: axum::http::StatusCode::NOT_FOUND,
-                context: Vec::from([super::error::ContextEntry {
-                    key: "document_key",
-                    schema: <i64 as utoipa::PartialSchema>::schema(),
-                }]),
-            },
-            super::error::OpenApiResponse {
-                label: Some("Database"),
-                status: axum::http::StatusCode::INTERNAL_SERVER_ERROR,
-                message_template: None,
-                context: Vec::from([]),
-            },
-            super::error::OpenApiResponse {
-                label: Some("DatabaseUnavailable"),
-                status: axum::http::StatusCode::INTERNAL_SERVER_ERROR,
-                message_template: None,
-                context: Vec::from([]),
-            },
-            super::error::OpenApiResponse {
-                label: Some("Authorization"),
-                message_template: None,
-                status: axum::http::StatusCode::FORBIDDEN,
-                context: Vec::from([]),
-            },
-        ])
-    }
+//     fn responses() -> Vec<super::error::OpenApiResponse> {
+//         Vec::from([
+//             super::error::OpenApiResponse {
+//                 label: Some("NotFound"),
+//                 message_template: Some("Document '{document_key}' not found"),
+//                 status: axum::http::StatusCode::NOT_FOUND,
+//                 context: Vec::from([super::error::ContextEntry {
+//                     key: "document_key",
+//                     schema: <i64 as utoipa::PartialSchema>::schema(),
+//                 }]),
+//             },
+//             super::error::OpenApiResponse {
+//                 label: Some("Database"),
+//                 status: axum::http::StatusCode::INTERNAL_SERVER_ERROR,
+//                 message_template: None,
+//                 context: Vec::from([]),
+//             },
+//             super::error::OpenApiResponse {
+//                 label: Some("DatabaseUnavailable"),
+//                 status: axum::http::StatusCode::INTERNAL_SERVER_ERROR,
+//                 message_template: None,
+//                 context: Vec::from([]),
+//             },
+//             super::error::OpenApiResponse {
+//                 label: Some("Authorization"),
+//                 message_template: None,
+//                 status: axum::http::StatusCode::FORBIDDEN,
+//                 context: Vec::from([]),
+//             },
+//         ])
+//     }
 
-    fn status(&self) -> axum::http::StatusCode {
-        match self {
-            Self::NotFound { .. } => axum::http::StatusCode::NOT_FOUND,
-            Self::Database(_) => axum::http::StatusCode::INTERNAL_SERVER_ERROR,
-            Self::DatabaseUnavailable { .. } => axum::http::StatusCode::INTERNAL_SERVER_ERROR,
-            Self::Authorization(_) => axum::http::StatusCode::FORBIDDEN,
-        }
-    }
+//     fn status(&self) -> axum::http::StatusCode {
+//         match self {
+//             Self::NotFound { .. } => axum::http::StatusCode::NOT_FOUND,
+//             Self::Database(_) => axum::http::StatusCode::INTERNAL_SERVER_ERROR,
+//             Self::DatabaseUnavailable { .. } => axum::http::StatusCode::INTERNAL_SERVER_ERROR,
+//             Self::Authorization(_) => axum::http::StatusCode::FORBIDDEN,
+//         }
+//     }
 
-    fn context(self) -> std::collections::HashMap<String, serde_json::Value> {
-        Default::default()
-    }
+//     fn context(self) -> std::collections::HashMap<String, serde_json::Value> {
+//         Default::default()
+//     }
 
-    fn sub_label(&self) -> Option<&'static str> {
-        match self {
-            Self::NotFound { .. } => Some("NotFound"),
-            Self::Database(_) => Some("DatabaseError"),
-            Self::DatabaseUnavailable { .. } => Some("DatabaseUnavailable"),
-            Self::Authorization(_) => Some("AuthorizationError"),
-        }
-    }
-}
+//     fn sub_label(&self) -> Option<&'static str> {
+//         match self {
+//             Self::NotFound { .. } => Some("NotFound"),
+//             Self::Database(_) => Some("DatabaseError"),
+//             Self::DatabaseUnavailable { .. } => Some("DatabaseUnavailable"),
+//             Self::Authorization(_) => Some("AuthorizationError"),
+//         }
+//     }
+// }
 
-impl utoipa::IntoResponses for DocumentErrors {
-    fn responses() -> std::collections::BTreeMap<
-        String,
-        utoipa::openapi::RefOr<utoipa::openapi::response::Response>,
-    > {
-        <Self as super::error::ViewError>::utoipa_responses().into()
-    }
-}
+// impl utoipa::IntoResponses for DocumentErrors {
+//     fn responses() -> std::collections::BTreeMap<
+//         String,
+//         utoipa::openapi::RefOr<utoipa::openapi::response::Response>,
+//     > {
+//         <Self as super::error::ViewError>::utoipa_responses().into()
+//     }
+// }
 
-impl axum::response::IntoResponse for DocumentErrors {
-    fn into_response(self) -> axum::response::Response {
-        <Self as super::error::ViewError>::into_response(self)
-    }
-}
+// impl axum::response::IntoResponse for DocumentErrors {
+//     fn into_response(self) -> axum::response::Response {
+//         <Self as super::error::ViewError>::into_response(self)
+//     }
+// }
 
 /// Returns a document of any type
 #[editoast_derive::route]
