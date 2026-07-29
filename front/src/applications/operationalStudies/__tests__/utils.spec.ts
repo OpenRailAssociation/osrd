@@ -1,3 +1,4 @@
+import { v4 as uuidV4 } from 'uuid';
 import { describe, it, expect } from 'vitest';
 
 import {
@@ -6,7 +7,9 @@ import {
   isTooFast,
   transformBoundariesDataToPositionDataArray,
   transformElectricalBoundariesToRanges,
+  sortPathOperationalPoints,
 } from 'applications/operationalStudies/utils';
+import type { PathItem, CoreOperationalPointOnPath } from 'common/api/osrdEditoastApi';
 
 import {
   boundariesDataWithNumber,
@@ -140,5 +143,52 @@ describe('isScheduledPointsNotHonored', () => {
   it('should return false if the train schedule is honored', () => {
     const result = isScheduledPointsNotHonored(trainSummaryHonored);
     expect(result).toBe(false);
+  });
+});
+
+describe('sortPathOperationalPoints', () => {
+  const makeOp = (id: string, position: number) => ({ id, position }) as CoreOperationalPointOnPath;
+
+  const makePathItem = (opId: string): PathItem => ({
+    id: uuidV4(),
+    location: {
+      type: 'operational_point_part_reference',
+      operational_point: { type: 'id', operational_point: opId },
+    },
+  });
+
+  it('should not modify a list already sorted by position', () => {
+    const ops = [makeOp('A', 0), makeOp('B', 100), makeOp('C', 200)];
+    const path = [makePathItem('A'), makePathItem('B'), makePathItem('C')];
+    const result = sortPathOperationalPoints(ops, path);
+    expect(result.map((op) => op.id)).toEqual(['A', 'B', 'C']);
+  });
+
+  it('should put the path origin first in the list when its position matches the one of other waypoints', () => {
+    const ops = [makeOp('A', 0), makeOp('C', 0), makeOp('B', 0), makeOp('D', 200)];
+    const path = [makePathItem('C'), makePathItem('A'), makePathItem('D')];
+    const result = sortPathOperationalPoints(ops, path);
+    expect(result.map((op) => op.id)).toEqual(['C', 'A', 'B', 'D']);
+  });
+
+  it('should sort two path items based on their index in the path if they are next to each other in ops when they are neither the origin or destination)', () => {
+    const ops = [
+      makeOp('A', 0),
+      makeOp('C', 200),
+      makeOp('D', 200),
+      makeOp('B', 200),
+      makeOp('E', 200),
+      makeOp('F', 300),
+    ];
+    const path = [makePathItem('A'), makePathItem('B'), makePathItem('D'), makePathItem('F')];
+    const result = sortPathOperationalPoints(ops, path);
+    expect(result.map((op) => op.id)).toEqual(['A', 'C', 'B', 'D', 'E', 'F']);
+  });
+
+  it('should put the path destination at the end of the list when its position matches the one of other waypoints', () => {
+    const ops = [makeOp('A', 0), makeOp('D', 100), makeOp('B', 100), makeOp('C', 100)];
+    const path = [makePathItem('A'), makePathItem('C'), makePathItem('D')];
+    const result = sortPathOperationalPoints(ops, path);
+    expect(result.map((op) => op.id)).toEqual(['A', 'B', 'C', 'D']);
   });
 });
