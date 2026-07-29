@@ -1,7 +1,20 @@
 {
   "appName": "Expression de besoins",
+  "consist": {
+    "title": "Convoi"
+  },
+  "destination": {
+    "title": "Destination"
+  },
   "noConfigurationFound": {
     "text": "Impossible de récupérer l'environnement de recherche d'itinéraire (infrastructure, sillons). Veuillez réessayer plus tard.",
     "title": "Aucune configuration disponible"
+  },
+  "origin": {
+    "title": "Origine"
+  },
+  "trainPath": {
+    "ch": "CH",
+    "ci": "CI"
   }
 }
