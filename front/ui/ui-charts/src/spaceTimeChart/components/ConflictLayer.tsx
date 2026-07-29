@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 
-import { hexToRgb, indexToColor } from '../../common/helpers/colors';
+import { ERROR_10, ERROR_30, ERROR_60, hexToRgb, indexToColor, RED_900 } from '../../common/helpers/colors';
 import { useDraw, usePicking } from '../../common/hooks/useCanvas';
 import type { DrawingFunction, PickingDrawingFunction, PickingElement } from '../../common/types';
 import { SpaceTimeChartCanvasContext } from '../lib/context';
@@ -48,9 +48,9 @@ export type ConflictLayerProps = {
 
 const BORDER_SIZE = 4;
 const BORDERS = [
-  { opacity: 0.33, color: '#d91c1c', size: 2 * BORDER_SIZE },
-  { opacity: 0.5, color: '#ff6868', size: BORDER_SIZE },
-  { opacity: 1, color: '#6b0000', size: 0 },
+  { opacity: 0.33, color: ERROR_60, size: 2 * BORDER_SIZE },
+  { opacity: 0.5, color: ERROR_30, size: BORDER_SIZE },
+  { opacity: 1, color: ERROR_10, size: 0 },
 ];
 
 export const ConflictLayer = ({ conflicts }: ConflictLayerProps) => {

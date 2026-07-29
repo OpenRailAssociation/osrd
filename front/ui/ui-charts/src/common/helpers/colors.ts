@@ -42,13 +42,18 @@ export const YELLOW_400 = 'rgb(255, 192, 3)';
 export const SKY_900 = 'rgb(7, 69, 128)';
 export const SKY_700 = 'rgb(33, 112, 185)';
 export const STONE_100 = 'rgb(247, 246, 238)';
+export const STONE_500 = 'rgb(138, 113, 75)';
 export const STONE_50 = 'rgb(250, 249, 245)';
 export const LIME_50 = 'rgb(242, 240, 228)';
+export const EMERALD_100 = 'rgb(202, 237, 219)';
+export const ROSE_200 = 'rgb(255, 212, 216)';
+export const AMBER_100 = 'rgb(255, 234, 191)';
 
 export const AMBIANT_A10 = 'rgb(239, 243, 245)';
 
 export const ERROR_60 = 'rgb(217, 28, 28)';
 export const ERROR_30 = 'rgb(255, 104, 104)';
+export const ERROR_10 = 'rgb(107, 0, 0)';
 
 export const WARNING_30 = 'rgb(234, 167, 43)';
 

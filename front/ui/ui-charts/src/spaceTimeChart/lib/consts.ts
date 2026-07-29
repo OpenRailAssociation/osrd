@@ -1,12 +1,12 @@
 import { SECOND, MINUTE, HOUR, FONT_SIZE, FONT_MONO } from '../../common/consts';
-import { BLACK_100, SKY_700, GREY_10, GREY_30, GREY_50 } from '../../common/helpers/colors';
+import { BLACK_100, SKY_700, GREY_10, GREY_30, GREY_50, AMBER_100, EMERALD_100, ROSE_200 } from '../../common/helpers/colors';
 import { type SpaceTimeChartTheme } from './types';
 
 
 // Occupancy blocks colors :
-export const OCCUPANCY_FREE = '#CAEDDB';
-export const OCCUPANCY_SEMAPHORE = '#FFD4D8';
-export const OCCUPANCY_WARNING = '#FFEABF';
+export const OCCUPANCY_FREE = EMERALD_100;
+export const OCCUPANCY_SEMAPHORE = ROSE_200;
+export const OCCUPANCY_WARNING = AMBER_100;
 
 export const DEFAULT_THEME: SpaceTimeChartTheme = {
   background: 'white',
