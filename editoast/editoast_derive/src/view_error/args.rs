@@ -33,7 +33,8 @@ use crate::view_error::codegen::ViewErrorImpl;
 pub(super) struct Args {
     ident: syn::Ident,
     data: ast::Data<VariantArgs, FieldArgs>,
-    attrs: Vec<syn::Attribute>,
+    #[darling(with = ErrorAttrs::parse)]
+    attrs: ErrorAttrs,
 
     /// Changes the base name of the error label
     #[darling(default)]
@@ -61,7 +62,8 @@ struct TypeArgs {
 struct VariantArgs {
     ident: syn::Ident,
     fields: ast::Fields<FieldArgs>,
-    attrs: Vec<syn::Attribute>,
+    #[darling(with = ErrorAttrs::parse)]
+    attrs: ErrorAttrs,
 
     #[darling(default)]
     status: StatusCodeArg,
@@ -73,6 +75,15 @@ struct VariantArgs {
 struct FieldArgs {
     ident: Option<syn::Ident>,
     ty: syn::Type,
+}
+
+/// Parses `thiserror`'s `error` attribute on a type or enum variant
+///
+/// Supports `#[error("format_string", interpolated_values*)]` and `#[error(transparent)]` forms.
+/// Interpolated values are ignored.
+#[derive(Debug)]
+struct ErrorAttrs {
+    message: Option<String>,
 }
 
 #[derive(Debug, Clone, FromMeta)]
@@ -89,7 +100,9 @@ impl Args {
         let Self {
             ident,
             data,
-            attrs,
+            attrs: ErrorAttrs {
+                message: message_template,
+            },
             name,
             context: context_on_type,
             args: TypeArgs { status },
@@ -124,7 +137,7 @@ impl Args {
                     responses_impl: vec![OpenApiResponse {
                         sub_label: None,
                         status,
-                        message_template: message_template(&attrs),
+                        message_template,
                         context: openapi_context,
                     }],
                 }
@@ -139,7 +152,10 @@ impl Args {
                     let VariantArgs {
                         ident: variant_ident,
                         fields,
-                        attrs,
+                        attrs:
+                            ErrorAttrs {
+                                message: message_template,
+                            },
                         status,
                         context: context_on_variant,
                     } = variant;
@@ -167,7 +183,7 @@ impl Args {
                     responses_impl.push(OpenApiResponse {
                         sub_label: Some(sub_label),
                         status,
-                        message_template: message_template(&attrs),
+                        message_template,
                         context: openapi_context,
                     });
                 }
@@ -263,21 +279,31 @@ impl FieldArgs {
     }
 }
 
-fn message_template(attrs: &[syn::Attribute]) -> Option<String> {
-    attrs
-        .iter()
-        .find(|attr| attr.path().is_ident("error"))
-        .and_then(|attr| {
-            attr.parse_args_with(|input: syn::parse::ParseStream<'_>| {
-                let message = input
-                    .peek(syn::LitStr)
-                    .then(|| input.parse::<syn::LitStr>())
-                    .transpose()?
-                    .map(|message| message.value());
-                let _ = input.parse::<proc_macro2::TokenStream>()?;
-                Ok(message)
+impl ErrorAttrs {
+    fn parse(attrs: Vec<syn::Attribute>) -> Result<Self> {
+        let message = attrs
+            .into_iter()
+            .find(|attr| attr.path().is_ident("error"))
+            .map(|attr| {
+                attr.parse_args_with(|input: syn::parse::ParseStream<'_>| {
+                    let message = if input.peek(syn::LitStr) {
+                        Some(input.parse::<syn::LitStr>()?.value())
+                    } else {
+                        None
+                    };
+
+                    // parse_args_with requires parsing the entire input. At this point
+                    // #[error()] can have remaining tokens after the message format string containing
+                    // the values to interpolate.
+                    let _ = input.parse::<proc_macro2::TokenStream>()?;
+
+                    Ok(message)
+                })
+                .map_err(darling::Error::from)
             })
-            .ok()
-            .flatten()
-        })
+            .transpose()
+            .map(Option::flatten)?;
+
+        Ok(Self { message })
+    }
 }
