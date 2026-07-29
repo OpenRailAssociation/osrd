@@ -2,7 +2,7 @@ use quote::ToTokens;
 
 use crate::view_error::args;
 
-struct Codegen(ViewErrorImpl);
+pub(super) struct Codegen(pub(super) ViewErrorImpl);
 
 impl ToTokens for Codegen {
     fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream) {

@@ -2,7 +2,10 @@ use darling::FromDeriveInput;
 use darling::FromField;
 use darling::FromMeta;
 use darling::FromVariant;
+use darling::Result;
 use darling::ast;
+
+use crate::view_error::codegen::Codegen;
 
 #[derive(Debug, FromDeriveInput)]
 #[darling(
@@ -67,5 +70,12 @@ pub(super) struct StatusCodeArg(pub(super) syn::Ident);
 impl Default for StatusCodeArg {
     fn default() -> Self {
         Self(syn::parse_quote! { INTERNAL_SERVER_ERROR }) // 500
+    }
+}
+
+impl Args {
+    pub(super) fn parse(self) -> Result<Codegen> {
+        let view_error_impl = todo!();
+        Ok(Codegen(view_error_impl))
     }
 }

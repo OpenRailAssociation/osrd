@@ -7,8 +7,9 @@ use proc_macro2::TokenStream;
 use syn::DeriveInput;
 
 pub fn view_error(input: &DeriveInput) -> Result<TokenStream> {
-    let _ = args::Args::from_derive_input(input)?;
-    todo!()
+    let args = args::Args::from_derive_input(input)?;
+    let codegen = args.parse()?;
+    Ok(quote::quote! { #codegen })
 }
 
 #[cfg(test)]
