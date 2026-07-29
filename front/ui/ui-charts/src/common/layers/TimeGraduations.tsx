@@ -1,10 +1,10 @@
 import { useCallback, useContext } from 'react';
 
-import { MINUTE } from '../../common/consts';
+import { FONT_SANS, MINUTE } from '../../common/consts';
 import { MouseContext, TimeChartCanvasContext } from '../../common/context';
 import { computeVisibleTimeMarkers, getCrispLineCoordinate } from '../../common/helpers/time';
 import type { TimeChartContextType, DrawingFunction } from '../../common/types';
-import { BLACK_25, GREY_50 } from '../helpers/colors';
+import { BLACK_25, GREY_50, WHITE_100 } from '../helpers/colors';
 import { useDraw } from '../hooks/useCanvas';
 
 const TimeGraduations = () => {
@@ -89,7 +89,7 @@ const TimeGraduations = () => {
         const padding = 4;
         const fontSize = 12;
         const fontWeight = '400';
-        const fontFamily = 'IBM Plex Sans, sans-regular';
+        const fontFamily = `${FONT_SANS}, sans-regular`;
         ctx.font = `${fontWeight} ${fontSize}px ${fontFamily}`;
         const textWidth = ctx.measureText(timeLabel).width;
 
@@ -101,7 +101,7 @@ const TimeGraduations = () => {
         const labelY = spaceAxisSize - 50;
 
         // Label background
-        ctx.fillStyle = '#FFFFFF';
+        ctx.fillStyle = WHITE_100;
         ctx.fillRect(labelX, labelY - fontSize - 2, textWidth + padding * 2, fontSize + 4);
 
         // Text
