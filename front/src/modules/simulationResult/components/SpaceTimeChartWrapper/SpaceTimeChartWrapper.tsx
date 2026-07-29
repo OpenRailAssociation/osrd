@@ -82,7 +82,9 @@ import CurveSelectionSidePanel, {
 import canDragHoveredTrain from './helpers/canDragHoveredTrain';
 import cutSpaceTimeCurves from './helpers/cutSpaceTimeCurves';
 import formatSpaceTimeCurves from './helpers/formatSpaceTimeCurves';
-import getPanelOccurrenceCounts from './helpers/getPanelOccurrenceCounts';
+import getPanelOccurrenceCounts, {
+  getTodOccurrenceCounts,
+} from './helpers/getPanelOccurrenceCounts';
 import getTrainExceptionTypes from './helpers/getTrainExceptionTypes';
 import type { ExistingLinking } from './helpers/linkings';
 import makeProjectedTrains from './helpers/makeProjectedTrains';
@@ -263,6 +265,8 @@ const SpaceTimeChartWrapper = ({
 
   const [panelSelectionMode, setPanelSelectionMode] = useState<PanelSelectionMode>('compliant');
   const [lastClickedOccurrenceId, setLastClickedOccurrenceId] = useState<OccurrenceId>();
+  // The TOD waypoint the current 'tod' selection was made from.
+  const [selectedTrainWaypointId, setSelectedTrainWaypointId] = useState<string>();
 
   const translations = { linearMode: t('main.linearMode') };
 
@@ -429,6 +433,7 @@ const SpaceTimeChartWrapper = ({
         paths,
         activeWaypointRef,
         selectedTrain: selection,
+        selectedWaypointId: selectedTrainWaypointId,
         panelMode: panelSelectionMode,
         onCloseOccupancyLayer,
         handleWaypointClick,
@@ -450,6 +455,7 @@ const SpaceTimeChartWrapper = ({
       subCategories,
       trainSchedulesWithDetails,
       selection,
+      selectedTrainWaypointId,
       panelSelectionMode,
       onCloseOccupancyLayer,
       handleWaypointClick,
@@ -662,9 +668,17 @@ const SpaceTimeChartWrapper = ({
   const panelExceptionType: CurveStyleExceptionType =
     selectedTrainBy === 'tod' ? 'path_and_schedule' : 'start_time';
 
+  // A 'tod' selection counts occurrences actually present at that waypoint.
+  const activeWaypointZones =
+    selectedTrainBy === 'tod' && selectedTrainWaypointId
+      ? trackOccupancyDiagramsData?.find((wp) => wp.waypointId === selectedTrainWaypointId)?.zones
+      : undefined;
+
   const panelCounts =
     selectedTrain && isPacedTrainWithDetails(selectedTrain) && selectedTrainBy !== 'timetable'
-      ? getPanelOccurrenceCounts(selectedTrain.paced, panelExceptionType)
+      ? activeWaypointZones && selectedTrainScheduleId
+        ? getTodOccurrenceCounts(activeWaypointZones, selectedTrainScheduleId, panelExceptionType)
+        : getPanelOccurrenceCounts(selectedTrain.paced, panelExceptionType)
       : undefined;
   const showCurvePanel = !!panelCounts;
 
@@ -672,6 +686,7 @@ const SpaceTimeChartWrapper = ({
     setPanelSelectionMode(mode);
 
     const by = selectedTrainBy === 'tod' ? 'tod' : 'std';
+    // Switching panel mode stays on the same TOD waypoint when the selection came from one.
     if (mode === 'single') {
       const singleId =
         lastClickedOccurrenceId ??
@@ -688,10 +703,17 @@ const SpaceTimeChartWrapper = ({
     }
   };
 
-  const commitSelection = (id: TrainId, by: 'std' | 'tod', panelMode: PanelSelectionMode) => {
-    if (selectedTrainId === id && selectedTrainBy === by) return;
+  const commitSelection = (
+    id: TrainId,
+    by: 'std' | 'tod',
+    panelMode: PanelSelectionMode,
+    waypointId?: string
+  ) => {
+    if (selectedTrainId === id && selectedTrainBy === by && selectedTrainWaypointId === waypointId)
+      return;
     if (isOccurrenceId(id)) setLastClickedOccurrenceId(id);
     setPanelSelectionMode(panelMode);
+    setSelectedTrainWaypointId(waypointId);
     dispatch(updateSelectedTrain({ id, by }));
   };
 
@@ -733,9 +755,14 @@ const SpaceTimeChartWrapper = ({
 
     // Click on a TOD occupancy zone.
     if (isOccupancyPickingElement(element)) {
-      const { trainId } = parseOccupancyZonePathId(element.pathId);
+      const { trainId, waypointId } = parseOccupancyZonePathId(element.pathId);
       const { exception } = findTrainScheduleAndException(trainSchedulesWithDetails ?? [], trainId);
-      commitSelection(trainId, 'tod', exception?.path_and_schedule ? 'single' : 'compliant');
+      commitSelection(
+        trainId,
+        'tod',
+        exception?.path_and_schedule ? 'single' : 'compliant',
+        waypointId
+      );
     }
   };
 
