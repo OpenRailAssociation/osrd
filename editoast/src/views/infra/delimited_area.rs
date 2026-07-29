@@ -512,6 +512,9 @@ mod tests {
     use crate::fixtures::create_small_infra;
     use crate::views::infra::delimited_area::DelimitedAreaResponse;
     use crate::views::test_app;
+    use crate::views::test_app::TestRequestExt as _;
+    use authz::InfraGrant;
+    use authz::Role;
     use editoast_models::Infra;
 
     use schemas::infra::Direction;
@@ -527,11 +530,18 @@ mod tests {
         entries: Vec<DirectedLocation>,
         exits: Vec<DirectedLocation>,
     ) -> Vec<DirectionalTrackRange> {
-        let app = test_app!().skip_authz().build();
+        let app = test_app!().build();
         let pool = app.db_pool();
         let Infra { id: infra_id, .. } = create_small_infra(&mut pool.get_ok()).await;
+        let user = app
+            .user("user", "User")
+            .with_infra_grant(infra_id, InfraGrant::Reader)
+            .with_roles([Role::OperationalStudies])
+            .create()
+            .await;
         let DelimitedAreaResponse { track_ranges } = app
             .get(&format!("/infra/{infra_id}/delimited_area"))
+            .by_user(user.as_ref())
             .json(&json!({
                 "infra_id": infra_id,
                 "entries": entries,
@@ -542,6 +552,43 @@ mod tests {
             .assert_status_ok()
             .json();
         track_ranges
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn delimited_area_requires_operational_studies_and_can_read() {
+        let app = test_app!().build();
+        let pool = app.db_pool();
+        let Infra { id: infra_id, .. } = create_small_infra(&mut pool.get_ok()).await;
+        let user_no_role = app
+            .user("alice", "Alice")
+            .with_infra_grant(infra_id, InfraGrant::Reader)
+            .create()
+            .await;
+        let user_no_grant = app
+            .user("bob", "Bob")
+            .with_roles([Role::OperationalStudies])
+            .create()
+            .await;
+        app.get(&format!("/infra/{infra_id}/delimited_area"))
+            .by_user(user_no_role.as_ref())
+            .json(&json!({
+                "infra_id": infra_id,
+                "entries": [],
+                "exits": [],
+            }
+            ))
+            .await
+            .assert_status_forbidden();
+        app.get(&format!("/infra/{infra_id}/delimited_area"))
+            .by_user(user_no_grant.as_ref())
+            .json(&json!({
+                "infra_id": infra_id,
+                "entries": [],
+                "exits": [],
+            }
+            ))
+            .await
+            .assert_status_forbidden();
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]

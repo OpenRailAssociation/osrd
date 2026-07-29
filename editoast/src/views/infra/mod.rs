@@ -1058,8 +1058,27 @@ pub mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn infra_list() {
-        let app = test_app!().skip_authz().build();
-        app.get("/infra/").await.assert_status_ok();
+        let app = test_app!().build();
+        let db_pool = app.db_pool();
+        let infra_granted = create_small_infra(&mut db_pool.get_ok()).await;
+        let _ = create_small_infra(&mut db_pool.get_ok()).await;
+        let user = app
+            .user("user", "User")
+            .with_infra_grant(infra_granted.id, InfraGrant::Reader)
+            .create()
+            .await;
+        let InfraListResponse {
+            results: infras, ..
+        } = app
+            .get("/infra/")
+            .by_user(user.as_ref())
+            .await
+            .assert_status_ok()
+            .json();
+        assert_eq!(
+            infras.iter().map(|infra| infra.id).collect_vec(),
+            vec![infra_granted.id]
+        );
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -1172,36 +1191,49 @@ pub mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn infra_get() {
-        let core_client = CoreClient::Mocked(MockingClient::default());
-
-        let app = test_app!().skip_authz().core_client(core_client).build();
+        let app = test_app!().build();
         let db_pool = app.db_pool();
-        let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
+        let infra_id = create_empty_infra(&mut db_pool.get_ok()).await.id;
+        let user = app
+            .user("user", "User")
+            .with_infra_grant(infra_id, InfraGrant::Reader)
+            .create()
+            .await;
 
-        app.get(format!("/infra/{}", empty_infra.id).as_str())
+        let infra: Infra = app
+            .get(format!("/infra/{}", infra_id).as_str())
+            .by_user(user.as_ref())
             .await
-            .assert_status_ok();
+            .assert_status_ok()
+            .json();
 
-        empty_infra.delete(&mut db_pool.get_ok()).await.unwrap();
+        infra.delete(&mut db_pool.get_ok()).await.unwrap();
 
-        app.get(format!("/infra/{}", empty_infra.id).as_str())
+        app.get(format!("/infra/{}", infra_id).as_str())
+            .by_user(user.as_ref())
             .await
             .assert_status_not_found();
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn infra_rename() {
-        let app = test_app!().skip_authz().build();
+        let app = test_app!().build();
         let db_pool = app.db_pool();
-        let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
-
+        let infra_id = create_empty_infra(&mut db_pool.get_ok()).await.id;
+        let user = app
+            .user("user", "User")
+            .with_infra_grant(infra_id, InfraGrant::Writer)
+            .with_roles([Role::OperationalStudies])
+            .create()
+            .await;
         let infra: Infra = app
-            .put(format!("/infra/{}", empty_infra.id).as_str())
+            .put(format!("/infra/{}", infra_id).as_str())
             .json(&json!({"name": "rename_test"}))
+            .by_user(user.as_ref())
             .await
             .assert_status_ok()
             .json();
-
+        assert_eq!(infra.id, infra.id);
         assert_eq!(infra.name, "rename_test");
     }
 
@@ -1212,52 +1244,85 @@ pub mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn infra_refresh() {
-        let app = test_app!().skip_authz().build();
+        let app = test_app!().build();
         let db_pool = app.db_pool();
-        let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
+        let infra_id = create_empty_infra(&mut db_pool.get_ok()).await.id;
+        let user = app
+            .user("user", "User")
+            .with_roles([Role::OperationalStudies])
+            .create()
+            .await;
 
         let refreshed_infras: InfraRefreshedResponse = app
-            .post(format!("/infra/refresh/?infras={}", empty_infra.id).as_str())
+            .post(format!("/infra/refresh/?infras={}", infra_id).as_str())
+            .by_user(user.as_ref())
             .await
             .assert_status_ok()
             .json();
-        assert_eq!(refreshed_infras.infra_refreshed, vec![empty_infra.id]);
+        assert_eq!(refreshed_infras.infra_refreshed, vec![infra_id]);
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    // Slow test
-    // PostgreSQL deadlock can happen in this test, see section `Deadlock` of [DbConnectionPoolV2::get] for more information
     async fn infra_refresh_force() {
-        let app = test_app!().skip_authz().build();
+        let app = test_app!().build();
         let db_pool = app.db_pool();
-        let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
+        let infra_id = create_empty_infra(&mut db_pool.get_ok()).await.id;
+        let user = app
+            .user("user", "User")
+            .with_roles([Role::OperationalStudies])
+            .create()
+            .await;
 
+        // First call to refresh after creation, the infra should be refreshed
         let refreshed_infras: InfraRefreshedResponse = app
-            .post(format!("/infra/refresh/?infras={}&force=true", empty_infra.id).as_str())
+            .post(format!("/infra/refresh/?infras={}", infra_id).as_str())
+            .by_user(user.as_ref())
             .await
             .assert_status_ok()
             .json();
-        assert!(refreshed_infras.infra_refreshed.contains(&empty_infra.id));
+        assert_eq!(refreshed_infras.infra_refreshed, vec![infra_id]);
+        // Second refresh call, nothing to refresh
+        let refreshed_infras: InfraRefreshedResponse = app
+            .post(format!("/infra/refresh/?infras={}", infra_id).as_str())
+            .by_user(user.as_ref())
+            .await
+            .assert_status_ok()
+            .json();
+        assert_eq!(refreshed_infras.infra_refreshed, Vec::<i64>::new());
+        // Third call with the force option enabled, the infra should be refreshed
+        let refreshed_infras: InfraRefreshedResponse = app
+            .post(format!("/infra/refresh/?infras={}&force=true", infra_id).as_str())
+            .by_user(user.as_ref())
+            .await
+            .assert_status_ok()
+            .json();
+        assert_eq!(refreshed_infras.infra_refreshed, vec![infra_id]);
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn infra_get_speed_limit_tags() {
-        let app = test_app!().skip_authz().build();
+        let app = test_app!().build();
         let builtin_tags = app.speed_limit_tag_ids();
         let db_pool = app.db_pool();
-        let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
+        let infra_id = create_empty_infra(&mut db_pool.get_ok()).await.id;
+        let user = app
+            .user("user", "User")
+            .with_infra_grant(infra_id, InfraGrant::Reader)
+            .create()
+            .await;
 
         let speed_section = SpeedSection {
             speed_limit_by_tag: HashMap::from([("test_tag".into(), Speed(10.))]),
             ..Default::default()
         }
         .into();
-        apply_create_operation(&speed_section, empty_infra.id, &mut db_pool.get_ok())
+        apply_create_operation(&speed_section, infra_id, &mut db_pool.get_ok())
             .await
             .expect("Failed to create speed section object");
 
         let mut speed_limit_tags: Vec<String> = app
-            .get(format!("/infra/{}/speed_limit_tags/", empty_infra.id).as_str())
+            .get(format!("/infra/{}/speed_limit_tags/", infra_id).as_str())
+            .by_user(user.as_ref())
             .await
             .assert_status_ok()
             .json();
@@ -1269,13 +1334,34 @@ pub mod tests {
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn infra_get_speed_limit_tags_needs_reader_grant() {
+        let app = test_app!().build();
+        let db_pool = app.db_pool();
+        let infra_id = create_empty_infra(&mut db_pool.get_ok()).await.id;
+        let user_reader = app
+            .user("alice", "Alice")
+            .with_infra_grant(infra_id, InfraGrant::Reader)
+            .create()
+            .await;
+        let user_no_grant = app.user("bob", "Bob").create().await;
+        app.get(format!("/infra/{}/speed_limit_tags/", infra_id).as_str())
+            .by_user(user_no_grant.as_ref())
+            .await
+            .assert_status_forbidden();
+        app.get(format!("/infra/{}/speed_limit_tags/", infra_id).as_str())
+            .by_user(user_reader.as_ref())
+            .await
+            .assert_status_ok();
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn infra_get_all_voltages() {
-        let app = test_app!().skip_authz().build();
+        let app = test_app!().build();
         let db_pool = app.db_pool();
         let infra_1 = create_empty_infra(&mut db_pool.get_ok()).await;
         let infra_2 = create_empty_infra(&mut db_pool.get_ok()).await;
+        let user = app.user("user", "User").create().await;
 
-        // Create electrifications
         let electrification_1 = Electrification {
             id: "test1".into(),
             voltage: "0V".into(),
@@ -1296,19 +1382,22 @@ pub mod tests {
             .await
             .expect("Failed to create electrification_2 object");
 
-        // Create rolling_stock
-        let _rolling_stock = create_rolling_stock_with_energy_sources(
+        // Create a rolling stock with a 25000V mode
+        let _ = create_rolling_stock_with_energy_sources(
             &mut db_pool.get_ok(),
             "other_rolling_stock_infra_get_all_voltages",
         )
         .await;
 
-        let voltages: Vec<String> = app.get("/infra/voltages/").await.assert_status_ok().json();
+        let mut voltages: Vec<String> = app
+            .get("/infra/voltages/")
+            .by_user(user.as_ref())
+            .await
+            .assert_status_ok()
+            .json();
 
-        assert!(voltages.len() >= 3);
-        assert!(voltages.contains(&String::from("0V")));
-        assert!(voltages.contains(&String::from("1V")));
-        assert!(voltages.contains(&String::from("25000V")));
+        voltages.sort();
+        assert_eq!(&voltages, &["0V", "1V", "25000V"]);
     }
 
     #[rstest]
@@ -1317,11 +1406,15 @@ pub mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     #[case(false)]
     async fn infra_get_voltages(#[case] include_rolling_stock_modes: bool) {
-        let app = test_app!().skip_authz().build();
+        let app = test_app!().build();
         let db_pool = app.db_pool();
         let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
+        let user = app
+            .user("user", "User")
+            .with_infra_grant(empty_infra.id, InfraGrant::Reader)
+            .create()
+            .await;
 
-        // Create electrification
         let electrification = Electrification {
             id: "test".into(),
             voltage: "0".into(),
@@ -1332,14 +1425,14 @@ pub mod tests {
             .await
             .expect("Failed to create electrification object");
 
-        // Create rolling_stock
-        let _rolling_stock = create_rolling_stock_with_energy_sources(
+        // Create a rolling stock with a 25000V mode
+        let _ = create_rolling_stock_with_energy_sources(
             &mut db_pool.get_ok(),
             "other_rolling_stock_infra_get_voltages",
         )
         .await;
 
-        let voltages: Vec<String> = app
+        let mut voltages: Vec<String> = app
             .get(
                 format!(
                     "/infra/{}/voltages/?include_rolling_stock_modes={}",
@@ -1347,27 +1440,56 @@ pub mod tests {
                 )
                 .as_str(),
             )
+            .by_user(user.as_ref())
             .await
             .assert_status_ok()
             .json();
+        voltages.sort();
 
         if !include_rolling_stock_modes {
-            assert_eq!(voltages[0], "0");
-            assert_eq!(voltages.len(), 1);
+            assert_eq!(&voltages, &["0"]);
         } else {
-            assert!(voltages.contains(&String::from("25000V")));
-            assert!(voltages.len() >= 2);
+            assert_eq!(&voltages, &["0", "25000V"]);
         }
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn infra_get_voltages_needs_reader_grant() {
+        let app = test_app!().build();
+        let db_pool = app.db_pool();
+        let infra_id = create_empty_infra(&mut db_pool.get_ok()).await.id;
+
+        let user_no_grant = app.user("alice", "Alice").create().await;
+        let user_reader = app
+            .user("bob", "Bob")
+            .with_infra_grant(infra_id, InfraGrant::Reader)
+            .create()
+            .await;
+
+        app.get(format!("/infra/{infra_id}/voltages/",).as_str())
+            .by_user(user_no_grant.as_ref())
+            .await
+            .assert_status_forbidden();
+        app.get(format!("/infra/{infra_id}/voltages/",).as_str())
+            .by_user(user_reader.as_ref())
+            .await
+            .assert_status_ok();
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn infra_get_switch_types() {
-        let app = test_app!().skip_authz().build();
+        let app = test_app!().build();
         let db_pool = app.db_pool();
         let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
+        let user = app
+            .user("user", "User")
+            .with_infra_grant(empty_infra.id, InfraGrant::Reader)
+            .create()
+            .await;
 
         let switch_types: Vec<SwitchType> = app
             .get(format!("/infra/{}/switch_types/", empty_infra.id).as_str())
+            .by_user(user.as_ref())
             .await
             .assert_status_ok()
             .json();
@@ -1377,31 +1499,37 @@ pub mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn infra_lock() {
-        let core_client = CoreClient::Mocked(MockingClient::default());
-
-        let app = test_app!().skip_authz().core_client(core_client).build();
+        let app = test_app!().build();
         let db_pool = app.db_pool();
-        let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
+        let infra_id = create_empty_infra(&mut db_pool.get_ok()).await.id;
+        let user = app
+            .user("user", "User")
+            .with_infra_grant(infra_id, InfraGrant::Writer)
+            .with_roles([Role::OperationalStudies])
+            .create()
+            .await;
 
         // Lock infra
-        app.post(format!("/infra/{}/lock/", empty_infra.id).as_str())
+        app.post(format!("/infra/{}/lock/", infra_id).as_str())
+            .by_user(user.as_ref())
             .await
             .assert_status_no_content();
 
         // Check lock
-        let infra = Infra::retrieve(db_pool.get_ok(), empty_infra.id)
+        let infra = Infra::retrieve(db_pool.get_ok(), infra_id)
             .await
             .unwrap()
             .expect("infra was not cloned");
         assert!(infra.locked);
 
         // Unlock infra
-        app.post(format!("/infra/{}/unlock/", empty_infra.id).as_str())
+        app.post(format!("/infra/{}/unlock/", infra_id).as_str())
+            .by_user(user.as_ref())
             .await
             .assert_status_no_content();
 
         // Check lock
-        let infra = Infra::retrieve(db_pool.get_ok(), empty_infra.id)
+        let infra = Infra::retrieve(db_pool.get_ok(), infra_id)
             .await
             .unwrap()
             .expect("infra was not cloned");
@@ -1409,13 +1537,46 @@ pub mod tests {
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn infra_lock_requires_writer_grant_and_operational_studies() {
+        let app = test_app!().build();
+        let db_pool = app.db_pool();
+        let infra_id = create_empty_infra(&mut db_pool.get_ok()).await.id;
+        let user_missing_writer = app
+            .user("alice", "Alice")
+            .with_infra_grant(infra_id, InfraGrant::Reader)
+            .with_roles([Role::OperationalStudies])
+            .create()
+            .await;
+        let user_missing_operational_studies = app
+            .user("bob", "Bob")
+            .with_infra_grant(infra_id, InfraGrant::Reader)
+            .create()
+            .await;
+        app.post(format!("/infra/{infra_id}/lock/").as_str())
+            .by_user(user_missing_writer.as_ref())
+            .await
+            .assert_status_forbidden();
+        app.post(format!("/infra/{infra_id}/lock/").as_str())
+            .by_user(user_missing_operational_studies.as_ref())
+            .await
+            .assert_status_forbidden();
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn match_operational_points() {
-        let app = test_app!().skip_authz().build();
+        let app = test_app!().build();
         let db_pool = app.db_pool();
         let mut infra = create_small_infra(&mut db_pool.get_ok()).await;
         let infra_cache = InfraCache::load(&mut db_pool.get_ok(), &infra)
             .await
             .unwrap();
+        let user = app
+            .user("user", "User")
+            .with_infra_grant(infra.id, InfraGrant::Reader)
+            .with_roles([Role::OperationalStudies])
+            .create()
+            .await;
+
         infra
             .refresh(db_pool.clone(), false, &infra_cache)
             .await
@@ -1438,6 +1599,7 @@ pub mod tests {
             .json(&json!({
                 "operational_point_references": operational_point_references,
             }))
+            .by_user(user.as_ref())
             .await
             .assert_status_ok()
             .json();
@@ -1469,9 +1631,15 @@ pub mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn match_operational_point_input_with_incompatible_op_id_gets_filtered_out() {
-        let app = test_app!().skip_authz().build();
+        let app = test_app!().build();
         let db_pool = app.db_pool();
         let infra = create_small_infra(&mut db_pool.get_ok()).await;
+        let user = app
+            .user("user", "User")
+            .with_infra_grant(infra.id, InfraGrant::Reader)
+            .with_roles([Role::OperationalStudies])
+            .create()
+            .await;
         let operational_point_references = vec![
             OperationalPointReference::Uic {
                 uic: 8,
@@ -1487,6 +1655,7 @@ pub mod tests {
             .json(&json!({
                 "operational_point_references": operational_point_references,
             }))
+            .by_user(user.as_ref())
             .await
             .assert_status_ok()
             .json();
@@ -1500,8 +1669,36 @@ pub mod tests {
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn match_operational_points_requires_reader_and_operational_studies() {
+        let app = test_app!().build();
+        let db_pool = app.db_pool();
+        let infra = create_small_infra(&mut db_pool.get_ok()).await;
+        let user_no_grant = app
+            .user("alice", "Alice")
+            .with_roles([Role::OperationalStudies])
+            .create()
+            .await;
+        let user_no_role = app
+            .user("bob", "Bob")
+            .with_infra_grant(infra.id, InfraGrant::Reader)
+            .create()
+            .await;
+        app.post(format!("/infra/{}/match_operational_points", infra.id).as_str())
+            .json(&json!({"operational_point_references": []}))
+            .by_user(user_no_grant.as_ref())
+            .await
+            .assert_status_forbidden();
+        app.post(format!("/infra/{}/match_operational_points", infra.id).as_str())
+            .json(&json!({"operational_point_references": []}))
+            .by_user(user_no_role.as_ref())
+            .await
+            .assert_status_forbidden();
+    }
+
+    // TODO: move it to the infra_cache crate
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn load_infra_cache() {
-        let app = test_app!().skip_authz().build();
+        let app = test_app!().build();
         let db_pool = app.db_pool();
         let infra = create_empty_infra(&mut db_pool.get_ok()).await;
         let infra_caches = dashmap::DashMap::new();
@@ -1527,9 +1724,10 @@ pub mod tests {
         assert_eq!(infra_caches.len(), 1);
     }
 
+    // TODO: move it to the infra_cache crate
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn load_infra_cache_mut() {
-        let app = test_app!().skip_authz().build();
+        let app = test_app!().build();
         let db_pool = DbConnectionPoolV2::for_tests();
         let infra = create_empty_infra(&mut db_pool.get_ok()).await;
         let infra_caches = dashmap::DashMap::new();

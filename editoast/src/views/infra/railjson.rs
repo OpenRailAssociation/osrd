@@ -273,10 +273,15 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     // PostgreSQL deadlock can happen in this test, see section `Deadlock` of [DbConnectionPoolV2::get] for more information
-    async fn test_get_railjson() {
-        let app = test_app!().skip_authz().build();
+    async fn get_railjson() {
+        let app = test_app!().build();
         let db_pool = app.db_pool();
         let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
+        let user = app
+            .user("user", "User")
+            .with_infra_grant(empty_infra.id, InfraGrant::Reader)
+            .create()
+            .await;
 
         apply_create_operation(
             &SwitchType::default().into(),
@@ -288,12 +293,26 @@ mod tests {
 
         let railjson: RailJson = app
             .get(&format!("/infra/{}/railjson", empty_infra.id))
+            .by_user(user.as_ref())
             .await
             .assert_status_ok()
             .json();
 
         assert_eq!(railjson.version, RAILJSON_VERSION);
         assert_eq!(railjson.extended_switch_types.len(), 1);
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn get_railjson_requires_can_read() {
+        let app = test_app!().build();
+        let db_pool = app.db_pool();
+        let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
+        let user = app.user("user", "User").create().await;
+
+        app.get(&format!("/infra/{}/railjson", empty_infra.id))
+            .by_user(user.as_ref())
+            .await
+            .assert_status_forbidden();
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -335,5 +354,17 @@ mod tests {
                 .await
                 .unwrap()
         );
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn test_post_railjson_requires_operational_studies() {
+        let app = test_app!().build();
+        let user = app.user("user", "User").create().await;
+
+        app.post("/infra/railjson?name=post_railjson_forbidden_test")
+            .by_user(user.as_ref())
+            .json(&RailJson::default())
+            .await
+            .assert_status_forbidden();
     }
 }

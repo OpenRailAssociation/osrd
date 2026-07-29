@@ -419,11 +419,16 @@ fn build_path_output(path: &[PathfindingStep], infra_cache: &InfraCache) -> Path
 mod tests {
     use std::collections::HashMap;
 
+    use serde_json::json;
+
     use super::compute_path;
+    use crate::fixtures::create_empty_infra;
     use crate::infra_cache::Graph;
     use crate::infra_cache::tests::create_small_infra_cache;
     use crate::views::infra::pathfinding::InfraPathfindingInput;
     use crate::views::infra::pathfinding::PathfindingTrackLocationInput;
+    use crate::views::test_app;
+    use crate::views::test_app::TestRequestExt as _;
     use schemas::infra::Direction;
     use schemas::infra::DirectionalTrackRange;
     use schemas::primitives::Identifier;
@@ -463,6 +468,23 @@ mod tests {
         assert_eq!(path.track_ranges, expected_path());
         assert_eq!(path.detectors, vec!["D1".into()]);
         assert_eq!(path.switches_directions, expected_switches());
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn pathfinding_requires_can_read() {
+        let app = test_app!().build();
+        let db_pool = app.db_pool();
+        let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
+        let user = app.user("user", "User").create().await;
+
+        app.post(format!("/infra/{}/pathfinding/", empty_infra.id).as_str())
+            .by_user(user.as_ref())
+            .json(&json!({
+                "starting": { "track": "A", "position": 0.0 },
+                "ending": { "track": "B", "position": 0.0 },
+            }))
+            .await
+            .assert_status_forbidden();
     }
 
     #[test]
