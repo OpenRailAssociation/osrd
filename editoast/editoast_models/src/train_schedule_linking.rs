@@ -3,7 +3,7 @@ use editoast_derive::Model;
 #[derive(Debug, Clone, Model)]
 #[cfg_attr(test, derive(serde::Deserialize))]
 #[model(table = database::tables::train_schedule_linking)]
-#[model(gen(ops = crud, batch_ops = cd, list))]
+#[model(gen(ops = c, batch_ops = crd, list))]
 pub struct TrainScheduleLinking {
     pub id: i64,
     pub timetable_id: i64,
