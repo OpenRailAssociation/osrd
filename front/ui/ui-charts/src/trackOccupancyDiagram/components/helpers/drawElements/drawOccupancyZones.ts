@@ -1,3 +1,4 @@
+import { FONT } from '../../../../common/consts';
 import { getCrispLineCoordinate } from '../../../../common/helpers/time';
 import type { SpaceTimeChartContextType } from '../../../../spaceTimeChart';
 import { OCCUPANCY_ZONE_Y_START, OCCUPANCY_ZONE_HEIGHT, FONTS, COLORS } from '../../../lib/consts';
@@ -201,7 +202,7 @@ export const drawZoneTrailingText = (
   const yCenter = getSpacePixel(position) + yOffset + OCCUPANCY_ZONE_Y_START - LABEL_OFFSET_Y;
 
   ctx.save();
-  ctx.font = '600 12px IBM Plex Mono';
+  ctx.font = `600 12px ${FONT}`;
   ctx.textAlign = 'left';
   ctx.textBaseline = 'middle';
 

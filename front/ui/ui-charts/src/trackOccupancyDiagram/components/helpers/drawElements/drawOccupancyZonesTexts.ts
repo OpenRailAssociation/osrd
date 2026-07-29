@@ -1,3 +1,4 @@
+import { FONT } from '../../../../common/consts';
 import { MINUTES_TEXT_OFFSET, STATION_TEXT_OFFSET, FONTS, COLORS } from '../../../lib/consts';
 import type { OccupancyZone } from '../../../lib/types';
 import { drawText } from '../../utils';
@@ -146,7 +147,7 @@ export const drawOccupancyZonesTexts = ({
     color: GREY_60,
     xPosition: 'right',
     yPosition: 'bottom',
-    font: `${labelFontWeight} 10px IBM Plex Mono`,
+    font: `${labelFontWeight} 10px ${FONT}`,
     stroke: textStroke,
   });
 
@@ -158,7 +159,7 @@ export const drawOccupancyZonesTexts = ({
     color: GREY_60,
     xPosition: 'left',
     yPosition: 'bottom',
-    font: `${labelFontWeight} 10px IBM Plex Mono`,
+    font: `${labelFontWeight} 10px ${FONT}`,
     stroke: textStroke,
   });
 };
