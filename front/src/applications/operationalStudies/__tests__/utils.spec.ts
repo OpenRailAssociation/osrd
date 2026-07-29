@@ -7,9 +7,10 @@ import {
   isTooFast,
   transformBoundariesDataToPositionDataArray,
   transformElectricalBoundariesToRanges,
+  buildPathWaypointsFromRawOPs,
   sortPathOperationalPoints,
 } from 'applications/operationalStudies/utils';
-import type { PathItem } from 'common/api/osrdEditoastApi';
+import type { PathItem, CoreOperationalPointOnPath } from 'common/api/osrdEditoastApi';
 import type { PathWaypoint } from 'modules/simulationResult/types';
 
 import {
@@ -144,6 +145,43 @@ describe('isScheduledPointsNotHonored', () => {
   it('should return false if the train schedule is honored', () => {
     const result = isScheduledPointsNotHonored(trainSummaryHonored);
     expect(result).toBe(false);
+  });
+});
+
+describe('buildPathWaypointsFromRawOPs', () => {
+  const makeRawOp = (id: string) => ({ id }) as CoreOperationalPointOnPath;
+
+  const makePathItem = (pathItemId: string, opId: string): PathItem => ({
+    id: pathItemId,
+    location: {
+      type: 'operational_point_part_reference',
+      operational_point: { type: 'id', operational_point: opId },
+    },
+  });
+
+  it('should populate pathItemId when all OPs are unique', () => {
+    const ops = [
+      makeRawOp('op1'),
+      makeRawOp('op2'),
+      makeRawOp('op3'),
+      makeRawOp('op4'),
+      makeRawOp('op5'),
+      makeRawOp('op6'),
+    ];
+    const path = [
+      makePathItem('step1', 'op1'),
+      makePathItem('step2', 'op3'),
+      makePathItem('step3', 'op6'),
+    ];
+    const result = buildPathWaypointsFromRawOPs(ops, path);
+    expect(result.map(({ opId, pathItemId }) => ({ opId, pathItemId }))).toEqual([
+      { opId: 'op1', pathItemId: 'step1' },
+      { opId: 'op2', pathItemId: null },
+      { opId: 'op3', pathItemId: 'step2' },
+      { opId: 'op4', pathItemId: null },
+      { opId: 'op5', pathItemId: null },
+      { opId: 'op6', pathItemId: 'step3' },
+    ]);
   });
 });
 
