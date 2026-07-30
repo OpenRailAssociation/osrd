@@ -3,6 +3,10 @@ import { useEffect, useRef, useState } from 'react';
 import type { NetzgrafikDto, Operation } from '@osrd-project/netzgrafik-frontend';
 import { useTranslation } from 'react-i18next';
 
+import { setFailure } from 'reducers/main';
+import { useAppDispatch } from 'store';
+import { castErrorToFailure, getErrorMessage } from 'utils/error';
+
 import { EMPTY_DTO } from './consts';
 
 type NGEElement = HTMLElement & {
@@ -39,10 +43,12 @@ const frameSrc = `
  */
 const NGE = ({ activeFilterSettingId, dto, onOperation, onLoad }: NGEProps) => {
   const { i18n } = useTranslation();
+  const dispatch = useAppDispatch();
 
   const frameRef = useRef<HTMLIFrameElement>(null);
 
   const [ngeRootElement, setNgeRootElement] = useState<NGEElement | null>(null);
+  const [ngeError, setNgeError] = useState<unknown>();
 
   useEffect(() => {
     const frame = frameRef.current!;
@@ -74,8 +80,14 @@ const NGE = ({ activeFilterSettingId, dto, onOperation, onLoad }: NGEProps) => {
 
   useEffect(() => {
     if (ngeRootElement && dto) {
-      // eslint-disable-next-line react/immutability
-      ngeRootElement.netzgrafikDto = dto;
+      try {
+        // eslint-disable-next-line react/immutability
+        ngeRootElement.netzgrafikDto = dto;
+        setNgeError(undefined);
+      } catch (error) {
+        dispatch(setFailure(castErrorToFailure(error)));
+        setNgeError(error);
+      }
     }
   }, [dto, ngeRootElement]);
 
@@ -101,7 +113,13 @@ const NGE = ({ activeFilterSettingId, dto, onOperation, onLoad }: NGEProps) => {
     return () => {};
   }, [onOperation, ngeRootElement]);
 
-  return <iframe ref={frameRef} srcDoc={frameSrc} title="NGE" className="nge-iframe-container" />;
+  return !ngeError ? (
+    <iframe ref={frameRef} srcDoc={frameSrc} title="NGE" className="nge-iframe-container" />
+  ) : (
+    <div title="NGE" className="nge-error-container">
+      {getErrorMessage(ngeError)}
+    </div>
+  );
 };
 
 export default NGE;
