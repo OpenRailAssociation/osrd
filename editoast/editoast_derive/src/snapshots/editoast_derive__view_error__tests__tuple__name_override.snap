@@ -11,7 +11,11 @@ struct Tuple(String, u32);
 // -----------------------------------------------------------------------------
 
 impl crate::views::error::ViewError for Tuple {
-    const LABEL: &'static str = "custom_name";
+    fn label(&self) -> &'static str {
+        match self {
+            Self(_0, _1) => "custom_name",
+        }
+    }
     fn status(&self) -> axum::http::StatusCode {
         match self {
             Self(_0, _1) => axum::http::StatusCode::INTERNAL_SERVER_ERROR,
@@ -28,7 +32,8 @@ impl crate::views::error::ViewError for Tuple {
     fn responses() -> Vec<crate::views::error::OpenApiResponse> {
         let responses = Vec::from([
             crate::views::error::OpenApiResponse {
-                label: None,
+                label: "custom_name",
+                sub_label: None,
                 message_template: None,
                 status: axum::http::StatusCode::INTERNAL_SERVER_ERROR,
                 context: Vec::from([]),

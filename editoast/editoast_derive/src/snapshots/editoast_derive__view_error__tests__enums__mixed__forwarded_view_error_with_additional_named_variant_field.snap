@@ -12,7 +12,13 @@ enum Error {
 // -----------------------------------------------------------------------------
 
 impl crate::views::error::ViewError for Error {
-    const LABEL: &'static str = "Error";
+    fn label(&self) -> &'static str {
+        match self {
+            Self::Variant { inner: _inner, context: _context } => {
+                crate::views::error::ViewError::label(_inner)
+            }
+        }
+    }
     fn status(&self) -> axum::http::StatusCode {
         match self {
             Self::Variant { inner: _inner, context: _context } => {

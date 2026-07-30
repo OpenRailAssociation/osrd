@@ -10,7 +10,11 @@ struct Error(#[view_error] InnerError, String);
 // -----------------------------------------------------------------------------
 
 impl crate::views::error::ViewError for Error {
-    const LABEL: &'static str = "Error";
+    fn label(&self) -> &'static str {
+        match self {
+            Self(_0, _1) => crate::views::error::ViewError::label(_0),
+        }
+    }
     fn status(&self) -> axum::http::StatusCode {
         match self {
             Self(_0, _1) => crate::views::error::ViewError::status(_0),

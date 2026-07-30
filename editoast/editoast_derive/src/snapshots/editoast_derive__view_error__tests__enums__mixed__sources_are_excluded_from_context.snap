@@ -23,7 +23,15 @@ enum Sources {
 // -----------------------------------------------------------------------------
 
 impl crate::views::error::ViewError for Sources {
-    const LABEL: &'static str = "Sources";
+    fn label(&self) -> &'static str {
+        match self {
+            Self::Implicit { source: _source, context: _context } => "Sources",
+            Self::Explicit { my_error: _my_error, context: _context } => "Sources",
+            Self::From(_0) => "Sources",
+            Self::Transparent(_0) => "Sources",
+            Self::DeriveMore(_0) => "Sources",
+        }
+    }
     fn status(&self) -> axum::http::StatusCode {
         match self {
             Self::Implicit { source: _source, context: _context } => {
@@ -82,7 +90,8 @@ impl crate::views::error::ViewError for Sources {
     fn responses() -> Vec<crate::views::error::OpenApiResponse> {
         let responses = Vec::from([
             crate::views::error::OpenApiResponse {
-                label: Some("Implicit"),
+                label: "Sources",
+                sub_label: Some("Implicit"),
                 message_template: Some("implicit source"),
                 status: axum::http::StatusCode::INTERNAL_SERVER_ERROR,
                 context: Vec::from([
@@ -93,7 +102,8 @@ impl crate::views::error::ViewError for Sources {
                 ]),
             },
             crate::views::error::OpenApiResponse {
-                label: Some("Explicit"),
+                label: "Sources",
+                sub_label: Some("Explicit"),
                 message_template: Some("explicit source"),
                 status: axum::http::StatusCode::INTERNAL_SERVER_ERROR,
                 context: Vec::from([
@@ -104,19 +114,22 @@ impl crate::views::error::ViewError for Sources {
                 ]),
             },
             crate::views::error::OpenApiResponse {
-                label: Some("From"),
+                label: "Sources",
+                sub_label: Some("From"),
                 message_template: Some("inline #[from], inferred as source"),
                 status: axum::http::StatusCode::INTERNAL_SERVER_ERROR,
                 context: Vec::from([]),
             },
             crate::views::error::OpenApiResponse {
-                label: Some("Transparent"),
+                label: "Sources",
+                sub_label: Some("Transparent"),
                 message_template: None,
                 status: axum::http::StatusCode::INTERNAL_SERVER_ERROR,
                 context: Vec::from([]),
             },
             crate::views::error::OpenApiResponse {
-                label: Some("DeriveMore"),
+                label: "Sources",
+                sub_label: Some("DeriveMore"),
                 message_template: Some(
                     "derive_more conversion without #[source], not a source error",
                 ),

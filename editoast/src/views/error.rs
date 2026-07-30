@@ -19,9 +19,8 @@ use utoipa::openapi::schema::SchemaType;
 ///
 /// Not meant to be implemented directly. Use the `derive(ViewError)` proc-macro instead.
 pub(crate) trait ViewError: std::error::Error + utoipa::IntoResponses + Sized {
-    const LABEL: &'static str;
-
     fn responses() -> Vec<OpenApiResponse>;
+    fn label(&self) -> &'static str;
     fn status(&self) -> http::StatusCode;
     fn context(self) -> HashMap<String, serde_json::Value>;
     /// If the error type is an enum, return the error label of each error variant, or `None` otherwise
@@ -29,15 +28,13 @@ pub(crate) trait ViewError: std::error::Error + utoipa::IntoResponses + Sized {
 
     fn unique_label(&self) -> String {
         if let Some(variant_label) = self.sub_label() {
-            format!("editoast::{}::{}", Self::LABEL, variant_label)
+            format!("editoast::{}::{}", self.label(), variant_label)
         } else {
-            format!("editoast::{}", Self::LABEL)
+            format!("editoast::{}", self.label())
         }
     }
 
     fn utoipa_responses() -> utoipa::openapi::Responses {
-        let base = format!("editoast::{}", Self::LABEL);
-
         let responses = <Self as ViewError>::responses()
             .into_iter()
             .into_group_map_by(|res| res.status)
@@ -46,7 +43,7 @@ pub(crate) trait ViewError: std::error::Error + utoipa::IntoResponses + Sized {
                 let schema = responses
                     .into_iter()
                     .fold(OneOfBuilder::new(), |builder, response| {
-                        builder.item(response.as_schema(&base, code.as_str()))
+                        builder.item(response.as_schema(code.as_str()))
                     });
                 let response = ResponseBuilder::new()
                     .content(
@@ -93,7 +90,8 @@ impl axum::response::IntoResponse for EditoastError {
 }
 
 pub(crate) struct OpenApiResponse {
-    pub(crate) label: Option<&'static str>,
+    pub(crate) label: &'static str,
+    pub(crate) sub_label: Option<&'static str>,
     pub(crate) status: http::StatusCode,
     pub(crate) message_template: Option<&'static str>,
     pub(crate) context: Vec<ContextEntry>,
@@ -105,7 +103,7 @@ pub(crate) struct ContextEntry {
 }
 
 impl OpenApiResponse {
-    fn as_schema(&self, base_error_type: &str, status: &str) -> RefOr<Schema> {
+    fn as_schema(&self, status: &str) -> RefOr<Schema> {
         let context = self
             .context
             .iter()
@@ -116,9 +114,11 @@ impl OpenApiResponse {
             })
             .build();
         let unique_label = format!(
-            "{}{}",
-            base_error_type,
-            self.label.map(|v| format!("::{v}")).unwrap_or_default()
+            "editoast::{}{}",
+            self.label,
+            self.sub_label
+                .map(|label| format!("::{label}"))
+                .unwrap_or_default()
         );
         RefOr::T(Schema::Object(
             ObjectBuilder::new()

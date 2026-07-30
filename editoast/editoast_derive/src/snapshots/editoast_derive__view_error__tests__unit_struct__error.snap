@@ -12,7 +12,11 @@ struct UnitError;
 // -----------------------------------------------------------------------------
 
 impl crate::views::error::ViewError for UnitError {
-    const LABEL: &'static str = "UnitError";
+    fn label(&self) -> &'static str {
+        match self {
+            Self => "UnitError",
+        }
+    }
     fn status(&self) -> axum::http::StatusCode {
         match self {
             Self => axum::http::StatusCode::INTERNAL_SERVER_ERROR,
@@ -29,7 +33,8 @@ impl crate::views::error::ViewError for UnitError {
     fn responses() -> Vec<crate::views::error::OpenApiResponse> {
         let responses = Vec::from([
             crate::views::error::OpenApiResponse {
-                label: None,
+                label: "UnitError",
+                sub_label: None,
                 message_template: Some("unit error"),
                 status: axum::http::StatusCode::INTERNAL_SERVER_ERROR,
                 context: Vec::from([]),

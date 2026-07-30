@@ -13,7 +13,11 @@ struct Named {
 // -----------------------------------------------------------------------------
 
 impl crate::views::error::ViewError for Named {
-    const LABEL: &'static str = "custom_name";
+    fn label(&self) -> &'static str {
+        match self {
+            Self { field: _field } => "custom_name",
+        }
+    }
     fn status(&self) -> axum::http::StatusCode {
         match self {
             Self { field: _field } => axum::http::StatusCode::INTERNAL_SERVER_ERROR,
@@ -30,7 +34,8 @@ impl crate::views::error::ViewError for Named {
     fn responses() -> Vec<crate::views::error::OpenApiResponse> {
         let responses = Vec::from([
             crate::views::error::OpenApiResponse {
-                label: None,
+                label: "custom_name",
+                sub_label: None,
                 message_template: None,
                 status: axum::http::StatusCode::INTERNAL_SERVER_ERROR,
                 context: Vec::from([]),

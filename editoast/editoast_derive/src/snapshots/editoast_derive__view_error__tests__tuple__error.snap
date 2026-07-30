@@ -12,7 +12,11 @@ struct TupleError(#[source] std::io::Error, String);
 // -----------------------------------------------------------------------------
 
 impl crate::views::error::ViewError for TupleError {
-    const LABEL: &'static str = "TupleError";
+    fn label(&self) -> &'static str {
+        match self {
+            Self(_0, _1) => "TupleError",
+        }
+    }
     fn status(&self) -> axum::http::StatusCode {
         match self {
             Self(_0, _1) => axum::http::StatusCode::INTERNAL_SERVER_ERROR,
@@ -37,7 +41,8 @@ impl crate::views::error::ViewError for TupleError {
     fn responses() -> Vec<crate::views::error::OpenApiResponse> {
         let responses = Vec::from([
             crate::views::error::OpenApiResponse {
-                label: None,
+                label: "TupleError",
+                sub_label: None,
                 message_template: Some("tuple error"),
                 status: axum::http::StatusCode::INTERNAL_SERVER_ERROR,
                 context: Vec::from([

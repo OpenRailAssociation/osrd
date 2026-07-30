@@ -11,7 +11,11 @@ struct NewType(String);
 // -----------------------------------------------------------------------------
 
 impl crate::views::error::ViewError for NewType {
-    const LABEL: &'static str = "NewType";
+    fn label(&self) -> &'static str {
+        match self {
+            Self(_0) => "NewType",
+        }
+    }
     fn status(&self) -> axum::http::StatusCode {
         match self {
             Self(_0) => axum::http::StatusCode::INTERNAL_SERVER_ERROR,
@@ -36,7 +40,8 @@ impl crate::views::error::ViewError for NewType {
     fn responses() -> Vec<crate::views::error::OpenApiResponse> {
         let responses = Vec::from([
             crate::views::error::OpenApiResponse {
-                label: None,
+                label: "NewType",
+                sub_label: None,
                 message_template: None,
                 status: axum::http::StatusCode::INTERNAL_SERVER_ERROR,
                 context: Vec::from([

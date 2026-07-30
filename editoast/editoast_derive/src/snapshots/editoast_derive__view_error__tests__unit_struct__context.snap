@@ -11,7 +11,11 @@ struct UnitWithContext;
 // -----------------------------------------------------------------------------
 
 impl crate::views::error::ViewError for UnitWithContext {
-    const LABEL: &'static str = "UnitWithContext";
+    fn label(&self) -> &'static str {
+        match self {
+            Self => "UnitWithContext",
+        }
+    }
     fn status(&self) -> axum::http::StatusCode {
         match self {
             Self => axum::http::StatusCode::INTERNAL_SERVER_ERROR,
@@ -28,7 +32,8 @@ impl crate::views::error::ViewError for UnitWithContext {
     fn responses() -> Vec<crate::views::error::OpenApiResponse> {
         let responses = Vec::from([
             crate::views::error::OpenApiResponse {
-                label: None,
+                label: "UnitWithContext",
+                sub_label: None,
                 message_template: None,
                 status: axum::http::StatusCode::INTERNAL_SERVER_ERROR,
                 context: Vec::from([]),

@@ -24,7 +24,17 @@ enum Wrapper {
 // -----------------------------------------------------------------------------
 
 impl crate::views::error::ViewError for Wrapper {
-    const LABEL: &'static str = "Wrapper";
+    fn label(&self) -> &'static str {
+        match self {
+            Self::Transparent(_0) => crate::views::error::ViewError::label(_0),
+            Self::From(_0) => crate::views::error::ViewError::label(_0),
+            Self::Source { inner: _inner } => {
+                crate::views::error::ViewError::label(_inner)
+            }
+            Self::Plain(_0) => crate::views::error::ViewError::label(_0),
+            Self::Own { detail: _detail } => "Wrapper",
+        }
+    }
     fn status(&self) -> axum::http::StatusCode {
         match self {
             Self::Transparent(_0) => crate::views::error::ViewError::status(_0),
@@ -69,7 +79,8 @@ impl crate::views::error::ViewError for Wrapper {
     fn responses() -> Vec<crate::views::error::OpenApiResponse> {
         let mut responses = Vec::from([
             crate::views::error::OpenApiResponse {
-                label: Some("Own"),
+                label: "Wrapper",
+                sub_label: Some("Own"),
                 message_template: Some("own error: {detail}"),
                 status: axum::http::StatusCode::BAD_REQUEST,
                 context: Vec::from([

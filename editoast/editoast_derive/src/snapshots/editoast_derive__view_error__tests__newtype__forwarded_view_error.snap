@@ -11,7 +11,11 @@ struct Wrapper(#[from] #[view_error] errors::InnerError);
 // -----------------------------------------------------------------------------
 
 impl crate::views::error::ViewError for Wrapper {
-    const LABEL: &'static str = "Wrapper";
+    fn label(&self) -> &'static str {
+        match self {
+            Self(_0) => crate::views::error::ViewError::label(_0),
+        }
+    }
     fn status(&self) -> axum::http::StatusCode {
         match self {
             Self(_0) => crate::views::error::ViewError::status(_0),

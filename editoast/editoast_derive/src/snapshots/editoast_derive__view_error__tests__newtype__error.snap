@@ -12,7 +12,11 @@ struct NewTypeError(std::io::Error);
 // -----------------------------------------------------------------------------
 
 impl crate::views::error::ViewError for NewTypeError {
-    const LABEL: &'static str = "NewTypeError";
+    fn label(&self) -> &'static str {
+        match self {
+            Self(_0) => "NewTypeError",
+        }
+    }
     fn status(&self) -> axum::http::StatusCode {
         match self {
             Self(_0) => axum::http::StatusCode::INTERNAL_SERVER_ERROR,
@@ -29,7 +33,8 @@ impl crate::views::error::ViewError for NewTypeError {
     fn responses() -> Vec<crate::views::error::OpenApiResponse> {
         let responses = Vec::from([
             crate::views::error::OpenApiResponse {
-                label: None,
+                label: "NewTypeError",
+                sub_label: None,
                 message_template: None,
                 status: axum::http::StatusCode::INTERNAL_SERVER_ERROR,
                 context: Vec::from([]),

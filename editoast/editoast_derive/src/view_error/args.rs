@@ -123,7 +123,7 @@ impl Args {
             args: TypeArgs { status },
         } = self;
         let label = name.unwrap_or_else(|| ident.to_string());
-        let mut view_error_impl = ViewErrorImpl::new(ident, label);
+        let mut view_error_impl = ViewErrorImpl::new(ident, label.clone());
 
         match data {
             ast::Data::Struct(fields) => {
@@ -147,6 +147,7 @@ impl Args {
                             entries: context_entries,
                         },
                         OpenApiResponse {
+                            label,
                             sub_label: None,
                             status,
                             message_template: thiserror.message().cloned(),
@@ -189,6 +190,7 @@ impl Args {
                                 entries: context_entries,
                             },
                             OpenApiResponse {
+                                label: label.clone(),
                                 sub_label: Some(sub_label),
                                 status,
                                 message_template: thiserror.message().cloned(),

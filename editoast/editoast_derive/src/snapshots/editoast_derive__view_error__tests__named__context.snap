@@ -15,7 +15,13 @@ struct NamedWithContext {
 // -----------------------------------------------------------------------------
 
 impl crate::views::error::ViewError for NamedWithContext {
-    const LABEL: &'static str = "NamedWithContext";
+    fn label(&self) -> &'static str {
+        match self {
+            Self { cause: _cause, fix: _fix, incident_id: _incident_id } => {
+                "NamedWithContext"
+            }
+        }
+    }
     fn status(&self) -> axum::http::StatusCode {
         match self {
             Self { cause: _cause, fix: _fix, incident_id: _incident_id } => {
@@ -52,7 +58,8 @@ impl crate::views::error::ViewError for NamedWithContext {
     fn responses() -> Vec<crate::views::error::OpenApiResponse> {
         let responses = Vec::from([
             crate::views::error::OpenApiResponse {
-                label: None,
+                label: "NamedWithContext",
+                sub_label: None,
                 message_template: None,
                 status: axum::http::StatusCode::INTERNAL_SERVER_ERROR,
                 context: Vec::from([

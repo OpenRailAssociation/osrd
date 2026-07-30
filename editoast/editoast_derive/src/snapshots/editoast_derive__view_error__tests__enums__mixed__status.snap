@@ -18,7 +18,14 @@ enum Mixed {
 // -----------------------------------------------------------------------------
 
 impl crate::views::error::ViewError for Mixed {
-    const LABEL: &'static str = "Mixed";
+    fn label(&self) -> &'static str {
+        match self {
+            Self::Unit => "Mixed",
+            Self::NewType(_0) => "Mixed",
+            Self::Tuple(_0, _1) => "Mixed",
+            Self::Rich { cause: _cause, fix: _fix, incident_id: _incident_id } => "Mixed",
+        }
+    }
     fn status(&self) -> axum::http::StatusCode {
         match self {
             Self::Unit => axum::http::StatusCode::INTERNAL_SERVER_ERROR,
@@ -52,25 +59,29 @@ impl crate::views::error::ViewError for Mixed {
     fn responses() -> Vec<crate::views::error::OpenApiResponse> {
         let responses = Vec::from([
             crate::views::error::OpenApiResponse {
-                label: Some("Unit"),
+                label: "Mixed",
+                sub_label: Some("Unit"),
                 message_template: None,
                 status: axum::http::StatusCode::INTERNAL_SERVER_ERROR,
                 context: Vec::from([]),
             },
             crate::views::error::OpenApiResponse {
-                label: Some("NewType"),
+                label: "Mixed",
+                sub_label: Some("NewType"),
                 message_template: None,
                 status: axum::http::StatusCode::INTERNAL_SERVER_ERROR,
                 context: Vec::from([]),
             },
             crate::views::error::OpenApiResponse {
-                label: Some("Tuple"),
+                label: "Mixed",
+                sub_label: Some("Tuple"),
                 message_template: None,
                 status: axum::http::StatusCode::BAD_REQUEST,
                 context: Vec::from([]),
             },
             crate::views::error::OpenApiResponse {
-                label: Some("Rich"),
+                label: "Mixed",
+                sub_label: Some("Rich"),
                 message_template: None,
                 status: axum::http::StatusCode::PAYMENT_REQUIRED,
                 context: Vec::from([]),
