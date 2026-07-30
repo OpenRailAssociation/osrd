@@ -24,7 +24,7 @@ import Banner from 'common/Banner';
 import { useInfraID } from 'common/osrdContext';
 import useSpeedLimitTags from 'common/SpeedLimitTagSelector/useSpeedLimitTags';
 import { useSubCategoryContext } from 'common/SubCategoryContext';
-import isMainCategory, { checkCategoryWarning } from 'modules/rollingStock/helpers/category';
+import { checkCategoryWarning, findSubCategory } from 'modules/rollingStock/helpers/category';
 import useCategoryOptions, {
   categoryOptionId,
 } from 'modules/rollingStock/hooks/useCategoryOptions';
@@ -353,11 +353,10 @@ const ExpandedTrainForm = ({
   );
 
   const subCategories = useSubCategoryContext();
-  const currentSubCategory = useMemo(() => {
-    const category = fields.category;
-    if (!category || isMainCategory(category)) return undefined;
-    return subCategories.find((option) => option.code === category.sub_category_code);
-  }, [fields.category, subCategories]);
+  const currentSubCategory = useMemo(
+    () => findSubCategory(subCategories, fields.category),
+    [fields.category, subCategories]
+  );
   const isCategoryWarning = checkCategoryWarning(
     selectedRollingStock,
     fields.category,

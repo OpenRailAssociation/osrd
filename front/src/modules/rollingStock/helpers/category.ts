@@ -4,6 +4,14 @@ export default function isMainCategory(category: TrainCategory | null) {
   return category === null || 'main_category' in category;
 }
 
+export const findSubCategory = (
+  subCategories: SubCategory[],
+  category: TrainCategory | null | undefined
+) =>
+  !category || isMainCategory(category)
+    ? undefined
+    : subCategories.find((option) => option.code === category.sub_category_code);
+
 export function checkCategoryWarning(
   rollingStock: LightRollingStock | undefined,
   currentCategory: TrainCategory | null,

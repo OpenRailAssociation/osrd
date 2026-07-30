@@ -10,7 +10,7 @@ import type { SubCategory } from 'common/api/osrdEditoastApi';
 import type { OSRDMenuItem } from 'common/OSRDMenu';
 import OSRDMenu from 'common/OSRDMenu';
 import OSRDTooltip from 'common/OSRDTooltip';
-import isMainCategory from 'modules/rollingStock/helpers/category';
+import { findSubCategory } from 'modules/rollingStock/helpers/category';
 
 import { getTrainCategoryClassName } from '../Timetable/utils';
 import type { PairDataToolTip, PairingItem } from './types';
@@ -133,10 +133,7 @@ const RoundTripsModalCard = ({
     container: document.querySelector('.round-trips-modal'),
   });
 
-  const currentSubCategory =
-    category && !isMainCategory(category)
-      ? subCategories.find((option) => option.code === category.sub_category_code)
-      : undefined;
+  const currentSubCategory = findSubCategory(subCategories, category);
 
   return (
     <div

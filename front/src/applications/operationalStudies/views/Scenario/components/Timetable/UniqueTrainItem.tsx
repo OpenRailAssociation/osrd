@@ -15,7 +15,7 @@ import {
 } from 'common/api/osrdEditoastApi';
 import { SkeletonLoader } from 'common/Loaders';
 import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
-import isMainCategory from 'modules/rollingStock/helpers/category';
+import { findSubCategory } from 'modules/rollingStock/helpers/category';
 import {
   createTrainSchedules,
   deleteTrainSchedules,
@@ -168,10 +168,7 @@ const UniqueTrainItem = ({
 
   const { category } = train;
 
-  const currentSubCategory =
-    category && !isMainCategory(category)
-      ? subCategories.find((option) => option.code === category.sub_category_code)
-      : undefined;
+  const currentSubCategory = findSubCategory(subCategories, category);
 
   return (
     <div
