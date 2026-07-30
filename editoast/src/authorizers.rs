@@ -1,4 +1,5 @@
 use std::convert::Infallible;
+use std::ops::Not as _;
 
 use authz::v2::Access;
 use authz::v2::Actor;
@@ -163,21 +164,15 @@ impl<'c> UserAuthorizer<'c> {
                     return Ok(Some(check));
                 };
 
-                if let Some(current_grant) = current_grant {
-                    if current_grant == *new_grant {
-                        // I can do nothing (no-op);
-                        None
-                    } else if issuer == *subject {
-                        // I can also alter my own grant and self-demote;
-                        None
-                    } else {
-                        // but I cannot do the same thing to my equals
-                        (current_grant >= issuer_grant).then_some(check)
-                    }
-                } else {
-                    // Unprivileged subjects can always be shared to.
-                    None
-                }
+                current_grant.and_then(|current_grant| {
+                    let no_op = current_grant == *new_grant;
+                    let altering_self = issuer == *subject;
+                    let altering_underling = current_grant < issuer_grant;
+                    let promoting_above_me = issuer_grant < *new_grant;
+                    (!promoting_above_me && (no_op || altering_self || altering_underling))
+                        .not()
+                        .then_some(check)
+                })
             }
             Check::CanAlterSubjectInfraGrant(authz::Subject::Group(_), _, _) => {
                 // The only users allowed to alter groups grants are admins who bypass this entire
@@ -212,21 +207,15 @@ impl<'c> UserAuthorizer<'c> {
                     return Ok(Some(check));
                 };
 
-                if let Some(current_grant) = current_grant {
-                    if current_grant == *new_grant {
-                        // I can do nothing (no-op);
-                        None
-                    } else if issuer == *subject {
-                        // I can also alter my own grant and self-demote;
-                        None
-                    } else {
-                        // but I cannot do the same thing to my equals
-                        (current_grant >= issuer_grant).then_some(check)
-                    }
-                } else {
-                    // Unprivileged subjects can always be shared to.
-                    None
-                }
+                current_grant.and_then(|current_grant| {
+                    let no_op = current_grant == *new_grant;
+                    let altering_self = issuer == *subject;
+                    let altering_underling = current_grant < issuer_grant;
+                    let promoting_above_me = issuer_grant < *new_grant;
+                    (!promoting_above_me && (no_op || altering_self || altering_underling))
+                        .not()
+                        .then_some(check)
+                })
             }
             Check::CanAlterSubjectRollingStockGrant(authz::Subject::Group(_), _, _) => {
                 // The only users allowed to alter groups grants are admins who bypass this entire
@@ -752,15 +741,14 @@ mod tests {
         )]
         // a user with no grant do not have the privilege to share grants
         #[case::unreachable(ISSUER_NOTHING, USER_NOTHING, InfraGrant::Reader, false)]
-        // noop: no changes, the issuer grant does not matter
         #[case::noop_1(ISSUER_READER, USER_READER, InfraGrant::Reader, true)]
         #[case::noop_2(ISSUER_WRITER, USER_READER, InfraGrant::Reader, true)]
         #[case::noop_3(ISSUER_OWNER, USER_READER, InfraGrant::Reader, true)]
-        #[case::noop_4(ISSUER_READER, USER_WRITER, InfraGrant::Writer, true)]
+        #[case::noop_4(ISSUER_READER, USER_WRITER, InfraGrant::Writer, false)]
         #[case::noop_5(ISSUER_WRITER, USER_WRITER, InfraGrant::Writer, true)]
         #[case::noop_6(ISSUER_OWNER, USER_WRITER, InfraGrant::Writer, true)]
-        #[case::noop_7(ISSUER_READER, USER_OWNER, InfraGrant::Owner, true)]
-        #[case::noop_8(ISSUER_WRITER, USER_OWNER, InfraGrant::Owner, true)]
+        #[case::noop_7(ISSUER_READER, USER_OWNER, InfraGrant::Owner, false)]
+        #[case::noop_8(ISSUER_WRITER, USER_OWNER, InfraGrant::Owner, false)]
         #[case::noop_9(ISSUER_OWNER, USER_OWNER, InfraGrant::Owner, true)]
         // -----
         #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -875,15 +863,14 @@ mod tests {
         )]
         // a user with no grant do not have the privilege to share grants
         #[case::unreachable(ISSUER_NOTHING, USER_NOTHING, RollingStockGrant::Reader, false)]
-        // noop: no changes, the issuer grant does not matter
         #[case::noop_1(ISSUER_READER, USER_READER, RollingStockGrant::Reader, true)]
         #[case::noop_2(ISSUER_WRITER, USER_READER, RollingStockGrant::Reader, true)]
         #[case::noop_3(ISSUER_OWNER, USER_READER, RollingStockGrant::Reader, true)]
-        #[case::noop_4(ISSUER_READER, USER_WRITER, RollingStockGrant::Writer, true)]
+        #[case::noop_4(ISSUER_READER, USER_WRITER, RollingStockGrant::Writer, false)]
         #[case::noop_5(ISSUER_WRITER, USER_WRITER, RollingStockGrant::Writer, true)]
         #[case::noop_6(ISSUER_OWNER, USER_WRITER, RollingStockGrant::Writer, true)]
-        #[case::noop_7(ISSUER_READER, USER_OWNER, RollingStockGrant::Owner, true)]
-        #[case::noop_8(ISSUER_WRITER, USER_OWNER, RollingStockGrant::Owner, true)]
+        #[case::noop_7(ISSUER_READER, USER_OWNER, RollingStockGrant::Owner, false)]
+        #[case::noop_8(ISSUER_WRITER, USER_OWNER, RollingStockGrant::Owner, false)]
         #[case::noop_9(ISSUER_OWNER, USER_OWNER, RollingStockGrant::Owner, true)]
         // -----
         #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
