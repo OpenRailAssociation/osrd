@@ -181,7 +181,7 @@ impl<'c> UserAuthorizer<'c> {
             }
             Check::CanAlterSubjectInfraGrant(authz::Subject::Group(_), _, _) => {
                 // The only users allowed to alter groups grants are admins who bypass this entire
-                // verification function. So if we reach here, well then... TOO BAD GAME OVER LOL
+                // verification function.
                 Some(check)
             }
 
@@ -230,7 +230,7 @@ impl<'c> UserAuthorizer<'c> {
             }
             Check::CanAlterSubjectRollingStockGrant(authz::Subject::Group(_), _, _) => {
                 // The only users allowed to alter groups grants are admins who bypass this entire
-                // verification function. So if we reach here, well then... TOO BAD GAME OVER LOL
+                // verification function.
                 Some(check)
             }
             Check::SubjectEffectiveRollingStockGrantIsNot(grant, subject, rolling_stock) => {
