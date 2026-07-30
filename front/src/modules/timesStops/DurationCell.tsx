@@ -170,6 +170,7 @@ type DurationState = {
   activeUnit: ActiveUnit;
   units: Record<ActiveUnit, string>;
   creationDigits: string; // buffer for creation mode : digits shift h←m←s as you type
+  editedDigitCount: number; // count for edition mode: shift to next digit as you type
 };
 
 type DurationAction =
@@ -192,6 +193,7 @@ const initialState: DurationState = {
   activeUnit: 'm',
   units: secondsToUnits(0),
   creationDigits: '',
+  editedDigitCount: 0,
 };
 
 const initialDurationState = (controlledValue: Duration | null): DurationState => ({
@@ -218,6 +220,7 @@ const durationReducer = (state: DurationState, action: DurationAction): Duration
         allDigitsSelected: true,
         isCreationMode,
         creationDigits: '',
+        editedDigitCount: 0,
       };
     }
     case 'STOP_EDITING': {
@@ -252,9 +255,19 @@ const durationReducer = (state: DurationState, action: DurationAction): Duration
           ? CLEARED_VALUE[0] + digit
           : clamp(state.activeUnit, value[1] + digit);
 
+      let editedDigitCount = ++state.editedDigitCount;
+      let nextUnit = state.activeUnit;
+      if (state.editedDigitCount > 1) {
+        nextUnit = getNextUnit(state.activeUnit);
+
+        editedDigitCount = 0;
+      }
+
       return {
         ...state,
         allDigitsSelected: false,
+        editedDigitCount,
+        activeUnit: nextUnit,
         units: { ...state.units, [state.activeUnit]: nextValue },
       };
     }
@@ -277,12 +290,20 @@ const durationReducer = (state: DurationState, action: DurationAction): Duration
           ...state,
           isCreationMode: false,
           allDigitsSelected: false,
+          editedDigitCount: 0,
           units: cascadeAll(state.units, state.activeUnit),
         };
       }
 
       const { units, activeUnit } = applyDigitBackspace(state.units, state.activeUnit);
-      return { ...state, isCreationMode: false, allDigitsSelected: false, units, activeUnit };
+      return {
+        ...state,
+        isCreationMode: false,
+        allDigitsSelected: false,
+        units,
+        activeUnit,
+        editedDigitCount: 0,
+      };
     }
 
     case 'NAVIGATE': {
@@ -290,13 +311,19 @@ const durationReducer = (state: DurationState, action: DurationAction): Duration
       return {
         ...state,
         isCreationMode: false,
+        editedDigitCount: 0,
         activeUnit:
           direction === 'left' ? getPrevUnit(state.activeUnit) : getNextUnit(state.activeUnit),
       };
     }
 
     case 'SET_ACTIVE_UNIT':
-      return { ...state, isCreationMode: false, activeUnit: action.payload };
+      return {
+        ...state,
+        isCreationMode: false,
+        activeUnit: action.payload,
+        editedDigitCount: 0,
+      };
 
     case 'EXTERNAL_VALUE_CHANGED':
       // Only sync if not currently editing to avoid overwriting user input
