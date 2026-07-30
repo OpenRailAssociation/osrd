@@ -20,7 +20,7 @@ import { ConfirmModal } from 'common/BootstrapSNCF/ModalSNCF';
 import DeleteModal from 'common/BootstrapSNCF/ModalSNCF/DeleteModal';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import { useRollingStockContext } from 'common/RollingStockContext';
-import isMainCategory from 'modules/rollingStock/helpers/category';
+import { findSubCategory } from 'modules/rollingStock/helpers/category';
 import { getOccurrencesWorstStatus } from 'modules/trainSchedule/helpers/pacedTrain';
 import {
   createExceptions,
@@ -322,10 +322,7 @@ const PacedTrainItem = ({
 
   const { category } = pacedTrain;
 
-  const currentSubCategory =
-    category && !isMainCategory(category)
-      ? subCategories.find((option) => option.code === category.sub_category_code)
-      : undefined;
+  const currentSubCategory = findSubCategory(subCategories, category);
 
   const worstCase = useMemo(
     () => getOccurrencesWorstStatus(pacedTrain.summary, pacedTrain.paced.exceptions),

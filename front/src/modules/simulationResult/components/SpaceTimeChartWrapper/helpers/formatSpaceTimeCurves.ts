@@ -7,7 +7,7 @@ import {
 import getSubCategoryColors from 'applications/operationalStudies/helpers/getSubCategoryColors';
 import type { CategoryColors } from 'applications/operationalStudies/types';
 import type { SubCategory } from 'common/api/osrdEditoastApi';
-import isMainCategory from 'modules/rollingStock/helpers/category';
+import isMainCategory, { findSubCategory } from 'modules/rollingStock/helpers/category';
 import type { IndividualTrainProjection } from 'modules/simulationResult/types';
 import {
   findExceptionWithOccurrenceId,
@@ -56,9 +56,7 @@ const formatSpaceTimeCurves = (
       if (isMainCategory(category)) {
         colors = TRAIN_MAIN_CATEGORY_PATH_COLORS[category.main_category];
       } else {
-        const currentSubCategory = subCategories.find(
-          (option) => option.code === category.sub_category_code
-        );
+        const currentSubCategory = findSubCategory(subCategories, category);
         if (currentSubCategory) {
           colors = getSubCategoryColors(currentSubCategory);
         }

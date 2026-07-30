@@ -21,7 +21,7 @@ import Itinerary from 'modules/pathfinding/components/Itinerary';
 import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
 import { RollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector';
 import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector';
-import isMainCategory, { checkCategoryWarning } from 'modules/rollingStock/helpers/category';
+import { checkCategoryWarning, findSubCategory } from 'modules/rollingStock/helpers/category';
 import { isElectric } from 'modules/rollingStock/helpers/electric';
 import TimesStopsInput from 'modules/timesStops/TimesStopsInput';
 import {
@@ -256,10 +256,10 @@ const ManageTrainSchedule = () => {
 
   const subCategories = useSubCategoryContext();
 
-  const currentSubCategory = useMemo(() => {
-    if (isMainCategory(currentCategory)) return undefined;
-    return subCategories.find((option) => option.code === currentCategory.sub_category_code);
-  }, [currentCategory, subCategories]);
+  const currentSubCategory = useMemo(
+    () => findSubCategory(subCategories, currentCategory),
+    [currentCategory, subCategories]
+  );
 
   const isCategoryWarning = checkCategoryWarning(rollingStock, currentCategory, currentSubCategory);
 
