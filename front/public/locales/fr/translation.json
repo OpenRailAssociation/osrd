@@ -858,8 +858,8 @@
       "fromDeparture": "propager vers le début",
       "shiftAllWaypoints": "décaler tout le sillon",
       "stopDurationAtThisWaypoint": "Seulement ce point",
-      "stopDurationFromDeparture": "Jusqu'à ce point",
-      "stopDurationToDestination": "A partir de ce point",
+      "stopDurationFromThisPointOn": "A partir de ce point",
+      "stopDurationUpToThisPoint": "Jusqu'à ce point",
       "toDestination": "propager vers la fin"
     },
     "realMargin": "marge réelle",

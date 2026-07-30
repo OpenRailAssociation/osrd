@@ -33,7 +33,7 @@ const DurationPropagationMenu = ({
 
   const items: OSRDMenuItem[] = [
     {
-      title: `${deltaLabel} ${t('stopDurationFromDeparture')}`,
+      title: `${deltaLabel} ${t('stopDurationUpToThisPoint')}`,
       icon: <ArrowUp />,
       disabled: disableFromDeparture,
       onClick: selectMode('fromDeparture'),
@@ -45,7 +45,7 @@ const DurationPropagationMenu = ({
       onClick: selectMode('atThisWaypoint'),
     },
     {
-      title: `${deltaLabel} ${t('stopDurationToDestination')}`,
+      title: `${deltaLabel} ${t('stopDurationFromThisPointOn')}`,
       icon: <ArrowDown />,
       disabled: disableToDestination,
       onClick: selectMode('toDestination'),
