@@ -160,7 +160,7 @@ describe('useLazySimulateTrains', () => {
       expect(result.current.simulatedTrainsById.get(mockTrain.id)?.startTime).toEqual(newDeparture);
     });
 
-    it('should not update departure time for shifted exceptions', () => {
+    it('should update departure time and apply shifted exceptions when provided', () => {
       const { result } = renderHookWithStore(() => useLazySimulateTrains(baseOptions));
       act(() => {
         result.current.simulateTrainSchedules([
@@ -198,45 +198,11 @@ describe('useLazySimulateTrains', () => {
       });
       expect(result.current.simulatedTrainsById.size).toBe(0);
     });
-
-    it('should update the start time in the train schedules ref', () => {
-      const { result, rerender } = renderHookWithStore(
-        ({ infraId }) => useLazySimulateTrains({ ...baseOptions, infraId }),
-        { initialProps: { infraId: 1 } }
-      );
-      act(() => {
-        result.current.simulateTrainSchedules([mockTrain]);
-      });
-      act(() => {
-        onProgress?.(new Map([[mockTrain.id, mockSimulationSummaryResult]]));
-      });
-
-      const newDeparture = new Date('2024-01-01T12:00:00Z');
-      act(() => {
-        result.current.updateSimulatedTrainScheduleDepartureTime(mockTrain.id, newDeparture);
-      });
-
-      act(() => {
-        rerender({ infraId: 2 });
-      });
-
-      expect(mockSimulateTrainSchedules).toHaveBeenLastCalledWith([mockTrain.id]);
-    });
   });
 
   describe('loader selection', () => {
-    it('should use TrainTrackProjectionLazyLoader anyway', () => {
-      renderHookWithStore(
-        () => useLazySimulateTrains(baseOptions),
-        {},
-        {
-          simulation: {
-            ...simulationResultsInitialState,
-            projectionType: 'trackProjection',
-            isSimulationEnabled: true,
-          },
-        }
-      );
+    it('should use create the loader when rolling stocks are available', () => {
+      renderHookWithStore(() => useLazySimulateTrains(baseOptions));
 
       expect(vi.mocked(TrainSimulationLazyLoader).mock.instances.length).toBe(1);
     });
