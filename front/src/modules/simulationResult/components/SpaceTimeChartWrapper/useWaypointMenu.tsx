@@ -93,7 +93,7 @@ const useWaypointMenu = (
       (waypoint) => waypoint.waypointId === activeWaypointId
     );
 
-    if (typeof activeWaypoint?.opId === 'string') {
+    if (activeWaypoint?.location.type !== 'track_offset') {
       const isDeployed = deployedWaypoints.has(activeWaypointId);
 
       menuItems.push({
