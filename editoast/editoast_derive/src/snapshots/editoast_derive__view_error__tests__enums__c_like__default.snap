@@ -38,7 +38,7 @@ impl crate::views::error::ViewError for Color {
         }
     }
     fn responses() -> Vec<crate::views::error::OpenApiResponse> {
-        Vec::from([
+        let responses = Vec::from([
             crate::views::error::OpenApiResponse {
                 label: Some("Red"),
                 message_template: None,
@@ -57,7 +57,8 @@ impl crate::views::error::ViewError for Color {
                 status: axum::http::StatusCode::INTERNAL_SERVER_ERROR,
                 context: Vec::from([]),
             },
-        ])
+        ]);
+        responses
     }
 }
 impl utoipa::IntoResponses for Color {

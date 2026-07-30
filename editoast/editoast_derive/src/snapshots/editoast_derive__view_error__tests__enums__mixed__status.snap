@@ -50,7 +50,7 @@ impl crate::views::error::ViewError for Mixed {
         }
     }
     fn responses() -> Vec<crate::views::error::OpenApiResponse> {
-        Vec::from([
+        let responses = Vec::from([
             crate::views::error::OpenApiResponse {
                 label: Some("Unit"),
                 message_template: None,
@@ -75,7 +75,8 @@ impl crate::views::error::ViewError for Mixed {
                 status: axum::http::StatusCode::PAYMENT_REQUIRED,
                 context: Vec::from([]),
             },
-        ])
+        ]);
+        responses
     }
 }
 impl utoipa::IntoResponses for Mixed {

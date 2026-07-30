@@ -32,10 +32,26 @@ impl ToTokens for Codegen {
 pub(super) struct ViewErrorImpl {
     pub(super) implementor: syn::Ident,
     pub(super) label: String,
-    pub(super) status_impl: Vec<(syn::Pat, args::StatusCodeArg)>,
-    pub(super) variant_label_impl: Option<Vec<(syn::Pat, String)>>,
-    pub(super) context_impl: Vec<(syn::Pat, Context)>,
-    pub(super) responses_impl: Vec<OpenApiResponse>,
+    pub(super) status_impl: Vec<(syn::Pat, OrForwarded<args::StatusCodeArg>)>,
+    pub(super) variant_label_impl: Option<Vec<(syn::Pat, OrForwarded<String>)>>,
+    pub(super) context_impl: Vec<(syn::Pat, OrForwarded<Context>)>,
+    pub(super) responses_impl: ResponsesImpl,
+}
+
+pub(super) struct ResponsesImpl {
+    pub(super) openapi: Vec<OpenApiResponse>,
+    pub(super) forwarded_view_errors: Vec<syn::Type>,
+}
+
+/// ViewErrors can be forwarded when included in another error type using
+/// `#[view_error]`. In that case the forwarded error is used and all information
+/// about the wrapping type or variant is ignored. This enum allows to either provide
+/// a value to emit on the token stream or forward a `trait ViewError` function call result
+/// to implement forwarding.
+#[derive(Clone)]
+pub(super) enum OrForwarded<T: ToTokens> {
+    Value(T),
+    Forwarded { binding: syn::Ident },
 }
 
 #[derive(Clone)]
@@ -61,6 +77,57 @@ pub(super) struct ContextEntrySpec {
     pub(super) ty: syn::Type,
 }
 
+impl ViewErrorImpl {
+    pub(super) fn new(implementor: syn::Ident, label: String) -> Self {
+        Self {
+            implementor,
+            label,
+            status_impl: Vec::new(),
+            variant_label_impl: None,
+            context_impl: Vec::new(),
+            responses_impl: ResponsesImpl {
+                openapi: Vec::new(),
+                forwarded_view_errors: Vec::new(),
+            },
+        }
+    }
+
+    pub(super) fn push_error(&mut self, pat: syn::Pat, context: Context, openapi: OpenApiResponse) {
+        self.status_impl
+            .push((pat.clone(), OrForwarded::Value(openapi.status.clone())));
+        if let Some(sub_label) = openapi.sub_label.clone() {
+            self.variant_label_impl
+                .get_or_insert_default()
+                .push((pat.clone(), OrForwarded::Value(sub_label)));
+        }
+        self.context_impl.push((pat, OrForwarded::Value(context)));
+        self.responses_impl.openapi.push(openapi);
+    }
+
+    pub(super) fn forward_view_error(
+        &mut self,
+        pat: syn::Pat,
+        binding: syn::Ident,
+        fwd_ty: syn::Type,
+    ) {
+        self.status_impl.push((
+            pat.clone(),
+            OrForwarded::Forwarded {
+                binding: binding.clone(),
+            },
+        ));
+        self.variant_label_impl.get_or_insert_default().push((
+            pat.clone(),
+            OrForwarded::Forwarded {
+                binding: binding.clone(),
+            },
+        ));
+        self.context_impl
+            .push((pat, OrForwarded::Forwarded { binding }));
+        self.responses_impl.forwarded_view_errors.push(fwd_ty);
+    }
+}
+
 impl ToTokens for ViewErrorImpl {
     fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream) {
         let Self {
@@ -69,23 +136,39 @@ impl ToTokens for ViewErrorImpl {
             status_impl,
             variant_label_impl,
             context_impl,
-            responses_impl,
+            responses_impl:
+                ResponsesImpl {
+                    openapi,
+                    forwarded_view_errors,
+                },
         } = self;
 
         let (status_pat, status_code): (Vec<_>, Vec<_>) = status_impl.iter().cloned().unzip();
+        let status_code = OrForwarded::apply(status_code, &syn::parse_quote! { status });
+
         let (context_pat, context_entry): (Vec<_>, Vec<_>) = context_impl.iter().cloned().unzip();
+        let context_entry = OrForwarded::apply(context_entry, &syn::parse_quote! { context });
+
+        let sub_label = syn::parse_quote! { sub_label };
         let variant_label_impl = variant_label_impl
             .as_ref()
-            .map(|vl_impl| {
-                let (pat, label): (Vec<_>, Vec<_>) = vl_impl.iter().cloned().unzip();
+            .map(|variant_label_impl| {
+                let arms = variant_label_impl.iter().map(|(pattern, value)| {
+                    let value = match value {
+                        OrForwarded::Value(value) => quote::quote! { Some(#value) },
+                        OrForwarded::Forwarded { binding: _ } => value.as_tokens(&sub_label),
+                    };
+                    quote::quote! { #pattern => #value }
+                });
                 quote::quote! {
                     match self {
-                        #(#pat => Some(#label)),*
+                        #(#arms),*
                     }
                 }
             })
-            .unwrap_or(quote::quote! { None });
+            .unwrap_or_else(|| quote::quote! { None });
 
+        let maybe_mut = (!forwarded_view_errors.is_empty()).then_some(quote::quote! { mut });
         tokens.extend(quote::quote! {
             impl crate::views::error::ViewError for #implementor {
                 const LABEL: &'static str = #label;
@@ -107,7 +190,13 @@ impl ToTokens for ViewErrorImpl {
                 }
 
                 fn responses() -> Vec<crate::views::error::OpenApiResponse> {
-                    Vec::from([#(#responses_impl),*])
+                    let #maybe_mut responses = Vec::from([#(#openapi),*]);
+                    #(
+                        responses.extend(
+                            <#forwarded_view_errors as crate::views::error::ViewError>::responses()
+                        );
+                    )*
+                    responses
                 }
             }
         });
@@ -171,6 +260,24 @@ impl ToTokens for ContextEntrySpec {
                 schema: <#ty as utoipa::PartialSchema>::schema(),
             }
         });
+    }
+}
+
+impl<T: ToTokens> OrForwarded<T> {
+    fn as_tokens(&self, method: &syn::Ident) -> proc_macro2::TokenStream {
+        match self {
+            OrForwarded::Value(value) => quote::quote! { #value },
+            OrForwarded::Forwarded { binding } => {
+                quote::quote! { crate::views::error::ViewError::#method(#binding) }
+            }
+        }
+    }
+
+    fn apply(
+        it: impl IntoIterator<Item = Self>,
+        method: &syn::Ident,
+    ) -> Vec<proc_macro2::TokenStream> {
+        it.into_iter().map(|item| item.as_tokens(method)).collect()
     }
 }
 

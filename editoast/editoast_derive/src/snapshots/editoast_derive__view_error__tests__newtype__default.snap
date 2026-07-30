@@ -25,14 +25,15 @@ impl crate::views::error::ViewError for NewType {
         }
     }
     fn responses() -> Vec<crate::views::error::OpenApiResponse> {
-        Vec::from([
+        let responses = Vec::from([
             crate::views::error::OpenApiResponse {
                 label: None,
                 message_template: None,
                 status: axum::http::StatusCode::INTERNAL_SERVER_ERROR,
                 context: Vec::from([]),
             },
-        ])
+        ]);
+        responses
     }
 }
 impl utoipa::IntoResponses for NewType {

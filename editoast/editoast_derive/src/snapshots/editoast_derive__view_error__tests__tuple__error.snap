@@ -35,7 +35,7 @@ impl crate::views::error::ViewError for TupleError {
         }
     }
     fn responses() -> Vec<crate::views::error::OpenApiResponse> {
-        Vec::from([
+        let responses = Vec::from([
             crate::views::error::OpenApiResponse {
                 label: None,
                 message_template: Some("tuple error"),
@@ -47,7 +47,8 @@ impl crate::views::error::ViewError for TupleError {
                     },
                 ]),
             },
-        ])
+        ]);
+        responses
     }
 }
 impl utoipa::IntoResponses for TupleError {

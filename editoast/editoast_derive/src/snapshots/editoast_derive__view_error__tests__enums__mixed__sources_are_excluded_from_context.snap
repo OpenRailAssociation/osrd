@@ -80,7 +80,7 @@ impl crate::views::error::ViewError for Sources {
         }
     }
     fn responses() -> Vec<crate::views::error::OpenApiResponse> {
-        Vec::from([
+        let responses = Vec::from([
             crate::views::error::OpenApiResponse {
                 label: Some("Implicit"),
                 message_template: Some("implicit source"),
@@ -128,7 +128,8 @@ impl crate::views::error::ViewError for Sources {
                     },
                 ]),
             },
-        ])
+        ]);
+        responses
     }
 }
 impl utoipa::IntoResponses for Sources {

@@ -72,7 +72,7 @@ struct VariantArgs {
 }
 
 #[derive(Debug, FromField)]
-#[darling(forward_attrs(from, source))]
+#[darling(forward_attrs(from, source, view_error))]
 struct FieldArgs {
     ident: Option<syn::Ident>,
     ty: syn::Type,
@@ -100,6 +100,7 @@ enum ThisErrorAttr {
 #[derive(Debug)]
 struct FieldAttrs {
     source: bool,
+    view_error: bool,
 }
 
 #[derive(Debug, Clone, FromMeta)]
@@ -122,47 +123,39 @@ impl Args {
             args: TypeArgs { status },
         } = self;
         let label = name.unwrap_or_else(|| ident.to_string());
-        let message_template = thiserror.message().cloned();
+        let mut view_error_impl = ViewErrorImpl::new(ident, label);
 
-        let view_error_impl = match data {
+        match data {
             ast::Data::Struct(fields) => {
                 let pattern = fields.pattern(None);
-                let context_entries = if context_on_type && !thiserror.is_transparent() {
-                    fields.context()
+                if let Some(ForwardedField { binding, ty }) = fields.forwarded_view_error() {
+                    view_error_impl.forward_view_error(pattern, binding, ty);
                 } else {
-                    Vec::new()
-                };
-                let openapi_context = if context_on_type && !thiserror.is_transparent() {
-                    fields.openapi_context_spec()
-                } else {
-                    Vec::new()
-                };
-
-                ViewErrorImpl {
-                    implementor: ident,
-                    label,
-                    status_impl: vec![(pattern.clone(), status.clone())],
-                    variant_label_impl: None,
-                    context_impl: vec![(
+                    let context_entries = if context_on_type && !thiserror.is_transparent() {
+                        fields.context()
+                    } else {
+                        Vec::new()
+                    };
+                    let openapi_context = if context_on_type && !thiserror.is_transparent() {
+                        fields.openapi_context_spec()
+                    } else {
+                        Vec::new()
+                    };
+                    view_error_impl.push_error(
                         pattern,
                         Context {
                             entries: context_entries,
                         },
-                    )],
-                    responses_impl: vec![OpenApiResponse {
-                        sub_label: None,
-                        status,
-                        message_template,
-                        context: openapi_context,
-                    }],
+                        OpenApiResponse {
+                            sub_label: None,
+                            status,
+                            message_template: thiserror.message().cloned(),
+                            context: openapi_context,
+                        },
+                    );
                 }
             }
             ast::Data::Enum(variants) => {
-                let mut status_impl = Vec::with_capacity(variants.len());
-                let mut variant_label_impl = Vec::with_capacity(variants.len());
-                let mut context_impl = Vec::with_capacity(variants.len());
-                let mut responses_impl = Vec::with_capacity(variants.len());
-
                 for variant in variants {
                     let VariantArgs {
                         ident: variant_ident,
@@ -173,46 +166,39 @@ impl Args {
                     } = variant;
                     let sub_label = variant_ident.to_string();
                     let pattern = fields.pattern(Some(&variant_ident));
-                    let message_template = thiserror.message().cloned();
-                    let context_entries =
-                        if (context_on_type || context_on_variant) && !thiserror.is_transparent() {
+                    if let Some(ForwardedField { binding, ty }) = fields.forwarded_view_error() {
+                        view_error_impl.forward_view_error(pattern, binding, ty);
+                    } else {
+                        let context_entries = if (context_on_type || context_on_variant)
+                            && !thiserror.is_transparent()
+                        {
                             fields.context()
                         } else {
                             Vec::new()
                         };
-                    let openapi_context =
-                        if (context_on_type || context_on_variant) && !thiserror.is_transparent() {
+                        let openapi_context = if (context_on_type || context_on_variant)
+                            && !thiserror.is_transparent()
+                        {
                             fields.openapi_context_spec()
                         } else {
                             Vec::new()
                         };
-
-                    status_impl.push((pattern.clone(), status.clone()));
-                    variant_label_impl.push((pattern.clone(), sub_label.clone()));
-                    context_impl.push((
-                        pattern,
-                        Context {
-                            entries: context_entries,
-                        },
-                    ));
-                    responses_impl.push(OpenApiResponse {
-                        sub_label: Some(sub_label),
-                        status,
-                        message_template,
-                        context: openapi_context,
-                    });
-                }
-
-                ViewErrorImpl {
-                    implementor: ident,
-                    label,
-                    status_impl,
-                    variant_label_impl: Some(variant_label_impl),
-                    context_impl,
-                    responses_impl,
+                        view_error_impl.push_error(
+                            pattern,
+                            Context {
+                                entries: context_entries,
+                            },
+                            OpenApiResponse {
+                                sub_label: Some(sub_label),
+                                status,
+                                message_template: thiserror.message().cloned(),
+                                context: openapi_context,
+                            },
+                        );
+                    }
                 }
             }
-        };
+        }
 
         Ok(Codegen(view_error_impl))
     }
@@ -224,12 +210,21 @@ trait AstFieldsExt {
     fn pattern(&self, self_variant: Option<&syn::Ident>) -> syn::Pat;
     fn context(&self) -> Vec<ContextEntry>;
     fn openapi_context_spec(&self) -> Vec<ContextEntrySpec>;
-    fn bindings(&self) -> Vec<syn::Ident>;
+    fn forwarded_view_error(&self) -> Option<ForwardedField>;
+}
+
+struct ForwardedField {
+    binding: syn::Ident,
+    ty: syn::Type,
 }
 
 impl AstFieldsExt for ast::Fields<FieldArgs> {
     fn pattern(&self, self_variant: Option<&syn::Ident>) -> syn::Pat {
-        let bindings = self.bindings();
+        let bindings = self
+            .fields
+            .iter()
+            .enumerate()
+            .map(|(index, field)| field.binding(index));
         let head = self_variant
             .map(|self_variant| quote! { Self::#self_variant })
             .unwrap_or_else(|| quote! { Self });
@@ -250,12 +245,11 @@ impl AstFieldsExt for ast::Fields<FieldArgs> {
     fn context(&self) -> Vec<ContextEntry> {
         self.fields
             .iter()
-            .zip(self.bindings())
             .enumerate()
-            .filter(|(_, (field, _))| !field.is_source())
-            .map(|(index, (field, binding))| ContextEntry {
+            .filter(|(_, field)| !field.is_source())
+            .map(|(index, field)| ContextEntry {
                 key: field.key(index),
-                binding,
+                binding: field.binding(index),
             })
             .collect()
     }
@@ -272,22 +266,29 @@ impl AstFieldsExt for ast::Fields<FieldArgs> {
             .collect()
     }
 
-    fn bindings(&self) -> Vec<syn::Ident> {
-        self.fields
+    fn forwarded_view_error(&self) -> Option<ForwardedField> {
+        let (index, field) = self
+            .fields
             .iter()
             .enumerate()
-            .map(|(index, field)| {
-                field
-                    .ident
-                    .as_ref()
-                    .map(|ident| syn::Ident::new(&format!("_{}", ident.unraw()), ident.span()))
-                    .unwrap_or_else(|| syn::Ident::new(&format!("_{index}"), Span::call_site()))
-            })
-            .collect()
+            .find(|(_, field)| field.attrs.view_error)?;
+        // NOTE: an error forwarding another view error can have additional fields in the
+        // Rust type but these will be ignored as the embedded view error will be substituted.
+        Some(ForwardedField {
+            binding: field.binding(index),
+            ty: field.ty.clone(),
+        })
     }
 }
 
 impl FieldArgs {
+    fn binding(&self, index: usize) -> syn::Ident {
+        self.ident
+            .as_ref()
+            .map(|ident| syn::Ident::new(&format!("_{}", ident.unraw()), ident.span()))
+            .unwrap_or_else(|| syn::Ident::new(&format!("_{index}"), Span::call_site()))
+    }
+
     fn is_source(&self) -> bool {
         self.attrs.source
             || self
@@ -366,8 +367,20 @@ impl FieldAttrs {
             matches!(&attr.meta, syn::Meta::Path(_))
                 && (attr.path().is_ident("from") || attr.path().is_ident("source"))
         });
+        let view_error =
+            if let Some(attr) = attrs.iter().find(|attr| attr.path().is_ident("view_error")) {
+                if !matches!(&attr.meta, syn::Meta::Path(_)) {
+                    return Err(darling::Error::custom(
+                        "`#[view_error]` does not accept arguments on fields",
+                    )
+                    .with_span(attr));
+                }
+                true
+            } else {
+                false
+            };
 
-        Ok(Self { source })
+        Ok(Self { source, view_error })
     }
 }
 
