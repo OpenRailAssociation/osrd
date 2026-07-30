@@ -78,6 +78,31 @@ describe('applyScheduleEdit', () => {
     });
   });
 
+  describe('stopDurationWithArrival', () => {
+    it('sets both arrival and stop, computing departure from the new arrival', () => {
+      const state: ScheduleState = { arrival: _10H00, stop: _30MIN };
+      const result = applyScheduleEdit(state, {
+        field: 'stopDurationWithArrival',
+        value: { stop: _60MIN, arrival: _10H30 },
+      });
+
+      expect(t(result.arrival)).toBe(t(_10H30));
+      expect(ms(result.stop)).toBe(ms(_60MIN));
+      // departure = 10h30 + 60min = 11h30
+      expect(t(result.departure)).toBe(new Date('2025-01-01T11:30:00Z').getTime());
+    });
+
+    it('departure stays put when arrival shifts back by the same amount stop grows', () => {
+      const state: ScheduleState = { arrival: _10H00, stop: _30MIN };
+      const result = applyScheduleEdit(state, {
+        field: 'stopDurationWithArrival',
+        value: { stop: _60MIN, arrival: new Date('2025-01-01T09:30:00Z') },
+      });
+
+      expect(t(result.departure)).toBe(t(_10H30));
+    });
+  });
+
   describe('requestedDeparture', () => {
     it('sets departure and computes stop from arrival when arrival exists', () => {
       const state: ScheduleState = { arrival: _10H00, stop: null };

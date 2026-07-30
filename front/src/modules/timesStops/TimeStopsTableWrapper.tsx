@@ -261,9 +261,24 @@ const TimeStopsTableWrapper = ({
     const propagationEdits = propagationToEdits(propagationResult, rows);
     const originEdits = computeOriginEdits(propagationResult.updatedStartTime);
 
+    const editedRowArrivalEdit = propagationEdits.find(
+      (edit): edit is PendingEdit & { field: 'requestedArrival' } =>
+        edit.rowId === singleEdit.rowId && edit.field === 'requestedArrival'
+    );
+    const editedRowEdit: PendingEdit = editedRowArrivalEdit
+      ? {
+          rowId: singleEdit.rowId,
+          field: 'stopDurationWithArrival',
+          value: {
+            stop: update.value !== null ? new Duration({ seconds: update.value }) : null,
+            arrival: editedRowArrivalEdit.value ?? propagationResult.updatedStartTime,
+          },
+        }
+      : singleEdit;
+
     return [
       ...originEdits,
-      singleEdit,
+      editedRowEdit,
       ...propagationEdits.filter((e) => e.rowId !== singleEdit.rowId),
     ];
   };
