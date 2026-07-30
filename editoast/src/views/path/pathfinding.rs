@@ -1,8 +1,5 @@
 use std::collections::BTreeSet;
-use std::collections::HashMap;
-use std::collections::hash_map::DefaultHasher;
 use std::hash::Hash;
-use std::hash::Hasher;
 use std::sync::Arc;
 
 use authz;
@@ -11,12 +8,10 @@ use axum::extract::Json;
 use axum::extract::Path;
 use axum::extract::State;
 use common::units;
-use core_client::AsCoreRequest;
 use core_client::CoreClient;
 use core_client::pathfinding::PathfindingCoreResult;
 use core_client::pathfinding::PathfindingInputError;
 use core_client::pathfinding::PathfindingNotFound;
-use core_client::pathfinding::PathfindingRequest;
 use core_client::pathfinding::PathfindingResultSuccess;
 use database::DbConnection;
 use educe::Educe;
@@ -27,8 +22,6 @@ use schemas::train_schedule::PathItemLocation;
 use schemas::train_schedule::TrainScheduleLike;
 use serde::Deserialize;
 use serde::Serialize;
-use tracing::debug;
-use tracing::info;
 use utoipa::ToSchema;
 
 use crate::AppState;
@@ -95,25 +88,6 @@ impl PathfindingInput {
             stops_at_end_of_block: Some(train_schedule.options().stops_at_end_of_block()),
             allowed_track_sections: BTreeSet::new(),
         }
-    }
-
-    /// Generates a unique hash based on the pathfinding entries.
-    /// We need to recalculate the path if:
-    ///   - The path entry is different
-    ///   - The infrastructure has been modified
-    ///   - The application has been updated (the algorithm or payloads may have changed)
-    fn compute_path_hash_with_versioning(
-        &self,
-        infra: i64,
-        infra_version: i64,
-        app_version: Option<&str>,
-    ) -> String {
-        // Use provided app version or default
-        let osrd_version = app_version.unwrap_or("default");
-        let mut hasher = DefaultHasher::new();
-        self.hash(&mut hasher);
-        let hash_path_input = hasher.finish();
-        format!("pathfinding_{osrd_version}.{infra}.{infra_version}.{hash_path_input}")
     }
 }
 
@@ -262,162 +236,6 @@ pub(in crate::views) async fn post(
     Ok(Json(result))
 }
 
-/// Pathfinding batch computation given a list of path inputs
-async fn pathfinding_blocks_batch(
-    conn: DbConnection,
-    valkey_conn: &mut cache::Connection,
-    core: Arc<CoreClient>,
-    infra: &Infra,
-    pathfinding_inputs: &[PathfindingInput],
-    app_version: Option<&str>,
-) -> Result<Vec<Arc<PathfindingResult>>> {
-    let mut hash_to_path_indexes: HashMap<String, Vec<usize>> = HashMap::default();
-    let mut path_request_map: HashMap<String, PathfindingInput> = HashMap::default();
-    let initial_value = Arc::new(PathfindingResult::Failure(PathfindingFailure::default()));
-    let mut pathfinding_results = vec![initial_value; pathfinding_inputs.len()];
-    for (index, path_input) in pathfinding_inputs.iter().enumerate() {
-        let pathfinding_hash =
-            path_input.compute_path_hash_with_versioning(infra.id, infra.version, app_version);
-        hash_to_path_indexes
-            .entry(pathfinding_hash.clone())
-            .or_default()
-            .push(index);
-        path_request_map
-            .entry(pathfinding_hash.clone())
-            .or_insert(path_input.clone());
-    }
-
-    info!(
-        nb_pathfindings = pathfinding_inputs.len(),
-        nb_unique_pathfindings = hash_to_path_indexes.len()
-    );
-
-    // Compute hashes of all path_inputs
-    let hashes = hash_to_path_indexes.keys().collect::<Vec<_>>();
-
-    // Try to retrieve the result from Valkey
-    let pathfinding_cached_results: Vec<Option<Arc<PathfindingResult>>> = valkey_conn
-        .json_get_bulk(&hashes)
-        .await?
-        .into_iter()
-        .map(|result| result.map(Arc::new))
-        .collect();
-    let pathfinding_cached_results: HashMap<_, _> =
-        hashes.into_iter().zip(pathfinding_cached_results).collect();
-
-    // Report number of hit cache
-    let nb_hit = pathfinding_cached_results.values().flatten().count();
-    let nb_miss = pathfinding_cached_results.len() - nb_hit;
-    info!(nb_hit, nb_miss, "Hit cache");
-
-    // Handle miss cache:
-    debug!("Extracting locations from path items");
-    let path_items: Vec<_> = pathfinding_cached_results
-        .iter()
-        .filter(|(_, res)| res.is_none())
-        .flat_map(|(hash, _)| &path_request_map[*hash].path_items)
-        .collect();
-    let op_cache = OperationalPointCache::load_path_items(conn, infra.id, &path_items).await?;
-
-    debug!(
-        nb_path_items = path_items.len(),
-        "Preparing pathfinding requests"
-    );
-    let mut to_cache = vec![];
-    let mut pathfinding_requests = vec![];
-    let mut to_compute_hashes = vec![];
-    for (hash, pathfinding_result) in pathfinding_cached_results.into_iter() {
-        if let Some(result) = pathfinding_result {
-            hash_to_path_indexes[hash]
-                .iter()
-                .for_each(|index| pathfinding_results[*index] = result.clone());
-            continue;
-        }
-        let pathfinding_input = &path_request_map[hash];
-        match build_pathfinding_request(pathfinding_input, infra, &op_cache) {
-            Ok(pathfinding_request) => {
-                pathfinding_requests.push(pathfinding_request);
-                to_compute_hashes.push(hash);
-            }
-            Err(result) => {
-                let arc_result = Arc::new(*result.clone());
-                hash_to_path_indexes[hash]
-                    .iter()
-                    .for_each(|index| pathfinding_results[*index] = arc_result.clone());
-                to_cache.push((hash.to_string(), result));
-            }
-        }
-    }
-
-    debug!(
-        nb_requests = pathfinding_requests.len(),
-        "Sending pathfinding requests to core"
-    );
-    let mut futures = vec![];
-    for request in &pathfinding_requests {
-        futures.push(Box::pin(request.fetch(core.as_ref())));
-    }
-    let computed_paths: Vec<_> = futures::future::join_all(futures)
-        .await
-        .into_iter()
-        .collect();
-
-    for (path_result, hash) in computed_paths.into_iter().zip(to_compute_hashes) {
-        let path = path_result?;
-        to_cache.push((hash.to_string(), Box::new(path.clone().into())));
-        let result: Arc<PathfindingResult> = Arc::new(path.into());
-        hash_to_path_indexes[hash]
-            .iter()
-            .for_each(|index| pathfinding_results[*index] = result.clone());
-    }
-
-    debug!(nb_cached = to_cache.len(), "Caching pathfinding response");
-    valkey_conn.json_set_bulk(to_cache).await?;
-
-    Ok(pathfinding_results)
-}
-
-fn build_pathfinding_request(
-    pathfinding_input: &PathfindingInput,
-    infra: &Infra,
-    op_cache: &OperationalPointCache,
-) -> std::result::Result<PathfindingRequest, Box<PathfindingResult>> {
-    if pathfinding_input.path_items.len() <= 1 {
-        return Err(Box::from(PathfindingResult::Failure(
-            PathfindingFailure::PathfindingInputError(PathfindingInputError::NotEnoughPathItems),
-        )));
-    }
-    let track_offsets = op_cache
-        .extract_location_from_path_items(&pathfinding_input.path_items)
-        .map_err(PathfindingResult::Failure)?;
-
-    // Create the pathfinding request
-    Ok(PathfindingRequest {
-        infra: infra.id,
-        expected_version: infra.version,
-        path_items: track_offsets
-            .into_iter()
-            .map(|offsets| core_client::pathfinding::PathItem {
-                locations: offsets,
-                can_backtrack: Some(false),
-            })
-            .collect(),
-        rolling_stock_loading_gauge: pathfinding_input.rolling_stock_loading_gauge,
-        rolling_stock_is_thermal: pathfinding_input.rolling_stock_is_thermal,
-        rolling_stock_supported_electrifications: pathfinding_input
-            .rolling_stock_supported_electrifications
-            .clone(),
-        rolling_stock_supported_signaling_systems: pathfinding_input
-            .rolling_stock_supported_signaling_systems
-            .clone(),
-        rolling_stock_maximum_speed: pathfinding_input.rolling_stock_maximum_speed,
-        rolling_stock_length: pathfinding_input.rolling_stock_length,
-        speed_limit_tag: pathfinding_input.speed_limit_tag.clone(),
-        stops_at_end_of_block: pathfinding_input.stops_at_end_of_block,
-        allowed_track_sections: pathfinding_input.allowed_track_sections.clone(),
-    })
-}
-
 fn build_pathfinding_train(
     pathfinding_input: &PathfindingInput,
     op_cache: &OperationalPointCache,
@@ -474,42 +292,59 @@ pub struct TrainScheduleWithConsist<T: TrainScheduleLike> {
 /// Compute a path given a batch of trainschedule and an infrastructure.
 pub async fn pathfinding_from_train_batch<T: TrainScheduleLike>(
     conn: DbConnection,
-    valkey: &mut cache::Connection,
+    valkey_client: Arc<cache::Client>,
     core: Arc<CoreClient>,
     infra: &Infra,
     train_schedules_with_consists: &[TrainScheduleWithConsist<T>],
-    app_version: Option<&str>,
+    _app_version: Option<&str>, // question: this was used before for the cache, we are changing the invalidation
 ) -> Result<Vec<Arc<PathfindingResult>>> {
-    let initial_value = Arc::new(PathfindingResult::Failure(
-        PathfindingFailure::PathfindingInputError(PathfindingInputError::NotEnoughPathItems),
-    ));
-    let mut results = vec![initial_value; train_schedules_with_consists.len()];
+    let mut pathfinding_env = core_task::PathfindingEnv::new(core_task::CoreEnv {
+        infra_id: infra.id as u64,
+        infra_version: infra.version,
+        client: core,
+    });
 
-    let mut to_compute = vec![];
-    let mut to_compute_index = vec![];
-    for (
-        index,
-        TrainScheduleWithConsist {
-            train_schedule,
-            consist,
-        },
-    ) in train_schedules_with_consists.iter().enumerate()
-    {
-        // Create the path input
-        let path_input = PathfindingInput::from(consist, train_schedule);
-        to_compute.push(path_input);
-        to_compute_index.push(index);
+    // Question: before we computed the op_cache only for requests that were cache miss
+    // Could this have a performance impact?
+    let path_items: Vec<_> = train_schedules_with_consists
+        .iter()
+        .flat_map(|pf_input| pf_input.train_schedule.locations())
+        .collect();
+    let op_cache = OperationalPointCache::load_path_items(conn, infra.id, &path_items).await?;
+
+    let mut results = Vec::new();
+    let valid_pathfinding_trains = train_schedules_with_consists
+        .iter()
+        .map(|ts| PathfindingInput::from(&ts.consist, &ts.train_schedule))
+        .map(|path_input| build_pathfinding_train(&path_input, &op_cache))
+        .enumerate()
+        .filter_map(|(index, pathfinding_train)| match pathfinding_train {
+            Ok(pathfinding_train) => Some((index, pathfinding_train)),
+            Err(err) => {
+                results.push((index, err.into()));
+                None
+            }
+        });
+    pathfinding_env.extend(valid_pathfinding_trains);
+
+    let mut stream = pathfinding_env.into_stream(valkey_client);
+    while let Some(correlated) = stream.next().await {
+        // An error in the pathfinding (bad input, no route found...) is a valid PathfindingResult
+        // So `?` corresponds to a technical error
+        // QUESTION: should we drop everything in such a situation?
+        let pf_result: Arc<PathfindingResult> = Arc::new(correlated.data?.into());
+        for index in correlated.correlation_key {
+            // Only the Arc is cloned: the actualy path data isn’t
+            results.push((index, pf_result.clone()));
+        }
     }
 
-    for (index, res) in
-        pathfinding_blocks_batch(conn, valkey, core, infra, &to_compute, app_version)
-            .await?
-            .into_iter()
-            .enumerate()
-    {
-        results[to_compute_index[index]] = res;
-    }
-    Ok(results)
+    // Question: the previous implementation had a lot of tracing informations, mostly to watch over the cache
+    // Is is ok if we don’t have them?
+
+    // We re-order all the results in the same order as in the input
+    results.sort_by_key(|(index, _result)| *index);
+    Ok(results.into_iter().map(|(_index, result)| result).collect())
 }
 
 #[cfg(test)]
