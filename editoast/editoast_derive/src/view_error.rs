@@ -16,6 +16,40 @@ pub fn view_error(input: &DeriveInput) -> Result<TokenStream> {
 mod tests {
     use super::*;
 
+    #[test]
+    fn derive_more_from_skip_is_not_supported() {
+        let input = syn::parse_quote! {
+            enum Error {
+                #[from(skip)]
+                Variant(String),
+            }
+        };
+        let error = view_error(&input).expect_err("opt-out conversions should be rejected");
+        assert!(
+            error
+                .to_string()
+                .contains("`#[from(skip)]` is not supported by `ViewError`"),
+            "unexpected error: {error}"
+        );
+    }
+
+    #[test]
+    fn derive_more_from_ignore_is_not_supported() {
+        let input = syn::parse_quote! {
+            enum Error {
+                #[from(ignore)]
+                Variant(String),
+            }
+        };
+        let error = view_error(&input).expect_err("opt-out conversions should be rejected");
+        assert!(
+            error
+                .to_string()
+                .contains("`#[from(ignore)]` is not supported by `ViewError`"),
+            "unexpected error: {error}"
+        );
+    }
+
     mod unit_struct {
         use super::*;
 
@@ -58,6 +92,18 @@ mod tests {
                 syn::parse_quote! {
                     #[view_error(context)]
                     struct UnitWithContext;
+                }
+            );
+        }
+
+        #[test]
+        fn error() {
+            crate::assert_macro_expansion!(
+                view_error,
+                syn::parse_quote! {
+                    #[error("unit error")]
+                    #[view_error(context)]
+                    struct UnitError;
                 }
             );
         }
@@ -108,6 +154,18 @@ mod tests {
                 }
             );
         }
+
+        #[test]
+        fn error() {
+            crate::assert_macro_expansion!(
+                view_error,
+                syn::parse_quote! {
+                    #[error(transparent)]
+                    #[view_error(context)]
+                    struct NewTypeError(std::io::Error);
+                }
+            );
+        }
     }
 
     mod tuple {
@@ -152,6 +210,18 @@ mod tests {
                 syn::parse_quote! {
                     #[view_error(context)]
                     struct Tuple(String, u32);
+                }
+            );
+        }
+
+        #[test]
+        fn error() {
+            crate::assert_macro_expansion!(
+                view_error,
+                syn::parse_quote! {
+                    #[error("tuple error")]
+                    #[view_error(context)]
+                    struct TupleError(#[source] std::io::Error, String);
                 }
             );
         }
@@ -212,6 +282,21 @@ mod tests {
                 }
             );
         }
+
+        #[test]
+        fn error() {
+            crate::assert_macro_expansion!(
+                view_error,
+                syn::parse_quote! {
+                    #[error("named error")]
+                    #[view_error(context)]
+                    struct NamedError {
+                        source: std::io::Error,
+                        context: String,
+                    }
+                }
+            );
+        }
     }
 
     mod enums {
@@ -237,6 +322,7 @@ mod tests {
         }
 
         mod mixed {
+
             use super::*;
 
             #[test]
@@ -280,6 +366,36 @@ mod tests {
                     }
                 );
             }
+        }
+
+        #[test]
+        fn sources_are_excluded_from_context() {
+            crate::assert_macro_expansion!(
+                view_error,
+                syn::parse_quote! {
+                    #[view_error(context)]
+                    enum Sources {
+                        #[error("implicit source")]
+                        Implicit {
+                            source: std::io::Error,
+                            context: String,
+                        },
+                        #[error("explicit source")]
+                        Explicit {
+                            #[source]
+                            my_error: std::io::Error,
+                            context: String,
+                        },
+                        #[error("inline #[from], inferred as source")]
+                        From(#[from] std::io::Error),
+                        #[error(transparent)] // inferred as source as well
+                        Transparent(std::io::Error),
+                        #[error("derive_more conversion without #[source], not a source error")]
+                        #[from(InnerError)]
+                        DeriveMore(InnerError),
+                    }
+                }
+            );
         }
     }
 }
