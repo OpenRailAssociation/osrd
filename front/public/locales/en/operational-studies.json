@@ -11,7 +11,7 @@
     "map": "Map",
     "sdd": "SDD",
     "std": "STD",
-    "tables": "Tables",
+    "table": "Table",
     "trains": "Trains"
   },
   "importTrainScheduleSet": {

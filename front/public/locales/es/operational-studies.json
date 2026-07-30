@@ -9,7 +9,7 @@
     "map": "Mapa",
     "sdd": "DEV",
     "std": "DET",
-    "tables": "Cuadros",
+    "table": "Cuadro",
     "trains": "Trenes"
   },
   "importTrainScheduleSet": {

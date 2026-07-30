@@ -56,7 +56,7 @@ class ScenarioPage extends CommonPage {
     this.conflictsButton = page.getByTestId('conflicts-button');
     this.trainsButton = page.getByTestId('trains-button');
     this.simulationMapButton = page.getByTestId('map-button');
-    this.timeStopsOutputsButton = page.getByTestId('tables-button');
+    this.timeStopsOutputsButton = page.getByTestId('table-button');
     this.macroEditorButton = page.getByTestId('macro-button');
     this.stdButton = page.getByTestId('std-button');
     this.sddButton = page.getByTestId('sdd-button');

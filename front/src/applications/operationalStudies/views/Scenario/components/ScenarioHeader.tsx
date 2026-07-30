@@ -17,7 +17,7 @@ import InfraLoadingState from './InfraLoadingState';
 const BOARDS: Board[] = [
   'trains',
   'std',
-  'tables',
+  'table',
   'sdd',
   'map',
   'macro',

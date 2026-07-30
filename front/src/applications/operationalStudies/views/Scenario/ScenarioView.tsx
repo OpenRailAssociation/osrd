@@ -13,7 +13,7 @@ const Scenario = () => {
   const { activeBoards, toggleBoard } = usePersistScenarioHeader(scenario?.id, [
     'trains',
     'std',
-    'tables',
+    'table',
     'sdd',
     'map',
   ]);

@@ -1,6 +1,6 @@
-import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import type { Operation, NetzgrafikDto } from '@osrd-project/netzgrafik-frontend';
+import type { NetzgrafikDto, Operation } from '@osrd-project/netzgrafik-frontend';
 import { useTranslation } from 'react-i18next';
 
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
@@ -95,8 +95,8 @@ const ScenarioContent = ({ activeBoards, toggleBoard }: ScenarioContentProps) =>
   const closeViewAndOpenTableBoard = useCallback(
     (closeView: () => void) => {
       closeView();
-      if (!activeBoards.has('tables')) {
-        toggleBoard('tables');
+      if (!activeBoards.has('table')) {
+        toggleBoard('table');
       }
       setIsScrollingToTimeStopsTable(true);
     },
@@ -156,7 +156,7 @@ const ScenarioContent = ({ activeBoards, toggleBoard }: ScenarioContentProps) =>
     ]
   );
 
-  const simulationResultBoards = ['std', 'tables', 'sdd', 'map'] as Board[];
+  const simulationResultBoards: Board[] = ['std', 'table', 'sdd', 'map'];
   const isBoardSimulationResultsActive = simulationResultBoards.some((board) =>
     activeBoards.has(board)
   );

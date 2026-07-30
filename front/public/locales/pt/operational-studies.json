@@ -5,7 +5,7 @@
     "map": "Mapa",
     "sdd": "GEV",
     "std": "GET",
-    "tables": "Tabelas",
+    "table": "Tabela",
     "trains": "Comboios"
   },
   "importTrainScheduleSet": {

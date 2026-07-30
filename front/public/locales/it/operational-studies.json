@@ -2,7 +2,7 @@
   "boards": {
     "conflicts": "Conflitti",
     "map": "Mappa",
-    "tables": "Tabelle",
+    "table": "Tabella",
     "trains": "Treni"
   },
   "importTrainScheduleSet": {
