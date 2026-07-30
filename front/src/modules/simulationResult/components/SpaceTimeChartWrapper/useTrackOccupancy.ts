@@ -340,8 +340,7 @@ const useTrackOccupancy = ({
 
         res.push({
           waypointId,
-          // The TOD can't be opened on a trackoffset waypoint so opId is always defined
-          operationalPointId: op.opId!,
+          operationalPointId: op.waypointId,
           operationalPointPosition: op.position,
           operationalPointName: op.name,
           zones: resolvedZones,
