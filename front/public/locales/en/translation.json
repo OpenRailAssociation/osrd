@@ -859,8 +859,8 @@
       "fromDeparture": "from departure",
       "shiftAllWaypoints": "shift all waypoints",
       "stopDurationAtThisWaypoint": "Only this point",
-      "stopDurationFromDeparture": "Until this point",
-      "stopDurationToDestination": "From this point",
+      "stopDurationFromThisPointOn": "From this point",
+      "stopDurationUpToThisPoint": "Until this point",
       "toDestination": "to destination"
     },
     "realMargin": "real margin",

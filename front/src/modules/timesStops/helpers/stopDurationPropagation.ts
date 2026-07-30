@@ -33,23 +33,25 @@ export const propagateStopDuration = (
     return undefined;
 
   const pathStepId = update.row.pathStepId;
-  const editedPathIndex = selectedTrain.path.findIndex((step) => step.id === pathStepId);
+  const pathIndexById = new Map(selectedTrain.path.map((step, index) => [step.id, index]));
+  const editedPathIndex = pathIndexById.get(pathStepId) ?? -1;
   if (editedPathIndex < 0) return undefined;
 
+  // Delta between the old and new stop duration — drives every shift below.
   const oldDuration = update.row.stopDuration ?? Duration.zero;
   const newDuration = new Duration({ seconds: update.value });
   const delta = newDuration.sub(oldDuration);
 
+  // The edited point's current schedule state, if it already has one.
   const currentSchedule = selectedTrain.schedule ?? [];
   const editedItem = currentSchedule.find((item) => item.at === pathStepId);
   const editedOffset = editedItem?.arrival ? Duration.parse(editedItem.arrival) : null;
   const currentStartTime = new Date(selectedTrain.start_time);
 
+  // Shift every scheduled arrival after the edited point by +delta, in path order. Bump +24h
+  // if a shifted arrival ends up before the previous one.
   const affectedItems = currentSchedule
-    .map((item) => ({
-      item,
-      pathIndex: selectedTrain.path.findIndex((step) => step.id === item.at),
-    }))
+    .map((item) => ({ item, pathIndex: pathIndexById.get(item.at) ?? -1 }))
     .filter(({ item, pathIndex }) => !!item.arrival && pathIndex > editedPathIndex)
     .sort((a, b) => a.pathIndex - b.pathIndex);
 
@@ -62,6 +64,7 @@ export const propagateStopDuration = (
     lastOffset = adjusted;
   }
 
+  // Apply the shifts above, then set the edited point's new duration (its arrival stays the same).
   const shiftedSchedule = currentSchedule.map((item) =>
     adjustments.has(item.at) ? { ...item, arrival: adjustments.get(item.at) } : item
   );
