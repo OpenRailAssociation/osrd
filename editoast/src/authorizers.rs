@@ -150,13 +150,13 @@ impl<'c> UserAuthorizer<'c> {
                 new_grant,
             ) => {
                 let issuer = self.issuer();
-                let Ok((Some(issuer_grant), current_grant)) =
+                let Ok((issuer_grant, current_grant)) =
                     authz::v2::infra_effective_grant(issuer, *infra)
                         .zip(authz::v2::infra_effective_grant(*subject, *infra))
                         .access_authorized::<Infallible>(self.openfga)
                         .access()
-                        .await?
-                else {
+                        .await?;
+                let Some(issuer_grant) = issuer_grant else {
                     // According to the authorization model, non-Admin users must have a grant to share
                     return Ok(Some(check));
                 };
@@ -190,7 +190,7 @@ impl<'c> UserAuthorizer<'c> {
                 new_grant,
             ) => {
                 let issuer = self.issuer();
-                let Ok((Some(issuer_grant), current_grant)) =
+                let Ok((issuer_grant, current_grant)) =
                     authz::v2::rolling_stock_effective_grant(issuer, *rolling_stock)
                         .zip(authz::v2::rolling_stock_effective_grant(
                             *subject,
@@ -198,8 +198,8 @@ impl<'c> UserAuthorizer<'c> {
                         ))
                         .access_authorized::<Infallible>(self.openfga)
                         .access()
-                        .await?
-                else {
+                        .await?;
+                let Some(issuer_grant) = issuer_grant else {
                     // According to the authorization model, non-Admin users must have a grant to share
                     return Ok(Some(check));
                 };
