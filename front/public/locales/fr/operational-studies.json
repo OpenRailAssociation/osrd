@@ -11,7 +11,7 @@
     "map": "Carte",
     "sdd": "GEV",
     "std": "GET",
-    "tables": "Tableaux",
+    "table": "Tableau",
     "trains": "Trains"
   },
   "importTrainScheduleSet": {

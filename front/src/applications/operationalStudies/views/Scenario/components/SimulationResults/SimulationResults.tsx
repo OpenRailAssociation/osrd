@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { ChevronLeft, ChevronRight, Eye } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
@@ -304,7 +304,7 @@ const SimulationResults = ({
       {simulationResults && (
         <BoardWrapper
           ref={timeStopsTableRef}
-          hidden={!activeBoards.has('tables')}
+          hidden={!activeBoards.has('table')}
           name={simulationResults.train.train_name}
           items={[
             {

@@ -10,7 +10,7 @@
     "map": "Karte",
     "sdd": "GWD",
     "std": "WZD",
-    "tables": "Fahrpläne",
+    "table": "Fahrplan",
     "trains": "Züge"
   },
   "importTrainScheduleSet": {
