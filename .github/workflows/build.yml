@@ -873,13 +873,19 @@ jobs:
 
   end_to_end_tests:
     runs-on: ubuntu-latest
-    name: End to end tests
+    name: End to end tests (shard ${{ matrix.shard }})
     needs:
       - build-core
       - build-editoast
       - build-osrdyne
       - build-gateway
       - build-front
+    strategy:
+      # Every shard brings up its own test infrastructure, so a failing shard
+      # tells us nothing about the others: let them all run to completion.
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4]
     steps:
       # TODO: check if we can deduplicate the base steps from integration_tests_quality
       # https://www.jameskerr.blog/posts/sharing-steps-in-github-action-workflows/
@@ -974,48 +980,49 @@ jobs:
             echo "Running Playwright tests on Chromium only"
           fi
               # Run Playwright tests
+          # Each shard runs a disjoint subset of the tests and writes a blob
+          # report; end_to_end_tests_report merges them back into a single one.
+          mkdir -p front/blob-report
           docker run --init --name=playwright-test --net=host \
             -e CI=true \
             -e PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 \
             --ipc=host \
             -v "$PWD/front/test-results:/app/front/test-results" \
-            osrd-playwright:latest npx playwright test $TEST_PROJECT
+            -v "$PWD/front/blob-report:/app/front/blob-report" \
+            osrd-playwright:latest \
+            npx playwright test $TEST_PROJECT \
+              --shard=${{ matrix.shard }}/${{ strategy.job-total }} \
+              --reporter=blob,line
           exit $(docker wait playwright-test)
+
+      - name: Upload blob report
+        if: always()
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: blob-report-${{ matrix.shard }}
+          path: front/blob-report
+          # Only consumed by end_to_end_tests_report, within the same run.
+          retention-days: 1
 
       - name: Upload media artifact
         if: always()
         uses: actions/upload-artifact@v7.0.1
         with:
-          name: playwright-media
+          name: playwright-media-${{ matrix.shard }}
           path: |
             front/test-results/**/video.webm
             front/test-results/**/*.png
+          if-no-files-found: ignore
           retention-days: 30
 
       - name: Upload trace artifact
         if: always()
         uses: actions/upload-artifact@v7.0.1
         with:
-          name: playwright-traces
+          name: playwright-traces-${{ matrix.shard }}
           path: front/test-results/**/trace.zip
+          if-no-files-found: ignore
           retention-days: 30
-
-      - name: Generate GitHub Summary
-        if: always()
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITHUB_REPOSITORY: ${{ github.repository }}
-          GITHUB_RUN_ID: ${{ github.run_id }}
-        run: |
-          set -eo pipefail
-          docker run --init --name=build-report --net=host \
-            --ipc=host \
-            -e GITHUB_TOKEN="$GITHUB_TOKEN" \
-            -e GITHUB_REPOSITORY="$GITHUB_REPOSITORY" \
-            -e GITHUB_RUN_ID="$GITHUB_RUN_ID" \
-            -v "$PWD/front/test-results:/app/front/test-results" \
-            osrd-playwright:latest npx tsx /app/front/tests/reporter/generate-github-summary.ts /app/front/test-results/personalized-report.json /app/front/test-results/summary.md
-          cat front/test-results/summary.md >> $GITHUB_STEP_SUMMARY
 
       - name: Save container logs
         run: docker compose logs > container-logs
@@ -1024,9 +1031,62 @@ jobs:
       - uses: actions/upload-artifact@v7.0.1
         if: always()
         with:
-          name: e2e-container-logs
+          name: e2e-container-logs-${{ matrix.shard }}
           path: container-logs
           retention-days: 30
+
+  end_to_end_tests_report:
+    runs-on: ubuntu-latest
+    name: End to end tests report
+    # Failing shards still produce a blob report, and that is precisely when the
+    # summary is worth reading, so only skip when the front image is unusable.
+    if: ${{ !cancelled() && needs.build-front.result == 'success' }}
+    needs:
+      - build-front
+      - end_to_end_tests
+    steps:
+      - name: Download built front-tests image
+        if: needs.build-front.outputs.output_method == 'artifact'
+        uses: actions/download-artifact@v8.0.1
+        with:
+          name: images-front
+          path: .
+
+      - name: Load built images
+        if: needs.build-front.outputs.output_method == 'artifact'
+        run: |
+          docker load --input ./osrd-front-tests.tar
+
+      - name: Download blob reports from all shards
+        uses: actions/download-artifact@v8.0.1
+        with:
+          pattern: blob-report-*
+          path: front/all-blob-reports
+          merge-multiple: true
+
+      - name: Merge shard reports and generate GitHub Summary
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_RUN_ID: ${{ github.run_id }}
+        run: |
+          set -eo pipefail
+          mkdir -p front/test-results
+          # merge-reports replays every shard's blob through the personalized
+          # reporter, rebuilding a single personalized-report.json that the
+          # existing summary generator turns into markdown. This only needs the
+          # front-tests image: merging reports requires no browser.
+          docker run --init --name=merge-report --net=host \
+            --ipc=host \
+            -e GITHUB_TOKEN="$GITHUB_TOKEN" \
+            -e GITHUB_REPOSITORY="$GITHUB_REPOSITORY" \
+            -e GITHUB_RUN_ID="$GITHUB_RUN_ID" \
+            -v "$PWD/front/all-blob-reports:/app/all-blob-reports" \
+            -v "$PWD/front/test-results:/app/test-results" \
+            ${{ fromJSON(needs.build-front.outputs.stable_tags).front-tests }} \
+            sh -c "npx playwright merge-reports --reporter=./tests/reporter/generate-personalized-report.ts ./all-blob-reports \
+              && npx tsx ./tests/reporter/generate-github-summary.ts ./test-results/personalized-report.json ./test-results/summary.md"
+          cat front/test-results/summary.md >> $GITHUB_STEP_SUMMARY
 
   check_reuse_compliance:
     runs-on: ubuntu-latest

@@ -175,6 +175,8 @@ clean up first:
 - Every test file is **incrementally numbered**.
 - Page Object = behavior + locators
 - Test = data + expectations
+- Keep spec files reasonably sized: CI shards the suite **per file**, never splitting one, so a
+  single oversized spec file becomes the critical path of the whole e2e job.
 
 ---
 
@@ -348,6 +350,12 @@ You can also inspect traces in the browser by following [this url](https://trace
 
 In the CI those files are available as artifacts. You can view them in the Github summary.
 
+CI splits the suite across 4 parallel shards, so each artifact family is uploaded once per
+shard: `playwright-traces-1` … `playwright-traces-4`, and likewise for `playwright-media-*`
+and `e2e-container-logs-*`. The Github summary lists one link per shard. A failed test only
+has a trace in the shard that ran it, and the summary does not say which one that is, so
+open the shard whose job log shows the failure.
+
 ## UI Mode
 
 Use UI Mode when you want to explore, run, and debug tests visually.
@@ -395,7 +403,9 @@ npx playwright test --help
 - **Projects**: only `chromium` & `firefox` are available
 - **Locale**: `fr`
 - **Timezone**: `Europe/Paris`
-- **Reporter**: custom + HTML
+- **Reporter**: custom + HTML locally. In CI each shard writes a `blob` report instead, and a
+  dedicated `End to end tests report` job merges the 4 blobs back through the custom reporter
+  to produce a single Github summary
 - **Parallel workers**: no limit in CI, but technically `2` (and `30%` of logical CPU locally, after empirical tries)
 - **Screenshots**: on failure
 

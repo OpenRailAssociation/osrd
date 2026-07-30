@@ -93,7 +93,28 @@ class GenerateReport implements Reporter {
       this.personalizedReport.results.summary.suites = this.countSuites(this.suite);
     }
 
+    this.applyTestTimeSpan();
     this.writeReportToFile(this.personalizedReport);
+  }
+
+  /**
+   * `playwright merge-reports` replays shard blobs long after the tests ran, so
+   * onBegin/onEnd wall-clock timestamps would report a near-zero duration.
+   * Falls back to those timestamps when tests carry no timing
+   */
+  private applyTestTimeSpan() {
+    const { summary, tests } = this.personalizedReport.results;
+
+    let start = Infinity;
+    let stop = -Infinity;
+    tests.forEach((test) => {
+      if (test.start !== undefined) start = Math.min(start, test.start);
+      if (test.stop !== undefined) stop = Math.max(stop, test.stop);
+    });
+
+    if (!Number.isFinite(start) || !Number.isFinite(stop)) return;
+    summary.start = start * 1000;
+    summary.stop = stop * 1000;
   }
 
   /** Process test cases in the suite and nested child suites.

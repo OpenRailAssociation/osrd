@@ -45,9 +45,29 @@ async function fetchArtifacts(
   }
 }
 
-function getArtifactIdByName(artifacts: Artifact[], name: string): string | null {
-  const match = artifacts.find((artifact) => artifact.name === name);
-  return match ? match.id.toString() : null;
+/**
+ * Collect every artifact belonging to a family, sharded or not.
+ * Sharded runs upload `playwright-traces-1`, `playwright-traces-2`, … so a
+ * single exact-name lookup would find nothing.
+ */
+function getArtifactLinks(artifacts: Artifact[], prefix: string): { label: string; url: string }[] {
+  return artifacts
+    .filter((artifact) => artifact.name === prefix || artifact.name.startsWith(`${prefix}-`))
+    .sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }))
+    .map((artifact) => ({
+      label: artifact.name.slice(prefix.length).replace(/^-/, ''),
+      url: `https://github.com/${REPO}/actions/runs/${RUN_ID}/artifacts/${artifact.id}`,
+    }));
+}
+
+function formatArtifactLinks(
+  links: { label: string; url: string }[],
+  notFoundMessage: string
+): string {
+  if (links.length === 0) return notFoundMessage;
+  return links
+    .map(({ label, url }) => `[${label ? `shard ${label}` : 'download'}](${url})`)
+    .join(' · ');
 }
 
 function formatStatus(status: string): string {
@@ -78,16 +98,15 @@ await (async () => {
 
   const { artifacts } = await fetchArtifacts(REPO, RUN_ID, TOKEN);
 
-  const traceId = getArtifactIdByName(artifacts, 'playwright-traces');
-  const mediaId = getArtifactIdByName(artifacts, 'playwright-media');
+  const traceUrls = formatArtifactLinks(
+    getArtifactLinks(artifacts, 'playwright-traces'),
+    'Trace artifact not found'
+  );
 
-  const traceUrl = traceId
-    ? `https://github.com/${REPO}/actions/runs/${RUN_ID}/artifacts/${traceId}`
-    : 'Trace artifact not found';
-
-  const mediaUrl = mediaId
-    ? `https://github.com/${REPO}/actions/runs/${RUN_ID}/artifacts/${mediaId}`
-    : 'Video and screenshot artifact not found';
+  const mediaUrls = formatArtifactLinks(
+    getArtifactLinks(artifacts, 'playwright-media'),
+    'Video and screenshot artifact not found'
+  );
 
   let summaryMd = `
 ## 📊 Test Summary
@@ -108,8 +127,8 @@ await (async () => {
 
 > Each failed test includes a downloadable \`trace.zip\` file.
 > To view the trace, extract the archive and upload it to the 🎯 [Playwright Trace Viewer](https://trace.playwright.dev/)
-- 📦 [Download Traces](${traceUrl})
-- 🎥 [Download Videos and screenshots](${mediaUrl})
+- 📦 Download Traces: ${traceUrls}
+- 🎥 Download Videos and screenshots: ${mediaUrls}
 
 | Test Suite | Failed Test | Status | Error |
 |------------|-------------|:------:|-------|
