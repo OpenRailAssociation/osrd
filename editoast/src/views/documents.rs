@@ -7,111 +7,45 @@ use axum::http::StatusCode;
 use axum::http::header::CACHE_CONTROL;
 use axum::http::header::CONTENT_TYPE;
 use axum::response::IntoResponse;
-use editoast_derive::EditoastError;
 use editoast_derive::ViewError;
 use serde::Serialize;
 use std::sync::Arc;
-use thiserror::Error;
 use utoipa::ToSchema;
 
 use crate::error::Result;
-use crate::views::AuthorizationError;
 use database::DbConnectionPoolV2;
 use editoast_models::Document;
 use editoast_models::prelude::*;
 
-#[derive(Error, Debug, EditoastError, ViewError)]
-#[editoast_error(base_id = "document")]
-pub(in crate::views) enum DocumentErrors {
-    #[error("Document '{document_key}' not found")]
-    #[editoast_error(status = 404)]
-    #[view_error(status = NOT_FOUND, context)]
-    NotFound { document_key: i64 },
-    #[error(transparent)]
-    #[editoast_error(status = 500)]
+#[derive(Debug, thiserror::Error, ViewError)]
+pub(in crate::views) enum DatabaseError {
+    #[error("database error: {0}")]
     #[view_error(status = INTERNAL_SERVER_ERROR)]
-    Database(#[from] editoast_models::Error),
-    #[error(transparent)]
-    #[editoast_error(status = 503)]
+    Internal(#[from] editoast_models::Error),
+    #[error("database unavailable: {0}")]
     #[view_error(status = SERVICE_UNAVAILABLE)]
-    DatabaseUnavailable(#[from] database::DatabasePoolError),
-    #[error(transparent)]
-    #[editoast_error(status = 403)]
-    #[view_error(status = FORBIDDEN)]
-    Authorization(#[from] AuthorizationError),
+    Unavailable(#[from] database::DatabasePoolError),
 }
-// impl crate::views::error::ViewError for DocumentErrors {
-//     const LABEL: &'static str = "DocumentsErrors";
 
-//     fn responses() -> Vec<super::error::OpenApiResponse> {
-//         Vec::from([
-//             super::error::OpenApiResponse {
-//                 label: Some("NotFound"),
-//                 message_template: Some("Document '{document_key}' not found"),
-//                 status: axum::http::StatusCode::NOT_FOUND,
-//                 context: Vec::from([super::error::ContextEntry {
-//                     key: "document_key",
-//                     schema: <i64 as utoipa::PartialSchema>::schema(),
-//                 }]),
-//             },
-//             super::error::OpenApiResponse {
-//                 label: Some("Database"),
-//                 status: axum::http::StatusCode::INTERNAL_SERVER_ERROR,
-//                 message_template: None,
-//                 context: Vec::from([]),
-//             },
-//             super::error::OpenApiResponse {
-//                 label: Some("DatabaseUnavailable"),
-//                 status: axum::http::StatusCode::INTERNAL_SERVER_ERROR,
-//                 message_template: None,
-//                 context: Vec::from([]),
-//             },
-//             super::error::OpenApiResponse {
-//                 label: Some("Authorization"),
-//                 message_template: None,
-//                 status: axum::http::StatusCode::FORBIDDEN,
-//                 context: Vec::from([]),
-//             },
-//         ])
-//     }
+#[derive(Debug, thiserror::Error, ViewError)]
+#[error("Document '{document_key}' not found")]
+#[view_error(status = NOT_FOUND, context)]
+pub(in crate::views) struct DocumentNotFound {
+    document_key: i64,
+}
 
-//     fn status(&self) -> axum::http::StatusCode {
-//         match self {
-//             Self::NotFound { .. } => axum::http::StatusCode::NOT_FOUND,
-//             Self::Database(_) => axum::http::StatusCode::INTERNAL_SERVER_ERROR,
-//             Self::DatabaseUnavailable { .. } => axum::http::StatusCode::INTERNAL_SERVER_ERROR,
-//             Self::Authorization(_) => axum::http::StatusCode::FORBIDDEN,
-//         }
-//     }
-
-//     fn context(self) -> std::collections::HashMap<String, serde_json::Value> {
-//         Default::default()
-//     }
-
-//     fn sub_label(&self) -> Option<&'static str> {
-//         match self {
-//             Self::NotFound { .. } => Some("NotFound"),
-//             Self::Database(_) => Some("DatabaseError"),
-//             Self::DatabaseUnavailable { .. } => Some("DatabaseUnavailable"),
-//             Self::Authorization(_) => Some("AuthorizationError"),
-//         }
-//     }
-// }
-
-// impl utoipa::IntoResponses for DocumentErrors {
-//     fn responses() -> std::collections::BTreeMap<
-//         String,
-//         utoipa::openapi::RefOr<utoipa::openapi::response::Response>,
-//     > {
-//         <Self as super::error::ViewError>::utoipa_responses().into()
-//     }
-// }
-
-// impl axum::response::IntoResponse for DocumentErrors {
-//     fn into_response(self) -> axum::response::Response {
-//         <Self as super::error::ViewError>::into_response(self)
-//     }
-// }
+#[derive(Debug, thiserror::Error, ViewError, derive_more::From)]
+pub(in crate::views) enum DocumentError {
+    #[error(transparent)]
+    NotFound(
+        #[from]
+        #[view_error]
+        DocumentNotFound,
+    ),
+    #[error(transparent)]
+    #[from(forward)]
+    Database(#[view_error] DatabaseError),
+}
 
 /// Returns a document of any type
 #[editoast_derive::route]
@@ -128,15 +62,18 @@ pub(in crate::views) enum DocumentErrors {
             content_type = "application/octet-stream",
             body = String,
         ),
+        DocumentError,
     )
 )]
 pub(in crate::views) async fn get(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Path(document_id): Path<i64>,
-) -> Result<impl IntoResponse> {
+) -> Result<impl IntoResponse, DocumentError> {
     let conn = &mut db_pool.get().await?;
-    let doc = Document::retrieve_or_fail(conn.clone(), document_id, || DocumentErrors::NotFound {
-        document_key: document_id,
+    let doc = Document::retrieve_or_fail(conn.clone(), document_id, || {
+        DocumentError::NotFound(DocumentNotFound {
+            document_key: document_id,
+        })
     })
     .await?;
     Ok((
@@ -165,13 +102,14 @@ struct NewDocumentResponse {
     request_body(content_type = "application/octet-stream", content = String),
     responses(
         (status = 201, description = "The document was created", body = NewDocumentResponse),
+        DatabaseError,
     )
 )]
 pub(in crate::views) async fn post(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
     axum_extra::TypedHeader(content_type): axum_extra::TypedHeader<headers::ContentType>,
     bytes: Bytes,
-) -> Result<impl IntoResponse> {
+) -> Result<impl IntoResponse, DatabaseError> {
     let content_type = content_type.to_string();
 
     // Create document
@@ -201,16 +139,18 @@ pub(in crate::views) async fn post(
     ),
     responses(
         (status = 204, description = "The document was deleted"),
-        DocumentErrors,
+        DocumentError,
     )
 )]
 pub(in crate::views) async fn delete(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Path(document_id): Path<i64>,
-) -> Result<impl IntoResponse, DocumentErrors> {
+) -> Result<impl IntoResponse, DocumentError> {
     let conn = &mut db_pool.get().await?;
-    Document::delete_static_or_fail(conn, document_id, || DocumentErrors::NotFound {
-        document_key: document_id,
+    Document::delete_static_or_fail(conn, document_id, || {
+        DocumentError::NotFound(DocumentNotFound {
+            document_key: document_id,
+        })
     })
     .await?;
     Ok(StatusCode::NO_CONTENT)
