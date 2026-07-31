@@ -25,6 +25,7 @@ use crate::v2::infra_revoke_grant;
 use crate::v2::infra_set_grant;
 use crate::v2::project::project_direct_grant;
 use crate::v2::project_effective_grant;
+use crate::v2::project_revoke_grant;
 use crate::v2::project_set_grant;
 use crate::v2::remove_members;
 use crate::v2::remove_roles;
@@ -99,6 +100,7 @@ pub trait TestClientExt {
         subject: Subject,
         project: Project,
     ) -> Option<ProjectGrant>;
+    async fn project_revoke_grant(&self, subject: Subject, project: Project) -> bool;
     async fn project_set_grant(&self, subject: Subject, project: Project) -> ();
 }
 
@@ -312,6 +314,14 @@ impl TestClientExt for fga::Client {
         let authorize = special_authorizers::Authorize(self);
         authorize
             .access_value(project_effective_grant(subject, project))
+            .await
+            .unwrap()
+    }
+
+    async fn project_revoke_grant(&self, subject: Subject, project: Project) -> bool {
+        let authorize = special_authorizers::Authorize(self);
+        authorize
+            .access_value(project_revoke_grant(subject, project))
             .await
             .unwrap()
     }
