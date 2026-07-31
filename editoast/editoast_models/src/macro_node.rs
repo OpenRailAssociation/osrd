@@ -14,7 +14,6 @@ pub struct MacroNode {
     pub position_x: i64,
     pub position_y: i64,
     pub full_name: Option<String>,
-    pub connection_time: i64,
     #[model(remote = "Vec<Option<String>>")]
     pub labels: Tags,
     pub trigram: Option<String>,
@@ -69,7 +68,6 @@ pub mod test {
             .position_x(12)
             .position_y(32)
             .full_name(Some("My Super Node".to_string()))
-            .connection_time(51)
             .labels(Tags::new(vec!["A".to_string(), "B".to_string()]))
             .trigram(Some("ABC".to_string()))
             .path_item_key("PATH".to_string())

@@ -249,7 +249,7 @@ const castNodeToNge = (
   connections: [],
   resourceId: state.ngeResource.id,
   perronkanten: 10,
-  connectionTime: node.connection_time,
+  connectionTime: null,
   trainrunCategoryHaltezeiten: TRAINRUN_CATEGORY_HALTEZEITEN,
   symmetryAxis: 0,
   warnings: [],
@@ -318,7 +318,6 @@ export const loadAndIndexNge = async (
             pathItem.location.operational_point.type === 'domestic'
               ? pathItem.location.operational_point.main_code
               : null,
-          connection_time: 0,
           labels: [],
           // we put the nodes on a grid
           position_x: (nbNodesIndexed % 8) * 200,

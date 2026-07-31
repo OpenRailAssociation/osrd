@@ -64,7 +64,6 @@ pub(in crate::views) struct MacroNodeForm {
     position_x: i64,
     position_y: i64,
     full_name: Option<String>,
-    connection_time: i64,
     labels: Tags,
     trigram: Option<String>,
     path_item_key: String,
@@ -86,7 +85,6 @@ impl MacroNodeForm {
             .position_x(self.position_x)
             .position_y(self.position_y)
             .full_name(self.full_name)
-            .connection_time(self.connection_time)
             .labels(self.labels)
             .trigram(self.trigram)
             .path_item_key(self.path_item_key)
@@ -101,7 +99,6 @@ pub(in crate::views) struct MacroNodeResponse {
     position_x: i64,
     position_y: i64,
     full_name: Option<String>,
-    connection_time: i64,
     labels: Tags,
     trigram: Option<String>,
     path_item_key: String,
@@ -121,7 +118,6 @@ impl From<MacroNode> for MacroNodeResponse {
             position_x: node.position_x,
             position_y: node.position_y,
             full_name: node.full_name,
-            connection_time: node.connection_time,
             labels: node.labels,
             trigram: node.trigram,
             path_item_key: node.path_item_key,
@@ -352,7 +348,6 @@ pub mod test {
                 && self.position_x == other.position_x
                 && self.position_y == other.position_y
                 && self.full_name == other.full_name
-                && self.connection_time == other.connection_time
                 && self.labels == other.labels
                 && self.trigram == other.trigram
                 && self.path_item_key == other.path_item_key
@@ -365,7 +360,6 @@ pub mod test {
             self.position_x == other.position_x
                 && self.position_y == other.position_y
                 && self.full_name == other.full_name
-                && self.connection_time == other.connection_time
                 && self.labels == other.labels
                 && self.trigram == other.trigram
                 && self.path_item_key == other.path_item_key
@@ -385,7 +379,6 @@ pub mod test {
             position_x: 12,
             position_y: 51,
             full_name: Some("My super node".to_string()),
-            connection_time: 13,
             labels: Tags::new(vec!["".to_string(), "".to_string()]),
             trigram: None,
             path_item_key: "->".to_string(),
@@ -421,7 +414,6 @@ pub mod test {
             position_x: 4,
             position_y: 1,
             full_name: Some("My super node".to_string()),
-            connection_time: 13,
             labels: Tags::new(vec!["A".to_string(), "B".to_string()]),
             trigram: None,
             path_item_key: "A->B".to_string(),
@@ -530,7 +522,6 @@ pub mod test {
                 .position_x(rng.random_range(0..100))
                 .position_y(rng.random_range(0..100))
                 .full_name(Some(random_string(10)))
-                .connection_time(rng.random::<i64>())
                 .labels(Tags::new(vec![random_string(5), random_string(5)]))
                 .trigram(Some(random_string(3)))
                 .path_item_key(random_string(10))

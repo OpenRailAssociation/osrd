@@ -4028,7 +4028,6 @@ export type LightRollingStockWithLiveries = LightRollingStock & {
 };
 export type Tags = string[];
 export type MacroNodeResponse = {
-  connection_time: number;
   full_name?: string | null;
   id: number;
   is_collapsed: boolean;
@@ -4045,7 +4044,6 @@ export type MacroNodeBatchResponse = {
   macro_nodes: MacroNodeResponse[];
 };
 export type MacroNodeForm = {
-  connection_time: number;
   full_name?: string | null;
   is_collapsed?: boolean;
   labels: Tags;

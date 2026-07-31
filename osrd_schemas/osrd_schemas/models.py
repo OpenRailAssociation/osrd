@@ -5172,7 +5172,6 @@ class LoadingGaugeLimit(BaseModel):
 
 
 class MacroNodeForm(BaseModel):
-    connection_time: int
     full_name: str | None = None
     is_collapsed: bool | None = None
     labels: list[str]
@@ -5183,7 +5182,6 @@ class MacroNodeForm(BaseModel):
 
 
 class MacroNodeResponse(BaseModel):
-    connection_time: int
     full_name: str | None = None
     id: int
     is_collapsed: bool

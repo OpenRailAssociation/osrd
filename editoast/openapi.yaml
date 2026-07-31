@@ -12008,13 +12008,9 @@ components:
       required:
       - position_x
       - position_y
-      - connection_time
       - labels
       - path_item_key
       properties:
-        connection_time:
-          type: integer
-          format: int64
         full_name:
           type:
           - string
@@ -12052,14 +12048,10 @@ components:
       - id
       - position_x
       - position_y
-      - connection_time
       - labels
       - path_item_key
       - is_collapsed
       properties:
-        connection_time:
-          type: integer
-          format: int64
         full_name:
           type:
           - string
