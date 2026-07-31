@@ -37,7 +37,8 @@ import fr.sncf.osrd.standalone_sim.makeElectricalProfiles
 import fr.sncf.osrd.standalone_sim.makeMRSPResponse
 import fr.sncf.osrd.standalone_sim.result.ElectrificationRange
 import fr.sncf.osrd.standalone_sim.runScheduleMetadataExtractor
-import fr.sncf.osrd.stdcm.STDCMResult
+import fr.sncf.osrd.stdcm.STDCMCompleteResult
+import fr.sncf.osrd.stdcm.STDCMPartialResult
 import fr.sncf.osrd.stdcm.graph.STDCMGraph
 import fr.sncf.osrd.stdcm.graph.checkPlannedStepsAndMaybeIndex
 import fr.sncf.osrd.stdcm.graph.findPath
@@ -212,12 +213,47 @@ class STDCMEndpoint(
                 val response = STDCMFinalResult(status = STDCMProgressStatus.DONE, result = result)
                 return RsJson(RsWithBody(STDCMFinalResult.adapter.toJson(response)))
             }
-            val pathfindingResponse =
-                runPathfindingBlockPostProcessing(
-                    infra,
-                    path.trainPath,
-                    path.waypointOffsets,
-                    path.backtrackIndexes,
+
+            val report = workSchedulesFailureExplainer.makeReport()
+            val mostBlockingWorkSchedules =
+                report.largestConflicts.map { ConflictingWorkSchedule(it.source.id, it.lastOPId) }
+            val nearestToDestinationWorkSchedules =
+                report.closestConflicts.map { ConflictingWorkSchedule(it.source.id, it.lastOPId) }
+            var partialPathfindingResult: PathfindingBlockResponse? = null
+            var lastReachedOperationalPoint: LastReachedOperationalPoint? = null
+
+            // No solution was found, but STDCM managed to go up to a certain point: return the
+            // corresponding partial path.
+            if (path is STDCMPartialResult) {
+                partialPathfindingResult =
+                    runPathfindingBlockPostProcessing(
+                        infra,
+                        path.trainPath,
+                        path.waypointOffsets,
+                        path.backtrackIndexes,
+                    )
+                val id =
+                    path.trainPath
+                        .getOperationalPointParts()
+                        .asSequence()
+                        .map {
+                            infra.rawInfra.getOperationalPointPartOpId(it.value)
+                        }
+                        .last()
+                val arrivalTime =
+                    request.startTime.plus(Duration.ofSeconds(path.earliestReachableTime.toLong()))
+                lastReachedOperationalPoint =
+                    LastReachedOperationalPoint(id, path.geoPoint, arrivalTime)
+            }
+            // STDCM found a valid solution, but it found unavoidable conflicts in the
+            // post-processing. Return the corresponding blocking work schedules.
+            // TODO : check with PO for this behaviour
+            val result =
+                PathNotFound(
+                    mostBlockingWorkSchedules.distinct(),
+                    nearestToDestinationWorkSchedules,
+                    partialPathfindingResult,
+                    lastReachedOperationalPoint,
                 )
 
             val simulationResponse =
@@ -257,7 +293,7 @@ class STDCMEndpoint(
          */
         fun logDebugData(
             infra: RawInfra,
-            path: STDCMResult,
+            path: STDCMCompleteResult,
             simulationResponse: SimulationSuccess,
             departureTime: ZonedDateTime,
             requirements: Map<ZoneId, List<STDCMTimetableData.DetailedRequirement>>,
@@ -280,7 +316,7 @@ class STDCMEndpoint(
         /** Build the simulation part of the response */
         fun buildSimResponse(
             infra: FullInfra,
-            path: STDCMResult,
+            path: STDCMCompleteResult,
             speedLimitTag: String?,
             temporarySpeedLimitManager: TemporarySpeedLimitManager?,
             comfort: Comfort,
@@ -338,7 +374,7 @@ class STDCMEndpoint(
 
         /** Build the electrical profiles from the path */
         fun buildSTDCMElectricalProfiles(
-            path: STDCMResult,
+            path: STDCMCompleteResult,
             rollingStocks: DistanceRangeMap<RollingStock>,
             comfort: Comfort,
         ): RangeValues<ElectricalProfileValue> {
