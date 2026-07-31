@@ -167,14 +167,18 @@ export function configureHandlePan({
 
       const train = projectedTrains.find((projectedTrain) => projectedTrain.id === hoveredTrainId);
       if (!train) {
-        console.error(`No train found with id ${hoveredTrainId}`);
-        return;
+        throw new Error(`No train found with id ${hoveredTrainId}`);
       }
 
       // Gate: drag is only allowed when the selected train has blue curves (by === 'std')
       if (
         selectedTrainBy === 'std' &&
-        canDragHoveredTrain({ panelSelectionMode, hoveredTrain: train, selectedTrainId })
+        canDragHoveredTrain({
+          panelSelectionMode,
+          hoveredTrain: train,
+          selectedTrainId,
+          relevantExceptionType: 'start_time',
+        })
       ) {
         let initialDepartureTime = train.departureTime;
         let originalPacedExceptions: SimulatedException[] | undefined;
@@ -215,23 +219,41 @@ export function configureHandlePan({
     }
 
     if (occupancyZoneDragAndDrop) {
-      if (
-        isPanning &&
-        !previousPanning &&
-        !occupancyZoneDragAndDrop.isDragging &&
-        !zoomMode &&
-        hoveredItem &&
-        isOccupancyPickingElement(hoveredItem.element)
-      ) {
-        occupancyZoneDragAndDrop.onDragStart(parseOccupancyZonePathId(hoveredItem.element.pathId));
-        return;
-      }
-
-      if (occupancyZoneDragAndDrop?.isDragging) {
+      if (occupancyZoneDragAndDrop.isDragging) {
         if (!isPanning) {
           occupancyZoneDragAndDrop.onDrop();
         }
         return;
+      }
+
+      if (
+        isPanning &&
+        !previousPanning &&
+        !zoomMode &&
+        hoveredItem &&
+        isOccupancyPickingElement(hoveredItem.element)
+      ) {
+        const zoneRef = parseOccupancyZonePathId(hoveredItem.element.pathId);
+        const hoveredZoneTrain = projectedTrains.find(
+          (projectedTrain) => projectedTrain.id === zoneRef.trainId
+        );
+        if (!hoveredZoneTrain) {
+          throw new Error(`No train found with id ${zoneRef.trainId}`);
+        }
+
+        // Drag is only allowed when the selected train is shown active on the TOD.
+        if (
+          selectedTrainBy === 'tod' &&
+          canDragHoveredTrain({
+            panelSelectionMode,
+            hoveredTrain: hoveredZoneTrain,
+            selectedTrainId,
+            relevantExceptionType: 'path_and_schedule',
+          })
+        ) {
+          occupancyZoneDragAndDrop.onDragStart(zoneRef);
+          return;
+        }
       }
     }
 
