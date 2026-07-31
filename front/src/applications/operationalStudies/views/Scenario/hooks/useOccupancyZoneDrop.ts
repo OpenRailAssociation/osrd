@@ -4,10 +4,7 @@ import type { Track } from '@osrd-project/ui-charts';
 import { v4 as uuidV4 } from 'uuid';
 
 import { useTimetableContext } from 'applications/operationalStudies/hooks/useTimetableContext';
-import {
-  buildOccurrenceExceptionData,
-  updatePacedTrainExceptionsList,
-} from 'applications/operationalStudies/views/Scenario/components/ManageTrainSchedule/helpers/buildPacedTrainException';
+import { checkChangeGroups } from 'applications/operationalStudies/views/Scenario/components/ManageTrainSchedule/helpers/buildPacedTrainException';
 import { updateTrainSchedule } from 'applications/operationalStudies/views/Scenario/components/ManageTrainSchedule/hooks/useUpdateTrainSchedule';
 import type { PacedTrainException, PathItem, TrainSchedule } from 'common/api/osrdEditoastApi';
 import { matchPathStepAndOp } from 'modules/pathfinding/utils';
@@ -20,11 +17,14 @@ import type { ProjectionWaypoint } from 'modules/simulationResult/types';
 import {
   computeIndexedOccurrenceStartTime,
   extractOccurrenceDetailsFromPacedTrain,
+  findExceptionWithOccurrenceId,
   findTrainScheduleAndException,
   getOccurrenceTrainName,
   isPacedTrain,
+  isPacedTrainWithDetails,
 } from 'modules/trainSchedule/helpers/pacedTrain';
 import {
+  deleteExceptions,
   storeTrainSchedule,
   updateExceptions,
 } from 'modules/trainSchedule/helpers/updateTrainScheduleHelpers';
@@ -32,7 +32,11 @@ import type { TrainScheduleWithDetails, SimulationSummary } from 'modules/trainS
 import type { TrainId } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 import { Duration, startTimeToDate } from 'utils/duration';
-import { extractOccurrenceIndexFromOccurrenceId, isOccurrenceId } from 'utils/trainId';
+import {
+  extractOccurrenceIndexFromOccurrenceId,
+  formatTrainScheduleIdToOccurrenceId,
+  isOccurrenceId,
+} from 'utils/trainId';
 
 /**
  * Insert or update a path step to go through a specific track.
@@ -166,8 +170,6 @@ export default function useOccupancyZoneDrop({
           throw new Error(`Occurrence ID references a non-paced train ${rawTrainSchedule.id}`);
         }
         const { paced: _paced, ...occurrenceBaseTrain } = rawTrainSchedule;
-        // Use the existing start_time override if there is one, otherwise compute this
-        // occurrence's own.
         const occurrenceStartTime = exception?.start_time
           ? new Date(exception.start_time.value)
           : computeIndexedOccurrenceStartTime(
@@ -197,40 +199,98 @@ export default function useOccupancyZoneDrop({
       } else {
         // Reassign the track on the model, every compliant occurrence follows it automatically.
         const rawTrainSchedule = trainSchedules.get(trainSchedule.id)!;
-        const updatedModel = await storeTrainSchedule(
+        const updatedModelTrainSchedule = { ...rawTrainSchedule, path: newPath };
+
+        if (!isPacedTrain(rawTrainSchedule)) {
+          const result = await updateTrainSchedule({
+            timetableId,
+            trainScheduleId: trainSchedule.id,
+            originalTrainSchedule: trainSchedule,
+            updatedTrainSchedule: updatedModelTrainSchedule,
+            addedExceptions: [],
+            upsertTrainSchedules,
+            dispatch,
+          });
+          if (!result.success) {
+            throw new Error(`Invalid train schedule: ${result.errorCodes.join(', ')}`);
+          }
+          return;
+        }
+        if (!isPacedTrainWithDetails(trainSchedule)) {
+          throw new Error(`Train schedule ${trainSchedule.id} references a non-paced train`);
+        }
+
+        // 'all' mode also forces every occurrence with its own path_and_schedule exception
+        // onto the new track (only the ones whose own path contains this waypoint).
+        const waypointZones = deployedWaypoints.find((wp) => wp.waypointId === waypointId)?.zones;
+        const movedExceptions: PacedTrainException[] =
+          panelSelectionMode === 'all'
+            ? rawTrainSchedule.paced.exceptions.map((pacedException) => {
+                if (!pacedException.path_and_schedule || pacedException.disabled) {
+                  return pacedException;
+                }
+
+                const occurrenceId = formatTrainScheduleIdToOccurrenceId(trainId, pacedException);
+                const occurrenceZone = waypointZones?.find((zone) => zone.trainId === occurrenceId);
+                if (!occurrenceZone) {
+                  // We don't move this occurrence. Its own path doesn't contain the dragged waypoint.
+                  return pacedException;
+                }
+
+                const occurrenceOwnStartTime = pacedException.start_time
+                  ? new Date(pacedException.start_time.value)
+                  : computeIndexedOccurrenceStartTime(
+                      new Date(rawTrainSchedule.start_time),
+                      Duration.parse(rawTrainSchedule.paced.interval),
+                      pacedException.occurrence_index!
+                    );
+                const occurrenceOffset = Duration.subtractDate(
+                  new Date(occurrenceZone.startTime),
+                  occurrenceOwnStartTime
+                );
+                const occurrenceSummary =
+                  findExceptionWithOccurrenceId(trainSchedule.paced.exceptions, occurrenceId)
+                    ?.summary ?? trainSchedule.summary;
+
+                return {
+                  ...pacedException,
+                  path_and_schedule: {
+                    ...pacedException.path_and_schedule,
+                    path: upsertPathStepTrack(
+                      pacedException.path_and_schedule.path,
+                      occurrenceSummary,
+                      operationalPoint,
+                      occurrenceOffset,
+                      track.name!
+                    ),
+                  },
+                };
+              })
+            : rawTrainSchedule.paced.exceptions;
+
+        // Clear exceptions that no longer differ from the updated model.
+        const {
+          exceptions: reconciledExceptions,
+          modifiedExceptions: exceptionsToUpdate,
+          exceptionsToDeleteIds,
+        } = checkChangeGroups(updatedModelTrainSchedule, rawTrainSchedule.paced, movedExceptions);
+
+        if (exceptionsToDeleteIds.length) {
+          await deleteExceptions(dispatch, exceptionsToDeleteIds);
+        }
+        if (exceptionsToUpdate.length) {
+          await updateExceptions(dispatch, exceptionsToUpdate, rawTrainSchedule.id);
+        }
+
+        await storeTrainSchedule(
           trainSchedule.id,
-          { ...rawTrainSchedule, path: newPath },
+          {
+            ...updatedModelTrainSchedule,
+            paced: { ...rawTrainSchedule.paced, exceptions: reconciledExceptions },
+          },
           dispatch,
           upsertTrainSchedules
         );
-
-        // 'all' mode also forces every occurrence with its own path_and_schedule exception
-        // onto the new track.
-        if (panelSelectionMode === 'all' && isPacedTrain(rawTrainSchedule)) {
-          const updatedExceptions: PacedTrainException[] = rawTrainSchedule.paced.exceptions.map(
-            (pacedException) =>
-              pacedException.path_and_schedule
-                ? {
-                    ...pacedException,
-                    path_and_schedule: {
-                      ...pacedException.path_and_schedule,
-                      path: upsertPathStepTrack(
-                        pacedException.path_and_schedule.path,
-                        simulationSummary,
-                        operationalPoint,
-                        occupancyZoneStartOffset,
-                        track.name!
-                      ),
-                    },
-                  }
-                : pacedException
-          );
-          const exceptionsToPersist = updatedExceptions.filter((e) => e.path_and_schedule);
-          if (exceptionsToPersist.length) {
-            await updateExceptions(dispatch, exceptionsToPersist, rawTrainSchedule.id);
-            upsertTrainSchedules([withPacedExceptions(updatedModel, updatedExceptions)]);
-          }
-        }
       }
     },
     [

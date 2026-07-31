@@ -148,7 +148,7 @@ export const formatTrainScheduleIdToOccurrenceId = (
   trainScheduleId: TrainScheduleId,
   exception: PacedTrainException
 ): OccurrenceId =>
-  exception.occurrence_index
+  exception.occurrence_index !== undefined
     ? formatTrainScheduleIdToIndexedOccurrenceId(trainScheduleId, exception.occurrence_index)
     : // TODO_EXCEPTION: remove `!` when using TrainSchedulingException type
       formatTrainScheduleIdToExceptionId(trainScheduleId, Number(exception.id!));
