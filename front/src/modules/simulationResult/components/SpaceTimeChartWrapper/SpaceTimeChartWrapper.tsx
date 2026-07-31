@@ -615,7 +615,13 @@ const SpaceTimeChartWrapper = ({
     if (!isTrainId(hoveredPathId)) return false;
     const hoveredTrain = projectedTrains.find((train) => train.id === hoveredPathId);
     if (!hoveredTrain) return false;
-    return canDragHoveredTrain({ panelSelectionMode, hoveredTrain, selectedTrainId });
+    return canDragHoveredTrain({
+      panelSelectionMode,
+      hoveredTrain,
+      selectedTrainId,
+      selectedTrainBy,
+      relevantExceptionType: 'start_time',
+    });
   }, [selectedTrainBy, hoveredItem, projectedTrains, panelSelectionMode, selectedTrainId]);
 
   const handlePan = useCallback(
