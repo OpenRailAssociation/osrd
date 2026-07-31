@@ -2,9 +2,11 @@ use fga::model::Relation as _;
 use futures::FutureExt;
 
 use crate::Group;
+use crate::Role;
 use crate::Subject;
 use crate::model::Project;
 use crate::model::ProjectGrant;
+use crate::v2::Actor;
 use crate::v2::Check;
 use crate::v2::Protected;
 
@@ -100,8 +102,39 @@ pub fn project_set_grant(subject: Subject, project: Project) -> Protected<()> {
         .with_check(Check::CanGiveSubjectProjectGrant(subject, project))
 }
 
+/// Revokes the (direct) grant a subject has on an [Project], if any
+///
+/// Returns `true` if a grant was revoked, `false` otherwise, making the operation idempotent.
+/// No transaction is setup as OpenFGA does not support them.
+pub fn project_revoke_grant(subject: Subject, project: Project) -> Protected<bool> {
+    // Revoking rules:
+    // Only admins can fully revoke grants
+    project_direct_grant(subject, project)
+        .map(move |openfga, grant| {
+            async move {
+                let Some(grant) = grant else {
+                    return Ok(false);
+                };
+
+                let mut delete = openfga.prepare_deletes();
+                match (subject, grant) {
+                    (Subject::User(user), ProjectGrant::Owner) => {
+                        delete.push(&Project::owner().tuple(&user, &project))
+                    }
+                    (Subject::Group(group), ProjectGrant::Owner) => delete
+                        .push(&Project::owner().tuple(Group::member().userset(&group), &project)),
+                };
+                delete.execute().await?;
+                Ok(true)
+            }
+            .boxed()
+        })
+        .with_check(Check::HasRole(Actor::Issuer, Role::Admin))
+}
+
 #[cfg(test)]
 mod tests {
+    use fga::Client;
     use std::collections::HashSet;
 
     use crate::User;
@@ -277,7 +310,106 @@ mod tests {
             group_effective_grant(&openfga, 2).await,
             Some(ProjectGrant::Owner)
         );
+    }
 
+    async fn user_revoke_grant(openfga: &Client, user_id: i64) -> bool {
+        openfga
+            .project_revoke_grant(Subject::user(user_id), Project(1))
+            .await
+    }
+
+    async fn group_revoke_grant(openfga: &Client, group_id: i64) -> bool {
+        openfga
+            .project_revoke_grant(Subject::group(group_id), Project(1))
+            .await
+    }
+
+    #[tokio::test]
+    // Revoking a non-existent project grant should fail
+    async fn project_revoke_no_op() {
+        let openfga = authz_client!();
+        assert!(!user_revoke_grant(&openfga, 1).await);
+        assert!(!group_revoke_grant(&openfga, 1).await);
+    }
+
+    // TODO
+    // Refactorize the two following tests using `rstest` when `project_set_grant` is done
+    #[tokio::test]
+    async fn project_revoke_grant_user_ok() {
+        let openfga = authz_client!();
+
+        assert_eq!(user_direct_grant(&openfga, 1).await, None);
+
+        openfga
+            .write_tuples(&[Project::owner().tuple(&User(1), &Project(1))])
+            .await
+            .unwrap();
+
+        assert_eq!(
+            user_direct_grant(&openfga, 1).await,
+            Some(ProjectGrant::Owner)
+        );
+        assert!(user_revoke_grant(&openfga, 1).await);
+        assert_eq!(user_direct_grant(&openfga, 1).await, None);
+    }
+
+    #[tokio::test]
+    async fn project_revoke_grant_group_ok() {
+        let openfga = authz_client!();
+
+        assert_eq!(group_direct_grant(&openfga, 1).await, None);
+
+        openfga
+            .write_tuples(
+                &[Project::owner().tuple(Group::member().userset(&Group(1)), &Project(1))],
+            )
+            .await
+            .unwrap();
+
+        assert_eq!(
+            group_direct_grant(&openfga, 1).await,
+            Some(ProjectGrant::Owner)
+        );
+        assert!(group_revoke_grant(&openfga, 1).await);
+        assert_eq!(group_direct_grant(&openfga, 1).await, None);
+    }
+
+    #[tokio::test]
+    // The inherited grants of a user on a project are not affected by revoking that user direct grants on the project
+    async fn project_revoke_grant_keep_effective() {
+        let openfga = authz_client!();
+
+        assert_eq!(user_direct_grant(&openfga, 1).await, None);
+        assert_eq!(group_direct_grant(&openfga, 1).await, None);
+
+        openfga
+            .prepare_writes()
+            .write(&Group::member().tuple(&User(1), &Group(1)))
+            .write(&Project::owner().tuple(&User(1), &Project(1)))
+            .write(&Project::owner().tuple(Group::member().userset(&Group(1)), &Project(1)))
+            .execute()
+            .await
+            .unwrap();
+
+        assert_eq!(
+            user_effective_grant(&openfga, 1).await,
+            Some(ProjectGrant::Owner)
+        );
+        assert_eq!(
+            group_effective_grant(&openfga, 1).await,
+            Some(ProjectGrant::Owner)
+        );
+
+        assert!(user_revoke_grant(&openfga, 1).await);
+
+        assert_eq!(
+            user_effective_grant(&openfga, 1).await,
+            Some(ProjectGrant::Owner)
+        );
+        assert_eq!(
+            group_effective_grant(&openfga, 1).await,
+            Some(ProjectGrant::Owner)
+        );
     }
 
     #[rstest::rstest]
@@ -342,6 +474,14 @@ mod tests {
             Check::SubjectExists(Subject::user(1)),
             Check::ProjectExists(Project(1)),
             Check::CanGiveSubjectProjectGrant(Subject::user(1), Project(1))
+        ]
+    )]
+    #[case::project_revoke_grant(
+        project_revoke_grant(Subject::user(1), Project(1)).checks,
+        &[
+            Check::SubjectExists(Subject::user(1)),
+            Check::ProjectExists(Project(1)),
+            Check::HasRole(Actor::Issuer, Role::Admin),
         ]
     )]
     #[tokio::test]
