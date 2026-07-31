@@ -21,6 +21,7 @@ import type {
 } from 'common/api/osrdEditoastApi';
 import type { Comfort, ConstraintDistribution } from 'common/api/osrdRailwayManagerApi';
 import Banner from 'common/Banner';
+import { useInfraID } from 'common/osrdContext';
 import useSpeedLimitTags from 'common/SpeedLimitTagSelector/useSpeedLimitTags';
 import { useSubCategoryContext } from 'common/SubCategoryContext';
 import isMainCategory, { checkCategoryWarning } from 'modules/rollingStock/helpers/category';
@@ -217,7 +218,8 @@ const ExpandedTrainForm = ({
   onItineraryOpened,
 }: ExpandedTrainFormProps) => {
   const { t } = useTranslation(['operational-studies', 'translation']);
-  const speedLimitTags = useSpeedLimitTags();
+  const infraID = useInfraID();
+  const speedLimitTags = useSpeedLimitTags(infraID);
   const categoryOptions = useCategoryOptions();
 
   const { filteredRollingStockList: rollingStocks } = useFilterRollingStock();

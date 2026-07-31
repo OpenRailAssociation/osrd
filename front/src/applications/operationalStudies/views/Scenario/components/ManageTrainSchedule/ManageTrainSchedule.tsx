@@ -12,7 +12,7 @@ import simulationSettings from 'assets/pictures/components/simulationSettings.sv
 import rollingStockPic from 'assets/pictures/components/train.svg';
 import { type Comfort, type LightRollingStockWithLiveries } from 'common/api/osrdEditoastApi';
 import { type MarkerInformation, MARKER_TYPE } from 'common/Map/components/ItineraryMarkers';
-import { useOsrdConfActions } from 'common/osrdContext';
+import { useInfraID, useOsrdConfActions } from 'common/osrdContext';
 import useSpeedLimitTags from 'common/SpeedLimitTagSelector/useSpeedLimitTags';
 import { useSubCategoryContext } from 'common/SubCategoryContext';
 import Tabs from 'common/Tabs';
@@ -94,7 +94,8 @@ const ManageTrainSchedule = () => {
   const constraintDistribution = useSelector(getConstraintDistribution);
   const startTime = useSelector(getStartTime);
 
-  const speedLimitTags = useSpeedLimitTags();
+  const infraID = useInfraID();
+  const speedLimitTags = useSpeedLimitTags(infraID);
   const { rollingStockComfort, rollingStock } = useStoreDataForRollingStockSelector({
     rollingStockId,
   });

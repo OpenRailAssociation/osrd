@@ -98,7 +98,7 @@ const SpeedSectionEditionLeftPanel = () => {
     });
   };
 
-  const speedLimitTags = useSpeedLimitTags();
+  const speedLimitTags = useSpeedLimitTags(infraID);
 
   const updateSpeedSectionExtensions = (
     extensions: SpeedSectionEntity['properties']['extensions']
