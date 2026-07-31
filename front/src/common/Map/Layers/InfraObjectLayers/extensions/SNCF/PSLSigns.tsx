@@ -5,7 +5,6 @@ import { Source } from 'react-map-gl/maplibre';
 
 import { MAP_URL } from 'common/Map/const';
 import type { Theme } from 'common/Map/theme';
-import { useInfraID } from 'common/osrdContext';
 
 import OrderedLayer from '../../../OrderedLayer';
 import type { LayerContext } from '../../../types';
@@ -14,6 +13,7 @@ import getMastLayerProps from '../../getMastLayerProps';
 
 type SNCF_PSL_SignsProps = {
   colors: Theme;
+  infraId: number | undefined;
   layerOrder?: number;
   filter: FilterSpecification;
 };
@@ -63,8 +63,7 @@ export function getPSLSignsLayerProps({
 }
 
 export default function SNCF_PSL_Signs(props: SNCF_PSL_SignsProps) {
-  const infraID = useInfraID();
-  const { colors, layerOrder, filter } = props;
+  const { colors, infraId, layerOrder, filter } = props;
 
   const signsParams: LayerProps = getPSLSignsLayerProps({
     sourceTable: 'psl_signs',
@@ -81,12 +80,12 @@ export default function SNCF_PSL_Signs(props: SNCF_PSL_SignsProps) {
     sourceTable: 'psl_signs',
   });
 
-  if (isNil(infraID)) return null;
+  if (isNil(infraId)) return null;
   return (
     <Source
       id="osrd_sncf_psl_signs_geo"
       type="vector"
-      url={`${MAP_URL}/layer/psl_signs/mvt/geo/?infra=${infraID}`}
+      url={`${MAP_URL}/layer/psl_signs/mvt/geo/?infra=${infraId}`}
     >
       <OrderedLayer {...mastsParams} layerOrder={layerOrder} filter={filter} />
       <OrderedLayer {...signsParams} layerOrder={layerOrder} filter={filter} />

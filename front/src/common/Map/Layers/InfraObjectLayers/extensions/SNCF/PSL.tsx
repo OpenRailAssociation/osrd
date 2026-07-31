@@ -214,7 +214,12 @@ const SNCF_PSL = ({ colors, layerOrder, punctualLayerOrder, highlightedArea }: S
           layerOrder={layerOrder}
         />
       </Source>
-      <SNCF_PSL_Signs colors={colors} layerOrder={punctualLayerOrder} filter={speedSectionFilter} />
+      <SNCF_PSL_Signs
+        colors={colors}
+        infraId={infraId}
+        layerOrder={punctualLayerOrder}
+        filter={speedSectionFilter}
+      />
     </>
   );
 };
