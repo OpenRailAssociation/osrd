@@ -152,7 +152,7 @@ export function buildSplitPoints({
       };
 
       return {
-        id: operationalPointId,
+        id: waypointId,
         position: operationalPointPosition,
         size: (tracks?.length || 0) * TRACK_HEIGHT_CONTAINER + DEFAULT_THEME.timeCaptionsSize,
         spaceTimeChartNode: (
