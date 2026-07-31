@@ -4,6 +4,7 @@ import {
   parseLocalDateTime,
   isArrivalDateInSearchTimeWindow,
   timeToLocaleStringRounded,
+  timeToMsSinceMidnight,
 } from 'utils/date';
 import { Duration } from 'utils/duration';
 
@@ -89,5 +90,17 @@ describe('timeToLocaleStringRounded', () => {
     expect(timeToLocaleStringRounded(new Duration({ hours: 25, minutes: 7 }), locale)).toEqual(
       '25:07'
     );
+  });
+});
+
+describe('timeToMsSinceMidnight', () => {
+  it('should convert hours and minutes to milliseconds since midnight', () => {
+    const result = timeToMsSinceMidnight({ hours: 8, minutes: 30 });
+    expect(result).toBe((8 * 60 + 30) * 60 * 1000);
+  });
+
+  it('should return 0 for midnight', () => {
+    const result = timeToMsSinceMidnight({ hours: 0, minutes: 0 });
+    expect(result).toBe(0);
   });
 });
