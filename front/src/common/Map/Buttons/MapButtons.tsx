@@ -65,6 +65,45 @@ const ZOOM_DEFAULT = 5;
 const ZOOM_DELTA = 1.5;
 const MAP_POPOVERS = { SEARCH: 'SEARCH', SETTINGS: 'SETTINGS', KEY: 'KEY' };
 
+// Only mounted when the caller doesn't supply its own zoomIn/zoomOut (some
+// standalone maps always do, and must not depend on OsrdContext).
+const ContextZoomButtons = ({
+  isNewButtons,
+  viewport,
+}: {
+  isNewButtons: boolean;
+  viewport: Viewport;
+}) => {
+  const { t } = useTranslation();
+  const dispatch = useAppDispatch();
+  const { updateViewport } = useMapSettingsActions();
+
+  const zoomIn = useCallback(() => {
+    dispatch(updateViewport({ zoom: (viewport.zoom || ZOOM_DEFAULT) + ZOOM_DELTA }));
+  }, [dispatch, updateViewport, viewport]);
+
+  const zoomOut = useCallback(() => {
+    dispatch(updateViewport({ zoom: (viewport.zoom || ZOOM_DEFAULT) - ZOOM_DELTA }));
+  }, [dispatch, updateViewport, viewport]);
+
+  return (
+    <>
+      <MapButton
+        onClick={zoomIn}
+        isNewButton={isNewButtons}
+        icon={<ZoomIn />}
+        tooltip={t('common.zoom-in')}
+      />
+      <MapButton
+        onClick={zoomOut}
+        isNewButton={isNewButtons}
+        icon={<ZoomOut />}
+        tooltip={t('common.zoom-out')}
+      />
+    </>
+  );
+};
+
 export default function MapButtons({
   map,
   resetPitchBearing,
@@ -83,8 +122,6 @@ export default function MapButtons({
   layersModalContainer,
 }: MapButtonsProps) {
   const { t } = useTranslation();
-  const dispatch = useAppDispatch();
-  const { updateViewport } = useMapSettingsActions();
   const { infraId, updateMapSettings, ...mapSettings } = useMapContext();
 
   const { isOpen, openModal } = useContext(ModalContext);
@@ -173,14 +210,6 @@ export default function MapButtons({
 
   useOutsideClick(mapButtonsRef, () => setOpenedPopover(undefined));
 
-  const zoomIn = useCallback(() => {
-    dispatch(updateViewport({ zoom: (viewport.zoom || ZOOM_DEFAULT) + ZOOM_DELTA }));
-  }, [dispatch, viewport]);
-
-  const zoomOut = useCallback(() => {
-    dispatch(updateViewport({ zoom: (viewport.zoom || ZOOM_DEFAULT) - ZOOM_DELTA }));
-  }, [dispatch, viewport]);
-
   return (
     <div ref={mapButtonsRef}>
       <div
@@ -188,18 +217,24 @@ export default function MapButtons({
           editor: !!editorProps,
         })}
       >
-        <MapButton
-          onClick={zoomInProps ?? zoomIn}
-          isNewButton={isNewButtons}
-          icon={<ZoomIn />}
-          tooltip={t('common.zoom-in')}
-        />
-        <MapButton
-          onClick={zoomOutProps ?? zoomOut}
-          isNewButton={isNewButtons}
-          icon={<ZoomOut />}
-          tooltip={t('common.zoom-out')}
-        />
+        {zoomInProps && zoomOutProps ? (
+          <>
+            <MapButton
+              onClick={zoomInProps}
+              isNewButton={isNewButtons}
+              icon={<ZoomIn />}
+              tooltip={t('common.zoom-in')}
+            />
+            <MapButton
+              onClick={zoomOutProps}
+              isNewButton={isNewButtons}
+              icon={<ZoomOut />}
+              tooltip={t('common.zoom-out')}
+            />
+          </>
+        ) : (
+          <ContextZoomButtons isNewButtons={isNewButtons} viewport={viewport} />
+        )}
         <MapButton
           onClick={resetPitchBearing}
           isNewButton={isNewButtons}
