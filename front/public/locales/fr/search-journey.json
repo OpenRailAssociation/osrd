@@ -1,6 +1,7 @@
 {
   "appName": "Expression de besoins",
   "consist": {
+    "unavailable": "Indisponible",
     "title": "Convoi"
   },
   "destination": {
@@ -15,6 +16,7 @@
   },
   "trainPath": {
     "ch": "CH",
-    "ci": "CI"
+    "ci": "CI",
+    "time": "Heure"
   }
 }

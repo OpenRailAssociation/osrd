@@ -26,6 +26,7 @@ const searchJourneyOpFromSearchResult = (
     id: searchResult.obj_id,
     uic: searchResult.uic,
     mainCode: searchResult.main_code,
+    countryCode: searchResult.country_code,
     secondaryCode: searchResult.secondary_code,
     name: searchResult.name,
     coordinates: searchResult.geographic!.coordinates as [number, number],
