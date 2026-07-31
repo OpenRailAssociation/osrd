@@ -9,7 +9,7 @@ import type { ManageTrainSchedulePathProperties } from 'applications/operational
 import type {
   CoreIncompatibleConstraints,
   CorePathfindingInputError,
-  CorePathfindingResultSuccess,
+  CorePathfindingResult,
   PostInfraByInfraIdPathPropertiesApiArg,
   RelatedOperationalPoint,
 } from 'common/api/osrdEditoastApi';
@@ -158,7 +158,7 @@ const usePathfinding = ({
 
   const populateStoreWithPathfinding = async (
     pathStepsInput: PathStep[],
-    pathResult: CorePathfindingResultSuccess,
+    pathResult: CorePathfindingResult,
     incompatibleConstraints?: CoreIncompatibleConstraints
   ) => {
     const pathPropertiesParams: PostInfraByInfraIdPathPropertiesApiArg = {

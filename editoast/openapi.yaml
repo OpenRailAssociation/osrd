@@ -5893,10 +5893,10 @@ components:
           incompatible_constraints:
             $ref: '#/components/schemas/CoreIncompatibleConstraints'
           relaxed_constraints_path:
-            $ref: '#/components/schemas/CorePathfindingResultSuccess'
-    CorePathfindingResultSuccess:
+            $ref: '#/components/schemas/CorePathfindingResult'
+    CorePathfindingResult:
       type: object
-      description: A successful pathfinding result. This is also used for STDCM response.
+      description: A pathfinding result. This is also used for STDCM response.
       required:
       - path
       - length
@@ -13255,7 +13255,7 @@ components:
     PathfindingResult:
       oneOf:
       - allOf:
-        - $ref: '#/components/schemas/CorePathfindingResultSuccess'
+        - $ref: '#/components/schemas/CorePathfindingResult'
         - type: object
           required:
           - status
@@ -15661,7 +15661,7 @@ components:
             type: string
             format: date-time
           pathfinding_result:
-            $ref: '#/components/schemas/CorePathfindingResultSuccess'
+            $ref: '#/components/schemas/CorePathfindingResult'
           simulation:
             $ref: '#/components/schemas/SimulationResponseSuccess'
           status:

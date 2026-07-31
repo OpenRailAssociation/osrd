@@ -17,7 +17,6 @@ use common::units::millisecond;
 use core_client::AsCoreRequest;
 use core_client::CoreClient;
 use core_client::pathfinding::InvalidPathItem;
-use core_client::pathfinding::PathfindingResultSuccess;
 use core_client::stdcm::ConsistConfiguration;
 use core_client::stdcm::ConsistSchedule;
 use core_client::stdcm::Request as StdcmRequest;
@@ -76,7 +75,7 @@ use editoast_models::timetable::Timetable;
 pub(in crate::views) enum StdcmResponse {
     Success {
         simulation: SimulationResponseSuccess,
-        pathfinding_result: PathfindingResultSuccess,
+        pathfinding_result: core_client::pathfinding::PathfindingResult,
         departure_time: DateTime<Utc>,
     },
     PathNotFound,
@@ -736,8 +735,8 @@ mod tests {
         }
     }
 
-    fn pathfinding_result_success() -> PathfindingResultSuccess {
-        PathfindingResultSuccess {
+    fn pathfinding_result_success() -> core_client::pathfinding::PathfindingResult {
+        core_client::pathfinding::PathfindingResult {
             path: TrainPath {
                 blocks: vec![],
                 routes: vec![],
