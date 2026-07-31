@@ -28,21 +28,15 @@ import type { BaseTrainProjection, ProjectionWaypoint, TrainSpaceTimeData } from
 import { EXCEPTION_SUFFIX } from './helpers/makeProjectedTrains';
 import { NO_TRACK_SPECIFIED_SYMBOL, sortTracks } from './helpers/sortTracks';
 import { batchFetchTrackOccupancy } from './helpers/utils';
-import { getMovableOccupancyZone, type MovableOccupancyZone } from './helpers/zones';
+import {
+  getMovableOccupancyZone,
+  type MovableOccupancyZone,
+  type DeployedWaypoint,
+} from './helpers/zones';
 
 type AsyncState<T> = { type: 'loading'; data?: T; abort?: () => void } | { type: 'ok'; data: T };
 type ZonesState = AsyncState<MovableOccupancyZone[]>;
 type OperationalPointState = { selected: boolean; zones: ZonesState };
-
-export type DeployedWaypoint = {
-  waypointId: string;
-  operationalPointId: string;
-  operationalPointPosition: number;
-  operationalPointName?: string;
-  zones?: MovableOccupancyZone[];
-  tracks?: Track[];
-  loading?: boolean;
-};
 
 type StationLabel = { type?: 'label'; label: string } | { type: 'requestedPoint' };
 function extractStationLabel(

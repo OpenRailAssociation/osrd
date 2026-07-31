@@ -1,4 +1,4 @@
-import type { OccupancyZone } from '@osrd-project/ui-charts';
+import type { OccupancyZone, Track } from '@osrd-project/ui-charts';
 
 import {
   type PacedTrainException,
@@ -16,6 +16,16 @@ export type MovableOccupancyZone = Omit<OccupancyZone, 'curveStyle'> & {
   dbEndTime: number;
   trainId: TrainId;
   exceptionType?: CurveStyleExceptionType;
+};
+
+export type DeployedWaypoint = {
+  waypointId: string;
+  operationalPointId: string;
+  operationalPointPosition: number;
+  operationalPointName?: string;
+  zones?: MovableOccupancyZone[];
+  tracks?: Track[];
+  loading?: boolean;
 };
 
 export type OccupancyZoneReference = {

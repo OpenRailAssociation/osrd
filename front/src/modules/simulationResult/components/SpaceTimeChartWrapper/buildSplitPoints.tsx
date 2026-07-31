@@ -6,7 +6,6 @@ import {
   TrackOccupancyManchette,
   WaypointComponent,
   type SplitPoint,
-  type Track,
 } from '@osrd-project/ui-charts';
 import { keyBy, sortBy } from 'lodash';
 
@@ -18,17 +17,7 @@ import type { SelectedTrain } from 'reducers/simulationResults/types';
 import { extractTrainScheduleIdFromOccurrenceId, isOccurrenceId } from 'utils/trainId';
 
 import type { PanelSelectionMode } from './CurveSelectionSidePanel';
-import type { MovableOccupancyZone } from './helpers/zones';
-
-type OccupancyZonesLayers = {
-  waypointId: string;
-  operationalPointId: string;
-  operationalPointPosition: number;
-  operationalPointName?: string;
-  zones?: MovableOccupancyZone[];
-  tracks?: Track[];
-  loading?: boolean;
-};
+import type { MovableOccupancyZone, DeployedWaypoint } from './helpers/zones';
 
 type Path = {
   id: string;
@@ -39,7 +28,7 @@ type Path = {
 };
 
 type BuildSplitPointsProps = {
-  occupancyZonesLayers: OccupancyZonesLayers[] | undefined;
+  occupancyZonesLayers: DeployedWaypoint[] | undefined;
   paths: Path[];
   activeWaypointRef?: React.RefObject<HTMLDivElement | null>;
   selectedTrain?: SelectedTrain;

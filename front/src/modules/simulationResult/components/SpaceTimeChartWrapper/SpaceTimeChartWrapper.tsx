@@ -82,6 +82,7 @@ import {
   parseOccupancyZonePathId,
   formatOccupancyZonePathId,
   type MovableOccupancyZone,
+  type DeployedWaypoint,
   type OccupancyZoneReference,
 } from './helpers/zones';
 import ProjectionLoadingMessage from './ProjectionLoadingMessage';
@@ -95,15 +96,7 @@ type SpaceTimeChartWrapperBaseProps = {
   trainScheduleProjections: TrainSpaceTimeData[];
   conflicts?: Conflict[];
   workSchedules?: PostWorkSchedulesProjectPathApiResponse;
-  trackOccupancyDiagramsData?: {
-    waypointId: string;
-    operationalPointId: string;
-    operationalPointPosition: number;
-    operationalPointName?: string;
-    zones?: MovableOccupancyZone[];
-    tracks?: Track[];
-    loading?: boolean;
-  }[];
+  trackOccupancyDiagramsData?: DeployedWaypoint[];
   onCloseOccupancyLayer?: (waypointId: string) => void;
   projectionLoaderData: {
     totalTrains: number;
