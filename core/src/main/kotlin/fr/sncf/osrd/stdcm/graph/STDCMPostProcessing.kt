@@ -4,10 +4,12 @@ import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.envelope_sim.Comfort
 import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue
 import fr.sncf.osrd.path.implementations.buildTrainPathFromBlockRanges
+import fr.sncf.osrd.path.interfaces.BlockRange
 import fr.sncf.osrd.path.interfaces.TrainPath
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal.OPEN
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal.SHORT_SLIP_STOP
-import fr.sncf.osrd.stdcm.STDCMResult
+import fr.sncf.osrd.stdcm.STDCMCompleteResult
+import fr.sncf.osrd.stdcm.STDCMPartialResult
 import fr.sncf.osrd.stdcm.infra_exploration.StepTracker
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface
 import fr.sncf.osrd.train.RollingStock
@@ -15,6 +17,7 @@ import fr.sncf.osrd.train.TrainStop
 import fr.sncf.osrd.utils.DistanceRangeMap
 import fr.sncf.osrd.utils.arePositionsEqual
 import fr.sncf.osrd.utils.isTimeStrictlyPositive
+import fr.sncf.osrd.utils.toGeoPoint
 import fr.sncf.osrd.utils.units.meters
 import io.opentelemetry.api.trace.SpanKind
 import io.opentelemetry.instrumentation.annotations.WithSpan
@@ -27,35 +30,25 @@ import kotlin.math.min
  */
 class STDCMPostProcessing(private val graph: STDCMGraph) {
     /**
-     * Builds the STDCM result object from the raw pathfinding result. This is the only non-private
-     * method of this class, the rest is implementation detail.
+     * Builds the STDCM result object from the raw pathfinding result. This is called when STDCM
+     * finds a path. We're gathering all the necessary information for the response.
      */
     @WithSpan(value = "STDCM post processing", kind = SpanKind.SERVER)
-    fun makeResult(
+    fun makeCompleteResult(
         infra: FullInfra,
-        path: Result,
+        path: PathResult,
         standardAllowance: AllowanceValue?,
         rollingStocks: List<RollingStock>,
         timeStep: Double,
         comfort: Comfort?,
         maxRunTime: Double,
         blockAvailability: BlockAvailabilityInterface,
-    ): STDCMResult? {
+    ): STDCMCompleteResult? {
         val edges = path.edges
         val lastExplorer = edges.last().infraExplorer
-        val blockRanges = lastExplorer.getAllBlocks().toList()
         val routes = lastExplorer.getExploredRoutes()
         val seenSteps = lastExplorer.getStepTracker().getSeenSteps().toList()
-        val trainPath =
-            buildTrainPathFromBlockRanges(
-                infra.rawInfra,
-                infra.blockInfra,
-                blockRanges,
-                seenSteps.mapNotNull { step ->
-                    if (step.isBacktracking) step.travelledPathOffset else null
-                },
-                routes = routes,
-            )
+        val trainPath = lastExplorer.buildFullPath(infra.rawInfra, infra.blockInfra)
 
         val updatedTimeData = computeTimeData(edges)
         val stops = makeStops(edges, updatedTimeData)
@@ -78,21 +71,20 @@ class STDCMPostProcessing(private val graph: STDCMGraph) {
                 updatedTimeData,
             )
         val res =
-            STDCMResult(
-                withAllowance.envelope,
+            STDCMCompleteResult(
                 trainPath,
-                path.edges.last().infraExplorerWithNewEnvelope.getFullRollingStockRangeMap()
-                    as DistanceRangeMap<RollingStock>,
-                routes,
-                updatedTimeData.departureTime,
-
-                // Allow us to display OP, a hack that will be fixed
-                // after the redesign of simulation data models
-                makePathStops(stops, trainPath),
                 seenSteps.map { it.travelledPathOffset },
                 seenSteps.mapIndexedNotNull { index, step ->
                     if (step.isBacktracking) index else null
                 },
+                withAllowance.envelope,
+                path.edges.last().infraExplorerWithNewEnvelope.getFullRollingStockRangeMap()
+                    as DistanceRangeMap<RollingStock>,
+                routes,
+                updatedTimeData.departureTime,
+                // Allow us to display OP, a hack that will be fixed
+                // after the redesign of simulation data models
+                makePathStops(stops, trainPath),
                 withAllowance.engineeringAllowanceRanges,
             )
         return if (res.envelope.totalTime > maxRunTime) {
@@ -100,6 +92,56 @@ class STDCMPostProcessing(private val graph: STDCMGraph) {
             // as we only check the time at the start of an edge when exploring the graph
             null
         } else res
+    }
+
+    /**
+     * Builds the STDCM Partial result object from the last node explored. This is called when STDCM
+     * doesn't find a path. We're gathering all the necessary information for the response.
+     */
+    fun makePartialResult(
+        infra: FullInfra,
+        lastNode: STDCMNode,
+    ): STDCMPartialResult {
+        val lastExplorer = lastNode.infraExplorer
+        val reachedSteps =
+            lastExplorer.getStepTracker().iterateReachedStepsBackwards().toList().asReversed()
+        val predecessorBlocks = lastExplorer.getPredecessorBlocks().toList()
+        val blockRanges = predecessorBlocks.ifEmpty {
+            val currentBlockRange = lastExplorer.getCurrentBlockRange()
+            listOf(
+                BlockRange(
+                    currentBlockRange.value,
+                    currentBlockRange.objectBegin,
+                    currentBlockRange.objectEnd,
+                    currentBlockRange.pathBegin,
+                    currentBlockRange.pathEnd,
+                    currentBlockRange.objectLength,
+                )
+            )
+        }
+        // TODO: Send only simulated routes, and not all explored ones
+        val trainPath =
+            buildTrainPathFromBlockRanges(
+                infra.rawInfra,
+                infra.blockInfra,
+                blockRanges,
+                reachedSteps.mapNotNull { step ->
+                    if (step.isBacktracking) step.travelledPathOffset else null
+                },
+                lastExplorer.getExploredRoutes(),
+            )
+        val earliestReachableTime = lastNode.timeData.earliestReachableTime
+        val geoPoint =
+            lastNode.toGeoPoint(infra.rawInfra, infra.blockInfra, useLocationOnEdge = true)
+        return STDCMPartialResult(
+            trainPath,
+            reachedSteps.map { it.travelledPathOffset },
+            reachedSteps.mapIndexedNotNull { index, step ->
+                if (step.isBacktracking) index else null
+            },
+            earliestReachableTime,
+            geoPoint,
+        )
     }
 
     /**

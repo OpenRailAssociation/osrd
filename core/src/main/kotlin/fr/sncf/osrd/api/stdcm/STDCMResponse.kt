@@ -22,7 +22,26 @@ class STDCMSuccess(
     @Json(name = "departure_time") var departureTime: ZonedDateTime,
 ) : STDCMResponse
 
-class PathNotFound : STDCMResponse
+class LastReachedOperationalPoint(
+    var id: String,
+    var coordinates: Point,
+    @Json(name = "arrival_time") var arrivalTime: ZonedDateTime,
+)
+
+class ConflictingWorkSchedule(
+    var id: String,
+    @Json(name = "last_op_id") var lastOPId: String,
+)
+
+class PathNotFound(
+    @Json(name = "most_blocking_work_schedules")
+    var mostBlockingWorkSchedules: List<ConflictingWorkSchedule>,
+    @Json(name = "nearest_to_destination_work_schedules")
+    var nearestToDestinationWorkSchedules: List<ConflictingWorkSchedule>,
+    @Json(name = "partial_path") var partialPath: PathfindingBlockResponse? = null,
+    @Json(name = "last_reached_operational_point")
+    var lastReachedOperationalPoint: LastReachedOperationalPoint? = null,
+) : STDCMResponse
 
 val polymorphicSTDCMResponseAdapter: PolymorphicJsonAdapterFactory<STDCMResponse> =
     PolymorphicJsonAdapterFactory.of(STDCMResponse::class.java, "status")

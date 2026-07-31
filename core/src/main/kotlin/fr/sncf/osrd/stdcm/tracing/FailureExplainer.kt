@@ -52,15 +52,42 @@ class FailureExplainer(
         ): ConflictReport {
             val remainingTime = parentNode.remainingTimeEstimation
             val travelTime = parentNode.timeData.totalRunningTime
-            val geoPoint = parentNode.toGeoPoint(rawInfra, blockInfra)
-            val trainPath = parentNode.infraExplorer.buildFullPath(rawInfra, blockInfra)
-            val lastOPName =
-                trainPath
+            val geoPoint = parentNode.toGeoPoint(rawInfra, blockInfra, useLocationOnEdge = true)
+            val infraExplorer = parentNode.infraExplorer
+            val reachedSteps =
+                infraExplorer.getStepTracker().iterateReachedStepsBackwards().toList().asReversed()
+            val predecessorBlocks = infraExplorer.getPredecessorBlocks().toList()
+            val blockRanges = predecessorBlocks.ifEmpty {
+                val currentBlockRange = infraExplorer.getCurrentBlockRange()
+                listOf(
+                    BlockRange(
+                        currentBlockRange.value,
+                        currentBlockRange.objectBegin,
+                        currentBlockRange.objectEnd,
+                        currentBlockRange.pathBegin,
+                        currentBlockRange.pathEnd,
+                        currentBlockRange.objectLength,
+                    )
+                )
+            }
+            // TODO: Send only simulated routes, and not all explored ones
+            val reachedTrainPath =
+                buildTrainPathFromBlockRanges(
+                    parentNode.graph!!.rawInfra,
+                    parentNode.graph.blockInfra,
+                    blockRanges,
+                    reachedSteps.mapNotNull { step ->
+                        if (step.isBacktracking) step.travelledPathOffset else null
+                    },
+                    infraExplorer.getExploredRoutes(),
+                )
+            val lastOPId =
+                reachedTrainPath
                     .getOperationalPointParts()
                     .asSequence()
-                    .mapNotNull { rawInfra.getOperationalPointPartProps(it.value)["identifier"] }
-                    .lastOrNull()
-            val geoLineString = trainPath.getGeo()
+                    .map { rawInfra.getOperationalPointPartOpId(it.value) }
+                    .last()
+            val geoLineString = reachedTrainPath.getGeo()
             val pathGeometry =
                 RJSLineString(
                     "LineString",
@@ -119,7 +146,7 @@ class FailureExplainer(
         val source: RequirementId,
         val lat: Double,
         val lon: Double,
-        val lastOPName: String?,
+        val lastOPId: String,
         @Json(name = "path_geometry") val pathGeometry: RJSLineString,
     )
 
