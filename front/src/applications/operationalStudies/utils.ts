@@ -3,7 +3,7 @@ import { type Dictionary, isEqual, omit } from 'lodash';
 
 import type {
   OperationalPointReference,
-  CorePathfindingResultSuccess,
+  CorePathfindingResult,
   PathItemLocation,
   PathProperties,
   RelatedOperationalPoint,
@@ -298,7 +298,7 @@ export const preparePathPropertiesData = (
     geometry,
     geom_projection,
   }: PathProperties,
-  { path_item_positions, length }: CorePathfindingResultSuccess,
+  { path_item_positions, length }: CorePathfindingResult,
   trainSchedulePath: TrainSchedule['path'],
   t: TFunction<'operational-studies'>,
   trackSectionsById?: Record<string, TrackSection>

@@ -390,7 +390,6 @@ mod tests {
     use authz::RollingStockGrant;
     use axum::http::StatusCode;
     use core_client::mocking::MockingClient;
-    use core_client::pathfinding::PathfindingResultSuccess;
     use core_client::pathfinding::TrainPath;
     use diesel::data_types::PgInterval;
     use schemas::infra::LevelCrossingPart;
@@ -453,8 +452,8 @@ mod tests {
         assert!(result.is_none());
     }
 
-    fn pathfinding_result_success() -> PathfindingResultSuccess {
-        PathfindingResultSuccess {
+    fn pathfinding_result_success() -> core_client::pathfinding::PathfindingResult {
+        core_client::pathfinding::PathfindingResult {
             path: TrainPath {
                 blocks: vec![],
                 routes: vec![],

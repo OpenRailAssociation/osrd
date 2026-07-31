@@ -11,7 +11,7 @@ import usePathOps from 'applications/operationalStudies/hooks/usePathOps';
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import type { PathPropertiesFormatted } from 'applications/operationalStudies/types';
 import type {
-  CorePathfindingResultSuccess,
+  CorePathfindingResult,
   RelatedOperationalPoint,
   TrainSchedule,
 } from 'common/api/osrdEditoastApi';
@@ -34,7 +34,7 @@ const MAP_ID = 'simulation-result-map';
 type SimulationResultMapProps = {
   pathSteps?: TrainSchedule['path'];
   pathProperties?: PathPropertiesFormatted;
-  pathfindingResults?: CorePathfindingResultSuccess;
+  pathfindingResults?: CorePathfindingResult;
   setMapCanvas?: (mapCanvas: string) => void;
 };
 
@@ -85,7 +85,7 @@ const SimulationResultMap = ({
       steps: TrainSchedule['path'],
       matchedOps: Map<string, RelatedOperationalPoint | null>,
       simulatedPathProperties?: PathPropertiesFormatted,
-      simulatedPath?: CorePathfindingResultSuccess
+      simulatedPath?: CorePathfindingResult
     ) => {
       const pathPropertiesOps = simulatedPathProperties?.operationalPoints;
       // 1. Get path steps track ids to fetch their track metadata

@@ -3,8 +3,8 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import type { PathPropertiesFormatted } from 'applications/operationalStudies/types';
 import type {
-  CorePathfindingResultSuccess,
   LightRollingStock,
+  PathfindingResult,
   ReceptionSignal,
   SimulationResponseSuccess,
 } from 'common/api/osrdEditoastApi';
@@ -23,13 +23,13 @@ import useUpdateTimesStopsTable from './hooks/useUpdateTimesStopsTable';
 import TimesStopsTable from './TimesStopsTable';
 import {
   type CellUpdate,
+  type MarginValue,
   type PendingEdit,
   type PropagationMode,
-  type StopPropagationMode,
-  type MarginValue,
-  type TimesStopsRow,
-  type TimeFillMode,
   type RequestedTimeField,
+  type StopPropagationMode,
+  type TimeFillMode,
+  type TimesStopsRow,
 } from './types';
 
 type TimeStopsTableWrapperProps = {
@@ -39,7 +39,7 @@ type TimeStopsTableWrapperProps = {
   trainSchedulesWithDetails: TrainScheduleWithDetails[];
   simulatedTrain?: SimulationResponseSuccess['final_output'];
   simulatedBaseTrain?: SimulationResponseSuccess['base'];
-  simulatedPath?: CorePathfindingResultSuccess;
+  simulatedPath?: PathfindingResult;
   simulatedPathItemTimes?: Extract<SimulationSummary, { isValid: true }>['pathItemTimes'];
   simulatedPathItemRespect?: Extract<SimulationSummary, { isValid: true }>['pathItemRespect'];
   operationalPointsOnPath?: PathPropertiesFormatted['operationalPoints'];
