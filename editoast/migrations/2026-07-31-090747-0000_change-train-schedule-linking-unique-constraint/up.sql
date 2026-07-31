@@ -1,0 +1,7 @@
+ALTER TABLE train_schedule_linking
+DROP CONSTRAINT train_schedule_linking_timetable_id_source_train_schedule_i_key,
+DROP CONSTRAINT train_schedule_linking_timetable_id_target_train_schedule_i_key,
+ADD CONSTRAINT unique_source UNIQUE NULLS NOT DISTINCT (timetable_id, source_train_schedule_id, source_occurrence_index, source_added_exception_id, source_train_schedule_instance_index),
+ADD CONSTRAINT unique_target UNIQUE NULLS NOT DISTINCT (timetable_id, target_train_schedule_id, target_occurrence_index, target_added_exception_id, target_train_schedule_instance_index);
+
+-- Add source_train_schedule_instance_index and target_train_schedule_instance_index to the UNIQUE constraints, with custom names
