@@ -5,10 +5,7 @@ import { useSelector } from 'react-redux';
 
 import { applyPathStepWeight } from 'applications/operationalStudies/helpers/applyPathStepWeight';
 import { upsertTrackOffsetPathItemsInWaypoints } from 'applications/operationalStudies/helpers/upsertTrackOffsetPathItemsInWaypoints';
-import type {
-  CorePathfindingResultSuccess,
-  TrainScheduleResponse,
-} from 'common/api/osrdEditoastApi';
+import type { CorePathfindingResult, TrainScheduleResponse } from 'common/api/osrdEditoastApi';
 import type { ProjectionWaypoint, ProjectionData } from 'modules/simulationResult/types';
 import { getProjectionType } from 'reducers/simulationResults/selectors';
 
@@ -23,7 +20,7 @@ const useGetProjectedTrainOperationalPoints = ({
   infraId: number;
   timetableId: number | undefined;
   path?: TrainScheduleResponse['path'];
-  pathfinding?: CorePathfindingResultSuccess;
+  pathfinding?: CorePathfindingResult;
   projectedOperationalPoints?: ProjectionData['operationalPoints'];
 }) => {
   const { t } = useTranslation('operational-studies');

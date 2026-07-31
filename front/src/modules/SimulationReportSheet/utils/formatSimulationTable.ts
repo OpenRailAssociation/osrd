@@ -1,7 +1,7 @@
 import type { Style } from '@react-pdf/types';
 
 import type { OperationalPointWithTimeAndSpeed } from 'applications/operationalStudies/types';
-import type { CorePathfindingResultSuccess } from 'common/api/osrdEditoastApi';
+import type { CorePathfindingResult } from 'common/api/osrdEditoastApi';
 import { timeToLocaleStringRounded } from 'utils/date';
 import { addDurationToDate, Duration } from 'utils/duration';
 import { kgToT } from 'utils/physics';
@@ -58,7 +58,7 @@ export const getRowStyle = (
 
 export const formatOperationalStudiesDataForSimulationTable = (
   operationalPointsList: OperationalPointWithTimeAndSpeed[],
-  pathItemPositions: CorePathfindingResultSuccess['path_item_positions'],
+  pathItemPositions: CorePathfindingResult['path_item_positions'],
   rollingStock: { mass: number; name: string },
   dateTimeLocale: Intl.Locale
 ) =>

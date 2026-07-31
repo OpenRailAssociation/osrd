@@ -4,7 +4,7 @@ import { Page, Text, Image, Document, View } from '@react-pdf/renderer';
 import type { TFunction } from 'i18next';
 
 import type { OperationalPointWithTimeAndSpeed } from 'applications/operationalStudies/types';
-import type { CorePathfindingResultSuccess } from 'common/api/osrdEditoastApi';
+import type { CorePathfindingResult } from 'common/api/osrdEditoastApi';
 import { timeToLocaleStringRounded, useDateTimeLocale } from 'utils/date';
 import { msToKmh, kgToT } from 'utils/physics';
 
@@ -16,7 +16,7 @@ import type { RouteTableRow, SimulationSheetData } from './types';
 import { formatOperationalStudiesDataForSimulationTable } from './utils/formatSimulationTable';
 
 type SimulationReportSheetProps = {
-  path: CorePathfindingResultSuccess;
+  path: CorePathfindingResult;
   scenarioData: { name: string; infraName: string };
   trainData: SimulationSheetData;
   mapCanvas?: string;

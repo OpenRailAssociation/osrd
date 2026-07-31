@@ -1,6 +1,6 @@
 import type { TFunction } from 'i18next';
 
-import type { CorePathfindingResultSuccess, TrainSchedule } from 'common/api/osrdEditoastApi';
+import type { CorePathfindingResult, TrainSchedule } from 'common/api/osrdEditoastApi';
 import type { PathWaypoint, ProjectionWaypoint } from 'modules/simulationResult/types';
 
 /**
@@ -9,21 +9,21 @@ import type { PathWaypoint, ProjectionWaypoint } from 'modules/simulationResult/
 export function upsertTrackOffsetPathItemsInWaypoints(
   type: 'projection',
   path: TrainSchedule['path'],
-  pathItemsPositions: CorePathfindingResultSuccess['path_item_positions'],
+  pathItemsPositions: CorePathfindingResult['path_item_positions'],
   operationalPoints: ProjectionWaypoint[],
   t: TFunction<'operational-studies'>
 ): ProjectionWaypoint[];
 export function upsertTrackOffsetPathItemsInWaypoints(
   type: 'path',
   path: TrainSchedule['path'],
-  pathItemsPositions: CorePathfindingResultSuccess['path_item_positions'],
+  pathItemsPositions: CorePathfindingResult['path_item_positions'],
   operationalPoints: PathWaypoint[],
   t: TFunction<'operational-studies'>
 ): PathWaypoint[];
 export function upsertTrackOffsetPathItemsInWaypoints(
   type: 'projection' | 'path',
   path: TrainSchedule['path'],
-  pathItemsPositions: CorePathfindingResultSuccess['path_item_positions'],
+  pathItemsPositions: CorePathfindingResult['path_item_positions'],
   operationalPoints: (ProjectionWaypoint | PathWaypoint)[],
   t: TFunction<'operational-studies'>
 ): (ProjectionWaypoint | PathWaypoint)[] {

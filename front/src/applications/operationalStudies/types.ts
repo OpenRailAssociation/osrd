@@ -4,7 +4,7 @@ import type {
   CoreIncompatibleConstraints,
   TrainSchedule,
   PathProperties,
-  CorePathfindingResultSuccess,
+  CorePathfindingResult,
   SimulationResponse,
   SimulationResponseSuccess,
   MacroNodeForm,
@@ -65,7 +65,7 @@ export type ManageTrainSchedulePathProperties = {
   geometry: NonNullable<PathProperties['geometry']>;
   suggestedOperationalPoints: SuggestedOP[];
   length: number;
-  trackSectionRanges: NonNullable<CorePathfindingResultSuccess['path']['track_section_ranges']>;
+  trackSectionRanges: NonNullable<CorePathfindingResult['path']['track_section_ranges']>;
   incompatibleConstraints?: CoreIncompatibleConstraints;
 };
 
@@ -138,7 +138,7 @@ export type SimulationResults =
       train: Train;
       rollingStock: RollingStockWithLiveries;
       simulation: SimulationResponseSuccess;
-      path: CorePathfindingResultSuccess;
+      path: CorePathfindingResult;
       pathProperties: PathPropertiesFormatted;
       powerRestrictions: LayerData<PowerRestrictionValues>[];
     };
@@ -189,7 +189,7 @@ export type PathProjectionResult = {
 } & (
   | {
       pathfindingStatus: 'succeeded';
-      pathfinding: CorePathfindingResultSuccess;
+      pathfinding: CorePathfindingResult;
       geometry: PathProperties['geometry'];
       projectingOnSimulatedPathException: boolean | undefined;
     }
