@@ -67,10 +67,10 @@ const LayersModal = ({
 }: LayersModalProps) => {
   const { t } = useTranslation();
 
-  const { layersSettings, updateMapSettings } = useMapContext();
+  const { infraId, layersSettings, updateMapSettings } = useMapContext();
   const [selectedLayers, setSelectedLayers] = useState<LayersSettings>(layersSettings);
 
-  const speedLimitTags = useSpeedLimitTags();
+  const speedLimitTags = useSpeedLimitTags(infraId);
   const DEFAULT_SPEED_LIMIT_TAG = useMemo(() => t('mapSettings.noSpeedLimitByTag'), [t]);
 
   const speedLimitOptions = useMemo(

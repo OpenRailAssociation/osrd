@@ -12,6 +12,7 @@ import { useTranslation } from 'react-i18next';
 
 import type { CategoryColors } from 'applications/operationalStudies/types';
 import type { LightRollingStockWithLiveries, SubCategory } from 'common/api/osrdEditoastApi';
+import { useInfraID } from 'common/osrdContext';
 import useSpeedLimitTags from 'common/SpeedLimitTagSelector/useSpeedLimitTags';
 import useStoreDataForRollingStockSelector from 'modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector';
 import isMainCategory from 'modules/rollingStock/helpers/category';
@@ -110,7 +111,8 @@ const ItineraryModalFormHeader = ({
   };
 
   // Composition code/speed limit by tag
-  const speedLimitTags = useSpeedLimitTags();
+  const infraID = useInfraID();
+  const speedLimitTags = useSpeedLimitTags(infraID);
 
   // Train schedule name error
   const [isNameBlurred, setIsNameBlurred] = useState(false);

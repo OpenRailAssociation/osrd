@@ -5,7 +5,6 @@ import { uniq } from 'lodash';
 import { useTranslation } from 'react-i18next';
 
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import { useInfraID } from 'common/osrdContext';
 import { setFailure } from 'reducers/main';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
@@ -17,11 +16,9 @@ import { castErrorToFailure } from 'utils/error';
  * some speed limit tags should be available for users (stored in the stdcm
  * environment configuration)
  */
-const useSpeedLimitTags = () => {
+const useSpeedLimitTags = (infraID: number | undefined) => {
   const dispatch = useAppDispatch();
   const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTrainSchedule' });
-
-  const infraID = useInfraID();
 
   const { data: speedLimitsTagsByInfraId = [], error } =
     osrdEditoastApi.endpoints.getInfraByInfraIdSpeedLimitTags.useQuery(
