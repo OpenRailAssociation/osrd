@@ -63,6 +63,7 @@ fun findPath(
     temporarySpeedLimitManager: TemporarySpeedLimitManager,
     searchMetadata: STDCMGraph.SearchMetadata? = null,
     fullFailureExplainer: FailureExplainer? = null,
+    workSchedulesFailureExplainer: FailureExplainer? = null,
     progressCallback: ProgressCallback? = null,
 ): STDCMResult? {
     return STDCMPathfinding(
@@ -81,6 +82,7 @@ fun findPath(
             temporarySpeedLimitManager,
             searchMetadata,
             fullFailureExplainer,
+            workSchedulesFailureExplainer,
             progressCallback,
         )
         .findPath()
@@ -102,6 +104,7 @@ class STDCMPathfinding(
     temporarySpeedLimitManager: TemporarySpeedLimitManager,
     searchMetadata: STDCMGraph.SearchMetadata?,
     fullFailureExplainer: FailureExplainer?,
+    workSchedulesFailureExplainer: FailureExplainer?,
     private val progressCallback: ProgressCallback? = null,
 ) {
 
@@ -122,6 +125,7 @@ class STDCMPathfinding(
             temporarySpeedLimitManager,
             searchMetadata,
             fullFailureExplainer,
+            workSchedulesFailureExplainer,
         )
 
     @WithSpan(value = "STDCM pathfinding", kind = SpanKind.SERVER)
