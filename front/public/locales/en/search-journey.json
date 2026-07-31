@@ -14,6 +14,12 @@
   "origin": {
     "title": "Origin"
   },
+  "search": {
+    "button": "Search in ROP",
+    "cancel": "Cancel",
+    "error": "The search failed. Please try again.",
+    "pending": "Searching…"
+  },
   "trainPath": {
     "ch": "CH",
     "ci": "CI",

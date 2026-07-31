@@ -2,8 +2,8 @@ import { useMemo, useState } from 'react';
 
 import { useSelector } from 'react-redux';
 
-import DefaultBaseMap from 'common/Map/DefaultBaseMap';
 import { MARKER_TYPE, type MarkerInformation } from 'common/Map/components/ItineraryMarkers';
+import DefaultBaseMap from 'common/Map/DefaultBaseMap';
 import { defaultMapSettings } from 'reducers/commonMap';
 import type { MapSettings, Viewport } from 'reducers/commonMap/types';
 import type { SearchJourneyOperationalPoint } from 'reducers/searchJourney';
