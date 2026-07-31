@@ -2,6 +2,58 @@
 @use './styles/configError';
 
 .search-journey-view {
+  background-color: rgb(239, 243, 245);
+  padding: 32px;
   display: flex;
   flex-direction: column;
+.search-journey__separator {
+    border-radius: 4px;
+    background-color: rgba(0, 0, 0, 0.05);
+    width: 6px;
+    margin: 12px 0;
+  }
+
+    .search-journey-config {
+      display: flex;
+    }
+  .search-journey-parameters {
+    display: grid;
+    grid-template-columns: [consist-col] 322px auto [via-col] 1fr;
+    column-gap: 13px;
+  }
+
+  .consist-wrapper {
+    grid-column: consist-col;
+    position: relative;
+  }
+
+  .origin-destination-wrapper {
+    grid-column: via-col;
+    display: flex;
+    gap: 12px;
+      flex-direction: column;
+  }
+
+  .search-journey-map {
+    margin-left: 32px;
+    width: 100%;
+    min-width: 450px;
+    height: calc(100vh - 120px);
+    position: sticky;
+    top: 32px;
+  }
+}
+
+.search-journey-consist-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 16px;
+  text-align: center;
+  background-color: rgba(255, 255, 255, 0.7);
 }

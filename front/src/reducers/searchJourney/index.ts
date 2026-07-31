@@ -4,16 +4,23 @@ import type { Draft } from 'immer';
 export type SearchJourneyOperationalPoint = {
   id: string;
   mainCode: string;
+  countryCode: string;
   uic: number;
   secondaryCode?: string | null;
   name: string;
   coordinates: [number, number];
 };
 
+/** Time of day only (no date), matching the `start_ms` (ms since midnight) expected by the back-end. */
+export type SearchJourneyStartTime = {
+  hours: number;
+  minutes: number;
+};
+
 export type SearchJourneyState = {
   infraId?: number;
   timetableIds: number[];
-  startTime?: Date;
+  startTime?: SearchJourneyStartTime;
   origin?: SearchJourneyOperationalPoint;
   destination?: SearchJourneyOperationalPoint;
 };
@@ -30,7 +37,7 @@ export const searchJourneySlice = createSlice({
   name: 'searchJourney',
   initialState: searchJourneyInitialState,
   reducers: {
-    /** Set the environment (infra + timetables) returned by GET /journey_search_environment */
+    /** Set the environment (infra + timetables) returned by GET /search_journeys/search_environment */
     setSearchJourneyEnv(
       state: Draft<SearchJourneyState>,
       action: PayloadAction<{ infraId: number; timetableIds: number[] }>

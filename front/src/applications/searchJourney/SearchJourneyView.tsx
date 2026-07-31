@@ -6,6 +6,7 @@ import { Loader } from 'common/Loaders/Loader';
 
 import SearchJourneyEmptyConfigError from './components/SearchJourneyEmptyConfigError';
 import useSearchJourneyEnv from './hooks/useSearchJourneyEnv';
+import SearchJourneyConfig from './components/SearchJourneyConfig';
 
 const SearchJourneyView = () => {
   const { t } = useTranslation('search-journey');
@@ -19,7 +20,12 @@ const SearchJourneyView = () => {
       </div>
       <div className="search-journey-view">
         {loading && <Loader position="center" className="mt-5" />}
-        {error && <SearchJourneyEmptyConfigError />}
+        {error !== null && <SearchJourneyEmptyConfigError />}
+        {!loading && error === null && (
+          <>
+            <SearchJourneyConfig />
+          </>
+        )}
       </div>
     </>
   );

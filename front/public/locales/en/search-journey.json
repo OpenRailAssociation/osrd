@@ -1,7 +1,8 @@
 {
   "appName": "Capacity Need Announcement",
   "consist": {
-    "title": "Consist"
+    "title": "Consist",
+    "unavailable": "Unavailable"
   },
   "destination": {
     "title": "Destination"
@@ -15,6 +16,7 @@
   },
   "trainPath": {
     "ch": "CH",
-    "ci": "CI"
+    "ci": "CI",
+    "time": "Time"
   }
 }
