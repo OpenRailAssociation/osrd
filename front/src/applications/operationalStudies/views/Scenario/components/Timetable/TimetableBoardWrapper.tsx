@@ -1,4 +1,4 @@
-import { useCallback, useContext, useEffect, useMemo } from 'react';
+import { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
@@ -64,6 +64,8 @@ const TimetableBoardWrapper = ({
   const subCategories = useSubCategoryContext();
 
   const dispatch = useAppDispatch();
+
+  const [isSelectMode, setIsSelectMode] = useState(false);
 
   const { totalPacedTrainCount, totalUniqueTrainCount } = useMemo(
     () =>
@@ -171,6 +173,10 @@ const TimetableBoardWrapper = ({
       }
 
       removeAndUnselectTrains(selectedTrainScheduleIds);
+
+      if (trainSchedules.length - selectedTrainScheduleIds.length === 0) {
+        setIsSelectMode(false);
+      }
 
       if (!hideToast) {
         dispatch(
@@ -295,6 +301,8 @@ const TimetableBoardWrapper = ({
       <Timetable
         selectedTrainScheduleIds={selectedTrainScheduleIds}
         setSelectedTrainScheduleIds={setSelectedTrainScheduleIds}
+        isSelectMode={isSelectMode}
+        setIsSelectMode={setIsSelectMode}
         setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
         upsertTrainSchedules={upsertTrainSchedules}
         setTrainScheduleToEditData={setTrainScheduleToEditData}
