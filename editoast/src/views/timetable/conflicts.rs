@@ -858,7 +858,7 @@ mod tests {
     use axum::http::StatusCode;
     use core_client::conflict_detection::ConflictDetectionResponse;
     use core_client::mocking::MockingClient;
-    use core_client::pathfinding::PathfindingResultSuccess;
+    use core_client::pathfinding::PathfindingResult as CorePathfindingResult;
     use core_client::pathfinding::TrainPath;
     use core_client::simulation::CompleteReportTrain;
     use core_client::simulation::ElectricalProfiles;
@@ -1117,7 +1117,7 @@ mod tests {
         let mut core = MockingClient::new();
         core.stub("/pathfinding/blocks")
             .response(StatusCode::OK)
-            .json(PathfindingResult::Success(PathfindingResultSuccess {
+            .json(PathfindingResult::Success(CorePathfindingResult {
                 path: TrainPath {
                     blocks: vec![],
                     routes: vec![],
@@ -1300,7 +1300,7 @@ mod tests {
         let target_simulation = Response::Success(fake_occurrence_simulation_success());
 
         // Create mock pathfinding results with track section ranges
-        let source_pathfinding = PathfindingResult::Success(PathfindingResultSuccess {
+        let source_pathfinding = PathfindingResult::Success(CorePathfindingResult {
             path: TrainPath {
                 track_section_ranges: vec![
                     TrackRange {
@@ -1321,7 +1321,7 @@ mod tests {
             ..Default::default()
         });
 
-        let target_pathfinding = PathfindingResult::Success(PathfindingResultSuccess {
+        let target_pathfinding = PathfindingResult::Success(CorePathfindingResult {
             path: TrainPath {
                 track_section_ranges: vec![
                     TrackRange {
