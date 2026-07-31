@@ -165,6 +165,15 @@ class STDCMEndpoint(
             val fullFailureExplainer =
                 FailureExplainer(request.startTime, infra.rawInfra, infra.blockInfra)
 
+            val workSchedulesFailureExplainer =
+                FailureExplainer(
+                    request.startTime,
+                    infra.rawInfra,
+                    infra.blockInfra,
+                    maxLargestConflicts = 2,
+                    maxClosestConflicts = 1,
+                )
+
             var callback: ProgressCallback? = null
             if (ctx != null) {
                 callback = { progressCallback(ctx.chan, ctx.replyTo, ctx.correlationId, it) }
@@ -194,6 +203,7 @@ class STDCMEndpoint(
                     temporarySpeedLimitManager,
                     STDCMGraph.SearchMetadata(request.startTime, requirements.metadata, s3Context),
                     fullFailureExplainer,
+                    workSchedulesFailureExplainer,
                     callback,
                 )
             fullFailureExplainer.saveReport(s3Context)

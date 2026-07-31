@@ -50,6 +50,7 @@ class STDCMGraph(
     val temporarySpeedLimitManager: TemporarySpeedLimitManager = TemporarySpeedLimitManager(),
     val searchMetadata: SearchMetadata?,
     fullFailureExplainer: FailureExplainer?,
+    workSchedulesFailureExplainer: FailureExplainer?,
 ) : Graph<STDCMNode, STDCMEdge> {
     val rawInfra = fullInfra.rawInfra
     val blockInfra = fullInfra.blockInfra
@@ -62,6 +63,7 @@ class STDCMGraph(
             this,
             timeStep,
             fullFailureExplainer,
+            workSchedulesFailureExplainer,
         )
     val allowanceManager = EngineeringAllowanceManager(this)
     val backtrackingManager: BacktrackingManager = BacktrackingManager(this)
