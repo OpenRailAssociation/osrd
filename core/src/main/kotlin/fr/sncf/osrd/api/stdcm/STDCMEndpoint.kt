@@ -37,7 +37,8 @@ import fr.sncf.osrd.standalone_sim.makeElectricalProfiles
 import fr.sncf.osrd.standalone_sim.makeMRSPResponse
 import fr.sncf.osrd.standalone_sim.result.ElectrificationRange
 import fr.sncf.osrd.standalone_sim.runScheduleMetadataExtractor
-import fr.sncf.osrd.stdcm.STDCMResult
+import fr.sncf.osrd.stdcm.STDCMCompleteResult
+import fr.sncf.osrd.stdcm.STDCMPartialResult
 import fr.sncf.osrd.stdcm.graph.STDCMGraph
 import fr.sncf.osrd.stdcm.graph.checkPlannedStepsAndMaybeIndex
 import fr.sncf.osrd.stdcm.graph.findPath
@@ -257,7 +258,7 @@ class STDCMEndpoint(
          */
         fun logDebugData(
             infra: RawInfra,
-            path: STDCMResult,
+            path: STDCMCompleteResult,
             simulationResponse: SimulationSuccess,
             departureTime: ZonedDateTime,
             requirements: Map<ZoneId, List<STDCMTimetableData.DetailedRequirement>>,
@@ -280,7 +281,7 @@ class STDCMEndpoint(
         /** Build the simulation part of the response */
         fun buildSimResponse(
             infra: FullInfra,
-            path: STDCMResult,
+            path: STDCMCompleteResult,
             speedLimitTag: String?,
             temporarySpeedLimitManager: TemporarySpeedLimitManager?,
             comfort: Comfort,
@@ -338,7 +339,7 @@ class STDCMEndpoint(
 
         /** Build the electrical profiles from the path */
         fun buildSTDCMElectricalProfiles(
-            path: STDCMResult,
+            path: STDCMCompleteResult,
             rollingStocks: DistanceRangeMap<RollingStock>,
             comfort: Comfort,
         ): RangeValues<ElectricalProfileValue> {

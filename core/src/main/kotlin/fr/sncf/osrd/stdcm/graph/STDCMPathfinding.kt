@@ -35,6 +35,11 @@ import org.slf4j.LoggerFactory
 data class EdgeLocation(val edge: STDCMEdge, val offset: Offset<STDCMEdge>)
 
 data class Result(
+    val isPathComplete: Boolean,
+    val node: STDCMNode,
+)
+
+data class PathResult(
     val edges: List<STDCMEdge>, // Full path as a list of edges
     val waypoints: List<EdgeLocation>,
 )
@@ -134,17 +139,18 @@ class STDCMPathfinding(
 
         assert(steps.last().stop) { "The last stop is supposed to be an actual stop" }
         starts = getStartNodes(graph, consistSchedule)
-        val path = findPathImpl()
+        val result = findPathImpl()
         graph.stdcmSimulations.logWarnings()
-        if (path == null) {
-            logger.info("Failed to find a path")
-            return null
+        if (!result.isPathComplete) {
+            logger.info("Failed to find a complete path, start postprocessing partial result")
+            return STDCMPostProcessing(graph).makePartialResult(fullInfra, result.node)
         }
-        logger.info("Path found, start postprocessing")
 
+        logger.info("Reached destination, start postprocessing")
+        val path = buildPath(result.node)
         val res =
             STDCMPostProcessing(graph)
-                .makeResult(
+                .makeCompleteResult(
                     fullInfra,
                     path,
                     graph.standardAllowance,
@@ -204,7 +210,7 @@ class STDCMPathfinding(
         }
     }
 
-    private fun findPathImpl(): Result? {
+    private fun findPathImpl(): Result {
         val queue = PriorityQueue<STDCMNode>()
 
         val progressLogger = ProgressLogger(graph, callback = progressCallback)
@@ -215,13 +221,14 @@ class STDCMPathfinding(
         }
         val start = Instant.now()
         var lastFValue = Double.NEGATIVE_INFINITY
+        var closestNode: STDCMNode = queue.peek()
         while (true) {
             if (Duration.between(start, Instant.now()).toSeconds() >= pathfindingTimeout)
                 throw OSRDError(ErrorType.PathfindingTimeoutError)
             val endNode = queue.poll()
             if (endNode == null) {
                 fValueLogger.logAggregatedSummary()
-                return null
+                return Result(false, closestNode)
             }
             if (endNode.getMinTotalSimulationTime(graph.remainingTimeEstimator) > maxRunTime)
                 continue
@@ -237,9 +244,12 @@ class STDCMPathfinding(
 
             progressLogger.processNode(endNode)
             if (endNode.infraExplorer.getStepTracker().hasReachedDestination()) {
-                return buildResult(endNode)
+                return Result(true, endNode)
             }
             queue += getAdjacentNodes(endNode)
+            if (closestNode.remainingTimeEstimation > endNode.remainingTimeEstimation) {
+                closestNode = endNode
+            }
         }
     }
 
@@ -251,7 +261,7 @@ class STDCMPathfinding(
             .filter { graph.tryMarkPending(it) }
     }
 
-    private fun buildResult(node: STDCMNode): Result {
+    private fun buildPath(node: STDCMNode): PathResult {
         var mutLastEdge: STDCMEdge? = node.previousEdge
         val edges = ArrayDeque<STDCMEdge>()
 
@@ -269,7 +279,7 @@ class STDCMPathfinding(
             node.infraExplorer.getStepTracker().iterateReachedStepsBackwards().toList().asReversed()
         val waypoints = makeWaypoints(edgeList, reachedSteps)
 
-        return Result(edgeList, waypoints)
+        return PathResult(edgeList, waypoints)
     }
 
     /** Converts start locations into starting nodes. */

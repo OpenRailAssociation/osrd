@@ -7,7 +7,8 @@ import fr.sncf.osrd.path.implementations.buildTrainPathFromBlockRanges
 import fr.sncf.osrd.path.interfaces.TrainPath
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal.OPEN
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal.SHORT_SLIP_STOP
-import fr.sncf.osrd.stdcm.STDCMResult
+import fr.sncf.osrd.stdcm.STDCMCompleteResult
+import fr.sncf.osrd.stdcm.STDCMPartialResult
 import fr.sncf.osrd.stdcm.infra_exploration.StepTracker
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface
 import fr.sncf.osrd.train.RollingStock
@@ -15,6 +16,7 @@ import fr.sncf.osrd.train.TrainStop
 import fr.sncf.osrd.utils.DistanceRangeMap
 import fr.sncf.osrd.utils.arePositionsEqual
 import fr.sncf.osrd.utils.isTimeStrictlyPositive
+import fr.sncf.osrd.utils.toGeoPoint
 import fr.sncf.osrd.utils.units.meters
 import io.opentelemetry.api.trace.SpanKind
 import io.opentelemetry.instrumentation.annotations.WithSpan
@@ -31,16 +33,16 @@ class STDCMPostProcessing(private val graph: STDCMGraph) {
      * method of this class, the rest is implementation detail.
      */
     @WithSpan(value = "STDCM post processing", kind = SpanKind.SERVER)
-    fun makeResult(
+    fun makeCompleteResult(
         infra: FullInfra,
-        path: Result,
+        path: PathResult,
         standardAllowance: AllowanceValue?,
         rollingStocks: List<RollingStock>,
         timeStep: Double,
         comfort: Comfort?,
         maxRunTime: Double,
         blockAvailability: BlockAvailabilityInterface,
-    ): STDCMResult? {
+    ): STDCMCompleteResult? {
         val edges = path.edges
         val lastExplorer = edges.last().infraExplorer
         val blockRanges = lastExplorer.getAllBlocks().toList()
@@ -78,7 +80,7 @@ class STDCMPostProcessing(private val graph: STDCMGraph) {
                 updatedTimeData,
             )
         val res =
-            STDCMResult(
+            STDCMCompleteResult(
                 withAllowance.envelope,
                 trainPath,
                 path.edges.last().infraExplorerWithNewEnvelope.getFullRollingStockRangeMap()
@@ -100,6 +102,26 @@ class STDCMPostProcessing(private val graph: STDCMGraph) {
             // as we only check the time at the start of an edge when exploring the graph
             null
         } else res
+    }
+
+    fun makePartialResult(
+        infra: FullInfra,
+        lastNode: STDCMNode,
+    ): STDCMPartialResult {
+        val lastExplorer = lastNode.infraExplorer
+        val trainPath = lastExplorer.buildFullPath(infra.rawInfra, infra.blockInfra)
+        val earliestReachableTime = lastNode.timeData.earliestReachableTime
+        val geoPoint = lastNode.toGeoPoint(infra.rawInfra, infra.blockInfra)
+        val seenSteps = lastExplorer.getStepTracker().getSeenSteps().toList()
+        return STDCMPartialResult(
+            trainPath,
+            seenSteps.map { it.travelledPathOffset },
+            seenSteps.mapIndexedNotNull { index, step ->
+                if (step.isBacktracking) index else null
+            },
+            earliestReachableTime,
+            geoPoint,
+        )
     }
 
     /**

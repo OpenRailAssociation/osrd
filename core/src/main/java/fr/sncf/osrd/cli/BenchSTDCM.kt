@@ -16,6 +16,7 @@ import fr.sncf.osrd.api.stdcm.stdcmRequestAdapter
 import fr.sncf.osrd.cli.ValidateInfra.parseRailJSONFromFile
 import fr.sncf.osrd.pathfinding.Pathfinding
 import fr.sncf.osrd.signaling.etcs_level2.ETCS_LEVEL2
+import fr.sncf.osrd.stdcm.STDCMCompleteResult
 import fr.sncf.osrd.stdcm.STDCMResult
 import fr.sncf.osrd.stdcm.graph.STDCMGraph
 import fr.sncf.osrd.stdcm.graph.findPath
@@ -232,11 +233,16 @@ class BenchSTDCM : CliCommand {
                             ),
                             FailureExplainer(request.startTime, infra.rawInfra, infra.blockInfra),
                         )
-                    if (path != null && hasDuplicateTracks(infra, path.trainPath)) path = null
+                    if (
+                        path != null &&
+                            path is STDCMCompleteResult &&
+                            hasDuplicateTracks(infra, path.trainPath)
+                    )
+                        path = null
                 } catch (e: Exception) {
                     results["error"] = e.toString()
                 }
-                if (path != null) {
+                if (path != null && path is STDCMCompleteResult) {
                     results["result_time"] = path.envelope.totalTime
                     results["result_distance"] = path.trainPath.getLength().meters
                 }
