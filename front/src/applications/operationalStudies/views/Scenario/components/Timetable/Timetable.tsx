@@ -27,6 +27,8 @@ type TimetableProps = {
   setSelectedTrainScheduleIds: React.Dispatch<React.SetStateAction<number[]>>;
   removeAndUnselectTrains: (trainIds: number[]) => void;
   handleDeleteTrainSchedules: () => void;
+  isSelectMode: boolean;
+  setIsSelectMode: (isSelectMode: boolean) => void;
   trainScheduleToEditData?: TrainScheduleToEditData;
   trainSchedules?: TrainScheduleResponse[];
   trainSchedulesWithDetails: TrainScheduleWithDetails[];
@@ -42,6 +44,8 @@ const Timetable = ({
   setSelectedTrainScheduleIds,
   removeAndUnselectTrains,
   handleDeleteTrainSchedules,
+  isSelectMode,
+  setIsSelectMode,
   trainScheduleToEditData,
   trainSchedules = NO_TRAIN_SCHEDULES,
   trainSchedulesWithDetails,
@@ -54,7 +58,6 @@ const Timetable = ({
   const { t } = useTranslation('operational-studies', { keyPrefix: 'main.timetable' });
 
   const [showTrainDetails, setShowTrainDetails] = useState(false);
-  const [isSelectMode, setIsSelectMode] = useState(false);
   const [timetableMode, setTimetableMode] = useState<TimetableMode>('calendar');
   const [expandedTrainScheduleSetIds, setExpandedTrainScheduleSetIds] = useState<Set<number>>(
     new Set()
