@@ -11,6 +11,7 @@ import fr.sncf.osrd.api.standalone_sim.SimulationSuccess
 import fr.sncf.osrd.api.standalone_sim.polymorphicElectricalProfileAdapter
 import fr.sncf.osrd.api.standalone_sim.polymorphicSimulationResponseAdapter
 import fr.sncf.osrd.api.standalone_sim.polymorphicSpeedLimitSourceAdapter
+import fr.sncf.osrd.geom.Point
 import fr.sncf.osrd.utils.json.UnitAdapterFactory
 import java.time.ZonedDateTime
 

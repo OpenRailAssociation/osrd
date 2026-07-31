@@ -4923,6 +4923,16 @@ export type StdcmProgressionEvent = {
   best_travel_time: number;
   point: GeoJsonPoint;
 };
+export type StdcmLastReachedOperationalPoint = {
+  arrival_time: string;
+  geographic: GeoJsonPoint;
+  operational_point: OperationalPoint;
+};
+export type StdcmConflictingWorkSchedule = {
+  end_date_time: string;
+  last_op: OperationalPoint;
+  start_date_time: string;
+};
 export type InternalError = {
   context: {
     [key: string]: unknown;
@@ -4951,6 +4961,10 @@ export type StdcmResponse =
       status: 'success';
     }
   | {
+      last_reached_operational_point?: null | StdcmLastReachedOperationalPoint;
+      most_blocking_work_schedules: StdcmConflictingWorkSchedule[];
+      nearest_to_destination_work_schedules: StdcmConflictingWorkSchedule[];
+      partial_pathfinding_result?: null | CorePathfindingResultSuccess;
       status: 'path_not_found';
     }
   | {

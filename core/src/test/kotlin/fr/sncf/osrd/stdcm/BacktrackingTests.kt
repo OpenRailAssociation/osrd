@@ -54,7 +54,9 @@ class BacktrackingTests {
                 .setEndLocations(setOf(BlockLocation(block, Offset(1000.meters))))
                 .setUnavailableTimes(occupancyGraph)
                 .run() ?: return
-        occupancyTest(res, occupancyGraph)
+        Assertions.assertTrue(res is STDCMCompleteResult)
+        val resSuccess = res as STDCMCompleteResult
+        occupancyTest(resSuccess, occupancyGraph)
     }
 
     /**
@@ -101,7 +103,9 @@ class BacktrackingTests {
                 .setEndLocations(setOf(BlockLocation(lastBlock, Offset(5.meters))))
                 .setUnavailableTimes(occupancyGraph)
                 .run() ?: return
-        occupancyTest(res, occupancyGraph)
+        Assertions.assertTrue(res is STDCMCompleteResult)
+        val resSuccess = res as STDCMCompleteResult
+        occupancyTest(resSuccess, occupancyGraph)
     }
 
     /**
@@ -137,7 +141,7 @@ class BacktrackingTests {
         val occupancyGraph =
             ImmutableMultimap.of(
                 firstBlock,
-                OccupancySegment(runTime + 10, Double.POSITIVE_INFINITY, 0.meters, 1000.meters),
+                OccupancySegment(runTime + 22, Double.POSITIVE_INFINITY, 0.meters, 1000.meters),
             )
         val res =
             STDCMPathfindingBuilder()
@@ -146,7 +150,9 @@ class BacktrackingTests {
                 .setEndLocations(setOf(BlockLocation(secondBlock, Offset(5.meters))))
                 .setUnavailableTimes(occupancyGraph)
                 .run() ?: return
-        occupancyTest(res, occupancyGraph)
+        Assertions.assertTrue(res is STDCMCompleteResult)
+        val resSuccess = res as STDCMCompleteResult
+        occupancyTest(resSuccess, occupancyGraph)
     }
 
     /** Test that we can backtrack several times over the same edges */
@@ -169,6 +175,6 @@ class BacktrackingTests {
                 .setStartLocations(setOf(BlockLocation(firstBlock, Offset(0.meters))))
                 .setEndLocations(setOf(BlockLocation(lastBlock, Offset(1000.meters))))
                 .run()!!
-        Assertions.assertTrue(res.envelope.continuous)
+        Assertions.assertTrue(res is STDCMCompleteResult && res.envelope.continuous)
     }
 }

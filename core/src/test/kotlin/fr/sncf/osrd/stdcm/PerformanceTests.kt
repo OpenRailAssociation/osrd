@@ -57,7 +57,9 @@ class PerformanceTests {
                 .setUnavailableTimes(occupancyGraph)
                 .setTimeStep(timeStep)
                 .run()!!
-        occupancyTest(res, occupancyGraph, 2 * timeStep)
+        Assertions.assertTrue(res is STDCMCompleteResult)
+        val resSuccess = res as STDCMCompleteResult
+        occupancyTest(resSuccess, occupancyGraph, 2 * timeStep)
     }
 
     @Test
@@ -156,7 +158,9 @@ class PerformanceTests {
                 .setUnavailableTimes(occupancyGraph)
                 .setTimeStep(timeStep)
                 .run()!!
-        occupancyTest(res, occupancyGraph, 2 * timeStep)
+        Assertions.assertTrue(res is STDCMCompleteResult)
+        val resSuccess = res as STDCMCompleteResult
+        occupancyTest(resSuccess, occupancyGraph, 2 * timeStep)
     }
 
     @Disabled("Requires at least one bugfix (and likely more): this starts an infinite loop")

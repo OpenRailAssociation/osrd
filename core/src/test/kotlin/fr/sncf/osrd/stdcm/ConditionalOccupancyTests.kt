@@ -9,8 +9,6 @@ import fr.sncf.osrd.utils.DummyInfra
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
 import kotlin.test.assertTrue
-import org.junit.jupiter.api.Assertions.assertNotNull
-import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
 
 class ConditionalOccupancyTests {
@@ -46,14 +44,14 @@ class ConditionalOccupancyTests {
             initBuilder(infra.fullInfra(), occupancyGraph, block1)
                 .setEndLocations(setOf(BlockLocation(block2, Offset(50.meters))))
                 .run()
-        assertNotNull(res1)
+        assertTrue(res1 is STDCMCompleteResult)
 
         // Conflict
         val res2 =
             initBuilder(infra.fullInfra(), occupancyGraph, block1)
                 .setEndLocations(setOf(BlockLocation(unavailableBlock, Offset(50.meters))))
                 .run()
-        assertNull(res2)
+        assertTrue(res2 is STDCMPartialResult)
     }
 
     @Test
@@ -91,14 +89,14 @@ class ConditionalOccupancyTests {
             initBuilder(infra.fullInfra(), occupancyGraph, block1)
                 .setEndLocations(setOf(BlockLocation(block2, Offset(50.meters))))
                 .run()
-        assertNotNull(res1)
+        assertTrue(res1 is STDCMCompleteResult)
 
         // Conflict
         val res2 =
             initBuilder(infra.fullInfra(), occupancyGraph, block1)
                 .setEndLocations(setOf(BlockLocation(unavailableBlock, Offset(50.meters))))
                 .run()
-        assertNull(res2)
+        assertTrue(res2 is STDCMPartialResult)
     }
 
     @Test
@@ -177,28 +175,28 @@ class ConditionalOccupancyTests {
             initBuilder(infra.fullInfra(), occupancyGraph, block1)
                 .setEndLocations(setOf(BlockLocation(block2, Offset(50.meters))))
                 .run()
-        assertNotNull(res1)
+        assertTrue(res1 is STDCMCompleteResult)
 
         // End location on d --> e: no conflict
         val res2 =
             initBuilder(infra.fullInfra(), occupancyGraph, block1)
                 .setEndLocations(setOf(BlockLocation(block4, Offset(50.meters))))
                 .run()
-        assertNotNull(res2)
+        assertTrue(res2 is STDCMCompleteResult)
 
         // End location on g --> h: no conflict
         val res3 =
             initBuilder(infra.fullInfra(), occupancyGraph, block1)
                 .setEndLocations(setOf(BlockLocation(block7, Offset(50.meters))))
                 .run()
-        assertNotNull(res3)
+        assertTrue(res3 is STDCMCompleteResult)
 
         // End location on g --> i: conflict
         val res4 =
             initBuilder(infra.fullInfra(), occupancyGraph, block1)
                 .setEndLocations(setOf(BlockLocation(unavailableBlock, Offset(50.meters))))
                 .run()
-        assertNull(res4)
+        assertTrue(res4 is STDCMPartialResult)
     }
 
     @Test
@@ -229,7 +227,9 @@ class ConditionalOccupancyTests {
                 .setStartLocations(setOf(BlockLocation(blocks[0], Offset(0.meters))))
                 .setEndLocations(setOf(BlockLocation(blocks[2], Offset(50.meters))))
                 .run()!!
-        assertTrue { res.departureTime + res.envelope.totalTime >= 3600 }
+        assertTrue {
+            res is STDCMCompleteResult && res.departureTime + res.envelope.totalTime >= 3600
+        }
     }
 
     private fun initBuilder(

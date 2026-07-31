@@ -20,7 +20,6 @@ import fr.sncf.osrd.utils.units.seconds
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
@@ -52,13 +51,18 @@ class StopTests {
                 .run()!!
         val expectedOffset = 150.0
 
+        Assertions.assertTrue(res is STDCMCompleteResult)
+        val resSuccess = res as STDCMCompleteResult
+
         // Check that we stop
-        Assertions.assertTrue(areSpeedsEqual(0.0, res.envelope.interpolateSpeed(expectedOffset)))
+        Assertions.assertTrue(
+            areSpeedsEqual(0.0, resSuccess.envelope.interpolateSpeed(expectedOffset))
+        )
 
         // Check that the stop is properly returned
         Assertions.assertEquals(
             listOf(TrainStop(expectedOffset, 10000.0, SHORT_SLIP_STOP)),
-            res.stopResults,
+            resSuccess.stopResults,
         )
     }
 
@@ -95,9 +99,12 @@ class StopTests {
                 )
                 .run()!!
 
+        Assertions.assertTrue(res is STDCMCompleteResult)
+        val resSuccess = res as STDCMCompleteResult
+
         // Check that we stop
         for (offset in stopsOffsets) Assertions.assertTrue(
-            areSpeedsEqual(0.0, res.envelope.interpolateSpeed(100.0 + offset.meters))
+            areSpeedsEqual(0.0, resSuccess.envelope.interpolateSpeed(100.0 + offset.meters))
         )
     }
 
@@ -121,7 +128,9 @@ class StopTests {
                     ExplorerStep(setOf(BlockLocation(secondBlock, Offset(100.meters))), 0.0, true)
                 )
                 .run()!!
-        checkStop(res, listOf(TrainStop(100.0, 10000.0, SHORT_SLIP_STOP)))
+        Assertions.assertTrue(res is STDCMCompleteResult)
+        val resSuccess = res as STDCMCompleteResult
+        checkStop(resSuccess, listOf(TrainStop(100.0, 10000.0, SHORT_SLIP_STOP)))
     }
 
     /** Look for a path in an empty timetable, with a stop at the end of a block */
@@ -148,7 +157,9 @@ class StopTests {
                     ExplorerStep(setOf(BlockLocation(secondBlock, Offset(100.meters))), 0.0, true)
                 )
                 .run()!!
-        checkStop(res, listOf(TrainStop(100.0, 10000.0, SHORT_SLIP_STOP)))
+        Assertions.assertTrue(res is STDCMCompleteResult)
+        val resSuccess = res as STDCMCompleteResult
+        checkStop(resSuccess, listOf(TrainStop(100.0, 10000.0, SHORT_SLIP_STOP)))
     }
 
     /** Checks that we can make a detour to pass by an intermediate step */
@@ -190,10 +201,13 @@ class StopTests {
                     )
                 )
                 .run()!!
-        val blocks = res.trainPath.getBlocks().map { infra.getBlockName(it.value) }
+        Assertions.assertTrue(res is STDCMCompleteResult)
+        val resSuccess = res as STDCMCompleteResult
+
+        val blocks = resSuccess.trainPath.getBlocks().map { infra.getBlockName(it.value) }
         Assertions.assertEquals(listOf("a->b", "b->x", "x->d", "d->e"), blocks)
-        Assertions.assertNotEquals(stop, res.stopResults.isEmpty())
-        Assertions.assertEquals(stop, res.envelope.interpolateSpeed(101100.0) == 0.0)
+        Assertions.assertNotEquals(stop, resSuccess.stopResults.isEmpty())
+        Assertions.assertEquals(stop, resSuccess.envelope.interpolateSpeed(101100.0) == 0.0)
     }
 
     /**
@@ -229,7 +243,7 @@ class StopTests {
                 )
                 .setUnavailableTimes(unavailableTimes)
                 .run()
-        assertNull(res)
+        Assertions.assertTrue(res is STDCMPartialResult)
     }
 
     /** Checks that we add the right amount of delay with a stop */
@@ -262,8 +276,10 @@ class StopTests {
                 .addStep(ExplorerStep(setOf(BlockLocation(blocks[2], Offset(1.meters))), 0.0, true))
                 .setUnavailableTimes(occupancy)
                 .run()!!
-        checkStop(res, listOf(TrainStop(50.0, 10000.0, SHORT_SLIP_STOP)))
-        occupancyTest(res, occupancy)
+        Assertions.assertTrue(res is STDCMCompleteResult)
+        val resSuccess = res as STDCMCompleteResult
+        checkStop(resSuccess, listOf(TrainStop(50.0, 10000.0, SHORT_SLIP_STOP)))
+        occupancyTest(resSuccess, occupancy)
     }
 
     /** Checks that we can handle a standard allowance with a stop */
@@ -321,9 +337,10 @@ class StopTests {
                         ExplorerStep(setOf(BlockLocation(blocks[3], Offset(1.meters))), 0.0, true)
                     )
             )
+
         val expectedStops = listOf(TrainStop(51.0, 1000.0, SHORT_SLIP_STOP))
-        checkStop(res.withAllowance!!, expectedStops)
-        checkStop(res.withoutAllowance!!, expectedStops)
+        checkStop(res.withAllowance!! as STDCMCompleteResult, expectedStops)
+        checkStop(res.withoutAllowance!! as STDCMCompleteResult, expectedStops)
         occupancyTest(res.withAllowance, occupancy, 2 * timeStep)
         occupancyTest(res.withoutAllowance, occupancy, 2 * timeStep)
         checkAllowanceResult(res, allowance, 4 * timeStep)
@@ -397,8 +414,8 @@ class StopTests {
                     )
             )
         val expectedStops = listOf(TrainStop(51.0, 1000.0, SHORT_SLIP_STOP))
-        checkStop(res.withAllowance!!, expectedStops)
-        checkStop(res.withoutAllowance!!, expectedStops)
+        checkStop(res.withAllowance!! as STDCMCompleteResult, expectedStops)
+        checkStop(res.withoutAllowance!! as STDCMCompleteResult, expectedStops)
         occupancyTest(res.withAllowance, occupancy, 2 * timeStep)
         occupancyTest(res.withoutAllowance, occupancy, 2 * timeStep)
     }
@@ -451,7 +468,7 @@ class StopTests {
                 .setUnavailableTimes(occupancy)
                 .setMaxDepartureDelay(0.0) // Prevents the train from starting after the conflict
                 .run()
-        assertNull(res)
+        Assertions.assertTrue(res is STDCMPartialResult)
     }
 
     /** Checks that we can make the stop longer to avoid conflicts */
@@ -502,18 +519,23 @@ class StopTests {
         val resWithoutConflict = builderWithoutConflict.run()!!
         val resWithConflict = builderWithConflict.run()!!
 
+        Assertions.assertTrue(resWithoutConflict is STDCMCompleteResult)
+        val resWithoutConflictSuccess = resWithoutConflict as STDCMCompleteResult
+        Assertions.assertTrue(resWithConflict is STDCMCompleteResult)
+        val resWithConflictSuccess = resWithConflict as STDCMCompleteResult
+
         // Check that there's no slowing down, no engineering allowance
-        val resTravelTime = resWithConflict.envelope.totalTime
-        assertEquals(resWithoutConflict.envelope.totalTime, resTravelTime, timeStep)
+        val resTravelTime = resWithConflictSuccess.envelope.totalTime
+        assertEquals(resWithoutConflictSuccess.envelope.totalTime, resTravelTime, timeStep)
 
         // Check that the stop is long enough
         assert(
             10_000 <=
-                resWithConflict.envelope.interpolateArrivalAt(200.0) +
-                    resWithConflict.stopResults.first().duration +
+                resWithConflictSuccess.envelope.interpolateArrivalAt(200.0) +
+                    resWithConflictSuccess.stopResults.first().duration +
                     3 * timeStep
         )
-        occupancyTest(resWithConflict, occupancy)
+        occupancyTest(resWithConflictSuccess, occupancy)
     }
 
     /** Checks that we can follow start scheduled points and adjust stop durations */
@@ -582,9 +604,12 @@ class StopTests {
                 .setTimeStep(timeStep)
                 .setUnavailableTimes(occupancy)
                 .run()!!
-        occupancyTest(res, occupancy)
-        assertEquals(7_000.0, res.departureTime, timeStep)
-        assertEquals(5_000.0, res.stopResults.first().duration, timeStep)
+        Assertions.assertTrue(res is STDCMCompleteResult)
+        val resSuccess = res as STDCMCompleteResult
+
+        occupancyTest(resSuccess, occupancy)
+        assertEquals(7_000.0, resSuccess.departureTime, timeStep)
+        assertEquals(5_000.0, resSuccess.stopResults.first().duration, timeStep)
     }
 
     /** Checks that we can follow end scheduled points and adjust stop durations */
@@ -653,10 +678,14 @@ class StopTests {
                 .setUnavailableTimes(occupancy)
                 .setTimeStep(timeStep)
                 .run()!!
-        occupancyTest(res, occupancy)
+        Assertions.assertTrue(res is STDCMCompleteResult)
+        val resSuccess = res as STDCMCompleteResult
+        occupancyTest(resSuccess, occupancy)
         val arrivalTime =
-            res.departureTime + res.envelope.totalTime + res.stopResults.first().duration
-        assertTrue(res.departureTime >= 3_000.0)
+            resSuccess.departureTime +
+                resSuccess.envelope.totalTime +
+                resSuccess.stopResults.first().duration
+        assertTrue(resSuccess.departureTime >= 3_000.0)
         assertEquals(15_000.0, arrivalTime, 2 * timeStep)
     }
 
@@ -710,8 +739,10 @@ class StopTests {
                 .setMaxRunTime(5_000.0)
                 .setMaxDepartureDelay(Double.POSITIVE_INFINITY)
                 .run()!!
-        occupancyTest(res, occupancy)
-        assertEquals(res.stopResults[0].duration, 1.0, 2 * timeStep)
+        Assertions.assertTrue(res is STDCMCompleteResult)
+        val resSuccess = res as STDCMCompleteResult
+        occupancyTest(resSuccess, occupancy)
+        assertEquals(resSuccess.stopResults[0].duration, 1.0, 2 * timeStep)
     }
 
     /**
@@ -785,7 +816,9 @@ class StopTests {
                 )
                 .setTimeStep(timeStep)
                 .run()!!
-        occupancyTest(res, occupancy)
+        Assertions.assertTrue(res is STDCMCompleteResult)
+        val resSuccess = res as STDCMCompleteResult
+        occupancyTest(resSuccess, occupancy)
     }
 
     /** First stop can be on different locations, its stop duration reproduces a bug */
@@ -841,7 +874,9 @@ class StopTests {
                     ExplorerStep(setOf(BlockLocation(lastBlock, Offset(100.meters))), 0.0, true)
                 )
                 .run()!!
-        val blocks = res.trainPath.getBlocks().map { infra.getBlockName(it.value) }
+        Assertions.assertTrue(res is STDCMCompleteResult)
+        val resSuccess = res as STDCMCompleteResult
+        val blocks = resSuccess.trainPath.getBlocks().map { infra.getBlockName(it.value) }
         val useBotPath = blocks.contains("x->y")
         assertTrue { useBotPath }
     }
@@ -849,7 +884,7 @@ class StopTests {
     companion object {
         /** Check that the train actually stops at the expected times and positions */
         private fun checkStop(
-            res: STDCMResult,
+            res: STDCMCompleteResult,
             expectedStops: List<TrainStop>,
             allowLonger: Boolean = true,
         ) {

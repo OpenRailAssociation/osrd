@@ -11,6 +11,7 @@ import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import fr.sncf.osrd.api.*
+import fr.sncf.osrd.api.pathfinding.PathfindingBlockResponse
 import fr.sncf.osrd.api.pathfinding.findStopPositionAtEndOfBlockConsideringRollingStock
 import fr.sncf.osrd.api.pathfinding.findWaypointBlocks
 import fr.sncf.osrd.api.pathfinding.hasDuplicateTracks
@@ -62,6 +63,7 @@ import io.opentelemetry.api.trace.Span
 import io.opentelemetry.api.trace.SpanKind
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import java.io.File
+import java.time.Duration
 import java.time.Duration.between
 import java.time.Duration.ofMillis
 import java.time.LocalDateTime
@@ -207,9 +209,41 @@ class STDCMEndpoint(
                     workSchedulesFailureExplainer,
                     callback,
                 )
+
             fullFailureExplainer.saveReport(s3Context)
-            if (path == null || hasDuplicateTracks(infra, path.trainPath)) {
-                val result = PathNotFound()
+            // STDCM has found a valid solution: return the result with the complete path and
+            // simulation.
+            if (path is STDCMCompleteResult && !hasDuplicateTracks(infra, path.trainPath)) {
+                val pathfindingResponse =
+                    runPathfindingBlockPostProcessing(
+                        infra,
+                        path.trainPath,
+                        path.waypointOffsets,
+                        path.backtrackIndexes,
+                    )
+
+                val simulationResponse =
+                    buildSimResponse(
+                        infra,
+                        path,
+                        request.consistSchedule.values[0].speedLimitTag,
+                        temporarySpeedLimitManager,
+                        request.comfort,
+                    )
+
+                val departureTime =
+                    request.startTime.plus(ofMillis((path.departureTime * 1000).toLong()))
+
+                logDebugData(
+                    infra.rawInfra,
+                    path,
+                    simulationResponse,
+                    departureTime,
+                    requirements.metadata,
+                    s3Context,
+                )
+
+                val result = STDCMSuccess(simulationResponse, pathfindingResponse, departureTime)
                 val response = STDCMFinalResult(status = STDCMProgressStatus.DONE, result = result)
                 return RsJson(RsWithBody(STDCMFinalResult.adapter.toJson(response)))
             }
@@ -255,29 +289,6 @@ class STDCMEndpoint(
                     partialPathfindingResult,
                     lastReachedOperationalPoint,
                 )
-
-            val simulationResponse =
-                buildSimResponse(
-                    infra,
-                    path,
-                    request.consistSchedule.values[0].speedLimitTag,
-                    temporarySpeedLimitManager,
-                    request.comfort,
-                )
-
-            val departureTime =
-                request.startTime.plus(ofMillis((path.departureTime * 1000).toLong()))
-
-            logDebugData(
-                infra.rawInfra,
-                path,
-                simulationResponse,
-                departureTime,
-                requirements.metadata,
-                s3Context,
-            )
-
-            val result = STDCMSuccess(simulationResponse, pathfindingResponse, departureTime)
             val response = STDCMFinalResult(status = STDCMProgressStatus.DONE, result = result)
             RsJson(RsWithBody(STDCMFinalResult.adapter.toJson(response)))
         } catch (ex: Throwable) {
