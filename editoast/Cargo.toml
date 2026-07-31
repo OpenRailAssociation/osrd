@@ -137,7 +137,9 @@ tempfile = "3.20.0" # redis-test (crate cache) isn't up to date
 thiserror = "2.0.18"
 tokio = { version = "1.52.3", features = ["fs", "macros", "rt-multi-thread"] }
 tokio-postgres = "0.7.17"
-tokio-stream = "0.1.18"
+tokio-stream = { version = "0.1.19", default-features = false, features = [
+  "rt",
+] }
 tracing = { version = "0.1.44", default-features = false, features = [
   "attributes",
   "log",

@@ -16,6 +16,8 @@ use schemas::train_schedule::PathItemLocation;
 use serde::Deserialize;
 use serde::Serialize;
 use tokio::task::JoinSet;
+use tokio_stream::StreamExt as _;
+use tokio_stream::wrappers::JoinSetStream;
 use tracing::Instrument as _;
 use utoipa::ToSchema;
 
@@ -171,10 +173,11 @@ pub(in crate::views) async fn search_journeys(
     })
     .await?;
 
-    let mut timetables = Vec::new();
-    while let Some(ts_fut_result) = train_schedule_futs.join_next().await {
-        timetables.push(ts_fut_result??);
-    }
+    let timetables = JoinSetStream::new(train_schedule_futs)
+        // Converts `Result<Result<_, InternalError>, JoinError>` into `Result<_, InternalError>`
+        .map(|fut| fut?)
+        .collect::<Result<Vec<_>>>()
+        .await?;
 
     let op_references: Vec<&OperationalPointPartReference> = timetables
         .iter()
