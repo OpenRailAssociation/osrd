@@ -1,16 +1,20 @@
 import { useCallback, useEffect, useState } from 'react';
 
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import { setSearchJourneyEnv } from 'reducers/searchJourney';
+import { useAppDispatch } from 'store';
+
 export const NO_CONFIG_FOUND_MSG = 'No configuration found';
 
 /**
  * Hook in charge of loading the search journey environment (infra + timetables)
- * by calling `GET /journey_search_environment` and dispatching `setSearchJourneyEnv`.
- *
- * TODO: wire this hook to the real editoast endpoint once it's available
- * Until then, it resolves with an error so that `SearchJourneyView`
- * falls back to its empty configuration state.
+ * by calling `GET /search_journeys/search_environment` and dispatching `setSearchJourneyEnv`.
  */
 export default function useSearchJourneyEnv() {
+  const dispatch = useAppDispatch();
+  const [getSearchJourneysSearchEnvironment] =
+    osrdEditoastApi.endpoints.getSearchJourneysSearchEnvironment.useLazyQuery();
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<null | Error>(null);
 
@@ -19,13 +23,21 @@ export default function useSearchJourneyEnv() {
       setError(null);
       setLoading(true);
 
-      throw new Error(NO_CONFIG_FOUND_MSG);
+      // Kept in sync with useStdcmEnv's { data } + manual throw pattern for consistency.
+      const { data } = await getSearchJourneysSearchEnvironment();
+      if (!data) throw new Error(NO_CONFIG_FOUND_MSG);
+      dispatch(
+        setSearchJourneyEnv({
+          infraId: data.infra_id,
+          timetableIds: data.timetable_ids,
+        })
+      );
     } catch (e) {
       setError(e as Error);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [getSearchJourneysSearchEnvironment, dispatch]);
 
   useEffect(() => {
     loadSearchJourneyEnv();
