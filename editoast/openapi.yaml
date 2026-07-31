@@ -15540,6 +15540,23 @@ components:
           description: |-
             For calendar timetables: elapsed ms since 1970-01-01T00:00:00Z.
             For hourly timetables: elapsed ms since the timetable start.
+    StdcmLastReachedOperationalPoint:
+      type: object
+      required:
+      - id
+      - geographic
+      - arrival_time
+      - operational_point
+      properties:
+        arrival_time:
+          type: string
+          format: date-time
+        geographic:
+          $ref: '#/components/schemas/GeoJsonPoint'
+        id:
+          type: string
+        operational_point:
+          $ref: '#/components/schemas/OperationalPoint'
     StdcmPathfindingItem:
       type: object
       required:
@@ -15596,8 +15613,26 @@ components:
       - type: object
         title: StdcmResponsePathNotFound
         required:
+        - most_blocking_work_schedule_ids
+        - nearest_to_destination_work_schedule
         - status
         properties:
+          last_reached_operational_point:
+            oneOf:
+            - type: 'null'
+            - $ref: '#/components/schemas/StdcmLastReachedOperationalPoint'
+          most_blocking_work_schedule_ids:
+            type: array
+            items:
+              type: string
+          nearest_to_destination_work_schedule:
+            type: array
+            items:
+              $ref: '#/components/schemas/WorkSchedule'
+          partial_pathfinding_result:
+            oneOf:
+            - type: 'null'
+            - $ref: '#/components/schemas/CorePathfindingResultSuccess'
           status:
             type: string
             enum:

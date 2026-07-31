@@ -265,7 +265,7 @@ class STDCMEndpoint(
                         .getOperationalPointParts()
                         .asSequence()
                         .mapNotNull {
-                            infra.rawInfra.getOperationalPointPartProps(it.value)["name"]
+                            infra.rawInfra.getOperationalPointPartOpId(it.value)
                         }
                         .last()
                 val arrivalTime =

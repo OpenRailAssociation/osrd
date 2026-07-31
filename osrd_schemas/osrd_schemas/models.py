@@ -3957,10 +3957,6 @@ class StartTimeChangeGroup(BaseModel):
     """
 
 
-class StdcmResponsePathNotFound(BaseModel):
-    status: Literal["path_not_found"]
-
-
 class StdcmResponseInternalError(BaseModel):
     error: InternalError
     status: Literal["internal_error"]
@@ -6851,22 +6847,6 @@ class StdcmResponsePreprocessingSimulationError(BaseModel):
     status: Literal["preprocessing_simulation_error"]
 
 
-class StdcmResponse(
-    RootModel[
-        StdcmResponseSuccess
-        | StdcmResponsePathNotFound
-        | StdcmResponsePreprocessingSimulationError
-        | StdcmResponseInternalError
-    ]
-):
-    root: (
-        StdcmResponseSuccess
-        | StdcmResponsePathNotFound
-        | StdcmResponsePreprocessingSimulationError
-        | StdcmResponseInternalError
-    )
-
-
 class Switch(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
@@ -7256,6 +7236,37 @@ class SimDebugData(BaseModel):
     train_positions: list[float]
     train_times: list[float]
     zone_locations: list[SimDebugZoneLocation]
+
+
+class StdcmLastReachedOperationalPoint(BaseModel):
+    arrival_time: AwareDatetime
+    geographic: GeoJsonPoint
+    id: str
+    operational_point: OperationalPoint
+
+
+class StdcmResponsePathNotFound(BaseModel):
+    last_reached_operational_point: StdcmLastReachedOperationalPoint | None = None
+    most_blocking_work_schedule_ids: list[str]
+    nearest_to_destination_work_schedule: list[WorkSchedule]
+    partial_pathfinding_result: CorePathfindingResultSuccess | None = None
+    status: Literal["path_not_found"]
+
+
+class StdcmResponse(
+    RootModel[
+        StdcmResponseSuccess
+        | StdcmResponsePathNotFound
+        | StdcmResponsePreprocessingSimulationError
+        | StdcmResponseInternalError
+    ]
+):
+    root: (
+        StdcmResponseSuccess
+        | StdcmResponsePathNotFound
+        | StdcmResponsePreprocessingSimulationError
+        | StdcmResponseInternalError
+    )
 
 
 class TrainScheduleExceptionChangeGroups(BaseModel):

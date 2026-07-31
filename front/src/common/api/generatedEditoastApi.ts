@@ -4922,6 +4922,22 @@ export type StdcmProgressionEvent = {
   best_travel_time: number;
   point: GeoJsonPoint;
 };
+export type StdcmLastReachedOperationalPoint = {
+  arrival_time: string;
+  geographic: GeoJsonPoint;
+  id: string;
+  operational_point: OperationalPoint;
+};
+export type WorkScheduleType = 'CATENARY' | 'TRACK';
+export type WorkSchedule = {
+  end_date_time: string;
+  id: number;
+  obj_id: string;
+  start_date_time: string;
+  track_ranges: TrackRange[];
+  work_schedule_group_id: number;
+  work_schedule_type: WorkScheduleType;
+};
 export type InternalError = {
   context: {
     [key: string]: unknown;
@@ -4950,6 +4966,10 @@ export type StdcmResponse =
       status: 'success';
     }
   | {
+      last_reached_operational_point?: null | StdcmLastReachedOperationalPoint;
+      most_blocking_work_schedule_ids: string[];
+      nearest_to_destination_work_schedule: WorkSchedule[];
+      partial_pathfinding_result?: null | CorePathfindingResultSuccess;
       status: 'path_not_found';
     }
   | {
@@ -5377,16 +5397,6 @@ export type WorkScheduleItemForm = {
   start_date_time: string;
   track_ranges: TrackRange[];
   work_schedule_type: 'CATENARY' | 'TRACK';
-};
-export type WorkScheduleType = 'CATENARY' | 'TRACK';
-export type WorkSchedule = {
-  end_date_time: string;
-  id: number;
-  obj_id: string;
-  start_date_time: string;
-  track_ranges: TrackRange[];
-  work_schedule_group_id: number;
-  work_schedule_type: WorkScheduleType;
 };
 export type Intersection = {
   /** Distance of the end of the intersection relative to the beginning of the path */

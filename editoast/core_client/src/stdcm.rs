@@ -146,6 +146,14 @@ pub struct ConsistSchedule {
     pub values: Vec<ConsistConfiguration>,
 }
 
+// Represents the last reached operational point in a partial pathfinding result
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, ToSchema)]
+pub struct LastReachedOperationalPoint {
+    pub id: String,
+    pub coordinates: ProgressCoordinates,
+    pub arrival_time: DateTime<Utc>,
+}
+
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
 #[serde(tag = "status", rename_all = "SCREAMING_SNAKE_CASE")]
 #[allow(clippy::large_enum_variant)]
@@ -176,7 +184,12 @@ pub enum Response {
         path: PathfindingResultSuccess,
         departure_time: DateTime<Utc>,
     },
-    PathNotFound,
+    PathNotFound {
+        most_blocking_work_schedule_ids: Vec<String>,
+        nearest_to_destination_work_schedule_ids: Vec<String>,
+        partial_path: Option<PathfindingResultSuccess>,
+        last_reached_operational_point: Option<LastReachedOperationalPoint>,
+    },
 }
 
 impl AsCoreRequest<Json<Response>> for Request {
