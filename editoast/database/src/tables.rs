@@ -461,7 +461,6 @@ diesel::table! {
         position_y -> Int8,
         #[max_length = 255]
         full_name -> Nullable<Varchar>,
-        connection_time -> Int8,
         labels -> Array<Nullable<Text>>,
         #[max_length = 255]
         trigram -> Nullable<Varchar>,

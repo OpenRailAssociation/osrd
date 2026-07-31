@@ -23,7 +23,6 @@ export const castNgeNode = (
   ngeId: node.id,
   trigram: node.betriebspunktName,
   full_name: node.fullName,
-  connection_time: node.connectionTime,
   position_x: Math.round(node.positionX),
   position_y: Math.round(node.positionY),
   is_collapsed: node.isCollapsed,
