@@ -4,6 +4,7 @@ import type { Track } from '@osrd-project/ui-charts';
 import { v4 as uuidV4 } from 'uuid';
 
 import { useTimetableContext } from 'applications/operationalStudies/hooks/useTimetableContext';
+import type { PacedTrainResponse } from 'applications/operationalStudies/types';
 import {
   buildOccurrenceExceptionData,
   updatePacedTrainExceptionsList,
@@ -19,9 +20,11 @@ import type { ProjectionWaypoint } from 'modules/simulationResult/types';
 import {
   computeIndexedOccurrenceStartTime,
   extractOccurrenceDetailsFromPacedTrain,
+  findExceptionWithOccurrenceId,
   findTrainScheduleAndException,
   getOccurrenceTrainName,
   isPacedTrain,
+  isPacedTrainWithDetails,
   withPacedExceptions,
 } from 'modules/trainSchedule/helpers/pacedTrain';
 import {
@@ -33,7 +36,11 @@ import type { TrainScheduleWithDetails, SimulationSummary } from 'modules/trainS
 import type { TrainId } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 import { Duration, startTimeToDate } from 'utils/duration';
-import { extractOccurrenceIndexFromOccurrenceId, isOccurrenceId } from 'utils/trainId';
+import {
+  extractOccurrenceIndexFromOccurrenceId,
+  formatTrainScheduleIdToOccurrenceId,
+  isOccurrenceId,
+} from 'utils/trainId';
 
 /**
  * Insert or update a path step to go through a specific track.
@@ -111,6 +118,24 @@ function upsertPathStepTrack(
   return newPath;
 }
 
+/**
+ * Use the existing start_time override if there is one, otherwise compute the
+ * occurrence's own.
+ */
+function getOccurrenceStartTime(
+  rawTrainSchedule: PacedTrainResponse,
+  startTimeOverride: PacedTrainException['start_time'],
+  getOccurrenceIndex: () => number
+): Date {
+  return startTimeOverride
+    ? new Date(startTimeOverride.value)
+    : computeIndexedOccurrenceStartTime(
+        new Date(rawTrainSchedule.start_time),
+        Duration.parse(rawTrainSchedule.paced.interval),
+        getOccurrenceIndex()
+      );
+}
+
 export default function useOccupancyZoneDrop({
   trainSchedulesWithDetails,
   pathOperationalPoints,
@@ -167,15 +192,11 @@ export default function useOccupancyZoneDrop({
           throw new Error(`Occurrence ID references a non-paced train ${rawTrainSchedule.id}`);
         }
         const { paced: _paced, ...occurrenceBaseTrain } = rawTrainSchedule;
-        // Use the existing start_time override if there is one, otherwise compute this
-        // occurrence's own.
-        const occurrenceStartTime = exception?.start_time
-          ? new Date(exception.start_time.value)
-          : computeIndexedOccurrenceStartTime(
-              new Date(rawTrainSchedule.start_time),
-              Duration.parse(rawTrainSchedule.paced.interval),
-              extractOccurrenceIndexFromOccurrenceId(trainId)
-            );
+        const occurrenceStartTime = getOccurrenceStartTime(
+          rawTrainSchedule,
+          exception?.start_time,
+          () => extractOccurrenceIndexFromOccurrenceId(trainId)
+        );
         const updatedOccurrence: TrainSchedule = {
           ...extractOccurrenceDetailsFromPacedTrain(occurrenceBaseTrain, exception),
           path: newPath,
@@ -212,25 +233,53 @@ export default function useOccupancyZoneDrop({
         );
 
         // 'all' mode also forces every occurrence with its own path_and_schedule exception
-        // onto the new track.
+        // onto the new track (only the ones whose own path contains this waypoint).
         if (panelSelectionMode === 'all' && isPacedTrain(rawTrainSchedule)) {
+          if (!isPacedTrainWithDetails(trainSchedule)) {
+            throw new Error(`Train schedule ${trainSchedule.id} references a non-paced train`);
+          }
+          const waypointZones = deployedWaypoints.find((wp) => wp.waypointId === waypointId)?.zones;
+
           const updatedExceptions: PacedTrainException[] = rawTrainSchedule.paced.exceptions.map(
-            (pacedException) =>
-              pacedException.path_and_schedule
-                ? {
-                    ...pacedException,
-                    path_and_schedule: {
-                      ...pacedException.path_and_schedule,
-                      path: upsertPathStepTrack(
-                        pacedException.path_and_schedule.path,
-                        simulationSummary,
-                        operationalPoint,
-                        occupancyZoneStartOffset,
-                        track.name!
-                      ),
-                    },
-                  }
-                : pacedException
+            (pacedException) => {
+              if (!pacedException.path_and_schedule || pacedException.disabled) {
+                return pacedException;
+              }
+
+              const occurrenceId = formatTrainScheduleIdToOccurrenceId(trainId, pacedException);
+              const occurrenceZone = waypointZones?.find((zone) => zone.trainId === occurrenceId);
+              if (!occurrenceZone) {
+                // We don't move this occurrence. Its own path doesn't contain the dragged waypoint.
+                return pacedException;
+              }
+
+              const occurrenceOwnStartTime = getOccurrenceStartTime(
+                rawTrainSchedule,
+                pacedException.start_time,
+                () => pacedException.occurrence_index!
+              );
+              const occurrenceOffset = Duration.subtractDate(
+                new Date(occurrenceZone.startTime),
+                occurrenceOwnStartTime
+              );
+              const occurrenceSummary =
+                findExceptionWithOccurrenceId(trainSchedule.paced.exceptions, occurrenceId)
+                  ?.summary ?? trainSchedule.summary;
+
+              return {
+                ...pacedException,
+                path_and_schedule: {
+                  ...pacedException.path_and_schedule,
+                  path: upsertPathStepTrack(
+                    pacedException.path_and_schedule.path,
+                    occurrenceSummary,
+                    operationalPoint,
+                    occurrenceOffset,
+                    track.name!
+                  ),
+                },
+              };
+            }
           );
           const exceptionsToPersist = updatedExceptions.filter((e) => e.path_and_schedule);
           if (exceptionsToPersist.length) {
