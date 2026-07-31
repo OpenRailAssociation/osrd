@@ -4,6 +4,7 @@ import fr.sncf.osrd.api.ConsistSchedule
 import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.envelope_sim.Comfort
 import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue
+import fr.sncf.osrd.path.interfaces.PhysicsPath
 import fr.sncf.osrd.pathfinding.Pathfinding
 import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
@@ -11,6 +12,7 @@ import fr.sncf.osrd.sim_infra.impl.TemporarySpeedLimitManager
 import fr.sncf.osrd.stdcm.STDCMResult
 import fr.sncf.osrd.stdcm.infra_exploration.ExplorerStep
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorerWithEnvelope
+import fr.sncf.osrd.stdcm.infra_exploration.LocatedStep
 import fr.sncf.osrd.stdcm.infra_exploration.initInfraExplorerWithEnvelope
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface
 import fr.sncf.osrd.stdcm.tracing.FailureExplainer
@@ -19,6 +21,7 @@ import fr.sncf.osrd.stdcm.tracing.ProgressLogger
 import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.utils.LogAggregator
 import fr.sncf.osrd.utils.units.Offset
+import fr.sncf.osrd.utils.units.meters
 import io.opentelemetry.api.trace.Span
 import io.opentelemetry.api.trace.SpanKind
 import io.opentelemetry.instrumentation.annotations.WithSpan
@@ -257,32 +260,12 @@ class STDCMPathfinding(
         }
 
         val edgeList = edges.toList()
-        return Result(edgeList, makeWaypoints(edgeList))
-    }
 
-    private fun makeWaypoints(edges: List<STDCMEdge>): List<EdgeLocation> {
-        var nextStepIndex = 0
-        var currentEdgeIndex = 0
-        val res = mutableListOf<EdgeLocation>()
-        while (currentEdgeIndex < edges.size && nextStepIndex < steps.size) {
-            val step = steps[nextStepIndex]
-            val edge = edges[currentEdgeIndex]
-            val locationOnEdge =
-                step.locations
-                    .filter { it.edge == edge.block }
-                    .mapNotNull { edge.edgeOffsetFromBlock(it.offset) }
-                    .minOrNull()
-            // Sometimes a step has several locations on the same edge, we just pick the first
-            if (locationOnEdge != null) {
-                res.add(EdgeLocation(edge, locationOnEdge))
-                nextStepIndex++
-            } else {
-                currentEdgeIndex++
-            }
-        }
-        assert(nextStepIndex == steps.size)
-        assert(currentEdgeIndex == edges.size - 1)
-        return res
+        val reachedSteps =
+            node.infraExplorer.getStepTracker().iterateReachedStepsBackwards().toList().asReversed()
+        val waypoints = makeWaypoints(edgeList, reachedSteps)
+
+        return Result(edgeList, waypoints)
     }
 
     /** Converts start locations into starting nodes. */
@@ -321,4 +304,32 @@ class STDCMPathfinding(
         }
         return res
     }
+}
+
+private fun makeWaypoints(
+    edges: List<STDCMEdge>,
+    reachedSteps: List<LocatedStep>,
+): List<EdgeLocation> {
+    val res = mutableListOf<EdgeLocation>()
+    var nextStepIndex = 0
+    var edgeStartOffset = Offset<PhysicsPath>(0.meters)
+
+    for (edge in edges) {
+        val edgeEndOffset = edgeStartOffset + edge.length.distance
+        while (
+            nextStepIndex < reachedSteps.size &&
+                edge.block == reachedSteps[nextStepIndex].location.edge &&
+                reachedSteps[nextStepIndex].travelledPathOffset in edgeStartOffset..edgeEndOffset
+        ) {
+            val locationOnEdge =
+                edge.edgeOffsetFromBlock(reachedSteps[nextStepIndex].location.offset)
+            res.add(EdgeLocation(edge, locationOnEdge!!))
+            nextStepIndex++
+        }
+        edgeStartOffset = edgeEndOffset
+    }
+    assert(edgeStartOffset == reachedSteps.last().travelledPathOffset)
+    assert(reachedSteps.size == res.size)
+
+    return res
 }
