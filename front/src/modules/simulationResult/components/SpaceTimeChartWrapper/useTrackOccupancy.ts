@@ -334,7 +334,6 @@ const useTrackOccupancy = ({
 
         res.push({
           waypointId,
-          operationalPointId: op.waypointId,
           operationalPointPosition: op.position,
           operationalPointName: op.name,
           zones: resolvedZones,
