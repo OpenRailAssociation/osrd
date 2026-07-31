@@ -11,8 +11,10 @@ import {
   type TrainScheduleResponse,
 } from 'common/api/osrdEditoastApi';
 import { matchPathStepAndOp } from 'modules/pathfinding/utils';
-import type { MovableOccupancyZone } from 'modules/simulationResult/components/SpaceTimeChartWrapper/helpers/zones';
-import type { DeployedWaypoint } from 'modules/simulationResult/components/SpaceTimeChartWrapper/useTrackOccupancy';
+import type {
+  MovableOccupancyZone,
+  DeployedWaypoint,
+} from 'modules/simulationResult/components/SpaceTimeChartWrapper/helpers/zones';
 import type { ProjectionWaypoint } from 'modules/simulationResult/types';
 import { findTrainScheduleAndException } from 'modules/trainSchedule/helpers/pacedTrain';
 import { storeTrainSchedule } from 'modules/trainSchedule/helpers/updateTrainScheduleHelpers';
