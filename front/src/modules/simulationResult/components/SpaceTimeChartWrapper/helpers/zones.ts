@@ -20,7 +20,6 @@ export type MovableOccupancyZone = Omit<OccupancyZone, 'curveStyle'> & {
 
 export type DeployedWaypoint = {
   waypointId: string;
-  operationalPointId: string;
   operationalPointPosition: number;
   operationalPointName?: string;
   zones?: MovableOccupancyZone[];

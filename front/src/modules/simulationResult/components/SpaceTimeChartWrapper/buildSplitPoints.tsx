@@ -77,15 +77,7 @@ export function buildSplitPoints({
     occupancyZonesLayers,
     ({ operationalPointPosition }) => operationalPointPosition
   ).map(
-    ({
-      waypointId,
-      operationalPointId,
-      operationalPointName,
-      operationalPointPosition,
-      zones,
-      tracks,
-      loading,
-    }) => {
+    ({ waypointId, operationalPointName, operationalPointPosition, zones, tracks, loading }) => {
       const baseZones = zones ?? [];
       const zonesCountByTrainScheduleId = countZonesByTrainScheduleId(baseZones);
 
@@ -136,7 +128,8 @@ export function buildSplitPoints({
         id: waypointId,
         name: (
           <div className="d-flex flex-row align-items-center">
-            {operationalPointName || operationalPointId}
+            {/* TODO: find a better fallback when OP isn't found in infra */}
+            {operationalPointName || waypointId}
             {loading && <Spinner className="ml-2 small" spinnerClassName="spinner-border-sm" />}
           </div>
         ),
