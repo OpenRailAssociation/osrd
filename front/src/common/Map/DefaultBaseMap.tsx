@@ -29,6 +29,7 @@ type DefaultBaseMapProps = {
   highlightedArea?: Geometry;
   highlightedOperationalPoints?: number[];
   highlightedTrackSections?: string[];
+  withToggleLayersButton?: boolean;
 };
 
 const ZOOM_DEFAULT = 5;
@@ -53,6 +54,7 @@ const DefaultBaseMap = ({
   highlightedArea,
   highlightedOperationalPoints,
   highlightedTrackSections,
+  withToggleLayersButton,
 }: PropsWithChildren<DefaultBaseMapProps>) => {
   const mapRef = useRef<MapRef | null>(null);
   const { viewport } = mapSettings;
@@ -111,6 +113,7 @@ const DefaultBaseMap = ({
         bearing={viewport.bearing}
         withMapKeyButton={false}
         withSearchButton={false}
+        withToggleLayersButton={withToggleLayersButton}
         viewPort={viewport}
         isNewButtons
         compactModal
