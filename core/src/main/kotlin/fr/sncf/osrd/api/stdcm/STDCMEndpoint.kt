@@ -161,7 +161,8 @@ class STDCMEndpoint(
                     consistSchedules.rollingStocks.map { it.length },
                 )
             val requirements = getRequirements(request, infra, timetableCacheManager)
-            val failureExplainer =
+
+            val fullFailureExplainer =
                 FailureExplainer(request.startTime, infra.rawInfra, infra.blockInfra)
 
             var callback: ProgressCallback? = null
@@ -192,10 +193,10 @@ class STDCMEndpoint(
                     Pathfinding.TIMEOUT,
                     temporarySpeedLimitManager,
                     STDCMGraph.SearchMetadata(request.startTime, requirements.metadata, s3Context),
-                    failureExplainer = failureExplainer,
+                    fullFailureExplainer,
                     callback,
                 )
-            failureExplainer.saveReport(s3Context)
+            fullFailureExplainer.saveReport(s3Context)
             if (path == null || hasDuplicateTracks(infra, path.trainPath)) {
                 val result = PathNotFound()
                 val response = STDCMFinalResult(status = STDCMProgressStatus.DONE, result = result)

@@ -25,7 +25,7 @@ internal constructor(
     private val graph: STDCMGraph,
     // Margin added to every occupancy, to account for binary search tolerance
     private val internalMargin: Double,
-    private val failureExplainer: FailureExplainer?,
+    private val fullFailureExplainer: FailureExplainer?,
 ) {
     /**
      * Returns one value per "opening" (interval between two unavailable times). Always returns the
@@ -54,7 +54,7 @@ internal constructor(
                         if (availability.maximumDelay >= internalMargin) {
                             res.add(time - startTime)
                             prevConflict?.causes?.forEach { cause ->
-                                failureExplainer?.conflictCallback(
+                                fullFailureExplainer?.conflictCallback(
                                     prevNode,
                                     cause.duration,
                                     cause.cause,
@@ -70,7 +70,7 @@ internal constructor(
                 }
         }
         prevConflict?.causes?.forEach { cause ->
-            failureExplainer?.conflictCallback(prevNode, cause.duration, cause.cause)
+            fullFailureExplainer?.conflictCallback(prevNode, cause.duration, cause.cause)
         }
         return res
     }
