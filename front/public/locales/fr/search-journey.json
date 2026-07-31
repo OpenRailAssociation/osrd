@@ -1,8 +1,8 @@
 {
   "appName": "Expression de besoins",
   "consist": {
-    "unavailable": "Indisponible",
-    "title": "Convoi"
+    "title": "Convoi",
+    "unavailable": "Indisponible"
   },
   "destination": {
     "title": "Destination"
@@ -13,6 +13,12 @@
   },
   "origin": {
     "title": "Origine"
+  },
+  "search": {
+    "button": "Rechercher dans les PER",
+    "cancel": "Annuler",
+    "error": "La recherche a échoué. Veuillez réessayer.",
+    "pending": "Recherche en cours…"
   },
   "trainPath": {
     "ch": "CH",
