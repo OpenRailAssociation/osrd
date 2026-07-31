@@ -4191,10 +4191,6 @@ class StartTimeChangeGroup(BaseModel):
     """
 
 
-class StdcmResponsePathNotFound(BaseModel):
-    status: Literal["path_not_found"] = "path_not_found"
-
-
 class StdcmResponseInternalError(BaseModel):
     error: InternalError
     status: Literal["internal_error"] = "internal_error"
@@ -7089,22 +7085,6 @@ class StdcmResponsePreprocessingSimulationError(BaseModel):
     status: Literal["preprocessing_simulation_error"] = "preprocessing_simulation_error"
 
 
-class StdcmResponse(
-    RootModel[
-        StdcmResponseSuccess
-        | StdcmResponsePathNotFound
-        | StdcmResponsePreprocessingSimulationError
-        | StdcmResponseInternalError
-    ]
-):
-    root: (
-        StdcmResponseSuccess
-        | StdcmResponsePathNotFound
-        | StdcmResponsePreprocessingSimulationError
-        | StdcmResponseInternalError
-    )
-
-
 class Switch(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
@@ -7494,6 +7474,50 @@ class SimDebugData(BaseModel):
     train_positions: list[float]
     train_times: list[float]
     zone_locations: list[SimDebugZoneLocation]
+
+
+class StdcmConflictingWorkSchedule(BaseModel):
+    """
+    Represents one conflicting work schedule in a partial pathfinding result
+    """
+
+    end_date_time: AwareDatetime
+    last_op: OperationalPoint
+    start_date_time: AwareDatetime
+
+
+class StdcmLastReachedOperationalPoint(BaseModel):
+    """
+    Represents the last reached operational point in a partial pathfinding result
+    """
+
+    arrival_time: AwareDatetime
+    geographic: GeoJsonPoint
+    operational_point: OperationalPoint
+
+
+class StdcmResponsePathNotFound(BaseModel):
+    last_reached_operational_point: StdcmLastReachedOperationalPoint | None = None
+    most_blocking_work_schedules: list[StdcmConflictingWorkSchedule]
+    nearest_to_destination_work_schedules: list[StdcmConflictingWorkSchedule]
+    partial_pathfinding_result: CorePathfindingResultSuccess | None = None
+    status: Literal["path_not_found"] = "path_not_found"
+
+
+class StdcmResponse(
+    RootModel[
+        StdcmResponseSuccess
+        | StdcmResponsePathNotFound
+        | StdcmResponsePreprocessingSimulationError
+        | StdcmResponseInternalError
+    ]
+):
+    root: (
+        StdcmResponseSuccess
+        | StdcmResponsePathNotFound
+        | StdcmResponsePreprocessingSimulationError
+        | StdcmResponseInternalError
+    )
 
 
 class TrainScheduleExceptionChangeGroups(BaseModel):

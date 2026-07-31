@@ -146,6 +146,21 @@ pub struct ConsistSchedule {
     pub values: Vec<ConsistConfiguration>,
 }
 
+/// Represents the last reached operational point in a partial pathfinding result
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, ToSchema)]
+pub struct LastReachedOperationalPoint {
+    pub id: String,
+    pub coordinates: ProgressCoordinates,
+    pub arrival_time: DateTime<Utc>,
+}
+
+/// Represents one conflicting work schedule in a partial pathfinding result
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, ToSchema)]
+pub struct ConflictingWorkSchedule {
+    pub id: String,
+    pub last_op_id: String,
+}
+
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
 #[serde(tag = "status", rename_all = "SCREAMING_SNAKE_CASE")]
 #[allow(clippy::large_enum_variant)]
@@ -176,7 +191,12 @@ pub enum Response {
         path: PathfindingResultSuccess,
         departure_time: DateTime<Utc>,
     },
-    PathNotFound,
+    PathNotFound {
+        most_blocking_work_schedules: Vec<ConflictingWorkSchedule>,
+        nearest_to_destination_work_schedules: Vec<ConflictingWorkSchedule>,
+        partial_path: Option<PathfindingResultSuccess>,
+        last_reached_operational_point: Option<LastReachedOperationalPoint>,
+    },
 }
 
 impl AsCoreRequest<Json<Response>> for Request {

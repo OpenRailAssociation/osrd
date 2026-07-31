@@ -6,6 +6,8 @@ import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import fr.sncf.osrd.api.S3Context
 import fr.sncf.osrd.conflicts.RequirementId
+import fr.sncf.osrd.path.implementations.buildTrainPathFromBlockRanges
+import fr.sncf.osrd.path.interfaces.BlockRange
 import fr.sncf.osrd.railjson.schema.geom.RJSLineString
 import fr.sncf.osrd.sim_infra.api.BlockInfra
 import fr.sncf.osrd.sim_infra.api.RawInfra
@@ -16,6 +18,7 @@ import java.io.File
 import java.time.Duration
 import java.time.ZonedDateTime
 import java.util.PriorityQueue
+import kotlin.collections.ifEmpty
 
 /**
  * Keep track of some of the most relevant conflicts encountered during the search.
@@ -103,7 +106,7 @@ class FailureExplainer(
                 cause,
                 geoPoint.lat,
                 geoPoint.lon,
-                lastOPName,
+                lastOPId,
                 pathGeometry,
             )
         }
