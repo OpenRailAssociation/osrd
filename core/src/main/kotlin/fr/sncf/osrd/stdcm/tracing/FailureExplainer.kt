@@ -58,7 +58,7 @@ class FailureExplainer(
                 trainPath
                     .getOperationalPointParts()
                     .asSequence()
-                    .mapNotNull { rawInfra.getOperationalPointPartProps(it.value)["identifier"] }
+                    .mapNotNull { rawInfra.getOperationalPointPartProps(it.value)["name"] }
                     .lastOrNull()
             val geoLineString = trainPath.getGeo()
             val pathGeometry =
