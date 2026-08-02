@@ -64,6 +64,7 @@ pub(crate) trait ViewError: std::error::Error + utoipa::IntoResponses + Sized {
 }
 
 #[derive(Debug, serde::Serialize)]
+#[cfg_attr(test, derive(PartialEq, Eq))]
 pub(crate) struct EditoastError {
     pub(crate) r#type: String,
     #[serde(with = "crate::error::StatusCodeRemoteDef")]
@@ -147,5 +148,68 @@ impl OpenApiResponse {
                 .required("context")
                 .build(),
         ))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    use editoast_derive::ViewError;
+
+    impl EditoastError {
+        fn new(r#type: &str, status: u16, message: &str) -> Self {
+            Self {
+                r#type: r#type.to_string(),
+                status: http::StatusCode::from_u16(status).unwrap(),
+                message: message.to_string(),
+                context: Default::default(),
+            }
+        }
+
+        fn context(mut self, key: &str, value: impl serde::Serialize) -> Self {
+            self.context
+                .insert(key.to_string(), serde_json::to_value(value).unwrap());
+            self
+        }
+    }
+
+    mod unit_struct {
+        use super::*;
+
+        use pretty_assertions::assert_eq;
+
+        #[test]
+        fn default() {
+            #[derive(Debug, thiserror::Error, ViewError)]
+            #[error("ohno")]
+            struct Unit;
+
+            assert_eq!(
+                EditoastError::from(Unit),
+                EditoastError::new("editoast::Unit", 500, "ohno")
+            );
+        }
+    }
+
+    mod tuple {
+        use super::*;
+
+        use pretty_assertions::assert_eq;
+
+        #[test]
+        fn context() {
+            #[derive(Debug, thiserror::Error, ViewError)]
+            #[error("ohno")]
+            #[view_error(context)]
+            struct Tuple(String, u32);
+
+            assert_eq!(
+                EditoastError::from(Tuple("foo".to_string(), 42)),
+                EditoastError::new("editoast::Tuple", 500, "ohno")
+                    .context("0", "foo")
+                    .context("1", 42)
+            );
+        }
     }
 }
