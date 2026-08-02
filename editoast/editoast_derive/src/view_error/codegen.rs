@@ -30,18 +30,18 @@ impl ToTokens for Codegen {
 }
 
 pub(super) struct ViewErrorImpl {
-    pub(super) implementor: syn::Ident,
-    pub(super) label: String,
-    pub(super) label_impl: Vec<(syn::Pat, OrForwarded<String>)>,
-    pub(super) status_impl: Vec<(syn::Pat, OrForwarded<args::StatusCodeArg>)>,
-    pub(super) variant_label_impl: Option<Vec<(syn::Pat, OrForwarded<String>)>>,
-    pub(super) context_impl: Vec<(syn::Pat, OrForwarded<Context>)>,
-    pub(super) responses_impl: ResponsesImpl,
+    implementor: syn::Ident,
+    label: String,
+    label_impl: Vec<(syn::Pat, OrForwarded<String>)>,
+    status_impl: Vec<(syn::Pat, OrForwarded<args::StatusCodeArg>)>,
+    variant_label_impl: Option<Vec<(syn::Pat, OrForwarded<String>)>>,
+    context_impl: Vec<(syn::Pat, OrForwarded<Context>)>,
+    responses_impl: ResponsesImpl,
 }
 
-pub(super) struct ResponsesImpl {
-    pub(super) openapi: Vec<OpenApiResponse>,
-    pub(super) forwarded_view_errors: Vec<syn::Type>,
+struct ResponsesImpl {
+    openapi: Vec<OpenApiResponse>,
+    forwarded_view_errors: Vec<syn::Type>,
 }
 
 /// ViewErrors can be forwarded when included in another error type using
@@ -50,7 +50,7 @@ pub(super) struct ResponsesImpl {
 /// a value to emit on the token stream or forward a `trait ViewError` function call result
 /// to implement forwarding.
 #[derive(Clone)]
-pub(super) enum OrForwarded<T: ToTokens> {
+enum OrForwarded<T: ToTokens> {
     Value(T),
     Forwarded { binding: syn::Ident },
 }
