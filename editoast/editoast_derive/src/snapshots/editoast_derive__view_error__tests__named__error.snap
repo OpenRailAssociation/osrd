@@ -6,7 +6,7 @@ source: editoast_derive/src/view_error.rs
 
 #[error("named error")]
 #[view_error(context)]
-struct NamedError {
+struct Named {
     source: std::io::Error,
     context: String,
 }
@@ -14,10 +14,10 @@ struct NamedError {
 // Macro expansion
 // -----------------------------------------------------------------------------
 
-impl crate::views::error::ViewError for NamedError {
+impl crate::views::error::ViewError for Named {
     fn label(&self) -> &'static str {
         match self {
-            Self { source: _source, context: _context } => "NamedError",
+            Self { source: _source, context: _context } => "Named",
         }
     }
     fn status(&self) -> axum::http::StatusCode {
@@ -46,7 +46,7 @@ impl crate::views::error::ViewError for NamedError {
     fn responses() -> Vec<crate::views::error::OpenApiResponse> {
         let responses = Vec::from([
             crate::views::error::OpenApiResponse {
-                label: "NamedError",
+                label: "Named",
                 sub_label: None,
                 message_template: Some("named error"),
                 status: axum::http::StatusCode::INTERNAL_SERVER_ERROR,
@@ -61,7 +61,7 @@ impl crate::views::error::ViewError for NamedError {
         responses
     }
 }
-impl utoipa::IntoResponses for NamedError {
+impl utoipa::IntoResponses for Named {
     fn responses() -> std::collections::BTreeMap<
         String,
         utoipa::openapi::RefOr<utoipa::openapi::response::Response>,
@@ -69,7 +69,7 @@ impl utoipa::IntoResponses for NamedError {
         <Self as crate::views::error::ViewError>::utoipa_responses().into()
     }
 }
-impl axum::response::IntoResponse for NamedError {
+impl axum::response::IntoResponse for Named {
     fn into_response(self) -> axum::response::Response {
         <Self as crate::views::error::ViewError>::into_response(self)
     }

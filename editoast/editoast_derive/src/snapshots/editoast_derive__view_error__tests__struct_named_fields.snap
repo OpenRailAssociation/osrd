@@ -4,21 +4,27 @@ source: editoast_derive/src/view_error.rs
 // Source
 // -----------------------------------------------------------------------------
 
+#[error("named error")]
 #[view_error(context)]
-struct UnitWithContext;
+struct Named {
+    source: std::io::Error,
+    context: String,
+}
 
 // Macro expansion
 // -----------------------------------------------------------------------------
 
-impl crate::views::error::ViewError for UnitWithContext {
+impl crate::views::error::ViewError for Named {
     fn label(&self) -> &'static str {
         match self {
-            Self => "UnitWithContext",
+            Self { source: _source, context: _context } => "Named",
         }
     }
     fn status(&self) -> axum::http::StatusCode {
         match self {
-            Self => axum::http::StatusCode::INTERNAL_SERVER_ERROR,
+            Self { source: _source, context: _context } => {
+                axum::http::StatusCode::INTERNAL_SERVER_ERROR
+            }
         }
     }
     fn sub_label(&self) -> Option<&'static str> {
@@ -26,23 +32,36 @@ impl crate::views::error::ViewError for UnitWithContext {
     }
     fn context(self) -> std::collections::HashMap<String, serde_json::Value> {
         match self {
-            Self => std::collections::HashMap::from([]),
+            Self { source: _source, context: _context } => {
+                std::collections::HashMap::from([
+                    (
+                        "context".to_owned(),
+                        serde_json::to_value(_context)
+                            .expect("failed to serialize context entry context"),
+                    ),
+                ])
+            }
         }
     }
     fn responses() -> Vec<crate::views::error::OpenApiResponse> {
         let responses = Vec::from([
             crate::views::error::OpenApiResponse {
-                label: "UnitWithContext",
+                label: "Named",
                 sub_label: None,
-                message_template: None,
+                message_template: Some("named error"),
                 status: axum::http::StatusCode::INTERNAL_SERVER_ERROR,
-                context: Vec::from([]),
+                context: Vec::from([
+                    crate::views::error::ContextEntry {
+                        key: "context",
+                        schema: <String as utoipa::PartialSchema>::schema(),
+                    },
+                ]),
             },
         ]);
         responses
     }
 }
-impl utoipa::IntoResponses for UnitWithContext {
+impl utoipa::IntoResponses for Named {
     fn responses() -> std::collections::BTreeMap<
         String,
         utoipa::openapi::RefOr<utoipa::openapi::response::Response>,
@@ -50,7 +69,7 @@ impl utoipa::IntoResponses for UnitWithContext {
         <Self as crate::views::error::ViewError>::utoipa_responses().into()
     }
 }
-impl axum::response::IntoResponse for UnitWithContext {
+impl axum::response::IntoResponse for Named {
     fn into_response(self) -> axum::response::Response {
         <Self as crate::views::error::ViewError>::into_response(self)
     }
