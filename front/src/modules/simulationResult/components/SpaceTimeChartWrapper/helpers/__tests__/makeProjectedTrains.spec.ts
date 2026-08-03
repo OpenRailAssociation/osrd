@@ -125,6 +125,7 @@ describe('makeProjectedTrains', () => {
 
       expect(result[0]).toEqual({
         id: 'indexedoccurrence_2562_0',
+        key: 'indexedoccurrence_2562_0',
         name: `${pacedTrain.name} 1`,
         departureTime: pacedTrain.departureTime,
         type: 'occurrence',
@@ -133,6 +134,7 @@ describe('makeProjectedTrains', () => {
       });
       expect(result[1]).toEqual({
         id: 'indexedoccurrence_2562_1',
+        key: 'indexedoccurrence_2562_1',
         name: `${exception.train_name!.value}≠`,
         departureTime: new Date('2025-07-09T06:30:00.000Z'),
         type: 'exception',
@@ -256,6 +258,7 @@ describe('makeProjectedTrains', () => {
       expect(result.length).toBe(4);
       expect(result[0]).toEqual({
         id: 'indexedoccurrence_2564_0',
+        key: 'indexedoccurrence_2564_0',
         name: 'auie 1',
         departureTime: pacedTrain.departureTime,
         type: 'occurrence',
@@ -264,6 +267,7 @@ describe('makeProjectedTrains', () => {
       });
       expect(result[1]).toEqual({
         id: 'indexedoccurrence_2564_1',
+        key: 'indexedoccurrence_2564_1',
         name: `${pacedTrain.name} 3`,
         departureTime: dayjs(pacedTrain.departureTime).add(1, 'hour').toDate(),
         type: 'occurrence',
@@ -272,6 +276,7 @@ describe('makeProjectedTrains', () => {
       });
       expect(result[2]).toEqual({
         id: 'indexedoccurrence_2564_2',
+        key: 'indexedoccurrence_2564_2',
         name: `${pacedTrain.name} 5`,
         departureTime: dayjs(pacedTrain.departureTime).add(2, 'hour').toDate(),
         type: 'occurrence',
@@ -280,6 +285,7 @@ describe('makeProjectedTrains', () => {
       });
       expect(result[3]).toEqual({
         id: 'exception_2564_2',
+        key: 'exception_2564_2',
         name: `${exception.train_name!.value}≠`,
         departureTime: new Date(exception.start_time!.value),
         type: 'exception',
@@ -311,6 +317,7 @@ describe('makeProjectedTrains', () => {
       expect(result.length).toBe(4);
       expect(result[3]).toEqual({
         id: 'exception_2564_2',
+        key: 'exception_2564_2',
         name: 'auie/+≠',
         departureTime: exceptionStartTime,
         type: 'exception',

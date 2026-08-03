@@ -22,6 +22,7 @@ import {
 } from 'utils/trainId';
 
 export type PathDataWithSimulated = PathData & {
+  key: string;
   colors: CategoryColors;
   isSimulated?: boolean;
 };
@@ -66,6 +67,7 @@ const formatSpaceTimeCurves = (
     const departureTime = train.departureTime.getTime();
 
     return train.spaceTimeCurves.map((curve) => ({
+      key: `${train.key}-${curve.positions[0]}`,
       id: train.id,
       isSimulated: train.isSimulated,
       label: train.name,

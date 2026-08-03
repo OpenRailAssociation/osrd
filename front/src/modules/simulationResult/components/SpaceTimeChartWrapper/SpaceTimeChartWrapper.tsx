@@ -752,7 +752,7 @@ const SpaceTimeChartWrapper = ({
               );
               return (
                 <PathLayer
-                  key={`${path.id}-${path.points[0]?.position}`}
+                  key={path.key}
                   path={path}
                   color={style.color}
                   level={style.level}
