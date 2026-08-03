@@ -57,7 +57,7 @@ const GrantManagerAddSubjectForm = ({
             value={addUserForm.user}
             suggestions={searchedUsers}
             getSuggestionLabel={(option) => option.name}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={setSearchTerm}
             onSelectSuggestion={(suggestion) => {
               setAddUserForm((prev) => ({ ...prev, user: suggestion }));
             }}

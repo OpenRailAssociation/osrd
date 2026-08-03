@@ -35,8 +35,8 @@ const ComboBoxStory = () => {
     setValue(suggestion);
   };
 
-  const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const inputValue = e.target.value.toLowerCase();
+  const onChange = (newValue: string) => {
+    const inputValue = newValue.toLowerCase();
     if (!inputValue) {
       setFilteredSuggestions(suggestions);
       return;

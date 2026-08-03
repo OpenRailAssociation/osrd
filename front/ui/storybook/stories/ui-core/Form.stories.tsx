@@ -77,7 +77,7 @@ const FormComponent = (fieldProps: {
         id="combobox"
         label="Combo box"
         value={data.combobox}
-        onChange={(e) => setData((prev) => ({ ...prev, combobox: e.target.value }))}
+        onChange={(newValue) => setData((prev) => ({ ...prev, combobox: newValue }))}
         suggestions={['Group DDDEEEFFF', 'Group AAABBBCCC', 'Group GGGHHHIII']}
         getSuggestionLabel={(e) => e}
         onSelectSuggestion={noop}

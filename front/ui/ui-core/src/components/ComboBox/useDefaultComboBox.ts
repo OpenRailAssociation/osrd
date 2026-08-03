@@ -68,8 +68,8 @@ const useDefaultComboBox = <T>(suggestions: T[], getSuggestionLabel: (suggestion
     [labels, query]
   );
 
-  const onChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setQuery(e.target.value);
+  const onChange = useCallback((newValue: string) => {
+    setQuery(newValue);
   }, []);
 
   const resetSuggestions = useCallback(() => {

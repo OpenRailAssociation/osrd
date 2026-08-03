@@ -1,7 +1,5 @@
-import type { ChangeEvent } from 'react';
-
 import { act, renderHook } from '@testing-library/react';
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
 
 import useDefaultComboBox, {
   defaultFilterSuggestions,
@@ -75,10 +73,6 @@ describe('defaultFilterSuggestions', () => {
   });
 });
 
-function mockChangeEvent(value: string): ChangeEvent<HTMLInputElement> {
-  return vi.mockObject({ target: { value } }) as ChangeEvent<HTMLInputElement>;
-}
-
 describe('useDefaultComboBox', () => {
   const GREEN = { id: '1-green', label: 'Green' };
   const RED = { id: '2-red', label: 'Red' };
@@ -92,31 +86,31 @@ describe('useDefaultComboBox', () => {
     expect(result.current.suggestions).toEqual([GREEN, RED, ORANGE]);
 
     act(() => {
-      result.current.onChange(mockChangeEvent('re'));
+      result.current.onChange('re');
     });
 
     expect(result.current.suggestions).toEqual([RED, GREEN]);
 
     act(() => {
-      result.current.onChange(mockChangeEvent('red'));
+      result.current.onChange('red');
     });
 
     expect(result.current.suggestions).toEqual([RED]);
 
     act(() => {
-      result.current.onChange(mockChangeEvent(' ang '));
+      result.current.onChange(' ang');
     });
 
     expect(result.current.suggestions).toEqual([ORANGE]);
 
     act(() => {
-      result.current.onChange(mockChangeEvent('blu'));
+      result.current.onChange('blu');
     });
 
     expect(result.current.suggestions).toEqual([]);
 
     act(() => {
-      result.current.onChange(mockChangeEvent(' '));
+      result.current.onChange(' ');
     });
 
     expect(result.current.suggestions).toEqual([GREEN, RED, ORANGE]);
@@ -126,7 +120,7 @@ describe('useDefaultComboBox', () => {
     const { result } = renderHook(() => useDefaultComboBox(SUGGESTIONS, (color) => color.label));
 
     act(() => {
-      result.current.onChange(mockChangeEvent('red'));
+      result.current.onChange('red');
     });
 
     expect(result.current.suggestions).toEqual([RED]);
