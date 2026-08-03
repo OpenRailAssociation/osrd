@@ -12,7 +12,6 @@ export * from './components/Quadrilateral';
 export * from './components/ZoomRect';
 
 export { DEFAULT_THEME } from './lib/consts';
-export { WorkSchedule } from './lib/types';
 export { SpaceTimeChartContext, SpaceTimeChartCanvasContext } from './lib/context';
 export type {
   SpaceTimeChartProps,
