@@ -13,6 +13,7 @@ import fr.sncf.osrd.api.standalone_sim.SimulationSuccess
 import fr.sncf.osrd.envelope_sim.Comfort
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext
 import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue
+import fr.sncf.osrd.path.interfaces.Electrification
 import fr.sncf.osrd.path.interfaces.PhysicsPath
 import fr.sncf.osrd.path.interfaces.TrainPath
 import fr.sncf.osrd.path.legacy_objects.electrification.Neutral
@@ -155,18 +156,15 @@ fun runStandaloneSimulation(
 
     tracer?.runStart("max-effort")
 
-    var trainState = TrainState.zero.copy(speed = initialSpeed.metersPerSecond)
-    val maxEffortStates = mutableListOf(trainState)
-    while (trainState.position < trainPath.length.meters) {
-        val nextTrainState = step(context, constraints, trainState, tracer)
-        for (constraint in constraints) {
-            if (constraint is Updatable) {
-                constraint.update(trainState, nextTrainState)
-            }
-        }
-        trainState = nextTrainState
-        maxEffortStates.add(trainState)
-    }
+    val maxEffortSimulator =
+        TrainSimulator(
+            context,
+            constraints,
+            TrainState.zero.copy(speed = initialSpeed.metersPerSecond),
+            tracer,
+        )
+    maxEffortSimulator.runToEnd()
+    val maxEffortStates = maxEffortSimulator.states
 
     val provisionalStates =
         runMargins(
@@ -384,7 +382,6 @@ fun runMargins(
             context.driver.vMaxFactor = vMaxFactor
 
             val initialTrainState = marginStates.last()
-            var trainState = initialTrainState
             states.clear()
 
             for (constraint in constraints) {
@@ -395,16 +392,10 @@ fun runMargins(
 
             tracer?.runStart("provisional-lower=$lower-upper=$upper-vmaxfactor=$vMaxFactor")
 
-            while (trainState.position < upper.toPrecise()) {
-                val nextTrainState = step(context, constraints, trainState, tracer)
-                for (constraint in constraints) {
-                    if (constraint is Updatable) {
-                        constraint.update(trainState, nextTrainState)
-                    }
-                }
-                trainState = nextTrainState
-                states.add(trainState)
-            }
+            val simulator = TrainSimulator(context, constraints, initialTrainState, tracer)
+            simulator.advanceUntilPosition(upper.toPrecise())
+            // drop the state the simulator started on, it already is in marginStates
+            states.addAll(simulator.states.drop(1))
 
             val trialTime = states.last().time - initialTrainState.time
             val timeDiff = (trialTime - marginTime).seconds.absoluteValue
@@ -429,9 +420,100 @@ fun runMargins(
     return marginStates
 }
 
-internal fun List<TrainState>.toReportTrain(
+class PathConstraints(
+    val constraints: List<Constraint>,
+    val mrsp: RangeMap<PreciseDistance, PreciseSpeed>,
+)
+
+fun buildPathConstraints(
+    context: EnvelopeSimContext,
+    infra: FullInfra,
+    trainPath: TrainPath,
+    rollingStock: RollingStock,
+    electrificationMap: DistanceRangeMap<Electrification>,
+    speedLimitTag: String?,
+    useSpeedLimits: Boolean,
     schedule: List<SimulationScheduleItem>,
-): ReportTrain {
+    tracer: Tracer? = null,
+): PathConstraints {
+    val constraints = mutableListOf<Constraint>()
+    var mrsp: RangeMap<PreciseDistance, PreciseSpeed> = TreeRangeMap.create()
+    mrsp.put(Range.all(), rollingStock.maxSpeed.metersPerSecond)
+    if (useSpeedLimits) {
+        val props = trainPath.getSpeedLimitProperties(speedLimitTag, null)
+        for (prop in props) {
+            val lower = prop.lower.toPrecise()
+            val upper = prop.upper.toPrecise()
+            val speed = prop.value.speed.toPrecise()
+            if (speed != 0.micrometersPerSecond) {
+                mrsp.putLower(Range.closed(lower, upper), speed)
+            }
+        }
+        mrsp = mrsp.withStockLength(rollingStock.length.meters)
+
+        val signalingRanges = buildSignalingRanges(infra, trainPath)
+        val safetySpeedRanges = makeSafetySpeedRanges(infra, trainPath, schedule, signalingRanges)
+        for (range in safetySpeedRanges) {
+            val lower = range.lower.toPrecise()
+            val upper = range.upper.toPrecise()
+            val speed = range.value.toPrecise()
+            mrsp.putLower(Range.closed(lower, upper), speed)
+        }
+    }
+
+    for (scheduleItem in schedule) {
+        val constraint =
+            Stop(
+                position = scheduleItem.pathOffset.toPrecise(),
+                initialDuration = scheduleItem.stopDetails?.duration?.toPrecise() ?: continue,
+            )
+
+        tracer?.traceSpeedCurves(context, constraint, constraint.position)
+
+        constraints.add(constraint)
+    }
+
+    for (entry in mrsp.entries) {
+        val range = entry.key
+        if (range.upperEndpoint() == 0.micrometers) continue
+        if (range.lowerEndpoint() >= range.upperEndpoint()) continue
+        val speed = entry.value
+
+        val constraint = SpeedLimitedZone(range.lowerEndpoint(), range.upperEndpoint(), speed)
+
+        tracer?.traceSpeedCurves(context, constraint, constraint.start)
+
+        constraints.add(constraint)
+    }
+
+    for (entry in electrificationMap) {
+        val lowerPantograph = (entry.value as? Neutral)?.lowerPantograph ?: continue
+        val section =
+            NeutralSection(
+                start = entry.lower.toPrecise(),
+                end = entry.upper.toPrecise(),
+                lowerPantograph = lowerPantograph,
+            )
+        constraints.add(section)
+    }
+
+    return PathConstraints(constraints, mrsp)
+}
+
+/** Traces the speed curves of [constraint], as seen by a train stopped at [position]. */
+private fun Tracer.traceSpeedCurves(
+    context: EnvelopeSimContext,
+    constraint: SpeedConstraint,
+    position: PreciseDistance,
+) {
+    val trainState =
+        TrainState(time = 0.microseconds, position = position, speed = 0.micrometersPerSecond)
+    for (curve in constraint.speedCurves(context, trainState)) {
+        speedCurve(constraint, curve)
+    }
+}
+
+internal fun List<TrainState>.toReportTrain(schedule: List<SimulationScheduleItem>): ReportTrain {
     val simplifiedPoints = simplifyEnvelopePoints(map { it.toEnvelopePoint() }, 5.0, 0.2)
 
     return ReportTrain(
