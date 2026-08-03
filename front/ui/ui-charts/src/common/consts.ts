@@ -9,14 +9,6 @@ export const HOUR = 60 * MINUTE;
 
 export const KILOMETER = 1000000;
 
-// ========== CHRONOGRAM CONSTANTS ==========
-
-export const CHRONOGRAM_HEADER_HEIGHT = 33;
-export const CHRONOGRAM_BOTTOM_PADDING = 40;
-export const INITIAL_CHRONOGRAM_HEIGHT = 600;
-export const LEVEL_CROSSING_ITEM_HEIGHT = 48;
-export const CHRONOGRAM_SLIDER_WIDTH = 122;
-
 // ========== CANVAS CONSTANTS ==========
 
 export enum CANVASMODE {

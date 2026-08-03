@@ -3,7 +3,7 @@ import { type HTMLProps } from 'react';
 import type { PathLevel, SpaceTimeChartTheme } from '../spaceTimeChart';
 import type { DataPoint, Handler, PointToData, DataToPoint } from '../spaceTimeChart/lib/types';
 import type { LAYERS, PICKING_LAYERS } from './consts';
-import { type CANVASMODE } from './consts';
+import type { CANVASMODE } from './consts';
 
 export type BaseChartContextType = {
   fingerprint: string;

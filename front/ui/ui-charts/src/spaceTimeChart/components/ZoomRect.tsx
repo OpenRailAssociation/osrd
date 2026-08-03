@@ -29,7 +29,7 @@ export const ZoomRect = (rect: CanvasRect) => {
   const drawZoomRect = useCallback<DrawingFunction<SpaceTimeChartContextType>>(
     (ctx, context) => {
       ctx.save();
-      ctx.fillStyle = BLACK_5; /* black5 */
+      ctx.fillStyle = BLACK_5;
       const { width, height } = fillRect(ctx, rect, context);
       if (width && height) {
         ctx.lineWidth = LINE_WIDTH;
