@@ -64,7 +64,7 @@ const createVirtualOp = (
   t: TFunction<'operational-studies'>
 ): ProjectionWaypoint => {
   const virtualName = getVirtualOpName(opRef, index, totalCount, t);
-  const virtualId = `virtual_op_${virtualName}`;
+  const virtualId = `virtual_op_${pathItemId}`;
 
   return {
     waypointId: virtualId,
