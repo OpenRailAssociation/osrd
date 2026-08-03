@@ -177,7 +177,7 @@ pub(in crate::views) async fn search_journeys(
                     })?;
                 }
 
-                Ok::<_, InternalError>((timetable_type, train_schedules))
+                Ok::<_, InternalError>(train_schedules)
             }
             .instrument(span),
         );
@@ -194,15 +194,17 @@ pub(in crate::views) async fn search_journeys(
     })
     .await?;
 
-    let timetables = JoinSetStream::new(train_schedule_futs)
+    let train_schedules: Vec<_> = JoinSetStream::new(train_schedule_futs)
         // Converts `Result<Result<_, InternalError>, JoinError>` into `Result<_, InternalError>`
         .map(|fut| fut?)
         .collect::<Result<Vec<_>>>()
-        .await?;
+        .await?
+        .into_iter()
+        .flatten()
+        .collect();
 
-    let op_references: Vec<&OperationalPointPartReference> = timetables
+    let op_references: Vec<&OperationalPointPartReference> = train_schedules
         .iter()
-        .flat_map(|(_, train_schedules)| train_schedules)
         .flat_map(|train_schedule| &train_schedule.path)
         .filter_map(|path_item| match &path_item.location {
             PathItemLocation::OperationalPointPartReference(op_ref) => Some(op_ref),
@@ -249,105 +251,92 @@ pub(in crate::views) async fn search_journeys(
     };
 
     let journeys = tokio::task::spawn_blocking(move || {
-        let mut train_schedule_ids = Vec::new();
-        let mut path_indexed_connections: Vec<PathIndexedConnection> = Vec::new();
-        for (_, train_schedules) in timetables {
-            let index_offset = train_schedule_ids.len();
+        let train_schedule_ids: Vec<i64> = train_schedules
+            .iter()
+            .map(|train_schedule| train_schedule.id)
+            .collect();
 
-            train_schedule_ids.extend(
-                train_schedules
-                    .iter()
-                    .map(|train_schedule| train_schedule.id),
-            );
+        let mut path_indexed_connections: Vec<PathIndexedConnection> = train_schedules
+            .into_iter()
+            .enumerate()
+            .flat_map(|(train_schedule_index, train_schedule)| {
+                // Timetables are only Calendar so we can use the raw start_time
+                let offset_ms = common::units::millisecond::i64::from(train_schedule.start_time);
 
-            path_indexed_connections.extend(
-                train_schedules.into_iter().zip(index_offset..).flat_map(
-                    |(train_schedule, train_schedule_index)| {
-                        // Timetables are only Calendar so we can use the raw start_time
-                        let offset_ms =
-                            common::units::millisecond::i64::from(train_schedule.start_time);
+                // avoid moving them into the filter_map closure
+                let op_index_by_id = &op_index_by_id;
+                let op_cache = &op_cache;
 
-                        // avoid moving them into the filter_map closure
-                        let op_index_by_id = &op_index_by_id;
-                        let op_cache = &op_cache;
+                train_schedule
+                    .path
+                    .into_iter()
+                    .enumerate()
+                    .filter_map(move |(i, path_item)| {
+                        let arrival_ms: i64;
+                        let stop_for_ms: i64;
 
-                        train_schedule
-                            .path
-                            .into_iter()
-                            .enumerate()
-                            .filter_map(move |(i, path_item)| {
-                                let arrival_ms: i64;
-                                let stop_for_ms: i64;
+                        if i == 0 {
+                            arrival_ms = offset_ms;
+                            stop_for_ms = 0;
+                        } else {
+                            let schedule_item = train_schedule
+                                .schedule
+                                .iter()
+                                .find(|schedule_item| schedule_item.at == path_item.id)?;
 
-                                if i == 0 {
-                                    arrival_ms = offset_ms;
-                                    stop_for_ms = 0;
-                                } else {
-                                    let schedule_item = train_schedule
-                                        .schedule
-                                        .iter()
-                                        .find(|schedule_item| schedule_item.at == path_item.id)?;
+                            arrival_ms = offset_ms + schedule_item.arrival?.num_milliseconds();
+                            stop_for_ms = schedule_item.stop_for?.num_milliseconds();
+                        }
 
-                                    arrival_ms =
-                                        offset_ms + schedule_item.arrival?.num_milliseconds();
-                                    stop_for_ms = schedule_item.stop_for?.num_milliseconds();
-                                }
+                        let PathItemLocation::OperationalPointPartReference(op_ref) =
+                            path_item.location
+                        else {
+                            return None;
+                        };
 
-                                let PathItemLocation::OperationalPointPartReference(op_ref) =
-                                    path_item.location
-                                else {
-                                    return None;
-                                };
+                        let op_index =
+                            find_op_index(op_cache, op_index_by_id, &op_ref.operational_point)?;
 
-                                let op_index = find_op_index(
-                                    op_cache,
-                                    op_index_by_id,
-                                    &op_ref.operational_point,
-                                )?;
+                        // Timetables must be anchored on 1970-01-01 so arrival_ms and departure_ms
+                        // overflow u32 only for schedules absurdly far in the future.
+                        // We drop the step rather than failing the whole request.
+                        Some(ScheduleStep {
+                            path_index: i,
+                            op_index,
+                            arrival_ms: u32::try_from(arrival_ms).ok()?,
+                            departure_ms: u32::try_from(arrival_ms + stop_for_ms).ok()?,
+                        })
+                    })
+                    .tuple_windows()
+                    .map(move |(departure, arrival)| PathIndexedConnection {
+                        connection: Connection {
+                            trip: train_schedule_index,
+                            departure: departure.op_index,
+                            departure_ms: departure.departure_ms,
+                            arrival: arrival.op_index,
+                            arrival_ms: arrival.arrival_ms,
+                        },
+                        departure_path_index: departure.path_index,
+                        arrival_path_index: arrival.path_index,
+                    })
+                    .filter(|path_indexed_connection| {
+                        // Simple filters to reduce the size of the problem.
 
-                                // Timetables must be anchored on 1970-01-01 so arrival_ms and departure_ms
-                                // overflow u32 only for schedules absurdly far in the future.
-                                // We drop the step rather than failing the whole request.
-                                Some(ScheduleStep {
-                                    path_index: i,
-                                    op_index,
-                                    arrival_ms: u32::try_from(arrival_ms).ok()?,
-                                    departure_ms: u32::try_from(arrival_ms + stop_for_ms).ok()?,
-                                })
-                            })
-                            .tuple_windows()
-                            .map(move |(departure, arrival)| PathIndexedConnection {
-                                connection: Connection {
-                                    trip: train_schedule_index,
-                                    departure: departure.op_index,
-                                    departure_ms: departure.departure_ms,
-                                    arrival: arrival.op_index,
-                                    arrival_ms: arrival.arrival_ms,
-                                },
-                                departure_path_index: departure.path_index,
-                                arrival_path_index: arrival.path_index,
-                            })
-                            .filter(|path_indexed_connection| {
-                                // Simple filters to reduce the size of the problem.
+                        // The connection isn't too early for the traveler to take it
+                        let departs_late_enough = (start_ms as i64 - start_tolerance as i64)
+                            <= path_indexed_connection.connection.departure_ms as i64;
 
-                                // The connection isn't too early for the traveler to take it
-                                let departs_late_enough = (start_ms as i64
-                                    - start_tolerance as i64)
-                                    <= path_indexed_connection.connection.departure_ms as i64;
+                        // If the connection departs from the source OP, it
+                        // doesn't depart too late for the traveler to take it
+                        let departs_early_enough = path_indexed_connection.connection.departure
+                            != origin_index
+                            || path_indexed_connection.connection.departure_ms
+                                <= start_ms + start_tolerance;
 
-                                // If the connection departs from the source OP, it
-                                // doesn't depart too late for the traveler to take it
-                                let departs_early_enough =
-                                    path_indexed_connection.connection.departure != origin_index
-                                        || path_indexed_connection.connection.departure_ms
-                                            <= start_ms + start_tolerance;
-
-                                departs_early_enough && departs_late_enough
-                            })
-                    },
-                ),
-            );
-        }
+                        departs_early_enough && departs_late_enough
+                    })
+            })
+            .collect();
 
         // Sort train connections by *decreasing* departure time.
         path_indexed_connections.sort_unstable_by(|a, b| {
