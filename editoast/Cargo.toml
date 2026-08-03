@@ -43,7 +43,7 @@ clap = { version = "4.6", features = ["derive", "env"] }
 common = { path = "./common" }
 core_client = { path = "./core_client" }
 core_task = { path = "./core_task" }
-darling = "0.23"
+darling = "0.24"
 dashmap = "6.1.0"
 database = { path = "./database" }
 deadpool = { version = "0.13.0", default-features = false, features = [
@@ -132,7 +132,7 @@ serde_with = { version = "3.21.0", default-features = false, features = [
 sha1 = "0.11"
 stdext = "0.3.3"
 strum = { version = "0.28.0", features = ["derive"] }
-syn = "2.0"
+syn = "3.0"
 tempfile = "3.20.0" # redis-test (crate cache) isn't up to date
 thiserror = "2.0.18"
 tokio = { version = "1.52.3", features = ["fs", "macros", "rt-multi-thread"] }
