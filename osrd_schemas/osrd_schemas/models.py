@@ -4200,7 +4200,7 @@ class TrainSchedulePartBound(BaseModel):
     """
     time_ms: Annotated[int, Field(ge=0)]
     """
-    Scheduled time of the step in milliseconds from midnight UTC.
+    Scheduled time of the step in milliseconds from 1970-01-01 00:00:00 UTC.
     """
 
 
@@ -6208,7 +6208,7 @@ class JourneySearchQuery(BaseModel):
     origin: OperationalPointPartReference
     start_ms: Annotated[int, Field(ge=0)]
     """
-    Amount of milliseconds from midnight UTC to the center of the start window.
+    Amount of milliseconds from 1970-01-01 00:00:00 UTC to the center of the start window.
 
     The start window is defined as the time between
     `start_sec - start_tolerance` and `start_sec + start_tolerance`.
@@ -6221,6 +6221,9 @@ class JourneySearchQuery(BaseModel):
     `start_sec - start_tolerance` and `start_sec + start_tolerance`.
     """
     timetable_ids: list[int]
+    """
+    Until daily patterns are supported, timetables must be calendar anchored on 1970-01-01 UTC.
+    """
     transfer_ms: Annotated[int, Field(ge=0)]
     """
     Constant time for a transfer/footpath in the same stop in milliseconds.

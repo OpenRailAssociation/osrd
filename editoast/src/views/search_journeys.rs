@@ -4,12 +4,12 @@ use std::collections::HashSet;
 use axum::Extension;
 use axum::extract::Json;
 use axum::extract::State;
-use common::units::quantities::Offset;
 use editoast_derive::EditoastError;
 use editoast_models::Infra;
 use editoast_models::prelude::*;
 use itertools::Itertools;
 use profile_connection_scan::Connection;
+use schemas::timetable_type::TimetableType;
 use schemas::train_schedule::OperationalPointPartReference;
 use schemas::train_schedule::OperationalPointReference;
 use schemas::train_schedule::PathItemLocation;
@@ -48,9 +48,10 @@ enum Error {
 pub(in crate::views) struct JourneySearchQuery {
     infra_id: i64,
 
+    /// Until daily patterns are supported, timetables must be calendar anchored on 1970-01-01 UTC.
     timetable_ids: HashSet<i64>,
 
-    /// Amount of milliseconds from midnight UTC to the center of the start window.
+    /// Amount of milliseconds from 1970-01-01 00:00:00 UTC to the center of the start window.
     ///
     /// The start window is defined as the time between
     /// `start_sec - start_tolerance` and `start_sec + start_tolerance`.
@@ -81,7 +82,7 @@ struct TrainSchedulePartBound {
     /// Id of the operational point of the corresponding step in the train schedule's path.
     op_id: String,
 
-    /// Scheduled time of the step in milliseconds from midnight UTC.
+    /// Scheduled time of the step in milliseconds from 1970-01-01 00:00:00 UTC.
     time_ms: u32,
 }
 
@@ -135,6 +136,7 @@ struct PathIndexedConnection {
 ///
 /// The trains are not simulated, meaning each stop needs to be dated in order
 /// to be taken into account.
+/// Until daily patterns are supported, timetables must be calendar anchored on 1970-01-01 UTC.
 #[editoast_derive::route]
 #[utoipa::path(
     post, path = "",
@@ -167,9 +169,15 @@ pub(in crate::views) async fn search_journeys(
         train_schedule_futs.spawn(
             async move {
                 let conn = db_pool.get().await?;
-                let train_schedules = retrieve_trains(conn, timetable_id).await?;
+                let (timetable_type, train_schedules) = retrieve_trains(conn, timetable_id).await?;
 
-                Ok::<_, InternalError>(train_schedules)
+                if timetable_type != TimetableType::Calendar {
+                    Err(Error::InvalidInput {
+                        message: "only calendar timetables are supported",
+                    })?;
+                }
+
+                Ok::<_, InternalError>((timetable_type, train_schedules))
             }
             .instrument(span),
         );
@@ -243,7 +251,7 @@ pub(in crate::views) async fn search_journeys(
     let journeys = tokio::task::spawn_blocking(move || {
         let mut train_schedule_ids = Vec::new();
         let mut path_indexed_connections: Vec<PathIndexedConnection> = Vec::new();
-        for (timetable_type, train_schedules) in timetables {
+        for (_, train_schedules) in timetables {
             let index_offset = train_schedule_ids.len();
 
             train_schedule_ids.extend(
@@ -255,16 +263,9 @@ pub(in crate::views) async fn search_journeys(
             path_indexed_connections.extend(
                 train_schedules.into_iter().zip(index_offset..).flat_map(
                     |(train_schedule, train_schedule_index)| {
-                        let offset_ms = match timetable_type {
-                            schemas::timetable_type::TimetableType::Calendar => {
-                                // TODO this handles badly train schedules that span longer than a day
-                                datetime_millis_from_midnight(train_schedule.start_time)
-                            }
-                            schemas::timetable_type::TimetableType::Hourly => u32::try_from(
-                                common::units::millisecond::i64::from(train_schedule.start_time),
-                            )
-                            .unwrap(),
-                        };
+                        // Timetables are only Calendar so we can use the raw start_time
+                        let offset_ms =
+                            common::units::millisecond::i64::from(train_schedule.start_time);
 
                         // avoid moving them into the filter_map closure
                         let op_index_by_id = &op_index_by_id;
@@ -275,8 +276,8 @@ pub(in crate::views) async fn search_journeys(
                             .into_iter()
                             .enumerate()
                             .filter_map(move |(i, path_item)| {
-                                let arrival_ms: u32;
-                                let stop_for_ms: u32;
+                                let arrival_ms: i64;
+                                let stop_for_ms: i64;
 
                                 if i == 0 {
                                     arrival_ms = offset_ms;
@@ -287,12 +288,9 @@ pub(in crate::views) async fn search_journeys(
                                         .iter()
                                         .find(|schedule_item| schedule_item.at == path_item.id)?;
 
-                                    arrival_ms = offset_ms
-                                        + u32::try_from(schedule_item.arrival?.num_milliseconds())
-                                            .unwrap();
-                                    stop_for_ms =
-                                        u32::try_from(schedule_item.stop_for?.num_milliseconds())
-                                            .unwrap();
+                                    arrival_ms =
+                                        offset_ms + schedule_item.arrival?.num_milliseconds();
+                                    stop_for_ms = schedule_item.stop_for?.num_milliseconds();
                                 }
 
                                 let PathItemLocation::OperationalPointPartReference(op_ref) =
@@ -307,11 +305,14 @@ pub(in crate::views) async fn search_journeys(
                                     &op_ref.operational_point,
                                 )?;
 
+                                // Timetables must be anchored on 1970-01-01 so arrival_ms and departure_ms
+                                // overflow u32 only for schedules absurdly far in the future.
+                                // We drop the step rather than failing the whole request.
                                 Some(ScheduleStep {
                                     path_index: i,
                                     op_index,
-                                    arrival_ms,
-                                    departure_ms: arrival_ms + stop_for_ms,
+                                    arrival_ms: u32::try_from(arrival_ms).ok()?,
+                                    departure_ms: u32::try_from(arrival_ms + stop_for_ms).ok()?,
                                 })
                             })
                             .tuple_windows()
@@ -440,9 +441,4 @@ where
             }
         }
     })
-}
-
-fn datetime_millis_from_midnight(t: Offset) -> u32 {
-    const MS_IN_DAY: i64 = 24 * 60 * 60 * 1000;
-    (common::units::millisecond::i64::from(t) % MS_IN_DAY) as u32
 }
