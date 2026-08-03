@@ -16478,16 +16478,34 @@ components:
       - to
       properties:
         from:
-          type: integer
-          description: Index of the start path step in the train schedule's path
-          minimum: 0
+          $ref: '#/components/schemas/TrainSchedulePartBound'
+          description: Path step of the train_schedule where the part begins
         to:
-          type: integer
-          description: Index of the end path step in the train schedule's path
-          minimum: 0
+          $ref: '#/components/schemas/TrainSchedulePartBound'
+          description: Path step of the train_schedule where the part ends
         train_schedule_id:
           type: integer
           format: int64
+    TrainSchedulePartBound:
+      type: object
+      description: A step of the train schedule's path, with its identity and schedule.
+      required:
+      - path_step_index
+      - op_id
+      - time_ms
+      properties:
+        op_id:
+          type: string
+          description: Id of the operational point of the corresponding step in the train schedule's path.
+        path_step_index:
+          type: integer
+          description: Index of the path step in the train schedule's path
+          minimum: 0
+        time_ms:
+          type: integer
+          format: int32
+          description: Scheduled time of the step in milliseconds from midnight UTC.
+          minimum: 0
     TrainScheduleResponse:
       allOf:
       - $ref: '#/components/schemas/TrainSchedule'

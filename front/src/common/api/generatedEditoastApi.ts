@@ -4445,11 +4445,19 @@ export type SearchPayload = {
   /** The query to run */
   query: SearchQuery;
 };
+export type TrainSchedulePartBound = {
+  /** Id of the operational point of the corresponding step in the train schedule's path. */
+  op_id: string;
+  /** Index of the path step in the train schedule's path */
+  path_step_index: number;
+  /** Scheduled time of the step in milliseconds from midnight UTC. */
+  time_ms: number;
+};
 export type TrainSchedulePart = {
-  /** Index of the start path step in the train schedule's path */
-  from: number;
-  /** Index of the end path step in the train schedule's path */
-  to: number;
+  /** Path step of the train_schedule where the part begins */
+  from: TrainSchedulePartBound;
+  /** Path step of the train_schedule where the part ends */
+  to: TrainSchedulePartBound;
   train_schedule_id: number;
 };
 export type JourneyProposals = {
