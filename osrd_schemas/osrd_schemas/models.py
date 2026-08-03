@@ -4185,20 +4185,23 @@ class TrainScheduleOptions(BaseModel):
     use_speed_limits_for_simulation: bool | None = None
 
 
-class TrainSchedulePart(BaseModel):
+class TrainSchedulePartBound(BaseModel):
     """
-    A part of a train schedule, from one step of its path to another.
+    A step of the train schedule's path, with its identity and schedule.
     """
 
-    from_: Annotated[int, Field(alias="from", ge=0)]
+    op_id: str
     """
-    Index of the start path step in the train schedule's path
+    Id of the operational point of the corresponding step in the train schedule's path.
     """
-    to: Annotated[int, Field(ge=0)]
+    path_step_index: Annotated[int, Field(ge=0)]
     """
-    Index of the end path step in the train schedule's path
+    Index of the path step in the train schedule's path
     """
-    train_schedule_id: int
+    time_ms: Annotated[int, Field(ge=0)]
+    """
+    Scheduled time of the step in milliseconds from midnight UTC.
+    """
 
 
 class TrainScheduleSet(BaseModel):
@@ -5081,13 +5084,6 @@ class InfraPathfindingInput(BaseModel):
     starting: PathfindingTrackLocationInput
 
 
-class JourneyProposals(BaseModel):
-    journeys: list[list[TrainSchedulePart]]
-    """
-    Each journey is a list of train schedule parts.
-    """
-
-
 class LevelCrossing(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
@@ -5904,6 +5900,22 @@ class TrainCategoryMain(BaseModel):
     main_category: TrainMainCategory
 
 
+class TrainSchedulePart(BaseModel):
+    """
+    A part of a train schedule, from one step of its path to another.
+    """
+
+    from_: Annotated[TrainSchedulePartBound, Field(alias="from")]
+    """
+    Path step of the train_schedule where the part begins
+    """
+    to: TrainSchedulePartBound
+    """
+    Path step of the train_schedule where the part ends
+    """
+    train_schedule_id: int
+
+
 class WorkSchedule(BaseModel):
     end_date_time: AwareDatetime
     id: int
@@ -6181,6 +6193,13 @@ class InfraObjectBufferStop(BaseModel):
 class InfraObjectRoute(BaseModel):
     obj_type: Literal["Route"]
     railjson: Route
+
+
+class JourneyProposals(BaseModel):
+    journeys: list[list[TrainSchedulePart]]
+    """
+    Each journey is a list of train schedule parts.
+    """
 
 
 class JourneySearchQuery(BaseModel):

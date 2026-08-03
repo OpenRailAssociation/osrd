@@ -70,16 +70,29 @@ pub(in crate::views) struct JourneySearchQuery {
     transfer_ms: u32,
 }
 
+/// A step of the train schedule's path, with its identity and schedule.
+#[derive(Debug, Clone, Serialize, ToSchema)]
+struct TrainSchedulePartBound {
+    /// Index of the path step in the train schedule's path
+    path_step_index: usize,
+
+    /// Id of the operational point of the corresponding step in the train schedule's path.
+    op_id: String,
+
+    /// Scheduled time of the step in milliseconds from midnight UTC.
+    time_ms: u32,
+}
+
 /// A part of a train schedule, from one step of its path to another.
 #[derive(Debug, Clone, Serialize, ToSchema)]
 struct TrainSchedulePart {
     train_schedule_id: i64,
 
-    /// Index of the start path step in the train schedule's path
-    from: usize,
+    /// Path step of the train_schedule where the part begins
+    from: TrainSchedulePartBound,
 
-    /// Index of the end path step in the train schedule's path
-    to: usize,
+    /// Path step of the train_schedule where the part ends
+    to: TrainSchedulePartBound,
 }
 
 #[derive(Debug, Clone, Serialize, ToSchema)]
@@ -196,10 +209,15 @@ pub(in crate::views) async fn search_journeys(
 
     let op_cache = OperationalPointCache::load_path_items(conn, infra_id, &path_items).await?;
 
-    let op_index_by_id: HashMap<String, usize> = op_references
+    let op_ids: Vec<String> = op_references
         .iter()
         .filter_map(|op_ref| op_cache.get_op_ref_id(&op_ref.operational_point))
         .unique()
+        .collect();
+
+    let op_index_by_id: HashMap<String, usize> = op_ids
+        .iter()
+        .cloned()
         .enumerate()
         .map(|(index, op_id)| (op_id, index))
         .collect();
@@ -339,7 +357,7 @@ pub(in crate::views) async fn search_journeys(
 
         let journeys =
             profile_connection_scan::journey_list(profile_connection_scan::JourneyListParams {
-                stop_count: op_index_by_id.len(),
+                stop_count: op_ids.len(),
                 trip_count: train_schedule_ids.len(),
                 connections,
                 start_ms,
@@ -360,8 +378,16 @@ pub(in crate::views) async fn search_journeys(
                     .map(|path_indexed_connection| TrainSchedulePart {
                         train_schedule_id: train_schedule_ids
                             [path_indexed_connection.connection.trip],
-                        from: path_indexed_connection.departure_path_index,
-                        to: path_indexed_connection.arrival_path_index,
+                        from: TrainSchedulePartBound {
+                            path_step_index: path_indexed_connection.departure_path_index,
+                            op_id: op_ids[path_indexed_connection.connection.departure].clone(),
+                            time_ms: path_indexed_connection.connection.departure_ms,
+                        },
+                        to: TrainSchedulePartBound {
+                            path_step_index: path_indexed_connection.arrival_path_index,
+                            op_id: op_ids[path_indexed_connection.connection.arrival].clone(),
+                            time_ms: path_indexed_connection.connection.arrival_ms,
+                        },
                     })
                     .collect()
             })
