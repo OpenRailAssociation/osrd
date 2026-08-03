@@ -490,7 +490,7 @@ const PathStepItem = ({
                 narrow
                 onFocusCapture={onOpFocus}
                 onBlurCapture={onOpBlur}
-                onChange={(e) => onOpInputChange(e.target.value)}
+                onChange={onOpInputChange}
               />
             </div>
             {isTrackOffset ? (
@@ -507,7 +507,7 @@ const PathStepItem = ({
                   value={selectedTrackNameOption}
                   suggestions={filteredTrackSuggestions}
                   getSuggestionLabel={(option) => option.label}
-                  onChange={(e) => setTrackNameQuery(e.target.value)}
+                  onChange={setTrackNameQuery}
                   onSelectSuggestion={(option) => onTrackNameChange(option?.label ?? '')}
                   resetSuggestions={() => setTrackNameQuery('')}
                   allowCustomValue

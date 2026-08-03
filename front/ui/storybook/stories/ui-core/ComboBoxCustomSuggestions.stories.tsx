@@ -376,8 +376,7 @@ const ComboBoxStory = (props: { small?: boolean; disabled?: boolean; readOnly?: 
     valueRef.current = suggestion;
   };
 
-  const onChange: React.ChangeEventHandler<HTMLInputElement> = (e) => {
-    const newValue = e.target.value;
+  const onChange = (newValue: string) => {
     setFilteredSuggestions(filterAndMarkSuggestions(ALL_SUGGESTIONS, newValue));
   };
 

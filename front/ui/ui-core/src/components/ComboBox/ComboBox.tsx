@@ -15,7 +15,7 @@ import cx from 'classnames';
 import useOutsideClick from '../../hooks/useOutsideClick';
 import Input, { type InputProps } from '../Input';
 
-export type ComboBoxProps<T> = Omit<InputProps, 'value'> & {
+export type ComboBoxProps<T> = Omit<InputProps, 'value' | 'onChange'> & {
   value?: T;
   suggestions: Array<T>;
   customLabel?: ReactNode;
@@ -31,6 +31,7 @@ export type ComboBoxProps<T> = Omit<InputProps, 'value'> & {
     isSelected: boolean;
   }) => ReactNode;
   renderFooterItem?: () => ReactNode;
+  onChange: (inputValue: string) => void;
 
   allowCustomValue?: boolean;
   onAddCustomValue?: (value: string) => void;
@@ -122,7 +123,7 @@ const ComboBox = <T,>({
 
   // behavior
   const handleInputChange: ChangeEventHandler<HTMLInputElement> = (e) => {
-    onChange?.(e);
+    onChange?.(e.currentTarget.value);
     setInputValue(e.currentTarget.value);
   };
 
@@ -238,6 +239,7 @@ const ComboBox = <T,>({
 
   const clearInput = () => {
     setInputValue('');
+    onChange?.('');
     resetSuggestions();
     focusInput();
   };

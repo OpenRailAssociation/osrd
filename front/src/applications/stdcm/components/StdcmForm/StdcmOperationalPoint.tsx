@@ -116,10 +116,6 @@ const StdcmOperationalPoint = ({
     }
   };
 
-  const handleCiInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(e.target.value);
-  };
-
   const resetSuggestions = () => {
     if (searchTerm !== '' && !operationalPoint) {
       setSearchTerm('');
@@ -163,7 +159,7 @@ const StdcmOperationalPoint = ({
           label={t('trainPath.ci')}
           value={operationalPoint}
           suggestions={ciSuggestions}
-          onChange={handleCiInputChange}
+          onChange={setSearchTerm}
           getSuggestionLabel={(option) => [option.mainCode, option.name].join(' ')}
           onSelectSuggestion={handleCiSelect}
           resetSuggestions={resetSuggestions}

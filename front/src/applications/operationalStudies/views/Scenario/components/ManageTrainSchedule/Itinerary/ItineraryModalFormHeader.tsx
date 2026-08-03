@@ -82,12 +82,12 @@ const ItineraryModalFormHeader = ({
     : modalFormState.rollingStockName;
 
   // When user types or clears input
-  const handleRollingStockInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    onRollingStockQueryChange(e);
+  const handleRollingStockInputChange = (newValue: string) => {
+    onRollingStockQueryChange(newValue);
     onModalFormStateChange({
       ...modalFormState,
       rollingStockId: undefined,
-      rollingStockName: e.target.value,
+      rollingStockName: newValue,
     });
   };
 
@@ -189,7 +189,7 @@ const ItineraryModalFormHeader = ({
             narrow
             small
             autoComplete="off"
-            value={rollingStockValue || undefined}
+            value={rollingStockValue ?? ''}
             suggestions={rollingStockSuggestions.map(getRollingStockLabel)}
             getSuggestionLabel={(s) => s}
             onSelectSuggestion={handleRollingStockSelect}

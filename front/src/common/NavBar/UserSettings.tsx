@@ -133,9 +133,7 @@ const UserSettings = () => {
               {...userComboBoxDefaultProps}
               autoComplete="off"
               narrow
-              onChange={(e) => {
-                setInputValue(e.target.value);
-              }}
+              onChange={setInputValue}
             />
           </>
         )}
