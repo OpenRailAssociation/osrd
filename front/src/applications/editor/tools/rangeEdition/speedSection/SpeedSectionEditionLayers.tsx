@@ -127,6 +127,7 @@ export const SpeedSectionEditionLayers = () => {
     const context = {
       colors: colors[mapStyle],
       isEmphasized: true,
+      interactionType: interactionState.type,
       showIGNBDORTHO,
       layersSettings,
       issuesSettings,
@@ -144,7 +145,7 @@ export const SpeedSectionEditionLayers = () => {
       speedSectionLayerProps: speedSectionLayers,
       pslLayerProps: [...pslLayers, ...pslSignLayers],
     };
-  }, [mapStyle, showIGNBDORTHO, layersSettings, issuesSettings]);
+  }, [mapStyle, interactionState.type, showIGNBDORTHO, layersSettings, issuesSettings]);
 
   // Here is where we handle loading the TrackSections attached to the speed section:
   useEffect(() => {
@@ -291,7 +292,7 @@ export const SpeedSectionEditionLayers = () => {
         key="speed-section"
       >
         {speedSectionLayerProps.map((props, i) => (
-          <Layer {...props} key={i} />
+          <Layer {...props} key={`${i}-${interactionState.type}`} />
         ))}
       </Source>
       {/* complete routes (dashed) */}
