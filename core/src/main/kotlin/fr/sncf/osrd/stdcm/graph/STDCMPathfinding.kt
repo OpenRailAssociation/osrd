@@ -34,10 +34,9 @@ import org.slf4j.LoggerFactory
 
 data class EdgeLocation(val edge: STDCMEdge, val offset: Offset<STDCMEdge>)
 
-data class Result(
-    val isPathComplete: Boolean,
-    val node: STDCMNode,
-)
+data class Result(val node: STDCMNode) {
+    val hasReachedDestination = node.infraExplorer.getStepTracker().hasReachedDestination()
+}
 
 data class PathResult(
     val edges: List<STDCMEdge>, // Full path as a list of edges
@@ -141,8 +140,8 @@ class STDCMPathfinding(
         starts = getStartNodes(graph, consistSchedule)
         val result = findPathImpl()
         graph.stdcmSimulations.logWarnings()
-        if (!result.isPathComplete) {
-            logger.info("Failed to find a complete path, start postprocessing partial result")
+        if (!result.hasReachedDestination) {
+            logger.info("Failed to reach destination, start postprocessing partial result")
             return STDCMPostProcessing(graph).makePartialResult(fullInfra, result.node)
         }
 
@@ -228,7 +227,7 @@ class STDCMPathfinding(
             val endNode = queue.poll()
             if (endNode == null) {
                 fValueLogger.logAggregatedSummary()
-                return Result(false, closestNode)
+                return Result(closestNode)
             }
             if (endNode.getMinTotalSimulationTime(graph.remainingTimeEstimator) > maxRunTime)
                 continue
@@ -244,10 +243,10 @@ class STDCMPathfinding(
 
             progressLogger.processNode(endNode)
             if (endNode.infraExplorer.getStepTracker().hasReachedDestination()) {
-                return Result(true, endNode)
+                return Result(endNode)
             }
             queue += getAdjacentNodes(endNode)
-            if (closestNode.remainingTimeEstimation > endNode.remainingTimeEstimation) {
+            if (endNode.remainingTimeEstimation < closestNode.remainingTimeEstimation) {
                 closestNode = endNode
             }
         }

@@ -54,7 +54,7 @@ class FailureExplainer(
             val travelTime = parentNode.timeData.totalRunningTime
             val geoPoint = parentNode.toGeoPoint(rawInfra, blockInfra)
             val trainPath = parentNode.infraExplorer.buildFullPath(rawInfra, blockInfra)
-            val lastOPName =
+            val lastOPId =
                 trainPath
                     .getOperationalPointParts()
                     .asSequence()
@@ -76,7 +76,7 @@ class FailureExplainer(
                 cause,
                 geoPoint.lat,
                 geoPoint.lon,
-                lastOPName,
+                lastOPId,
                 pathGeometry,
             )
         }
@@ -119,7 +119,7 @@ class FailureExplainer(
         val source: RequirementId,
         val lat: Double,
         val lon: Double,
-        val lastOPName: String?,
+        val lastOPId: String?,
         @Json(name = "path_geometry") val pathGeometry: RJSLineString,
     )
 

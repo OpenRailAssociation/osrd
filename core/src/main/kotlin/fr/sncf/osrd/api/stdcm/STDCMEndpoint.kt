@@ -211,6 +211,8 @@ class STDCMEndpoint(
                 )
 
             fullFailureExplainer.saveReport(s3Context)
+            // STDCM has found a valid solution: return the result with the complete path and
+            // simulation.
             if (path is STDCMCompleteResult && !hasDuplicateTracks(infra, path.trainPath)) {
                 val pathfindingResponse =
                     runPathfindingBlockPostProcessing(
@@ -252,6 +254,8 @@ class STDCMEndpoint(
             var partialPathfindingResult: PathfindingBlockResponse? = null
             var lastReachedOperationalPoint: LastReachedOperationalPoint? = null
 
+            // No solution was found, but STDCM managed to go up to a certain point: return the
+            // corresponding partial path.
             if (path is STDCMPartialResult) {
                 partialPathfindingResult =
                     runPathfindingBlockPostProcessing(
@@ -260,7 +264,7 @@ class STDCMEndpoint(
                         path.waypointOffsets,
                         path.backtrackIndexes,
                     )
-                val name =
+                val id =
                     path.trainPath
                         .getOperationalPointParts()
                         .asSequence()
@@ -271,9 +275,11 @@ class STDCMEndpoint(
                 val arrivalTime =
                     request.startTime.plus(Duration.ofSeconds(path.earliestReachableTime.toLong()))
                 lastReachedOperationalPoint =
-                    LastReachedOperationalPoint(name, path.geoPoint, arrivalTime)
+                    LastReachedOperationalPoint(id, path.geoPoint, arrivalTime)
             }
-
+            // STDCM found a valid solution, but it found unavoidable conflicts in the
+            // post-processing. Return the corresponding blocking work schedules.
+            // TODO : check with PO for this behaviour
             val result =
                 PathNotFound(
                     mostBlockingWorkScheduleIds,

@@ -93,7 +93,9 @@ class EngineeringAllowanceTests {
                 .setUnavailableTimes(occupancyGraph)
                 .setTimeStep(timeStep)
                 .run()!!
-        occupancyTest(res, occupancyGraph, 2 * timeStep)
+        Assertions.assertTrue(res is STDCMCompleteResult)
+        val resSuccess = res as STDCMCompleteResult
+        occupancyTest(resSuccess, occupancyGraph, 2 * timeStep)
     }
 
     /**
@@ -183,8 +185,10 @@ class EngineeringAllowanceTests {
                 .setUnavailableTimes(occupancyGraph)
                 .setTimeStep(timeStep)
                 .run()!!
-        occupancyTest(res, occupancyGraph, 2 * timeStep)
-        Assertions.assertEquals(0.0, res.departureTime, 2 * timeStep)
+        Assertions.assertTrue(res is STDCMCompleteResult)
+        val resSuccess = res as STDCMCompleteResult
+        occupancyTest(resSuccess, occupancyGraph, 2 * timeStep)
+        Assertions.assertEquals(0.0, resSuccess.departureTime, 2 * timeStep)
     }
 
     /** Test that allowances don't cause new conflicts */
@@ -280,8 +284,10 @@ class EngineeringAllowanceTests {
                 .setUnavailableTimes(occupancyGraph)
                 .setTimeStep(timeStep)
                 .run()!!
-        occupancyTest(res, occupancyGraph, 2 * timeStep)
-        Assertions.assertEquals(0.0, res.departureTime, 2 * timeStep)
+        Assertions.assertTrue(res is STDCMCompleteResult)
+        val resSuccess = res as STDCMCompleteResult
+        occupancyTest(resSuccess, occupancyGraph, 2 * timeStep)
+        Assertions.assertEquals(0.0, resSuccess.departureTime, 2 * timeStep)
     }
 
     /**
@@ -328,9 +334,11 @@ class EngineeringAllowanceTests {
                 .setUnavailableTimes(occupancyGraph)
                 .setTimeStep(timeStep)
                 .run()!!
-        occupancyTest(res, occupancyGraph)
-        Assertions.assertEquals((3600 * 2).toDouble(), res.departureTime, 2 * timeStep)
-        Assertions.assertTrue(res.departureTime <= 3600 * 2)
+        Assertions.assertTrue(res is STDCMCompleteResult)
+        val resSuccess = res as STDCMCompleteResult
+        occupancyTest(resSuccess, occupancyGraph)
+        Assertions.assertEquals((3600 * 2).toDouble(), resSuccess.departureTime, 2 * timeStep)
+        Assertions.assertTrue(resSuccess.departureTime <= 3600 * 2)
     }
 
     /** The allowance happens in an area where we have added delay by shifting the departure time */
@@ -379,7 +387,9 @@ class EngineeringAllowanceTests {
                 .setUnavailableTimes(occupancyGraph)
                 .setTimeStep(timeStep)
                 .run()!!
-        occupancyTest(res, occupancyGraph, 2 * timeStep)
+        Assertions.assertTrue(res is STDCMCompleteResult)
+        val resSuccess = res as STDCMCompleteResult
+        occupancyTest(resSuccess, occupancyGraph, 2 * timeStep)
     }
 
     /**
@@ -446,7 +456,9 @@ class EngineeringAllowanceTests {
                 .setMaxRunTime(POSITIVE_INFINITY)
                 .setMaxDepartureDelay(0.0)
                 .run()!!
-        occupancyTest(res, occupancyGraph)
+        Assertions.assertTrue(res is STDCMCompleteResult)
+        val resSuccess = res as STDCMCompleteResult
+        occupancyTest(resSuccess, occupancyGraph)
     }
 
     /**
@@ -496,7 +508,9 @@ class EngineeringAllowanceTests {
                 .setMaxRunTime(POSITIVE_INFINITY)
                 .run() ?: return // No solution found is valid here (and expected)
         // But if we find a solution there must be no conflict
-        occupancyTest(res, occupancyGraph)
+        Assertions.assertTrue(res is STDCMCompleteResult)
+        val resSuccess = res as STDCMCompleteResult
+        occupancyTest(resSuccess, occupancyGraph)
     }
 
     /** Test that we return null with no crash when we can't slow down fast enough */
@@ -630,8 +644,10 @@ class EngineeringAllowanceTests {
                 .setUnavailableTimes(occupancyGraph)
                 .setTimeStep(timeStep)
                 .run()!!
-        occupancyTest(res, occupancyGraph)
-        Assertions.assertEquals(3600.0, res.departureTime, 2 * timeStep)
+        Assertions.assertTrue(res is STDCMCompleteResult)
+        val resSuccess = res as STDCMCompleteResult
+        occupancyTest(resSuccess, occupancyGraph)
+        Assertions.assertEquals(3600.0, resSuccess.departureTime, 2 * timeStep)
     }
 
     /**
@@ -714,7 +730,9 @@ class EngineeringAllowanceTests {
                 .setUnavailableTimes(occupancyGraph)
                 .setTimeStep(timeStep)
                 .run()!!
-        occupancyTest(res, occupancyGraph, 2 * timeStep)
+        Assertions.assertTrue(res is STDCMCompleteResult)
+        val resSuccess = res as STDCMCompleteResult
+        occupancyTest(resSuccess, occupancyGraph, 2 * timeStep)
     }
 
     /**
@@ -754,6 +772,8 @@ class EngineeringAllowanceTests {
                 .setRollingStocks(listOf(VERY_LONG_FAST_TRAIN))
                 .setStandardAllowance(AllowanceValue.Percentage(10.0))
                 .run()!!
-        occupancyTest(res, occupancyGraph, 2 * timeStep)
+        Assertions.assertTrue(res is STDCMCompleteResult)
+        val resSuccess = res as STDCMCompleteResult
+        occupancyTest(resSuccess, occupancyGraph, 2 * timeStep)
     }
 }

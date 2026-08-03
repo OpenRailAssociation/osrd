@@ -13,6 +13,7 @@ import fr.sncf.osrd.envelope_sim.Comfort
 import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
+import fr.sncf.osrd.stdcm.STDCMCompleteResult
 import fr.sncf.osrd.stdcm.STDCMPathfindingBuilder
 import fr.sncf.osrd.stdcm.convertRouteLocation
 import fr.sncf.osrd.stdcm.infra_exploration.ExplorerStep
@@ -64,16 +65,21 @@ class ConsistChangeTests {
                 .setRollingStocks(listOf(slowTrain, mediumTrain, fastTrain))
                 .setBoundaries(listOf(1, 2))
                 .run()!!
-        val realStops = stdcmResult.stopResults.filter { it.duration > 0 }.toList()
+        Assertions.assertTrue(stdcmResult is STDCMCompleteResult)
+        val stdcmResultSuccess = stdcmResult as STDCMCompleteResult
+        val realStops = stdcmResultSuccess.stopResults.filter { it.duration > 0 }.toList()
         assertEquals(2, realStops.size)
         assertEquals(
             slowTrain.maxSpeed,
-            stdcmResult.envelope.maxSpeedInRange(0.0, realStops[0].position),
+            stdcmResultSuccess.envelope.maxSpeedInRange(0.0, realStops[0].position),
             0.01,
         )
         assertEquals(
             mediumTrain.maxSpeed,
-            stdcmResult.envelope.maxSpeedInRange(realStops[0].position, realStops[1].position),
+            stdcmResultSuccess.envelope.maxSpeedInRange(
+                realStops[0].position,
+                realStops[1].position,
+            ),
             0.01,
         )
         assertEquals(
@@ -119,11 +125,13 @@ class ConsistChangeTests {
                 .setRollingStocks(listOf(slowTrain, mediumTrain, fastTrain))
                 .setBoundaries(listOf(1, 2))
                 .run()!!
+        Assertions.assertTrue(stdcmResult is STDCMCompleteResult)
+        val stdcmResultSuccess = stdcmResult as STDCMCompleteResult
         val simulationResponse =
-            STDCMEndpoint.buildSimResponse(infra, stdcmResult, null, null, Comfort.STANDARD)
+            STDCMEndpoint.buildSimResponse(infra, stdcmResultSuccess, null, null, Comfort.STANDARD)
         STDCMEndpoint.logDebugData(
             infra.rawInfra,
-            stdcmResult,
+            stdcmResultSuccess,
             simulationResponse,
             ZonedDateTime.now(),
             mapOf(),
@@ -263,24 +271,29 @@ class ConsistChangeTests {
                 .setRollingStocks(listOf(slowTrain, fastTrain))
                 .setBoundaries(listOf(2))
                 .run()!!
-        val realStops = stdcmResult.stopResults.filter { it.duration > 0 }.toList()
+        Assertions.assertTrue(stdcmResult is STDCMCompleteResult)
+        val stdcmResultSuccess = stdcmResult as STDCMCompleteResult
+        val realStops = stdcmResultSuccess.stopResults.filter { it.duration > 0 }.toList()
         assertEquals(2, realStops.size)
         // The first train should be used up to the second stop
         assertEquals(
             slowTrain.maxSpeed,
-            stdcmResult.envelope.maxSpeedInRange(0.0, realStops[0].position),
+            stdcmResultSuccess.envelope.maxSpeedInRange(0.0, realStops[0].position),
             0.01,
         )
         assertEquals(
             slowTrain.maxSpeed,
-            stdcmResult.envelope.maxSpeedInRange(realStops[0].position, realStops[1].position),
+            stdcmResultSuccess.envelope.maxSpeedInRange(
+                realStops[0].position,
+                realStops[1].position,
+            ),
             0.01,
         )
         assertEquals(
             fastTrain.maxSpeed,
-            stdcmResult.envelope.maxSpeedInRange(
+            stdcmResultSuccess.envelope.maxSpeedInRange(
                 realStops[1].position,
-                stdcmResult.envelope.endPos,
+                stdcmResultSuccess.envelope.endPos,
             ),
             0.01,
         )

@@ -229,7 +229,9 @@ class ConditionalOccupancyTests {
                 .setStartLocations(setOf(BlockLocation(blocks[0], Offset(0.meters))))
                 .setEndLocations(setOf(BlockLocation(blocks[2], Offset(50.meters))))
                 .run()!!
-        assertTrue { res.departureTime + res.envelope.totalTime >= 3600 }
+        assertTrue {
+            res is STDCMCompleteResult && res.departureTime + res.envelope.totalTime >= 3600
+        }
     }
 
     private fun initBuilder(

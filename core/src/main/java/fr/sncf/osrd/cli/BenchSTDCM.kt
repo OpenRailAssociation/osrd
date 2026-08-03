@@ -233,16 +233,12 @@ class BenchSTDCM : CliCommand {
                             ),
                             FailureExplainer(request.startTime, infra.rawInfra, infra.blockInfra),
                         )
-                    if (
-                        path != null &&
-                            path is STDCMCompleteResult &&
-                            hasDuplicateTracks(infra, path.trainPath)
-                    )
+                    if (path !is STDCMCompleteResult || hasDuplicateTracks(infra, path.trainPath))
                         path = null
                 } catch (e: Exception) {
                     results["error"] = e.toString()
                 }
-                if (path != null && path is STDCMCompleteResult) {
+                if (path as STDCMCompleteResult? != null) {
                     results["result_time"] = path.envelope.totalTime
                     results["result_distance"] = path.trainPath.getLength().meters
                 }

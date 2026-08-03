@@ -195,7 +195,7 @@ class FullSTDCMTests {
                 .setEndLocations(end.blockLocations)
                 .setBlockAvailability(blockAvailability)
                 .run()!!
-        assertTrue(res.departureTime >= 3600)
+        assertTrue(res is STDCMCompleteResult && res.departureTime >= 3600)
     }
 
     /** Test that we properly account for start or end scheduled step. */
@@ -222,12 +222,18 @@ class FullSTDCMTests {
         if (hasStandardAllowance)
             builder = builder.setStandardAllowance(AllowanceValue.Percentage(5.0))
         val res = builder.run()!!
+        assertTrue(res is STDCMCompleteResult)
+        val resSuccess = res as STDCMCompleteResult
         if (startPlannedTimingData != null) {
-            assertEquals(expectedPassageTime, res.departureTime)
+            assertEquals(expectedPassageTime, resSuccess.departureTime)
         } else {
-            assertEquals(expectedPassageTime, res.departureTime + res.envelope.totalTime, timeStep)
+            assertEquals(
+                expectedPassageTime,
+                resSuccess.departureTime + resSuccess.envelope.totalTime,
+                timeStep,
+            )
         }
-        assertTrue(res.departureTime <= 12_000.0) // Max departure delay
+        assertTrue(resSuccess.departureTime <= 12_000.0) // Max departure delay
     }
 
     /**
@@ -296,7 +302,9 @@ class FullSTDCMTests {
                 .setMaxRunTime(Double.POSITIVE_INFINITY)
                 .setMaxDepartureDelay(0.0)
                 .run()!!
-        assertTrue(res.stopResults.first().duration > 5_000.0) {
+        assertTrue(res is STDCMCompleteResult)
+        val resSuccess = res as STDCMCompleteResult
+        assertTrue(resSuccess.stopResults.first().duration > 5_000.0) {
             "if a solution can be found without lengthening the stop, the test itself is broken"
         }
     }
