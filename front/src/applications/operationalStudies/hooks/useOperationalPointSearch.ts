@@ -128,10 +128,13 @@ export const useOperationalPointSearch = ({
     };
 
     const search = async (searchPayload: SearchPayload) =>
-      (await postSearch({
-        searchPayload,
-        pageSize,
-      }).unwrap()) as SearchResultItemOperationalPoint[];
+      (await postSearch(
+        {
+          searchPayload,
+          pageSize,
+        },
+        true
+      ).unwrap()) as SearchResultItemOperationalPoint[];
 
     const searchOps = async () => {
       // 1) Large call on the entire query
