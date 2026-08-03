@@ -1724,7 +1724,7 @@ export type PostDocumentsApiArg = {
   contentType: string;
   body: string;
 };
-export type GetDocumentsByDocumentKeyApiResponse = unknown;
+export type GetDocumentsByDocumentKeyApiResponse = /** status 200 Document content */ string;
 export type GetDocumentsByDocumentKeyApiArg = {
   /** The document's key */
   documentKey: number;

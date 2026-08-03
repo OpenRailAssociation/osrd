@@ -431,6 +431,60 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/NewDocumentResponse'
+        '500':
+          description: ''
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - type: object
+                  description: 'database error: {0}'
+                  required:
+                  - error_type
+                  - status
+                  - message
+                  - context
+                  properties:
+                    context:
+                      type: object
+                    error_type:
+                      type: string
+                      enum:
+                      - editoast::DatabaseError::Internal
+                    message:
+                      type: string
+                    status:
+                      type: integer
+                      format: int32
+                      enum:
+                      - '500'
+        '503':
+          description: ''
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - type: object
+                  description: 'database unavailable: {0}'
+                  required:
+                  - error_type
+                  - status
+                  - message
+                  - context
+                  properties:
+                    context:
+                      type: object
+                    error_type:
+                      type: string
+                      enum:
+                      - editoast::DatabaseError::Unavailable
+                    message:
+                      type: string
+                    status:
+                      type: integer
+                      format: int32
+                      enum:
+                      - '503'
   /documents/{document_key}:
     get:
       tags:
@@ -451,47 +505,6 @@ paths:
             application/octet-stream:
               schema:
                 type: string
-    delete:
-      tags:
-      - documents
-      summary: Delete an existing document
-      parameters:
-      - name: document_key
-        in: path
-        description: The document's key
-        required: true
-        schema:
-          type: integer
-          format: int64
-      responses:
-        '204':
-          description: The document was deleted
-        '403':
-          description: ''
-          content:
-            application/json:
-              schema:
-                oneOf:
-                - type: object
-                  required:
-                  - error_type
-                  - status
-                  - message
-                  - context
-                  properties:
-                    context:
-                      type: object
-                    error_type:
-                      type: string
-                      enum:
-                      - editoast::DocumentsErrors::Authorization
-                    message:
-                      type: string
-                    status:
-                      type: integer
-                      format: int32
-                      enum:
-                      - '403'
         '404':
           description: ''
           content:
@@ -517,7 +530,7 @@ paths:
                     error_type:
                       type: string
                       enum:
-                      - editoast::DocumentsErrors::NotFound
+                      - editoast::DocumentNotFound
                     message:
                       type: string
                     status:
@@ -532,6 +545,7 @@ paths:
               schema:
                 oneOf:
                 - type: object
+                  description: 'database error: {0}'
                   required:
                   - error_type
                   - status
@@ -543,7 +557,7 @@ paths:
                     error_type:
                       type: string
                       enum:
-                      - editoast::DocumentsErrors::Database
+                      - editoast::DatabaseError::Internal
                     message:
                       type: string
                     status:
@@ -551,7 +565,14 @@ paths:
                       format: int32
                       enum:
                       - '500'
+        '503':
+          description: ''
+          content:
+            application/json:
+              schema:
+                oneOf:
                 - type: object
+                  description: 'database unavailable: {0}'
                   required:
                   - error_type
                   - status
@@ -563,7 +584,82 @@ paths:
                     error_type:
                       type: string
                       enum:
-                      - editoast::DocumentsErrors::DatabaseUnavailable
+                      - editoast::DatabaseError::Unavailable
+                    message:
+                      type: string
+                    status:
+                      type: integer
+                      format: int32
+                      enum:
+                      - '503'
+    delete:
+      tags:
+      - documents
+      summary: Delete an existing document
+      parameters:
+      - name: document_key
+        in: path
+        description: The document's key
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '204':
+          description: The document was deleted
+        '404':
+          description: ''
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - type: object
+                  description: Document '{document_key}' not found
+                  required:
+                  - error_type
+                  - status
+                  - message
+                  - context
+                  properties:
+                    context:
+                      type: object
+                      required:
+                      - document_key
+                      properties:
+                        document_key:
+                          type: integer
+                          format: int64
+                    error_type:
+                      type: string
+                      enum:
+                      - editoast::DocumentNotFound
+                    message:
+                      type: string
+                    status:
+                      type: integer
+                      format: int32
+                      enum:
+                      - '404'
+        '500':
+          description: ''
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - type: object
+                  description: 'database error: {0}'
+                  required:
+                  - error_type
+                  - status
+                  - message
+                  - context
+                  properties:
+                    context:
+                      type: object
+                    error_type:
+                      type: string
+                      enum:
+                      - editoast::DatabaseError::Internal
                     message:
                       type: string
                     status:
@@ -571,6 +667,33 @@ paths:
                       format: int32
                       enum:
                       - '500'
+        '503':
+          description: ''
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - type: object
+                  description: 'database unavailable: {0}'
+                  required:
+                  - error_type
+                  - status
+                  - message
+                  - context
+                  properties:
+                    context:
+                      type: object
+                    error_type:
+                      type: string
+                      enum:
+                      - editoast::DatabaseError::Unavailable
+                    message:
+                      type: string
+                    status:
+                      type: integer
+                      format: int32
+                      enum:
+                      - '503'
   /electrical_profile_set:
     get:
       tags:
@@ -7203,91 +7326,6 @@ components:
           type: string
           enum:
           - editoast:delimited_area:InvalidLocations
-    EditoastDocumentErrorsAuthorization:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-          title: EditoastDocumentErrorsAuthorizationContext
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 403
-        type:
-          type: string
-          enum:
-          - editoast:document:Authorization
-    EditoastDocumentErrorsDatabase:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-          title: EditoastDocumentErrorsDatabaseContext
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 500
-        type:
-          type: string
-          enum:
-          - editoast:document:Database
-    EditoastDocumentErrorsDatabaseUnavailable:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-          title: EditoastDocumentErrorsDatabaseUnavailableContext
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 503
-        type:
-          type: string
-          enum:
-          - editoast:document:DatabaseUnavailable
-    EditoastDocumentErrorsNotFound:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-          title: EditoastDocumentErrorsNotFoundContext
-          required:
-          - document_key
-          properties:
-            document_key:
-              type: integer
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 404
-        type:
-          type: string
-          enum:
-          - editoast:document:NotFound
     EditoastEditionErrorInfraIsLocked:
       type: object
       required:
@@ -7428,10 +7466,6 @@ components:
       - $ref: '#/components/schemas/EditoastCoreErrorUnparsableErrorOutput'
       - $ref: '#/components/schemas/EditoastDatabaseAccessErrorDatabaseAccessError'
       - $ref: '#/components/schemas/EditoastDelimitedAreaErrorInvalidLocations'
-      - $ref: '#/components/schemas/EditoastDocumentErrorsAuthorization'
-      - $ref: '#/components/schemas/EditoastDocumentErrorsDatabase'
-      - $ref: '#/components/schemas/EditoastDocumentErrorsDatabaseUnavailable'
-      - $ref: '#/components/schemas/EditoastDocumentErrorsNotFound'
       - $ref: '#/components/schemas/EditoastEditionErrorInfraIsLocked'
       - $ref: '#/components/schemas/EditoastEditionErrorSplitTrackSectionBadOffset'
       - $ref: '#/components/schemas/EditoastElectricalProfilesErrorDatabase'
