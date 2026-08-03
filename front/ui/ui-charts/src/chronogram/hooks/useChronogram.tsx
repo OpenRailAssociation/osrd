@@ -5,8 +5,8 @@ import { timeScaleToZoomValue, zoomX } from '../../manchette/utils/helpers';
 import {
   CHRONOGRAM_BOTTOM_PADDING,
   LEVEL_CROSSING_ITEM_HEIGHT,
-  CHRONOGRAM_HEADER_HEIGHT
-} from "../consts";
+  CHRONOGRAM_HEADER_HEIGHT,
+} from '../consts';
 
 // TODO: manchette's existant utils => common ?
 function getDistance(a: Point, b: Point): Point {

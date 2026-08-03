@@ -1,4 +1,4 @@
-import { STONE_500 } from "../common/helpers/colors";
+import { STONE_500 } from '../common/helpers/colors';
 
 export const INITIAL_OP_LIST_HEIGHT = 521;
 

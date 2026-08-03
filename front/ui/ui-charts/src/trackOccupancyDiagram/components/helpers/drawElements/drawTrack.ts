@@ -1,10 +1,17 @@
 import { sum } from 'lodash';
 
+import {
+  WHITE_100,
+  WHITE_50,
+  GREY_20,
+  PRIMARY_5,
+  PRIMARY_30,
+  SKY_700,
+} from '../../../../common/helpers/colors';
 import { TRACK_HEIGHT_CONTAINER, TICKS_PATTERN } from '../../../lib/consts';
 import { getTickPattern } from '../../utils';
-import { WHITE_100, WHITE_50, GREY_20, PRIMARY_5, PRIMARY_30, SKY_700 } from '../../../../common/helpers/colors';
 
-const RAIL_TICK_COLOR = SKY_700
+const RAIL_TICK_COLOR = SKY_700;
 
 const drawRails = ({
   xStart,

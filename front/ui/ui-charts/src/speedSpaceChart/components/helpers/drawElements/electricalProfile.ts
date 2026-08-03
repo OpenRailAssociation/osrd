@@ -1,5 +1,12 @@
 import { FONT_SANS } from '../../../../common/consts';
-import { BLACK_10, BLACK_100, BLACK_20, GREY_80, STONE_900, WHITE_100 } from '../../../../common/helpers/colors';
+import {
+  BLACK_10,
+  BLACK_100,
+  BLACK_20,
+  GREY_80,
+  STONE_900,
+  WHITE_100,
+} from '../../../../common/helpers/colors';
 import type { DrawFunctionParams } from '../../../types';
 import { LINEAR_LAYERS_BACKGROUND_COLOR, LINEAR_LAYERS_HEIGHTS, MARGINS } from '../../const';
 import {

@@ -1,8 +1,8 @@
 import React from 'react';
 
+import { SECOND } from '../../common/consts';
 import type { Point } from '../../common/types';
 import { Tooltip } from './Tooltip';
-import { SECOND } from '../../common/consts';
 
 export type ConflictTooltipProps = {
   position: Point;

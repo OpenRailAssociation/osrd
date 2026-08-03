@@ -1,4 +1,5 @@
 import chroma from 'chroma-js';
+
 import { SKY_700, SKY_900, WHITE_100 } from '../../../../common/helpers/colors';
 import type { DrawFunctionParams, EtcsBrakingCurveType, LayerData } from '../../../types';
 import {

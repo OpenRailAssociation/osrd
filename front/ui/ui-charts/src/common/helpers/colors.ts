@@ -7,7 +7,7 @@ const INDICES_TO_COLORS: Record<number, string> = {};
 
 // COLORS DEFINITIONS:
 export const BLACK_100 = 'rgb(0, 0, 0)';
-export const BLACK_70 = 'rgba(0, 0, 0, 0.70)'
+export const BLACK_70 = 'rgba(0, 0, 0, 0.70)';
 export const BLACK_55 = 'rgba(0, 0, 0, 0.55)';
 export const BLACK_25 = 'rgba(0, 0, 0, 0.25)';
 export const BLACK_20 = 'rgba(0, 0, 0, 0.20)';
@@ -48,7 +48,6 @@ export const STONE_900 = 'rgb(31, 27, 23)';
 export const STONE_500 = 'rgb(138, 113, 75)';
 export const STONE_100 = 'rgb(247, 246, 238)';
 export const STONE_50 = 'rgb(250, 249, 245)';
-
 
 export const LIME_50 = 'rgb(242, 240, 228)';
 export const EMERALD_100 = 'rgb(202, 237, 219)';

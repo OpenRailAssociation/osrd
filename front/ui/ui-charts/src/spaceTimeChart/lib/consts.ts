@@ -1,7 +1,15 @@
 import { SECOND, MINUTE, HOUR, FONT_SIZE, FONT_MONO } from '../../common/consts';
-import { BLACK_100, SKY_700, GREY_10, GREY_30, GREY_50, AMBER_100, EMERALD_100, ROSE_200 } from '../../common/helpers/colors';
+import {
+  BLACK_100,
+  SKY_700,
+  GREY_10,
+  GREY_30,
+  GREY_50,
+  AMBER_100,
+  EMERALD_100,
+  ROSE_200,
+} from '../../common/helpers/colors';
 import { type SpaceTimeChartTheme } from './types';
-
 
 // Occupancy blocks colors :
 export const OCCUPANCY_FREE = EMERALD_100;

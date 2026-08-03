@@ -1,4 +1,7 @@
 import chroma from 'chroma-js';
+
+import { FONT_SANS } from '../../../../common/consts';
+import { BLACK_100, WHITE_100 } from '../../../../common/helpers/colors';
 import {
   type DrawFunctionParams,
   type EtcsBrakingCurves,
@@ -18,8 +21,6 @@ import {
   getCursorPosition,
   getSnappedStop,
 } from '../../utils';
-import { BLACK_100, WHITE_100 } from '../../../../common/helpers/colors';
-import { FONT_SANS } from '../../../../common/consts';
 
 const {
   MARGIN_LEFT,

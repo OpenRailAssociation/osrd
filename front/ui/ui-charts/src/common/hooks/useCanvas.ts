@@ -90,8 +90,8 @@ export function useCanvas<T extends BaseChartContextType>(
       PICKING_LAYERS.forEach((layer) => {
         if (layers && !layers.has(layer)) return;
 
-      const ctx = contextsRef.current[`picking-${layer}`];
-      const set = pickingFunctions.current[layer];
+        const ctx = contextsRef.current[`picking-${layer}`];
+        const set = pickingFunctions.current[layer];
 
         if (ctx && ctx.canvas.width && ctx.canvas.height) {
           const { width, height } = sizeRef.current;

@@ -1,6 +1,15 @@
 import chroma from 'chroma-js';
 
 import {
+  BLUE_700,
+  CYAN_400,
+  LIME_50,
+  NEUTRAL_300,
+  STONE_100,
+  STONE_50,
+  YELLOW_400,
+} from '../../common/helpers/colors';
+import {
   type ColorDictionary,
   type EtcsAlphaDictionary,
   EtcsBrakingCurveType,
@@ -9,7 +18,6 @@ import {
   type EtcsLayersDisplay,
   type Store,
 } from '../types';
-import { BLUE_700, CYAN_400, LIME_50, NEUTRAL_300, STONE_100, STONE_50, YELLOW_400 } from '../../common/helpers/colors';
 
 export const SLOPE_FILL_COLOR = NEUTRAL_300;
 

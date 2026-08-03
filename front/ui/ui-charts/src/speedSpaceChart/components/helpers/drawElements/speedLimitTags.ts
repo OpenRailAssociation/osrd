@@ -1,4 +1,6 @@
 import chroma from 'chroma-js';
+
+import { FONT_SANS } from '../../../../common/consts';
 import { BLACK_10, WHITE_100 } from '../../../../common/helpers/colors';
 import type {
   DrawFunctionParams,
@@ -21,7 +23,6 @@ import {
   maxPositionValue,
   positionOnGraphScale,
 } from '../../utils';
-import { FONT_SANS } from '../../../../common/consts';
 
 const RECT_HEIGHT = 17;
 const Y_POSITION = 12;

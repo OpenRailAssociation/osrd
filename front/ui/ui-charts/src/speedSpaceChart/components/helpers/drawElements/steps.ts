@@ -1,4 +1,6 @@
 import chroma from 'chroma-js';
+
+import { FONT_SANS } from '../../../../common/consts';
 import { BLACK_100, GREY_50, GREY_80, SKY_700 } from '../../../../common/helpers/colors';
 import type { DrawFunctionParams } from '../../../types';
 import { MARGINS } from '../../const';
@@ -9,8 +11,7 @@ import {
   getDisplayedStops,
   getSnappedStop,
 } from '../../utils';
-import { FONT_SANS } from '../../../../common/consts';
-  
+
 const { MARGIN_LEFT, MARGIN_RIGHT, MARGIN_TOP, MARGIN_BOTTOM } = MARGINS;
 const STEP_HEIGHT = 6;
 const STEP_WIDTH = 1;

@@ -1,11 +1,7 @@
 import { HOUR, MINUTE } from '../../../../common/consts';
 import { GREY_50, LIME_50, STONE_50 } from '../../../../common/helpers/colors';
 import type { SpaceTimeChartContextType } from '../../../../spaceTimeChart';
-import {
-  TRACK_HEIGHT_CONTAINER,
-  CANVAS_PADDING,
-  TICKS_PRIORITIES,
-} from '../../../lib/consts';
+import { TRACK_HEIGHT_CONTAINER, CANVAS_PADDING, TICKS_PRIORITIES } from '../../../lib/consts';
 import { type Track } from '../../../lib/types';
 import { getLabelLevels, getLabelMarks } from '../../utils';
 import { drawTrack } from './drawTrack';

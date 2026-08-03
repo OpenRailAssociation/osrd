@@ -1,7 +1,6 @@
 import { FONT_MONO, FONT_SANS } from '../../../../common/consts';
-import { MINUTES_TEXT_OFFSET, STATION_TEXT_OFFSET } from '../../../lib/consts';
 import { GREY_50, GREY_60, GREY_80 } from '../../../../common/helpers/colors';
-
+import { MINUTES_TEXT_OFFSET, STATION_TEXT_OFFSET } from '../../../lib/consts';
 import type { OccupancyZone } from '../../../lib/types';
 import { drawText } from '../../utils';
 

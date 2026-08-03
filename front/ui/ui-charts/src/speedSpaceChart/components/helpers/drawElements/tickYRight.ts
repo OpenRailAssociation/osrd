@@ -1,9 +1,10 @@
 import chroma from 'chroma-js';
+
+import { FONT_SANS } from '../../../../common/consts';
 import { GREY_50 } from '../../../../common/helpers/colors';
 import type { DrawFunctionParams } from '../../../types';
 import { MARGINS, TICK_TITLE_MARGINS, RIGHT_TICK_HEIGHT_OFFSET } from '../../const';
 import { clearCanvas, slopesValues } from '../../utils';
-import { FONT_SANS } from '../../../../common/consts';
 
 const { MARGIN_LEFT, MARGIN_TOP, MARGIN_BOTTOM, RIGHT_TICK_MARGINS } = MARGINS;
 const { Y_RIGHT_VERTICAL, Y_RIGHT_HORIZONTAL } = TICK_TITLE_MARGINS;

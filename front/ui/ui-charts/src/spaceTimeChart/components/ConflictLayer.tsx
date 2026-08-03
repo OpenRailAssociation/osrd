@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 
-import { ERROR_10, ERROR_30, ERROR_60, hexToRgb, indexToColor, RED_900 } from '../../common/helpers/colors';
+import { ERROR_10, ERROR_30, ERROR_60, hexToRgb, indexToColor } from '../../common/helpers/colors';
 import { useDraw, usePicking } from '../../common/hooks/useCanvas';
 import type { DrawingFunction, PickingDrawingFunction, PickingElement } from '../../common/types';
 import { SpaceTimeChartCanvasContext } from '../lib/context';

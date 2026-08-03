@@ -1,4 +1,5 @@
 import chroma from 'chroma-js';
+
 import { ERROR_30, ERROR_60, WARNING_30 } from '../../../../common/helpers/colors';
 import type { DrawFunctionParams } from '../../../types';
 import { MARGINS } from '../../const';

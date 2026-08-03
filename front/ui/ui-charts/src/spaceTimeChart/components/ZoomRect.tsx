@@ -1,11 +1,11 @@
 import { useCallback } from 'react';
 
+import { BLACK_5 } from '../../common/helpers/colors';
 import { useDraw } from '../../common/hooks/useCanvas';
 import type { DrawingFunction } from '../../common/types';
 import { SpaceTimeChartCanvasContext } from '../lib/context';
 import type { SpaceTimeChartContextType } from '../lib/types';
 import { fillRect, type CanvasRect } from '../utils/canvas';
-import { BLACK_5 } from '../../common/helpers/colors';
 
 /**
  * radius 1 black dot with radius 3 white region around it

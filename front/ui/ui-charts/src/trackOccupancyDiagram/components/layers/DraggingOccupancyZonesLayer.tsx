@@ -1,6 +1,7 @@
 import { useCallback, useContext } from 'react';
 
 import { MouseContext } from '../../../common';
+import { BLUE_500, CYAN_300, PRIMARY_50, PRIMARY_80 } from '../../../common/helpers/colors';
 import { useDraw } from '../../../common/hooks/useCanvas';
 import type { DrawingFunction } from '../../../common/types';
 import {
@@ -9,7 +10,6 @@ import {
 } from '../../../spaceTimeChart';
 import type { OccupancyZone } from '../../lib/types';
 import { drawThroughTrain } from '../helpers/drawElements/drawOccupancyZones';
-import { BLUE_500, CYAN_300, PRIMARY_50, PRIMARY_80 } from '../../../common/helpers/colors';
 
 const DraggingOccupancyZonesLayer = ({ occupancyZones }: { occupancyZones: OccupancyZone[] }) => {
   const mouseContext = useContext(MouseContext);

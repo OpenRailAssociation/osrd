@@ -3,8 +3,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Slider } from '@osrd-project/ui-core';
 
 import { zoomValueToTimeScale } from '../../manchette/utils/helpers';
+import { CHRONOGRAM_SLIDER_WIDTH, INITIAL_CHRONOGRAM_HEIGHT } from '../consts';
 import useChronogram from '../hooks/useChronogram';
-import { CHRONOGRAM_SLIDER_WIDTH, INITIAL_CHRONOGRAM_HEIGHT } from "../consts";
 import type { ChronogramProps } from '../lib/types';
 import { ChronogramCanvas } from './ChronogramCanvas';
 import ChronogramManchette from './ChronogramManchette';
