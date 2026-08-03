@@ -4478,7 +4478,7 @@ export type TrainSchedulePartBound = {
   op_id: string;
   /** Index of the path step in the train schedule's path */
   path_step_index: number;
-  /** Scheduled time of the step in milliseconds from midnight UTC. */
+  /** Scheduled time of the step in milliseconds from 1970-01-01 00:00:00 UTC. */
   time_ms: number;
 };
 export type TrainSchedulePart = {
@@ -4496,7 +4496,7 @@ export type JourneySearchQuery = {
   destination: OperationalPointPartReference;
   infra_id: number;
   origin: OperationalPointPartReference;
-  /** Amount of milliseconds from midnight UTC to the center of the start window.
+  /** Amount of milliseconds from 1970-01-01 00:00:00 UTC to the center of the start window.
     
     The start window is defined as the time between
     `start_sec - start_tolerance` and `start_sec + start_tolerance`. */
@@ -4506,6 +4506,7 @@ export type JourneySearchQuery = {
     The start window is defined as the time between
     `start_sec - start_tolerance` and `start_sec + start_tolerance`. */
   start_tolerance: number;
+  /** Until daily patterns are supported, timetables must be calendar anchored on 1970-01-01 UTC. */
   timetable_ids: number[];
   /** Constant time for a transfer/footpath in the same stop in milliseconds.
     

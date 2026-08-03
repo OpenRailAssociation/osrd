@@ -2813,6 +2813,7 @@ paths:
       description: |-
         The trains are not simulated, meaning each stop needs to be dated in order
         to be taken into account.
+        Until daily patterns are supported, timetables must be calendar anchored on 1970-01-01 UTC.
       requestBody:
         content:
           application/json:
@@ -11525,7 +11526,7 @@ components:
           type: integer
           format: int32
           description: |-
-            Amount of milliseconds from midnight UTC to the center of the start window.
+            Amount of milliseconds from 1970-01-01 00:00:00 UTC to the center of the start window.
 
             The start window is defined as the time between
             `start_sec - start_tolerance` and `start_sec + start_tolerance`.
@@ -11544,6 +11545,7 @@ components:
           items:
             type: integer
             format: int64
+          description: Until daily patterns are supported, timetables must be calendar anchored on 1970-01-01 UTC.
           uniqueItems: true
         transfer_ms:
           type: integer
@@ -16675,7 +16677,7 @@ components:
         time_ms:
           type: integer
           format: int32
-          description: Scheduled time of the step in milliseconds from midnight UTC.
+          description: Scheduled time of the step in milliseconds from 1970-01-01 00:00:00 UTC.
           minimum: 0
     TrainScheduleResponse:
       allOf:
