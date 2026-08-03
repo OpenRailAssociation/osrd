@@ -2,7 +2,7 @@ import { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'r
 
 import { isEqual } from 'lodash';
 
-import { PICKING_LAYERS, LAYERS, CANVASMODE } from '../consts';
+import { PICKING_LAYERS, LAYERS } from '../consts';
 import { rgbToHex, colorToIndex } from '../helpers/colors';
 import getPNGBlob from '../helpers/png';
 import { getPickingScalingRatio } from '../helpers/utils';
@@ -90,8 +90,8 @@ export function useCanvas<T extends BaseChartContextType>(
       PICKING_LAYERS.forEach((layer) => {
         if (layers && !layers.has(layer)) return;
 
-        const ctx = contextsRef.current[`${PICKING}-${layer}`];
-        const set = pickingFunctions.current[layer];
+      const ctx = contextsRef.current[`picking-${layer}`];
+      const set = pickingFunctions.current[layer];
 
         if (ctx && ctx.canvas.width && ctx.canvas.height) {
           const { width, height } = sizeRef.current;
@@ -119,7 +119,7 @@ export function useCanvas<T extends BaseChartContextType>(
     LAYERS.forEach((layer) => {
       if (layers && !layers.has(layer)) return;
 
-      const ctx = contextsRef.current[`${CANVASMODE.RENDERING}-${layer}`];
+      const ctx = contextsRef.current[`rendering-${layer}`];
       const set = drawingFunctions.current[layer];
 
       if (ctx) {
@@ -171,12 +171,12 @@ export function useCanvas<T extends BaseChartContextType>(
    * This function helpers registering a drawing function on a given layer:
    */
   const register = useCallback<DrawingFunctionHandler<T>>(({ type, layer, fn }) => {
-    if (type === CANVASMODE.PICKING) {
+    if (type === 'picking') {
       const set = pickingFunctions.current[layer];
       if (set.has(fn)) throw new Error('This picking function has already been registered.');
 
       set.add(fn);
-    } else if (type === CANVASMODE.RENDERING) {
+    } else if (type === 'rendering') {
       const set = drawingFunctions.current[layer];
       if (set.has(fn)) throw new Error('This drawing function has already been registered.');
 
@@ -191,12 +191,12 @@ export function useCanvas<T extends BaseChartContextType>(
    * This function helpers unregistering a drawing function from a given layer:
    */
   const unregister = useCallback<DrawingFunctionHandler<T>>(({ type, layer, fn }) => {
-    if (type === CANVASMODE.PICKING) {
+    if (type === 'picking') {
       const set = pickingFunctions.current[layer];
       if (!set.has(fn)) throw new Error('This picking function has not been registered.');
 
       set.delete(fn);
-    } else if (type === CANVASMODE.RENDERING) {
+    } else if (type === 'rendering') {
       const set = drawingFunctions.current[layer];
       if (!set.has(fn)) throw new Error('This drawing function has not been registered.');
 
@@ -211,7 +211,7 @@ export function useCanvas<T extends BaseChartContextType>(
     () =>
       getPNGBlob(
         canvasesRef.current,
-        LAYERS.map((layer) => `${CANVASMODE.RENDERING}-${layer}`),
+        LAYERS.map((layer) => `rendering-${layer}`),
         chartContextRef.current.theme.background
       ),
     []
@@ -226,8 +226,8 @@ export function useCanvas<T extends BaseChartContextType>(
 
     // Create missing layers:
     const allLayers = [
-      ...LAYERS.map((layer) => ({ layer, type: CANVASMODE.RENDERING })),
-      ...PICKING_LAYERS.map((layer) => ({ layer, type: CANVASMODE.PICKING })),
+      ...LAYERS.map((layer) => ({ layer, type: 'rendering' })),
+      ...PICKING_LAYERS.map((layer) => ({ layer, type: 'picking' })),
     ];
     allLayers.forEach(({ layer, type }) => {
       const layerId = `${type}-${layer}`;
@@ -242,7 +242,7 @@ export function useCanvas<T extends BaseChartContextType>(
         contexts[layerId] = ctx;
 
         // Draw layer if functions are already registered:
-        if (type === CANVASMODE.PICKING) {
+        if (type === 'picking') {
           // (also hide picking layers)
           canvas.style.display = 'none';
         }
@@ -266,7 +266,7 @@ export function useCanvas<T extends BaseChartContextType>(
     for (const id in canvasesRef.current) {
       const canvas = canvasesRef.current[id];
       const ctx = contextsRef.current[id];
-      const isPicking = id.split('-')[0] === CANVASMODE.PICKING;
+      const isPicking = id.split('-')[0] === 'picking';
 
       if (canvas) {
         const ratio = isPicking ? pickingScalingRatio : devicePixelRatio;
@@ -295,7 +295,7 @@ export function useCanvas<T extends BaseChartContextType>(
     const pickingScalingRatio = getPickingScalingRatio();
 
     PICKING_LAYERS.some((layer) => {
-      const ctx = contextsRef.current[`${CANVASMODE.PICKING}-${layer}`];
+      const ctx = contextsRef.current[`picking-${layer}`];
       if (ctx && position) {
         const [r, g, b, a] = ctx.getImageData(
           Math.round(position.x * pickingScalingRatio),
@@ -346,10 +346,10 @@ export function usePicking<T>(
   const { register, unregister } = useContext(contextKey);
 
   useEffect(() => {
-    register({ type: CANVASMODE.PICKING, layer, fn });
+    register({ type: 'picking', layer, fn });
 
     return () => {
-      unregister({ type: CANVASMODE.PICKING, layer, fn });
+      unregister({ type: 'picking', layer, fn });
     };
   }, [layer, fn, register, unregister]);
 }
@@ -365,10 +365,10 @@ export function useDraw<T>(
   const { register, unregister } = useContext(contextKey);
 
   useEffect(() => {
-    register({ type: CANVASMODE.RENDERING, layer, fn });
+    register({ type: 'rendering', layer, fn });
 
     return () => {
-      unregister({ type: CANVASMODE.RENDERING, layer, fn });
+      unregister({ type: 'rendering', layer, fn });
     };
   }, [layer, fn, register, unregister]);
 }

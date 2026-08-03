@@ -9,16 +9,7 @@ export const HOUR = 60 * MINUTE;
 
 export const KILOMETER = 1000000;
 
-// ========== CANVAS CONSTANTS ==========
-
-export enum CANVASMODE {
-  PICKING = 'picking',
-  RENDERING = 'rendering'
-}
-
-
 // ========== STYLE CONSTANTS ==========
-
 
 export const FONT_SIZE = 10;
 export const FONT_MONO = 'IBM Plex Mono'
