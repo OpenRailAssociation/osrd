@@ -202,11 +202,6 @@ const ComboBox = <T,>({
           const exactSuggestion = suggestionsByLabel.get(normalizedInputValue);
           if (exactSuggestion) {
             selectSuggestion(exactSuggestion);
-          } else if (
-            suggestions.length === 1 &&
-            getSuggestionLabel(suggestions[0]).startsWith(inputValue)
-          ) {
-            selectSuggestion(suggestions[0]);
           } else {
             if (showAddCustomValue) {
               confirmCustomValue();
