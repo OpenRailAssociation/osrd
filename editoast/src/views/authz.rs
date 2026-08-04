@@ -160,7 +160,7 @@ pub(in crate::views) async fn user_groups(
     }): State<AppState>,
 ) -> Result<Json<Vec<Group>>> {
     let user = authn_state
-        .regular_user()
+        .user()
         .ok_or(AuthorizationError::Unauthenticated)?;
     let authorizer = authn_state.authorizer(regulator.openfga());
     let user_groups = authz::v2::user_groups(user)
@@ -516,7 +516,7 @@ pub(in crate::views) async fn user_grants(
     Json(body): Json<HashMap<ResourceType, Vec<i64>>>,
 ) -> Result<Json<HashMap<ResourceType, Vec<UserResourceGrant>>>> {
     let user = authn_state
-        .regular_user()
+        .user()
         .ok_or(AuthorizationError::Unauthenticated)?;
     let authorizer = authn_state.authorizer(regulator.openfga());
     let mut response = HashMap::<_, Vec<UserResourceGrant>>::new();
