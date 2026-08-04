@@ -6,352 +6,35 @@
   "502": "服务器错误",
   "503": "服务器错误",
   "504": "服务器无响应。",
-  "core": {
-    "assert_error": "",
-    "missing_last_stdcm_stop": ""
-  },
-  "default": "",
   "editoast": {
-    "DatabaseAccessError": "",
-    "JoinError": {
-      "cancelled": "",
-      "panic": "",
-      "unhandled_add_case_here": ""
-    },
-    "app_health": {
-      "Core": "",
-      "Database": "",
-      "Openfga": "",
-      "Timeout": "",
-      "Valkey": ""
-    },
-    "attached": {
-      "TrackNotFound": ""
-    },
     "authorization": {
-      "AuthError": "",
-      "DbError": "",
       "Forbidden": "拒绝访问",
-      "ForbiddenImpersonation": "",
-      "ImpersonatedUserNotFound": "",
       "Unauthenticated": "未认证的用户"
     },
     "authz": {
-      "Authorizer": "",
-      "Authz": "",
-      "Database": "",
-      "Driver": "",
       "GrantsApiMisuse": "API使用错误",
-      "NoSuchUser": "未知用户",
-      "UnknownIdentities": "",
-      "UnknownResource": "",
-      "UnknownResourceType": "",
-      "UnknownSubject": "",
-      "UnknownUser": ""
-    },
-    "authz_legacy": {
-      "Openfga": "",
-      "Storage": "",
-      "UnknownResource": "",
-      "UnknownSubject": "",
-      "UnknownUser": ""
-    },
-    "auto_fixes": {
-      "ConflictingFixesOnSameObject": "",
-      "FixTrialFailure": "",
-      "MaximumIterationReached": "",
-      "MissingErrorObject": ""
-    },
-    "cache_operation": {
-      "DuplicateIdsProvided": "",
-      "ObjectNotFound": ""
+      "NoSuchUser": "未知用户"
     },
     "catalog_entry": {
-      "Database": "内部错误（数据库）",
-      "NotFound": ""
-    },
-    "core": {
-      "pathfinding": {
-        "ZeroLengthPath": ""
-      }
-    },
-    "coreclient": {
-      "BrokenPipe": "",
-      "CannotExtractResponseBody": "",
-      "CoreResponseFormatError": "",
-      "MqClientError": "",
-      "UnparsableErrorOutput": ""
-    },
-    "delimited_area": {
-      "InvalidLocations": ""
-    },
-    "document": {
-      "Database": "",
-      "NotFound": ""
-    },
-    "electrical_profiles": {
-      "Database": "",
-      "NotFound": ""
-    },
-    "fonts": {
-      "FileNotFound": ""
-    },
-    "geometry": {
-      "UnexpectedGeometry": ""
-    },
-    "icons": {
-      "FileNotFound": ""
+      "Database": "内部错误（数据库）"
     },
     "infra": {
-      "Database": "内部错误",
-      "NotFound": "",
-      "edition": {
-        "InfraIsLocked": "",
-        "SplitTrackSectionBadOffset": ""
-      },
-      "errors": {
-        "WrongErrorTypeProvided": ""
-      },
-      "lines": {
-        "LineNotFound": ""
-      },
-      "objects": {
-        "DuplicateIdsProvided": "",
-        "ObjectIdNotFound": ""
-      },
-      "pathfinding": {
-        "EndingTrackLocationNotFound": "",
-        "InvalidNumberOfPaths": "",
-        "StartingTrackLocationNotFound": ""
-      }
-    },
-    "infra_cache": {
-      "ObjectNotFound": ""
-    },
-    "infra_state": {
-      "FetchError": ""
-    },
-    "layers": {
-      "LayerNotFound": "",
-      "ViewNotFound": ""
+      "Database": "内部错误"
     },
     "level_crossing": {
-      "Database": "",
-      "InfraNotFound": "",
-      "LevelCrossingBatchNotFound": "",
-      "TimetableNotFound": "",
-      "TrainBatchNotFound": "",
       "UnsupportedTimetableType": "不支持每小时的时间表。"
     },
-    "macro_node": {
-      "Database": "",
-      "NotFound": "",
-      "ScenarioNotFound": ""
-    },
-    "macro_note": {
-      "Database": "",
-      "NotFound": "",
-      "ScenarioNotFound": "",
-      "WrongScenario": ""
-    },
-    "model": {
-      "ModelError": ""
-    },
     "operation": {
-      "EmptyId": "不允许使用空字符串id",
-      "InvalidPatch": "",
-      "ModifyId": "",
-      "ObjectNotFound": ""
-    },
-    "operationalPointProjection": {
-      "InvalidNumberOfDistances": "",
-      "InvalidNumberOfRefs": ""
-    },
-    "pathfinding": {
-      "Database": "",
-      "ElectricalProfilesOverlap": "",
-      "ElectrificationOverlap": "",
-      "InfraNotFound": "",
-      "NotFound": "",
-      "OperationalPointsNotFound": "",
-      "RollingStockNotFound": "",
-      "TrackSectionsNotFound": ""
+      "EmptyId": "不允许使用空字符串id"
     },
     "postgres": {
-      "Host": "",
-      "Password": "",
-      "Port": "",
       "Username": "无效的用户名"
     },
-    "project": {
-      "Database": "",
-      "ImageError": "",
-      "ImageNotFound": "",
-      "NotFound": ""
-    },
-    "railjson": {
-      "UnsupportedVersion": ""
-    },
     "rollingstocks": {
-      "BasePowerClassEmpty": "",
-      "CannotCreateCompoundImage": "无法在合成的图像上复制分离的图像",
-      "CannotReadImage": "",
-      "Database": "",
-      "IsLocked": "",
-      "IsUsed": "",
-      "KeyNotFound": "",
-      "LiveryMultipartError": "",
-      "NameAlreadyUsed": ""
-    },
-    "round_trips": {
-      "Database": "",
-      "DuplicateTrainIds": "",
-      "TimetableNotFound": ""
-    },
-    "scenario": {
-      "Database": "",
-      "InfraNotFound": "",
-      "NotFound": "",
-      "StudyNotFound": "",
-      "TimetableNotFound": ""
+      "CannotCreateCompoundImage": "无法在合成的图像上复制分离的图像"
     },
     "search": {
-      "ArgMissing": "",
-      "ArgTypeMismatch": "",
-      "EmptyArray": "",
-      "IntegerConversion": "无法转换为i64",
-      "InvalidColumnName": "",
-      "InvalidFunctionIdentifier": "",
-      "InvalidSyntax": "",
-      "ObjectType": "",
-      "QueryAst": "",
-      "RuntimeTypeCheckFail": "",
-      "SearchEngineError": "",
-      "UndefinedFunction": "",
-      "UndefinedOverload": "",
-      "UnexpectedArg": "",
-      "UnexpectedColumn": "",
-      "UnexpectedErsatz": "",
-      "VariadicArgTypeMismatch": ""
-    },
-    "search_journeys": {
-      "Database": "",
-      "InfraNotFound": "",
-      "InvalidInput": ""
-    },
-    "single_simulation": {
-      "ElectricalProfileSetNotFound": "",
-      "PathNotFound": "",
-      "RollingStockNotFound": "",
-      "WrongCoreResponseFormat": ""
-    },
-    "sprites": {
-      "FileNotFound": "",
-      "UnknownSignalingSystem": ""
-    },
-    "stdcm": {
-      "BatchRollingStockNotFound": "",
-      "Database": "",
-      "InfraNotFound": "",
-      "InvalidConsistLength": "",
-      "InvalidConsistMass": "",
-      "InvalidConsistMaxSpeed": "",
-      "InvalidPathItems": "",
-      "TimetableNotFound": "",
-      "TowedRollingStockNotFound": "",
-      "TrainSimulationFail": ""
-    },
-    "stdcm_debug": {
-      "JsonParseError": "",
-      "S3Error": "",
-      "S3NotConfigured": ""
-    },
-    "stdcm_search_env": {
-      "Database": "",
-      "NotFound": ""
-    },
-    "study": {
-      "Database": "",
-      "NotFound": "",
-      "ProjectNotFound": "",
-      "StartDateAfterEndDate": ""
-    },
-    "sub_categories": {
-      "CodeAlreadyUsed": "",
-      "Database": "",
-      "NotFound": ""
-    },
-    "temporary_speed_limit": {
-      "Database": "",
-      "NameAlreadyUsed": ""
-    },
-    "timetable": {
-      "BatchTrainScheduleSetNotFound": "",
-      "Database": "",
-      "InfraNotFound": "",
-      "InfraNotLoaded": "",
-      "InvalidPeriod": "",
-      "NotFound": "",
-      "ParseError": "",
-      "Timeout": "",
-      "TrainScheduleSetsNotFound": "",
-      "similar_trains": {
-        "Database": "",
-        "EmptyTrainsTraffic": "",
-        "InvalidPath": "",
-        "RollingStockNotFound": "",
-        "SpeedLimitNotFound": ""
-      }
-    },
-    "towedrollingstocks": {
-      "Database": "",
-      "IdNotFound": "",
-      "IsLocked": ""
-    },
-    "train_schedule": {
-      "BatchNotFound": "",
-      "Database": "",
-      "ExceptionNotFound": "",
-      "InfraNotFound": "",
-      "InvalidPathPortion": "",
-      "NotFound": "",
-      "PathfindingFailed": "",
-      "RollingStockNotFound": "",
-      "SimulationFailed": "",
-      "TrainScheduleSetNotFound": ""
-    },
-    "train_schedule_exception": {
-      "BatchNotFound": "",
-      "Database": "",
-      "InvalidOccurrenceIndex": "",
-      "NotFound": "",
-      "NotPacedTrain": "",
-      "OccurrenceIndexAlreadyUsed": "",
-      "TimetableNotFound": "",
-      "TrainScheduleNotFound": ""
-    },
-    "train_schedule_set": {
-      "CatalogEntryNotFound": "",
-      "Database": "",
-      "NotFound": ""
-    },
-    "url": {
-      "InvalidUrl": ""
-    },
-    "valkey": {
-      "Url": ""
-    },
-    "work_schedule": {
-      "Database": "",
-      "NameAlreadyUsed": "",
-      "WorkScheduleGroupNotFound": ""
-    },
-    "worker_load": {
-      "Database": "",
-      "FetchStatusError": "",
-      "InfraNotFound": "",
-      "TimetableNotFound": ""
+      "IntegerConversion": "无法转换为i64"
     }
-  },
-  "pageNotFound": ""
+  }
 }
