@@ -89,6 +89,11 @@
   }
 }
 
+.scenario-edition-modal-title {
+  font-family: 'IBM Plex Sans';
+  font-style: semi-bold;
+}
+
 .ui-dialog-overlay .dialog-content section.scenario-add-or-edit-modal-body {
   padding: 0;
   overflow: visible; // Fix ComboBox overflow

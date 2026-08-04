@@ -2,7 +2,7 @@
   --header-height: 40px;
 }
 
-html:has(> body > .menu-overlay) {
+html:has(> body > .menu-overlay, .ui-dialog-overlay) {
   overflow: hidden;
 }
 
