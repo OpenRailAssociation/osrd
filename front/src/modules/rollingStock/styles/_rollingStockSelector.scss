@@ -48,9 +48,7 @@
     .rollingstock-img {
       height: 32px;
       white-space: nowrap;
-      transform: scale(
-        0.4
-      ); // Have to scale whole <img> because electric trains with pantograph have taller pictures
+      transform: scale(0.4); // Have to scale whole <img> because electric trains with pantograph have taller pictures
       transform-origin: left;
       img {
         display: inline-block;
