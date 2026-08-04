@@ -1,4 +1,4 @@
-import type { TrainSchedule } from 'common/api/osrdEditoastApi';
+import type { LightRollingStockWithLiveries, TrainSchedule } from 'common/api/osrdEditoastApi';
 import {
   extractOccurrenceDetailsFromPacedTrain,
   findExceptionWithOccurrenceId,
@@ -19,7 +19,8 @@ import { msToStartTime } from 'utils/duration';
 export function applyOccurrenceOnPacedTrain(
   originalTrainSchedule: TrainScheduleWithDetails,
   train: Train,
-  occurrenceId: OccurrenceId
+  occurrenceId: OccurrenceId,
+  rollingStocks: LightRollingStockWithLiveries[]
 ): TrainScheduleWithDetails {
   if (!originalTrainSchedule.paced) return originalTrainSchedule;
 
@@ -44,12 +45,15 @@ export function applyOccurrenceOnPacedTrain(
     ...occurrenceProps
   } = extractOccurrenceDetailsFromPacedTrain(rawPacedTrain, occurrenceToUpdateException);
 
+  const rollingStock = rollingStocks.find((rs) => rs.name === rollingStockName);
+
   return {
     ...originalTrainSchedule,
     ...occurrenceProps,
     name: train_name,
     startTime: msToStartTime(start_time, originalTrainSchedule.startTime),
     speedLimitTag: speed_limit_tag ?? null,
+    rollingStock,
     rollingStockName,
   };
 }

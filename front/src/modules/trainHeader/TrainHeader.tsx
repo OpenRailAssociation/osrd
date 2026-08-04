@@ -6,6 +6,7 @@ import { useScenarioContext } from 'applications/operationalStudies/hooks/useSce
 import { updateTrainSchedule } from 'applications/operationalStudies/views/Scenario/components/ManageTrainSchedule/hooks/useUpdateTrainSchedule';
 import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/views/Scenario/consts';
 import type { PathfindingResult, TrainScheduleResponse } from 'common/api/osrdEditoastApi';
+import useFilterRollingStock from 'modules/rollingStock/hooks/useFilterRollingStock';
 import type { TrainScheduleWithDetails } from 'modules/trainSchedule/types';
 import { setFailure } from 'reducers/main';
 import { selectTrainToEdit } from 'reducers/osrdconf/operationalStudiesConf';
@@ -51,6 +52,7 @@ const TrainHeader = ({
   const { timetableId } = useScenarioContext();
   const occurrenceId = isOccurrenceId(train.id) ? train.id : undefined;
   const trainScheduleId = extractEditoastIdFromTrainId(train.id);
+  const { filteredRollingStockList: rollingStocks } = useFilterRollingStock();
 
   // TODO: As soon as we ditch the old train edition modal, we should switch to a TrainSchedule instead
   //       of a TrainScheduleWithDetails as we have no need for the "details" in this form.
@@ -91,7 +93,7 @@ const TrainHeader = ({
     dispatch(
       selectTrainToEdit({
         trainSchedule: occurrenceId
-          ? applyOccurrenceOnPacedTrain(originalTrainSchedule, train, occurrenceId)
+          ? applyOccurrenceOnPacedTrain(originalTrainSchedule, train, occurrenceId, rollingStocks)
           : originalTrainSchedule,
         isOccurrence: !!occurrenceId,
       })
@@ -107,6 +109,7 @@ const TrainHeader = ({
     originalTrainSchedule,
     trainScheduleId,
     occurrenceId,
+    rollingStocks,
     dispatch,
     setDisplayTrainScheduleManagement,
     setTrainScheduleToEditData,
