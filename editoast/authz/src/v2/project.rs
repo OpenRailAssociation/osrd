@@ -36,8 +36,6 @@ pub fn project_direct_grant(subject: Subject, project: Project) -> Protected<Opt
         }
         .boxed()
     })
-    .with_check(Check::SubjectExists(subject))
-    .with_check(Check::ProjectExists(project))
 }
 
 /// Returns the effective grant a subject has on an [Project]
@@ -62,8 +60,6 @@ pub fn project_effective_grant(
         }
         .boxed()
     })
-    .with_check(Check::SubjectExists(subject))
-    .with_check(Check::ProjectExists(project))
 }
 
 pub fn project_set_grant(subject: Subject, project: Project) -> Protected<()> {
@@ -140,6 +136,7 @@ mod tests {
     use crate::User;
     use crate::authz_client;
     use crate::model::Project;
+    use crate::v2::Check;
     use crate::v2::TestClientExt;
 
     use super::*;
@@ -456,31 +453,21 @@ mod tests {
     #[rstest::rstest]
     #[case::project_direct_grant(
         project_direct_grant(Subject::user(1), Project(1)).checks,
-        &[
-            Check::SubjectExists(Subject::user(1)),
-            Check::ProjectExists(Project(1)),
-        ]
+        &[]
     )]
     #[case::project_effective_grant(
         project_effective_grant(Subject::user(1), Project(1)).checks,
-        &[
-            Check::SubjectExists(Subject::user(1)),
-            Check::ProjectExists(Project(1)),
-        ]
+        &[]
     )]
     #[case::project_set_grant(
         project_set_grant(Subject::user(1), Project(1)).checks,
         &[
-            Check::SubjectExists(Subject::user(1)),
-            Check::ProjectExists(Project(1)),
             Check::CanGiveSubjectProjectGrant(Subject::user(1), Project(1))
         ]
     )]
     #[case::project_revoke_grant(
         project_revoke_grant(Subject::user(1), Project(1)).checks,
         &[
-            Check::SubjectExists(Subject::user(1)),
-            Check::ProjectExists(Project(1)),
             Check::HasRole(Actor::Issuer, Role::Admin),
         ]
     )]

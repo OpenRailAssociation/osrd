@@ -542,10 +542,7 @@ impl<'a> UserBuilder<'a> {
                 .unwrap_authorized()
                 .await;
 
-            let system = SystemAuthorizer {
-                openfga: regulator.openfga(),
-                conn: app.db_pool().get().await.unwrap(),
-            };
+            let system = SystemAuthorizer::new_infallible(regulator.openfga());
             for (infra_id, grant) in infras_grant.into_iter() {
                 v2::infra_set_grant(
                     authz::Subject::User(authz::User(user.id)),
@@ -660,10 +657,7 @@ impl<'a> GroupBuilder<'a> {
             .unwrap_authorized()
             .await;
 
-            let system = SystemAuthorizer {
-                openfga: regulator.openfga(),
-                conn: app.db_pool().get().await.unwrap(),
-            };
+            let system = SystemAuthorizer::new_infallible(regulator.openfga());
             let subject = authz::Subject::Group(group_auth);
             for (infra_id, grant) in infras_grant.into_iter() {
                 v2::infra_set_grant(subject, authz::Infra(infra_id), grant)

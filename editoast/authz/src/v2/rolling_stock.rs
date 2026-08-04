@@ -59,8 +59,6 @@ pub fn rolling_stock_privileges(
         }
         .boxed()
     })
-    .with_check(Check::RollingStockExists(rolling_stock))
-    .with_check(Check::SubjectExists(Subject::user(user)))
     .with_check(Check::HasRollingStockPrivilege(
         Actor::Issuer,
         RollingStockPrivilege::CanRead,
@@ -131,8 +129,6 @@ pub fn rolling_stock_effective_grant(
         }
         .boxed()
     })
-    .with_check(Check::SubjectExists(subject))
-    .with_check(Check::RollingStockExists(rolling_stock))
     .with_check(Check::HasRollingStockPrivilege(
         Actor::Issuer,
         RollingStockPrivilege::CanRead,
@@ -214,8 +210,6 @@ pub fn rolling_stock_set_grant(
     //     5. **cannot** demote or promote any group [CanAlterSubjectRollingStockGrant]
     let prot = prot
         .reset_checks() // get rid of revoking-specific checks
-        .with_check(Check::SubjectExists(subject))
-        .with_check(Check::RollingStockExists(rolling_stock))
         .with_check(Check::HasRollingStockPrivilege(
             Actor::Issuer,
             share_privilege,
@@ -336,7 +330,6 @@ pub fn rolling_stock_granted_subjects(
             RollingStockPrivilege::CanRead,
             rolling_stock,
         ))
-        .with_check(Check::RollingStockExists(rolling_stock))
 }
 
 /// Returns the *direct grant* a subject has on a [RollingStock], if any
@@ -379,8 +372,6 @@ pub fn rolling_stock_direct_grant(
         }
         .boxed()
     })
-    .with_check(Check::SubjectExists(subject))
-    .with_check(Check::RollingStockExists(rolling_stock))
 }
 
 /// Revokes the (direct) grant a subject has on a [RollingStock], if any
@@ -822,26 +813,21 @@ mod tests {
     #[case::rolling_stock_privileges(
         rolling_stock_privileges(User(1), RollingStock(1)).checks,
         &[
-           Check::SubjectExists(Subject::user(1)),
-           Check::HasRollingStockPrivilege(Actor::Issuer, RollingStockPrivilege::CanRead, RollingStock(1)),
-           Check::RollingStockExists(RollingStock(1))
+           Check::HasRollingStockPrivilege(Actor::Issuer, RollingStockPrivilege::CanRead, RollingStock(1))
         ]
     )]
     #[rstest]
     #[case::rolling_stock_effective_grant(
         rolling_stock_effective_grant(Subject::user(1), RollingStock(1)).checks,
         &[
-           Check::SubjectExists(Subject::user(1)),
-           Check::HasRollingStockPrivilege(Actor::Issuer, RollingStockPrivilege::CanRead, RollingStock(1)),
-           Check::RollingStockExists(RollingStock(1))
+           Check::HasRollingStockPrivilege(Actor::Issuer, RollingStockPrivilege::CanRead, RollingStock(1))
         ]
     )]
     #[rstest]
     #[case::rolling_stock_granted_subjects(
         rolling_stock_granted_subjects(RollingStock(1), RollingStockGrant::Writer).checks,
         &[
-           Check::HasRollingStockPrivilege(Actor::Issuer, RollingStockPrivilege::CanRead, RollingStock(1)),
-           Check::RollingStockExists(RollingStock(1))
+           Check::HasRollingStockPrivilege(Actor::Issuer, RollingStockPrivilege::CanRead, RollingStock(1))
         ]
     )]
     fn protected_contains_expected_checks(

@@ -399,11 +399,8 @@ impl From<fga::client::Error> for InternalError {
 }
 
 impl From<crate::authorizers::Error> for InternalError {
-    fn from(value: crate::authorizers::Error) -> Self {
-        match value {
-            crate::authorizers::Error::Database(error) => error.into(),
-            crate::authorizers::Error::OpenFga(error) => error.into(),
-        }
+    fn from(crate::authorizers::Error(inner): crate::authorizers::Error) -> Self {
+        inner.into()
     }
 }
 

@@ -1,4 +1,5 @@
 use std::convert::Infallible;
+use std::marker::PhantomData;
 use std::ops::Not as _;
 
 use authz::ProjectGrant;
@@ -7,8 +8,6 @@ use authz::v2::Actor;
 use authz::v2::Authorizer;
 use authz::v2::Check;
 use authz::v2::Protected;
-use editoast_models::prelude::*;
-use futures::FutureExt as _;
 use futures::StreamExt as _;
 use futures::stream::FuturesUnordered;
 use tracing::Instrument as _;
@@ -19,49 +18,37 @@ use tracing::Instrument as _;
 /// system knows are correct. For example, attributing the first owner of a new resource.
 ///
 /// No user can be associated with this authorizer.
-pub struct SystemAuthorizer<'a> {
-    pub openfga: &'a fga::Client,
-    pub conn: database::DbConnection,
+///
+/// This authorizer performs no checks and thus [`Authorizer::authorize`] always succeeds
+/// and never rejects. But always setting the rejection type to [`Infallible`], while convenient
+/// when [`SystemAuthorizer`] is used directly, hurts authorizer production by
+/// [`State::authorizer`](crate::authentication::State::authorizer). So you can provide this type whichever
+/// rejection type you prefer.
+pub struct SystemAuthorizer<'a, R = Infallible> {
+    openfga: &'a fga::Client,
+    rejection: PhantomData<R>,
 }
 
-impl SystemAuthorizer<'_> {
-    #[tracing::instrument(target = "SystemAuthorizer::check", skip_all, fields(?check), ret(level = "trace"), err)]
-    async fn check<'ch>(&self, check: &'ch Check) -> Result<Option<&'ch Check>, Error> {
-        let conn = &mut self.conn.clone();
-        Ok(match check {
-            Check::SubjectExists(authz::Subject::User(user)) => {
-                (!editoast_models::User::exists(conn, **user).await?).then_some(check)
-            }
-            Check::SubjectExists(authz::Subject::Group(group)) => {
-                (!editoast_models::Group::exists(conn, **group).await?).then_some(check)
-            }
-            Check::InfraExists(infra) => {
-                (!editoast_models::Infra::exists(conn, **infra).await?).then_some(check)
-            }
-            Check::RollingStockExists(authz::RollingStock(rolling_stock_id)) => {
-                (!editoast_models::RollingStock::exists(conn, *rolling_stock_id).await?)
-                    .then_some(check)
-            }
-            Check::ProjectExists(authz::Project(project_id)) => {
-                (!editoast_models::Project::exists(conn, *project_id).await?).then_some(check)
-            }
-            // checked by UserAuthorizer
-            Check::HasRole(..)
-            | Check::HasInfraPrivilege(..)
-            | Check::HasRollingStockPrivilege(..)
-            | Check::CanAlterSubjectInfraGrant(..)
-            | Check::CanGiveSubjectProjectGrant(..)
-            | Check::SubjectEffectiveInfraGrantIsNot(..)
-            | Check::CanAlterSubjectRollingStockGrant(..)
-            | Check::SubjectEffectiveRollingStockGrantIsNot(..)
-            | Check::IsNotLastInfraOwner(..)
-            | Check::IsNotLastRollingStockOwner(..) => None,
-        })
+impl<'a, R> SystemAuthorizer<'a, R> {
+    pub fn new(openfga: &'a fga::Client) -> Self {
+        Self {
+            openfga,
+            rejection: PhantomData,
+        }
     }
 }
 
-impl Authorizer for SystemAuthorizer<'_> {
-    type Rejection = Check;
+impl<'a> SystemAuthorizer<'a, Infallible> {
+    /// Shortcut for `SystemAuthorizer::<Infallible>::new`.
+    ///
+    /// Avoids having to import the name.
+    pub fn new_infallible(openfga: &'a fga::Client) -> Self {
+        Self::new(openfga)
+    }
+}
+
+impl<R> Authorizer for SystemAuthorizer<'_, R> {
+    type Rejection = R;
     type Error = Error;
 
     #[tracing::instrument(skip_all)]
@@ -69,20 +56,6 @@ impl Authorizer for SystemAuthorizer<'_> {
         &'a self,
         data: Protected<T>,
     ) -> Result<Access<'a, T, Self::Rejection>, Self::Error> {
-        {
-            // scoping to tell the borrow checker that checks is consumed before returning
-            // access_authorized which takes ownership of data
-            let mut checks = data
-                .checks
-                .iter()
-                .map(|check| self.check(check).in_current_span())
-                .collect::<FuturesUnordered<_>>();
-            while let Some(result) = checks.next().await {
-                if let Some(check) = result? {
-                    return Ok(Access::Denied { rejection: *check });
-                }
-            }
-        }
         Ok(data.access_authorized(self.openfga))
     }
 }
@@ -91,21 +64,14 @@ pub struct UserAuthorizer<'c> {
     pub user: authz::User,
     pub roles: Vec<authz::Role>, // TODO: use a SmallVec
     pub openfga: &'c fga::Client,
-    pub conn: database::DbConnection,
 }
 
 impl<'c> UserAuthorizer<'c> {
-    pub fn new(
-        user: authz::User,
-        roles: Vec<authz::Role>,
-        openfga: &'c fga::Client,
-        conn: database::DbConnection,
-    ) -> Self {
+    pub fn new(user: authz::User, roles: Vec<authz::Role>, openfga: &'c fga::Client) -> Self {
         Self {
             user,
             roles,
             openfga,
-            conn,
         }
     }
 
@@ -270,11 +236,6 @@ impl<'c> UserAuthorizer<'c> {
                 .await?;
                 (owners.len() == 1 && owners.contains(subject)).then_some(check)
             }
-            // checked by SystemAuthorizer
-            Check::SubjectExists(_)
-            | Check::InfraExists(_)
-            | Check::RollingStockExists(_)
-            | Check::ProjectExists(_) => None,
         })
     }
 }
@@ -288,25 +249,18 @@ impl Authorizer for UserAuthorizer<'_> {
         &'a self,
         data: Protected<T>,
     ) -> Result<Access<'a, T, Self::Rejection>, Self::Error> {
-        let system_authorizer = SystemAuthorizer {
-            openfga: self.openfga,
-            conn: self.conn.clone(),
-        };
         {
             // scoping to tell the borrow checker that checks is consumed before returning
             // access_authorized which takes ownership of data
-            // same thing for the system_authorizer
             let mut checks = FuturesUnordered::new();
-            for check in &data.checks {
-                checks.push(system_authorizer.check(check).in_current_span().boxed());
-            }
             if !self.roles.contains(&authz::Role::Admin) {
                 for check in &data.checks {
-                    checks.push(self.check(check).in_current_span().boxed());
+                    checks.push(self.check(check).in_current_span());
                 }
             }
             while let Some(result) = checks.next().await {
                 if let Some(check) = result? {
+                    tracing::error!(user = ?self.user, ?check, "authorization denied");
                     return Ok(Access::Denied { rejection: *check });
                 }
             }
@@ -316,22 +270,8 @@ impl Authorizer for UserAuthorizer<'_> {
 }
 
 #[derive(Debug, thiserror::Error)]
-pub enum Error {
-    #[error(transparent)]
-    Database(#[from] editoast_models::Error),
-    #[error(transparent)]
-    OpenFga(#[from] authz::v2::OpenFgaError),
-}
-
-/// Wraps [`unreachable!`] with a message specific to impossible checks
-macro_rules! impossible {
-    ($check:expr) => {
-        unreachable!(
-            "impossible check {:?} — if this occurs, some authz::Protected check handling has been overlooked", $check
-        )
-    };
-}
-pub(crate) use impossible;
+#[error(transparent)]
+pub struct Error(#[from] pub authz::v2::OpenFgaError);
 
 #[cfg(test)]
 mod tests {
@@ -395,149 +335,6 @@ mod tests {
             .unwrap()
     }
 
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn existing_user() {
-        let openfga = openfga().await;
-        let pool = DbConnectionPoolV2::for_tests();
-        let user = create_user(&pool, "user").await;
-        let system = SystemAuthorizer {
-            openfga: &openfga,
-            conn: pool.get_ok(),
-        };
-        let user_authorizer = UserAuthorizer::new(user, vec![Role::Admin], &openfga, pool.get_ok());
-
-        assert_eq!(authorize(&system, Check::user(user)).await, Ok(()));
-        assert_eq!(authorize(&user_authorizer, Check::user(user)).await, Ok(()));
-    }
-
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn missing_user() {
-        let openfga = openfga().await;
-        let pool = DbConnectionPoolV2::for_tests();
-        let user = create_user(&pool, "user").await;
-        let system = SystemAuthorizer {
-            openfga: &openfga,
-            conn: pool.get_ok(),
-        };
-        let user_authorizer = UserAuthorizer::new(user, vec![Role::Admin], &openfga, pool.get_ok());
-
-        let check = Check::user(authz::User(i64::MAX));
-        assert_eq!(authorize(&system, check).await, Err(check));
-        assert_eq!(authorize(&user_authorizer, check).await, Err(check));
-    }
-
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn existing_group() {
-        let openfga = openfga().await;
-        let pool = DbConnectionPoolV2::for_tests();
-        let user = create_user(&pool, "user").await;
-        let group = create_group(&pool, "group").await;
-        let system = SystemAuthorizer {
-            openfga: &openfga,
-            conn: pool.get_ok(),
-        };
-        let user_authorizer = UserAuthorizer::new(user, vec![Role::Admin], &openfga, pool.get_ok());
-
-        assert_eq!(authorize(&system, Check::group(group)).await, Ok(()));
-        assert_eq!(
-            authorize(&user_authorizer, Check::group(group)).await,
-            Ok(())
-        );
-    }
-
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn missing_group() {
-        let openfga = openfga().await;
-        let pool = DbConnectionPoolV2::for_tests();
-        let user = create_user(&pool, "user").await;
-        let system = SystemAuthorizer {
-            openfga: &openfga,
-            conn: pool.get_ok(),
-        };
-        let user_authorizer = UserAuthorizer::new(user, vec![Role::Admin], &openfga, pool.get_ok());
-
-        let check = Check::group(authz::Group(i64::MAX));
-        assert_eq!(authorize(&system, check).await, Err(check));
-        assert_eq!(authorize(&user_authorizer, check).await, Err(check));
-    }
-
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn existing_infra() {
-        let openfga = openfga().await;
-        let pool = DbConnectionPoolV2::for_tests();
-        let user = create_user(&pool, "user").await;
-        let infra = authz::Infra(create_empty_infra(&mut pool.get_ok()).await.id);
-        let system = SystemAuthorizer {
-            openfga: &openfga,
-            conn: pool.get_ok(),
-        };
-        let user_authorizer = UserAuthorizer::new(user, vec![Role::Admin], &openfga, pool.get_ok());
-
-        assert_eq!(authorize(&system, Check::InfraExists(infra)).await, Ok(()));
-        assert_eq!(
-            authorize(&user_authorizer, Check::InfraExists(infra)).await,
-            Ok(())
-        );
-    }
-
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn missing_infra() {
-        let openfga = openfga().await;
-        let pool = DbConnectionPoolV2::for_tests();
-        let user = create_user(&pool, "user").await;
-        let system = SystemAuthorizer {
-            openfga: &openfga,
-            conn: pool.get_ok(),
-        };
-        let user_authorizer = UserAuthorizer::new(user, vec![Role::Admin], &openfga, pool.get_ok());
-
-        let check = Check::InfraExists(authz::Infra(i64::MAX));
-        assert_eq!(authorize(&system, check).await, Err(check));
-        assert_eq!(authorize(&user_authorizer, check).await, Err(check));
-    }
-
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn existing_rolling_stock() {
-        let openfga = openfga().await;
-        let pool = DbConnectionPoolV2::for_tests();
-        let user = create_user(&pool, "user").await;
-        let rolling_stock = authz::RollingStock(
-            create_fast_rolling_stock(&mut pool.get_ok(), "rolling_stock")
-                .await
-                .id,
-        );
-        let system = SystemAuthorizer {
-            openfga: &openfga,
-            conn: pool.get_ok(),
-        };
-        let user_authorizer = UserAuthorizer::new(user, vec![Role::Admin], &openfga, pool.get_ok());
-
-        assert_eq!(
-            authorize(&system, Check::RollingStockExists(rolling_stock)).await,
-            Ok(())
-        );
-        assert_eq!(
-            authorize(&user_authorizer, Check::RollingStockExists(rolling_stock)).await,
-            Ok(())
-        );
-    }
-
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn missing_rolling_stock() {
-        let openfga = openfga().await;
-        let pool = DbConnectionPoolV2::for_tests();
-        let user = create_user(&pool, "user").await;
-        let system = SystemAuthorizer {
-            openfga: &openfga,
-            conn: pool.get_ok(),
-        };
-        let user_authorizer = UserAuthorizer::new(user, vec![Role::Admin], &openfga, pool.get_ok());
-
-        let check = Check::RollingStockExists(authz::RollingStock(i64::MAX));
-        assert_eq!(authorize(&system, check).await, Err(check));
-        assert_eq!(authorize(&user_authorizer, check).await, Err(check));
-    }
-
     #[rstest]
     #[case::has_role(Check::HasRole(Actor::Issuer, Role::Admin))]
     #[case::has_infra_privilege(Check::HasInfraPrivilege(
@@ -578,11 +375,7 @@ mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn system_authorizer_ignores_non_sanity_checks(#[case] check: Check) {
         let openfga = openfga().await;
-        let pool = DbConnectionPoolV2::for_tests();
-        let system = SystemAuthorizer {
-            openfga: &openfga,
-            conn: pool.get_ok(),
-        };
+        let system = SystemAuthorizer::new_infallible(&openfga);
 
         assert_eq!(authorize(&system, check).await, Ok(()));
     }
@@ -592,12 +385,7 @@ mod tests {
         let openfga = openfga().await;
         let pool = DbConnectionPoolV2::for_tests();
         let user = create_user(&pool, "user").await;
-        let user_authorizer = UserAuthorizer::new(
-            user,
-            vec![Role::OperationalStudies],
-            &openfga,
-            pool.get_ok(),
-        );
+        let user_authorizer = UserAuthorizer::new(user, vec![Role::OperationalStudies], &openfga);
 
         let check = Check::HasRole(Actor::Issuer, Role::OperationalStudies);
         assert_eq!(authorize(&user_authorizer, check).await, Ok(()));
@@ -616,7 +404,7 @@ mod tests {
             .write_tuples(&[authz::User::role().tuple(&Role::Stdcm, &target)])
             .await
             .unwrap();
-        let user_authorizer = UserAuthorizer::new(issuer, vec![], &openfga, pool.get_ok());
+        let user_authorizer = UserAuthorizer::new(issuer, vec![], &openfga);
 
         let check = Check::HasRole(Actor::User(target), Role::Stdcm);
         assert_eq!(authorize(&user_authorizer, check).await, Ok(()));
@@ -637,11 +425,11 @@ mod tests {
             .await
             .unwrap();
 
-        let user_authorizer = UserAuthorizer::new(owner, vec![], &openfga, pool.get_ok());
+        let user_authorizer = UserAuthorizer::new(owner, vec![], &openfga);
         let check = Check::HasInfraPrivilege(Actor::Issuer, InfraPrivilege::CanDelete, infra);
         assert_eq!(authorize(&user_authorizer, check).await, Ok(()));
 
-        let user_authorizer = UserAuthorizer::new(no_grant, vec![], &openfga, pool.get_ok());
+        let user_authorizer = UserAuthorizer::new(no_grant, vec![], &openfga);
         let check = Check::HasInfraPrivilege(Actor::Issuer, InfraPrivilege::CanShareRead, infra);
         assert_eq!(authorize(&user_authorizer, check).await, Err(check));
     }
@@ -662,7 +450,7 @@ mod tests {
             .await
             .unwrap();
 
-        let user_authorizer = UserAuthorizer::new(owner, vec![], &openfga, pool.get_ok());
+        let user_authorizer = UserAuthorizer::new(owner, vec![], &openfga);
         let check = Check::HasRollingStockPrivilege(
             Actor::Issuer,
             RollingStockPrivilege::CanDelete,
@@ -670,7 +458,7 @@ mod tests {
         );
         assert_eq!(authorize(&user_authorizer, check).await, Ok(()));
 
-        let user_authorizer = UserAuthorizer::new(no_grant, vec![], &openfga, pool.get_ok());
+        let user_authorizer = UserAuthorizer::new(no_grant, vec![], &openfga);
         let check = Check::HasRollingStockPrivilege(
             Actor::Issuer,
             RollingStockPrivilege::CanShareRead,
@@ -690,7 +478,7 @@ mod tests {
             .write_tuples(&[authz::Infra::writer().tuple(&target, &infra)])
             .await
             .unwrap();
-        let user_authorizer = UserAuthorizer::new(issuer, vec![], &openfga, pool.get_ok());
+        let user_authorizer = UserAuthorizer::new(issuer, vec![], &openfga);
 
         let check = Check::HasInfraPrivilege(Actor::User(target), InfraPrivilege::CanWrite, infra);
         assert_eq!(authorize(&user_authorizer, check).await, Ok(()));
@@ -781,8 +569,7 @@ mod tests {
             #[case] ok: bool,
         ) {
             let openfga = openfga().await;
-            let pool = DbConnectionPoolV2::for_tests();
-            let user_authorizer = UserAuthorizer::new(issuer, vec![], &openfga, pool.get_ok());
+            let user_authorizer = UserAuthorizer::new(issuer, vec![], &openfga);
 
             openfga
                 .prepare_writes()
@@ -903,8 +690,7 @@ mod tests {
             #[case] ok: bool,
         ) {
             let openfga = openfga().await;
-            let pool = DbConnectionPoolV2::for_tests();
-            let user_authorizer = UserAuthorizer::new(issuer, vec![], &openfga, pool.get_ok());
+            let user_authorizer = UserAuthorizer::new(issuer, vec![], &openfga);
 
             openfga
                 .prepare_writes()
@@ -966,7 +752,7 @@ mod tests {
             .write_tuples(&[authz::RollingStock::writer().tuple(&target, &rolling_stock)])
             .await
             .unwrap();
-        let user_authorizer = UserAuthorizer::new(issuer, vec![], &openfga, pool.get_ok());
+        let user_authorizer = UserAuthorizer::new(issuer, vec![], &openfga);
 
         let check = Check::HasRollingStockPrivilege(
             Actor::User(target),
@@ -994,7 +780,7 @@ mod tests {
             .write_tuples(&[authz::Infra::owner().tuple(&target, &infra)])
             .await
             .unwrap();
-        let user_authorizer = UserAuthorizer::new(issuer, vec![], &openfga, pool.get_ok());
+        let user_authorizer = UserAuthorizer::new(issuer, vec![], &openfga);
 
         let check = Check::SubjectEffectiveInfraGrantIsNot(
             InfraGrant::Owner,
@@ -1026,7 +812,7 @@ mod tests {
             .write_tuples(&[authz::RollingStock::owner().tuple(&target, &rolling_stock)])
             .await
             .unwrap();
-        let user_authorizer = UserAuthorizer::new(issuer, vec![], &openfga, pool.get_ok());
+        let user_authorizer = UserAuthorizer::new(issuer, vec![], &openfga);
 
         let check = Check::SubjectEffectiveRollingStockGrantIsNot(
             RollingStockGrant::Owner,
@@ -1058,7 +844,7 @@ mod tests {
             .execute()
             .await
             .unwrap();
-        let user_authorizer = UserAuthorizer::new(issuer, vec![], &openfga, pool.get_ok());
+        let user_authorizer = UserAuthorizer::new(issuer, vec![], &openfga);
 
         let check = Check::SubjectEffectiveInfraGrantIsNot(
             InfraGrant::Owner,
@@ -1090,7 +876,7 @@ mod tests {
             .execute()
             .await
             .unwrap();
-        let user_authorizer = UserAuthorizer::new(issuer, vec![], &openfga, pool.get_ok());
+        let user_authorizer = UserAuthorizer::new(issuer, vec![], &openfga);
 
         let check = Check::SubjectEffectiveRollingStockGrantIsNot(
             RollingStockGrant::Owner,
@@ -1113,7 +899,7 @@ mod tests {
             .write_tuples(&[authz::Infra::owner().tuple(&owner, &infra)])
             .await
             .unwrap();
-        let user_authorizer = UserAuthorizer::new(issuer, vec![], &openfga, pool.get_ok());
+        let user_authorizer = UserAuthorizer::new(issuer, vec![], &openfga);
 
         let check = Check::IsNotLastInfraOwner(authz::Subject::User(owner), infra);
         assert_eq!(authorize(&user_authorizer, check).await, Err(check));
@@ -1146,7 +932,7 @@ mod tests {
             .write_tuples(&[authz::RollingStock::owner().tuple(&owner, &rolling_stock)])
             .await
             .unwrap();
-        let user_authorizer = UserAuthorizer::new(issuer, vec![], &openfga, pool.get_ok());
+        let user_authorizer = UserAuthorizer::new(issuer, vec![], &openfga);
 
         let check = Check::IsNotLastRollingStockOwner(authz::Subject::User(owner), rolling_stock);
         assert_eq!(authorize(&user_authorizer, check).await, Err(check));
@@ -1176,7 +962,7 @@ mod tests {
             ])
             .await
             .unwrap();
-        let user_authorizer = UserAuthorizer::new(issuer, vec![], &openfga, pool.get_ok());
+        let user_authorizer = UserAuthorizer::new(issuer, vec![], &openfga);
 
         let check = Check::IsNotLastInfraOwner(authz::Subject::Group(group), infra);
         assert_eq!(authorize(&user_authorizer, check).await, Err(check));
@@ -1198,7 +984,7 @@ mod tests {
                 .tuple(authz::Group::member().userset(&group), &rolling_stock)])
             .await
             .unwrap();
-        let user_authorizer = UserAuthorizer::new(issuer, vec![], &openfga, pool.get_ok());
+        let user_authorizer = UserAuthorizer::new(issuer, vec![], &openfga);
 
         let check = Check::IsNotLastRollingStockOwner(authz::Subject::Group(group), rolling_stock);
         assert_eq!(authorize(&user_authorizer, check).await, Err(check));
@@ -1246,7 +1032,7 @@ mod tests {
         let openfga = openfga().await;
         let pool = DbConnectionPoolV2::for_tests();
         let user = create_user(&pool, "admin").await;
-        let user_authorizer = UserAuthorizer::new(user, vec![Role::Admin], &openfga, pool.get_ok());
+        let user_authorizer = UserAuthorizer::new(user, vec![Role::Admin], &openfga);
 
         assert_eq!(authorize(&user_authorizer, check).await, Ok(()));
     }

@@ -53,8 +53,6 @@ pub fn infra_direct_grant(subject: Subject, infra: Infra) -> Protected<Option<In
         }
         .boxed()
     })
-    .with_check(Check::SubjectExists(subject))
-    .with_check(Check::InfraExists(infra))
 }
 
 /// Returns the effective (maximum) grant a subject has on an [Infra], if any
@@ -117,8 +115,6 @@ pub fn infra_effective_grant(subject: Subject, infra: Infra) -> Protected<Option
         }
         .boxed()
     })
-    .with_check(Check::SubjectExists(subject))
-    .with_check(Check::InfraExists(infra))
     .with_check(Check::HasInfraPrivilege(
         Actor::Issuer,
         InfraPrivilege::CanRead,
@@ -191,8 +187,6 @@ pub fn infra_set_grant(subject: Subject, infra: Infra, new_grant: InfraGrant) ->
     //     5. **cannot** demote or promote any group [CanAlterSubjectInfraGrant]
     let prot = prot
         .reset_checks() // get rid of revoking-specific checks
-        .with_check(Check::SubjectExists(subject))
-        .with_check(Check::InfraExists(infra))
         .with_check(Check::HasInfraPrivilege(
             Actor::Issuer,
             share_privilege,
@@ -311,8 +305,6 @@ pub fn infra_privileges(user: User, infra: Infra) -> Protected<HashSet<InfraPriv
         }
         .boxed()
     })
-    .with_check(Check::InfraExists(infra))
-    .with_check(Check::SubjectExists(Subject::user(user)))
     .with_check(Check::HasInfraPrivilege(
         Actor::Issuer,
         InfraPrivilege::CanRead,
@@ -398,7 +390,6 @@ pub fn infra_granted_subjects(infra: Infra, grant: InfraGrant) -> Protected<Vec<
             InfraPrivilege::CanRead,
             infra,
         ))
-        .with_check(Check::InfraExists(infra))
 }
 
 pub fn infra_list(user: User, privilege: InfraPrivilege) -> Protected<ResourcesList<Infra>> {
@@ -896,25 +887,14 @@ mod tests {
     }
 
     #[rstest]
-    #[case::infra_direct_grant(
-        infra_direct_grant(Subject::user(1), Infra(1)).checks,
-        &[
-            Check::SubjectExists(Subject::user(1)),
-            Check::InfraExists(Infra(1))])
-        ]
+    #[case::infra_direct_grant(infra_direct_grant(Subject::user(1), Infra(1)).checks, &[])]
     #[case::infra_effective_grant(
         infra_effective_grant(Subject::user(1), Infra(1)).checks,
-        &[
-            Check::SubjectExists(Subject::user(1)),
-            Check::InfraExists(Infra(1)),
-            Check::HasInfraPrivilege(Actor::Issuer, InfraPrivilege::CanRead, Infra(1)),
-        ]
+        &[Check::HasInfraPrivilege(Actor::Issuer, InfraPrivilege::CanRead, Infra(1))]
     )]
     #[case::infra_revoke_grant(
         infra_revoke_grant(Subject::user(1), Infra(1)).checks,
         &[
-            Check::SubjectExists(Subject::user(1)),
-            Check::InfraExists(Infra(1)),
             Check::HasInfraPrivilege(Actor::Issuer, InfraPrivilege::CanRevoke, Infra(1)),
             Check::IsNotLastInfraOwner(Subject::user(1), Infra(1)),
             Check::SubjectEffectiveInfraGrantIsNot(InfraGrant::Owner, Subject::user(1), Infra(1))
@@ -922,23 +902,13 @@ mod tests {
     )]
     #[case::infra_privileges(
         infra_privileges(User(1), Infra(1)).checks,
-        &[
-            Check::SubjectExists(Subject::user(1)),
-            Check::InfraExists(Infra(1)),
-            Check::HasInfraPrivilege(Actor::Issuer, InfraPrivilege::CanRead, Infra(1)),
-        ]
+        &[Check::HasInfraPrivilege(Actor::Issuer, InfraPrivilege::CanRead, Infra(1))]
     )]
     #[case::infra_privileges(
         infra_granted_subjects(Infra(1), InfraGrant::Owner).checks,
-        &[
-            Check::InfraExists(Infra(1)),
-            Check::HasInfraPrivilege(Actor::Issuer, InfraPrivilege::CanRead, Infra(1)),
-        ]
+        &[Check::HasInfraPrivilege(Actor::Issuer, InfraPrivilege::CanRead, Infra(1))]
     )]
-    #[case::infra_list(
-        infra_list(User(1), InfraPrivilege::CanRead).checks,
-        &[Check::SubjectExists(Subject::user(1))]
-    )]
+    #[case::infra_list(infra_list(User(1), InfraPrivilege::CanRead).checks, &[])]
     fn protected_contains_expected_checks(
         #[case] protected_checks: HashSet<Check>,
         #[case] expected_checks: &[Check],

@@ -3,7 +3,6 @@ use std::collections::HashSet;
 use std::sync::Arc;
 
 use crate::authorizers::SystemAuthorizer;
-use crate::authorizers::impossible;
 use crate::error::Result;
 use crate::views::authz::resources::Resource;
 use crate::views::authz::resources::StandardGrant;
@@ -164,20 +163,13 @@ pub(in crate::views) async fn user_groups(
     let user = authn_state
         .regular_user()
         .ok_or(AuthorizationError::Unauthenticated)?;
-    let authorizer = authn_state.authorizer(regulator.openfga(), db_pool.get().await?);
+    let authorizer = authn_state.authorizer(regulator.openfga());
     let user_groups = authz::v2::user_groups(user)
         .authorize(&authorizer)
         .await?
         .access()
         .await?
-        .map_err(|rejection| match rejection {
-            Check::SubjectExists(authz::Subject::User(authz::User(user_id))) => {
-                AuthzError::UnknownSubject {
-                    subject_id: user_id,
-                }
-            }
-            rejection => impossible!(rejection),
-        })?;
+        .map_err(|_| AuthorizationError::Forbidden)?;
 
     let groups_id = user_groups.into_iter().map(|authz::Group(id)| id);
     let (result, missing_ids) =
@@ -248,6 +240,16 @@ pub(in crate::views) async fn users_info(
         u1
     };
 
+    {
+        let found_ids = users
+            .iter()
+            .map(|user| user.user.id)
+            .collect::<HashSet<_>>();
+        if let Some(id) = ids.into_iter().find(|id| !found_ids.contains(id)) {
+            return Err(AuthzError::UnknownUser { id }.into());
+        }
+    }
+
     // Check for missing requested identities
     {
         let identities = HashSet::from_iter(identities.iter());
@@ -273,21 +275,8 @@ pub(in crate::views) async fn users_info(
         let user_groups = v2::user_groups(authz::User(user.user.id));
         v2::Protected::value(user).zip(user_groups)
     }));
-    let system = SystemAuthorizer {
-        openfga: regulator.openfga(),
-        conn,
-    };
-    let user_groups = system
-        .authorize(groups_prots)
-        .await?
-        .access()
-        .await?
-        .map_err(|rejection| match rejection {
-            Check::SubjectExists(authz::Subject::User(authz::User(user_id))) => {
-                AuthzError::UnknownUser { id: user_id }
-            }
-            rejection => impossible!(rejection),
-        })?;
+    let system = SystemAuthorizer::new_infallible(regulator.openfga());
+    let Ok(user_groups) = system.authorize(groups_prots).await?.access().await?;
 
     // Find groups that really exist (OpenFGA can be out of sync sometimes)
     let group_by_id = {
@@ -306,7 +295,7 @@ pub(in crate::views) async fn users_info(
     };
 
     // Fetch roles and build the response
-    let results = v2::Protected::from_iter(user_groups.into_iter().map(
+    let Ok(results) = v2::Protected::from_iter(user_groups.into_iter().map(
         |(
             UserWithIdentities {
                 user: editoast_models::User { id, name },
@@ -336,14 +325,7 @@ pub(in crate::views) async fn users_info(
     .authorize(&system)
     .await?
     .access()
-    .await?
-    .inspect_err(|rejection| match rejection {
-        Check::SubjectExists(authz::Subject::User(authz::User(_))) => {
-            unreachable!("checked while retrieving groups")
-        }
-        check => impossible!(check),
-    })
-    .expect("no rejections possible");
+    .await?;
 
     Ok(Json(results))
 }
@@ -380,16 +362,29 @@ pub(in crate::views) async fn user_privileges(
     Json(resources_ids): Json<HashMap<ResourceType, Vec<i64>>>,
 ) -> Result<Json<HashMap<ResourceType, Vec<ResourcePrivileges>>>> {
     let mut result = HashMap::<_, Vec<_>>::new();
-    let mut conn = db_pool.get().await?;
+    let missing_resources = retrieve_missing_resource_ids(
+        db_pool.get().await?,
+        resources_ids.iter().flat_map(|(resource_type, ids)| {
+            std::iter::repeat(*resource_type).zip(ids.iter().copied())
+        }),
+    )
+    .await?;
+
     match &authn_state {
         crate::authentication::State::Authenticated { user, .. } => {
             let resources = resources_ids.into_iter().flat_map(|(resource_type, ids)| {
-                ids.into_iter().map(move |id| match resource_type {
-                    ResourceType::Infra => Resource::Infra(authz::Infra(id)),
-                    ResourceType::RollingStock => Resource::RollingStock(authz::RollingStock(id)),
-                })
+                let missing_ids = &missing_resources[&resource_type];
+                // Missing resources are not an error under this API: omit them before authorization.
+                ids.into_iter()
+                    .filter(|id| !missing_ids.contains(id))
+                    .map(move |id| match resource_type {
+                        ResourceType::Infra => Resource::Infra(authz::Infra(id)),
+                        ResourceType::RollingStock => {
+                            Resource::RollingStock(authz::RollingStock(id))
+                        }
+                    })
             });
-            let protected_privileges = resources.map(|resource| match resource {
+            let protected_privileges = resources.into_iter().map(|resource| match resource {
                 resource @ Resource::Infra(infra) => v2::infra_privileges(*user, infra)
                     .collect_into::<HashSet<StandardPrivilege>>()
                     .zip(v2::Protected::value(resource)),
@@ -399,7 +394,7 @@ pub(in crate::views) async fn user_privileges(
                         .zip(v2::Protected::value(resource))
                 }
             });
-            let authorizer = authn_state.authorizer(regulator.openfga(), conn);
+            let authorizer = authn_state.authorizer(regulator.openfga());
             let accesses = authorizer.authorize_all(protected_privileges).await?;
             for access in v2::Access::access_all(accesses).await? {
                 match access {
@@ -411,10 +406,6 @@ pub(in crate::views) async fn user_privileges(
                                 resource_id: resource.id(),
                                 privileges,
                             });
-                    }
-                    Err(Check::InfraExists(_)) | Err(Check::RollingStockExists(_)) => {
-                        // not an error under the target API
-                        // (though maybe we should revisit it?)
                     }
                     Err(Check::HasInfraPrivilege(
                         Actor::Issuer,
@@ -441,14 +432,7 @@ pub(in crate::views) async fn user_privileges(
                             },
                         );
                     }
-                    Err(Check::SubjectExists(authz::Subject::User(_))) => {
-                        panic!("race condition: user deleted");
-                    }
-                    Err(check @ Check::HasInfraPrivilege(_, _, _))
-                    | Err(check @ Check::HasRollingStockPrivilege(_, _, _))
-                    | Err(check) => {
-                        impossible!(check)
-                    }
+                    Err(_) => return Err(AuthorizationError::Forbidden.into()),
                 }
             }
         }
@@ -463,37 +447,46 @@ pub(in crate::views) async fn user_privileges(
                 StandardPrivilege::CanRevoke,
             ]);
             for (resource_type, ids) in resources_ids {
-                let existing_ids: Vec<i64> = match resource_type {
-                    ResourceType::Infra => {
-                        Infra::retrieve_batch_unchecked::<_, Vec<_>>(&mut conn, ids)
-                            .await?
-                            .into_iter()
-                            .map(|i| i.id)
-                            .collect()
-                    }
-                    ResourceType::RollingStock => {
-                        RollingStock::retrieve_batch_unchecked::<_, Vec<_>>(&mut conn, ids)
-                            .await?
-                            .into_iter()
-                            .map(|rs| rs.id)
-                            .collect()
-                    }
-                };
-                result
-                    .entry(resource_type)
-                    .or_default()
-                    .extend(
-                        existing_ids
-                            .into_iter()
-                            .map(|resource_id| ResourcePrivileges {
-                                resource_id,
-                                privileges: privileges.clone(),
-                            }),
-                    );
+                let missing_ids = &missing_resources[&resource_type];
+                result.entry(resource_type).or_default().extend(
+                    ids.into_iter()
+                        .filter(|id| !missing_ids.contains(id))
+                        .map(|resource_id| ResourcePrivileges {
+                            resource_id,
+                            privileges: privileges.clone(),
+                        }),
+                );
             }
         }
     }
     Ok(Json(result))
+}
+
+async fn retrieve_missing_resource_ids(
+    mut conn: database::DbConnection,
+    resources: impl IntoIterator<Item = (ResourceType, i64)>,
+) -> std::result::Result<HashMap<ResourceType, HashSet<i64>>, editoast_models::Error> {
+    let mut resources = resources
+        .into_iter()
+        .into_group_map()
+        .into_iter()
+        .map(|(resource_type, ids)| (resource_type, ids.into_iter().collect()))
+        .collect::<HashMap<ResourceType, HashSet<i64>>>();
+    let infra_ids = resources.remove(&ResourceType::Infra).unwrap_or_default();
+    let rolling_stock_ids = resources
+        .remove(&ResourceType::RollingStock)
+        .unwrap_or_default();
+
+    let mut infra_conn = conn.clone();
+    let ((_, missing_infras), (_, missing_rolling_stocks)) = tokio::try_join!(
+        Infra::retrieve_batch::<_, Vec<_>>(&mut infra_conn, infra_ids),
+        RollingStock::retrieve_batch::<_, Vec<_>>(&mut conn, rolling_stock_ids),
+    )?;
+
+    Ok(HashMap::from([
+        (ResourceType::Infra, missing_infras),
+        (ResourceType::RollingStock, missing_rolling_stocks),
+    ]))
 }
 
 #[derive(Serialize, ToSchema)]
@@ -528,11 +521,22 @@ pub(in crate::views) async fn user_grants(
     let user = authn_state
         .regular_user()
         .ok_or(AuthorizationError::Unauthenticated)?;
-    let authorizer = authn_state.authorizer(regulator.openfga(), db_pool.get().await?);
+    let authorizer = authn_state.authorizer(regulator.openfga());
     let mut response = HashMap::<_, Vec<UserResourceGrant>>::new();
+    let missing_resources = retrieve_missing_resource_ids(
+        db_pool.get().await?,
+        body.iter().flat_map(|(resource_type, ids)| {
+            std::iter::repeat(*resource_type).zip(ids.iter().copied())
+        }),
+    )
+    .await?;
+    // Missing resources are not an error under this API: omit them before authorization.
     // TODO build all protected at once, zip them and batch send them with `authorize_all`
     for (resource_type, ids) in &body {
         for id in ids {
+            if missing_resources[resource_type].contains(id) {
+                continue;
+            }
             let grant_access = match resource_type {
                 ResourceType::Infra => {
                     authz::v2::infra_effective_grant(authz::Subject::user(user), authz::Infra(*id))
@@ -552,10 +556,6 @@ pub(in crate::views) async fn user_grants(
             let grant = match grant_access {
                 Ok(Some(grant)) => grant,
                 Ok(None) => continue,
-                Err(Check::InfraExists(infra)) => {
-                    tracing::warn!(%infra, "non-existent infra — skipping");
-                    continue;
-                }
                 Err(Check::HasInfraPrivilege(Actor::Issuer, InfraPrivilege::CanRead, infra)) => {
                     tracing::warn!(%infra, "user cannot read infra — skipping");
                     continue;
@@ -568,14 +568,7 @@ pub(in crate::views) async fn user_grants(
                     tracing::warn!(%rolling_stock, "user cannot read rolling stock — skipping");
                     continue;
                 }
-                Err(Check::SubjectExists(subject)) => {
-                    unreachable!("{subject} exists or race condition")
-                }
-                Err(Check::RollingStockExists(rolling_stock)) => {
-                    tracing::warn!(%rolling_stock, "non-existent rolling stock — skipping");
-                    continue;
-                }
-                Err(check) => impossible!(check),
+                Err(_) => return Err(AuthorizationError::Forbidden.into()),
             };
             response
                 .entry(*resource_type)
@@ -624,13 +617,17 @@ pub(in crate::views) async fn resource_granted_users(
     Path(ResourceTypeParam { resource_type }): Path<ResourceTypeParam>,
     Path(ResourceIdParam { resource_id }): Path<ResourceIdParam>,
 ) -> Result<Json<Vec<SubjectGrant>>> {
-    let conn = db_pool.get().await?;
+    let mut conn = db_pool.get().await?;
     let openfga = regulator.openfga();
-    let authorizer = authn_state.authorizer(openfga, conn);
+    let authorizer = authn_state.authorizer(openfga);
     // Ask OpenFGA about grants on the resource
     let ((readers, writers), owners) = match resource_type {
         ResourceType::Infra => {
             let infra = authz::Infra(resource_id);
+            Infra::exists_or_fail(&mut conn, resource_id, || AuthzError::UnknownResource {
+                resource_id,
+            })
+            .await?;
             authorizer
                 .authorize(
                     authz::v2::infra_granted_subjects(infra, InfraGrant::Reader)
@@ -640,18 +637,14 @@ pub(in crate::views) async fn resource_granted_users(
                 .await?
                 .access()
                 .await?
-                .map_err(|err| match err {
-                    Check::HasInfraPrivilege(Actor::Issuer, InfraPrivilege::CanRead, ..) => {
-                        AuthzError::Authz(AuthorizationError::Forbidden)
-                    }
-                    Check::InfraExists(_) => AuthzError::UnknownResource {
-                        resource_id: infra.0,
-                    },
-                    rejection => impossible!(rejection),
-                })?
+                .map_err(|_| AuthorizationError::Forbidden)?
         }
         ResourceType::RollingStock => {
             let rolling_stock = authz::RollingStock(resource_id);
+            RollingStock::exists_or_fail(&mut conn, resource_id, || AuthzError::UnknownResource {
+                resource_id,
+            })
+            .await?;
             authorizer
                 .authorize(
                     authz::v2::rolling_stock_granted_subjects(
@@ -670,17 +663,7 @@ pub(in crate::views) async fn resource_granted_users(
                 .await?
                 .access()
                 .await?
-                .map_err(|err| match err {
-                    Check::HasRollingStockPrivilege(
-                        Actor::Issuer,
-                        RollingStockPrivilege::CanRead,
-                        _,
-                    ) => AuthzError::Authz(AuthorizationError::Forbidden),
-                    Check::RollingStockExists(rolling_stock) => AuthzError::UnknownResource {
-                        resource_id: rolling_stock.0,
-                    },
-                    rejection => impossible!(rejection),
-                })?
+                .map_err(|_| AuthorizationError::Forbidden)?
         }
     };
 
@@ -813,6 +796,36 @@ pub(in crate::views) async fn update_grants(
     Extension(authn_state): Extension<crate::authentication::State>,
     Json(body): Json<BodyUpdateGrants>,
 ) -> Result<impl IntoResponse> {
+    {
+        let conn = db_pool.get().await?;
+        let missing_resources = match &body {
+            BodyUpdateGrants::Grant(grants) => {
+                retrieve_missing_resource_ids(
+                    conn,
+                    grants
+                        .iter()
+                        .map(|grant| (grant.resource_type, grant.resource_id)),
+                )
+                .await?
+            }
+            BodyUpdateGrants::Revoke(revokes) => {
+                retrieve_missing_resource_ids(
+                    conn,
+                    revokes
+                        .iter()
+                        .map(|revoke| (revoke.resource_type, revoke.resource_id)),
+                )
+                .await?
+            }
+        };
+        let missing_resource_id = [ResourceType::Infra, ResourceType::RollingStock]
+            .into_iter()
+            .find_map(|resource_type| missing_resources[&resource_type].iter().min().copied());
+        if let Some(resource_id) = missing_resource_id {
+            return Err(AuthzError::UnknownResource { resource_id }.into());
+        }
+    }
+
     // Fetch subjects from the database and determine whether they're a user or a group.
     let subjects = {
         let subjects_id = match &body {
@@ -844,7 +857,7 @@ pub(in crate::views) async fn update_grants(
             .collect::<HashMap<_, _>>()
     };
 
-    let authorizer = authn_state.authorizer(regulator.openfga(), db_pool.get().await?);
+    let authorizer = authn_state.authorizer(regulator.openfga());
 
     match body {
         BodyUpdateGrants::Grant(grants) => {
@@ -855,39 +868,7 @@ pub(in crate::views) async fn update_grants(
 
             match prot.authorize(&authorizer).await?.access().await? {
                 Ok(_) => Ok(StatusCode::CREATED),
-                Err(Check::InfraExists(infra)) => Err(AuthzError::UnknownResource {
-                    resource_id: *infra,
-                }
-                .into()),
-                Err(Check::RollingStockExists(rolling_stock)) => Err(AuthzError::UnknownResource {
-                    resource_id: *rolling_stock,
-                }
-                .into()),
-                Err(Check::SubjectExists(subject)) => Err(AuthzError::UnknownSubject {
-                    subject_id: subject.id(),
-                }
-                .into()),
-                Err(
-                    Check::HasInfraPrivilege(
-                        Actor::Issuer,
-                        InfraPrivilege::CanShareRead
-                        | InfraPrivilege::CanShareWrite
-                        | InfraPrivilege::CanShareOwnership,
-                        _,
-                    )
-                    | Check::HasRollingStockPrivilege(
-                        Actor::Issuer,
-                        RollingStockPrivilege::CanShareRead
-                        | RollingStockPrivilege::CanShareWrite
-                        | RollingStockPrivilege::CanShareOwnership,
-                        _,
-                    )
-                    | Check::CanAlterSubjectInfraGrant(..)
-                    | Check::CanAlterSubjectRollingStockGrant(..)
-                    | Check::IsNotLastRollingStockOwner(..)
-                    | Check::IsNotLastInfraOwner(..),
-                ) => Err(AuthorizationError::Forbidden.into()),
-                Err(check) => impossible!(check),
+                Err(_) => Err(AuthorizationError::Forbidden.into()),
             }
         }
         BodyUpdateGrants::Revoke(revokes) => {
@@ -898,27 +879,7 @@ pub(in crate::views) async fn update_grants(
 
             match prot.authorize(&authorizer).await?.access().await? {
                 Ok(_) => Ok(StatusCode::NO_CONTENT),
-                Err(Check::InfraExists(infra)) => Err(AuthzError::UnknownResource {
-                    resource_id: *infra,
-                }
-                .into()),
-                Err(Check::SubjectExists(subject)) => Err(AuthzError::UnknownSubject {
-                    subject_id: subject.id(),
-                }
-                .into()),
-                Err(
-                    Check::HasInfraPrivilege(Actor::Issuer, InfraPrivilege::CanRevoke, _)
-                    | Check::SubjectEffectiveInfraGrantIsNot(..)
-                    | Check::IsNotLastInfraOwner(..)
-                    | Check::HasRollingStockPrivilege(
-                        Actor::Issuer,
-                        RollingStockPrivilege::CanRevoke,
-                        _,
-                    )
-                    | Check::SubjectEffectiveRollingStockGrantIsNot(..)
-                    | Check::IsNotLastRollingStockOwner(..),
-                ) => Err(AuthorizationError::Forbidden.into()),
-                Err(check) => impossible!(check),
+                Err(_) => Err(AuthorizationError::Forbidden.into()),
             }
         }
     }
@@ -1004,6 +965,7 @@ mod tests {
     use strum::IntoEnumIterator;
 
     use super::*;
+    use crate::error::InternalError;
     use crate::fixtures::create_empty_infra;
     use crate::fixtures::create_fast_rolling_stock;
     use crate::fixtures::create_small_infra;
@@ -1033,7 +995,7 @@ mod tests {
             .post("/authz/me/privileges")
             .by_user(toto.as_ref())
             .json(&json!({
-               "infra": [infra1, infra2, infra3, infra4]
+               "infra": [infra1, infra2, infra3, infra4, i64::MAX]
             }))
             .await
             .assert_status_ok()
@@ -1081,6 +1043,7 @@ mod tests {
         );
         assert_eq!(privileges.remove(&infra4).unwrap(), HashSet::from([]));
         assert!(!privileges.contains_key(&infra_unused));
+        assert!(!privileges.contains_key(&i64::MAX));
     }
 
     // TODO: merge with the previous test once test deadlocks are fixed
@@ -1322,6 +1285,107 @@ mod tests {
                 }
             }
         }
+    }
+
+    #[rstest]
+    #[case(ResourceType::Infra)]
+    #[case(ResourceType::RollingStock)]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn users_grants_for_missing_resource_returns_not_found(
+        #[case] resource_type: ResourceType,
+    ) {
+        let app = test_app!().build();
+        let user = app
+            .user("authz", "Authz")
+            .with_roles([Role::OperationalStudies])
+            .create()
+            .await;
+
+        app.get(&format!("/authz/{resource_type}/{}", i64::MAX))
+            .by_user(user.as_ref())
+            .await
+            .assert_status_not_found();
+    }
+
+    #[rstest]
+    #[case(ResourceType::Infra)]
+    #[case(ResourceType::RollingStock)]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn update_grants_for_missing_resource_returns_not_found(
+        #[case] resource_type: ResourceType,
+    ) {
+        let app = test_app!().build();
+        let owner = app
+            .user("owner", "Owner")
+            .with_roles([Role::OperationalStudies])
+            .create()
+            .await;
+        let subject = app.user("subject", "Subject").create().await;
+
+        app.post("/authz/grants")
+            .by_user(owner.as_ref())
+            .json(&json!({
+                "grant": [{
+                    "subject_id": subject.id,
+                    "resource_type": resource_type,
+                    "resource_id": i64::MAX,
+                    "grant": StandardGrant::Reader,
+                }]
+            }))
+            .await
+            .assert_status_not_found();
+
+        app.post("/authz/grants")
+            .by_user(owner.as_ref())
+            .json(&json!({
+                "revoke": [{
+                    "subject_id": subject.id,
+                    "resource_type": resource_type,
+                    "resource_id": i64::MAX,
+                }]
+            }))
+            .await
+            .assert_status_not_found();
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn update_grants_reports_missing_resources_deterministically() {
+        let app = test_app!().build();
+        let owner = app
+            .user("owner", "Owner")
+            .with_roles([Role::OperationalStudies])
+            .create()
+            .await;
+        let subject = app.user("subject", "Subject").create().await;
+        let missing_infra_id = i64::MAX - 1;
+
+        let response: InternalError = app
+            .post("/authz/grants")
+            .by_user(owner.as_ref())
+            .json(&json!({
+                "grant": [
+                    {
+                        "subject_id": subject.id,
+                        "resource_type": ResourceType::RollingStock,
+                        "resource_id": i64::MAX,
+                        "grant": StandardGrant::Reader,
+                    },
+                    {
+                        "subject_id": subject.id,
+                        "resource_type": ResourceType::Infra,
+                        "resource_id": missing_infra_id,
+                        "grant": StandardGrant::Reader,
+                    },
+                ]
+            }))
+            .await
+            .assert_status_not_found()
+            .json();
+
+        assert_eq!(
+            response.context["resource_id"],
+            serde_json::Value::from(missing_infra_id)
+        );
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -3128,6 +3192,12 @@ mod tests {
                 },
             ]
         );
+
+        app.post("/authz/user/info")
+            .by_user(admin.as_ref())
+            .json(&json!({ "ids": [i64::MAX] }))
+            .await
+            .assert_status_not_found();
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
