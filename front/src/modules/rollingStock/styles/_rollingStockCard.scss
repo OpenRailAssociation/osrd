@@ -189,9 +189,7 @@
       align-items: baseline;
       position: relative;
       white-space: nowrap;
-      transform: scale(
-        1.5
-      ); // Have to scale whole <img> because electric trains with pantograph have taller pictures
+      transform: scale(1.5); // Have to scale whole <img> because electric trains with pantograph have taller pictures
       transform-origin: left;
       img {
         max-height: 64px;
