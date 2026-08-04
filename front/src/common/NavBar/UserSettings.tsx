@@ -106,7 +106,7 @@ const UserSettings = () => {
           {t('nav-bar.safeWordHelp')}
         </small>
         {FEATURE_FLAGS.map((flag) => (
-          <div className="mt-4" key={flag}>
+          <div className="my-4" key={flag}>
             <Switch
               id={`feature-flag-${flag}`}
               label={t(`nav-bar.featureFlags.${flag}`)}
