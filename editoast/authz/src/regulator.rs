@@ -7,7 +7,6 @@ use tracing::Level;
 use crate::Authorization;
 use crate::Error;
 use crate::Role;
-use crate::identity::GroupInfo;
 use crate::identity::User as UserSubject;
 use crate::identity::UserIdentity;
 use crate::identity::UserInfo;
@@ -41,12 +40,6 @@ pub trait StorageDriver: Clone {
         &self,
         user_id: i64,
     ) -> impl Future<Output = Result<Option<UserInfo>, Self::Error>> + Send;
-
-    #[deprecated(note = "use editoast_models::Group::retrieve directly")]
-    fn get_group_info(
-        &self,
-        group_id: i64,
-    ) -> impl Future<Output = Result<Option<GroupInfo>, Self::Error>> + Send;
 
     #[deprecated = "use the database directly"]
     async fn get_user_info_by_identity(
@@ -99,35 +92,10 @@ impl<S: StorageDriver> Regulator<S> {
             .map_err(Error::Storage)
     }
 
-    /// Returns whether a group with some id exists
-    #[tracing::instrument(skip_all, fields(group_id = %group_id), ret(level = Level::DEBUG), err)]
-    pub async fn group_exists(&self, group_id: i64) -> Result<bool, Error<S::Error>> {
-        #[expect(deprecated)] // to be removed soon
-        self.driver
-            .get_group_info(group_id)
-            .await
-            .map(|x| x.is_some())
-            .map_err(Error::Storage)
-    }
-
-    pub async fn subject_exists(&self, subject: &Subject) -> Result<bool, Error<S::Error>> {
-        match subject {
-            Subject::User(user) => self.user_exists(user.0).await,
-            Subject::Group(group) => self.group_exists(group.0).await,
-        }
-    }
-
     #[tracing::instrument(skip(self), ret(level = Level::DEBUG), err)]
     pub async fn user_roles(&self, user: &User) -> Result<HashSet<Role>, Error<S::Error>> {
         // no need to check for user inexistence, an empty set will be returned in this case
         let roles = Role::list_roles(&self.openfga, model::User::role(), user).await?;
-        Ok(roles.into_iter().collect())
-    }
-
-    #[tracing::instrument(skip(self), ret(level = Level::DEBUG), err)]
-    pub async fn group_roles(&self, group: &Group) -> Result<HashSet<Role>, Error<S::Error>> {
-        // no need to check for group inexistence, an empty set will be returned in this case
-        let roles = Role::list_roles(&self.openfga, Group::role(), group).await?;
         Ok(roles.into_iter().collect())
     }
 

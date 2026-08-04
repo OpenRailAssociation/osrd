@@ -2,7 +2,6 @@ use std::ops::DerefMut;
 use std::sync::Arc;
 
 use authz::StorageDriver;
-use authz::identity::GroupInfo;
 use authz::identity::User;
 use authz::identity::UserIdentity;
 use authz::identity::UserInfo;
@@ -115,19 +114,6 @@ impl StorageDriver for PgAuthDriver {
         .await?
         .get(&user_id)
         .cloned();
-        Ok(info)
-    }
-
-    #[tracing::instrument(skip_all, fields(%group_id), ret(level = Level::DEBUG), err)]
-    async fn get_group_info(&self, group_id: i64) -> Result<Option<GroupInfo>, Self::Error> {
-        let conn = self.pool.get().await?;
-        let info = authn_group::table
-            .select(authn_group::name)
-            .filter(authn_group::id.eq(group_id))
-            .first::<String>(conn.write().await.deref_mut())
-            .await
-            .optional()?
-            .map(|name| GroupInfo { name });
         Ok(info)
     }
 
