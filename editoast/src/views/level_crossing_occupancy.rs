@@ -1,4 +1,5 @@
 use crate::AppState;
+use crate::authorizers::SystemAuthorizer;
 use crate::error::Result;
 use crate::views::AuthenticationExt;
 use crate::views::path::pathfinding::PathfindingResult;
@@ -14,6 +15,9 @@ use editoast_models::Timetable;
 use editoast_models::TrainSchedule;
 use editoast_models::train_schedule::OccurrenceId;
 
+use authz::RollingStockPrivilege;
+use authz::v2::Authorizer as _;
+use authz::v2::ResourcesList;
 use axum::Extension;
 use axum::extract::Json;
 use axum::extract::State;
@@ -22,7 +26,6 @@ use common::units::millisecond;
 use common::units::quantities::Offset;
 use core_client::pathfinding::TrackRange;
 use core_client::simulation::ReportTrain;
-use database::DbConnection;
 use editoast_derive::EditoastError;
 use editoast_models::TrainScheduleException;
 use editoast_models::prelude::*;
@@ -38,6 +41,7 @@ use schemas::timetable_type::TimetableType;
 use serde::Deserialize;
 use serde::Serialize;
 use std::collections::HashMap;
+use std::collections::HashSet;
 use thiserror::Error;
 use utoipa::ToSchema;
 
@@ -74,6 +78,7 @@ pub(in crate::views) struct LevelCrossingOccupancyForm {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+#[cfg_attr(test, derive(PartialEq))]
 pub(in crate::views) struct LevelCrossingOccupancy {
     #[serde(flatten)]
     #[schema(inline)]
@@ -100,9 +105,11 @@ pub(in crate::views) async fn occupancy(
         db_pool,
         valkey_client,
         core_client,
+        regulator,
         ..
     }): State<AppState>,
     Extension(auth): AuthenticationExt,
+    Extension(authn_state): Extension<crate::authentication::State>,
     Json(LevelCrossingOccupancyForm {
         train_ids,
         level_crossing_ids,
@@ -168,15 +175,30 @@ pub(in crate::views) async fn occupancy(
         })
         .await?;
 
-    // Collect all occurrences from all trains
+    // Collect all occurrences from all trains, grouped by the rolling stock name of their train
     let train_occurrences = trains
         .iter()
         .flat_map(|train| {
+            let train_exceptions = exceptions.remove(&train.id).unwrap_or_default();
             train
-                .iter_occurrences(&exceptions.remove(&train.id).unwrap_or_default())
-                .collect::<Vec<_>>()
+                .iter_occurrences(&train_exceptions)
+                .map(|occurrence| (train.rolling_stock_name.clone(), occurrence))
+                .collect_vec()
         })
-        .collect_vec();
+        .into_group_map();
+
+    let rolling_stock_names: HashSet<_> = train_occurrences.keys().cloned().collect();
+    let rolling_stocks: Vec<_> = RollingStock::retrieve_batch_unchecked(conn, rolling_stock_names)
+        .await
+        .map_err(RollingStockError::from)?;
+
+    let train_occurrences = filter_readable_occurrences(
+        train_occurrences,
+        &rolling_stocks,
+        &authn_state,
+        regulator.openfga(),
+    )
+    .await?;
 
     // Extract train schedules for simulation
     let train_schedules = train_occurrences
@@ -195,7 +217,10 @@ pub(in crate::views) async fn occupancy(
     )
     .await?;
 
-    let rolling_stock_lengths = load_rolling_stock_lengths(&train_schedules, conn).await?;
+    let rolling_stock_lengths: HashMap<_, _> = rolling_stocks
+        .into_iter()
+        .map(|rs| (rs.name, common::units::millimeter::from(rs.length) as u64))
+        .collect();
 
     // For each occurrence + simulation result, compute level crossing occupancy and group by level crossing id
     let mut results: HashMap<Identifier, Vec<LevelCrossingOccupancy>> = HashMap::new();
@@ -238,24 +263,51 @@ pub(in crate::views) async fn occupancy(
     Ok(Json(results))
 }
 
-async fn load_rolling_stock_lengths(
-    train_schedules: &[TrainOccurrence],
-    conn: &mut DbConnection,
-) -> Result<HashMap<String, u64>> {
-    let rolling_stocks_names = train_schedules.iter().map(|t| t.rolling_stock_name.clone());
+/// Discards the occurrences whose rolling stock the user isn't allowed to read
+async fn filter_readable_occurrences(
+    train_occurrences: HashMap<String, Vec<(OccurrenceId, TrainOccurrence)>>,
+    rolling_stocks: &[RollingStock],
+    authn_state: &crate::authentication::State,
+    openfga: &fga::Client,
+) -> Result<Vec<(OccurrenceId, TrainOccurrence)>> {
+    // The request bypasses authorization
+    let Some(user) = authn_state.regular_user() else {
+        return Ok(train_occurrences.into_values().flatten().collect());
+    };
 
-    let rolling_stocks: Vec<_> = RollingStock::retrieve_batch_unchecked(conn, rolling_stocks_names)
-        .await
-        .map_err(RollingStockError::from)?;
+    // Listing the readable rolling stocks cannot be rejected: the issuer is already authenticated
+    let Ok(authorized_rolling_stocks) = SystemAuthorizer::new_infallible(openfga)
+        .authorize(authz::v2::rolling_stock_list(
+            user,
+            RollingStockPrivilege::CanRead,
+        ))
+        .await?
+        .access()
+        .await?;
 
-    Ok(rolling_stocks
+    let ResourcesList::Privileged(authorized_rolling_stocks) = authorized_rolling_stocks else {
+        // The user is an admin: every rolling stock is readable
+        return Ok(train_occurrences.into_values().flatten().collect());
+    };
+    let authorized_rolling_stock_ids = authorized_rolling_stocks
         .into_iter()
-        .map(|rs| {
-            (
-                rs.name.clone(),
-                common::units::millimeter::from(rs.length) as u64,
-            )
+        .map(|rolling_stock| rolling_stock.0)
+        .collect::<HashSet<_>>();
+
+    // Occurrences are grouped by rolling stock name, the authorization by id
+
+    let authorized_rolling_stock_names = rolling_stocks
+        .iter()
+        .filter(|rs| authorized_rolling_stock_ids.contains(&rs.id))
+        .map(|rs| rs.name.clone())
+        .collect::<HashSet<_>>();
+
+    Ok(train_occurrences
+        .into_iter()
+        .filter(|(rolling_stock_name, _)| {
+            authorized_rolling_stock_names.contains(rolling_stock_name)
         })
+        .flat_map(|(_, occurrences)| occurrences)
         .collect())
 }
 
@@ -378,12 +430,15 @@ fn find_pedal_position(
 mod tests {
     use super::*;
     use crate::fixtures::create_fast_rolling_stock;
-    use crate::fixtures::create_hourly_timetable_with_train_schedule_set;
     use crate::fixtures::create_small_infra;
     use crate::fixtures::create_timetable_with_train_schedule_set;
+    use crate::views::test_app::TestApp;
+    use crate::views::test_app::TestRequestExt as _;
     use crate::views::test_app::test_app;
-    use axum_test::TestResponse;
 
+    use authz::InfraGrant;
+    use authz::Role;
+    use authz::RollingStockGrant;
     use chrono::TimeDelta;
     use core_client::mocking::MockingClient;
     use core_client::pathfinding::PathfindingResultSuccess;
@@ -530,11 +585,7 @@ mod tests {
         })
     }
 
-    async fn init_level_crossing_test(
-        lc_position: f64,
-        lc_id: &str,
-        track: &str,
-    ) -> (TestResponse, Identifier, TrainSchedule) {
+    fn mocked_core() -> MockingClient {
         let mut core = MockingClient::new();
         core.stub("/pathfinding/blocks")
             .response(StatusCode::OK)
@@ -544,17 +595,17 @@ mod tests {
             .response(StatusCode::OK)
             .json(simulation_with_realistic_positions())
             .finish();
-
-        create_and_fetch_occupancy(core, lc_id, track, lc_position).await
+        core
     }
 
-    async fn create_and_fetch_occupancy(
-        core: MockingClient,
+    /// Creates the infra, the rolling stock, the timetable, the level crossing and the train the
+    /// occupancy tests run on, and returns the form querying them
+    async fn create_occupancy_fixtures(
+        app: &TestApp,
         lc_id: &str,
         track: &str,
         lc_position: f64,
-    ) -> (TestResponse, Identifier, TrainSchedule) {
-        let app = test_app!().skip_authz().core_client(core.into()).build();
+    ) -> (LevelCrossingOccupancyForm, TrainSchedule, RollingStock) {
         let db_pool = app.db_pool();
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
         let rolling_stock =
@@ -582,46 +633,65 @@ mod tests {
             .await
             .expect("Failed to create level crossing");
 
-        let train = editoast_models::TrainSchedule::default()
+        let train = create_train(app, train_schedule_set.id, &rolling_stock.name).await;
+
+        let form = LevelCrossingOccupancyForm {
+            train_ids: vec![train.id],
+            level_crossing_ids: vec![level_crossing.obj_id.into()],
+            infra_id: small_infra.id,
+            timetable_id: timetable.id,
+            electrical_profile_set_id: None,
+        };
+        (form, train, rolling_stock)
+    }
+
+    /// A train running from `Mid_West_station` to `Mid_East_station`, paced every 15 minutes
+    /// over an hour
+    async fn create_train(
+        app: &TestApp,
+        train_schedule_set_id: i64,
+        rolling_stock_name: &str,
+    ) -> TrainSchedule {
+        TrainSchedule::default()
             .into_changeset()
-            .train_schedule_set_id(train_schedule_set.id)
-            .rolling_stock_name(rolling_stock.name)
+            .train_schedule_set_id(train_schedule_set_id)
+            .rolling_stock_name(rolling_stock_name.to_string())
             .path(vec![
                 PathItem::new_operational_point("Mid_West_station"),
                 PathItem::new_operational_point("Mid_East_station"),
             ])
             .interval(Some(TimeDelta::minutes(15)))
             .time_window(Some(TimeDelta::hours(1)))
-            .create(&mut db_pool.get_ok())
+            .create(&mut app.db_pool().get_ok())
             .await
-            .expect("Failed to create train");
-
-        (
-            app.post("/level_crossing_occupancy")
-                .json(&LevelCrossingOccupancyForm {
-                    train_ids: vec![train.id],
-                    level_crossing_ids: vec![level_crossing.obj_id.clone().into()],
-                    infra_id: small_infra.id,
-                    timetable_id: timetable.id,
-                    electrical_profile_set_id: None,
-                })
-                .await,
-            level_crossing.obj_id.clone().into(),
-            train,
-        )
+            .expect("Failed to create train")
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn test_level_crossing_occupancy_endpoint() {
-        // Level crossing at 750m on TC1 (on train path)
-        let (response, level_crossing_id, train) =
-            init_level_crossing_test(750.0, "LC_TC1", "TC1").await;
+        let app = test_app!().core_client(mocked_core().into()).build();
+        let (form, train, rolling_stock) =
+            create_occupancy_fixtures(&app, "LC_TC1", "TC1", 750.0).await;
 
-        let occupancies: HashMap<Identifier, Vec<LevelCrossingOccupancy>> =
-            response.assert_status_ok().json();
+        let user = app
+            .user("authorized", "Authorized")
+            .with_infra_grant(form.infra_id, InfraGrant::Reader)
+            .with_rolling_stock_grant(rolling_stock.id, RollingStockGrant::Reader)
+            .with_roles([Role::OperationalStudies])
+            .create()
+            .await;
 
-        assert!(occupancies.contains_key(&level_crossing_id));
-        let lc_occupancies = occupancies.get(&level_crossing_id).unwrap();
+        let occupancies: HashMap<Identifier, Vec<LevelCrossingOccupancy>> = app
+            .post("/level_crossing_occupancy")
+            .json(&form)
+            .by_user(&user.info)
+            .await
+            .assert_status_ok()
+            .json();
+
+        let level_crossing_obj_id = &form.level_crossing_ids[0];
+        assert!(occupancies.contains_key(level_crossing_obj_id));
+        let lc_occupancies = occupancies.get(level_crossing_obj_id).unwrap();
         assert_eq!(lc_occupancies.len(), 4);
 
         // Expected values:
@@ -643,45 +713,116 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn test_level_crossing_occupancy_returns_empty() {
-        // Level crossing at 750m on TX1 (not on train path)
-        let (response, level_crossing_id, ..) =
-            init_level_crossing_test(750.0, "LC_TX1", "TX1").await;
+        // A level crossing at 750m on TX1, which is not on the train path
+        let app = test_app!().core_client(mocked_core().into()).build();
+        let (form, _, rolling_stock) =
+            create_occupancy_fixtures(&app, "LC_TX1", "TX1", 750.0).await;
 
-        let occupancies: HashMap<Identifier, Vec<LevelCrossingOccupancy>> =
-            response.assert_status_ok().json();
+        let user = app
+            .user("authorized", "Authorized")
+            .with_infra_grant(form.infra_id, InfraGrant::Reader)
+            .with_rolling_stock_grant(rolling_stock.id, RollingStockGrant::Reader)
+            .with_roles([Role::OperationalStudies])
+            .create()
+            .await;
 
-        // Level crossing should exist but have no occupancies
+        // WHEN
+        let occupancies: HashMap<Identifier, Vec<LevelCrossingOccupancy>> = app
+            .post("/level_crossing_occupancy")
+            .json(&form)
+            .by_user(&user.info)
+            .await
+            .assert_status_ok()
+            .json();
+
+        // The level crossing is reported, without any occupancy
         assert_eq!(
-            occupancies
-                .get(&level_crossing_id)
-                .map(|vec| vec.len())
-                .unwrap_or(0),
-            0
+            occupancies.get(&form.level_crossing_ids[0]).unwrap(),
+            &Vec::new()
         );
     }
 
+    /// The trains whose rolling stock the user cannot read are filtered out of the response,
+    /// instead of failing the whole request with a 403
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn test_level_crossing_occupancy_rejects_hourly_timetable() {
-        let app = test_app!()
-            .skip_authz()
-            .core_client(MockingClient::new().into())
-            .build();
-        let db_pool = app.db_pool();
-        let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
-        let (timetable, _train_schedule_set) =
-            create_hourly_timetable_with_train_schedule_set(&mut db_pool.get_ok()).await;
+    async fn test_level_crossing_occupancy_without_rolling_stock_permission() {
+        // GIVEN
+        let app = test_app!().core_client(mocked_core().into()).build();
+        let (form, ..) = create_occupancy_fixtures(&app, "LC_TC1", "TC1", 750.0).await;
 
-        let response = app
-            .post("/level_crossing_occupancy")
-            .json(&LevelCrossingOccupancyForm {
-                train_ids: vec![],
-                level_crossing_ids: vec![],
-                infra_id: small_infra.id,
-                timetable_id: timetable.id,
-                electrical_profile_set_id: None,
-            })
+        // a user that has the role to reach the endpoint and a read grant on the infra,
+        // but no read grant on the rolling stock of the train
+        let user = app
+            .user("unauthorized", "Unauthorized")
+            .with_infra_grant(form.infra_id, InfraGrant::Reader)
+            .with_roles([Role::OperationalStudies])
+            .create()
             .await;
 
-        response.assert_status_unprocessable_entity();
+        // WHEN
+        let occupancies: HashMap<Identifier, Vec<LevelCrossingOccupancy>> = app
+            .post("/level_crossing_occupancy")
+            .json(&form)
+            .by_user(&user.info)
+            .await
+            .assert_status_ok()
+            .json();
+
+        assert_eq!(
+            occupancies.get(&form.level_crossing_ids[0]).unwrap(),
+            &Vec::new()
+        );
+    }
+
+    /// Among several trains, only the occurrences of those whose rolling stock the user can read
+    /// are reported, the others are filtered out
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn test_level_crossing_occupancy_filters_out_unreadable_trains_only() {
+        // GIVEN
+        let app = test_app!().core_client(mocked_core().into()).build();
+        let (mut form, readable_train, readable_rolling_stock) =
+            create_occupancy_fixtures(&app, "LC_TC1", "TC1", 750.0).await;
+
+        // a second train of the same timetable, running on another rolling stock
+        let unreadable_rolling_stock =
+            create_fast_rolling_stock(&mut app.db_pool().get_ok(), "unreadable_rolling_stock")
+                .await;
+        let unreadable_train = create_train(
+            &app,
+            readable_train.train_schedule_set_id,
+            &unreadable_rolling_stock.name,
+        )
+        .await;
+        form.train_ids.push(unreadable_train.id);
+
+        // a user granted a read access on the rolling stock of the first train only
+        let user = app
+            .user("authorized", "Authorized")
+            .with_infra_grant(form.infra_id, InfraGrant::Reader)
+            .with_rolling_stock_grant(readable_rolling_stock.id, RollingStockGrant::Reader)
+            .with_roles([Role::OperationalStudies])
+            .create()
+            .await;
+
+        // WHEN
+        let occupancies: HashMap<Identifier, Vec<LevelCrossingOccupancy>> = app
+            .post("/level_crossing_occupancy")
+            .json(&form)
+            .by_user(&user.info)
+            .await
+            .assert_status_ok()
+            .json();
+
+        // THEN the occurrences of the readable train are reported, and only those
+        let reported_occurrences: HashSet<_> = occupancies
+            .get(&form.level_crossing_ids[0])
+            .expect("the level crossing should be reported")
+            .iter()
+            .map(|occupancy| occupancy.occurrence_id.clone())
+            .collect();
+        let readable_occurrences: HashSet<_> = (0..4)
+            .map(|index| OccurrenceId::new_base(readable_train.id, index))
+            .collect();
+        assert_eq!(reported_occurrences, readable_occurrences);
     }
 }
