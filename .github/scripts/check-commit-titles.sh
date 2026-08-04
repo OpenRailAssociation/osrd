@@ -18,7 +18,7 @@ checks='check_fixup check_forbidden_chars check_structure'
 
 # shellcheck disable=SC2329 # Called indirectly
 check_fixup() {
-    if grep -E -q -i '^fixup|pr comment|clippy fix'; then
+    if grep -E -q -i '^fix|pr comment|clippy fix|\<wip\>'; then
         echo 'Found a fixup commit'
     fi
 }
