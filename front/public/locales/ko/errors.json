@@ -138,7 +138,9 @@
     "level_crossing": {
       "Database": "",
       "InfraNotFound": "",
+      "LevelCrossingBatchNotFound": "",
       "TimetableNotFound": "",
+      "TrainBatchNotFound": "",
       "UnsupportedTimetableType": ""
     },
     "macro_node": {
