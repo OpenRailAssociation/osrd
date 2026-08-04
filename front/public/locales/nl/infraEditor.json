@@ -18,8 +18,1015 @@
         "title": "Einde"
       },
       "track": {
-        "description": "Identificatiecode van het spoorgedeelte"
+        "description": "Identificatiecode van het spoorgedeelte",
+        "title": ""
       }
+    },
+    "title": ""
+  },
+  "BalSystem": {
+    "properties": {
+      "conditional_parameters": {
+        "description": "",
+        "title": ""
+      },
+      "default_parameters": {
+        "description": ""
+      },
+      "next_signaling_systems": {
+        "description": "",
+        "title": ""
+      },
+      "settings": {
+        "description": ""
+      },
+      "signaling_system": {
+        "title": ""
+      }
+    },
+    "title": ""
+  },
+  "BaprSystem": {
+    "properties": {
+      "conditional_parameters": {
+        "description": "",
+        "title": ""
+      },
+      "next_signaling_systems": {
+        "description": "",
+        "title": ""
+      },
+      "parameters": {
+        "description": ""
+      },
+      "settings": {
+        "description": ""
+      },
+      "signaling_system": {
+        "title": ""
+      }
+    },
+    "title": ""
+  },
+  "BufferStop": {
+    "description": "",
+    "properties": {
+      "id": {
+        "description": "",
+        "title": ""
+      },
+      "position": {
+        "description": "",
+        "title": ""
+      },
+      "track": {
+        "description": "",
+        "title": ""
+      }
+    },
+    "title": ""
+  },
+  "BufferStopExtensions": {
+    "title": ""
+  },
+  "BufferStopReference": {
+    "properties": {
+      "id": {
+        "description": "",
+        "title": ""
+      },
+      "type": {
+        "title": ""
+      }
+    },
+    "title": ""
+  },
+  "BufferStopSncfExtension": {
+    "properties": {
+      "kp": {
+        "description": "",
+        "title": ""
+      }
+    },
+    "title": ""
+  },
+  "ConditionalParameter": {
+    "properties": {
+      "on_route": {
+        "description": "",
+        "title": ""
+      },
+      "parameters": {
+        "description": "",
+        "title": ""
+      }
+    },
+    "title": ""
+  },
+  "Curve": {
+    "description": "",
+    "properties": {
+      "begin": {
+        "description": "",
+        "title": ""
+      },
+      "end": {
+        "description": "",
+        "title": ""
+      },
+      "radius": {
+        "description": "",
+        "title": ""
+      }
+    },
+    "title": ""
+  },
+  "Detector": {
+    "description": "",
+    "properties": {
+      "id": {
+        "description": "",
+        "title": ""
+      },
+      "position": {
+        "description": "",
+        "title": ""
+      },
+      "track": {
+        "description": "",
+        "title": ""
+      }
+    },
+    "title": ""
+  },
+  "DetectorExtensions": {
+    "title": ""
+  },
+  "DetectorReference": {
+    "properties": {
+      "id": {
+        "description": "",
+        "title": ""
+      },
+      "type": {
+        "title": ""
+      }
+    },
+    "title": ""
+  },
+  "DetectorSncfExtension": {
+    "properties": {
+      "kp": {
+        "description": "",
+        "title": ""
+      }
+    },
+    "title": ""
+  },
+  "Direction": {
+    "description": "",
+    "title": ""
+  },
+  "DirectionalTrackRange": {
+    "description": "",
+    "properties": {
+      "begin": {
+        "description": "",
+        "title": ""
+      },
+      "direction": {
+        "description": ""
+      },
+      "end": {
+        "description": "",
+        "title": ""
+      },
+      "track": {
+        "description": "",
+        "title": ""
+      }
+    },
+    "title": ""
+  },
+  "Electrification": {
+    "description": "",
+    "properties": {
+      "id": {
+        "description": "",
+        "title": ""
+      },
+      "track_ranges": {
+        "description": "",
+        "title": ""
+      },
+      "voltage": {
+        "description": "",
+        "title": ""
+      }
+    },
+    "title": ""
+  },
+  "Endpoint": {
+    "title": ""
+  },
+  "EtcsLevel2System": {
+    "properties": {
+      "conditional_parameters": {
+        "description": "",
+        "title": ""
+      },
+      "default_parameters": {
+        "description": ""
+      },
+      "next_signaling_systems": {
+        "description": "",
+        "title": ""
+      },
+      "settings": {
+        "description": ""
+      },
+      "signaling_system": {
+        "title": ""
+      }
+    },
+    "title": ""
+  },
+  "FlagSignalParameter": {
+    "title": ""
+  },
+  "LevelCrossing": {
+    "description": "",
+    "properties": {
+      "id": {
+        "description": "",
+        "title": ""
+      },
+      "name": {
+        "description": "",
+        "title": ""
+      },
+      "parts": {
+        "title": ""
+      },
+      "short_zone_length": {
+        "description": "",
+        "title": ""
+      }
+    },
+    "title": ""
+  },
+  "LevelCrossingPart": {
+    "description": "",
+    "properties": {
+      "pedal_downstream": {
+        "description": "",
+        "title": ""
+      },
+      "pedal_upstream": {
+        "description": "",
+        "title": ""
+      },
+      "position": {
+        "description": "",
+        "title": ""
+      },
+      "track": {
+        "description": "",
+        "title": ""
+      }
+    },
+    "title": ""
+  },
+  "LimitedLogicalSignal": {
+    "description": "",
+    "title": ""
+  },
+  "LineString": {
+    "description": "",
+    "properties": {
+      "bbox": {
+        "title": ""
+      },
+      "coordinates": {
+        "title": ""
+      },
+      "type": {
+        "title": ""
+      }
+    },
+    "title": ""
+  },
+  "LoadingGaugeLimit": {
+    "description": "",
+    "properties": {
+      "begin": {
+        "description": "",
+        "title": ""
+      },
+      "category": {
+        "description": ""
+      },
+      "end": {
+        "description": "",
+        "title": ""
+      }
+    },
+    "title": ""
+  },
+  "LoadingGaugeType": {
+    "description": "",
+    "title": ""
+  },
+  "LogicalSignal": {
+    "description": "",
+    "properties": {
+      "conditional_parameters": {
+        "description": "",
+        "title": ""
+      },
+      "default_parameters": {
+        "description": "",
+        "title": ""
+      },
+      "next_signaling_systems": {
+        "description": "",
+        "title": ""
+      },
+      "settings": {
+        "description": "",
+        "title": ""
+      },
+      "signaling_system": {
+        "description": "",
+        "title": ""
+      }
+    },
+    "title": ""
+  },
+  "NeutralSection": {
+    "description": "",
+    "properties": {
+      "announcement_track_ranges": {
+        "description": "",
+        "title": ""
+      },
+      "id": {
+        "description": "",
+        "title": ""
+      },
+      "lower_pantograph": {
+        "description": "",
+        "title": ""
+      },
+      "track_ranges": {
+        "description": "",
+        "title": ""
+      }
+    },
+    "title": ""
+  },
+  "NeutralSectionExtensions": {
+    "title": ""
+  },
+  "NeutralSectionNeutralSncfExtension": {
+    "properties": {
+      "announcement": {
+        "description": "",
+        "title": ""
+      },
+      "end": {
+        "description": "",
+        "title": ""
+      },
+      "exe": {
+        "description": ""
+      },
+      "rev": {
+        "description": "",
+        "title": ""
+      }
+    },
+    "title": ""
+  },
+  "OperationalPoint": {
+    "description": "",
+    "properties": {
+      "country_code": {
+        "description": "",
+        "title": ""
+      },
+      "id": {
+        "description": "",
+        "title": ""
+      },
+      "is_passenger_station": {
+        "description": "",
+        "title": ""
+      },
+      "main_code": {
+        "description": "",
+        "title": ""
+      },
+      "name": {
+        "description": "",
+        "title": ""
+      },
+      "parts": {
+        "title": ""
+      },
+      "plc": {
+        "description": "",
+        "title": ""
+      },
+      "secondary_code": {
+        "description": "",
+        "title": ""
+      },
+      "secondary_name": {
+        "description": "",
+        "title": ""
+      },
+      "uic": {
+        "description": "",
+        "title": ""
+      },
+      "weight": {
+        "description": "",
+        "title": ""
+      }
+    },
+    "title": ""
+  },
+  "OperationalPointPart": {
+    "description": "",
+    "properties": {
+      "local_track_name": {
+        "description": "",
+        "title": ""
+      },
+      "position": {
+        "description": "",
+        "title": ""
+      },
+      "track": {
+        "description": "",
+        "title": ""
+      }
+    },
+    "title": ""
+  },
+  "OperationalPointPartExtensions": {
+    "title": ""
+  },
+  "OperationalPointPartSncfExtension": {
+    "properties": {
+      "kp": {
+        "description": "",
+        "title": ""
+      }
+    },
+    "title": ""
+  },
+  "Route": {
+    "description": "",
+    "properties": {
+      "entry_point": {
+        "title": ""
+      },
+      "entry_point_direction": {
+        "description": ""
+      },
+      "exit_point": {
+        "title": ""
+      },
+      "id": {
+        "description": "",
+        "title": ""
+      },
+      "release_detectors": {
+        "description": "",
+        "title": ""
+      },
+      "switches_directions": {
+        "description": "",
+        "title": ""
+      }
+    },
+    "title": ""
+  },
+  "Side": {
+    "description": "",
+    "title": ""
+  },
+  "Sign": {
+    "description": "",
+    "properties": {
+      "direction": {
+        "description": ""
+      },
+      "kp": {
+        "description": "",
+        "title": ""
+      },
+      "position": {
+        "description": "",
+        "title": ""
+      },
+      "side": {
+        "description": ""
+      },
+      "track": {
+        "description": "",
+        "title": ""
+      },
+      "type": {
+        "description": "",
+        "title": ""
+      },
+      "value": {
+        "description": "",
+        "title": ""
+      }
+    },
+    "title": ""
+  },
+  "Signal": {
+    "description": "",
+    "properties": {
+      "direction": {
+        "description": ""
+      },
+      "id": {
+        "description": "",
+        "title": ""
+      },
+      "logical_signals": {
+        "description": "",
+        "title": ""
+      },
+      "position": {
+        "description": "",
+        "title": ""
+      },
+      "sight_distance": {
+        "description": "",
+        "title": ""
+      },
+      "track": {
+        "description": "",
+        "title": ""
+      }
+    },
+    "title": ""
+  },
+  "SignalExtensions": {
+    "title": ""
+  },
+  "SignalSncfExtension": {
+    "properties": {
+      "kp": {
+        "description": "",
+        "title": ""
+      },
+      "label": {
+        "title": ""
+      },
+      "side": {
+        "description": ""
+      }
+    },
+    "title": ""
+  },
+  "SignalingSystem": {
+    "title": ""
+  },
+  "Slope": {
+    "description": "",
+    "properties": {
+      "begin": {
+        "description": "",
+        "title": ""
+      },
+      "end": {
+        "description": "",
+        "title": ""
+      },
+      "gradient": {
+        "description": "",
+        "title": ""
+      }
+    },
+    "title": ""
+  },
+  "SpeedSection": {
+    "description": "",
+    "properties": {
+      "id": {
+        "description": "",
+        "title": ""
+      },
+      "on_routes": {
+        "description": "",
+        "title": ""
+      },
+      "speed_limit": {
+        "description": "",
+        "title": ""
+      },
+      "speed_limit_by_tag": {
+        "description": "",
+        "title": ""
+      },
+      "track_ranges": {
+        "description": "",
+        "title": ""
+      }
+    },
+    "title": ""
+  },
+  "SpeedSectionExtensions": {
+    "title": ""
+  },
+  "SpeedSectionPslSncfExtension": {
+    "properties": {
+      "announcement": {
+        "description": "",
+        "title": ""
+      },
+      "r": {
+        "description": "",
+        "title": ""
+      },
+      "z": {
+        "description": ""
+      }
+    },
+    "title": ""
+  },
+  "Switch": {
+    "description": "",
+    "properties": {
+      "group_change_delay": {
+        "description": "",
+        "title": ""
+      },
+      "id": {
+        "description": "",
+        "title": ""
+      },
+      "ports": {
+        "description": "",
+        "title": ""
+      },
+      "switch_type": {
+        "description": "",
+        "title": ""
+      }
+    },
+    "title": ""
+  },
+  "SwitchExtensions": {
+    "title": ""
+  },
+  "SwitchPortConnection": {
+    "description": "",
+    "properties": {
+      "dst": {
+        "description": "",
+        "title": ""
+      },
+      "src": {
+        "description": "",
+        "title": ""
+      }
+    },
+    "title": ""
+  },
+  "SwitchSncfExtension": {
+    "properties": {
+      "label": {
+        "description": "",
+        "title": ""
+      }
+    },
+    "title": ""
+  },
+  "SwitchType": {
+    "description": "",
+    "properties": {
+      "groups": {
+        "description": "",
+        "title": ""
+      },
+      "id": {
+        "description": "",
+        "title": ""
+      },
+      "ports": {
+        "description": "",
+        "title": ""
+      }
+    },
+    "title": ""
+  },
+  "TrackEndpoint": {
+    "description": "",
+    "properties": {
+      "endpoint": {
+        "description": ""
+      },
+      "track": {
+        "description": "",
+        "title": ""
+      }
+    },
+    "title": ""
+  },
+  "TrackSection": {
+    "description": "",
+    "properties": {
+      "curves": {
+        "description": "",
+        "title": ""
+      },
+      "geo": {
+        "description": ""
+      },
+      "id": {
+        "description": "",
+        "title": ""
+      },
+      "length": {
+        "description": "",
+        "title": ""
+      },
+      "loading_gauge_limits": {
+        "description": "",
+        "title": ""
+      },
+      "slopes": {
+        "description": "",
+        "title": ""
+      }
+    },
+    "title": ""
+  },
+  "TrackSectionExtensions": {
+    "title": ""
+  },
+  "TrackSectionSncfExtension": {
+    "properties": {
+      "line_code": {
+        "description": "",
+        "title": ""
+      },
+      "line_name": {
+        "description": "",
+        "title": ""
+      },
+      "track_name": {
+        "description": "",
+        "title": ""
+      },
+      "track_number": {
+        "description": "",
+        "title": ""
+      }
+    },
+    "title": ""
+  },
+  "TrackSectionSourceExtension": {
+    "properties": {
+      "id": {
+        "description": "",
+        "title": ""
+      },
+      "name": {
+        "description": "",
+        "title": ""
+      }
+    },
+    "title": ""
+  },
+  "Tvm300System": {
+    "properties": {
+      "conditional_parameters": {
+        "description": "",
+        "title": ""
+      },
+      "default_parameters": {
+        "description": ""
+      },
+      "next_signaling_systems": {
+        "description": "",
+        "title": ""
+      },
+      "settings": {
+        "description": ""
+      },
+      "signaling_system": {
+        "title": ""
+      }
+    },
+    "title": ""
+  },
+  "Tvm430System": {
+    "properties": {
+      "conditional_parameters": {
+        "description": "",
+        "title": ""
+      },
+      "default_parameters": {
+        "description": ""
+      },
+      "next_signaling_systems": {
+        "description": "",
+        "title": ""
+      },
+      "settings": {
+        "description": ""
+      },
+      "signaling_system": {
+        "title": ""
+      }
+    },
+    "title": ""
+  },
+  "__main____BalSystem__ConditionalParameters": {
+    "properties": {
+      "on_route": {
+        "description": "",
+        "title": ""
+      },
+      "parameters": {
+        "description": ""
+      }
+    },
+    "title": ""
+  },
+  "__main____BalSystem__Parameters": {
+    "properties": {
+      "jaune_cli": {
+        "description": ""
+      }
+    },
+    "title": ""
+  },
+  "__main____BalSystem__Settings": {
+    "properties": {
+      "Nf": {
+        "description": ""
+      }
+    },
+    "title": ""
+  },
+  "__main____BaprSystem__ConditionalParameters": {
+    "properties": {
+      "on_route": {
+        "description": "",
+        "title": ""
+      },
+      "parameters": {
+        "description": ""
+      }
+    },
+    "title": ""
+  },
+  "__main____BaprSystem__Parameters": {
+    "title": ""
+  },
+  "__main____BaprSystem__Settings": {
+    "properties": {
+      "Nf": {
+        "description": ""
+      },
+      "distant": {
+        "description": ""
+      }
+    },
+    "title": ""
+  },
+  "__main____EtcsLevel2System__ConditionalParameters": {
+    "properties": {
+      "on_route": {
+        "description": "",
+        "title": ""
+      },
+      "parameters": {
+        "description": ""
+      }
+    },
+    "title": ""
+  },
+  "__main____EtcsLevel2System__Parameters": {
+    "title": ""
+  },
+  "__main____EtcsLevel2System__Settings": {
+    "properties": {
+      "Nf": {
+        "description": ""
+      }
+    },
+    "title": ""
+  },
+  "__main____Tvm300System__ConditionalParameters": {
+    "properties": {
+      "on_route": {
+        "description": "",
+        "title": ""
+      },
+      "parameters": {
+        "description": ""
+      }
+    },
+    "title": ""
+  },
+  "__main____Tvm300System__Parameters": {
+    "title": ""
+  },
+  "__main____Tvm300System__Settings": {
+    "properties": {
+      "Nf": {
+        "description": ""
+      }
+    },
+    "title": ""
+  },
+  "__main____Tvm430System__ConditionalParameters": {
+    "properties": {
+      "on_route": {
+        "description": "",
+        "title": ""
+      },
+      "parameters": {
+        "description": ""
+      }
+    },
+    "title": ""
+  },
+  "__main____Tvm430System__Parameters": {
+    "title": ""
+  },
+  "__main____Tvm430System__Settings": {
+    "properties": {
+      "Nf": {
+        "description": ""
+      }
+    },
+    "title": ""
+  },
+  "properties": {
+    "buffer_stops": {
+      "description": "",
+      "title": ""
+    },
+    "detectors": {
+      "description": "",
+      "title": ""
+    },
+    "electrifications": {
+      "description": "",
+      "title": ""
+    },
+    "extended_switch_types": {
+      "description": "",
+      "title": ""
+    },
+    "level_crossings": {
+      "description": "",
+      "title": ""
+    },
+    "neutral_sections": {
+      "description": "",
+      "title": ""
+    },
+    "operational_points": {
+      "description": "",
+      "title": ""
+    },
+    "routes": {
+      "description": "",
+      "title": ""
+    },
+    "signals": {
+      "description": "",
+      "title": ""
+    },
+    "speed_sections": {
+      "description": "",
+      "title": ""
+    },
+    "switches": {
+      "description": "",
+      "title": ""
+    },
+    "track_sections": {
+      "description": "",
+      "title": ""
+    },
+    "version": {
+      "description": "",
+      "title": ""
     }
   }
 }
