@@ -587,6 +587,7 @@
   },
   "operational-studies-management": {
     "delete": "",
+    "filter-placeholder": "",
     "open": "",
     "sort-by-latest": "",
     "sort-by-name": "",
