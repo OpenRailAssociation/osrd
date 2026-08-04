@@ -9,7 +9,6 @@ import destinationSVG from 'assets/pictures/destination.svg';
 import originSVG from 'assets/pictures/origin.svg';
 import viaSVG from 'assets/pictures/via.svg';
 import type { PathItemLocation, TrackSection } from 'common/api/osrdEditoastApi';
-import { matchPathStepAndOp } from 'modules/pathfinding/utils';
 import type { SuggestedOP } from 'modules/trainSchedule/types';
 import type { PathStep } from 'reducers/osrdconf/types';
 
@@ -75,7 +74,7 @@ const extractMarkerInformation = (
       if (!pathStep.coordinates) return null;
 
       const matchingOp = suggestedOP
-        ? suggestedOP.find((op) => matchPathStepAndOp(pathStep.location, op))
+        ? suggestedOP.find((op) => op.pathStepId === pathStep.id)
         : undefined;
 
       const images = MARKER_IMAGES;
