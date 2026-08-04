@@ -174,6 +174,14 @@ impl StorageDriver for PgAuthDriver {
                 .await?,
         )
     }
+
+    async fn project_exists(&self, project_id: i64) -> Result<bool, Self::Error> {
+        Ok(dsl::select(dsl::exists(
+            project::table.filter(project::id.eq(project_id)),
+        ))
+        .get_result::<bool>(self.pool.get().await?.write().await.deref_mut())
+        .await?)
+    }
 }
 
 impl PgAuthDriver {

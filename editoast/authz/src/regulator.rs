@@ -73,6 +73,11 @@ pub trait StorageDriver: Clone {
 
     fn infra_exists(&self, infra_id: i64)
     -> impl Future<Output = Result<bool, Self::Error>> + Send;
+
+    fn project_exists(
+        &self,
+        project_id: i64,
+    ) -> impl Future<Output = Result<bool, Self::Error>> + Send;
 }
 
 impl<S: StorageDriver> Regulator<S> {
@@ -222,6 +227,43 @@ impl<S: StorageDriver> Regulator<S> {
                     .await?
             }
         };
+        Ok(Authorization::from_privilege_check(check))
+    }
+
+    #[tracing::instrument(skip(self), ret(level = Level::DEBUG), err)]
+    pub async fn authorize_project(
+        &self,
+        user: &User,
+        project: &Project,
+        privilege: ProjectPrivilege,
+    ) -> Result<Authorization<()>, Error<S::Error>> {
+        // Check if the project exists
+        if !self
+            .driver
+            .project_exists(project.0)
+            .await
+            .map_err(Error::Storage)?
+        {
+            return Err(Error::UnknownResource(project.0));
+        }
+
+        // Check if the user exists
+        if !self.user_exists(user.0).await? {
+            return Err(Error::UnknownSubject(user.0));
+        }
+
+        // Bypass if user is an admin
+        if self.is_admin(user.0).await? {
+            return Ok(Authorization::Bypassed);
+        }
+
+        // Note: Match statement is used here to prevent potential bugs if new privilege is added
+        let check = match privilege {
+            ProjectPrivilege::HasAccess => self
+                .openfga
+                .check(model::Project::has_access().check(user, project)),
+        };
+
         Ok(Authorization::from_privilege_check(check))
     }
 }

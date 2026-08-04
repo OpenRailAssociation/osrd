@@ -306,5 +306,10 @@ mod mock_driver {
             // Mock implementation, always return true
             Ok(true)
         }
+
+        async fn project_exists(&self, _project_id: i64) -> Result<bool, Self::Error> {
+            // Mock implementation, always return true
+            Ok(true)
+        }
     }
 }

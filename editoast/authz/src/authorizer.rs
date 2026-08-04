@@ -68,6 +68,16 @@ impl<S: StorageDriver> Authorizer<S> {
             .authorize_infra(&User(self.user_id), infra, privilege)
             .await
     }
+
+    pub async fn authorize_project(
+        &self,
+        project: &Project,
+        privilege: ProjectPrivilege,
+    ) -> Result<Authorization<()>, Error<S::Error>> {
+        self.regulator
+            .authorize_project(&User(self.user_id), project, privilege)
+            .await
+    }
 }
 
 impl<S: StorageDriver> std::fmt::Debug for Authorizer<S> {
