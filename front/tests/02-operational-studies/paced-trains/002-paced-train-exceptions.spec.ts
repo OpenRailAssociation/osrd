@@ -42,6 +42,8 @@ const frTranslations = {
 const trains: TrainSchedule[] = readJsonFile('./tests/assets/trains/trains.json');
 
 test.describe('Paced train exceptions', { tag: ['@op', '@paced-trains', '@exceptions'] }, () => {
+  //TODO: remove ignorePageErrors when issue #13066 is resolved
+  test.use({ ignorePageErrors: true });
   let project: Project;
   let study: Study;
   let infra: Infra;
