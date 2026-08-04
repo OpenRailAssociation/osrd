@@ -673,7 +673,8 @@
     "disconnect": "Sign out",
     "featureFlags": {
       "hourlyTimetables": "Enable hourly timetables",
-      "linkings": "Enable linkings"
+      "linkings": "Enable linkings",
+      "projectGrants": "Enable project grants management"
     },
     "help": "Help",
     "impersonation": "Impersonate user",
