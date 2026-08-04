@@ -3730,6 +3730,48 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/TrainScheduleException'
+  /timetable/{id}/train_schedule_linkings:
+    post:
+      tags:
+      - linkings
+      summary: Create linkings in batch
+      parameters:
+      - name: id
+        in: path
+        description: A timetable ID
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/LinkingCreateForm'
+        required: true
+      responses:
+        '201':
+          description: Linkings created
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  required:
+                  - id
+                  - source
+                  - target
+                  properties:
+                    id:
+                      type: integer
+                      format: int64
+                    source:
+                      $ref: '#/components/schemas/LinkingOccurrenceId'
+                    target:
+                      $ref: '#/components/schemas/LinkingOccurrenceId'
   /timetable/{id}/train_schedule_sets:
     get:
       tags:
@@ -7377,6 +7419,9 @@ components:
       - $ref: '#/components/schemas/EditoastLevelCrossingErrorUnsupportedTimetableType'
       - $ref: '#/components/schemas/EditoastLinesErrorsLineNotFound'
       - $ref: '#/components/schemas/EditoastLinkingErrorDatabase'
+      - $ref: '#/components/schemas/EditoastLinkingErrorRequestIncompatibleWithTimetableType'
+      - $ref: '#/components/schemas/EditoastLinkingErrorSourceAlreadyUsed'
+      - $ref: '#/components/schemas/EditoastLinkingErrorTargetAlreadyUsed'
       - $ref: '#/components/schemas/EditoastLinkingErrorTimetableNotFound'
       - $ref: '#/components/schemas/EditoastListErrorsErrorsWrongErrorTypeProvided'
       - $ref: '#/components/schemas/EditoastMacroNodeErrorDatabase'
@@ -7972,6 +8017,84 @@ components:
           type: string
           enum:
           - editoast:train_schedule_linking:Database
+    EditoastLinkingErrorRequestIncompatibleWithTimetableType:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          title: EditoastLinkingErrorRequestIncompatibleWithTimetableTypeContext
+          required:
+          - timetable_id
+          - timetable_type
+          properties:
+            timetable_id:
+              type: integer
+            timetable_type:
+              type: object
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 409
+        type:
+          type: string
+          enum:
+          - editoast:train_schedule_linking:RequestIncompatibleWithTimetableType
+    EditoastLinkingErrorSourceAlreadyUsed:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          title: EditoastLinkingErrorSourceAlreadyUsedContext
+          required:
+          - occurrence
+          properties:
+            occurrence:
+              type: string
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 409
+        type:
+          type: string
+          enum:
+          - editoast:train_schedule_linking:SourceAlreadyUsed
+    EditoastLinkingErrorTargetAlreadyUsed:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          title: EditoastLinkingErrorTargetAlreadyUsedContext
+          required:
+          - occurrence
+          properties:
+            occurrence:
+              type: string
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 409
+        type:
+          type: string
+          enum:
+          - editoast:train_schedule_linking:TargetAlreadyUsed
     EditoastLinkingErrorTimetableNotFound:
       type: object
       required:
@@ -11799,6 +11922,16 @@ components:
             type: array
             items:
               $ref: '#/components/schemas/RollingStockLivery'
+    LinkingCreateForm:
+      type: object
+      required:
+      - source
+      - target
+      properties:
+        source:
+          $ref: '#/components/schemas/LinkingOccurrenceId'
+        target:
+          $ref: '#/components/schemas/LinkingOccurrenceId'
     LinkingOccurrenceId:
       oneOf:
       - type: object

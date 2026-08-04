@@ -332,6 +332,9 @@
     },
     "train_schedule_linking": {
       "Database": "Erreur interne (base de données)",
+      "RequestIncompatibleWithTimetableType": "La grille horaire {{timetable_id}} est de type {{timetable_type}}, donc elle ne peut pas contenir d'occurrences avec un train_schedule_instance_index.",
+      "SourceAlreadyUsed": "L'occurrence {{occurrence}} est déjà utilisée comme source.",
+      "TargetAlreadyUsed": "L'occurrence ({{occurrence}} est déjà utilisée comme cible.",
       "TimetableNotFound": "Grille horaire '{{timetable_id}}' non trouvée"
     },
     "train_schedule_set": {

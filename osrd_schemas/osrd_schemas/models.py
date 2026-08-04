@@ -1205,6 +1205,51 @@ class EditoastLinkingErrorDatabase(BaseModel):
     type: Literal["editoast:train_schedule_linking:Database"]
 
 
+class EditoastLinkingErrorRequestIncompatibleWithTimetableTypeContext(BaseModel):
+    timetable_id: int
+    timetable_type: dict[str, Any]
+
+
+class EditoastLinkingErrorRequestIncompatibleWithTimetableType(BaseModel):
+    context: Annotated[
+        EditoastLinkingErrorRequestIncompatibleWithTimetableTypeContext | None,
+        Field(title="EditoastLinkingErrorRequestIncompatibleWithTimetableTypeContext"),
+    ] = None
+    message: str
+    status: Literal[409]
+    type: Literal[
+        "editoast:train_schedule_linking:RequestIncompatibleWithTimetableType"
+    ]
+
+
+class EditoastLinkingErrorSourceAlreadyUsedContext(BaseModel):
+    occurrence: str
+
+
+class EditoastLinkingErrorSourceAlreadyUsed(BaseModel):
+    context: Annotated[
+        EditoastLinkingErrorSourceAlreadyUsedContext | None,
+        Field(title="EditoastLinkingErrorSourceAlreadyUsedContext"),
+    ] = None
+    message: str
+    status: Literal[409]
+    type: Literal["editoast:train_schedule_linking:SourceAlreadyUsed"]
+
+
+class EditoastLinkingErrorTargetAlreadyUsedContext(BaseModel):
+    occurrence: str
+
+
+class EditoastLinkingErrorTargetAlreadyUsed(BaseModel):
+    context: Annotated[
+        EditoastLinkingErrorTargetAlreadyUsedContext | None,
+        Field(title="EditoastLinkingErrorTargetAlreadyUsedContext"),
+    ] = None
+    message: str
+    status: Literal[409]
+    type: Literal["editoast:train_schedule_linking:TargetAlreadyUsed"]
+
+
 class EditoastLinkingErrorTimetableNotFoundContext(BaseModel):
     timetable_id: int
 
@@ -2806,20 +2851,6 @@ class LinkingOccurrenceIdAddedException(BaseModel):
     train_schedule_id: int
     train_schedule_instance_index: int | None = None
     type: Literal["added_exception"]
-
-
-class LinkingOccurrenceId(
-    RootModel[
-        LinkingOccurrenceIdUnique
-        | LinkingOccurrenceIdPacedOccurrence
-        | LinkingOccurrenceIdAddedException
-    ]
-):
-    root: (
-        LinkingOccurrenceIdUnique
-        | LinkingOccurrenceIdPacedOccurrence
-        | LinkingOccurrenceIdAddedException
-    )
 
 
 class LoadingGaugeType(Enum):
@@ -4708,6 +4739,9 @@ class EditoastError(
         | EditoastLevelCrossingErrorUnsupportedTimetableType
         | EditoastLinesErrorsLineNotFound
         | EditoastLinkingErrorDatabase
+        | EditoastLinkingErrorRequestIncompatibleWithTimetableType
+        | EditoastLinkingErrorSourceAlreadyUsed
+        | EditoastLinkingErrorTargetAlreadyUsed
         | EditoastLinkingErrorTimetableNotFound
         | EditoastListErrorsErrorsWrongErrorTypeProvided
         | EditoastMacroNodeErrorDatabase
@@ -4887,6 +4921,9 @@ class EditoastError(
         | EditoastLevelCrossingErrorUnsupportedTimetableType
         | EditoastLinesErrorsLineNotFound
         | EditoastLinkingErrorDatabase
+        | EditoastLinkingErrorRequestIncompatibleWithTimetableType
+        | EditoastLinkingErrorSourceAlreadyUsed
+        | EditoastLinkingErrorTargetAlreadyUsed
         | EditoastLinkingErrorTimetableNotFound
         | EditoastListErrorsErrorsWrongErrorTypeProvided
         | EditoastMacroNodeErrorDatabase
@@ -5151,6 +5188,19 @@ class LightEffortCurves(BaseModel):
     )
     default_mode: str
     modes: dict[str, LightModeEffortCurves]
+
+
+class LinkingCreateForm(BaseModel):
+    source: (
+        LinkingOccurrenceIdUnique
+        | LinkingOccurrenceIdPacedOccurrence
+        | LinkingOccurrenceIdAddedException
+    )
+    target: (
+        LinkingOccurrenceIdUnique
+        | LinkingOccurrenceIdPacedOccurrence
+        | LinkingOccurrenceIdAddedException
+    )
 
 
 class LoadingGaugeLimit(BaseModel):

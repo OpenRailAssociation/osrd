@@ -1,16 +1,23 @@
 use super::AppState;
 use axum::Json;
+use axum::extract::Path;
 use axum::extract::State;
+use axum::response::IntoResponse;
 use editoast_derive::EditoastError;
 use editoast_models::Timetable;
 use editoast_models::TrainScheduleLinking;
+use editoast_models::prelude::*;
+use editoast_models::train_schedule_linking::TrainScheduleLinkingChangeset;
 use itertools::Itertools;
+use reqwest::StatusCode;
+use schemas::timetable_type::TimetableType;
 use serde::Deserialize;
 use serde::Serialize;
 use thiserror::Error;
 use utoipa::ToSchema;
 
 use crate::error::Result;
+use crate::views::timetable::TimetableIdParam;
 
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize, ToSchema)]
 pub struct LinkingResponse {
@@ -86,16 +93,57 @@ impl From<TrainScheduleLinking> for LinkingResponse {
     }
 }
 
-#[derive(Debug, Error, EditoastError, Serialize, derive_more::From)]
+#[derive(Debug, Error, EditoastError, Serialize)]
 #[editoast_error(base_id = "train_schedule_linking")]
 enum LinkingError {
     #[error("Timetable {timetable_id} does not exist")]
     #[editoast_error(status = 404)]
     TimetableNotFound { timetable_id: i64 },
+    #[error("Occurrence {occurrence} is already used as a source.")]
+    #[editoast_error(status = 409)]
+    SourceAlreadyUsed { occurrence: String },
+    #[error("Occurrence {occurrence} is already used as a target.")]
+    #[editoast_error(status = 409)]
+    TargetAlreadyUsed { occurrence: String },
+    #[error(
+        "Timetable {timetable_id} has type {timetable_type}, so it can't have occurrences with train_schedule_instance_index"
+    )]
+    #[editoast_error(status = 409)]
+    RequestIncompatibleWithTimetableType {
+        timetable_id: i64,
+        timetable_type: TimetableType,
+    },
     #[error(transparent)]
     #[from(forward)]
     #[serde(skip)]
     Database(editoast_models::Error),
+}
+
+impl From<editoast_models::Error> for LinkingError {
+    fn from(err: editoast_models::Error) -> Self {
+        match &err {
+            editoast_models::Error::UniqueViolation {
+                constraint,
+                column: _,
+                value,
+            } => match constraint.as_str() {
+                "unique_source" => Self::SourceAlreadyUsed {
+                    occurrence: format!(
+                        "(timetable_id, train_schedule_id, occurrence_index, added_exception_id, train_schedule_instance_index) = ({})",
+                        value.clone()
+                    ),
+                },
+                "unique_target" => Self::TargetAlreadyUsed {
+                    occurrence: format!(
+                        "(timetable_id, train_schedule_id, occurrence_index, added_exception_id, train_schedule_instance_index) = ({})",
+                        value.clone()
+                    ),
+                },
+                _ => Self::Database(err),
+            },
+            _ => Self::Database(err),
+        }
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize, ToSchema)]
@@ -145,6 +193,125 @@ pub(in crate::views) async fn list(
         });
     let linkings = TrainScheduleLinking::list(conn, settings).await?;
     Ok(Json(linkings.into_iter().map_into().collect()))
+}
+
+#[derive(Debug, Clone, PartialEq, Deserialize, Serialize, ToSchema)]
+pub struct LinkingCreateForm {
+    pub source: LinkingOccurrenceId,
+    pub target: LinkingOccurrenceId,
+}
+
+impl LinkingOccurrenceId {
+    pub fn train_schedule_id(&self) -> i64 {
+        match self {
+            LinkingOccurrenceId::Unique {
+                train_schedule_id, ..
+            } => *train_schedule_id,
+            LinkingOccurrenceId::PacedOccurrence {
+                train_schedule_id, ..
+            } => *train_schedule_id,
+            LinkingOccurrenceId::AddedException {
+                train_schedule_id, ..
+            } => *train_schedule_id,
+        }
+    }
+    pub fn train_schedule_instance_index(&self) -> Option<i64> {
+        match self {
+            LinkingOccurrenceId::Unique {
+                train_schedule_instance_index,
+                ..
+            } => *train_schedule_instance_index,
+            LinkingOccurrenceId::PacedOccurrence {
+                train_schedule_instance_index,
+                ..
+            } => *train_schedule_instance_index,
+            LinkingOccurrenceId::AddedException {
+                train_schedule_instance_index,
+                ..
+            } => *train_schedule_instance_index,
+        }
+    }
+    pub fn occurrence_index(&self) -> Option<i64> {
+        match self {
+            LinkingOccurrenceId::PacedOccurrence {
+                occurrence_index, ..
+            } => Some(*occurrence_index),
+            _ => None,
+        }
+    }
+    pub fn added_exception_id(&self) -> Option<i64> {
+        match self {
+            LinkingOccurrenceId::AddedException {
+                added_exception_id, ..
+            } => Some(*added_exception_id),
+            _ => None,
+        }
+    }
+}
+
+impl From<LinkingCreateForm> for TrainScheduleLinkingChangeset {
+    fn from(LinkingCreateForm { source, target }: LinkingCreateForm) -> Self {
+        TrainScheduleLinking::changeset()
+            .source_train_schedule_id(source.train_schedule_id())
+            .source_occurrence_index(source.occurrence_index())
+            .source_added_exception_id(source.added_exception_id())
+            .source_train_schedule_instance_index(source.train_schedule_instance_index())
+            .target_train_schedule_id(target.train_schedule_id())
+            .target_occurrence_index(target.occurrence_index())
+            .target_added_exception_id(target.added_exception_id())
+            .target_train_schedule_instance_index(target.train_schedule_instance_index())
+    }
+}
+
+/// Create linkings in batch
+#[editoast_derive::route(authz::Role::OperationalStudies)]
+#[utoipa::path(
+    post, path = "",
+    tag = "linkings",
+    params(TimetableIdParam),
+    request_body = Vec<LinkingCreateForm>,
+    responses(
+        (status = 201, description = "Linkings created", body = inline(Vec<LinkingResponse>)),
+    ),
+)]
+pub(in crate::views) async fn create(
+    State(AppState { db_pool, .. }): State<AppState>,
+    Path(TimetableIdParam { id: timetable_id }): Path<TimetableIdParam>,
+    Json(linking_forms): Json<Vec<LinkingCreateForm>>,
+) -> Result<impl IntoResponse> {
+    let conn = &mut db_pool.get().await?;
+
+    let timetable = Timetable::retrieve_or_fail(conn.clone(), timetable_id, || {
+        LinkingError::TimetableNotFound { timetable_id }
+    })
+    .await?;
+
+    if timetable.timetable_type.0 == TimetableType::Hourly
+        || timetable.timetable_type.0 == TimetableType::Calendar
+    {
+        for linking in &linking_forms {
+            if linking.source.train_schedule_instance_index().is_some()
+                || linking.target.train_schedule_instance_index().is_some()
+            {
+                return Err(LinkingError::RequestIncompatibleWithTimetableType {
+                    timetable_id: timetable.id,
+                    timetable_type: *timetable.timetable_type,
+                }
+                .into());
+            }
+        }
+    }
+
+    let changesets: Vec<TrainScheduleLinkingChangeset> = linking_forms
+        .into_iter()
+        .map_into()
+        .map(|linking: TrainScheduleLinkingChangeset| linking.timetable_id(timetable_id))
+        .collect();
+    let linkings: Vec<TrainScheduleLinking> = TrainScheduleLinking::create_batch(conn, changesets)
+        .await
+        .map_err(LinkingError::from)?;
+    let response: Vec<LinkingResponse> = linkings.into_iter().map_into().collect();
+    Ok((StatusCode::CREATED, Json(response)))
 }
 
 #[cfg(test)]

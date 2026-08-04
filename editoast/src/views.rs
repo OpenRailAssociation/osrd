@@ -212,6 +212,9 @@ fn service_router() -> server::router::DocumentedRouter {
                             .nests("/path_steps", |path| {
                                 path.route("/local_track_names", post!(timetable::get_local_track_names))
                             })
+                            .nests("/train_schedule_linkings", |path| {
+                                path.route("/", post!(timetable::linkings::create))
+                            })
                     })
             })
             //

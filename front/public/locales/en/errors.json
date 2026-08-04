@@ -332,6 +332,9 @@
     },
     "train_schedule_linking": {
       "Database": "Internal error (database)",
+      "RequestIncompatibleWithTimetableType": "Timetable {{timetable_id}} has type {{timetable_type}}, so it can't have occurrences with train_schedule_instance_index",
+      "SourceAlreadyUsed": "Occurrence {{occurrence}} is already used as a source.",
+      "TargetAlreadyUsed": "Occurrence {{occurrence}} is already used as a target.",
       "TimetableNotFound": "Timetable '{{timetable_id}}' could not be found"
     },
     "train_schedule_set": {

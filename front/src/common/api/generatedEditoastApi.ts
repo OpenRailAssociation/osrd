@@ -30,9 +30,9 @@ export const addTagTypes = [
   'temporary_speed_limits',
   'timetable',
   'train_schedule_exceptions',
+  'linkings',
   'train_schedule_set',
   'train_schedule',
-  'linkings',
   'etcs_braking_curves',
   'work_schedules',
   'worker',
@@ -1185,6 +1185,17 @@ const injectedRtkApi = api
           body: queryArg.body,
         }),
         invalidatesTags: ['train_schedule_exceptions'],
+      }),
+      postTimetableByIdTrainScheduleLinkings: build.mutation<
+        PostTimetableByIdTrainScheduleLinkingsApiResponse,
+        PostTimetableByIdTrainScheduleLinkingsApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/timetable/${queryArg.id}/train_schedule_linkings`,
+          method: 'POST',
+          body: queryArg.body,
+        }),
+        invalidatesTags: ['linkings'],
       }),
       getTimetableByIdTrainScheduleSets: build.query<
         GetTimetableByIdTrainScheduleSetsApiResponse,
@@ -2562,6 +2573,16 @@ export type PostTimetableByIdTrainScheduleExceptionApiArg = {
     occurrence_index?: number | null;
     train_schedule_id: number;
   };
+};
+export type PostTimetableByIdTrainScheduleLinkingsApiResponse = /** status 201 Linkings created */ {
+  id: number;
+  source: LinkingOccurrenceId;
+  target: LinkingOccurrenceId;
+}[];
+export type PostTimetableByIdTrainScheduleLinkingsApiArg = {
+  /** A timetable ID */
+  id: number;
+  body: LinkingCreateForm[];
 };
 export type GetTimetableByIdTrainScheduleSetsApiResponse =
   /** status 200 list of train_schedule_sets linked to a timetable */ {
@@ -5021,6 +5042,28 @@ export type TrainScheduleException = {
   timetable_id: number;
   train_schedule_id: number;
 };
+export type LinkingOccurrenceId =
+  | {
+      train_schedule_id: number;
+      train_schedule_instance_index?: number | null;
+      type: 'unique';
+    }
+  | {
+      occurrence_index: number;
+      train_schedule_id: number;
+      train_schedule_instance_index?: number | null;
+      type: 'paced_occurrence';
+    }
+  | {
+      added_exception_id: number;
+      train_schedule_id: number;
+      train_schedule_instance_index?: number | null;
+      type: 'added_exception';
+    };
+export type LinkingCreateForm = {
+  source: LinkingOccurrenceId;
+  target: LinkingOccurrenceId;
+};
 export type PacedTrainException = {
   occurrence_index?: number;
 } & {
@@ -5146,24 +5189,6 @@ export type TrainScheduleSetUpdateForm = {
   name?: string | null;
   published: boolean;
 };
-export type LinkingOccurrenceId =
-  | {
-      train_schedule_id: number;
-      train_schedule_instance_index?: number | null;
-      type: 'unique';
-    }
-  | {
-      occurrence_index: number;
-      train_schedule_id: number;
-      train_schedule_instance_index?: number | null;
-      type: 'paced_occurrence';
-    }
-  | {
-      added_exception_id: number;
-      train_schedule_id: number;
-      train_schedule_instance_index?: number | null;
-      type: 'added_exception';
-    };
 export type CoreSignalUpdate = {
   /** The labels of the new aspect */
   aspect_label: string;
