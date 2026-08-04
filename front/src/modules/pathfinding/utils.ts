@@ -165,9 +165,7 @@ export const upsertPathStepsInOPs = (
         updatedOPs.push(formattedStep);
       }
     } else {
-      const index = updatedOPs.findIndex(
-        (op) => matchPathStepAndOp(step.location, op) && step.positionOnPath === op.positionOnPath
-      );
+      const index = updatedOPs.findIndex((op) => op.pathStepId === step.id);
       if (index < 0) {
         throw new Error(`Could not find path step "${step.id}" in OP list`);
       }
