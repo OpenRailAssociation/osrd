@@ -148,7 +148,9 @@ const ComboBox = <T,>({
   const onFieldBlur = () => {
     const exactSuggestion = suggestionsByLabel.get(normalizedInputValue);
     if (activeSuggestionIndex === -1 && !showAddCustomValue) {
-      if (exactSuggestion) {
+      if (normalizedInputValue === '') {
+        onSelectSuggestion(undefined);
+      } else if (exactSuggestion) {
         onSelectSuggestion(exactSuggestion);
       } else {
         onAddCustomValue?.(inputValue);
