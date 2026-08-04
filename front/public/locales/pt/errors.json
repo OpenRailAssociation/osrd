@@ -13,6 +13,11 @@
   "default": "Ocorreu um erro.",
   "editoast": {
     "DatabaseAccessError": "Erro fatal de acesso à base de dados",
+    "JoinError": {
+      "cancelled": "",
+      "panic": "",
+      "unhandled_add_case_here": ""
+    },
     "app_health": {
       "Core": "Erro de core",
       "Database": "Erro de base de dados",
@@ -27,7 +32,9 @@
       "AuthError": "Erro interno de autenticação ou de autorização, tente novamente ou contacte o suporte",
       "DbError": "Erro interno de base de dados, tente outra vez ou contacte o suporte",
       "Forbidden": "Acesso recusado",
-      "ForbiddenImpersonation": "Usurpação recursa"
+      "ForbiddenImpersonation": "Usurpação recursa",
+      "ImpersonatedUserNotFound": "",
+      "Unauthenticated": ""
     },
     "authz": {
       "Authorizer": "Erro interno",
@@ -36,17 +43,21 @@
       "Driver": "Erro interno de autenticação ou autorização. Tente novamente ou contate o suporte",
       "GrantsApiMisuse": "Utilização incorreta da API de autorização",
       "NoSuchUser": "Utilizador desconhecido",
+      "UnknownIdentities": "",
       "UnknownResource": "Recurso desconhecido",
       "UnknownResourceType": "Tipo de recurso desconhecido",
       "UnknownSubject": "Assunto desconhecido",
       "UnknownUser": "Utilizador desconhecido '{{id}}'"
     },
     "authz_legacy": {
+      "Openfga": "",
+      "Storage": "",
       "UnknownResource": "Recurso desconhecido",
       "UnknownSubject": "Assunto desconhecido",
       "UnknownUser": "Utilizador desconhecido '{{id}}'"
     },
     "auto_fixes": {
+      "ConflictingFixesOnSameObject": "",
       "FixTrialFailure": "Falha ao aplicar os corretores",
       "MaximumIterationReached": "Número máximo de iterações atingido para corrigir a infraestrutura sem fornecer todas as correções possíveis",
       "MissingErrorObject": "Não foi possível encontrar o objeto do erro"
@@ -64,8 +75,281 @@
         "ZeroLengthPath": "O comprimento de um caminho não pode ser nulo."
       }
     },
+    "coreclient": {
+      "BrokenPipe": "",
+      "CannotExtractResponseBody": "",
+      "CoreResponseFormatError": "",
+      "MqClientError": "",
+      "UnparsableErrorOutput": ""
+    },
     "delimited_area": {
       "InvalidLocations": "Certas localizações são inválidas"
+    },
+    "document": {
+      "Database": "",
+      "NotFound": ""
+    },
+    "electrical_profiles": {
+      "Database": "",
+      "NotFound": ""
+    },
+    "fonts": {
+      "FileNotFound": ""
+    },
+    "geometry": {
+      "UnexpectedGeometry": ""
+    },
+    "icons": {
+      "FileNotFound": ""
+    },
+    "infra": {
+      "Database": "",
+      "NotFound": "",
+      "edition": {
+        "InfraIsLocked": "",
+        "SplitTrackSectionBadOffset": ""
+      },
+      "errors": {
+        "WrongErrorTypeProvided": ""
+      },
+      "lines": {
+        "LineNotFound": ""
+      },
+      "objects": {
+        "DuplicateIdsProvided": "",
+        "ObjectIdNotFound": ""
+      },
+      "pathfinding": {
+        "EndingTrackLocationNotFound": "",
+        "InvalidNumberOfPaths": "",
+        "StartingTrackLocationNotFound": ""
+      }
+    },
+    "infra_cache": {
+      "ObjectNotFound": ""
+    },
+    "infra_state": {
+      "FetchError": ""
+    },
+    "layers": {
+      "LayerNotFound": "",
+      "ViewNotFound": ""
+    },
+    "level_crossing": {
+      "Database": "",
+      "InfraNotFound": "",
+      "TimetableNotFound": "",
+      "UnsupportedTimetableType": ""
+    },
+    "macro_node": {
+      "Database": "",
+      "NotFound": "",
+      "ScenarioNotFound": ""
+    },
+    "macro_note": {
+      "Database": "",
+      "NotFound": "",
+      "ScenarioNotFound": "",
+      "WrongScenario": ""
+    },
+    "model": {
+      "ModelError": ""
+    },
+    "operation": {
+      "EmptyId": "",
+      "InvalidPatch": "",
+      "ModifyId": "",
+      "ObjectNotFound": ""
+    },
+    "operationalPointProjection": {
+      "InvalidNumberOfDistances": "",
+      "InvalidNumberOfRefs": ""
+    },
+    "pathfinding": {
+      "Database": "",
+      "ElectricalProfilesOverlap": "",
+      "ElectrificationOverlap": "",
+      "InfraNotFound": "",
+      "NotFound": "",
+      "OperationalPointsNotFound": "",
+      "RollingStockNotFound": "",
+      "TrackSectionsNotFound": ""
+    },
+    "postgres": {
+      "Host": "",
+      "Password": "",
+      "Port": "",
+      "Username": ""
+    },
+    "project": {
+      "Database": "",
+      "ImageError": "",
+      "ImageNotFound": "",
+      "NotFound": ""
+    },
+    "railjson": {
+      "UnsupportedVersion": ""
+    },
+    "rollingstocks": {
+      "BasePowerClassEmpty": "",
+      "CannotCreateCompoundImage": "",
+      "CannotReadImage": "",
+      "Database": "",
+      "IsLocked": "",
+      "IsUsed": "",
+      "KeyNotFound": "",
+      "LiveryMultipartError": "",
+      "NameAlreadyUsed": ""
+    },
+    "round_trips": {
+      "Database": "",
+      "DuplicateTrainIds": "",
+      "TimetableNotFound": ""
+    },
+    "scenario": {
+      "Database": "",
+      "InfraNotFound": "",
+      "NotFound": "",
+      "StudyNotFound": "",
+      "TimetableNotFound": ""
+    },
+    "search": {
+      "ArgMissing": "",
+      "ArgTypeMismatch": "",
+      "EmptyArray": "",
+      "IntegerConversion": "",
+      "InvalidColumnName": "",
+      "InvalidFunctionIdentifier": "",
+      "InvalidSyntax": "",
+      "ObjectType": "",
+      "QueryAst": "",
+      "RuntimeTypeCheckFail": "",
+      "SearchEngineError": "",
+      "UndefinedFunction": "",
+      "UndefinedOverload": "",
+      "UnexpectedArg": "",
+      "UnexpectedColumn": "",
+      "UnexpectedErsatz": "",
+      "VariadicArgTypeMismatch": ""
+    },
+    "search_journeys": {
+      "Database": "",
+      "InfraNotFound": "",
+      "InvalidInput": ""
+    },
+    "single_simulation": {
+      "ElectricalProfileSetNotFound": "",
+      "PathNotFound": "",
+      "RollingStockNotFound": "",
+      "WrongCoreResponseFormat": ""
+    },
+    "sprites": {
+      "FileNotFound": "",
+      "UnknownSignalingSystem": ""
+    },
+    "stdcm": {
+      "BatchRollingStockNotFound": "",
+      "Database": "",
+      "InfraNotFound": "",
+      "InvalidConsistLength": "",
+      "InvalidConsistMass": "",
+      "InvalidConsistMaxSpeed": "",
+      "InvalidPathItems": "",
+      "TimetableNotFound": "",
+      "TowedRollingStockNotFound": "",
+      "TrainSimulationFail": ""
+    },
+    "stdcm_debug": {
+      "JsonParseError": "",
+      "S3Error": "",
+      "S3NotConfigured": ""
+    },
+    "stdcm_search_env": {
+      "Database": "",
+      "NotFound": ""
+    },
+    "study": {
+      "Database": "",
+      "NotFound": "",
+      "ProjectNotFound": "",
+      "StartDateAfterEndDate": ""
+    },
+    "sub_categories": {
+      "CodeAlreadyUsed": "",
+      "Database": "",
+      "NotFound": ""
+    },
+    "temporary_speed_limit": {
+      "Database": "",
+      "NameAlreadyUsed": ""
+    },
+    "timetable": {
+      "BatchTrainScheduleSetNotFound": "",
+      "Database": "",
+      "InfraNotFound": "",
+      "InfraNotLoaded": "",
+      "InvalidPeriod": "",
+      "NotFound": "",
+      "ParseError": "",
+      "Timeout": "",
+      "TrainScheduleSetsNotFound": "",
+      "similar_trains": {
+        "Database": "",
+        "EmptyTrainsTraffic": "",
+        "InvalidPath": "",
+        "RollingStockNotFound": "",
+        "SpeedLimitNotFound": ""
+      }
+    },
+    "towedrollingstocks": {
+      "Database": "",
+      "IdNotFound": "",
+      "IsLocked": ""
+    },
+    "train_schedule": {
+      "BatchNotFound": "",
+      "Database": "",
+      "ExceptionNotFound": "",
+      "InfraNotFound": "",
+      "InvalidPathPortion": "",
+      "NotFound": "",
+      "PathfindingFailed": "",
+      "RollingStockNotFound": "",
+      "SimulationFailed": "",
+      "TrainScheduleSetNotFound": ""
+    },
+    "train_schedule_exception": {
+      "BatchNotFound": "",
+      "Database": "",
+      "InvalidOccurrenceIndex": "",
+      "NotFound": "",
+      "NotPacedTrain": "",
+      "OccurrenceIndexAlreadyUsed": "",
+      "TimetableNotFound": "",
+      "TrainScheduleNotFound": ""
+    },
+    "train_schedule_set": {
+      "CatalogEntryNotFound": "",
+      "Database": "",
+      "NotFound": ""
+    },
+    "url": {
+      "InvalidUrl": ""
+    },
+    "valkey": {
+      "Url": ""
+    },
+    "work_schedule": {
+      "Database": "",
+      "NameAlreadyUsed": "",
+      "WorkScheduleGroupNotFound": ""
+    },
+    "worker_load": {
+      "Database": "",
+      "FetchStatusError": "",
+      "InfraNotFound": "",
+      "TimetableNotFound": ""
     }
-  }
+  },
+  "pageNotFound": ""
 }
