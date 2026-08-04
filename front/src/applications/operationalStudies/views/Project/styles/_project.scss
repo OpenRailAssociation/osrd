@@ -46,6 +46,7 @@
         border-radius: 4px;
         max-height: 30vh;
         height: 100%;
+        margin-bottom: 8px;
         img {
           display: flex;
           align-items: center;
@@ -177,8 +178,8 @@
     align-items: center;
     flex-wrap: wrap;
     gap: 16px;
-    padding: 16px 8px;
-    margin-top: 32px;
+    padding-inline: 8px;
+    padding-bottom: 16px;
   }
 
   .studies-list {
