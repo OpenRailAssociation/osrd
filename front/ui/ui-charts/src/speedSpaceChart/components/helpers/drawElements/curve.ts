@@ -94,7 +94,7 @@ export const drawCurve = ({ ctx, width, height, store }: DrawFunctionParams) => 
 
   // Fill eco speed curve.
   ctx.beginPath();
-  ctx.fillStyle = chroma(WHITE_100).hex();
+  ctx.fillStyle = WHITE_100;
   ctx.globalCompositeOperation = 'destination-out';
   ecoCurvePoints.forEach(({ x, y }) => {
     ctx.lineTo(x, y);

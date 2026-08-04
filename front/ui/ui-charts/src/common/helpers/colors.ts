@@ -12,7 +12,7 @@ export const BLACK_55 = 'rgba(0, 0, 0, 0.55)';
 export const BLACK_25 = 'rgba(0, 0, 0, 0.25)';
 export const BLACK_20 = 'rgba(0, 0, 0, 0.20)';
 export const BLACK_10 = 'rgba(0, 0, 0, 0.10)';
-export const BLACK_5 = 'rgba(0, 0, 0, 0.5)';
+export const BLACK_5 = 'rgba(0, 0, 0, 0.05)';
 
 export const GREY_90 = 'rgb(31, 27, 23)';
 export const GREY_80 = 'rgb(49, 46, 43)';
@@ -20,7 +20,7 @@ export const GREY_60 = 'rgb(92, 89, 85)';
 export const GREY_50 = 'rgb(121, 118, 113)';
 export const GREY_30 = 'rgb(182, 178, 175)';
 export const GREY_20 = 'rgb(211, 209, 207)';
-export const GREY_10 = 'rgb((237, 237, 237)';
+export const GREY_10 = 'rgb(237, 237, 237)';
 
 export const PRIMARY_80 = 'rgb(31, 15, 150)';
 export const PRIMARY_50 = 'rgb(37, 106, 250)';

@@ -1,5 +1,7 @@
 import { useCallback, useContext } from 'react';
 
+import chroma from 'chroma-js';
+
 import { MouseContext } from '../../../common';
 import { BLUE_500, CYAN_300, PRIMARY_50, PRIMARY_80 } from '../../../common/helpers/colors';
 import { useDraw } from '../../../common/hooks/useCanvas';
@@ -36,7 +38,7 @@ const DraggingOccupancyZonesLayer = ({ occupancyZones }: { occupancyZones: Occup
         ctx.shadowBlur = 8;
         ctx.shadowOffsetX = 0;
         ctx.shadowOffsetY = 5;
-        ctx.shadowColor = BLUE_500;
+        ctx.shadowColor = chroma(BLUE_500).alpha(0.55).hex();
         ctx.fill();
         ctx.restore();
 

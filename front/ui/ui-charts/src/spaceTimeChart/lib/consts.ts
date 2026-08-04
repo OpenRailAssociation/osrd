@@ -70,24 +70,24 @@ export const DEFAULT_THEME: SpaceTimeChartTheme = {
   timeCaptionsStyles: {
     1: {
       color: GREY_50,
-      font: `12px ${FONT_MONO}, monospace';`,
+      font: `12px ${FONT_MONO}, monospace;`,
       topOffset: 12,
     },
     2: {
       color: GREY_30,
-      font: `12px ${FONT_MONO}, monospace';`,
+      font: `12px ${FONT_MONO}, monospace;`,
       topOffset: 12,
     },
     3: {
       color: GREY_30,
-      font: `10px ${FONT_MONO}, monospace';`,
+      font: `10px ${FONT_MONO}, monospace;`,
       topOffset: 6,
     },
   },
   dateCaptionsSize: 0,
   dateCaptionsStyle: {
     color: GREY_30,
-    font: `10px ${FONT_MONO}, monospace';`,
+    font: `10px ${FONT_MONO}, monospace;`,
     topOffset: 28,
     textAlign: 'left',
   },

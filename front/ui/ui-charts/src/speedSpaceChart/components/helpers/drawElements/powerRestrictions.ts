@@ -1,5 +1,5 @@
 import { FONT_SANS } from '../../../../common/consts';
-import { BLACK_100, ERROR_60, GREY_50 } from '../../../../common/helpers/colors';
+import { BLACK_10, ERROR_60, GREY_50 } from '../../../../common/helpers/colors';
 import type { DrawFunctionParams } from '../../../types';
 import {
   LINEAR_LAYERS_BACKGROUND_COLOR,
@@ -62,7 +62,7 @@ export const drawPowerRestrictions = ({
 
   drawSeparatorLinearLayer(
     ctx,
-    BLACK_100,
+    BLACK_10,
     MARGINS,
     width,
     marginTop - LINEAR_LAYERS_HEIGHTS.POWER_RESTRICTIONS_HEIGHT + LINEAR_LAYER_SEPARATOR_HEIGHT
