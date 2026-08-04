@@ -1,3 +1,4 @@
+use authz::v2;
 use axum::Extension;
 use axum::extract::Json;
 use axum::extract::State;
@@ -13,9 +14,10 @@ use serde::Serialize;
 use thiserror::Error;
 use utoipa::ToSchema;
 
-use super::AuthenticationExt;
 use crate::AppState;
+use crate::authentication;
 use crate::error::Result;
+use crate::views::AuthorizationError;
 use editoast_models::Infra;
 use editoast_models::timetable::Timetable;
 
@@ -76,9 +78,10 @@ pub(in crate::views) async fn worker_load(
     State(AppState {
         db_pool,
         core_client,
+        regulator,
         ..
     }): State<AppState>,
-    Extension(auth): AuthenticationExt,
+    Extension(authn_state): Extension<authentication::State>,
     Json(WorkerLoadForm {
         infra_id,
         timetable_id,
@@ -89,16 +92,13 @@ pub(in crate::views) async fn worker_load(
     })
     .await?;
 
-    // Check user privilege on infra
-    auth.check_authorization(async |authorizer| {
-        authorizer
-            .authorize_infra(
-                &authz::Infra(infra_id),
-                authz::InfraPrivilege::CanRestrictedRead,
-            )
-            .await
-    })
-    .await?;
+    if let authentication::State::Authenticated { user, .. } = &authn_state {
+        v2::infra_privileges(*user, authz::Infra(infra_id))
+            .map(async |privileges| privileges.contains(&authz::InfraPrivilege::CanRestrictedRead))
+            .ok_or(AuthorizationError::Forbidden)
+            .run::<AuthorizationError, _>(&authn_state.authorizer(regulator.openfga()))
+            .await??;
+    }
 
     // Check timetable exists
     if let Some(timetable_id) = timetable_id {

@@ -1,6 +1,7 @@
 use crate::AppState;
+use crate::authentication;
 use crate::error::Result;
-use crate::views::AuthenticationExt;
+use crate::views::AuthorizationError;
 use crate::views::path::pathfinding::PathfindingResult;
 use crate::views::path::projection::PathProjection;
 use crate::views::projection::interpolate_arrival_time;
@@ -8,6 +9,7 @@ use crate::views::rolling_stock::RollingStockError;
 use crate::views::timetable::simulation;
 use crate::views::timetable::simulation::SimulationResponseSuccess;
 use crate::views::timetable::simulation::train_simulation_ordered_batch;
+use authz::v2;
 use editoast_models::Infra;
 use editoast_models::LevelCrossingModel;
 use editoast_models::Timetable;
@@ -100,9 +102,10 @@ pub(in crate::views) async fn occupancy(
         db_pool,
         valkey_client,
         core_client,
+        regulator,
         ..
     }): State<AppState>,
-    Extension(auth): AuthenticationExt,
+    Extension(authn_state): Extension<authentication::State>,
     Json(LevelCrossingOccupancyForm {
         train_ids,
         level_crossing_ids,
@@ -111,15 +114,13 @@ pub(in crate::views) async fn occupancy(
         electrical_profile_set_id,
     }): Json<LevelCrossingOccupancyForm>,
 ) -> Result<Json<HashMap<Identifier, Vec<LevelCrossingOccupancy>>>> {
-    auth.check_authorization(async |authorizer| {
-        authorizer
-            .authorize_infra(
-                &authz::Infra(infra_id),
-                authz::InfraPrivilege::CanRestrictedRead,
-            )
-            .await
-    })
-    .await?;
+    if let authentication::State::Authenticated { user, .. } = &authn_state {
+        v2::infra_privileges(*user, authz::Infra(infra_id))
+            .map(async |privileges| privileges.contains(&authz::InfraPrivilege::CanRestrictedRead))
+            .ok_or(AuthorizationError::Forbidden)
+            .run::<AuthorizationError, _>(&authn_state.authorizer(regulator.openfga()))
+            .await??;
+    }
 
     let conn = &mut db_pool.get().await?;
 

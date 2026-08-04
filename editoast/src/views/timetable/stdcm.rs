@@ -1,6 +1,7 @@
 pub(crate) mod request;
 
 use authz;
+use authz::v2;
 use axum::Extension;
 use axum::extract::Json;
 use axum::extract::Path;
@@ -53,9 +54,10 @@ use utoipa::IntoParams;
 use utoipa::ToSchema;
 
 use crate::AppState;
+use crate::authentication;
 use crate::error::InternalError;
 use crate::error::Result;
-use crate::views::AuthenticationExt;
+use crate::views::AuthorizationError;
 use crate::views::path::pathfinding::TrainScheduleWithConsist;
 use crate::views::timetable::PhysicsConsistParameters;
 use crate::views::timetable::simulation;
@@ -191,9 +193,10 @@ pub(in crate::views) async fn stdcm(
         db_pool,
         valkey_client,
         core_client,
+        regulator,
         ..
     }): State<AppState>,
-    Extension(auth): AuthenticationExt,
+    Extension(authn_state): Extension<authentication::State>,
     Path(id): Path<i64>,
     Query(query): Query<StdcmQueryParams>,
     Json(request): Json<Request>,
@@ -211,17 +214,13 @@ pub(in crate::views) async fn stdcm(
     })
     .await?;
 
-    // Check user privilege on infra
-    auth.clone()
-        .check_authorization(async |authorizer| {
-            authorizer
-                .authorize_infra(
-                    &authz::Infra(infra_id),
-                    authz::InfraPrivilege::CanRestrictedRead,
-                )
-                .await
-        })
-        .await?;
+    if let authentication::State::Authenticated { user, .. } = &authn_state {
+        v2::infra_privileges(*user, authz::Infra(infra_id))
+            .map(async |privileges| privileges.contains(&authz::InfraPrivilege::CanRestrictedRead))
+            .ok_or(AuthorizationError::Forbidden)
+            .run::<AuthorizationError, _>(&authn_state.authorizer(regulator.openfga()))
+            .await??;
+    }
 
     // 2. Get Timetable / Work schedules
     Timetable::exists_or_fail(&mut conn, timetable_id, || StdcmError::TimetableNotFound {

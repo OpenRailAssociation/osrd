@@ -37,7 +37,6 @@ mod test_app;
 
 use ::core::str;
 
-use ::authz::Authorization;
 use ::authz::Authorizer;
 use core_client::CoreClient;
 use editoast_derive::EditoastError;
@@ -45,8 +44,6 @@ use editoast_models::PgAuthDriver;
 use thiserror::Error;
 
 pub use server::OpenApiRoot;
-
-use crate::error::Result;
 
 #[cfg(test)]
 use test_app::test_app;
@@ -464,7 +461,7 @@ pub enum Authentication {
     /// The issuer of the request did not provide any authentication information.
     Unauthenticated,
     /// The issuer of the request provided the 'x-remote-user-identity' header.
-    Authenticated(Authorizer<PgAuthDriver>),
+    Authenticated(#[expect(dead_code)] Authorizer<PgAuthDriver>),
     /// The requests comes from a trusted service (like core). All requests are considered safe.
     SkipAuthorization {
         #[expect(unused)]
@@ -473,30 +470,6 @@ pub enum Authentication {
         name: Option<String>,
     },
 }
-
-impl Authentication {
-    /// Function wrapper that allows you to check if the issuer of the request has the good privilege, grant, role....
-    /// If the request is unauthenticated, it will return an Unauthorized error, and for the SkipAuthorization.
-    /// The provided function will be called with the authorizer and its result will be checked by the allowed() method.
-    /// In case of error, a Forbidden error will be returned.
-    /// How to use it: `auth.check_authorization(async |authorizer| authorizer.authorize_infra_delete(infra_id).await).await?;`
-    async fn check_authorization<E: Into<AuthorizationError>>(
-        self,
-        f: impl AsyncFnOnce(Authorizer<PgAuthDriver>) -> Result<Authorization<()>, E>,
-    ) -> Result<(), AuthorizationError> {
-        match self {
-            Authentication::SkipAuthorization { .. } => Ok(()),
-            Authentication::Unauthenticated => Err(AuthorizationError::Unauthenticated),
-            Authentication::Authenticated(authorizer) => f(authorizer)
-                .await
-                .map_err(Into::into)?
-                .allowed()
-                .map_err(|_| AuthorizationError::Forbidden),
-        }
-    }
-}
-
-pub use server::middlewares::AuthenticationExt;
 
 pub type AuthorizerError = ::authz::Error<<PgAuthDriver as ::authz::StorageDriver>::Error>;
 
@@ -508,6 +481,7 @@ pub enum AuthorizationError {
     Unauthenticated,
     #[error("Forbidden (403) — user has insufficient privileges")]
     #[editoast_error(status = 403)]
+    #[from(::authz::v2::Check)]
     Forbidden,
     #[error("Forbidden (403) — user must be an admin to impersonate")]
     #[editoast_error(status = 403)]
@@ -522,6 +496,12 @@ pub enum AuthorizationError {
     #[error(transparent)]
     #[editoast_error(status = 500)]
     DbError(#[from] database::db_connection_pool::DatabasePoolError),
+}
+
+impl From<crate::authorizers::Error> for AuthorizationError {
+    fn from(crate::authorizers::Error(fga_error): crate::authorizers::Error) -> Self {
+        Self::from(fga_error)
+    }
 }
 
 #[cfg(test)]

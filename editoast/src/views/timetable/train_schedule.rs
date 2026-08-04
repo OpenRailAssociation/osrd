@@ -5,6 +5,7 @@ use std::iter::Extend as _;
 use std::sync::Arc;
 
 use authz;
+use authz::v2;
 use axum::Extension;
 use axum::extract::Json;
 use axum::extract::Path;
@@ -49,9 +50,10 @@ use utoipa::IntoParams;
 use utoipa::ToSchema;
 
 use super::AppState;
-use super::AuthenticationExt;
+use crate::authentication;
 use crate::error::EditoastError as _;
 use crate::error::Result;
+use crate::views::AuthorizationError;
 use crate::views::infra::InfraIdQueryParam;
 use crate::views::path::operational_point_cache::OperationalPointCache;
 use crate::views::path::pathfinding::PathfindingFailure;
@@ -325,9 +327,10 @@ pub(in crate::views) async fn simulation_summary(
         db_pool,
         valkey_client,
         core_client,
+        regulator,
         ..
     }): State<AppState>,
-    Extension(auth): AuthenticationExt,
+    Extension(authn_state): Extension<authentication::State>,
     Json(SimulationBatchForm {
         infra_id,
         timetable_id,
@@ -342,16 +345,13 @@ pub(in crate::views) async fn simulation_summary(
     })
     .await?;
 
-    // Check user privilege on infra
-    auth.check_authorization(async |authorizer| {
-        authorizer
-            .authorize_infra(
-                &authz::Infra(infra_id),
-                authz::InfraPrivilege::CanRestrictedRead,
-            )
-            .await
-    })
-    .await?;
+    if let authentication::State::Authenticated { user, .. } = &authn_state {
+        v2::infra_privileges(*user, authz::Infra(infra_id))
+            .map(async |privileges| privileges.contains(&authz::InfraPrivilege::CanRestrictedRead))
+            .ok_or(AuthorizationError::Forbidden)
+            .run::<AuthorizationError, _>(&authn_state.authorizer(regulator.openfga()))
+            .await??;
+    }
 
     /////
     // Init the simulation environment
@@ -598,9 +598,10 @@ pub(in crate::views) async fn get_path(
         db_pool,
         valkey_client,
         core_client,
+        regulator,
         ..
     }): State<AppState>,
-    Extension(auth): AuthenticationExt,
+    Extension(authn_state): Extension<authentication::State>,
     Path(TrainScheduleIdParam {
         id: train_schedule_id,
     }): Path<TrainScheduleIdParam>,
@@ -618,16 +619,13 @@ pub(in crate::views) async fn get_path(
     })
     .await?;
 
-    // Check user privilege on infra
-    auth.check_authorization(async |authorizer| {
-        authorizer
-            .authorize_infra(
-                &authz::Infra(infra_id),
-                authz::InfraPrivilege::CanRestrictedRead,
-            )
-            .await
-    })
-    .await?;
+    if let authentication::State::Authenticated { user, .. } = &authn_state {
+        v2::infra_privileges(*user, authz::Infra(infra_id))
+            .map(async |privileges| privileges.contains(&authz::InfraPrivilege::CanRestrictedRead))
+            .ok_or(AuthorizationError::Forbidden)
+            .run::<AuthorizationError, _>(&authn_state.authorizer(regulator.openfga()))
+            .await??;
+    }
 
     let train_schedule =
         editoast_models::TrainSchedule::retrieve_or_fail(conn.clone(), train_schedule_id, || {
@@ -750,9 +748,10 @@ pub(in crate::views) async fn simulation(
         valkey_client,
         core_client,
         db_pool,
+        regulator,
         ..
     }): State<AppState>,
-    Extension(auth): AuthenticationExt,
+    Extension(authn_state): Extension<authentication::State>,
     Path(TrainScheduleIdParam {
         id: train_schedule_id,
     }): Path<TrainScheduleIdParam>,
@@ -768,16 +767,13 @@ pub(in crate::views) async fn simulation(
     })
     .await?;
 
-    // Check user privilege on infra
-    auth.check_authorization(async |authorizer| {
-        authorizer
-            .authorize_infra(
-                &authz::Infra(infra_id),
-                authz::InfraPrivilege::CanRestrictedRead,
-            )
-            .await
-    })
-    .await?;
+    if let authentication::State::Authenticated { user, .. } = &authn_state {
+        v2::infra_privileges(*user, authz::Infra(infra_id))
+            .map(async |privileges| privileges.contains(&authz::InfraPrivilege::CanRestrictedRead))
+            .ok_or(AuthorizationError::Forbidden)
+            .run::<AuthorizationError, _>(&authn_state.authorizer(regulator.openfga()))
+            .await??;
+    }
 
     // Retrieve train_schedule or fail
     let train_schedule = editoast_models::TrainSchedule::retrieve_or_fail(
@@ -887,9 +883,10 @@ pub(in crate::views) async fn etcs_braking_curves(
         valkey_client,
         core_client,
         db_pool,
+        regulator,
         ..
     }): State<AppState>,
-    Extension(auth): AuthenticationExt,
+    Extension(authn_state): Extension<authentication::State>,
     Path(TrainScheduleIdParam {
         id: train_schedule_id,
     }): Path<TrainScheduleIdParam>,
@@ -905,16 +902,13 @@ pub(in crate::views) async fn etcs_braking_curves(
     })
     .await?;
 
-    // Check user privilege on infra
-    auth.check_authorization(async |authorizer| {
-        authorizer
-            .authorize_infra(
-                &authz::Infra(infra_id),
-                authz::InfraPrivilege::CanRestrictedRead,
-            )
-            .await
-    })
-    .await?;
+    if let authentication::State::Authenticated { user, .. } = &authn_state {
+        v2::infra_privileges(*user, authz::Infra(infra_id))
+            .map(async |privileges| privileges.contains(&authz::InfraPrivilege::CanRestrictedRead))
+            .ok_or(AuthorizationError::Forbidden)
+            .run::<AuthorizationError, _>(&authn_state.authorizer(regulator.openfga()))
+            .await??;
+    }
 
     // Retrieve train schedule or fail
     let train_schedule = editoast_models::TrainSchedule::retrieve_or_fail(
@@ -1055,9 +1049,10 @@ pub(in crate::views) async fn project_path(
         valkey_client,
         core_client,
         config,
+        regulator,
         ..
     }): State<AppState>,
-    Extension(auth): AuthenticationExt,
+    Extension(authn_state): Extension<authentication::State>,
     Json(ProjectPathForm {
         infra_id,
         timetable_id,
@@ -1071,15 +1066,13 @@ pub(in crate::views) async fn project_path(
     })
     .await?;
 
-    auth.check_authorization(async |authorizer| {
-        authorizer
-            .authorize_infra(
-                &authz::Infra(infra_id),
-                authz::InfraPrivilege::CanRestrictedRead,
-            )
-            .await
-    })
-    .await?;
+    if let authentication::State::Authenticated { user, .. } = &authn_state {
+        v2::infra_privileges(*user, authz::Infra(infra_id))
+            .map(async |privileges| privileges.contains(&authz::InfraPrivilege::CanRestrictedRead))
+            .ok_or(AuthorizationError::Forbidden)
+            .run::<AuthorizationError, _>(&authn_state.authorizer(regulator.openfga()))
+            .await??;
+    }
 
     let conn = &mut db_pool.get().await?;
 
@@ -1184,9 +1177,10 @@ pub(in crate::views) async fn project_path_op(
         valkey_client,
         core_client,
         config,
+        regulator,
         ..
     }): State<AppState>,
-    Extension(auth): AuthenticationExt,
+    Extension(authn_state): Extension<authentication::State>,
     Json(ProjectPathOperationalPointForm {
         infra_id,
         train_ids,
@@ -1202,15 +1196,13 @@ pub(in crate::views) async fn project_path_op(
     })
     .await?;
 
-    auth.check_authorization(async |authorizer| {
-        authorizer
-            .authorize_infra(
-                &authz::Infra(infra_id),
-                authz::InfraPrivilege::CanRestrictedRead,
-            )
-            .await
-    })
-    .await?;
+    if let authentication::State::Authenticated { user, .. } = &authn_state {
+        v2::infra_privileges(*user, authz::Infra(infra_id))
+            .map(async |privileges| privileges.contains(&authz::InfraPrivilege::CanRestrictedRead))
+            .ok_or(AuthorizationError::Forbidden)
+            .run::<AuthorizationError, _>(&authn_state.authorizer(regulator.openfga()))
+            .await??;
+    }
 
     let conn = &mut db_pool.get().await?;
 
@@ -1372,9 +1364,10 @@ pub(in crate::views) async fn occupancy_blocks(
         valkey_client,
         core_client,
         config,
+        regulator,
         ..
     }): State<AppState>,
-    Extension(auth): AuthenticationExt,
+    Extension(authn_state): Extension<authentication::State>,
     Json(OccupancyBlockForm {
         infra_id,
         timetable_id,
@@ -1383,15 +1376,13 @@ pub(in crate::views) async fn occupancy_blocks(
         electrical_profile_set_id,
     }): Json<OccupancyBlockForm>,
 ) -> Result<Json<HashMap<i64, OccupancyBlocksTrainScheduleResult>>> {
-    auth.check_authorization(async |authorizer| {
-        authorizer
-            .authorize_infra(
-                &authz::Infra(infra_id),
-                authz::InfraPrivilege::CanRestrictedRead,
-            )
-            .await
-    })
-    .await?;
+    if let authentication::State::Authenticated { user, .. } = &authn_state {
+        v2::infra_privileges(*user, authz::Infra(infra_id))
+            .map(async |privileges| privileges.contains(&authz::InfraPrivilege::CanRestrictedRead))
+            .ok_or(AuthorizationError::Forbidden)
+            .run::<AuthorizationError, _>(&authn_state.authorizer(regulator.openfga()))
+            .await??;
+    }
 
     let infra = &Infra::retrieve_or_fail(db_pool.get().await?, infra_id, || {
         TrainScheduleError::InfraNotFound { infra_id }
@@ -1538,9 +1529,10 @@ pub(in crate::views) async fn track_occupancy(
         db_pool,
         valkey_client,
         core_client,
+        regulator,
         ..
     }): State<AppState>,
-    Extension(auth): AuthenticationExt,
+    Extension(authn_state): Extension<authentication::State>,
     Json(TrackOccupancyForm {
         train_schedule_ids,
         operational_point_reference,
@@ -1550,15 +1542,13 @@ pub(in crate::views) async fn track_occupancy(
         use_simulation,
     }): Json<TrackOccupancyForm>,
 ) -> Result<Json<Vec<TrackSectionOccupancy>>> {
-    auth.check_authorization(async |authorizer| {
-        authorizer
-            .authorize_infra(
-                &authz::Infra(infra_id),
-                authz::InfraPrivilege::CanRestrictedRead,
-            )
-            .await
-    })
-    .await?;
+    if let authentication::State::Authenticated { user, .. } = &authn_state {
+        v2::infra_privileges(*user, authz::Infra(infra_id))
+            .map(async |privileges| privileges.contains(&authz::InfraPrivilege::CanRestrictedRead))
+            .ok_or(AuthorizationError::Forbidden)
+            .run::<AuthorizationError, _>(&authn_state.authorizer(regulator.openfga()))
+            .await??;
+    }
 
     // Load infrastructure and paced trains
     let infra = Infra::retrieve_or_fail(db_pool.get().await?, infra_id, || {

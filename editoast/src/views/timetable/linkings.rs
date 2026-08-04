@@ -346,7 +346,8 @@ mod tests {
     use std::collections::HashSet;
 
     use authz::Role;
-    use editoast_models::prelude::{Create, Model};
+    use editoast_models::prelude::Create;
+    use editoast_models::prelude::Model;
     use reqwest::StatusCode;
     use serde_json::json;
 

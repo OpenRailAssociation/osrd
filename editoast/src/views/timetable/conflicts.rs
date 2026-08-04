@@ -1,3 +1,4 @@
+use authz::v2;
 use std::collections::HashMap;
 
 use axum::Extension;
@@ -17,8 +18,9 @@ use serde::Serialize;
 use utoipa::ToSchema;
 
 use crate::AppState;
+use crate::authentication;
 use crate::error::Result;
-use crate::views::AuthenticationExt;
+use crate::views::AuthorizationError;
 use crate::views::infra::InfraIdQueryParam;
 use crate::views::timetable::ElectricalProfileSetIdQueryParam;
 use crate::views::timetable::TimetableError;
@@ -302,9 +304,10 @@ pub(in crate::views) async fn conflicts(
         db_pool,
         valkey_client,
         core_client,
+        regulator,
         ..
     }): State<AppState>,
-    Extension(auth): AuthenticationExt,
+    Extension(authn_state): Extension<authentication::State>,
     Path(TimetableIdParam { id: timetable_id }): Path<TimetableIdParam>,
     Query(InfraIdQueryParam { infra_id }): Query<InfraIdQueryParam>,
     Query(ElectricalProfileSetIdQueryParam {
@@ -318,16 +321,13 @@ pub(in crate::views) async fn conflicts(
     })
     .await?;
 
-    // Check user privilege on infra
-    auth.check_authorization(async |authorizer| {
-        authorizer
-            .authorize_infra(
-                &authz::Infra(infra_id),
-                authz::InfraPrivilege::CanRestrictedRead,
-            )
-            .await
-    })
-    .await?;
+    if let authentication::State::Authenticated { user, .. } = &authn_state {
+        v2::infra_privileges(*user, authz::Infra(infra_id))
+            .map(async |privileges| privileges.contains(&authz::InfraPrivilege::CanRestrictedRead))
+            .ok_or(AuthorizationError::Forbidden)
+            .run::<AuthorizationError, _>(&authn_state.authorizer(regulator.openfga()))
+            .await??;
+    }
 
     let (timetable_type, trains) = retrieve_trains(conn.clone(), timetable_id).await?;
 

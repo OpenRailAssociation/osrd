@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use authz::InfraGrant;
 use authz::v2;
 use axum::Extension;
@@ -26,10 +24,9 @@ use crate::authorizers::SystemAuthorizer;
 use crate::error::Result;
 use crate::generated_data::InfraGeneratedData as _;
 use crate::infra_cache::InfraCache;
-use crate::views::AuthenticationExt;
+use crate::views::AuthorizationError;
 use crate::views::infra::InfraApiError;
 use crate::views::infra::InfraIdParam;
-use database::DbConnectionPoolV2;
 use editoast_models::Infra;
 use editoast_models::prelude::*;
 use schemas::primitives::ObjectType;
@@ -47,8 +44,10 @@ use schemas::primitives::ObjectType;
 )]
 pub(in crate::views) async fn get_railjson(
     Path(infra): Path<InfraIdParam>,
-    State(db_pool): State<Arc<DbConnectionPoolV2>>,
-    Extension(auth): AuthenticationExt,
+    State(AppState {
+        db_pool, regulator, ..
+    }): State<AppState>,
+    Extension(authn_state): Extension<authentication::State>,
 ) -> Result<impl IntoResponse> {
     let infra_id = infra.infra_id;
     let infra_meta = Infra::retrieve_or_fail(db_pool.get().await?, infra_id, || {
@@ -56,13 +55,13 @@ pub(in crate::views) async fn get_railjson(
     })
     .await?;
 
-    // Check user privilege on infra
-    auth.check_authorization(async |authorizer| {
-        authorizer
-            .authorize_infra(&authz::Infra(infra_id), authz::InfraPrivilege::CanRead)
-            .await
-    })
-    .await?;
+    if let authentication::State::Authenticated { user, .. } = &authn_state {
+        v2::infra_privileges(*user, authz::Infra(infra_id))
+            .map(async |privileges| privileges.contains(&authz::InfraPrivilege::CanRead))
+            .ok_or(AuthorizationError::Forbidden)
+            .run::<AuthorizationError, _>(&authn_state.authorizer(regulator.openfga()))
+            .await??;
+    }
 
     let futures: Vec<_> = ObjectType::iter()
         .map(|object_type| (object_type, db_pool.get()))

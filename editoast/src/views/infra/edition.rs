@@ -1,4 +1,5 @@
 use authz;
+use authz::v2;
 use axum::Extension;
 use axum::extract::Json;
 use axum::extract::Path;
@@ -29,6 +30,7 @@ use tracing::info;
 use uuid::Uuid;
 
 use crate::AppState;
+use crate::authentication;
 use crate::error::Result;
 use crate::generated_data;
 use crate::infra_cache::InfraCache;
@@ -38,7 +40,7 @@ use crate::infra_cache::operation::DeleteOperation;
 use crate::infra_cache::operation::Operation;
 use crate::infra_cache::operation::UpdateOperation;
 use crate::map;
-use crate::views::AuthenticationExt;
+use crate::views::AuthorizationError;
 use crate::views::infra::InfraApiError;
 use crate::views::infra::InfraIdParam;
 use database::DbConnection;
@@ -73,9 +75,10 @@ pub(in crate::views) async fn edit(
         infra_caches,
         valkey_client,
         config,
+        regulator,
         ..
     }): State<AppState>,
-    Extension(auth): AuthenticationExt,
+    Extension(authn_state): Extension<authentication::State>,
     Json(operations): Json<Vec<Operation>>,
 ) -> Result<Json<Vec<InfraObject>>> {
     // TODO: lock for update
@@ -84,13 +87,13 @@ pub(in crate::views) async fn edit(
     })
     .await?;
 
-    // Check user privilege on infra
-    auth.check_authorization(async |authorizer| {
-        authorizer
-            .authorize_infra(&authz::Infra(infra_id), authz::InfraPrivilege::CanWrite)
-            .await
-    })
-    .await?;
+    if let authentication::State::Authenticated { user, .. } = &authn_state {
+        v2::infra_privileges(*user, authz::Infra(infra_id))
+            .map(async |privileges| privileges.contains(&authz::InfraPrivilege::CanWrite))
+            .ok_or(AuthorizationError::Forbidden)
+            .run::<AuthorizationError, _>(&authn_state.authorizer(regulator.openfga()))
+            .await??;
+    }
 
     let mut infra_cache = InfraCache::get_or_load_mut(
         &mut db_pool.get().await?,
@@ -133,9 +136,10 @@ pub(in crate::views) async fn split_track_section(
         infra_caches,
         valkey_client,
         config,
+        regulator,
         ..
     }): State<AppState>,
-    Extension(auth): AuthenticationExt,
+    Extension(authn_state): Extension<authentication::State>,
     Json(payload): Json<TrackOffset>,
 ) -> Result<Json<Vec<String>>> {
     info!(
@@ -150,13 +154,13 @@ pub(in crate::views) async fn split_track_section(
     })
     .await?;
 
-    // Check user privilege on infra
-    auth.check_authorization(async |authorizer| {
-        authorizer
-            .authorize_infra(&authz::Infra(infra_id), authz::InfraPrivilege::CanWrite)
-            .await
-    })
-    .await?;
+    if let authentication::State::Authenticated { user, .. } = &authn_state {
+        v2::infra_privileges(*user, authz::Infra(infra_id))
+            .map(async |privileges| privileges.contains(&authz::InfraPrivilege::CanWrite))
+            .ok_or(AuthorizationError::Forbidden)
+            .run::<AuthorizationError, _>(&authn_state.authorizer(regulator.openfga()))
+            .await??;
+    }
 
     let mut infra_cache = InfraCache::get_or_load_mut(
         &mut db_pool.get().await?,

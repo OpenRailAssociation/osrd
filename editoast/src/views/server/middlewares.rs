@@ -243,8 +243,6 @@ pub(in crate::views) async fn authentication_validation_middleware(
     Ok(next.run(req).await)
 }
 
-pub type AuthenticationExt = axum::extract::Extension<Authentication>;
-
 async fn authenticate(
     headers: &axum::http::HeaderMap,
     regulator: Regulator,

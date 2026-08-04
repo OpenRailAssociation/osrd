@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
 use authz;
+use authz::v2;
 use axum::Extension;
 use axum::extract::Json;
 use axum::extract::Path;
@@ -10,9 +11,10 @@ use serde::Deserialize;
 use thiserror::Error;
 
 use crate::AppState;
+use crate::authentication;
 use crate::error::Result;
 use crate::infra_cache::InfraCache;
-use crate::views::AuthenticationExt;
+use crate::views::AuthorizationError;
 use crate::views::infra::InfraApiError;
 use editoast_models::Infra;
 use editoast_models::prelude::*;
@@ -67,9 +69,10 @@ pub(in crate::views) async fn attached(
         db_pool,
         valkey_client,
         config,
+        regulator,
         ..
     }): State<AppState>,
-    Extension(auth): AuthenticationExt,
+    Extension(authn_state): Extension<authentication::State>,
 ) -> Result<Json<HashMap<ObjectType, Vec<String>>>> {
     // Check that infra exists
     let mut conn = db_pool.get().await?;
@@ -79,16 +82,13 @@ pub(in crate::views) async fn attached(
     })
     .await?;
 
-    // Check user privilege on infra
-    auth.check_authorization(async |authorizer| {
-        authorizer
-            .authorize_infra(
-                &authz::Infra(infra_id),
-                authz::InfraPrivilege::CanRestrictedRead,
-            )
-            .await
-    })
-    .await?;
+    if let authentication::State::Authenticated { user, .. } = &authn_state {
+        v2::infra_privileges(*user, authz::Infra(infra_id))
+            .map(async |privileges| privileges.contains(&authz::InfraPrivilege::CanRestrictedRead))
+            .ok_or(AuthorizationError::Forbidden)
+            .run::<AuthorizationError, _>(&authn_state.authorizer(regulator.openfga()))
+            .await??;
+    }
 
     // Check track existence
     let infra_cache = InfraCache::get_or_load(

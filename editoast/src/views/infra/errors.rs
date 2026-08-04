@@ -1,7 +1,7 @@
 use std::str::FromStr;
-use std::sync::Arc;
 
 use authz;
+use authz::v2;
 use axum::Extension;
 use axum::extract::Json;
 use axum::extract::Path;
@@ -13,16 +13,17 @@ use serde::Deserialize;
 use serde::Serialize;
 use thiserror::Error;
 
+use crate::AppState;
+use crate::authentication;
 use crate::error::Result;
 use crate::generated_data::InfraErrorLevel;
 use crate::generated_data::InfraGeneratedData as _;
 use crate::generated_data::infra_error::InfraError;
 use crate::generated_data::infra_error::InfraErrorTypeLabel;
-use crate::views::AuthenticationExt;
+use crate::views::AuthorizationError;
 use crate::views::infra::InfraIdParam;
 use crate::views::pagination::PaginationQueryParams;
 use crate::views::pagination::PaginationStats;
-use database::DbConnectionPoolV2;
 use editoast_models::Infra;
 use editoast_models::prelude::*;
 
@@ -69,7 +70,9 @@ pub(in crate::views) struct InfraErrorResponse {
      ),
  )]
 pub(in crate::views) async fn list_errors(
-    State(db_pool): State<Arc<DbConnectionPoolV2>>,
+    State(AppState {
+        db_pool, regulator, ..
+    }): State<AppState>,
     Path(InfraIdParam { infra_id }): Path<InfraIdParam>,
     Query(PaginationQueryParams { page, page_size }): Query<PaginationQueryParams<100>>,
     Query(ErrorListQueryParams {
@@ -77,7 +80,7 @@ pub(in crate::views) async fn list_errors(
         error_type,
         object_id,
     }): Query<ErrorListQueryParams>,
-    Extension(auth): AuthenticationExt,
+    Extension(authn_state): Extension<authentication::State>,
 ) -> Result<Json<ErrorListResponse>> {
     let error_type = match error_type.map(|et| InfraErrorTypeLabel::from_str(&et).ok()) {
         Some(None) => return Err(ListErrorsErrors::WrongErrorTypeProvided.into()),
@@ -91,16 +94,13 @@ pub(in crate::views) async fn list_errors(
     })
     .await?;
 
-    // Check user privilege on infra
-    auth.check_authorization(async |authorizer| {
-        authorizer
-            .authorize_infra(
-                &authz::Infra(infra_id),
-                authz::InfraPrivilege::CanRestrictedRead,
-            )
-            .await
-    })
-    .await?;
+    if let authentication::State::Authenticated { user, .. } = &authn_state {
+        v2::infra_privileges(*user, authz::Infra(infra_id))
+            .map(async |privileges| privileges.contains(&authz::InfraPrivilege::CanRestrictedRead))
+            .ok_or(AuthorizationError::Forbidden)
+            .run::<AuthorizationError, _>(&authn_state.authorizer(regulator.openfga()))
+            .await??;
+    }
 
     let (results, total_count) = infra
         .get_paginated_errors(&mut conn, level, error_type, object_id, page, page_size)
