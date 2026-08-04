@@ -1,6 +1,7 @@
 import dayjs from 'dayjs';
 import { omit } from 'lodash';
 
+import { generateBareOccurrences } from 'applications/operationalStudies/helpers/generateBareOccurrences';
 import type { RoundTripsFromJson } from 'applications/operationalStudies/types';
 import type {
   TrainSchedule,
@@ -13,7 +14,7 @@ import type {
 } from 'common/api/osrdEditoastApi';
 import isMainCategory from 'modules/rollingStock/helpers/category';
 import type { SimulationSummary, TrainScheduleWithDetails } from 'modules/trainSchedule/types';
-import type { Duration } from 'utils/duration';
+import { Duration } from 'utils/duration';
 
 import { specialCodeDictionary, TRAIN_MAIN_CATEGORY_CLASS } from './consts';
 
@@ -243,3 +244,43 @@ export const sortTrainScheduleSets = (
   if (name1 > name2) return 1;
   return 0;
 };
+
+/**
+ * Compute the latest midnight that happen before the last start time of a set of train schedules,
+ * including their occurrences and exceptions.
+ */
+export function computeLatestMidnight(trainSchedules: TrainScheduleResponse[], now: Date): Date {
+  if (trainSchedules.length === 0) {
+    const midnight = new Date(now);
+    midnight.setHours(0, 0, 0, 0);
+    return midnight;
+  }
+
+  const latestStartTime = trainSchedules.map(
+    (trainSchedule: TrainScheduleResponse): Date | undefined => {
+      if (!trainSchedule.paced) return new Date(trainSchedule.start_time);
+
+      const occurrences = generateBareOccurrences({
+        id: trainSchedule.id,
+        startTime: new Date(trainSchedule.start_time),
+        paced: {
+          timeWindow: Duration.parse(trainSchedule.paced.time_window),
+          interval: Duration.parse(trainSchedule.paced.interval),
+          exceptions: trainSchedule.paced.exceptions,
+        },
+      });
+
+      return occurrences
+        .map(({ startTime }) => startTime)
+        .toSorted((a, b) => +b - +a)
+        .at(0);
+    }
+  );
+
+  const midnight = new Date(
+    latestStartTime.toSorted((a, b) => (a && b ? +b - +a : 0)).at(0) ?? now
+  );
+  midnight.setHours(0, 0, 0, 0);
+
+  return midnight;
+}

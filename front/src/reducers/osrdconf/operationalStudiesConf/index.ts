@@ -99,11 +99,15 @@ export const operationalStudiesConfSlice = createSlice({
       }
     },
     // Clears stale data left by selectTrainToEdit/updateItineraryForm so a new train form starts empty
-    resetItineraryForm(state: Draft<OperationalStudiesConfState>) {
+    resetItineraryForm(
+      state: Draft<OperationalStudiesConfState>,
+      action: PayloadAction<{ startTime: Date | undefined }>
+    ) {
       return {
         ...operationalStudiesInitialConf,
         mapSettings: state.mapSettings,
         infraID: state.infraID,
+        startTime: action.payload.startTime ?? operationalStudiesInitialConf.startTime,
       };
     },
     // Use this action to transform an op to via from times and stop table or

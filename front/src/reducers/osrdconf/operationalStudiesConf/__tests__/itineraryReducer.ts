@@ -47,12 +47,13 @@ const testItineraryReducer = () => {
   it('should handle resetItineraryForm', () => {
     const pathSteps = testDataBuilder.buildPathSteps();
     const store = createStore({ pathSteps });
-    store.dispatch(resetItineraryForm());
+    store.dispatch(resetItineraryForm({ startTime: new Date(2026, 7, 4, 0, 0, 0) }));
     const state = getState();
     expect(state.category).toBe(operationalStudiesInitialConf.category);
     expect(state.rollingStockName).toBe(operationalStudiesInitialConf.rollingStockName);
     expect(state.name).toBe(operationalStudiesInitialConf.name);
     expect(state.pathSteps).toEqual(operationalStudiesInitialConf.pathSteps);
+    expect(state.startTime).toEqual(new Date(2026, 7, 4, 0, 0, 0));
   });
 };
 

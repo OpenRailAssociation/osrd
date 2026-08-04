@@ -32,7 +32,11 @@ import RoundTripsModal from '../RoundTrips/RoundTripsModal';
 import FilterPanel from './FilterPanel';
 import SelectionToolBar from './TimetableSelectionToolbar';
 import type { TimetableFilters, TimetableMode } from './types';
-import { exportTrainSchedules, timetableHasInvalidTrainSchedule } from './utils';
+import {
+  computeLatestMidnight,
+  exportTrainSchedules,
+  timetableHasInvalidTrainSchedule,
+} from './utils';
 
 type TimetableToolbarProps = {
   timetableFilters: TimetableFilters;
@@ -70,7 +74,7 @@ const TimetableToolbar = ({
   const { t } = useTranslation(['operational-studies', 'translation'], { keyPrefix: 'main' });
   const dispatch = useAppDispatch();
 
-  const { infraId, timetableId } = useScenarioContext();
+  const { infraId, timetableId, scenario } = useScenarioContext();
   const { trainSchedules } = useTimetableContext();
 
   const { data: trainScheduleRoundTripsData } =
@@ -208,7 +212,14 @@ const TimetableToolbar = ({
             data-testid="scenarios-add-train-schedule-button"
             title={t('timetable.addTrainSchedule')}
             onClick={() => {
-              dispatch(resetItineraryForm());
+              dispatch(
+                resetItineraryForm({
+                  startTime:
+                    scenario.timetable_type === 'CALENDAR'
+                      ? computeLatestMidnight(trainSchedules, new Date())
+                      : undefined,
+                })
+              );
               setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.add);
             }}
             type="button"
