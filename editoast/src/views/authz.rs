@@ -863,6 +863,9 @@ pub(in crate::views) async fn update_grants(
                     resource_id: *rolling_stock,
                 }
                 .into()),
+                Err(Check::ProjectExists(project)) => Err(AuthzError::UnknownResource {
+                    resource_id: project.0,
+                }),
                 Err(Check::SubjectExists(subject)) => Err(AuthzError::UnknownSubject {
                     subject_id: subject.id(),
                 }
