@@ -2,7 +2,6 @@ use anyhow::anyhow;
 use anyhow::bail;
 use authz;
 use authz::v2::Authorizer;
-use authz::v2::Check;
 use clap::Args;
 use clap::Subcommand;
 use database::DbConnectionPoolV2;
@@ -16,7 +15,6 @@ use std::collections::HashSet;
 use std::sync::Arc;
 
 use crate::authorizers::SystemAuthorizer;
-use crate::authorizers::impossible;
 
 use super::openfga_config::OpenfgaConfig;
 
@@ -84,10 +82,7 @@ pub async fn list_user(
     pool: Arc<DbConnectionPoolV2>,
 ) -> anyhow::Result<()> {
     let openfga = openfga_config.into_client().await?;
-    let system = SystemAuthorizer {
-        openfga: &openfga,
-        conn: pool.get().await?,
-    };
+    let system = SystemAuthorizer::new_infallible(&openfga);
 
     let (users, groups) = tokio::join!(
         async {
@@ -112,13 +107,8 @@ pub async fn list_user(
         )
         .authorize(&system)
         .await?;
-        let group_members = match group_member_access.access().await? {
-            Ok(users) => users.into_iter().flatten().collect::<HashSet<_>>(),
-            Err(Check::SubjectExists(authz::Subject::Group(_))) => {
-                unreachable!("groups were listed from the database")
-            }
-            Err(rejection) => impossible!(rejection),
-        };
+        let Ok(group_members) = group_member_access.access().await?;
+        let group_members = group_members.into_iter().flatten().collect::<HashSet<_>>();
         users?
             .into_iter()
             .filter(|user| !group_members.contains(&authz::User(user.user.id)))
@@ -185,25 +175,17 @@ pub async fn user_info(
             .id
     };
     let openfga = openfga_config.into_client().await?;
-    let system = SystemAuthorizer {
-        openfga: &openfga,
-        conn: pool.get().await?,
-    };
+    let system = SystemAuthorizer::new_infallible(&openfga);
     let Some(user) = editoast_models::User::retrieve(pool.get().await?, uid).await? else {
         tracing::error!(user.id = uid, "User not found");
         return Ok(());
     };
     let identities = user.get_identities(pool.get().await?).await?;
-    let groups = match system
+    let Ok(groups) = system
         .authorize(authz::v2::user_groups(authz::User(uid)))
         .await?
         .access()
-        .await?
-    {
-        Ok(groups) => groups,
-        Err(Check::SubjectExists(authz::Subject::User(_))) => unreachable!("tested above"),
-        Err(check) => impossible!(check),
-    };
+        .await?;
     let conn = pool.get().await?;
 
     println!("id      : {uid}");

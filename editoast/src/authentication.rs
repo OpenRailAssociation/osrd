@@ -1,4 +1,5 @@
 use authz::Role;
+use authz::v2::Check;
 
 use crate::authorizers::SystemAuthorizer;
 use crate::authorizers::UserAuthorizer;
@@ -101,16 +102,12 @@ impl State {
     pub fn authorizer<'a>(
         &self,
         openfga: &'a fga::Client,
-        conn: database::DbConnection,
-    ) -> itertools::Either<UserAuthorizer<'a>, SystemAuthorizer<'a>> {
+    ) -> itertools::Either<UserAuthorizer<'a>, SystemAuthorizer<'a, Check>> {
         match self {
             State::Authenticated { user, roles } => {
-                itertools::Either::Left(UserAuthorizer::new(*user, roles.clone(), openfga, conn))
+                itertools::Either::Left(UserAuthorizer::new(*user, roles.clone(), openfga))
             }
-            State::Skip => itertools::Either::Right(SystemAuthorizer {
-                openfga,
-                conn: conn.clone(),
-            }),
+            State::Skip => itertools::Either::Right(SystemAuthorizer::new(openfga)),
         }
     }
 

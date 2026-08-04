@@ -17,16 +17,15 @@ use std::collections::HashSet;
 use futures::FutureExt;
 use futures::future::BoxFuture;
 
-use crate::Group;
 use crate::Infra;
 use crate::InfraGrant;
 use crate::InfraPrivilege;
+use crate::Project;
 use crate::Role;
 use crate::RollingStock;
 use crate::RollingStockGrant;
 use crate::Subject;
 use crate::User;
-use crate::model::Project;
 use crate::model::RollingStockPrivilege;
 
 pub type OpenFgaError = fga::client::Error;
@@ -98,25 +97,6 @@ pub enum Check {
     SubjectEffectiveRollingStockGrantIsNot(RollingStockGrant, Subject, RollingStock),
     /// The subject must not be the last direct owner of the rolling stock
     IsNotLastRollingStockOwner(Subject, RollingStock),
-
-    /// The subject must exist in PostgreSQL
-    SubjectExists(Subject),
-    /// The infra must exist in PostgreSQL
-    InfraExists(Infra),
-    /// The rolling stock must exist in PostgreSQL
-    RollingStockExists(RollingStock),
-    /// The project must exist in PostgreSQL
-    ProjectExists(Project),
-}
-
-impl Check {
-    pub fn user(user: User) -> Self {
-        Check::SubjectExists(Subject::User(user))
-    }
-
-    pub fn group(group: Group) -> Self {
-        Check::SubjectExists(Subject::Group(group))
-    }
 }
 
 /// The result of authorizing a [Protected] operation via [Authorizer::authorize]

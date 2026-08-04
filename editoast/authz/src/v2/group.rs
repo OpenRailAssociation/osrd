@@ -3,7 +3,6 @@ use std::collections::HashSet;
 use fga::client::UserList;
 use fga::model::Relation as _;
 use futures::FutureExt as _;
-use itertools::Itertools as _;
 
 use crate::Group;
 use crate::Role;
@@ -29,7 +28,6 @@ pub fn group_members(group: Group) -> Protected<Vec<User>> {
         }
         .boxed()
     })
-    .with_check(Check::group(group))
 }
 
 pub fn user_groups(user: User) -> Protected<Vec<Group>> {
@@ -47,15 +45,12 @@ pub fn user_groups(user: User) -> Protected<Vec<Group>> {
         }
         .boxed()
     })
-    .with_check(Check::user(user))
 }
 
 /// Adds some members to a group
 ///
 /// Idempotent but not atomic due to the lack of transactions in OpenFGA.
 pub fn add_members(group: Group, members: HashSet<User>) -> Protected<()> {
-    let user_exists_checks = members.iter().map(|user| Check::user(*user)).collect_vec(); // members is moved in Protected
-
     group_members(group)
         .map(move |openfga, existing_members| {
             async move {
@@ -71,7 +66,6 @@ pub fn add_members(group: Group, members: HashSet<User>) -> Protected<()> {
             }
             .boxed()
         })
-        .with_check_iter(user_exists_checks)
         .with_check(Check::HasRole(Actor::Issuer, Role::Admin))
 }
 
@@ -79,8 +73,6 @@ pub fn add_members(group: Group, members: HashSet<User>) -> Protected<()> {
 ///
 /// Idempotent but not atomic due to the lack of transactions in OpenFGA.
 pub fn remove_members(group: Group, members: HashSet<User>) -> Protected<()> {
-    let user_exists_checks = members.iter().map(|user| Check::user(*user)).collect_vec(); // members is moved in Protected
-
     group_members(group)
         .map(move |openfga, existing_members| {
             async move {
@@ -96,7 +88,6 @@ pub fn remove_members(group: Group, members: HashSet<User>) -> Protected<()> {
             }
             .boxed()
         })
-        .with_check_iter(user_exists_checks)
         .with_check(Check::HasRole(Actor::Issuer, Role::Admin))
 }
 
@@ -104,7 +95,6 @@ pub fn remove_members(group: Group, members: HashSet<User>) -> Protected<()> {
 mod tests {
     use rstest::rstest;
 
-    use crate::Subject;
     use crate::v2::TestClientExt as _;
 
     use super::*;
@@ -233,31 +223,15 @@ mod tests {
     }
 
     #[rstest]
-    #[case::group_members(
-        group_members(Group(1)).checks,
-        &[Check::SubjectExists(Subject::group(1))]
-    )]
-    #[case::user_groups(
-        user_groups(User(1)).checks,
-        &[Check::SubjectExists(Subject::user(1))]
-    )]
+    #[case::group_members(group_members(Group(1)).checks, &[])]
+    #[case::user_groups(user_groups(User(1)).checks, &[])]
     #[case::add_members(
         add_members(Group(1), HashSet::from([User(1), User(2)])).checks,
-        &[
-            Check::SubjectExists(Subject::group(1)),
-            Check::SubjectExists(Subject::user(1)),
-            Check::SubjectExists(Subject::user(2)),
-            Check::HasRole(Actor::Issuer, Role::Admin),
-        ]
+        &[Check::HasRole(Actor::Issuer, Role::Admin)]
     )]
     #[case::remove_members(
         remove_members(Group(1), HashSet::from([User(1), User(2)])).checks,
-        &[
-            Check::SubjectExists(Subject::group(1)),
-            Check::SubjectExists(Subject::user(1)),
-            Check::SubjectExists(Subject::user(2)),
-            Check::HasRole(Actor::Issuer, Role::Admin),
-        ]
+        &[Check::HasRole(Actor::Issuer, Role::Admin)]
     )]
     fn protected_contains_expected_checks(
         #[case] protected_checks: HashSet<Check>,

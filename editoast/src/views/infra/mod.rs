@@ -13,7 +13,6 @@ use authz::InfraGrant;
 use authz::InfraPrivilege;
 use authz::v2;
 use authz::v2::Authorizer as _;
-use authz::v2::Check;
 use axum::Extension;
 use axum::extract::Json;
 use axum::extract::Path;
@@ -45,7 +44,6 @@ use crate::Arc;
 use crate::authentication;
 use crate::authorizers::SystemAuthorizer;
 use crate::authorizers::UserAuthorizer;
-use crate::authorizers::impossible;
 use crate::error::Result;
 use crate::generated_data::InfraGeneratedData as _;
 use crate::generated_data::operational_point::OperationalPointLayer;
@@ -198,17 +196,13 @@ pub(in crate::views) async fn list(
     let settings = match authn {
         crate::authentication::State::Skip => default_settings,
         crate::authentication::State::Authenticated { user, roles } => {
-            let authorizer =
-                UserAuthorizer::new(user, roles.clone(), regulator.openfga(), conn.clone());
+            let authorizer = UserAuthorizer::new(user, roles.clone(), regulator.openfga());
             let authorized_infras = authorizer
                 .authorize(authz::v2::infra_list(user, InfraPrivilege::CanRead))
                 .await?
                 .access()
                 .await?
-                .map_err(|err| match err {
-                    Check::SubjectExists(_) => unreachable!("checked above"),
-                    _ => AuthorizationError::Forbidden,
-                })?;
+                .map_err(|_| AuthorizationError::Forbidden)?;
             match authorized_infras {
                 authz::v2::ResourcesList::All => default_settings,
                 authz::v2::ResourcesList::Privileged(authorized_infras) => {
@@ -307,34 +301,15 @@ pub(in crate::views) async fn create(
     let infra = infra.create(&mut conn).await?;
 
     if let authentication::State::Authenticated { user, .. } = &authn_state {
-        match v2::infra_set_grant(
+        let Ok(()) = v2::infra_set_grant(
             authz::Subject::User(*user),
             authz::Infra(infra.id),
             InfraGrant::Owner,
         )
-        .authorize(&SystemAuthorizer {
-            openfga: regulator.openfga(),
-            conn: conn.clone(),
-        })
+        .authorize(&SystemAuthorizer::new_infallible(regulator.openfga()))
         .await?
         .access()
-        .await?
-        {
-            Ok(()) => {}
-            Err(v2::Check::SubjectExists(subject)) => {
-                unreachable!("authenticated user should exist: {subject:?}")
-            }
-            Err(v2::Check::InfraExists(infra)) => {
-                unreachable!("infra was just created: {infra:?}")
-            }
-            Err(
-                check @ (v2::Check::HasInfraPrivilege(..)
-                | v2::Check::CanAlterSubjectInfraGrant(..)),
-            ) => {
-                unreachable!("SystemAuthorizer should not reject infra grant checks: {check:?}")
-            }
-            Err(check) => impossible!(check),
-        }
+        .await?;
     }
 
     Ok((StatusCode::CREATED, Json(infra)))
@@ -385,34 +360,15 @@ pub(in crate::views) async fn clone(
     let cloned_infra = infra.clone(&mut conn, name).await?;
 
     if let authentication::State::Authenticated { user, .. } = &authn_state {
-        match v2::infra_set_grant(
+        let Ok(()) = v2::infra_set_grant(
             authz::Subject::User(*user),
             authz::Infra(cloned_infra.id),
             InfraGrant::Owner,
         )
-        .authorize(&SystemAuthorizer {
-            openfga: regulator.openfga(),
-            conn: conn.clone(),
-        })
+        .authorize(&SystemAuthorizer::new_infallible(regulator.openfga()))
         .await?
         .access()
-        .await?
-        {
-            Ok(()) => {}
-            Err(v2::Check::SubjectExists(subject)) => {
-                unreachable!("authenticated user should exist: {subject:?}")
-            }
-            Err(v2::Check::InfraExists(infra)) => {
-                unreachable!("infra was just cloned: {infra:?}")
-            }
-            Err(
-                check @ (v2::Check::HasInfraPrivilege(..)
-                | v2::Check::CanAlterSubjectInfraGrant(..)),
-            ) => {
-                unreachable!("SystemAuthorizer should not reject infra grant checks: {check:?}")
-            }
-            Err(check) => impossible!(check),
-        }
+        .await?;
     }
 
     Ok(Json(cloned_infra.id))

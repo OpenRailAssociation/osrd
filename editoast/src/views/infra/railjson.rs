@@ -23,7 +23,6 @@ use utoipa::ToSchema;
 use crate::AppState;
 use crate::authentication;
 use crate::authorizers::SystemAuthorizer;
-use crate::authorizers::impossible;
 use crate::error::Result;
 use crate::generated_data::InfraGeneratedData as _;
 use crate::infra_cache::InfraCache;
@@ -207,34 +206,15 @@ pub(in crate::views) async fn post_railjson(
         .map_err(RailJsonError::from)?;
 
     if let authentication::State::Authenticated { user, .. } = &authn_state {
-        match v2::infra_set_grant(
+        let Ok(()) = v2::infra_set_grant(
             authz::Subject::user(*user),
             authz::Infra(infra.id),
             InfraGrant::Owner,
         )
-        .authorize(&SystemAuthorizer {
-            openfga: regulator.openfga(),
-            conn: conn.clone(),
-        })
+        .authorize(&SystemAuthorizer::new_infallible(regulator.openfga()))
         .await?
         .access()
-        .await?
-        {
-            Ok(()) => {}
-            Err(v2::Check::SubjectExists(subject)) => {
-                unreachable!("authenticated user should exist: {subject:?}")
-            }
-            Err(v2::Check::InfraExists(infra)) => {
-                unreachable!("infra was just imported: {infra:?}")
-            }
-            Err(
-                check @ (v2::Check::HasInfraPrivilege(..)
-                | v2::Check::CanAlterSubjectInfraGrant(..)),
-            ) => {
-                unreachable!("SystemAuthorizer should not reject infra grant checks: {check:?}")
-            }
-            Err(check) => impossible!(check),
-        }
+        .await?;
     }
 
     infra

@@ -21,7 +21,6 @@ pub fn subject_roles(subject: Subject) -> Protected<Vec<Role>> {
         }
         .boxed()
     })
-    .with_check(Check::SubjectExists(subject))
 }
 
 /// Gives the subject the specified roles
@@ -307,23 +306,14 @@ mod tests {
     }
 
     #[rstest]
-    #[case::subject_roles(
-        subject_roles(Subject::user(1)).checks,
-        &[Check::SubjectExists(Subject::user(1))]
-    )]
+    #[case::subject_roles(subject_roles(Subject::user(1)).checks, &[])]
     #[case::add_roles(
         add_roles(Subject::user(1), HashSet::from([Role::Admin, Role::Stdcm])).checks,
-        &[
-            Check::SubjectExists(Subject::user(1)),
-            Check::HasRole(Actor::Issuer, Role::Admin)
-        ]
+        &[Check::HasRole(Actor::Issuer, Role::Admin)]
     )]
     #[case::remove_roles(
         remove_roles(Subject::user(1), HashSet::from([Role::Admin, Role::Stdcm])).checks,
-        &[
-            Check::SubjectExists(Subject::user(1)),
-            Check::HasRole(Actor::Issuer, Role::Admin)
-        ]
+        &[Check::HasRole(Actor::Issuer, Role::Admin)]
     )]
     fn protected_contains_expected_checks(
         #[case] protected_checks: HashSet<Check>,

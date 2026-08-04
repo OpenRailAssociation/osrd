@@ -9,7 +9,6 @@ use authz::Role;
 use authz::identity::GroupInfo;
 use authz::identity::UserInfo;
 use authz::v2::Authorizer;
-use authz::v2::Check;
 use clap::Args;
 use clap::Subcommand;
 use database::DbConnection;
@@ -21,7 +20,6 @@ use strum::IntoEnumIterator;
 use tracing::info;
 
 use crate::authorizers::SystemAuthorizer;
-use crate::authorizers::impossible;
 
 use super::openfga_config::OpenfgaConfig;
 
@@ -143,19 +141,11 @@ pub async fn list_subject_roles(
     pool: Arc<DbConnectionPoolV2>,
     openfga_config: OpenfgaConfig,
 ) -> anyhow::Result<()> {
-    let system = SystemAuthorizer {
-        openfga: &openfga_config.into_client().await?,
-        conn: pool.get().await?,
-    };
+    let openfga = openfga_config.into_client().await?;
+    let system = SystemAuthorizer::new_infallible(&openfga);
     let subject = parse_and_fetch_subject(&subject, pool.get().await?).await?;
     let subject_roles = authz::v2::subject_roles(subject.clone().into_authz());
-    let roles = match system.authorize(subject_roles).await?.access().await? {
-        Ok(roles) => roles,
-        Err(Check::SubjectExists(_)) => {
-            unreachable!("checked by parse_and_fetch_subject")
-        }
-        Err(rejection) => impossible!(rejection),
-    };
+    let Ok(roles) = system.authorize(subject_roles).await?.access().await?;
 
     if roles.is_empty() {
         info!("{subject} has no roles assigned");
@@ -184,10 +174,7 @@ pub async fn add_roles(
     openfga_config: OpenfgaConfig,
 ) -> anyhow::Result<()> {
     let openfga = &openfga_config.into_client().await?;
-    let system = SystemAuthorizer {
-        openfga,
-        conn: pool.get().await?,
-    };
+    let system = SystemAuthorizer::new_infallible(openfga);
 
     let roles = roles
         .iter()
@@ -204,13 +191,8 @@ pub async fn add_roles(
     );
     let subject = parse_and_fetch_subject(&subject, pool.get().await?).await?;
     let add_roles = authz::v2::add_roles(subject.into_authz(), roles);
-    match system.authorize(add_roles).await?.access().await? {
-        Ok(()) => Ok(()),
-        Err(Check::SubjectExists(_)) => {
-            unreachable!("checked by parse_and_fetch_subject")
-        }
-        Err(check) => impossible!(check),
-    }
+    let Ok(()) = system.authorize(add_roles).await?.access().await?;
+    Ok(())
 }
 
 pub async fn remove_roles(
@@ -219,10 +201,7 @@ pub async fn remove_roles(
     openfga_config: OpenfgaConfig,
 ) -> anyhow::Result<()> {
     let openfga = &openfga_config.into_client().await?;
-    let system = SystemAuthorizer {
-        openfga,
-        conn: pool.get().await?,
-    };
+    let system = SystemAuthorizer::new_infallible(openfga);
 
     let roles = roles
         .iter()
@@ -239,11 +218,6 @@ pub async fn remove_roles(
     );
     let subject = parse_and_fetch_subject(&subject, pool.get().await?).await?;
     let remove_roles = authz::v2::remove_roles(subject.into_authz(), roles);
-    match system.authorize(remove_roles).await?.access().await? {
-        Ok(()) => Ok(()),
-        Err(Check::SubjectExists(_)) => {
-            unreachable!("checked by parse_and_fetch_subject")
-        }
-        Err(check) => impossible!(check),
-    }
+    let Ok(()) = system.authorize(remove_roles).await?.access().await?;
+    Ok(())
 }

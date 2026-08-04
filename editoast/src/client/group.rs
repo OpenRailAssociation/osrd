@@ -3,7 +3,6 @@ use anyhow::bail;
 use authz;
 use authz::Group;
 use authz::v2::Authorizer;
-use authz::v2::Check;
 use clap::Args;
 use clap::Subcommand;
 use database::DbConnectionPoolV2;
@@ -13,7 +12,6 @@ use std::collections::HashSet;
 use std::sync::Arc;
 
 use crate::authorizers::SystemAuthorizer;
-use crate::authorizers::impossible;
 
 use super::openfga_config::OpenfgaConfig;
 
@@ -97,10 +95,7 @@ pub async fn group_info(
 ) -> anyhow::Result<()> {
     let openfga = openfga_config.into_client().await?;
     let conn = pool.get().await?;
-    let system = SystemAuthorizer {
-        openfga: &openfga,
-        conn: conn.clone(),
-    };
+    let system = SystemAuthorizer::new_infallible(&openfga);
     let Some(editoast_models::Group {
         id: group_id,
         name: _,
@@ -113,16 +108,11 @@ pub async fn group_info(
         tracing::error!(group.id = group_id, "No such group");
         return Ok(());
     };
-    let user_ids = match system
+    let Ok(user_ids) = system
         .authorize(authz::v2::group_members(authz::Group(group_id)))
         .await?
         .access()
-        .await?
-    {
-        Ok(user_ids) => user_ids,
-        Err(Check::SubjectExists(authz::Subject::Group(_))) => unreachable!("tested above"),
-        Err(check) => impossible!(check),
-    };
+        .await?;
 
     println!("id     : {group_id}");
     println!("name   : {}", group.name);
@@ -149,10 +139,7 @@ pub async fn exclude_group(
     }
 
     let regulator = openfga_config.into_regulator(pool.clone()).await?;
-    let system = SystemAuthorizer {
-        openfga: regulator.openfga(),
-        conn: pool.get().await?,
-    };
+    let system = SystemAuthorizer::new_infallible(regulator.openfga());
 
     let group_id = editoast_models::Group::retrieve(pool.get().await?, group_name.clone())
         .await?
@@ -169,18 +156,15 @@ pub async fn exclude_group(
                 .ok_or_else(|| anyhow!("No user with identity '{user}' found"))?
                 .id
         };
+        editoast_models::User::retrieve(pool.get().await?, uid)
+            .await?
+            .ok_or_else(|| anyhow!("No such user {uid}"))?;
         authz_users.insert(authz::User(uid));
     }
 
     let remove_member = authz::v2::remove_members(authz::Group(group_id), authz_users);
-    match system.authorize(remove_member).await?.access().await? {
-        Ok(()) => Ok(()),
-        Err(Check::SubjectExists(authz::Subject::Group(_))) => unreachable!("tested above"),
-        Err(Check::SubjectExists(authz::Subject::User(user))) => {
-            bail!("No such user {user}")
-        }
-        Err(check) => impossible!(check),
-    }
+    let Ok(()) = system.authorize(remove_member).await?.access().await?;
+    Ok(())
 }
 
 /// Include users in a group
@@ -194,10 +178,7 @@ pub async fn include_group(
     }
 
     let regulator = openfga_config.into_regulator(pool.clone()).await?;
-    let system = SystemAuthorizer {
-        openfga: regulator.openfga(),
-        conn: pool.get().await?,
-    };
+    let system = SystemAuthorizer::new_infallible(regulator.openfga());
 
     let group_id = editoast_models::Group::retrieve(pool.get().await?, group_name.clone())
         .await?
@@ -214,18 +195,15 @@ pub async fn include_group(
                 .ok_or_else(|| anyhow!("No user with identity '{user}' found"))?
                 .id
         };
+        editoast_models::User::retrieve(pool.get().await?, uid)
+            .await?
+            .ok_or_else(|| anyhow!("No such user {uid}"))?;
         authz_users.insert(authz::User(uid));
     }
 
     let add_member = authz::v2::add_members(authz::Group(group_id), authz_users);
-    match system.authorize(add_member).await?.access().await? {
-        Ok(()) => Ok(()),
-        Err(Check::SubjectExists(authz::Subject::Group(_))) => unreachable!("tested above"),
-        Err(Check::SubjectExists(authz::Subject::User(user))) => {
-            bail!("No such user {user}")
-        }
-        Err(check) => impossible!(check),
-    }
+    let Ok(()) = system.authorize(add_member).await?.access().await?;
+    Ok(())
 }
 
 pub async fn delete_group(
@@ -235,10 +213,7 @@ pub async fn delete_group(
 ) -> anyhow::Result<()> {
     let regulator = openfga_config.into_regulator(pool.clone()).await?;
     let mut conn = pool.get().await?;
-    let system = SystemAuthorizer {
-        openfga: regulator.openfga(),
-        conn: conn.clone(),
-    };
+    let system = SystemAuthorizer::new_infallible(regulator.openfga());
     let group_id = editoast_models::Group::retrieve(pool.get().await?, name.clone())
         .await?
         .ok_or_else(|| anyhow!("group '{name}' could not be deleted (not found)"))?
@@ -246,23 +221,14 @@ pub async fn delete_group(
     let group = Group(group_id);
 
     // Delete the relationships between the group to be deleted and its members
-    let users_in_group = match system
+    let Ok(users_in_group) = system
         .authorize(authz::v2::group_members(group))
         .await?
         .access()
-        .await?
-    {
-        Ok(user_ids) => HashSet::from_iter(user_ids),
-        Err(Check::SubjectExists(authz::Subject::Group(_))) => unreachable!("tested above"),
-        Err(check) => impossible!(check),
-    };
+        .await?;
+    let users_in_group = HashSet::from_iter(users_in_group);
     let remove_member = authz::v2::remove_members(group, users_in_group);
-    match system.authorize(remove_member).await?.access().await? {
-        Ok(()) => {}
-        Err(Check::SubjectExists(authz::Subject::Group(_))) => unreachable!("tested above"),
-        Err(Check::SubjectExists(authz::Subject::User(_))) => unreachable!("tested above"),
-        Err(check) => impossible!(check),
-    }
+    let Ok(()) = system.authorize(remove_member).await?.access().await?;
 
     let deleted = editoast_models::Group::delete_static(&mut conn, group_id).await?;
     if deleted {
