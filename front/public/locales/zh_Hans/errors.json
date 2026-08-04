@@ -1,4 +1,11 @@
 {
+  "401": "未认证用户",
+  "403": "拒绝访问",
+  "404": "未找到资源",
+  "500": "服务器错误",
+  "502": "服务器错误",
+  "503": "服务器错误",
+  "504": "服务器无响应。",
   "core": {
     "assert_error": "",
     "missing_last_stdcm_stop": ""
@@ -24,14 +31,18 @@
     "authorization": {
       "AuthError": "",
       "DbError": "",
+      "Forbidden": "拒绝访问",
       "ForbiddenImpersonation": "",
-      "ImpersonatedUserNotFound": ""
+      "ImpersonatedUserNotFound": "",
+      "Unauthenticated": "未认证的用户"
     },
     "authz": {
       "Authorizer": "",
       "Authz": "",
       "Database": "",
       "Driver": "",
+      "GrantsApiMisuse": "API使用错误",
+      "NoSuchUser": "未知用户",
       "UnknownIdentities": "",
       "UnknownResource": "",
       "UnknownResourceType": "",
@@ -56,6 +67,7 @@
       "ObjectNotFound": ""
     },
     "catalog_entry": {
+      "Database": "内部错误（数据库）",
       "NotFound": ""
     },
     "core": {
@@ -91,6 +103,7 @@
       "FileNotFound": ""
     },
     "infra": {
+      "Database": "内部错误",
       "NotFound": "",
       "edition": {
         "InfraIsLocked": "",
@@ -127,7 +140,8 @@
       "InfraNotFound": "",
       "LevelCrossingBatchNotFound": "",
       "TimetableNotFound": "",
-      "TrainBatchNotFound": ""
+      "TrainBatchNotFound": "",
+      "UnsupportedTimetableType": "不支持每小时的时间表。"
     },
     "macro_node": {
       "Database": "",
@@ -144,6 +158,7 @@
       "ModelError": ""
     },
     "operation": {
+      "EmptyId": "不允许使用空字符串id",
       "InvalidPatch": "",
       "ModifyId": "",
       "ObjectNotFound": ""
@@ -165,7 +180,8 @@
     "postgres": {
       "Host": "",
       "Password": "",
-      "Port": ""
+      "Port": "",
+      "Username": "无效的用户名"
     },
     "project": {
       "Database": "",
@@ -178,6 +194,7 @@
     },
     "rollingstocks": {
       "BasePowerClassEmpty": "",
+      "CannotCreateCompoundImage": "无法在合成的图像上复制分离的图像",
       "CannotReadImage": "",
       "Database": "",
       "IsLocked": "",
@@ -202,6 +219,7 @@
       "ArgMissing": "",
       "ArgTypeMismatch": "",
       "EmptyArray": "",
+      "IntegerConversion": "无法转换为i64",
       "InvalidColumnName": "",
       "InvalidFunctionIdentifier": "",
       "InvalidSyntax": "",
