@@ -30,6 +30,9 @@
         "description": "Parámetros de señal BAL para rutas específicas",
         "title": "Parámetros condicionales"
       },
+      "default_parameters": {
+        "description": ""
+      },
       "next_signaling_systems": {
         "description": "Lista de sistemas de señalización de entrada permitidos",
         "title": "Sistemas de señalamiento siguientes"
@@ -40,15 +43,21 @@
       "signaling_system": {
         "title": "Sistema de señalamiento"
       }
-    }
+    },
+    "title": ""
   },
   "BaprSystem": {
     "properties": {
       "conditional_parameters": {
+        "description": "",
         "title": "Parámetros condicionales"
       },
       "next_signaling_systems": {
+        "description": "",
         "title": "Sistemas de señalamiento siguientes"
+      },
+      "parameters": {
+        "description": ""
       },
       "settings": {
         "description": "Configuración de señales BAPR"
@@ -56,7 +65,8 @@
       "signaling_system": {
         "title": "Sistema de señalamiento"
       }
-    }
+    },
+    "title": ""
   },
   "BufferStop": {
     "properties": {
@@ -65,51 +75,85 @@
         "title": "Id."
       },
       "position": {
+        "description": "",
         "title": "Posición"
+      },
+      "track": {
+        "description": "",
+        "title": ""
       }
     },
     "title": "Topera"
   },
+  "BufferStopExtensions": {
+    "title": ""
+  },
   "BufferStopReference": {
     "properties": {
       "id": {
+        "description": "",
         "title": "Id."
       },
       "type": {
         "title": "Tipo"
       }
-    }
+    },
+    "title": ""
+  },
+  "BufferStopSncfExtension": {
+    "properties": {
+      "kp": {
+        "description": "",
+        "title": ""
+      }
+    },
+    "title": ""
   },
   "ConditionalParameter": {
     "properties": {
+      "on_route": {
+        "description": "",
+        "title": ""
+      },
       "parameters": {
+        "description": "",
         "title": "Parámetros"
       }
     },
     "title": "Parámetro condicional"
   },
   "Curve": {
+    "description": "",
     "properties": {
       "begin": {
+        "description": "",
         "title": "Comienzo"
       },
       "end": {
+        "description": "",
         "title": "Final"
       },
       "radius": {
+        "description": "",
         "title": "Radio"
       }
     },
     "title": "Curva"
   },
   "Detector": {
+    "description": "",
     "properties": {
       "id": {
         "description": "Identificador único del objeto",
         "title": "Id."
       },
       "position": {
+        "description": "",
         "title": "Posición"
+      },
+      "track": {
+        "description": "",
+        "title": ""
       }
     },
     "title": "Detector"
@@ -129,117 +173,288 @@
     },
     "title": "Referencia del detector"
   },
+  "DetectorSncfExtension": {
+    "properties": {
+      "kp": {
+        "description": "",
+        "title": ""
+      }
+    },
+    "title": ""
+  },
   "Direction": {
+    "description": "",
     "title": "Dirección"
   },
   "DirectionalTrackRange": {
+    "description": "",
     "properties": {
       "begin": {
+        "description": "",
         "title": "Comienzo"
       },
       "direction": {
         "description": "Descripción de la dirección"
       },
       "end": {
+        "description": "",
         "title": "Final"
+      },
+      "track": {
+        "description": "",
+        "title": ""
       }
-    }
+    },
+    "title": ""
   },
   "Electrification": {
+    "description": "",
     "properties": {
       "id": {
         "description": "Identificador único del objeto",
         "title": "Id."
+      },
+      "track_ranges": {
+        "description": "",
+        "title": ""
+      },
+      "voltage": {
+        "description": "",
+        "title": ""
       }
     },
     "title": "Catenaria"
   },
+  "Endpoint": {
+    "title": ""
+  },
   "EtcsLevel2System": {
     "properties": {
       "conditional_parameters": {
+        "description": "",
         "title": "Parámetros condicionales"
       },
+      "default_parameters": {
+        "description": ""
+      },
       "next_signaling_systems": {
+        "description": "",
         "title": "Sistemas de señalamiento siguientes"
+      },
+      "settings": {
+        "description": ""
       },
       "signaling_system": {
         "title": "Sistema de señalamiento"
       }
-    }
+    },
+    "title": ""
+  },
+  "FlagSignalParameter": {
+    "title": ""
+  },
+  "LevelCrossing": {
+    "description": "",
+    "properties": {
+      "id": {
+        "description": "",
+        "title": ""
+      },
+      "name": {
+        "description": "",
+        "title": ""
+      },
+      "parts": {
+        "title": ""
+      },
+      "short_zone_length": {
+        "description": "",
+        "title": ""
+      }
+    },
+    "title": ""
+  },
+  "LevelCrossingPart": {
+    "description": "",
+    "properties": {
+      "pedal_downstream": {
+        "description": "",
+        "title": ""
+      },
+      "pedal_upstream": {
+        "description": "",
+        "title": ""
+      },
+      "position": {
+        "description": "",
+        "title": ""
+      },
+      "track": {
+        "description": "",
+        "title": ""
+      }
+    },
+    "title": ""
+  },
+  "LimitedLogicalSignal": {
+    "description": "",
+    "title": ""
   },
   "LineString": {
+    "description": "",
     "properties": {
+      "bbox": {
+        "title": ""
+      },
       "coordinates": {
         "title": "Coordenadas"
       },
       "type": {
         "title": "Tipo"
       }
-    }
+    },
+    "title": ""
   },
   "LoadingGaugeLimit": {
+    "description": "",
     "properties": {
       "begin": {
+        "description": "",
         "title": "Comienzo"
       },
+      "category": {
+        "description": ""
+      },
       "end": {
+        "description": "",
         "title": "Final"
       }
-    }
+    },
+    "title": ""
+  },
+  "LoadingGaugeType": {
+    "description": "",
+    "title": ""
   },
   "LogicalSignal": {
+    "description": "",
     "properties": {
       "conditional_parameters": {
+        "description": "",
         "title": "Parámetros condicionales"
       },
       "default_parameters": {
+        "description": "",
         "title": "Parámetros predeterminados"
       },
       "next_signaling_systems": {
+        "description": "",
         "title": "Sistemas de señalamiento siguientes"
       },
       "settings": {
+        "description": "",
         "title": "Configuración"
       },
       "signaling_system": {
+        "description": "",
         "title": "Sistema de señalamiento"
       }
-    }
+    },
+    "title": ""
   },
   "NeutralSection": {
+    "description": "",
     "properties": {
+      "announcement_track_ranges": {
+        "description": "",
+        "title": ""
+      },
       "id": {
         "description": "Identificador único del objeto",
         "title": "Id."
       },
       "lower_pantograph": {
+        "description": "",
         "title": "Bajar pantógrafo"
+      },
+      "track_ranges": {
+        "description": "",
+        "title": ""
       }
-    }
+    },
+    "title": ""
+  },
+  "NeutralSectionExtensions": {
+    "title": ""
   },
   "NeutralSectionNeutralSncfExtension": {
     "properties": {
       "announcement": {
+        "description": "",
         "title": "Anuncio"
       },
       "end": {
+        "description": "",
         "title": "Final"
+      },
+      "exe": {
+        "description": ""
+      },
+      "rev": {
+        "description": "",
+        "title": ""
       }
-    }
+    },
+    "title": ""
   },
   "OperationalPoint": {
+    "description": "",
     "properties": {
+      "country_code": {
+        "description": "",
+        "title": ""
+      },
       "id": {
         "description": "Identificador único del objeto",
         "title": "Id."
       },
+      "is_passenger_station": {
+        "description": "",
+        "title": ""
+      },
+      "main_code": {
+        "description": "",
+        "title": ""
+      },
+      "name": {
+        "description": "",
+        "title": ""
+      },
       "parts": {
         "title": "Partes"
       },
+      "plc": {
+        "description": "",
+        "title": ""
+      },
+      "secondary_code": {
+        "description": "",
+        "title": ""
+      },
+      "secondary_name": {
+        "description": "",
+        "title": ""
+      },
+      "uic": {
+        "description": "",
+        "title": ""
+      },
       "weight": {
+        "description": "",
         "title": "Peso"
       }
-    }
+    },
+    "title": ""
   },
   "OperationalPointIdentifierExtension": {
     "properties": {
@@ -249,16 +464,43 @@
     }
   },
   "OperationalPointPart": {
+    "description": "",
     "properties": {
+      "local_track_name": {
+        "description": "",
+        "title": ""
+      },
       "position": {
+        "description": "",
         "title": "Posición"
+      },
+      "track": {
+        "description": "",
+        "title": ""
       }
-    }
+    },
+    "title": ""
+  },
+  "OperationalPointPartExtensions": {
+    "title": ""
+  },
+  "OperationalPointPartSncfExtension": {
+    "properties": {
+      "kp": {
+        "description": "",
+        "title": ""
+      }
+    },
+    "title": ""
   },
   "Route": {
+    "description": "",
     "properties": {
       "entry_point": {
         "title": "Punto de entrada"
+      },
+      "entry_point_direction": {
+        "description": ""
       },
       "exit_point": {
         "title": "Punto de salida"
@@ -266,213 +508,530 @@
       "id": {
         "description": "Identificador único del objeto",
         "title": "Id."
+      },
+      "release_detectors": {
+        "description": "",
+        "title": ""
+      },
+      "switches_directions": {
+        "description": "",
+        "title": ""
       }
-    }
+    },
+    "title": ""
   },
   "Side": {
+    "description": "",
     "title": "Lado"
   },
   "Sign": {
+    "description": "",
     "properties": {
+      "direction": {
+        "description": ""
+      },
+      "kp": {
+        "description": "",
+        "title": ""
+      },
       "position": {
+        "description": "",
         "title": "Posición"
       },
+      "side": {
+        "description": ""
+      },
+      "track": {
+        "description": "",
+        "title": ""
+      },
       "type": {
+        "description": "",
         "title": "Tipo"
       },
       "value": {
+        "description": "",
         "title": "Valor"
       }
     },
     "title": "Señal"
   },
   "Signal": {
+    "description": "",
     "properties": {
+      "direction": {
+        "description": ""
+      },
       "id": {
         "description": "Identificador único del objeto",
         "title": "Id."
       },
       "logical_signals": {
+        "description": "",
         "title": "Señales lógicas"
       },
       "position": {
+        "description": "",
         "title": "Posición"
       },
       "sight_distance": {
+        "description": "",
         "title": "Distancia de visibilidad"
+      },
+      "track": {
+        "description": "",
+        "title": ""
       }
-    }
+    },
+    "title": ""
+  },
+  "SignalExtensions": {
+    "title": ""
   },
   "SignalSncfExtension": {
     "properties": {
+      "kp": {
+        "description": "",
+        "title": ""
+      },
       "label": {
         "title": "Etiqueta"
+      },
+      "side": {
+        "description": ""
       }
-    }
+    },
+    "title": ""
   },
   "SignalingSystem": {
     "title": "Sistema de señalamiento"
   },
   "Slope": {
+    "description": "",
     "properties": {
       "begin": {
+        "description": "",
         "title": "Comienzo"
       },
       "end": {
+        "description": "",
         "title": "Final"
       },
       "gradient": {
+        "description": "",
         "title": "Degradado"
       }
-    }
+    },
+    "title": ""
   },
   "SpeedSection": {
+    "description": "",
     "properties": {
       "id": {
         "description": "Identificador único del objeto",
         "title": "Id."
       },
+      "on_routes": {
+        "description": "",
+        "title": ""
+      },
       "speed_limit": {
+        "description": "",
         "title": "Límite de velocidad"
       },
       "speed_limit_by_tag": {
+        "description": "",
         "title": "Límite de velocidad por etiqueta"
+      },
+      "track_ranges": {
+        "description": "",
+        "title": ""
       }
-    }
+    },
+    "title": ""
+  },
+  "SpeedSectionExtensions": {
+    "title": ""
   },
   "SpeedSectionPslSncfExtension": {
     "properties": {
       "announcement": {
+        "description": "",
         "title": "Anuncio"
+      },
+      "r": {
+        "description": "",
+        "title": ""
+      },
+      "z": {
+        "description": ""
       }
-    }
+    },
+    "title": ""
   },
   "Switch": {
+    "description": "",
     "properties": {
+      "group_change_delay": {
+        "description": "",
+        "title": ""
+      },
       "id": {
         "description": "Identificador único del objeto",
         "title": "Id."
+      },
+      "ports": {
+        "description": "",
+        "title": ""
+      },
+      "switch_type": {
+        "description": "",
+        "title": ""
       }
-    }
+    },
+    "title": ""
+  },
+  "SwitchExtensions": {
+    "title": ""
+  },
+  "SwitchPortConnection": {
+    "description": "",
+    "properties": {
+      "dst": {
+        "description": "",
+        "title": ""
+      },
+      "src": {
+        "description": "",
+        "title": ""
+      }
+    },
+    "title": ""
   },
   "SwitchSncfExtension": {
     "properties": {
       "label": {
+        "description": "",
         "title": "Etiqueta"
       }
-    }
+    },
+    "title": ""
   },
   "SwitchType": {
+    "description": "",
     "properties": {
       "groups": {
+        "description": "",
         "title": "Grupos"
       },
       "id": {
         "description": "Identificador único del objeto",
         "title": "Id."
+      },
+      "ports": {
+        "description": "",
+        "title": ""
       }
-    }
+    },
+    "title": ""
+  },
+  "TrackEndpoint": {
+    "description": "",
+    "properties": {
+      "endpoint": {
+        "description": ""
+      },
+      "track": {
+        "description": "",
+        "title": ""
+      }
+    },
+    "title": ""
   },
   "TrackSection": {
+    "description": "",
     "properties": {
       "curves": {
+        "description": "",
         "title": "Curvas"
+      },
+      "geo": {
+        "description": ""
       },
       "id": {
         "description": "Identificador único del objeto",
         "title": "Id."
       },
       "length": {
+        "description": "",
         "title": "Longitud"
+      },
+      "loading_gauge_limits": {
+        "description": "",
+        "title": ""
+      },
+      "slopes": {
+        "description": "",
+        "title": ""
       }
-    }
+    },
+    "title": ""
+  },
+  "TrackSectionExtensions": {
+    "title": ""
+  },
+  "TrackSectionSncfExtension": {
+    "properties": {
+      "line_code": {
+        "description": "",
+        "title": ""
+      },
+      "line_name": {
+        "description": "",
+        "title": ""
+      },
+      "track_name": {
+        "description": "",
+        "title": ""
+      },
+      "track_number": {
+        "description": "",
+        "title": ""
+      }
+    },
+    "title": ""
   },
   "TrackSectionSourceExtension": {
     "properties": {
       "id": {
+        "description": "",
         "title": "Id."
       },
       "name": {
+        "description": "",
         "title": "Nombre"
       }
-    }
+    },
+    "title": ""
   },
   "Tvm300System": {
     "properties": {
       "conditional_parameters": {
+        "description": "",
         "title": "Parámetros condicionales"
       },
+      "default_parameters": {
+        "description": ""
+      },
       "next_signaling_systems": {
+        "description": "",
         "title": "Sistemas de señalamiento siguientes"
+      },
+      "settings": {
+        "description": ""
       },
       "signaling_system": {
         "title": "Sistema de señalamiento"
       }
-    }
+    },
+    "title": ""
   },
   "Tvm430System": {
     "properties": {
       "conditional_parameters": {
+        "description": "",
         "title": "Parámetros condicionales"
       },
+      "default_parameters": {
+        "description": ""
+      },
       "next_signaling_systems": {
+        "description": "",
         "title": "Sistemas de señalamiento siguientes"
+      },
+      "settings": {
+        "description": ""
       },
       "signaling_system": {
         "title": "Sistema de señalamiento"
       }
-    }
+    },
+    "title": ""
   },
   "__main____BalSystem__ConditionalParameters": {
+    "properties": {
+      "on_route": {
+        "description": "",
+        "title": ""
+      },
+      "parameters": {
+        "description": ""
+      }
+    },
     "title": "Parámetros condicionales"
   },
   "__main____BalSystem__Parameters": {
+    "properties": {
+      "jaune_cli": {
+        "description": ""
+      }
+    },
     "title": "Parámetros"
   },
   "__main____BalSystem__Settings": {
+    "properties": {
+      "Nf": {
+        "description": ""
+      }
+    },
     "title": "Configuración"
   },
   "__main____BaprSystem__ConditionalParameters": {
+    "properties": {
+      "on_route": {
+        "description": "",
+        "title": ""
+      },
+      "parameters": {
+        "description": ""
+      }
+    },
     "title": "Parámetros condicionales"
   },
   "__main____BaprSystem__Parameters": {
     "title": "Parámetros"
   },
   "__main____BaprSystem__Settings": {
+    "properties": {
+      "Nf": {
+        "description": ""
+      },
+      "distant": {
+        "description": ""
+      }
+    },
     "title": "Configuración"
   },
   "__main____EtcsLevel2System__ConditionalParameters": {
+    "properties": {
+      "on_route": {
+        "description": "",
+        "title": ""
+      },
+      "parameters": {
+        "description": ""
+      }
+    },
     "title": "Parámetros condicionales"
   },
   "__main____EtcsLevel2System__Parameters": {
     "title": "Parámetros"
   },
   "__main____EtcsLevel2System__Settings": {
+    "properties": {
+      "Nf": {
+        "description": ""
+      }
+    },
     "title": "Configuración"
   },
   "__main____Tvm300System__ConditionalParameters": {
+    "properties": {
+      "on_route": {
+        "description": "",
+        "title": ""
+      },
+      "parameters": {
+        "description": ""
+      }
+    },
     "title": "Parámetros condicionales"
   },
   "__main____Tvm300System__Parameters": {
     "title": "Parámetros"
   },
   "__main____Tvm300System__Settings": {
+    "properties": {
+      "Nf": {
+        "description": ""
+      }
+    },
     "title": "Configuración"
   },
   "__main____Tvm430System__ConditionalParameters": {
+    "properties": {
+      "on_route": {
+        "description": "",
+        "title": ""
+      },
+      "parameters": {
+        "description": ""
+      }
+    },
     "title": "Parámetros condicionales"
   },
   "__main____Tvm430System__Parameters": {
     "title": "Parámetros"
   },
   "__main____Tvm430System__Settings": {
+    "properties": {
+      "Nf": {
+        "description": ""
+      }
+    },
     "title": "Configuración"
   },
   "properties": {
+    "buffer_stops": {
+      "description": "",
+      "title": ""
+    },
     "detectors": {
+      "description": "",
       "title": "Detectores"
     },
+    "electrifications": {
+      "description": "",
+      "title": ""
+    },
+    "extended_switch_types": {
+      "description": "",
+      "title": ""
+    },
+    "level_crossings": {
+      "description": "",
+      "title": ""
+    },
+    "neutral_sections": {
+      "description": "",
+      "title": ""
+    },
+    "operational_points": {
+      "description": "",
+      "title": ""
+    },
+    "routes": {
+      "description": "",
+      "title": ""
+    },
+    "signals": {
+      "description": "",
+      "title": ""
+    },
+    "speed_sections": {
+      "description": "",
+      "title": ""
+    },
+    "switches": {
+      "description": "",
+      "title": ""
+    },
+    "track_sections": {
+      "description": "",
+      "title": ""
+    },
     "version": {
+      "description": "",
       "title": "Versión"
     }
   }
