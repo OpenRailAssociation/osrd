@@ -13,11 +13,6 @@
   "default": "Es ist ein Fehler aufgetreten.",
   "editoast": {
     "DatabaseAccessError": "Fehler beim Datenbankzugriff",
-    "JoinError": {
-      "cancelled": "",
-      "panic": "",
-      "unhandled_add_case_here": ""
-    },
     "app_health": {
       "Core": "Core ist fehlerhaft",
       "Database": "Datenbankfehler",
@@ -33,8 +28,7 @@
       "DbError": "Interner Datenbankfehler, bitte erneut versuchen oder den Support kontaktieren",
       "Forbidden": "Zugriff verweigert",
       "ForbiddenImpersonation": "Identitätswechsel verweigert",
-      "ImpersonatedUserNotFound": "Imitierter Benutzer unbekannt",
-      "Unauthenticated": ""
+      "ImpersonatedUserNotFound": "Imitierter Benutzer unbekannt"
     },
     "authz": {
       "Authorizer": "Interner Fehler",
@@ -43,15 +37,12 @@
       "Driver": "Interner Authentifizierungs-/Autorisierungsfehler, bitte erneut versuchen oder den Support kontaktieren",
       "GrantsApiMisuse": "Fehlerhafte Nutzung der Autorisierungs-API",
       "NoSuchUser": "Unbekannter Benutzer",
-      "UnknownIdentities": "",
       "UnknownResource": "Unbekannte Ressource",
       "UnknownResourceType": "Unbekannter Ressourcentyp",
       "UnknownSubject": "Unbekanntes Subjekt",
       "UnknownUser": "Unbekannter Benutzer '{{id}}'"
     },
     "authz_legacy": {
-      "Openfga": "",
-      "Storage": "",
       "UnknownResource": "Unbekannte Ressource",
       "UnknownSubject": "Unbekanntes Subjekt",
       "UnknownUser": "Unbekannter Benutzer '{{id}}'"
@@ -139,9 +130,7 @@
       "Database": "Interner Fehler (Datenbank)",
       "InfraNotFound": "Infrastruktur '{{infra_id}}' nicht gefunden.",
       "LevelCrossingBatchNotFound": "'{{count}}' Bahnübergang(e) nicht gefunden.",
-      "TimetableNotFound": "",
-      "TrainBatchNotFound": "'{{count}}' Dienstleistung(en) nicht gefunden.",
-      "UnsupportedTimetableType": ""
+      "TrainBatchNotFound": "'{{count}}' Dienstleistung(en) nicht gefunden."
     },
     "macro_node": {
       "Database": "Interner Fehler",
@@ -246,11 +235,6 @@
       "UnexpectedErsatz": "Erwarteter Wert vom Typ {{expected}}, aber '{{value}}' erhalten",
       "VariadicArgTypeMismatch": "Erwartetes variadisches Argument vom Typ {{expected}}, aber {{actual}} erhalten"
     },
-    "search_journeys": {
-      "Database": "",
-      "InfraNotFound": "",
-      "InvalidInput": ""
-    },
     "single_simulation": {
       "ElectricalProfileSetNotFound": "Bahnstromprofil '{{electrical_profile_set_id}}' nicht gefunden",
       "PathNotFound": "Pfad '{{path_id}}' nicht gefunden",
@@ -262,22 +246,15 @@
       "UnknownSignalingSystem": "Unbekanntes Zugsicherungssystem"
     },
     "stdcm": {
-      "BatchRollingStockNotFound": "",
       "Database": "Interner Fehler (Datenbank)",
       "InfraNotFound": "Infrastruktur '{{infra_id}}' nicht gefunden",
       "InvalidConsistLength": "Ungültige Zuglänge {{provided_consist_length}}: muss größer als '{{expected_min}}' sein",
       "InvalidConsistMass": "Ungültige Zugmasse {{provided_consist_mass}}: muss größer als '{{expected_min}}' sein",
-      "InvalidConsistMaxSpeed": "",
       "InvalidPathItems": "Ungültige(r) Wegepunkt(e) {{items}}",
       "RollingStockNotFound": "Schienenfahrzeug '{{rolling_stock_id}}' existiert nicht",
       "TimetableNotFound": "Fahrplan '{{timetable_id}}' existiert nicht",
       "TowedRollingStockNotFound": "Wagen {towed_rolling_stock_id} existiert nicht",
       "TrainSimulationFail": "Zugsimulation fehlgeschlagen"
-    },
-    "stdcm_debug": {
-      "JsonParseError": "",
-      "S3Error": "",
-      "S3NotConfigured": ""
     },
     "stdcm_search_env": {
       "Database": "Interner Fehler (Datenbank)",
@@ -303,10 +280,8 @@
       "Database": "Interner Fehler (Datenbank)",
       "InfraNotFound": "Infrastruktur '{{infra_id}}' existiert nicht",
       "InfraNotLoaded": "Infrastruktur '{{infra_id}}' ist nicht geladen",
-      "InvalidPeriod": "",
       "NotFound": "Fahrplan '{{timetable_id}}' nicht gefunden",
       "ParseError": "train_id konnte nicht analysiert werden: '{{train_id}}'",
-      "Timeout": "",
       "TrainScheduleSetsNotFound": "'{{ids}}' Zugpakete nicht gefunden",
       "similar_trains": {
         "Database": "Interner Fehler (Datenbank)",
@@ -326,7 +301,6 @@
       "Database": "Interner Datenbankfehler",
       "ExceptionNotFound": "Ausnahme '{{exception_key}}' nicht gefunden",
       "InfraNotFound": "Infrastruktur '{{infra_id}}' nicht gefunden",
-      "InvalidPathPortion": "",
       "NotFound": "Zugfahrplan '{{train_schedule_id}}' nicht gefunden",
       "PathfindingFailed": "Wegefindung für Zugfahrplan '{{train_schedule_id}}' fehlgeschlagen",
       "RollingStockNotFound": "Schienenfahrzeug '{{rolling_stock_name}}' nicht gefunden",
@@ -336,10 +310,8 @@
     "train_schedule_exception": {
       "BatchNotFound": "'{{count}}' Zugfahrplan-Ausnahme(n) nicht gefunden",
       "Database": "Interner Fehler (Datenbank)",
-      "InvalidOccurrenceIndex": "",
       "NotFound": "Zugfahrplan-Ausnahme '{{exception_id}}' nicht gefunden",
       "NotPacedTrain": "Zugfahrplan '{{train_schedule_id}}' ist keine Taktleistung",
-      "OccurrenceIndexAlreadyUsed": "",
       "TimetableNotFound": "Fahrplan '{{timetable_id}}' nicht gefunden",
       "TrainScheduleNotFound": "Zugfahrplan '{{train_schedule_id}}' nicht gefunden"
     },
