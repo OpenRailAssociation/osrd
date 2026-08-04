@@ -4,7 +4,6 @@ import dayjs from 'dayjs';
 import type { TFunction } from 'i18next';
 import { round, isEqual, isNil } from 'lodash';
 
-import type { PathPropertiesFormatted } from 'applications/operationalStudies/types';
 import { getInvalidStepLabel } from 'applications/operationalStudies/utils';
 import type {
   RelatedOperationalPoint,
@@ -397,16 +396,3 @@ export const getOperationalPointName = (
   // Invalid step
   return getInvalidStepLabel(step.operational_point);
 };
-
-/** Build matching parameters from an operational point for PathStep matching. */
-export const buildOpMatchParams = (op: PathPropertiesFormatted['operationalPoints'][number]) =>
-  op.opId
-    ? {
-        opId: op.opId,
-        uic: op.uic,
-        secondaryCode: op.secondary_code,
-        mainCode: op.main_code,
-        track: op.part.track,
-        offsetOnTrack: op.part.position,
-      }
-    : null;
