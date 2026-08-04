@@ -385,9 +385,9 @@ const useTimesStopsTableData = (
                 : undefined;
           }
 
-          // TODO : the correspondance is weird. We rely on an opId to match the schedule but the db opId
-          // won't be the same as the generated one from the path steps.
-          const receptionSignal = scheduleByAt[op.opId ?? op.waypointId]?.reception_signal;
+          const receptionSignal = op.pathItemId
+            ? scheduleByAt[op.pathItemId]?.reception_signal
+            : undefined;
 
           const { shortSlipDistance, onStopSignal } =
             receptionSignalToSignalBooleans(receptionSignal);
