@@ -1,13 +1,11 @@
 import type { PathPropertiesFormatted } from 'applications/operationalStudies/types';
 import { getPowerRestrictionsWarnings } from 'applications/operationalStudies/views/Scenario/components/ManageTrainSchedule/PowerRestrictionsSelector/helpers/powerRestrictionWarnings';
 import type { PowerRestrictionItem, RollingStock } from 'common/api/osrdEditoastApi';
-import { matchPathStepAndOp } from 'modules/pathfinding/utils';
 import { NO_POWER_RESTRICTION } from 'modules/powerRestriction/consts';
 import type { Train } from 'reducers/osrdconf/types';
 
 import type { TimesStopsRowNew } from '../types';
 import { buildPowerRestrictionsFromRows } from './cellUpdate';
-import { buildOpMatchParams } from './utils';
 
 export type PowerRestrictionBlockInfo = {
   /** The restriction code active at this row position (null if no restriction is active). */
@@ -160,10 +158,7 @@ export const computePowerRestrictionWarnings = ({
 
   const pathStepPositions = new Map<string, number>();
   path.forEach((pathStep) => {
-    const matchingOp = operationalPointsOnPath?.find((op) => {
-      const builtOp = buildOpMatchParams(op);
-      return builtOp && matchPathStepAndOp(pathStep.location, builtOp);
-    });
+    const matchingOp = operationalPointsOnPath?.find((op) => op.pathItemId === pathStep.id);
     if (matchingOp) pathStepPositions.set(pathStep.id, matchingOp.position);
   });
 
