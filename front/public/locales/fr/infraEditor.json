@@ -414,12 +414,44 @@
   "OperationalPoint": {
     "description": "Décrit les points remarquables de l’infrastructure correspondante.",
     "properties": {
+      "country_code": {
+        "description": "",
+        "title": ""
+      },
       "id": {
         "description": "Identifiant unique de l'objet",
         "title": "Identifiant"
       },
+      "is_passenger_station": {
+        "description": "",
+        "title": ""
+      },
+      "main_code": {
+        "description": "",
+        "title": ""
+      },
+      "name": {
+        "description": "",
+        "title": ""
+      },
       "parts": {
         "title": "Parties de point remarquable"
+      },
+      "plc": {
+        "description": "",
+        "title": ""
+      },
+      "secondary_code": {
+        "description": "",
+        "title": ""
+      },
+      "secondary_name": {
+        "description": "",
+        "title": ""
+      },
+      "uic": {
+        "description": "",
+        "title": ""
       },
       "weight": {
         "description": "représente l'importance du PR",
