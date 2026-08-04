@@ -721,15 +721,11 @@ mod tests {
     )]
     #[case::project_set_grant(
         project_set_grant(Subject::user(1), Project(1)).checks,
-        &[
-            Check::CanGiveSubjectProjectGrant(Subject::user(1), Project(1))
-        ]
+        &[Check::CanGiveSubjectProjectGrant(Subject::user(1), Project(1))]
     )]
     #[case::project_revoke_grant(
         project_revoke_grant(Subject::user(1), Project(1)).checks,
-        &[
-            Check::HasRole(Actor::Issuer, Role::Admin),
-        ]
+        &[Check::HasRole(Actor::Issuer, Role::Admin)]
     )]
     #[case::project_privileges(
         project_privileges(User(1), Project(1)).checks,

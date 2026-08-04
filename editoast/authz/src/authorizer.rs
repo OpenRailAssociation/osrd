@@ -2,15 +2,12 @@ use std::collections::HashSet;
 use tracing::Level;
 use tracing::debug;
 
-use crate::Authorization;
 use crate::Error;
-use crate::Infra;
 use crate::Regulator;
 use crate::Role;
 use crate::StorageDriver;
 use crate::identity::UserIdentity;
 use crate::identity::UserInfo;
-use crate::model::InfraPrivilege;
 use crate::model::User;
 
 /// Represents how an authenticated user can interact with the authorization system
@@ -57,16 +54,6 @@ impl<S: StorageDriver> Authorizer<S> {
     #[tracing::instrument(skip_all, fields(user = %self.user, ?roles), ret(level = Level::DEBUG))]
     pub async fn check_roles(&self, roles: HashSet<Role>) -> Result<bool, Error<S::Error>> {
         self.regulator.check_roles(&User(self.user_id), roles).await
-    }
-
-    pub async fn authorize_infra(
-        &self,
-        infra: &Infra,
-        privilege: InfraPrivilege,
-    ) -> Result<Authorization<()>, Error<S::Error>> {
-        self.regulator
-            .authorize_infra(&User(self.user_id), infra, privilege)
-            .await
     }
 }
 

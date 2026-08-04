@@ -6,6 +6,7 @@
 //! - Then if the user requests the curves and slopes, editoast will retrieve the slopes from the cache and ask the core to compute the curves.
 
 use authz;
+use authz::v2;
 use axum::Extension;
 use axum::extract::Json;
 use axum::extract::Path;
@@ -24,8 +25,9 @@ use std::hash::Hash;
 use utoipa::ToSchema;
 
 use crate::AppState;
+use crate::authentication;
 use crate::error::Result;
-use crate::views::AuthenticationExt;
+use crate::views::AuthorizationError;
 use crate::views::path::retrieve_infra_version;
 
 #[derive(Debug, Serialize, Deserialize, ToSchema, Hash)]
@@ -87,9 +89,10 @@ pub(in crate::views) async fn post(
         db_pool,
         valkey_client,
         core_client,
+        regulator,
         ..
     }): State<AppState>,
-    Extension(auth): AuthenticationExt,
+    Extension(authn_state): Extension<authentication::State>,
     Path(infra_id): Path<i64>,
     Json(path_properties_input): Json<PathPropertiesInput>,
 ) -> Result<Json<PathProperties>> {
@@ -97,16 +100,13 @@ pub(in crate::views) async fn post(
     let conn = &mut db_pool.get().await?;
     let infra_version = retrieve_infra_version(conn, infra_id).await?;
 
-    // Check user privilege on infra
-    auth.check_authorization(async |authorizer| {
-        authorizer
-            .authorize_infra(
-                &authz::Infra(infra_id),
-                authz::InfraPrivilege::CanRestrictedRead,
-            )
-            .await
-    })
-    .await?;
+    if let authentication::State::Authenticated { user, .. } = &authn_state {
+        v2::infra_privileges(*user, authz::Infra(infra_id))
+            .map(async |privileges| privileges.contains(&authz::InfraPrivilege::CanRestrictedRead))
+            .ok_or(AuthorizationError::Forbidden)
+            .run::<AuthorizationError, _>(&authn_state.authorizer(regulator.openfga()))
+            .await??;
+    }
 
     use core_task::Task as _;
     let path_properties = PathPropertiesRequest {

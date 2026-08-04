@@ -14,6 +14,7 @@ use std::collections::HashSet;
 use std::sync::Arc;
 
 use authz;
+use authz::v2;
 use axum::Extension;
 use axum::extract::Json;
 use axum::extract::Path;
@@ -65,8 +66,9 @@ use super::pagination::PaginationQueryParams;
 use super::pagination::PaginationStats;
 use super::path::pathfinding::PathfindingResult;
 use crate::AppState;
+use crate::authentication;
 use crate::error::Result;
-use crate::views::AuthenticationExt;
+use crate::views::AuthorizationError;
 use crate::views::path::operational_point_cache::OperationalPointCache;
 use crate::views::timetable::simulation::SimulationResponseSuccess;
 use editoast_models::Infra;
@@ -286,9 +288,10 @@ pub(in crate::views) async fn requirements(
         valkey_client,
         core_client,
         config,
+        regulator,
         ..
     }): State<AppState>,
-    Extension(auth): AuthenticationExt,
+    Extension(authn_state): Extension<authentication::State>,
     Path(TimetableIdParam { id: timetable_id }): Path<TimetableIdParam>,
     Query(page_settings): Query<PaginationQueryParams<200>>,
     Query(InfraIdQueryParam { infra_id }): Query<InfraIdQueryParam>,
@@ -296,16 +299,13 @@ pub(in crate::views) async fn requirements(
         electrical_profile_set_id,
     }): Query<ElectricalProfileSetIdQueryParam>,
 ) -> Result<Json<TrainRequirementsPage>> {
-    // Check user privilege on infra
-    auth.check_authorization(async |authorizer| {
-        authorizer
-            .authorize_infra(
-                &authz::Infra(infra_id),
-                authz::InfraPrivilege::CanRestrictedRead,
-            )
-            .await
-    })
-    .await?;
+    if let authentication::State::Authenticated { user, .. } = &authn_state {
+        v2::infra_privileges(*user, authz::Infra(infra_id))
+            .map(async |privileges| privileges.contains(&authz::InfraPrivilege::CanRestrictedRead))
+            .ok_or(AuthorizationError::Forbidden)
+            .run::<AuthorizationError, _>(&authn_state.authorizer(regulator.openfga()))
+            .await??;
+    }
 
     let conn = &mut db_pool.get().await?;
 
@@ -475,24 +475,23 @@ pub(in crate::views) struct LocalTrackNamesForm {
     ),
 )]
 pub(in crate::views) async fn get_local_track_names(
-    State(AppState { db_pool, .. }): State<AppState>,
-    Extension(auth): AuthenticationExt,
+    State(AppState {
+        db_pool, regulator, ..
+    }): State<AppState>,
+    Extension(authn_state): Extension<authentication::State>,
     Path(TimetableIdParam { id: timetable_id }): Path<TimetableIdParam>,
     Json(LocalTrackNamesForm {
         operational_point_references,
         infra_id,
     }): Json<LocalTrackNamesForm>,
 ) -> Result<Json<HashMap<NonBlankString, HashSet<NonBlankString>>>> {
-    // Check user privilege on infra
-    auth.check_authorization(async |authorizer| {
-        authorizer
-            .authorize_infra(
-                &authz::Infra(infra_id),
-                authz::InfraPrivilege::CanRestrictedRead,
-            )
-            .await
-    })
-    .await?;
+    if let authentication::State::Authenticated { user, .. } = &authn_state {
+        v2::infra_privileges(*user, authz::Infra(infra_id))
+            .map(async |privileges| privileges.contains(&authz::InfraPrivilege::CanRestrictedRead))
+            .ok_or(AuthorizationError::Forbidden)
+            .run::<AuthorizationError, _>(&authn_state.authorizer(regulator.openfga()))
+            .await??;
+    }
 
     timeout(std::time::Duration::from_secs(240), async move {
         let conn = &mut db_pool.get().await?;

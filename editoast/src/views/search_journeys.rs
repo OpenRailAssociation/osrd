@@ -1,3 +1,4 @@
+use authz::v2;
 use std::collections::HashMap;
 use std::collections::HashSet;
 
@@ -22,9 +23,10 @@ use tracing::Instrument as _;
 use utoipa::ToSchema;
 
 use crate::AppState;
+use crate::authentication;
 use crate::error::InternalError;
 use crate::error::Result;
-use crate::views::AuthenticationExt;
+use crate::views::AuthorizationError;
 use crate::views::path::operational_point_cache::OperationalPointCache;
 use crate::views::timetable::conflicts::retrieve_trains;
 
@@ -147,8 +149,10 @@ struct PathIndexedConnection {
     ),
 )]
 pub(in crate::views) async fn search_journeys(
-    State(AppState { db_pool, .. }): State<AppState>,
-    Extension(auth): AuthenticationExt,
+    State(AppState {
+        db_pool, regulator, ..
+    }): State<AppState>,
+    Extension(authn_state): Extension<authentication::State>,
     Json(JourneySearchQuery {
         infra_id,
         timetable_ids,
@@ -187,15 +191,13 @@ pub(in crate::views) async fn search_journeys(
 
     Infra::exists_or_fail(&mut conn, infra_id, || Error::InfraNotFound { infra_id }).await?;
 
-    auth.check_authorization(async |authorizer| {
-        authorizer
-            .authorize_infra(
-                &authz::Infra(infra_id),
-                authz::InfraPrivilege::CanRestrictedRead,
-            )
-            .await
-    })
-    .await?;
+    if let authentication::State::Authenticated { user, .. } = &authn_state {
+        v2::infra_privileges(*user, authz::Infra(infra_id))
+            .map(async |privileges| privileges.contains(&authz::InfraPrivilege::CanRestrictedRead))
+            .ok_or(AuthorizationError::Forbidden)
+            .run::<AuthorizationError, _>(&authn_state.authorizer(regulator.openfga()))
+            .await??;
+    }
 
     let train_schedules: Vec<_> = JoinSetStream::new(train_schedule_futs)
         // Converts `Result<Result<_, InternalError>, JoinError>` into `Result<_, InternalError>`

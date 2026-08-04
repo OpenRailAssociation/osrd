@@ -169,6 +169,25 @@ impl<T> Protected<T> {
         authorizer.authorize(self).await
     }
 
+    /// Authorizes the protected operation and runs it if authorized, otherwise returns an error of the desired type.
+    ///
+    /// Chains [Authorizer::authorize] and [Access::access] and combines the potential errors into a single error type.
+    /// A rejection is considered an error here as well.
+    ///
+    /// Convenient to obtain one-liners and ease error handling.
+    pub async fn run<E, A>(self, authorizer: &A) -> Result<T, E>
+    where
+        E: From<A::Rejection> + From<A::Error> + From<OpenFgaError>,
+        A: Authorizer,
+    {
+        authorizer
+            .authorize(self)
+            .await?
+            .access()
+            .await?
+            .map_err(|rejection| E::from(rejection))
+    }
+
     /// Consumes the protection and produces an [Access::Authorized] without performing any check
     ///
     /// Only use this in trusted context or in an [Authorizer] implementation after performing the necessary checks.
@@ -256,6 +275,12 @@ impl<T: Send + 'static> Protected<Option<T>> {
         T: Into<E>,
     {
         self.map(async move |val| val.map(T::into))
+    }
+}
+
+impl Protected<bool> {
+    pub fn ok_or<E: Send + 'static>(self, err: E) -> Protected<Result<(), E>> {
+        self.map(async |b| b.then_some(()).ok_or(err))
     }
 }
 

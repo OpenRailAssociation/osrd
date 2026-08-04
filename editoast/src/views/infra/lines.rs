@@ -1,17 +1,18 @@
 use authz;
+use authz::v2;
 use axum::Extension;
 use axum::extract::Json;
 use axum::extract::Path;
 use axum::extract::State;
-use database::DbConnectionPoolV2;
 use editoast_derive::EditoastError;
 use schemas::infra::TrackSection;
 use schemas::primitives::BoundingBox;
-use std::sync::Arc;
 use thiserror::Error;
 
+use crate::AppState;
+use crate::authentication;
 use crate::error::Result;
-use crate::views::AuthenticationExt;
+use crate::views::AuthorizationError;
 use crate::views::infra::InfraApiError;
 use crate::views::infra::InfraIdParam;
 use editoast_models::Infra;
@@ -40,8 +41,10 @@ enum LinesErrors {
 )]
 pub(in crate::views) async fn get_line_bbox(
     Path((infra_id, line_code)): Path<(i64, i64)>,
-    State(db_pool): State<Arc<DbConnectionPoolV2>>,
-    Extension(auth): AuthenticationExt,
+    State(AppState {
+        db_pool, regulator, ..
+    }): State<AppState>,
+    Extension(authn_state): Extension<authentication::State>,
 ) -> Result<Json<BoundingBox>> {
     let line_code: i32 = line_code.try_into().unwrap();
 
@@ -51,16 +54,13 @@ pub(in crate::views) async fn get_line_bbox(
     })
     .await?;
 
-    // Check user privilege on infra
-    auth.check_authorization(async |authorizer| {
-        authorizer
-            .authorize_infra(
-                &authz::Infra(infra_id),
-                authz::InfraPrivilege::CanRestrictedRead,
-            )
-            .await
-    })
-    .await?;
+    if let authentication::State::Authenticated { user, .. } = &authn_state {
+        v2::infra_privileges(*user, authz::Infra(infra_id))
+            .map(async |privileges| privileges.contains(&authz::InfraPrivilege::CanRestrictedRead))
+            .ok_or(AuthorizationError::Forbidden)
+            .run::<AuthorizationError, _>(&authn_state.authorizer(regulator.openfga()))
+            .await??;
+    }
 
     let mut bbox = BoundingBox::default();
     let selection_settings =
