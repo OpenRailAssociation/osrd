@@ -84,7 +84,7 @@ impl State {
     ///
     /// If this function returns a user, then it is subject to permissions,
     /// otherwise they likely can be bypassed.
-    pub fn regular_user(&self) -> Option<authz::User> {
+    pub fn user(&self) -> Option<authz::User> {
         match self {
             State::Skip => None,
             State::Authenticated { user, .. } => Some(*user),
