@@ -124,7 +124,7 @@
     "json-key-path-list": "^2.0.3",
     "openapi-types": "^12.1.3",
     "oxfmt": "^0.58.0",
-    "oxlint": "^1.75.0",
+    "oxlint": "^1.74.0",
     "oxlint-tsgolint": "^0.24.0",
     "pdfjs-dist": "^6.1.200",
     "sass": "^1.102.0",
