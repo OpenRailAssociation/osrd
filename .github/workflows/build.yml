@@ -979,7 +979,7 @@ jobs:
             -e PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 \
             --ipc=host \
             -v "$PWD/front/test-results:/app/front/test-results" \
-            osrd-playwright:latest npx playwright test $TEST_PROJECT
+            osrd-playwright:latest npx playwright test
           exit $(docker wait playwright-test)
 
       - name: Upload media artifact
