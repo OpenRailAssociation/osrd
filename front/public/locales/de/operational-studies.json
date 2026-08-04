@@ -1,6 +1,5 @@
 {
   "boardFullNames": {
-    "chronogram": "",
     "sdd": "Geschwindigkeits-Weg-Diagramm",
     "std": "Weg-Zeit-Diagramm"
   },
@@ -89,9 +88,6 @@
       "unableToDeleteScenarioMessage": "Szenario löschen nicht möglich"
     },
     "filterPlaceholder": "Filter, Tags",
-    "infrastructure": {
-      "label": ""
-    },
     "lessDetails": "Weniger Details anzeigen",
     "linearMode": "Linear",
     "loadingConflicts": "Konflikte werden geladen…",
@@ -204,14 +200,10 @@
     "scenarioDescription": "Beschreibung",
     "scenarioDescriptionInvalid": "Die Beschreibung darf 1.024 Zeichen nicht überschreiten.",
     "scenarioDescriptionPlaceholder": "Kurzbeschreibung des Szenarios",
-    "scenarioInfraInvalid": "",
-    "scenarioInfrastructureLabel": "",
     "scenarioModificationTitle": "Szenario bearbeiten",
     "scenarioName": "Szenarioname",
     "scenarioNameInvalid": "Der Szenarioname darf 128 Zeichen nicht überschreiten.",
     "scenarioTags": "Tags",
-    "scenarioTimetableTypeCalendar": "",
-    "scenarioTimetableTypeHourly": "",
     "scenarioUpdated": "Änderung erfolgreich!",
     "scenarioUpdatedDetails": "Szenario {{ name }} wurde geändert.",
     "timetable": {
@@ -375,8 +367,6 @@
     "errorMessages": {
       "error": "Ein Fehler ist aufgetreten",
       "hardErrorInfra": "Die Infrastruktur enthält Fehler und kann ohne vorherige Behebung nicht genutzt werden.",
-      "intervalTooHigh": "",
-      "intervalTooLow": "",
       "invalidInitialSpeed": "Die Eingangsgeschwindigkeit muss auf Zehntel gerundet werden.",
       "mandatoryField": "Pflichtfeld",
       "nameLengthLimit": "Der Name darf 128 Zeichen nicht überschreiten.",
@@ -394,8 +384,6 @@
       "noTrainStep": "Die Schrittweite der Zugnamen muss größer als 0 sein.",
       "originTimeOutsideWindow": "Die Abfahrtszeit muss zwischen {{low}} und {{high}} liegen.",
       "requiredField": "Erforderliches Feld.",
-      "timeWindowTooHigh": "",
-      "timeWindowTooLow": "",
       "tooHighInput": "Muss < 43800 sein",
       "tooHighValue": "{{value}} muss kleiner als 43800 sein (ein Monat)",
       "tooLowInput": "Muss > 0 sein",
@@ -429,32 +417,13 @@
     "inverseOD": "Route umkehren",
     "itineraryModal": {
       "addLocationOnMap": "Betriebsstelle auf der Karte hinzufügen",
-      "addPoint": "",
-      "addPointOnMap": "",
       "alertInvalidOP": "Mindestens ein Wegepunkt konnte nicht erkannt werden",
-      "alertMissingDestination": "",
-      "alertMissingOrigin": "",
-      "alertMissingRequestedPoint": "",
       "cancel": "Abbrechen",
-      "cancelMapSelection": "",
       "focusLocationOnMap": "Karte auf diese Betriebsstelle zentrieren",
       "frameAll": "Auf alle Wegepunkte auf der Karte zentrieren",
-      "intermediateWaypointsPanel": {
-        "addWaypoint": "",
-        "collapseGroup": "",
-        "expandGroup": "",
-        "hide": "",
-        "hideLabel": "",
-        "idleMessage": "",
-        "noWaypoint": "",
-        "panelTitle": "",
-        "showLabel": ""
-      },
       "invalidOP": "Nicht erkannter Punkt: ",
       "moveLocationOnMap": "Betriebsstelle auf der Karte verschieben",
-      "movePointOnMap": "",
       "next": "Weiter",
-      "noComputation": "",
       "opId": "Betriebsstellenkennung",
       "opName": "Betriebsstellenname",
       "opType": "Typ",
@@ -462,18 +431,10 @@
       "pass": "Durchfahrt",
       "requestedPoint": "Punkt auf der Karte",
       "stop": "Halt",
-      "submit": {
-        "addService": "",
-        "addSingleTrain": "",
-        "editOccurrence": "",
-        "editService": "",
-        "editSingleTrain": ""
-      },
       "track": "Gleis",
       "trainName": "Zugname",
       "trigram": "Betriebsstellenkürzel",
-      "uic": "UIC",
-      "unknownTrack": ""
+      "uic": "UIC"
     },
     "launchPathFinding": "Wegefindung starten",
     "manageVias": "Wegepunkteverwaltung",
@@ -481,7 +442,6 @@
     "noDestinationChosen": "Ziel nicht definiert",
     "noOriginChosen": "Startpunkt nicht definiert",
     "noPlaceChosen": "Kein Halt/Wegepunkt definiert",
-    "noRollingStock": "",
     "noSpeedLimitByTag": "Keiner",
     "origin": "Startpunkt",
     "pacedTrainUpdated": "Leistung aktualisiert",
@@ -536,46 +496,6 @@
     },
     "toggleTrigramSearch": "Betriebsstellenkürzelsuche umschalten",
     "trainAdded": "Zug hinzugefügt",
-    "trainHeader": {
-      "allowances": {
-        "linear": "",
-        "mareco": ""
-      },
-      "categoryMismatch": "",
-      "form": {
-        "add": "",
-        "comfort": "",
-        "compositionCode": "",
-        "departureDate": "",
-        "departureTime": "",
-        "electricalProfiles": "",
-        "extraOccurrences_one": "",
-        "extraOccurrences_other": "",
-        "extraOccurrences_zero": "",
-        "initialSpeedTooHigh": "",
-        "initialVelocity": "",
-        "invalidInitialSpeed": "",
-        "invalidInitialSpeedRounding": "",
-        "recoveryMargin": "",
-        "rollingStock": "",
-        "serviceInterval": "",
-        "serviceWindow": "",
-        "tags": "",
-        "trainCategory": "",
-        "trainName": ""
-      },
-      "itinerary": "",
-      "pathChanged": "",
-      "serviceChangeWarning": {
-        "cancel": "",
-        "confirm": "",
-        "explanations_one": "",
-        "explanations_other": "",
-        "header": ""
-      },
-      "serviceModelTrain": "",
-      "serviceOccurrence": ""
-    },
     "trainLabels": "Tags",
     "trainScheduleDepartureTime": "Abfahrtszeit",
     "trainScheduleInitialSpeed": "Anfangsgeschwindigkeit",
@@ -584,7 +504,6 @@
     "turnUniqueTrainIntoPacedTrain": "Diesen einzelnen Zug in eine Leistung umwandeln",
     "unavailableDistance": "Abstand nicht verfügbar",
     "uniqueTrainUpdated": "Einzelner Zug aktualisiert",
-    "unknownRollingStock": "",
     "updateOccurrence": "Dieses Vorkommen bearbeiten",
     "updatePacedTrain": "Leistung bearbeiten",
     "updateUniqueTrain": "Zug bearbeiten",
@@ -672,11 +591,6 @@
     "updatedOn": "Bearbeitet am"
   },
   "simulationResults": {
-    "curveSelection": {
-      "all": "",
-      "compliant": "",
-      "single": ""
-    },
     "departureTime": "Abfahrt",
     "displayWaypoints": "Zwischenpunkte anzeigen",
     "electricalProfiles": {
@@ -721,8 +635,6 @@
         "title": "ETCS",
         "transition": "Überg."
       },
-      "invalidSimulation": "",
-      "noData": "",
       "powerRestrictions": "Leistungsbeschränkungen",
       "reticleInfos": "Fadenkreuz-Infos",
       "slopes": "Längsneigungen",

@@ -1,11 +1,9 @@
 {
   "boardFullNames": {
-    "chronogram": "",
     "sdd": "Gráfico velocidad-distancia",
     "std": "Gráfico espacio-tiempo"
   },
   "boards": {
-    "chronogram": "",
     "conflicts": "Conflictos",
     "macro": "Macro",
     "map": "Mapa",
@@ -48,8 +46,6 @@
     },
     "success": "Operación exitosa",
     "warningMessages": {
-      "alreadyPresentNode_one": "",
-      "alreadyPresentNode_other": "",
       "warning": "Atención"
     }
   },
@@ -59,699 +55,88 @@
     "conflicts": {
       "conflictsCount_one": "{{count}} conflicto",
       "conflictsCount_other": "{{count}} conflictos",
-      "conflictsCount_zero": "Sin conflictos",
-      "filterWithSelectedTrain": "",
-      "for": "",
-      "otherTrains": "",
-      "trainsInConflictTitle": ""
+      "conflictsCount_zero": "Sin conflictos"
     },
-    "copyTimetable": {
-      "text_one": "",
-      "text_other": "",
-      "title": ""
-    },
-    "cutTimetable": {
-      "text_one": "",
-      "text_other": "",
-      "title": ""
-    },
-    "description": {
-      "electricalProfileWithId": "",
-      "electricalProfileWithName": ""
-    },
-    "editScenario": "",
-    "electricalProfileSet": "",
-    "errorMessages": {
-      "error": "",
-      "unableToDeleteScenarioMessage": ""
-    },
-    "filterPlaceholder": "",
     "infrastructure": {
       "label": "Infraestructura"
     },
-    "lessDetails": "",
-    "linearMode": "",
-    "loadingConflicts": "",
-    "loadingMacroEditor": "",
     "macroEditor": {
-      "intervalXmin": "",
       "trainCategory": {
-        "COMMUTER_TRAIN": {
-          "name": "",
-          "shortName": ""
-        },
-        "FAST_FREIGHT_TRAIN": {
-          "name": "",
-          "shortName": ""
-        },
-        "FREIGHT_TRAIN": {
-          "name": "",
-          "shortName": ""
-        },
-        "HIGH_SPEED_TRAIN": {
-          "name": "",
-          "shortName": ""
-        },
-        "INTERCITY_TRAIN": {
-          "name": "",
-          "shortName": ""
-        },
-        "NIGHT_TRAIN": {
-          "name": "",
-          "shortName": ""
-        },
         "NO_CATEGORY": {
-          "name": "Sin categoría",
-          "shortName": ""
+          "name": "Sin categoría"
         },
         "REGIONAL_TRAIN": {
-          "name": "Tren regional",
-          "shortName": ""
+          "name": "Tren regional"
         },
         "TOURISTIC_TRAIN": {
-          "name": "Tren turistico",
-          "shortName": ""
-        },
-        "TRAM_TRAIN": {
-          "name": "",
-          "shortName": ""
+          "name": "Tren turistico"
         },
         "WORK_TRAIN": {
-          "name": "Tren de trabajo",
-          "shortName": ""
+          "name": "Tren de trabajo"
         }
-      },
-      "uniqueTrain": ""
+      }
     },
     "moreDetails": "Mostrar mas detalles",
-    "noElectricalProfileSet": "",
     "occurrenceMenu": {
       "delete": "Eliminar",
       "disable": "Deshabilitar",
       "edit": "Edición",
       "enable": "Habilitar",
-      "occurrenceMenuButton": "",
-      "project": "Proyecto",
-      "restore": ""
+      "project": "Proyecto"
     },
-    "operationalPointReference": "",
-    "pacedTrainAndUniqueTrainCount": "",
-    "pacedTrainCountSelected_one": "",
-    "pacedTrainCountSelected_other": "",
-    "pacedTrainCount_one": "",
-    "pacedTrainCount_other": "",
-    "pacedTrainCount_zero": "",
-    "pacedTrain_one": "",
-    "pacedTrain_other": "",
-    "pacedTrain_zero": "",
-    "pasteTimetable": {
-      "text_one": "",
-      "text_other": "",
-      "title": ""
-    },
-    "requestedDestination": "",
-    "requestedOrigin": "",
-    "requestedPoint": "",
-    "requestedPointUnknown": "",
-    "roundTripsModal": {
-      "cadence": "",
-      "intermediateStops": "",
-      "manageRoundTrips": "",
-      "matchedWith": "",
-      "oneWays": "",
-      "openRoundTripsMenu": "",
-      "others": "",
-      "pickReturn": "",
-      "restore": "",
-      "roundTrips": "",
-      "roundTripsManagement": "",
-      "setOneWay": "",
-      "suggestions": "",
-      "todo": ""
-    },
-    "scenarioCancel": "",
-    "scenarioCreateButton": "",
-    "scenarioCreationTitle": "",
     "scenarioDeleteButton": "Borrar",
-    "scenarioDeleted": "",
-    "scenarioDeletedDetails": "",
-    "scenarioDescription": "",
-    "scenarioDescriptionInvalid": "",
-    "scenarioDescriptionPlaceholder": "",
-    "scenarioInfraInvalid": "",
-    "scenarioInfrastructureLabel": "",
-    "scenarioModificationTitle": "",
-    "scenarioName": "",
-    "scenarioNameInvalid": "",
-    "scenarioTags": "",
-    "scenarioTimetableTypeCalendar": "",
-    "scenarioTimetableTypeHourly": "",
-    "scenarioUpdated": "",
-    "scenarioUpdatedDetails": "",
     "timetable": {
-      "addTrainSchedule": "",
-      "advancedFilterLabel": "",
-      "choosePath": "",
-      "closeFilter": "",
-      "copy": "",
-      "delete": "",
-      "deletePacedTrainAndUniqueTrainSelectionConfirmation": "",
-      "deletePacedTrainSelectionConfirmation": "",
-      "deleteSelection": "",
-      "deleteUniqueTrainSelectionConfirmation": "",
       "duplicate": "Clon",
-      "exportSelection": "",
-      "filterLabel": "",
-      "importTimetableNetworkGraphFromCatalog": "",
-      "importTimetableNetworkGraphFromFile": "",
-      "importTimetableNetworkGraphItem": "",
-      "invalid": {
-        "incompatible_constraints": "",
-        "invalid_path_items": "",
-        "not_enough_path_items": "",
-        "not_found_in_blocks": "",
-        "not_found_in_routes": "",
-        "not_found_in_tracks": "",
-        "pathfinding_not_found": "",
-        "rolling_stock_not_found": "",
-        "simulation_failed": "",
-        "zero_length_path": ""
-      },
-      "invalidTrains": "",
-      "modeCalendar": "",
-      "modeTrainScheduleSet": "",
-      "noSpeedLimitTagsShort": "",
-      "noTrainSchedule": "",
       "occurrenceChangeGroup": {
-        "constraint_distribution": "",
-        "initial_speed": "",
-        "labels": "",
-        "options": "",
-        "path_and_schedule": "",
-        "rolling_stock": "",
-        "speed_limit_tag": "",
-        "start_time": "",
         "train_name": "Nombre"
       },
-      "occurrenceType": {
-        "addedOccurrence": "",
-        "disabledOccurrence": "",
-        "editedOccurrence": ""
-      },
-      "pacedTrain": "",
-      "pacedTrainAdded": "",
-      "pacedTrainDeleted": "",
-      "punctuality": "",
-      "resetAllExceptions": "",
-      "resetExceptions": "",
-      "rollingStockFilterPlaceholder": "",
-      "selectAll": "",
-      "selectOptions": "",
-      "showAllCategories": "",
       "showAllTrains": "Todo",
-      "showHonoredTrains": "",
-      "showInvalidTrains": "",
-      "showNotHonoredTrains": "",
-      "showTrainsWithNoCategory": "",
-      "showValidTrains": "",
-      "speedLimitTags": "Códigos de composición",
-      "stopsCount_one": "",
-      "stopsCount_other": "",
-      "stopsCount_zero": "",
-      "toggleFilters": "",
-      "trainAdded": "",
-      "trainCategories": "",
-      "trainDeleted": "",
-      "trainScheduleSets": {
-        "addTrainScheduleSet": "",
-        "cancel": "",
-        "catalogEntry": "",
-        "checkingNameUniquenessError": "",
-        "choose": "",
-        "createNewCatalogEntry": "",
-        "description": "",
-        "duplicate": "",
-        "duplicateCatalogEntry": "",
-        "edit": "",
-        "editAndPublish": "",
-        "editLocalTitle": "",
-        "editPublishedTitle": "",
-        "error": {
-          "alreadyPublished": "",
-          "catalogEntryRequired": "",
-          "nameRequired": "",
-          "tssNameDuplicate": ""
-        },
-        "existingCatalogEntry": "",
-        "localRemoveDialogTitle": "",
-        "localRemoveDialogWarning": "",
-        "localRemoveDialogWarningEmpty": "",
-        "localRemoveFromScenario": "",
-        "moveToPackage": "",
-        "moveToSelectPackage": "",
-        "movingToAnotherPackage": "",
-        "name": "",
-        "namePlaceholder": "",
-        "newCatalogEntry": "",
-        "newLocalTrainScheduleSet": "",
-        "newTrainScheduleSet": "",
-        "package": "",
-        "parentCatalogEntry": "",
-        "publishDialogTitle": "",
-        "publishSubmit": "",
-        "publishToCatalog": "",
-        "removeDialogText": "",
-        "removeDialogTitle": "",
-        "removeDialogWarning": "",
-        "removeFromScenario": "",
-        "sandbox": "",
-        "transformToLocalCopy": "",
-        "transformToLocalCopyDialogText": "",
-        "transformToLocalCopyDialogTitle": "",
-        "transformToLocalCopySubmit": ""
-      },
-      "trainSchedulesSelectionDeletedCount_one": "",
-      "trainSchedulesSelectionDeletedCount_other": "",
-      "trainType": "",
-      "uniqueTrain": "",
-      "unselectAll": "",
-      "update": "",
-      "validityFilter": ""
-    },
-    "uniqueTrainCountSelected_one": "",
-    "uniqueTrainCountSelected_other": "",
-    "uniqueTrainCount_one": "",
-    "uniqueTrainCount_other": "",
-    "uniqueTrainCount_zero": "",
-    "uniqueTrain_one": "",
-    "uniqueTrain_other": "",
-    "uniqueTrain_zero": ""
+      "speedLimitTags": "Códigos de composición"
+    }
   },
   "manageTrainSchedule": {
-    "addPacedTrain": "",
-    "addUniqueTrain": "",
-    "addVia": "",
-    "addVias": "",
-    "allowances": {
-      "distribution-linear": "",
-      "distribution-mareco": "",
-      "standard-allowance": ""
-    },
-    "anyTrack": "",
-    "category": "",
-    "categoryMismatch": "",
     "deleteRoute": "Elimina la ruta",
-    "deleteVias": "",
-    "destination": "",
     "errorMessages": {
-      "error": "Ha ocurrido un error",
-      "hardErrorInfra": "",
-      "intervalTooHigh": "",
-      "intervalTooLow": "",
-      "invalidInitialSpeed": "",
-      "mandatoryField": "",
-      "nameLengthLimit": "",
-      "noDelta": "",
-      "noDepartureTime": "",
-      "noDestination": "",
-      "noName": "",
-      "noOrigin": "",
-      "noOriginTime": "",
-      "noPathfinding": "",
-      "noRollingStock": "",
-      "noSpeedLimitByTag": "",
-      "noTimetable": "",
-      "noTrainCount": "",
-      "noTrainStep": "",
-      "originTimeOutsideWindow": "",
-      "requiredField": "",
-      "timeWindowTooHigh": "",
-      "timeWindowTooLow": "",
-      "tooHighInput": "",
-      "tooLowInput": "",
-      "trainScheduleTitle": "",
-      "unableToRetrieveTags": ""
+      "error": "Ha ocurrido un error"
     },
-    "hideTrainSettings": "",
-    "incompatibleConstraints": {
-      "filters": {
-        "activateAll": "",
-        "disable": "",
-        "enable": "",
-        "focus": "",
-        "title": ""
-      },
-      "gotoMap": "",
-      "incompatible_electrification_ranges": "",
-      "incompatible_gauge_ranges": "",
-      "incompatible_signaling_system_ranges": "",
-      "info": "",
-      "noElectrification": "",
-      "seeConstraintsOnMap": "",
-      "title": "",
-      "title_on": ""
-    },
-    "infraLoading": "",
-    "inputOPMainCodes": "",
-    "inputOPMainCodesExample": "",
-    "invalidTrainScheduleStep": "",
-    "inverseOD": "",
     "itineraryModal": {
-      "addLocationOnMap": "",
-      "addPoint": "",
-      "addPointOnMap": "",
-      "alertInvalidOP": "",
-      "alertMissingDestination": "",
-      "alertMissingOrigin": "",
-      "alertMissingRequestedPoint": "",
-      "cancel": "",
-      "cancelMapSelection": "",
-      "focusLocationOnMap": "",
-      "frameAll": "",
-      "intermediateWaypointsPanel": {
-        "addWaypoint": "",
-        "collapseGroup": "",
-        "expandGroup": "",
-        "hide": "",
-        "hideLabel": "",
-        "idleMessage": "",
-        "noWaypoint": "",
-        "panelTitle": "",
-        "showLabel": ""
-      },
-      "invalidOP": "",
-      "moveLocationOnMap": "",
-      "movePointOnMap": "",
-      "next": "Próximo",
-      "noComputation": "",
-      "opId": "",
-      "opName": "",
-      "opType": "",
-      "openItineraryModal": "",
-      "pass": "",
-      "requestedPoint": "",
-      "stop": "",
-      "submit": {
-        "addService": "",
-        "addSingleTrain": "",
-        "editOccurrence": "",
-        "editService": "",
-        "editSingleTrain": ""
-      },
-      "track": "",
-      "trainName": "",
-      "trigram": "",
-      "uic": "",
-      "unknownTrack": ""
+      "next": "Próximo"
     },
-    "launchPathFinding": "",
-    "manageVias": "",
-    "missingPathSteps": "",
-    "noDestinationChosen": "",
-    "noOriginChosen": "",
-    "noPlaceChosen": "",
-    "noRollingStock": "",
-    "noSpeedLimitByTag": "",
-    "origin": "",
-    "pacedTrainUpdated": "",
     "pacedTrains": {
-      "add": "Añadir",
-      "addExtraOccurrences": "",
-      "added": "",
-      "defineService": "",
-      "departureDay": "",
-      "departureTime": "",
-      "interval": "",
-      "resetExceptionsConfirmation": "",
-      "timeWindow": ""
+      "add": "Añadir"
     },
-    "pathfinding": "",
-    "pathfindingDone": "",
-    "pathfindingError": "",
     "pathfindingErrors": {
-      "incompatible_constraints": "",
-      "not_enough_path_items": "",
-      "not_found_in_blocks": "",
-      "not_found_in_routes": "Ruta perdida",
-      "not_found_in_tracks": "",
-      "pathfinding_failure": "",
-      "rolling_stock_not_found": "",
-      "zero_length_path": ""
+      "not_found_in_routes": "Ruta perdida"
     },
-    "pathfindingInProgress": "",
-    "pathfindingMissingParams": "",
-    "pathfindingNoState": "",
-    "powerRestriction": "",
-    "powerRestrictionEmptyExplanationText": "",
-    "powerRestrictionExplanationText": "",
-    "refineSearchForMoreResults": "",
-    "removeVia": "",
-    "returnToSimulationResults": "",
-    "rollingstock": "",
-    "saving": "",
-    "showTrainSettings": "",
-    "speedLimitByTagAbbrev": "",
     "tabs": {
-      "pathFinding": "Recorrido",
-      "rollingStock": "",
-      "simulationSettings": "",
-      "timesStops": "",
-      "unrecognizedRollingStock": "",
-      "unspecifiedRollingStock": ""
-    },
-    "toggleTrigramSearch": "",
-    "trainAdded": "",
-    "trainHeader": {
-      "allowances": {
-        "linear": "",
-        "mareco": ""
-      },
-      "categoryMismatch": "",
-      "form": {
-        "add": "",
-        "comfort": "",
-        "compositionCode": "",
-        "departureDate": "",
-        "departureTime": "",
-        "electricalProfiles": "",
-        "extraOccurrences_one": "",
-        "extraOccurrences_other": "",
-        "extraOccurrences_zero": "",
-        "initialSpeedTooHigh": "",
-        "initialVelocity": "",
-        "invalidInitialSpeed": "",
-        "invalidInitialSpeedRounding": "",
-        "recoveryMargin": "",
-        "rollingStock": "",
-        "serviceInterval": "",
-        "serviceWindow": "",
-        "tags": "",
-        "trainCategory": "",
-        "trainName": ""
-      },
-      "itinerary": "",
-      "pathChanged": "",
-      "serviceChangeWarning": {
-        "cancel": "",
-        "confirm": "",
-        "explanations_one": "",
-        "explanations_other": "",
-        "header": ""
-      },
-      "serviceModelTrain": "",
-      "serviceOccurrence": ""
-    },
-    "trainLabels": "",
-    "trainScheduleDepartureTime": "",
-    "trainScheduleInitialSpeed": "",
-    "trainScheduleName": "",
-    "turnPacedTrainIntoUniqueTrain": "",
-    "turnUniqueTrainIntoPacedTrain": "",
-    "unavailableDistance": "",
-    "uniqueTrainUpdated": "",
-    "unknownRollingStock": "",
-    "updateOccurrence": "",
-    "updatePacedTrain": "",
-    "updateUniqueTrain": "",
-    "usingElectricalProfiles": "",
-    "via": "",
-    "viewItineraryOnMap": "",
-    "warningMessages": {
-      "inconsistent_one": "",
-      "inconsistent_other": "",
-      "missingPowerRestriction": "",
-      "modeNotHandled": "",
-      "pathfindingChange": "",
-      "powerRestrictionInvalidCombination": "",
-      "powerRestrictionsReset": ""
+      "pathFinding": "Recorrido"
     }
   },
   "operational-studies-management": {
-    "delete": "",
-    "filter-placeholder": "",
     "open": "Abierto",
-    "sort-by-latest": "",
-    "sort-by-name": "",
     "unselect-all": "Desseleccionar"
   },
   "project": {
-    "addImage": "",
-    "confirm-delete_one": "",
-    "confirm-delete_other": "",
-    "count_one": "",
-    "count_other": "",
-    "count_zero": "",
-    "create": "",
-    "error": {
-      "unableToCreateProjectTitle": "",
-      "unableToDeleteProject": "",
-      "unableToPostDocumentTitle": "",
-      "unableToUpdateProjectTitle": "",
-      "uploadImageSize": "",
-      "uploadImageSizeTitle": "",
-      "uploadImageType": "",
-      "uploadImageTypeTitle": ""
-    },
-    "fundedBy": "",
-    "modifyProject": "",
-    "noImageInvalid": "",
-    "objectives": "",
-    "projectBudget": "",
-    "projectBudgetInvalid": "",
     "projectCancel": "Cancelar",
-    "projectCreateButton": "",
-    "projectCreationTitle": "",
-    "projectDeleteButton": "",
-    "projectDeleted": "",
-    "projectDeletedDetails": "",
-    "projectDescription": "",
-    "projectDescriptionInvalid": "",
-    "projectDescriptionPlaceholder": "",
-    "projectFunders": "",
-    "projectFundersInvalid": "",
-    "projectImage": "",
-    "projectModificationTitle": "",
-    "projectModifyButton": "Salvar",
-    "projectName": "",
-    "projectNameInvalid": "",
-    "projectObjectives": "",
-    "projectObjectivesInvalid": "",
-    "projectObjectivesMarkdown": "",
-    "projectTags": "",
-    "projects": "",
-    "removeImage": "",
-    "selected_one": "",
-    "selected_other": "",
-    "totalBudget": "",
-    "uploadImage": ""
-  },
-  "scenario": {
-    "confirm-delete_one": "",
-    "confirm-delete_other": "",
-    "count_one": "",
-    "count_other": "",
-    "count_zero": "",
-    "create": "",
-    "selected_one": "",
-    "selected_other": "",
-    "updatedOn": ""
+    "projectModifyButton": "Salvar"
   },
   "simulationResults": {
-    "curveSelection": {
-      "all": "",
-      "compliant": "",
-      "single": ""
-    },
     "departureTime": "Salida",
-    "displayWaypoints": "",
     "electricalProfiles": {
-      "incompatible": "",
-      "incompatibleMode": "",
-      "incompatibleProfile": "",
       "legend": "Leyenda",
-      "missingProfile": "",
-      "notElectrified": "",
-      "thermal": "Motor de combustión",
-      "unused": "",
-      "used": ""
+      "thermal": "Motor de combustión"
     },
-    "errorMessages": {
-      "errorLoadingInfra": ""
-    },
-    "hideWaypoints": "",
-    "infraLoading": "",
-    "manchetteSettings": {
-      "waypointsVisibility": ""
-    },
-    "powerRestriction": {
-      "incompatible": "",
-      "used": ""
-    },
-    "projectionInProgress": "",
-    "simulationSheet": "",
-    "speedDistanceDiagram": "",
     "speedDistanceSettings": {
-      "context": "",
-      "electricalProfiles": "",
-      "energySource": "",
       "etcs": {
-        "guidance": "",
-        "indication": "",
-        "permittedSpeed": "",
-        "routing": "",
-        "signals": "Señales",
-        "spacing": "",
-        "stop": "",
-        "stopsAndTransitions": "",
-        "title": "",
-        "transition": ""
+        "signals": "Señales"
       },
-      "invalidSimulation": "",
-      "noData": "",
-      "powerRestrictions": "",
-      "reticleInfos": "",
-      "slopes": "",
-      "speedLimitTags": "",
-      "speedLimits": "Límites de velocidad",
-      "steps": "",
-      "temporarySpeedLimits": "",
-      "tractionStatus": ""
-    },
-    "timeSpaceChart": "",
-    "timeSpaceChartSettings": {
-      "capacity": "",
-      "conflicts": "",
-      "inputMode": "",
-      "operationalPointProjection": "",
-      "paths": "",
-      "projection": "",
-      "signalsStates": "",
-      "trackProjection": ""
-    },
-    "toggleManchetteMenu": "",
-    "toggleWarpedMap": "",
-    "warpedMapUnavailable": "",
-    "waypointMenu": {
-      "hide": "",
-      "hideOccupancy": "",
-      "showOccupancy": ""
+      "speedLimits": "Límites de velocidad"
     },
     "waypointsPanel": {
-      "name": "",
-      "secondaryCode": "CH",
-      "warning": ""
+      "secondaryCode": "CH"
     }
   },
   "study": {
-    "budget": "",
-    "confirm-delete_one": "",
-    "confirm-delete_other": "",
-    "count_one": "",
-    "count_other": "",
-    "count_zero": "",
-    "create": "",
-    "date-creation": "",
-    "date-expected-end": "",
     "date-modified": "Actualizado",
     "date-real-end": "Fecha real de finalización",
     "date-start": "Comienzo",
@@ -766,7 +151,6 @@
     "studyBusinessCodeInvalid": "El código de negocio del estudio no debe exceder los 128 caracteres",
     "studyCancel": "Cancelar",
     "studyCategories": {
-      "chartStability": "",
       "disturbanceTests": "Pruebas de interrupción",
       "flowRate": "Caudal",
       "garageRequirement": "Consideraciones para requisitos del garaje",
