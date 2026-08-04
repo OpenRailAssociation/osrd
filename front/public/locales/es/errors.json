@@ -13,6 +13,11 @@
   "default": "Se produjo un error.",
   "editoast": {
     "DatabaseAccessError": "Error grave de acceso a la base de datos",
+    "JoinError": {
+      "cancelled": "",
+      "panic": "",
+      "unhandled_add_case_here": ""
+    },
     "app_health": {
       "Core": "Error del núcleo",
       "Database": "Error en la base de datos",
@@ -20,26 +25,50 @@
       "Timeout": "El servicio no respondió a tiempo",
       "Valkey": "Error de Valkey"
     },
+    "attached": {
+      "TrackNotFound": ""
+    },
     "authorization": {
       "AuthError": "Error interno de autenticación o de autorización; vuelva a intentarlo o contacte al personal de asistencia",
-      "DbError": "Error grave de acceso a la base de datos"
+      "DbError": "Error grave de acceso a la base de datos",
+      "Forbidden": "",
+      "ForbiddenImpersonation": "",
+      "ImpersonatedUserNotFound": "",
+      "Unauthenticated": ""
     },
     "authz": {
       "Authorizer": "Error interno",
       "Authz": "Error interno de autenticación o de autorización; vuelva a intentarlo o contacte al personal de asistencia",
+      "Database": "",
+      "Driver": "",
       "GrantsApiMisuse": "Uso impropio de la API",
       "NoSuchUser": "Usuario desconocido",
+      "UnknownIdentities": "",
       "UnknownResource": "Recurso desconocido",
-      "UnknownResourceType": "Tipo de recurso desconocido"
+      "UnknownResourceType": "Tipo de recurso desconocido",
+      "UnknownSubject": "",
+      "UnknownUser": ""
     },
     "authz_legacy": {
-      "UnknownResource": "Recurso desconocido"
+      "Openfga": "",
+      "Storage": "",
+      "UnknownResource": "Recurso desconocido",
+      "UnknownSubject": "",
+      "UnknownUser": ""
     },
     "auto_fixes": {
+      "ConflictingFixesOnSameObject": "",
+      "FixTrialFailure": "",
+      "MaximumIterationReached": "",
       "MissingErrorObject": "No se pudo encontrar el objeto del error"
     },
     "cache_operation": {
-      "DuplicateIdsProvided": "{{obj_type}} {{obj_id}}: ya existe un duplicado"
+      "DuplicateIdsProvided": "{{obj_type}} {{obj_id}}: ya existe un duplicado",
+      "ObjectNotFound": ""
+    },
+    "catalog_entry": {
+      "Database": "",
+      "NotFound": ""
     },
     "core": {
       "pathfinding": {
@@ -47,6 +76,10 @@
       }
     },
     "coreclient": {
+      "BrokenPipe": "",
+      "CannotExtractResponseBody": "",
+      "CoreResponseFormatError": "",
+      "MqClientError": "",
       "UnparsableErrorOutput": "El núcleo devolvió un error en un formato desconocido"
     },
     "delimited_area": {
@@ -56,6 +89,16 @@
       "Database": "Error interno (de la base de datos)",
       "NotFound": "No se encontró el documento «{{document_key}}»"
     },
+    "electrical_profiles": {
+      "Database": "",
+      "NotFound": ""
+    },
+    "fonts": {
+      "FileNotFound": ""
+    },
+    "geometry": {
+      "UnexpectedGeometry": ""
+    },
     "icons": {
       "FileNotFound": "Archivo no encontrado"
     },
@@ -63,20 +106,78 @@
       "Database": "Error interno",
       "NotFound": "No se pudo encontrar la infraestructura «{{infra_id}}»",
       "edition": {
-        "InfraIsLocked": "Infraestructura bloqueada"
+        "InfraIsLocked": "Infraestructura bloqueada",
+        "SplitTrackSectionBadOffset": ""
+      },
+      "errors": {
+        "WrongErrorTypeProvided": ""
+      },
+      "lines": {
+        "LineNotFound": ""
+      },
+      "objects": {
+        "DuplicateIdsProvided": "",
+        "ObjectIdNotFound": ""
+      },
+      "pathfinding": {
+        "EndingTrackLocationNotFound": "",
+        "InvalidNumberOfPaths": "",
+        "StartingTrackLocationNotFound": ""
       }
+    },
+    "infra_cache": {
+      "ObjectNotFound": ""
+    },
+    "infra_state": {
+      "FetchError": ""
+    },
+    "layers": {
+      "LayerNotFound": "",
+      "ViewNotFound": ""
+    },
+    "level_crossing": {
+      "Database": "",
+      "InfraNotFound": "",
+      "TimetableNotFound": "",
+      "UnsupportedTimetableType": ""
+    },
+    "macro_node": {
+      "Database": "",
+      "NotFound": "",
+      "ScenarioNotFound": ""
     },
     "macro_note": {
       "Database": "Error interno (base de datos)",
       "NotFound": "No se encontró la nota «{{note_id}}»",
+      "ScenarioNotFound": "",
       "WrongScenario": "La nota «{note_id}» no pertenece al escenario «{scenario_id}»"
+    },
+    "model": {
+      "ModelError": ""
+    },
+    "operation": {
+      "EmptyId": "",
+      "InvalidPatch": "",
+      "ModifyId": "",
+      "ObjectNotFound": ""
+    },
+    "operationalPointProjection": {
+      "InvalidNumberOfDistances": "",
+      "InvalidNumberOfRefs": ""
     },
     "paced_train": {
       "Database": "Error interno (de la base de datos)",
       "InfraNotFound": "No se pudo encontrar la infraestructura «{{infra_id}}»"
     },
     "pathfinding": {
-      "InfraNotFound": "No existe la infraestructura «{{infra_id}}»"
+      "Database": "",
+      "ElectricalProfilesOverlap": "",
+      "ElectrificationOverlap": "",
+      "InfraNotFound": "No existe la infraestructura «{{infra_id}}»",
+      "NotFound": "",
+      "OperationalPointsNotFound": "",
+      "RollingStockNotFound": "",
+      "TrackSectionsNotFound": ""
     },
     "postgres": {
       "Host": "Anfitrión «{{hostname}}» no válido",
@@ -94,44 +195,164 @@
       "UnsupportedVersion": "Versión de railjson no admitida"
     },
     "rollingstocks": {
-      "Database": "Error interno (base de datos)"
+      "BasePowerClassEmpty": "",
+      "CannotCreateCompoundImage": "",
+      "CannotReadImage": "",
+      "Database": "Error interno (base de datos)",
+      "IsLocked": "",
+      "IsUsed": "",
+      "KeyNotFound": "",
+      "LiveryMultipartError": "",
+      "NameAlreadyUsed": ""
+    },
+    "round_trips": {
+      "Database": "",
+      "DuplicateTrainIds": "",
+      "TimetableNotFound": ""
+    },
+    "scenario": {
+      "Database": "",
+      "InfraNotFound": "",
+      "NotFound": "",
+      "StudyNotFound": "",
+      "TimetableNotFound": ""
     },
     "search": {
+      "ArgMissing": "",
+      "ArgTypeMismatch": "",
+      "EmptyArray": "",
+      "IntegerConversion": "",
+      "InvalidColumnName": "",
+      "InvalidFunctionIdentifier": "",
       "InvalidSyntax": "Sintaxis no válida",
+      "ObjectType": "",
+      "QueryAst": "",
+      "RuntimeTypeCheckFail": "",
+      "SearchEngineError": "",
       "UndefinedFunction": "Función no definida",
-      "UnexpectedColumn": "Columna inesperada"
+      "UndefinedOverload": "",
+      "UnexpectedArg": "",
+      "UnexpectedColumn": "Columna inesperada",
+      "UnexpectedErsatz": "",
+      "VariadicArgTypeMismatch": ""
+    },
+    "search_journeys": {
+      "Database": "",
+      "InfraNotFound": "",
+      "InvalidInput": ""
     },
     "single_simulation": {
-      "PathNotFound": "No se pudo encontrar la ruta «{{path_id}}»"
+      "ElectricalProfileSetNotFound": "",
+      "PathNotFound": "No se pudo encontrar la ruta «{{path_id}}»",
+      "RollingStockNotFound": "",
+      "WrongCoreResponseFormat": ""
     },
     "sprites": {
-      "FileNotFound": "Archivo no encontrado"
+      "FileNotFound": "Archivo no encontrado",
+      "UnknownSignalingSystem": ""
+    },
+    "stdcm": {
+      "BatchRollingStockNotFound": "",
+      "Database": "",
+      "InfraNotFound": "",
+      "InvalidConsistLength": "",
+      "InvalidConsistMass": "",
+      "InvalidConsistMaxSpeed": "",
+      "InvalidPathItems": "",
+      "TimetableNotFound": "",
+      "TowedRollingStockNotFound": "",
+      "TrainSimulationFail": ""
+    },
+    "stdcm_debug": {
+      "JsonParseError": "",
+      "S3Error": "",
+      "S3NotConfigured": ""
     },
     "stdcm_search_env": {
-      "Database": "Error interno (base de datos)"
+      "Database": "Error interno (base de datos)",
+      "NotFound": ""
     },
     "study": {
       "Database": "Error interno (base de datos)",
-      "NotFound": "No se pudo encontrar el estudio «{{study_id}}»"
+      "NotFound": "No se pudo encontrar el estudio «{{study_id}}»",
+      "ProjectNotFound": "",
+      "StartDateAfterEndDate": ""
+    },
+    "sub_categories": {
+      "CodeAlreadyUsed": "",
+      "Database": "",
+      "NotFound": ""
     },
     "temporary_speed_limit": {
       "Database": "Error interno (base de datos)",
       "NameAlreadyUsed": "Ya existe un grupo de límites de velocidad temporales con el nombre «{{name}}»"
     },
     "timetable": {
-      "Database": "Error interno (base de datos)"
+      "BatchTrainScheduleSetNotFound": "",
+      "Database": "Error interno (base de datos)",
+      "InfraNotFound": "",
+      "InfraNotLoaded": "",
+      "InvalidPeriod": "",
+      "NotFound": "",
+      "ParseError": "",
+      "Timeout": "",
+      "TrainScheduleSetsNotFound": "",
+      "similar_trains": {
+        "Database": "",
+        "EmptyTrainsTraffic": "",
+        "InvalidPath": "",
+        "RollingStockNotFound": "",
+        "SpeedLimitNotFound": ""
+      }
     },
     "towedrollingstocks": {
-      "Database": "Error interno"
+      "Database": "Error interno",
+      "IdNotFound": "",
+      "IsLocked": ""
     },
     "train_schedule": {
-      "InfraNotFound": "No se pudo encontrar la infraestructura «{{infra_id}}»"
+      "BatchNotFound": "",
+      "Database": "",
+      "ExceptionNotFound": "",
+      "InfraNotFound": "No se pudo encontrar la infraestructura «{{infra_id}}»",
+      "InvalidPathPortion": "",
+      "NotFound": "",
+      "PathfindingFailed": "",
+      "RollingStockNotFound": "",
+      "SimulationFailed": "",
+      "TrainScheduleSetNotFound": ""
+    },
+    "train_schedule_exception": {
+      "BatchNotFound": "",
+      "Database": "",
+      "InvalidOccurrenceIndex": "",
+      "NotFound": "",
+      "NotPacedTrain": "",
+      "OccurrenceIndexAlreadyUsed": "",
+      "TimetableNotFound": "",
+      "TrainScheduleNotFound": ""
+    },
+    "train_schedule_set": {
+      "CatalogEntryNotFound": "",
+      "Database": "",
+      "NotFound": ""
     },
     "url": {
       "InvalidUrl": "URL «{{url}}» no válido"
     },
     "valkey": {
       "Url": "URL «{{url}}» no válido"
+    },
+    "work_schedule": {
+      "Database": "",
+      "NameAlreadyUsed": "",
+      "WorkScheduleGroupNotFound": ""
+    },
+    "worker_load": {
+      "Database": "",
+      "FetchStatusError": "",
+      "InfraNotFound": "",
+      "TimetableNotFound": ""
     }
   },
   "pageNotFound": "La página que busca no existe."
