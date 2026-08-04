@@ -14,7 +14,6 @@ import type {
   TrackSection,
   ScheduleItem,
 } from 'common/api/osrdEditoastApi';
-import { matchPathStepAndOp } from 'modules/pathfinding/utils';
 import { interpolateValue } from 'modules/simulationResult/helpers/utils';
 import type { SimulationSummary } from 'modules/trainSchedule/types';
 import type { Train } from 'reducers/osrdconf/types';
@@ -23,11 +22,7 @@ import { Duration } from 'utils/duration';
 
 import { ARRIVAL_TIME_ACCEPTABLE_ERROR, marginsUndefined } from '../consts';
 import { computeMargins, getTheoreticalMargins } from '../helpers/computeMargins';
-import {
-  buildOpMatchParams,
-  getOperationalPointName,
-  receptionSignalToSignalBooleans,
-} from '../helpers/utils';
+import { getOperationalPointName, receptionSignalToSignalBooleans } from '../helpers/utils';
 import { type Margins, type StepStatus, type TimesStopsRowNew } from '../types';
 
 /**
@@ -257,10 +252,7 @@ const useTimesStopsTableData = (
         const matchingOp =
           pathStepOp ??
           ('operational_point' in pathStep.location && stableOPs
-            ? stableOPs.find((op) => {
-                const builtOp = buildOpMatchParams(op);
-                return builtOp && matchPathStepAndOp(pathStep.location, builtOp);
-              })
+            ? stableOPs.find((op) => op.pathItemId === pathStep.id)
             : undefined);
 
         const name =
@@ -347,21 +339,7 @@ const useTimesStopsTableData = (
     if (stableOPs) {
       stableOPs.forEach((op, opIndex) => {
         const trackName = op.part.local_track_name;
-
-        const matchingPathStep = selectedTrain.path.find((pathStep) => {
-          // Track-offset waypoints (opId is null) are matched by pathItemId
-          if (!op.opId) {
-            return op.pathItemId ? pathStep.id === op.pathItemId : false;
-          }
-          // TODO: now that we can match with pathItemId, we no longer need to call matchPathStepAndOp
-          // We could probably remove this function after the drop of the old interfaces is done
-          const builtOp = buildOpMatchParams(op);
-          return builtOp && matchPathStepAndOp(pathStep.location, builtOp);
-        });
-
-        const matchingPathStepRow = matchingPathStep
-          ? pathStepRowsById.get(matchingPathStep.id)
-          : undefined;
+        const matchingPathStepRow = op.pathItemId ? pathStepRowsById.get(op.pathItemId) : undefined;
 
         if (matchingPathStepRow) {
           formattedRows.push({
