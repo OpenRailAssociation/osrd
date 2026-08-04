@@ -370,7 +370,7 @@
     "description": "Les zones neutres sont des intervalles de section de voie où les trains n’ont pas le droit de récupérer de l’électricité de caténaires. Ils doivent utiliser leur inertie sur ces intervalles. En pratique, les zones neutres sont délimitées par des panneaux. Dans OSRD, les zones neutres sont directionnelles, afin de prendre en compte des placements de panneaux différents en fonction de la direction. Pour plus d’information, consulter [la documentation] (https://osrd.fr/en/docs/explanation/neutral_sections/).",
     "properties": {
       "announcement_track_ranges": {
-        "description": "Liste des intervalles de section de voie où la NEUTRAL SECTION à venir est annoncée",
+        "description": "Liste des intervalles de section de voie où la section neutre à venir est annoncée",
         "title": "Intervalles de section de voie à venir"
       },
       "id": {
