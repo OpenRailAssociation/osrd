@@ -1,7 +1,6 @@
-import { readFile } from 'node:fs/promises';
+import { readFile, glob } from 'node:fs/promises';
 import path from 'node:path';
 
-import { glob } from 'glob';
 import { jsonKeyPathList } from 'json-key-path-list';
 import * as ts from 'typescript';
 
@@ -71,20 +70,15 @@ async function readJsonFile<T extends { [key: string]: unknown }>(filePath: stri
  */
 async function getLocalesKeys(localePath: string, locale: string): Promise<Set<string>> {
   const pathForLocale = `${localePath}/${locale}/`;
-  const files = await glob(`${pathForLocale}/**/*.json`);
-  const allKeys = (
-    await Promise.all(
-      files.map(async (file) => {
-        const data = await readJsonFile(file);
-        const namespace = file.replace(pathForLocale, '').replace(/\.json$/, '');
-        return jsonKeyPathList(data).map(
-          (key: string) => `${namespace}:${key.replace(/_(zero|one|other|many)$/, '')}`
-        );
-      })
-    )
-  )
-    .flat()
-    .sort();
+  const allKeys = new Set<string>();
+  for await (const file of glob(`${pathForLocale}/**/*.json`)) {
+    const data = await readJsonFile(file);
+    const namespace = file.replace(pathForLocale, '').replace(/\.json$/, '');
+    const keys: string[] = jsonKeyPathList(data);
+    for (const key of keys) {
+      allKeys.add(`${namespace}:${key.replace(/_(zero|one|other|many)$/, '')}`);
+    }
+  }
   return new Set(allKeys);
 }
 
