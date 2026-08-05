@@ -17,17 +17,23 @@ import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
+import useScenarioTrainScheduleSet, {
+  type ImportTrainScheduleSetsPayload,
+} from 'applications/operationalStudies/hooks/useScenarioTrainScheduleSet';
 import { useTimetableContext } from 'applications/operationalStudies/hooks/useTimetableContext';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import MenuTriggerButton from 'common/MenuTriggerButton';
 import UploadFileModal from 'common/uploadFileModal';
 import type { TrainScheduleWithDetails } from 'modules/trainSchedule/types';
+import { setFailure } from 'reducers/main';
 import { resetItineraryForm } from 'reducers/osrdconf/operationalStudiesConf';
 import { useAppDispatch } from 'store';
+import { castErrorToFailure } from 'utils/error';
 
 import { MANAGE_TRAIN_SCHEDULE_TYPES } from '../../consts';
 import useImportTrainSchedules from '../ImportTrainSchedule';
+import { TrainScheduleSetCatalogDialog } from '../ImportTrainScheduleSets';
 import RoundTripsModal from '../RoundTrips/RoundTripsModal';
 import FilterPanel from './FilterPanel';
 import SelectionToolBar from './TimetableSelectionToolbar';
@@ -40,6 +46,7 @@ import {
 
 type TimetableToolbarProps = {
   timetableFilters: TimetableFilters;
+  trainSchedulesWithDetails: TrainScheduleWithDetails[];
   filteredTrainSchedules: TrainScheduleWithDetails[];
   selectedTrainScheduleIds: number[];
   showTrainDetails: boolean;
@@ -57,6 +64,7 @@ type TimetableToolbarProps = {
 
 const TimetableToolbar = ({
   timetableFilters,
+  trainSchedulesWithDetails,
   filteredTrainSchedules,
   selectedTrainScheduleIds,
   showTrainDetails,
@@ -132,6 +140,19 @@ const TimetableToolbar = ({
       />
     );
 
+  const { importTrainScheduleSets } = useScenarioTrainScheduleSet(trainSchedulesWithDetails);
+  const [trainScheduleSetsCatalogModalIsOpen, setTrainScheduleSetsCatalogModalIsOpen] =
+    useState<boolean>(false);
+
+  const handleImportTrainScheduleSets = async (data: ImportTrainScheduleSetsPayload) => {
+    try {
+      await importTrainScheduleSets(data);
+      setTrainScheduleSetsCatalogModalIsOpen(false);
+    } catch (error) {
+      dispatch(setFailure(castErrorToFailure(error)));
+    }
+  };
+
   return (
     <>
       {areInvalidTrainSchedules && (
@@ -201,8 +222,7 @@ const TimetableToolbar = ({
                   icon: <Book />,
                   title: t('timetable.importTimetableNetworkGraphFromCatalog'),
                   dataTestID: 'scenarios-import-timetable-by-catalog',
-                  onClick: () =>
-                    setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.catalog),
+                  onClick: () => setTrainScheduleSetsCatalogModalIsOpen(true),
                 },
               ],
             }}
@@ -296,6 +316,12 @@ const TimetableToolbar = ({
           timetableId={timetableId}
           trainSchedules={trainSchedules}
           refreshNge={refreshNge}
+        />
+      )}
+      {trainScheduleSetsCatalogModalIsOpen && (
+        <TrainScheduleSetCatalogDialog
+          onSubmit={handleImportTrainScheduleSets}
+          onCancel={() => setTrainScheduleSetsCatalogModalIsOpen(false)}
         />
       )}
     </>

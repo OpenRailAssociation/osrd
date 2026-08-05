@@ -1,30 +1,23 @@
 import { ChevronLeft, ChevronRight } from '@osrd-project/ui-icons';
-import { useDispatch } from 'react-redux';
 
 import { ManageTrainScheduleContextProvider } from 'applications/operationalStudies/hooks/useManageTrainScheduleContext';
-import useScenarioTrainScheduleSet from 'applications/operationalStudies/hooks/useScenarioTrainScheduleSet';
-import type { ImportTrainScheduleSetsPayload } from 'applications/operationalStudies/hooks/useScenarioTrainScheduleSet';
 import { useTimetableContext } from 'applications/operationalStudies/hooks/useTimetableContext';
-import type { TrainScheduleWithDetails } from 'modules/trainSchedule/types';
-import { setFailure } from 'reducers/main';
-import { castErrorToFailure } from 'utils/error';
 
 import { MANAGE_TRAIN_SCHEDULE_TYPES } from '../../consts';
-import { TrainScheduleSetCatalogDialog } from '../ImportTrainScheduleSets';
 import ManageTrainSchedule from './ManageTrainSchedule';
 import ManageTrainScheduleLeftPanel, {
   type ManageTrainScheduleLeftPanelProps,
 } from './ManageTrainScheduleLeftPanel';
 
 type ManageTrainScheduleModalProps = ManageTrainScheduleLeftPanelProps & {
-  trainSchedulesWithDetails: TrainScheduleWithDetails[];
+  displayTrainScheduleManagement: string;
+  setDisplayTrainScheduleManagement: (type: string) => void;
   setCollapsedTimetableEdit: () => void;
   collapsedTimetableEdit: boolean;
   closeViewAndOpenTableBoard: (closeView: () => void) => void;
 };
 
 const ManageTrainScheduleModal = ({
-  trainSchedulesWithDetails,
   displayTrainScheduleManagement,
   setDisplayTrainScheduleManagement,
   trainScheduleToEditData,
@@ -33,19 +26,7 @@ const ManageTrainScheduleModal = ({
   collapsedTimetableEdit,
   closeViewAndOpenTableBoard,
 }: ManageTrainScheduleModalProps) => {
-  const dispatch = useDispatch();
-
   const { upsertTrainSchedules } = useTimetableContext();
-  const { importTrainScheduleSets } = useScenarioTrainScheduleSet(trainSchedulesWithDetails);
-
-  const handleImportTrainScheduleSets = async (data: ImportTrainScheduleSetsPayload) => {
-    try {
-      await importTrainScheduleSets(data);
-      setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.none);
-    } catch (error) {
-      dispatch(setFailure(castErrorToFailure(error)));
-    }
-  };
 
   return (
     <div className="scenario-manage-train-schedule-modal">
@@ -76,13 +57,6 @@ const ManageTrainScheduleModal = ({
               {collapsedTimetableEdit ? <ChevronRight /> : <ChevronLeft />}
             </button>
           </div>
-        )}
-
-        {displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.catalog && (
-          <TrainScheduleSetCatalogDialog
-            onSubmit={handleImportTrainScheduleSets}
-            onCancel={() => setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.none)}
-          />
         )}
       </ManageTrainScheduleContextProvider>
     </div>
