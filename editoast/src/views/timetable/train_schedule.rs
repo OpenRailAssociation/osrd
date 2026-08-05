@@ -1338,6 +1338,20 @@ pub(in crate::views) async fn project_path_op(
         })
         .unzip();
 
+    // Check user privilege on the rolling stocks of the occurrences.
+    // Without a simulation, no rolling stock is involved: the check is skipped.
+    if use_simulation {
+        crate::authorizers::require_readable_rolling_stocks(
+            occurrences
+                .iter()
+                .map(|occurrence| occurrence.rolling_stock_name.clone()),
+            conn,
+            &authn_state,
+            regulator.openfga(),
+        )
+        .await?;
+    }
+
     // Transform operational point references into a list of path item locations
     let path_item_locations_projection = operational_points_refs
         .iter()
@@ -3833,7 +3847,6 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn paced_train_project_path() {
-        // SETUP
         let db_pool = DbConnectionPoolV2::for_tests();
 
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
@@ -3851,12 +3864,17 @@ mod tests {
 
         let core = mocked_core_pathfinding_sim_and_proj();
         let app = test_app!()
-            .skip_authz()
             .db_pool(db_pool)
             .core_client(core.into())
             .build();
 
-        // TEST
+        let user = app
+            .user("authorized", "Authorized")
+            .with_infra_grant(small_infra.id, authz::InfraGrant::Reader)
+            .with_roles([authz::Role::OperationalStudies])
+            .create()
+            .await;
+
         let response: HashMap<i64, ProjectPathTrainScheduleResult> = app
             .post("/train_schedules/project_path")
             .json(&json!({
@@ -3873,12 +3891,100 @@ mod tests {
                     }
                 ],
             }))
+            .by_user(&user.info)
             .await
             .assert_status_ok()
             .json();
         // EXPECT
         // TODO: improve this test
         assert_eq!(response.len(), 2);
+    }
+
+    /// With a simulation, projecting a train whose rolling stock the user cannot read is forbidden
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn project_path_op_without_rolling_stock_permission() {
+        let app = test_app!()
+            .core_client(mocked_core_pathfinding_sim_and_proj().into())
+            .build();
+        let db_pool = app.db_pool();
+
+        let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
+        let (timetable, train_schedule_set) =
+            create_timetable_with_train_schedule_set(&mut db_pool.get_ok()).await;
+        let paced_train =
+            create_simple_paced_train(&mut db_pool.get_ok(), train_schedule_set.id).await;
+        create_fast_rolling_stock(&mut db_pool.get_ok(), &paced_train.rolling_stock_name).await;
+
+        // a user that can read the infra, but not the rolling stock of the train
+        let user = app
+            .user("unauthorized", "Unauthorized")
+            .with_infra_grant(small_infra.id, authz::InfraGrant::Reader)
+            .with_roles([authz::Role::OperationalStudies])
+            .create()
+            .await;
+
+        app.post("/train_schedules/project_path_op")
+            .json(&json!({
+                "infra_id": small_infra.id,
+                "timetable_id": timetable.id,
+                "electrical_profile_set_id": null,
+                "train_ids": vec![paced_train.id],
+                "operational_points_refs": [
+                    { "type": "domestic", "country_code": "FR", "main_code": "MWS", "secondary_code": "BV" },
+                    { "type": "id", "operational_point": "Mid_East_station" },
+                ],
+                "operational_points_distances": [10000],
+                "use_simulation": true,
+            }))
+            .by_user(&user.info)
+            .await
+            .assert_status_forbidden();
+    }
+
+    /// Without a simulation, no rolling stock is involved: projecting a train whose rolling stock
+    /// the user cannot read is allowed
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn project_path_op_without_simulation_skips_rolling_stock_permission() {
+        let app = test_app!()
+            .core_client(mocked_core_pathfinding_sim_and_proj().into())
+            .build();
+        let db_pool = app.db_pool();
+
+        let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
+        let (timetable, train_schedule_set) =
+            create_timetable_with_train_schedule_set(&mut db_pool.get_ok()).await;
+        let paced_train =
+            create_simple_paced_train(&mut db_pool.get_ok(), train_schedule_set.id).await;
+        create_fast_rolling_stock(&mut db_pool.get_ok(), &paced_train.rolling_stock_name).await;
+
+        // the very same user as above, without any grant on the rolling stock of the train
+        let user = app
+            .user("unauthorized", "Unauthorized")
+            .with_infra_grant(small_infra.id, authz::InfraGrant::Reader)
+            .with_roles([authz::Role::OperationalStudies])
+            .create()
+            .await;
+
+        let response: HashMap<i64, ProjectPathTrainScheduleResult> = app
+            .post("/train_schedules/project_path_op")
+            .json(&json!({
+                "infra_id": small_infra.id,
+                "timetable_id": timetable.id,
+                "electrical_profile_set_id": null,
+                "train_ids": vec![paced_train.id],
+                "operational_points_refs": [
+                    { "type": "domestic", "country_code": "FR", "main_code": "MWS", "secondary_code": "BV" },
+                    { "type": "id", "operational_point": "Mid_East_station" },
+                ],
+                "operational_points_distances": [10000],
+                "use_simulation": false,
+            }))
+            .by_user(&user.info)
+            .await
+            .assert_status_ok()
+            .json();
+
+        assert!(response.contains_key(&paced_train.id));
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
