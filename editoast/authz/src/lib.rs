@@ -98,19 +98,6 @@ impl<T: std::fmt::Debug> Authorization<T> {
     }
 }
 
-impl<T: Default> Authorization<T> {
-    #[inline]
-    fn from_privilege_check(allowed: bool) -> Self {
-        if allowed {
-            Authorization::Granted(T::default())
-        } else {
-            Authorization::Denied {
-                reason: "insufficient privileges",
-            }
-        }
-    }
-}
-
 #[cfg(test)]
 macro_rules! authz_client {
     () => {{

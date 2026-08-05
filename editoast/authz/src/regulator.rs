@@ -1,10 +1,8 @@
 use std::collections::HashSet;
 use std::future::Future;
 
-use fga::model::Relation as _;
 use tracing::Level;
 
-use crate::Authorization;
 use crate::Error;
 use crate::Role;
 use crate::identity::GroupInfo;
@@ -88,46 +86,10 @@ impl<S: StorageDriver> Regulator<S> {
         &self.openfga
     }
 
-    /// Returns whether a user with some id exists
-    #[tracing::instrument(skip_all, fields(user_id = %user_id), ret(level = Level::DEBUG), err)]
-    pub async fn user_exists(&self, user_id: i64) -> Result<bool, Error<S::Error>> {
-        #[expect(deprecated)]
-        self.driver
-            .get_user_info(user_id)
-            .await
-            .map(|x| x.is_some())
-            .map_err(Error::Storage)
-    }
-
-    /// Returns whether a group with some id exists
-    #[tracing::instrument(skip_all, fields(group_id = %group_id), ret(level = Level::DEBUG), err)]
-    pub async fn group_exists(&self, group_id: i64) -> Result<bool, Error<S::Error>> {
-        #[expect(deprecated)] // to be removed soon
-        self.driver
-            .get_group_info(group_id)
-            .await
-            .map(|x| x.is_some())
-            .map_err(Error::Storage)
-    }
-
-    pub async fn subject_exists(&self, subject: &Subject) -> Result<bool, Error<S::Error>> {
-        match subject {
-            Subject::User(user) => self.user_exists(user.0).await,
-            Subject::Group(group) => self.group_exists(group.0).await,
-        }
-    }
-
     #[tracing::instrument(skip(self), ret(level = Level::DEBUG), err)]
     pub async fn user_roles(&self, user: &User) -> Result<HashSet<Role>, Error<S::Error>> {
         // no need to check for user inexistence, an empty set will be returned in this case
         let roles = Role::list_roles(&self.openfga, model::User::role(), user).await?;
-        Ok(roles.into_iter().collect())
-    }
-
-    #[tracing::instrument(skip(self), ret(level = Level::DEBUG), err)]
-    pub async fn group_roles(&self, group: &Group) -> Result<HashSet<Role>, Error<S::Error>> {
-        // no need to check for group inexistence, an empty set will be returned in this case
-        let roles = Role::list_roles(&self.openfga, Group::role(), group).await?;
         Ok(roles.into_iter().collect())
     }
 
@@ -150,83 +112,5 @@ impl<S: StorageDriver> Regulator<S> {
             return Ok(true);
         }
         Ok(false)
-    }
-
-    pub async fn is_admin(&self, user: &User) -> Result<bool, Error<S::Error>> {
-        let user_roles = self.user_roles(user).await?;
-        Ok(user_roles.contains(&Role::Admin))
-    }
-
-    #[tracing::instrument(skip(self), ret(level = Level::DEBUG), err)]
-    pub async fn authorize_infra(
-        &self,
-        user: &User,
-        infra: &Infra,
-        privilege: InfraPrivilege,
-    ) -> Result<Authorization<()>, Error<S::Error>> {
-        // Check if the infra exists
-        if !self
-            .driver
-            .infra_exists(infra.0)
-            .await
-            .map_err(Error::Storage)?
-        {
-            return Err(Error::UnknownResource(infra.0));
-        }
-
-        // Check if user exists
-        if !self.user_exists(user.0).await? {
-            return Err(Error::UnknownSubject(user.0));
-        }
-
-        // Bypass if user is an admin
-        if self.is_admin(user).await? {
-            return Ok(Authorization::Bypassed);
-        }
-
-        // Calling openfga with the appropriate privilege check
-        let check = match privilege {
-            InfraPrivilege::CanRestrictedRead => {
-                self.openfga
-                    .check(model::Infra::can_restricted_read().check(user, infra))
-                    .await?
-            }
-            InfraPrivilege::CanRead => {
-                self.openfga
-                    .check(model::Infra::can_read().check(user, infra))
-                    .await?
-            }
-            InfraPrivilege::CanWrite => {
-                self.openfga
-                    .check(model::Infra::can_write().check(user, infra))
-                    .await?
-            }
-            InfraPrivilege::CanDelete => {
-                self.openfga
-                    .check(model::Infra::can_delete().check(user, infra))
-                    .await?
-            }
-            InfraPrivilege::CanShareRead => {
-                self.openfga
-                    .check(model::Infra::can_share_read().check(user, infra))
-                    .await?
-            }
-            InfraPrivilege::CanShareWrite => {
-                self.openfga
-                    .check(model::Infra::can_share_write().check(user, infra))
-                    .await?
-            }
-            InfraPrivilege::CanShareOwnership => {
-                self.openfga
-                    .check(model::Infra::can_share_ownership().check(user, infra))
-                    .await?
-            }
-            InfraPrivilege::CanRevoke => {
-                self.openfga
-                    .check(model::Infra::can_revoke().check(user, infra))
-                    .await?
-            }
-        };
-        Ok(Authorization::from_privilege_check(check))
     }
 }

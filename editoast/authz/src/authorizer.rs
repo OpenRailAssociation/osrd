@@ -42,14 +42,6 @@ impl<S: StorageDriver> Authorizer<S> {
         Ok(authorizer)
     }
 
-    pub fn user_id(&self) -> i64 {
-        self.user_id
-    }
-
-    pub fn user_name(&self) -> &str {
-        &self.user.name
-    }
-
     /// Check that the user has any of the required roles
     #[tracing::instrument(skip_all, fields(user = %self.user, ?roles), ret(level = Level::DEBUG))]
     pub async fn check_roles(&self, roles: HashSet<Role>) -> Result<bool, Error<S::Error>> {
