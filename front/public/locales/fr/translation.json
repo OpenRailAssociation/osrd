@@ -707,7 +707,8 @@
       "TRAM_TRAIN": "Tram-train",
       "WORK_TRAIN": "Train de travaux",
       "choose": "Choisissez une catégorie",
-      "noCategory": "Pas de catégorie"
+      "noCategory": "Pas de catégorie",
+      "none": "Aucun"
     },
     "chooseRollingStock": "Sélectionnez un matériel roulant pour en afficher les informations",
     "comfort": "Confort",

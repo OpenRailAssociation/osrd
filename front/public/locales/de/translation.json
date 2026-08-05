@@ -696,7 +696,8 @@
       "TRAM_TRAIN": "Tram-Train",
       "WORK_TRAIN": "Bauzug",
       "choose": "Kategorie auswählen",
-      "noCategory": "Keine Kategorie"
+      "noCategory": "Keine Kategorie",
+      "none": "Keiner"
     },
     "chooseRollingStock": "Wählen Sie ein Schienenfahrzeug aus, um dessen Informationen anzuzeigen",
     "comfort": "Komfort",
