@@ -77,7 +77,6 @@ pub struct TrainOccurrence {
     #[serde_as(as = "DefaultOnNull")]
     pub comfort: Comfort,
     pub constraint_distribution: Distribution,
-    #[schema(inline)]
     #[serde(default)]
     pub speed_limit_tag: Option<NonBlankString>,
     #[schema(inline)]

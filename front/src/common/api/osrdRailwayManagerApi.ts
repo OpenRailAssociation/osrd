@@ -77,6 +77,8 @@ export type PostSendLastMinuteRequestApiArg = {
     simulation_report_sheet: Blob;
   };
 };
+export type ComponentsSchemasTransformTimetableResponsePropertiesPacedTrainsItemsAllOf0PropertiesSpeedLimitTagOneOf1 =
+  string;
 export type ComponentsSchemasTransformTimetableResponsePropertiesPacedTrainsItemsAllOf0PropertiesScheduleItemsPropertiesReferenceBaseArrivalOneOf1 =
   string;
 export type ConstraintDistribution = 'STANDARD' | 'MARECO';
@@ -86,12 +88,12 @@ export type Options = {
   use_speed_limits_for_simulation?: boolean;
 };
 export type Margins = {
-  boundaries: string[];
+  boundaries: ComponentsSchemasTransformTimetableResponsePropertiesPacedTrainsItemsAllOf0PropertiesSpeedLimitTagOneOf1[];
   /** The values of the margins. Must contains one more element than the boundaries
     Can be a percentage `X%` or a time in minutes per 100 kilometer `Xmin/100km` */
   values: string[];
 };
-export type Items = {
+export type PathItem = {
   /** The unique identifier of the path item.
     This is used to reference path items in the train schedule. */
   id: string;
@@ -132,7 +134,7 @@ export type Items = {
         type: 'operational_point_part_reference';
       });
 };
-export type Items2 = {
+export type ScheduleItem = {
   arrival?: null | ComponentsSchemasTransformTimetableResponsePropertiesPacedTrainsItemsAllOf0PropertiesScheduleItemsPropertiesReferenceBaseArrivalOneOf1;
   /** Position on the path of the schedule item. */
   at: string;
@@ -189,7 +191,7 @@ export type TransformTimetableResponse = {
     initial_speed?: number;
     labels?: string[];
     margins?: {
-      boundaries: string[];
+      boundaries: ComponentsSchemasTransformTimetableResponsePropertiesPacedTrainsItemsAllOf0PropertiesSpeedLimitTagOneOf1[];
       /** The values of the margins. Must contains one more element than the boundaries
             Can be a percentage `X%` or a time in minutes per 100 kilometer `Xmin/100km` */
       values: string[];
@@ -281,13 +283,13 @@ export type TransformTimetableResponse = {
         };
         path_and_schedule?: {
           margins: Margins;
-          path: Items[];
+          path: PathItem[];
           power_restrictions: {
             from: string;
             to: string;
             value: string;
           }[];
-          schedule: Items2[];
+          schedule: ScheduleItem[];
         };
         rolling_stock?: {
           comfort: Comfort;
@@ -297,7 +299,7 @@ export type TransformTimetableResponse = {
           value?: null | ComponentsSchemasTransformTimetableResponsePropertiesPacedTrainsItemsAllOf0PropertiesCategoryOneOf1;
         };
         speed_limit_tag?: {
-          value?: null | string;
+          value?: null | ComponentsSchemasTransformTimetableResponsePropertiesPacedTrainsItemsAllOf0PropertiesSpeedLimitTagOneOf1;
         };
         start_time?: {
           /** For calendar timetables: elapsed ms since 1970-01-01T00:00:00Z.
