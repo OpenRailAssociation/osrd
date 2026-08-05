@@ -1079,6 +1079,7 @@ impl From<&RailJson> for InfraCache {
 pub mod tests {
     use pretty_assertions::assert_eq;
     use std::collections::HashMap;
+    use std::sync::Arc;
 
     use database::DbConnection;
     use database::DbConnectionPoolV2;
@@ -1143,6 +1144,68 @@ pub mod tests {
         let result = apply_create_operation(&railjson_object, infra_id, conn).await;
         assert!(result.is_ok(), "Failed to create a {object_type}");
         railjson_object
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn load_infra_cache() {
+        let db_pool = DbConnectionPoolV2::for_tests();
+        let infra = create_empty_infra(&mut db_pool.get_ok()).await;
+        let infra_caches = dashmap::DashMap::new();
+        let valkey_client = Arc::new(cache::Client::new(
+            cache::Config::NoCache,
+            "INFRA_CACHE_TEST",
+        ));
+        InfraCache::get_or_load(
+            &mut db_pool.get_ok(),
+            &infra_caches,
+            &infra,
+            &valkey_client,
+            None,
+        )
+        .await
+        .unwrap();
+        assert_eq!(infra_caches.len(), 1);
+        InfraCache::get_or_load(
+            &mut db_pool.get_ok(),
+            &infra_caches,
+            &infra,
+            &valkey_client,
+            None,
+        )
+        .await
+        .unwrap();
+        assert_eq!(infra_caches.len(), 1);
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn load_infra_cache_mut() {
+        let db_pool = DbConnectionPoolV2::for_tests();
+        let infra = create_empty_infra(&mut db_pool.get_ok()).await;
+        let infra_caches = dashmap::DashMap::new();
+        let valkey_client = Arc::new(cache::Client::new(
+            cache::Config::NoCache,
+            "INFRA_CACHE_TEST",
+        ));
+        InfraCache::get_or_load_mut(
+            &mut db_pool.get_ok(),
+            &infra_caches,
+            &infra,
+            &valkey_client,
+            None,
+        )
+        .await
+        .unwrap();
+        assert_eq!(infra_caches.len(), 1);
+        InfraCache::get_or_load_mut(
+            &mut db_pool.get_ok(),
+            &infra_caches,
+            &infra,
+            &valkey_client,
+            None,
+        )
+        .await
+        .unwrap();
+        assert_eq!(infra_caches.len(), 1);
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
