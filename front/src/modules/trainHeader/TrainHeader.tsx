@@ -2,16 +2,16 @@ import { useCallback, useMemo, useState } from 'react';
 
 import { useTranslation } from 'react-i18next';
 
+import { useItineraryModalContext } from 'applications/operationalStudies/hooks/useItineraryModalContext';
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import { useTimetableContext } from 'applications/operationalStudies/hooks/useTimetableContext';
 import { updateTrainSchedule } from 'applications/operationalStudies/views/Scenario/components/ManageTrainSchedule/hooks/useUpdateTrainSchedule';
-import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/views/Scenario/consts';
 import type { PathfindingResult } from 'common/api/osrdEditoastApi';
 import useFilterRollingStock from 'modules/rollingStock/hooks/useFilterRollingStock';
 import type { TrainScheduleWithDetails } from 'modules/trainSchedule/types';
 import { setFailure } from 'reducers/main';
 import { selectTrainToEdit } from 'reducers/osrdconf/operationalStudiesConf';
-import type { Train, TrainScheduleToEditData } from 'reducers/osrdconf/types';
+import type { Train } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 import { extractEditoastIdFromTrainId, isOccurrenceId } from 'utils/trainId';
 
@@ -23,8 +23,6 @@ export type TrainHeaderProps = {
   train: Train;
   path?: Omit<PathfindingResult, 'status'>;
   trainSchedulesWithDetails: TrainScheduleWithDetails[];
-  setDisplayTrainScheduleManagement: (type: string) => void;
-  setTrainScheduleToEditData: (trainScheduleToEditData?: TrainScheduleToEditData) => void;
 };
 
 export type ExtraOccurrencesChanges = {
@@ -37,13 +35,7 @@ export type ExtraOccurrencesChanges = {
  * or an expanded form that allow the user to edit every data about the train outside of the train
  * stops themselves or its itinerary.
  */
-const TrainHeader = ({
-  train,
-  path,
-  trainSchedulesWithDetails,
-  setDisplayTrainScheduleManagement,
-  setTrainScheduleToEditData,
-}: TrainHeaderProps) => {
+const TrainHeader = ({ train, path, trainSchedulesWithDetails }: TrainHeaderProps) => {
   const [expanded, setExpanded] = useState(false);
   const { t } = useTranslation(['operational-studies']);
 
@@ -53,6 +45,8 @@ const TrainHeader = ({
   const occurrenceId = isOccurrenceId(train.id) ? train.id : undefined;
   const trainScheduleId = extractEditoastIdFromTrainId(train.id);
   const { filteredRollingStockList: rollingStocks } = useFilterRollingStock();
+
+  const { openItineraryModalToEdit } = useItineraryModalContext();
 
   // TODO: As soon as we ditch the old train edition modal, we should switch to a TrainSchedule instead
   //       of a TrainScheduleWithDetails as we have no need for the "details" in this form.
@@ -98,12 +92,11 @@ const TrainHeader = ({
         isOccurrence: !!occurrenceId,
       })
     );
-    setTrainScheduleToEditData({
+    openItineraryModalToEdit({
       trainScheduleId,
       originalTrainSchedule: originalTrainSchedule ?? train,
       occurrenceId,
     });
-    setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.itinerary);
   }, [
     train,
     originalTrainSchedule,
@@ -111,8 +104,7 @@ const TrainHeader = ({
     occurrenceId,
     rollingStocks,
     dispatch,
-    setDisplayTrainScheduleManagement,
-    setTrainScheduleToEditData,
+    openItineraryModalToEdit,
   ]);
 
   if (expanded) {

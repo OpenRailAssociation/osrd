@@ -16,6 +16,7 @@ import {
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 
+import { useItineraryModalContext } from 'applications/operationalStudies/hooks/useItineraryModalContext';
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import useScenarioTrainScheduleSet, {
   type ImportTrainScheduleSetsPayload,
@@ -31,7 +32,6 @@ import { resetItineraryForm } from 'reducers/osrdconf/operationalStudiesConf';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 
-import { MANAGE_TRAIN_SCHEDULE_TYPES } from '../../consts';
 import useImportTrainSchedules from '../ImportTrainSchedule';
 import { TrainScheduleSetCatalogDialog } from '../ImportTrainScheduleSets';
 import RoundTripsModal from '../RoundTrips/RoundTripsModal';
@@ -54,7 +54,6 @@ type TimetableToolbarProps = {
   setSelectedTrainScheduleIds: (selectedTrainScheduleIds: number[]) => void;
   setShowTrainDetails: (show: boolean) => void;
   setIsSelectMode: (show: boolean) => void;
-  setDisplayTrainScheduleManagement: (mode: string) => void;
   refreshNge: () => Promise<void>;
   handleDeleteTrainSchedules: () => void;
   handleMoveTrainSchedules: () => void;
@@ -72,7 +71,6 @@ const TimetableToolbar = ({
   setShowTrainDetails,
   setIsSelectMode,
   setSelectedTrainScheduleIds,
-  setDisplayTrainScheduleManagement,
   refreshNge,
   handleDeleteTrainSchedules,
   handleMoveTrainSchedules,
@@ -95,6 +93,8 @@ const TimetableToolbar = ({
 
   const { openModal, closeModal } = useContext(ModalContext);
   const importFile = useImportTrainSchedules();
+
+  const { openItineraryModalToCreate } = useItineraryModalContext();
 
   const toggleisSelectMode = () => {
     setIsSelectMode(!isSelectMode);
@@ -240,7 +240,7 @@ const TimetableToolbar = ({
                       : undefined,
                 })
               );
-              setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.add);
+              openItineraryModalToCreate();
             }}
             type="button"
           >
