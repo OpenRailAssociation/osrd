@@ -251,7 +251,7 @@ const useTimesStopsTableData = (
 
         const matchingOp =
           pathStepOp ??
-          ('operational_point' in pathStep.location && stableOPs
+          (pathStep.location.type === 'operational_point_part_reference' && stableOPs
             ? stableOPs.find((op) => op.pathItemId === pathStep.id)
             : undefined);
 
