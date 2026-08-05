@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import type { HoveredItem, Point } from '../../common';
-import { getEventPosition, getEventWheelDelta } from '../../spaceTimeChart/utils/events';
+import { getEventPosition, getEventWheelDelta } from '../helpers/utils';
 import type { DataPoint, Handler, MouseContextType, PointToData } from '../types';
 
 type Handlers<T> = {

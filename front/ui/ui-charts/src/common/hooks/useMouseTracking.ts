@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 
-import { getEventPosition } from '../../spaceTimeChart/utils/events';
+import { getEventPosition } from '../helpers/utils';
 import { type MouseState } from '../types';
 
 /**

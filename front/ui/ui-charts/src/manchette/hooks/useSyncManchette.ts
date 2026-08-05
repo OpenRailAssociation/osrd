@@ -1,9 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
+import { zoomX, timeScaleToZoomValue, getDistance } from '../../common/helpers/utils';
 import type { SpaceTimeChartProps } from '../../spaceTimeChart';
 import { DEFAULT_ZOOM_MS_PER_PX, MAX_ZOOM_Y, MIN_ZOOM_Y, ZOOM_Y_DELTA } from '../consts';
-import { getDistance } from '../utils';
-import { timeScaleToZoomValue, zoomX } from '../utils/helpers';
 
 const INITIAL_STATE = {
   xZoom: timeScaleToZoomValue(DEFAULT_ZOOM_MS_PER_PX),
