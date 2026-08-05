@@ -151,11 +151,11 @@ class OperationalStudiesPage extends ScenarioTimetableSection {
       await this.startTimeField.inputValue(),
       'Europe/Paris'
     ).toDate();
-    const scenarioCreationDate = new Date(date);
+    const expectedDate = new Date(date);
     const isSameDate =
-      startTimeDate.getFullYear() === scenarioCreationDate.getFullYear() &&
-      startTimeDate.getMonth() === scenarioCreationDate.getMonth() &&
-      startTimeDate.getDate() === scenarioCreationDate.getDate();
+      startTimeDate.getFullYear() === expectedDate.getFullYear() &&
+      startTimeDate.getMonth() === expectedDate.getMonth() &&
+      startTimeDate.getDate() === expectedDate.getDate();
     expect(isSameDate).toBe(true);
 
     await expect(this.initialSpeedInput).toBeVisible();

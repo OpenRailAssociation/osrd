@@ -27,6 +27,7 @@ import test from '../../page-object-fixture';
 import { waitForInfraStateToBeCached } from '../../utils';
 import { getInfra } from '../../utils/api-utils';
 import { cleanWhitespace } from '../../utils/data-normalizer';
+import { createDateInSpecialTimeZone } from '../../utils/date-utils';
 import { readJsonFile } from '../../utils/file-utils';
 import createScenario from '../../utils/scenario';
 import sendTrains from '../../utils/send-trains';
@@ -100,7 +101,13 @@ test.describe('Paced train management', { tag: ['@op', '@paced-trains'] }, () =>
     });
 
     await test.step('Verify default inputs/buttons', async () => {
-      await operationalStudiesPage.checkInputsAndButtons(frTranslations, scenario.creation_date);
+      const midnight = createDateInSpecialTimeZone(scenario.creation_date, 'Europe/Paris')
+        .set('hours', 0)
+        .set('minutes', 0)
+        .set('seconds', 0)
+        .set('milliseconds', 0)
+        .toDate();
+      await operationalStudiesPage.checkInputsAndButtons(frTranslations, midnight.toISOString());
     });
 
     await test.step('Verify tabs default behavior', async () => {
