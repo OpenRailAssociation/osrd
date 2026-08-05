@@ -7,12 +7,9 @@ import type {
   TimeChartStyles,
   SpaceChartStyles,
   BaseChartStyles,
+  DataPoint,
+  Axis,
 } from '../../common/types';
-
-// GLOBAL UTILITY TYPES:
-export type Handler<P extends object> = (payload: P) => void;
-
-export type RGBColor = [number, number, number];
 
 // TIME AND SPACE SCALE UTILITY TYPES:
 export type SpaceScale = {
@@ -61,11 +58,6 @@ export type NormalizedScale = {
 export type NormalizedScaleTree = BinaryTreeNode<NormalizedScale>;
 
 // BUSINESS SPECIFIC TYPES:
-export type DataPoint = {
-  time: number;
-  position: number;
-};
-
 export type PathEnd = 'stop' | 'out';
 export const DEFAULT_PATH_END = 'stop';
 export type PathData = {
@@ -83,14 +75,11 @@ export type OperationalPoint = {
   importanceLevel?: number; // Lower is better. If null, the point won't be displayed.
 };
 
-export type Axis = 'x' | 'y';
-
 export type Direction = 'forward' | 'backward' | 'still';
 
 // DATA TRANSLATION TYPES:
 export type SpaceToPixel = (position: number, fromEnd?: boolean) => number;
 export type PixelToSpace = (y: number) => number;
-export type PointToData = (point: Point) => DataPoint;
 export type DataToPoint = (data: DataPoint) => Point;
 
 // STYLES:

@@ -1,17 +1,21 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
 import { clamp, inRange } from 'lodash';
 
-import type { PixelToTime, Point, TimeToPixel } from '../../common/types';
+import type {
+  Axis,
+  DataPoint,
+  PixelToTime,
+  Point,
+  PointToData,
+  TimeToPixel,
+} from '../../common/types';
 import {
   type NormalizedScaleTree,
   type NormalizedScale,
   type SpaceScale,
   type SpaceToPixel,
   type PixelToSpace,
-  type PointToData,
   type DataToPoint,
-  type DataPoint,
-  type Axis,
   type PathData,
 } from '../lib/types';
 

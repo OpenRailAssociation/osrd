@@ -1,7 +1,6 @@
 import { type HTMLProps } from 'react';
 
-import type { PathLevel, SpaceTimeChartTheme } from '../spaceTimeChart';
-import type { DataPoint, Handler, PointToData, DataToPoint } from '../spaceTimeChart/lib/types';
+import type { DataToPoint } from '../spaceTimeChart/lib/types';
 import type { LAYERS, PICKING_LAYERS } from './consts';
 
 export type BaseChartContextType = {
@@ -15,6 +14,9 @@ export type Point = {
   y: number;
 };
 
+export type Axis = 'x' | 'y';
+
+export type RGBColor = [number, number, number];
 export type RGBAColor = [number, number, number, number];
 
 // CANVAS SPECIFIC TYPES:
@@ -105,7 +107,7 @@ type BaseTimeChartContextType = BaseChartContextType & {
 
   // Full theme:
   // TODO: create a more generic ChartTheme
-  theme: SpaceTimeChartTheme;
+  theme: BaseChartStyles & TimeChartStyles & SpaceChartStyles;
 };
 
 export type ChartOptions = {
@@ -205,3 +207,16 @@ export type TimeChartStyles = {
 export type SpaceChartStyles = {
   spaceGraduationsStyles: Record<number, LineStyle>;
 };
+
+export type PathLevel = 1 | 2 | 3 | 4 | 5;
+
+// BUSINESS SPECIFIC TYPES:
+export type DataPoint = {
+  time: number;
+  position: number;
+};
+
+export type Handler<P extends object> = (payload: P) => void;
+
+// DATA TRANSLATION TYPES:
+export type PointToData = (point: Point) => DataPoint;

@@ -1,7 +1,7 @@
 import { clamp } from 'lodash';
 
-import type { Point, RGBAColor } from '../../common/types';
-import type { SpaceTimeChartContextType, RGBColor } from '../lib/types';
+import type { Point, RGBColor, RGBAColor } from '../../common/types';
+import type { SpaceTimeChartContextType } from '../lib/types';
 
 /**
  * This function draws a thick lines from "from" to "to" on the given ImageData, with no

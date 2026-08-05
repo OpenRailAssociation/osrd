@@ -7,11 +7,13 @@ export { getCrispLineCoordinate } from './helpers/time';
 export type {
   CurveOutline,
   CurveStyle,
-  HoveredItem,
+  DataPoint,
   DrawingFunction,
+  HoveredItem,
   PickingDrawingFunction,
   PickingElement,
   Point,
+  PathLevel,
 } from './types';
 
 export { MouseContext } from './context';

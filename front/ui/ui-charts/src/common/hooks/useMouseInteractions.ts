@@ -1,9 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import type { HoveredItem, Point } from '../../common';
-import { type DataPoint, type Handler, type PointToData } from '../../spaceTimeChart/lib/types';
 import { getEventPosition, getEventWheelDelta } from '../../spaceTimeChart/utils/events';
-import type { MouseContextType } from '../types';
+import type { DataPoint, Handler, MouseContextType, PointToData } from '../types';
 
 type Handlers<T> = {
   onPan?: Handler<{
