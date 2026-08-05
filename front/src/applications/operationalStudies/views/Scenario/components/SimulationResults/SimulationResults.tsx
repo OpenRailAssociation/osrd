@@ -24,7 +24,6 @@ import TimeStopsTableWrapper from 'modules/timesStops/TimeStopsTableWrapper';
 import TrainHeader from 'modules/trainHeader/TrainHeader';
 import { findExceptionWithOccurrenceId } from 'modules/trainSchedule/helpers/pacedTrain';
 import type { TrainScheduleWithDetails } from 'modules/trainSchedule/types';
-import type { TrainScheduleToEditData } from 'reducers/osrdconf/types';
 import { toggleDisplayOnlyPathSteps } from 'reducers/simulationResults';
 import {
   getDisplayOnlyPathSteps,
@@ -55,8 +54,6 @@ type SimulationResultsProps = {
   trainSchedulesWithDetails: TrainScheduleWithDetails[];
   conflicts?: Conflict[];
   activeBoards: Set<Board>;
-  setDisplayTrainScheduleManagement: (type: string) => void;
-  setTrainScheduleToEditData: (trainScheduleToEditData?: TrainScheduleToEditData) => void;
   isScrollingToTimeStopsTable: boolean;
   setIsScrollingToTimeStopsTable: React.Dispatch<React.SetStateAction<boolean>>;
 };
@@ -67,8 +64,6 @@ const SimulationResults = ({
   trainSchedulesWithDetails,
   conflicts = NO_CONFLICTS,
   activeBoards,
-  setTrainScheduleToEditData,
-  setDisplayTrainScheduleManagement,
   isScrollingToTimeStopsTable,
   setIsScrollingToTimeStopsTable,
 }: SimulationResultsProps) => {
@@ -322,8 +317,6 @@ const SimulationResults = ({
               train={simulationResults.train}
               path={simulationResults.path}
               trainSchedulesWithDetails={trainSchedulesWithDetails}
-              setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
-              setTrainScheduleToEditData={setTrainScheduleToEditData}
             />
           }
           customFooter={

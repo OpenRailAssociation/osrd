@@ -1,12 +1,12 @@
-import { useCallback, useContext, useEffect, useState } from 'react';
+import { useCallback, useContext, useState } from 'react';
 
 import { ChevronLeft, Pencil } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
+import { useItineraryModalContext } from 'applications/operationalStudies/hooks/useItineraryModalContext';
+import { useTimetableContext } from 'applications/operationalStudies/hooks/useTimetableContext';
 import { EditedElementContainerContext } from 'applications/operationalStudies/views/Scenario/components/EditedElementContainerContext';
-import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/views/Scenario/consts';
-import type { TrainScheduleResponse } from 'common/api/osrdEditoastApi';
 import CheckboxRadioSNCF from 'common/BootstrapSNCF/CheckboxRadioSNCF';
 import { ConfirmModal, useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import DotsLoader from 'common/DotsLoader';
@@ -24,11 +24,6 @@ import ItineraryModal from './Itinerary/ItineraryModal';
 import PacedTrainSettings from './PacedTrainSettings';
 
 export type ManageTrainScheduleLeftPanelProps = {
-  displayTrainScheduleManagement: string;
-  trainScheduleToEditData?: TrainScheduleToEditData;
-  setDisplayTrainScheduleManagement: (type: string) => void;
-  upsertTrainSchedules: (trainSchedules: TrainScheduleResponse[]) => void;
-  setTrainScheduleToEditData: (trainScheduleToEditData?: TrainScheduleToEditData) => void;
   closeViewAndOpenTableBoard: (closeView: () => void) => void;
 };
 
@@ -36,11 +31,6 @@ export type ManageTrainScheduleLeftPanelProps = {
  * Create/edit unique trains and paced trains
  */
 const ManageTrainScheduleLeftPanel = ({
-  displayTrainScheduleManagement,
-  setDisplayTrainScheduleManagement,
-  upsertTrainSchedules,
-  trainScheduleToEditData,
-  setTrainScheduleToEditData,
   closeViewAndOpenTableBoard,
 }: ManageTrainScheduleLeftPanelProps) => {
   const { setEditedElementContainer } = useContext(EditedElementContainerContext);
@@ -49,28 +39,19 @@ const ManageTrainScheduleLeftPanel = ({
   const editingTrainType = useSelector(getEditingTrainType);
   const osrdConf = useSelector(getOperationalStudiesConf);
 
+  const { upsertTrainSchedules } = useTimetableContext();
+  const { trainScheduleToEditData, closeItineraryModal } = useItineraryModalContext();
+
   const { openModal, closeModal } = useModal();
 
   const [isWorking, setIsWorking] = useState(false);
-  const [itineraryModalIsOpen, setItineraryModalIsOpen] = useState(
-    displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.add ||
-      displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.edit ||
-      displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.itinerary
-  );
-  const [itineraryChanged, setItineraryChanged] = useState(false);
+  const [itineraryModalIsOpen, setItineraryModalIsOpen] = useState(true);
 
   const leaveManageTrainSchedule = () => {
-    setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.none);
-    setTrainScheduleToEditData(undefined);
+    closeItineraryModal();
   };
 
-  const updateTimetable = useUpdateTrainSchedule(
-    setIsWorking,
-    setDisplayTrainScheduleManagement,
-    upsertTrainSchedules,
-    setTrainScheduleToEditData,
-    trainScheduleToEditData
-  );
+  const updateTimetable = useUpdateTrainSchedule(setIsWorking, upsertTrainSchedules);
 
   const getEditLabel = (_itemToEdit: TrainScheduleToEditData) => {
     if (!_itemToEdit.originalTrainSchedule.paced && editingTrainType === 'uniqueTrain') {
@@ -83,19 +64,6 @@ const ManageTrainScheduleLeftPanel = ({
       ? t('turnUniqueTrainIntoPacedTrain')
       : t('turnPacedTrainIntoUniqueTrain');
   };
-
-  useEffect(() => {
-    if (
-      displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.itinerary &&
-      !itineraryModalIsOpen
-    ) {
-      if (itineraryChanged) {
-        updateTimetable();
-      } else {
-        leaveManageTrainSchedule();
-      }
-    }
-  }, [displayTrainScheduleManagement, itineraryModalIsOpen, itineraryChanged]);
 
   const openConfirmModal = useCallback(() => {
     if (
@@ -135,38 +103,37 @@ const ManageTrainScheduleLeftPanel = ({
   return (
     <div className="scenario-timetable-manage-train-schedule left-column">
       <div className="scenario-timetable-manage-train-schedule-header">
-        {displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.edit &&
-          trainScheduleToEditData && (
-            <>
-              <button
-                className="btn btn-warning mb-2"
-                type="button"
-                onClick={openConfirmModal}
-                data-testid="submit-edit-train-schedule"
-              >
-                <span className="mr-2">
-                  <Pencil size="lg" />
-                </span>
-                {getEditLabel(trainScheduleToEditData)}
-              </button>
-              {editingTrainType !== 'occurrence' && (
-                <div className="osrd-config-item-container paced-trains-container">
-                  <CheckboxRadioSNCF
-                    type="checkbox"
-                    label={t('pacedTrains.defineService')}
-                    id="define-paced-train"
-                    name="define-paced-train"
-                    containerClassName="mb-0"
-                    checked={editingTrainType === 'pacedTrain'}
-                    onChange={() => dispatch(toggleEditingTrainType())}
-                  />
-                  {editingTrainType === 'pacedTrain' && <PacedTrainSettings />}
-                </div>
-              )}
-            </>
-          )}
+        {trainScheduleToEditData && (
+          <>
+            <button
+              className="btn btn-warning mb-2"
+              type="button"
+              onClick={openConfirmModal}
+              data-testid="submit-edit-train-schedule"
+            >
+              <span className="mr-2">
+                <Pencil size="lg" />
+              </span>
+              {getEditLabel(trainScheduleToEditData)}
+            </button>
+            {editingTrainType !== 'occurrence' && (
+              <div className="osrd-config-item-container paced-trains-container">
+                <CheckboxRadioSNCF
+                  type="checkbox"
+                  label={t('pacedTrains.defineService')}
+                  id="define-paced-train"
+                  name="define-paced-train"
+                  containerClassName="mb-0"
+                  checked={editingTrainType === 'pacedTrain'}
+                  onChange={() => dispatch(toggleEditingTrainType())}
+                />
+                {editingTrainType === 'pacedTrain' && <PacedTrainSettings />}
+              </div>
+            )}
+          </>
+        )}
 
-        {displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.add && (
+        {trainScheduleToEditData === undefined && (
           <>
             {isWorking ? (
               <button
@@ -201,35 +168,30 @@ const ManageTrainScheduleLeftPanel = ({
           </>
         )}
       </div>
-      {(displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.add ||
-        displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.edit) && (
-        <div
-          className="scenario-timetable-manage-train-schedule-body"
-          role="button"
-          tabIndex={0}
-          data-testid="open-itinerary-modal-button"
-          onClick={() => setItineraryModalIsOpen(true)}
+      <div
+        className="scenario-timetable-manage-train-schedule-body"
+        role="button"
+        tabIndex={0}
+        data-testid="open-itinerary-modal-button"
+        onClick={() => setItineraryModalIsOpen(true)}
+      >
+        <button
+          className="btn btn-light btn-block text-truncate pr-2"
+          title={t('itineraryModal.openItineraryModal')}
+          type="button"
         >
-          <button
-            className="btn btn-light btn-block text-truncate pr-2"
-            title={t('itineraryModal.openItineraryModal')}
-            type="button"
-          >
-            <span className="mr-2">
-              <ChevronLeft size="lg" />
-            </span>
-            {t('itineraryModal.openItineraryModal')}
-          </button>
-        </div>
-      )}
+          <span className="mr-2">
+            <ChevronLeft size="lg" />
+          </span>
+          {t('itineraryModal.openItineraryModal')}
+        </button>
+      </div>
       {itineraryModalIsOpen && (
         <ItineraryModal
           itineraryModalIsOpen={itineraryModalIsOpen}
-          onClose={({ withChanges }) => {
+          onClose={({ withChanges: _ }) => {
             setItineraryModalIsOpen(false);
-            setItineraryChanged(withChanges);
           }}
-          displayTrainScheduleManagement={displayTrainScheduleManagement}
         />
       )}
       <div

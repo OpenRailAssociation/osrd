@@ -20,8 +20,6 @@ import type { TimetableMode } from './types';
 import useFilterTrainSchedules from './useFilterTrainSchedules';
 
 type TimetableProps = {
-  setDisplayTrainScheduleManagement: (mode: string) => void;
-  setTrainScheduleToEditData: (trainScheduleToEditData?: TrainScheduleToEditData) => void;
   setSelectedTrainScheduleIds: React.Dispatch<React.SetStateAction<number[]>>;
   handleDeleteTrainSchedules: () => void;
   isSelectMode: boolean;
@@ -34,8 +32,6 @@ type TimetableProps = {
 };
 
 const Timetable = ({
-  setDisplayTrainScheduleManagement,
-  setTrainScheduleToEditData,
   setSelectedTrainScheduleIds,
   handleDeleteTrainSchedules,
   isSelectMode,
@@ -156,7 +152,6 @@ const Timetable = ({
           setSelectedTrainScheduleIds={setSelectedTrainScheduleIds}
           setShowTrainDetails={setShowTrainDetails}
           setIsSelectMode={setIsSelectMode}
-          setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
           refreshNge={refreshNge}
           handleDeleteTrainSchedules={handleDeleteTrainSchedules}
           handleMoveTrainSchedules={() => openMoveDialog(selectedTrainScheduleIds)}
@@ -164,8 +159,6 @@ const Timetable = ({
           setTimetableMode={setTimetableMode}
         />
         <TrainList
-          setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
-          setTrainScheduleToEditData={setTrainScheduleToEditData}
           setSelectedTrainScheduleIds={setSelectedTrainScheduleIds}
           trainScheduleToEditData={trainScheduleToEditData}
           trainSchedulesWithDetails={filteredTrainSchedules}

@@ -1,12 +1,12 @@
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
+import { useItineraryModalContext } from 'applications/operationalStudies/hooks/useItineraryModalContext';
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import {
   checkChangeGroups,
   updatePacedTrainExceptionsList,
 } from 'applications/operationalStudies/views/Scenario/components/ManageTrainSchedule/helpers/buildPacedTrainException';
-import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/views/Scenario/consts';
 import type {
   PacedTrainException,
   TrainSchedule,
@@ -280,10 +280,7 @@ export async function updateTrainSchedule({
 
 const useUpdateTrainSchedule = (
   setIsWorking: (isWorking: boolean) => void,
-  setDisplayTrainScheduleManagement: (type: string) => void,
-  upsertTrainSchedules: (trainSchedules: TrainScheduleResponse[]) => void,
-  setTrainScheduleToEditData: (trainScheduleToEditData?: TrainScheduleToEditData) => void,
-  trainScheduleToEditData?: TrainScheduleToEditData
+  upsertTrainSchedules: (trainSchedules: TrainScheduleResponse[]) => void
 ) => {
   const { t } = useTranslation('operational-studies', {
     keyPrefix: 'manageTrainSchedule',
@@ -297,6 +294,8 @@ const useUpdateTrainSchedule = (
   const trainIdUsedForProjection = useSelector(getTrainIdUsedForProjection);
   const startTime = useSelector(getStartTime);
   const addedExceptions = useSelector(getAddedExceptions);
+
+  const { closeItineraryModal, trainScheduleToEditData } = useItineraryModalContext();
 
   const onUpdateSuccess = (editData: TrainScheduleToEditData) => {
     const { trainScheduleId } = editData;
@@ -326,8 +325,7 @@ const useUpdateTrainSchedule = (
     }
 
     dispatch(clearAddedExceptionsList());
-    setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.none);
-    setTrainScheduleToEditData(undefined);
+    closeItineraryModal();
   };
 
   return async () => {

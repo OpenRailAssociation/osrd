@@ -10,6 +10,7 @@ import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
 import useCategoryColors from 'applications/operationalStudies/hooks/useCategoryColors';
+import { useItineraryModalContext } from 'applications/operationalStudies/hooks/useItineraryModalContext';
 import { useManageTrainScheduleContext } from 'applications/operationalStudies/hooks/useManageTrainScheduleContext';
 import { useOperationalPointSearch } from 'applications/operationalStudies/hooks/useOperationalPointSearch';
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
@@ -44,7 +45,6 @@ import { addElementAtIndex } from 'utils/array';
 import { Duration } from 'utils/duration';
 import useModalFocusTrap from 'utils/hooks/useModalFocusTrap';
 
-import { MANAGE_TRAIN_SCHEDULE_TYPES } from '../../../consts';
 import {
   createEmptyPathStep,
   ensureTrailingEmptyStep,
@@ -65,7 +65,6 @@ import { computePathStepCoordinates, getOpKey, isOpRefMetadata } from './utils';
 type ItineraryModalProps = {
   itineraryModalIsOpen: boolean;
   onClose: ({ withChanges }: { withChanges: boolean }) => void;
-  displayTrainScheduleManagement: string;
 };
 
 export type ItineraryModalFormState = {
@@ -76,11 +75,7 @@ export type ItineraryModalFormState = {
   category?: TrainCategory;
 };
 
-const ItineraryModal = ({
-  itineraryModalIsOpen,
-  onClose,
-  displayTrainScheduleManagement,
-}: ItineraryModalProps) => {
+const ItineraryModal = ({ itineraryModalIsOpen, onClose }: ItineraryModalProps) => {
   const { t } = useTranslation('operational-studies', {
     keyPrefix: 'manageTrainSchedule.itineraryModal',
   });
@@ -162,6 +157,7 @@ const ItineraryModal = ({
     reopenSuggestionsForStep,
   } = useOperationalPointSearch({});
 
+  const { trainScheduleToEditData } = useItineraryModalContext();
   const { launchPathfinding } = useManageTrainScheduleContext();
 
   const { pathStepsMetadataById, setPathStepMetadata } = usePathStepsMetadata(
@@ -476,27 +472,21 @@ const ItineraryModal = ({
   }, [pathSteps]);
 
   useEffect(() => {
-    if (
-      displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.edit ||
-      displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.add ||
-      displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.itinerary
-    ) {
-      const formattedPathSteps = storePathSteps
-        .filter((pathStep): pathStep is PathStep => pathStep !== null)
-        .map<PathStepV2>((pathStep) => ({
-          id: pathStep.id,
-          location: pathStep.location,
-          arrival: pathStep.arrival ?? null,
-          stopFor: pathStep.stopFor ?? null,
-          theoreticalMargin: pathStep.theoreticalMargin ?? null,
-          receptionSignal: pathStep.receptionSignal ?? null,
-        }));
-      formattedPathSteps.forEach((step) => {
-        initCustomTracksEntry(step.location);
-      });
-      setPathSteps(ensureTrailingEmptyStep(formattedPathSteps));
-    }
-  }, [storePathSteps, displayTrainScheduleManagement]);
+    const formattedPathSteps = storePathSteps
+      .filter((pathStep): pathStep is PathStep => pathStep !== null)
+      .map<PathStepV2>((pathStep) => ({
+        id: pathStep.id,
+        location: pathStep.location,
+        arrival: pathStep.arrival ?? null,
+        stopFor: pathStep.stopFor ?? null,
+        theoreticalMargin: pathStep.theoreticalMargin ?? null,
+        receptionSignal: pathStep.receptionSignal ?? null,
+      }));
+    formattedPathSteps.forEach((step) => {
+      initCustomTracksEntry(step.location);
+    });
+    setPathSteps(ensureTrailingEmptyStep(formattedPathSteps));
+  }, [storePathSteps]);
 
   const pathfindingStepsWithLocations = useMemo(
     () =>
@@ -929,7 +919,7 @@ const ItineraryModal = ({
           </div>
         </div>
         <ItineraryModalFooter
-          mode={displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.add ? 'new' : 'edit'}
+          mode={trainScheduleToEditData === undefined ? 'new' : 'edit'}
           trainType={editingTrainType}
           onCancel={() => closeModal({ withChanges: false })}
           onSubmit={submitItinerary}
