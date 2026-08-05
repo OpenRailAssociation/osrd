@@ -256,6 +256,10 @@ export type StudyFrTranslations = {
 
 export type ManageTrainScheduleTranslations = FlatTranslations & {
   pacedTrains: FlatTranslations;
+  trainHeader: FlatTranslations & {
+    allowances: FlatTranslations;
+    form: FlatTranslations;
+  };
 };
 
 export type RoundTripsModalTranslations = FlatTranslations & {

@@ -82,6 +82,10 @@ class PacedTrainSection extends CommonPage {
     return this.pacedTrainItem.nth(index).getByTestId('toggle-icon-close');
   }
 
+  private selectedPacedTrainArea(index: number): Locator {
+    return this.pacedTrainItem.nth(index).getByTestId('selected-paced-train-area');
+  }
+
   async expandPacedTrainOccurrenceList(index: number) {
     await this.expandPacedTrainToggleIcon(index).click();
   }
@@ -187,6 +191,12 @@ class PacedTrainSection extends CommonPage {
     await expect(occurrenceArrivalTimeLocator).toHaveText(expectedArrivalTime);
   }
 
+  async verifyOccurrenceArrivalTimes(expectedArrivalTimes: string[]) {
+    for (const [occurrenceIndex, arrivalTime] of expectedArrivalTimes.entries()) {
+      await this.verifyOccurrenceArrivalTime(occurrenceIndex, arrivalTime);
+    }
+  }
+
   async getActionButtonsLocators({
     trainIndex,
     trainType,
@@ -275,6 +285,12 @@ class PacedTrainSection extends CommonPage {
     const occurrenceItem = this.testedPacedTrainOccurrences.nth(occurrenceIndex);
     await occurrenceItem.click();
     await this.collapsePacedTrainOccurrenceList(pacedTrainIndex);
+  }
+
+  async selectPacedTrainModel(index = 0) {
+    const nameArea = this.selectedPacedTrainArea(index);
+    await expect(nameArea).toBeVisible();
+    await nameArea.click();
   }
 
   async duplicatePacedTrain(index = 0) {

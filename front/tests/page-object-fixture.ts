@@ -3,6 +3,7 @@ import type { Page } from '@playwright/test';
 import testWithLogging from './logging-fixture';
 import HomePage from './pages/home-page';
 import GetManchetteComponent from './pages/operational-studies/get-manchette-component';
+import HeaderPageObject from './pages/operational-studies/header-page-object';
 import ImportExportPage from './pages/operational-studies/import-export-page';
 import ItineraryModalPage from './pages/operational-studies/itinerary-modal-page';
 import NGEPage from './pages/operational-studies/nge-page';
@@ -46,6 +47,7 @@ type Fixtures = {
   scenarioTimetableSection: ScenarioTimetableSection;
   trainScheduleDetailSection: TrainScheduleDetailSection;
   getManchetteComponent: GetManchetteComponent;
+  headerPage: HeaderPageObject;
   ngePage: NGEPage;
   roundTripPage: RoundTripPage;
   importExportPage: ImportExportPage;
@@ -129,6 +131,9 @@ const test = testWithLogging.extend<Fixtures>({
   },
   getManchetteComponent: async ({ page }, use) => {
     await use(new GetManchetteComponent(page));
+  },
+  headerPage: async ({ page }, use) => {
+    await use(new HeaderPageObject(page));
   },
   ngePage: async ({ page }, use) => {
     await use(new NGEPage(page));
