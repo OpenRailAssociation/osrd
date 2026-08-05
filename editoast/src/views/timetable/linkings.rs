@@ -323,6 +323,7 @@ mod tests {
     use reqwest::StatusCode;
     use serde_json::json;
 
+    use crate::error::InternalError;
     use crate::fixtures::create_simple_paced_train;
     use crate::fixtures::create_timetable;
     use crate::fixtures::create_timetable_with_train_schedule_set;
@@ -417,6 +418,129 @@ mod tests {
                 .map(|linking| linking.id)
                 .collect::<Vec<i64>>(),
             vec![linking_2.id]
+        );
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn test_create() {
+        let app = test_app!().build();
+        let pool = app.db_pool();
+        let conn = &mut pool.get_ok();
+        let user = app
+            .user("user", "User")
+            .with_roles([Role::OperationalStudies])
+            .create()
+            .await;
+
+        let (timetable, train_schedule_set) = create_timetable_with_train_schedule_set(conn).await;
+        let train_schedule_1 = create_simple_paced_train(conn, train_schedule_set.id).await;
+        let train_schedule_2 = create_simple_paced_train(conn, train_schedule_set.id).await;
+
+        let source = LinkingOccurrenceId::PacedOccurrence {
+            train_schedule_id: train_schedule_1.id,
+            occurrence_index: 0,
+            train_schedule_instance_index: None,
+        };
+        let target = LinkingOccurrenceId::PacedOccurrence {
+            train_schedule_id: train_schedule_2.id,
+            occurrence_index: 0,
+            train_schedule_instance_index: None,
+        };
+        let request = vec![LinkingCreateForm {
+            source: source.clone(),
+            target: target.clone(),
+        }];
+
+        let created_linkings: Vec<LinkingResponse> = app
+            .post(format!("/timetable/{}/train_schedule_linkings", timetable.id).as_str())
+            .json(&json!(request))
+            .by_user(user.as_ref())
+            .await
+            .assert_status(StatusCode::CREATED)
+            .json();
+
+        assert_eq!(created_linkings.len(), 1);
+        assert_eq!(created_linkings[0].source, source);
+        assert_eq!(created_linkings[0].target, target);
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn test_create_already_used() {
+        let app = test_app!().build();
+        let pool = app.db_pool();
+        let conn = &mut pool.get_ok();
+        let user = app
+            .user("user", "User")
+            .with_roles([Role::OperationalStudies])
+            .create()
+            .await;
+
+        let (timetable, train_schedule_set) = create_timetable_with_train_schedule_set(conn).await;
+        let train_schedule_1 = create_simple_paced_train(conn, train_schedule_set.id).await;
+        let train_schedule_2 = create_simple_paced_train(conn, train_schedule_set.id).await;
+
+        TrainScheduleLinking::changeset()
+            .timetable_id(timetable.id)
+            .source_train_schedule_id(train_schedule_1.id)
+            .source_occurrence_index(Some(0))
+            .target_train_schedule_id(train_schedule_2.id)
+            .target_occurrence_index(Some(0))
+            .create(conn)
+            .await
+            .expect("Failed to create a linking");
+
+        let request = vec![LinkingCreateForm {
+            source: LinkingOccurrenceId::PacedOccurrence {
+                train_schedule_id: train_schedule_1.id,
+                occurrence_index: 0,
+                train_schedule_instance_index: None,
+            },
+            target: LinkingOccurrenceId::PacedOccurrence {
+                train_schedule_id: train_schedule_2.id,
+                occurrence_index: 1,
+                train_schedule_instance_index: None,
+            },
+        }];
+
+        // Make sure an error is returned for a source already used
+        let response: InternalError = app
+            .post(format!("/timetable/{}/train_schedule_linkings", timetable.id).as_str())
+            .json(&json!(request))
+            .by_user(user.as_ref())
+            .await
+            .assert_status(StatusCode::CONFLICT)
+            .json();
+
+        assert_eq!(
+            &response.error_type,
+            "editoast:train_schedule_linking:SourceAlreadyUsed"
+        );
+
+        let request = vec![LinkingCreateForm {
+            source: LinkingOccurrenceId::PacedOccurrence {
+                train_schedule_id: train_schedule_1.id,
+                occurrence_index: 1,
+                train_schedule_instance_index: None,
+            },
+            target: LinkingOccurrenceId::PacedOccurrence {
+                train_schedule_id: train_schedule_2.id,
+                occurrence_index: 0,
+                train_schedule_instance_index: None,
+            },
+        }];
+
+        // Make sure an error is returned for a target already used
+        let response: InternalError = app
+            .post(format!("/timetable/{}/train_schedule_linkings", timetable.id).as_str())
+            .json(&json!(request))
+            .by_user(user.as_ref())
+            .await
+            .assert_status(StatusCode::CONFLICT)
+            .json();
+
+        assert_eq!(
+            &response.error_type,
+            "editoast:train_schedule_linking:TargetAlreadyUsed"
         );
     }
 }
