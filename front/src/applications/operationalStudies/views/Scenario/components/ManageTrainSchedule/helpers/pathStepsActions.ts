@@ -23,5 +23,5 @@ export const ensureTrailingEmptyStep = (steps: PathStepV2[]): PathStepV2[] => {
   return [...trimmed, existingEmpty ?? createEmptyPathStep()];
 };
 
-export const deletePathStep = (steps: PathStepV2[], stepId: string): PathStepV2[] =>
-  steps.filter((s) => s.key !== stepId);
+export const deletePathStep = (steps: PathStepV2[], stepKey: string): PathStepV2[] =>
+  steps.filter((s) => s.key !== stepKey);

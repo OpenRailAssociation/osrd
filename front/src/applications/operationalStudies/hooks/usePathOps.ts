@@ -49,8 +49,8 @@ const usePathOps = (
   // as there are input OP refs, in the same order
   return useMemo(() => {
     const relatedOps = operationalPoints?.related_operational_points;
-    const pathStepIds = [...opRefMap.keys()];
-    return new Map(relatedOps?.map((op, index) => [pathStepIds[index], op]));
+    const pathStepKeys = [...opRefMap.keys()];
+    return new Map(relatedOps?.map((op, index) => [pathStepKeys[index], op]));
   }, [operationalPoints]);
 };
 

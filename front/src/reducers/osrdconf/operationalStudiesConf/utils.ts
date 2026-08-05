@@ -25,7 +25,7 @@ export const updateRestrictions = (
   restrictionsToRemove: PowerRestriction[],
   firstRestriction?: PowerRestriction,
   secondRestriction?: PowerRestriction,
-  newPathStepId?: string
+  newPathStepKey?: string
 ) => {
   const newPowerRestrictions: PowerRestriction[] = [];
 
@@ -42,11 +42,11 @@ export const updateRestrictions = (
 
     let newRestriction = restriction;
     // update the restriction if it is the first or second restriction
-    if (newPathStepId) {
+    if (newPathStepKey) {
       if (restriction.to === firstRestriction?.to) {
-        newRestriction = { ...restriction, to: newPathStepId };
+        newRestriction = { ...restriction, to: newPathStepKey };
       } else if (restriction.from === secondRestriction?.from) {
-        newRestriction = { ...restriction, from: newPathStepId };
+        newRestriction = { ...restriction, from: newPathStepKey };
       }
     }
     newPowerRestrictions.push(newRestriction);
