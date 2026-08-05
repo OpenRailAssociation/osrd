@@ -339,8 +339,8 @@ const ItineraryModal = ({
   const invalidTrackSteps = useMemo(
     () =>
       pathSteps.flatMap((step) => {
-        if (isEmptyStep(step, getInputForStep(step.id))) return [];
-        const metadata = pathStepsMetadataById.get(step.id);
+        if (isEmptyStep(step, getInputForStep(step.key))) return [];
+        const metadata = pathStepsMetadataById.get(step.key);
         if (isOpRefMetadata(metadata) && metadata.trackName && !metadata.isValidLocalTrackName) {
           return [`${metadata.name} ${metadata.secondaryCode}`];
         }
@@ -382,7 +382,7 @@ const ItineraryModal = ({
 
     setPathSteps((prev) => {
       const next = prev.map((step) =>
-        step.id === stepId ? { ...step, location: newLocation } : step
+        step.key === stepId ? { ...step, location: newLocation } : step
       );
       return ensureTrailingEmptyStep(next);
     });
@@ -393,8 +393,8 @@ const ItineraryModal = ({
   const isOnlyStep = pathSteps.length === 1;
 
   const hasInvalidPathStep = pathSteps.some((step) => {
-    if (isEmptyStep(step, getInputForStep(step.id))) return false;
-    const meta = pathStepsMetadataById.get(step.id);
+    if (isEmptyStep(step, getInputForStep(step.key))) return false;
+    const meta = pathStepsMetadataById.get(step.key);
     return !meta || meta.isInvalid;
   });
   const handleDeletePathStep = (stepId: string) => {
@@ -404,7 +404,7 @@ const ItineraryModal = ({
     if (mapSelectionStepId === stepId) setMapSelectionStepId(null);
 
     setPathSteps((prev) => {
-      const step = prev.find((s) => s.id === stepId);
+      const step = prev.find((s) => s.key === stepId);
       if (!step) return prev;
 
       const next = deletePathStep(prev, stepId);
@@ -420,13 +420,13 @@ const ItineraryModal = ({
 
     setPathSteps((prev) => ensureTrailingEmptyStep(addElementAtIndex(prev, insertIndex, newStep)));
 
-    setActiveStepId(newStep.id);
-    setInputForStep(newStep.id, '');
+    setActiveStepId(newStep.key);
+    setInputForStep(newStep.key, '');
   };
 
   const handleAddWaypoint = useCallback(
     (op: CoreOperationalPointOnPath, afterStepId: string) => {
-      const insertIndex = pathSteps.findIndex((step) => step.id === afterStepId) + 1;
+      const insertIndex = pathSteps.findIndex((step) => step.key === afterStepId) + 1;
       if (insertIndex === 0) return;
 
       const newStep = createEmptyPathStep();
@@ -452,7 +452,7 @@ const ItineraryModal = ({
 
       // Pre-fill the metadata so the new step shows its name right away and
       // is not briefly flagged invalid while its OP match is fetched
-      setPathStepMetadata(newStep.id, {
+      setPathStepMetadata(newStep.key, {
         type: 'opRef',
         isInvalid: false,
         name: op.name,
@@ -479,15 +479,15 @@ const ItineraryModal = ({
 
   /**Return true if the path step is invalid and is not a placeholder, not being fetched and not being edited */
   const isStepInvalidAndFinal = (step: PathStepV2, metadata?: PathStepMetadata) => {
-    const query = (getInputForStep(step.id) ?? '').trim();
-    const isEditing = editingStepIdRef.current === step.id || query.length > 0;
-    const isPending = pendingStepIdRef.current === step.id;
+    const query = (getInputForStep(step.key) ?? '').trim();
+    const isEditing = editingStepIdRef.current === step.key || query.length > 0;
+    const isPending = pendingStepIdRef.current === step.key;
     // if not step.location, the step is a placeholder waiting for user input
     return !isEditing && !isPending && !!step.location && !!metadata?.isInvalid;
   };
 
   const hasInvalidPathStepDisplay = pathSteps.some((step) =>
-    isStepInvalidAndFinal(step, pathStepsMetadataById.get(step.id))
+    isStepInvalidAndFinal(step, pathStepsMetadataById.get(step.key))
   );
 
   const locatedStepsCount = pathSteps.filter((step) => step.location !== null).length;
@@ -557,7 +557,7 @@ const ItineraryModal = ({
 
       const stepId = mapSelectionStepId;
       setPathSteps((prev) =>
-        ensureTrailingEmptyStep(prev.map((s) => (s.id === stepId ? { ...s, location } : s)))
+        ensureTrailingEmptyStep(prev.map((s) => (s.key === stepId ? { ...s, location } : s)))
       );
       setInputForStep(stepId, '');
       setMapSelectionStepId(null);
@@ -570,7 +570,7 @@ const ItineraryModal = ({
       if (!mapSelectionStepId) return;
       const stepId = mapSelectionStepId;
       setPathSteps((prev) =>
-        ensureTrailingEmptyStep(prev.map((s) => (s.id === stepId ? { ...s, location } : s)))
+        ensureTrailingEmptyStep(prev.map((s) => (s.key === stepId ? { ...s, location } : s)))
       );
       if (displayName) {
         commitSelectionForStep(stepId, displayName);
@@ -589,7 +589,7 @@ const ItineraryModal = ({
 
       setPathSteps((prev) =>
         ensureTrailingEmptyStep(
-          prev.map((step) => (step.id === stepId ? { ...step, location } : step))
+          prev.map((step) => (step.key === stepId ? { ...step, location } : step))
         )
       );
       setInputForStep(stepId, '');
@@ -633,7 +633,7 @@ const ItineraryModal = ({
     const formattedPathSteps = trainState.pathSteps
       .filter((pathStep): pathStep is PathStep => pathStep !== null)
       .map<PathStepV2>((pathStep) => ({
-        id: pathStep.key,
+        key: pathStep.key,
         location: pathStep.location,
         arrival: pathStep.arrival ?? null,
         stopFor: pathStep.stopFor ?? null,
@@ -650,7 +650,7 @@ const ItineraryModal = ({
     () =>
       pathSteps.filter((s) => {
         if (!s.location) return false;
-        const meta = pathStepsMetadataById.get(s.id);
+        const meta = pathStepsMetadataById.get(s.key);
         return !!meta && !meta.isInvalid;
       }),
     [pathSteps, pathStepsMetadataById]
@@ -663,7 +663,7 @@ const ItineraryModal = ({
 
     const sameSteps =
       prev.length === next.length &&
-      prev.every((p, i) => p.id === next[i].id && p.location === next[i].location);
+      prev.every((p, i) => p.key === next[i].key && p.location === next[i].location);
 
     if (sameSteps) return prev;
 
@@ -677,7 +677,7 @@ const ItineraryModal = ({
 
     const pathfindingLocations = pathfindingSteps.map((s) => s.location!);
     const metadataByPathStepId = new Map(
-      pathfindingSteps.map((s) => [s.id, pathStepsMetadataById.get(s.id)!])
+      pathfindingSteps.map((s) => [s.key, pathStepsMetadataById.get(s.key)!])
     );
 
     launchPathfindingV2({
@@ -709,10 +709,10 @@ const ItineraryModal = ({
     steps
       .filter((step) => step.location !== null)
       .map<PathStep>((step) => {
-        const metadata = metadataById.get(step.id);
+        const metadata = metadataById.get(step.key);
 
         const baseStep = {
-          key: step.id,
+          key: step.key,
           location: step.location!,
           arrival: step.arrival,
           stopFor: step.stopFor,
@@ -742,7 +742,7 @@ const ItineraryModal = ({
 
     setPathSteps((prev) =>
       ensureTrailingEmptyStep(
-        prev.map((step) => (step.id === stepId ? { ...step, location: null } : step))
+        prev.map((step) => (step.key === stepId ? { ...step, location: null } : step))
       )
     );
   };
@@ -755,7 +755,7 @@ const ItineraryModal = ({
   );
 
   const reverseItinerary = () => {
-    const filledSteps = pathSteps.filter((step) => !isEmptyStep(step, getInputForStep(step.id)));
+    const filledSteps = pathSteps.filter((step) => !isEmptyStep(step, getInputForStep(step.key)));
 
     if (filledSteps.length < 2) return;
 
@@ -768,7 +768,7 @@ const ItineraryModal = ({
     setBannerWiggle((c) => c + 1);
 
     const stepsWithLocationOrInput = pathSteps.filter(
-      (step) => !isEmptyStep(step, getInputForStep(step.id))
+      (step) => !isEmptyStep(step, getInputForStep(step.key))
     );
     if (stepsWithLocationOrInput.length < 2) return;
 
@@ -923,13 +923,13 @@ const ItineraryModal = ({
             </div>
             {pathSteps.map((pathStep, i) => {
               const opKey = getOpKey(pathStep.location);
-              const pathStepMetadata = pathStepsMetadataById.get(pathStep.id);
+              const pathStepMetadata = pathStepsMetadataById.get(pathStep.key);
               const isInvalidAndFinal = isStepInvalidAndFinal(pathStep, pathStepMetadata);
-              const isMapSelecting = mapSelectionStepId === pathStep.id;
+              const isMapSelecting = mapSelectionStepId === pathStep.key;
 
-              const previousPathStepMetadata = pathStepsMetadataById.get(pathSteps[i - 1]?.id);
+              const previousPathStepMetadata = pathStepsMetadataById.get(pathSteps[i - 1]?.key);
               const isTrailingPlaceholder =
-                i === pathSteps.length - 1 && isEmptyStep(pathStep, getInputForStep(pathStep.id));
+                i === pathSteps.length - 1 && isEmptyStep(pathStep, getInputForStep(pathStep.key));
 
               return (
                 <>
@@ -957,7 +957,7 @@ const ItineraryModal = ({
                     </div>
                   )}
                   <PathStepItem
-                    key={pathStep.id}
+                    key={pathStep.key}
                     pathStep={pathStep}
                     setPathSteps={setPathSteps}
                     pathStepMetadata={pathStepMetadata}
@@ -969,18 +969,18 @@ const ItineraryModal = ({
                       (isInvalidAndFinal || !!previousPathStepMetadata?.isInvalid)
                     }
                     onDelete={() => {
-                      handleDeletePathStep(pathStep.id);
+                      handleDeletePathStep(pathStep.key);
                     }}
                     onOpClear={() => {
-                      clearStep(pathStep.id);
+                      clearStep(pathStep.key);
                     }}
                     onOpFocus={() => {
-                      markEditing(pathStep.id);
+                      markEditing(pathStep.key);
                       if (!pathStep.location) {
-                        clearStep(pathStep.id);
+                        clearStep(pathStep.key);
                       }
-                      focusValueRef.current[pathStep.id] =
-                        getInputForStep(pathStep.id) ??
+                      focusValueRef.current[pathStep.key] =
+                        getInputForStep(pathStep.key) ??
                         (pathStepMetadata &&
                         !pathStepMetadata.isInvalid &&
                         pathStepMetadata.type === 'opRef'
@@ -988,15 +988,15 @@ const ItineraryModal = ({
                           : '');
                     }}
                     onOpInputChange={(value) => {
-                      markEditing(pathStep.id);
+                      markEditing(pathStep.key);
                       if (
                         value === '' &&
                         pathStep.location &&
-                        getInputForStep(pathStep.id) === undefined
+                        getInputForStep(pathStep.key) === undefined
                       ) {
                         return;
                       }
-                      setInputForStep(pathStep.id, value);
+                      setInputForStep(pathStep.key, value);
                     }}
                     customTracks={customTracksByOpKey.get(opKey ?? '') ?? []}
                     onAddCustomTrack={(track) => {
@@ -1011,7 +1011,7 @@ const ItineraryModal = ({
                     onTrackNameChange={(trackName) => {
                       setPathSteps((prev) =>
                         prev.map((step) => {
-                          if (step.id !== pathStep.id) return step;
+                          if (step.key !== pathStep.key) return step;
                           if (!step.location || step.location.type === 'track_offset') return step;
                           return {
                             ...step,
@@ -1025,21 +1025,21 @@ const ItineraryModal = ({
                     }}
                     onOpBlur={() => {
                       // If the user focuses out on an input with a valid op, we display the last valid op of this input (or empty)
-                      const valueOnFocus = focusValueRef.current[pathStep.id];
-                      const valueOnBlur = getInputForStep(pathStep.id);
+                      const valueOnFocus = focusValueRef.current[pathStep.key];
+                      const valueOnBlur = getInputForStep(pathStep.key);
 
                       if (
-                        pendingStepIdRef.current === pathStep.id ||
-                        confirmedStepIdRef.current === pathStep.id
+                        pendingStepIdRef.current === pathStep.key ||
+                        confirmedStepIdRef.current === pathStep.key
                       ) {
                         pendingStepIdRef.current = '';
                         confirmedStepIdRef.current = '';
-                        unmarkEditing(pathStep.id);
+                        unmarkEditing(pathStep.key);
                         return;
                       }
 
                       if (valueOnBlur === undefined) {
-                        unmarkEditing(pathStep.id);
+                        unmarkEditing(pathStep.key);
                         return;
                       }
 
@@ -1047,25 +1047,25 @@ const ItineraryModal = ({
                       const normalizedOnBlur = valueOnBlur;
 
                       if (normalizedOnBlur === '' && normalizedOnFocus === '') {
-                        unmarkEditing(pathStep.id);
+                        unmarkEditing(pathStep.key);
                         return;
                       }
 
                       if (normalizedOnBlur === '') {
-                        clearStep(pathStep.id);
+                        clearStep(pathStep.key);
                       } else if (normalizedOnBlur !== normalizedOnFocus) {
-                        setInputForStep(pathStep.id, normalizedOnFocus);
+                        setInputForStep(pathStep.key, normalizedOnFocus);
                       }
 
-                      unmarkEditing(pathStep.id);
+                      unmarkEditing(pathStep.key);
                     }}
-                    inputValue={getInputForStep(pathStep.id)}
-                    opSuggestions={activeStepId === pathStep.id ? opSuggestions : []}
+                    inputValue={getInputForStep(pathStep.key)}
+                    opSuggestions={activeStepId === pathStep.key ? opSuggestions : []}
                     onSelectOpSuggestion={(suggestion, chCode) => {
-                      applyOperationalPointToStep(pathStep.id, suggestion, chCode);
+                      applyOperationalPointToStep(pathStep.key, suggestion, chCode);
                     }}
                     onChevronClick={(queryValue) => {
-                      reopenSuggestionsForStep(pathStep.id, queryValue);
+                      reopenSuggestionsForStep(pathStep.key, queryValue);
                     }}
                     resetOpSuggestions={resetOpSuggestions}
                     connectorLong={hoveredGapIndex === i}
@@ -1074,7 +1074,7 @@ const ItineraryModal = ({
                     isInvalidAndFinal={isInvalidAndFinal}
                     isMapSelectionMode={isMapSelecting}
                     isDestination={i === pathSteps.length - 2}
-                    onStartMapSelection={() => handleStartMapSelection(pathStep.id)}
+                    onStartMapSelection={() => handleStartMapSelection(pathStep.key)}
                     onCancelMapSelection={handleCancelMapSelection}
                   />
                 </>

@@ -34,9 +34,11 @@ export const propagateStopDuration = (
   )
     return undefined;
 
+  console.debug('First if passed !');
   const pathStepId = update.row.pathStepId;
   const pathIndexById = new Map(selectedTrain.path.map((step, index) => [step.key, index]));
   const editedPathIndex = pathIndexById.get(pathStepId) ?? -1;
+  console.debug('Index: ', editedPathIndex);
   if (editedPathIndex < 0) return undefined;
 
   // Delta between the old and new stop duration — drives every shift below.
