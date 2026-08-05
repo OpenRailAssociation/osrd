@@ -36,7 +36,7 @@ const getOpRefKey = (opRef: OperationalPointReference): string => {
  */
 export const usePathStepsMetadata = (
   pathSteps: PathStepV2[],
-  pendingStepIdRef: RefObject<string>
+  pendingStepKeyRef: RefObject<string>
 ) => {
   const { infraId, timetableId, getTrackSectionsByIds } = useScenarioContext();
 
@@ -210,12 +210,12 @@ export const usePathStepsMetadata = (
           parts,
         });
       });
-      const pendingStepId = pendingStepIdRef?.current;
+      const pendingStepKey = pendingStepKeyRef?.current;
 
-      if (pendingStepId) {
-        const metadata = newPathStepsMetadataById.get(pendingStepId);
+      if (pendingStepKey) {
+        const metadata = newPathStepsMetadataById.get(pendingStepKey);
         if (metadata && !metadata.isInvalid) {
-          pendingStepIdRef.current = '';
+          pendingStepKeyRef.current = '';
         }
       }
       setPathStepsMetadataById(newPathStepsMetadataById);

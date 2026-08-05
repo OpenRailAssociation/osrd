@@ -37,7 +37,7 @@ const isSameWaypoint = (a: LocatedStep, b: LocatedStep) => {
  * A requested step may have no matching OP (for instance a map-click waypoint
  * that does not coincide with an operational point along the path). Such a
  * step keeps an undefined `requestedOp`, in which case, its entry in
- * `positionByStepId` is used to place the OPs that fall after it under it.
+ * `positionByStepKey` is used to place the OPs that fall after it under it.
  *
  * Consecutive steps targeting the same OP (the same OP selected twice in a row)
  * are collapsed into a single group whose `count` reflects how many steps it
@@ -46,7 +46,7 @@ const isSameWaypoint = (a: LocatedStep, b: LocatedStep) => {
 export function groupOperationalPoints(
   operationalPoints: CoreOperationalPointOnPath[],
   pathSteps: PathStepV2[],
-  positionByStepId?: Map<string, number>
+  positionByStepKey?: Map<string, number>
 ): WaypointGroup[] {
   const validSteps = pathSteps.filter((step): step is LocatedStep => step.location !== null);
 
@@ -74,7 +74,7 @@ export function groupOperationalPoints(
   }));
 
   const isStepBeforeOp = (step: LocatedStep, op: CoreOperationalPointOnPath) => {
-    const position = positionByStepId?.get(step.key);
+    const position = positionByStepKey?.get(step.key);
     return position !== undefined && position < op.position;
   };
 
@@ -95,7 +95,7 @@ export function groupOperationalPoints(
       if (index <= currentGroupIndex || !matchOpRefAndWaypoint(step.location, op)) return false;
       // An OP crossed twice matches both steps by identity. Pick the right
       // crossing: by position if known, else by pinned track.
-      const position = positionByStepId?.get(step.key);
+      const position = positionByStepKey?.get(step.key);
       if (position !== undefined) return position === op.position;
       const pinnedTrack =
         step.location.type === 'operational_point_part_reference'
