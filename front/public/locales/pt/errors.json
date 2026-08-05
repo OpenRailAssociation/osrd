@@ -13,6 +13,11 @@
   "default": "Ocorreu um erro.",
   "editoast": {
     "DatabaseAccessError": "Erro fatal de acesso à base de dados",
+    "JoinError": {
+      "cancelled": "Tarefa anulada",
+      "panic": "Pânico",
+      "unhandled_add_case_here": "Caso de JoinError inesperado"
+    },
     "app_health": {
       "Core": "Erro de core",
       "Database": "Erro de base de dados",
@@ -27,7 +32,9 @@
       "AuthError": "Erro interno de autenticação ou de autorização, tente novamente ou contacte o suporte",
       "DbError": "Erro interno de base de dados, tente outra vez ou contacte o suporte",
       "Forbidden": "Acesso recusado",
-      "ForbiddenImpersonation": "Usurpação recursa"
+      "ForbiddenImpersonation": "Usurpação recursa",
+      "ImpersonatedUserNotFound": "Utilizador usurpado desconhecido",
+      "Unauthenticated": "Utilizador não autenticado"
     },
     "authz": {
       "Authorizer": "Erro interno",
@@ -36,17 +43,21 @@
       "Driver": "Erro interno de autenticação ou autorização. Tente novamente ou contate o suporte",
       "GrantsApiMisuse": "Utilização incorreta da API de autorização",
       "NoSuchUser": "Utilizador desconhecido",
+      "UnknownIdentities": "Identidades desconhecidas '{{identities}}'",
       "UnknownResource": "Recurso desconhecido",
       "UnknownResourceType": "Tipo de recurso desconhecido",
       "UnknownSubject": "Assunto desconhecido",
       "UnknownUser": "Utilizador desconhecido '{{id}}'"
     },
     "authz_legacy": {
+      "Openfga": "Erro interno",
+      "Storage": "Erro interno",
       "UnknownResource": "Recurso desconhecido",
       "UnknownSubject": "Assunto desconhecido",
       "UnknownUser": "Utilizador desconhecido '{{id}}'"
     },
     "auto_fixes": {
+      "ConflictingFixesOnSameObject": "Correções conflituosas para o mesmo objeto na mesma iteração de correção",
       "FixTrialFailure": "Falha ao aplicar os corretores",
       "MaximumIterationReached": "Número máximo de iterações atingido para corrigir a infraestrutura sem fornecer todas as correções possíveis",
       "MissingErrorObject": "Não foi possível encontrar o objeto do erro"
@@ -66,6 +77,46 @@
     },
     "delimited_area": {
       "InvalidLocations": "Certas localizações são inválidas"
+    },
+    "document": {
+      "Database": "Erro interno (base de dados)",
+      "NotFound": "Documento '{{document_key}}' não encontrado"
+    },
+    "electrical_profiles": {
+      "Database": "Erro interno (base de dados)",
+      "NotFound": "Perfil elétrico '{{electrical_profile_set_id}}' não encontrado"
+    },
+    "fonts": {
+      "FileNotFound": "Ficheiro para o tipo de letra solicitado não encontrado"
+    },
+    "geometry": {
+      "UnexpectedGeometry": "Geometria {{expected}} esperada mas {{actual}} recebida"
+    },
+    "icons": {
+      "FileNotFound": "Ficheiro não encontrado"
+    },
+    "infra": {
+      "Database": "Erro interno",
+      "NotFound": "Infraestrutura '{{infra_id}}' não existe",
+      "edition": {
+        "InfraIsLocked": "Infraestrutura bloqueada",
+        "SplitTrackSectionBadOffset": "A distância para dividir a secção de via '{{tracksection_id}}' da infraestrutura '{{infra_id}}' é inválida. O valor deve estar compreendido entre 0 e {{tracksection_length}} metros."
+      },
+      "lines": {
+        "LineNotFound": "Nenhuma linha encontrada com o código {{line_code}}"
+      },
+      "objects": {
+        "DuplicateIdsProvided": "Identificadores de objeto duplicados fornecidos",
+        "ObjectIdNotFound": "Objeto '{{object_id}}' não encontrado"
+      },
+      "pathfinding": {
+        "EndingTrackLocationNotFound": "Localização do fim da secção de via não encontrada",
+        "InvalidNumberOfPaths": "A procura de caminho não pode devolver mais de 5 caminhos",
+        "StartingTrackLocationNotFound": "Localização do início de secção de via não encontrado"
+      }
+    },
+    "infra_cache": {
+      "ObjectNotFound": "{{obj_type}} '{{obj_id}}' não encontrado na cache da infraestrutura"
     }
   }
 }
