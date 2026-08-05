@@ -65,12 +65,12 @@ export const formatPropagationDeltaLabelByMode = (
  */
 const propagateFromEditedPoint = (
   delta: Duration,
-  editedPathStepId: string,
+  editedPathStepKey: string,
   selectedTrain: Train,
   direction: 'fromDeparture' | 'toDestination',
   timetableType: TimetableType
 ): PropagationResult | undefined => {
-  const editedPathIndex = selectedTrain.path.findIndex((step) => step.key === editedPathStepId);
+  const editedPathIndex = selectedTrain.path.findIndex((step) => step.key === editedPathStepKey);
   if (editedPathIndex < 0) return undefined;
 
   const currentStartTime = getTruncatedToSecondStartTime(selectedTrain, timetableType);
@@ -103,17 +103,17 @@ const propagateFromEditedPoint = (
  */
 const applyAtThisPoint = (
   delta: Duration,
-  editedPathStepId: string,
+  editedPathStepKey: string,
   field: RequestedTimeField,
   mode: 'atThisWaypoint' | 'atThisTime',
   selectedTrain: Train,
   timetableType: TimetableType
 ): PropagationResult | undefined => {
-  const editedPathIndex = selectedTrain.path.findIndex((step) => step.key === editedPathStepId);
+  const editedPathIndex = selectedTrain.path.findIndex((step) => step.key === editedPathStepKey);
   if (editedPathIndex < 0) return undefined;
 
   const editedSchedule = (selectedTrain.schedule ?? []).map((item) => {
-    if (item.at !== editedPathStepId) return item;
+    if (item.at !== editedPathStepKey) return item;
     const stop = item.stop_for ? getTruncatedToSecondSchedule(item.stop_for) : null;
 
     // An edited departure atThisTime is the stop moving by +delta, the arrival doesn't move.
