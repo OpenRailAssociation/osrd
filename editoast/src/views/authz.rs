@@ -31,7 +31,6 @@ use editoast_models::RollingStock;
 use editoast_models::User;
 use editoast_models::authn::user::UserWithIdentities;
 use editoast_models::prelude::*;
-use futures::FutureExt as _;
 use futures::TryStreamExt;
 use itertools::Itertools;
 use serde::Deserialize;
@@ -304,21 +303,18 @@ pub(in crate::views) async fn users_info(
             groups,
         )| {
             let group_by_id = group_by_id.clone();
-            v2::subject_roles(authz::Subject::user(id)).map(move |_, roles| {
-                async move {
-                    Ok(UserInfo {
-                        id,
-                        name,
-                        identities,
-                        roles: HashSet::from_iter(roles),
-                        groups: groups
-                            .into_iter()
-                            // Skip group if it does not exist
-                            .filter_map(|g| group_by_id.get(&*g).cloned())
-                            .collect(),
-                    })
+            v2::subject_roles(authz::Subject::user(id)).map(async move |roles| {
+                UserInfo {
+                    id,
+                    name,
+                    identities,
+                    roles: HashSet::from_iter(roles),
+                    groups: groups
+                        .into_iter()
+                        // Skip group if it does not exist
+                        .filter_map(|g| group_by_id.get(&*g).cloned())
+                        .collect(),
                 }
-                .boxed()
             })
         },
     ))

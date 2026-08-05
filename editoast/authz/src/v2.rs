@@ -197,7 +197,7 @@ impl<T: Send + 'static> Protected<T> {
         Self::new(move |_| async move { Ok(t) }.boxed())
     }
 
-    pub fn map<U: Send + 'static>(
+    pub fn then<U: Send + 'static>(
         self,
         f: impl for<'c> FnOnce(&'c fga::Client, T) -> BoxFuture<'c, Result<U, OpenFgaError>>
         + Send
@@ -214,6 +214,21 @@ impl<T: Send + 'static> Protected<T> {
             }),
             checks,
         }
+    }
+
+    pub fn map<U, F, Fut>(self, f: F) -> Protected<U>
+    where
+        U: Send + 'static,
+        F: FnOnce(T) -> Fut + Send + 'static,
+        Fut: Future<Output = U> + Send + 'static,
+    {
+        self.then(move |_, t| {
+            async move {
+                let u = f(t).await;
+                Ok(u)
+            }
+            .boxed()
+        })
     }
 
     pub fn zip<U: Send + 'static>(
@@ -240,7 +255,7 @@ impl<T: Send + 'static> Protected<Option<T>> {
         E: Send + 'static,
         T: Into<E>,
     {
-        self.map(move |_, val| async move { Ok(val.map(T::into)) }.boxed())
+        self.map(async move |val| val.map(T::into))
     }
 }
 
@@ -256,14 +271,10 @@ where
         C: FromIterator<<C as IntoIterator>::Item>,
         <T as IntoIterator>::Item: Into<<C as IntoIterator>::Item>,
     {
-        self.map(move |_, val| {
-            async move {
-                Ok(val
-                    .into_iter()
-                    .map(<T as IntoIterator>::Item::into)
-                    .collect::<C>())
-            }
-            .boxed()
+        self.map(async move |val| {
+            val.into_iter()
+                .map(<T as IntoIterator>::Item::into)
+                .collect::<C>()
         })
     }
 }
