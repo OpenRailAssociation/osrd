@@ -263,10 +263,6 @@ impl TestAppBuilder {
             .merge(service_router().router)
             .route_layer(axum::middleware::from_fn_with_state(
                 app_state.clone(),
-                crate::views::server::middlewares::authentication_middleware,
-            ))
-            .route_layer(axum::middleware::from_fn_with_state(
-                app_state.clone(),
                 crate::views::server::middlewares::authentication_validation_middleware,
             ))
             .route_layer(axum::middleware::from_fn_with_state(

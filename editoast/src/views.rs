@@ -37,7 +37,6 @@ mod test_app;
 
 use ::core::str;
 
-use ::authz::Authorizer;
 use core_client::CoreClient;
 use editoast_derive::EditoastError;
 use editoast_models::PgAuthDriver;
@@ -449,26 +448,6 @@ fn service_router() -> server::router::DocumentedRouter {
                 post!(level_crossing_occupancy::occupancy),
             )
     })
-}
-
-/// Represents the bundle of information about the issuer of a request
-/// that can be extracted form recognized headers.
-#[derive(Debug, Clone)]
-#[allow(clippy::large_enum_variant)]
-// TODO wrap the OpenFGA client contained of the `Authenticated` variant in an Arc
-//      and remove the clippy ignore.
-pub enum Authentication {
-    /// The issuer of the request did not provide any authentication information.
-    Unauthenticated,
-    /// The issuer of the request provided the 'x-remote-user-identity' header.
-    Authenticated(#[expect(dead_code)] Authorizer<PgAuthDriver>),
-    /// The requests comes from a trusted service (like core). All requests are considered safe.
-    SkipAuthorization {
-        #[expect(unused)]
-        identity: Option<String>,
-        #[expect(unused)]
-        name: Option<String>,
-    },
 }
 
 pub type AuthorizerError = ::authz::Error<<PgAuthDriver as ::authz::StorageDriver>::Error>;

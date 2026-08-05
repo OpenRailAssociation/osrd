@@ -1,9 +1,6 @@
 use std::convert::Infallible;
 
-use authz::Authorizer;
 use authz::Role;
-use authz::StorageDriver as _;
-use authz::identity::UserInfo;
 use authz::v2::special_authorizers;
 use axum::Extension;
 use axum::extract::Request;
@@ -15,10 +12,7 @@ use editoast_models::authn::user::AddIdentitiesError;
 use crate::AppState;
 use crate::authentication::AuthenticationParameters;
 use crate::error::Result;
-use crate::views::Authentication;
 use crate::views::AuthorizationError;
-use crate::views::AuthorizerError;
-use crate::views::Regulator;
 
 #[tracing::instrument(skip_all, fields(authn))]
 pub(in crate::views) async fn authentication_extraction_middleware(
@@ -240,95 +234,5 @@ pub(in crate::views) async fn authentication_validation_middleware(
     req.extensions_mut().insert(state);
     req.extensions_mut().insert(user);
     req.extensions_mut().remove::<crate::authentication::Mode>();
-    Ok(next.run(req).await)
-}
-
-async fn authenticate(
-    headers: &axum::http::HeaderMap,
-    regulator: Regulator,
-) -> Result<Authentication, AuthorizationError> {
-    const IDENTITY: &str = "x-remote-user-identity";
-    const NAME: &str = "x-remote-user-name";
-    const SKIP_AUTHZ: &str = "x-osrd-skip-authz";
-    const IMPERSONATE: &str = "x-impersonate";
-
-    let identity = headers.get(IDENTITY).map(|hv| {
-        str::from_utf8(hv.as_bytes())
-            .expect("unexpected non-utf8 characters in x-remote-user-identity")
-            .to_owned()
-    });
-    let name = headers.get(NAME).map(|hv| {
-        str::from_utf8(hv.as_bytes())
-            .expect("unexpected non-utf8 characters in x-remote-user-name")
-            .to_owned()
-    });
-    let impersonate = headers.get(IMPERSONATE).map(|hv| {
-        str::from_utf8(hv.as_bytes())
-            .expect("unexpected non-utf8 characters in x-impersonate")
-            .to_owned()
-    });
-    let skip_authz = headers.contains_key(SKIP_AUTHZ);
-
-    let (user, identity) = match (identity, name) {
-        (identity, name) if skip_authz => {
-            tracing::debug!(identity, name, "authorization skipped by request");
-            return Ok(Authentication::SkipAuthorization { identity, name });
-        }
-        (None, _) => return Ok(Authentication::Unauthenticated),
-        (Some(identity), name) => (
-            UserInfo {
-                identities: vec![identity.clone()],
-                name: name.unwrap_or_default(),
-            },
-            identity,
-        ),
-    };
-
-    let authorizer = match Authorizer::try_initialize(identity.clone(), regulator.clone()).await {
-        Ok(authorizer) => authorizer,
-        Err(AuthorizerError::UnknownUser { .. }) => {
-            // The user is not in the database, let's add it
-            #[allow(deprecated)] // soon to be removed
-            regulator
-                .clone()
-                .driver()
-                .ensure_user(&user.name, &user.identities[0])
-                .await
-                .map_err(AuthorizerError::Storage)?;
-            Authorizer::try_initialize(identity, regulator.clone()).await?
-        }
-        Err(err) => return Err(err.into()),
-    };
-
-    let Some(impersonated_identity) = impersonate else {
-        return Ok(Authentication::Authenticated(authorizer));
-    };
-
-    // The user is trying to impersonate another user
-    if !authorizer.check_roles([Role::Admin].into()).await? {
-        return Err(AuthorizationError::ForbiddenImpersonation);
-    }
-
-    let impersonated_authorizer =
-        match Authorizer::try_initialize(impersonated_identity.clone(), regulator).await {
-            Ok(authorizer) => authorizer,
-            Err(AuthorizerError::UnknownUser { .. }) => {
-                return Err(AuthorizationError::ImpersonatedUserNotFound {
-                    identity: impersonated_identity,
-                });
-            }
-            err => err?,
-        };
-    Ok(Authentication::Authenticated(impersonated_authorizer))
-}
-
-pub(in crate::views) async fn authentication_middleware(
-    State(AppState { regulator, .. }): State<AppState>,
-    mut req: Request,
-    next: Next,
-) -> Result<Response> {
-    let headers = req.headers();
-    let authorizer = authenticate(headers, regulator).await?;
-    req.extensions_mut().insert(authorizer);
     Ok(next.run(req).await)
 }
