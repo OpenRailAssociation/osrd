@@ -3,6 +3,7 @@ export { default as TimeGraduations } from './layers/TimeGraduations';
 
 export { usePicking, useDraw } from './hooks/useCanvas';
 export { getCrispLineCoordinate } from './helpers/time';
+export { timeScaleToZoomValue } from './helpers/utils';
 
 export type {
   CurveOutline,

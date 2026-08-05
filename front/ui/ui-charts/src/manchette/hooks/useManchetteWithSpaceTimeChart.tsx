@@ -3,6 +3,7 @@ import React, { Fragment, type ReactNode, useCallback, useMemo, useState } from 
 import { sortBy, clamp } from 'lodash';
 
 import { getCrispLineCoordinate } from '../../common/helpers/time';
+import { timeScaleToZoomValue, zoomValueToTimeScale } from '../../common/helpers/utils';
 import { type SpaceScale, type SpaceTimeChartProps } from '../../spaceTimeChart';
 import {
   getSpaceToPixel,
@@ -24,11 +25,9 @@ import { calcTotalDistance } from '../utils';
 import {
   selectWaypointsToDisplay,
   getScales,
-  timeScaleToZoomValue,
   spaceScaleToZoomValue,
   getExtremaScales,
   zoomValueToSpaceScale,
-  zoomValueToTimeScale,
 } from '../utils/helpers';
 import useSyncManchette, { type SyncManchetteState } from './useSyncManchette';
 
