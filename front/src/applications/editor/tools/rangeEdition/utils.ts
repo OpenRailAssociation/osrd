@@ -413,4 +413,4 @@ export const makeRouteElements = (
   }, {});
 
 export const trackRangeKey = (trackRange: ApplicableTrackRange, index: number) =>
-  `track-range-${trackRange.track}-${trackRange.begin}-${trackRange.end}-${trackRange.applicable_directions}-${index}`;
+  `track-range-${trackRange.track}-${trackRange.applicable_directions}-${index}`;
