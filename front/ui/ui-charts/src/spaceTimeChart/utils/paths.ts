@@ -1,4 +1,5 @@
-import type { DataPoint, Direction, PathData, SpaceToPixel } from '../lib/types';
+import type { DataPoint } from '../../common/types';
+import type { Direction, PathData, SpaceToPixel } from '../lib/types';
 
 /**
  * This function takes a path, a point index and looks forward in the points order for the first

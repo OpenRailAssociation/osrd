@@ -19,7 +19,6 @@ export type {
   OperationalPoint,
   SpaceTimeChartTheme,
   PathData,
-  DataPoint,
   SpaceTimeChartContextType,
 } from './lib/types';
 

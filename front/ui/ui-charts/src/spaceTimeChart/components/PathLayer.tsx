@@ -6,18 +6,15 @@ import { hexToRgb, indexToColor } from '../../common/helpers/colors';
 import { useDraw, usePicking } from '../../common/hooks/useCanvas';
 import type {
   CurveStyle,
+  DataPoint,
   DrawingFunction,
+  PathLevel,
   PickingDrawingFunction,
   PickingElement,
   Point,
 } from '../../common/types';
 import { SpaceTimeChartCanvasContext } from '../lib/context';
-import {
-  type DataPoint,
-  type OperationalPoint,
-  type PathData,
-  type SpaceTimeChartContextType,
-} from '../lib/types';
+import { type OperationalPoint, type PathData, type SpaceTimeChartContextType } from '../lib/types';
 import { drawAliasedDisc, drawAliasedLine } from '../utils/canvas';
 import { getPathDirection, getSpacePixels } from '../utils/paths';
 import { getSpaceBreakpoints } from '../utils/scales';
@@ -53,7 +50,6 @@ type PathStyle = {
   lineCap: CanvasLineCap;
 };
 
-export type PathLevel = 1 | 2 | 3 | 4 | 5;
 const STYLES: Record<PathLevel, PathStyle> = {
   1: {
     width: 0.5,

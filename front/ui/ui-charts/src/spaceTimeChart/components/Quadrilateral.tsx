@@ -7,9 +7,10 @@ import type {
   DrawingFunction,
   PickingDrawingFunction,
   Point,
+  DataPoint,
 } from '../../common/types';
 import { SpaceTimeChartCanvasContext } from '../lib/context';
-import type { DataPoint, SpaceTimeChartContextType } from '../lib/types';
+import type { SpaceTimeChartContextType } from '../lib/types';
 import { drawAliasedQuadrilateral } from '../utils/canvas';
 
 export type QuadrilaterPickingElement = PickingElement & {
