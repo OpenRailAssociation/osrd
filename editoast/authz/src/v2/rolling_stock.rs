@@ -145,7 +145,7 @@ pub fn rolling_stock_set_grant(
     new_grant: RollingStockGrant,
 ) -> Protected<()> {
     let prot =
-        rolling_stock_revoke_grant(subject, rolling_stock).map(move |openfga, _has_revoked| {
+        rolling_stock_revoke_grant(subject, rolling_stock).then(move |openfga, _has_revoked| {
             async move {
                 let mut writes = openfga.prepare_writes();
                 match (subject, new_grant) {
@@ -315,15 +315,12 @@ pub fn rolling_stock_granted_subjects(
     }
     get_granted_users(rolling_stock, grant)
         .zip(get_granted_groups(rolling_stock, grant))
-        .map(move |_, (users, groups)| {
-            async move {
-                Ok(users
-                    .into_iter()
-                    .map(Subject::User)
-                    .chain(groups.into_iter().map(Subject::Group))
-                    .collect_vec())
-            }
-            .boxed()
+        .map(async move |(users, groups)| {
+            users
+                .into_iter()
+                .map(Subject::User)
+                .chain(groups.into_iter().map(Subject::Group))
+                .collect_vec()
         })
         .with_check(Check::HasRollingStockPrivilege(
             Actor::Issuer,
@@ -382,7 +379,7 @@ pub fn rolling_stock_revoke_grant(
     subject: Subject,
     rolling_stock: RollingStock,
 ) -> Protected<bool> {
-    let prot = rolling_stock_direct_grant(subject, rolling_stock).map(move |openfga, grant| {
+    let prot = rolling_stock_direct_grant(subject, rolling_stock).then(move |openfga, grant| {
         async move {
             let Some(grant) = grant else {
                 return Ok(false);

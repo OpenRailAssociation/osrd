@@ -71,7 +71,7 @@ pub fn project_effective_grant(
 
 pub fn project_set_grant(subject: Subject, project: Project) -> Protected<()> {
     project_direct_grant(subject, project)
-        .map(move |openfga, grant| {
+        .then(move |openfga, grant| {
             async move {
                 // Projects only have one grant level, the subject either has it or doesn't
                 let update = match grant {
@@ -113,7 +113,7 @@ pub fn project_revoke_grant(subject: Subject, project: Project) -> Protected<boo
     // Revoking rules:
     // Only admins can fully revoke grants
     project_direct_grant(subject, project)
-        .map(move |openfga, grant| {
+        .then(move |openfga, grant| {
             async move {
                 let Some(grant) = grant else {
                     return Ok(false);
@@ -163,7 +163,7 @@ pub fn project_privileges(user: User, project: Project) -> Protected<HashSet<Pro
 
 /// Lists all the projects a user has access to
 pub fn project_list(user: User) -> Protected<ResourcesList<Project>> {
-    subject_roles(Subject::user(user)).map(move |openfga, roles| {
+    subject_roles(Subject::user(user)).then(move |openfga, roles| {
         async move {
             if roles.contains(&Role::Admin) {
                 return Ok(ResourcesList::All);
@@ -203,15 +203,12 @@ pub fn project_granted_subjects(project: Project) -> Protected<Vec<Subject>> {
     }
     get_granted_users(project)
         .zip(get_granted_groups(project))
-        .map(move |_, (users, groups)| {
-            async move {
-                Ok(users
-                    .into_iter()
-                    .map(Subject::User)
-                    .chain(groups.into_iter().map(Subject::Group))
-                    .collect())
-            }
-            .boxed()
+        .map(async move |(users, groups)| {
+            users
+                .into_iter()
+                .map(Subject::User)
+                .chain(groups.into_iter().map(Subject::Group))
+                .collect()
         })
         .with_check(Check::HasProjectPrivilege(
             Actor::Issuer,
