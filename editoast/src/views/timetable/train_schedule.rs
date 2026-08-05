@@ -44,6 +44,7 @@ use schemas::infra::OperationalPoint;
 use schemas::paced_train::TrainSchedule;
 use schemas::primitives::NonBlankString;
 use schemas::primitives::TimeWindow;
+use schemas::rolling_stock::RollingResistanceRaw;
 use schemas::train_schedule::OperationalPointPartReference;
 use schemas::train_schedule::OperationalPointReference;
 use schemas::train_schedule::PathItemLocation;
@@ -642,12 +643,14 @@ pub(in crate::views) struct PathPortionQueryParam {
 )]
 pub(in crate::views) async fn get_path(
     State(AppState {
+        regulator,
         db_pool,
         valkey_client,
         core_client,
         ..
     }): State<AppState>,
     Extension(auth): AuthenticationExt,
+    Extension(authn_state): Extension<crate::authentication::State>,
     Path(TrainScheduleIdParam {
         id: train_schedule_id,
     }): Path<TrainScheduleIdParam>,
@@ -695,16 +698,27 @@ pub(in crate::views) async fn get_path(
     };
 
     let rolling_stock_name = train_occurrence.rolling_stock_name().to_owned();
-    let Some(consist) = RollingStock::retrieve(conn.clone(), rolling_stock_name.clone())
-        .await?
-        .map(schemas::RollingStock::from)
-        .map(PhysicsConsistParameters::from_traction_engine)
+    let Some(rolling_stock_model) =
+        RollingStock::retrieve(conn.clone(), rolling_stock_name.clone()).await?
     else {
         let failure = PathfindingFailure::PathfindingInputError(
             PathfindingInputError::RollingStockNotFound { rolling_stock_name },
         );
         return Ok(Json(PathfindingResult::Failure(failure)));
     };
+
+    if let Some(user) = authn_state.regular_user() {
+        let system_authorizer = SystemAuthorizer::new_infallible(regulator.openfga());
+        crate::authorizers::require(
+            &system_authorizer,
+            rolling_stock_privileges(user, authz::RollingStock(rolling_stock_model.id)),
+            &RollingStockPrivilege::CanRead,
+        )
+        .await?;
+    }
+
+    let rolling_stock = schemas::RollingStock::<RollingResistanceRaw>::from(rolling_stock_model);
+    let consist = PhysicsConsistParameters::from_traction_engine(rolling_stock);
 
     let path_items = train_occurrence.locations();
 
@@ -795,16 +809,16 @@ pub(in crate::views) async fn simulation(
     })
     .await?;
 
-     // Check user privilege on infra
-     if let Some(user) = authn_state.regular_user() {
+    // Check user privilege on infra
+    if let Some(user) = authn_state.regular_user() {
         let authorizer = authn_state.authorizer(regulator.openfga());
-         crate::authorizers::require(
-             &authorizer,
-             infra_privileges(user, authz::Infra(infra_id)),
+        crate::authorizers::require(
+            &authorizer,
+            infra_privileges(user, authz::Infra(infra_id)),
             &InfraPrivilege::CanRestrictedRead,
-         )
-         .await?;
-     }
+        )
+        .await?;
+    }
 
     // Retrieve train_schedule or fail
     let train_schedule = editoast_models::TrainSchedule::retrieve_or_fail(
@@ -1978,6 +1992,8 @@ pub(in crate::views) async fn move_train_schedules_to_another_train_schedule_set
 mod tests {
     use std::collections::HashMap;
 
+    use authz::InfraGrant;
+    use authz::RollingStockGrant;
     use axum::http::StatusCode;
     use chrono::Duration;
     use chrono::TimeDelta;
@@ -3341,17 +3357,19 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn get_paced_train_path_infra_not_found() {
-        let app = test_app!().skip_authz().build();
+        let app = test_app!().build();
         let pool = app.db_pool();
         let train_schedule_set = create_train_schedule_set(&mut pool.get_ok()).await;
         let paced_train =
             create_simple_paced_train(&mut pool.get_ok(), train_schedule_set.id).await;
+        let user_no_grant = app.user("user", "User").create().await;
 
         let response: InternalError = app
             .get(&format!(
                 "/train_schedules/{}/path?infra_id={}",
                 paced_train.id, 0
             ))
+            .by_user(user_no_grant.as_ref())
             .await
             .assert_status_not_found()
             .json();
@@ -3364,15 +3382,21 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn get_paced_train_path_not_found() {
-        let app = test_app!().skip_authz().build();
+        let app = test_app!().build();
         let pool = app.db_pool();
         let small_infra = create_small_infra(&mut pool.get_ok()).await;
+        let user = app
+            .user("user", "User")
+            .with_infra_grant(small_infra.id, InfraGrant::Reader)
+            .create()
+            .await;
 
         let response: InternalError = app
             .get(&format!(
                 "/train_schedules/{}/path?infra_id={}",
                 0, small_infra.id
             ))
+            .by_user(user.as_ref())
             .await
             .assert_status_not_found()
             .json();
@@ -3423,20 +3447,28 @@ mod tests {
                 "status": "success"
             }))
             .finish();
-        let app = test_app!().skip_authz().core_client(core.into()).build();
+        let app = test_app!().core_client(core.into()).build();
         let db_pool = app.db_pool();
 
-        create_fast_rolling_stock(&mut db_pool.get_ok(), "R2D2").await;
         let train_schedule_set = create_train_schedule_set(&mut db_pool.get_ok()).await;
         let paced_train =
             create_simple_paced_train(&mut db_pool.get_ok(), train_schedule_set.id).await;
+        let rolling_stock =
+            create_fast_rolling_stock(&mut db_pool.get_ok(), &paced_train.rolling_stock_name).await;
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
+        let user = app
+            .user("user", "User")
+            .with_rolling_stock_grant(rolling_stock.id, RollingStockGrant::Reader)
+            .with_infra_grant(small_infra.id, InfraGrant::Reader)
+            .create()
+            .await;
 
         let response = app
             .get(&format!(
                 "/train_schedules/{}/path?infra_id={}",
                 paced_train.id, small_infra.id
             ))
+            .by_user(user.as_ref())
             .await
             .assert_status_ok()
             .json::<PathfindingResult>();
@@ -3454,6 +3486,81 @@ mod tests {
                 length: 1
             })
         )
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn get_paced_train_path_requires_reader_grant_on_the_infra_and_rolling_stock() {
+        // Setup the app and the mocked core client
+        let mut core = MockingClient::new();
+        for _ in 0..2 {
+            core.stub("/pathfinding/blocks")
+                .response(StatusCode::OK)
+                .json(json!({
+                    "path": {
+                        "blocks":[],
+                        "routes": [],
+                        "track_section_ranges": [],
+                    },
+                    "path_item_positions": [],
+                    "backtrack_path_items": [],
+                    "length": 1,
+                    "status": "success"
+                }))
+                .finish();
+        }
+        let app = test_app!().core_client(core.into()).build();
+
+        // Setup the rolling stock, train schedule and infra
+        let db_pool = app.db_pool();
+        let rolling_stock = create_fast_rolling_stock(&mut db_pool.get_ok(), "R2D2").await;
+        let train_schedule_set = create_train_schedule_set(&mut db_pool.get_ok()).await;
+        let mut paced_train =
+            create_simple_paced_train(&mut db_pool.get_ok(), train_schedule_set.id).await;
+        paced_train.rolling_stock_name = rolling_stock.name;
+        let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
+
+        // Setup the users
+        let authorized_user = app
+            .user("user", "User")
+            .with_rolling_stock_grant(rolling_stock.id, RollingStockGrant::Reader)
+            .with_infra_grant(small_infra.id, InfraGrant::Reader)
+            .create()
+            .await;
+        let user_missing_infra_grant = app
+            .user("alice", "Alice")
+            .with_rolling_stock_grant(rolling_stock.id, RollingStockGrant::Reader)
+            .create()
+            .await;
+        let user_missing_rolling_stock_grant = app
+            .user("bob", "Bob")
+            .with_infra_grant(small_infra.id, InfraGrant::Reader)
+            .create()
+            .await;
+
+        // Authorized user request succeeds
+        app.get(&format!(
+            "/train_schedules/{}/path?infra_id={}",
+            paced_train.id, small_infra.id
+        ))
+        .by_user(authorized_user.as_ref())
+        .await
+        .assert_status_ok();
+
+        // Users missing grants requests fail with 403 Forbidden
+        app.get(&format!(
+            "/train_schedules/{}/path?infra_id={}",
+            paced_train.id, small_infra.id
+        ))
+        .by_user(user_missing_infra_grant.as_ref())
+        .await
+        .assert_status_forbidden();
+        app.get(&format!(
+            "/train_schedules/{}/path?infra_id={}",
+            paced_train.id, small_infra.id
+        ))
+        .by_user(user_missing_rolling_stock_grant.as_ref())
+        .await
+        .assert_status_forbidden();
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -3491,19 +3598,27 @@ mod tests {
                 "status": "success"
             }))
             .finish();
-        let app = test_app!().skip_authz().core_client(core.into()).build();
+        let app = test_app!().core_client(core.into()).build();
         let db_pool = app.db_pool();
 
-        create_fast_rolling_stock(&mut db_pool.get_ok(), "R2D2").await;
         let train_schedule_set = create_train_schedule_set(&mut db_pool.get_ok()).await;
         let paced_train =
             create_simple_paced_train(&mut db_pool.get_ok(), train_schedule_set.id).await;
+        let rolling_stock =
+            create_fast_rolling_stock(&mut db_pool.get_ok(), &paced_train.rolling_stock_name).await;
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
+        let user = app
+            .user("user", "User")
+            .with_infra_grant(small_infra.id, InfraGrant::Reader)
+            .with_rolling_stock_grant(rolling_stock.id, RollingStockGrant::Reader)
+            .create()
+            .await;
 
         app.get(&format!(
             "/train_schedules/{}/path?infra_id={}&begin_index=1&end_index=2",
             paced_train.id, small_infra.id
         ))
+        .by_user(user.as_ref())
         .await
         .assert_status_ok();
     }
@@ -3516,20 +3631,29 @@ mod tests {
         #[case] begin_index: usize,
         #[case] end_index: usize,
     ) {
-        let app = test_app!().skip_authz().build();
+        let app = test_app!().build();
         let db_pool = app.db_pool();
 
-        create_fast_rolling_stock(&mut db_pool.get_ok(), "R2D2").await;
         let train_schedule_set = create_train_schedule_set(&mut db_pool.get_ok()).await;
-        let paced_train =
+        let mut paced_train =
             create_simple_paced_train(&mut db_pool.get_ok(), train_schedule_set.id).await;
+        let rolling_stock =
+            create_fast_rolling_stock(&mut db_pool.get_ok(), &paced_train.rolling_stock_name).await;
+        paced_train.rolling_stock_name = rolling_stock.name;
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
+        let user = app
+            .user("user", "User")
+            .with_infra_grant(small_infra.id, InfraGrant::Reader)
+            .with_rolling_stock_grant(rolling_stock.id, RollingStockGrant::Reader)
+            .create()
+            .await;
 
         let response: InternalError = app
             .get(&format!(
                 "/train_schedules/{}/path?infra_id={}&begin_index={}&end_index={}",
                 paced_train.id, small_infra.id, begin_index, end_index
             ))
+            .by_user(user.as_ref())
             .await
             .assert_status_bad_request()
             .json();
@@ -3554,15 +3678,17 @@ mod tests {
                 "status": "success"
             }))
             .finish();
-        let app = test_app!().skip_authz().core_client(core.into()).build();
+        let app = test_app!().core_client(core.into()).build();
         let db_pool = app.db_pool();
 
-        create_fast_rolling_stock(&mut db_pool.get_ok(), "R2D2").await;
         let (timetable, train_schedule_set) =
             create_timetable_with_train_schedule_set(&mut db_pool.get_ok()).await;
 
         let train_schedule =
             create_simple_paced_train(&mut db_pool.get_ok(), train_schedule_set.id).await;
+        let rolling_stock =
+            create_fast_rolling_stock(&mut db_pool.get_ok(), &train_schedule.rolling_stock_name)
+                .await;
 
         let change_rolling_stock_exception = create_train_schedule_exception(
             &mut db_pool.get_ok(),
@@ -3584,12 +3710,19 @@ mod tests {
         .await;
 
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
+        let user_no_grant = app
+            .user("user", "User")
+            .with_rolling_stock_grant(rolling_stock.id, RollingStockGrant::Reader)
+            .with_infra_grant(small_infra.id, InfraGrant::Reader)
+            .create()
+            .await;
 
         let response = app
             .get(&format!(
                 "/train_schedules/{}/path?infra_id={}&exception_id={}",
                 train_schedule.id, small_infra.id, change_rolling_stock_exception.id
             ))
+            .by_user(user_no_grant.as_ref())
             .await
             .assert_status_ok()
             .json::<PathfindingResult>();
