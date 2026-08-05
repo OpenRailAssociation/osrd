@@ -233,7 +233,7 @@ const ExpandedTrainForm = ({
   const { t } = useTranslation(['operational-studies', 'translation']);
   const infraID = useInfraID();
   const speedLimitTags = useSpeedLimitTags(infraID);
-  const categoryOptions = useCategoryOptions();
+  const categoryOptions = useCategoryOptions(false);
 
   const { filteredRollingStockList: rollingStocks } = useFilterRollingStock();
 
@@ -473,6 +473,7 @@ const ExpandedTrainForm = ({
             id="train-header-category-select"
             label={t('manageTrainSchedule.trainHeader.form.trainCategory')}
             small
+            placeholder={t('translation:rollingStock.categoriesOptions.none')}
             value={selectedCategoryOption}
             options={categoryOptions}
             getOptionLabel={(option) => option?.label ?? ''}

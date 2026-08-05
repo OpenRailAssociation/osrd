@@ -709,7 +709,8 @@
       "TRAM_TRAIN": "Tram-Train",
       "WORK_TRAIN": "Work Train",
       "choose": "Choose a category",
-      "noCategory": "No category"
+      "noCategory": "No category",
+      "none": "None"
     },
     "chooseRollingStock": "Select a rolling stock to display information",
     "comfort": "Comfort",
