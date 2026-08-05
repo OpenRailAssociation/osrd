@@ -149,6 +149,7 @@ const Timetable = ({
         <TimetableToolbar
           filteredTrainSchedules={filteredTrainSchedules}
           timetableFilters={timetableFilters}
+          trainSchedulesWithDetails={trainSchedulesWithDetails}
           selectedTrainScheduleIds={selectedTrainScheduleIds}
           showTrainDetails={showTrainDetails}
           isSelectMode={isSelectMode}
