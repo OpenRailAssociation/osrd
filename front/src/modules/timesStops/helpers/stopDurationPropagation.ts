@@ -68,13 +68,13 @@ export const propagateStopDuration = (
   // Set the edited point's new duration (its arrival stays the same)
   const updatedScheduleStop: ScheduleItem[] = editedItem
     ? currentSchedule.map((item) =>
-        item.at === pathStepId ? { ...item, stop_for: newDuration.toISOString() } : item
-      )
+      item.at === pathStepId ? { ...item, stop_for: newDuration.toISOString() } : item
+    )
     : insertScheduleItemInOrder(
-        currentSchedule,
-        { at: pathStepId, arrival: null, stop_for: newDuration.toISOString() },
-        selectedTrain.path
-      );
+      currentSchedule,
+      { at: pathStepId, arrival: null, stop_for: newDuration.toISOString() },
+      selectedTrain.path
+    );
 
   // Shift every scheduled arrival after the edited point by +delta, in path order. Bump +24h
   // if a shifted arrival ends up before the previous departure.

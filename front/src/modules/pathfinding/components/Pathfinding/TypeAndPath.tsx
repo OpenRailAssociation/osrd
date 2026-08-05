@@ -132,7 +132,7 @@ const TypeAndPath = ({ onSubmit }: TypeAndPathProps) => {
       const pathSteps: PathStepV2[] = opList
         .filter((op) => op.main_code !== '')
         .map(({ main_code, secondary_code, country_code }) => ({
-          id: uuidV4(),
+          key: uuidV4(),
           location: {
             type: 'operational_point_part_reference',
             operational_point: {
