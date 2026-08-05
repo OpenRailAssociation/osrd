@@ -43,7 +43,6 @@ use utoipa::ToSchema;
 
 use super::AppState;
 use super::AuthorizationError;
-use super::AuthorizerError;
 
 mod resources;
 
@@ -66,9 +65,6 @@ pub(in crate::views) enum ResourceType {
 #[derive(Debug, thiserror::Error, EditoastError)]
 #[editoast_error(base_id = "authz")]
 enum AuthzError {
-    #[error("Internal error")]
-    #[editoast_error(status = 500, no_context)]
-    Authorizer(AuthorizerError),
     #[error("Unknown resource {resource_id}")]
     #[editoast_error(status = 404)]
     UnknownResource { resource_id: i64 },
@@ -88,20 +84,6 @@ enum AuthzError {
     #[error(transparent)]
     #[editoast_error(status = 500)]
     Database(#[from] editoast_models::Error),
-}
-
-impl From<AuthorizerError> for AuthzError {
-    fn from(err: AuthorizerError) -> Self {
-        match err {
-            AuthorizerError::UnknownResource(resource_id) => {
-                AuthzError::UnknownResource { resource_id }
-            }
-            AuthorizerError::UnknownSubject(subject_id) => {
-                AuthzError::UnknownSubject { subject_id }
-            }
-            err => AuthzError::Authorizer(err),
-        }
-    }
 }
 
 #[derive(Serialize, ToSchema)]
@@ -156,13 +138,13 @@ pub(in crate::views) async fn whoami(
 pub(in crate::views) async fn user_groups(
     Extension(authn_state): Extension<crate::authentication::State>,
     State(AppState {
-        regulator, db_pool, ..
+        openfga, db_pool, ..
     }): State<AppState>,
 ) -> Result<Json<Vec<Group>>> {
     let user = authn_state
         .user()
         .ok_or(AuthorizationError::Unauthenticated)?;
-    let authorizer = authn_state.authorizer(regulator.openfga());
+    let authorizer = authn_state.authorizer(&openfga);
     let user_groups = authz::v2::user_groups(user)
         .authorize(&authorizer)
         .await?
@@ -221,7 +203,7 @@ pub(in crate::views) struct UserInfo {
 )]
 pub(in crate::views) async fn users_info(
     State(AppState {
-        regulator, db_pool, ..
+        openfga, db_pool, ..
     }): State<AppState>,
     Json(UsersInfoRequest { ids, identities }): Json<UsersInfoRequest>,
 ) -> Result<Json<Vec<UserInfo>>> {
@@ -274,7 +256,7 @@ pub(in crate::views) async fn users_info(
         let user_groups = v2::user_groups(authz::User(user.user.id));
         v2::Protected::value(user).zip(user_groups)
     }));
-    let system = SystemAuthorizer::new_infallible(regulator.openfga());
+    let system = SystemAuthorizer::new_infallible(&openfga);
     let Ok(user_groups) = system.authorize(groups_prots).await?.access().await?;
 
     // Find groups that really exist (OpenFGA can be out of sync sometimes)
@@ -352,7 +334,7 @@ pub(in crate::views) struct ResourcePrivileges {
 )]
 pub(in crate::views) async fn user_privileges(
     State(AppState {
-        db_pool, regulator, ..
+        db_pool, openfga, ..
     }): State<AppState>,
     Extension(authn_state): Extension<crate::authentication::State>,
     Json(resources_ids): Json<HashMap<ResourceType, Vec<i64>>>,
@@ -390,7 +372,7 @@ pub(in crate::views) async fn user_privileges(
                         .zip(v2::Protected::value(resource))
                 }
             });
-            let authorizer = authn_state.authorizer(regulator.openfga());
+            let authorizer = authn_state.authorizer(&openfga);
             let accesses = authorizer.authorize_all(protected_privileges).await?;
             for access in v2::Access::access_all(accesses).await? {
                 match access {
@@ -510,7 +492,7 @@ pub(in crate::views) struct UserResourceGrant {
 )]
 pub(in crate::views) async fn user_grants(
     State(AppState {
-        db_pool, regulator, ..
+        db_pool, openfga, ..
     }): State<AppState>,
     Extension(authn_state): Extension<crate::authentication::State>,
     Json(body): Json<HashMap<ResourceType, Vec<i64>>>,
@@ -518,7 +500,7 @@ pub(in crate::views) async fn user_grants(
     let user = authn_state
         .user()
         .ok_or(AuthorizationError::Unauthenticated)?;
-    let authorizer = authn_state.authorizer(regulator.openfga());
+    let authorizer = authn_state.authorizer(&openfga);
     let mut response = HashMap::<_, Vec<UserResourceGrant>>::new();
     let missing_resources = retrieve_missing_resource_ids(
         db_pool.get().await?,
@@ -609,13 +591,13 @@ pub(in crate::views) struct SubjectGrant {
 pub(in crate::views) async fn resource_granted_users(
     Extension(authn_state): Extension<crate::authentication::State>,
     State(AppState {
-        db_pool, regulator, ..
+        db_pool, openfga, ..
     }): State<AppState>,
     Path(ResourceTypeParam { resource_type }): Path<ResourceTypeParam>,
     Path(ResourceIdParam { resource_id }): Path<ResourceIdParam>,
 ) -> Result<Json<Vec<SubjectGrant>>> {
     let mut conn = db_pool.get().await?;
-    let openfga = regulator.openfga();
+    let openfga = &openfga;
     let authorizer = authn_state.authorizer(openfga);
     // Ask OpenFGA about grants on the resource
     let ((readers, writers), owners) = match resource_type {
@@ -788,7 +770,7 @@ pub(in crate::views) enum BodyUpdateGrants {
 )]
 pub(in crate::views) async fn update_grants(
     State(AppState {
-        db_pool, regulator, ..
+        db_pool, openfga, ..
     }): State<AppState>,
     Extension(authn_state): Extension<crate::authentication::State>,
     Json(body): Json<BodyUpdateGrants>,
@@ -854,7 +836,7 @@ pub(in crate::views) async fn update_grants(
             .collect::<HashMap<_, _>>()
     };
 
-    let authorizer = authn_state.authorizer(regulator.openfga());
+    let authorizer = authn_state.authorizer(&openfga);
 
     match body {
         BodyUpdateGrants::Grant(grants) => {

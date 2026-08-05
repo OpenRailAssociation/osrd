@@ -288,7 +288,7 @@ pub(in crate::views) async fn requirements(
         valkey_client,
         core_client,
         config,
-        regulator,
+        openfga,
         ..
     }): State<AppState>,
     Extension(authn_state): Extension<authentication::State>,
@@ -303,7 +303,7 @@ pub(in crate::views) async fn requirements(
         v2::infra_privileges(*user, authz::Infra(infra_id))
             .map(async |privileges| privileges.contains(&authz::InfraPrivilege::CanRestrictedRead))
             .ok_or(AuthorizationError::Forbidden)
-            .run::<AuthorizationError, _>(&authn_state.authorizer(regulator.openfga()))
+            .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
             .await??;
     }
 
@@ -476,7 +476,7 @@ pub(in crate::views) struct LocalTrackNamesForm {
 )]
 pub(in crate::views) async fn get_local_track_names(
     State(AppState {
-        db_pool, regulator, ..
+        db_pool, openfga, ..
     }): State<AppState>,
     Extension(authn_state): Extension<authentication::State>,
     Path(TimetableIdParam { id: timetable_id }): Path<TimetableIdParam>,
@@ -489,7 +489,7 @@ pub(in crate::views) async fn get_local_track_names(
         v2::infra_privileges(*user, authz::Infra(infra_id))
             .map(async |privileges| privileges.contains(&authz::InfraPrivilege::CanRestrictedRead))
             .ok_or(AuthorizationError::Forbidden)
-            .run::<AuthorizationError, _>(&authn_state.authorizer(regulator.openfga()))
+            .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
             .await??;
     }
 

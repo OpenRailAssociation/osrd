@@ -45,7 +45,7 @@ use schemas::primitives::ObjectType;
 pub(in crate::views) async fn get_railjson(
     Path(infra): Path<InfraIdParam>,
     State(AppState {
-        db_pool, regulator, ..
+        db_pool, openfga, ..
     }): State<AppState>,
     Extension(authn_state): Extension<authentication::State>,
 ) -> Result<impl IntoResponse> {
@@ -59,7 +59,7 @@ pub(in crate::views) async fn get_railjson(
         v2::infra_privileges(*user, authz::Infra(infra_id))
             .map(async |privileges| privileges.contains(&authz::InfraPrivilege::CanRead))
             .ok_or(AuthorizationError::Forbidden)
-            .run::<AuthorizationError, _>(&authn_state.authorizer(regulator.openfga()))
+            .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
             .await??;
     }
 
@@ -188,7 +188,7 @@ pub(in crate::views) async fn post_railjson(
         db_pool,
         infra_caches,
         valkey_client,
-        regulator,
+        openfga,
         config,
         ..
     }): State<AppState>,
@@ -210,7 +210,7 @@ pub(in crate::views) async fn post_railjson(
             authz::Infra(infra.id),
             InfraGrant::Owner,
         )
-        .authorize(&SystemAuthorizer::new_infallible(regulator.openfga()))
+        .authorize(&SystemAuthorizer::new_infallible(&openfga))
         .await?
         .access()
         .await?;

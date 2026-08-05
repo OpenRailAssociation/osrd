@@ -71,8 +71,8 @@ async fn clean_orphaned_openfga_tuples(
     openfga_config: OpenfgaConfig,
 ) -> anyhow::Result<()> {
     println!("🧹 Removing orphaned openfga tuples...");
-    let regulator = openfga_config.into_regulator(db_pool.clone()).await?;
-    let deleted_count = delete_orphaned_tuples(regulator.openfga(), db_pool).await?;
+    let openfga = openfga_config.into_client().await?;
+    let deleted_count = delete_orphaned_tuples(&openfga, db_pool).await?;
 
     if deleted_count == 0 {
         println!("✨ No orphaned openfga tuples found");

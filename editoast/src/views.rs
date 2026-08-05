@@ -39,7 +39,6 @@ use ::core::str;
 
 use core_client::CoreClient;
 use editoast_derive::EditoastError;
-use editoast_models::PgAuthDriver;
 use thiserror::Error;
 
 pub use server::OpenApiRoot;
@@ -450,8 +449,6 @@ fn service_router() -> server::router::DocumentedRouter {
     })
 }
 
-pub type AuthorizerError = ::authz::Error<<PgAuthDriver as ::authz::StorageDriver>::Error>;
-
 #[derive(Debug, Error, derive_more::From, EditoastError)]
 #[editoast_error(base_id = "authorization")]
 pub enum AuthorizationError {
@@ -469,9 +466,7 @@ pub enum AuthorizationError {
     #[editoast_error(status = 404)]
     ImpersonatedUserNotFound { identity: String },
     #[error(transparent)]
-    #[editoast_error(forward)]
-    #[from(AuthorizerError, fga::client::Error)]
-    AuthError(AuthorizerError),
+    OpenFga(#[from] fga::client::Error),
     #[error(transparent)]
     #[editoast_error(status = 500)]
     DbError(#[from] database::db_connection_pool::DatabasePoolError),

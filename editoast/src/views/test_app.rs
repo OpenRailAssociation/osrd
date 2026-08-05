@@ -48,14 +48,12 @@ use crate::infra_cache::InfraCache;
 use crate::views::service_router;
 use crate::views::timetable::similar_trains::trains_traffic::TrainTraffic;
 use crate::views::timetable::similar_trains::trains_traffic::TrainsTrafficPool;
-use editoast_models::PgAuthDriver;
 use fga::client::DEFAULT_OPENFGA_MAX_CHECKS_PER_BATCH_CHECK;
 use fga::client::DEFAULT_OPENFGA_MAX_TUPLES_PER_WRITE;
 
 use super::CoreConfig;
 use super::OpenfgaConfig;
 use super::PostgresConfig;
-use super::Regulator;
 use super::ServerConfig;
 
 // NoopSpanExporter exists in 'opentelemetry-sdk' but is hidden behind
@@ -220,7 +218,7 @@ impl TestAppBuilder {
             Limits::default(),
         )
         .reset_store();
-        let openfga_authz = block_on(fga::Client::try_new_store(
+        let openfga = block_on(fga::Client::try_new_store(
             &store_name,
             fga_connection_settings.clone(),
         ))
@@ -236,20 +234,18 @@ impl TestAppBuilder {
             ))
             .expect("Failed creating OpenFGA migrations store");
             block_on(fga_migrations::run_migrations(
-                openfga_authz.clone(),
+                openfga.clone(),
                 openfga_migrations,
                 fga_migrations::TargetMigration::Latest,
             ))
             .expect("OpenFGA authorization model should be updated");
         }
-        let driver = PgAuthDriver::new(db_pool_v2.clone());
-        let regulator = Regulator::new(openfga_authz.clone(), driver);
 
         let app_state = AppState {
             db_pool: db_pool_v2.clone(),
             core_client: core_client.clone(),
             valkey_client: valkey,
-            regulator,
+            openfga,
             infra_caches,
             speed_limit_tag_ids,
             health_check_timeout: config.health_check_timeout,
@@ -335,7 +331,7 @@ impl TestApp {
     }
 
     pub fn openfga(&self) -> &fga::Client {
-        self.app_state.regulator.openfga()
+        &self.app_state.openfga
     }
 
     pub fn speed_limit_tag_ids(&self) -> Arc<SpeedLimitTagIds> {
@@ -416,11 +412,9 @@ impl TestApp {
     }
 
     pub fn infra_grant(&self, infra_id: i64, subject_id: i64) -> Option<InfraGrant> {
-        let regulator = &self.app_state.regulator;
         let subject = self.authz_subject(subject_id);
         block_on(
-            regulator
-                .openfga()
+            self.openfga()
                 .infra_effective_grant(subject, authz::Infra(infra_id)),
         )
     }
@@ -520,7 +514,6 @@ impl<'a> UserBuilder<'a> {
         {
             panic!("An OpenFGA model must be provided to grant a user roles or infra grants");
         }
-        let regulator = &app.app_state.regulator;
 
         let authz::identity::UserInfo { identities, name } = info.clone();
         let user =
@@ -529,13 +522,13 @@ impl<'a> UserBuilder<'a> {
                 .expect("User should be created successfully");
         if app.enable_authorization {
             v2::add_roles(authz::Subject::user(user.id), roles)
-                .authorize(&special_authorizers::Authorize(regulator.openfga()))
+                .authorize(&special_authorizers::Authorize(&app.app_state.openfga))
                 .await
                 .expect("roles should be granted successfully")
                 .unwrap_authorized()
                 .await;
 
-            let system = SystemAuthorizer::new_infallible(regulator.openfga());
+            let system = SystemAuthorizer::new_infallible(&app.app_state.openfga);
             for (infra_id, grant) in infras_grant.into_iter() {
                 v2::infra_set_grant(
                     authz::Subject::User(authz::User(user.id)),
@@ -620,7 +613,6 @@ impl<'a> GroupBuilder<'a> {
                 "An OpenFGA model must be provided to grant a group roles, members, or infra grants"
             );
         }
-        let regulator = &app.app_state.regulator;
 
         let id =
             editoast_models::Group::upsert(app.db_pool().get().await.unwrap(), info.name.clone())
@@ -631,7 +623,7 @@ impl<'a> GroupBuilder<'a> {
         if app.enable_authorization {
             let group_auth = authz::Group(group.id);
             v2::add_roles(group_auth.into(), roles)
-                .authorize(&special_authorizers::Authorize(regulator.openfga()))
+                .authorize(&special_authorizers::Authorize(&app.app_state.openfga))
                 .await
                 .expect("roles should be granted successfully")
                 .unwrap_authorized()
@@ -644,13 +636,13 @@ impl<'a> GroupBuilder<'a> {
                     .map(|authz::identity::User { id, .. }| authz::User(*id))
                     .collect(),
             )
-            .authorize(&special_authorizers::Authorize(regulator.openfga()))
+            .authorize(&special_authorizers::Authorize(&app.app_state.openfga))
             .await
             .expect("members should be added successfully")
             .unwrap_authorized()
             .await;
 
-            let system = SystemAuthorizer::new_infallible(regulator.openfga());
+            let system = SystemAuthorizer::new_infallible(&app.app_state.openfga);
             let subject = authz::Subject::Group(group_auth);
             for (infra_id, grant) in infras_grant.into_iter() {
                 v2::infra_set_grant(subject, authz::Infra(infra_id), grant)

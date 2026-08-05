@@ -185,7 +185,7 @@ pub(in crate::views) struct InfraListResponse {
 )]
 pub(in crate::views) async fn list(
     State(AppState {
-        db_pool, regulator, ..
+        db_pool, openfga, ..
     }): State<AppState>,
     Extension(authn): Extension<authentication::State>,
     Query(pagination): Query<PaginationQueryParams<1000>>,
@@ -195,7 +195,7 @@ pub(in crate::views) async fn list(
     let settings = match authn {
         crate::authentication::State::Skip => default_settings,
         crate::authentication::State::Authenticated { user, roles } => {
-            let authorizer = UserAuthorizer::new(user, roles.clone(), regulator.openfga());
+            let authorizer = UserAuthorizer::new(user, roles.clone(), &openfga);
             let authorized_infras = authorizer
                 .authorize(authz::v2::infra_list(
                     user,
@@ -244,7 +244,7 @@ pub(in crate::views) struct InfraIdParam {
 )]
 pub(in crate::views) async fn get(
     State(AppState {
-        db_pool, regulator, ..
+        db_pool, openfga, ..
     }): State<AppState>,
     Extension(authn_state): Extension<authentication::State>,
     Path(infra): Path<InfraIdParam>,
@@ -259,7 +259,7 @@ pub(in crate::views) async fn get(
         v2::infra_privileges(*user, authz::Infra(infra_id))
             .map(async |privileges| privileges.contains(&authz::InfraPrivilege::CanRestrictedRead))
             .ok_or(AuthorizationError::Forbidden)
-            .run::<AuthorizationError, _>(&authn_state.authorizer(regulator.openfga()))
+            .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
             .await??;
     }
 
@@ -295,7 +295,7 @@ impl InfraCreateForm {
 )]
 pub(in crate::views) async fn create(
     State(AppState {
-        db_pool, regulator, ..
+        db_pool, openfga, ..
     }): State<AppState>,
     Extension(authn_state): Extension<authentication::State>,
     Json(infra_form): Json<InfraCreateForm>,
@@ -310,7 +310,7 @@ pub(in crate::views) async fn create(
             authz::Infra(infra.id),
             InfraGrant::Owner,
         )
-        .authorize(&SystemAuthorizer::new_infallible(regulator.openfga()))
+        .authorize(&SystemAuthorizer::new_infallible(&openfga))
         .await?
         .access()
         .await?;
@@ -341,7 +341,7 @@ pub(in crate::views) async fn clone(
     Extension(authn_state): Extension<authentication::State>,
     Path(InfraIdParam { infra_id }): Path<InfraIdParam>,
     State(AppState {
-        db_pool, regulator, ..
+        db_pool, openfga, ..
     }): State<AppState>,
     Query(CloneQuery { name }): Query<CloneQuery>,
 ) -> Result<Json<i64>> {
@@ -355,7 +355,7 @@ pub(in crate::views) async fn clone(
         v2::infra_privileges(*user, authz::Infra(infra_id))
             .map(async |privileges| privileges.contains(&authz::InfraPrivilege::CanRead))
             .ok_or(AuthorizationError::Forbidden)
-            .run::<AuthorizationError, _>(&authn_state.authorizer(regulator.openfga()))
+            .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
             .await??;
     }
 
@@ -367,7 +367,7 @@ pub(in crate::views) async fn clone(
             authz::Infra(cloned_infra.id),
             InfraGrant::Owner,
         )
-        .authorize(&SystemAuthorizer::new_infallible(regulator.openfga()))
+        .authorize(&SystemAuthorizer::new_infallible(&openfga))
         .await?
         .access()
         .await?;
@@ -397,7 +397,7 @@ pub(in crate::views) async fn clone(
 )]
 pub(in crate::views) async fn delete(
     State(AppState {
-        db_pool, regulator, ..
+        db_pool, openfga, ..
     }): State<AppState>,
     Extension(authn_state): Extension<authentication::State>,
     Path(InfraIdParam { infra_id }): Path<InfraIdParam>,
@@ -406,7 +406,7 @@ pub(in crate::views) async fn delete(
         v2::infra_privileges(*user, authz::Infra(infra_id))
             .map(async |privileges| privileges.contains(&authz::InfraPrivilege::CanDelete))
             .ok_or(AuthorizationError::Forbidden)
-            .run::<AuthorizationError, _>(&authn_state.authorizer(regulator.openfga()))
+            .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
             .await??;
     }
 
@@ -468,7 +468,7 @@ pub(in crate::views) async fn put(
 )]
 pub(in crate::views) async fn get_switch_types(
     State(AppState {
-        db_pool, regulator, ..
+        db_pool, openfga, ..
     }): State<AppState>,
     Extension(authn_state): Extension<authentication::State>,
     Path(InfraIdParam { infra_id }): Path<InfraIdParam>,
@@ -484,7 +484,7 @@ pub(in crate::views) async fn get_switch_types(
         v2::infra_privileges(*user, authz::Infra(infra_id))
             .map(async |privileges| privileges.contains(&authz::InfraPrivilege::CanRestrictedRead))
             .ok_or(AuthorizationError::Forbidden)
-            .run::<AuthorizationError, _>(&authn_state.authorizer(regulator.openfga()))
+            .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
             .await??;
     }
 
@@ -522,7 +522,7 @@ pub(in crate::views) async fn get_speed_limit_tags(
     Extension(authn_state): Extension<authentication::State>,
     Path(InfraIdParam { infra_id }): Path<InfraIdParam>,
     State(AppState {
-        db_pool, regulator, ..
+        db_pool, openfga, ..
     }): State<AppState>,
     State(builtin_tags): State<Arc<SpeedLimitTagIds>>,
 ) -> Result<Json<HashSet<String>>> {
@@ -537,7 +537,7 @@ pub(in crate::views) async fn get_speed_limit_tags(
         v2::infra_privileges(*user, authz::Infra(infra_id))
             .map(async |privileges| privileges.contains(&authz::InfraPrivilege::CanRestrictedRead))
             .ok_or(AuthorizationError::Forbidden)
-            .run::<AuthorizationError, _>(&authn_state.authorizer(regulator.openfga()))
+            .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
             .await??;
     }
 
@@ -574,7 +574,7 @@ pub(in crate::views) async fn get_voltages(
     Path(InfraIdParam { infra_id }): Path<InfraIdParam>,
     Query(param): Query<GetVoltagesQueryParams>,
     State(AppState {
-        db_pool, regulator, ..
+        db_pool, openfga, ..
     }): State<AppState>,
 ) -> Result<Json<Vec<String>>> {
     let include_rolling_stock_modes = param.include_rolling_stock_modes;
@@ -587,7 +587,7 @@ pub(in crate::views) async fn get_voltages(
         v2::infra_privileges(*user, authz::Infra(infra_id))
             .map(async |privileges| privileges.contains(&authz::InfraPrivilege::CanRestrictedRead))
             .ok_or(AuthorizationError::Forbidden)
-            .run::<AuthorizationError, _>(&authn_state.authorizer(regulator.openfga()))
+            .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
             .await??;
     }
 
@@ -640,14 +640,14 @@ pub(in crate::views) async fn lock(
     Extension(authn_state): Extension<authentication::State>,
     Path(InfraIdParam { infra_id }): Path<InfraIdParam>,
     State(AppState {
-        db_pool, regulator, ..
+        db_pool, openfga, ..
     }): State<AppState>,
 ) -> Result<impl IntoResponse> {
     if let authentication::State::Authenticated { user, .. } = &authn_state {
         v2::infra_privileges(*user, authz::Infra(infra_id))
             .map(async |privileges| privileges.contains(&authz::InfraPrivilege::CanWrite))
             .ok_or(AuthorizationError::Forbidden)
-            .run::<AuthorizationError, _>(&authn_state.authorizer(regulator.openfga()))
+            .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
             .await??;
     }
 
@@ -670,14 +670,14 @@ pub(in crate::views) async fn unlock(
     Extension(authn_state): Extension<authentication::State>,
     Path(InfraIdParam { infra_id }): Path<InfraIdParam>,
     State(AppState {
-        db_pool, regulator, ..
+        db_pool, openfga, ..
     }): State<AppState>,
 ) -> Result<impl IntoResponse> {
     if let authentication::State::Authenticated { user, .. } = &authn_state {
         v2::infra_privileges(*user, authz::Infra(infra_id))
             .map(async |privileges| privileges.contains(&authz::InfraPrivilege::CanWrite))
             .ok_or(AuthorizationError::Forbidden)
-            .run::<AuthorizationError, _>(&authn_state.authorizer(regulator.openfga()))
+            .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
             .await??;
     }
 
@@ -746,7 +746,7 @@ operational point that it matches on a given infrastructure.
 )]
 pub(in crate::views) async fn match_operational_points(
     State(AppState {
-        db_pool, regulator, ..
+        db_pool, openfga, ..
     }): State<AppState>,
     Extension(authn_state): Extension<authentication::State>,
     Path(InfraIdParam { infra_id }): Path<InfraIdParam>,
@@ -758,7 +758,7 @@ pub(in crate::views) async fn match_operational_points(
         v2::infra_privileges(*user, authz::Infra(infra_id))
             .map(async |privileges| privileges.contains(&authz::InfraPrivilege::CanRestrictedRead))
             .ok_or(AuthorizationError::Forbidden)
-            .run::<AuthorizationError, _>(&authn_state.authorizer(regulator.openfga()))
+            .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
             .await??;
     }
     let mut conn = db_pool.get().await?;
