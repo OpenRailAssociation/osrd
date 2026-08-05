@@ -199,7 +199,6 @@ const ScenarioContent = ({ activeBoards, toggleBoard }: ScenarioContentProps) =>
         <main className="mastcontainer mastcontainer-no-mastnav scenario scenario-content-v2">
           {displayTrainScheduleManagement !== MANAGE_TRAIN_SCHEDULE_TYPES.none && (
             <ManageTrainScheduleModal
-              trainSchedulesWithDetails={trainSchedulesWithDetails}
               displayTrainScheduleManagement={displayTrainScheduleManagement}
               setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
               upsertTrainSchedules={upsertTrainSchedulesWithNge}
