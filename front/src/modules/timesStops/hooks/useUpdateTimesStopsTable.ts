@@ -140,7 +140,7 @@ const useUpdateTimesStopsTable = (
 
   const computeMarginUpdate = useCallback(
     (update: RequestedMarginUpdate): ComputedUpdate => {
-      const { pathStepId, updatedPath } = upsertPathStep(update.row, selectedTrain.path, allRows);
+      const { pathStepKey, updatedPath } = upsertPathStep(update.row, selectedTrain.path, allRows);
       const edits = buildMarginEdits(update.row, update.value, allRows);
 
       const baseTrainInputs: Pick<TrainSchedule, 'path' | 'schedule' | 'margins'> = {
@@ -151,8 +151,7 @@ const useUpdateTimesStopsTable = (
       const updatedPathSteps = updatedPath.map((_, index) =>
         computeBasePathStep(baseTrainInputs, index)
       );
-
-      const targetedStep = updatedPathSteps.find((step) => step.key === pathStepId);
+      const targetedStep = updatedPathSteps.find((step) => step.key === pathStepKey);
 
       if (!targetedStep) return { patch: { path: updatedPath }, edits };
 
@@ -165,12 +164,12 @@ const useUpdateTimesStopsTable = (
   /** A stop is always required to edit a reception signal, so its schedule item must exist. */
   const computeReceptionSignalUpdate = useCallback(
     (update: ReceptionSignalUpdate): ComputedUpdate => {
-      const { pathStepId, updatedPath } = upsertPathStep(update.row, selectedTrain.path, allRows);
+      const { pathStepKey, updatedPath } = upsertPathStep(update.row, selectedTrain.path, allRows);
       const edits: PendingEdit[] = [
         { rowId: update.row.id, field: 'receptionSignal', value: update.value },
       ];
       const currentSchedule = selectedTrain.schedule ?? [];
-      const existingItemIndex = currentSchedule.findIndex((item) => item.at === pathStepId);
+      const existingItemIndex = currentSchedule.findIndex((item) => item.at === pathStepKey);
       if (existingItemIndex < 0) return { patch: undefined, edits };
 
       return {
@@ -207,7 +206,7 @@ const useUpdateTimesStopsTable = (
           ),
         };
 
-      const { pathStepId, updatedPath } = upsertPathStep(update.row, selectedTrain.path, allRows);
+      const { pathStepKey, updatedPath } = upsertPathStep(update.row, selectedTrain.path, allRows);
       const currentSchedule = selectedTrain.schedule ?? [];
       const startTime = getTruncatedToSecondStartTime(selectedTrain, scenario.timetable_type);
 
@@ -230,7 +229,7 @@ const useUpdateTimesStopsTable = (
         startTime
       );
       const updatedSchedule = upsertScheduleItem(currentSchedule, updatedPath, {
-        at: pathStepId,
+        at: pathStepKey,
         arrival,
         stop_for,
       });
@@ -246,7 +245,7 @@ const useUpdateTimesStopsTable = (
       // Editing a row that is not a path step yet creates one
       const editedRows = update.row.pathStepId
         ? allRows
-        : allRows.map((row) => (row.id === update.row.id ? { ...row, pathStepId } : row));
+        : allRows.map((row) => (row.id === update.row.id ? { ...row, pathStepKey } : row));
 
       return {
         patch: {
@@ -268,9 +267,9 @@ const useUpdateTimesStopsTable = (
    */
   const computePowerRestrictionUpdate = useCallback(
     (update: PowerRestrictionUpdate): ComputedUpdate => {
-      const { pathStepId, updatedPath } = upsertPathStep(update.row, selectedTrain.path, allRows);
+      const { pathStepKey, updatedPath } = upsertPathStep(update.row, selectedTrain.path, allRows);
       const modifiedRows = allRows.map((r) =>
-        r.id === update.row.id ? { ...r, pathStepId, powerRestriction: update.value } : r
+        r.id === update.row.id ? { ...r, pathStepKey, powerRestriction: update.value } : r
       );
       return {
         patch: {
@@ -293,7 +292,7 @@ const useUpdateTimesStopsTable = (
       const startTime = getTruncatedToSecondStartTime(selectedTrain, scenario.timetable_type);
 
       for (const row of update.rows) {
-        const { pathStepId, updatedPath: updatedPathForRow } = upsertPathStep(
+        const { pathStepKey, updatedPath: updatedPathForRow } = upsertPathStep(
           row,
           currentPath,
           allRows
@@ -318,8 +317,11 @@ const useUpdateTimesStopsTable = (
         );
         // A row with no time to fill leaves the schedule untouched
         updatedSchedule =
-          upsertScheduleItem(updatedSchedule, currentPath, { at: pathStepId, arrival, stop_for }) ??
-          updatedSchedule;
+          upsertScheduleItem(updatedSchedule, currentPath, {
+            at: pathStepKey,
+            arrival,
+            stop_for,
+          }) ?? updatedSchedule;
       }
 
       return {

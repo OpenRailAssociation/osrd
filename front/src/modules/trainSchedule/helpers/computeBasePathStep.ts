@@ -3,14 +3,14 @@ import type { PathStep } from 'reducers/osrdconf/types';
 import { Duration } from 'utils/duration';
 
 const findCorrespondingMargin = (
-  stepId: string,
+  stepKey: string,
   stepIndex: number,
   margins: { boundaries: string[]; values: string[] }
 ) => {
   // The first pathStep will never have its key in boundaries
   if (stepIndex === 0) return margins.values[0] === 'none' ? undefined : margins.values[0];
 
-  const marginIndex = margins.boundaries.findIndex((boundaryKey) => boundaryKey === stepId);
+  const marginIndex = margins.boundaries.findIndex((boundaryKey) => boundaryKey === stepKey);
 
   return marginIndex !== -1 ? margins.values[marginIndex + 1] : undefined;
 };
