@@ -53,3 +53,10 @@ export function cleanTimeInput(value: string | null | undefined): string {
 export function stripTimeColons(time: string): string {
   return time.replaceAll(':', '');
 }
+
+/**
+ * Escape regex special characters in a string so it can be safely used inside a RegExp.
+ */
+export function escapeRegExp(text: string): string {
+  return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}

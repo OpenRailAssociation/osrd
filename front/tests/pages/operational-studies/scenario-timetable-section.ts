@@ -43,6 +43,7 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
   private readonly projectTrainButton: Locator;
   private readonly deleteTrainButton: Locator;
   readonly editTrainScheduleButton: Locator;
+  private readonly trainScheduleDepartureTime: Locator;
   private readonly trainScheduleArrivalTime: Locator;
   private readonly trainScheduleArrivalTimeLoader: Locator;
   private readonly invalidTrainSchedulesReasons: Locator;
@@ -89,6 +90,7 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
     this.projectTrainButton = page.getByTestId('project-train');
     this.deleteTrainButton = page.getByTestId('delete-train');
     this.editTrainScheduleButton = page.getByTestId('submit-edit-train-schedule');
+    this.trainScheduleDepartureTime = page.getByTestId('train-schedule-departure-time');
     this.trainScheduleArrivalTime = page.getByTestId('train-schedule-arrival-time');
     this.trainScheduleArrivalTimeLoader = page.getByTestId('arrival-time-loader');
     this.invalidTrainSchedulesReasons = this.trainSchedules.getByTestId('invalid-reason');
@@ -105,6 +107,10 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
 
   static getPacedTrainButton(pacedTrainSelector: Locator): Locator {
     return pacedTrainSelector.getByTestId('paced-train-name');
+  }
+
+  private static getPacedTrainInterval(pacedTrainSelector: Locator): Locator {
+    return pacedTrainSelector.getByTestId('paced-train-interval');
   }
 
   static getOccurrences(pacedTrain: Locator): Locator {
@@ -377,6 +383,31 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
         timeout: 30_000,
       })
       .toBe(expectedArrivalTime);
+  }
+
+  async verifyTrainScheduleDepartureTime(expectedDepartureTime: string, index = 0) {
+    await expect(this.trainScheduleDepartureTime.nth(index)).toHaveText(expectedDepartureTime);
+  }
+
+  async verifyTrainName(expectedName: string, index = 0) {
+    await expect(this.trainName.nth(index)).toHaveText(expectedName);
+  }
+
+  async verifyPacedTrainName(expectedName: string, index = 0) {
+    const nameLocator = ScenarioTimetableSection.getPacedTrainButton(
+      this.trainSchedules.nth(index)
+    );
+    await expect(nameLocator).toHaveText(expectedName);
+  }
+
+  async verifyPacedTrainInterval(expectedIntervalMinutes: number, index = 0) {
+    const intervalLocator = ScenarioTimetableSection.getPacedTrainInterval(
+      this.trainSchedules.nth(index)
+    );
+    // The interval only renders once the paced train summary has finished recomputing
+    await expect(intervalLocator).toHaveText(`— ${expectedIntervalMinutes}min`, {
+      timeout: 30_000,
+    });
   }
 
   async selectAllTrainSchedules() {
