@@ -5,8 +5,8 @@ import type { PathStepV2 } from 'reducers/osrdconf/types';
 
 import { groupOperationalPoints } from '../utils';
 
-const makeStep = (id: string, uic: number, ch = 'BV'): PathStepV2 => ({
-  id,
+const makeStep = (key: string, uic: number, ch = 'BV'): PathStepV2 => ({
+  key,
   location: {
     type: 'operational_point_part_reference',
     operational_point: { type: 'uic', uic, secondary_code: ch },
@@ -18,8 +18,8 @@ const makeStep = (id: string, uic: number, ch = 'BV'): PathStepV2 => ({
 });
 
 // A step matching no OP, as produced by a map-click waypoint
-const makeTrackOffsetStep = (id: string): PathStepV2 => ({
-  id,
+const makeTrackOffsetStep = (key: string): PathStepV2 => ({
+  key,
   location: { type: 'track_offset', track: 'xxx', offset: 50 },
   arrival: null,
   stopFor: null,
@@ -48,7 +48,7 @@ const makeOp = (
 // Flatten a grouping result into ids, so a whole result reads as one shape
 const summarize = (groups: ReturnType<typeof groupOperationalPoints>) =>
   groups.map((group) => ({
-    step: group.requestedStep.id,
+    step: group.requestedStep.key,
     requestedOp: group.requestedOp?.id,
     intermediates: group.intermediates.map((op) => op.id),
   }));
@@ -195,7 +195,7 @@ describe('groupOperationalPoints', () => {
       const groups = groupOperationalPoints(ops, steps);
       expect(
         groups.map((group) => ({
-          step: group.requestedStep.id,
+          step: group.requestedStep.key,
           requestedOp: group.requestedOp?.id,
           count: group.duplicatesCount,
         }))

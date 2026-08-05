@@ -75,7 +75,7 @@ export const usePathStepsMetadata = (
       pathSteps.reduce<TrainSchedule['path']>((acc, step) => {
         if (step.location) {
           acc.push({
-            key: step.id,
+            key: step.key,
             location: step.location,
           });
         }
@@ -115,7 +115,7 @@ export const usePathStepsMetadata = (
         const { location } = pathStep;
         // TODO : we need to evaluate if we still need to invalidate a pathstep when it has no location
         if (!location) {
-          newPathStepsMetadataById.set(pathStep.id, { isInvalid: true });
+          newPathStepsMetadataById.set(pathStep.key, { isInvalid: true });
           return;
         }
 
@@ -134,11 +134,11 @@ export const usePathStepsMetadata = (
           if (!correspondingTrack || !coordinates) {
             // Can happen in case of track offset id does not exist in infra or
             // if its offset is greater than the track length
-            newPathStepsMetadataById.set(pathStep.id, { isInvalid: true });
+            newPathStepsMetadataById.set(pathStep.key, { isInvalid: true });
             return;
           }
 
-          newPathStepsMetadataById.set(pathStep.id, {
+          newPathStepsMetadataById.set(pathStep.key, {
             type: 'trackOffset',
             isInvalid: false,
             label: '',
@@ -148,23 +148,23 @@ export const usePathStepsMetadata = (
         }
         // Find the matching operational point for this pathStep to get
         // its valid status and its name
-        const matchedOp = pathStepsOperationalPoints.get(pathStep.id);
+        const matchedOp = pathStepsOperationalPoints.get(pathStep.key);
 
         const { local_track_name } = location;
 
         if (!matchedOp) {
           // A just-added step has no match until /match_operational_points
           // answers; keep its pre-filled metadata instead of flagging it
-          const previous = pathStepsMetadataById.get(pathStep.id);
+          const previous = pathStepsMetadataById.get(pathStep.key);
           if (previous && !previous.isInvalid && previous.type === 'opRef') {
-            newPathStepsMetadataById.set(pathStep.id, previous);
+            newPathStepsMetadataById.set(pathStep.key, previous);
             return;
           }
 
           const opRefKey = getOpRefKey(location.operational_point);
           const timetableTrackNames = localTrackNamesData?.[opRefKey] ?? [];
 
-          newPathStepsMetadataById.set(pathStep.id, {
+          newPathStepsMetadataById.set(pathStep.key, {
             isInvalid: true,
             localTrackName: local_track_name ?? undefined,
             customTrackNames: timetableTrackNames.length > 0 ? timetableTrackNames : undefined,
@@ -199,7 +199,7 @@ export const usePathStepsMetadata = (
 
         const parts = [...validParts, ...customParts];
 
-        newPathStepsMetadataById.set(pathStep.id, {
+        newPathStepsMetadataById.set(pathStep.key, {
           type: 'opRef',
           isInvalid: false,
           name: matchedOp.name,
