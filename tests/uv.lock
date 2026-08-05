@@ -498,7 +498,7 @@ requires-dist = [
 [package.metadata.requires-dev]
 dev = [
     { name = "pyright", specifier = "~=1.1.410" },
-    { name = "ruff", specifier = "~=0.16.0" },
+    { name = "ruff", specifier = "~=0.16.1" },
 ]
 
 [[package]]
@@ -809,7 +809,7 @@ requires-dist = [
     { name = "pyright", marker = "extra == 'check'", specifier = "~=1.1.410" },
     { name = "pytest", marker = "extra == 'check'", specifier = "~=9.1.1" },
     { name = "pytest-cov", marker = "extra == 'check'", specifier = "~=7.1.0" },
-    { name = "ruff", marker = "extra == 'check'", specifier = "~=0.16.0" },
+    { name = "ruff", marker = "extra == 'check'", specifier = "~=0.16.1" },
 ]
 provides-extras = ["check"]
 
@@ -879,7 +879,7 @@ requires-dist = [
     { name = "pytest-cov", specifier = "~=7.1.0" },
     { name = "railjson-generator", editable = "../python/railjson_generator" },
     { name = "requests", specifier = "~=2.34.2" },
-    { name = "ruff", marker = "extra == 'check'", specifier = "~=0.16.0" },
+    { name = "ruff", marker = "extra == 'check'", specifier = "~=0.16.1" },
 ]
 provides-extras = ["check"]
 
