@@ -146,3 +146,110 @@ pub(in crate::views) async fn list(
     let linkings = TrainScheduleLinking::list(conn, settings).await?;
     Ok(Json(linkings.into_iter().map_into().collect()))
 }
+
+#[cfg(test)]
+mod tests {
+    use std::collections::HashSet;
+
+    use authz::Role;
+    use editoast_models::prelude::{Create, Model};
+    use reqwest::StatusCode;
+    use serde_json::json;
+
+    use crate::fixtures::create_simple_paced_train;
+    use crate::fixtures::create_timetable;
+    use crate::fixtures::create_timetable_with_train_schedule_set;
+    use crate::views::test_app::TestRequestExt as _;
+    use crate::views::test_app::test_app;
+
+    use super::*;
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn test_list() {
+        let app = test_app!().build();
+        let pool = app.db_pool();
+        let conn = &mut pool.get_ok();
+
+        let user = app
+            .user("user", "User")
+            .with_roles([Role::OperationalStudies])
+            .create()
+            .await;
+
+        let (timetable, train_schedule_set) = create_timetable_with_train_schedule_set(conn).await;
+        let train_schedule_1 = create_simple_paced_train(conn, train_schedule_set.id).await;
+        let train_schedule_2 = create_simple_paced_train(conn, train_schedule_set.id).await;
+        let linking_1 = TrainScheduleLinking::changeset()
+            .timetable_id(timetable.id)
+            .source_train_schedule_id(train_schedule_1.id)
+            .source_occurrence_index(Some(1))
+            .target_train_schedule_id(train_schedule_1.id)
+            .target_occurrence_index(Some(2))
+            .create(conn)
+            .await
+            .expect("Failed to create a linking");
+        let linking_2 = TrainScheduleLinking::changeset()
+            .timetable_id(timetable.id)
+            .source_train_schedule_id(train_schedule_1.id)
+            .source_occurrence_index(Some(2))
+            .target_train_schedule_id(train_schedule_2.id)
+            .target_occurrence_index(Some(1))
+            .create(conn)
+            .await
+            .expect("Failed to create a linking");
+
+        let other_timetable = create_timetable(conn).await;
+        // Create another linking on an other timetable to make sure it doesn't appear in the requests
+        TrainScheduleLinking::changeset()
+            .timetable_id(other_timetable.id)
+            .source_train_schedule_id(train_schedule_1.id)
+            .source_occurrence_index(Some(0))
+            .target_train_schedule_id(train_schedule_2.id)
+            .target_occurrence_index(Some(0))
+            .create(conn)
+            .await
+            .expect("Failed to create a linking");
+
+        let request = ListLinkingsQuery {
+            timetable_id: timetable.id,
+            train_schedules: vec![train_schedule_1.id],
+        };
+
+        let response: Vec<LinkingResponse> = app
+            .post("/train_schedules/linkings")
+            .json(&json!(request))
+            .by_user(user.as_ref())
+            .await
+            .assert_status(StatusCode::OK)
+            .json();
+
+        assert_eq!(
+            response
+                .into_iter()
+                .map(|linking| linking.id)
+                .collect::<HashSet<i64>>(),
+            HashSet::from([linking_1.id, linking_2.id])
+        );
+
+        let request = ListLinkingsQuery {
+            timetable_id: timetable.id,
+            train_schedules: vec![train_schedule_2.id],
+        };
+
+        let response: Vec<LinkingResponse> = app
+            .post("/train_schedules/linkings")
+            .json(&json!(request))
+            .by_user(user.as_ref())
+            .await
+            .assert_status(StatusCode::OK)
+            .json();
+
+        assert_eq!(
+            response
+                .into_iter()
+                .map(|linking| linking.id)
+                .collect::<Vec<i64>>(),
+            vec![linking_2.id]
+        );
+    }
+}
