@@ -9,6 +9,7 @@ use authz::v2::Actor;
 use authz::v2::Authorizer;
 use authz::v2::Check;
 use authz::v2::Protected;
+use editoast_models::prelude::RetrieveBatchUnchecked as _;
 use futures::StreamExt as _;
 use futures::stream::FuturesUnordered;
 use tracing::Instrument as _;
@@ -310,6 +311,40 @@ where
     } else {
         Err(AuthorizationError::Forbidden)
     }
+}
+
+/// Ensures the issuer can read every rolling stock of `rolling_stock_names`, and fails with a
+/// [`AuthorizationError::Forbidden`] as soon as one of them isn't readable.
+pub async fn require_readable_rolling_stocks(
+    rolling_stock_names: impl IntoIterator<Item = String>,
+    conn: &mut database::DbConnection,
+    authn_state: &crate::authentication::State,
+    openfga: &fga::Client,
+) -> crate::error::Result<()> {
+    let Some(user) = authn_state.regular_user() else {
+        return Ok(());
+    };
+
+    // Rolling stocks are referenced by name, the authorization by id
+    let rolling_stock_names = rolling_stock_names
+        .into_iter()
+        .collect::<std::collections::HashSet<_>>();
+    let rolling_stocks: Vec<editoast_models::RollingStock> =
+        editoast_models::RollingStock::retrieve_batch_unchecked(conn, rolling_stock_names)
+            .await
+            .map_err(crate::views::rolling_stock::RollingStockError::from)?;
+
+    // Not using rolling_stock_list: we bail out as soon as one rolling stock isn't readable
+    let authorizer = authn_state.authorizer(openfga);
+    for rolling_stock in rolling_stocks {
+        require(
+            &authorizer,
+            authz::v2::rolling_stock_privileges(user, authz::RollingStock(rolling_stock.id)),
+            &authz::RollingStockPrivilege::CanRead,
+        )
+        .await?;
+    }
+    Ok(())
 }
 
 #[cfg(test)]
