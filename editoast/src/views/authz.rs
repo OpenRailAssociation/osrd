@@ -77,10 +77,6 @@ enum AuthzError {
     #[error("Unknown user identities '{}'", identities.iter().format(", "))]
     #[editoast_error(status = 404)]
     UnknownIdentities { identities: HashSet<String> },
-    #[error("Authorization error")]
-    #[editoast_error(forward)]
-    Authz(#[from] AuthorizationError),
-
     #[error(transparent)]
     #[editoast_error(status = 500)]
     Database(#[from] editoast_models::Error),
