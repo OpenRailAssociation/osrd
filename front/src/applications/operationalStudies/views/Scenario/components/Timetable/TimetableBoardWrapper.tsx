@@ -25,8 +25,6 @@ import Timetable from './Timetable';
 import { copyTrainSchedulesToClipboard } from './utils';
 
 type TimetableBoardWrapperProps = {
-  setDisplayTrainScheduleManagement: (mode: string) => void;
-  setTrainScheduleToEditData: (trainScheduleToEditData?: TrainScheduleToEditData) => void;
   trainScheduleToEditData?: TrainScheduleToEditData;
   trainSchedulesWithDetails: TrainScheduleWithDetails[];
   refreshNge: () => Promise<void>;
@@ -36,8 +34,6 @@ type TimetableBoardWrapperProps = {
 };
 
 const TimetableBoardWrapper = ({
-  setDisplayTrainScheduleManagement,
-  setTrainScheduleToEditData,
   trainScheduleToEditData,
   trainSchedulesWithDetails,
   refreshNge,
@@ -289,8 +285,6 @@ const TimetableBoardWrapper = ({
         setSelectedTrainScheduleIds={setSelectedTrainScheduleIds}
         isSelectMode={isSelectMode}
         setIsSelectMode={setIsSelectMode}
-        setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
-        setTrainScheduleToEditData={setTrainScheduleToEditData}
         handleDeleteTrainSchedules={handleDeleteTrainSchedules}
         trainScheduleToEditData={trainScheduleToEditData}
         trainSchedulesWithDetails={trainSchedulesWithDetails}

@@ -29,7 +29,6 @@ import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 import { usePrevious } from 'utils/hooks/state';
 
-import { MANAGE_TRAIN_SCHEDULE_TYPES } from '../consts';
 import BoardWrapper from './BoardWrapper';
 import { EditedElementContainerProvider } from './EditedElementContainerContext';
 import MacroEditorState from './MacroEditor/MacroEditorState';
@@ -56,9 +55,6 @@ const ScenarioContent = ({ activeBoards, toggleBoard }: ScenarioContentProps) =>
 
   const { infraId, timetableId, isInfraLoaded } = useScenarioContext();
 
-  const [displayTrainScheduleManagement, setDisplayTrainScheduleManagement] = useState<string>(
-    MANAGE_TRAIN_SCHEDULE_TYPES.none
-  );
   const [collapsedTimetableEdit, setCollapsedTimetableEdit] = useState(false);
   const [trainScheduleToEditData, setTrainScheduleToEditData] = useState<TrainScheduleToEditData>();
   const [macroBoardHeight, setMacroBoardHeight] = useState<number>(MACRO_EDITOR_HEIGHT);
@@ -223,13 +219,8 @@ const ScenarioContent = ({ activeBoards, toggleBoard }: ScenarioContentProps) =>
       <ItineraryModalContext.Provider value={itineraryModalContext}>
         <EditedElementContainerProvider>
           <main className="mastcontainer mastcontainer-no-mastnav scenario scenario-content-v2">
-            {displayTrainScheduleManagement !== MANAGE_TRAIN_SCHEDULE_TYPES.none && (
+            {itineraryModalOpen && (
               <ManageTrainScheduleModal
-                displayTrainScheduleManagement={displayTrainScheduleManagement}
-                setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
-                upsertTrainSchedules={upsertTrainSchedulesWithNge}
-                trainScheduleToEditData={trainScheduleToEditData}
-                setTrainScheduleToEditData={setTrainScheduleToEditData}
                 setCollapsedTimetableEdit={() => setCollapsedTimetableEdit(!collapsedTimetableEdit)}
                 collapsedTimetableEdit={collapsedTimetableEdit}
                 closeViewAndOpenTableBoard={closeViewAndOpenTableBoard}
@@ -242,10 +233,7 @@ const ScenarioContent = ({ activeBoards, toggleBoard }: ScenarioContentProps) =>
             >
               <div className="scenario-sidemenu">
                 <TimetableBoardWrapper
-                  setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
                   trainSchedulesWithDetails={trainSchedulesWithDetails}
-                  setTrainScheduleToEditData={setTrainScheduleToEditData}
-                  trainScheduleToEditData={trainScheduleToEditData}
                   refreshNge={refreshNge}
                   projectingOnSimulatedPathException={
                     projectionData?.projectingOnSimulatedPathException
@@ -256,11 +244,7 @@ const ScenarioContent = ({ activeBoards, toggleBoard }: ScenarioContentProps) =>
               </div>
             </div>
             <div className="center-column">
-              {!isInfraLoaded &&
-                displayTrainScheduleManagement !== MANAGE_TRAIN_SCHEDULE_TYPES.add &&
-                displayTrainScheduleManagement !== MANAGE_TRAIN_SCHEDULE_TYPES.edit && (
-                  <ScenarioLoaderMessage />
-                )}
+              {!isInfraLoaded && !itineraryModalOpen && <ScenarioLoaderMessage />}
               <div className="scenario-results">
                 {/* STD / TABLES / SDD / MAP */}
                 {isInfraLoaded && isBoardSimulationResultsActive && (
@@ -270,8 +254,6 @@ const ScenarioContent = ({ activeBoards, toggleBoard }: ScenarioContentProps) =>
                     conflicts={conflicts}
                     trainSchedulesWithDetails={trainSchedulesWithDetails}
                     activeBoards={activeBoards}
-                    setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
-                    setTrainScheduleToEditData={setTrainScheduleToEditData}
                     isScrollingToTimeStopsTable={isScrollingToTimeStopsTable}
                     setIsScrollingToTimeStopsTable={setIsScrollingToTimeStopsTable}
                   />
