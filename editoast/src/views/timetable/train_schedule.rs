@@ -1688,6 +1688,20 @@ pub(in crate::views) async fn track_occupancy(
         })
         .unzip();
 
+    // Check user privilege on the rolling stocks of the occurrences.
+    // Without a simulation, no rolling stock is involved: the check is skipped.
+    if use_simulation {
+        crate::authorizers::require_readable_rolling_stocks(
+            trains
+                .iter()
+                .map(|occurrence| occurrence.rolling_stock_name.clone()),
+            conn,
+            &authn_state,
+            &openfga,
+        )
+        .await?;
+    }
+
     let op_location =
         PathItemLocation::OperationalPointPartReference(OperationalPointPartReference {
             operational_point: operational_point_reference.clone(),
@@ -4076,12 +4090,13 @@ mod tests {
         }
     }
 
-    async fn init_paced_train_test(
+    async fn init_track_occupancy_test(
         with_exception: bool,
         path: Vec<PathItem>,
         schedule: Vec<ScheduleItem>,
         operational_point_reference: OperationalPointReference,
         use_simulation: bool,
+        rolling_stock_grant: Option<authz::RollingStockGrant>,
     ) -> TestResponse {
         let mut core = MockingClient::new();
         core.stub("/pathfinding/blocks")
@@ -4092,13 +4107,21 @@ mod tests {
             .response(StatusCode::OK)
             .json(simulation_empty_response(path.len()))
             .finish();
-        let app = test_app!().skip_authz().core_client(core.into()).build();
+        let app = test_app!().core_client(core.into()).build();
         let db_pool = app.db_pool();
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
         let rolling_stock =
             create_fast_rolling_stock(&mut db_pool.get_ok(), "simulation_rolling_stock").await;
         let (timetable, train_schedule_set) =
             create_timetable_with_train_schedule_set(&mut db_pool.get_ok()).await;
+        let mut user_builder = app
+            .user("user", "User")
+            .with_infra_grant(small_infra.id, authz::InfraGrant::Reader)
+            .with_roles([authz::Role::OperationalStudies]);
+        if let Some(grant) = rolling_stock_grant {
+            user_builder = user_builder.with_rolling_stock_grant(rolling_stock.id, grant);
+        }
+        let user = user_builder.create().await;
         let train_schedule = models::TrainSchedule::default()
             .into_changeset()
             .train_schedule_set_id(train_schedule_set.id)
@@ -4130,7 +4153,73 @@ mod tests {
                 electrical_profile_set_id: None,
                 use_simulation,
             })
+            .by_user(&user.info)
             .await
+    }
+
+    /// [init_track_occupancy_test] as a user allowed to read the rolling stock of the train
+    async fn init_paced_train_test(
+        with_exception: bool,
+        path: Vec<PathItem>,
+        schedule: Vec<ScheduleItem>,
+        operational_point_reference: OperationalPointReference,
+        use_simulation: bool,
+    ) -> TestResponse {
+        init_track_occupancy_test(
+            with_exception,
+            path,
+            schedule,
+            operational_point_reference,
+            use_simulation,
+            Some(authz::RollingStockGrant::Reader),
+        )
+        .await
+    }
+
+    /// The very same setup as [paced_train_track_occupancy_without_exceptions], but the user is
+    /// granted a read access on the infra only, not on the rolling stock of the train
+    async fn init_track_occupancy_test_without_rolling_stock_permission(
+        use_simulation: bool,
+    ) -> TestResponse {
+        init_track_occupancy_test(
+            false,
+            vec![
+                PathItem::new_operational_point("Mid_West_station"),
+                PathItem::new_operational_point("Mid_East_station"),
+            ],
+            vec![ScheduleItem::new_with_stop(
+                "Mid_East_station",
+                Duration::new(0, 0).expect("Failed to parse duration"),
+            )],
+            OperationalPointReference::Id {
+                operational_point: "Mid_West_station".into(),
+            },
+            use_simulation,
+            None,
+        )
+        .await
+    }
+
+    /// With a simulation, a train whose rolling stock the user cannot read is forbidden
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn track_occupancy_without_rolling_stock_permission() {
+        init_track_occupancy_test_without_rolling_stock_permission(true)
+            .await
+            .assert_status_forbidden();
+    }
+
+    /// Without a simulation, no rolling stock is involved: the train is reported even though the
+    /// user cannot read its rolling stock
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn track_occupancy_without_simulation_skips_rolling_stock_permission() {
+        let track_occupancies: Vec<TrackSectionOccupancy> =
+            init_track_occupancy_test_without_rolling_stock_permission(false)
+                .await
+                .assert_status_ok()
+                .json();
+
+        assert_eq!(track_occupancies.len(), 1);
+        assert_eq!(track_occupancies[0].trains.len(), 4);
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]

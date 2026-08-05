@@ -859,13 +859,15 @@ pub mod tests {
             .await
             .expect("Failed to retrieve rolling stock")
             .expect("Rolling stock not found");
-        let rs_id = rolling_stock.id;
-
         assert_eq!(rolling_stock.name, rs_name);
         assert_eq!(
             fast_rolling_stock_form.startup_time,
             rolling_stock.startup_time
         );
+        // Check if the issuer was added as owner to the rolling stock
+        app.assert_rolling_stock_grant(rolling_stock.id, user.id, Some(RollingStockGrant::Owner))
+            .await;
+
         let rolling_stock: RollingStockForm = rolling_stock.into();
         assert_eq!(
             rolling_stock
@@ -873,9 +875,6 @@ pub mod tests {
                 .contains("ETCS_LEVEL2"),
             false
         );
-        // Check if the issuer was added as owner to the rolling stock
-        app.assert_rolling_stock_grant(rs_id, user.id, Some(RollingStockGrant::Owner))
-            .await;
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
