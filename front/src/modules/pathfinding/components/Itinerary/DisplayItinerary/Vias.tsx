@@ -43,7 +43,7 @@ const Vias = ({ zoomToFeaturePoint }: ViasProps) => {
               <small data-testid="via-dropped-name" className="mr-1 text-nowrap">
                 {`${
                   via.name ||
-                  ('operational_point' in via.location &&
+                  (via.location.type === 'operational_point_part_reference' &&
                     via.location.operational_point.type === 'domestic' &&
                     via.location.operational_point.main_code) ||
                   (via.positionOnPath &&
