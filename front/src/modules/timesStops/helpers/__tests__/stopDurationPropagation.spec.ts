@@ -13,7 +13,7 @@ const _18H00 = new Date('2026-01-01T18:00:00.000Z');
 const makeTrain = (op11StopFor: string): Train =>
   ({
     start_time: _18H00.toISOString(),
-    path: Array.from({ length: 20 }, (_, i) => ({ id: `op${i + 1}`, location: {} })),
+    path: Array.from({ length: 20 }, (_, i) => ({ key: `op${i + 1}`, location: {} })),
     schedule: [
       { at: 'op5', arrival: 'PT15M' },
       { at: 'op11', arrival: 'PT30M', stop_for: op11StopFor },
@@ -25,7 +25,7 @@ const makeTrain = (op11StopFor: string): Train =>
 const makeTrainWithoutOp11 = (): Train =>
   ({
     start_time: _18H00.toISOString(),
-    path: Array.from({ length: 20 }, (_, i) => ({ id: `op${i + 1}`, location: {} })),
+    path: Array.from({ length: 20 }, (_, i) => ({ key: `op${i + 1}`, location: {} })),
     schedule: [
       { at: 'op5', arrival: 'PT15M' },
       { at: 'op17', arrival: 'PT50M' },

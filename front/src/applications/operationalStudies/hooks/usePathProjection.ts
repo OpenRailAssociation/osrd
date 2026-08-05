@@ -135,9 +135,9 @@ const usePathProjection = (
     osrdEditoastApi.endpoints.postInfraByInfraIdPathProperties.useQuery(
       pathfinding?.status === 'success'
         ? {
-          infraId,
-          pathPropertiesInput: { track_section_ranges: pathfinding.path.track_section_ranges },
-        }
+            infraId,
+            pathPropertiesInput: { track_section_ranges: pathfinding.path.track_section_ranges },
+          }
         : skipToken
     );
 
@@ -177,11 +177,11 @@ const usePathProjection = (
     osrdEditoastApi.endpoints.postInfraByInfraIdMatchOperationalPoints.useQuery(
       opRefs.length > 0
         ? {
-          infraId,
-          body: {
-            operational_point_references: opRefs,
-          },
-        }
+            infraId,
+            body: {
+              operational_point_references: opRefs,
+            },
+          }
         : skipToken
     );
 

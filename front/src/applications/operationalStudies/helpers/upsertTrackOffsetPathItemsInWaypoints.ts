@@ -62,9 +62,9 @@ export function upsertTrackOffsetPathItemsInWaypoints(
         type === 'projection'
           ? baseFormattedStep
           : {
-            ...baseFormattedStep,
-            part: { track: location.track, position: location.offset, local_track_name: 'V1' },
-          };
+              ...baseFormattedStep,
+              part: { track: location.track, position: location.offset, local_track_name: 'V1' },
+            };
 
       // If we can't find any op position greater than the current step position, we add it at the end
       if (indexToInsert === -1) {

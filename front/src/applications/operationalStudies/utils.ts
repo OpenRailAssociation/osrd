@@ -433,7 +433,7 @@ export const checkRoundTripCompatible = (
     isPacedTrain(trainScheduleA) &&
     isPacedTrain(trainScheduleB) &&
     Duration.parse(trainScheduleA.paced.interval).ms !==
-    Duration.parse(trainScheduleB.paced.interval).ms
+      Duration.parse(trainScheduleB.paced.interval).ms
   ) {
     return false;
   }
