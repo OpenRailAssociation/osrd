@@ -22,10 +22,6 @@ class PowerRestriction(BaseModel):
     value: str
 
 
-class SpeedLimitTag(RootModel[str]):
-    root: Annotated[str, Field(min_length=1)]
-
-
 class AddOperation(BaseModel):
     """
     JSON Patch 'add' operation representation
@@ -204,10 +200,6 @@ class Plc(RootModel[str]):
     """
 
 
-class SecondaryCode(RootModel[str]):
-    root: Annotated[str, Field(min_length=1)]
-
-
 class SecondaryName(RootModel[str]):
     root: Annotated[str, Field(min_length=1)]
 
@@ -382,6 +374,48 @@ class CoreSpacingRequirement(BaseModel):
     Time in ms: see begin_time
     """
     zone: str
+
+
+class SpeedLimitSourceGivenTrainTag(BaseModel):
+    """
+    source of the speed-limit if relevant (tag used)
+    """
+
+    speed_limit_source_type: Literal["given_train_tag"]
+    tag: str
+
+
+class SpeedLimitSourceFallbackTag(BaseModel):
+    """
+    source of the speed-limit if relevant (tag used)
+    """
+
+    speed_limit_source_type: Literal["fallback_tag"]
+    tag: str
+
+
+class SpeedLimitSourceUnknownTag(BaseModel):
+    """
+    source of the speed-limit if relevant (tag used)
+    """
+
+    speed_limit_source_type: Literal["unknown_tag"]
+
+
+class CoreSpeedLimitProperty(BaseModel):
+    source: (
+        SpeedLimitSourceGivenTrainTag
+        | SpeedLimitSourceFallbackTag
+        | SpeedLimitSourceUnknownTag
+        | None
+    ) = None
+    """
+    source of the speed-limit if relevant (tag used)
+    """
+    speed: float
+    """
+    in meters per second
+    """
 
 
 class CoreZoneUpdate(BaseModel):
@@ -2831,7 +2865,7 @@ class OperationalPointReferenceId(BaseModel):
     type: Literal["id"]
 
 
-class SecondaryCode2(RootModel[str]):
+class SecondaryCode(RootModel[str]):
     root: Annotated[str, Field(min_length=1)]
     """
     An optional secondary code to identify a more specific location
@@ -2844,7 +2878,7 @@ class OperationalPointReferenceDomestic(BaseModel):
     """
     The operational point main code
     """
-    secondary_code: SecondaryCode2 | None = None
+    secondary_code: SecondaryCode | None = None
     """
     An optional secondary code to identify a more specific location
     """
@@ -2852,7 +2886,7 @@ class OperationalPointReferenceDomestic(BaseModel):
 
 
 class OperationalPointReferenceUic(BaseModel):
-    secondary_code: SecondaryCode2 | None = None
+    secondary_code: SecondaryCode | None = None
     """
     An optional secondary code to identify a more specific location
     """
@@ -3187,10 +3221,6 @@ class RefillLaw(BaseModel):
 
 
 class Plc2(RootModel[str]):
-    root: Annotated[str, Field(min_length=1)]
-
-
-class SecondaryCode4(RootModel[str]):
     root: Annotated[str, Field(min_length=1)]
 
 
@@ -3582,64 +3612,6 @@ class ElectricalProfiles(BaseModel):
     """
 
 
-class SpeedLimitSourceGivenTrainTag(BaseModel):
-    """
-    source of the speed-limit if relevant (tag used)
-    """
-
-    speed_limit_source_type: Literal["given_train_tag"]
-    tag: str
-
-
-class SpeedLimitSourceFallbackTag(BaseModel):
-    """
-    source of the speed-limit if relevant (tag used)
-    """
-
-    speed_limit_source_type: Literal["fallback_tag"]
-    tag: str
-
-
-class SpeedLimitSourceUnknownTag(BaseModel):
-    """
-    source of the speed-limit if relevant (tag used)
-    """
-
-    speed_limit_source_type: Literal["unknown_tag"]
-
-
-class Value(BaseModel):
-    source: (
-        SpeedLimitSourceGivenTrainTag
-        | SpeedLimitSourceFallbackTag
-        | SpeedLimitSourceUnknownTag
-        | None
-    ) = None
-    """
-    source of the speed-limit if relevant (tag used)
-    """
-    speed: float
-    """
-    in meters per second
-    """
-
-
-class Mrsp(BaseModel):
-    """
-    A MRSP computation result (Most Restrictive Speed Profile)
-    """
-
-    boundaries: list[Boundary]
-    """
-    List of `n` boundaries of the ranges (block path).
-    A boundary is a distance from the beginning of the path in mm.
-    """
-    values: list[Value]
-    """
-    List of `n+1` values associated to the ranges
-    """
-
-
 class PathItemTimesBaseItem(RootModel[int]):
     root: Annotated[int, Field(ge=0)]
 
@@ -3792,7 +3764,7 @@ class SpeedDependantPower(BaseModel):
     speeds: list[float]
 
 
-class Value1(RootModel[float]):
+class Value(RootModel[float]):
     root: Annotated[float, Field(ge=0.0)]
 
 
@@ -3805,19 +3777,15 @@ class SpeedIntervalValueCurve(BaseModel):
     Speed in m/s (sorted ascending)
     External bounds are implicit to [0, rolling_stock.max_speed]
     """
-    values: Annotated[list[Value1], Field(examples=[[0.5, 0.6, 0.5]], min_length=1)]
+    values: Annotated[list[Value], Field(examples=[[0.5, 0.6, 0.5]], min_length=1)]
     """
     Interval values, must be >= 0 (unit to be made explicit at use)
     There must be one more value than boundaries
     """
 
 
-class Value2(RootModel[str]):
-    root: Annotated[str, Field(min_length=1)]
-
-
 class SpeedLimitTagChangeGroup(BaseModel):
-    value: Value2 | None = None
+    value: NonBlankString | None = None
 
 
 class SpeedLimits(BaseModel):
@@ -4537,6 +4505,22 @@ class CoreRoutingRequirement(BaseModel):
     """
     route: str
     zones: list[CoreRoutingZoneRequirement]
+
+
+class CoreSpeedLimitProperties(BaseModel):
+    """
+    A MRSP computation result (Most Restrictive Speed Profile)
+    """
+
+    boundaries: list[Boundary]
+    """
+    List of `n` boundaries of the ranges (block path).
+    A boundary is a distance from the beginning of the path in mm.
+    """
+    values: list[CoreSpeedLimitProperty]
+    """
+    List of `n+1` values associated to the ranges
+    """
 
 
 class CoreTrackRange(BaseModel):
@@ -5728,10 +5712,7 @@ class SimulationResponseSuccess(BaseModel):
     """
     Simulation that takes into account the regularity margins and the schedule item times
     """
-    mrsp: Mrsp
-    """
-    A MRSP computation result (Most Restrictive Speed Profile)
-    """
+    mrsp: CoreSpeedLimitProperties
     provisional: CoreReportTrain
     """
     Simulation that takes into account the regularity margins
@@ -6812,7 +6793,7 @@ class CoreOperationalPointOnPath(BaseModel):
     """
     Distance from the beginning of the path in mm
     """
-    secondary_code: SecondaryCode | None = None
+    secondary_code: NonBlankString | None = None
     secondary_name: SecondaryName | None = None
     uic: Annotated[int | None, Field(ge=0)] = None
     weight: Annotated[int | None, Field(ge=0, le=100)]
@@ -6950,7 +6931,7 @@ class OperationalPoint(BaseModel):
     """
     Primary Location Code : https://rne.eu/it/products/ccs/crd/
     """
-    secondary_code: SecondaryCode | None = None
+    secondary_code: NonBlankString | None = None
     secondary_name: SecondaryName | None = None
     uic: Annotated[int | None, Field(ge=0)] = None
     weight: Annotated[int | None, Field(ge=0)] = None
@@ -7065,7 +7046,7 @@ class RelatedOperationalPoint(BaseModel):
     name: Annotated[str, Field(min_length=1)]
     parts: list[RelatedOperationalPointPart]
     plc: Plc2 | None = None
-    secondary_code: SecondaryCode4 | None = None
+    secondary_code: NonBlankString | None = None
     secondary_name: SecondaryName | None = None
     uic: Annotated[int | None, Field(ge=0)] = None
     weight: Annotated[int | None, Field(ge=0)] = None
@@ -7297,7 +7278,7 @@ class TrainSchedule(BaseModel):
     power_restrictions: list[PowerRestriction] | None = None
     rolling_stock_name: str
     schedule: list[ScheduleItem] | None = None
-    speed_limit_tag: SpeedLimitTag | None = None
+    speed_limit_tag: NonBlankString | None = None
     start_time: OffsetInMs
     """
     For calendar timetables: elapsed ms since 1970-01-01T00:00:00Z.

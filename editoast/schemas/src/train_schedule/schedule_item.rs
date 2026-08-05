@@ -22,6 +22,7 @@ pub enum ReceptionSignal {
 #[derive(Debug, Default, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
 #[serde(deny_unknown_fields)]
 #[serde(remote = "Self")]
+#[schema(title = "ScheduleItem")]
 pub struct ScheduleItem {
     /// Position on the path of the schedule item.
     #[schema(inline)]

@@ -28,7 +28,6 @@ pub struct OperationalPoint {
     pub country_code: NonBlankString,
     #[schema(inline)]
     pub main_code: NonBlankString,
-    #[schema(inline)]
     pub secondary_code: Option<NonBlankString>,
     pub is_passenger_station: bool,
     #[schema(inline)]

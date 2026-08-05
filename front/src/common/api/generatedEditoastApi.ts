@@ -3134,7 +3134,7 @@ export type OperationalPoint = {
   parts: OperationalPointPart[];
   /** Primary Location Code : https://rne.eu/it/products/ccs/crd/ */
   plc?: null | string;
-  secondary_code?: null | string;
+  secondary_code?: null | NonBlankString;
   secondary_name?: null | string;
   uic?: number | null;
   weight?: number | null;
@@ -3549,7 +3549,7 @@ export type RelatedOperationalPoint = {
   name: string;
   parts: RelatedOperationalPointPart[];
   plc?: null | string;
-  secondary_code?: null | string;
+  secondary_code?: null | NonBlankString;
   secondary_name?: null | string;
   uic?: number | null;
   weight?: number | null;
@@ -3620,7 +3620,7 @@ export type CoreOperationalPointOnPath = {
   plc?: null | string;
   /** Distance from the beginning of the path in mm */
   position: number;
-  secondary_code?: null | string;
+  secondary_code?: null | NonBlankString;
   secondary_name?: null | string;
   uic?: number | null;
   /** Importance of the operational point */
@@ -4599,6 +4599,33 @@ export type CoreZoneUpdate = {
   time: number;
   zone: string;
 };
+export type CoreSpeedLimitProperty = {
+  /** source of the speed-limit if relevant (tag used) */
+  source?:
+    | null
+    | (
+        | {
+            speed_limit_source_type: 'given_train_tag';
+            tag: string;
+          }
+        | {
+            speed_limit_source_type: 'fallback_tag';
+            tag: string;
+          }
+        | {
+            speed_limit_source_type: 'unknown_tag';
+          }
+      );
+  /** in meters per second */
+  speed: number;
+};
+export type CoreSpeedLimitProperties = {
+  /** List of `n` boundaries of the ranges (block path).
+    A boundary is a distance from the beginning of the path in mm. */
+  boundaries: number[];
+  /** List of `n+1` values associated to the ranges */
+  values: CoreSpeedLimitProperty[];
+};
 export type SimulationResponseSuccess = {
   /** Simulation without any regularity margins */
   base: CoreReportTrain;
@@ -4625,33 +4652,7 @@ export type SimulationResponseSuccess = {
     spacing_requirements: CoreSpacingRequirement[];
     zone_updates: CoreZoneUpdate[];
   };
-  /** A MRSP computation result (Most Restrictive Speed Profile) */
-  mrsp: {
-    /** List of `n` boundaries of the ranges (block path).
-        A boundary is a distance from the beginning of the path in mm. */
-    boundaries: number[];
-    /** List of `n+1` values associated to the ranges */
-    values: {
-      /** source of the speed-limit if relevant (tag used) */
-      source?:
-        | null
-        | (
-            | {
-                speed_limit_source_type: 'given_train_tag';
-                tag: string;
-              }
-            | {
-                speed_limit_source_type: 'fallback_tag';
-                tag: string;
-              }
-            | {
-                speed_limit_source_type: 'unknown_tag';
-              }
-          );
-      /** in meters per second */
-      speed: number;
-    }[];
-  };
+  mrsp: CoreSpeedLimitProperties;
   /** Simulation that takes into account the regularity margins */
   provisional: CoreReportTrain;
 };
@@ -4977,7 +4978,7 @@ export type RollingStockCategoryChangeGroup = {
   value?: null | TrainCategory;
 };
 export type SpeedLimitTagChangeGroup = {
-  value?: null | string;
+  value?: null | NonBlankString;
 };
 export type StartTimeChangeGroup = {
   /** For calendar timetables: elapsed ms since 1970-01-01T00:00:00Z.
@@ -5045,7 +5046,7 @@ export type TrainSchedule = {
   }[];
   rolling_stock_name: string;
   schedule?: ScheduleItem[];
-  speed_limit_tag?: null | string;
+  speed_limit_tag?: null | NonBlankString;
   /** For calendar timetables: elapsed ms since 1970-01-01T00:00:00Z.
     For hourly timetables: elapsed ms since the timetable start. */
   start_time: number;

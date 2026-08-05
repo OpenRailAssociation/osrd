@@ -288,7 +288,6 @@ pub struct SpeedLimitProperties {
     /// A boundary is a distance from the beginning of the path in mm.
     pub boundaries: Vec<u64>,
     /// List of `n+1` values associated to the ranges
-    #[schema(inline)]
     pub values: Vec<SpeedLimitProperty>,
 }
 #[derive(Debug, Serialize, Educe)]

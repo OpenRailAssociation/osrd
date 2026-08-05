@@ -169,7 +169,6 @@ pub struct LabelsChangeGroup {
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ToSchema)]
 pub struct SpeedLimitTagChangeGroup {
-    #[schema(inline)]
     pub value: Option<NonBlankString>,
 }
 

@@ -5648,8 +5648,7 @@ components:
         secondary_code:
           oneOf:
           - type: 'null'
-          - type: string
-            minLength: 1
+          - $ref: '#/components/schemas/NonBlankString'
         secondary_name:
           oneOf:
           - type: 'null'
@@ -6056,6 +6055,74 @@ components:
           minimum: 0
         zone:
           type: string
+    CoreSpeedLimitProperties:
+      type: object
+      description: A MRSP computation result (Most Restrictive Speed Profile)
+      required:
+      - boundaries
+      - values
+      properties:
+        boundaries:
+          type: array
+          items:
+            type: integer
+            format: int64
+            minimum: 0
+          description: |-
+            List of `n` boundaries of the ranges (block path).
+            A boundary is a distance from the beginning of the path in mm.
+        values:
+          type: array
+          items:
+            $ref: '#/components/schemas/CoreSpeedLimitProperty'
+          description: List of `n+1` values associated to the ranges
+    CoreSpeedLimitProperty:
+      type: object
+      required:
+      - speed
+      properties:
+        source:
+          oneOf:
+          - type: 'null'
+          - oneOf:
+            - type: object
+              title: SpeedLimitSourceGivenTrainTag
+              required:
+              - tag
+              - speed_limit_source_type
+              properties:
+                speed_limit_source_type:
+                  type: string
+                  enum:
+                  - given_train_tag
+                tag:
+                  type: string
+            - type: object
+              title: SpeedLimitSourceFallbackTag
+              required:
+              - tag
+              - speed_limit_source_type
+              properties:
+                speed_limit_source_type:
+                  type: string
+                  enum:
+                  - fallback_tag
+                tag:
+                  type: string
+            - type: object
+              title: SpeedLimitSourceUnknownTag
+              required:
+              - speed_limit_source_type
+              properties:
+                speed_limit_source_type:
+                  type: string
+                  enum:
+                  - unknown_tag
+          description: source of the speed-limit if relevant (tag used)
+        speed:
+          type: number
+          format: double
+          description: in meters per second
     CoreTrackRange:
       type: object
       description: |-
@@ -12144,8 +12211,7 @@ components:
         secondary_code:
           oneOf:
           - type: 'null'
-          - type: string
-            minLength: 1
+          - $ref: '#/components/schemas/NonBlankString'
         secondary_name:
           oneOf:
           - type: 'null'
@@ -12510,6 +12576,7 @@ components:
             $ref: '#/components/schemas/ScheduleItem'
     PathItem:
       type: object
+      title: PathItem
       description: A location on the path of a train
       required:
       - id
@@ -13262,8 +13329,7 @@ components:
         secondary_code:
           oneOf:
           - type: 'null'
-          - type: string
-            minLength: 1
+          - $ref: '#/components/schemas/NonBlankString'
         secondary_name:
           oneOf:
           - type: 'null'
@@ -13981,6 +14047,7 @@ components:
             format: int64
     ScheduleItem:
       type: object
+      title: ScheduleItem
       required:
       - at
       properties:
@@ -14893,71 +14960,7 @@ components:
                     $ref: '#/components/schemas/CoreZoneUpdate'
           description: Simulation that takes into account the regularity margins and the schedule item times
         mrsp:
-          type: object
-          description: A MRSP computation result (Most Restrictive Speed Profile)
-          required:
-          - boundaries
-          - values
-          properties:
-            boundaries:
-              type: array
-              items:
-                type: integer
-                format: int64
-                minimum: 0
-              description: |-
-                List of `n` boundaries of the ranges (block path).
-                A boundary is a distance from the beginning of the path in mm.
-            values:
-              type: array
-              items:
-                type: object
-                required:
-                - speed
-                properties:
-                  source:
-                    oneOf:
-                    - type: 'null'
-                    - oneOf:
-                      - type: object
-                        title: SpeedLimitSourceGivenTrainTag
-                        required:
-                        - tag
-                        - speed_limit_source_type
-                        properties:
-                          speed_limit_source_type:
-                            type: string
-                            enum:
-                            - given_train_tag
-                          tag:
-                            type: string
-                      - type: object
-                        title: SpeedLimitSourceFallbackTag
-                        required:
-                        - tag
-                        - speed_limit_source_type
-                        properties:
-                          speed_limit_source_type:
-                            type: string
-                            enum:
-                            - fallback_tag
-                          tag:
-                            type: string
-                      - type: object
-                        title: SpeedLimitSourceUnknownTag
-                        required:
-                        - speed_limit_source_type
-                        properties:
-                          speed_limit_source_type:
-                            type: string
-                            enum:
-                            - unknown_tag
-                    description: source of the speed-limit if relevant (tag used)
-                  speed:
-                    type: number
-                    format: double
-                    description: in meters per second
-              description: List of `n+1` values associated to the ranges
+          $ref: '#/components/schemas/CoreSpeedLimitProperties'
         provisional:
           $ref: '#/components/schemas/CoreReportTrain'
           description: Simulation that takes into account the regularity margins
@@ -15177,8 +15180,7 @@ components:
         value:
           oneOf:
           - type: 'null'
-          - type: string
-            minLength: 1
+          - $ref: '#/components/schemas/NonBlankString'
     SpeedLimits:
       type: object
       required:
@@ -16386,8 +16388,7 @@ components:
           speed_limit_tag:
             oneOf:
             - type: 'null'
-            - type: string
-              minLength: 1
+            - $ref: '#/components/schemas/NonBlankString'
           start_time:
             type: integer
             format: int64
