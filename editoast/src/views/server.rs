@@ -288,10 +288,6 @@ impl Server {
             .merge(router)
             .route_layer(axum::middleware::from_fn_with_state(
                 app_state.clone(),
-                middlewares::authentication_middleware,
-            ))
-            .route_layer(axum::middleware::from_fn_with_state(
-                app_state.clone(),
                 middlewares::authentication_validation_middleware,
             ))
             .route_layer(axum::middleware::from_fn_with_state(
