@@ -29,11 +29,11 @@
       "TrackNotFound": "Track {{track_id}} not found"
     },
     "authorization": {
-      "AuthError": "Authentication/authorization internal error, try again or contact support",
       "DbError": "Database access fatal error",
       "Forbidden": "Access denied",
       "ForbiddenImpersonation": "Impersonation denied",
       "ImpersonatedUserNotFound": "Unknown impersonated user",
+      "OpenFga": "Authentication/authorization internal error, try again or contact support",
       "Unauthenticated": "Unauthenticated user"
     },
     "authz": {

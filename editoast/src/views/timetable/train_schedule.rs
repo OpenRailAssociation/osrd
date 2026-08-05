@@ -327,7 +327,7 @@ pub(in crate::views) async fn simulation_summary(
         db_pool,
         valkey_client,
         core_client,
-        regulator,
+        openfga,
         ..
     }): State<AppState>,
     Extension(authn_state): Extension<authentication::State>,
@@ -349,7 +349,7 @@ pub(in crate::views) async fn simulation_summary(
         v2::infra_privileges(*user, authz::Infra(infra_id))
             .map(async |privileges| privileges.contains(&authz::InfraPrivilege::CanRestrictedRead))
             .ok_or(AuthorizationError::Forbidden)
-            .run::<AuthorizationError, _>(&authn_state.authorizer(regulator.openfga()))
+            .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
             .await??;
     }
 
@@ -598,7 +598,7 @@ pub(in crate::views) async fn get_path(
         db_pool,
         valkey_client,
         core_client,
-        regulator,
+        openfga,
         ..
     }): State<AppState>,
     Extension(authn_state): Extension<authentication::State>,
@@ -623,7 +623,7 @@ pub(in crate::views) async fn get_path(
         v2::infra_privileges(*user, authz::Infra(infra_id))
             .map(async |privileges| privileges.contains(&authz::InfraPrivilege::CanRestrictedRead))
             .ok_or(AuthorizationError::Forbidden)
-            .run::<AuthorizationError, _>(&authn_state.authorizer(regulator.openfga()))
+            .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
             .await??;
     }
 
@@ -748,7 +748,7 @@ pub(in crate::views) async fn simulation(
         valkey_client,
         core_client,
         db_pool,
-        regulator,
+        openfga,
         ..
     }): State<AppState>,
     Extension(authn_state): Extension<authentication::State>,
@@ -771,7 +771,7 @@ pub(in crate::views) async fn simulation(
         v2::infra_privileges(*user, authz::Infra(infra_id))
             .map(async |privileges| privileges.contains(&authz::InfraPrivilege::CanRestrictedRead))
             .ok_or(AuthorizationError::Forbidden)
-            .run::<AuthorizationError, _>(&authn_state.authorizer(regulator.openfga()))
+            .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
             .await??;
     }
 
@@ -883,7 +883,7 @@ pub(in crate::views) async fn etcs_braking_curves(
         valkey_client,
         core_client,
         db_pool,
-        regulator,
+        openfga,
         ..
     }): State<AppState>,
     Extension(authn_state): Extension<authentication::State>,
@@ -906,7 +906,7 @@ pub(in crate::views) async fn etcs_braking_curves(
         v2::infra_privileges(*user, authz::Infra(infra_id))
             .map(async |privileges| privileges.contains(&authz::InfraPrivilege::CanRestrictedRead))
             .ok_or(AuthorizationError::Forbidden)
-            .run::<AuthorizationError, _>(&authn_state.authorizer(regulator.openfga()))
+            .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
             .await??;
     }
 
@@ -1049,7 +1049,7 @@ pub(in crate::views) async fn project_path(
         valkey_client,
         core_client,
         config,
-        regulator,
+        openfga,
         ..
     }): State<AppState>,
     Extension(authn_state): Extension<authentication::State>,
@@ -1070,7 +1070,7 @@ pub(in crate::views) async fn project_path(
         v2::infra_privileges(*user, authz::Infra(infra_id))
             .map(async |privileges| privileges.contains(&authz::InfraPrivilege::CanRestrictedRead))
             .ok_or(AuthorizationError::Forbidden)
-            .run::<AuthorizationError, _>(&authn_state.authorizer(regulator.openfga()))
+            .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
             .await??;
     }
 
@@ -1177,7 +1177,7 @@ pub(in crate::views) async fn project_path_op(
         valkey_client,
         core_client,
         config,
-        regulator,
+        openfga,
         ..
     }): State<AppState>,
     Extension(authn_state): Extension<authentication::State>,
@@ -1200,7 +1200,7 @@ pub(in crate::views) async fn project_path_op(
         v2::infra_privileges(*user, authz::Infra(infra_id))
             .map(async |privileges| privileges.contains(&authz::InfraPrivilege::CanRestrictedRead))
             .ok_or(AuthorizationError::Forbidden)
-            .run::<AuthorizationError, _>(&authn_state.authorizer(regulator.openfga()))
+            .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
             .await??;
     }
 
@@ -1364,7 +1364,7 @@ pub(in crate::views) async fn occupancy_blocks(
         valkey_client,
         core_client,
         config,
-        regulator,
+        openfga,
         ..
     }): State<AppState>,
     Extension(authn_state): Extension<authentication::State>,
@@ -1380,7 +1380,7 @@ pub(in crate::views) async fn occupancy_blocks(
         v2::infra_privileges(*user, authz::Infra(infra_id))
             .map(async |privileges| privileges.contains(&authz::InfraPrivilege::CanRestrictedRead))
             .ok_or(AuthorizationError::Forbidden)
-            .run::<AuthorizationError, _>(&authn_state.authorizer(regulator.openfga()))
+            .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
             .await??;
     }
 
@@ -1529,7 +1529,7 @@ pub(in crate::views) async fn track_occupancy(
         db_pool,
         valkey_client,
         core_client,
-        regulator,
+        openfga,
         ..
     }): State<AppState>,
     Extension(authn_state): Extension<authentication::State>,
@@ -1546,7 +1546,7 @@ pub(in crate::views) async fn track_occupancy(
         v2::infra_privileges(*user, authz::Infra(infra_id))
             .map(async |privileges| privileges.contains(&authz::InfraPrivilege::CanRestrictedRead))
             .ok_or(AuthorizationError::Forbidden)
-            .run::<AuthorizationError, _>(&authn_state.authorizer(regulator.openfga()))
+            .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
             .await??;
     }
 

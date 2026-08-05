@@ -57,7 +57,7 @@ pub(in crate::views) async fn get_objects(
     Path(InfraIdParam { infra_id }): Path<InfraIdParam>,
     Path(object_type_param): Path<ObjectTypeParam>,
     State(AppState {
-        db_pool, regulator, ..
+        db_pool, openfga, ..
     }): State<AppState>,
     Extension(authn_state): Extension<authentication::State>,
     Json(obj_ids): Json<Vec<String>>,
@@ -75,7 +75,7 @@ pub(in crate::views) async fn get_objects(
         v2::infra_privileges(*user, authz::Infra(infra_id))
             .map(async |privileges| privileges.contains(&authz::InfraPrivilege::CanRestrictedRead))
             .ok_or(AuthorizationError::Forbidden)
-            .run::<AuthorizationError, _>(&authn_state.authorizer(regulator.openfga()))
+            .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
             .await??;
     }
 
@@ -132,7 +132,7 @@ pub(in crate::views) async fn list_objects_ids(
     Path(InfraIdParam { infra_id }): Path<InfraIdParam>,
     Path(ObjectTypeParam { object_type }): Path<ObjectTypeParam>,
     State(AppState {
-        db_pool, regulator, ..
+        db_pool, openfga, ..
     }): State<AppState>,
     Extension(authn_state): Extension<authentication::State>,
 ) -> Result<Json<ListObjectsResponse>> {
@@ -145,7 +145,7 @@ pub(in crate::views) async fn list_objects_ids(
         v2::infra_privileges(*user, authz::Infra(infra_id))
             .map(async |privileges| privileges.contains(&authz::InfraPrivilege::CanRestrictedRead))
             .ok_or(AuthorizationError::Forbidden)
-            .run::<AuthorizationError, _>(&authn_state.authorizer(regulator.openfga()))
+            .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
             .await??;
     }
 

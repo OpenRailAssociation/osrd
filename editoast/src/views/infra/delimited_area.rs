@@ -129,7 +129,7 @@ pub(in crate::views) async fn delimited_area(
         db_pool,
         valkey_client,
         config,
-        regulator,
+        openfga,
         ..
     }): State<AppState>,
     Path(InfraIdParam { infra_id }): Path<InfraIdParam>,
@@ -149,7 +149,7 @@ pub(in crate::views) async fn delimited_area(
         v2::infra_privileges(*user, authz::Infra(infra_id))
             .map(async |privileges| privileges.contains(&authz::InfraPrivilege::CanRestrictedRead))
             .ok_or(AuthorizationError::Forbidden)
-            .run::<AuthorizationError, _>(&authn_state.authorizer(regulator.openfga()))
+            .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
             .await??;
     }
 

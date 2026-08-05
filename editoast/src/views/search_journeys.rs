@@ -150,7 +150,7 @@ struct PathIndexedConnection {
 )]
 pub(in crate::views) async fn search_journeys(
     State(AppState {
-        db_pool, regulator, ..
+        db_pool, openfga, ..
     }): State<AppState>,
     Extension(authn_state): Extension<authentication::State>,
     Json(JourneySearchQuery {
@@ -195,7 +195,7 @@ pub(in crate::views) async fn search_journeys(
         v2::infra_privileges(*user, authz::Infra(infra_id))
             .map(async |privileges| privileges.contains(&authz::InfraPrivilege::CanRestrictedRead))
             .ok_or(AuthorizationError::Forbidden)
-            .run::<AuthorizationError, _>(&authn_state.authorizer(regulator.openfga()))
+            .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
             .await??;
     }
 

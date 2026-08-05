@@ -1,4 +1,3 @@
-pub mod auth_driver;
 pub mod authn;
 pub mod catalog_entry;
 pub mod document;
@@ -35,7 +34,6 @@ pub mod train_schedule_set;
 pub mod work_schedules;
 
 // Export all Model at crate root
-pub use auth_driver::PgAuthDriver;
 pub use authn::group::Group;
 pub use authn::user::User;
 pub use catalog_entry::CatalogEntry;

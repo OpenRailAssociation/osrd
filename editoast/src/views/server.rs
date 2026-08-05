@@ -19,7 +19,6 @@ use core_client::CoreClient;
 use core_client::mq_client;
 use dashmap::DashMap;
 use database::DbConnectionPoolV2;
-use editoast_models::PgAuthDriver;
 use fga::client::Limits;
 use object_store::aws::AmazonS3;
 use object_store::aws::AmazonS3Builder;
@@ -95,8 +94,6 @@ pub struct Server {
     router: NormalizePath<Router>,
 }
 
-pub type Regulator = ::authz::Regulator<PgAuthDriver>;
-
 /// The state of the whole Editoast service, available to all handlers
 ///
 /// If only the database is needed, use `State<database::DbConnectionPoolV2>`.
@@ -109,7 +106,7 @@ pub struct AppState {
     pub speed_limit_tag_ids: Arc<SpeedLimitTagIds>,
     pub core_client: Arc<CoreClient>,
     pub health_check_timeout: Duration,
-    pub regulator: Regulator,
+    pub openfga: fga::Client,
     pub trains_traffic: Arc<RwLock<timetable::similar_trains::trains_traffic::TrainsTrafficPool>>,
     pub s3_client: Option<Arc<AmazonS3>>,
 }
@@ -211,7 +208,7 @@ impl AppState {
         )?;
 
         Ok(Self {
-            regulator: Regulator::new(openfga, PgAuthDriver::new(db_pool.clone())),
+            openfga,
             valkey_client,
             db_pool,
             infra_caches,

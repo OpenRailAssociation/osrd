@@ -83,7 +83,7 @@ pub(in crate::views) async fn authentication_extraction_middleware(
 pub(in crate::views) async fn authentication_validation_middleware(
     Extension(authn): Extension<crate::authentication::Mode>,
     State(AppState {
-        db_pool, regulator, ..
+        db_pool, openfga, ..
     }): State<AppState>,
     mut req: Request,
     next: Next,
@@ -187,7 +187,7 @@ pub(in crate::views) async fn authentication_validation_middleware(
                 )?;
                 if let Some(impersonator) = impersonator {
                     warn_on_name_mismatch(&impersonator, impersonator_identity, impersonator_name);
-                    check_impersonation_privilege(regulator.openfga(), &impersonator).await?;
+                    check_impersonation_privilege(&openfga, &impersonator).await?;
                 } else {
                     // a new user cannot have Admin role
                     return Err(AuthorizationError::ForbiddenImpersonation.into());
@@ -212,7 +212,7 @@ pub(in crate::views) async fn authentication_validation_middleware(
     };
 
     // A failed OpenFGA request does not invalidate the creation of a new user
-    let openfga = regulator.openfga(); // to remove once OpenFGA is in the AppState directly
+    let openfga = &openfga; // to remove once OpenFGA is in the AppState directly
     let roles = special_authorizers::Authorize(openfga)
         .access_value(roles_prot)
         .await

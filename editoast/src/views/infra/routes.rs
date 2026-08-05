@@ -61,7 +61,7 @@ pub(in crate::views) struct RoutesResponse {
 pub(in crate::views) async fn get_routes_from_waypoint(
     Path(path): Path<RoutesFromWaypointParams>,
     State(AppState {
-        db_pool, regulator, ..
+        db_pool, openfga, ..
     }): State<AppState>,
     Extension(authn_state): Extension<authentication::State>,
 ) -> Result<Json<RoutesResponse>> {
@@ -75,7 +75,7 @@ pub(in crate::views) async fn get_routes_from_waypoint(
         v2::infra_privileges(*user, authz::Infra(path.infra_id))
             .map(async |privileges| privileges.contains(&authz::InfraPrivilege::CanRestrictedRead))
             .ok_or(AuthorizationError::Forbidden)
-            .run::<AuthorizationError, _>(&authn_state.authorizer(regulator.openfga()))
+            .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
             .await??;
     }
 
@@ -145,7 +145,7 @@ pub(in crate::views) async fn get_routes_track_ranges(
         infra_caches,
         valkey_client,
         config,
-        regulator,
+        openfga,
         ..
     }): State<AppState>,
     Extension(authn_state): Extension<authentication::State>,
@@ -164,7 +164,7 @@ pub(in crate::views) async fn get_routes_track_ranges(
         v2::infra_privileges(*user, authz::Infra(infra_id))
             .map(async |privileges| privileges.contains(&authz::InfraPrivilege::CanRestrictedRead))
             .ok_or(AuthorizationError::Forbidden)
-            .run::<AuthorizationError, _>(&authn_state.authorizer(regulator.openfga()))
+            .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
             .await??;
     }
 
@@ -216,7 +216,7 @@ pub(in crate::views) async fn get_routes_nodes(
         infra_caches,
         valkey_client,
         config,
-        regulator,
+        openfga,
         ..
     }): State<AppState>,
     Extension(authn_state): Extension<authentication::State>,
@@ -232,7 +232,7 @@ pub(in crate::views) async fn get_routes_nodes(
         v2::infra_privileges(*user, authz::Infra(infra_id))
             .map(async |privileges| privileges.contains(&authz::InfraPrivilege::CanRestrictedRead))
             .ok_or(AuthorizationError::Forbidden)
-            .run::<AuthorizationError, _>(&authn_state.authorizer(regulator.openfga()))
+            .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
             .await??;
     }
 

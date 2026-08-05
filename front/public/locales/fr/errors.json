@@ -29,11 +29,11 @@
       "TrackNotFound": "Section de voie {{track_id}} non trouvée"
     },
     "authorization": {
-      "AuthError": "Erreur interne d'authentification ou d'autorisation, veuillez réessayer ou contacter le support",
       "DbError": "Erreur interne de base de données, veuillez réessayer ou contacter le support",
       "Forbidden": "Accès refusé",
       "ForbiddenImpersonation": "Usurpation refusée",
       "ImpersonatedUserNotFound": "Utilisateur usurpé inconnu",
+      "OpenFga": "Erreur interne d'authentification ou d'autorisation, veuillez réessayer ou contacter le support",
       "Unauthenticated": "Utilisateur non authentifié"
     },
     "authz": {

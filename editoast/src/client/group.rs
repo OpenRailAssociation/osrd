@@ -138,8 +138,8 @@ pub async fn exclude_group(
         bail!("No user specified");
     }
 
-    let regulator = openfga_config.into_regulator(pool.clone()).await?;
-    let system = SystemAuthorizer::new_infallible(regulator.openfga());
+    let openfga = openfga_config.into_client().await?;
+    let system = SystemAuthorizer::new_infallible(&openfga);
 
     let group_id = editoast_models::Group::retrieve(pool.get().await?, group_name.clone())
         .await?
@@ -177,8 +177,8 @@ pub async fn include_group(
         bail!("No user specified");
     }
 
-    let regulator = openfga_config.into_regulator(pool.clone()).await?;
-    let system = SystemAuthorizer::new_infallible(regulator.openfga());
+    let openfga = openfga_config.into_client().await?;
+    let system = SystemAuthorizer::new_infallible(&openfga);
 
     let group_id = editoast_models::Group::retrieve(pool.get().await?, group_name.clone())
         .await?
@@ -211,9 +211,9 @@ pub async fn delete_group(
     openfga_config: OpenfgaConfig,
     pool: Arc<DbConnectionPoolV2>,
 ) -> anyhow::Result<()> {
-    let regulator = openfga_config.into_regulator(pool.clone()).await?;
+    let openfga = openfga_config.into_client().await?;
     let mut conn = pool.get().await?;
-    let system = SystemAuthorizer::new_infallible(regulator.openfga());
+    let system = SystemAuthorizer::new_infallible(&openfga);
     let group_id = editoast_models::Group::retrieve(pool.get().await?, name.clone())
         .await?
         .ok_or_else(|| anyhow!("group '{name}' could not be deleted (not found)"))?

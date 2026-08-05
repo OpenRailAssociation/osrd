@@ -92,7 +92,7 @@ pub(in crate::views) async fn pathfinding_view(
         infra_caches,
         valkey_client,
         config,
-        regulator,
+        openfga,
         ..
     }): State<AppState>,
     Extension(authn_state): Extension<authentication::State>,
@@ -120,7 +120,7 @@ pub(in crate::views) async fn pathfinding_view(
         v2::infra_privileges(*user, authz::Infra(infra_id))
             .map(async |privileges| privileges.contains(&authz::InfraPrivilege::CanRestrictedRead))
             .ok_or(AuthorizationError::Forbidden)
-            .run::<AuthorizationError, _>(&authn_state.authorizer(regulator.openfga()))
+            .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
             .await??;
     }
 
