@@ -478,7 +478,6 @@ impl From<Grant> for InfraGrant {
 
 /// Given a list of the existing direct grants on a resource, either return its direct grant
 /// if there is only one or panic if multiple direct grants exist.
-// TODO PR: pass an extra `resource_type` parameter to make the panic message more explicit ?
 fn validate_direct_grant(
     is_reader: bool,
     is_writer: bool,
