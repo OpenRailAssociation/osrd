@@ -352,7 +352,7 @@ const ItineraryModalMap = ({
         )}
         {pathSteps &&
           pathSteps.map((step, index) => {
-            const pathStepMetadata = pathStepsMetadata?.get(step.id);
+            const pathStepMetadata = pathStepsMetadata?.get(step.key);
             const pathStepLocation = step.location;
 
             if (!pathStepMetadata || !pathStepLocation || pathStepMetadata.isInvalid) return null;
@@ -363,7 +363,9 @@ const ItineraryModalMap = ({
               if (pathStepMetadata.type === 'trackOffset') {
                 coordinates = pathStepMetadata.coordinates;
               } else {
-                const matchedOp = pathWaypoints.find((waypoint) => waypoint.pathItemId === step.id);
+                const matchedOp = pathWaypoints.find(
+                  (waypoint) => waypoint.pathItemId === step.key
+                );
                 const trackMetadata = pathStepMetadata.parts.find(
                   (part) => part.type === 'valid' && part.trackId === matchedOp?.part.track
                 );
@@ -381,7 +383,7 @@ const ItineraryModalMap = ({
 
             let name = '';
             if (pathStepMetadata.type === 'trackOffset') {
-              const stepName = getStepName?.(step.id);
+              const stepName = getStepName?.(step.key);
               if (stepName) {
                 name = stepName;
               } else if (pathStepMetadata.label) {
@@ -397,23 +399,23 @@ const ItineraryModalMap = ({
               name = computeOpRefMarkerName(pathStepMetadata);
             }
 
-            const isSelected = selectedStepId === step.id;
+            const isSelected = selectedStepId === step.key;
 
             return (
               <PathStepMarker
-                key={step.id}
-                id={step.id}
+                key={step.key}
+                id={step.key}
                 testId="path-step-marker"
                 markerIndicator={(index + 1).toString()}
                 name={name}
                 coordinates={coordinates}
                 markerState={isSelected ? PATH_STEP_MARKER_STATE.SELECTED : undefined}
                 isSelected={isSelected}
-                resetKey={markerResetKeys[step.id]}
+                resetKey={markerResetKeys[step.key]}
                 draggable={!!onPathStepDragEnd && isSelected}
                 onDragStart={() => setIsDraggingMarker(true)}
-                onDrag={(lngLat) => handleMarkerDrag(step.id, lngLat)}
-                onDragEnd={(lngLat) => handleMarkerDragEnd(step.id, lngLat)}
+                onDrag={(lngLat) => handleMarkerDrag(step.key, lngLat)}
+                onDragEnd={(lngLat) => handleMarkerDragEnd(step.key, lngLat)}
               />
             );
           })}

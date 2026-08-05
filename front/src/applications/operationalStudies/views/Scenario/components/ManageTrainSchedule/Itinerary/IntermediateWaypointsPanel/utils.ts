@@ -74,7 +74,7 @@ export function groupOperationalPoints(
   }));
 
   const isStepBeforeOp = (step: LocatedStep, op: CoreOperationalPointOnPath) => {
-    const position = positionByStepId?.get(step.id);
+    const position = positionByStepId?.get(step.key);
     return position !== undefined && position < op.position;
   };
 
@@ -95,7 +95,7 @@ export function groupOperationalPoints(
       if (index <= currentGroupIndex || !matchOpRefAndWaypoint(step.location, op)) return false;
       // An OP crossed twice matches both steps by identity. Pick the right
       // crossing: by position if known, else by pinned track.
-      const position = positionByStepId?.get(step.id);
+      const position = positionByStepId?.get(step.key);
       if (position !== undefined) return position === op.position;
       const pinnedTrack =
         step.location.type === 'operational_point_part_reference'

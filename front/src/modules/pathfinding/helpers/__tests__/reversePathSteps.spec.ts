@@ -10,7 +10,7 @@ describe('reversePathSteps', () => {
     {
       arrival: null,
       theoreticalMargin: '0%',
-      id: 'id205',
+      key: 'id205',
       location: {
         type: 'operational_point_part_reference',
         operational_point: {
@@ -26,7 +26,7 @@ describe('reversePathSteps', () => {
       stopFor: new Duration({ milliseconds: 30 }),
       arrival: null,
       theoreticalMargin: '10%',
-      id: 'id111',
+      key: 'id111',
       location: {
         type: 'operational_point_part_reference',
         operational_point: {
@@ -39,7 +39,7 @@ describe('reversePathSteps', () => {
     },
     {
       arrival: new Duration({ milliseconds: 1500000 }),
-      id: 'id117',
+      key: 'id117',
       location: {
         type: 'operational_point_part_reference',
         operational_point: {
@@ -55,7 +55,7 @@ describe('reversePathSteps', () => {
     {
       stopFor: new Duration({ milliseconds: 50 }),
       arrival: null,
-      id: 'id132',
+      key: 'id132',
       location: {
         type: 'operational_point_part_reference',
         operational_point: {
@@ -70,7 +70,7 @@ describe('reversePathSteps', () => {
     {
       arrival: null,
       theoreticalMargin: '2min/100km',
-      id: 'id97',
+      key: 'id97',
       location: {
         type: 'track_offset',
         track: '6146255e-6667-11e3-81ff-01f464e0362d',
@@ -80,7 +80,7 @@ describe('reversePathSteps', () => {
       receptionSignal: null,
     },
     {
-      id: 'id206',
+      key: 'id206',
       location: {
         type: 'operational_point_part_reference',
         operational_point: {
@@ -99,7 +99,7 @@ describe('reversePathSteps', () => {
 
   const expectedReversedPathSteps: PathStepV2[] = [
     {
-      id: 'id206',
+      key: 'id206',
       location: {
         type: 'operational_point_part_reference',
         operational_point: {
@@ -117,7 +117,7 @@ describe('reversePathSteps', () => {
     {
       arrival: null,
       theoreticalMargin: '10%',
-      id: 'id97',
+      key: 'id97',
       location: {
         type: 'track_offset',
         track: '6146255e-6667-11e3-81ff-01f464e0362d',
@@ -129,7 +129,7 @@ describe('reversePathSteps', () => {
     {
       stopFor: new Duration({ milliseconds: 50 }),
       arrival: null,
-      id: 'id132',
+      key: 'id132',
       location: {
         type: 'operational_point_part_reference',
         operational_point: {
@@ -143,7 +143,7 @@ describe('reversePathSteps', () => {
     },
     {
       arrival: null,
-      id: 'id117',
+      key: 'id117',
       location: {
         type: 'operational_point_part_reference',
         operational_point: {
@@ -160,7 +160,7 @@ describe('reversePathSteps', () => {
       stopFor: new Duration({ milliseconds: 30 }),
       arrival: null,
       theoreticalMargin: '0%',
-      id: 'id111',
+      key: 'id111',
       location: {
         type: 'operational_point_part_reference',
         operational_point: {
@@ -173,7 +173,7 @@ describe('reversePathSteps', () => {
     },
     {
       arrival: null,
-      id: 'id205',
+      key: 'id205',
       location: {
         type: 'operational_point_part_reference',
         operational_point: {

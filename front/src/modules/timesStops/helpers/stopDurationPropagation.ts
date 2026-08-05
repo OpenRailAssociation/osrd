@@ -34,6 +34,7 @@ export const propagateStopDuration = (
   )
     return undefined;
 
+  console.debug('First if passed !');
   const pathStepId = update.row.pathStepId;
   const editedPathIndex = selectedTrain.path.findIndex((step) => step.key === pathStepId);
   if (editedPathIndex < 0) return undefined;
