@@ -62,10 +62,9 @@ const formatBasePairingItem = (
     t
   );
 
-  // TODO arrivalStepId => arrivalStepKey
-  const arrivalStepId = trainSchedule.path.at(-1)?.key;
+  const arrivalStepKey = trainSchedule.path.at(-1)?.key;
   const destinationSchedule = trainSchedule.schedule?.find(
-    (scheduleStep) => scheduleStep.at === arrivalStepId
+    (scheduleStep) => scheduleStep.at === arrivalStepKey
   );
   const requestedArrivalTime = destinationSchedule?.arrival
     ? addDurationToDate(
