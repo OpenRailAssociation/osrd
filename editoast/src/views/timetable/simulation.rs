@@ -644,7 +644,10 @@ pub fn build_pathfinding_consist(
             .supported_electrification(),
         supported_signaling_systems: physics_consist_parameters
             .traction_engine
-            .supported_signaling_systems(),
+            .supported_signaling_systems
+            .iter()
+            .map_into()
+            .collect(),
         maximum_speed: OrderedFloat(
             physics_consist_parameters
                 .compute_max_speed()

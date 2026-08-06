@@ -1,5 +1,6 @@
 use std::collections::BTreeSet;
 use std::collections::HashMap;
+use std::collections::HashSet;
 use std::collections::hash_map::DefaultHasher;
 use std::hash::Hash;
 use std::hash::Hasher;
@@ -20,8 +21,12 @@ use core_client::pathfinding::PathfindingRequest;
 use core_client::pathfinding::PathfindingResultSuccess;
 use database::DbConnection;
 use educe::Educe;
+use futures::StreamExt as _;
+use itertools::Itertools as _;
 use ordered_float::OrderedFloat;
 use schemas::rolling_stock::LoadingGaugeType;
+use schemas::rolling_stock::SupportedSignalingSystemVariant;
+use schemas::rolling_stock::hashing_supported_signaling_systems_variant;
 use schemas::train_schedule::PathItemLocation;
 use schemas::train_schedule::TrainScheduleLike;
 use serde::Deserialize;
@@ -41,7 +46,8 @@ use editoast_models::prelude::*;
 
 /// Path input is described by some rolling stock information
 /// and a list of path waypoints
-#[derive(Deserialize, Clone, Debug, Hash, ToSchema)]
+#[derive(Deserialize, Clone, Debug, educe::Educe, ToSchema)]
+#[educe(Hash)]
 #[cfg_attr(test, derive(Serialize))]
 pub(in crate::views) struct PathfindingInput {
     /// The loading gauge of the rolling stock
@@ -52,7 +58,8 @@ pub(in crate::views) struct PathfindingInput {
     /// Empty if does not support any electrification
     rolling_stock_supported_electrifications: BTreeSet<String>,
     /// List of supported signaling systems
-    rolling_stock_supported_signaling_systems: BTreeSet<String>,
+    #[educe(Hash(method(hashing_supported_signaling_systems_variant)))]
+    rolling_stock_supported_signaling_systems: HashSet<SupportedSignalingSystemVariant>,
     /// List of waypoints given to the pathfinding
     path_items: Vec<PathItemLocation>,
     /// Rolling stock maximum speed
@@ -84,7 +91,10 @@ impl PathfindingInput {
                 .supported_electrification(),
             rolling_stock_supported_signaling_systems: consist
                 .traction_engine
-                .supported_signaling_systems(),
+                .supported_signaling_systems
+                .iter()
+                .map_into()
+                .collect(),
             rolling_stock_maximum_speed: OrderedFloat(units::meter_per_second::from(
                 consist.compute_max_speed(),
             )),
@@ -467,6 +477,7 @@ pub async fn pathfinding_from_train_batch<T: TrainScheduleLike>(
 #[cfg(test)]
 pub mod tests {
     use std::collections::BTreeSet;
+    use std::collections::HashSet;
 
     use axum::http::StatusCode;
     use core_client::mocking::MockingClient;
@@ -476,6 +487,7 @@ pub mod tests {
     use core_client::pathfinding::TrainPath;
     use pretty_assertions::assert_eq;
     use schemas::rolling_stock::LoadingGaugeType;
+    use schemas::rolling_stock::SupportedSignalingSystemVariant;
     use schemas::train_schedule::OperationalPointPartReference;
     use schemas::train_schedule::OperationalPointReference;
     use schemas::train_schedule::PathItemLocation;
@@ -491,9 +503,9 @@ pub mod tests {
             rolling_stock_loading_gauge: LoadingGaugeType::G1,
             rolling_stock_is_thermal: true,
             rolling_stock_supported_electrifications: BTreeSet::new(),
-            rolling_stock_supported_signaling_systems: BTreeSet::from([
-                "BAL".into(),
-                "BAPR".into(),
+            rolling_stock_supported_signaling_systems: HashSet::from([
+                SupportedSignalingSystemVariant::BAL,
+                SupportedSignalingSystemVariant::BAPR,
             ]),
             rolling_stock_maximum_speed: 22.0.into(),
             rolling_stock_length: 26_000,

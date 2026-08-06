@@ -115,6 +115,7 @@ postgis_diesel = { version = "3.1.0", features = ["serde"] }
 postgres-openssl = "0.5.3"
 pretty_assertions = "1.4.1"
 proc-macro2 = "1.0"
+proptest = "1.11.0"
 quote = "1.0"
 rand = "0.10.1"
 rangemap = "1.7.1"

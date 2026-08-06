@@ -19,6 +19,8 @@ pub struct TrainScheduleException {
     pub timetable_id: i64,
     pub train_schedule_id: i64,
     pub occurrence_index: Option<i64>,
+    pub train_schedule_instance_index: i64,
+    pub added_exception_id: i64,
     pub disabled: bool,
     #[model(json)]
     pub change_groups: TrainScheduleExceptionChangeGroups,

@@ -1,5 +1,6 @@
 use std::collections::BTreeSet;
 use std::collections::HashMap;
+use std::collections::HashSet;
 use std::hash::DefaultHasher;
 use std::hash::Hash;
 use std::hash::Hasher as _;
@@ -14,6 +15,8 @@ use itertools::Itertools;
 use ordered_float::OrderedFloat;
 use schemas::infra::TrackOffset;
 use schemas::rolling_stock::LoadingGaugeType;
+use schemas::rolling_stock::SupportedSignalingSystemVariant;
+use schemas::rolling_stock::hashing_supported_signaling_systems_variant;
 
 use crate::CoreEnv;
 use crate::Correlated;
@@ -151,7 +154,8 @@ where
     }
 }
 
-#[derive(Debug, Hash, PartialEq, Eq)]
+#[derive(Debug, educe::Educe, PartialEq, Eq)]
+#[educe(Hash)]
 #[cfg_attr(test, derive(Clone))]
 pub struct PathfindingConsist {
     pub loading_gauge: LoadingGaugeType,
@@ -160,7 +164,8 @@ pub struct PathfindingConsist {
     /// Supported electrification modes (leave empty for unelectrified consists)
     pub supported_electrifications: BTreeSet<String>,
     /// A list of supported signaling systems
-    pub supported_signaling_systems: BTreeSet<String>,
+    #[educe(Hash(method(hashing_supported_signaling_systems_variant)))]
+    pub supported_signaling_systems: HashSet<SupportedSignalingSystemVariant>,
     pub maximum_speed: OrderedFloat<f64>,
     /// Consist length in millimeters
     pub length: u64,
@@ -474,7 +479,7 @@ pub(crate) mod test_data {
             loading_gauge: LoadingGaugeType::GB,
             thermal: true,
             supported_electrifications: BTreeSet::new(),
-            supported_signaling_systems: BTreeSet::from(["BAPR".to_owned()]),
+            supported_signaling_systems: HashSet::from([SupportedSignalingSystemVariant::BAPR]),
             maximum_speed: OrderedFloat::from(100.0),
             length: id as u64,
             speed_limit_tag: Some("MA100".to_owned()),
