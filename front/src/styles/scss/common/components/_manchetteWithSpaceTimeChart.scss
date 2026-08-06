@@ -50,6 +50,10 @@
     color: var(--primary60);
     transform: translateY(-50%);
 
+    &.faded {
+      opacity: 0.2;
+    }
+
     .numbered-icon {
       position: relative;
       display: flex;
@@ -60,11 +64,40 @@
       height: 28px;
       outline: none;
 
+      svg {
+        pointer-events: none;
+      }
+
       .occurrences-number {
         font-size: 12px;
         line-height: 12px;
         font-family: IBM plex sans;
         font-weight: 600;
+      }
+
+      .mode-tooltip {
+        position: absolute;
+        right: calc(100% + 10px);
+        top: 50%;
+        transform: translateY(-50%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 4px 12px;
+        background-color: var(--black100);
+        color: var(--white100);
+        font-size: 0.875rem;
+        font-weight: 400;
+        white-space: nowrap;
+        border-radius: 4px;
+        box-shadow: 0 4px 6px -2px var(--black28);
+        opacity: 0;
+        pointer-events: none;
+        z-index: 3;
+      }
+
+      &:hover .mode-tooltip {
+        opacity: 0.85;
       }
     }
 
