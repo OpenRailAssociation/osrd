@@ -17,11 +17,20 @@ class Conflict(
 )
 
 enum class ConflictType {
-    @Json(name = "Spacing") SPACING,
-    @Json(name = "Routing") ROUTING,
+    @Json(name = "Spacing")
+    SPACING,
+    @Json(name = "Routing")
+    ROUTING,
 }
 
 class ConflictRequirement(val zone: ZoneId, val startTime: Double, val endTime: Double)
+
+data class RoutingZoneConfig(
+    val entryDet: DirDetectorId,
+    val exitDet: DirDetectorId,
+    /** switch name to the name of the config it must be in */
+    val switches: Map<String, String>,
+)
 
 interface ResourceRequirement {
     val beginTime: Double
@@ -86,12 +95,6 @@ class ConflictDetectorImpl(requirements: List<Requirements>) : ConflictDetector 
             }
         }
     }
-
-    data class RoutingZoneConfig(
-        val entryDet: DirDetectorId,
-        val exitDet: DirDetectorId,
-        val switches: Map<String, String>,
-    )
 
     data class RoutingZoneRequirement(
         val trainId: String,
@@ -282,6 +285,7 @@ fun mergeMap(
                     if (++eventCount == 1) eventBeginning = event.time
                     conflictReqs.addAll(event.requirements)
                 }
+
                 EventType.END -> {
                     if (--eventCount > 0) continue
                     newConflicts.add(
