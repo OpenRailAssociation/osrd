@@ -461,19 +461,19 @@ const useTrackOccupancy = ({
       else draggedTrainScheduleIds.current.add(draggedEditoastId);
 
       // Update actual state:
-      const draggedTrainScheduleId = formatEditoastIdToTrainScheduleId(draggedEditoastId);
       const impactedPathOperationalPointIDs = new Set<string>();
+      const offset = newTrainData.departureTime.getTime() - initialDepartureTime.getTime();
+
       const newState = { ...pathOperationalPointsState };
       forEach(newState, (opState, waypointId) => {
         if (opState.selected) {
           forEach(opState.zones.data, (zone) => {
-            if (
-              isOccurrenceId(zone.trainId) &&
-              extractTrainScheduleIdFromOccurrenceId(zone.trainId) === draggedTrainScheduleId &&
-              zone.exceptionType !== 'start_time'
-            ) {
+            const isDraggedTrainZone = toOwnerTrainScheduleId(zone.trainId) === draggedEditoastId;
+            const isStartTimeExceptionOccurrence =
+              isOccurrenceId(zone.trainId) && zone.exceptionType === 'start_time';
+
+            if (isDraggedTrainZone && !isStartTimeExceptionOccurrence) {
               impactedPathOperationalPointIDs.add(waypointId);
-              const offset = newTrainData.departureTime.getTime() - initialDepartureTime.getTime();
               zone.startTime = zone.dbStartTime + offset;
               zone.endTime = zone.dbEndTime + offset;
             }
@@ -489,17 +489,23 @@ const useTrackOccupancy = ({
             const newZones = await fetchTrackOccupancy(
               getTrackOccupancyOperationalPointReference(pathOpsByWaypointId.get(waypointId)),
               waypointId,
-              {
-                [draggedTrainId]: newTrainData,
-              }
+              { [draggedEditoastId]: newTrainData }
             );
 
             if (newZones.length)
               setPathOperationalPointsState((state) => {
                 const opState = state[waypointId];
-                opState.zones.data = opState.zones.data?.map((zone) =>
-                  zone.trainId === draggedTrainId ? newZones[0] : zone
-                );
+                if (!opState.zones.data) return state;
+
+                opState.zones.data = opState.zones.data.map((zone) => {
+                  if (toOwnerTrainScheduleId(zone.trainId) === draggedEditoastId) {
+                    const matchingZone = newZones.find(
+                      (newZone) => newZone.trainId === zone.trainId
+                    );
+                    return matchingZone || zone;
+                  }
+                  return zone;
+                });
                 return state;
               });
           })
