@@ -920,7 +920,7 @@ pub mod tests {
         use pretty_assertions::assert_eq;
 
         #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-        async fn infra_clone_empty() {
+        async fn clone_empty() {
             let app = test_app!().build();
             let db_pool = app.db_pool();
             let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
@@ -952,7 +952,7 @@ pub mod tests {
         }
 
         #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-        async fn infra_clone() {
+        async fn clone_filled() {
             let app = test_app!().build();
             let db_pool = app.db_pool();
             let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
@@ -1036,7 +1036,7 @@ pub mod tests {
         use super::*;
 
         #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-        async fn infra_delete() {
+        async fn delete() {
             let pool = DbConnectionPoolV2::for_tests();
             let app = test_app!()
                 .db_pool(pool)
@@ -1069,7 +1069,7 @@ pub mod tests {
         use pretty_assertions::assert_eq;
 
         #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-        async fn infra_list() {
+        async fn list() {
             let app = test_app!().build();
             let db_pool = app.db_pool();
             let infra_granted = create_small_infra(&mut db_pool.get_ok()).await;
@@ -1094,7 +1094,7 @@ pub mod tests {
         }
 
         #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-        async fn infra_list_filters_authorized_infras() {
+        async fn list_filters_authorized_infras() {
             let app = test_app!().build();
             let db_pool = app.db_pool();
             let infra = create_small_infra(&mut db_pool.get_ok()).await;
@@ -1136,7 +1136,7 @@ pub mod tests {
         }
 
         #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-        async fn infra_list_impersonated_user() {
+        async fn list_called_by_impersonated_user() {
             let app = test_app!().build();
             let db_pool = app.db_pool();
             let infra_no_grant = create_small_infra(&mut db_pool.get_ok()).await;
@@ -1182,7 +1182,7 @@ pub mod tests {
         use pretty_assertions::assert_eq;
 
         #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-        async fn default_infra_create() {
+        async fn create() {
             let app = test_app!().build();
             let user = app
                 .user("thomas", "Thomas")
@@ -1211,7 +1211,7 @@ pub mod tests {
         use super::*;
 
         #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-        async fn infra_get() {
+        async fn get() {
             let app = test_app!().build();
             let db_pool = app.db_pool();
             let infra_id = create_empty_infra(&mut db_pool.get_ok()).await.id;
@@ -1242,7 +1242,7 @@ pub mod tests {
         use pretty_assertions::assert_eq;
 
         #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-        async fn infra_rename() {
+        async fn rename() {
             let app = test_app!().build();
             let db_pool = app.db_pool();
             let infra_id = create_empty_infra(&mut db_pool.get_ok()).await.id;
@@ -1274,7 +1274,7 @@ pub mod tests {
         }
 
         #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-        async fn infra_refresh() {
+        async fn refresh() {
             let app = test_app!().build();
             let db_pool = app.db_pool();
             let infra_id = create_empty_infra(&mut db_pool.get_ok()).await.id;
@@ -1294,7 +1294,7 @@ pub mod tests {
         }
 
         #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-        async fn infra_refresh_force() {
+        async fn refresh_force() {
             let app = test_app!().build();
             let db_pool = app.db_pool();
             let infra_id = create_empty_infra(&mut db_pool.get_ok()).await.id;
@@ -1336,7 +1336,7 @@ pub mod tests {
         use pretty_assertions::assert_eq;
 
         #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-        async fn infra_get_speed_limit_tags() {
+        async fn get_speed_limit_tags() {
             let app = test_app!().build();
             let builtin_tags = app.speed_limit_tag_ids();
             let db_pool = app.db_pool();
@@ -1370,7 +1370,7 @@ pub mod tests {
         }
 
         #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-        async fn infra_get_speed_limit_tags_needs_reader_grant() {
+        async fn get_speed_limit_tags_needs_reader_grant() {
             let app = test_app!().build();
             let db_pool = app.db_pool();
             let infra_id = create_empty_infra(&mut db_pool.get_ok()).await.id;
@@ -1396,7 +1396,7 @@ pub mod tests {
         use pretty_assertions::assert_eq;
 
         #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-        async fn infra_get_all_voltages() {
+        async fn get_all_voltages() {
             let app = test_app!().build();
             let db_pool = app.db_pool();
             let infra_1 = create_empty_infra(&mut db_pool.get_ok()).await;
@@ -1451,7 +1451,7 @@ pub mod tests {
         #[case(true)]
         #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
         #[case(false)]
-        async fn infra_get_voltages(#[case] include_rolling_stock_modes: bool) {
+        async fn get_voltages(#[case] include_rolling_stock_modes: bool) {
             let app = test_app!().build();
             let db_pool = app.db_pool();
             let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
@@ -1500,7 +1500,7 @@ pub mod tests {
         }
 
         #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-        async fn infra_get_voltages_needs_reader_grant() {
+        async fn get_voltages_needs_reader_grant() {
             let app = test_app!().build();
             let db_pool = app.db_pool();
             let infra_id = create_empty_infra(&mut db_pool.get_ok()).await.id;
@@ -1528,7 +1528,7 @@ pub mod tests {
         use pretty_assertions::assert_eq;
 
         #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-        async fn infra_get_switch_types() {
+        async fn get_switch_types() {
             let app = test_app!().build();
             let db_pool = app.db_pool();
             let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
@@ -1553,7 +1553,7 @@ pub mod tests {
         use super::*;
 
         #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-        async fn infra_lock() {
+        async fn lock() {
             let app = test_app!().build();
             let db_pool = app.db_pool();
             let infra_id = create_empty_infra(&mut db_pool.get_ok()).await.id;
@@ -1592,7 +1592,7 @@ pub mod tests {
         }
 
         #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-        async fn infra_lock_requires_writer_grant_and_operational_studies() {
+        async fn lock_requires_writer_grant_and_operational_studies() {
             let app = test_app!().build();
             let db_pool = app.db_pool();
             let infra_id = create_empty_infra(&mut db_pool.get_ok()).await.id;
