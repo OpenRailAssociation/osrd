@@ -8,7 +8,6 @@ import { useSubCategoryContext } from 'common/SubCategoryContext';
 import isMainCategory from 'modules/rollingStock/helpers/category';
 import { parseStartTime } from 'modules/trainSchedule/helpers/formatTrainScheduleWithDetails';
 import { timeToLocaleString, useDateTimeLocale } from 'utils/date';
-import { Duration } from 'utils/duration';
 
 import type { ConflictWithTrainNames } from '../types';
 import { getTrainCategoryClassName } from './../../../applications/operationalStudies/views/Scenario/components/Timetable/utils';
@@ -52,12 +51,8 @@ const ConflictCard = ({ conflict }: { conflict: ConflictWithTrainNames }) => {
     parseStartTime(conflict.start_time, scenario.timetable_type),
     dateTimeLocale
   );
-  // An hourly timetable displays the conflict duration where a calendar one displays its
-  // end time: both are elapsed times formatted the same way.
-  const endTimeOrDuration = timeToLocaleString(
-    isHourlyTimetable
-      ? new Duration({ milliseconds: conflict.duration })
-      : parseStartTime(conflict.start_time + conflict.duration, scenario.timetable_type),
+  const endTime = timeToLocaleString(
+    parseStartTime(conflict.start_time + conflict.duration, scenario.timetable_type),
     dateTimeLocale
   );
   const startDate = isHourlyTimetable
@@ -151,8 +146,8 @@ const ConflictCard = ({ conflict }: { conflict: ConflictWithTrainNames }) => {
           <div className="start-time" title={startTime}>
             {startTime}
           </div>
-          <div className="end-time" title={endTimeOrDuration}>
-            {endTimeOrDuration}
+          <div className="end-time" title={endTime}>
+            {endTime}
           </div>
         </div>
         {startDate && (

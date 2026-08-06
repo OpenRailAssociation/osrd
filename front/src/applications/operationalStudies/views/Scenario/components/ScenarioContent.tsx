@@ -63,7 +63,6 @@ const ScenarioContent = ({ activeBoards, toggleBoard }: ScenarioContentProps) =>
     projectionData,
     conflicts,
     isConflictsLoading,
-    hourlyTimetableDuration,
     upsertTrainSchedules,
     removeTrainSchedules,
     updateTrainScheduleDepartureTime,
@@ -81,9 +80,7 @@ const ScenarioContent = ({ activeBoards, toggleBoard }: ScenarioContentProps) =>
   } = useConflictsFilter(
     useMemo(() => trainSchedules || [], [trainSchedules]),
     conflicts,
-    isConflictsLoading,
-    scenario.timetable_type,
-    hourlyTimetableDuration
+    isConflictsLoading
   );
 
   const macroEditorState = useRef<MacroEditorState>(null);

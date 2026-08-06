@@ -43,20 +43,19 @@ export const formatLocalTime = (date: Date) => dayjs(date).local().format('HH:mm
 
 const pad = (value: number) => String(value).padStart(2, '0');
 
-/**
- * Format a start time to a string truncated to the second: a locale-aware clock time for
- * a Date (calendar timetable), or an "hh:mm:ss" elapsed time for a Duration (offset from
- * the start of an hourly timetable, which has no locale/calendar meaning). Contrary to a
- * clock time, the elapsed time does not wrap its hours at 24.
- */
-export const timeToLocaleString = (time: StartTime, locale: Intl.Locale): string => {
-  if (!(time instanceof Duration)) return time.toLocaleTimeString(locale);
+/** Format a duration as an elapsed "hh:mm" or "hh:mm:ss" time. Hours are not wrapped at 24. */
+const durationToElapsedString = (duration: Duration, withSeconds: boolean): string => {
+  const hours = Math.floor(duration.total('hour'));
+  const minutes = Math.floor(duration.sub(new Duration({ hours })).total('minute'));
+  if (!withSeconds) return `${pad(hours)}:${pad(minutes)}`;
 
-  const hours = Math.floor(time.total('hour'));
-  const minutes = Math.floor(time.sub(new Duration({ hours })).total('minute'));
-  const seconds = Math.floor(time.sub(new Duration({ hours, minutes })).total('second'));
+  const seconds = Math.floor(duration.sub(new Duration({ hours, minutes })).total('second'));
   return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
 };
+
+/** Format a start time as a clock time for a Date, or an elapsed "hh:mm:ss" for a Duration. */
+export const timeToLocaleString = (time: StartTime, locale: Intl.Locale): string =>
+  time instanceof Duration ? durationToElapsedString(time, true) : time.toLocaleTimeString(locale);
 
 /**
  * Format a start time to a string rounded to the nearest minute: a locale-aware clock
@@ -65,10 +64,7 @@ export const timeToLocaleString = (time: StartTime, locale: Intl.Locale): string
  */
 export const timeToLocaleStringRounded = (time: StartTime, locale: Intl.Locale): string => {
   if (time instanceof Duration) {
-    const totalMinutes = Math.round(time.total('minute'));
-    const hours = Math.floor(totalMinutes / 60);
-    const minutes = totalMinutes % 60;
-    return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+    return durationToElapsedString(time.round('minute'), false);
   }
   const roundedTime = new Date(
     ...[
