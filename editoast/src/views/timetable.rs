@@ -65,8 +65,10 @@ use super::pagination::PaginationQueryParams;
 use super::pagination::PaginationStats;
 use super::path::pathfinding::PathfindingResult;
 use crate::AppState;
+use crate::authentication;
 use crate::error::Result;
 use crate::views::AuthenticationExt;
+use crate::views::AuthorizationError;
 use crate::views::path::operational_point_cache::OperationalPointCache;
 use crate::views::timetable::simulation::SimulationResponseSuccess;
 use editoast_models::Infra;
@@ -280,6 +282,7 @@ pub struct ElectricalProfileSetIdQueryParam {
         (status = 200, description = "The paginated list of timetable requirements", body = inline(TrainRequirementsPage)),
     ),
 )]
+// TODO test the endpoint
 pub(in crate::views) async fn requirements(
     State(AppState {
         db_pool,
@@ -288,7 +291,7 @@ pub(in crate::views) async fn requirements(
         config,
         ..
     }): State<AppState>,
-    Extension(auth): AuthenticationExt,
+    Extension(authn_state): Extension<crate::authentication::State>,
     Path(TimetableIdParam { id: timetable_id }): Path<TimetableIdParam>,
     Query(page_settings): Query<PaginationQueryParams<200>>,
     Query(InfraIdQueryParam { infra_id }): Query<InfraIdQueryParam>,
@@ -296,16 +299,9 @@ pub(in crate::views) async fn requirements(
         electrical_profile_set_id,
     }): Query<ElectricalProfileSetIdQueryParam>,
 ) -> Result<Json<TrainRequirementsPage>> {
-    // Check user privilege on infra
-    auth.check_authorization(async |authorizer| {
-        authorizer
-            .authorize_infra(
-                &authz::Infra(infra_id),
-                authz::InfraPrivilege::CanRestrictedRead,
-            )
-            .await
-    })
-    .await?;
+    if !matches!(&authn_state, authentication::State::Skip) {
+        return Err(AuthorizationError::Forbidden.into());
+    }
 
     let conn = &mut db_pool.get().await?;
 
