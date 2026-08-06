@@ -2,6 +2,7 @@ package fr.sncf.osrd.trainsim
 
 import fr.sncf.osrd.envelope_sim.SimpleContextBuilder.makeSimpleContext
 import kotlin.test.assertEquals
+import kotlin.test.assertIs
 import kotlin.test.assertTrue
 import org.junit.jupiter.api.Test
 
@@ -19,6 +20,9 @@ class MultiTrainSimulationTest {
     private fun speedLimit(length: Double = pathLength, limit: Double = 20.0) =
         SpeedLimitedZone(0.micrometers, length.meters, limit.metersPerSecond)
 
+    private fun runSuccessfully(trains: List<ScheduledTrain>): List<List<TrainState>> =
+        assertIs<TimetableResult.Success>(runTrains(trains, timeStep.seconds)).states
+
     private fun makeTimetable(): List<ScheduledTrain> =
         listOf(
             ScheduledTrain(makeSimulator(), 0.0.seconds),
@@ -32,10 +36,9 @@ class MultiTrainSimulationTest {
             ),
         )
 
-    // TODO: Only valid while trains to interact with each other. The test will have to be removed
     @Test
     fun testEachTrainMatchesItsStandaloneRun() {
-        val together = runTrains(makeTimetable(), timeStep.seconds)
+        val together = runSuccessfully(makeTimetable())
 
         val alone =
             makeTimetable().map {
@@ -51,7 +54,7 @@ class MultiTrainSimulationTest {
 
     @Test
     fun testEveryTrainReachesItsPathEnd() {
-        val states = runTrains(makeTimetable(), timeStep.seconds)
+        val states = runSuccessfully(makeTimetable())
 
         for ((i, trainStates) in states.withIndex()) {
             assertTrue(trainStates.size > 1, "train $i didn't move")
@@ -68,7 +71,7 @@ class MultiTrainSimulationTest {
 
     @Test
     fun testTimetableTrainsBehaveDifferently() {
-        val states = runTrains(makeTimetable(), timeStep.seconds)
+        val states = runSuccessfully(makeTimetable())
         val arrivalTimes = states.map { it.last().time }
 
         assertEquals(
@@ -83,8 +86,8 @@ class MultiTrainSimulationTest {
         val early = makeSimulator()
         val late = makeSimulator()
 
-        runTrains(listOf(ScheduledTrain(early, 0.0.seconds)), timeStep.seconds)
-        runTrains(listOf(ScheduledTrain(late, 3600.0.seconds)), timeStep.seconds)
+        runSuccessfully(listOf(ScheduledTrain(early, 0.0.seconds)))
+        runSuccessfully(listOf(ScheduledTrain(late, 3600.0.seconds)))
 
         assertEquals(early.states, late.states)
     }
@@ -95,9 +98,8 @@ class MultiTrainSimulationTest {
         val last = makeSimulator()
 
         val states =
-            runTrains(
-                listOf(ScheduledTrain(first, 0.0.seconds), ScheduledTrain(last, 86400.0.seconds)),
-                timeStep.seconds,
+            runSuccessfully(
+                listOf(ScheduledTrain(first, 0.0.seconds), ScheduledTrain(last, 86400.0.seconds))
             )
 
         assertTrue(states[1].size > 1)
@@ -106,8 +108,8 @@ class MultiTrainSimulationTest {
 
     @Test
     fun testTrainOrderDoesNotMatter() {
-        val states = runTrains(makeTimetable(), timeStep.seconds)
-        val reversedStates = runTrains(makeTimetable().reversed(), timeStep.seconds)
+        val states = runSuccessfully(makeTimetable())
+        val reversedStates = runSuccessfully(makeTimetable().reversed())
 
         assertEquals(states, reversedStates.reversed())
     }
@@ -119,9 +121,8 @@ class MultiTrainSimulationTest {
         val long = makeSimulator()
 
         val states =
-            runTrains(
-                listOf(ScheduledTrain(short, 0.0.seconds), ScheduledTrain(long, 0.0.seconds)),
-                timeStep.seconds,
+            runSuccessfully(
+                listOf(ScheduledTrain(short, 0.0.seconds), ScheduledTrain(long, 0.0.seconds))
             )
 
         assertTrue(states[0].last().position >= shortLength.meters)
@@ -131,9 +132,39 @@ class MultiTrainSimulationTest {
 
     @Test
     fun testLoopIsDeterministic() {
-        val first = runTrains(makeTimetable(), timeStep.seconds)
-        val second = runTrains(makeTimetable(), timeStep.seconds)
+        val first = runSuccessfully(makeTimetable())
+        val second = runSuccessfully(makeTimetable())
 
         assertEquals(first, second)
+    }
+
+    // The train is held at 0 by the constraint. Only time advances not distance => infinite loop
+    @Test
+    fun testATrainThatCanNeverMoveStalls() {
+        val stuck = TrainSimulator(makeContext(), listOf(HoldAt(0.micrometers)))
+
+        val result = runTrains(listOf(ScheduledTrain(stuck, 0.0.seconds)), timeStep.seconds)
+
+        val stalled = assertIs<TimetableResult.Stalled>(result)
+        assertEquals(listOf(0), stalled.blocked)
+    }
+
+    @Test
+    fun testAStallStillReportsWhatEveryTrainDid() {
+        val arriving = makeSimulator()
+        val stuck = TrainSimulator(makeContext(), listOf(HoldAt(0.micrometers)))
+
+        val result =
+            runTrains(
+                listOf(ScheduledTrain(arriving, 0.0.seconds), ScheduledTrain(stuck, 0.0.seconds)),
+                timeStep.seconds,
+            )
+
+        val stalled = assertIs<TimetableResult.Stalled>(result)
+        assertEquals(listOf(1), stalled.blocked, "only the held train is under way")
+        assertTrue(
+            stalled.states[0].last().position >= pathLength.meters,
+            "the other train should still have arrived",
+        )
     }
 }
