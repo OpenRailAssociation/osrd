@@ -177,16 +177,22 @@ export type CurveStyleExceptionType = keyof Pick<
  */
 export type CurveStyleInput = {
   chart: 'std' | 'tod';
-  train: {
-    id: TrainId;
-    exceptionType?: CurveStyleExceptionType;
-    isDragging?: boolean;
-  };
+  train:
+    | {
+        id: OccurrenceId;
+        /**
+         * The relevant exception types (start_time / path_and_schedule) this occurrence
+         * carries (it can cumulate several). Only occurrences can carry exceptions.
+         */
+        relevantExceptionTypes: CurveStyleExceptionType[];
+      }
+    | { id: TrainScheduleId };
   selection: SelectedTrain | undefined;
   panelMode?: 'compliant' | 'all' | 'single';
   hover?: {
     trainId: TrainId;
     from: SelectionSource;
-    exceptionType?: CurveStyleExceptionType;
+    relevantExceptionTypes?: CurveStyleExceptionType[];
   };
+  dragging?: { trainId: TrainId; relevantExceptionTypes?: CurveStyleExceptionType[] };
 };

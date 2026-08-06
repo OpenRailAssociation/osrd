@@ -15,7 +15,7 @@ export type MovableOccupancyZone = Omit<OccupancyZone, 'curveStyle'> & {
   dbStartTime: number;
   dbEndTime: number;
   trainId: TrainId;
-  exceptionType?: CurveStyleExceptionType;
+  exceptionTypes: CurveStyleExceptionType[];
 };
 
 export type DeployedWaypoint = {
@@ -131,12 +131,13 @@ export function getMovableOccupancyZone(
     endDirection = 'down';
   }
 
-  let exceptionType: CurveStyleExceptionType | undefined;
+  const exceptionTypes: CurveStyleExceptionType[] = [];
 
+  if (exception?.start_time !== undefined) {
+    exceptionTypes.push('start_time');
+  }
   if (exception?.path_and_schedule !== undefined) {
-    exceptionType = 'path_and_schedule';
-  } else if (exception?.start_time !== undefined) {
-    exceptionType = 'start_time';
+    exceptionTypes.push('path_and_schedule');
   }
 
   return {
@@ -150,6 +151,6 @@ export function getMovableOccupancyZone(
     trainName,
     dbStartTime: occupationStartTime,
     dbEndTime: occupationEndTime,
-    exceptionType,
+    exceptionTypes,
   };
 }

@@ -53,6 +53,7 @@ import {
   getIsSimulationEnabled,
   getSelectedTrain,
 } from 'reducers/simulationResults/selectors';
+import type { SelectionSource } from 'reducers/simulationResults/types';
 import { useAppDispatch } from 'store';
 import { Duration } from 'utils/duration';
 import {
@@ -77,7 +78,7 @@ import CurveSelectionSidePanel, {
 import cutSpaceTimeCurves from './helpers/cutSpaceTimeCurves';
 import formatSpaceTimeCurves from './helpers/formatSpaceTimeCurves';
 import getPanelOccurrenceCounts from './helpers/getPanelOccurrenceCounts';
-import getStdExceptionType from './helpers/getStdExceptionType';
+import getTrainExceptionTypes from './helpers/getTrainExceptionTypes';
 import makeProjectedTrains from './helpers/makeProjectedTrains';
 import { getOccupancyBlocks } from './helpers/utils';
 import {
@@ -148,26 +149,38 @@ export const MANCHETTE_WITH_SPACE_TIME_CHART_DEFAULT_HEIGHT = 561;
 const NO_CONFLICTS: Conflict[] = [];
 
 /**
- * Builds the hover input for the curve-style helper. Chart hover wins over
- * timetable hover: when the user is over a curve in the STD, the train list
- * hover is ignored.
- *
- * TODO: add the TOD source (`from: 'tod'`) once the TOD emits hover events.
+ * Builds the hover input for the curve-style helper: the hovered train, the
+ * chart it is hovered from (STD wins over TOD, which wins over the train
+ * list hover) and its exception types.
  */
-const buildCurveHover = (
+const buildCurveStyleHover = (
   hoveredItem: HoveredItem | null,
-  hoveredTrainIdFromTimetable: TrainId | undefined
+  hoveredTrainIdFromTimetable: TrainId | undefined,
+  trainSchedulesWithDetailsById: Map<number, TrainScheduleWithDetails>
 ): CurveStyleInput['hover'] => {
+  let trainId: TrainId | undefined;
+  let from: SelectionSource | undefined;
+
   if (
     hoveredItem &&
     (isSegmentPickingElement(hoveredItem.element) || isPointPickingElement(hoveredItem.element))
   ) {
-    return { trainId: hoveredItem.element.pathId as TrainId, from: 'std' };
+    trainId = hoveredItem.element.pathId as TrainId;
+    from = 'std';
+  } else if (hoveredItem && isOccupancyPickingElement(hoveredItem.element)) {
+    ({ trainId } = parseOccupancyZonePathId(hoveredItem.element.pathId));
+    from = 'tod';
+  } else if (hoveredTrainIdFromTimetable) {
+    trainId = hoveredTrainIdFromTimetable;
+    from = 'timetable';
   }
-  if (hoveredTrainIdFromTimetable) {
-    return { trainId: hoveredTrainIdFromTimetable, from: 'timetable' };
-  }
-  return undefined;
+
+  if (!trainId || !from) return undefined;
+  return {
+    trainId,
+    from,
+    relevantExceptionTypes: getTrainExceptionTypes(trainSchedulesWithDetailsById, trainId),
+  };
 };
 function formatDragOffset(ms: number): string {
   const sign = ms >= 0 ? '+' : '-';
@@ -329,6 +342,11 @@ const SpaceTimeChartWrapper = ({
     return hoveredTrainId;
   }, [hoveredItem, hoveredTrainId]);
 
+  const curveHover = useMemo(
+    () => buildCurveStyleHover(hoveredItem, hoveredTrainId, trainSchedulesWithDetailsById),
+    [hoveredItem, hoveredTrainId, trainSchedulesWithDetailsById]
+  );
+
   // If we're dealing a unique train or a path_and_schedule exception, use the
   // ID as-is so that only this single occupancy zone gets dragged. Otherwise,
   // we're dealing with a compliant occurrence: extract the paced train ID so
@@ -387,6 +405,7 @@ const SpaceTimeChartWrapper = ({
         handleWaypointClick,
         activeWaypointId,
         hoveredTrainIdForChart,
+        curveHover,
         isDraggingOccupancyZoneId,
         activeTrackId: dragOverTrackId,
         onTrackDragOver: setDragOverTrackId,
@@ -402,6 +421,7 @@ const SpaceTimeChartWrapper = ({
       handleWaypointClick,
       activeWaypointRef,
       hoveredTrainIdForChart,
+      curveHover,
       isDraggingOccupancyZoneId,
       dragOverTrackId,
       setDragOverTrackId,
@@ -748,19 +768,31 @@ const SpaceTimeChartWrapper = ({
             }
           >
             {paths.map((path) => {
-              const hover = buildCurveHover(hoveredItem, hoveredTrainId);
               const trainId = path.id as TrainId;
               const style = getPathStyleV2(
                 {
                   chart: 'std',
-                  train: {
-                    id: trainId,
-                    isDragging: draggingState?.draggedTrain.id === trainId,
-                    exceptionType: getStdExceptionType(trainSchedulesWithDetailsById, trainId),
-                  },
+                  train: isOccurrenceId(trainId)
+                    ? {
+                        id: trainId,
+                        relevantExceptionTypes: getTrainExceptionTypes(
+                          trainSchedulesWithDetailsById,
+                          trainId
+                        ),
+                      }
+                    : { id: trainId },
                   selection,
                   panelMode: panelSelectionMode,
-                  hover,
+                  hover: curveHover,
+                  dragging: draggingState
+                    ? {
+                        trainId: draggingState.draggedTrain.id,
+                        relevantExceptionTypes: getTrainExceptionTypes(
+                          trainSchedulesWithDetailsById,
+                          draggingState.draggedTrain.id
+                        ),
+                      }
+                    : undefined,
                 },
                 { colors: path.colors, isSimulated: path.isSimulated }
               );
@@ -773,6 +805,7 @@ const SpaceTimeChartWrapper = ({
                   opacity={style.opacity}
                   border={style.outline}
                   label={style.label}
+                  stop={style.stop}
                 />
               );
             })}
@@ -804,6 +837,7 @@ const SpaceTimeChartWrapper = ({
               panelSelectionMode={panelSelectionMode}
               onModeChange={handlePanelModeChange}
               counts={panelCounts}
+              isFaded={!!draggingState}
             />
           )}
         </div>
