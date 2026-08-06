@@ -964,6 +964,7 @@ pub(in crate::views) async fn simulation(
         (status = 200, description = "ETCS Braking Curves Output", body = core_client::etcs_braking_curves::Response),
     ),
 )]
+// TODO test the endpoint
 pub(in crate::views) async fn etcs_braking_curves(
     State(AppState {
         config,
@@ -1018,6 +1019,25 @@ pub(in crate::views) async fn etcs_braking_curves(
         None => train_schedule.clone().into_train_occurrence(),
     };
 
+    let rs = RollingStock::retrieve_or_fail(
+        db_pool.get().await?,
+        train_occurrence.rolling_stock_name.clone(),
+        || TrainScheduleError::RollingStockNotFound {
+            rolling_stock_name: train_occurrence.rolling_stock_name.clone(),
+        },
+    )
+    .await?;
+
+    if let Some(user) = authn_state.user() {
+        let system_authorizer = SystemAuthorizer::new_infallible(&openfga);
+        crate::authorizers::require(
+            &system_authorizer,
+            rolling_stock_privileges(user, authz::RollingStock(rs.id)),
+            &RollingStockPrivilege::CanRead,
+        )
+        .await?;
+    }
+
     // Compute simulation of a train schedule
     let (simulation_result, pathfinding_result) = train_simulation_ordered_batch(
         &mut db_pool.get().await?,
@@ -1049,14 +1069,6 @@ pub(in crate::views) async fn etcs_braking_curves(
     };
 
     // Build physics consist
-    let rs = RollingStock::retrieve_or_fail(
-        db_pool.get().await?,
-        train_occurrence.rolling_stock_name.clone(),
-        || TrainScheduleError::RollingStockNotFound {
-            rolling_stock_name: train_occurrence.rolling_stock_name.clone(),
-        },
-    )
-    .await?;
     let physics_consist: PhysicsConsist =
         PhysicsConsistParameters::from_traction_engine(rs.into()).into();
 
