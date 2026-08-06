@@ -17,7 +17,7 @@ import trainSettingsReducer from './trainSettingsReducer';
 export const operationalStudiesInitialConf: OperationalStudiesConfState = {
   ...defaultCommonConf,
   name: '',
-  startTime: new Date(),
+  startTime: new Date(Math.floor(Date.now() / 1000) * 1000),
   initialSpeed: 0,
   labels: [],
   rollingStockName: '',
