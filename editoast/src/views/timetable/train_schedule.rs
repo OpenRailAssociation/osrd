@@ -57,6 +57,7 @@ use utoipa::ToSchema;
 
 use super::AppState;
 use super::AuthenticationExt;
+use crate::authorizers::SystemAuthorizer;
 use crate::authorizers::impossible;
 use crate::error::EditoastError as _;
 use crate::error::Result;
@@ -926,15 +927,18 @@ pub(in crate::views) async fn simulation(
         (status = 200, description = "ETCS Braking Curves Output", body = core_client::etcs_braking_curves::Response),
     ),
 )]
+// TODO test the endpoint
 pub(in crate::views) async fn etcs_braking_curves(
     State(AppState {
         config,
+        regulator,
         valkey_client,
         core_client,
         db_pool,
         ..
     }): State<AppState>,
     Extension(auth): AuthenticationExt,
+    Extension(authn_state): Extension<crate::authentication::State>,
     Path(TrainScheduleIdParam {
         id: train_schedule_id,
     }): Path<TrainScheduleIdParam>,
@@ -981,6 +985,28 @@ pub(in crate::views) async fn etcs_braking_curves(
         None => train_schedule.clone().into_train_occurrence(),
     };
 
+    let rs = RollingStock::retrieve_or_fail(
+        db_pool.get().await?,
+        train_occurrence.rolling_stock_name.clone(),
+        || TrainScheduleError::RollingStockNotFound {
+            rolling_stock_name: train_occurrence.rolling_stock_name.clone(),
+        },
+    )
+    .await?;
+
+    if let Some(user) = authn_state.regular_user() {
+        let system_authorizer = SystemAuthorizer {
+            openfga: regulator.openfga(),
+            conn: db_pool.get().await?,
+        };
+        crate::authorizers::require(
+            &system_authorizer,
+            rolling_stock_privileges(user, authz::RollingStock(rs.id)),
+            &RollingStockPrivilege::CanRead,
+        )
+        .await?;
+    }
+
     // Compute simulation of a train schedule
     let (simulation_result, pathfinding_result) = train_simulation_ordered_batch(
         &mut db_pool.get().await?,
@@ -1012,14 +1038,6 @@ pub(in crate::views) async fn etcs_braking_curves(
     };
 
     // Build physics consist
-    let rs = RollingStock::retrieve_or_fail(
-        db_pool.get().await?,
-        train_occurrence.rolling_stock_name.clone(),
-        || TrainScheduleError::RollingStockNotFound {
-            rolling_stock_name: train_occurrence.rolling_stock_name.clone(),
-        },
-    )
-    .await?;
     let physics_consist: PhysicsConsist =
         PhysicsConsistParameters::from_traction_engine(rs.into()).into();
 
