@@ -470,7 +470,7 @@ const useTrackOccupancy = ({
             if (
               isOccurrenceId(zone.trainId) &&
               extractTrainScheduleIdFromOccurrenceId(zone.trainId) === draggedTrainScheduleId &&
-              zone.exceptionType !== 'start_time'
+              !zone.exceptionTypes.includes('start_time')
             ) {
               impactedPathOperationalPointIDs.add(waypointId);
               const offset = newTrainData.departureTime.getTime() - initialDepartureTime.getTime();

@@ -12,22 +12,27 @@ import {
 } from 'utils/trainId';
 
 /**
- * Returns the exception type the STD classifier cares about for a given
- * train. A `start_time` change is the only one that affects the curve in
- * this chart; the TOD will have its own helper for `path_and_schedule`.
+ * Returns every exception type the curve-style classifier cares about for a
+ * given train (an exception can cumulate several). The classifier needs them
+ * regardless of the chart: the compliant mode compares them to the type
+ * relevant for the selection source (`start_time` for a STD selection,
+ * `path_and_schedule` for a TOD one).
  */
-const getStdExceptionType = (
+const getTrainExceptionTypes = (
   trainSchedulesWithDetailsById: Map<number, TrainScheduleWithDetails>,
   trainId: TrainId
-): CurveStyleExceptionType | undefined => {
-  if (!isOccurrenceId(trainId)) return undefined;
+): CurveStyleExceptionType[] => {
+  if (!isOccurrenceId(trainId)) return [];
   const trainScheduleId = extractEditoastIdFromTrainScheduleId(
     extractTrainScheduleIdFromOccurrenceId(trainId)
   );
   const trainSchedule = trainSchedulesWithDetailsById.get(trainScheduleId);
-  if (!trainSchedule || !isPacedTrainWithDetails(trainSchedule)) return undefined;
+  if (!trainSchedule || !isPacedTrainWithDetails(trainSchedule)) return [];
   const exception = findExceptionWithOccurrenceId(trainSchedule.paced.exceptions, trainId);
-  return exception?.start_time ? 'start_time' : undefined;
+  const exceptionTypes: CurveStyleExceptionType[] = [];
+  if (exception?.start_time !== undefined) exceptionTypes.push('start_time');
+  if (exception?.path_and_schedule !== undefined) exceptionTypes.push('path_and_schedule');
+  return exceptionTypes;
 };
 
-export default getStdExceptionType;
+export default getTrainExceptionTypes;

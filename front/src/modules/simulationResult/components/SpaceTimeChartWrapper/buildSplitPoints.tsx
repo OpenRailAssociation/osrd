@@ -12,6 +12,7 @@ import { keyBy, sortBy } from 'lodash';
 import type { CategoryColors } from 'applications/operationalStudies/types';
 import { Spinner } from 'common/Loaders';
 import getPathStyleV2 from 'modules/simulationResult/helpers/getPathStyleV2';
+import type { CurveStyleInput } from 'modules/simulationResult/types';
 import type { TrainId } from 'reducers/osrdconf/types';
 import type { SelectedTrain } from 'reducers/simulationResults/types';
 import { extractTrainScheduleIdFromOccurrenceId, isOccurrenceId } from 'utils/trainId';
@@ -37,6 +38,7 @@ type BuildSplitPointsProps = {
   handleWaypointClick?: (waypointId: string) => void;
   activeWaypointId?: string;
   hoveredTrainIdForChart?: TrainId;
+  curveHover?: CurveStyleInput['hover'];
   isDraggingOccupancyZoneId?: (waypointId: string, trainId: TrainId) => boolean;
   activeTrackId?: string;
   onTrackDragOver?: (trackId: string | undefined) => void;
@@ -52,6 +54,7 @@ export function buildSplitPoints({
   handleWaypointClick,
   activeWaypointId,
   hoveredTrainIdForChart,
+  curveHover,
   isDraggingOccupancyZoneId,
   activeTrackId,
   onTrackDragOver,
@@ -98,16 +101,12 @@ export function buildSplitPoints({
         const curveStyle = getPathStyleV2(
           {
             chart: 'tod',
-            train: { id: zone.trainId, exceptionType: zone.exceptionType },
+            train: isOccurrenceId(zone.trainId)
+              ? { id: zone.trainId, relevantExceptionTypes: zone.exceptionTypes }
+              : { id: zone.trainId },
             selection: selectedTrain,
             panelMode,
-            hover: hoveredTrainIdForChart
-              ? {
-                  trainId: hoveredTrainIdForChart,
-                  from: 'tod',
-                  exceptionType: zone.exceptionType,
-                }
-              : undefined,
+            hover: curveHover,
           },
           { colors: path.colors, isSimulated: path.isSimulated }
         );
