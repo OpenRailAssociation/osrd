@@ -75,6 +75,7 @@ import CurveSelectionSidePanel, {
   PANEL_SELECTION_MODES,
   type PanelSelectionMode,
 } from './CurveSelectionSidePanel';
+import canDragHoveredTrain from './helpers/canDragHoveredTrain';
 import cutSpaceTimeCurves from './helpers/cutSpaceTimeCurves';
 import formatSpaceTimeCurves from './helpers/formatSpaceTimeCurves';
 import getPanelOccurrenceCounts from './helpers/getPanelOccurrenceCounts';
@@ -520,6 +521,20 @@ const SpaceTimeChartWrapper = ({
 
   const isDraggingOccupancyZone = Boolean(draggingOccupancyZoneRef);
 
+  // Whether the curve currently under the cursor can be dragged: it mirrors the
+  // drag-start gate so the cursor previews the "move" affordance (ew-resize)
+  // before the drag actually begins.
+  const canDragHovered = useMemo(() => {
+    if (selectedTrainBy !== 'std' || !hoveredItem) return false;
+    const { element } = hoveredItem;
+    if (!isSegmentPickingElement(element) && !isPointPickingElement(element)) return false;
+    const hoveredPathId = element.pathId;
+    if (!isTrainId(hoveredPathId)) return false;
+    const hoveredTrain = projectedTrains.find((train) => train.id === hoveredPathId);
+    if (!hoveredTrain) return false;
+    return canDragHoveredTrain({ panelSelectionMode, hoveredTrain, selectedTrainId });
+  }, [selectedTrainBy, hoveredItem, projectedTrains, panelSelectionMode, selectedTrainId]);
+
   const handlePan = useCallback(
     // TODO: fix this lint
     // eslint-disable-next-line react-hooks-js/use-memo
@@ -734,7 +749,17 @@ const SpaceTimeChartWrapper = ({
           ref={spaceTimeChartRef}
           data-testid="space-time-chart-container"
           className="space-time-chart-container"
-          style={{ cursor: draggingState ? 'ew-resize' : undefined }}
+          style={{
+            cursor:
+              draggingState || canDragHovered
+                ? 'ew-resize'
+                : hoveredItem &&
+                    (isSegmentPickingElement(hoveredItem.element) ||
+                      isPointPickingElement(hoveredItem.element) ||
+                      isOccupancyPickingElement(hoveredItem.element))
+                  ? 'pointer'
+                  : undefined,
+          }}
         >
           <SpaceTimeChartToolbar
             xZoom={xZoom}
