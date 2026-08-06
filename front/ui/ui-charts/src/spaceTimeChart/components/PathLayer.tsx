@@ -20,11 +20,11 @@ import { getPathDirection, getSpacePixels } from '../utils/paths';
 import { getSpaceBreakpoints } from '../utils/scales';
 
 const DEFAULT_PICKING_TOLERANCE = 5;
-const PAUSE_THICKNESS = 7;
-const PAUSE_OPACITY = 0.2;
+const DEFAULT_STOP_THICKNESS = 4;
+const DEFAULT_STOP_OPACITY = 0.2;
 const CIRCLE_RADIUS = 4;
 const VERTICAL_LINE_HEIGHT = 18;
-const TEXT_PADDING = 3;
+const TEXT_PADDING = 2;
 
 export type PointPickingElement = PickingElement & { type: 'point'; pathId: string; point: Point };
 
@@ -90,12 +90,13 @@ export type PathLayerProps = {
   opacity?: number;
   border?: CurveStyle['outline'];
   label?: CurveStyle['label'];
+  stop?: CurveStyle['stop'];
 };
 
 /**
  * This component handles drawing a Path inside a SpaceTimeChart. It renders:
  * - The path itself
- * - The pauses
+ * - The stops
  * - The "picking" shape (to handle interactions)
  */
 export const PathLayer = ({
@@ -106,7 +107,11 @@ export const PathLayer = ({
   opacity = 1,
   border,
   label,
+  stop,
 }: PathLayerProps) => {
+  const stopThickness = stop?.thickness ?? DEFAULT_STOP_THICKNESS;
+  const stopOpacity = stop?.opacity ?? DEFAULT_STOP_OPACITY;
+  const stopColor = stop?.color ?? color;
   /**
    * This function returns the list of points to join to draw the path. As it can be discontinuous,
    * it is returned as a Point[][]. For now, the only case for discontinuous paths is when the path
@@ -246,7 +251,7 @@ export const PathLayer = ({
   /**
    * This function draws the stops of the path on the operational points.
    */
-  const drawPauses = useCallback<DrawingFunction<SpaceTimeChartContextType>>(
+  const drawStops = useCallback<DrawingFunction<SpaceTimeChartContextType>>(
     (ctx, { getTimePixel, getSpacePixel, operationalPoints, swapAxis }) => {
       const stopPositions = new Set(operationalPoints.map((p) => p.position));
       path.points.forEach(({ position, time }, i, a) => {
@@ -257,9 +262,9 @@ export const PathLayer = ({
             // (i.e. when there's only one space pixel):
             const rawPixels = getSpacePixels(getSpacePixel, position);
             if (rawPixels.length === 1) {
-              // Use the raw coordinate so the pause sits exactly on the
+              // Use the raw coordinate so the stop sits exactly on the
               // curve. Adjusting it for sharper rendering would move the
-              // pause, and one side would look thicker than the other.
+              // stop, and one side would look thicker than the other.
               const spacePixel = rawPixels[0];
               ctx.beginPath();
               if (!swapAxis) {
@@ -297,6 +302,7 @@ export const PathLayer = ({
         padding = TEXT_PADDING,
         alpha = 0.75,
         borderColor,
+        labelOpacity = 1,
       }: {
         textColor: string;
         background: string;
@@ -306,6 +312,7 @@ export const PathLayer = ({
         padding?: number;
         alpha?: number;
         borderColor?: string;
+        labelOpacity?: number;
       }
     ) => {
       ctx.save();
@@ -325,7 +332,7 @@ export const PathLayer = ({
       const ry = y - ascent - padding;
 
       // BACKGROUND
-      ctx.globalAlpha = alpha * opacity;
+      ctx.globalAlpha = alpha * labelOpacity;
       ctx.fillStyle = background;
       ctx.beginPath();
       ctx.roundRect(rx, ry, w, h, 3);
@@ -334,7 +341,7 @@ export const PathLayer = ({
       // BORDER
       if (borderColor) {
         ctx.save();
-        ctx.globalAlpha = opacity;
+        ctx.globalAlpha = labelOpacity;
         ctx.strokeStyle = borderColor;
         ctx.lineWidth = 1;
         ctx.roundRect(rx, ry, w, h, 3);
@@ -343,13 +350,13 @@ export const PathLayer = ({
       }
 
       // TEXT
-      ctx.globalAlpha = opacity;
+      ctx.globalAlpha = labelOpacity;
       ctx.fillStyle = textColor;
       ctx.fillText(text, x, y);
 
       ctx.restore();
     },
-    [opacity]
+    []
   );
 
   /**
@@ -434,6 +441,7 @@ export const PathLayer = ({
         alpha: label?.background?.opacity,
         borderColor: label?.background?.border,
         padding,
+        labelOpacity: label?.opacity,
       });
       ctx.restore();
     },
@@ -444,7 +452,7 @@ export const PathLayer = ({
     (operationalPoints: OperationalPoint[], lines: Point[][]) => {
       let totalLength = 0;
 
-      // Compute length of pauses
+      // Compute length of stops
       const stopPositions = new Set(operationalPoints.map((p) => p.position));
       path.points.forEach(({ position, time }, i, pointsArray) => {
         if (i > 0) {
@@ -548,6 +556,7 @@ export const PathLayer = ({
           background: label?.background?.color ?? background,
           alpha: label?.background?.opacity,
           borderColor: label?.background?.border,
+          labelOpacity: label?.opacity,
         });
       }
 
@@ -566,11 +575,13 @@ export const PathLayer = ({
       drawBorder(ctx, stcContext);
 
       // Draw stops:
-      ctx.strokeStyle = color;
-      ctx.lineWidth = PAUSE_THICKNESS;
-      ctx.globalAlpha = PAUSE_OPACITY * opacity;
-      ctx.lineCap = 'round';
-      drawPauses(ctx, stcContext);
+      if (stopThickness > 0) {
+        ctx.strokeStyle = stopColor;
+        ctx.lineWidth = stopThickness;
+        ctx.globalAlpha = stopOpacity * opacity;
+        ctx.lineCap = 'round';
+        drawStops(ctx, stcContext);
+      }
 
       const style = STYLES[level];
 
@@ -607,9 +618,12 @@ export const PathLayer = ({
       path.label,
       drawBorder,
       color,
-      drawPauses,
+      drawStops,
       level,
       opacity,
+      stopThickness,
+      stopOpacity,
+      stopColor,
       getPathLines,
       drawSinglePoint,
       computePathLength,
