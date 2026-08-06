@@ -340,6 +340,7 @@ pub(in crate::views) async fn requirements(
         .into_iter()
         .into_group_map_by(|e| e.train_schedule_id);
 
+    // No rolling stock authorization is needed here: the endpoint is restricted to core above
     let (occurrence_ids, occurrences): (Vec<_>, Vec<_>) = paced_trains
         .iter()
         .flat_map(|train_schedule| {

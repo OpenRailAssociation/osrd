@@ -1,12 +1,12 @@
 use crate::AppState;
 use crate::authentication;
-use crate::authorizers::SystemAuthorizer;
 use crate::error::Result;
 use crate::views::AuthorizationError;
 use crate::views::path::pathfinding::PathfindingResult;
 use crate::views::path::projection::PathProjection;
 use crate::views::projection::interpolate_arrival_time;
 use crate::views::rolling_stock::RollingStockError;
+use crate::views::rolling_stock::filter_readable_occurrences;
 use crate::views::timetable::simulation;
 use crate::views::timetable::simulation::SimulationResponseSuccess;
 use crate::views::timetable::simulation::train_simulation_ordered_batch;
@@ -17,9 +17,6 @@ use editoast_models::Timetable;
 use editoast_models::TrainSchedule;
 use editoast_models::train_schedule::OccurrenceId;
 
-use authz::RollingStockPrivilege;
-use authz::v2::Authorizer as _;
-use authz::v2::ResourcesList;
 use axum::Extension;
 use axum::extract::Json;
 use axum::extract::State;
@@ -33,7 +30,6 @@ use editoast_models::TrainScheduleException;
 use editoast_models::prelude::*;
 use editoast_models::rolling_stock::RollingStock;
 use itertools::Itertools;
-use schemas::TrainOccurrence;
 use schemas::infra::Direction;
 use schemas::infra::LevelCrossing;
 use schemas::infra::TrackOffset;
@@ -174,25 +170,25 @@ pub(in crate::views) async fn occupancy(
         })
         .await?;
 
-    // Collect all occurrences from all trains, grouped by the rolling stock name of their train
+    // Collect all occurrences from all trains
     let train_occurrences = trains
         .iter()
         .flat_map(|train| {
             let train_exceptions = exceptions.remove(&train.id).unwrap_or_default();
-            train
-                .iter_occurrences(&train_exceptions)
-                .map(|occurrence| (train.rolling_stock_name.clone(), occurrence))
-                .collect_vec()
+            train.iter_occurrences(&train_exceptions).collect_vec()
         })
-        .into_group_map();
+        .collect_vec();
 
-    let rolling_stock_names: HashSet<_> = train_occurrences.keys().cloned().collect();
+    let rolling_stock_names: HashSet<_> = trains
+        .iter()
+        .map(|train| train.rolling_stock_name.clone())
+        .collect();
     let rolling_stocks: Vec<_> = RollingStock::retrieve_batch_unchecked(conn, rolling_stock_names)
         .await
         .map_err(RollingStockError::from)?;
 
     let train_occurrences = filter_readable_occurrences(
-        train_occurrences,
+        train_occurrences.into_iter().collect(),
         &rolling_stocks,
         &authn_state,
         regulator.openfga(),
@@ -260,54 +256,6 @@ pub(in crate::views) async fn occupancy(
     }
 
     Ok(Json(results))
-}
-
-/// Discards the occurrences whose rolling stock the user isn't allowed to read
-async fn filter_readable_occurrences(
-    train_occurrences: HashMap<String, Vec<(OccurrenceId, TrainOccurrence)>>,
-    rolling_stocks: &[RollingStock],
-    authn_state: &crate::authentication::State,
-    openfga: &fga::Client,
-) -> Result<Vec<(OccurrenceId, TrainOccurrence)>> {
-    // The request bypasses authorization
-    let Some(user) = authn_state.user() else {
-        return Ok(train_occurrences.into_values().flatten().collect());
-    };
-
-    // Listing the readable rolling stocks cannot be rejected: the issuer is already authenticated
-    let Ok(authorized_rolling_stocks) = SystemAuthorizer::new_infallible(openfga)
-        .authorize(authz::v2::rolling_stock_list(
-            user,
-            RollingStockPrivilege::CanRead,
-        ))
-        .await?
-        .access()
-        .await?;
-
-    let ResourcesList::Privileged(authorized_rolling_stocks) = authorized_rolling_stocks else {
-        // The user is an admin: every rolling stock is readable
-        return Ok(train_occurrences.into_values().flatten().collect());
-    };
-    let authorized_rolling_stock_ids = authorized_rolling_stocks
-        .into_iter()
-        .map(|rolling_stock| rolling_stock.0)
-        .collect::<HashSet<_>>();
-
-    // Occurrences are grouped by rolling stock name, the authorization by id
-
-    let authorized_rolling_stock_names = rolling_stocks
-        .iter()
-        .filter(|rs| authorized_rolling_stock_ids.contains(&rs.id))
-        .map(|rs| rs.name.clone())
-        .collect::<HashSet<_>>();
-
-    Ok(train_occurrences
-        .into_iter()
-        .filter(|(rolling_stock_name, _)| {
-            authorized_rolling_stock_names.contains(rolling_stock_name)
-        })
-        .flat_map(|(_, occurrences)| occurrences)
-        .collect())
 }
 
 fn find_level_crossing_occupancy(

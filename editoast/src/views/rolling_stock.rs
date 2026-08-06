@@ -6,9 +6,13 @@ type RollingStockForm = schemas::RollingStock<schemas::rolling_stock::RollingRes
 use authz::RollingStockGrant;
 use authz::RollingStockPrivilege;
 use authz::v2;
+use authz::v2::Authorizer as _;
+use authz::v2::ResourcesList;
 use authz::v2::rolling_stock_privileges;
 use axum::Extension;
 
+use std::collections::HashMap;
+use std::collections::HashSet;
 use std::io::Cursor;
 use std::sync::Arc;
 
@@ -30,11 +34,13 @@ use editoast_models::rolling_stock;
 use editoast_models::rolling_stock::RollingStock;
 use editoast_models::rolling_stock::ScenarioReference;
 use editoast_models::rolling_stock_livery::RollingStockLivery;
+use editoast_models::train_schedule::OccurrenceId;
 use image::DynamicImage;
 use image::GenericImage;
 use image::ImageBuffer;
 use image::ImageFormat;
 use image::ImageReader;
+use schemas::TrainOccurrence;
 use serde::Deserialize;
 use serde::Serialize;
 use strum::Display;
@@ -691,6 +697,51 @@ pub async fn retrieve_existing_rolling_stock(
             .await
         }
     }
+}
+
+/// Discards the occurrences whose rolling stock the user isn't allowed to read
+pub(in crate::views) async fn filter_readable_occurrences(
+    occurrences: HashMap<OccurrenceId, TrainOccurrence>,
+    rolling_stocks: &[RollingStock],
+    authn_state: &crate::authentication::State,
+    openfga: &fga::Client,
+) -> Result<Vec<(OccurrenceId, TrainOccurrence)>> {
+    // The request bypasses authorization
+    let Some(user) = authn_state.user() else {
+        return Ok(occurrences.into_iter().collect());
+    };
+
+    // Listing the readable rolling stocks cannot be rejected: the issuer is already authenticated
+    let Ok(authorized_rolling_stocks) = SystemAuthorizer::new_infallible(openfga)
+        .authorize(authz::v2::rolling_stock_list(
+            user,
+            RollingStockPrivilege::CanRead,
+        ))
+        .await?
+        .access()
+        .await?;
+
+    let ResourcesList::Privileged(authorized_rolling_stocks) = authorized_rolling_stocks else {
+        // The user is an admin: every rolling stock is readable
+        return Ok(occurrences.into_iter().collect());
+    };
+    let authorized_rolling_stock_ids = authorized_rolling_stocks
+        .into_iter()
+        .map(|rolling_stock| rolling_stock.0)
+        .collect::<HashSet<_>>();
+
+    let authorized_rolling_stock_names = rolling_stocks
+        .iter()
+        .filter(|rolling_stock| authorized_rolling_stock_ids.contains(&rolling_stock.id))
+        .map(|rolling_stock| rolling_stock.name.clone())
+        .collect::<HashSet<_>>();
+
+    Ok(occurrences
+        .into_iter()
+        .filter(|(_, occurrence)| {
+            authorized_rolling_stock_names.contains(&occurrence.rolling_stock_name)
+        })
+        .collect())
 }
 
 fn assert_rolling_stock_unlocked(rolling_stock: &RollingStock) -> Result<()> {
