@@ -83,8 +83,11 @@ const buildTableRow = ({
   closedSignal,
   margins,
 }: BuildTableRowParams): TimesStopsRowNew => {
+  // Truncate sub-second part: schedule.arrival is stored in whole seconds
+  // (via Math.floor in diffSeconds in scheduleStateToApiFields())
+  const startDateMs = Math.floor(startDate.getTime() / 1000) * 1000;
   const requestedArrival = schedule?.arrival
-    ? new Date(startDate.getTime() + Duration.parse(schedule.arrival).ms)
+    ? new Date(startDateMs + Duration.parse(schedule.arrival).ms)
     : null;
 
   // computedArrival is offset from startDate
