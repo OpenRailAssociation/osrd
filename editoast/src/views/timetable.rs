@@ -282,13 +282,13 @@ pub struct ElectricalProfileSetIdQueryParam {
         (status = 200, description = "The paginated list of timetable requirements", body = inline(TrainRequirementsPage)),
     ),
 )]
+// TODO test the endpoint
 pub(in crate::views) async fn requirements(
     State(AppState {
         db_pool,
         valkey_client,
         core_client,
         config,
-        regulator,
         ..
     }): State<AppState>,
     Extension(authn_state): Extension<authentication::State>,
@@ -299,12 +299,8 @@ pub(in crate::views) async fn requirements(
         electrical_profile_set_id,
     }): Query<ElectricalProfileSetIdQueryParam>,
 ) -> Result<Json<TrainRequirementsPage>> {
-    if let authentication::State::Authenticated { user, .. } = &authn_state {
-        v2::infra_privileges(*user, authz::Infra(infra_id))
-            .map(async |privileges| privileges.contains(&authz::InfraPrivilege::CanRestrictedRead))
-            .ok_or(AuthorizationError::Forbidden)
-            .run::<AuthorizationError, _>(&authn_state.authorizer(regulator.openfga()))
-            .await??;
+    if !matches!(&authn_state, authentication::State::Skip) {
+        return Err(AuthorizationError::Forbidden.into());
     }
 
     let conn = &mut db_pool.get().await?;
