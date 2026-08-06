@@ -214,18 +214,20 @@ export const propagateTime = (
 
   if (isOriginUpdate || update.propagationMode === 'shiftAllWaypoints') {
     if (!isOriginUpdate) return propagateShiftAll(delta, selectedTrain);
+    let result: PropagationResult | undefined;
     if (isShiftAllPropagation || update.propagationMode === 'toDestination')
-      return propagateShiftAll(delta, selectedTrain);
+      result = propagateShiftAll(delta, selectedTrain);
     // atThisWaypoint at origin = only move start_time. Following offsets are compensated so
     // their absolute times stay the same — which is exactly what fromDeparture does.
-    if (update.propagationMode === 'atThisWaypoint')
-      return propagateFromEditedPoint(
+    else if (update.propagationMode === 'atThisWaypoint')
+      result = propagateFromEditedPoint(
         delta,
         update.row.pathStepId!,
         selectedTrain,
         'fromDeparture'
       );
-    return undefined;
+    // Use the exact typed value as updatedStartTime (avoids inheriting sub-second ms from current start_time)
+    return result && newValue ? { ...result, updatedStartTime: newValue } : result;
   }
 
   if (update.propagationMode === 'atThisWaypoint' || !update.row.pathStepId) return undefined;
