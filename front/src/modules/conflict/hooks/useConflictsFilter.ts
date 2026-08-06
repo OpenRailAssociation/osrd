@@ -2,14 +2,13 @@ import { useState, useCallback, useMemo, useEffect } from 'react';
 
 import { useSelector } from 'react-redux';
 
-import type { Conflict, TimetableType, TrainScheduleResponse } from 'common/api/osrdEditoastApi';
+import type { Conflict, TrainScheduleResponse } from 'common/api/osrdEditoastApi';
 import computeOccurrenceName from 'modules/trainSchedule/helpers/computeOccurrenceName';
 import {
   findExceptionWithOccurrenceId,
   isPacedTrain,
 } from 'modules/trainSchedule/helpers/pacedTrain';
 import { getSelectedTrain } from 'reducers/simulationResults/selectors';
-import type { Duration } from 'utils/duration';
 import {
   extractTrainScheduleIdFromOccurrenceId,
   isIndexedOccurrenceId,
@@ -21,7 +20,6 @@ import {
 
 import type { ConflictWithTrainNames } from '../types';
 import addTrainNamesToConflicts, {
-  dedupeHourlyConflicts,
   filterAndReorderConflict,
   reorderConflictTrains,
   reorderConflictTrainsByScheduleId,
@@ -30,9 +28,7 @@ import addTrainNamesToConflicts, {
 const useConflictsFilter = (
   trainSchedules: TrainScheduleResponse[],
   conflicts: Conflict[],
-  isConflictsLoading: boolean,
-  timetableType: TimetableType,
-  hourlyTimetableDuration?: Duration
+  isConflictsLoading: boolean
 ) => {
   const { id: selectedTrainId } = useSelector(getSelectedTrain) || {};
   const [showOnlySelectedTrain, setShowOnlySelectedTrain] = useState(false);
@@ -77,24 +73,13 @@ const useConflictsFilter = (
     return `${selectedTrain.train_name}/+`;
   }, [selectedTrainId, trainScheduleById]);
 
-  // For an hourly timetable, editoast may report the same conflict once per repetition of
-  // a paced train's pattern: keep only the ones starting within [0, system hour duration)
-  // and drop the resulting duplicates.
-  const dedupedConflicts = useMemo(() => {
-    if (timetableType !== 'HOURLY') return conflicts;
-    if (!hourlyTimetableDuration) {
-      throw new Error('An hourly timetable must have a computed hourly timetable duration');
-    }
-    return dedupeHourlyConflicts(conflicts, hourlyTimetableDuration);
-  }, [conflicts, timetableType, hourlyTimetableDuration]);
-
-  const totalConflictsCount = dedupedConflicts.length;
+  const totalConflictsCount = conflicts.length;
 
   useEffect(() => {
     if (isConflictsLoading) return;
-    const sortedByStartTime = [...dedupedConflicts].sort((a, b) => a.start_time - b.start_time);
+    const sortedByStartTime = [...conflicts].sort((a, b) => a.start_time - b.start_time);
     setEnrichedConflicts(addTrainNamesToConflicts(sortedByStartTime, trainSchedules));
-  }, [dedupedConflicts, isConflictsLoading, trainSchedules]);
+  }, [conflicts, isConflictsLoading, trainSchedules]);
 
   const selectedEnrichedConflicts = useMemo(() => {
     if (!selectedTrainId) return [];

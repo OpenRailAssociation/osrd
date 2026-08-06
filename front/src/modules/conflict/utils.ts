@@ -2,7 +2,6 @@ import type { Conflict, TrainCategory, TrainScheduleResponse } from 'common/api/
 import computeOccurrenceName from 'modules/trainSchedule/helpers/computeOccurrenceName';
 import { isPacedTrainBase } from 'modules/trainSchedule/helpers/pacedTrain';
 import type { TrainId } from 'reducers/osrdconf/types';
-import type { Duration } from 'utils/duration';
 
 import type { ConflictWithTrainNames } from './types';
 
@@ -89,34 +88,6 @@ export default function addTrainNamesToConflicts(
       trainsData: names.map((name, idx) => ({ name, category: categories[idx] ?? null })),
     };
   });
-}
-
-/**
- * For an hourly timetable, editoast wraps every paced train repetition into the
- * timetable's period, so a conflict caused by a pattern repeating every `period` can be
- * reported once per repetition. Keep only conflicts starting within [0, period) and drop
- * exact duplicates (same type/start/duration/trains) among those.
- */
-export function dedupeHourlyConflicts(conflicts: Conflict[], period: Duration): Conflict[] {
-  const seenKeys = new Set<string>();
-  const dedupedConflicts: Conflict[] = [];
-
-  for (const conflict of conflicts) {
-    if (conflict.start_time < 0 || conflict.start_time >= period.ms) continue;
-
-    // Train ids are serialized then sorted so that two conflicts listing the same trains in
-    // a different order share the same key.
-    const trainIds = conflict.train_ids.map((train) => JSON.stringify(train)).sort();
-    const key = [conflict.conflict_type, conflict.start_time, conflict.duration, ...trainIds].join(
-      '|'
-    );
-    if (seenKeys.has(key)) continue;
-
-    seenKeys.add(key);
-    dedupedConflicts.push(conflict);
-  }
-
-  return dedupedConflicts;
 }
 
 export const reorderConflictTrains = (
