@@ -51,10 +51,20 @@ export type CurveStyle = {
   thickness?: number;
   /** Border drawn around the TOD occupancy bar. */
   border?: { color: string; width: number };
+  /** Segments drawn on the curve stops. */
+  stop?: {
+    /** Thickness in px (defaults to 4). */
+    thickness?: number;
+    /** Opacity (defaults to 0.2). */
+    opacity?: number;
+    /** Halo color (defaults to the curve color). */
+    color?: string;
+  };
   label?: {
     background?: { color: string; opacity?: number; border?: string };
     color?: string;
     fontWeight?: number;
+    opacity?: number;
   };
 };
 

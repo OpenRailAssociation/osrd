@@ -19,7 +19,10 @@ export const INVALID_OUTLINE: CurveOutline = {
 
 const FONT_WEIGHT_REGULAR = 400;
 const FONT_WEIGHT_BOLD = 600;
-const OUT_OF_SELECTION_OPACITY = 0.3;
+const OUT_OF_SELECTION_OPACITY = 0.6;
+const OUT_OF_DRAG_OPACITY = 0.6;
+const STOP_OPACITY_SELECTED = 0.4;
+const STOP_OPACITY_HOVERED = 0.5;
 const TOD_SELECTED_BAR_HEIGHT = 4;
 const TOD_HALO_THICKNESS = 4;
 const TOD_HALO_OPACITY = 0.25;
@@ -40,10 +43,22 @@ type StyleOptions = {
    */
   outOfSelection?: boolean;
   /**
+   * A drag is in progress and the train is not part of the dragged paced
+   * train. The curve softens to 0.6 to put the focus on the dragged group,
+   * while the label keeps its full opacity.
+   */
+  outOfDrag?: boolean;
+  /**
    * The train is directly under the cursor. Hover takes priority over
    * `outOfSelection` (the curve "comes back" while hovered).
    */
   hovered?: boolean;
+  /**
+   * The curve belongs to the paced train being dragged (whether it moves or
+   * is pinned by a start_time exception). Its stop indicators are hidden
+   * until mouse up.
+   */
+  hideStops?: boolean;
   /** tod switches to the TOD specific look. std (default) the space-time chart one. */
   chart?: 'std' | 'tod';
 };
@@ -72,6 +87,7 @@ const getBaseStyle = (state: CurveVisualState, train: TrainForStyle): CurveStyle
   const activeStyle: CurveStyle = {
     color: SELECTED_CURVE_COLOR,
     opacity: 1,
+    stop: { thickness: 6, opacity: STOP_OPACITY_SELECTED },
     outline:
       isSimulated === true
         ? { offset: 0, width: 3, color: SELECTED_CURVE_OUTLINE_COLOR }
@@ -89,6 +105,7 @@ const getBaseStyle = (state: CurveVisualState, train: TrainForStyle): CurveStyle
   const passivePrimaryStyle: CurveStyle = {
     color: colors.base,
     opacity: 1,
+    stop: { opacity: STOP_OPACITY_SELECTED },
     outline:
       isSimulated === true ? { offset: 0, width: 3, color: colors.surface } : INVALID_OUTLINE,
     label: {
@@ -101,6 +118,7 @@ const getBaseStyle = (state: CurveVisualState, train: TrainForStyle): CurveStyle
   const passiveSecondaryStyle: CurveStyle = {
     color: colors.base,
     opacity: 1,
+    stop: { opacity: STOP_OPACITY_SELECTED },
     outline:
       isSimulated === true ? { offset: 0, width: 2, color: colors.surface } : INVALID_OUTLINE,
     label: {
@@ -113,7 +131,6 @@ const getBaseStyle = (state: CurveVisualState, train: TrainForStyle): CurveStyle
   const dragStyle: CurveStyle = {
     color: DRAGGED_CURVE_COLOR,
     opacity: 1,
-    level: 1,
     outline: { offset: 0, width: 1.5, color: DRAGGED_CURVE_OUTLINE_COLOR },
     label: {
       color: colors.base,
@@ -145,18 +162,28 @@ const getBaseStyle = (state: CurveVisualState, train: TrainForStyle): CurveStyle
 
 const getHoveredStyle = (state: CurveVisualState, train: TrainForStyle): CurveStyle => {
   const { colors, isSimulated } = train;
-  // 'none' hovered is a full visual switch to the category hovered tint.
-  if (state === 'none') {
+  // Hovered curves switch to the category hovered tint, per the spec. The
+  // active one is the exception: it has no dedicated hover look, only its
+  // label switches to the hovered one.
+  if (state === 'active')
+    return {
+      ...getBaseStyle(state, train),
+      label: hoveredLabel(colors),
+      stop: { thickness: 6, opacity: STOP_OPACITY_HOVERED },
+    };
+  if (state === 'none' || state === 'passivePrimary' || state === 'passiveSecondary') {
     return {
       color: colors.strong,
       opacity: 1,
       level: 3,
       label: hoveredLabel(colors),
+      stop: { opacity: STOP_OPACITY_HOVERED, color: colors.base },
       ...(isSimulated === false && { outline: INVALID_OUTLINE }),
     };
   }
-  // 'active', 'passivePrimary', 'passiveSecondary' and 'drag' do not change on
-  // hover: the user is already focused on (or interacting with) this curve.
+
+  // 'drag' does not change on hover: the user is already interacting with
+  // this curve.
   return getBaseStyle(state, train);
 };
 
@@ -262,31 +289,48 @@ const getTodStyle = (
 /**
  * Maps a curve visual state to its style primitives.
  *
- * `outOfSelection` and `hovered` are transverse modifiers applied on top of the
- * state. When `hovered` is set it wins over `outOfSelection`. `chart: 'tod'`
- * restyles the result for the track-occupancy diagram.
+ * `outOfSelection`, `outOfDrag` and `hovered` are transverse modifiers applied
+ * on top of the state. When `hovered` is set it wins over the others. `chart:
+ * 'tod'` restyles the result for the track-occupancy diagram.
  */
 const getCurveStyle = (
   state: CurveVisualState,
   train: TrainForStyle,
-  { outOfSelection = false, hovered = false, chart = 'std' }: StyleOptions = {}
+  {
+    outOfSelection = false,
+    outOfDrag = false,
+    hovered = false,
+    hideStops = false,
+    chart = 'std',
+  }: StyleOptions = {}
 ): CurveStyle => {
   // The TOD never fades occupancies out.
   if (chart === 'tod') return getTodStyle(state, train, hovered);
-  if (hovered) return getHoveredStyle(state, train);
-  if (outOfSelection) {
+
+  let style: CurveStyle;
+  if (hovered) {
+    style = getHoveredStyle(state, train);
+  } else if (outOfDrag) {
+    // Checked before outOfSelection: during a drag both flags are set, and the
+    // lighter drag fade must win.
+    style = { ...getBaseStyle(state, train), opacity: OUT_OF_DRAG_OPACITY };
+  } else if (outOfSelection) {
     const { colors } = train;
-    return {
+    style = {
       color: colors.base,
       opacity: OUT_OF_SELECTION_OPACITY,
       label: {
         color: colors.base,
         fontWeight: FONT_WEIGHT_REGULAR,
         background: RESTING_LABEL_BACKGROUND,
+        opacity: OUT_OF_SELECTION_OPACITY,
       },
     };
+  } else {
+    style = getBaseStyle(state, train);
   }
-  return getBaseStyle(state, train);
+
+  return hideStops ? { ...style, stop: { ...style.stop, thickness: 0 } } : style;
 };
 
 export default getCurveStyle;
