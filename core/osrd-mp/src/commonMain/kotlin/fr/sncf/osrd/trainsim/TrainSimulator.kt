@@ -10,7 +10,8 @@ import fr.sncf.osrd.envelope_sim.EnvelopeSimContext
  */
 class TrainSimulator(
     val context: EnvelopeSimContext,
-    val constraints: List<Constraint>,
+    // Mutable for the regulator to be able to modify them
+    var constraints: List<Constraint>,
     initialState: TrainState = TrainState.zero,
     private val tracer: Tracer? = null,
     /** How many steps the train may take in one call before it is considered stuck. */
