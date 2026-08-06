@@ -1218,6 +1218,17 @@ pub(in crate::views) async fn project_path(
         })
         .collect();
 
+    // Check user privilege on the rolling stocks of the occurrences: they are all simulated
+    crate::authorizers::require_readable_rolling_stocks(
+        simulation_contexts
+            .iter()
+            .map(|context| context.train_schedule.rolling_stock_name.clone()),
+        conn,
+        &authn_state,
+        regulator.openfga(),
+    )
+    .await?;
+
     let project_path_result = compute_projected_train_paths(
         conn,
         core_client,
@@ -3866,9 +3877,11 @@ mod tests {
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
         let (timetable, train_schedule_set) =
             create_timetable_with_train_schedule_set(&mut db_pool.get_ok()).await;
-        let _ = create_fast_rolling_stock(&mut db_pool.get_ok(), "R2D2").await;
         let paced_train_valid =
             create_simple_paced_train(&mut db_pool.get_ok(), train_schedule_set.id).await;
+        let rolling_stock =
+            create_fast_rolling_stock(&mut db_pool.get_ok(), &paced_train_valid.rolling_stock_name)
+                .await;
         let paced_train_fail = simple_paced_train_changeset(train_schedule_set.id)
             .rolling_stock_name("fail".to_string())
             .start_time(millisecond::i64::new(0))
@@ -3885,6 +3898,7 @@ mod tests {
         let user = app
             .user("authorized", "Authorized")
             .with_infra_grant(small_infra.id, authz::InfraGrant::Reader)
+            .with_rolling_stock_grant(rolling_stock.id, authz::RollingStockGrant::Reader)
             .with_roles([authz::Role::OperationalStudies])
             .create()
             .await;
@@ -3912,6 +3926,51 @@ mod tests {
         // EXPECT
         // TODO: improve this test
         assert_eq!(response.len(), 2);
+    }
+
+    /// Projecting a train whose rolling stock the user cannot read is forbidden
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn project_path_without_rolling_stock_permission() {
+        // SETUP
+        let app = test_app!()
+            .core_client(mocked_core_pathfinding_sim_and_proj().into())
+            .build();
+        let db_pool = app.db_pool();
+
+        let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
+        let (timetable, train_schedule_set) =
+            create_timetable_with_train_schedule_set(&mut db_pool.get_ok()).await;
+        let paced_train =
+            create_simple_paced_train(&mut db_pool.get_ok(), train_schedule_set.id).await;
+        create_fast_rolling_stock(&mut db_pool.get_ok(), &paced_train.rolling_stock_name).await;
+
+        // a user that can read the infra, but not the rolling stock of the train
+        let user = app
+            .user("unauthorized", "Unauthorized")
+            .with_infra_grant(small_infra.id, authz::InfraGrant::Reader)
+            .with_roles([authz::Role::OperationalStudies])
+            .create()
+            .await;
+
+        // TEST
+        app.post("/train_schedules/project_path")
+            .json(&json!({
+                "infra_id": small_infra.id,
+                "timetable_id": timetable.id,
+                "electrical_profile_set_id": null,
+                "ids": vec![paced_train.id],
+                "track_section_ranges": [
+                    {
+                        "track_section": "TA1",
+                        "begin": 0,
+                        "end": 100,
+                        "direction": "START_TO_STOP"
+                    }
+                ],
+            }))
+            .by_user(&user.info)
+            .await
+            .assert_status_forbidden();
     }
 
     /// With a simulation, projecting a train whose rolling stock the user cannot read is forbidden
