@@ -147,6 +147,53 @@ impl<CorrelationKey, T> From<Correlated<CorrelationKey, T>> for (CorrelationKey,
     }
 }
 
+/// Fetch data from the valkey cache for a vector of correlated inputs
+///
+/// Cache misses are returned at None
+async fn batch_fetch_from_cache<T, CorrelationKey: 'static>(
+    inputs: Vec<Correlated<CorrelationKey, T>>,
+    vk_client: Arc<cache::Client>,
+) -> Box<dyn Iterator<Item = (T, CorrelationKey, String, Option<<T as Task>::Output>)>>
+where
+    T: Task + 'static,
+{
+    // We sort the keys so that unit tests can predictably mock redis requests.
+    // That's because redis-test doesn't find a matching request in the list, but
+    // just pops the first one and asserts.
+    #[cfg(test)]
+    let inputs = inputs
+        .into_iter()
+        .map(|input| {
+            let key = input.data.key(vk_client.app_version());
+            (input, key)
+        })
+        .sorted_by_key(|(_, key)| key.clone())
+        .map(|(input, _)| input)
+        .collect_vec();
+
+    let (correlation_keys, inputs) = inputs
+        .into_iter()
+        .map_into()
+        .unzip::<_, _, Vec<_>, Vec<_>>();
+    let cache_keys = inputs
+        .iter()
+        .map(|input| input.key(vk_client.app_version()))
+        .collect_vec();
+
+    // we have to clone because of json_get_bulk's API x Rust 2024 new rules
+    let keys = cache_keys.clone();
+
+    let mut vkconn = vk_client.get_connection().await.unwrap();
+    match vkconn.json_get_bulk::<_, T::Output>(keys.as_slice()).await {
+        Ok(cached_values) => Box::new(izip!(inputs, correlation_keys, cache_keys, cached_values)),
+        Err(e) => {
+            tracing::error!(?e, "task stream: cache read error — computing task output");
+            let cached_values = vec![None; inputs.len()];
+            Box::new(izip!(inputs, correlation_keys, cache_keys, cached_values))
+        }
+    }
+}
+
 /// Extends streams to provide [TaskStreamExt::run]
 ///
 /// The stream must contain [Correlated] task requests. In practice, the `CorrelationKey`
@@ -244,55 +291,9 @@ where
                     .zip(stream::repeat(vk_client.clone()))
                     .zip(stream::repeat(cache_read_tx))
                     .for_each_concurrent(None, async move |((inputs, vk_client), cache_read_tx)| {
-                        // We sort the keys so that unit tests can predictably mock redis requests.
-                        // That's because redis-test doesn't find a matching request in the list, but
-                        // just pops the first one and asserts.
-                        #[cfg(test)]
-                        let inputs = inputs
-                            .into_iter()
-                            .map(|input| {
-                                let key = input.data.key(vk_client.app_version());
-                                (input, key)
-                            })
-                            .sorted_by_key(|(_, key)| key.clone())
-                            .map(|(input, _)| input)
-                            .collect_vec();
-
-                        let (correlation_keys, inputs) = inputs
-                            .into_iter()
-                            .map_into()
-                            .unzip::<_, _, Vec<_>, Vec<_>>();
-                        let cache_keys = inputs
-                            .iter()
-                            .map(|input| input.key(vk_client.app_version()))
-                            .collect_vec();
-
-                        // we have to clone because of json_get_bulk's API x Rust 2024 new rules
-                        let keys = cache_keys.clone();
-
-                        // Fetch from valkey or compute and write to valkey
-
-                        let mut vkconn = vk_client.get_connection().await.unwrap();
-                        match vkconn.json_get_bulk::<_, T::Output>(keys.as_slice()).await {
-                            Ok(cached_values) => {
-                                for (value, correlation, key, input) in
-                                    izip!(cached_values, correlation_keys, cache_keys, inputs)
-                                {
-                                    cache_read_tx.send((input, correlation, key, value)).ok();
-                                }
-                            }
-                            Err(e) => {
-                                tracing::error!(
-                                    ?e,
-                                    "task stream: cache read error — computing task output"
-                                );
-                                for (key, correlation, input) in
-                                    izip!(cache_keys, correlation_keys, inputs)
-                                {
-                                    cache_read_tx.send((input, correlation, key, None)).ok();
-                                }
-                            }
-                        };
+                        for cache_result in batch_fetch_from_cache(inputs, vk_client).await {
+                            cache_read_tx.send(cache_result).ok();
+                        }
                     })
                     .in_current_span(),
             );
