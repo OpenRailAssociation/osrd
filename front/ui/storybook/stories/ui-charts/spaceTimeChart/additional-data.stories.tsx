@@ -293,13 +293,13 @@ const meta: Meta<typeof Wrapper> = {
   argTypes: {
     swapAxis: {
       name: 'Swap time and space axis?',
-      defaultValue: false,
+      value: false,
       control: { type: 'boolean' },
     },
     spaceScaleType: {
       name: 'Space scaling type',
       options: ['linear', 'proportional'],
-      defaultValue: 'linear',
+      value: 'linear',
       control: { type: 'radio' },
     },
   },

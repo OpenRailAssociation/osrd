@@ -173,33 +173,33 @@ const meta: Meta<typeof Wrapper> = {
   argTypes: {
     enableSnapping: {
       name: 'Enable snapping?',
-      defaultValue: true,
+      value: true,
       control: { type: 'boolean' },
     },
     hideGrid: {
       name: 'Hide grid?',
-      defaultValue: false,
+      value: false,
       control: { type: 'boolean' },
     },
     hidePathsLabels: {
       name: 'Hide paths labels?',
-      defaultValue: false,
+      value: false,
       control: { type: 'boolean' },
     },
     hideDates: {
       name: 'Hide dates?',
-      defaultValue: false,
+      value: false,
       control: { type: 'boolean' },
     },
     swapAxis: {
       name: 'Swap time and space axis?',
-      defaultValue: false,
+      value: false,
       control: { type: 'boolean' },
     },
     spaceScaleType: {
       name: 'Space scaling type',
       options: ['linear', 'proportional'],
-      defaultValue: 'linear',
+      value: 'linear',
       control: { type: 'radio' },
     },
   },

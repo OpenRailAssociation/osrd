@@ -214,23 +214,23 @@ const meta: Meta<typeof Wrapper> = {
   argTypes: {
     color1: {
       name: 'Primary color',
-      defaultValue: DEFAULT_COLOR_1,
+      value: DEFAULT_COLOR_1,
       control: { type: 'color' },
     },
     color2: {
       name: 'Secondary color',
-      defaultValue: DEFAULT_COLOR_2,
+      value: DEFAULT_COLOR_2,
       control: { type: 'color' },
     },
     color3: {
       name: 'Background color',
-      defaultValue: DEFAULT_COLOR_3,
+      value: DEFAULT_COLOR_3,
       control: { type: 'color' },
     },
     spaceScaleType: {
       name: 'Space scaling type',
       options: ['linear', 'proportional'],
-      defaultValue: 'linear',
+      value: 'linear',
       control: { type: 'radio' },
     },
   },

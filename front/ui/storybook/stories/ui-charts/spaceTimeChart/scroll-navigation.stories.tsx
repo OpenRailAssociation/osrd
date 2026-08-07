@@ -217,7 +217,7 @@ const meta: Meta<typeof Wrapper> = {
     spaceScaleType: {
       name: 'Space scaling type',
       options: ['linear', 'proportional'],
-      defaultValue: 'linear',
+      value: 'linear',
       control: { type: 'radio' },
     },
   },
