@@ -53,8 +53,8 @@ const StdcmVias = ({
     [pathSteps]
   ) as StdcmViaPathStep[];
 
-  const cleanupConsistErrors = (pathStepId: string) => {
-    delete consistErrorsByStep.current[pathStepId];
+  const cleanupConsistErrors = (pathStepKey: string) => {
+    delete consistErrorsByStep.current[pathStepKey];
     onHasViaConsistErrorsChange(Object.values(consistErrorsByStep.current));
   };
 
@@ -131,9 +131,9 @@ const StdcmVias = ({
     };
   }, [newIntermediateOpIndex]);
 
-  const deleteViaOnClick = (pathStepId: string) => {
-    cleanupConsistErrors(pathStepId);
-    dispatch(deleteStdcmVia(pathStepId));
+  const deleteViaOnClick = (pathStepKey: string) => {
+    cleanupConsistErrors(pathStepKey);
+    dispatch(deleteStdcmVia(pathStepKey));
     onItineraryChange();
   };
 

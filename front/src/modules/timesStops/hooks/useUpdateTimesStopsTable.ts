@@ -91,7 +91,7 @@ const useUpdateTimesStopsTable = (
   const [updateTrainSchedule] = osrdEditoastApi.endpoints.putTrainSchedulesById.useMutation();
 
   const computeUpdatedMargins = useCallback(
-    (updatedPath: PathItem[], requestedMargin: MarginValue | null, pathStepId: string) => {
+    (updatedPath: PathItem[], requestedMargin: MarginValue | null, pathStepKey: string) => {
       const baseTrainInputs: Pick<TrainSchedule, 'path' | 'schedule' | 'margins'> = {
         path: updatedPath,
         schedule: selectedTrain.schedule,
@@ -101,7 +101,7 @@ const useUpdateTimesStopsTable = (
       const updatedPathSteps = updatedPath.map((_, index) =>
         computeBasePathStep(baseTrainInputs, index)
       );
-      const targetedStep = updatedPathSteps.find((step) => step.id === pathStepId);
+      const targetedStep = updatedPathSteps.find((step) => step.key === pathStepKey);
 
       if (!targetedStep) return selectedTrain.margins;
 
@@ -140,16 +140,16 @@ const useUpdateTimesStopsTable = (
           : propagateTime(update, selectedTrain);
       if (propagatedResult) return { ...propagatedResult, updatedMargins: selectedTrain.margins };
 
-      const { pathStepId, updatedPath } = upsertPathStep(update.row, selectedTrain.path, allRows);
+      const { pathStepKey, updatedPath } = upsertPathStep(update.row, selectedTrain.path, allRows);
       const currentSchedule = selectedTrain.schedule ?? [];
-      const existingItemIndex = currentSchedule.findIndex((item) => item.at === pathStepId);
-      const isOrigin = pathStepId === updatedPath[0].id;
+      const existingItemIndex = currentSchedule.findIndex((item) => item.at === pathStepKey);
+      const isOrigin = pathStepKey === updatedPath[0].key;
 
       if (update.field === 'requestedTheoreticalMargin') {
         return {
           updatedPath,
           updatedSchedule: currentSchedule,
-          updatedMargins: computeUpdatedMargins(updatedPath, update.value, pathStepId),
+          updatedMargins: computeUpdatedMargins(updatedPath, update.value, pathStepKey),
         };
       }
 
@@ -206,7 +206,7 @@ const useUpdateTimesStopsTable = (
         });
       } else {
         // Insert new schedule item in path order
-        const newItem: ScheduleItem = { at: pathStepId };
+        const newItem: ScheduleItem = { at: pathStepKey };
         if (newArrival !== null && !isOrigin) newItem.arrival = newArrival;
         if (newStopFor !== null) newItem.stop_for = newStopFor;
         updatedSchedule = insertScheduleItemInOrder(currentSchedule, newItem, updatedPath);
@@ -220,7 +220,7 @@ const useUpdateTimesStopsTable = (
         update.value !== null &&
         !isOrigin
       ) {
-        updatedSchedule = adjustFollowingWaypointsForMidnight(update.value, pathStepId, {
+        updatedSchedule = adjustFollowingWaypointsForMidnight(update.value, pathStepKey, {
           ...selectedTrain,
           schedule: updatedSchedule,
         });
@@ -233,7 +233,7 @@ const useUpdateTimesStopsTable = (
         update.propagationMode === 'atThisWaypoint' &&
         newState.departure !== null
       ) {
-        updatedSchedule = adjustFollowingWaypointsForMidnight(newState.departure, pathStepId, {
+        updatedSchedule = adjustFollowingWaypointsForMidnight(newState.departure, pathStepKey, {
           ...selectedTrain,
           schedule: updatedSchedule,
         });
@@ -250,9 +250,9 @@ const useUpdateTimesStopsTable = (
    * be set on a non-path-step waypoint).
    */
   const computePowerRestrictionUpdate = (update: PowerRestrictionUpdate) => {
-    const { pathStepId, updatedPath } = upsertPathStep(update.row, selectedTrain.path, allRows);
+    const { pathStepKey, updatedPath } = upsertPathStep(update.row, selectedTrain.path, allRows);
     const modifiedRows = allRows.map((r) =>
-      r.id === update.row.id ? { ...r, pathStepId, powerRestriction: update.value } : r
+      r.id === update.row.id ? { ...r, pathStepKey, powerRestriction: update.value } : r
     );
     return {
       updatedPath,

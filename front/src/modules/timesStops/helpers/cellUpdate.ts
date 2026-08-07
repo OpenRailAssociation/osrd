@@ -26,7 +26,7 @@ const computeInsertIndex = (
 
   // Find the first PathStep whose opOnPathIndex is greater than the edited OP's
   const foundIndex = currentPath.findIndex((step) => {
-    const opIndex = pathStepOpIndices.get(step.id);
+    const opIndex = pathStepOpIndices.get(step.key);
     return opIndex !== undefined && opIndex > editedOpIndex;
   });
 
@@ -38,16 +38,16 @@ export const upsertPathStep = (
   editedRow: TimesStopsRowNew,
   currentPath: PathItem[],
   allRows: TimesStopsRowNew[]
-): { pathStepId: string; updatedPath: PathItem[] } => {
+): { pathStepKey: string; updatedPath: PathItem[] } => {
   if (editedRow.pathStepId) {
-    return { pathStepId: editedRow.pathStepId, updatedPath: currentPath };
+    return { pathStepKey: editedRow.pathStepId, updatedPath: currentPath };
   }
 
-  const newPathStep: PathItem = { id: uuidV4(), location: editedRow.location };
+  const newPathStep: PathItem = { key: uuidV4(), location: editedRow.location };
   const insertIndex = computeInsertIndex(editedRow.opOnPathIndex, allRows, currentPath);
   const updatedPath = addElementAtIndex(currentPath, insertIndex, newPathStep);
 
-  return { pathStepId: newPathStep.id, updatedPath };
+  return { pathStepKey: newPathStep.key, updatedPath };
 };
 
 /** Compute departure from arrival and stop duration. */
@@ -152,8 +152,8 @@ export const scheduleStateToApiFields = (
   stop_for: state.stop !== null ? state.stop.toISOString() : null,
 });
 
-const getPathIndex = (pathStepId: string, path: PathItem[]) =>
-  path.findIndex((step) => step.id === pathStepId);
+const getPathIndex = (pathStepKey: string, path: PathItem[]) =>
+  path.findIndex((step) => step.key === pathStepKey);
 
 /**
  * Insert a schedule item at the correct position to maintain path order.

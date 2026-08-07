@@ -31,7 +31,7 @@ export const extractMarkersInfo = (pathSteps: StdcmPathStep[]): ExtractedMarkerI
     }
 
     acc.push({
-      id: step.id,
+      key: step.id,
       pointType,
       location: {
         type: 'operational_point_part_reference',

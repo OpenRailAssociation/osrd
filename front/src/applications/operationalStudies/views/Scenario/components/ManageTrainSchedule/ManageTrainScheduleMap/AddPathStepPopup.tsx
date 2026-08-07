@@ -71,7 +71,7 @@ const AddPathStepPopup = ({
 
       const { properties } = featureInfoClick.feature;
       setNewPathStep({
-        id: uuidV4(),
+        key: uuidV4(),
         coordinates: featureInfoClick.coordinates.slice(0, 2),
         location,
         kp: properties.kp,
@@ -128,7 +128,7 @@ const AddPathStepPopup = ({
       }
 
       setClickedOp({
-        id: uuidV4(),
+        key: uuidV4(),
         name: operationalPoint.name,
         location: { type: 'operational_point_part_reference', operational_point: opRef },
         tracks: trackPartCoordinates,

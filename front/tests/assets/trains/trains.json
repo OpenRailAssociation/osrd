@@ -6,7 +6,7 @@
     "start_time": 1728961200000,
     "path": [
       {
-        "id": "id227",
+        "key": "id227",
         "location": {
           "type": "operational_point_part_reference",
           "operational_point": {
@@ -17,7 +17,7 @@
         }
       },
       {
-        "id": "id228",
+        "key": "id228",
         "location": {
           "type": "operational_point_part_reference",
           "operational_point": {
@@ -63,7 +63,7 @@
     "start_time": 1728964800000,
     "path": [
       {
-        "id": "id227",
+        "key": "id227",
         "location": {
           "type": "operational_point_part_reference",
           "operational_point": {
@@ -74,7 +74,7 @@
         }
       },
       {
-        "id": "id228",
+        "key": "id228",
         "location": {
           "type": "operational_point_part_reference",
           "operational_point": {
@@ -131,7 +131,7 @@
     "start_time": 1728968400000,
     "path": [
       {
-        "id": "id744",
+        "key": "id744",
         "location": {
           "type": "operational_point_part_reference",
           "operational_point": {
@@ -142,7 +142,7 @@
         }
       },
       {
-        "id": "id765",
+        "key": "id765",
         "location": {
           "type": "operational_point_part_reference",
           "operational_point": {
@@ -153,7 +153,7 @@
         }
       },
       {
-        "id": "id745",
+        "key": "id745",
         "location": {
           "type": "operational_point_part_reference",
           "operational_point": {
@@ -215,7 +215,7 @@
     "start_time": 1728985543000,
     "path": [
       {
-        "id": "8bf52569-50a5-46a5-8e62-b5626460cfba",
+        "key": "8bf52569-50a5-46a5-8e62-b5626460cfba",
         "location": {
           "type": "operational_point_part_reference",
           "operational_point": {
@@ -227,7 +227,7 @@
         }
       },
       {
-        "id": "id2492",
+        "key": "id2492",
         "location": {
           "type": "track_offset",
           "track": "TD0",
@@ -235,7 +235,7 @@
         }
       },
       {
-        "id": "3cbdab53-120e-460b-8f4b-e0ecc7cae836",
+        "key": "3cbdab53-120e-460b-8f4b-e0ecc7cae836",
         "location": {
           "track": "TI0",
           "offset": 246000,
@@ -290,7 +290,7 @@
             "path_and_schedule": {
               "path": [
                 {
-                  "id": "id2458",
+                  "key": "id2458",
                   "location": {
                     "type": "track_offset",
                     "track": "TG4",
@@ -298,7 +298,7 @@
                   }
                 },
                 {
-                  "id": "id2570",
+                  "key": "id2570",
                   "location": {
                     "type": "operational_point_part_reference",
                     "operational_point": {
@@ -310,7 +310,7 @@
                   }
                 },
                 {
-                  "id": "8369cfc6-e667-4b6b-965a-79795c94dd18",
+                  "key": "8369cfc6-e667-4b6b-965a-79795c94dd18",
                   "location": {
                     "type": "operational_point_part_reference",
                     "operational_point": {
@@ -355,7 +355,7 @@
           "path_and_schedule": {
             "path": [
               {
-                "id": "id2458",
+                "key": "id2458",
                 "location": {
                   "type": "track_offset",
                   "track": "TG4",
@@ -363,7 +363,7 @@
                 }
               },
               {
-                "id": "id2659",
+                "key": "id2659",
                 "location": {
                   "type": "operational_point_part_reference",
                   "operational_point": {
@@ -375,7 +375,7 @@
                 }
               },
               {
-                "id": "id2492",
+                "key": "id2492",
                 "location": {
                   "type": "track_offset",
                   "track": "TD0",
@@ -383,7 +383,7 @@
                 }
               },
               {
-                "id": "id2570",
+                "key": "id2570",
                 "location": {
                   "type": "operational_point_part_reference",
                   "operational_point": {
@@ -395,7 +395,7 @@
                 }
               },
               {
-                "id": "b174dfa7-f6e7-45d9-9545-469a64e675b9",
+                "key": "b174dfa7-f6e7-45d9-9545-469a64e675b9",
                 "location": {
                   "operational_point": {
                     "uic": 8799,
@@ -468,7 +468,7 @@
     "start_time": 1729036800000,
     "path": [
       {
-        "id": "id227",
+        "key": "id227",
         "location": {
           "type": "operational_point_part_reference",
           "operational_point": {
@@ -480,7 +480,7 @@
         }
       },
       {
-        "id": "id228",
+        "key": "id228",
         "location": {
           "type": "operational_point_part_reference",
           "operational_point": {
@@ -535,7 +535,7 @@
           "path_and_schedule": {
             "path": [
               {
-                "id": "id227",
+                "key": "id227",
                 "location": {
                   "type": "operational_point_part_reference",
                   "operational_point": {
@@ -547,7 +547,7 @@
                 }
               },
               {
-                "id": "id228",
+                "key": "id228",
                 "location": {
                   "type": "operational_point_part_reference",
                   "operational_point": {
@@ -584,7 +584,7 @@
     "start_time": 1729162800000,
     "path": [
       {
-        "id": "id227",
+        "key": "id227",
         "location": {
           "type": "operational_point_part_reference",
           "operational_point": {
@@ -595,7 +595,7 @@
         }
       },
       {
-        "id": "id228",
+        "key": "id228",
         "location": {
           "type": "operational_point_part_reference",
           "operational_point": {
@@ -657,7 +657,7 @@
     "start_time": 1729205322000,
     "path": [
       {
-        "id": "8bf52569-50a5-46a5-8e62-b5626460cfba",
+        "key": "8bf52569-50a5-46a5-8e62-b5626460cfba",
         "location": {
           "type": "operational_point_part_reference",
           "operational_point": {
@@ -669,7 +669,7 @@
         }
       },
       {
-        "id": "id2492",
+        "key": "id2492",
         "location": {
           "type": "track_offset",
           "track": "TD0",
@@ -677,7 +677,7 @@
         }
       },
       {
-        "id": "3cbdab53-120e-460b-8f4b-e0ecc7cae836",
+        "key": "3cbdab53-120e-460b-8f4b-e0ecc7cae836",
         "location": {
           "type": "track_offset",
           "track": "TI0",
@@ -732,7 +732,7 @@
             "path_and_schedule": {
               "path": [
                 {
-                  "id": "id2458",
+                  "key": "id2458",
                   "location": {
                     "type": "track_offset",
                     "track": "TG4",
@@ -740,7 +740,7 @@
                   }
                 },
                 {
-                  "id": "id2570",
+                  "key": "id2570",
                   "location": {
                     "type": "operational_point_part_reference",
                     "operational_point": {
@@ -752,7 +752,7 @@
                   }
                 },
                 {
-                  "id": "8369cfc6-e667-4b6b-965a-79795c94dd18",
+                  "key": "8369cfc6-e667-4b6b-965a-79795c94dd18",
                   "location": {
                     "type": "operational_point_part_reference",
                     "operational_point": {
@@ -797,7 +797,7 @@
           "path_and_schedule": {
             "path": [
               {
-                "id": "id2458",
+                "key": "id2458",
                 "location": {
                   "type": "track_offset",
                   "track": "TG4",
@@ -805,7 +805,7 @@
                 }
               },
               {
-                "id": "id2659",
+                "key": "id2659",
                 "location": {
                   "type": "operational_point_part_reference",
                   "operational_point": {
@@ -817,7 +817,7 @@
                 }
               },
               {
-                "id": "id2492",
+                "key": "id2492",
                 "location": {
                   "type": "track_offset",
                   "track": "TD0",
@@ -825,7 +825,7 @@
                 }
               },
               {
-                "id": "id2570",
+                "key": "id2570",
                 "location": {
                   "type": "operational_point_part_reference",
                   "operational_point": {
@@ -837,7 +837,7 @@
                 }
               },
               {
-                "id": "b174dfa7-f6e7-45d9-9545-469a64e675b9",
+                "key": "b174dfa7-f6e7-45d9-9545-469a64e675b9",
                 "location": {
                   "type": "operational_point_part_reference",
                   "operational_point": {
@@ -910,7 +910,7 @@
     "start_time": 1729134000000,
     "path": [
       {
-        "id": "id227",
+        "key": "id227",
         "location": {
           "type": "operational_point_part_reference",
           "operational_point": {
@@ -921,7 +921,7 @@
         }
       },
       {
-        "id": "id228",
+        "key": "id228",
         "location": {
           "type": "operational_point_part_reference",
           "operational_point": {
@@ -960,7 +960,7 @@
     "start_time": 1729134900000,
     "path": [
       {
-        "id": "id477",
+        "key": "id477",
         "location": {
           "operational_point": {
             "uic": 8722,
@@ -971,7 +971,7 @@
         }
       },
       {
-        "id": "id3522",
+        "key": "id3522",
         "location": {
           "track": "TA1",
           "offset": 1424000,
@@ -979,7 +979,7 @@
         }
       },
       {
-        "id": "id498",
+        "key": "id498",
         "location": {
           "operational_point": {
             "uic": 8744,
@@ -990,7 +990,7 @@
         }
       },
       {
-        "id": "id478",
+        "key": "id478",
         "location": {
           "operational_point": {
             "uic": 8788,
@@ -1035,7 +1035,7 @@
     "start_time": 1729141200000,
     "path": [
       {
-        "id": "id744",
+        "key": "id744",
         "location": {
           "operational_point": {
             "uic": 8733,
@@ -1046,7 +1046,7 @@
         }
       },
       {
-        "id": "id765",
+        "key": "id765",
         "location": {
           "operational_point": {
             "uic": 8744,
@@ -1057,7 +1057,7 @@
         }
       },
       {
-        "id": "id745",
+        "key": "id745",
         "location": {
           "operational_point": {
             "uic": 8777,
@@ -1102,7 +1102,7 @@
     "start_time": 1729142100000,
     "path": [
       {
-        "id": "id938",
+        "key": "id938",
         "location": {
           "operational_point": {
             "uic": 8722,
@@ -1113,7 +1113,7 @@
         }
       },
       {
-        "id": "id1939",
+        "key": "id1939",
         "location": {
           "track": "TA6",
           "offset": 10000,
@@ -1121,7 +1121,7 @@
         }
       },
       {
-        "id": "id959",
+        "key": "id959",
         "location": {
           "operational_point": {
             "uic": 8733,
@@ -1132,7 +1132,7 @@
         }
       },
       {
-        "id": "id964",
+        "key": "id964",
         "location": {
           "operational_point": {
             "uic": 8744,
@@ -1143,7 +1143,7 @@
         }
       },
       {
-        "id": "id939",
+        "key": "id939",
         "location": {
           "operational_point": {
             "uic": 8788,
@@ -1200,7 +1200,7 @@
     "start_time": 1729150200000,
     "path": [
       {
-        "id": "id1306",
+        "key": "id1306",
         "location": {
           "operational_point": {
             "uic": 8711,
@@ -1211,7 +1211,7 @@
         }
       },
       {
-        "id": "id1327",
+        "key": "id1327",
         "location": {
           "operational_point": {
             "uic": 8733,
@@ -1222,7 +1222,7 @@
         }
       },
       {
-        "id": "id1307",
+        "key": "id1307",
         "location": {
           "operational_point": {
             "uic": 8744,
@@ -1267,7 +1267,7 @@
     "start_time": 1729151100000,
     "path": [
       {
-        "id": "id1700",
+        "key": "id1700",
         "location": {
           "operational_point": {
             "uic": 8722,
@@ -1278,7 +1278,7 @@
         }
       },
       {
-        "id": "id1762",
+        "key": "id1762",
         "location": {
           "operational_point": {
             "uic": 8744,
@@ -1289,7 +1289,7 @@
         }
       },
       {
-        "id": "id1701",
+        "key": "id1701",
         "location": {
           "operational_point": {
             "uic": 8755,
@@ -1334,7 +1334,7 @@
     "start_time": 1729154220000,
     "path": [
       {
-        "id": "id2121",
+        "key": "id2121",
         "location": {
           "operational_point": {
             "uic": 8722,
@@ -1345,7 +1345,7 @@
         }
       },
       {
-        "id": "id2175",
+        "key": "id2175",
         "location": {
           "operational_point": {
             "uic": 8733,
@@ -1356,7 +1356,7 @@
         }
       },
       {
-        "id": "id2122",
+        "key": "id2122",
         "location": {
           "operational_point": {
             "uic": 8777,
@@ -1395,7 +1395,7 @@
     "start_time": 1729155361000,
     "path": [
       {
-        "id": "id2532",
+        "key": "id2532",
         "location": {
           "operational_point": {
             "uic": 8766,
@@ -1406,7 +1406,7 @@
         }
       },
       {
-        "id": "id2550",
+        "key": "id2550",
         "location": {
           "operational_point": {
             "uic": 8755,
@@ -1417,7 +1417,7 @@
         }
       },
       {
-        "id": "id2533",
+        "key": "id2533",
         "location": {
           "operational_point": {
             "uic": 8744,
@@ -1462,7 +1462,7 @@
     "start_time": 1729157759000,
     "path": [
       {
-        "id": "id2854",
+        "key": "id2854",
         "location": {
           "operational_point": {
             "uic": 8733,
@@ -1473,7 +1473,7 @@
         }
       },
       {
-        "id": "id2855",
+        "key": "id2855",
         "location": {
           "operational_point": {
             "uic": 8777,
@@ -1512,7 +1512,7 @@
     "start_time": 1729158331000,
     "path": [
       {
-        "id": "id3088",
+        "key": "id3088",
         "location": {
           "operational_point": {
             "uic": 8788,
@@ -1523,7 +1523,7 @@
         }
       },
       {
-        "id": "id3571",
+        "key": "id3571",
         "location": {
           "track": "TD3",
           "offset": 0,
@@ -1531,7 +1531,7 @@
         }
       },
       {
-        "id": "id3089",
+        "key": "id3089",
         "location": {
           "operational_point": {
             "uic": 8744,
@@ -1576,7 +1576,7 @@
     "start_time": 1729158343000,
     "path": [
       {
-        "id": "b4df37d0-ffe2-4166-b7b6-8c0c5a47e9b0",
+        "key": "b4df37d0-ffe2-4166-b7b6-8c0c5a47e9b0",
         "location": {
           "operational_point": {
             "uic": 8777,
@@ -1588,7 +1588,7 @@
         }
       },
       {
-        "id": "b29c5a41-37cc-49cc-90f7-9ddc9ebc5e0c",
+        "key": "b29c5a41-37cc-49cc-90f7-9ddc9ebc5e0c",
         "location": {
           "track": "TF1",
           "offset": 1435,
@@ -1596,7 +1596,7 @@
         }
       },
       {
-        "id": "id2659",
+        "key": "id2659",
         "location": {
           "operational_point": {
             "uic": 8744,
@@ -1608,7 +1608,7 @@
         }
       },
       {
-        "id": "id2492",
+        "key": "id2492",
         "location": {
           "track": "TD0",
           "offset": 11080000,
@@ -1616,7 +1616,7 @@
         }
       },
       {
-        "id": "id2570",
+        "key": "id2570",
         "location": {
           "operational_point": {
             "uic": 8733,
@@ -1628,7 +1628,7 @@
         }
       },
       {
-        "id": "01074160-42ec-4354-986d-338fd2d9d77b",
+        "key": "01074160-42ec-4354-986d-338fd2d9d77b",
         "location": {
           "track": "TI3",
           "offset": 240000,
@@ -1636,7 +1636,7 @@
         }
       },
       {
-        "id": "dbc7c80b-aee0-4835-8857-63863dae2ff1",
+        "key": "dbc7c80b-aee0-4835-8857-63863dae2ff1",
         "location": {
           "operational_point": {
             "uic": 8799,
@@ -1691,7 +1691,7 @@
     "start_time": 1729160163000,
     "path": [
       {
-        "id": "id130",
+        "key": "id130",
         "location": {
           "track": "TX1",
           "offset": 421000,
@@ -1699,7 +1699,7 @@
         }
       },
       {
-        "id": "id219",
+        "key": "id219",
         "location": {
           "track": "TA6",
           "offset": 9199000,
@@ -1707,7 +1707,7 @@
         }
       },
       {
-        "id": "id3822",
+        "key": "id3822",
         "location": {
           "track": "TD0",
           "offset": 10809000,
@@ -1715,7 +1715,7 @@
         }
       },
       {
-        "id": "id188",
+        "key": "id188",
         "location": {
           "track": "TF1",
           "offset": 2486000,
@@ -1751,7 +1751,7 @@
     "start_time": 1729162080000,
     "path": [
       {
-        "id": "id354",
+        "key": "id354",
         "location": {
           "operational_point": {
             "uic": 8788,
@@ -1762,7 +1762,7 @@
         }
       },
       {
-        "id": "id385",
+        "key": "id385",
         "location": {
           "operational_point": {
             "uic": 8744,
@@ -1773,7 +1773,7 @@
         }
       },
       {
-        "id": "id355",
+        "key": "id355",
         "location": {
           "operational_point": {
             "uic": 8711,
@@ -1818,7 +1818,7 @@
     "start_time": 1729167000000,
     "path": [
       {
-        "id": "id803",
+        "key": "id803",
         "location": {
           "operational_point": {
             "uic": 8777,
@@ -1829,7 +1829,7 @@
         }
       },
       {
-        "id": "id804",
+        "key": "id804",
         "location": {
           "operational_point": {
             "uic": 8744,
@@ -1874,7 +1874,7 @@
     "start_time": 1729168200000,
     "path": [
       {
-        "id": "id1073",
+        "key": "id1073",
         "location": {
           "track": "TA6",
           "offset": 6609000,
@@ -1882,7 +1882,7 @@
         }
       },
       {
-        "id": "id1136",
+        "key": "id1136",
         "location": {
           "track": "TE3",
           "offset": 1247000,
@@ -1890,7 +1890,7 @@
         }
       },
       {
-        "id": "id1109",
+        "key": "id1109",
         "location": {
           "track": "TH1",
           "offset": 3761000,
@@ -1926,7 +1926,7 @@
     "start_time": 1729170000000,
     "path": [
       {
-        "id": "id1353",
+        "key": "id1353",
         "location": {
           "operational_point": {
             "uic": 8788,
@@ -1937,7 +1937,7 @@
         }
       },
       {
-        "id": "id1371",
+        "key": "id1371",
         "location": {
           "local_track_name": "V2",
           "operational_point": {
@@ -1949,7 +1949,7 @@
         }
       },
       {
-        "id": "id1354",
+        "key": "id1354",
         "location": {
           "operational_point": {
             "uic": 8722,
@@ -1994,7 +1994,7 @@
     "start_time": 1729173900000,
     "path": [
       {
-        "id": "id1572",
+        "key": "id1572",
         "location": {
           "operational_point": {
             "uic": 8722,
@@ -2005,7 +2005,7 @@
         }
       },
       {
-        "id": "id1593",
+        "key": "id1593",
         "location": {
           "operational_point": {
             "uic": 8733,
@@ -2016,7 +2016,7 @@
         }
       },
       {
-        "id": "id1598",
+        "key": "id1598",
         "location": {
           "operational_point": {
             "uic": 8744,
@@ -2027,7 +2027,7 @@
         }
       },
       {
-        "id": "id1573",
+        "key": "id1573",
         "location": {
           "operational_point": {
             "uic": 8788,
@@ -2078,7 +2078,7 @@
     "start_time": 1729174508000,
     "path": [
       {
-        "id": "id1948",
+        "key": "id1948",
         "location": {
           "operational_point": {
             "uic": 8711,
@@ -2089,7 +2089,7 @@
         }
       },
       {
-        "id": "id1949",
+        "key": "id1949",
         "location": {
           "operational_point": {
             "uic": 8733,
@@ -2128,7 +2128,7 @@
     "start_time": 1729180500000,
     "path": [
       {
-        "id": "id3049",
+        "key": "id3049",
         "location": {
           "track": "TG4",
           "offset": 1604000,
@@ -2136,7 +2136,7 @@
         }
       },
       {
-        "id": "id3065",
+        "key": "id3065",
         "location": {
           "track": "TD1",
           "offset": 13883000,
@@ -2172,7 +2172,7 @@
     "start_time": 1729180769000,
     "path": [
       {
-        "id": "id2078",
+        "key": "id2078",
         "location": {
           "operational_point": {
             "uic": 8766,
@@ -2183,7 +2183,7 @@
         }
       },
       {
-        "id": "id2124",
+        "key": "id2124",
         "location": {
           "operational_point": {
             "uic": 8744,
@@ -2194,7 +2194,7 @@
         }
       },
       {
-        "id": "id2129",
+        "key": "id2129",
         "location": {
           "operational_point": {
             "uic": 8733,
@@ -2205,7 +2205,7 @@
         }
       },
       {
-        "id": "id2079",
+        "key": "id2079",
         "location": {
           "operational_point": {
             "uic": 8722,
@@ -2255,7 +2255,7 @@
     "start_time": 1729191900000,
     "path": [
       {
-        "id": "b4df37d0-ffe2-4166-b7b6-8c0c5a47e9b0",
+        "key": "b4df37d0-ffe2-4166-b7b6-8c0c5a47e9b0",
         "location": {
           "operational_point": {
             "uic": 8777,
@@ -2267,7 +2267,7 @@
         }
       },
       {
-        "id": "id2659",
+        "key": "id2659",
         "location": {
           "operational_point": {
             "uic": 8744,
@@ -2279,7 +2279,7 @@
         }
       },
       {
-        "id": "id2492",
+        "key": "id2492",
         "location": {
           "track": "TD0",
           "offset": 11080000,
@@ -2287,7 +2287,7 @@
         }
       },
       {
-        "id": "id2570",
+        "key": "id2570",
         "location": {
           "operational_point": {
             "uic": 8733,
@@ -2299,7 +2299,7 @@
         }
       },
       {
-        "id": "dbc7c80b-aee0-4835-8857-63863dae2ff1",
+        "key": "dbc7c80b-aee0-4835-8857-63863dae2ff1",
         "deleted": false,
         "location": {
           "operational_point": {

@@ -285,7 +285,7 @@ pub(in crate::views) async fn search_journeys(
                                     let schedule_item = train_schedule
                                         .schedule
                                         .iter()
-                                        .find(|schedule_item| schedule_item.at == path_item.id)?;
+                                        .find(|schedule_item| schedule_item.at == path_item.key)?;
 
                                     arrival_ms = offset_ms
                                         + u32::try_from(schedule_item.arrival?.num_milliseconds())

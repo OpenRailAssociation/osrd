@@ -8,13 +8,13 @@ import { v4 as uuidV4 } from 'uuid';
 
 import { useManageTrainScheduleContext } from 'applications/operationalStudies/hooks/useManageTrainScheduleContext';
 import type {
-  PathItem,
   PostSearchApiArg,
   SearchPayload,
   SearchResultItemOperationalPoint,
 } from 'common/api/osrdEditoastApi';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { useInfraID } from 'common/osrdContext';
+import type { PathStep } from 'reducers/osrdconf/types';
 import { useDebounce } from 'utils/hooks/useDebounce';
 import {
   isCursorSurroundedBySpace,
@@ -163,10 +163,11 @@ const TypeAndPath = ({ setDisplayTypeAndPath, isInNewModal = false }: TypeAndPat
 
   const handleSubmit = async () => {
     if (infraId && opList.length > 0) {
-      const pathSteps: PathItem[] = opList
+      // WARN PathItem => PathStep
+      const pathSteps: PathStep[] = opList
         .filter((op) => op.main_code !== '')
         .map(({ main_code, secondary_code, country_code }) => ({
-          id: uuidV4(),
+          key: uuidV4(),
           location: {
             type: 'operational_point_part_reference',
             operational_point: {

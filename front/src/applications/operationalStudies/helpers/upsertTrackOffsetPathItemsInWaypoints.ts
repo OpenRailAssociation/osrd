@@ -46,9 +46,9 @@ export function upsertTrackOffsetPathItemsInWaypoints(
       }
 
       const baseFormattedStep = {
-        waypointId: `pathitem-${step.id}`,
+        waypointId: `pathitem-${step.key}`,
         opId: null,
-        pathItemId: step.id,
+        pathItemId: step.key,
         name: stepName,
         uic: 0,
         country_code: '??',

@@ -53,7 +53,7 @@ export function formatTrainSchedulePayload(osrdconf: OperationalStudiesConfState
       stops_at_end_of_block: false,
     },
     path: pathSteps.map((step) => ({
-      id: step.id,
+      key: step.key,
       location: step.location,
     })),
     paced:

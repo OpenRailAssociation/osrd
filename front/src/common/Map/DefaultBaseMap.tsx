@@ -133,10 +133,10 @@ const DefaultBaseMap = ({
         />
 
         {pathStepMarkers?.map((marker, index) => (
-          <Fragment key={marker.id}>
+          <Fragment key={marker.key}>
             {marker.coordinates ? (
               <PathStepMarker
-                id={marker.id}
+                id={marker.key}
                 testId={`${mapId}-marker-${marker.pointType}`}
                 coordinates={marker.coordinates}
                 markerIndicator={`${index + 1}`}

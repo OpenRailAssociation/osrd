@@ -46,7 +46,7 @@ const createClearViaButton = ({
     pathStepsAndSuggestedOPs &&
     rowIndex > 0 &&
     rowIndex < pathStepsAndSuggestedOPs.length - 1 &&
-    pathSteps.some((step) => step.id === rowData.pathStepId) &&
+    pathSteps.some((step) => step.key === rowData.pathStepId) &&
     (!isNil(rowData.stopFor) ||
       rowData.theoreticalMargin !== undefined ||
       rowData.arrival !== undefined ||
@@ -82,7 +82,7 @@ const TimesStopsInput = ({
 
   const clearPathStep = (rowData: TimesStopsInputRow) => {
     const updatedPathSteps = pathSteps.map((step) => {
-      if (step.id === rowData.pathStepId) {
+      if (step.key === rowData.pathStepId) {
         return {
           ...step,
           stopFor: undefined,

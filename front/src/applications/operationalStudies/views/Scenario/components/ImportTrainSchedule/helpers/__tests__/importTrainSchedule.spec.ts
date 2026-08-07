@@ -100,14 +100,14 @@ function buildSchedule(id: string, timeOffsetSeconds: number = 0): TrainSchedule
     constraint_distribution: 'STANDARD',
     path: [
       {
-        id: 'step1',
+        key: 'step1',
         location: {
           type: 'operational_point_part_reference',
           operational_point: { uic: 1, type: 'uic' },
         },
       },
       {
-        id: 'step2',
+        key: 'step2',
         location: {
           type: 'operational_point_part_reference',
           operational_point: { uic: 2, type: 'uic' },

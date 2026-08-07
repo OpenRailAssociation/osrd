@@ -5,12 +5,12 @@ import type { PostSimilarTrainsApiResponse } from 'common/api/osrdEditoastApi';
 import { mergeSimilarTrainSegments } from '..';
 
 describe('mergeSimilarTrainSegments', () => {
-  const makeSegments = (pathStepIds: string[], trainNames: (string | null)[]) => {
+  const makeSegments = (pathStepKeys: string[], trainNames: (string | null)[]) => {
     const segments: PostSimilarTrainsApiResponse['similar_trains'] = [];
     for (let i = 0; i < trainNames.length; i++) {
       segments.push({
-        begin: pathStepIds[i],
-        end: pathStepIds[i + 1],
+        begin: pathStepKeys[i],
+        end: pathStepKeys[i + 1],
         train: trainNames[i] ? { start_time: '00:00', train_name: trainNames[i]! } : null,
       });
     }

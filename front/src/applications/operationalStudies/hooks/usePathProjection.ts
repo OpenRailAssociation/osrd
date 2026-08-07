@@ -167,7 +167,7 @@ const usePathProjection = (
     pathUsedForProjection?.forEach((step) => {
       if (step.location.type === 'operational_point_part_reference') {
         refs.push(step.location.operational_point);
-        refPathItemIds.push(step.id);
+        refPathItemIds.push(step.key);
       }
     });
     return { opRefs: refs, opRefPathItemIds: refPathItemIds };

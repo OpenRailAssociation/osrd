@@ -135,7 +135,7 @@ const useStdcm = ({
         constraint_distribution: 'MARECO',
         path: payload.body.steps.map((step) => ({
           location: step.location,
-          id: uuidV4(),
+          key: uuidV4(),
         })),
         rolling_stock_name: stdcmRollingStock!.name,
         start_time: new Date(formattedResponse.departure_time).getTime(),

@@ -83,14 +83,14 @@ export const formatPropagationDeltaLabelByMode = (
  */
 const propagateFromEditedPoint = (
   delta: Duration,
-  editedPathStepId: string,
+  editedPathStepKey: string,
   selectedTrain: Train,
   direction: 'fromDeparture' | 'toDestination'
 ): PropagationResult | undefined => {
   // Delta strategy by direction:
   // - fromDeparture: compare time-of-day only
   // - toDestination: compare full date-time (can produce D+1)
-  const editedPathIndex = selectedTrain.path.findIndex((step) => step.id === editedPathStepId);
+  const editedPathIndex = selectedTrain.path.findIndex((step) => step.key === editedPathStepKey);
   if (editedPathIndex < 0) return undefined;
 
   const currentStartTime = new Date(selectedTrain.start_time);
@@ -102,7 +102,7 @@ const propagateFromEditedPoint = (
   const affectedItems = Iterator.from(selectedTrain.schedule ?? [])
     .map((item) => ({
       item,
-      pathIndex: selectedTrain.path.findIndex((step) => step.id === item.at),
+      pathIndex: selectedTrain.path.findIndex((step) => step.key === item.at),
     }))
     .filter(({ item, pathIndex }) => {
       if (item.arrival === null) return false;
@@ -117,7 +117,7 @@ const propagateFromEditedPoint = (
   // For fromDeparture: the edited item is excluded from the loop, but its offset is the baseline —
   // any shifted offset that falls before it gets +24h.
   // For toDestination: the edited item is included in the loop, so start at 0.
-  const editedItem = selectedTrain.schedule?.find((item) => item.at === editedPathStepId);
+  const editedItem = selectedTrain.schedule?.find((item) => item.at === editedPathStepKey);
   const editedOldOffset = editedItem?.arrival ? Duration.parse(editedItem.arrival) : null;
   let lastOffset =
     direction === 'fromDeparture' && editedOldOffset !== null
@@ -164,16 +164,16 @@ const propagateShiftAll = (
  */
 export const adjustFollowingWaypointsForMidnight = (
   newValue: Date,
-  editedPathStepId: string,
+  editedPathStepKey: string,
   selectedTrain: Train
 ): ScheduleItem[] => {
   const startTime = new Date(selectedTrain.start_time);
-  const editedPathIndex = selectedTrain.path.findIndex((step) => step.id === editedPathStepId);
+  const editedPathIndex = selectedTrain.path.findIndex((step) => step.key === editedPathStepKey);
 
   const itemsAfterUpdatedStep = Iterator.from(selectedTrain.schedule ?? [])
     .map((item) => ({
       item,
-      pathIndex: selectedTrain.path.findIndex((step) => step.id === item.at),
+      pathIndex: selectedTrain.path.findIndex((step) => step.key === item.at),
     }))
     .filter(({ item, pathIndex }) => item.arrival && pathIndex > editedPathIndex)
     .toArray();

@@ -4681,10 +4681,10 @@ paths:
                               - type: object
                                 title: PathItemRelativeLocationExactPathItem
                                 required:
-                                - path_item_id
+                                - path_item_key
                                 - type
                                 properties:
-                                  path_item_id:
+                                  path_item_key:
                                     $ref: '#/components/schemas/NonBlankString'
                                     description: Path item ID, when the operational point matches an item in the input path
                                   type:
@@ -4694,24 +4694,24 @@ paths:
                               - type: object
                                 title: PathItemRelativeLocationBetweenPathItems
                                 required:
-                                - previous_path_item_id
-                                - following_path_item_id
+                                - previous_path_item_key
+                                - following_path_item_key
                                 - type
                                 properties:
-                                  following_path_item_id:
+                                  following_path_item_key:
                                     $ref: '#/components/schemas/NonBlankString'
-                                    description: Following path item ID, when the operational point is not one of the input path items
-                                  previous_path_item_id:
+                                    description: Following path item key, when the operational point is not one of the input path items
+                                  previous_path_item_key:
                                     $ref: '#/components/schemas/NonBlankString'
-                                    description: Previous path item ID, when the operational point is not one of the input path items
+                                    description: Previous path item key, when the operational point is not one of the input path items
                                   type:
                                     type: string
                                     enum:
                                     - between_path_items
                               description: |-
                                 Position of an operational point on a path, relative to the input path items.
-                                If the OP matches an input path item, it is located using this path item's ID,
-                                else, if the path just passes by the OP, it is located using its previous and following path items IDs
+                                If the OP matches an input path item, it is located using this path item's key,
+                                else, if the path just passes by the OP, it is located using its previous and following path items keys
   /train_schedules/{id}:
     get:
       tags:
@@ -12670,10 +12670,10 @@ components:
       type: object
       description: A location on the path of a train
       required:
-      - id
+      - key
       - location
       properties:
-        id:
+        key:
           oneOf:
           - type: string
             minLength: 1

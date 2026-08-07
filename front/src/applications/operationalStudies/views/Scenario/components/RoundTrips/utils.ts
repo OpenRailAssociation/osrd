@@ -25,7 +25,7 @@ const getStepLabels = (
   steps.reduce<string[]>((acc, step, index) => {
     const pathOp = ops.at(index);
     const isExtremity = index === 0 || index === steps.length - 1;
-    const isStop = schedule?.some((s) => s.at === step.id && !!s.stop_for);
+    const isStop = schedule?.some((s) => s.at === step.key && !!s.stop_for);
 
     if (!isExtremity && !isStop) return acc;
 
@@ -62,9 +62,9 @@ const formatBasePairingItem = (
     t
   );
 
-  const arrivalStepId = trainSchedule.path.at(-1)?.id;
+  const arrivalStepKey = trainSchedule.path.at(-1)?.key;
   const destinationSchedule = trainSchedule.schedule?.find(
-    (scheduleStep) => scheduleStep.at === arrivalStepId
+    (scheduleStep) => scheduleStep.at === arrivalStepKey
   );
   const requestedArrivalTime = destinationSchedule?.arrival
     ? addDurationToDate(
