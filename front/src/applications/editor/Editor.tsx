@@ -20,7 +20,7 @@ import useSwitchTypes from 'applications/editor/tools/switchEdition/useSwitchTyp
 import type { switchProps } from 'applications/editor/tools/switchProps';
 import type { CommonToolState } from 'applications/editor/tools/types';
 import { centerMapOnObject, selectEntities } from 'applications/editor/tools/utils';
-import type { ObjectType } from 'common/api/osrdEditoastApi';
+import { osrdEditoastApi, type ObjectType } from 'common/api/osrdEditoastApi';
 import useCheckUserPrivileges from 'common/authorization/hooks/useCheckUserPrivileges';
 import useProtectedAction from 'common/authorization/hooks/useProtectedAction';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
@@ -28,6 +28,7 @@ import { LoaderState } from 'common/Loaders';
 import MapButtons from 'common/Map/Buttons/MapButtons';
 import MapSearch from 'common/Map/Search/MapSearch';
 import { MapContextProvider } from 'common/Map/useMapContext';
+import { computeBBoxViewport } from 'common/Map/WarpedMap/core/helpers';
 import { useInfraActions, useInfraID, useOsrdActions } from 'common/osrdContext';
 import useInfra from 'modules/infra/useInfra';
 import { useMapSettings, useMapSettingsActions } from 'reducers/commonMap';
@@ -57,8 +58,10 @@ const Editor = () => {
     useMapSettingsActions();
 
   const mapRef = useRef<MapRef>(null);
+  const focusedInfraIdRef = useRef<number | undefined>(undefined);
   const { urlInfra } = useParams();
   const infraID = useInfraID();
+  const [getInfraByInfraIdBbox] = osrdEditoastApi.endpoints.getInfraByInfraIdBbox.useLazyQuery();
   const [searchParams, setSearchParams] = useSearchParams();
   const isLoading = useSelector(getIsLoading);
   const isLocked = useSelector(getInfraLockStatus);
@@ -309,6 +312,36 @@ const Editor = () => {
       dispatch(updateTotalsIssue(infradID));
     }
   }, [urlInfra]);
+
+  useEffect(() => {
+    if (isNil(infraID) || focusedInfraIdRef.current === infraID) {
+      return;
+    }
+
+    focusedInfraIdRef.current = infraID;
+
+    void getInfraByInfraIdBbox({ infraId: infraID })
+      .unwrap()
+      .then((infraBbox) => {
+        if (!infraBbox) {
+          return;
+        }
+
+        const mapContainer = mapRef.current?.getContainer();
+        const newViewport = computeBBoxViewport(
+          [infraBbox.min_lon, infraBbox.min_lat, infraBbox.max_lon, infraBbox.max_lat],
+          viewport,
+          {
+            width: mapContainer?.clientWidth,
+            height: mapContainer?.clientHeight,
+            padding: 100,
+          }
+        );
+
+        setViewport(newViewport);
+      })
+      .catch(() => undefined);
+  }, [infraID, getInfraByInfraIdBbox, setViewport, viewport]);
 
   // Lifecycle events on tools:
   useEffect(() => {
