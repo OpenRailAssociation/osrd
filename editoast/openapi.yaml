@@ -4330,6 +4330,23 @@ paths:
                       $ref: '#/components/schemas/LinkingOccurrenceId'
         '404':
           description: Timetable doesn't exist.
+  /train_schedules/linkings/delete:
+    post:
+      tags:
+      - linkings
+      summary: Delete linkings in batch
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: integer
+                format: int64
+        required: true
+      responses:
+        '204':
+          description: Linkings deleted
   /train_schedules/move:
     patch:
       tags:
@@ -7418,6 +7435,7 @@ components:
       - $ref: '#/components/schemas/EditoastLevelCrossingErrorTrainBatchNotFound'
       - $ref: '#/components/schemas/EditoastLevelCrossingErrorUnsupportedTimetableType'
       - $ref: '#/components/schemas/EditoastLinesErrorsLineNotFound'
+      - $ref: '#/components/schemas/EditoastLinkingErrorBatchNotFound'
       - $ref: '#/components/schemas/EditoastLinkingErrorDatabase'
       - $ref: '#/components/schemas/EditoastLinkingErrorRequestIncompatibleWithTimetableType'
       - $ref: '#/components/schemas/EditoastLinkingErrorSourceAlreadyUsed'
@@ -7997,6 +8015,31 @@ components:
           type: string
           enum:
           - editoast:infra:lines:LineNotFound
+    EditoastLinkingErrorBatchNotFound:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          title: EditoastLinkingErrorBatchNotFoundContext
+          required:
+          - count
+          properties:
+            count:
+              type: integer
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 404
+        type:
+          type: string
+          enum:
+          - editoast:train_schedule_linking:BatchNotFound
     EditoastLinkingErrorDatabase:
       type: object
       required:
