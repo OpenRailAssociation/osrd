@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type PropsWithChildren } from 'react';
 
+import { skipToken } from '@reduxjs/toolkit/query';
 import type { Feature, Position } from 'geojson';
 import { useTranslation } from 'react-i18next';
 import type { MapLayerMouseEvent, MapRef } from 'react-map-gl/maplibre';
@@ -82,7 +83,6 @@ const ItineraryModalMap = ({
   } = useMapSettingsActions();
 
   const mapRef = useRef<MapRef | null>(null);
-  const focusedInfraIdRef = useRef<number | undefined>(undefined);
 
   const [hoveredOperationalPointId, setHoveredOperationalPointId] = useState<string>();
   const [isDraggingMarker, setIsDraggingMarker] = useState(false);
@@ -100,7 +100,6 @@ const ItineraryModalMap = ({
 
   const [getInfraObjectEntity] =
     osrdEditoastApi.endpoints.postInfraByInfraIdObjectsAndObjectType.useLazyQuery();
-  const [getInfraByInfraIdBbox] = osrdEditoastApi.endpoints.getInfraByInfraIdBbox.useLazyQuery();
 
   const lastStepHasLocation = !!pathSteps?.at(-1)?.location;
   const lastRealStepIndex = pathSteps ? pathSteps.length - (lastStepHasLocation ? 1 : 2) : -1;
@@ -110,6 +109,21 @@ const ItineraryModalMap = ({
     () => pathSteps?.filter((step) => step.location !== null).length ?? 0,
     [pathSteps]
   );
+
+  const { data: infraBbox } = osrdEditoastApi.endpoints.getInfraByInfraIdBbox.useQuery(
+    infraID ? { infraId: infraID } : skipToken
+  );
+
+  useMemo(() => {
+    if (infraBbox === undefined) return;
+    if (locatedStepsCount >= 2) return;
+    const { min_lat, min_lon, max_lat, max_lon } = infraBbox!;
+
+    const newViewport = computeBBoxViewport([min_lon, min_lat, max_lon, max_lat], viewport, {
+      padding: 64,
+    });
+    updateViewport(newViewport);
+  }, [infraBbox, locatedStepsCount]);
 
   useEffect(() => {
     if (!isMapSelectionMode) {
@@ -320,42 +334,6 @@ const ItineraryModalMap = ({
     }
     return result;
   }, [layersSettings, isMapSelectionMode]);
-
-  useEffect(() => {
-    if (pathProperties?.geometry) {
-      focusedInfraIdRef.current = undefined;
-      return;
-    }
-
-    // Initial state: focus on infra until a valid itinerary can drive map framing.
-    if (!infraID || locatedStepsCount >= 2 || focusedInfraIdRef.current === infraID) {
-      return;
-    }
-
-    focusedInfraIdRef.current = infraID;
-
-    void getInfraByInfraIdBbox({ infraId: infraID })
-      .unwrap()
-      .then((infraBbox) => {
-        if (!infraBbox) {
-          return;
-        }
-
-        const mapContainer = mapRef.current?.getContainer();
-        const newViewport = computeBBoxViewport(
-          [infraBbox.min_lon, infraBbox.min_lat, infraBbox.max_lon, infraBbox.max_lat],
-          viewport,
-          {
-            width: mapContainer?.clientWidth,
-            height: mapContainer?.clientHeight,
-            padding: 100,
-          }
-        );
-
-        dispatch(updateViewport(newViewport));
-      })
-      .catch(() => undefined);
-  }, [infraID, locatedStepsCount, pathProperties?.geometry, getInfraByInfraIdBbox, viewport]);
 
   return (
     <MapContextProvider

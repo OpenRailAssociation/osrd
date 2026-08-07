@@ -1,8 +1,8 @@
-import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { useCallback, useMemo, useRef } from 'react';
 
+import { skipToken } from '@reduxjs/toolkit/query';
 import type { MapLibreEvent } from 'maplibre-gl';
 import type { MapRef } from 'react-map-gl/maplibre';
-import { useParams } from 'react-router-dom';
 
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import BaseMap from 'common/Map/BaseMap';
@@ -10,6 +10,7 @@ import MapButtons from 'common/Map/Buttons/MapButtons';
 import { MapContextProvider } from 'common/Map/useMapContext';
 import { computeBBoxViewport } from 'common/Map/WarpedMap/core/helpers';
 import { useInfraID } from 'common/osrdContext';
+import { useParams } from 'react-router-dom';
 import { useMapSettings, useMapSettingsActions } from 'reducers/commonMap';
 import type { MapSettings, Viewport } from 'reducers/commonMap/types';
 import { syncReferenceMapRouterViewport, updateReferenceMapViewport } from 'reducers/referenceMap';
@@ -25,14 +26,8 @@ const Map = () => {
     useMapSettingsActions();
 
   const infraID = useInfraID();
-  const { urlLat, urlLon, urlZoom, urlBearing, urlPitch } = useParams();
 
   const mapRef = useRef<MapRef | null>(null);
-  const focusedInfraIdRef = useRef<number | undefined>(undefined);
-  const skipNextInfraAutoFocusRef = useRef(
-    Boolean(urlLat && urlLon && urlZoom && urlBearing && urlPitch)
-  );
-  const [getInfraByInfraIdBbox] = osrdEditoastApi.endpoints.getInfraByInfraIdBbox.useLazyQuery();
 
   const updateMapSettings = useCallback(
     (value: Partial<MapSettings>) => {
@@ -67,41 +62,26 @@ const Map = () => {
     [layersSettings.track_sections]
   );
 
-  useEffect(() => {
-    if (!infraID || focusedInfraIdRef.current === infraID) {
-      return;
-    }
-
+  const { urlLat } = useParams();
+  const skipNextInfraAutoFocusRef = useRef(urlLat !== undefined); 
+  const { data: infraBbox } = osrdEditoastApi.endpoints.getInfraByInfraIdBbox.useQuery(
+    infraID ? { infraId: infraID } : skipToken
+  );
+  useMemo(() => {
+    if (infraBbox === undefined) return;
     if (skipNextInfraAutoFocusRef.current) {
       skipNextInfraAutoFocusRef.current = false;
-      focusedInfraIdRef.current = infraID;
       return;
     }
 
-    focusedInfraIdRef.current = infraID;
+    const { min_lat, min_lon, max_lat, max_lon } = infraBbox!;
 
-    void getInfraByInfraIdBbox({ infraId: infraID })
-      .unwrap()
-      .then((infraBbox) => {
-        if (!infraBbox) {
-          return;
-        }
+    const newViewport = computeBBoxViewport([min_lon, min_lat, max_lon, max_lat], viewport, {
+      padding: 64,
+    });
 
-        const mapContainer = mapRef.current?.getContainer();
-        const newViewport = computeBBoxViewport(
-          [infraBbox.min_lon, infraBbox.min_lat, infraBbox.max_lon, infraBbox.max_lat],
-          viewport,
-          {
-            width: mapContainer?.clientWidth,
-            height: mapContainer?.clientHeight,
-            padding: 100,
-          }
-        );
-
-        updateViewportChange(newViewport);
-      })
-      .catch(() => undefined);
-  }, [infraID, getInfraByInfraIdBbox, updateViewportChange, viewport]);
+    updateViewportChange(newViewport);
+  }, [infraBbox]);
 
   return (
     <main className="mastcontainer mastcontainer-map">

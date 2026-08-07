@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { ChevronLeft, ChevronRight } from '@osrd-project/ui-icons';
+import { skipToken } from '@reduxjs/toolkit/query';
 import cx from 'classnames';
 import { isNil, toInteger } from 'lodash';
 import { useTranslation } from 'react-i18next';
@@ -58,10 +59,8 @@ const Editor = () => {
     useMapSettingsActions();
 
   const mapRef = useRef<MapRef>(null);
-  const focusedInfraIdRef = useRef<number | undefined>(undefined);
   const { urlInfra } = useParams();
   const infraID = useInfraID();
-  const [getInfraByInfraIdBbox] = osrdEditoastApi.endpoints.getInfraByInfraIdBbox.useLazyQuery();
   const [searchParams, setSearchParams] = useSearchParams();
   const isLoading = useSelector(getIsLoading);
   const isLocked = useSelector(getInfraLockStatus);
@@ -313,35 +312,19 @@ const Editor = () => {
     }
   }, [urlInfra]);
 
-  useEffect(() => {
-    if (isNil(infraID) || focusedInfraIdRef.current === infraID) {
-      return;
-    }
+  const { data: infraBbox } = osrdEditoastApi.endpoints.getInfraByInfraIdBbox.useQuery(
+    infraID ? { infraId: infraID } : skipToken
+  );
+  useMemo(() => {
+    if (infraBbox === undefined) return;
+    const { min_lat, min_lon, max_lat, max_lon } = infraBbox!;
 
-    focusedInfraIdRef.current = infraID;
+    const newViewport = computeBBoxViewport([min_lon, min_lat, max_lon, max_lat], viewport, {
+      padding: 64,
+    });
 
-    void getInfraByInfraIdBbox({ infraId: infraID })
-      .unwrap()
-      .then((infraBbox) => {
-        if (!infraBbox) {
-          return;
-        }
-
-        const mapContainer = mapRef.current?.getContainer();
-        const newViewport = computeBBoxViewport(
-          [infraBbox.min_lon, infraBbox.min_lat, infraBbox.max_lon, infraBbox.max_lat],
-          viewport,
-          {
-            width: mapContainer?.clientWidth,
-            height: mapContainer?.clientHeight,
-            padding: 100,
-          }
-        );
-
-        setViewport(newViewport);
-      })
-      .catch(() => undefined);
-  }, [infraID, getInfraByInfraIdBbox, setViewport, viewport]);
+    setViewport(newViewport);
+  }, [infraBbox]);
 
   // Lifecycle events on tools:
   useEffect(() => {
