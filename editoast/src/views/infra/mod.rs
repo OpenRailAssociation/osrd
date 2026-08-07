@@ -28,6 +28,7 @@ use editoast_models::prelude::*;
 use geos::Geom;
 use itertools::Itertools;
 use schemas::infra::SwitchType;
+use schemas::primitives::BoundingBox;
 use schemas::primitives::Identifier;
 use schemas::primitives::NonBlankString;
 use serde::Deserialize;
@@ -453,6 +454,41 @@ pub(in crate::views) async fn put(
         })
         .await?;
     Ok(Json(infra))
+}
+
+/// Retrieve the bounding box of an infra.
+#[editoast_derive::route]
+#[utoipa::path(
+    get, path = "/",
+    tag = "infra",
+    params(InfraIdParam),
+    responses(
+        (status = 200, description = "The bbox of the infra if it contains tracks", body = Option<BoundingBox>),
+        (status = 404, description = "Infra ID not found"),
+    ),
+)]
+pub(in crate::views) async fn bbox(
+    Extension(authn_state): Extension<authentication::State>,
+    State(AppState {
+        db_pool, openfga, ..
+    }): State<AppState>,
+    Path(InfraIdParam { infra_id }): Path<InfraIdParam>,
+) -> Result<Json<Option<BoundingBox>>> {
+    let infra = Infra::retrieve_or_fail(db_pool.get().await?, infra_id, || {
+        InfraApiError::NotFound { infra_id }
+    })
+    .await?;
+
+    // Check user privilege on infra
+    if let authentication::State::Authenticated { user, .. } = &authn_state {
+        v2::infra_privileges(*user, authz::Infra(infra_id))
+            .map(async |privileges| privileges.contains(&authz::InfraPrivilege::CanRestrictedRead))
+            .ok_or(AuthorizationError::Forbidden)
+            .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
+            .await??;
+    }
+
+    Ok(Json(infra.bbox(&mut db_pool.get().await?).await?))
 }
 
 /// Return the railjson list of switch types
@@ -1383,6 +1419,63 @@ pub mod tests {
                 .by_user(user_reader.as_ref())
                 .await
                 .assert_status_ok();
+        }
+    }
+
+    mod bbox {
+        use super::*;
+        use approx::assert_relative_eq;
+        use pretty_assertions::assert_eq;
+
+        #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+        async fn get_bbox() {
+            let app = test_app!().build();
+            let db_pool = app.db_pool();
+            let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
+            let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
+
+            let infra_cache = InfraCache::load(&mut db_pool.get_ok(), &small_infra)
+                .await
+                .unwrap();
+            generated_data::refresh_all(db_pool.clone(), small_infra.id, &infra_cache)
+                .await
+                .unwrap();
+
+            let user = app
+                .user("user", "User")
+                .with_infra_grant(empty_infra.id, InfraGrant::RestrictedReader)
+                .with_infra_grant(small_infra.id, InfraGrant::RestrictedReader)
+                .create()
+                .await;
+
+            let res: Option<BoundingBox> = app
+                .get(format!("/infra/{}/bbox", empty_infra.id).as_str())
+                .by_user(user.as_ref())
+                .await
+                .assert_status_ok()
+                .json();
+            assert_eq!(res, None);
+
+            let res: Option<BoundingBox> = app
+                .get(format!("/infra/{}/bbox", small_infra.id).as_str())
+                .by_user(user.as_ref())
+                .await
+                .assert_status_ok()
+                .json();
+            let bbox = res.expect("Expected a bounding box for small_infra");
+
+            let bbox_ref: BoundingBox = infra_cache.track_sections().values().fold(
+                BoundingBox::default(),
+                |mut bbox, ts| {
+                    bbox.union(&ts.unwrap_track_section().bbox_geo);
+                    bbox
+                },
+            );
+
+            assert_relative_eq!(bbox.min_lat, bbox_ref.min_lat);
+            assert_relative_eq!(bbox.min_lon, bbox_ref.min_lon);
+            assert_relative_eq!(bbox.max_lat, bbox_ref.max_lat);
+            assert_relative_eq!(bbox.max_lon, bbox_ref.max_lon);
         }
     }
 
