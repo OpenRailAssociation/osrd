@@ -32,7 +32,7 @@ const getOpRefKey = (opRef: OperationalPointReference): string => {
 
 /**
  * For each path step, get all its secondary codes and track names to display in the form
- * and update the pathStepsMetadataById state.
+ * and update the pathStepsMetadataByKey state.
  */
 export const usePathStepsMetadata = (
   pathSteps: PathStepV2[],
@@ -40,9 +40,9 @@ export const usePathStepsMetadata = (
 ) => {
   const { infraId, timetableId, getTrackSectionsByIds } = useScenarioContext();
 
-  const [pathStepsMetadataById, setPathStepsMetadataById] = useState<Map<string, PathStepMetadata>>(
-    new Map()
-  );
+  const [pathStepsMetadataByKey, setPathStepsMetadataByKey] = useState<
+    Map<string, PathStepMetadata>
+  >(new Map());
 
   // Build the opRefsByKey map to query local track names from the timetable
   const opRefsByKey = useMemo(() => {
@@ -109,13 +109,13 @@ export const usePathStepsMetadata = (
       const trackSectionsById = await getTrackSectionsByIds(allTrackIds);
 
       // 4. Loop of the path steps to build the metadata map
-      const newPathStepsMetadataById = new Map<string, PathStepMetadata>();
+      const newPathStepsMetadataByKey = new Map<string, PathStepMetadata>();
 
       pathSteps.forEach((pathStep) => {
         const { location } = pathStep;
         // TODO : we need to evaluate if we still need to invalidate a pathstep when it has no location
         if (!location) {
-          newPathStepsMetadataById.set(pathStep.key, { isInvalid: true });
+          newPathStepsMetadataByKey.set(pathStep.key, { isInvalid: true });
           return;
         }
 
@@ -134,11 +134,11 @@ export const usePathStepsMetadata = (
           if (!correspondingTrack || !coordinates) {
             // Can happen in case of track offset id does not exist in infra or
             // if its offset is greater than the track length
-            newPathStepsMetadataById.set(pathStep.key, { isInvalid: true });
+            newPathStepsMetadataByKey.set(pathStep.key, { isInvalid: true });
             return;
           }
 
-          newPathStepsMetadataById.set(pathStep.key, {
+          newPathStepsMetadataByKey.set(pathStep.key, {
             type: 'trackOffset',
             isInvalid: false,
             label: '',
@@ -155,16 +155,16 @@ export const usePathStepsMetadata = (
         if (!matchedOp) {
           // A just-added step has no match until /match_operational_points
           // answers; keep its pre-filled metadata instead of flagging it
-          const previous = pathStepsMetadataById.get(pathStep.key);
+          const previous = pathStepsMetadataByKey.get(pathStep.key);
           if (previous && !previous.isInvalid && previous.type === 'opRef') {
-            newPathStepsMetadataById.set(pathStep.key, previous);
+            newPathStepsMetadataByKey.set(pathStep.key, previous);
             return;
           }
 
           const opRefKey = getOpRefKey(location.operational_point);
           const timetableTrackNames = localTrackNamesData?.[opRefKey] ?? [];
 
-          newPathStepsMetadataById.set(pathStep.key, {
+          newPathStepsMetadataByKey.set(pathStep.key, {
             isInvalid: true,
             localTrackName: local_track_name ?? undefined,
             customTrackNames: timetableTrackNames.length > 0 ? timetableTrackNames : undefined,
@@ -199,7 +199,7 @@ export const usePathStepsMetadata = (
 
         const parts = [...validParts, ...customParts];
 
-        newPathStepsMetadataById.set(pathStep.key, {
+        newPathStepsMetadataByKey.set(pathStep.key, {
           type: 'opRef',
           isInvalid: false,
           name: matchedOp.name,
@@ -213,21 +213,21 @@ export const usePathStepsMetadata = (
       const pendingStepKey = pendingStepKeyRef?.current;
 
       if (pendingStepKey) {
-        const metadata = newPathStepsMetadataById.get(pendingStepKey);
+        const metadata = newPathStepsMetadataByKey.get(pendingStepKey);
         if (metadata && !metadata.isInvalid) {
           pendingStepKeyRef.current = '';
         }
       }
-      setPathStepsMetadataById(newPathStepsMetadataById);
+      setPathStepsMetadataByKey(newPathStepsMetadataByKey);
     };
     fetchAndSetMetadata();
   }, [pathStepsOperationalPoints, pathSteps, localTrackNamesData]);
 
   const setPathStepMetadata = useCallback(
     (id: string, metadata: PathStepMetadata) =>
-      setPathStepsMetadataById((prev) => new Map(prev).set(id, metadata)),
+      setPathStepsMetadataByKey((prev) => new Map(prev).set(id, metadata)),
     []
   );
 
-  return { pathStepsMetadataById, setPathStepMetadata };
+  return { pathStepsMetadataByKey, setPathStepMetadata };
 };
