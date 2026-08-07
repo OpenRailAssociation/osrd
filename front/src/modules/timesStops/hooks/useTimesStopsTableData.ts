@@ -373,11 +373,6 @@ const useTimesStopsTableData = (
           const { shortSlipDistance, onStopSignal } =
             receptionSignalToSignalBooleans(receptionSignal);
 
-          // TODO: remove this error once we migrate the location to trigram/domestic
-          if (op.uic === undefined || op.uic === null) {
-            throw new Error('No valid UIC found to build operational_point_part_reference');
-          }
-
           formattedRows.push({
             ...buildTableRow({
               id: op.waypointId,
@@ -390,14 +385,13 @@ const useTimesStopsTableData = (
               computedArrival,
               shortSlipDistance,
               closedSignal: onStopSignal,
-              // Build location from OP data for creating a new PathItem if user edits this row
-              // OPs on path always have a UIC identifier
               location: {
                 type: 'operational_point_part_reference',
                 operational_point: {
-                  type: 'uic',
-                  uic: op.uic,
+                  type: 'domestic',
+                  main_code: op.main_code,
                   secondary_code: op.secondary_code ?? null,
+                  country_code: op.country_code,
                 },
               },
             }),

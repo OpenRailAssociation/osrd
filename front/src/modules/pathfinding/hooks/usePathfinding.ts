@@ -71,7 +71,8 @@ const usePathfinding = ({
 
   /**
    * Fetches operational point data for the given path steps using a search API call
-   * and updates each step with the matched operational point's name, uic, ch and coordinates (if found).
+   * and updates each step with the matched operational point's name, main code, secondary code,
+   * country code and coordinates (if found).
    *
    * This is useful when the pathfinding can not be ran or fails.
    * If pathfinding is successful, calling this function is unnecessary.
@@ -110,17 +111,18 @@ const usePathfinding = ({
         return {
           ...step,
           ...(op.name && { name: op.name }),
-          ...(op.uic && {
+          ...{
             location: {
               local_track_name: step.location.local_track_name,
               type: 'operational_point_part_reference',
               operational_point: {
-                uic: op.uic,
+                main_code: op.main_code,
                 secondary_code: op.secondary_code,
-                type: 'uic',
+                country_code: op.country_code,
+                type: 'domestic',
               },
             },
-          }),
+          },
           ...(op.geo && { coordinates: op.geo.coordinates }),
         };
       });
