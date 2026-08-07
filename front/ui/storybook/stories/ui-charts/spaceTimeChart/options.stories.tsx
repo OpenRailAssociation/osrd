@@ -8,7 +8,7 @@ import {
 } from '@osrd-project/ui-charts';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import cx from 'classnames';
-import FileSaver from 'file-saver';
+import { saveAs } from 'file-saver';
 
 import '@osrd-project/ui-core/dist/theme.css';
 import '@osrd-project/ui-charts/dist/theme.css';
@@ -37,10 +37,7 @@ const ScreenshotButton = () => {
       }}
     >
       <button
-        onClick={() =>
-          // oxlint-disable-next-line typescript/no-deprecated -- False flag, as only the last argument is deprecated
-          captureCanvases().then((blob) => FileSaver.saveAs(blob, 'space-time-chart.png'))
-        }
+        onClick={() => captureCanvases().then((blob) => saveAs(blob, 'space-time-chart.png'))}
       >
         Export to PNG
       </button>
