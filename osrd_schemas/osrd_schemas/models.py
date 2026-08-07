@@ -1196,6 +1196,20 @@ class EditoastLinesErrorsLineNotFound(BaseModel):
     type: Literal["editoast:infra:lines:LineNotFound"]
 
 
+class EditoastLinkingErrorBatchNotFoundContext(BaseModel):
+    count: int
+
+
+class EditoastLinkingErrorBatchNotFound(BaseModel):
+    context: Annotated[
+        EditoastLinkingErrorBatchNotFoundContext | None,
+        Field(title="EditoastLinkingErrorBatchNotFoundContext"),
+    ] = None
+    message: str
+    status: Literal[404]
+    type: Literal["editoast:train_schedule_linking:BatchNotFound"]
+
+
 class EditoastLinkingErrorDatabase(BaseModel):
     context: Annotated[
         dict[str, Any] | None, Field(title="EditoastLinkingErrorDatabaseContext")
@@ -4738,6 +4752,7 @@ class EditoastError(
         | EditoastLevelCrossingErrorTrainBatchNotFound
         | EditoastLevelCrossingErrorUnsupportedTimetableType
         | EditoastLinesErrorsLineNotFound
+        | EditoastLinkingErrorBatchNotFound
         | EditoastLinkingErrorDatabase
         | EditoastLinkingErrorRequestIncompatibleWithTimetableType
         | EditoastLinkingErrorSourceAlreadyUsed
@@ -4920,6 +4935,7 @@ class EditoastError(
         | EditoastLevelCrossingErrorTrainBatchNotFound
         | EditoastLevelCrossingErrorUnsupportedTimetableType
         | EditoastLinesErrorsLineNotFound
+        | EditoastLinkingErrorBatchNotFound
         | EditoastLinkingErrorDatabase
         | EditoastLinkingErrorRequestIncompatibleWithTimetableType
         | EditoastLinkingErrorSourceAlreadyUsed

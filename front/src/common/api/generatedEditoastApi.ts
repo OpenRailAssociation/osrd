@@ -1405,6 +1405,17 @@ const injectedRtkApi = api
         }),
         providesTags: ['linkings'],
       }),
+      postTrainSchedulesLinkingsDelete: build.mutation<
+        PostTrainSchedulesLinkingsDeleteApiResponse,
+        PostTrainSchedulesLinkingsDeleteApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/train_schedules/linkings/delete`,
+          method: 'POST',
+          body: queryArg.body,
+        }),
+        invalidatesTags: ['linkings'],
+      }),
       patchTrainSchedulesMove: build.mutation<
         PatchTrainSchedulesMoveApiResponse,
         PatchTrainSchedulesMoveApiArg
@@ -2724,6 +2735,10 @@ export type PostTrainSchedulesLinkingsApiArg = {
     timetable_id: number;
     train_schedules: number[];
   };
+};
+export type PostTrainSchedulesLinkingsDeleteApiResponse = unknown;
+export type PostTrainSchedulesLinkingsDeleteApiArg = {
+  body: number[];
 };
 export type PatchTrainSchedulesMoveApiResponse = unknown;
 export type PatchTrainSchedulesMoveApiArg = {

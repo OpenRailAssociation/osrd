@@ -331,6 +331,7 @@
       "TrainScheduleNotFound": "Train schedule '{{train_schedule_id}}' could not be found"
     },
     "train_schedule_linking": {
+      "BatchNotFound": "{{count}} linking(s) could not be found",
       "Database": "Internal error (database)",
       "RequestIncompatibleWithTimetableType": "Timetable {{timetable_id}} has type {{timetable_type}}, so it can't have occurrences with train_schedule_instance_index",
       "SourceAlreadyUsed": "Occurrence {{occurrence}} is already used as a source.",

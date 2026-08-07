@@ -113,6 +113,9 @@ enum LinkingError {
         timetable_id: i64,
         timetable_type: TimetableType,
     },
+    #[error("{count} linking(s) could not be found")]
+    #[editoast_error(status = 404)]
+    BatchNotFound { count: usize },
     #[error(transparent)]
     #[from(forward)]
     #[serde(skip)]
@@ -312,6 +315,30 @@ pub(in crate::views) async fn create(
         .map_err(LinkingError::from)?;
     let response: Vec<LinkingResponse> = linkings.into_iter().map_into().collect();
     Ok((StatusCode::CREATED, Json(response)))
+}
+
+/// Delete linkings in batch
+#[editoast_derive::route(authz::Role::OperationalStudies)]
+#[utoipa::path(
+    post, path = "",
+    tag = "linkings",
+    request_body = Vec<i64>,
+    responses(
+        (status = 204, description = "Linkings deleted"),
+    ),
+)]
+pub(in crate::views) async fn delete(
+    State(AppState { db_pool, .. }): State<AppState>,
+    Json(linking_ids): Json<Vec<i64>>,
+) -> Result<impl IntoResponse> {
+    let conn = &mut db_pool.get().await?;
+
+    TrainScheduleLinking::delete_batch_or_fail(conn, linking_ids, |count| {
+        LinkingError::BatchNotFound { count }
+    })
+    .await?;
+
+    Ok(StatusCode::NO_CONTENT)
 }
 
 #[cfg(test)]
