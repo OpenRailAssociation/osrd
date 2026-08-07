@@ -1,3 +1,5 @@
+import { STONE_500 } from '../common/helpers/colors';
+
 export const INITIAL_OP_LIST_HEIGHT = 521;
 
 export const BASE_WAYPOINT_HEIGHT = 32;
@@ -17,4 +19,4 @@ export const MAX_ZOOM_MANCHETTE_HEIGHT_MILLIMETER = 500_000;
 export const FOOTER_HEIGHT = 40; // height of the manchette footer
 export const WAYPOINT_LINE_HEIGHT = 16;
 
-export const PATH_COLOR_DEFAULT = '#8A714B';
+export const PATH_COLOR_DEFAULT = STONE_500;

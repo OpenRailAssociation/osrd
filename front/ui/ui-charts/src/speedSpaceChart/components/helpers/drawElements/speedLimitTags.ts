@@ -1,3 +1,7 @@
+import chroma from 'chroma-js';
+
+import { FONT_SANS } from '../../../../common/consts';
+import { BLACK_10, WHITE_100 } from '../../../../common/helpers/colors';
 import type {
   DrawFunctionParams,
   SpeedLimitTagsLayerDrawFunctionParams,
@@ -9,7 +13,6 @@ import {
   LINEAR_LAYERS_BACKGROUND_COLOR,
   LINEAR_LAYERS_HEIGHTS,
   MARGINS,
-  WHITE,
 } from '../../const';
 import {
   clearCanvas,
@@ -65,7 +68,7 @@ export const drawSpeedLimitTags = ({
     speedLimitTagsBackgroundColor = LINEAR_LAYERS_BACKGROUND_COLOR.SECOND;
   }
 
-  drawSeparatorLinearLayer(ctx, 'rgba(0,0,0,0.1)', MARGINS, width, LINEAR_LAYER_SEPARATOR_HEIGHT);
+  drawSeparatorLinearLayer(ctx, BLACK_10, MARGINS, width, LINEAR_LAYER_SEPARATOR_HEIGHT);
   drawLinearLayerBackground(
     ctx,
     speedLimitTagsBackgroundColor,
@@ -140,11 +143,11 @@ export const drawSpeedLimitTags = ({
             iconYPosition + ICON_OFFSET,
             ICON_WIDTH,
             ICON_HEIGHT,
-            WHITE.hex()
+            chroma(WHITE_100).hex()
           );
       } else {
         ctx.fillStyle = 'white';
-        ctx.font = '600 12px "IBM Plex Sans"';
+        ctx.font = `600 12px "${FONT_SANS}"`;
         ctx.textAlign = 'left';
         ctx.textBaseline = 'middle';
         const textPosition = x + TEXT_LEFT_PADDING;
@@ -153,7 +156,7 @@ export const drawSpeedLimitTags = ({
     }
   });
 
-  drawSeparatorLinearLayer(ctx, 'rgba(0,0,0,0.1)', MARGINS, width, marginTop);
+  drawSeparatorLinearLayer(ctx, BLACK_10, MARGINS, width, marginTop);
   ctx.restore();
 
   // prevent overlapping with margins left and right

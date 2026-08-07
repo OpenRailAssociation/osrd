@@ -8,14 +8,14 @@
  * precision".
  */
 export function getPickingScalingRatio(): number {
-  const PICKING_DOWNSCALING_RATIO = 0.5;
+  const pickingDownscalingRatio = 0.5;
   const dpr = window.devicePixelRatio || 1;
 
   // When devicePixelRatio is over 1 (like for Retina displays), we downscale based on the "HTML
   // pixels":
-  if (dpr > 1) return PICKING_DOWNSCALING_RATIO;
+  if (dpr > 1) return pickingDownscalingRatio;
 
   // When devicePixelRatio is under or equal to 1 (like when the user zooms out for instance), we
   // downscale based on the actual "screen pixels" (to avoid having a too large scene to fill):
-  return PICKING_DOWNSCALING_RATIO * dpr;
+  return pickingDownscalingRatio * dpr;
 }

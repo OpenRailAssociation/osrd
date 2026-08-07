@@ -1,11 +1,11 @@
+import { FONT_MONO, FONT_SANS } from '../../../../common/consts';
+import { BLACK_55, BLACK_70, WHITE_100 } from '../../../../common/helpers/colors';
 import { getCrispLineCoordinate } from '../../../../common/helpers/time';
 import type { SpaceTimeChartContextType } from '../../../../spaceTimeChart';
-import { OCCUPANCY_ZONE_Y_START, OCCUPANCY_ZONE_HEIGHT, FONTS, COLORS } from '../../../lib/consts';
+import { OCCUPANCY_ZONE_Y_START, OCCUPANCY_ZONE_HEIGHT } from '../../../lib/consts';
 import type { OccupancyZone } from '../../../lib/types';
 import { drawOccupancyZonesTexts } from './drawOccupancyZonesTexts';
 
-const { SANS, MONO } = FONTS;
-const { REMAINING_TRAINS_BACKGROUND, WHITE_100 } = COLORS;
 const REMAINING_TRAINS_WIDTH = 70;
 const REMAINING_TRAINS_HEIGHT = 24;
 const REMAINING_TEXT_OFFSET = 12;
@@ -22,6 +22,8 @@ const ARROW_OFFSET_Y = 1.5;
 const ARROW_WIDTH = 4.5;
 const ARROW_TOP_Y = 3.5;
 const ARROW_BOTTOM_Y = 6.5;
+
+const REMAINING_TRAINS_BACKGROUND_COLOR = BLACK_70;
 
 export const drawThroughTrain = (ctx: CanvasRenderingContext2D, x: number, y: number) => {
   // Through trains are materialized by converging arrows like the following ones
@@ -65,13 +67,13 @@ export const drawRemainingTrainsBox = (
   const y = getSpacePixel(position) + yOffset;
   const textY = y + OCCUPANCY_ZONE_Y_START - REMAINING_TEXT_OFFSET;
 
-  ctx.fillStyle = REMAINING_TRAINS_BACKGROUND;
+  ctx.fillStyle = REMAINING_TRAINS_BACKGROUND_COLOR;
   ctx.beginPath();
   ctx.rect(x - REMAINING_TRAINS_WIDTH / 2, textY, REMAINING_TRAINS_WIDTH, REMAINING_TRAINS_HEIGHT);
   ctx.fill();
   ctx.stroke();
   ctx.fillStyle = WHITE_100;
-  ctx.font = SANS;
+  ctx.font = `400 12px ${FONT_SANS}`;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   ctx.fillText(`+${remainingTrainsNb} trains`, x, textY + REMAINING_TRAINS_HEIGHT / 2);
@@ -98,7 +100,7 @@ export const drawOccupationZone = (
 
   ctx.lineJoin = 'round';
   ctx.lineCap = 'round';
-  ctx.font = MONO;
+  ctx.font = `400 12px ${FONT_MONO}`;
 
   const { getTimePixel, getSpacePixel } = stcContext;
   const yStart = getCrispLineCoordinate(getSpacePixel(position), BACKGROUND_HEIGHT);
@@ -201,7 +203,7 @@ export const drawZoneTrailingText = (
   const yCenter = getSpacePixel(position) + yOffset + OCCUPANCY_ZONE_Y_START - LABEL_OFFSET_Y;
 
   ctx.save();
-  ctx.font = '600 12px IBM Plex Mono';
+  ctx.font = `600 12px ${FONT_MONO}`;
   ctx.textAlign = 'left';
   ctx.textBaseline = 'middle';
 
@@ -214,12 +216,12 @@ export const drawZoneTrailingText = (
   const x = xEnd;
   const yTop = yCenter - boxH / 2;
 
-  ctx.fillStyle = 'rgba(0,0,0,0.55)';
+  ctx.fillStyle = BLACK_55;
   ctx.beginPath();
   ctx.roundRect(x, yTop, boxW, boxH, radius);
   ctx.fill();
 
-  ctx.fillStyle = '#FFFFFF';
+  ctx.fillStyle = WHITE_100;
   ctx.fillText(trailingText, x + paddingX, yCenter + 0.5);
   ctx.restore();
 };

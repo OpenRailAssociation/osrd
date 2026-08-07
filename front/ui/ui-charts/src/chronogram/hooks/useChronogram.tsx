@@ -3,10 +3,10 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { Point } from '../../common/types';
 import { timeScaleToZoomValue, zoomX } from '../../manchette/utils/helpers';
 import {
-  CHRONOGRAM_HEADER_HEIGHT,
   CHRONOGRAM_BOTTOM_PADDING,
   LEVEL_CROSSING_ITEM_HEIGHT,
-} from '../lib/const';
+  CHRONOGRAM_HEADER_HEIGHT,
+} from '../consts';
 
 // TODO: manchette's existant utils => common ?
 function getDistance(a: Point, b: Point): Point {

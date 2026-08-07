@@ -1,9 +1,17 @@
 import { sum } from 'lodash';
 
-import { TRACK_HEIGHT_CONTAINER, COLORS, TICKS_PATTERN } from '../../../lib/consts';
+import {
+  WHITE_100,
+  WHITE_50,
+  GREY_20,
+  PRIMARY_5,
+  PRIMARY_30,
+  SKY_700,
+} from '../../../../common/helpers/colors';
+import { TRACK_HEIGHT_CONTAINER, TICKS_PATTERN } from '../../../lib/consts';
 import { getTickPattern } from '../../utils';
 
-const { WHITE_100, WHITE_50, GREY_20, PRIMARY_5, PRIMARY_30, RAIL_TICK } = COLORS;
+const RAIL_TICK_COLOR = SKY_700;
 
 const drawRails = ({
   xStart,
@@ -95,7 +103,7 @@ export const drawTrack = ({
       xStart: getTimePixel(+t),
       yStart: TRACK_HEIGHT_CONTAINER / 2,
       ticks: TICKS_PATTERN[tickPattern],
-      stroke: RAIL_TICK,
+      stroke: RAIL_TICK_COLOR,
     });
   }
 

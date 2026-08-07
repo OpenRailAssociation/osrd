@@ -1,3 +1,12 @@
+import { FONT_SANS } from '../../../../common/consts';
+import {
+  BLACK_10,
+  BLACK_100,
+  BLACK_20,
+  GREY_80,
+  STONE_900,
+  WHITE_100,
+} from '../../../../common/helpers/colors';
 import type { DrawFunctionParams } from '../../../types';
 import { LINEAR_LAYERS_BACKGROUND_COLOR, LINEAR_LAYERS_HEIGHTS, MARGINS } from '../../const';
 import {
@@ -54,7 +63,7 @@ export const drawElectricalProfile = ({ ctx, width, height, store }: DrawFunctio
     const profileWidth = xEnd - xStart;
 
     if (data.value.electricalProfile === 'neutral') {
-      ctx.fillStyle = '#1F1B17';
+      ctx.fillStyle = STONE_900;
       ctx.fillRect(xStart, topRect + 28, profileWidth, 9);
       ctx.clearRect(xStart, topRect + 31, profileWidth, 3);
     } else {
@@ -104,14 +113,14 @@ export const drawElectricalProfile = ({ ctx, width, height, store }: DrawFunctio
 
           // Draw profile name
 
-          ctx.fillStyle = '#000';
-          ctx.font = '600 14px IBM Plex Sans';
+          ctx.fillStyle = BLACK_100;
+          ctx.font = `600 14px ${FONT_SANS}`;
           ctx.textAlign = 'center';
           ctx.fillText(`${electricalProfile}`, xStart + profileWidth / 2, topLayer / 2);
 
           // Draw begin and end position
-          ctx.fillStyle = 'rgb(49, 46, 43)';
-          ctx.font = '400 14px IBM Plex Sans';
+          ctx.fillStyle = GREY_80;
+          ctx.font = `400 14px ${FONT_SANS}`;
 
           ctx.textAlign = 'right';
           ctx.fillText(
@@ -165,17 +174,17 @@ export const drawElectricalProfile = ({ ctx, width, height, store }: DrawFunctio
       const profileWidth = xEnd - xStart;
       const profileHeight = PROFILE_HEIGHT_MAX - heightLevelMax * 4;
 
-      ctx.shadowColor = 'rgba(0, 0, 0, 0.19)';
+      ctx.shadowColor = BLACK_20;
       ctx.shadowBlur = 5;
 
-      ctx.strokeStyle = '#FFF';
+      ctx.strokeStyle = WHITE_100;
       ctx.lineWidth = 2;
       ctx.strokeRect(xStart - 1, startHoverStrokeHeight - 1, profileWidth + 2, profileHeight + 2);
       ctx.stroke();
     }
   }
 
-  drawSeparatorLinearLayer(ctx, 'rgba(0,0,0,0.1)', MARGINS, width, topLayer + 1 - MARGIN_BOTTOM);
+  drawSeparatorLinearLayer(ctx, BLACK_10, MARGINS, width, topLayer + 1 - MARGIN_BOTTOM);
 
   ctx.restore();
 

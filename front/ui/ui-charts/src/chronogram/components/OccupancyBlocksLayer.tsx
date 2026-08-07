@@ -1,5 +1,6 @@
 import { useCallback, useContext } from 'react';
 
+import { FONT_SANS } from '../../common/consts';
 import { TimeChartCanvasContext } from '../../common/context';
 import {
   BLACK_100,
@@ -11,7 +12,7 @@ import {
 } from '../../common/helpers/colors';
 import { useDraw } from '../../common/hooks/useCanvas';
 import type { TimeChartContextType, DrawingFunction } from '../../common/types';
-import { CHRONOGRAM_HEADER_HEIGHT, LEVEL_CROSSING_ITEM_HEIGHT } from '../lib/const';
+import { LEVEL_CROSSING_ITEM_HEIGHT, CHRONOGRAM_HEADER_HEIGHT } from '../consts';
 import { ChronogramContext } from '../lib/context';
 import type { OccupancyBlock } from '../lib/types';
 import { formatDuration } from '../utils/format';
@@ -107,7 +108,7 @@ const drawBlockText = ({
   maxWidth?: number;
 }) => {
   ctx.save();
-  ctx.font = '12px IBM Plex Sans';
+  ctx.font = `12px ${FONT_SANS}`;
   if (color) ctx.fillStyle = color;
   ctx.textAlign = 'center';
   ctx.fillText(text, x, y, maxWidth);

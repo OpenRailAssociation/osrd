@@ -1,13 +1,15 @@
 import { useCallback, useContext } from 'react';
 
+import chroma from 'chroma-js';
+
 import { MouseContext } from '../../../common';
+import { BLUE_500, CYAN_300, PRIMARY_50, PRIMARY_80 } from '../../../common/helpers/colors';
 import { useDraw } from '../../../common/hooks/useCanvas';
 import type { DrawingFunction } from '../../../common/types';
 import {
   SpaceTimeChartCanvasContext,
   type SpaceTimeChartContextType,
 } from '../../../spaceTimeChart';
-import { COLORS } from '../../lib/consts';
 import type { OccupancyZone } from '../../lib/types';
 import { drawThroughTrain } from '../helpers/drawElements/drawOccupancyZones';
 
@@ -32,18 +34,18 @@ const DraggingOccupancyZonesLayer = ({ occupancyZones }: { occupancyZones: Occup
 
         // Draw zone box
         ctx.save();
-        ctx.fillStyle = COLORS.PRIMARY_80;
+        ctx.fillStyle = PRIMARY_80;
         ctx.shadowBlur = 8;
         ctx.shadowOffsetX = 0;
         ctx.shadowOffsetY = 5;
-        ctx.shadowColor = 'rgba(60, 138, 255, 0.55)';
+        ctx.shadowColor = chroma(BLUE_500).alpha(0.55).hex();
         ctx.fill();
         ctx.restore();
 
         // Draw shadow under the zone box
         ctx.save();
         ctx.lineWidth = 1;
-        ctx.strokeStyle = 'rgb(105, 255, 254)';
+        ctx.strokeStyle = CYAN_300;
         ctx.stroke();
         ctx.restore();
 
@@ -51,7 +53,7 @@ const DraggingOccupancyZonesLayer = ({ occupancyZones }: { occupancyZones: Occup
         ctx.save();
         ctx.lineWidth = 1.5;
         ctx.lineCap = 'round';
-        ctx.strokeStyle = COLORS.PRIMARY_50;
+        ctx.strokeStyle = PRIMARY_50;
         ctx.setLineDash([0, 4]);
         const verticalLineSpacing = zone.startTime === zone.endTime ? 7 : 2.5;
         ctx.beginPath();

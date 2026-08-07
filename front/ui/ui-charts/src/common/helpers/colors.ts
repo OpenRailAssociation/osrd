@@ -7,16 +7,62 @@ const INDICES_TO_COLORS: Record<number, string> = {};
 
 // COLORS DEFINITIONS:
 export const BLACK_100 = 'rgb(0, 0, 0)';
-export const BLACK_ALPHA_25 = 'rgba(0, 0, 0, 0.25)';
+export const BLACK_70 = 'rgba(0, 0, 0, 0.70)';
+export const BLACK_55 = 'rgba(0, 0, 0, 0.55)';
+export const BLACK_25 = 'rgba(0, 0, 0, 0.25)';
+export const BLACK_20 = 'rgba(0, 0, 0, 0.20)';
+export const BLACK_10 = 'rgba(0, 0, 0, 0.10)';
+export const BLACK_5 = 'rgba(0, 0, 0, 0.05)';
 
 export const GREY_90 = 'rgb(31, 27, 23)';
+export const GREY_80 = 'rgb(49, 46, 43)';
+export const GREY_60 = 'rgb(92, 89, 85)';
 export const GREY_50 = 'rgb(121, 118, 113)';
 export const GREY_30 = 'rgb(182, 178, 175)';
+export const GREY_20 = 'rgb(211, 209, 207)';
+export const GREY_10 = 'rgb(237, 237, 237)';
+
+export const PRIMARY_80 = 'rgb(31, 15, 150)';
+export const PRIMARY_50 = 'rgb(37, 106, 250)';
+export const PRIMARY_30 = 'rgb(114, 168, 247)';
+export const PRIMARY_5 = 'rgb(227, 237, 252)';
 
 export const RED_100 = 'rgb(221, 34, 34)';
 
+export const CYAN_400 = 'rgb(3, 222, 255)';
+export const CYAN_300 = 'rgb(105, 255, 254)';
+
+export const BLUE_700 = 'rgb(0, 87, 218)';
+export const BLUE_500 = 'rgb(60, 138, 255)';
+
 export const WHITE_100 = 'rgb(255, 255, 255)';
-export const WHITE_ALPHA_75 = 'rgba(255, 255, 255, 0.75)';
+export const WHITE_50 = 'rgba(255, 255, 255, 0.50)';
+export const WHITE_75 = 'rgba(255, 255, 255, 0.75)';
+
+export const YELLOW_400 = 'rgb(255, 192, 3)';
+
+export const SKY_900 = 'rgb(7, 69, 128)';
+export const SKY_700 = 'rgb(33, 112, 185)';
+
+export const STONE_900 = 'rgb(31, 27, 23)';
+export const STONE_500 = 'rgb(138, 113, 75)';
+export const STONE_100 = 'rgb(247, 246, 238)';
+export const STONE_50 = 'rgb(250, 249, 245)';
+
+export const LIME_50 = 'rgb(242, 240, 228)';
+export const EMERALD_100 = 'rgb(202, 237, 219)';
+export const ROSE_200 = 'rgb(255, 212, 216)';
+export const AMBER_100 = 'rgb(255, 234, 191)';
+
+export const AMBIANT_A10 = 'rgb(239, 243, 245)';
+
+export const ERROR_60 = 'rgb(217, 28, 28)';
+export const ERROR_30 = 'rgb(255, 104, 104)';
+export const ERROR_10 = 'rgb(107, 0, 0)';
+
+export const WARNING_30 = 'rgb(234, 167, 43)';
+
+export const NEUTRAL_300 = 'rgb(207, 221, 206)';
 
 /**
  * This function returns a unique hex color corresponding to the given index. The colors are

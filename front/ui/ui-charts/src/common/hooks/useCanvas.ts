@@ -21,9 +21,6 @@ import type {
 import { useDevicePixelRatio } from './useDevicePixelRatio';
 import { useSize } from './useSize';
 
-const PICKING = 'picking';
-const RENDERING = 'rendering';
-
 /**
  * This hook handles the internal canvas drawing logic of a chart component.
  */
@@ -93,7 +90,7 @@ export function useCanvas<T extends BaseChartContextType>(
       PICKING_LAYERS.forEach((layer) => {
         if (layers && !layers.has(layer)) return;
 
-        const ctx = contextsRef.current[`${PICKING}-${layer}`];
+        const ctx = contextsRef.current[`picking-${layer}`];
         const set = pickingFunctions.current[layer];
 
         if (ctx && ctx.canvas.width && ctx.canvas.height) {
@@ -122,7 +119,7 @@ export function useCanvas<T extends BaseChartContextType>(
     LAYERS.forEach((layer) => {
       if (layers && !layers.has(layer)) return;
 
-      const ctx = contextsRef.current[`${RENDERING}-${layer}`];
+      const ctx = contextsRef.current[`rendering-${layer}`];
       const set = drawingFunctions.current[layer];
 
       if (ctx) {
@@ -214,7 +211,7 @@ export function useCanvas<T extends BaseChartContextType>(
     () =>
       getPNGBlob(
         canvasesRef.current,
-        LAYERS.map((layer) => `${RENDERING}-${layer}`),
+        LAYERS.map((layer) => `rendering-${layer}`),
         chartContextRef.current.theme.background
       ),
     []
@@ -269,7 +266,7 @@ export function useCanvas<T extends BaseChartContextType>(
     for (const id in canvasesRef.current) {
       const canvas = canvasesRef.current[id];
       const ctx = contextsRef.current[id];
-      const isPicking = id.split('-')[0] === PICKING;
+      const isPicking = id.split('-')[0] === 'picking';
 
       if (canvas) {
         const ratio = isPicking ? pickingScalingRatio : devicePixelRatio;
@@ -298,7 +295,7 @@ export function useCanvas<T extends BaseChartContextType>(
     const pickingScalingRatio = getPickingScalingRatio();
 
     PICKING_LAYERS.some((layer) => {
-      const ctx = contextsRef.current[`${PICKING}-${layer}`];
+      const ctx = contextsRef.current[`picking-${layer}`];
       if (ctx && position) {
         const [r, g, b, a] = ctx.getImageData(
           Math.round(position.x * pickingScalingRatio),

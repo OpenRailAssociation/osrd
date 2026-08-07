@@ -2,7 +2,7 @@ import { useCallback } from 'react';
 
 import { HOUR, MINUTE } from '../../common/consts';
 import { TimeChartCanvasContext } from '../../common/context';
-import { WHITE_ALPHA_75 } from '../../common/helpers/colors';
+import { WHITE_75 } from '../../common/helpers/colors';
 import { computeVisibleTimeMarkers, getCrispLineCoordinate } from '../../common/helpers/time';
 import { useDraw } from '../../common/hooks/useCanvas';
 import type { DrawingFunction, TimeChartContextType } from '../../common/types';
@@ -128,7 +128,7 @@ export const TimeCaptions = () => {
       // Render caption background:
       ctx.fillStyle = background;
       if (!swapAxis) {
-        ctx.fillStyle = WHITE_ALPHA_75;
+        ctx.fillStyle = WHITE_75;
         ctx.fillRect(0, 0, width, 24);
         ctx.fillStyle = background;
         ctx.fillRect(0, spaceAxisSize, timeAxisSize, captionSize);

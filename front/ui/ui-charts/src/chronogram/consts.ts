@@ -1,3 +1,5 @@
+// ========== CHRONOGRAM CONSTANTS ==========
+
 export const CHRONOGRAM_HEADER_HEIGHT = 33;
 export const CHRONOGRAM_BOTTOM_PADDING = 40;
 export const INITIAL_CHRONOGRAM_HEIGHT = 600;
