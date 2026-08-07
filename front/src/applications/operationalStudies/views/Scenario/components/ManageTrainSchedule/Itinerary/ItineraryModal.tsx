@@ -192,7 +192,7 @@ export function setupStateWithTrainSchedule(
 const createDefaultTrainName = (
   t: TFunction<'operational-studies', 'manageTrainSchedule.itineraryModal'>,
   stepsWithLocationOrInput: PathStepV2[],
-  pathStepsMetadataById: Map<string, PathStepMetadata>
+  pathStepsMetadataByKey: Map<string, PathStepMetadata>
 ): string => {
   const createDefaultStepName = (pathStep: PathStepV2, trackOffsetDefault: string): string => {
     const location = pathStep.location;
@@ -200,7 +200,7 @@ const createDefaultTrainName = (
     if (location.type === 'track_offset') return trackOffsetDefault;
     const op = location.operational_point;
     if (op.type === 'domestic') return op.main_code;
-    const metadata = pathStepsMetadataById.get(pathStep.key);
+    const metadata = pathStepsMetadataByKey.get(pathStep.key);
     if (isOpRefMetadata(metadata)) return metadata.mainCode;
     return op.type === 'id' ? `ID ${op.operational_point}` : `UIC ${op.uic}`;
   };
@@ -341,7 +341,7 @@ const ItineraryModal = ({
     reopenSuggestionsForStep,
   } = useOperationalPointSearch({});
 
-  const { pathStepsMetadataById, setPathStepMetadata } = usePathStepsMetadata(
+  const { pathStepsMetadataByKey, setPathStepMetadata } = usePathStepsMetadata(
     pathSteps,
     pendingStepKeyRef
   );
@@ -353,13 +353,13 @@ const ItineraryModal = ({
     () =>
       pathSteps.flatMap((step) => {
         if (isEmptyStep(step, getInputForStep(step.key))) return [];
-        const metadata = pathStepsMetadataById.get(step.key);
+        const metadata = pathStepsMetadataByKey.get(step.key);
         if (isOpRefMetadata(metadata) && metadata.trackName && !metadata.isValidLocalTrackName) {
           return [`${metadata.name} ${metadata.secondaryCode}`];
         }
         return [];
       }),
-    [pathSteps, pathStepsMetadataById]
+    [pathSteps, pathStepsMetadataByKey]
   );
 
   const initCustomTracksEntry = useCallback(
@@ -407,7 +407,7 @@ const ItineraryModal = ({
 
   const hasInvalidPathStep = pathSteps.some((step) => {
     if (isEmptyStep(step, getInputForStep(step.key))) return false;
-    const meta = pathStepsMetadataById.get(step.key);
+    const meta = pathStepsMetadataByKey.get(step.key);
     return !meta || meta.validity === 'invalid';
   });
   const handleDeletePathStep = (stepKey: string) => {
@@ -497,7 +497,7 @@ const ItineraryModal = ({
     step.location !== null && metadata?.validity === 'invalid';
 
   const hasInvalidPathStepDisplay = pathSteps.some((step) =>
-    isStepInvalid(step, pathStepsMetadataById.get(step.key))
+    isStepInvalid(step, pathStepsMetadataByKey.get(step.key))
   );
 
   const locatedStepsCount = pathSteps.filter((step) => step.location !== null).length;
@@ -545,7 +545,7 @@ const ItineraryModal = ({
   const handleStartMapSelection = useCallback(
     (stepKey: string) => {
       setMapSelectionStepKey(stepKey);
-      const metadata = pathStepsMetadataById.get(stepKey);
+      const metadata = pathStepsMetadataByKey.get(stepKey);
       if (metadata) {
         const coordinates = computePathStepCoordinates(metadata);
         if (coordinates.length > 0) {
@@ -553,7 +553,7 @@ const ItineraryModal = ({
         }
       }
     },
-    [pathStepsMetadataById, dispatch, updateViewport]
+    [pathStepsMetadataByKey, dispatch, updateViewport]
   );
 
   const handleOutsideMapClick = useCallback(() => {}, []);
@@ -616,7 +616,7 @@ const ItineraryModal = ({
       dispatch(updateViewport(newViewport));
     } else {
       // Zoom on all path steps markers
-      const allMarkersCoordinates = pathStepsMetadataById
+      const allMarkersCoordinates = pathStepsMetadataByKey
         .values()
         .reduce<Position[]>((acc, pathStepMetadata) => {
           acc.push(...computePathStepCoordinates(pathStepMetadata));
@@ -655,10 +655,10 @@ const ItineraryModal = ({
     () =>
       pathSteps.filter((s) => {
         if (!s.location) return false;
-        const meta = pathStepsMetadataById.get(s.key);
+        const meta = pathStepsMetadataByKey.get(s.key);
         return !!meta && meta.validity === 'valid';
       }),
-    [pathSteps, pathStepsMetadataById]
+    [pathSteps, pathStepsMetadataByKey]
   );
   const pathfindingStepsRef = useRef<PathStepV2[]>([]);
 
@@ -682,13 +682,13 @@ const ItineraryModal = ({
 
     const pathfindingLocations = pathfindingSteps.map((s) => s.location!);
     const metadataByPathStepKey = new Map(
-      pathfindingSteps.map((s) => [s.key, pathStepsMetadataById.get(s.key)!])
+      pathfindingSteps.map((s) => [s.key, pathStepsMetadataByKey.get(s.key)!])
     );
 
     const controller = new AbortController();
     launchPathfindingV2({
       pathSteps: pathfindingLocations,
-      pathStepsMetadataById: metadataByPathStepKey,
+      pathStepsMetadataByKey: metadataByPathStepKey,
       rollingStockId: modalFormState.rollingStockId,
       speedLimitTag: modalFormState.speedLimitTag ?? null,
       signal: controller.signal,
@@ -789,7 +789,7 @@ const ItineraryModal = ({
     if (stepsWithLocationOrInput.length < 2) return;
 
     const name = isNameEmpty
-      ? createDefaultTrainName(t, stepsWithLocationOrInput, pathStepsMetadataById)
+      ? createDefaultTrainName(t, stepsWithLocationOrInput, pathStepsMetadataByKey)
       : modalFormState.name;
 
     const stepsWithStopAtDestination = stepsWithLocationOrInput.map((step, i) =>
@@ -798,7 +798,7 @@ const ItineraryModal = ({
         : step
     );
     //TODO this variable name should be changed when we no longer have to convert from v2 to v1 for path steps
-    const pathStepsFromV2 = buildPathSteps(stepsWithStopAtDestination, pathStepsMetadataById);
+    const pathStepsFromV2 = buildPathSteps(stepsWithStopAtDestination, pathStepsMetadataByKey);
 
     if (pathStepsFromV2.length < 2) return;
 
@@ -838,10 +838,10 @@ const ItineraryModal = ({
   }, []);
 
   useEffect(() => {
-    if (locatedStepsCount < 2 || pathStepsMetadataById.size < 2) return;
+    if (locatedStepsCount < 2 || pathStepsMetadataByKey.size < 2) return;
 
     frameAllPathSteps();
-  }, [pathStepsMetadataById, hasInvalidPathStep]);
+  }, [pathStepsMetadataByKey, hasInvalidPathStep]);
 
   const resetCategoryWarning = useCallback(() => {
     setCategoryWarning(undefined);
@@ -930,11 +930,11 @@ const ItineraryModal = ({
             </div>
             {pathSteps.map((pathStep, i) => {
               const opKey = getOpKey(pathStep.location);
-              const pathStepMetadata = pathStepsMetadataById.get(pathStep.key);
+              const pathStepMetadata = pathStepsMetadataByKey.get(pathStep.key);
               const isInvalid = isStepInvalid(pathStep, pathStepMetadata);
               const isMapSelecting = mapSelectionStepKey === pathStep.key;
 
-              const previousPathStepMetadata = pathStepsMetadataById.get(pathSteps[i - 1]?.key);
+              const previousPathStepMetadata = pathStepsMetadataByKey.get(pathSteps[i - 1]?.key);
               const isTrailingPlaceholder =
                 i === pathSteps.length - 1 && isEmptyStep(pathStep, getInputForStep(pathStep.key));
 
@@ -1130,7 +1130,7 @@ const ItineraryModal = ({
       >
         <ItineraryModalMap
           pathSteps={pathSteps}
-          pathStepsMetadata={pathStepsMetadataById}
+          pathStepsMetadata={pathStepsMetadataByKey}
           pathProperties={displayedPathProperties}
           pathWaypoints={pathWaypoints}
           selectedStepId={mapSelectionStepKey ?? undefined}

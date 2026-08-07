@@ -30,13 +30,13 @@ const usePathfindingV2 = () => {
   const launchPathfindingV2 = useCallback(
     async ({
       pathSteps,
-      pathStepsMetadataById,
+      pathStepsMetadataByKey,
       rollingStockId,
       speedLimitTag,
       signal,
     }: {
       pathSteps: PathStepV2['location'][];
-      pathStepsMetadataById: Map<string, PathStepMetadata>;
+      pathStepsMetadataByKey: Map<string, PathStepMetadata>;
       rollingStockId: number;
       speedLimitTag?: string | null;
       /**
@@ -52,7 +52,9 @@ const usePathfindingV2 = () => {
 
       if (
         !pathSteps.every((step) => !!step) ||
-        Array.from(pathStepsMetadataById.values()).some((metadata) => metadata.validity !== 'valid')
+        Array.from(pathStepsMetadataByKey.values()).some(
+          (metadata) => metadata.validity !== 'valid'
+        )
       ) {
         return;
       }
