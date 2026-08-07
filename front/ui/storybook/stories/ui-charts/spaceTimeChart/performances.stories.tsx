@@ -173,23 +173,23 @@ const meta: Meta<typeof Wrapper> = {
   argTypes: {
     operationalPointsCount: {
       name: 'Operational points',
-      defaultValue: 5,
+      value: 5,
       control: { type: 'number', step: 1, min: 2, max: 30 },
     },
     trainTypes: {
       name: 'Train types',
-      defaultValue: 4,
+      value: 4,
       control: { type: 'number', step: 1, min: 1, max: 20 },
     },
     pathsPerTrain: {
       name: 'Paths per train type',
-      defaultValue: 50,
+      value: 50,
       control: { type: 'number', step: 10, min: 0, max: 200 },
     },
     spaceScaleType: {
       name: 'Space scaling type',
       options: ['linear', 'proportional'],
-      defaultValue: 'linear',
+      value: 'linear',
       control: { type: 'radio' },
     },
   },

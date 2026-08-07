@@ -231,24 +231,24 @@ const meta: Meta<typeof Wrapper> = {
   argTypes: {
     enableDragPaths: {
       name: 'Enable dragging paths?',
-      defaultValue: true,
+      value: true,
       control: { type: 'boolean' },
     },
     enableMultiSelection: {
       name: 'Multi-selection?',
-      defaultValue: true,
+      value: true,
       control: { type: 'boolean' },
     },
     spaceScaleType: {
       name: 'Space scaling type',
       options: ['linear', 'proportional'],
-      defaultValue: 'linear',
+      value: 'linear',
       control: { type: 'radio' },
     },
     pickingTolerance: {
       name: 'Picking tolerance',
       description: '(in pixels)',
-      defaultValue: 5,
+      value: 5,
       control: { type: 'number', step: 1, min: 0, max: 30 },
     },
   },

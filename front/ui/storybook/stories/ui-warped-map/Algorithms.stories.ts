@@ -12,13 +12,13 @@ const meta: Meta<typeof Algorithms> = {
       name: 'Path',
       description: 'Which path to warp on',
       options: PATH_NAMES,
-      defaultValue: PATH_LONG,
+      value: PATH_LONG,
       control: { type: 'radio' },
     },
     tolerance: {
       name: 'Tolerance',
       description: 'The tolerance for turf.simplify',
-      defaultValue: DEFAULT_WARPING_OPTIONS.tolerance,
+      value: DEFAULT_WARPING_OPTIONS.tolerance,
       type: 'number',
       control: {
         type: 'range',
@@ -31,7 +31,7 @@ const meta: Meta<typeof Algorithms> = {
     stripsPerSide: {
       name: 'Strips per side',
       description: 'The number of strips on each side of the grid',
-      defaultValue: DEFAULT_WARPING_OPTIONS.stripsPerSide,
+      value: DEFAULT_WARPING_OPTIONS.stripsPerSide,
       type: 'number',
       control: {
         type: 'number',
@@ -43,7 +43,7 @@ const meta: Meta<typeof Algorithms> = {
     samplesCount: {
       name: 'Samples count',
       description: 'The number of samples on the grid',
-      defaultValue: DEFAULT_WARPING_OPTIONS.samplesCount,
+      value: DEFAULT_WARPING_OPTIONS.samplesCount,
       type: 'number',
       control: {
         type: 'number',
@@ -55,7 +55,7 @@ const meta: Meta<typeof Algorithms> = {
     straightenForce: {
       name: 'Straighten force',
       description: 'The strength of the force to strengthen on.',
-      defaultValue: DEFAULT_WARPING_OPTIONS.straightenForce,
+      value: DEFAULT_WARPING_OPTIONS.straightenForce,
       type: 'number',
       control: {
         type: 'range',
@@ -68,7 +68,7 @@ const meta: Meta<typeof Algorithms> = {
     straightenIterations: {
       name: 'Straighten iterations',
       description: 'The number of strenghtening iterations.',
-      defaultValue: DEFAULT_WARPING_OPTIONS.straightenIterations,
+      value: DEFAULT_WARPING_OPTIONS.straightenIterations,
       type: 'number',
       control: {
         type: 'number',
@@ -80,7 +80,7 @@ const meta: Meta<typeof Algorithms> = {
     quadtreeDepth: {
       name: 'Quadtree depth',
       description: 'The maximum depth of the quadtree',
-      defaultValue: DEFAULT_WARPING_OPTIONS.quadtreeDepth,
+      value: DEFAULT_WARPING_OPTIONS.quadtreeDepth,
       type: 'number',
       control: {
         type: 'number',

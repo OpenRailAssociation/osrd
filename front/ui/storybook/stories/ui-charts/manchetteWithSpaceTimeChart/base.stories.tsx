@@ -77,7 +77,7 @@ const meta: Meta<typeof ManchetteWithSpaceTimeWrapper> = {
     hidePositions: {
       name: 'Hide Positions',
       description: 'Hide position/distance information (km) on waypoints',
-      defaultValue: false,
+      value: false,
       control: { type: 'boolean' },
     },
   },
