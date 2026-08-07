@@ -94,6 +94,7 @@ const useLazyProjectTrains = ({
       );
     }
 
+    setProjectedTrainsById(new Map());
     loader.projectTrainSchedules([...trainSchedulesByIdRef.current.keys()]);
 
     loaderRef.current = loader;
