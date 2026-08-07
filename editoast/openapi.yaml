@@ -971,6 +971,30 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Operation'
+  /infra/{infra_id}/bbox:
+    get:
+      tags:
+      - infra
+      summary: Retrieve the bounding box of an infra.
+      parameters:
+      - name: infra_id
+        in: path
+        description: An existing infra ID
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: The bbox of the infra if it contains tracks
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - type: 'null'
+                - $ref: '#/components/schemas/BoundingBox'
+        '404':
+          description: Infra ID not found
   /infra/{infra_id}/clone:
     post:
       tags:
