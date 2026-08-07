@@ -570,4 +570,92 @@ mod tests {
             "editoast:train_schedule_linking:TargetAlreadyUsed"
         );
     }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn test_delete() {
+        let app = test_app!().build();
+        let pool = app.db_pool();
+        let conn = &mut pool.get_ok();
+
+        let user = app
+            .user("user", "User")
+            .with_roles([Role::OperationalStudies])
+            .create()
+            .await;
+
+        let (timetable, train_schedule_set) = create_timetable_with_train_schedule_set(conn).await;
+        let train_schedule_1 = create_simple_paced_train(conn, train_schedule_set.id).await;
+        let train_schedule_2 = create_simple_paced_train(conn, train_schedule_set.id).await;
+        let linking_1 = TrainScheduleLinking::changeset()
+            .timetable_id(timetable.id)
+            .source_train_schedule_id(train_schedule_1.id)
+            .source_occurrence_index(Some(1))
+            .target_train_schedule_id(train_schedule_1.id)
+            .target_occurrence_index(Some(2))
+            .create(conn)
+            .await
+            .expect("Failed to create a linking");
+        let linking_2 = TrainScheduleLinking::changeset()
+            .timetable_id(timetable.id)
+            .source_train_schedule_id(train_schedule_1.id)
+            .source_occurrence_index(Some(2))
+            .target_train_schedule_id(train_schedule_2.id)
+            .target_occurrence_index(Some(1))
+            .create(conn)
+            .await
+            .expect("Failed to create a linking");
+
+        app.post("/train_schedules/linkings/delete")
+            .json(&json!(vec![linking_1.id]))
+            .by_user(user.as_ref())
+            .await
+            .assert_status(StatusCode::NO_CONTENT);
+
+        let linkings = TrainScheduleLinking::list(conn, SelectionSettings::new())
+            .await
+            .expect("Failed to list all linkings");
+
+        assert_eq!(linkings.len(), 1);
+        assert_eq!(linkings[0].id, linking_2.id);
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn test_batch_not_found() {
+        let app = test_app!().build();
+        let pool = app.db_pool();
+        let conn = &mut pool.get_ok();
+        let user = app
+            .user("user", "User")
+            .with_roles([Role::OperationalStudies])
+            .create()
+            .await;
+
+        let (timetable, train_schedule_set) = create_timetable_with_train_schedule_set(conn).await;
+        let train_schedule_1 = create_simple_paced_train(conn, train_schedule_set.id).await;
+        let train_schedule_2 = create_simple_paced_train(conn, train_schedule_set.id).await;
+
+        let linking = TrainScheduleLinking::changeset()
+            .timetable_id(timetable.id)
+            .source_train_schedule_id(train_schedule_1.id)
+            .source_occurrence_index(Some(0))
+            .target_train_schedule_id(train_schedule_2.id)
+            .target_occurrence_index(Some(0))
+            .create(conn)
+            .await
+            .expect("Failed to create a linking");
+
+        let response: InternalError = app
+            .post("/train_schedules/linkings/delete")
+            .json(&json!(vec![linking.id, linking.id + 1]))
+            .by_user(user.as_ref())
+            .await
+            .assert_status(StatusCode::NOT_FOUND)
+            .json();
+
+        assert_eq!(
+            &response.error_type,
+            "editoast:train_schedule_linking:BatchNotFound"
+        );
+        assert_eq!(&response.context["count"], 1);
+    }
 }
