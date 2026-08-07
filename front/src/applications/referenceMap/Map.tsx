@@ -1,12 +1,16 @@
 import { useCallback, useMemo, useRef } from 'react';
 
+import { skipToken } from '@reduxjs/toolkit/query';
 import type { MapLibreEvent } from 'maplibre-gl';
 import type { MapRef } from 'react-map-gl/maplibre';
 
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import BaseMap from 'common/Map/BaseMap';
 import MapButtons from 'common/Map/Buttons/MapButtons';
 import { MapContextProvider } from 'common/Map/useMapContext';
+import { computeBBoxViewport } from 'common/Map/WarpedMap/core/helpers';
 import { useInfraID } from 'common/osrdContext';
+import { useParams } from 'react-router-dom';
 import { useMapSettings, useMapSettingsActions } from 'reducers/commonMap';
 import type { MapSettings, Viewport } from 'reducers/commonMap/types';
 import { syncReferenceMapRouterViewport, updateReferenceMapViewport } from 'reducers/referenceMap';
@@ -57,6 +61,27 @@ const Map = () => {
     () => (layersSettings.track_sections ? ['chartis/osrd_tvd_section/geo'] : []),
     [layersSettings.track_sections]
   );
+
+  const { urlLat } = useParams();
+  const skipNextInfraAutoFocusRef = useRef(urlLat !== undefined); 
+  const { data: infraBbox } = osrdEditoastApi.endpoints.getInfraByInfraIdBbox.useQuery(
+    infraID ? { infraId: infraID } : skipToken
+  );
+  useMemo(() => {
+    if (infraBbox === undefined) return;
+    if (skipNextInfraAutoFocusRef.current) {
+      skipNextInfraAutoFocusRef.current = false;
+      return;
+    }
+
+    const { min_lat, min_lon, max_lat, max_lon } = infraBbox!;
+
+    const newViewport = computeBBoxViewport([min_lon, min_lat, max_lon, max_lat], viewport, {
+      padding: 64,
+    });
+
+    updateViewportChange(newViewport);
+  }, [infraBbox]);
 
   return (
     <main className="mastcontainer mastcontainer-map">
