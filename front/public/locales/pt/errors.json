@@ -136,7 +136,46 @@
     "level_crossing": {
       "Database": "Erro interno (base de dados)",
       "InfraNotFound": "Infraestrutura '{{infra_id}}' não encontrada.",
-      "LevelCrossingBatchNotFound": "'{{count}}' passagen(s) de nível não encontrada(s)."
+      "LevelCrossingBatchNotFound": "'{{count}}' passagen(s) de nível não encontrada(s).",
+      "TimetableNotFound": "Horário '{{timetable_id}}' não encontrado.",
+      "UnsupportedTimetableType": "As grelhas horárias não são suportadas."
+    },
+    "macro_node": {
+      "Database": "Erro interno",
+      "NotFound": "Nó {{node_id}} não encontrado.",
+      "ScenarioNotFound": "Cenário '{{scenario_id}}' não encontrado"
+    },
+    "macro_note": {
+      "Database": "Erro interno (base de dados)",
+      "NotFound": "Nó '{{note_id}}' não encontrado.",
+      "ScenarioNotFound": "Cenário '{{scenario_id}}' não encontrado",
+      "WrongScenario": "A nota '{note_id}' não pertence ao cenário '{scenario_id}'"
+    },
+    "model": {
+      "ModelError": "Erro interno (consulta de base de dados)"
+    },
+    "operation": {
+      "EmptyId": "Uma cadeia de caracteres vazia é proibida como indentificador",
+      "ModifyId": "A operação de atualização tenta modificar o id do objeto, o que é proibido",
+      "ObjectNotFound": "Objeto '{{obj_id}}' não encontrado na infraestrutura '{{infra_id}}'"
+    },
+    "operationalPointProjection": {
+      "InvalidNumberOfDistances": "{{expected}} distâncias esperadas, mas {{found}} recebidas",
+      "InvalidNumberOfRefs": "Pelo menos 2 referências de pontos operacionais esperadas"
+    },
+    "pathfinding": {
+      "Database": "Erro interno (base de dados)",
+      "ElectricalProfilesOverlap": "O perfil elétrico sobrepõe-se a outros",
+      "ElectrificationOverlap": "Eletrificação {{electrification_id}} sobrepõe-se a outras",
+      "InfraNotFound": "Infraestrutura '{{infra_id}}' não encontrada",
+      "NotFound": "Itinerário'{{pathfinding_id}}' não encontrado",
+      "OperationalPointsNotFound": "Pontos operacionais {{operational_points}} não encontrados",
+      "RollingStockNotFound": "Material circulante '{{rolling_stock_id}}' não encontrado",
+      "TrackSectionsNotFound": "Secção de via {{track_sections}} não encontrada"
+    },
+    "postgres": {
+      "Host": "Anfitrião inválido '{{hostname}}'",
+      "Password": "Palavra-passe inválida"
     }
   }
 }
