@@ -65,7 +65,7 @@ test.describe('Netzgrafik Editor', { tag: ['@op', '@nge'] }, () => {
   /** *************** Test 1 **************** */
   test('Verify NGE train data', async ({ ngePage }) => {
     await test.step('Verify nodes displayed on NGE graph', async () => {
-      await ngePage.expectNodes(['FR-SWS/…', 'FR-MWS/…', 'FR-MES/…']);
+      await ngePage.expectNodes(['SWS/BV', 'MWS/BV', 'MES/BV']);
     });
 
     await test.step('Verify train rows labels', async () => {
