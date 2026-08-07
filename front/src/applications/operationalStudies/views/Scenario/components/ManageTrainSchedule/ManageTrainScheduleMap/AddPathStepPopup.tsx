@@ -119,13 +119,12 @@ const AddPathStepPopup = ({
         coordinates: result[0].geographic.coordinates as number[],
       });
 
-      let opRef: OperationalPointReference;
-      const uic = operationalPoint.uic;
-      if (uic) {
-        opRef = { type: 'uic', uic, secondary_code: operationalPoint.secondary_code };
-      } else {
-        opRef = { type: 'id', operational_point: operationalPoint.id };
-      }
+      const opRef: OperationalPointReference = {
+        type: 'domestic',
+        main_code: operationalPoint.main_code,
+        secondary_code: operationalPoint.secondary_code,
+        country_code: operationalPoint.country_code,
+      };
 
       setClickedOp({
         id: uuidV4(),

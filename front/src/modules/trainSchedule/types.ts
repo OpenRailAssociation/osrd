@@ -19,7 +19,7 @@ export type SuggestedOP = {
   name: string | undefined;
   uic?: number | null;
   secondaryCode?: string | null;
-  countryCode?: string | null;
+  countryCode?: string;
   kp?: string;
   mainCode?: string;
   isPassengerStation?: boolean;

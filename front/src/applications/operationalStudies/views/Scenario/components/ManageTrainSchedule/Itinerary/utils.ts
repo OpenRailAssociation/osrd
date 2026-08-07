@@ -34,28 +34,12 @@ export const computePathStepCoordinates = (pathStepMetadata: PathStepMetadata) =
   return [];
 };
 
-export const buildOpRef = (op: OperationalPoint): OperationalPointReference => {
-  const ch = op.secondary_code;
-  const uic = op.uic;
-  if (uic)
-    return {
-      type: 'uic',
-      uic,
-      secondary_code: ch,
-    };
-  const mainCode = op.main_code;
-  if (mainCode)
-    return {
-      type: 'domestic',
-      main_code: mainCode,
-      country_code: op.country_code,
-      secondary_code: ch,
-    };
-  return {
-    type: 'id',
-    operational_point: op.id,
-  };
-};
+export const buildOpRef = (op: OperationalPoint): OperationalPointReference => ({
+  type: 'domestic',
+  main_code: op.main_code,
+  country_code: op.country_code,
+  secondary_code: op.secondary_code,
+});
 
 export const buildOpDisplayName = (op: OperationalPoint): string => {
   const name = op.name;
@@ -67,7 +51,7 @@ export const getOpKey = (location: PathItemLocation | null): string | null => {
   if (!location || location.type === 'track_offset') return null;
   const op = location.operational_point;
   if (op.type === 'domestic') return `${op.country_code} ${op.main_code} ${op.secondary_code}`;
-  if (op.type === 'uic') return `${op.uic} ${op.secondary_code}`;
   if (op.type === 'id') return `${op.operational_point}`;
+  if (op.type === 'uic') return `${op.uic} ${op.secondary_code}`;
   return null;
 };

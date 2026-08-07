@@ -204,23 +204,13 @@ const ItineraryModal = ({
     if (!chosenSecondaryCode) return;
     pendingStepIdRef.current = stepId;
     confirmedStepIdRef.current = stepId;
-    let opRef: OperationalPointReference;
 
-    if (suggestion.uic) {
-      opRef = { type: 'uic', uic: suggestion.uic, secondary_code: chosenSecondaryCode };
-    } else if (suggestion.mainCode) {
-      opRef = {
-        type: 'domestic',
-        main_code: suggestion.mainCode,
-        secondary_code: chosenSecondaryCode,
-        country_code: suggestion.countryCode,
-      };
-    } else {
-      const chosenOpId = suggestion.secondaryCodeList.find(
-        (c) => c.code === chosenSecondaryCode
-      )?.opId;
-      opRef = { type: 'id', operational_point: chosenOpId! };
-    }
+    const opRef: OperationalPointReference = {
+      type: 'domestic',
+      main_code: suggestion.mainCode,
+      secondary_code: chosenSecondaryCode,
+      country_code: suggestion.countryCode,
+    };
     const newLocation: PathItemLocation = {
       type: 'operational_point_part_reference',
       operational_point: opRef,
