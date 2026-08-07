@@ -914,7 +914,7 @@ dependencies = [
  "dashmap",
  "deadpool",
  "editoast_derive",
- "educe 0.7.4",
+ "educe 0.7.6",
  "futures 0.3.33",
  "futures-util",
  "geos",
@@ -947,7 +947,7 @@ dependencies = [
  "core_client",
  "dashmap",
  "deadpool-redis",
- "educe 0.7.4",
+ "educe 0.7.6",
  "futures 0.3.33",
  "http",
  "itertools 0.15.0",
@@ -1477,7 +1477,7 @@ dependencies = [
  "diesel_json",
  "editoast_derive",
  "editoast_models",
- "educe 0.7.4",
+ "educe 0.7.6",
  "enum-map",
  "fga",
  "fga_migrations",
@@ -1556,7 +1556,7 @@ dependencies = [
  "diesel_json",
  "editoast_derive",
  "editoast_models",
- "educe 0.7.4",
+ "educe 0.7.6",
  "fga",
  "futures 0.3.33",
  "futures-util",
@@ -1600,14 +1600,14 @@ dependencies = [
 
 [[package]]
 name = "educe"
-version = "0.7.4"
+version = "0.7.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "92c3e1715a2bf74bc8f68cd7bae12ff144f02669c602106ad1fa16f2ba62e646"
+checksum = "e451fac8dd8dece16234604bf1efce6e90fddd8ab6ad4d66eec0eca5160959dd"
 dependencies = [
  "enum-ordinalize",
  "proc-macro2",
  "quote",
- "syn 2.0.119",
+ "syn 3.0.3",
 ]
 
 [[package]]
@@ -4603,7 +4603,7 @@ dependencies = [
  "chrono",
  "common",
  "editoast_derive",
- "educe 0.7.4",
+ "educe 0.7.6",
  "enum-map",
  "geos",
  "iso8601",
