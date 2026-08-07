@@ -75,6 +75,11 @@
         "ZeroLengthPath": "O comprimento de um caminho não pode ser nulo."
       }
     },
+    "coreclient": {
+      "CoreResponseFormatError": "Núcleo: não é possível analisar a resposta '{{msg}}'",
+      "MqClientError": "Núcleo: erro do cliente MQ",
+      "UnparsableErrorOutput": "Núcleo: devolveu um erro num formato desconhecido"
+    },
     "delimited_area": {
       "InvalidLocations": "Certas localizações são inválidas"
     },
@@ -102,6 +107,9 @@
         "InfraIsLocked": "Infraestrutura bloqueada",
         "SplitTrackSectionBadOffset": "A distância para dividir a secção de via '{{tracksection_id}}' da infraestrutura '{{infra_id}}' é inválida. O valor deve estar compreendido entre 0 e {{tracksection_length}} metros."
       },
+      "errors": {
+        "WrongErrorTypeProvided": "Tipo de erro fornecido incorreto"
+      },
       "lines": {
         "LineNotFound": "Nenhuma linha encontrada com o código {{line_code}}"
       },
@@ -117,6 +125,18 @@
     },
     "infra_cache": {
       "ObjectNotFound": "{{obj_type}} '{{obj_id}}' não encontrado na cache da infraestrutura"
+    },
+    "infra_state": {
+      "FetchError": "Erro ao recuperar o estado de carregamento da infraestrutura"
+    },
+    "layers": {
+      "LayerNotFound": "Camada de dados {{layer_name}} não encontrada.",
+      "ViewNotFound": "View {{view_name}} não encontrada."
+    },
+    "level_crossing": {
+      "Database": "Erro interno (base de dados)",
+      "InfraNotFound": "Infraestrutura '{{infra_id}}' não encontrada.",
+      "LevelCrossingBatchNotFound": "'{{count}}' passagen(s) de nível não encontrada(s)."
     }
   }
 }
