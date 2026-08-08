@@ -22,6 +22,7 @@ use actix_auth::AuthMiddleware;
 
 mod config;
 mod config_parser;
+mod csp;
 mod request_modifier;
 
 #[actix_web::main]
@@ -86,7 +87,10 @@ async fn main() -> std::io::Result<()> {
             actix_cors::Cors::default()
         };
 
+        let csp = csp::Csp;
+
         let mut app = App::new()
+            .wrap(csp)
             .wrap(cors)
             .wrap(RequestTracing::new())
             .wrap(Compress::default()) // enable compress

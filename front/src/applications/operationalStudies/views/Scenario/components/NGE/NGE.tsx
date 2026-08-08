@@ -18,19 +18,6 @@ type NGEProps = {
   onLoad?: () => void;
 };
 
-const frameSrc = `
-<!DOCTYPE html>
-<html class="sbb-lean sbb-light">
-  <head>
-    <base href="/netzgrafik-frontend/">
-    <link rel="stylesheet" href="/netzgrafik-frontend/styles.css"></link>
-    <script type="module" src="/netzgrafik-frontend/polyfills.js"></script>
-    <script type="module" src="/netzgrafik-frontend/main.js"></script>
-  </head>
-  <body></body>
-</html>
-`;
-
 /**
  * Standalone NetzGraphik Editor component.
  *
@@ -101,7 +88,14 @@ const NGE = ({ activeFilterSettingId, dto, onOperation, onLoad }: NGEProps) => {
     return () => {};
   }, [onOperation, ngeRootElement]);
 
-  return <iframe ref={frameRef} srcDoc={frameSrc} title="NGE" className="nge-iframe-container" />;
+  return (
+    <iframe
+      ref={frameRef}
+      src="/netzgrafik-frontend/index.html"
+      title="NGE"
+      className="nge-iframe-container"
+    />
+  );
 };
 
 export default NGE;
