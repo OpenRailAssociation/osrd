@@ -371,7 +371,9 @@ pub(in crate::views) async fn user_privileges(
                         .collect_into::<HashSet<StandardPrivilege>>()
                         .zip(v2::Protected::value(resource))
                 }
-                _resource @ Resource::Project(_project) => todo!(),
+                resource @ Resource::Project(project) => v2::project_privileges(*user, project)
+                    .collect_into::<HashSet<StandardPrivilege>>()
+                    .zip(v2::Protected::value(resource)),
             });
             let authorizer = authn_state.authorizer(&openfga);
             let accesses = authorizer.authorize_all(protected_privileges).await?;
@@ -411,6 +413,19 @@ pub(in crate::views) async fn user_privileges(
                             },
                         );
                     }
+                    Err(Check::HasProjectPrivilege(
+                        Actor::Issuer,
+                        ProjectPrivilege::HasAccess,
+                        project,
+                    )) => {
+                        result
+                            .entry(ResourceType::Project)
+                            .or_default()
+                            .push(ResourcePrivileges {
+                                resource_id: project.0,
+                                privileges: HashSet::new(),
+                            })
+                    }
                     Err(_) => return Err(AuthorizationError::Forbidden.into()),
                 }
             }
@@ -426,6 +441,7 @@ pub(in crate::views) async fn user_privileges(
                 StandardPrivilege::CanShareOwnership,
                 StandardPrivilege::CanRevoke,
             ]);
+            let project_privilege = HashSet::from([StandardPrivilege::HasAccess]);
             for (resource_type, ids) in resources_ids {
                 let missing_ids = &missing_resources[&resource_type];
                 result.entry(resource_type).or_default().extend(
@@ -433,7 +449,11 @@ pub(in crate::views) async fn user_privileges(
                         .filter(|id| !missing_ids.contains(id))
                         .map(|resource_id| ResourcePrivileges {
                             resource_id,
-                            privileges: privileges.clone(),
+                            privileges: if resource_type == ResourceType::Project {
+                                project_privilege.clone()
+                            } else {
+                                privileges.clone()
+                            },
                         }),
                 );
             }
@@ -960,6 +980,7 @@ mod tests {
     use authz::RollingStockGrant;
     use authz::v2::TestClientExt as _;
     use axum::http::StatusCode;
+    use models::Project;
     use pretty_assertions::assert_eq;
     use rstest::rstest;
     use serde_json::json;
@@ -986,11 +1007,19 @@ mod tests {
         let Infra {
             id: infra_unused, ..
         } = create_empty_infra(&mut app.db_pool().get_ok()).await;
+        let Project { id: project1, .. } =
+            create_project(&mut app.db_pool().get_ok(), "project1").await;
+        let Project { id: project2, .. } =
+            create_project(&mut app.db_pool().get_ok(), "project2").await;
+        let Project {
+            id: project_unused, ..
+        } = create_project(&mut app.db_pool().get_ok(), "project_unused").await;
         let toto = app
             .user("toto", "Toto")
             .with_infra_grant(infra1, InfraGrant::Owner)
             .with_infra_grant(infra2, InfraGrant::Writer)
             .with_infra_grant(infra3, InfraGrant::Reader)
+            .with_project_grant(project1, ProjectGrant::Owner)
             .create()
             .await;
 
@@ -998,11 +1027,13 @@ mod tests {
             .post("/authz/me/privileges")
             .by_user(toto.as_ref())
             .json(&json!({
-               "infra": [infra1, infra2, infra3, infra4, i64::MAX]
+               "infra": [infra1, infra2, infra3, infra4, i64::MAX],
+               "project": [project1, project2, i64::MAX],
             }))
             .await
             .assert_status_ok()
-            .json::<HashMap<ResourceType, Vec<ResourcePrivileges>>>()
+            .json::<HashMap<ResourceType, Vec<ResourcePrivileges>>>();
+        let mut infra_privileges = privileges
             .remove(&ResourceType::Infra)
             .unwrap()
             .into_iter()
@@ -1014,7 +1045,7 @@ mod tests {
             )
             .collect::<HashMap<_, _>>();
         assert_eq!(
-            privileges.remove(&infra1).unwrap(),
+            infra_privileges.remove(&infra1).unwrap(),
             HashSet::from([
                 StandardPrivilege::CanRestrictedRead,
                 StandardPrivilege::CanRead,
@@ -1027,7 +1058,7 @@ mod tests {
             ])
         );
         assert_eq!(
-            privileges.remove(&infra2).unwrap(),
+            infra_privileges.remove(&infra2).unwrap(),
             HashSet::from([
                 StandardPrivilege::CanRestrictedRead,
                 StandardPrivilege::CanRead,
@@ -1037,16 +1068,38 @@ mod tests {
             ])
         );
         assert_eq!(
-            privileges.remove(&infra3).unwrap(),
+            infra_privileges.remove(&infra3).unwrap(),
             HashSet::from([
                 StandardPrivilege::CanRestrictedRead,
                 StandardPrivilege::CanRead,
                 StandardPrivilege::CanShareRead
             ])
         );
-        assert_eq!(privileges.remove(&infra4).unwrap(), HashSet::from([]));
-        assert!(!privileges.contains_key(&infra_unused));
-        assert!(!privileges.contains_key(&i64::MAX));
+        assert_eq!(infra_privileges.remove(&infra4).unwrap(), HashSet::from([]));
+        assert!(!infra_privileges.contains_key(&infra_unused));
+        assert!(!infra_privileges.contains_key(&i64::MAX));
+
+        let mut project_privileges = privileges
+            .remove(&ResourceType::Project)
+            .unwrap()
+            .into_iter()
+            .map(
+                |ResourcePrivileges {
+                     resource_id,
+                     privileges,
+                 }| (resource_id, privileges),
+            )
+            .collect::<HashMap<_, _>>();
+        assert_eq!(
+            project_privileges.remove(&project1).unwrap(),
+            HashSet::from([StandardPrivilege::HasAccess])
+        );
+        assert_eq!(
+            project_privileges.remove(&project2).unwrap(),
+            HashSet::from([])
+        );
+        assert!(!project_privileges.contains_key(&project_unused));
+        assert!(!project_privileges.contains_key(&i64::MAX));
     }
 
     // TODO: merge with the previous test once test deadlocks are fixed
@@ -1124,15 +1177,19 @@ mod tests {
     async fn me_privileges_skip_authz() {
         let app = test_app!().build();
         let Infra { id: infra, .. } = create_empty_infra(&mut app.db_pool().get_ok()).await;
+        let Project { id: project, .. } =
+            create_project(&mut app.db_pool().get_ok(), "project").await;
         let mut privileges = app
             .post("/authz/me/privileges")
             .skip_authz()
             .json(&json!({
-               "infra": [infra]
+               "infra": [infra],
+               "project": [project]
             }))
             .await
             .assert_status_ok()
-            .json::<HashMap<ResourceType, Vec<ResourcePrivileges>>>()
+            .json::<HashMap<ResourceType, Vec<ResourcePrivileges>>>();
+        let mut infra_privileges = privileges
             .remove(&ResourceType::Infra)
             .unwrap()
             .into_iter()
@@ -1144,7 +1201,7 @@ mod tests {
             )
             .collect::<HashMap<_, _>>();
         assert_eq!(
-            privileges.remove(&infra).unwrap(),
+            infra_privileges.remove(&infra).unwrap(),
             HashSet::from([
                 StandardPrivilege::CanRestrictedRead,
                 StandardPrivilege::CanRead,
@@ -1156,6 +1213,22 @@ mod tests {
                 StandardPrivilege::CanRevoke,
             ])
         );
+
+        let mut project_privileges = privileges
+            .remove(&ResourceType::Project)
+            .unwrap()
+            .into_iter()
+            .map(
+                |ResourcePrivileges {
+                     resource_id,
+                     privileges,
+                 }| (resource_id, privileges),
+            )
+            .collect::<HashMap<_, _>>();
+        assert_eq!(
+            project_privileges.remove(&project).unwrap(),
+            HashSet::from([StandardPrivilege::HasAccess])
+        )
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]

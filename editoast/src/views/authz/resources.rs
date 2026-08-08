@@ -1,6 +1,7 @@
 use authz::InfraGrant;
 use authz::InfraPrivilege;
 use authz::ProjectGrant;
+use authz::ProjectPrivilege;
 use authz::RollingStockGrant;
 use authz::RollingStockPrivilege;
 use serde::Deserialize;
@@ -106,6 +107,13 @@ macro_rules! impl_standard_grant_from_into {
 
 impl_standard_privilege_from_into!(RollingStockPrivilege);
 impl_standard_privilege_from_into!(InfraPrivilege);
+impl From<ProjectPrivilege> for StandardPrivilege {
+    fn from(privilege: ProjectPrivilege) -> Self {
+        match privilege {
+            ProjectPrivilege::HasAccess => Self::HasAccess,
+        }
+    }
+}
 impl_standard_grant_from_into!(RollingStockGrant);
 impl_standard_grant_from_into!(InfraGrant);
 impl From<ProjectGrant> for StandardGrant {
