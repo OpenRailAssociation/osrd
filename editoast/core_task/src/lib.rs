@@ -194,6 +194,42 @@ where
     }
 }
 
+/// Writes into the cache in batches
+///
+/// It opens a channel that will be dropped when the CacheWriter will be dropped
+/// This will close the UnboundedReceiverStream in a separate tokio task and finish the work
+struct CacheWriter {
+    pub cache_write_tx: tokio::sync::mpsc::UnboundedSender<(String, serde_json::Value)>,
+}
+
+impl CacheWriter {
+    fn new(vk_client: Arc<cache::Client>, cache_write_cache_size: usize) -> Self {
+        use futures::StreamExt;
+        let (cache_write_tx, cache_write_rx) = tokio::sync::mpsc::unbounded_channel();
+        // 'write_cache' task, writes input key-value pairs to cache, logging errors
+        tokio::spawn(
+            async move {
+                UnboundedReceiverStream::new(cache_write_rx)
+                    .chunks(cache_write_cache_size)
+                    .for_each(|buffer| async {
+                        let mut vkconn = vk_client.get_connection().await.unwrap();
+                        if let Err(e) = vkconn.json_set_bulk(buffer).await {
+                            tracing::error!(?e, "task stream: cache write failure")
+                        }
+                    })
+                    .await;
+            }
+            .in_current_span(),
+        );
+
+        Self { cache_write_tx }
+    }
+
+    fn batched_write(&self, cache_key: String, serialized: serde_json::Value) -> Option<()> {
+        self.cache_write_tx.send((cache_key, serialized)).ok()
+    }
+}
+
 /// Extends streams to provide [TaskStreamExt::run]
 ///
 /// The stream must contain [Correlated] task requests. In practice, the `CorrelationKey`
@@ -255,27 +291,6 @@ where
          *                                   via for_each_concurrent)
          */
 
-        let (cache_write_tx, cache_write_rx) =
-            tokio::sync::mpsc::unbounded_channel::<(String, serde_json::Value)>();
-        {
-            let vk_client = vk_client.clone();
-            // 'write_cache' task, writes input key-value pairs to cache, logging errors
-            tokio::spawn(
-                async move {
-                    UnboundedReceiverStream::new(cache_write_rx)
-                        .chunks(T::CACHE_WRITES_BATCH_SIZE)
-                        .for_each(|buffer| async {
-                            let mut vkconn = vk_client.get_connection().await.unwrap();
-                            if let Err(e) = vkconn.json_set_bulk(buffer).await {
-                                tracing::error!(?e, "task stream: cache write failure")
-                            }
-                        })
-                        .await;
-                }
-                .in_current_span(),
-            );
-        }
-
         let (cache_read_tx, mut cache_read_rx) = tokio::sync::mpsc::unbounded_channel::<(
             T, // input
             CorrelationKey,
@@ -299,6 +314,7 @@ where
             );
         }
 
+        let cache = CacheWriter::new(vk_client.clone(), T::CACHE_WRITES_BATCH_SIZE);
         let (results_tx, results_rx) = futures::channel::mpsc::unbounded::<
             Correlated<CorrelationKey, Result<T::Output, T::Error>>,
         >();
@@ -326,7 +342,7 @@ where
                                         serialized.sort_all_objects();
                                         serialized
                                     };
-                                    cache_write_tx.send((cache_key, serialized)).ok();
+                                    cache.batched_write(cache_key, serialized);
                                     results_tx
                                         .unbounded_send(Correlated::new(correlation_key, Ok(value)))
                                         .ok();
