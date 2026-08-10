@@ -1,6 +1,7 @@
 use std::collections::BTreeSet;
 use std::collections::HashMap;
 use std::collections::HashSet;
+use std::convert::Infallible;
 use std::iter::Extend as _;
 use std::sync::Arc;
 
@@ -41,7 +42,9 @@ use itertools::Either;
 use itertools::Itertools as _;
 use itertools::izip;
 use reqwest::StatusCode;
+use schemas::TrainScheduleExceptionChangeGroups;
 use schemas::infra::OperationalPoint;
+use schemas::paced_train::RollingStockChangeGroup;
 use schemas::paced_train::TrainSchedule;
 use schemas::primitives::NonBlankString;
 use schemas::primitives::TimeWindow;
@@ -1528,7 +1531,7 @@ pub(in crate::views) async fn occupancy_blocks(
     )
     .await?;
 
-    let mut exceptions =
+    let exceptions =
         editoast_models::TrainScheduleException::retrieve_exceptions_by_train_schedules(
             conn,
             timetable_id,
@@ -1538,6 +1541,107 @@ pub(in crate::views) async fn occupancy_blocks(
         .into_iter()
         .map_into::<schemas::TrainScheduleException>()
         .into_group_map_by(|e| e.train_schedule_id);
+
+    // Retrieve the names of the rolling stocks used by the train schedules and exceptions:
+    let rolling_stocks_from_exceptions = exceptions.values().flatten().filter_map(|exception| {
+        if let TrainScheduleExceptionChangeGroups {
+            rolling_stock:
+                Some(RollingStockChangeGroup {
+                    rolling_stock_name, ..
+                }),
+            ..
+        } = &exception.change_groups
+        {
+            Some(rolling_stock_name.clone())
+        } else {
+            None
+        }
+    });
+
+    let rolling_stock_names: HashSet<String> = train_schedules
+        .iter()
+        .map(|train_schedule| train_schedule.rolling_stock_name.clone())
+        .chain(rolling_stocks_from_exceptions)
+        .collect::<HashSet<_>>();
+
+    // The paced trains and exceptions using a missing rolling stock are filtered out afterwards:
+    // 1. We retrieve from the database the rolling stocks used by the request paced trains and
+    //    exceptions.
+    // 2. We filter out unauthorized rolling stocks.
+    // 3. We only keep the paced trains and exceptions which are using an authorized rolling stock.
+    // => The paced trains and exceptions which are associated with a missing rolling stock will be
+    // automatically filtered out in the step `(3)`.
+    let rolling_stocks: Vec<_> = RollingStock::retrieve_batch_unchecked::<HashSet<String>, _>(
+        &mut conn.clone(),
+        rolling_stock_names,
+    )
+    .await?;
+
+    // Filter out unauthorized rolling stocks:
+    let authorized_rolling_stocks: HashSet<String> = match &authn_state {
+        crate::authentication::State::Skip => {
+            // The services should not be calling this endpoint
+            Err(AuthorizationError::Unauthenticated)?
+        }
+        crate::authentication::State::Authenticated { user, .. } => {
+            let system_authorizer = SystemAuthorizer::new_infallible(regulator.openfga());
+            let protected_authorized_rs = rolling_stocks.into_iter().map(|rolling_stock| {
+                authz::v2::rolling_stock_privileges(*user, authz::RollingStock(rolling_stock.id))
+                    .map(async move |grants| {
+                        grants
+                            .contains(&RollingStockPrivilege::CanRead)
+                            .then_some(rolling_stock.name.clone())
+                    })
+            });
+            let accesses = system_authorizer
+                .authorize_all(protected_authorized_rs)
+                .await?;
+            let Ok(authorized_rs) = authz::v2::Access::access_all(accesses)
+                .await?
+                .into_iter()
+                .collect::<Result<Vec<_>, Infallible>>();
+            authorized_rs.into_iter().flatten().collect::<HashSet<_>>()
+        }
+    };
+
+    // Filter out the train schedules and exceptions which are using unauthorized rolling stocks:
+    let train_schedules = train_schedules
+        .into_iter()
+        .filter(|train_schedule| {
+            authorized_rolling_stocks.contains(train_schedule.rolling_stock_name.as_str())
+        })
+        .collect_vec();
+    let mut exceptions: HashMap<i64, Vec<schemas::TrainScheduleException>> = exceptions
+        .into_iter()
+        .filter(|(train_schedule, _exceptions)| {
+            // Filter out the exceptions related to unauthorized train schedules:
+            train_schedules
+                .iter()
+                .map(|train| train.id)
+                .contains(train_schedule)
+        })
+        .map(|(train_schedule, exceptions)| {
+            let filtered_exceptions = exceptions
+                .into_iter()
+                .filter(|exception| {
+                    // Filter out exceptions updating the rolling stock to an unauthorized one:
+                    if let TrainScheduleExceptionChangeGroups {
+                        rolling_stock:
+                            Some(RollingStockChangeGroup {
+                                rolling_stock_name, ..
+                            }),
+                        ..
+                    } = &exception.change_groups
+                    {
+                        authorized_rolling_stocks.contains(rolling_stock_name)
+                    } else {
+                        true
+                    }
+                })
+                .collect_vec();
+            (train_schedule, filtered_exceptions)
+        })
+        .collect();
 
     let simulation_contexts: Vec<SimulationContext> = train_schedules
         .iter()
@@ -1565,6 +1669,11 @@ pub(in crate::views) async fn occupancy_blocks(
         .iter()
         .map(|c| c.train_schedule.clone())
         .collect::<Vec<_>>();
+
+    // TODO: core-task should be able to handle this case on its own
+    if train_schedules.is_empty() {
+        return Ok(Json(HashMap::new()));
+    }
 
     let occupancy_blocks_result = compute_occupancy_blocks(
         conn,
@@ -4065,14 +4174,15 @@ mod tests {
         let SimulationTestsSetup {
             app,
             infra_id,
+            rolling_stock_id,
             timetable,
             train_schedule,
             exception,
-            ..
         } = simulation_tests_initial_setup().await;
         let user = app
             .user("authorized", "authorized")
             .with_infra_grant(infra_id, authz::InfraGrant::Reader)
+            .with_rolling_stock_grant(rolling_stock_id, RollingStockGrant::Reader)
             .with_roles([authz::Role::OperationalStudies])
             .create()
             .await;
@@ -4114,22 +4224,23 @@ mod tests {
         )
         .await;
 
+        let json_payload = &json!({"ids": vec![train_schedule.id],
+            "infra_id": infra_id,
+            "timetable_id": timetable.id,
+            "path": {
+                "track_section_ranges": [{
+                    "track_section": "T1",
+                    "begin": 0,
+                    "end": 100,
+                    "direction": "START_TO_STOP",
+                }],
+                "routes": [],
+                "blocks":[],
+            },
+        });
         let response = app
             .post("/train_schedules/occupancy_blocks")
-            .json(&json!({"ids": vec![train_schedule.id],
-                "infra_id": infra_id,
-                "timetable_id": timetable.id,
-                "path": {
-                    "track_section_ranges": [{
-                        "track_section": "T1",
-                        "begin": 0,
-                        "end": 100,
-                        "direction": "START_TO_STOP",
-                    }],
-                    "routes": [],
-                    "blocks":[],
-                },
-            }))
+            .json(&json_payload)
             .by_user(&user.info)
             .await;
         let response: HashMap<i64, OccupancyBlocksTrainScheduleResult> =
@@ -4148,6 +4259,22 @@ mod tests {
             response.get(&train_schedule.id).unwrap().exceptions.len(),
             0
         );
+
+        // User without rolling stock reader rights should have a filtered out response:
+        let user_missing_rs_grant = app
+            .user("bob", "Bob")
+            .with_infra_grant(infra_id, authz::InfraGrant::Reader)
+            .with_roles([authz::Role::OperationalStudies])
+            .create()
+            .await;
+        let response_unauthorized: HashMap<i64, OccupancyBlocksTrainScheduleResult> = app
+            .post("/train_schedules/occupancy_blocks")
+            .json(&json_payload)
+            .by_user(&user_missing_rs_grant.info)
+            .await
+            .assert_status_ok()
+            .json();
+        assert!(response_unauthorized.is_empty());
     }
 
     fn pathfinding_result_success() -> PathfindingResultSuccess {
