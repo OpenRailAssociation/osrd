@@ -681,7 +681,24 @@ pub(in crate::views) async fn resource_granted_users(
                 .await?
                 .map_err(|_| AuthorizationError::Forbidden)?
         }
-        ResourceType::Project => todo!(),
+        ResourceType::Project => {
+            let project = authz::Project(resource_id);
+            Project::exists_or_fail(&mut conn, resource_id, || AuthzError::UnknownResource {
+                resource_id,
+            })
+            .await?;
+            let owners = authorizer
+                .authorize(authz::v2::project_granted_subjects(project))
+                .await?
+                .access()
+                .await?
+                .map_err(|_| AuthorizationError::Forbidden)?;
+
+            (
+                (Vec::<authz::Subject>::new(), Vec::<authz::Subject>::new()),
+                owners,
+            )
+        }
     };
 
     // NOTE: the same subject can appear in multiple lists. This can happen
@@ -1367,14 +1384,17 @@ mod tests {
         let app = test_app!().build();
         let db_pool = app.db_pool();
         let infra = create_small_infra(&mut db_pool.get_ok()).await;
+        let rolling_stock = create_fast_rolling_stock(&mut db_pool.get_ok(), "rolling_stock").await;
+        let project = create_project(&mut db_pool.get_ok(), "project").await;
+
         let user = app
             .user("authz", "Authz")
             .with_roles([Role::OperationalStudies])
             .with_infra_grant(infra.id, InfraGrant::Owner)
-            .with_rolling_stock_grant(infra.id, RollingStockGrant::Owner)
+            .with_rolling_stock_grant(rolling_stock.id, RollingStockGrant::Owner)
+            .with_project_grant(project.id, ProjectGrant::Owner)
             .create()
             .await;
-        let rolling_stock = create_fast_rolling_stock(&mut db_pool.get_ok(), "rolling_stock").await;
         for name in ["ben", "hal", "joe", "luc", "mar"] {
             app.user(name, name)
                 .with_roles([Role::OperationalStudies])
@@ -1389,31 +1409,41 @@ mod tests {
             app.user(name, name)
                 .with_roles([Role::OperationalStudies])
                 .with_rolling_stock_grant(rolling_stock.id, RollingStockGrant::Reader)
+                .with_project_grant(project.id, ProjectGrant::Owner)
                 .create()
                 .await;
         }
-        for resource_type in ResourceType::iter() {
+
+        for (resource_type, resource_id) in ResourceType::iter().map(|resource_type| {
+            let id = match resource_type {
+                ResourceType::Infra => infra.id,
+                ResourceType::RollingStock => rolling_stock.id,
+                ResourceType::Project => project.id,
+            };
+            (resource_type, id)
+        }) {
             let subjects: Vec<SubjectGrant> = app
-                .get(&format!("/authz/{}/{}", resource_type, infra.id))
+                .get(&format!("/authz/{}/{}", resource_type, resource_id))
                 .by_user(user.as_ref())
                 .await
                 .assert_status(StatusCode::OK)
                 .json();
-            match resource_type {
-                ResourceType::Infra => {
-                    assert_eq!(subjects.len(), 6);
+
+            assert_eq!(
+                subjects.len(),
+                match resource_type {
+                    ResourceType::Infra => 6,
+                    ResourceType::RollingStock => 8,
+                    ResourceType::Project => 3,
                 }
-                ResourceType::RollingStock => {
-                    assert_eq!(subjects.len(), 8);
-                }
-                ResourceType::Project => todo!(),
-            }
+            );
         }
     }
 
     #[rstest]
     #[case(ResourceType::Infra)]
     #[case(ResourceType::RollingStock)]
+    #[case(ResourceType::Project)]
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn users_grants_for_missing_resource_returns_not_found(
         #[case] resource_type: ResourceType,
@@ -1434,6 +1464,7 @@ mod tests {
     #[rstest]
     #[case(ResourceType::Infra)]
     #[case(ResourceType::RollingStock)]
+    #[case(ResourceType::Project)]
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn update_grants_for_missing_resource_returns_not_found(
         #[case] resource_type: ResourceType,
@@ -1453,7 +1484,7 @@ mod tests {
                     "subject_id": subject.id,
                     "resource_type": resource_type,
                     "resource_id": i64::MAX,
-                    "grant": StandardGrant::Reader,
+                    "grant": StandardGrant::Owner,
                 }]
             }))
             .await
@@ -1512,73 +1543,150 @@ mod tests {
         );
     }
 
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn groups_grants_on_resource() {
-        let app = test_app!().build();
-        let db_pool = app.db_pool();
-        let infra = create_small_infra(&mut app.db_pool().get_ok()).await;
-        let rolling_stock = create_fast_rolling_stock(&mut db_pool.get_ok(), "rolling_stock").await;
-        let alice = app
+    #[rstest]
+    #[case::infra(
+        test_app!().build(),
+        ResourceType::Infra,
+        create_small_infra(&mut app.db_pool().get_ok()).await.id,
+        app
             .user("alice", "Alice")
-            .with_infra_grant(infra.id, InfraGrant::Reader)
-            .with_rolling_stock_grant(rolling_stock.id, RollingStockGrant::Reader)
+            .with_infra_grant(resource_id, InfraGrant::Reader)
             .create()
-            .await;
-        let bob = app
+            .await,
+        app
             .user("bob", "Bob")
-            .with_infra_grant(infra.id, InfraGrant::Owner)
-            .with_rolling_stock_grant(rolling_stock.id, RollingStockGrant::Owner)
+            .with_infra_grant(resource_id, InfraGrant::Owner)
             .create()
-            .await;
-        let tom = app
+            .await,
+        app
             .user("tom", "Tom")
-            .with_infra_grant(infra.id, InfraGrant::Owner)
-            .with_rolling_stock_grant(rolling_stock.id, RollingStockGrant::Owner)
+            .with_infra_grant(resource_id, InfraGrant::Owner)
             .create()
-            .await;
-        let jerry = app
+            .await,
+        app
             .user("jerry", "Jerry")
-            .with_infra_grant(infra.id, InfraGrant::Reader)
-            .with_rolling_stock_grant(rolling_stock.id, RollingStockGrant::Reader)
+            .with_infra_grant(resource_id, InfraGrant::Reader)
             .create()
-            .await;
-        let alice_and_bob = app
+            .await,
+        app
             .group("Alice and Bob")
             .with_members([&alice, &bob])
-            .with_infra_grant(infra.id, InfraGrant::Writer)
-            .with_rolling_stock_grant(rolling_stock.id, RollingStockGrant::Writer)
+            .with_infra_grant(resource_id, InfraGrant::Writer)
             .create()
-            .await;
+            .await,
+    )]
+    #[case::rolling_stock(
+        test_app!().build(),
+        ResourceType::RollingStock,
+        create_fast_rolling_stock(&mut app.db_pool().get_ok(), "rolling_stock").await.id,
+        app
+            .user("alice", "Alice")
+            .with_rolling_stock_grant(resource_id, RollingStockGrant::Reader)
+            .create()
+            .await,
+        app
+            .user("bob", "Bob")
+            .with_rolling_stock_grant(resource_id, RollingStockGrant::Owner)
+            .create()
+            .await,
+        app
+            .user("tom", "Tom")
+            .with_rolling_stock_grant(resource_id, RollingStockGrant::Owner)
+            .create()
+            .await,
+        app
+            .user("jerry", "Jerry")
+            .with_rolling_stock_grant(resource_id, RollingStockGrant::Reader)
+            .create()
+            .await,
+        app
+            .group("Alice and Bob")
+            .with_members([&alice, &bob])
+            .with_rolling_stock_grant(resource_id, RollingStockGrant::Writer)
+            .create()
+            .await,
+    )]
+    // no test case for projects: they only have one grant level so they cannot be superseded or
+    // overridden. The only thing to check with them is whether they inherit grants from the
+    // projects they belong to.
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn groups_grants_on_resource(
+        #[case] app: TestApp,
+        #[case] resource_type: ResourceType,
+        #[case] resource_id: i64,
+        #[case] alice: authz::identity::User, // direct reader
+        #[case] bob: authz::identity::User,   // direct owner
+        #[case] tom: authz::identity::User,   // direct owner
+        #[case] jerry: authz::identity::User, // direct writer
+        #[case] alice_and_bob: authz::identity::Group, // direct writer
+    ) {
         let tom_and_jerry = app
             .group("Tom and Jerry")
             .with_members([&tom, &jerry])
             .create()
             .await;
-        for resource_type in ResourceType::iter() {
-            let resource_id = match resource_type {
-                ResourceType::Infra => infra.id,
-                ResourceType::RollingStock => rolling_stock.id,
-                ResourceType::Project => todo!(),
-            };
-            let subjects: Vec<SubjectGrant> = app
-                .get(&format!("/authz/{}/{}", resource_type, resource_id))
-                .by_user(alice.as_ref())
-                .await
-                .assert_status(StatusCode::OK)
-                .json();
+        let subjects: Vec<SubjectGrant> = app
+            .get(&format!("/authz/{}/{}", resource_type, resource_id))
+            .by_user(alice.as_ref())
+            .await
+            .assert_status(StatusCode::OK)
+            .json();
+        let grants = subjects
+            .into_iter()
+            .map(|SubjectGrant { id, grant, .. }| (id, grant))
+            .collect::<HashMap<_, _>>();
 
-            let grants = subjects
-                .into_iter()
-                .map(|SubjectGrant { id, grant, .. }| (id, grant))
-                .collect::<HashMap<_, _>>();
+        assert_eq!(grants.get(&alice.id), Some(&StandardGrant::Writer)); // group grants can supersede direct user grants
+        assert_eq!(grants.get(&bob.id), Some(&StandardGrant::Owner)); // but do not override them
+        assert_eq!(grants.get(&tom.id), Some(&StandardGrant::Owner)); // direct user grant
+        assert_eq!(grants.get(&jerry.id), Some(&StandardGrant::Reader)); // likewise
+        assert_eq!(grants.get(&alice_and_bob.id), Some(&StandardGrant::Writer)); // group direct grant
+        assert_eq!(grants.get(&tom_and_jerry.id), None); // no group grant (not even there in the response)
+    }
 
-            assert_eq!(grants.get(&alice.id), Some(&StandardGrant::Writer)); // group grants can supersede direct user grants
-            assert_eq!(grants.get(&bob.id), Some(&StandardGrant::Owner)); // but do not override them
-            assert_eq!(grants.get(&tom.id), Some(&StandardGrant::Owner)); // direct user grant
-            assert_eq!(grants.get(&jerry.id), Some(&StandardGrant::Reader)); // likewise
-            assert_eq!(grants.get(&alice_and_bob.id), Some(&StandardGrant::Writer)); // group direct grant
-            assert_eq!(grants.get(&tom_and_jerry.id), None); // no group grant (not even there in the response)
-        }
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn group_grants_on_project() {
+        let app = test_app!().build();
+        let db_pool = app.db_pool();
+        let project_id = create_project(&mut db_pool.get_ok(), "project").await.id;
+        let admin = app
+            .user("admin", "Admin")
+            .with_roles([Role::Admin])
+            .create()
+            .await;
+        let user = app.user("user", "User").create().await;
+
+        // The endpoint should return no grants for the newly created user:
+        let user_grant = app
+            .get(&format!("/authz/{}/{}", ResourceType::Project, project_id))
+            .by_user(admin.as_ref())
+            .await
+            .assert_status(StatusCode::OK)
+            .json::<Vec<SubjectGrant>>()
+            .into_iter()
+            .find(|SubjectGrant { id, .. }| *id == user.id);
+        assert!(user_grant.is_none());
+
+        // Add the user to a group with a direct grant on the project. The endpoint response should
+        // now contain a grant on the project for both the user (inherited) and its group (direct):
+        let group = app
+            .group("Loneliness group")
+            .with_members([&user])
+            .with_project_grant(project_id, ProjectGrant::Owner)
+            .create()
+            .await;
+        let subjects: Vec<SubjectGrant> = app
+            .get(&format!("/authz/{}/{}", ResourceType::Project, project_id))
+            .by_user(admin.as_ref())
+            .await
+            .assert_status(StatusCode::OK)
+            .json();
+        let grants = subjects
+            .into_iter()
+            .map(|SubjectGrant { id, grant, .. }| (id, grant))
+            .collect::<HashMap<_, _>>();
+        assert_eq!(grants.get(&user.id), Some(&StandardGrant::Owner));
+        assert_eq!(grants.get(&group.id), Some(&StandardGrant::Owner));
     }
 
     #[rstest]
