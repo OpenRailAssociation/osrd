@@ -149,7 +149,7 @@ pub fn journey_list(p: JourneyListParams) -> Vec<Vec<ConnectionId>> {
 
         let t2 = profiles[connection.arrival]
             .iter()
-            .rfind(|profile| profile.departure_ms > connection.arrival_ms + transfer_ms)
+            .rfind(|profile| profile.departure_ms >= connection.arrival_ms + transfer_ms)
             .map_or(u32::MAX, |profile| {
                 if profile.out_connection.is_some() {
                     profile.arrival_ms
