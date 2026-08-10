@@ -446,6 +446,25 @@ impl TestApp {
             "Infra grant for subject '{subject_id}' on infra '{infra_id}' does not match"
         );
     }
+
+    pub async fn assert_project_grant(
+        &self,
+        project_id: i64,
+        subject_id: i64,
+        expected_grant: Option<ProjectGrant>,
+    ) {
+        let subject = self.authz_subject(subject_id);
+        let project = authz::Project(project_id);
+        let actual_grant = self
+            .openfga()
+            .project_effective_grant(subject, project)
+            .await;
+        pretty_assertions::assert_eq!(
+            actual_grant,
+            expected_grant,
+            "Project grant for subject '{subject_id}' on project {project_id} does not match"
+        );
+    }
 }
 
 pub struct UserBuilder<'a> {
