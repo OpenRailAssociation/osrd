@@ -61,16 +61,6 @@ export function convertInputStringToNumber(str: string) {
 }
 
 /**
- * Given an UIC number, check if it begins with 87,
- * if true return the UIC without the 87,
- * if false return the full UIC
- * @param uic full UIC and CI code (8 digits)
- */
-export function formatUicToCi(uic: number) {
-  return uic.toString().replace(/^87/, '');
-}
-
-/**
  * Normalizes a string by removing accents and converting to lowercase.
  *
  * Accent removal is done using `String.normalize` which converts accented characters to their

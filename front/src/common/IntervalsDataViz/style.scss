@@ -49,24 +49,6 @@ $resize-width: 3px;
     flex-wrap: nowrap;
     align-items: center;
     justify-content: space-between;
-    .zoom-horizontal {
-      display: flex;
-      flex-direction: row;
-      z-index: 2;
-      flex-grow: 1;
-      //height: calc($dataviz-height + $scaling-height);
-      .btn {
-        background-color: #fff;
-        padding: 0 0.25em !important;
-        border-top-left-radius: 0;
-        border-bottom-left-radius: 0;
-        border-left-width: 0;
-        &:focus,
-        &:hover {
-          color: #000;
-        }
-      }
-    }
   }
   .content {
     .dataviz {

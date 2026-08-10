@@ -26,17 +26,6 @@ export const parseLocalDateTime = (inputDateTime: string) => {
 };
 
 /**
- * Format a local date suitable for an <input type="datetime-local">.
- */
-export const formatLocalDateTime = (date: Date) =>
-  dayjs(date).local().format('YYYY-MM-DDTHH:mm:ss');
-
-/**
- * Format a local date suitable for an <input type="date">.
- */
-export const formatLocalDate = (date: Date) => dayjs(date).local().format('YYYY-MM-DD');
-
-/**
  * format Date into local time, suitable for an <input type="time">
  */
 export const formatLocalTime = (date: Date) => dayjs(date).local().format('HH:mm:ss');

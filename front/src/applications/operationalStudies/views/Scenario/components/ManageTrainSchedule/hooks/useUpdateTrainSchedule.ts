@@ -1,7 +1,10 @@
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
-import { useItineraryModalContext } from 'applications/operationalStudies/hooks/useItineraryModalContext';
+import {
+  useItineraryModalContext,
+  type TrainScheduleToEditData,
+} from 'applications/operationalStudies/hooks/useItineraryModalContext';
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import {
   checkChangeGroups,
@@ -33,7 +36,7 @@ import {
   getOperationalStudiesConf,
   getAddedExceptions,
 } from 'reducers/osrdconf/operationalStudiesConf/selectors';
-import type { OccurrenceId, TrainScheduleToEditData } from 'reducers/osrdconf/types';
+import type { OccurrenceId } from 'reducers/osrdconf/types';
 import {
   updateAlreadySelectedTrainId,
   updateTrainIdUsedForProjection,

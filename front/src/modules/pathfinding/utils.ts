@@ -116,7 +116,7 @@ export const getPathfindingQuery = ({
   return null;
 };
 
-export const isPathStepInvalid = (step: PathStep | null): boolean => step?.isInvalid || false;
+const isPathStepInvalid = (step: PathStep | null): boolean => step?.isInvalid || false;
 
 export const upsertPathStepsInOPs = (
   ops: SuggestedOP[],
@@ -211,29 +211,3 @@ export const pathStepMatchesOp = (
   }
   return true;
 };
-
-/**
- * Check if a suggested operational point is a via.
- * Some OPs have same uic so we need to check also the secondary code (can be still not enough
- * probably because of imports problem).
- * If the vias has no uic, it has been added via map click and we know it has an id.
- * @param withKP - If true, we check the kp compatibility instead of the name.
- * It is used in the times and stops table to check if an operational point is a via.
- */
-export const isVia = (
-  vias: PathStep[],
-  op: Pick<
-    SuggestedOP,
-    | 'pathStepId'
-    | 'opId'
-    | 'uic'
-    | 'secondaryCode'
-    | 'countryCode'
-    | 'mainCode'
-    | 'track'
-    | 'offsetOnTrack'
-    | 'name'
-    | 'kp'
-  >,
-  { withKP = false } = {}
-) => vias.some((via) => pathStepMatchesOp(via, op, withKP));

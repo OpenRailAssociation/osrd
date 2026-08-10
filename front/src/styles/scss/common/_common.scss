@@ -1,7 +1,6 @@
 @use 'map/mapSearch';
 @use 'map/map';
 @use 'map/marker';
-@use 'map/popup';
 @use 'rc-slider';
 
 .osrd-config-item {
@@ -16,13 +15,6 @@
   background-color: white;
   padding: 8px;
   border-radius: 4px;
-  &.osrd-config-item-clickable {
-    cursor: pointer;
-    transition: 0.2s;
-    &:hover {
-      background-color: #d7d7d7;
-    }
-  }
 }
 
 .osrd-config-item-container-map {
@@ -31,15 +23,6 @@
   background-color: var(--white);
   padding: 8px;
   height: 100%;
-
-  .floating-itinerary {
-    position: absolute;
-    z-index: 1;
-    top: 16px;
-    left: 16px;
-    max-height: calc(100% - 32px);
-    max-width: 75%; // if the pathfinding error msg is too long
-  }
 
   // à creuser
   .btn-map-container {
@@ -90,74 +73,6 @@
     &.active {
       z-index: 1;
       opacity: 1;
-    }
-  }
-  .map-pathfinding-marker {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    position: absolute;
-    font-weight: 500;
-    border-radius: 4px;
-    line-height: 11.2px;
-    padding: 2.4px 4px;
-    font-size: 0.7rem;
-    white-space: nowrap;
-    &.origin-name {
-      color: var(--green);
-      background-color: var(--coolgray13);
-      left: 24px;
-      top: 1.6px;
-    }
-    &.via-number {
-      padding: 0;
-      font-weight: bold;
-      color: white;
-    }
-    &.via-name {
-      color: var(--cyan);
-      background-color: var(--coolgray1);
-      border: 1px dashed var(--cyan);
-      left: 24px;
-      top: 1.6px;
-    }
-    &.via-with-stop {
-      color: var(--white);
-      background-color: var(--cyan);
-      border-color: var(--cyan);
-    }
-    &.destination-name {
-      color: var(--yellow);
-      background-color: var(--coolgray13);
-      right: 28px;
-      top: 16px;
-    }
-    .main-line {
-      display: flex;
-      align-items: center;
-      flex-direction: column;
-      padding: 4px 0;
-      gap: 4px;
-      justify-content: space-between;
-      .track-name {
-        font-size: 1rem;
-        font-weight: bold;
-      }
-      .line-code {
-        font-size: 0.6rem;
-        font-weight: lighter;
-        line-height: 8px;
-      }
-    }
-    .second-line {
-      font-weight: lighter;
-      font-size: 0.6rem;
-      white-space: normal;
-      min-width: 112px;
-
-      &:not(.via) {
-        color: var(--white);
-      }
     }
   }
 }

@@ -3,12 +3,12 @@ import { useCallback, useState } from 'react';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 
+import type { TrainScheduleToEditData } from 'applications/operationalStudies/hooks/useItineraryModalContext';
 import useScenarioTrainScheduleSet from 'applications/operationalStudies/hooks/useScenarioTrainScheduleSet';
 import { useTimetableContext } from 'applications/operationalStudies/hooks/useTimetableContext';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type { TrainScheduleWithDetails } from 'modules/trainSchedule/types';
 import { setFailure } from 'reducers/main';
-import type { TrainScheduleToEditData } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 

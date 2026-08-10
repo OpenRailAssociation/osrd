@@ -1,22 +1,3 @@
-.rollingstock-search-filters {
-  background-color: var(--coolgray15);
-}
-.rollingstock-container {
-  &:hover {
-    .rollingstock-card-header,
-    .rollingstock-card-body,
-    .rollingstock-footer {
-      border-color: var(--coolgray3);
-    }
-  }
-  &.active {
-    .rollingstock-card-header,
-    .rollingstock-card-body,
-    .rollingstock-footer {
-      border-color: var(--blue);
-    }
-  }
-}
 .rollingstock-card-header {
   background-color: var(--gray);
   border-color: var(--gray);

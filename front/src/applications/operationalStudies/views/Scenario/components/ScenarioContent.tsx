@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import {
   ItineraryModalContext,
   type ItineraryModalContextType,
+  type TrainScheduleToEditData,
 } from 'applications/operationalStudies/hooks/useItineraryModalContext';
 import { ManageTrainScheduleContextProvider } from 'applications/operationalStudies/hooks/useManageTrainScheduleContext';
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
@@ -24,7 +25,7 @@ import ScenarioLoaderMessage from 'modules/scenario/components/ScenarioLoaderMes
 import ChronogramWrapper from 'modules/simulationResult/components/Chronogram/ChronogramWrapper';
 import type { PanelSelectionMode } from 'modules/simulationResult/components/SpaceTimeChartWrapper/CurveSelectionSidePanel';
 import { setFailure } from 'reducers/main';
-import type { TrainId, TrainScheduleToEditData } from 'reducers/osrdconf/types';
+import type { TrainId } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 import { usePrevious } from 'utils/hooks/state';

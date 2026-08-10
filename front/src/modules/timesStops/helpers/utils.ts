@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-use-before-define */
-import { keyColumn, createTextColumn } from '@sdziadkowiec/react-datasheet-grid';
 import dayjs from 'dayjs';
 import type { TFunction } from 'i18next';
 import { round, isEqual, isNil } from 'lodash';
@@ -11,10 +9,7 @@ import type {
   ReceptionSignal,
 } from 'common/api/osrdEditoastApi';
 import type { TimeString } from 'common/types';
-import type { SuggestedOP } from 'modules/trainSchedule/types';
-import type { PathStep } from 'reducers/osrdconf/types';
 import { Duration } from 'utils/duration';
-import { msToS } from 'utils/physics';
 import { NO_BREAK_SPACE } from 'utils/strings';
 import {
   durationInSeconds,
@@ -24,78 +19,7 @@ import {
 } from 'utils/timeManipulation';
 
 import { marginRegExValidation, MarginUnit } from '../consts';
-import { TableType, type TimeExtraDays, type TimesStopsInputRow } from '../types';
-
-export const formatSuggestedViasToRowVias = (
-  operationalPoints: SuggestedOP[],
-  pathSteps: PathStep[],
-  t: TFunction<'translation', undefined>,
-  startTime?: Date,
-  tableType?: TableType
-): TimesStopsInputRow[] => {
-  const formattedOps = [...operationalPoints];
-
-  // If the origin is in the ops and isn't the first operational point, we need
-  // to move it to the first position
-  const origin = pathSteps[0];
-  const originIndexInOps = origin
-    ? operationalPoints.findIndex((op) => origin.id === op.pathStepId)
-    : -1;
-  if (originIndexInOps !== -1) {
-    [formattedOps[0], formattedOps[originIndexInOps]] = [
-      formattedOps[originIndexInOps],
-      formattedOps[0],
-    ];
-  }
-
-  // Ditto: destination should be last
-  const dest = pathSteps[pathSteps.length - 1];
-  const destIndexInOps = dest ? operationalPoints.findIndex((op) => dest.id === op.pathStepId) : -1;
-  if (destIndexInOps !== -1) {
-    const lastOpIndex = formattedOps.length - 1;
-    [formattedOps[lastOpIndex], formattedOps[destIndexInOps]] = [
-      formattedOps[destIndexInOps],
-      formattedOps[lastOpIndex],
-    ];
-  }
-
-  return formattedOps.map((op, i) => {
-    const pathStep = pathSteps.find((step) => step.id === op.pathStepId);
-    const name = pathStep?.name || op.name;
-    const objectToUse = tableType === TableType.Input ? pathStep : op;
-
-    const { arrival, receptionSignal, stopFor, theoreticalMargin } = objectToUse || {};
-
-    const stopForSeconds = stopFor ? stopFor.total('second') : undefined;
-
-    const isMarginValid = theoreticalMargin ? marginRegExValidation.test(theoreticalMargin) : true;
-    const arrivalDuration = i === 0 ? Duration.zero : arrival;
-    const arrivalInSeconds = arrivalDuration ? msToS(arrivalDuration.ms) : null;
-
-    const formattedArrival = calculateStepTimeAndDays(startTime, arrivalDuration);
-
-    const departureTime =
-      stopForSeconds !== undefined && arrivalInSeconds
-        ? secToHoursString(arrivalInSeconds + stopForSeconds)
-        : undefined;
-    const formattedDeparture: TimeExtraDays | undefined = departureTime
-      ? { time: departureTime }
-      : undefined;
-    const { receptionSignal: _opReceptionSignal, ...filteredOp } = op;
-    const { shortSlipDistance, onStopSignal } = receptionSignalToSignalBooleans(receptionSignal);
-    return {
-      ...filteredOp,
-      isMarginValid,
-      arrival: formattedArrival,
-      departure: formattedDeparture,
-      onStopSignal,
-      name: name || t('timeStopTable.waypoint', { id: filteredOp.pathStepId }),
-      shortSlipDistance,
-      stopFor,
-      theoreticalMargin,
-    };
-  });
-};
+import { type TimeExtraDays, type TimesStopsInputRow } from '../types';
 
 const getDigits = (unit: string | undefined) =>
   unit === MarginUnit.second || unit === MarginUnit.percent ? 0 : 1;
@@ -115,18 +39,6 @@ export function formatDigitsAndUnit(fullValue: string | number | undefined, unit
   const extractedUnit = splitValue[3];
   const digits = getDigits(extractedUnit);
   return `${round(extractedValue, digits)}${NO_BREAK_SPACE}${extractedUnit}`;
-}
-
-export function disabledTextColumn(
-  key: string,
-  title: string,
-  options?: Parameters<typeof createTextColumn>[0]
-) {
-  return {
-    ...keyColumn(key, createTextColumn(options)),
-    title,
-    disabled: true,
-  };
 }
 
 /**
@@ -226,21 +138,6 @@ export function updateRowTimesAndMargin(
     }
   }
   return newRowData;
-}
-
-/**
- * This function is called before comparing rows to prevent a change from undefined to null (or the reverse)
- * from being treated as an actual update of a row (otherwise changes would occur on deletion of an undefined field)
- */
-export function normalizeNullablesInRow(row: TimesStopsInputRow): TimesStopsInputRow {
-  const normalizedRow = { ...row };
-  if (normalizedRow.stopFor === null) {
-    normalizedRow.stopFor = undefined;
-  }
-  if (normalizedRow.theoreticalMargin === null) {
-    normalizedRow.theoreticalMargin = undefined;
-  }
-  return normalizedRow;
 }
 
 /**

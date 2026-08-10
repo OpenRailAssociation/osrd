@@ -38,13 +38,6 @@ export function sToMs(value: number) {
   return value * 1000;
 }
 
-/** converts any unit to base
- *  for example milliseconds to seconds
- */
-export function msToS(value: number) {
-  return value * 0.001;
-}
-
 /** Convert km/h to m/s */
 export function kmhToMs(v: number) {
   return Math.abs(v / 3.6);

@@ -74,7 +74,7 @@ export type TimesStopsRowNew = {
   totalTravelTime: Duration | null;
 };
 
-export type TimesStopsRow = {
+type TimesStopsRow = {
   pathStepId: string | undefined;
   opId: string | undefined;
   name: string | undefined;
@@ -103,11 +103,6 @@ export type TimesStopsInputRow = Pick<
   'uic' | 'positionOnPath' | 'offsetOnTrack' | 'track'
 > &
   TimesStopsRow;
-
-export enum TableType {
-  Input = 'Input',
-  Output = 'Output',
-}
 
 export type TheoreticalMarginsRecord = Record<
   string,

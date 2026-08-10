@@ -115,13 +115,6 @@
         0 2px 4px rgba(0, 0, 0, 0.22);
     }
 
-    .driver-train-schedule {
-      background-color: white;
-      padding: 16px;
-      border-radius: 4px;
-      margin-inline: 38px 30px;
-    }
-
     .simulation-sheet-container {
       display: flex;
       justify-content: space-between;
@@ -144,31 +137,6 @@
       box-shadow: 0 1px 0 0 inset var(--white50);
       border-top: 1px solid var(--color-grey-30);
       border-radius: 0 0 8px 8px;
-    }
-
-    /* MAP */
-    .train-speed-label {
-      text-shadow: 0 0 3px #fff;
-      padding-bottom: 24px;
-    }
-
-    .map-pathfinding-marker {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      position: absolute;
-      font-weight: 500;
-      border-radius: 4px;
-      line-height: 11.2px;
-      padding: 2.4px 4px;
-      font-size: 0.7rem;
-      white-space: nowrap;
-
-      &.via-number {
-        padding: 0;
-        font-weight: bold;
-        color: white;
-      }
     }
   }
 }
