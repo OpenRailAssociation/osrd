@@ -3,28 +3,12 @@ import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
-import type { TrainScheduleResponse } from 'common/api/osrdEditoastApi';
-import {
-  createExceptions,
-  createTrainSchedules,
-} from 'modules/trainSchedule/helpers/updateTrainScheduleHelpers';
-import { setFailure, setSuccess } from 'reducers/main';
-import { clearAddedExceptionsList } from 'reducers/osrdconf/operationalStudiesConf';
-import {
-  getOperationalStudiesConf,
-  getAddedExceptions,
-} from 'reducers/osrdconf/operationalStudiesConf/selectors';
-import { updateSelectedTrain } from 'reducers/simulationResults';
-import { useAppDispatch } from 'store';
-import { castErrorToFailure } from 'utils/error';
-import { formatEditoastIdToTrainScheduleId } from 'utils/trainId';
+import { getOperationalStudiesConf } from 'reducers/osrdconf/operationalStudiesConf/selectors';
 
-import { formatTrainSchedulePayload } from './helpers/formatTrainSchedulePayload';
-import { validateTrainSchedule } from './helpers/validateTrainSchedule';
+import { useCreateTrainSchedule } from './hooks/useCreateTrainSchedule';
 
 type CreateTrainScheduleButtonProps = {
   setIsWorking: (isWorking: boolean) => void;
-  upsertTrainSchedules: (trainSchedules: TrainScheduleResponse[]) => void;
   closeManageTrainScheduleAndOpenTableBoard: () => void;
 };
 
@@ -33,116 +17,24 @@ type CreateTrainScheduleButtonProps = {
  */
 const CreateTrainScheduleButton = ({
   setIsWorking,
-  upsertTrainSchedules,
   closeManageTrainScheduleAndOpenTableBoard,
 }: CreateTrainScheduleButtonProps) => {
-  const dispatch = useAppDispatch();
+  const { workerStatus } = useScenarioContext();
+  const simulationConf = useSelector(getOperationalStudiesConf);
   const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTrainSchedule' });
 
-  const { workerStatus, sandboxId, timetableId } = useScenarioContext();
-
-  const simulationConf = useSelector(getOperationalStudiesConf);
-  const addedExceptions = useSelector(getAddedExceptions);
-
+  const createTrainSchedule = useCreateTrainSchedule(
+    setIsWorking,
+    closeManageTrainScheduleAndOpenTableBoard
+  );
   const isPacedTrainMode = simulationConf.editingTrainType === 'pacedTrain';
-
-  const handleTrainSchedulesCreation = async () => {
-    setIsWorking(true);
-
-    try {
-      const newTrainSchedulePayload = formatTrainSchedulePayload(simulationConf);
-
-      const validationErrors = validateTrainSchedule(newTrainSchedulePayload);
-      if (validationErrors.length) {
-        validationErrors.forEach((errorCode) => {
-          dispatch(
-            setFailure({
-              name: t('errorMessages.trainScheduleTitle'),
-              message: t(`errorMessages.${errorCode}`),
-            })
-          );
-        });
-
-        return;
-      }
-
-      const formattedNewTrainSchedule: TrainScheduleResponse = (
-        await createTrainSchedules(dispatch, sandboxId, [newTrainSchedulePayload])
-      )[0];
-      dispatch(
-        updateSelectedTrain({
-          id: formatEditoastIdToTrainScheduleId(formattedNewTrainSchedule.id),
-          by: 'timetable',
-        })
-      );
-
-      let trainScheduleToUpsert = formattedNewTrainSchedule;
-
-      const newAddedExceptions = addedExceptions.map(({ startTime: exStartTime }) => ({
-        key: '', // TODO : remove this when the key will be removed from the model
-        start_time: { value: exStartTime.getTime() },
-      }));
-
-      if (newAddedExceptions.length > 0) {
-        const newExceptions = await createExceptions(
-          dispatch,
-          newAddedExceptions,
-          formattedNewTrainSchedule.id,
-          timetableId
-        );
-
-        // TODO : remove this part when the back will be done inserting the new exception format in TrainSchedule
-        const formattedExceptions = newExceptions.map((exceptionNewModel) => {
-          const {
-            change_groups,
-            train_schedule_id: _train_schedule_id,
-            timetable_id: _timetable_id,
-            ...restExceptions
-          } = exceptionNewModel;
-          return {
-            ...change_groups,
-            ...restExceptions,
-            // TODO_EXCEPTION: remove this when drop key in the model
-            key: '',
-          };
-        });
-
-        // Add the new exceptions to the train schedule so they contain their new exception ids
-        trainScheduleToUpsert = {
-          ...formattedNewTrainSchedule,
-          ...(formattedNewTrainSchedule.paced && {
-            paced: {
-              ...formattedNewTrainSchedule.paced,
-              exceptions: formattedExceptions,
-            },
-          }),
-        };
-      }
-
-      dispatch(
-        setSuccess({
-          title: isPacedTrainMode ? t('pacedTrains.added') : t('trainAdded'),
-          text: `${simulationConf.name}: ${simulationConf.startTime.toLocaleTimeString()}`,
-        })
-      );
-      if (simulationConf.editingTrainType === 'pacedTrain') {
-        dispatch(clearAddedExceptionsList());
-      }
-      upsertTrainSchedules([trainScheduleToUpsert]);
-      closeManageTrainScheduleAndOpenTableBoard();
-    } catch (e) {
-      dispatch(setFailure(castErrorToFailure(e)));
-    } finally {
-      setIsWorking(false);
-    }
-  };
 
   return (
     <button
       className="btn btn-primary mb-2"
       type="button"
       disabled={workerStatus !== 'READY'}
-      onClick={handleTrainSchedulesCreation}
+      onClick={createTrainSchedule}
       data-testid="create-train-schedule-button"
     >
       <span className="mr-2">

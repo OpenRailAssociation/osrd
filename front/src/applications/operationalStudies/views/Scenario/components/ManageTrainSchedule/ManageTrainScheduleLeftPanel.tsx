@@ -147,7 +147,6 @@ const ManageTrainScheduleLeftPanel = ({
             ) : (
               <CreateTrainScheduleButton
                 setIsWorking={setIsWorking}
-                upsertTrainSchedules={upsertTrainSchedules}
                 closeManageTrainScheduleAndOpenTableBoard={() =>
                   closeViewAndOpenTableBoard(leaveManageTrainSchedule)
                 }
