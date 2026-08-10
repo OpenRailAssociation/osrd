@@ -142,6 +142,19 @@ export const addDurationToStartTime = (startTime: StartTime, dur: Duration): Sta
 export const subtractDurationFromDate = (date: Date, dur: Duration) =>
   new Date(date.getTime() - dur.ms);
 
+export const subtractDurationFromStartTime = (startTime: StartTime, dur: Duration) =>
+  startTime instanceof Duration ? startTime.sub(dur) : subtractDurationFromDate(startTime, dur);
+
+export const subtractStartTime = (a: StartTime, b: StartTime) => {
+  if (a instanceof Date && b instanceof Date) {
+    return Duration.subtractDate(a, b);
+  } else if (a instanceof Duration && b instanceof Duration) {
+    return a.sub(b);
+  } else {
+    throw new Error('Cannot subtract start times with different underlying type');
+  }
+};
+
 /** Compute the difference in minutes between two dates, truncated to the minute */
 export const minutesBetween = (a: Date, b: Date) =>
   new Duration({
