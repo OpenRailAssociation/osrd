@@ -395,18 +395,15 @@ export type DurationCellHandle = {
   focus: () => void;
 };
 
-const DurationCell = ({
-  disabled,
-  clearButtonTitle,
-  ref,
-  ...props
-}: CellContext<TimesStopsRowNew, Duration | null> &
+type DurationCellProps = CellContext<TimesStopsRowNew, Duration | null> &
   Omit<React.HTMLAttributes<HTMLDivElement>, 'onChange'> & {
     onCommit?: (seconds: number | null, propagationMode: StopPropagationMode) => void;
     disabled?: boolean;
     clearButtonTitle?: string;
     ref?: React.Ref<DurationCellHandle>;
-  }) => {
+  };
+
+const DurationCell = ({ disabled, clearButtonTitle, ref, ...props }: DurationCellProps) => {
   const { onCommit, getValue, row, table } = props || {};
   const controlledValue = getValue();
   const [state, dispatch] = useReducer(durationReducer, controlledValue, initialDurationState);
