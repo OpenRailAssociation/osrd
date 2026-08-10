@@ -191,13 +191,9 @@ pub(in crate::views) async fn occupancy(
         .await
         .map_err(RollingStockError::from)?;
 
-    let train_occurrences = filter_readable_occurrences(
-        train_occurrences,
-        &rolling_stocks,
-        &authn_state,
-        &openfga,
-    )
-    .await?;
+    let train_occurrences =
+        filter_readable_occurrences(train_occurrences, &rolling_stocks, &authn_state, &openfga)
+            .await?;
 
     // Extract train schedules for simulation
     let train_schedules = train_occurrences
