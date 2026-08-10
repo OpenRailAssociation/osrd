@@ -19,7 +19,7 @@ use crate::PathfindingConsist;
 use crate::PathfindingConstraints;
 use crate::PathfindingTrain;
 use crate::TrainKey;
-use crate::envs::pathfinding::PathItemAlternatives;
+use crate::envs::pathfinding::PathItemConstraint;
 
 #[derive(Debug)]
 pub(crate) struct SimulationInputs<Train>
@@ -221,7 +221,7 @@ impl SimulationTrain {
     /// The label can be reused for [Self::set_power_restriction] and [Self::set_margin].
     pub fn push_schedule_item(
         &mut self,
-        path_constraint: PathItemAlternatives,
+        path_constraint: PathItemConstraint,
         label: NonBlankString,
         schedule_item: ScheduleItem,
     ) {

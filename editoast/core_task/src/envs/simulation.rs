@@ -429,12 +429,12 @@ pub(crate) mod test_data {
             ),
         );
         builder.push_schedule_item(
-            pathfinding::PathItemAlternatives::from_iter([TrackOffset::new("id", id as u64)]),
+            pathfinding::PathItemConstraint::from_iter([TrackOffset::new("id", id as u64)]),
             NonBlankString::from("start"),
             ScheduleItem::pass_by(),
         );
         builder.push_schedule_item(
-            pathfinding::PathItemAlternatives::from_iter([TrackOffset::new("a", 42)]),
+            pathfinding::PathItemConstraint::from_iter([TrackOffset::new("a", 42)]),
             NonBlankString::from("a"),
             ScheduleItem {
                 arrival_at: Some(1200),
@@ -443,7 +443,7 @@ pub(crate) mod test_data {
             },
         );
         builder.push_schedule_item(
-            pathfinding::PathItemAlternatives::from_iter([
+            pathfinding::PathItemConstraint::from_iter([
                 TrackOffset::new("b", 43),
                 TrackOffset::new("bis", 34),
             ]),
@@ -455,7 +455,7 @@ pub(crate) mod test_data {
             },
         );
         builder.push_schedule_item(
-            pathfinding::PathItemAlternatives::from_iter([TrackOffset::new("finish", 44)]),
+            pathfinding::PathItemConstraint::from_iter([TrackOffset::new("finish", 44)]),
             NonBlankString::from("finish"),
             ScheduleItem {
                 arrival_at: Some(2400),

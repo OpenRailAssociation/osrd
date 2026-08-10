@@ -172,7 +172,7 @@ pub struct PathfindingConsist {
 #[cfg_attr(test, derive(Clone))]
 pub struct PathfindingConstraints {
     /// An ordered list of waypoints the resulting path must pass through
-    pub path_items: Vec<PathItemAlternatives>,
+    pub path_items: Vec<PathItemConstraint>,
     /// Set of authorized track section ids, empty means no restriction
     pub allowed_track_sections: BTreeSet<String>,
 }
@@ -182,15 +182,15 @@ pub struct PathfindingConstraints {
 /// The resulting path can cross any of these.
 #[derive(Debug, Hash, PartialEq, Eq)]
 #[cfg_attr(test, derive(Clone))]
-pub struct PathItemAlternatives(Vec<TrackOffset>);
+pub struct PathItemConstraint(Vec<TrackOffset>);
 
-impl FromIterator<TrackOffset> for PathItemAlternatives {
+impl FromIterator<TrackOffset> for PathItemConstraint {
     fn from_iter<T: IntoIterator<Item = TrackOffset>>(iter: T) -> Self {
         Self(iter.into_iter().collect())
     }
 }
 
-impl IntoIterator for PathItemAlternatives {
+impl IntoIterator for PathItemConstraint {
     type Item = TrackOffset;
     type IntoIter = <Vec<TrackOffset> as IntoIterator>::IntoIter;
 
@@ -383,7 +383,7 @@ pub fn pathfinding_request_from_consist_constraints(
             .path_items
             .iter()
             .map(
-                |PathItemAlternatives(track_alternatives)| core_client::pathfinding::PathItem {
+                |PathItemConstraint(track_alternatives)| core_client::pathfinding::PathItem {
                     locations: track_alternatives.clone(),
                     can_backtrack: Some(false),
                 },
@@ -458,12 +458,12 @@ pub(crate) mod test_data {
     pub(crate) fn constraints(id: usize) -> PathfindingConstraints {
         PathfindingConstraints {
             path_items: vec![
-                PathItemAlternatives::from_iter([TrackOffset::new("id", id as u64)]),
-                PathItemAlternatives::from_iter([
+                PathItemConstraint::from_iter([TrackOffset::new("id", id as u64)]),
+                PathItemConstraint::from_iter([
                     TrackOffset::new("tr1", 100),
                     TrackOffset::new("tr1bis", 100),
                 ]),
-                PathItemAlternatives::from_iter([TrackOffset::new("tr2", 200)]),
+                PathItemConstraint::from_iter([TrackOffset::new("tr2", 200)]),
             ],
             allowed_track_sections: BTreeSet::new(),
         }

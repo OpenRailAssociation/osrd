@@ -163,7 +163,7 @@ mod tests {
 
     use super::*;
     use crate::envs::pathfinding;
-    use crate::envs::pathfinding::PathItemAlternatives;
+    use crate::envs::pathfinding::PathItemConstraint;
     use crate::envs::simulation;
     use crate::envs::simulation::ScheduleItem;
     use crate::envs::simulation::SimulationTrain;
@@ -187,8 +187,8 @@ mod tests {
 
         let core_env = CoreEnv::new_mock(MockingClient::new());
         let path_items = vec![
-            PathItemAlternatives::from_iter([]),
-            PathItemAlternatives::from_iter([]),
+            PathItemConstraint::from_iter([]),
+            PathItemConstraint::from_iter([]),
         ];
         let pf_input = pathfinding::PathfindingKey(
             Arc::new(pathfinding::test_data::consist(1)),
@@ -288,11 +288,11 @@ mod tests {
 
         let core_env = CoreEnv::new_mock(MockingClient::new());
         let path_items = vec![
-            PathItemAlternatives::from_iter([]),
-            PathItemAlternatives::from_iter([]),
-            PathItemAlternatives::from_iter([]),
-            PathItemAlternatives::from_iter([]),
-            PathItemAlternatives::from_iter([]),
+            PathItemConstraint::from_iter([]),
+            PathItemConstraint::from_iter([]),
+            PathItemConstraint::from_iter([]),
+            PathItemConstraint::from_iter([]),
+            PathItemConstraint::from_iter([]),
         ];
         let pf_input = pathfinding::PathfindingKey(
             Arc::new(pathfinding::test_data::consist(1)),
@@ -468,12 +468,12 @@ mod tests {
             ),
         );
         builder.push_schedule_item(
-            PathItemAlternatives::from_iter([]),
+            PathItemConstraint::from_iter([]),
             NonBlankString::from("a"),
             ScheduleItem::pass_by(),
         );
         builder.push_schedule_item(
-            PathItemAlternatives::from_iter([]),
+            PathItemConstraint::from_iter([]),
             NonBlankString::from("b"),
             ScheduleItem {
                 arrival_at: Some(300),

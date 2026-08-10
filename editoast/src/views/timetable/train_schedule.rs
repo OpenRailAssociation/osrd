@@ -690,7 +690,7 @@ pub(in crate::views) async fn get_path(
     let constraints = core_task::PathfindingConstraints {
         path_items: track_offsets
             .into_iter()
-            .map(core_task::PathItemAlternatives::from_iter)
+            .map(core_task::PathItemConstraint::from_iter)
             .collect(),
         allowed_track_sections: BTreeSet::new(),
     };
