@@ -428,7 +428,6 @@
       "opId": "Betriebsstellenkennung",
       "opName": "Betriebsstellenname",
       "opType": "Typ",
-      "openItineraryModal": "Neue Benutzeroberfläche für Routenbearbeitung",
       "pass": "Durchfahrt",
       "requestedPoint": "Punkt auf der Karte",
       "stop": "Halt",

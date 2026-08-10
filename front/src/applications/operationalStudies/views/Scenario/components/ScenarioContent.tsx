@@ -7,6 +7,7 @@ import {
   ItineraryModalContext,
   type ItineraryModalContextType,
 } from 'applications/operationalStudies/hooks/useItineraryModalContext';
+import { ManageTrainScheduleContextProvider } from 'applications/operationalStudies/hooks/useManageTrainScheduleContext';
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import useScenarioData from 'applications/operationalStudies/hooks/useScenarioData';
 import {
@@ -14,7 +15,6 @@ import {
   type TimetableContextType,
 } from 'applications/operationalStudies/hooks/useTimetableContext';
 import type { Board } from 'applications/operationalStudies/types';
-import ManageTrainScheduleModal from 'applications/operationalStudies/views/Scenario/components/ManageTrainSchedule';
 import SimulationResults from 'applications/operationalStudies/views/Scenario/components/SimulationResults';
 import type { TrainScheduleResponse } from 'common/api/osrdEditoastApi';
 import { Loader } from 'common/Loaders';
@@ -34,6 +34,7 @@ import { EditedElementContainerProvider } from './EditedElementContainerContext'
 import MacroEditorState from './MacroEditor/MacroEditorState';
 import { handleOperation } from './MacroEditor/ngeToOsrd';
 import { loadNgeDto } from './MacroEditor/osrdToNge';
+import ItineraryModal from './ManageTrainSchedule/Itinerary/ItineraryModal';
 import NGE from './NGE';
 import { HIDDEN_CHART_TOP_HEIGHT } from './SimulationResults/SimulationResults';
 import TimetableBoardWrapper from './Timetable/TimetableBoardWrapper';
@@ -55,7 +56,6 @@ const ScenarioContent = ({ activeBoards, toggleBoard }: ScenarioContentProps) =>
 
   const { infraId, timetableId, isInfraLoaded } = useScenarioContext();
 
-  const [collapsedTimetableEdit, setCollapsedTimetableEdit] = useState(false);
   const [trainScheduleToEditData, setTrainScheduleToEditData] = useState<TrainScheduleToEditData>();
   const [macroBoardHeight, setMacroBoardHeight] = useState<number>(MACRO_EDITOR_HEIGHT);
   const [chronogramHeight, setChronogramHeight] = useState<number>(CHRONOGRAM_INITIAL_HEIGHT);
@@ -113,16 +113,12 @@ const ScenarioContent = ({ activeBoards, toggleBoard }: ScenarioContentProps) =>
   const [ngeIsLoading, setNGEIsLoading] = useState(true);
   const [isScrollingToTimeStopsTable, setIsScrollingToTimeStopsTable] = useState(false);
 
-  const closeViewAndOpenTableBoard = useCallback(
-    (closeView: () => void) => {
-      closeView();
-      if (!activeBoards.has('tables')) {
-        toggleBoard('tables');
-      }
-      setIsScrollingToTimeStopsTable(true);
-    },
-    [activeBoards, toggleBoard]
-  );
+  const openAndScrollToTableBoard = useCallback(() => {
+    if (!activeBoards.has('tables')) {
+      toggleBoard('tables');
+    }
+    setIsScrollingToTimeStopsTable(true);
+  }, [activeBoards, toggleBoard]);
 
   const refreshNge = useCallback(async () => {
     if (!activeBoards.has('macro')) return;
@@ -220,11 +216,9 @@ const ScenarioContent = ({ activeBoards, toggleBoard }: ScenarioContentProps) =>
         <EditedElementContainerProvider>
           <main className="mastcontainer mastcontainer-no-mastnav scenario scenario-content-v2">
             {itineraryModalOpen && (
-              <ManageTrainScheduleModal
-                setCollapsedTimetableEdit={() => setCollapsedTimetableEdit(!collapsedTimetableEdit)}
-                collapsedTimetableEdit={collapsedTimetableEdit}
-                closeViewAndOpenTableBoard={closeViewAndOpenTableBoard}
-              />
+              <ManageTrainScheduleContextProvider>
+                <ItineraryModal onTrainCreated={openAndScrollToTableBoard} />
+              </ManageTrainScheduleContextProvider>
             )}
             <div
               data-testid="scenario-left-column"

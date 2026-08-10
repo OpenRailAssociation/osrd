@@ -14,6 +14,7 @@ import { useItineraryModalContext } from 'applications/operationalStudies/hooks/
 import { useManageTrainScheduleContext } from 'applications/operationalStudies/hooks/useManageTrainScheduleContext';
 import { useOperationalPointSearch } from 'applications/operationalStudies/hooks/useOperationalPointSearch';
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
+import { useTimetableContext } from 'applications/operationalStudies/hooks/useTimetableContext';
 import type {
   CoreOperationalPointOnPath,
   OperationalPointReference,
@@ -51,7 +52,9 @@ import {
   isEmptyStep,
   deletePathStep,
 } from '../helpers/pathStepsActions';
+import { useCreateTrainSchedule } from '../hooks/useCreateTrainSchedule';
 import useMapTrackSelection from '../hooks/useMapTrackSelection';
+import useUpdateTrainSchedule from '../hooks/useUpdateTrainSchedule';
 import type { FeatureInfoClick } from '../types';
 import type { OperationalPointSuggestion } from './ComboBoxCustomList/ListElementComponent';
 import { usePathStepsMetadata } from './hooks/usePathStepsMetadata';
@@ -63,8 +66,7 @@ import PathStepItem from './PathStepItem';
 import { computePathStepCoordinates, getOpKey, isOpRefMetadata } from './utils';
 
 type ItineraryModalProps = {
-  itineraryModalIsOpen: boolean;
-  onClose: ({ withChanges }: { withChanges: boolean }) => void;
+  onTrainCreated: () => void;
 };
 
 export type ItineraryModalFormState = {
@@ -75,7 +77,7 @@ export type ItineraryModalFormState = {
   category?: TrainCategory;
 };
 
-const ItineraryModal = ({ itineraryModalIsOpen, onClose }: ItineraryModalProps) => {
+const ItineraryModal = ({ onTrainCreated }: ItineraryModalProps) => {
   const { t } = useTranslation('operational-studies', {
     keyPrefix: 'manageTrainSchedule.itineraryModal',
   });
@@ -91,6 +93,12 @@ const ItineraryModal = ({ itineraryModalIsOpen, onClose }: ItineraryModalProps) 
   const { updateViewport } = useMapSettingsActions();
   const infraId = useInfraID();
   const editingTrainType = useSelector(getEditingTrainType);
+
+  const { upsertTrainSchedules } = useTimetableContext();
+
+  const [isWorking, setIsWorking] = useState(false);
+  const createTrain = useCreateTrainSchedule(setIsWorking, onTrainCreated);
+  const updateTimetable = useUpdateTrainSchedule(setIsWorking, upsertTrainSchedules);
 
   const [modalFormState, setModalFormState] = useState<ItineraryModalFormState>({
     name,
@@ -124,10 +132,12 @@ const ItineraryModal = ({ itineraryModalIsOpen, onClose }: ItineraryModalProps) 
       ? 'intermediateWaypointsPanel.hideLabel'
       : 'intermediateWaypointsPanel.showLabel'
   );
+  const { closeItineraryModal, trainScheduleToEditData } = useItineraryModalContext();
+  const { launchPathfinding } = useManageTrainScheduleContext();
 
-  const closeModal = ({ withChanges }: { withChanges: boolean }) => {
+  const cancelModal = () => {
     modalRef.current?.close();
-    onClose({ withChanges });
+    closeItineraryModal();
   };
 
   const handleCancelMapSelection = useCallback(() => {
@@ -138,7 +148,7 @@ const ItineraryModal = ({ itineraryModalIsOpen, onClose }: ItineraryModalProps) 
     if (mapSelectionStepId !== null) {
       handleCancelMapSelection();
     } else {
-      closeModal({ withChanges: false });
+      cancelModal();
     }
   }, [mapSelectionStepId, handleCancelMapSelection]);
 
@@ -156,9 +166,6 @@ const ItineraryModal = ({ itineraryModalIsOpen, onClose }: ItineraryModalProps) 
     chooseSecondaryCodeForSuggestion,
     reopenSuggestionsForStep,
   } = useOperationalPointSearch({});
-
-  const { trainScheduleToEditData } = useItineraryModalContext();
-  const { launchPathfinding } = useManageTrainScheduleContext();
 
   const { pathStepsMetadataById, setPathStepMetadata } = usePathStepsMetadata(
     pathSteps,
@@ -597,6 +604,8 @@ const ItineraryModal = ({ itineraryModalIsOpen, onClose }: ItineraryModalProps) 
 
     launchPathfinding(reversePathSteps(updatedPathSteps), modalFormState.rollingStockId);
   };
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const submitItinerary = (trainType?: FooterTrainType) => {
     setSubmitAttempted(true);
     setBannerWiggle((c) => c + 1);
@@ -630,8 +639,24 @@ const ItineraryModal = ({ itineraryModalIsOpen, onClose }: ItineraryModalProps) 
     );
 
     launchPathfinding(pathStepsFromV2, modalFormState.rollingStockId, { isInitialization: true });
-    closeModal({ withChanges: true });
+
+    setIsSubmitting(true);
   };
+
+  useEffect(() => {
+    if (isSubmitting) {
+      try {
+        if (trainScheduleToEditData) {
+          updateTimetable();
+        } else {
+          createTrain();
+        }
+        onTrainCreated();
+      } finally {
+        setIsSubmitting(false);
+      }
+    }
+  }, [isSubmitting]);
 
   useModalFocusTrap(modalRef, handleEscapeOrClose);
 
@@ -645,10 +670,8 @@ const ItineraryModal = ({ itineraryModalIsOpen, onClose }: ItineraryModalProps) 
   }, []);
 
   useEffect(() => {
-    if (itineraryModalIsOpen) {
-      openModal();
-    }
-  }, [itineraryModalIsOpen]);
+    openModal();
+  }, []);
 
   useEffect(() => {
     if (locatedStepsCount < 2 || pathStepsMetadataById.size < 2) return;
@@ -921,8 +944,9 @@ const ItineraryModal = ({ itineraryModalIsOpen, onClose }: ItineraryModalProps) 
         <ItineraryModalFooter
           mode={trainScheduleToEditData === undefined ? 'new' : 'edit'}
           trainType={editingTrainType}
-          onCancel={() => closeModal({ withChanges: false })}
+          onCancel={() => cancelModal()}
           onSubmit={submitItinerary}
+          isWorking={isWorking}
         />
       </div>
       {waypointsPanelOpen && (
