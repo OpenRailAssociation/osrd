@@ -447,7 +447,6 @@
       "opId": "Operational point identifier",
       "opName": "Operational point name",
       "opType": "Type",
-      "openItineraryModal": "New interface for itinerary edition",
       "pass": "Pass",
       "requestedPoint": "Point on map",
       "stop": "Stop",

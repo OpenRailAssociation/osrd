@@ -11,6 +11,7 @@ export type ItineraryModalFooterProps = {
   trainType: FooterTrainType;
   onCancel: () => void;
   onSubmit: (trainType?: FooterTrainType) => void;
+  isWorking: boolean;
 };
 
 export default function ItineraryModalFooter({
@@ -18,6 +19,7 @@ export default function ItineraryModalFooter({
   trainType,
   onCancel,
   onSubmit,
+  isWorking,
 }: ItineraryModalFooterProps) {
   const { t } = useTranslation('operational-studies', {
     keyPrefix: 'manageTrainSchedule.itineraryModal',
@@ -40,6 +42,7 @@ export default function ItineraryModalFooter({
             size="medium"
             onClick={() => onSubmit('uniqueTrain')}
             dataTestID="itinerary-modal-add-single-train-button"
+            isLoading={isWorking}
           />
           <Button
             label={t('submit.addService')}
@@ -47,6 +50,7 @@ export default function ItineraryModalFooter({
             size="medium"
             onClick={() => onSubmit('pacedTrain')}
             dataTestID="itinerary-modal-add-service-train-button"
+            isLoading={isWorking}
           />
         </div>
       ) : (
@@ -62,6 +66,7 @@ export default function ItineraryModalFooter({
           size="medium"
           onClick={onSubmit}
           dataTestID="itinerary-modal-edit-train-button"
+          isLoading={isWorking}
         />
       )}
     </div>
