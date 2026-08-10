@@ -149,7 +149,7 @@ export default function TrainServiceForm({
                   padChar="0"
                   label={t('manageTrainSchedule.trainHeader.form.serviceInterval')}
                   value={fields.service_interval ?? 1_800_000} // 30m
-                  onChange={(ms) => onFieldImmediateChange('service_interval', ms)}
+                  onChange={(ms: number) => onFieldImmediateChange('service_interval', ms)}
                   statusWithMessage={
                     serviceIntervalError
                       ? {
@@ -172,7 +172,7 @@ export default function TrainServiceForm({
                   padChar="0"
                   label={t('manageTrainSchedule.trainHeader.form.serviceWindow')}
                   value={fields.service_window ?? 2 * 3_600_000} // 2h00m
-                  onChange={(ms) => onFieldImmediateChange('service_window', ms)}
+                  onChange={(ms: number) => onFieldImmediateChange('service_window', ms)}
                   statusWithMessage={
                     serviceWindowError
                       ? {
