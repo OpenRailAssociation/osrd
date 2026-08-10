@@ -20,7 +20,6 @@ import { useAppDispatch } from 'store';
 
 import CreateTrainScheduleButton from './CreateTrainScheduleButton';
 import useUpdateTrainSchedule from './hooks/useUpdateTrainSchedule';
-import ItineraryModal from './Itinerary/ItineraryModal';
 import PacedTrainSettings from './PacedTrainSettings';
 
 export type ManageTrainScheduleLeftPanelProps = {
@@ -45,7 +44,6 @@ const ManageTrainScheduleLeftPanel = ({
   const { openModal, closeModal } = useModal();
 
   const [isWorking, setIsWorking] = useState(false);
-  const [itineraryModalIsOpen, setItineraryModalIsOpen] = useState(true);
 
   const leaveManageTrainSchedule = () => {
     closeItineraryModal();
@@ -167,32 +165,6 @@ const ManageTrainScheduleLeftPanel = ({
           </>
         )}
       </div>
-      <div
-        className="scenario-timetable-manage-train-schedule-body"
-        role="button"
-        tabIndex={0}
-        data-testid="open-itinerary-modal-button"
-        onClick={() => setItineraryModalIsOpen(true)}
-      >
-        <button
-          className="btn btn-light btn-block text-truncate pr-2"
-          title={t('itineraryModal.openItineraryModal')}
-          type="button"
-        >
-          <span className="mr-2">
-            <ChevronLeft size="lg" />
-          </span>
-          {t('itineraryModal.openItineraryModal')}
-        </button>
-      </div>
-      {itineraryModalIsOpen && (
-        <ItineraryModal
-          itineraryModalIsOpen={itineraryModalIsOpen}
-          onClose={({ withChanges: _ }) => {
-            setItineraryModalIsOpen(false);
-          }}
-        />
-      )}
       <div
         className="scenario-timetable-manage-train-schedule-body"
         role="button"
