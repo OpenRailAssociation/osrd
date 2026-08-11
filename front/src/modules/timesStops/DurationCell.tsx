@@ -397,13 +397,20 @@ export type DurationCellHandle = {
 
 type DurationCellProps = CellContext<TimesStopsRowNew, Duration | null> &
   Omit<React.HTMLAttributes<HTMLDivElement>, 'onChange'> & {
+    onEnterKeyDown?: () => void;
     onCommit?: (seconds: number | null, propagationMode: StopPropagationMode) => void;
     disabled?: boolean;
     clearButtonTitle?: string;
     ref?: React.Ref<DurationCellHandle>;
   };
 
-const DurationCell = ({ disabled, clearButtonTitle, ref, ...props }: DurationCellProps) => {
+const DurationCell = ({
+  disabled,
+  clearButtonTitle,
+  ref,
+  onEnterKeyDown,
+  ...props
+}: DurationCellProps) => {
   const { onCommit, getValue, row, table } = props || {};
   const controlledValue = getValue();
   const [state, dispatch] = useReducer(durationReducer, controlledValue, initialDurationState);
@@ -474,6 +481,7 @@ const DurationCell = ({ disabled, clearButtonTitle, ref, ...props }: DurationCel
         e.preventDefault();
         blurHandledRef.current = true;
         commit();
+        onEnterKeyDown?.();
         containerRef.current?.blur();
         break;
       case 'Escape':
