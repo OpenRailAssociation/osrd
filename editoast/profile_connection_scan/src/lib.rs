@@ -158,43 +158,38 @@ pub fn journey_list(p: JourneyListParams) -> Vec<Vec<ConnectionId>> {
                 }
             });
 
-        let t = u32::min(t1, t2);
+        let t_min = u32::min(t1, t2);
 
-        if t == u32::MAX {
+        if t_min == u32::MAX {
             continue;
         }
 
         let candidate = Profile {
             out_connection: Some(connection_id),
             departure_ms: connection.departure_ms,
-            arrival_ms: t,
+            arrival_ms: t_min,
         };
 
-        let profiles = &mut profiles[connection.departure];
+        let stop_profiles = &mut profiles[connection.departure];
 
-        let pivot = profiles
-            .iter()
-            .rposition(|profile| profile.departure_ms >= candidate.departure_ms);
-
-        let mut earlier_profiles = match pivot {
-            Some(position) => profiles
-                .drain(position + 1..)
-                .filter(|profile| candidate.dominates(profile))
-                .collect(),
-            None => Vec::new(),
-        };
-
-        let insert_candidate = match profiles.last() {
-            Some(profile) => !profile.dominates(&candidate),
-            None => true,
-        };
-
-        if insert_candidate {
-            profiles.push(candidate);
-            trip_min_arrival_ms[connection.trip] = t;
+        // A candidate departs at his connection's departure_ms (no footpath variation).
+        // Since connections are scanned by decreasing departure_ms, the candidate can only be
+        // inserted at the end and we only need to compare it with the last profile.
+        match stop_profiles.last_mut() {
+            Some(last) => {
+                if !last.dominates(&candidate) {
+                    if last.departure_ms == candidate.departure_ms {
+                        *last = candidate
+                    } else {
+                        stop_profiles.push(candidate);
+                    }
+                }
+            }
+            None => {
+                stop_profiles.push(candidate);
+            }
         }
-
-        profiles.append(&mut earlier_profiles);
+        trip_min_arrival_ms[connection.trip] = t_min;
     }
 
     let mut start_profiles: Vec<&Profile> = profiles[start]
