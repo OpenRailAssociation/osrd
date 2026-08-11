@@ -6,6 +6,7 @@ import {
   useLayoutEffect,
   useEffect,
   useImperativeHandle,
+  Fragment,
   type Dispatch,
 } from 'react';
 
@@ -344,9 +345,17 @@ type UnitDisplayProps = {
   dispatch: Dispatch<DurationAction>;
   startEditing: (unit: ActiveUnit) => void;
   isEdited: boolean;
+  label?: string;
 };
 
-const UnitDisplay = ({ unit, state, dispatch, startEditing, isEdited }: UnitDisplayProps) => {
+const UnitDisplay = ({
+  unit,
+  state,
+  dispatch,
+  startEditing,
+  isEdited,
+  label = unit,
+}: UnitDisplayProps) => {
   const u = state.units[unit];
   const focused = state.isEditing && state.activeUnit === unit;
   const baseClass = 'duration-cell-digit';
@@ -386,7 +395,7 @@ const UnitDisplay = ({ unit, state, dispatch, startEditing, isEdited }: UnitDisp
           </>
         )}
       </span>
-      {unit && <span className={letterClass}>{unit}</span>}
+      {label && <span className={letterClass}>{label}</span>}
     </span>
   );
 };
@@ -405,6 +414,8 @@ type DurationCellProps = CellContext<TimesStopsRowNew, Duration | null> &
     clearButtonTitle?: string;
     disableClear?: boolean;
     ref?: React.Ref<DurationCellHandle>;
+    /** Display the duration as a digital clock, e.g. "42:53:04" */
+    digital?: boolean;
   };
 
 const DurationCell = ({
@@ -415,6 +426,7 @@ const DurationCell = ({
   onEnterKeyDown,
   onTabKeyDown,
   disableClear,
+  digital,
   ...props
 }: DurationCellProps) => {
   const { onCommit, getValue, row, table } = props || {};
@@ -565,15 +577,18 @@ const DurationCell = ({
           <CellPlaceholder onClick={() => {}} />
         ) : (
           <>
-            {UNITS.map((unit) => (
-              <UnitDisplay
-                key={unit}
-                unit={unit}
-                state={state}
-                dispatch={dispatch}
-                startEditing={startEditing}
-                isEdited={isEdited}
-              />
+            {UNITS.map((unit, index) => (
+              <Fragment key={unit}>
+                {digital && index > 0 ? ':' : null}
+                <UnitDisplay
+                  unit={unit}
+                  label={digital ? '' : unit}
+                  state={state}
+                  dispatch={dispatch}
+                  startEditing={startEditing}
+                  isEdited={isEdited}
+                />
+              </Fragment>
             ))}
           </>
         )}
