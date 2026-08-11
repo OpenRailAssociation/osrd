@@ -94,7 +94,6 @@
     "redux-persist": "^6.0.0",
     "redux-persist-transform-filter": "0.0.22",
     "remark-gfm": "^4.0.1",
-    "reselect": "^5.2.0",
     "uuid": "^14.0.1",
     "viewport-mercator-project": "^7.0.4",
     "virtua": "^0.50.0"

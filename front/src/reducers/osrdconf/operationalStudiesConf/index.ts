@@ -2,16 +2,14 @@ import { createSlice, type Draft, type PayloadAction } from '@reduxjs/toolkit';
 
 import computeBasePathStep from 'modules/trainSchedule/helpers/computeBasePathStep';
 import { isPacedTrainWithDetails } from 'modules/trainSchedule/helpers/pacedTrain';
-import type { SuggestedOP, TrainScheduleWithDetails } from 'modules/trainSchedule/types';
+import type { TrainScheduleWithDetails } from 'modules/trainSchedule/types';
 import { buildMapStateReducer } from 'reducers/commonMap';
 import { defaultCommonConf, buildCommonConfReducers } from 'reducers/osrdconf/osrdConfCommon';
 import type { OperationalStudiesConfState } from 'reducers/osrdconf/types';
 import { Duration, startTimeToDate } from 'utils/duration';
 import { msToKmh } from 'utils/physics';
 
-import { upsertPathStep } from '../helpers';
 import itineraryReducer from './itineraryReducer';
-import powerRestrictionReducer from './powerRestrictionReducer';
 import trainSettingsReducer from './trainSettingsReducer';
 
 export const operationalStudiesInitialConf: OperationalStudiesConfState = {
@@ -42,7 +40,6 @@ export const operationalStudiesConfSlice = createSlice({
     ...buildCommonConfReducers<OperationalStudiesConfState>(),
     ...buildMapStateReducer<OperationalStudiesConfState>(),
 
-    ...powerRestrictionReducer,
     ...trainSettingsReducer,
     ...itineraryReducer,
     selectTrainToEdit(
@@ -104,31 +101,6 @@ export const operationalStudiesConfSlice = createSlice({
         infraID: state.infraID,
       };
     },
-    // Use this action to transform an op to via from times and stop table or
-    // from the suggested via modal
-    upsertViaFromSuggestedOP(
-      state: Draft<OperationalStudiesConfState>,
-      action: PayloadAction<SuggestedOP>
-    ) {
-      upsertPathStep(state.pathSteps, action.payload);
-    },
-    upsertSeveralViasFromSuggestedOP(
-      state: Draft<OperationalStudiesConfState>,
-      action: PayloadAction<SuggestedOP[]>
-    ) {
-      action.payload.forEach((suggestedOp) => {
-        upsertPathStep(state.pathSteps, suggestedOp);
-      });
-    },
-    addAddedException(state: Draft<OperationalStudiesConfState>, action: PayloadAction<Date>) {
-      state.addedExceptions.push({
-        startTime: action.payload,
-      });
-    },
-    deleteAddedException(state: Draft<OperationalStudiesConfState>, action: PayloadAction<number>) {
-      const indexToDelete = action.payload;
-      state.addedExceptions.splice(indexToDelete, 1);
-    },
     clearAddedExceptionsList(state: Draft<OperationalStudiesConfState>) {
       state.addedExceptions = [];
     },
@@ -142,38 +114,14 @@ export const {
   resetItineraryForm,
 
   // train settings reducer
-  updateName,
-  updateStartTime,
-  updateInitialSpeed,
-  updateLabels,
   updateRollingStockName,
-  updateRollingStockComfort,
-  updateConstraintDistribution,
-  toggleUsingElectricalProfiles,
-  upsertViaFromSuggestedOP,
-  upsertSeveralViasFromSuggestedOP,
-  updateTimeWindow,
-  updateInterval,
-  addAddedException,
-  deleteAddedException,
   clearAddedExceptionsList,
-  toggleEditingTrainType,
-  updateCategory,
   updateItineraryForm,
 
   // itinerary reducer
   updatePathSteps,
   deleteItinerary,
   replaceItinerary,
-
-  // power restrictions reducer
-  upsertPowerRestrictionRanges,
-  cutPowerRestrictionRanges,
-  mergePowerRestrictionRanges,
-  deletePowerRestrictionRanges,
-  resizeSegmentEndInput,
-  resizeSegmentBeginInput,
-  cleanPowerRestrictionsCoveredByANewRange,
 } = operationalStudiesConfSliceActions;
 
 export type OperationalStudiesConfSlice = typeof operationalStudiesConfSlice;

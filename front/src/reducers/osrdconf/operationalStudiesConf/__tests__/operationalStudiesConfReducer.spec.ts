@@ -1,14 +1,13 @@
 import { describe, it, expect } from 'vitest';
 
 import type { LightRollingStockWithLiveries } from 'common/api/osrdEditoastApi';
-import type { SuggestedOP, TrainScheduleWithDetails } from 'modules/trainSchedule/types';
+import type { TrainScheduleWithDetails } from 'modules/trainSchedule/types';
 import {
   operationalStudiesConfSlice,
   operationalStudiesInitialConf,
 } from 'reducers/osrdconf/operationalStudiesConf';
-import commonConfBuilder from 'reducers/osrdconf/osrdConfCommon/__tests__/commonConfBuilder';
 import testCommonConfReducers from 'reducers/osrdconf/osrdConfCommon/__tests__/utils';
-import type { OperationalStudiesConfState, PathStep } from 'reducers/osrdconf/types';
+import type { OperationalStudiesConfState } from 'reducers/osrdconf/types';
 import { createStoreWithoutMiddleware } from 'store';
 import { Duration } from 'utils/duration';
 
@@ -148,87 +147,6 @@ describe('simulationConfReducer', () => {
         editingTrainType: 'pacedTrain',
       };
       expect(state).toEqual(expectedState);
-    });
-  });
-
-  describe('should handle upsertViaFromSuggestedOP', () => {
-    const testDataBuilder = commonConfBuilder();
-
-    // For this action, pathfinding has already been made so we know
-    // all steps will have a positionOnPath
-    const pathStepsData = testDataBuilder
-      .buildPathSteps()
-      .map((step, i) => step && { ...step, positionOnPath: i * 100 });
-
-    const [brest, rennes, lemans, paris, strasbourg] = pathStepsData;
-
-    it('should insert a new via if it comes from the suggested vias modal', () => {
-      const pathSteps = [brest, rennes, paris, strasbourg];
-      const store = createStore({ pathSteps });
-
-      const newVia: SuggestedOP = {
-        pathStepId: undefined,
-        opId: 'lemans',
-        name: undefined,
-        track: '60ca8dda-6667-11e3-81ff-01f464e0362d',
-        offsetOnTrack: 426.443,
-        positionOnPath: 200,
-        uic: 396002,
-        coordinates: [47.99542250806296, 0.1918181738752042],
-      };
-
-      const insertedVia: PathStep = {
-        id: 'id1',
-        positionOnPath: 200,
-        location: {
-          type: 'operational_point_part_reference',
-          operational_point: { uic: 396002, type: 'uic' },
-        },
-        coordinates: [47.99542250806296, 0.1918181738752042],
-      };
-
-      store.dispatch(operationalStudiesConfSlice.actions.upsertViaFromSuggestedOP(newVia));
-      const state = store.getState()[operationalStudiesConfSlice.name];
-      expect(state.pathSteps).toEqual([
-        brest,
-        rennes,
-        { ...insertedVia, id: state.pathSteps[2]?.id },
-        paris,
-        strasbourg,
-      ]);
-    });
-
-    it('should update an existing via if it comes from the "times and step" table and has been added by selecting it on the map', () => {
-      const pathSteps = [brest, rennes, lemans, paris, strasbourg];
-      const store = createStore({ pathSteps });
-
-      const newVia: SuggestedOP = {
-        pathStepId: 'lemans',
-        opId: undefined,
-        name: undefined,
-        track: '60ca8dda-6667-11e3-81ff-01f464e0362d',
-        offsetOnTrack: 426.443,
-        positionOnPath: 200,
-        stopFor: Duration.parse('PT5M'),
-        coordinates: [47.99542250806296, 0.1918181738752042],
-      };
-
-      const updatedVia: PathStep = {
-        id: 'lemans',
-        positionOnPath: 200,
-        location: {
-          type: 'track_offset',
-          track: '60ca8dda-6667-11e3-81ff-01f464e0362d',
-          offset: 426.443,
-        },
-        stopFor: Duration.parse('PT5M'),
-        coordinates: [47.99542250806296, 0.1918181738752042],
-        name: newVia.name,
-      };
-
-      store.dispatch(operationalStudiesConfSlice.actions.upsertViaFromSuggestedOP(newVia));
-      const state = store.getState()[operationalStudiesConfSlice.name];
-      expect(state.pathSteps).toEqual([brest, rennes, updatedVia, paris, strasbourg]);
     });
   });
 
