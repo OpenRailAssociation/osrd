@@ -479,10 +479,6 @@ impl VirtualTrainRun {
         infra: &Infra,
         consists_parameters: &[PhysicsConsistParameters],
     ) -> Result<Vec<Self>> {
-        // TODO : Remove this env var when the backtracking feature is done
-        let enable_backtrack =
-            std::env::var("ENABLE_BACKTRACK").unwrap_or_else(|_| "false".to_string()) == "true";
-
         // Doesn't matter for now, but eventually it will affect tmp speed limits
         let approx_start_time = stdcm_request.get_earliest_step_time();
         let train_schedules_with_consists = itertools::chain!(
@@ -517,11 +513,7 @@ impl VirtualTrainRun {
                                 .unwrap()
                         }),
                         reception_signal: ReceptionSignal::Stop,
-                        can_backtrack: if enable_backtrack {
-                            stdcm_step.duration.is_some()
-                        } else {
-                            false
-                        },
+                        can_backtrack: stdcm_step.pathfinding_item.can_backtrack,
                         ..Default::default()
                     })
                     .collect::<Vec<ScheduleItem>>(),
