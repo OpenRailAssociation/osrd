@@ -42,16 +42,11 @@ const computeDeltaForPropagationMode = (
 
 export const formatSignedDelta = (delta: Duration) => {
   const sign = delta.ms >= 0 ? '+' : '-';
-  const absoluteDelta = delta.abs().round('second');
-  const hours = Math.floor(absoluteDelta.total('hour'));
-  const minutes = Math.floor(absoluteDelta.total('minute')) % 60;
-  const seconds = Math.floor(absoluteDelta.total('second')) % 60;
-
-  const hoursLabel = hours.toString().padStart(2, '0');
-  const minutesLabel = minutes.toString().padStart(2, '0');
-  const secondsLabel = seconds.toString().padStart(2, '0');
-
-  return `${sign}${hoursLabel}:${minutesLabel}:${secondsLabel}`;
+  const label = delta
+    .abs()
+    .round('second')
+    .toLocaleString(undefined, { style: 'digital', hours: '2-digit' });
+  return `${sign}${label}`;
 };
 
 export const formatPropagationDeltaLabelByMode = (
