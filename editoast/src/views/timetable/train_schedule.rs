@@ -1903,6 +1903,7 @@ pub(in crate::views) async fn move_train_schedules_to_another_train_schedule_set
 mod tests {
     use std::collections::HashMap;
 
+    use authz::InfraGrant;
     use axum::http::StatusCode;
     use chrono::Duration;
     use chrono::TimeDelta;
@@ -1964,6 +1965,7 @@ mod tests {
     use crate::views::path::pathfinding::PathfindingResult;
     use crate::views::test_app;
     use crate::views::test_app::TestApp;
+    use crate::views::test_app::TestRequestExt as _;
 
     use crate::views::tests::mocked_core_pathfinding_sim_and_proj;
     use crate::views::timetable::simulation;
@@ -2239,6 +2241,81 @@ mod tests {
             response.train_schedule,
             train_schedule_schema_from_model(paced_train, vec![])
         );
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn etcs_braking_curves_returns_core_payload() {
+        let db_pool = DbConnectionPoolV2::for_tests();
+        let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
+        let rolling_stock =
+            create_fast_rolling_stock(&mut db_pool.get_ok(), "etcs_braking_curves_rolling_stock")
+                .await;
+        let (_, train_schedule_set) =
+            create_timetable_with_train_schedule_set(&mut db_pool.get_ok()).await;
+        let train_schedule = TrainScheduleChangeset::from(TrainSchedule {
+            train_occurrence: TrainOccurrence {
+                rolling_stock_name: rolling_stock.name,
+                ..TrainOccurrence::fake()
+            },
+            paced: None,
+        })
+        .train_schedule_set_id(train_schedule_set.id)
+        .create(&mut db_pool.get_ok())
+        .await
+        .expect("Failed to create train schedule");
+
+        let mut core = mocked_core_pathfinding_sim_and_proj();
+        core.stub("/etcs_braking_curves")
+            .response(StatusCode::OK)
+            .json(json!({
+                "slowdowns": [],
+                "stops": [],
+                "conflicts": [],
+            }))
+            .finish();
+        let app = test_app!()
+            .skip_authz()
+            .db_pool(db_pool)
+            .core_client(core.into())
+            .build();
+
+        let response: core_client::etcs_braking_curves::Response = app
+            .get(&format!(
+                "/train_schedules/{}/etcs_braking_curves?infra_id={}",
+                train_schedule.id, small_infra.id
+            ))
+            .await
+            .assert_status_ok()
+            .json();
+        assert!(response.slowdowns.is_empty());
+        assert!(response.stops.is_empty());
+        assert!(response.conflicts.is_empty());
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn etcs_braking_curves_requires_infra_read_grant() {
+        let app = test_app!().build();
+        let pool = app.db_pool();
+        let infra = create_small_infra(&mut pool.get_ok()).await;
+        let user_without_grant = app.user("alice", "Alice").create().await;
+        let user_with_grant = app
+            .user("bob", "Bob")
+            .with_infra_grant(infra.id, InfraGrant::Reader)
+            .create()
+            .await;
+        let endpoint = format!(
+            "/train_schedules/0/etcs_braking_curves?infra_id={}",
+            infra.id
+        );
+
+        app.get(&endpoint)
+            .by_user(user_without_grant.as_ref())
+            .await
+            .assert_status_forbidden();
+        app.get(&endpoint)
+            .by_user(user_with_grant.as_ref())
+            .await
+            .assert_status_not_found();
     }
 
     struct SimulationTestsSetup {
