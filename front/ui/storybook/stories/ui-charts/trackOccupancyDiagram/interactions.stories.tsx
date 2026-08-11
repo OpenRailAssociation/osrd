@@ -2,8 +2,8 @@ import React, { useMemo, useState, useCallback } from 'react';
 
 import {
   TrackOccupancyStandalone,
-  type SpaceTimeChartProps,
   isOccupancyPickingElement,
+  useHoveredPickingElement,
 } from '@osrd-project/ui-charts';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -14,9 +14,11 @@ import './styles/track-occupancy.css';
 
 const TrackOccupancyDiagramStory = () => {
   const [allOccupancyZones, setAllOccupancyZones] = useState(OCCUPANCY_ZONES);
-  const [hoveredPathId, setHoveredPathId] = useState<string>();
   const [hoveredTrackId, setHoveredTrackId] = useState<string>();
   const [draggingPathId, setDraggingPathId] = useState<string>();
+  const { hoveredElement, handleHoveredChildUpdate } =
+    useHoveredPickingElement(isOccupancyPickingElement);
+  const hoveredPathId = hoveredElement?.pathId;
 
   const { occupancyZones, draggingOccupancyZones } = useMemo(
     () => ({
@@ -24,15 +26,6 @@ const TrackOccupancyDiagramStory = () => {
       draggingOccupancyZones: allOccupancyZones.filter((zone) => zone.pathId === draggingPathId),
     }),
     [allOccupancyZones, draggingPathId]
-  );
-
-  const handleHoveredChildUpdate: SpaceTimeChartProps['onHoveredChildUpdate'] = useCallback(
-    ({ item }) => {
-      setHoveredPathId(
-        item && isOccupancyPickingElement(item.element) ? item.element.pathId : undefined
-      );
-    },
-    []
   );
 
   const handleMouseDown = useCallback(() => {
