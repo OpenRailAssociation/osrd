@@ -111,11 +111,10 @@ impl TryFrom<ChronoDuration> for PositiveDuration {
     /// This function errors when the given duration is negative
     /// The created PositiveDuration is limited to 1 millisecond
     fn try_from(duration: ChronoDuration) -> Result<Self, PositiveDurationError> {
-        let milli_sec = duration.num_milliseconds();
-        if milli_sec < 0 {
+        if duration.num_milliseconds() < 0 {
             return Err(PositiveDurationError::NegativeDuration);
         }
-        Ok(PositiveDuration(ChronoDuration::milliseconds(milli_sec)))
+        Ok(PositiveDuration(duration))
     }
 }
 
