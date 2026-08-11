@@ -176,15 +176,25 @@ def test_start_ws_v1_path(session: Session, small_infra: Infra):
         json={
             "path_items": [
                 {
-                    "type": "operational_point_part_reference",
-                    "operational_point": {
-                        "uic": 8722,
-                        "secondary_code": "BV",
-                        "type": "uic",
+                    "location": {
+                        "type": "operational_point_part_reference",
+                        "operational_point": {
+                            "uic": 8722,
+                            "secondary_code": "BV",
+                            "type": "uic",
+                        },
+                        "local_track_name": "V1",
                     },
-                    "local_track_name": "V1",
+                    "can_backtrack": False,
                 },
-                {"type": "track_offset", "offset": 1000000, "track": "TA0"},
+                {
+                    "location": {
+                        "type": "track_offset",
+                        "offset": 1000000,
+                        "track": "TA0",
+                    },
+                    "can_backtrack": False,
+                },
             ],
             "rolling_stock_is_thermal": True,
             "rolling_stock_loading_gauge": "G1",

@@ -256,8 +256,22 @@ def west_to_south_east_path(
         f"{EDITOAST_URL}infra/{small_infra.id}/pathfinding/blocks",
         json={
             "path_items": [
-                {"type": "track_offset", "offset": 837034, "track": "TA2"},
-                {"type": "track_offset", "offset": 4386000, "track": "TH1"},
+                {
+                    "location": {
+                        "type": "track_offset",
+                        "offset": 837034,
+                        "track": "TA2",
+                    },
+                    "can_backtrack": False,
+                },
+                {
+                    "location": {
+                        "type": "track_offset",
+                        "offset": 4386000,
+                        "track": "TH1",
+                    },
+                    "can_backtrack": False,
+                },
             ],
             "rolling_stock_is_thermal": True,
             "rolling_stock_loading_gauge": "G1",

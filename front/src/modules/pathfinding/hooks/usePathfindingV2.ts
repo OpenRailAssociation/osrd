@@ -59,7 +59,7 @@ const usePathfindingV2 = () => {
       const pathFindingPayload: PostInfraByInfraIdPathfindingBlocksApiArg = {
         infraId,
         pathfindingInput: {
-          path_items: pathSteps,
+          path_items: pathSteps.map((location) => ({ location, can_backtrack: false })),
           rolling_stock_is_thermal: isThermal,
           rolling_stock_loading_gauge: rollingStock.loading_gauge,
           rolling_stock_supported_electrifications: supportedElectrirications,

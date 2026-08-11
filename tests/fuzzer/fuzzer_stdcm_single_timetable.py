@@ -241,12 +241,15 @@ def _make_steps(op_list: list[str], timetable_range: TimetableTimeRange) -> list
     for _ in range(n_steps):
         steps.append(
             {
-                "location": {
-                    "type": "operational_point_part_reference",
-                    "operational_point": {
-                        "type": "id",
-                        "operational_point": _random_set_element(op_list),
+                "pathfinding_item": {
+                    "location": {
+                        "type": "operational_point_part_reference",
+                        "operational_point": {
+                            "type": "id",
+                            "operational_point": _random_set_element(op_list),
+                        },
                     },
+                    "can_backtrack": False,
                 }
             }
         )

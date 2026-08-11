@@ -13,7 +13,6 @@ use schemas::rolling_stock::RollingResistance;
 use schemas::train_schedule::Comfort;
 use schemas::train_schedule::MarginValue;
 use schemas::train_schedule::PathItem;
-use schemas::train_schedule::PathItemLocation;
 use serde::Deserialize;
 use serde::Deserializer;
 use serde::Serialize;
@@ -27,6 +26,7 @@ use utoipa::ToSchema;
 use crate::error::Result;
 use crate::views::path::operational_point_cache::OperationalPointCache;
 use crate::views::path::pathfinding::PathfindingFailure;
+use crate::views::path::pathfinding::PathfindingItem;
 use models::TemporarySpeedLimit;
 use models::TowedRollingStock;
 use models::WorkSchedule;
@@ -35,11 +35,11 @@ use models::prelude::*;
 use super::StdcmError;
 
 #[derive(Debug, Serialize, Deserialize, PartialEq, Clone, ToSchema)]
-pub(crate) struct PathfindingItem {
+pub(crate) struct StdcmPathfindingItem {
     /// The stop duration in milliseconds, None if the train does not stop.
     pub(crate) duration: Option<u64>,
     /// The associated location
-    pub(crate) location: PathItemLocation,
+    pub(crate) pathfinding_item: PathfindingItem,
     /// Time at which the train should arrive at the location, if specified
     pub(crate) timing_data: Option<StepTimingData>,
 }
@@ -73,12 +73,12 @@ pub(crate) struct ConsistSchedule {
 }
 
 /// Convert the list of pathfinding items into a list of path item
-pub(super) fn convert_steps(steps: &[PathfindingItem]) -> Vec<PathItem> {
+pub(super) fn convert_steps(steps: &[StdcmPathfindingItem]) -> Vec<PathItem> {
     steps
         .iter()
         .map(|step| PathItem {
             id: Default::default(),
-            location: step.location.clone(),
+            location: step.pathfinding_item.location.clone(),
         })
         .collect()
 }
@@ -100,7 +100,7 @@ pub(crate) struct StepTimingData {
 pub(crate) struct Request {
     /// Deprecated, first step arrival time should be used instead
     pub(crate) start_time: Option<DateTime<Utc>>,
-    pub(crate) steps: Vec<PathfindingItem>,
+    pub(crate) steps: Vec<StdcmPathfindingItem>,
     pub(crate) electrical_profile_set_id: Option<i64>,
     pub(crate) work_schedule_group_id: Option<i64>,
     pub(crate) temporary_speed_limit_group_id: Option<i64>,
@@ -166,7 +166,7 @@ impl Request {
     fn get_total_stop_time(&self) -> u64 {
         self.steps
             .iter()
-            .map(|step: &PathfindingItem| step.duration.unwrap_or_default())
+            .map(|step: &StdcmPathfindingItem| step.duration.unwrap_or_default())
             .sum()
     }
 
@@ -252,7 +252,11 @@ impl Request {
         conn: DbConnection,
         infra_id: i64,
     ) -> Result<Vec<core_client::stdcm::STDCMPathItem>> {
-        let locations: Vec<_> = self.steps.iter().map(|item| &item.location).collect();
+        let locations: Vec<_> = self
+            .steps
+            .iter()
+            .map(|item| &item.pathfinding_item.location)
+            .collect();
 
         let op_cache = OperationalPointCache::load_path_items(conn, infra_id, &locations).await?;
         let track_offsets = op_cache
