@@ -59,7 +59,7 @@ describe('propagateStopDuration', () => {
         {
           row: makeRow('PT5M'),
           field: 'stopDuration',
-          value: 900,
+          value: new Duration({ minutes: 15 }),
           propagationMode: 'atThisWaypoint',
         },
         train
@@ -70,7 +70,7 @@ describe('propagateStopDuration', () => {
         {
           row: { ...makeRow('PT5M'), pathStepId: null },
           field: 'stopDuration',
-          value: 900,
+          value: new Duration({ minutes: 15 }),
           propagationMode: 'toDestination',
         },
         train
@@ -82,7 +82,12 @@ describe('propagateStopDuration', () => {
     const train = makeTrain('PT5M');
     const row = makeRow('PT5M');
     const result = propagateStopDuration(
-      { row, field: 'stopDuration', value: 900, propagationMode: 'toDestination' }, // +10min
+      {
+        row,
+        field: 'stopDuration',
+        value: new Duration({ minutes: 15 }),
+        propagationMode: 'toDestination',
+      }, // +10min
       train
     );
     expect(result).toBeDefined();
@@ -101,7 +106,12 @@ describe('propagateStopDuration', () => {
       const train = makeTrain('PT5M');
       const row = makeRow('PT5M');
       const result = propagateStopDuration(
-        { row, field: 'stopDuration', value: 600, propagationMode: 'fromDeparture' }, // +5min
+        {
+          row,
+          field: 'stopDuration',
+          value: new Duration({ minutes: 10 }),
+          propagationMode: 'fromDeparture',
+        }, // +5min
         train
       );
       expect(result).toBeDefined();
@@ -119,7 +129,12 @@ describe('propagateStopDuration', () => {
       const train = makeTrainWithoutOp11();
       const row = makeRow(null);
       const result = propagateStopDuration(
-        { row, field: 'stopDuration', value: 600, propagationMode: 'fromDeparture' }, // +10min
+        {
+          row,
+          field: 'stopDuration',
+          value: new Duration({ minutes: 10 }),
+          propagationMode: 'fromDeparture',
+        }, // +10min
         train
       );
       expect(result).toBeDefined();

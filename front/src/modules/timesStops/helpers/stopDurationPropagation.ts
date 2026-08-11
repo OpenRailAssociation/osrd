@@ -39,7 +39,7 @@ export const propagateStopDuration = (
 
   // Delta between the old and new stop duration — drives every shift below.
   const oldDuration = update.row.stopDuration ?? Duration.zero;
-  const newDuration = new Duration({ seconds: update.value });
+  const newDuration = update.value;
   const delta = newDuration.sub(oldDuration);
 
   // The edited point's current schedule state, if it already has one.

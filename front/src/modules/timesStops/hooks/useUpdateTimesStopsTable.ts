@@ -168,16 +168,7 @@ const useUpdateTimesStopsTable = (
         };
       }
 
-      // Convert CellUpdate to OptimisticEdit (stopDuration: number → Duration)
-      let edit: Exclude<OptimisticEdit, { field: 'powerRestriction' }>;
-      if (update.field === 'stopDuration') {
-        edit = {
-          field: 'stopDuration',
-          value: update.value !== null ? new Duration({ seconds: update.value }) : null,
-        };
-      } else {
-        edit = update;
-      }
+      const edit: Exclude<OptimisticEdit, { field: 'powerRestriction' }> = update;
 
       const newState = applyScheduleEdit(
         { arrival: update.row.requestedArrival, stop: update.row.stopDuration },
@@ -422,8 +413,8 @@ const useUpdateTimesStopsTable = (
   );
 
   const updateStopDuration = useCallback(
-    (row: TimesStopsRowNew, durationSeconds: number | null, propagationMode: StopPropagationMode) =>
-      updateCell({ row, field: 'stopDuration', value: durationSeconds, propagationMode }),
+    (row: TimesStopsRowNew, duration: Duration | null, propagationMode: StopPropagationMode) =>
+      updateCell({ row, field: 'stopDuration', value: duration, propagationMode }),
     [updateCell]
   );
 
