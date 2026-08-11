@@ -45,15 +45,11 @@ use crate::views::timetable;
 
 #[derive(Clone)]
 pub struct CoreConfig {
+    pub mq_url: Url,
     pub timeout: Duration,
     pub single_worker: bool,
     pub num_channels: usize,
     pub worker_pool_id: String,
-}
-
-pub struct OsrdyneConfig {
-    pub mq_url: Url,
-    pub core: CoreConfig,
 }
 
 #[derive(Clone)]
@@ -84,7 +80,7 @@ pub struct ServerConfig {
     pub health_check_timeout: Duration,
     pub map_layers_max_zoom: u8,
     pub postgres_config: PostgresConfig,
-    pub osrdyne_config: OsrdyneConfig,
+    pub core_config: CoreConfig,
     pub valkey_config: cache::Config,
     pub openfga_config: OpenfgaConfig,
     pub root_url: Url,
@@ -159,8 +155,8 @@ impl AppState {
                 single_worker,
                 num_channels,
                 worker_pool_id,
+                mq_url,
             }: CoreConfig,
-            mq_url: Url,
         ) -> anyhow::Result<Arc<CoreClient>> {
             let options = mq_client::Options {
                 uri: mq_url,
@@ -172,13 +168,8 @@ impl AppState {
             let client = CoreClient::new_mq(options).await?;
             Ok(Arc::new(client))
         }
-        let core_client_fut = tokio::spawn(
-            connect_core_client(
-                config.osrdyne_config.core.clone(),
-                config.osrdyne_config.mq_url.clone(),
-            )
-            .in_current_span(),
-        );
+        let core_client_fut =
+            tokio::spawn(connect_core_client(config.core_config.clone()).in_current_span());
 
         #[tracing::instrument(skip_all, level = "info", err, name = "OpenFGA connection")]
         async fn connect_openfga(openfga_config: OpenfgaConfig) -> anyhow::Result<fga::Client> {
