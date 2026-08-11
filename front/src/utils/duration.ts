@@ -96,6 +96,27 @@ export class Duration {
   total(unit: 'second' | 'minute' | 'hour'): number {
     return this.ms / UNIT_IN_MS[unit];
   }
+
+  /**
+   * Format a string representing this duration for end-user display.
+   */
+  toLocaleString(
+    _locale: Intl.Locale | undefined,
+    {
+      secondsDisplay = 'always',
+    }: { style: 'digital'; hours: '2-digit'; secondsDisplay?: 'always' | 'auto' }
+  ) {
+    const hours = Math.floor(this.total('hour'));
+    const minutes = Math.floor(this.total('minute')) % 60;
+    const seconds = Math.floor(this.total('second')) % 60;
+
+    const parts = [hours, minutes];
+    if (secondsDisplay === 'always' || seconds !== 0) {
+      parts.push(seconds);
+    }
+
+    return parts.map((value) => value.toString().padStart(2, '0')).join(':');
+  }
 }
 
 /**
