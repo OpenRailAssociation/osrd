@@ -54,7 +54,6 @@ use fga::client::DEFAULT_OPENFGA_MAX_TUPLES_PER_WRITE;
 
 use super::CoreConfig;
 use super::OpenfgaConfig;
-use super::OsrdyneConfig;
 use super::PostgresConfig;
 use super::Regulator;
 use super::ServerConfig;
@@ -152,14 +151,12 @@ impl TestAppBuilder {
                 database_url: Url::parse("postgres://osrd:password@localhost:5432/osrd").unwrap(),
                 pool_size: 32,
             },
-            osrdyne_config: OsrdyneConfig {
+            core_config: CoreConfig {
                 mq_url: Url::parse("amqp://osrd:password@127.0.0.1:5672/%2f").unwrap(),
-                core: CoreConfig {
-                    timeout: chrono::Duration::seconds(180),
-                    single_worker: false,
-                    num_channels: 8,
-                    worker_pool_id: "core".into(),
-                },
+                timeout: chrono::Duration::seconds(180),
+                single_worker: false,
+                num_channels: 8,
+                worker_pool_id: "core".into(),
             },
             valkey_config: cache::Config::NoCache,
             root_url: self

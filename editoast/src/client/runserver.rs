@@ -111,14 +111,12 @@ pub async fn runserver(
         health_check_timeout: Duration::milliseconds(health_check_timeout_ms as i64),
         map_layers_max_zoom: map_layers_config.max_zoom as u8,
         postgres_config: postgres.into(),
-        osrdyne_config: views::OsrdyneConfig {
+        core_config: views::CoreConfig {
             mq_url,
-            core: views::CoreConfig {
-                timeout: Duration::seconds(core_timeout as i64),
-                single_worker: core_single_worker,
-                num_channels: core_client_channels_size,
-                worker_pool_id,
-            },
+            timeout: Duration::seconds(core_timeout as i64),
+            single_worker: core_single_worker,
+            num_channels: core_client_channels_size,
+            worker_pool_id,
         },
         valkey_config: valkey_config.into_cache_config(),
         openfga_config: openfga.into(),
