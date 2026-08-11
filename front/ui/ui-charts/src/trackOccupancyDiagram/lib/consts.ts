@@ -2,6 +2,8 @@ export const TRACK_HEIGHT_CONTAINER = 100;
 export const CANVAS_PADDING = 10;
 export const OCCUPANCY_ZONE_Y_START = TRACK_HEIGHT_CONTAINER / 2 - 1.5;
 export const OCCUPANCY_ZONE_HEIGHT = 3;
+/** White line drawn on the edges of an occupancy bar, to separate it from the ones next to it. */
+export const OCCUPANCY_SEPARATOR_WIDTH = 0.5;
 export const MINUTES_TEXT_OFFSET = 8.5;
 export const STATION_TEXT_OFFSET = 5;
 

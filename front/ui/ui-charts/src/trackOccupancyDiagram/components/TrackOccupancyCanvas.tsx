@@ -5,8 +5,9 @@ import { X } from '@osrd-project/ui-icons';
 import { MouseContext } from '../../common';
 import { SpaceTimeChartContext } from '../../spaceTimeChart';
 import { CANVAS_PADDING, TRACK_HEIGHT_CONTAINER } from '../lib/consts';
-import type { OccupancyZone, Track } from '../lib/types';
+import type { Linking, OccupancyZone, Track } from '../lib/types';
 import DraggingOccupancyZonesLayer from './layers/DraggingOccupancyZonesLayer';
+import LinkingLayer from './layers/LinkingLayer';
 import OccupancyZonesLayer from './layers/OccupancyZonesLayer';
 import TracksLayer from './layers/TracksLayer';
 
@@ -37,6 +38,7 @@ const TrackOccupancyCanvas = ({
   tracks,
   occupancyZones,
   draggingOccupancyZones,
+  linkings,
   onClose,
   onDragOver,
   topPadding = 0,
@@ -46,6 +48,7 @@ const TrackOccupancyCanvas = ({
   tracks: Track[];
   occupancyZones: OccupancyZone[];
   draggingOccupancyZones?: OccupancyZone[];
+  linkings?: Linking[];
   onClose?: () => void;
   onDragOver?: (trackId: string | undefined) => void;
   topPadding?: number;
@@ -109,6 +112,14 @@ const TrackOccupancyCanvas = ({
         topPadding={topPadding}
         occupancyZones={occupancyZones}
       />
+      {linkings && (
+        <LinkingLayer
+          tracks={tracks}
+          linkings={linkings}
+          position={position}
+          topPadding={topPadding}
+        />
+      )}
       {draggingOccupancyZones && (
         <DraggingOccupancyZonesLayer occupancyZones={draggingOccupancyZones} />
       )}

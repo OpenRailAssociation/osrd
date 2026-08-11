@@ -8,7 +8,7 @@ import { Manchette, useManchetteWithSpaceTimeChart, BASE_WAYPOINT_HEIGHT } from 
 import { DEFAULT_THEME, SpaceTimeChart, type SpaceTimeChartProps } from '../../spaceTimeChart';
 import useEdgePan from '../hooks/useEdgePan';
 import { TRACK_HEIGHT_CONTAINER } from '../lib/consts';
-import type { OccupancyZone, Track } from '../lib/types';
+import type { Linking, OccupancyZone, Track } from '../lib/types';
 import { isOccupancyPickingElement } from './layers/OccupancyZonesLayer';
 import TrackOccupancyCanvas from './TrackOccupancyCanvas';
 import TrackOccupancyManchette from './TrackOccupancyManchette';
@@ -17,6 +17,7 @@ const TrackOccupancyStandalone = ({
   tracks,
   occupancyZones,
   draggingOccupancyZones,
+  linkings,
   selectedPathId,
   onSelectedPathIdChange,
   onHoveredChildUpdate,
@@ -26,6 +27,7 @@ const TrackOccupancyStandalone = ({
   tracks: Track[];
   occupancyZones: OccupancyZone[];
   draggingOccupancyZones?: OccupancyZone[];
+  linkings?: Linking[];
   selectedPathId?: string;
   onSelectedPathIdChange?: (selectedPathId?: string) => void;
   onHoveredChildUpdate?: SpaceTimeChartProps['onHoveredChildUpdate'];
@@ -77,6 +79,7 @@ const TrackOccupancyStandalone = ({
             topPadding={BASE_WAYPOINT_HEIGHT * 1.5}
             occupancyZones={occupancyZones}
             draggingOccupancyZones={draggingOccupancyZones}
+            linkings={linkings}
             onDragOver={handleDragOver}
             hideBorders
           />
@@ -86,7 +89,15 @@ const TrackOccupancyStandalone = ({
         ),
       },
     ],
-    [height, tracks, occupancyZones, draggingOccupancyZones, highlightedTrackId, handleDragOver]
+    [
+      height,
+      tracks,
+      occupancyZones,
+      draggingOccupancyZones,
+      linkings,
+      highlightedTrackId,
+      handleDragOver,
+    ]
   );
 
   /**
@@ -120,6 +131,20 @@ const TrackOccupancyStandalone = ({
     pan,
   });
 
+  const handleClick = useCallback<NonNullable<SpaceTimeChartProps['onClick']>>(
+    ({ hoveredItem }) => {
+      if (onSelectedPathIdChange) {
+        if (hoveredItem?.layer && isOccupancyPickingElement(hoveredItem.element)) {
+          const newId = hoveredItem.element.pathId;
+          onSelectedPathIdChange(newId === selectedPathId ? undefined : newId);
+        } else {
+          onSelectedPathIdChange(undefined);
+        }
+      }
+    },
+    [onSelectedPathIdChange, selectedPathId]
+  );
+
   return (
     <div className="track-occupancy-standalone flex flex-col">
       <div className="bg-ambientB-5 flex flex-col justify-center main-container-header grow-0 shrink-0">
@@ -139,17 +164,7 @@ const TrackOccupancyStandalone = ({
               className="inset-0 absolute h-full"
               {...spaceTimeChartProps}
               hideGrid={true}
-              onClick={
-                onSelectedPathIdChange &&
-                (({ hoveredItem }) => {
-                  if (hoveredItem?.layer && isOccupancyPickingElement(hoveredItem.element)) {
-                    const newId = hoveredItem.element.pathId;
-                    onSelectedPathIdChange(newId === selectedPathId ? undefined : newId);
-                  } else {
-                    onSelectedPathIdChange(undefined);
-                  }
-                })
-              }
+              onClick={onSelectedPathIdChange ? handleClick : undefined}
               onPan={isDragging ? undefined : spaceTimeChartProps.onPan}
               onMouseMove={onMouseMove}
               onHoveredChildUpdate={onHoveredChildUpdate}
