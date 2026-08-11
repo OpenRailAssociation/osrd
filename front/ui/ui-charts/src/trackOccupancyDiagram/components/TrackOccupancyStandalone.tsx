@@ -8,7 +8,8 @@ import { Manchette, useManchetteWithSpaceTimeChart, BASE_WAYPOINT_HEIGHT } from 
 import { DEFAULT_THEME, SpaceTimeChart, type SpaceTimeChartProps } from '../../spaceTimeChart';
 import useEdgePan from '../hooks/useEdgePan';
 import { TRACK_HEIGHT_CONTAINER } from '../lib/consts';
-import type { Linking, OccupancyZone, Track } from '../lib/types';
+import type { BrokenLinking, Linking, OccupancyZone, Track } from '../lib/types';
+import { isBrokenLinkingPickingElement } from './layers/BrokenLinkingLayer';
 import { isOccupancyPickingElement } from './layers/OccupancyZonesLayer';
 import TrackOccupancyCanvas from './TrackOccupancyCanvas';
 import TrackOccupancyManchette from './TrackOccupancyManchette';
@@ -18,6 +19,9 @@ const TrackOccupancyStandalone = ({
   occupancyZones,
   draggingOccupancyZones,
   linkings,
+  brokenLinkings,
+  deleteIconUrl,
+  onDeleteBrokenLinking,
   selectedPathId,
   onSelectedPathIdChange,
   onHoveredChildUpdate,
@@ -28,6 +32,9 @@ const TrackOccupancyStandalone = ({
   occupancyZones: OccupancyZone[];
   draggingOccupancyZones?: OccupancyZone[];
   linkings?: Linking[];
+  brokenLinkings?: BrokenLinking[];
+  deleteIconUrl?: string;
+  onDeleteBrokenLinking?: (brokenLinkingId: string) => void;
   selectedPathId?: string;
   onSelectedPathIdChange?: (selectedPathId?: string) => void;
   onHoveredChildUpdate?: SpaceTimeChartProps['onHoveredChildUpdate'];
@@ -80,6 +87,8 @@ const TrackOccupancyStandalone = ({
             occupancyZones={occupancyZones}
             draggingOccupancyZones={draggingOccupancyZones}
             linkings={linkings}
+            brokenLinkings={brokenLinkings}
+            deleteIconUrl={deleteIconUrl}
             onDragOver={handleDragOver}
             hideBorders
           />
@@ -95,6 +104,8 @@ const TrackOccupancyStandalone = ({
       occupancyZones,
       draggingOccupancyZones,
       linkings,
+      brokenLinkings,
+      deleteIconUrl,
       highlightedTrackId,
       handleDragOver,
     ]
@@ -133,6 +144,10 @@ const TrackOccupancyStandalone = ({
 
   const handleClick = useCallback<NonNullable<SpaceTimeChartProps['onClick']>>(
     ({ hoveredItem }) => {
+      if (hoveredItem?.element && isBrokenLinkingPickingElement(hoveredItem.element)) {
+        onDeleteBrokenLinking?.(hoveredItem.element.brokenLinkingId);
+        return;
+      }
       if (onSelectedPathIdChange) {
         if (hoveredItem?.layer && isOccupancyPickingElement(hoveredItem.element)) {
           const newId = hoveredItem.element.pathId;
@@ -142,7 +157,7 @@ const TrackOccupancyStandalone = ({
         }
       }
     },
-    [onSelectedPathIdChange, selectedPathId]
+    [onDeleteBrokenLinking, onSelectedPathIdChange, selectedPathId]
   );
 
   return (
@@ -164,7 +179,7 @@ const TrackOccupancyStandalone = ({
               className="inset-0 absolute h-full"
               {...spaceTimeChartProps}
               hideGrid={true}
-              onClick={onSelectedPathIdChange ? handleClick : undefined}
+              onClick={onSelectedPathIdChange || onDeleteBrokenLinking ? handleClick : undefined}
               onPan={isDragging ? undefined : spaceTimeChartProps.onPan}
               onMouseMove={onMouseMove}
               onHoveredChildUpdate={onHoveredChildUpdate}

@@ -52,9 +52,23 @@ export type Linking = {
   hover?: boolean;
 };
 
+export type BrokenLinking = {
+  id: string;
+  trackId: string;
+  direction: 'forward' | 'backward';
+  time: number;
+  name: string;
+};
+
 export type LinkingPickingElement = PickingElement & {
   type: 'linking';
   linkingId: string;
+};
+
+export type BrokenLinkingPickingElement = PickingElement & {
+  type: 'brokenLinking';
+  brokenLinkingId: string;
+  direction: BrokenLinking['direction'];
 };
 
 export type TickPattern = keyof typeof TICKS_PATTERN;

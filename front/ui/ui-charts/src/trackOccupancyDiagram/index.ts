@@ -2,6 +2,7 @@ import './styles/main.css';
 
 export * from './lib/types';
 export * from './lib/consts';
+export { isBrokenLinkingPickingElement } from './components/layers/BrokenLinkingLayer';
 export { isLinkingPickingElement } from './components/layers/LinkingLayer';
 export { isOccupancyPickingElement } from './components/layers/OccupancyZonesLayer';
 export { default as TrackOccupancyCanvas } from './components/TrackOccupancyCanvas';
