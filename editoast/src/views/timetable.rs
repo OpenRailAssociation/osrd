@@ -944,6 +944,7 @@ pub(in crate::views) fn simulation_empty_response(
 mod tests {
     use std::collections::HashMap;
 
+    use authz::InfraGrant;
     use axum::http::StatusCode;
     use chrono::Duration;
     use common::units;
@@ -959,6 +960,7 @@ mod tests {
 
     use super::*;
     use crate::error::InternalError;
+    use crate::fixtures::create_fast_rolling_stock;
     use crate::fixtures::create_small_infra;
     use crate::fixtures::create_timetable;
     use crate::fixtures::create_timetable_with_simple_paced_train;
@@ -967,6 +969,8 @@ mod tests {
     use crate::fixtures::create_train_schedule_set;
     use crate::fixtures::simple_paced_train_base;
     use crate::views::test_app;
+    use crate::views::test_app::TestRequestExt as _;
+    use crate::views::tests::mocked_core_pathfinding_sim_and_proj;
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn get_unexisting_timetable() {
@@ -1124,6 +1128,42 @@ mod tests {
                 .unwrap(),
             train_schedule_exception_t1_1.id
         )
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn get_timetable_requirements_requires_infra_read_grant() {
+        let app = test_app!()
+            .core_client(mocked_core_pathfinding_sim_and_proj().into())
+            .build();
+        let pool = app.db_pool();
+        let infra = create_small_infra(&mut pool.get_ok()).await;
+        create_fast_rolling_stock(&mut pool.get_ok(), "R2D2").await;
+        let (timetable, _) = create_timetable_with_simple_paced_train(&mut pool.get_ok()).await;
+
+        let user_without_grant = app.user("alice", "Alice").create().await;
+        let user_with_grant = app
+            .user("bob", "Bob")
+            .with_infra_grant(infra.id, InfraGrant::Reader)
+            .create()
+            .await;
+        let endpoint = format!(
+            "/timetable/{}/requirements?infra_id={}",
+            timetable.id, infra.id
+        );
+
+        app.get(&endpoint)
+            .by_user(user_without_grant.as_ref())
+            .await
+            .assert_status_forbidden();
+
+        let response: TrainRequirementsPage = app
+            .get(&endpoint)
+            .by_user(user_with_grant.as_ref())
+            .await
+            .assert_status_ok()
+            .json();
+        assert_eq!(response.stats.count, 1);
+        assert_eq!(response.results.len(), 8);
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
