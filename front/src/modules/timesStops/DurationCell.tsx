@@ -402,6 +402,7 @@ type DurationCellProps = CellContext<TimesStopsRowNew, Duration | null> &
     onCommit?: (seconds: number | null, propagationMode: StopPropagationMode) => void;
     disabled?: boolean;
     clearButtonTitle?: string;
+    disableClear?: boolean;
     ref?: React.Ref<DurationCellHandle>;
   };
 
@@ -411,6 +412,7 @@ const DurationCell = ({
   ref,
   onEnterKeyDown,
   onTabKeyDown,
+  disableClear,
   ...props
 }: DurationCellProps) => {
   const { onCommit, getValue, row, table } = props || {};
@@ -583,7 +585,7 @@ const DurationCell = ({
         />
       </div>
       <ClearButton
-        isVisible={state.isEditing}
+        isVisible={state.isEditing && !disableClear}
         title={clearButtonTitle}
         containerRef={containerRef}
         onClear={handleClear}
