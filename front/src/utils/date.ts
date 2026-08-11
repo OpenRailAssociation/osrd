@@ -41,21 +41,14 @@ export const formatLocalDate = (date: Date) => dayjs(date).local().format('YYYY-
  */
 export const formatLocalTime = (date: Date) => dayjs(date).local().format('HH:mm:ss');
 
-const pad = (value: number) => String(value).padStart(2, '0');
-
-/** Format a duration as an elapsed "hh:mm" or "hh:mm:ss" time. Hours are not wrapped at 24. */
-const durationToElapsedString = (duration: Duration, withSeconds: boolean): string => {
-  const hours = Math.floor(duration.total('hour'));
-  const minutes = Math.floor(duration.sub(new Duration({ hours })).total('minute'));
-  if (!withSeconds) return `${pad(hours)}:${pad(minutes)}`;
-
-  const seconds = Math.floor(duration.sub(new Duration({ hours, minutes })).total('second'));
-  return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
-};
-
 /** Format a start time as a clock time for a Date, or an elapsed "hh:mm:ss" for a Duration. */
 export const timeToLocaleString = (time: StartTime, locale: Intl.Locale): string =>
-  time instanceof Duration ? durationToElapsedString(time, true) : time.toLocaleTimeString(locale);
+  time instanceof Duration
+    ? time.toLocaleString(locale, {
+        style: 'digital',
+        hours: '2-digit',
+      })
+    : time.toLocaleTimeString(locale);
 
 /**
  * Converts a time-of-day (hours/minutes, no date) into the equivalent offset in
@@ -79,7 +72,9 @@ export const timeToMsSinceMidnight = ({
  */
 export const timeToLocaleStringRounded = (time: StartTime, locale: Intl.Locale): string => {
   if (time instanceof Duration) {
-    return durationToElapsedString(time.round('minute'), false);
+    return time
+      .round('minute')
+      .toLocaleString(locale, { style: 'digital', hours: '2-digit', secondsDisplay: 'auto' });
   }
   const roundedTime = new Date(
     ...[
