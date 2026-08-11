@@ -59,6 +59,7 @@ const extractMetadataFromFilename = (fileName) => {
 const validateSvgAndExtractPath = (svgFilePath, height) => {
   const svg = readFileSync(svgFilePath, 'utf8');
   const svgElement = load(svg)('svg');
+  svgElement.find('title').remove();
   const svgWidth = parseInt(svgElement.attr('width'));
   const svgHeight = parseInt(svgElement.attr('height'));
   const svgViewBox = svgElement.attr('viewBox');

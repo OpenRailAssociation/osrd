@@ -481,6 +481,8 @@ type TimeCellProps = CellContext<TimesStopsRowNew, Date | null> &
     referenceDate?: Date;
     /** When the cell is empty, pre-fill the input with this value when the user focuses to edit. */
     prefillValue?: Date | null;
+    /** Title for the clear button. */
+    clearButtonTitle?: string;
     /** Called after Enter validates the input. Use to move focus (e.g. to the cell below). */
     onEnterKeyDown?: () => void;
     /** Called on Tab key to move focus to the next/previous editable time cell. */
@@ -494,6 +496,7 @@ const TimeCell = ({
   getValue,
   referenceDate,
   prefillValue,
+  clearButtonTitle,
   onEnterKeyDown,
   onTabKeyDown,
   onCommit,
@@ -734,6 +737,7 @@ const TimeCell = ({
       <ClearButton
         isVisible={state.focusedSection !== null && !state.empty && !disableClear}
         containerRef={inputRef}
+        title={clearButtonTitle}
         onClear={handleClear}
       />
     </>
