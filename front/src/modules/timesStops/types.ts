@@ -1,7 +1,7 @@
 import type { PathItemLocation, ReceptionSignal } from 'common/api/osrdEditoastApi';
 import type { TimeString } from 'common/types';
 import type { SuggestedOP } from 'modules/trainSchedule/types';
-import type { Duration } from 'utils/duration';
+import type { Duration, StartTime } from 'utils/duration';
 
 import type { MarginUnit } from './consts';
 
@@ -49,11 +49,11 @@ export type TimesStopsRowNew = {
   location: PathItemLocation;
 
   // Times
-  requestedArrival: Date | null;
-  computedArrival: Date | null;
+  requestedArrival: StartTime | null;
+  computedArrival: StartTime | null;
   stopDuration: Duration | null;
-  requestedDeparture: Date | null;
-  computedDeparture: Date | null;
+  requestedDeparture: StartTime | null;
+  computedDeparture: StartTime | null;
 
   // Signaling options
   closedSignal?: boolean;
@@ -127,7 +127,7 @@ export type UpdateCellStatus = 'updated' | 'skipped';
 export type ArrivalUpdate = {
   row: TimesStopsRowNew;
   field: 'requestedArrival';
-  value: Date | null;
+  value: StartTime | null;
   propagationMode: PropagationMode;
 };
 
@@ -141,7 +141,7 @@ export type StopDurationUpdate = {
 export type DepartureUpdate = {
   row: TimesStopsRowNew;
   field: 'requestedDeparture';
-  value: Date | null;
+  value: StartTime | null;
   propagationMode: PropagationMode;
 };
 
@@ -172,10 +172,10 @@ export type CellUpdate =
   | PowerRestrictionUpdate;
 
 export type OptimisticEdit =
-  | { field: 'requestedArrival'; value: Date | null }
-  | { field: 'requestedDeparture'; value: Date | null }
+  | { field: 'requestedArrival'; value: StartTime | null }
+  | { field: 'requestedDeparture'; value: StartTime | null }
   | { field: 'stopDuration'; value: Duration | null }
-  | { field: 'stopDurationWithArrival'; value: { stop: Duration | null; arrival: Date } }
+  | { field: 'stopDurationWithArrival'; value: { stop: Duration | null; arrival: StartTime } }
   | { field: 'receptionSignal'; value: ReceptionSignal | undefined }
   | { field: 'requestedTheoreticalMargin'; value: MarginValue | null }
   | { field: 'powerRestriction'; value: string | null };

@@ -13,7 +13,7 @@ import type {
 import type { TimeString } from 'common/types';
 import type { SuggestedOP } from 'modules/trainSchedule/types';
 import type { PathStep } from 'reducers/osrdconf/types';
-import { Duration } from 'utils/duration';
+import { Duration, type StartTime } from 'utils/duration';
 import { msToS } from 'utils/physics';
 import { NO_BREAK_SPACE } from 'utils/strings';
 import {
@@ -26,14 +26,23 @@ import {
 import { marginRegExValidation, MarginUnit } from '../consts';
 import { TableType, type TimeExtraDays, type TimesStopsInputRow } from '../types';
 
-export const truncateDateToSecond = (date: Date): Date => {
-  const truncated = new Date(date);
-  truncated.setMilliseconds(0);
-  return truncated;
+export const truncateStartTimeToSecond = (date: StartTime): StartTime => {
+  if (date instanceof Date) {
+    const truncated = new Date(date);
+    truncated.setMilliseconds(0);
+    return truncated;
+  } else {
+    return new Duration({ seconds: Math.floor(date.total('second')) });
+  }
 };
 
-export const truncateDateToDay = (date: Date): Date =>
-  new Date(date.getFullYear(), date.getMonth(), date.getDate());
+export const truncateStartTimeToDay = (date: StartTime): StartTime => {
+  if (date instanceof Date) {
+    return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  } else {
+    return new Duration({ days: Math.floor(date.total('day')) });
+  }
+};
 
 export const formatSuggestedViasToRowVias = (
   operationalPoints: SuggestedOP[],

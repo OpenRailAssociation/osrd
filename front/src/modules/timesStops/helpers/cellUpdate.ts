@@ -8,10 +8,17 @@ import type {
 } from 'common/api/osrdEditoastApi';
 import type { Train } from 'reducers/osrdconf/types';
 import { addElementAtIndex } from 'utils/array';
-import { Duration } from 'utils/duration';
+import {
+  Duration,
+  type StartTime,
+  addDurationToStartTime,
+  subtractStartTime,
+  subtractDurationFromStartTime,
+  startTimeToMs,
+} from 'utils/duration';
 
 import type { OptimisticEdit, PendingEdit, TimesStopsRowNew } from '../types';
-import { receptionSignalToSignalBooleans, truncateDateToSecond } from './utils';
+import { receptionSignalToSignalBooleans, truncateStartTimeToSecond } from './utils';
 
 /** Compute the insertion index for a new PathStep using row opOnPathIndex values. */
 const computeInsertIndex = (
@@ -51,12 +58,12 @@ export const upsertPathStep = (
 };
 
 /** Compute departure from arrival and stop duration. */
-const computeDeparture = (arrival: Date | null, stop: Duration | null): Date | null =>
-  arrival !== null && stop !== null ? new Date(arrival.getTime() + stop.ms) : null;
+const computeDeparture = (arrival: StartTime | null, stop: Duration | null): StartTime | null =>
+  arrival !== null && stop !== null ? addDurationToStartTime(arrival, stop) : null;
 
 /** State of a stop's schedule in display format (Date / Duration). */
 export type ScheduleState = {
-  arrival: Date | null;
+  arrival: StartTime | null;
   stop: Duration | null;
 };
 
@@ -71,7 +78,7 @@ export type ScheduleState = {
 export const applyScheduleEdit = (
   current: ScheduleState,
   edit: Exclude<OptimisticEdit, { field: 'powerRestriction' }>
-): ScheduleState & { departure: Date | null } => {
+): ScheduleState & { departure: StartTime | null } => {
   const { arrival, stop } = current;
 
   switch (edit.field) {
@@ -112,13 +119,13 @@ export const applyScheduleEdit = (
         // TimeCell already ensured departure >= arrival by using arrival as referenceDate
         return {
           arrival,
-          stop: new Duration({ milliseconds: newDeparture.getTime() - arrival.getTime() }),
+          stop: subtractStartTime(newDeparture, arrival),
           departure: newDeparture,
         };
       }
       // No arrival → arrival = departure - existingStop
       return {
-        arrival: new Date(newDeparture.getTime() - (stop?.ms ?? 0)),
+        arrival: subtractDurationFromStartTime(newDeparture, stop ?? Duration.zero),
         stop,
         departure: newDeparture,
       };
@@ -139,13 +146,13 @@ export const applyScheduleEdit = (
  */
 export const scheduleStateToApiFields = (
   state: ScheduleState,
-  startTime: Date
+  startTime: StartTime
 ): { arrival: string | null; stop_for: string | null } => ({
   arrival:
     state.arrival !== null
-      ? Duration.subtractDate(
-          truncateDateToSecond(state.arrival),
-          truncateDateToSecond(startTime)
+      ? subtractStartTime(
+          truncateStartTimeToSecond(state.arrival),
+          truncateStartTimeToSecond(startTime)
         ).toISOString()
       : null,
   stop_for: state.stop !== null ? state.stop.toISOString() : null,
@@ -233,16 +240,18 @@ export const computeOptimisticRow = (
  * Each affected row gets a new requestedArrival computed from updatedSchedule + updatedStartTime.
  */
 export const propagationToEdits = (
-  result: { updatedSchedule: ScheduleItem[]; updatedStartTime: Date },
+  result: { updatedSchedule: ScheduleItem[]; updatedStartTime: StartTime },
   rows: TimesStopsRowNew[]
 ): PendingEdit[] =>
   rows.flatMap((row) => {
     const item = result.updatedSchedule.find((s) => s.at === row.pathStepId);
     if (!item?.arrival) return [];
-    const newArrival = new Date(
-      result.updatedStartTime.getTime() + Duration.parse(item.arrival).ms
+    const newArrival = addDurationToStartTime(
+      result.updatedStartTime,
+      Duration.parse(item.arrival)
     );
-    if (newArrival.getTime() === row.requestedArrival?.getTime()) return [];
+    if (row.requestedArrival && startTimeToMs(newArrival) === startTimeToMs(row.requestedArrival))
+      return [];
     return [{ rowId: row.id, field: 'requestedArrival' as const, value: newArrival }];
   });
 

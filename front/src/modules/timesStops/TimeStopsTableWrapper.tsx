@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 
+import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import type { PathPropertiesFormatted } from 'applications/operationalStudies/types';
 import type {
   CorePathfindingResultSuccess,
@@ -9,7 +10,7 @@ import type {
 } from 'common/api/osrdEditoastApi';
 import type { SimulationSummary, TrainScheduleWithDetails } from 'modules/trainSchedule/types';
 import type { Train } from 'reducers/osrdconf/types';
-import { Duration, addDurationToDate } from 'utils/duration';
+import { Duration, type StartTime, addDurationToStartTime, startTimeToMs } from 'utils/duration';
 
 import { computeOptimisticRow, propagationToEdits } from './helpers/cellUpdate';
 import { computePowerRestrictionWarnings } from './helpers/powerRestrictionIncompatibility';
@@ -45,18 +46,18 @@ type TimeStopsTableWrapperProps = {
 };
 
 const bumpMidnightCrossings = (rows: TimesStopsRowNew[]): TimesStopsRowNew[] => {
-  let lastArrival: Date | null = null;
+  let lastArrival: StartTime | null = null;
   return rows.map((row) => {
     if (row.requestedArrival === null) return row;
     if (lastArrival !== null && row.requestedArrival < lastArrival) {
-      const bumped = addDurationToDate(row.requestedArrival, ONE_DAY);
+      const bumped = addDurationToStartTime(row.requestedArrival, ONE_DAY);
       lastArrival = bumped;
       return {
         ...row,
         requestedArrival: bumped,
         requestedDeparture:
           row.requestedDeparture !== null
-            ? addDurationToDate(row.requestedDeparture, ONE_DAY)
+            ? addDurationToStartTime(row.requestedDeparture, ONE_DAY)
             : null,
       };
     }
@@ -78,6 +79,8 @@ const TimeStopsTableWrapper = ({
   isSimulationDataLoading = false,
   rollingStock,
 }: TimeStopsTableWrapperProps) => {
+  const { scenario } = useScenarioContext();
+
   // Refs used to track simulation refresh after a user edit (see isAwaitingSimulation):
   //   - preEditPathItemTimesRef: batch summary (simulatedPathItemTimes reference)
   //   - isTrainSimulationPendingRef: all simulation queries (isSimulationDataLoading)
@@ -134,7 +137,13 @@ const TimeStopsTableWrapper = ({
     return bumpMidnightCrossings(copyRows);
   }, [rows, optimisticEdits]);
 
-  const startTime = useMemo(() => new Date(selectedTrain.start_time), [selectedTrain.start_time]);
+  const startTime = useMemo(
+    () =>
+      scenario.timetable_type === 'CALENDAR'
+        ? new Date(selectedTrain.start_time)
+        : new Duration({ milliseconds: selectedTrain.start_time }),
+    [selectedTrain.start_time, scenario.timetable_type]
+  );
 
   const availablePowerRestrictions = useMemo(
     () => Object.keys(rollingStock?.power_restrictions ?? {}),
@@ -207,9 +216,11 @@ const TimeStopsTableWrapper = ({
   };
 
   // Origin arrival = start_time (not in schedule), so propagationToEdits misses it.
-  const computeOriginEdits = (updatedStartTime: Date): PendingEdit[] => {
+  const computeOriginEdits = (updatedStartTime: StartTime): PendingEdit[] => {
     const originRow = rows.at(0);
-    return originRow && originRow.requestedArrival?.getTime() !== updatedStartTime.getTime()
+    return originRow &&
+      (!originRow.requestedArrival ||
+        startTimeToMs(originRow.requestedArrival) !== startTimeToMs(updatedStartTime))
       ? [{ rowId: originRow.id, field: 'requestedArrival', value: updatedStartTime }]
       : [];
   };
@@ -218,7 +229,7 @@ const TimeStopsTableWrapper = ({
     singleEdit: PendingEdit,
     update: CellUpdate & { propagationMode: PropagationMode }
   ): PendingEdit[] => {
-    const propagationResult = propagateTime(update, selectedTrain);
+    const propagationResult = propagateTime(update, selectedTrain, scenario.timetable_type);
     if (!propagationResult) return [singleEdit];
 
     const propagationEdits = propagationToEdits(propagationResult, rows);
@@ -244,7 +255,7 @@ const TimeStopsTableWrapper = ({
     singleEdit: PendingEdit,
     update: StopDurationUpdate
   ): PendingEdit[] => {
-    const propagationResult = propagateStopDuration(update, selectedTrain);
+    const propagationResult = propagateStopDuration(update, selectedTrain, scenario.timetable_type);
     if (!propagationResult) return [singleEdit];
 
     const propagationEdits = propagationToEdits(propagationResult, rows);
@@ -298,7 +309,7 @@ const TimeStopsTableWrapper = ({
 
   const handleArrivalChange = (
     row: TimesStopsRowNew,
-    arrival: Date | null,
+    arrival: StartTime | null,
     propagationMode: PropagationMode
   ) => {
     const singleEdit: PendingEdit = { rowId: row.id, field: 'requestedArrival', value: arrival };
@@ -315,7 +326,7 @@ const TimeStopsTableWrapper = ({
 
   const handleDepartureChange = (
     row: TimesStopsRowNew,
-    departure: Date | null,
+    departure: StartTime | null,
     propagationMode: PropagationMode
   ) => {
     const singleEdit: PendingEdit = {

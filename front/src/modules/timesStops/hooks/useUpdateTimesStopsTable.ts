@@ -28,7 +28,7 @@ import type { TrainScheduleWithDetails } from 'modules/trainSchedule/types';
 import type { OccurrenceId, TrainScheduleId, Train } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 import { removeElementAtIndex, replaceElementAtIndex } from 'utils/array';
-import { Duration } from 'utils/duration';
+import { Duration, type StartTime, startTimeToMs } from 'utils/duration';
 import {
   extractEditoastIdFromTrainScheduleId,
   extractTrainScheduleIdFromOccurrenceId,
@@ -86,7 +86,7 @@ const useUpdateTimesStopsTable = (
   trainSchedulesWithDetails: TrainScheduleWithDetails[]
 ) => {
   const dispatch = useAppDispatch();
-  const { timetableId } = useScenarioContext();
+  const { timetableId, scenario } = useScenarioContext();
   const { upsertTrainSchedules } = useTimetableContext();
   const [updateTrainSchedule] = osrdEditoastApi.endpoints.putTrainSchedulesById.useMutation();
 
@@ -131,13 +131,13 @@ const useUpdateTimesStopsTable = (
           updatedPath: PathItem[];
           updatedSchedule: ScheduleItem[];
           updatedMargins: TrainSchedule['margins'];
-          updatedStartTime?: Date;
+          updatedStartTime?: StartTime;
         }
       | undefined => {
       const propagatedResult =
         update.field === 'stopDuration'
-          ? propagateStopDuration(update, selectedTrain)
-          : propagateTime(update, selectedTrain);
+          ? propagateStopDuration(update, selectedTrain, scenario.timetable_type)
+          : propagateTime(update, selectedTrain, scenario.timetable_type);
       if (propagatedResult) return { ...propagatedResult, updatedMargins: selectedTrain.margins };
 
       const { pathStepId, updatedPath } = upsertPathStep(update.row, selectedTrain.path, allRows);
@@ -184,7 +184,10 @@ const useUpdateTimesStopsTable = (
         edit
       );
 
-      const startTime = new Date(selectedTrain.start_time);
+      const startTime =
+        scenario.timetable_type === 'CALENDAR'
+          ? new Date(selectedTrain.start_time)
+          : new Duration({ milliseconds: selectedTrain.start_time });
       const { arrival: newArrival, stop_for: newStopFor } = scheduleStateToApiFields(
         newState,
         startTime
@@ -218,6 +221,7 @@ const useUpdateTimesStopsTable = (
         (update.field === 'requestedArrival' || update.field === 'requestedDeparture') &&
         update.propagationMode === 'atThisWaypoint' &&
         update.value !== null &&
+        update.value instanceof Date &&
         !isOrigin
       ) {
         updatedSchedule = adjustFollowingWaypointsForMidnight(update.value, pathStepId, {
@@ -231,7 +235,8 @@ const useUpdateTimesStopsTable = (
       if (
         update.field === 'stopDuration' &&
         update.propagationMode === 'atThisWaypoint' &&
-        newState.departure !== null
+        newState.departure !== null &&
+        newState.departure instanceof Date
       ) {
         updatedSchedule = adjustFollowingWaypointsForMidnight(newState.departure, pathStepId, {
           ...selectedTrain,
@@ -241,7 +246,7 @@ const useUpdateTimesStopsTable = (
 
       return { updatedPath, updatedSchedule, updatedMargins: selectedTrain.margins };
     },
-    [selectedTrain, allRows, computeUpdatedMargins]
+    [selectedTrain, allRows, computeUpdatedMargins, scenario.timetable_type]
   );
 
   /**
@@ -326,7 +331,9 @@ const useUpdateTimesStopsTable = (
             updatedSchedule: result.updatedSchedule,
             trainName: occurrenceTrainName,
           }),
-          start_time: result.updatedStartTime?.getTime() ?? selectedTrain.start_time,
+          start_time: result.updatedStartTime
+            ? startTimeToMs(result.updatedStartTime)
+            : selectedTrain.start_time,
         };
       }
 
@@ -384,7 +391,9 @@ const useUpdateTimesStopsTable = (
         path: result.updatedPath,
         schedule: result.updatedSchedule,
         margins: result.updatedMargins,
-        start_time: result.updatedStartTime?.getTime() ?? selectedTrain.start_time,
+        start_time: result.updatedStartTime
+          ? startTimeToMs(result.updatedStartTime)
+          : selectedTrain.start_time,
       });
     },
     [selectedTrain, computeUpdatedPathAndSchedule, updateTrainSchedule]
@@ -411,7 +420,7 @@ const useUpdateTimesStopsTable = (
   // Functions are included in deps (exception to the project convention) to propagate
   // allRows updates through the entire callback chain.
   const updateArrival = useCallback(
-    (row: TimesStopsRowNew, arrival: Date | null, propagationMode: PropagationMode) =>
+    (row: TimesStopsRowNew, arrival: StartTime | null, propagationMode: PropagationMode) =>
       updateCell({
         row,
         field: 'requestedArrival',
@@ -428,7 +437,7 @@ const useUpdateTimesStopsTable = (
   );
 
   const updateDeparture = useCallback(
-    (row: TimesStopsRowNew, departure: Date | null, propagationMode: PropagationMode) =>
+    (row: TimesStopsRowNew, departure: StartTime | null, propagationMode: PropagationMode) =>
       updateCell({
         row,
         field: 'requestedDeparture',

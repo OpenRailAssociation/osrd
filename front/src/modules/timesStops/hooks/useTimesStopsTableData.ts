@@ -18,14 +18,19 @@ import { interpolateValue } from 'modules/simulationResult/helpers/utils';
 import type { SimulationSummary } from 'modules/trainSchedule/types';
 import type { Train } from 'reducers/osrdconf/types';
 import { getDisplayOnlyPathSteps } from 'reducers/simulationResults/selectors';
-import { Duration } from 'utils/duration';
+import {
+  Duration,
+  type StartTime,
+  addDurationToStartTime,
+  subtractStartTime,
+} from 'utils/duration';
 
 import { ARRIVAL_TIME_ACCEPTABLE_ERROR, marginsUndefined } from '../consts';
 import { computeMargins, getTheoreticalMargins } from '../helpers/computeMargins';
 import {
   getOperationalPointName,
   receptionSignalToSignalBooleans,
-  truncateDateToSecond,
+  truncateStartTimeToSecond,
 } from '../helpers/utils';
 import { type Margins, type StepStatus, type TimesStopsRowNew } from '../types';
 
@@ -54,7 +59,7 @@ type BuildTableRowParams = {
   secondaryCode?: string | null;
   trackName?: string;
   hasRequestedTrack?: boolean;
-  startDate: Date;
+  startDate: StartTime;
   schedule?: ScheduleItem;
   computedArrival?: Duration;
   invalidPathStep?: boolean;
@@ -90,17 +95,17 @@ const buildTableRow = ({
   // Truncate sub-second part: schedule.arrival is stored in whole seconds
   // (via Math.floor in diffSeconds in scheduleStateToApiFields())
   const requestedArrival = schedule?.arrival
-    ? new Date(truncateDateToSecond(startDate).getTime() + Duration.parse(schedule.arrival).ms)
+    ? addDurationToStartTime(truncateStartTimeToSecond(startDate), Duration.parse(schedule.arrival))
     : null;
 
   // computedArrival is offset from startDate
   const rawComputedArrivalDate =
-    computedArrival !== undefined ? new Date(startDate.getTime() + computedArrival.ms) : null;
+    computedArrival !== undefined ? addDurationToStartTime(startDate, computedArrival) : null;
 
   // Snap to requested arrival when within tolerance.
   const isOnTime =
     requestedArrival && rawComputedArrivalDate
-      ? Duration.subtractDate(requestedArrival, rawComputedArrivalDate).abs() <=
+      ? subtractStartTime(requestedArrival, rawComputedArrivalDate).abs() <=
         ARRIVAL_TIME_ACCEPTABLE_ERROR
       : false;
   const computedArrivalDate = isOnTime ? requestedArrival : rawComputedArrivalDate;
@@ -111,13 +116,13 @@ const buildTableRow = ({
   // requestedDeparture = requestedArrival + stopDuration
   const requestedDeparture =
     requestedArrival && stopDuration !== null
-      ? new Date(requestedArrival.getTime() + stopDuration.ms)
+      ? addDurationToStartTime(requestedArrival, stopDuration)
       : null;
 
   // computedDeparture = computedArrival + stopDuration
   const computedDeparture =
     computedArrivalDate && stopDuration !== null
-      ? new Date(computedArrivalDate.getTime() + stopDuration.ms)
+      ? addDurationToStartTime(computedArrivalDate, stopDuration)
       : null;
 
   const {
@@ -180,7 +185,7 @@ const useTimesStopsTableData = (
   operationalPointsOnPath?: PathPropertiesFormatted['operationalPoints']
 ): { allRows: TimesStopsRowNew[]; rows: TimesStopsRowNew[]; stableIsValid: boolean } => {
   const { t } = useTranslation('operational-studies');
-  const { getTrackSectionsByIds } = useScenarioContext();
+  const { scenario, getTrackSectionsByIds } = useScenarioContext();
   const displayOnlyPathSteps = useSelector(getDisplayOnlyPathSteps);
 
   // Stale-while-revalidate: keep the last known-good simulation props in a ref so the table
@@ -247,7 +252,10 @@ const useTimesStopsTableData = (
   }, [trackIds]);
 
   const allRows = useMemo(() => {
-    const startDate = new Date(selectedTrain.start_time);
+    const startDate =
+      scenario.timetable_type === 'CALENDAR'
+        ? new Date(selectedTrain.start_time)
+        : new Duration({ milliseconds: selectedTrain.start_time });
     const scheduleByAt = keyBy(selectedTrain.schedule, 'at');
     const pathIdToIndex = new Map(selectedTrain.path.map((step, idx) => [step.id, idx]));
 
@@ -410,6 +418,7 @@ const useTimesStopsTableData = (
 
     return formattedRows;
   }, [
+    scenario.timetable_type,
     selectedTrain,
     stableIsValid,
     stableTrain,
