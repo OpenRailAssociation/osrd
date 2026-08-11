@@ -397,6 +397,7 @@ export type DurationCellHandle = {
 
 type DurationCellProps = CellContext<TimesStopsRowNew, Duration | null> &
   Omit<React.HTMLAttributes<HTMLDivElement>, 'onChange'> & {
+    prefillValue?: Duration | null;
     onEnterKeyDown?: () => void;
     onTabKeyDown?: (direction: 'forward' | 'backward') => boolean;
     onCommit?: (seconds: number | null, propagationMode: StopPropagationMode) => void;
@@ -407,6 +408,7 @@ type DurationCellProps = CellContext<TimesStopsRowNew, Duration | null> &
   };
 
 const DurationCell = ({
+  prefillValue,
   disabled,
   clearButtonTitle,
   ref,
@@ -446,8 +448,9 @@ const DurationCell = ({
 
   const startEditing = (unit: ActiveUnit) => {
     if (disabled) return;
-    const isCreationMode = controlledValue === null;
-    const seconds = isCreationMode ? 0 : Math.round(controlledValue.total('second'));
+    const initialValue = controlledValue ?? prefillValue ?? Duration.zero;
+    const isCreationMode = controlledValue === null && prefillValue === null;
+    const seconds = Math.round(initialValue.total('second'));
     dispatch({
       type: 'START_EDITING',
       payload: { seconds, unit: isCreationMode ? 'm' : unit, isCreationMode },
