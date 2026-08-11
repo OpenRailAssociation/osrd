@@ -385,6 +385,16 @@ impl EditoastError for core_client::Error {
     }
 }
 
+impl EditoastError for tokio::task::JoinError {
+    fn get_status(&self) -> StatusCode {
+        StatusCode::INTERNAL_SERVER_ERROR
+    }
+
+    fn get_type(&self) -> &str {
+        "editoast:JoinError"
+    }
+}
+
 impl From<authz::Unauthorized> for InternalError {
     fn from(authz::Unauthorized { reason }: authz::Unauthorized) -> Self {
         tracing::error!(reason, "Unauthorized operation");

@@ -14,8 +14,9 @@ use chrono::DateTime;
 use chrono::Duration;
 use chrono::Utc;
 use common::units::millisecond;
-use core_client::AsCoreRequest;
+use core_client::AsCoreStreaming;
 use core_client::CoreClient;
+use core_client::Progress;
 use core_client::pathfinding::InvalidPathItem;
 use core_client::pathfinding::PathfindingResultSuccess;
 use core_client::stdcm::ConsistConfiguration;
@@ -42,13 +43,9 @@ use schemas::train_schedule::TrainOccurrence;
 use serde::Deserialize;
 use serde::Serialize;
 use std::collections::HashSet;
-use std::pin::pin;
 use std::sync::Arc;
 use thiserror::Error;
-use tokio::spawn;
 use tokio::sync::mpsc;
-use tracing::Instrument as _;
-use tracing::Span;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
 
@@ -169,7 +166,7 @@ pub(in crate::views) struct StdcmQueryParams {
     fields(
         timetable_id = id,
         infra_id = query.infra,
-        path_found,
+        path_found = tracing::field::Empty,
     )
 )]
 #[editoast_derive::route(authz::Role::Stdcm)]
@@ -363,79 +360,58 @@ pub(in crate::views) async fn stdcm(
             .collect(),
     };
 
-    let (tx, rx) = mpsc::unbounded_channel();
-
-    let stream_result_lambda = async move {
-        let stream_stdcm_response = stdcm_request
-            .fetch_streaming::<core_client::Json<core_client::stdcm::ProgressStatus>>(
-                core_client.as_ref(),
-            )
-            .await
-            .map_err(InternalError::from);
-        let stream_stdcm_response = match stream_stdcm_response {
-            Ok(stream_stdcm_response) => stream_stdcm_response,
-            Err(e) => {
-                let _ = tx.send(StdcmProgression::Completed(StdcmResponse::InternalError {
-                    error: e,
-                }));
-                return;
-            }
-        };
-
-        // 6. Handle STDCM Core Response
-        let result_stream = stream_stdcm_response.map(move |response| {
-            let response = response.map_err(InternalError::from);
-
-            let span = Span::current();
-
-            match response {
-                Ok(result) => match result {
-                    core_client::stdcm::ProgressStatus::InProgress {
-                        point,
-                        best_travel_time,
-                    } => StdcmProgression::Ongoing(StdcmProgressionEvent {
-                        point: Geometry::new(Value::Point(vec![point.lon, point.lat])),
-                        best_travel_time,
-                    }),
-                    core_client::stdcm::ProgressStatus::Done { result } => match result {
+    let (response_tx, response_rx) = mpsc::unbounded_channel();
+    stdcm_request
+        .fetch(core_client.as_ref())
+        .await?
+        .fold(response_tx, async |tx, event| {
+            let api_event = match event {
+                Ok(Progress::Event(core_client::stdcm::UpdateEvent {
+                    point,
+                    best_travel_time,
+                })) => StdcmProgression::Ongoing(StdcmProgressionEvent {
+                    point: Geometry::new(Value::Point(vec![point.lon, point.lat])),
+                    best_travel_time,
+                }),
+                Ok(Progress::Final(core_client::stdcm::FinalEvent {
+                    result:
                         core_client::stdcm::Response::Success {
                             simulation,
                             path,
                             departure_time,
-                        } => {
-                            span.record("path_found", true);
-                            StdcmProgression::Completed(StdcmResponse::Success {
-                                simulation: simulation.into(),
-                                pathfinding_result: path,
-                                departure_time,
-                            })
-                        }
-                        core_client::stdcm::Response::PathNotFound => {
-                            span.record("path_found", false);
-                            StdcmProgression::Completed(StdcmResponse::PathNotFound {})
-                        }
-                    },
-                },
-                Err(e) => StdcmProgression::Completed(StdcmResponse::InternalError { error: e }),
-            }
-        });
+                        },
+                })) => {
+                    tracing::Span::current().record("path_found", true);
+                    StdcmProgression::Completed(StdcmResponse::Success {
+                        simulation: simulation.into(),
+                        pathfinding_result: path,
+                        departure_time,
+                    })
+                }
+                Ok(Progress::Final(core_client::stdcm::FinalEvent {
+                    result: core_client::stdcm::Response::PathNotFound,
+                })) => {
+                    tracing::Span::current().record("path_found", false);
+                    StdcmProgression::Completed(StdcmResponse::PathNotFound {})
+                }
+                Err(error) => StdcmProgression::Completed(StdcmResponse::InternalError {
+                    error: error.into(),
+                }),
+            };
+            tx.send(api_event).ok();
+            tx
+        })
+        .await;
 
-        let mut result_stream = pin!(result_stream);
-        while let Some(item) = result_stream.next().await {
-            if tx.send(item).is_err() {
-                break;
-            }
-        }
-    };
-    spawn(stream_result_lambda.in_current_span());
-    let stream = tokio_stream::wrappers::UnboundedReceiverStream::new(rx);
     // Set `Content-Encoding` header to `identity` to not compress the payloads
     // This made the lmr live search progress display very laggy because the compression
     // layer compresses 8KB at a time which we do not wish to wait for (8KB of core intermediate
     // payloads is about 50 of them which is a lot to wait for)
     Ok((
         [(header::CONTENT_ENCODING, "identity")],
-        StreamBodyAs::json_nl(stream),
+        StreamBodyAs::json_nl(tokio_stream::wrappers::UnboundedReceiverStream::new(
+            response_rx,
+        )),
     )
         .into_response())
 }
@@ -967,7 +943,7 @@ mod tests {
                     mass.get::<kilogram>() as u64,
                 )
                 .response(StatusCode::OK)
-                .json(core_client::stdcm::ProgressStatus::Done {
+                .json(core_client::stdcm::FinalEvent {
                     result: core_client::stdcm::Response::Success {
                         simulation: simulation_empty_response().success().unwrap(),
                         path: pathfinding_result_success(),
@@ -1097,7 +1073,7 @@ mod tests {
         let mut core = core_mocking_client();
         core.stub("/stdcm")
             .response(StatusCode::OK)
-            .json(core_client::stdcm::ProgressStatus::Done {
+            .json(core_client::stdcm::FinalEvent {
                 result: core_client::stdcm::Response::PathNotFound,
             })
             .finish();
@@ -1135,15 +1111,15 @@ mod tests {
         let mut core = core_mocking_client();
         core.stub("/stdcm")
             .response(StatusCode::OK)
-            .json(core_client::stdcm::ProgressStatus::InProgress {
+            .json(core_client::stdcm::UpdateEvent {
                 point: core_client::stdcm::ProgressCoordinates { lat: 0.0, lon: 0.0 },
                 best_travel_time: 1,
             })
-            .json(core_client::stdcm::ProgressStatus::InProgress {
+            .json(core_client::stdcm::UpdateEvent {
                 point: core_client::stdcm::ProgressCoordinates { lat: 1.0, lon: 1.0 },
                 best_travel_time: 5,
             })
-            .json(core_client::stdcm::ProgressStatus::Done {
+            .json(core_client::stdcm::FinalEvent {
                 result: core_client::stdcm::Response::Success {
                     simulation: simulation_empty_response().success().unwrap(),
                     path: pathfinding_result_success(),
@@ -1210,15 +1186,15 @@ mod tests {
         let mut core = core_mocking_client();
         core.stub("/stdcm")
             .response(StatusCode::OK)
-            .json(core_client::stdcm::ProgressStatus::InProgress {
+            .json(core_client::stdcm::UpdateEvent {
                 point: core_client::stdcm::ProgressCoordinates { lat: 0.0, lon: 0.0 },
                 best_travel_time: 1,
             })
-            .json(core_client::stdcm::ProgressStatus::InProgress {
+            .json(core_client::stdcm::UpdateEvent {
                 point: core_client::stdcm::ProgressCoordinates { lat: 1.0, lon: 1.0 },
                 best_travel_time: 5,
             })
-            .json(core_client::stdcm::ProgressStatus::Done {
+            .json(core_client::stdcm::FinalEvent {
                 result: core_client::stdcm::Response::PathNotFound,
             })
             .finish();
@@ -1399,7 +1375,7 @@ mod tests {
             .finish();
         core.stub("/stdcm")
             .response(StatusCode::OK)
-            .json(core_client::stdcm::ProgressStatus::Done {
+            .json(core_client::stdcm::FinalEvent {
                 result: core_client::stdcm::Response::Success {
                     simulation: simulation_empty_response().success().unwrap(),
                     path: pathfinding_result_success(),
@@ -1496,7 +1472,7 @@ mod tests {
             .finish();
         core.stub("/stdcm")
             .response(StatusCode::OK)
-            .json(core_client::stdcm::ProgressStatus::Done {
+            .json(core_client::stdcm::FinalEvent {
                 result: core_client::stdcm::Response::Success {
                     simulation: simulation_empty_response().success().unwrap(),
                     path: pathfinding_result_success(),
@@ -1620,7 +1596,7 @@ mod tests {
                 comfort_acceleration.get::<meter_per_second_squared>(),
             )
             .response(StatusCode::OK)
-            .json(core_client::stdcm::ProgressStatus::Done {
+            .json(core_client::stdcm::FinalEvent {
                 result: core_client::stdcm::Response::Success {
                     simulation: simulation_empty_response().success().unwrap(),
                     path: pathfinding_result_success(),
