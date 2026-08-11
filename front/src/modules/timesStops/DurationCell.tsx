@@ -398,6 +398,7 @@ export type DurationCellHandle = {
 type DurationCellProps = CellContext<TimesStopsRowNew, Duration | null> &
   Omit<React.HTMLAttributes<HTMLDivElement>, 'onChange'> & {
     onEnterKeyDown?: () => void;
+    onTabKeyDown?: (direction: 'forward' | 'backward') => boolean;
     onCommit?: (seconds: number | null, propagationMode: StopPropagationMode) => void;
     disabled?: boolean;
     clearButtonTitle?: string;
@@ -409,6 +410,7 @@ const DurationCell = ({
   clearButtonTitle,
   ref,
   onEnterKeyDown,
+  onTabKeyDown,
   ...props
 }: DurationCellProps) => {
   const { onCommit, getValue, row, table } = props || {};
@@ -473,7 +475,7 @@ const DurationCell = ({
     containerRef.current?.blur();
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (!state.isEditing) return;
 
     switch (e.key) {
@@ -489,6 +491,12 @@ const DurationCell = ({
         blurHandledRef.current = true;
         dispatch({ type: 'CANCEL_EDITING', payload: controlledValue });
         containerRef.current?.blur();
+        break;
+      case 'Tab':
+        if (onTabKeyDown?.(e.shiftKey ? 'backward' : 'forward')) {
+          e.preventDefault();
+          e.currentTarget.blur();
+        }
         break;
       case 'ArrowLeft':
         e.preventDefault();
