@@ -64,7 +64,6 @@ describe('formatTrainSchedulePayload', () => {
     mapSettings: defaultMapSettings,
     constraintDistribution: 'MARECO',
     usingElectricalProfiles: true,
-    usingSpeedLimits: true,
     stopsAtEndOfBlock: false,
     powerRestriction: [],
     timeWindow: Duration.parse('PT3H'),

@@ -27,7 +27,6 @@ export const operationalStudiesInitialConf: OperationalStudiesConfState = {
   pathSteps: [null, null],
   constraintDistribution: 'STANDARD',
   usingElectricalProfiles: true,
-  usingSpeedLimits: true,
   stopsAtEndOfBlock: false,
   powerRestriction: [],
   timeWindow: new Duration({ minutes: 120 }),
@@ -81,7 +80,6 @@ export const operationalStudiesConfSlice = createSlice({
       state.initialSpeed = initial_speed ? Math.floor(msToKmh(initial_speed) * 10) / 10 : 0;
 
       state.usingElectricalProfiles = options?.use_electrical_profiles ?? true;
-      state.usingSpeedLimits = options?.use_speed_limits_for_simulation ?? true;
       state.stopsAtEndOfBlock = options?.stops_at_end_of_block ?? false;
       state.labels = labels;
       state.speedLimitByTag = speedLimitTag || undefined;
@@ -122,9 +120,6 @@ export const operationalStudiesConfSlice = createSlice({
         upsertPathStep(state.pathSteps, suggestedOp);
       });
     },
-    resetUsingSpeedLimits(state: Draft<OperationalStudiesConfState>) {
-      state.usingSpeedLimits = true;
-    },
     addAddedException(state: Draft<OperationalStudiesConfState>, action: PayloadAction<Date>) {
       state.addedExceptions.push({
         startTime: action.payload,
@@ -145,7 +140,6 @@ export const operationalStudiesConfSliceActions = operationalStudiesConfSlice.ac
 export const {
   selectTrainToEdit,
   resetItineraryForm,
-  resetUsingSpeedLimits,
 
   // train settings reducer
   updateName,

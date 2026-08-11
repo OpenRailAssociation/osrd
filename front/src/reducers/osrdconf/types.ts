@@ -61,7 +61,6 @@ export type OperationalStudiesConfState = OsrdConfState & {
   pathSteps: (PathStep | null)[];
   constraintDistribution: Distribution;
   usingElectricalProfiles: boolean;
-  usingSpeedLimits: boolean;
   stopsAtEndOfBlock: boolean;
   powerRestriction: PowerRestriction[];
   timeWindow: Duration;

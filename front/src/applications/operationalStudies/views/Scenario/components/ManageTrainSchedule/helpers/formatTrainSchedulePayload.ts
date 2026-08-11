@@ -49,7 +49,7 @@ export function formatTrainSchedulePayload(osrdconf: OperationalStudiesConfState
     margins: formatMargin(pathSteps),
     options: {
       use_electrical_profiles: osrdconf.usingElectricalProfiles,
-      use_speed_limits_for_simulation: osrdconf.usingSpeedLimits,
+      use_speed_limits_for_simulation: true,
       stops_at_end_of_block: false,
     },
     path: pathSteps.map((step) => ({

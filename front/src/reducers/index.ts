@@ -1,6 +1,6 @@
 import type { Action, ReducersMapObject } from 'redux';
 import { createTransform, persistCombineReducers } from 'redux-persist';
-import { createFilter, createBlacklistFilter } from 'redux-persist-transform-filter';
+import { createFilter } from 'redux-persist-transform-filter';
 import storage from 'redux-persist/es/storage'; // defaults to localStorage
 
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
@@ -44,16 +44,9 @@ const userWhiteList = ['account', 'userPreferences', 'impersonatedUser'];
 
 const mainWhiteList = ['lastInterfaceVersion'];
 
-const operationalStudiesConfBlackList = ['usingSpeedLimits'];
-
 const saveUserFilter = createFilter(userSlice.name, userWhiteList);
 
 const saveMainFilter = createFilter(mainSlice.name, mainWhiteList);
-
-const operationalStudiesFilter = createBlacklistFilter(
-  operationalStudiesConfSlice.name,
-  operationalStudiesConfBlackList
-);
 
 // Deserialize date strings coming from local storage
 const operationalStudiesDateTransform = createTransform(
@@ -92,12 +85,7 @@ const operationalStudiesDateTransform = createTransform(
 export const persistConfig = {
   key: 'root',
   storage,
-  transforms: [
-    saveUserFilter,
-    saveMainFilter,
-    operationalStudiesFilter,
-    operationalStudiesDateTransform,
-  ],
+  transforms: [saveUserFilter, saveMainFilter, operationalStudiesDateTransform],
   whitelist: [userSlice.name, mainSlice.name, simulationResultsSlice.name, referenceMapSlice.name],
 };
 
