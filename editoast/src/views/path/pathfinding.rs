@@ -431,11 +431,7 @@ fn build_pathfinding_request(
             .enumerate()
             .map(|(index, offsets)| core_client::pathfinding::PathItem {
                 locations: offsets,
-                can_backtrack: pathfinding_input
-                    .path_items
-                    .get(index)
-                    .map(|item| item.can_backtrack)
-                    .unwrap_or(false),
+                can_backtrack: pathfinding_input.path_items[index].can_backtrack,
             })
             .collect(),
         rolling_stock_loading_gauge: pathfinding_input.rolling_stock_loading_gauge,
