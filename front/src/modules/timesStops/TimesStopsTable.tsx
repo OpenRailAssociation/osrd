@@ -18,7 +18,7 @@ import { useTranslation } from 'react-i18next';
 import type { ReceptionSignal } from 'common/api/osrdEditoastApi';
 import { SkeletonLoader } from 'common/Loaders';
 import { NO_POWER_RESTRICTION } from 'modules/powerRestriction/consts';
-import { formatLocalTime, useDateTimeLocale } from 'utils/date';
+import { useDateTimeLocale } from 'utils/date';
 import type { Duration } from 'utils/duration';
 import { calculateTimeDifferenceInDays } from 'utils/timeManipulation';
 
@@ -64,6 +64,13 @@ declare module '@tanstack/react-table' {
     onPowerRestrictionChange: (row: TimesStopsRowNew, value: string | null) => void;
   }
 }
+
+const formatTime = (date: Date, locale: Intl.Locale) =>
+  date.toLocaleTimeString(locale, {
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+  });
 
 /**
  * Get the reference date for arrival editing.
@@ -482,7 +489,9 @@ const TimesStopsTable = ({
       return <SkeletonLoader className="cell-loading-placeholder" />;
     }
     const value = info.getValue();
-    return <span data-testid="computed-arrival">{value ? formatLocalTime(value) : ''}</span>;
+    return (
+      <span data-testid="computed-arrival">{value ? formatTime(value, dateTimeLocale) : ''}</span>
+    );
   };
 
   const returnCalculatedDepartureTimeCell = (info: CellContext<TimesStopsRowNew, Date | null>) => {
@@ -493,7 +502,7 @@ const TimesStopsTable = ({
     const isEmpty = !value;
     return (
       <span data-testid="computed-departure" className={cx({ 'cell-empty-dot': isEmpty })}>
-        {isEmpty ? '•' : formatLocalTime(value)}
+        {isEmpty ? '•' : formatTime(value, dateTimeLocale)}
       </span>
     );
   };
