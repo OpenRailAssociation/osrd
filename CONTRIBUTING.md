@@ -1,6 +1,6 @@
 # Contributing to OSRD
 
-All contributions, bug reports, bug fixes, documentation improvements, enhancements, and ideas are welcome.
+All contributions, bug reports, bug fixes, documentation improvements, enhancements, and ideas are welcome. About AI contributions, [see the dedicated section](#about-generative-ai-and-agentic-coding).
 
 Check out our community's [Code of Conduct](https://github.com/OpenRailAssociation/osrd/blob/dev/CODE_OF_CONDUCT.md) and feel free to say hi on our [#public-general:osrd.fr](https://matrix.to/#/#public-general:osrd.fr) matrix channel if you'd like. It's a nice place to chat about OSRD development, ask questions, and get to know the other contributors and users in a less formal setting.
 
@@ -95,7 +95,7 @@ Any developer has a specific (customized) setup.
 Therefore, some tools are not officially supported, but efforts are mutualized by versioning resources into the repository.
 
 > [!IMPORTANT]
-> On any important change (CLI launchers, architecture changes for components, tooling or langage version bumps, etc.), please notify at least the internal developer channel.
+> On any important change (CLI launchers, architecture changes for components, tooling or language version bumps, etc.), please notify at least the internal developer channel.
 
 Please try to own major changes, by notifying or getting help from unofficial maintainers (or OPS team).
 
@@ -114,3 +114,9 @@ https://osrd.fr/en/docs/guides/contribute/contribute-code/#share-your-changes
 ### Report and solve bugs
 
 https://osrd.fr/en/docs/guides/contribute/bug-reports
+
+# About generative AI and agentic coding
+
+Project policy about AI contributions is currently under discussion. AI-heavy contributions may or may not be accepted in the meantime with no consistency guarantees.
+
+AI-first pull requests closing issues tagged with `good-first-issue` are not accepted.
