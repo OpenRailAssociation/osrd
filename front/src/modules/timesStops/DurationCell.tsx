@@ -397,7 +397,7 @@ export type DurationCellHandle = {
 
 type DurationCellProps = CellContext<TimesStopsRowNew, Duration | null> &
   Omit<React.HTMLAttributes<HTMLDivElement>, 'onChange'> & {
-    onCommit?: (seconds: number | null, propagationMode: StopPropagationMode) => void;
+    onCommit?: (value: Duration | null, propagationMode: StopPropagationMode) => void;
     disabled?: boolean;
     clearButtonTitle?: string;
     ref?: React.Ref<DurationCellHandle>;
@@ -455,7 +455,8 @@ const DurationCell = ({ disabled, clearButtonTitle, ref, ...props }: DurationCel
       const newSeconds = unitsToSeconds(state.units);
       const initialSeconds =
         controlledValue !== null ? Math.round(controlledValue.total('second')) : null;
-      if (newSeconds !== initialSeconds) onCommit?.(newSeconds, propagationMode);
+      const newValue = new Duration({ seconds: newSeconds });
+      if (newSeconds !== initialSeconds) onCommit?.(newValue, propagationMode);
     }
     dispatch({ type: 'STOP_EDITING' });
   };

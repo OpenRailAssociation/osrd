@@ -51,7 +51,7 @@ declare module '@tanstack/react-table' {
     ) => void;
     onStopDurationChange: (
       row: TimesStopsRowNew,
-      durationSeconds: number | null,
+      duration: Duration | null,
       propagationMode: StopPropagationMode
     ) => void;
     onDepartureChange: (
@@ -113,7 +113,7 @@ type TimesStopsTableProps = {
   ) => void;
   onStopDurationChange: (
     row: TimesStopsRowNew,
-    durationSeconds: number | null,
+    duration: Duration | null,
     propagationMode: StopPropagationMode
   ) => void;
   onDepartureChange: (

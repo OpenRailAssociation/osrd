@@ -336,10 +336,9 @@ const TimeStopsTableWrapper = ({
 
   const handleStopDurationChange = (
     row: TimesStopsRowNew,
-    durationSeconds: number | null,
+    duration: Duration | null,
     propagationMode: StopPropagationMode
   ) => {
-    const duration = durationSeconds !== null ? new Duration({ seconds: durationSeconds }) : null;
     const singleEdit: PendingEdit = {
       rowId: row.id,
       field: 'stopDuration',
