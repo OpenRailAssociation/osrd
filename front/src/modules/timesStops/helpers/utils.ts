@@ -26,6 +26,12 @@ import {
 import { marginRegExValidation, MarginUnit } from '../consts';
 import { TableType, type TimeExtraDays, type TimesStopsInputRow } from '../types';
 
+export const truncateDateToSecond = (date: Date): Date => {
+  const truncated = new Date(date);
+  truncated.setMilliseconds(0);
+  return truncated;
+};
+
 export const formatSuggestedViasToRowVias = (
   operationalPoints: SuggestedOP[],
   pathSteps: PathStep[],

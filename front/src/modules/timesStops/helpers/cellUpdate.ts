@@ -11,7 +11,7 @@ import { addElementAtIndex } from 'utils/array';
 import { Duration } from 'utils/duration';
 
 import type { OptimisticEdit, PendingEdit, TimesStopsRowNew } from '../types';
-import { receptionSignalToSignalBooleans } from './utils';
+import { receptionSignalToSignalBooleans, truncateDateToSecond } from './utils';
 
 /** Compute the insertion index for a new PathStep using row opOnPathIndex values. */
 const computeInsertIndex = (
@@ -53,10 +53,6 @@ export const upsertPathStep = (
 /** Compute departure from arrival and stop duration. */
 const computeDeparture = (arrival: Date | null, stop: Duration | null): Date | null =>
   arrival !== null && stop !== null ? new Date(arrival.getTime() + stop.ms) : null;
-
-/** Difference between two dates, truncated to whole seconds. */
-const diffSeconds = (a: Date, b: Date) =>
-  Math.floor(a.getTime() / 1000) - Math.floor(b.getTime() / 1000);
 
 /** State of a stop's schedule in display format (Date / Duration). */
 export type ScheduleState = {
@@ -147,7 +143,10 @@ export const scheduleStateToApiFields = (
 ): { arrival: string | null; stop_for: string | null } => ({
   arrival:
     state.arrival !== null
-      ? new Duration({ seconds: diffSeconds(state.arrival, startTime) }).toISOString()
+      ? Duration.subtractDate(
+          truncateDateToSecond(state.arrival),
+          truncateDateToSecond(startTime)
+        ).toISOString()
       : null,
   stop_for: state.stop !== null ? state.stop.toISOString() : null,
 });
