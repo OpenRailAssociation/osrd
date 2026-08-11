@@ -80,7 +80,7 @@ pub struct Connection {
 #[derive(Clone, Debug)]
 struct Profile {
     /// The connection taken at the departure stop
-    out_connection: Option<ConnectionId>,
+    out_connection: ConnectionId,
 
     /// The departure time at a given stop.
     departure_ms: TimeOfDayMs,
@@ -131,43 +131,44 @@ pub fn journey_list(p: JourneyListParams) -> Vec<Vec<ConnectionId>> {
     assert!(start < stop_count);
     assert!(end < stop_count);
 
+    if start == end {
+        return Vec::new();
+    }
+
     // stop index -> profiles
     // profiles are ordered by decreasing departure_ms
     // they are also ordered by decreasing arrival_ms since they all lie on the Pareto front
     let mut profiles: Vec<Vec<Profile>> = vec![Vec::new(); stop_count];
-    profiles[end].push(Profile {
-        out_connection: None,
-        departure_ms: u32::MAX,
-        arrival_ms: 0,
-    });
 
     // This maps trips to the earliest arrival time possible when taking this trip.
     let mut trip_min_arrival_ms = vec![u32::MAX; trip_count];
 
     for (connection_id, connection) in connections.iter().enumerate() {
-        let t1 = trip_min_arrival_ms[connection.trip];
+        let direct_arrival_ms = if connection.arrival == end {
+            connection.arrival_ms
+        } else {
+            u32::MAX
+        };
 
-        let t2 = profiles[connection.arrival]
+        let seated_arrival_ms = trip_min_arrival_ms[connection.trip];
+
+        let transfer_arrival_ms = profiles[connection.arrival]
             .iter()
             .rfind(|profile| profile.departure_ms >= connection.arrival_ms + transfer_ms)
-            .map_or(u32::MAX, |profile| {
-                if profile.out_connection.is_some() {
-                    profile.arrival_ms
-                } else {
-                    connection.arrival_ms
-                }
-            });
+            .map_or(u32::MAX, |profile| profile.arrival_ms);
 
-        let t_min = u32::min(t1, t2);
+        let arrival_ms = direct_arrival_ms
+            .min(seated_arrival_ms)
+            .min(transfer_arrival_ms);
 
-        if t_min == u32::MAX {
+        if arrival_ms == u32::MAX {
             continue;
         }
 
         let candidate = Profile {
-            out_connection: Some(connection_id),
+            out_connection: connection_id,
             departure_ms: connection.departure_ms,
-            arrival_ms: t_min,
+            arrival_ms,
         };
 
         let stop_profiles = &mut profiles[connection.departure];
@@ -189,7 +190,7 @@ pub fn journey_list(p: JourneyListParams) -> Vec<Vec<ConnectionId>> {
                 stop_profiles.push(candidate);
             }
         }
-        trip_min_arrival_ms[connection.trip] = t_min;
+        trip_min_arrival_ms[connection.trip] = arrival_ms;
     }
 
     let mut start_profiles: Vec<&Profile> = profiles[start]
@@ -205,13 +206,12 @@ pub fn journey_list(p: JourneyListParams) -> Vec<Vec<ConnectionId>> {
     start_profiles
         .into_iter()
         .filter_map(|profile| {
-            let out_connection = profile.out_connection?;
             to_journey_list_rec(
                 &profiles,
                 &connections,
                 transfer_ms,
                 end,
-                vec![out_connection],
+                vec![profile.out_connection],
             )
         })
         .take(3)
@@ -240,9 +240,7 @@ fn to_journey_list_rec(
 
     // Try profiles from the one reaching the target earliest (see profiles construction) and stop at the first solution found
     profiles[start].iter().rev().find_map(|profile| {
-        let out_conn_id = profile
-            .out_connection
-            .expect("expected start != end to imply out_connection is Some");
+        let out_conn_id = profile.out_connection;
 
         let out_conn = connections[out_conn_id];
 
