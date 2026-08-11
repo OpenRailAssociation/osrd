@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 
-import { Duration } from 'utils/duration';
+import { Duration, type StartTime, startTimeToMs } from 'utils/duration';
 
 import { applyScheduleEdit, type ScheduleState } from '../cellUpdate';
 
@@ -13,7 +13,7 @@ const _30MIN = new Duration({ minutes: 30 });
 const _60MIN = new Duration({ minutes: 60 });
 
 /** Helper to compare dates by their timestamp */
-const t = (d: Date | null) => d?.getTime() ?? null;
+const t = (d: StartTime | null) => (d ? startTimeToMs(d) : null);
 /** Helper to compare durations by their ms */
 const ms = (d: Duration | null) => d?.ms ?? null;
 
