@@ -1,5 +1,6 @@
 use std::collections::BTreeSet;
 use std::collections::HashMap;
+use std::collections::HashSet;
 use std::collections::hash_map::DefaultHasher;
 use std::hash::Hash;
 use std::hash::Hasher;
@@ -41,12 +42,9 @@ use crate::views::path::operational_point_cache::OperationalPointCache;
 use crate::views::timetable::PhysicsConsistParameters;
 use models::Infra;
 use models::prelude::*;
-use serde_with::DefaultOnNull;
-use serde_with::serde_as;
 
 /// Path input is described by some rolling stock information
 /// and a list of path waypoints
-#[serde_as]
 #[derive(Deserialize, Clone, Debug, Hash, ToSchema)]
 #[cfg_attr(test, derive(Serialize))]
 pub(in crate::views) struct PathfindingInput {
@@ -60,7 +58,7 @@ pub(in crate::views) struct PathfindingInput {
     /// List of supported signaling systems
     rolling_stock_supported_signaling_systems: BTreeSet<String>,
     /// List of waypoints given to the pathfinding
-    path_items: Vec<PathItemLocation>,
+    path_items: Vec<PathfindingItem>,
     /// Rolling stock maximum speed
     #[schema(value_type = f64)]
     rolling_stock_maximum_speed: OrderedFloat<f64>,
@@ -74,10 +72,12 @@ pub(in crate::views) struct PathfindingInput {
     /// Set of authorized track section ids, empty means no restriction
     #[serde(default)]
     allowed_track_sections: BTreeSet<String>,
-    /// Indexes, in `path_items`, of the waypoints where the train is allowed to backtrack
-    #[serde(default)]
-    #[serde_as(as = "DefaultOnNull")]
-    pub can_backtrack_path_items: Vec<usize>,
+}
+
+#[derive(Debug, Serialize, Deserialize, PartialEq, Clone, ToSchema, Hash)]
+pub(crate) struct PathfindingItem {
+    pub(crate) location: PathItemLocation,
+    pub(crate) can_backtrack: bool,
 }
 
 impl PathfindingInput {
@@ -85,6 +85,12 @@ impl PathfindingInput {
         consist: &PhysicsConsistParameters,
         train_schedule: &impl TrainScheduleLike,
     ) -> Self {
+        let can_backtracks: HashSet<_> = train_schedule
+            .schedule()
+            .iter()
+            .filter(|item| item.can_backtrack)
+            .map(|item| &item.at)
+            .collect();
         Self {
             rolling_stock_loading_gauge: consist.compute_loading_gauge(),
             rolling_stock_is_thermal: consist.traction_engine.effort_curves.has_thermal_curves(),
@@ -99,16 +105,17 @@ impl PathfindingInput {
                 consist.compute_max_speed(),
             )),
             rolling_stock_length: units::millimeter::from(consist.compute_length()).round() as u64,
-            path_items: train_schedule.locations(),
+            path_items: train_schedule
+                .path()
+                .iter()
+                .map(|path_item| PathfindingItem {
+                    location: path_item.location.clone(),
+                    can_backtrack: can_backtracks.contains(&path_item.id),
+                })
+                .collect(),
             speed_limit_tag: train_schedule.speed_limit_tag().cloned(),
             stops_at_end_of_block: Some(train_schedule.options().stops_at_end_of_block()),
             allowed_track_sections: BTreeSet::new(),
-            can_backtrack_path_items: train_schedule
-                .schedule()
-                .iter()
-                .enumerate()
-                .filter_map(|(idx, item)| if item.can_backtrack { Some(idx) } else { None })
-                .collect(),
         }
     }
 
@@ -129,6 +136,13 @@ impl PathfindingInput {
         self.hash(&mut hasher);
         let hash_path_input = hasher.finish();
         format!("pathfinding_{osrd_version}.{infra}.{infra_version}.{hash_path_input}")
+    }
+
+    fn path_item_locations(&self) -> Vec<&PathItemLocation> {
+        self.path_items
+            .iter()
+            .map(|item| &item.location)
+            .collect_vec()
     }
 }
 
@@ -267,7 +281,8 @@ pub(in crate::views) async fn post(
     .await?;
 
     let op_cache =
-        OperationalPointCache::load_path_items(conn, infra.id, &path_input.path_items).await?;
+        OperationalPointCache::load_path_items(conn, infra.id, &path_input.path_item_locations())
+            .await?;
     let pathfinding_request = match build_pathfinding_request(&path_input, &infra, &op_cache) {
         Ok(pathfinding_request) => pathfinding_request,
         Err(result) => return Ok(Json(*result)),
@@ -331,6 +346,7 @@ async fn pathfinding_blocks_batch(
         .iter()
         .filter(|(_, res)| res.is_none())
         .flat_map(|(hash, _)| &path_request_map[*hash].path_items)
+        .map(|item| &item.location)
         .collect_vec();
     let op_cache = OperationalPointCache::load_path_items(conn, infra.id, &path_items).await?;
 
@@ -403,7 +419,7 @@ fn build_pathfinding_request(
         )));
     }
     let track_offsets = op_cache
-        .extract_location_from_path_items(&pathfinding_input.path_items)
+        .extract_location_from_path_items(&pathfinding_input.path_item_locations())
         .map_err(PathfindingResult::Failure)?;
 
     // Create the pathfinding request
@@ -415,7 +431,11 @@ fn build_pathfinding_request(
             .enumerate()
             .map(|(index, offsets)| core_client::pathfinding::PathItem {
                 locations: offsets,
-                can_backtrack: pathfinding_input.can_backtrack_path_items.contains(&index),
+                can_backtrack: pathfinding_input
+                    .path_items
+                    .get(index)
+                    .map(|item| item.can_backtrack)
+                    .unwrap_or(false),
             })
             .collect(),
         rolling_stock_loading_gauge: pathfinding_input.rolling_stock_loading_gauge,
@@ -500,10 +520,11 @@ pub mod tests {
     use crate::fixtures::create_small_infra;
     use crate::views::path::pathfinding::PathfindingFailure;
     use crate::views::path::pathfinding::PathfindingInput;
+    use crate::views::path::pathfinding::PathfindingItem;
     use crate::views::path::pathfinding::PathfindingResult;
     use crate::views::test_app;
 
-    fn pathfinding_input(path_items: Vec<PathItemLocation>) -> PathfindingInput {
+    fn pathfinding_input(path_items: Vec<PathfindingItem>) -> PathfindingInput {
         PathfindingInput {
             rolling_stock_loading_gauge: LoadingGaugeType::G1,
             rolling_stock_is_thermal: true,
@@ -518,7 +539,6 @@ pub mod tests {
             stops_at_end_of_block: None,
             allowed_track_sections: BTreeSet::new(),
             path_items,
-            can_backtrack_path_items: Default::default(),
         }
     }
 
@@ -546,22 +566,32 @@ pub mod tests {
         let db_pool = app.db_pool();
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
         let path_items = vec![
-            PathItemLocation::OperationalPointPartReference(OperationalPointPartReference {
-                operational_point: OperationalPointReference::Domestic {
-                    country_code: "FR".into(),
-                    main_code: "WS".into(),
-                    secondary_code: Some("BV".into()),
-                },
-                local_track_name: None,
-            }),
-            PathItemLocation::OperationalPointPartReference(OperationalPointPartReference {
-                operational_point: OperationalPointReference::Domestic {
-                    country_code: "FR".into(),
-                    main_code: "WS".into(),
-                    secondary_code: Some("BV".into()),
-                },
-                local_track_name: None,
-            }),
+            PathfindingItem {
+                location: PathItemLocation::OperationalPointPartReference(
+                    OperationalPointPartReference {
+                        operational_point: OperationalPointReference::Domestic {
+                            country_code: "FR".into(),
+                            main_code: "WS".into(),
+                            secondary_code: Some("BV".into()),
+                        },
+                        local_track_name: None,
+                    },
+                ),
+                can_backtrack: false,
+            },
+            PathfindingItem {
+                location: PathItemLocation::OperationalPointPartReference(
+                    OperationalPointPartReference {
+                        operational_point: OperationalPointReference::Domestic {
+                            country_code: "FR".into(),
+                            main_code: "WS".into(),
+                            secondary_code: Some("BV".into()),
+                        },
+                        local_track_name: None,
+                    },
+                ),
+                can_backtrack: false,
+            },
         ];
 
         let pathfinding_result: PathfindingResult = app
@@ -584,46 +614,71 @@ pub mod tests {
         let db_pool = app.db_pool();
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
         let path_items = vec![
-            PathItemLocation::OperationalPointPartReference(OperationalPointPartReference {
-                operational_point: OperationalPointReference::Domestic {
-                    country_code: "FR".into(),
-                    main_code: "WS".into(),
-                    secondary_code: Some("BV".into()),
-                },
-                local_track_name: None,
-            }),
-            PathItemLocation::OperationalPointPartReference(OperationalPointPartReference {
-                operational_point: OperationalPointReference::Domestic {
-                    country_code: "FR".into(),
-                    main_code: "NO_MAIN_CODE".into(),
-                    secondary_code: None,
-                },
-                local_track_name: None,
-            }),
-            PathItemLocation::OperationalPointPartReference(OperationalPointPartReference {
-                operational_point: OperationalPointReference::Domestic {
-                    country_code: "FR".into(),
-                    main_code: "SWS".into(),
-                    secondary_code: Some("BV".into()),
-                },
-                local_track_name: None,
-            }),
-            PathItemLocation::OperationalPointPartReference(OperationalPointPartReference {
-                operational_point: OperationalPointReference::Domestic {
-                    country_code: "NO_COUNTRY_CODE".into(),
-                    main_code: "WS".into(),
-                    secondary_code: Some("BV".into()),
-                },
-                local_track_name: None,
-            }),
-            PathItemLocation::OperationalPointPartReference(OperationalPointPartReference {
-                operational_point: OperationalPointReference::Domestic {
-                    country_code: "FR".into(),
-                    main_code: "WS".into(),
-                    secondary_code: Some("NO_SECONDARY_CODE".into()),
-                },
-                local_track_name: None,
-            }),
+            PathfindingItem {
+                location: PathItemLocation::OperationalPointPartReference(
+                    OperationalPointPartReference {
+                        operational_point: OperationalPointReference::Domestic {
+                            country_code: "FR".into(),
+                            main_code: "WS".into(),
+                            secondary_code: Some("BV".into()),
+                        },
+                        local_track_name: None,
+                    },
+                ),
+                can_backtrack: false,
+            },
+            PathfindingItem {
+                location: PathItemLocation::OperationalPointPartReference(
+                    OperationalPointPartReference {
+                        operational_point: OperationalPointReference::Domestic {
+                            country_code: "FR".into(),
+                            main_code: "NO_MAIN_CODE".into(),
+                            secondary_code: None,
+                        },
+                        local_track_name: None,
+                    },
+                ),
+                can_backtrack: false,
+            },
+            PathfindingItem {
+                location: PathItemLocation::OperationalPointPartReference(
+                    OperationalPointPartReference {
+                        operational_point: OperationalPointReference::Domestic {
+                            country_code: "FR".into(),
+                            main_code: "SWS".into(),
+                            secondary_code: Some("BV".into()),
+                        },
+                        local_track_name: None,
+                    },
+                ),
+                can_backtrack: false,
+            },
+            PathfindingItem {
+                location: PathItemLocation::OperationalPointPartReference(
+                    OperationalPointPartReference {
+                        operational_point: OperationalPointReference::Domestic {
+                            country_code: "NO_COUNTRY_CODE".into(),
+                            main_code: "WS".into(),
+                            secondary_code: Some("BV".into()),
+                        },
+                        local_track_name: None,
+                    },
+                ),
+                can_backtrack: false,
+            },
+            PathfindingItem {
+                location: PathItemLocation::OperationalPointPartReference(
+                    OperationalPointPartReference {
+                        operational_point: OperationalPointReference::Domestic {
+                            country_code: "FR".into(),
+                            main_code: "WS".into(),
+                            secondary_code: Some("NO_SECONDARY_CODE".into()),
+                        },
+                        local_track_name: None,
+                    },
+                ),
+                can_backtrack: false,
+            },
         ];
 
         let pathfinding_result: PathfindingResult = app
@@ -688,27 +743,42 @@ pub mod tests {
         let db_pool = app.db_pool();
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
         let path_items = vec![
-            PathItemLocation::OperationalPointPartReference(OperationalPointPartReference {
-                operational_point: OperationalPointReference::Uic {
-                    uic: 8733,
-                    secondary_code: Some("BV".into()),
-                },
-                local_track_name: Some("V2".into()),
-            }),
-            PathItemLocation::OperationalPointPartReference(OperationalPointPartReference {
-                operational_point: OperationalPointReference::Uic {
-                    uic: 8788,
-                    secondary_code: Some("BV".into()),
-                },
-                local_track_name: Some("V_INVALID".into()),
-            }),
-            PathItemLocation::OperationalPointPartReference(OperationalPointPartReference {
-                operational_point: OperationalPointReference::Uic {
-                    uic: 8733,
-                    secondary_code: Some("NO_SECONDARY_CODE".into()),
-                },
-                local_track_name: Some("V2".into()),
-            }),
+            PathfindingItem {
+                location: PathItemLocation::OperationalPointPartReference(
+                    OperationalPointPartReference {
+                        operational_point: OperationalPointReference::Uic {
+                            uic: 8733,
+                            secondary_code: Some("BV".into()),
+                        },
+                        local_track_name: Some("V2".into()),
+                    },
+                ),
+                can_backtrack: false,
+            },
+            PathfindingItem {
+                location: PathItemLocation::OperationalPointPartReference(
+                    OperationalPointPartReference {
+                        operational_point: OperationalPointReference::Uic {
+                            uic: 8788,
+                            secondary_code: Some("BV".into()),
+                        },
+                        local_track_name: Some("V_INVALID".into()),
+                    },
+                ),
+                can_backtrack: false,
+            },
+            PathfindingItem {
+                location: PathItemLocation::OperationalPointPartReference(
+                    OperationalPointPartReference {
+                        operational_point: OperationalPointReference::Uic {
+                            uic: 8733,
+                            secondary_code: Some("NO_SECONDARY_CODE".into()),
+                        },
+                        local_track_name: Some("V2".into()),
+                    },
+                ),
+                can_backtrack: false,
+            },
         ];
 
         let pathfinding_result: PathfindingResult = app
@@ -763,22 +833,32 @@ pub mod tests {
         let db_pool = app.db_pool();
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
         let path_items = vec![
-            PathItemLocation::OperationalPointPartReference(OperationalPointPartReference {
-                operational_point: OperationalPointReference::Domestic {
-                    country_code: "FR".into(),
-                    main_code: "WS".into(),
-                    secondary_code: Some("BV".into()),
-                },
-                local_track_name: None,
-            }),
-            PathItemLocation::OperationalPointPartReference(OperationalPointPartReference {
-                operational_point: OperationalPointReference::Domestic {
-                    country_code: "FR".into(),
-                    main_code: "SWS".into(),
-                    secondary_code: Some("BV".into()),
-                },
-                local_track_name: None,
-            }),
+            PathfindingItem {
+                location: PathItemLocation::OperationalPointPartReference(
+                    OperationalPointPartReference {
+                        operational_point: OperationalPointReference::Domestic {
+                            country_code: "FR".into(),
+                            main_code: "WS".into(),
+                            secondary_code: Some("BV".into()),
+                        },
+                        local_track_name: None,
+                    },
+                ),
+                can_backtrack: false,
+            },
+            PathfindingItem {
+                location: PathItemLocation::OperationalPointPartReference(
+                    OperationalPointPartReference {
+                        operational_point: OperationalPointReference::Domestic {
+                            country_code: "FR".into(),
+                            main_code: "SWS".into(),
+                            secondary_code: Some("BV".into()),
+                        },
+                        local_track_name: None,
+                    },
+                ),
+                can_backtrack: false,
+            },
         ];
 
         let pathfinding_res: PathfindingResult = app

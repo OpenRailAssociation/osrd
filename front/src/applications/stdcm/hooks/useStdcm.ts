@@ -134,7 +134,7 @@ const useStdcm = ({
         comfort: payload.body.comfort,
         constraint_distribution: 'MARECO',
         path: payload.body.steps.map((step) => ({
-          location: step.location,
+          location: step.pathfinding_item.location,
           id: uuidV4(),
         })),
         rolling_stock_name: stdcmRollingStock!.name,

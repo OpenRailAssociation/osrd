@@ -92,7 +92,10 @@ export const getPathfindingQuery = ({
   const destination = pathSteps.at(-1);
   if (infraId && rollingStock && origin && destination) {
     // Only origin and destination can be null so we can compact and we want to remove any via that would be null
-    const pathItems: PathfindingInput['path_items'] = compact(pathSteps);
+    const pathItems: PathfindingInput['path_items'] = compact(pathSteps).map((location) => ({
+      location,
+      can_backtrack: false,
+    }));
 
     return {
       infraId,

@@ -624,12 +624,13 @@ mod tests {
     use crate::fixtures::create_small_infra;
     use crate::fixtures::create_timetable;
     use crate::fixtures::create_towed_rolling_stock;
+    use crate::views::path::pathfinding::PathfindingItem;
     use crate::views::path::pathfinding::PathfindingResult;
     use crate::views::test_app::TestResponseExt as _;
     use crate::views::test_app::test_app;
     use crate::views::timetable::stdcm::Request;
     use crate::views::timetable::stdcm::request::ConsistSchedule;
-    use crate::views::timetable::stdcm::request::PathfindingItem;
+    use crate::views::timetable::stdcm::request::StdcmPathfindingItem;
     use crate::views::timetable::stdcm::request::StepTimingData;
 
     use super::*;
@@ -643,18 +644,21 @@ mod tests {
                 DateTime::from_str("2024-01-01T10:00:00Z").expect("Failed to parse datetime"),
             ),
             steps: vec![
-                PathfindingItem {
+                StdcmPathfindingItem {
                     duration: Some(0),
-                    location: PathItemLocation::OperationalPointPartReference(
-                        OperationalPointPartReference {
-                            operational_point: OperationalPointReference::Domestic {
-                                country_code: "FR".into(),
-                                main_code: "WS".into(),
-                                secondary_code: Some("BV".into()),
+                    pathfinding_item: PathfindingItem {
+                        location: PathItemLocation::OperationalPointPartReference(
+                            OperationalPointPartReference {
+                                operational_point: OperationalPointReference::Domestic {
+                                    country_code: "FR".into(),
+                                    main_code: "WS".into(),
+                                    secondary_code: Some("BV".into()),
+                                },
+                                local_track_name: None,
                             },
-                            local_track_name: None,
-                        },
-                    ),
+                        ),
+                        can_backtrack: false,
+                    },
                     timing_data: Some(StepTimingData {
                         arrival_time: DateTime::from_str("2024-01-01T14:00:00Z")
                             .expect("Failed to parse datetime"),
@@ -662,18 +666,21 @@ mod tests {
                         arrival_time_tolerance_after: 0,
                     }),
                 },
-                PathfindingItem {
+                StdcmPathfindingItem {
                     duration: Some(0),
-                    location: PathItemLocation::OperationalPointPartReference(
-                        OperationalPointPartReference {
-                            operational_point: OperationalPointReference::Domestic {
-                                country_code: "FR".into(),
-                                main_code: "MWS".into(),
-                                secondary_code: Some("BV".into()),
+                    pathfinding_item: PathfindingItem {
+                        location: PathItemLocation::OperationalPointPartReference(
+                            OperationalPointPartReference {
+                                operational_point: OperationalPointReference::Domestic {
+                                    country_code: "FR".into(),
+                                    main_code: "MWS".into(),
+                                    secondary_code: Some("BV".into()),
+                                },
+                                local_track_name: None,
                             },
-                            local_track_name: None,
-                        },
-                    ),
+                        ),
+                        can_backtrack: false,
+                    },
                     timing_data: None,
                 },
             ],
@@ -717,19 +724,22 @@ mod tests {
         }
     }
 
-    fn build_step(main_code: &str) -> PathfindingItem {
-        PathfindingItem {
+    fn build_step(main_code: &str) -> StdcmPathfindingItem {
+        StdcmPathfindingItem {
             duration: Some(0),
-            location: PathItemLocation::OperationalPointPartReference(
-                OperationalPointPartReference {
-                    operational_point: OperationalPointReference::Domestic {
-                        country_code: "FR".into(),
-                        main_code: main_code.into(),
-                        secondary_code: Some("BV".into()),
+            pathfinding_item: PathfindingItem {
+                location: PathItemLocation::OperationalPointPartReference(
+                    OperationalPointPartReference {
+                        operational_point: OperationalPointReference::Domestic {
+                            country_code: "FR".into(),
+                            main_code: main_code.into(),
+                            secondary_code: Some("BV".into()),
+                        },
+                        local_track_name: None,
                     },
-                    local_track_name: None,
-                },
-            ),
+                ),
+                can_backtrack: false,
+            },
             timing_data: None,
         }
     }

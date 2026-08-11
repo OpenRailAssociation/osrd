@@ -2571,7 +2571,7 @@ export type PostTimetableByIdStdcmApiArg = {
     maximum_run_time?: number | null;
     /** Deprecated, first step arrival time should be used instead */
     start_time?: string | null;
-    steps: PathfindingItem[];
+    steps: StdcmPathfindingItem[];
     temporary_speed_limit_group_id?: number | null;
     /** Margin after the train passage in milliseconds
         
@@ -3876,13 +3876,15 @@ export type PathfindingResult =
   | (PathfindingFailure & {
       status: 'failure';
     });
+export type PathfindingItem = {
+  can_backtrack: boolean;
+  location: PathItemLocation;
+};
 export type PathfindingInput = {
   /** Set of authorized track section ids, empty means no restriction */
   allowed_track_sections?: string[];
-  /** Indexes, in `path_items`, of the waypoints where the train is allowed to backtrack */
-  can_backtrack_path_items?: number[];
   /** List of waypoints given to the pathfinding */
-  path_items: PathItemLocation[];
+  path_items: PathfindingItem[];
   /** Can the rolling stock run on non-electrified tracks */
   rolling_stock_is_thermal: boolean;
   /** Rolling stock length in millimeters */
@@ -4998,11 +5000,11 @@ export type StepTimingData = {
   /** The train may arrive up to this duration before the expected arrival time */
   arrival_time_tolerance_before: number;
 };
-export type PathfindingItem = {
+export type StdcmPathfindingItem = {
   /** The stop duration in milliseconds, None if the train does not stop. */
   duration?: number | null;
   /** The associated location */
-  location: PathItemLocation;
+  pathfinding_item: PathfindingItem;
   timing_data?: null | StepTimingData;
 };
 export type Distribution = 'STANDARD' | 'MARECO';

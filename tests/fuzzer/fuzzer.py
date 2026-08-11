@@ -509,10 +509,13 @@ def _convert_stop_stdcm(stop: tuple[str, float]) -> dict:
     duration = None if random.randint(0, 1) == 0 else _to_ms(random.random() * 1_000)
     return {
         "duration": duration,
-        "location": {
-            "type": "track_offset",
-            "track": track_section,
-            "offset": _to_mm(offset),
+        "pathfinding_item": {
+            "location": {
+                "type": "track_offset",
+                "track": track_section,
+                "offset": _to_mm(offset),
+            },
+            "can_backtrack": False,
         },
     }
 

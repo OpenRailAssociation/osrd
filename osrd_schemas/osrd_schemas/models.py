@@ -3148,10 +3148,6 @@ class PathfindingFailurePathfindingNotFound4(
     pass
 
 
-class CanBacktrackPathItem(RootModel[int]):
-    root: Annotated[int, Field(ge=0)]
-
-
 SwitchesDirectionsAdditionalProperty = TypeAliasType(
     "SwitchesDirectionsAdditionalProperty",
     Annotated[str, Field(max_length=255, min_length=1)],
@@ -5392,74 +5388,14 @@ class PathfindingFailurePathfindingNotFound3(
     pass
 
 
-class PathfindingInput(BaseModel):
-    """
-    Path input is described by some rolling stock information
-    and a list of path waypoints
-    """
-
-    allowed_track_sections: list[str] | None = None
-    """
-    Set of authorized track section ids, empty means no restriction
-    """
-    can_backtrack_path_items: list[CanBacktrackPathItem] | None = None
-    """
-    Indexes, in `path_items`, of the waypoints where the train is allowed to backtrack
-    """
-    path_items: list[
-        PathItemLocationTrackOffset | PathItemLocationOperationalPointPartReference
-    ]
-    """
-    List of waypoints given to the pathfinding
-    """
-    rolling_stock_is_thermal: bool
-    """
-    Can the rolling stock run on non-electrified tracks
-    """
-    rolling_stock_length: Annotated[int, Field(ge=0)]
-    """
-    Rolling stock length in millimeters
-    """
-    rolling_stock_loading_gauge: LoadingGaugeType
-    """
-    The loading gauge of the rolling stock
-    """
-    rolling_stock_maximum_speed: float
-    """
-    Rolling stock maximum speed
-    """
-    rolling_stock_supported_electrifications: list[str]
-    """
-    List of supported electrification modes.
-    Empty if does not support any electrification
-    """
-    rolling_stock_supported_signaling_systems: list[str]
-    """
-    List of supported signaling systems
-    """
-    speed_limit_tag: str | None = None
-    """
-    Speed limit tag, used to estimate the travel time
-    """
-    stops_at_end_of_block: bool | None = None
-    """
-    Stop the train at the next block-delimiting signal,
-    staying in the same block and keeping the tail on the initial position
-    """
-
-
 class PathfindingItem(BaseModel):
-    duration: Annotated[int | None, Field(ge=0)] = None
-    """
-    The stop duration in milliseconds, None if the train does not stop.
-    """
+    can_backtrack: bool
     location: (
         PathItemLocationTrackOffset | PathItemLocationOperationalPointPartReference
     )
     """
-    The associated location
+    The location of a path waypoint
     """
-    timing_data: StepTimingData | None = None
 
 
 class PathfindingInputErrorInvalidPathItems2(BaseModel):
@@ -5827,6 +5763,18 @@ class SpeedSectionExtensions(BaseModel):
         extra="forbid",
     )
     psl_sncf: SpeedSectionPslSncfExtension | None = None
+
+
+class StdcmPathfindingItem(BaseModel):
+    duration: Annotated[int | None, Field(ge=0)] = None
+    """
+    The stop duration in milliseconds, None if the train does not stop.
+    """
+    pathfinding_item: PathfindingItem
+    """
+    The associated location
+    """
+    timing_data: StepTimingData | None = None
 
 
 class StdcmProgressionEvent(BaseModel):
@@ -6459,6 +6407,56 @@ class PathfindingFailurePathfindingNotFound5(
     PathfindingNotFoundIncompatibleConstraints, PathfindingFailurePathfindingNotFound1
 ):
     pass
+
+
+class PathfindingInput(BaseModel):
+    """
+    Path input is described by some rolling stock information
+    and a list of path waypoints
+    """
+
+    allowed_track_sections: list[str] | None = None
+    """
+    Set of authorized track section ids, empty means no restriction
+    """
+    path_items: list[PathfindingItem]
+    """
+    List of waypoints given to the pathfinding
+    """
+    rolling_stock_is_thermal: bool
+    """
+    Can the rolling stock run on non-electrified tracks
+    """
+    rolling_stock_length: Annotated[int, Field(ge=0)]
+    """
+    Rolling stock length in millimeters
+    """
+    rolling_stock_loading_gauge: LoadingGaugeType
+    """
+    The loading gauge of the rolling stock
+    """
+    rolling_stock_maximum_speed: float
+    """
+    Rolling stock maximum speed
+    """
+    rolling_stock_supported_electrifications: list[str]
+    """
+    List of supported electrification modes.
+    Empty if does not support any electrification
+    """
+    rolling_stock_supported_signaling_systems: list[str]
+    """
+    List of supported signaling systems
+    """
+    speed_limit_tag: str | None = None
+    """
+    Speed limit tag, used to estimate the travel time
+    """
+    stops_at_end_of_block: bool | None = None
+    """
+    Stop the train at the next block-delimiting signal,
+    staying in the same block and keeping the tail on the initial position
+    """
 
 
 class PathfindingResultSuccess(CorePathfindingResultSuccess):

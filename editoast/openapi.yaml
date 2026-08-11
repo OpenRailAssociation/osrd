@@ -3652,7 +3652,7 @@ paths:
                 steps:
                   type: array
                   items:
-                    $ref: '#/components/schemas/PathfindingItem'
+                    $ref: '#/components/schemas/StdcmPathfindingItem'
                 temporary_speed_limit_group_id:
                   type:
                   - integer
@@ -13061,16 +13061,10 @@ components:
             type: string
           description: Set of authorized track section ids, empty means no restriction
           uniqueItems: true
-        can_backtrack_path_items:
-          type: array
-          items:
-            type: integer
-            minimum: 0
-          description: Indexes, in `path_items`, of the waypoints where the train is allowed to backtrack
         path_items:
           type: array
           items:
-            $ref: '#/components/schemas/PathItemLocation'
+            $ref: '#/components/schemas/PathfindingItem'
           description: List of waypoints given to the pathfinding
         rolling_stock_is_thermal:
           type: boolean
@@ -13117,22 +13111,12 @@ components:
       type: object
       required:
       - location
+      - can_backtrack
       properties:
-        duration:
-          type:
-          - integer
-          - 'null'
-          format: int64
-          description: The stop duration in milliseconds, None if the train does not stop.
-          minimum: 0
+        can_backtrack:
+          type: boolean
         location:
           $ref: '#/components/schemas/PathItemLocation'
-          description: The associated location
-        timing_data:
-          oneOf:
-          - type: 'null'
-          - $ref: '#/components/schemas/StepTimingData'
-            description: Time at which the train should arrive at the location, if specified
     PathfindingOutput:
       type: object
       required:
@@ -15541,6 +15525,26 @@ components:
           description: |-
             For calendar timetables: elapsed ms since 1970-01-01T00:00:00Z.
             For hourly timetables: elapsed ms since the timetable start.
+    StdcmPathfindingItem:
+      type: object
+      required:
+      - pathfinding_item
+      properties:
+        duration:
+          type:
+          - integer
+          - 'null'
+          format: int64
+          description: The stop duration in milliseconds, None if the train does not stop.
+          minimum: 0
+        pathfinding_item:
+          $ref: '#/components/schemas/PathfindingItem'
+          description: The associated location
+        timing_data:
+          oneOf:
+          - type: 'null'
+          - $ref: '#/components/schemas/StepTimingData'
+            description: Time at which the train should arrive at the location, if specified
     StdcmProgressionEvent:
       type: object
       required:

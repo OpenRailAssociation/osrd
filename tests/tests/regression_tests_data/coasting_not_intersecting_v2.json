@@ -12,42 +12,57 @@
         "steps": [
             {
                 "duration": 507316,
-                "location": {
-                    "type": "track_offset",
-                    "track": "TE3",
-                    "offset": 20743
+                "pathfinding_item": {
+                        "location": {
+                        "type": "track_offset",
+                        "track": "TE3",
+                        "offset": 20743
+                    },
+                    "can_backtrack": false
                 }
             },
             {
                 "duration": 631216,
-                "location": {
-                    "type": "track_offset",
-                    "track": "TE3",
-                    "offset": 393924
+                "pathfinding_item": {
+                    "location": {
+                        "type": "track_offset",
+                        "track": "TE3",
+                        "offset": 393924
+                    },
+                    "can_backtrack": false
                 }
             },
             {
                 "duration": null,
-                "location": {
-                    "type": "track_offset",
-                    "track": "TE2",
-                    "offset": 1996809
+                "pathfinding_item": {
+                    "location": {
+                        "type": "track_offset",
+                        "track": "TE2",
+                        "offset": 1996809
+                    },
+                    "can_backtrack": false
                 }
             },
             {
                 "duration": null,
-                "location": {
-                    "type": "track_offset",
-                    "track": "TF0",
-                    "offset": 978
+                "pathfinding_item": {
+                    "location": {
+                        "type": "track_offset",
+                        "track": "TF0",
+                        "offset": 978
+                    },
+                    "can_backtrack": false
                 }
             },
             {
                 "duration": 1,
-                "location": {
-                    "type": "track_offset",
-                    "track": "TF1",
-                    "offset": 1203798
+                "pathfinding_item": {
+                    "location": {
+                        "type": "track_offset",
+                        "track": "TF1",
+                        "offset": 1203798
+                    },
+                    "can_backtrack": false
                 }
             }
         ],
