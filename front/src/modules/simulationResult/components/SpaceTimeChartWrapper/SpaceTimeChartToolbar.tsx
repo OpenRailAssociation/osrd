@@ -1,7 +1,7 @@
 import type { Dispatch, SetStateAction } from 'react';
 
 import { DEFAULT_ZOOM_MS_PER_PX, timeScaleToZoomValue } from '@osrd-project/ui-charts';
-import { Iterations, Link, Sliders, ZoomIn } from '@osrd-project/ui-icons';
+import { Iterations, Linking, Sliders, ZoomIn } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import { useSelector } from 'react-redux';
 
@@ -36,9 +36,8 @@ const SpaceTimeChartToolbar = ({
           className="linking-button linking-button-disabled"
           disabled
         >
-          {/* TODO: replace with the proper linking button (final icon + behavior)
-              https://github.com/OpenRailAssociation/osrd/issues/17580 */}
-          <Link />
+          {/* TODO: wire the linking mode toggle behavior */}
+          <Linking />
         </button>
       )}
       <button
