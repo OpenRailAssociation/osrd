@@ -845,6 +845,7 @@
     "calculatedArrivalTime": "calculated arrival time",
     "calculatedDepartureTime": "calculated depart. time",
     "calculatedDepartureTimeFull": "calculated departure time",
+    "clearCellTitle": "clear the cell",
     "computedTheoreticalMargin": "computed theoretical margin",
     "dayCounter": "D+{{count}}",
     "departureTime": "requested depart. time",

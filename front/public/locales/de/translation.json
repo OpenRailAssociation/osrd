@@ -820,6 +820,7 @@
     "calculatedArrivalTime": "berechnete Ankunft",
     "calculatedDepartureTime": "berechnete Abfahrt",
     "calculatedDepartureTimeFull": "berechnete Abfahrtszeit",
+    "clearCellTitle": "zelle löschen",
     "computedTheoreticalMargin": "berechnete theoretische Marge",
     "dayCounter": "T+{{count}}",
     "departureTime": "angeforderte Abfahrt",
