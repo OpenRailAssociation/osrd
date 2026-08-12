@@ -159,9 +159,36 @@ pub fn journey_list(p: JourneyListParams) -> Vec<Vec<Leg>> {
         return Vec::new();
     }
 
-    // stop index -> profiles
-    // profiles are ordered by decreasing departure_ms
-    // they are also ordered by decreasing arrival_ms since they all lie on the Pareto front
+    let profiles = scan_connections(stop_count, trip_count, &connections, end, transfer_ms);
+
+    let mut start_profiles: Vec<&Profile> = profiles[start]
+        .iter()
+        .filter(|profile| u32::abs_diff(profile.departure_ms, start_ms) <= start_tolerance)
+        .collect();
+
+    // TODO: In this first version we try the departures closest to the requested time first.
+    // We should use more specific criteria to select the best 3 journeys.
+    start_profiles.sort_unstable_by_key(|profile| u32::abs_diff(profile.departure_ms, start_ms));
+
+    // Explore the profile graph to create up to 3 journeys that a traveler can take to go from start to end.
+    start_profiles
+        .into_iter()
+        .map(|profile| extract_journey(&profiles, &connections, transfer_ms, end, profile))
+        .take(3)
+        .collect()
+}
+
+/// Scans every connection and returns the profiles of each stop, indexed by stop id.
+///
+/// Profiles are ordered by decreasing `departure_ms`.
+/// They are also ordered by decreasing `arrival_ms` since they all lie on the Pareto front.
+fn scan_connections(
+    stop_count: usize,
+    trip_count: usize,
+    connections: &[Connection],
+    end: StopId,
+    transfer_ms: u32,
+) -> Vec<Vec<Profile>> {
     let mut profiles: Vec<Vec<Profile>> = vec![Vec::new(); stop_count];
 
     // This maps trips to the best TripArrival found over the connections scanned so far
@@ -223,21 +250,7 @@ pub fn journey_list(p: JourneyListParams) -> Vec<Vec<Leg>> {
         trip_arrivals[connection.trip] = Some(arrival);
     }
 
-    let mut start_profiles: Vec<&Profile> = profiles[start]
-        .iter()
-        .filter(|profile| u32::abs_diff(profile.departure_ms, start_ms) <= start_tolerance)
-        .collect();
-
-    // TODO: In this first version we try the departures closest to the requested time first.
-    // We should use more specific criteria to select the best 3 journeys.
-    start_profiles.sort_unstable_by_key(|profile| u32::abs_diff(profile.departure_ms, start_ms));
-
-    // Explore the profile graph to create up to 3 journeys that a traveler can take to go from start to end.
-    start_profiles
-        .into_iter()
-        .map(|profile| extract_journey(&profiles, &connections, transfer_ms, end, profile))
-        .take(3)
-        .collect()
+    profiles
 }
 
 /// Rebuilds the journey starting at `starting_profile`, leg by leg, until it reaches `end`.
