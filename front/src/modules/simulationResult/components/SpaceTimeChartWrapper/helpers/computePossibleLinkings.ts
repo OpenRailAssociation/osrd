@@ -14,10 +14,7 @@ export type LinkableOccupancy = {
    * when it starts it here, and `via` in between, be it a stop or a track the train only passes by.
    */
   blockType: 'incoming' | 'outgoing' | 'via';
-  /**
-   * Whether the train stands still on the track: it stops at the end of its path for an `incoming`
-   * block, and starts its path at a null speed for an `outgoing` one. Not read on `via` blocks.
-   */
+  /** Whether the schedule of the train holds a stop here. Not read on `via` blocks. */
   isStop: boolean;
   active: boolean;
 };
