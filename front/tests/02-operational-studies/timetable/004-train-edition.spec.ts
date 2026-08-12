@@ -10,6 +10,8 @@ import {
   EDITED_PACED_TRAIN_NAME,
   INTERVAL,
   TIME_WINDOW,
+  TIME_WINDOW_HOURS,
+  TIME_WINDOW_MINUTES,
 } from '../../assets/paced-train/const';
 import test from '../../page-object-fixture';
 import { generateUniqueName, waitForInfraStateToBeCached } from '../../utils';
@@ -78,28 +80,24 @@ test.describe('Train edition', { tag: ['@op', '@paced-trains', '@unique-trains']
   /** *************** Test 1 **************** */
   test('Edit a paced train', async ({
     scenarioTimetableSection,
-    operationalStudiesPage,
     pacedTrainSection,
+    headerPage,
   }) => {
-    await test.step('Open paced train edition page', async () => {
+    await test.step('Open the paced train header', async () => {
       await pacedTrainSection.verifyOccurrencesCount(
         PACED_TRAIN_OCCURRENCE_COUNT,
         0,
         HIGH_SPEED_TRAIN_COLOR
       );
-      await pacedTrainSection.openPacedTrainEditor();
+      await pacedTrainSection.selectPacedTrainModel(0);
+      await headerPage.expandHeader();
     });
 
     await test.step('Update paced train properties', async () => {
-      await operationalStudiesPage.setTimeWindow(TIME_WINDOW);
-      await operationalStudiesPage.setInterval(INTERVAL);
-      await operationalStudiesPage.setTrainScheduleName(EDITED_PACED_TRAIN_NAME);
-      await operationalStudiesPage.selectCategory(FREIGHT_TRAIN.category);
-    });
-
-    await test.step('Save paced train and verify toast notification', async () => {
-      await operationalStudiesPage.updateTrainSchedule(frTranslations.updatePacedTrain);
-      await operationalStudiesPage.checkToastHasBeenLaunched(frTranslations.pacedTrainUpdated);
+      await headerPage.setServiceWindow(TIME_WINDOW_HOURS, TIME_WINDOW_MINUTES);
+      await headerPage.setServiceCadenceMinutes(INTERVAL);
+      await headerPage.setName(EDITED_PACED_TRAIN_NAME);
+      await headerPage.selectCategory(FREIGHT_TRAIN.category);
     });
 
     await test.step('Verify timetable labels and paced train details', async () => {
@@ -117,7 +115,7 @@ test.describe('Train edition', { tag: ['@op', '@paced-trains', '@unique-trains']
           expectedOccurrencesCount: 12,
         },
         0,
-        { pacedTrainCardAlreadyOpen: true, occurrenceColor: FREIGHT_TRAIN.color }
+        { occurrenceColor: FREIGHT_TRAIN.color }
       );
     });
   });
@@ -125,16 +123,16 @@ test.describe('Train edition', { tag: ['@op', '@paced-trains', '@unique-trains']
   /** *************** Test 2 **************** */
   test('Turn paced train into unique train', async ({
     scenarioTimetableSection,
-    operationalStudiesPage,
     pacedTrainSection,
+    headerPage,
   }) => {
-    await test.step('Edit paced train', async () => {
-      await pacedTrainSection.openPacedTrainEditor();
+    await test.step('Select the paced train and expand the header', async () => {
+      await pacedTrainSection.selectPacedTrainModel(0);
+      await headerPage.expandHeader();
     });
 
     await test.step('Convert paced train to unique train', async () => {
-      await operationalStudiesPage.turnPacedTrainIntoUniqueTrain(frTranslations);
-      await operationalStudiesPage.checkToastHasBeenLaunched(frTranslations.pacedTrainUpdated);
+      await headerPage.toggleScheduleKind(false);
     });
 
     await test.step('Verify timetable labels after conversion', async () => {
@@ -148,15 +146,15 @@ test.describe('Train edition', { tag: ['@op', '@paced-trains', '@unique-trains']
   /** *************** Test 3 **************** */
   test('Turn a unique train into a paced train', async ({
     scenarioTimetableSection,
-    operationalStudiesPage,
+    headerPage,
   }) => {
-    await test.step('Edit unique train at index 1', async () => {
-      await scenarioTimetableSection.editTrainSchedule(1);
+    await test.step('Select the unique train at index 0 and expand the header', async () => {
+      await scenarioTimetableSection.selectUniqueTrainModel(0);
+      await headerPage.expandHeader();
     });
 
     await test.step('Convert unique train to paced train', async () => {
-      await operationalStudiesPage.turnUniqueTrainIntoPacedTrain(frTranslations);
-      await operationalStudiesPage.checkToastHasBeenLaunched(frTranslations.uniqueTrainUpdated);
+      await headerPage.toggleScheduleKind(true);
     });
 
     await test.step('Verify timetable labels after conversion', async () => {
