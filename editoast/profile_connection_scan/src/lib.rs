@@ -81,6 +81,9 @@ struct TripArrival {
     /// The arrival time at the target
     arrival_ms: TimeOfDayMs,
 
+    /// The number of legs between entering the trip and reaching the target
+    leg_count: u32,
+
     /// The connection the traveler exits the trip to reach the target at `arrival_ms`
     exit_connection_id: ConnectionId,
 }
@@ -100,11 +103,14 @@ pub struct Leg {
 /// A Profile documents part of a route travelers can take to reach the destination.
 ///
 /// More specifically, at `departure_ms`, a traveler can take the leg
-/// `leg` to reach the destination at `arrival_ms`.
+/// `leg` to reach the destination at `arrival_ms` in `leg_count` legs.
 #[derive(Clone, Debug)]
 struct Profile {
     /// The leg taken at the departure stop
     leg: Leg,
+
+    /// The number of legs between the departure stop and the target
+    leg_count: u32,
 
     /// The departure time at a given stop.
     departure_ms: TimeOfDayMs,
@@ -114,9 +120,10 @@ struct Profile {
 }
 
 impl Profile {
-    /// Whether [self] is superior to [other] both in arrival time and departure time.
+    /// Whether [self] is superior to [other] both departure time and in arrival time, the number of legs breaking ties.
     fn dominates(&self, other: &Self) -> bool {
-        self.departure_ms >= other.departure_ms && self.arrival_ms <= other.arrival_ms
+        self.departure_ms >= other.departure_ms
+            && (self.arrival_ms, self.leg_count) <= (other.arrival_ms, other.leg_count)
     }
 }
 
@@ -197,6 +204,7 @@ fn scan_connections(
     for (connection_id, connection) in connections.iter().enumerate() {
         let direct = (connection.arrival == end).then_some(TripArrival {
             arrival_ms: connection.arrival_ms,
+            leg_count: 1,
             exit_connection_id: connection_id,
         });
 
@@ -207,13 +215,14 @@ fn scan_connections(
             .rfind(|profile| profile.departure_ms >= connection.arrival_ms + transfer_ms)
             .map(|profile| TripArrival {
                 arrival_ms: profile.arrival_ms,
+                leg_count: profile.leg_count + 1,
                 exit_connection_id: connection_id,
             });
 
         let Some(arrival) = [direct, seated, transfer]
             .into_iter()
             .flatten()
-            .min_by_key(|arrival| arrival.arrival_ms)
+            .min_by_key(|arrival| (arrival.arrival_ms, arrival.leg_count))
         else {
             continue;
         };
@@ -223,6 +232,7 @@ fn scan_connections(
                 enter_connection_id: connection_id,
                 exit_connection_id: arrival.exit_connection_id,
             },
+            leg_count: arrival.leg_count,
             departure_ms: connection.departure_ms,
             arrival_ms: arrival.arrival_ms,
         };
