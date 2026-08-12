@@ -732,7 +732,7 @@ const ItineraryModal = ({ onTrainCreated }: ItineraryModalProps) => {
                 />
               </div>
             )}
-          <TypeAndPath isInNewModal />
+          <TypeAndPath />
           <div
             className={cx('path-step-list', {
               'with-invalid-step': hasInvalidPathStepDisplay || invalidTrackSteps.length > 0,
