@@ -37,7 +37,6 @@ const InfraSelectorModalBodyEdition = ({
   const { getUserPrivileges } = useAuthz();
   const userPrivilegesByInfraId = useAsyncMemo(async () => {
     const data = await getUserPrivileges({
-      rolling_stock: [],
       infra: infrasList.map((infra) => infra.id),
     });
     return data.infra || {};
