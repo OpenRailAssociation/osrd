@@ -13,13 +13,14 @@ import {
   type ProjectWithStudies,
   type SearchResultItemProject,
 } from 'common/api/osrdEditoastApi';
+import useAuthz from 'common/authorization/hooks/useAuthz';
 import OptionsSNCF from 'common/BootstrapSNCF/OptionsSNCF';
 import { Spinner } from 'common/Loaders';
 import NavBar from 'common/NavBar';
 import SelectionToolbar from 'common/SelectionToolbar';
 import AddOrEditProjectModal from 'modules/project/components/AddOrEditProjectModal';
 import cleanLocalStorageByProject from 'modules/project/helpers/cleanLocalStorageByProject';
-import { getUserSafeWord } from 'reducers/user/userSelectors';
+import { getFeatureFlag, getUserSafeWord } from 'reducers/user/userSelectors';
 import { useAppDispatch } from 'store';
 
 import ProjectCard from './ProjectCard';
@@ -36,6 +37,7 @@ const ProjectListView = () => {
   const { t } = useTranslation('operational-studies');
   const dispatch = useAppDispatch();
   const safeWord = useSelector(getUserSafeWord);
+  const projectGrantsActivated = useSelector(getFeatureFlag('projectGrants'));
   const [sortOption, setSortOption] = useState<SortOptions>('LastModifiedDesc');
   const [filter, setFilter] = useState('');
   const [filterChips, setFilterChips] = useState('');
@@ -71,6 +73,8 @@ const ProjectListView = () => {
     ordering: sortOption,
     pageSize: 1000,
   });
+  const { getUserPrivileges } = useAuthz();
+
   const [isLoading, setIsLoading] = useState(true);
 
   const sortOptions = [
@@ -85,6 +89,18 @@ const ProjectListView = () => {
   ];
 
   const getProjectList = async () => {
+    if (!allProjects || allProjects.results.length === 0) return setProjectsList([]);
+    const privileges = projectGrantsActivated
+      ? await getUserPrivileges({
+          project: allProjects.results.map((project) => project.id),
+        })
+      : {};
+    // The project resource only exposes NONE/OWNER grants, so 'has_access' tells if the user can see it
+    const accessibleProjectIds = new Set(
+      Object.entries(privileges.project ?? {})
+        .filter(([, userPrivileges]) => userPrivileges.has('has_access'))
+        .map(([id]) => Number(id))
+    );
     setIsLoading(true);
     if (filter || safeWord !== '') {
       const payload: PostSearchApiArg = {
@@ -105,6 +121,9 @@ const ProjectListView = () => {
       };
       try {
         let filteredData = (await postSearch(payload).unwrap()) as SearchResultItemProject[];
+        filteredData = projectGrantsActivated
+          ? filteredData.filter((project) => accessibleProjectIds.has(project.id))
+          : filteredData;
         if (sortOption === 'LastModifiedDesc') {
           filteredData = [...filteredData].sort((a, b) =>
             b.last_modification.localeCompare(a.last_modification)
@@ -117,7 +136,11 @@ const ProjectListView = () => {
         console.error('filter projetcs error : ', error);
       }
     } else {
-      setProjectsList(allProjects?.results || []);
+      setProjectsList(
+        projectGrantsActivated
+          ? allProjects.results.filter((project) => accessibleProjectIds.has(project.id))
+          : allProjects.results
+      );
     }
     setIsLoading(false);
   };
@@ -164,7 +187,7 @@ const ProjectListView = () => {
 
   useEffect(() => {
     getProjectList();
-  }, [sortOption, filter, safeWord, allProjects]);
+  }, [sortOption, filter, safeWord, allProjects, projectGrantsActivated]);
 
   return (
     <>
