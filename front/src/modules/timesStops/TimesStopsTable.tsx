@@ -19,12 +19,11 @@ import type { ReceptionSignal } from 'common/api/osrdEditoastApi';
 import { SkeletonLoader } from 'common/Loaders';
 import { NO_POWER_RESTRICTION } from 'modules/powerRestriction/consts';
 import { useDateTimeLocale } from 'utils/date';
-import type { Duration } from 'utils/duration';
-import { calculateTimeDifferenceInDays } from 'utils/timeManipulation';
+import { Duration } from 'utils/duration';
 
 import DurationCell, { type DurationCellHandle } from './DurationCell';
 import type { PowerRestrictionBlockInfo } from './helpers/powerRestrictionIncompatibility';
-import { onStopSignalToReceptionSignal } from './helpers/utils';
+import { onStopSignalToReceptionSignal, truncateDateToDay } from './helpers/utils';
 import MarginCell from './MarginCell';
 import TimeCell, { type TimeCellHandle } from './TimeCell';
 import type { MarginValue, PropagationMode, StopPropagationMode, TimesStopsRowNew } from './types';
@@ -700,7 +699,8 @@ const TimesStopsTable = ({
     if (!row.original.pathStepId) return null;
     const arrival = row.original.computedArrival ?? row.original.requestedArrival;
     if (!arrival) return null;
-    return calculateTimeDifferenceInDays(startTime, arrival);
+    const diff = Duration.subtractDate(truncateDateToDay(arrival), truncateDateToDay(startTime));
+    return diff.total('day');
   };
 
   const tableRows = table.getRowModel().rows;
