@@ -25,6 +25,8 @@ import { mapBy } from 'utils/types';
 
 import { usePrevious } from '../../../../utils/hooks/state';
 import type { BaseTrainProjection, ProjectionWaypoint, TrainSpaceTimeData } from '../../types';
+import computePossibleLinkings from './helpers/computePossibleLinkings';
+import getLinkableOccupancyData from './helpers/getLinkableOccupancyData';
 import { EXCEPTION_SUFFIX } from './helpers/makeProjectedTrains';
 import { NO_TRACK_SPECIFIED_SYMBOL, sortTracks } from './helpers/sortTracks';
 import { batchFetchTrackOccupancy } from './helpers/utils';
@@ -212,8 +214,8 @@ const useTrackOccupancy = ({
                   `Invalid occupation type ${occupation.type} for unique train ${train.id}`
                 );
               }
-              zones.push(
-                getMovableOccupancyZone(
+              zones.push({
+                ...getMovableOccupancyZone(
                   waypointId,
                   trackId,
                   trainScheduleId,
@@ -221,8 +223,10 @@ const useTrackOccupancy = ({
                   train.spaceTimeCurves,
                   train.name,
                   train.departureTime
-                )
-              );
+                ),
+                ...getLinkableOccupancyData(occupation.path_item_relative_location, train),
+                localTrackName,
+              });
               continue;
             }
 
@@ -268,8 +272,8 @@ const useTrackOccupancy = ({
                   );
             }
 
-            zones.push(
-              getMovableOccupancyZone(
+            zones.push({
+              ...getMovableOccupancyZone(
                 waypointId,
                 trackId,
                 trainId,
@@ -278,8 +282,10 @@ const useTrackOccupancy = ({
                 trainName,
                 startTime,
                 exception
-              )
-            );
+              ),
+              ...getLinkableOccupancyData(occupation.path_item_relative_location, train, exception),
+              localTrackName,
+            });
           }
         }
       }
@@ -337,6 +343,7 @@ const useTrackOccupancy = ({
           operationalPointPosition: op.position,
           operationalPointName: op.name,
           zones: resolvedZones,
+          possibleLinkings: computePossibleLinkings(resolvedZones ?? []),
           loading: opState.zones.type === 'loading',
           tracks: sortTracks(infraTracks, virtualTracks),
         });

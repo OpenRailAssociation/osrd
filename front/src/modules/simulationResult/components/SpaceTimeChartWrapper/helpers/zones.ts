@@ -9,8 +9,9 @@ import { Duration } from 'utils/duration';
 import { isTrainId } from 'utils/trainId';
 
 import type { BaseTrainProjection, CurveStyleExceptionType } from '../../../types';
+import type { LinkableOccupancy } from './computePossibleLinkings';
 
-export type MovableOccupancyZone = Omit<OccupancyZone, 'curveStyle'> & {
+type DrawableOccupancyZone = Omit<OccupancyZone, 'curveStyle'> & {
   curveStyle?: OccupancyZone['curveStyle'];
   dbStartTime: number;
   dbEndTime: number;
@@ -18,11 +19,15 @@ export type MovableOccupancyZone = Omit<OccupancyZone, 'curveStyle'> & {
   exceptionTypes: CurveStyleExceptionType[];
 };
 
+/** An occupancy zone, carrying the data needed to compute the linkings of its track as well. */
+export type MovableOccupancyZone = DrawableOccupancyZone & LinkableOccupancy;
+
 export type DeployedWaypoint = {
   waypointId: string;
   operationalPointPosition: number;
   operationalPointName?: string;
   zones?: MovableOccupancyZone[];
+  possibleLinkings: Map<TrainId, TrainId>;
   tracks?: Track[];
   loading?: boolean;
 };
@@ -101,7 +106,7 @@ export function getMovableOccupancyZone(
   trainName: string,
   departureTime: Date,
   exception?: PacedTrainException
-): MovableOccupancyZone {
+): DrawableOccupancyZone {
   const trainStartTime = departureTime.getTime();
   const occupationStartTime = occupation.time_begin;
   const occupationEndTime = occupationStartTime + Duration.parse(occupation.duration).ms;
