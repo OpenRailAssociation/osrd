@@ -196,7 +196,6 @@ const useFilterRollingStock = ({
     // call editoast
     const data = await getUserPrivileges({
       rolling_stock: allRollingStocks.map((rs) => rs.id),
-      infra: [],
     });
     return data.rolling_stock || {};
   }, [
