@@ -73,14 +73,38 @@ pub struct Connection {
     pub arrival_ms: TimeOfDayMs,
 }
 
+/// Pairs a connection to exit a trip from with the resulting target arrival time.
+///
+/// A traveler on the trip should exit it at `exit_connection` to arrive to the target at `arrival_ms`
+#[derive(Clone, Copy, Debug)]
+struct TripArrival {
+    /// The arrival time at the target
+    arrival_ms: TimeOfDayMs,
+
+    /// The connection the traveler exits the trip to reach the target at `arrival_ms`
+    exit_connection_id: ConnectionId,
+}
+
+/// A Leg represents a part of a journey taken on a specific trip.
+///
+/// The traveler enters the trip at `enter_connection` and exits it after `exit_connection`.
+#[derive(Clone, Copy, Debug)]
+pub struct Leg {
+    /// The id of the connection taken to enter a trip
+    pub enter_connection_id: ConnectionId,
+
+    /// The id of the last connection taken before exiting the trip
+    pub exit_connection_id: ConnectionId,
+}
+
 /// A Profile documents part of a route travelers can take to reach the destination.
 ///
-/// More specifically, at `departure_ms`, a traveler can take the train
-/// connection `out_connection` to reach the destination at `arrival_ms`.
+/// More specifically, at `departure_ms`, a traveler can take the leg
+/// `leg` to reach the destination at `arrival_ms`.
 #[derive(Clone, Debug)]
 struct Profile {
-    /// The connection taken at the departure stop
-    out_connection: ConnectionId,
+    /// The leg taken at the departure stop
+    leg: Leg,
 
     /// The departure time at a given stop.
     departure_ms: TimeOfDayMs,
@@ -107,7 +131,7 @@ pub struct JourneyListParams {
     pub transfer_ms: u32,
 }
 
-/// This returns up to 3 journeys, each journey being the list of connections to take given as their [ConnectionId].
+/// This returns up to 3 journeys, each journey being the list of [Leg] to take.
 ///
 /// Some pre-conditions are required:
 ///
@@ -116,7 +140,7 @@ pub struct JourneyListParams {
 /// - All connections' `departure`s and `arrival`s must be strictly lower than [`JourneyListParams::stop_count`]
 ///
 /// See asserts below for more pre-conditions.
-pub fn journey_list(p: JourneyListParams) -> Vec<Vec<ConnectionId>> {
+pub fn journey_list(p: JourneyListParams) -> Vec<Vec<Leg>> {
     let JourneyListParams {
         stop_count,
         trip_count,
@@ -140,35 +164,40 @@ pub fn journey_list(p: JourneyListParams) -> Vec<Vec<ConnectionId>> {
     // they are also ordered by decreasing arrival_ms since they all lie on the Pareto front
     let mut profiles: Vec<Vec<Profile>> = vec![Vec::new(); stop_count];
 
-    // This maps trips to the earliest arrival time possible when taking this trip.
-    let mut trip_min_arrival_ms = vec![u32::MAX; trip_count];
+    // This maps trips to the best TripArrival found over the connections scanned so far
+    let mut trip_arrivals = vec![None; trip_count];
 
     for (connection_id, connection) in connections.iter().enumerate() {
-        let direct_arrival_ms = if connection.arrival == end {
-            connection.arrival_ms
-        } else {
-            u32::MAX
-        };
+        let direct = (connection.arrival == end).then_some(TripArrival {
+            arrival_ms: connection.arrival_ms,
+            exit_connection_id: connection_id,
+        });
 
-        let seated_arrival_ms = trip_min_arrival_ms[connection.trip];
+        let seated = trip_arrivals[connection.trip];
 
-        let transfer_arrival_ms = profiles[connection.arrival]
+        let transfer = profiles[connection.arrival]
             .iter()
             .rfind(|profile| profile.departure_ms >= connection.arrival_ms + transfer_ms)
-            .map_or(u32::MAX, |profile| profile.arrival_ms);
+            .map(|profile| TripArrival {
+                arrival_ms: profile.arrival_ms,
+                exit_connection_id: connection_id,
+            });
 
-        let arrival_ms = direct_arrival_ms
-            .min(seated_arrival_ms)
-            .min(transfer_arrival_ms);
-
-        if arrival_ms == u32::MAX {
+        let Some(arrival) = [direct, seated, transfer]
+            .into_iter()
+            .flatten()
+            .min_by_key(|arrival| arrival.arrival_ms)
+        else {
             continue;
-        }
+        };
 
         let candidate = Profile {
-            out_connection: connection_id,
+            leg: Leg {
+                enter_connection_id: connection_id,
+                exit_connection_id: arrival.exit_connection_id,
+            },
             departure_ms: connection.departure_ms,
-            arrival_ms,
+            arrival_ms: arrival.arrival_ms,
         };
 
         let stop_profiles = &mut profiles[connection.departure];
@@ -190,7 +219,8 @@ pub fn journey_list(p: JourneyListParams) -> Vec<Vec<ConnectionId>> {
                 stop_profiles.push(candidate);
             }
         }
-        trip_min_arrival_ms[connection.trip] = arrival_ms;
+
+        trip_arrivals[connection.trip] = Some(arrival);
     }
 
     let mut start_profiles: Vec<&Profile> = profiles[start]
@@ -205,65 +235,34 @@ pub fn journey_list(p: JourneyListParams) -> Vec<Vec<ConnectionId>> {
     // Explore the profile graph to create up to 3 journeys that a traveler can take to go from start to end.
     start_profiles
         .into_iter()
-        .filter_map(|profile| {
-            to_journey_list_rec(
-                &profiles,
-                &connections,
-                transfer_ms,
-                end,
-                vec![profile.out_connection],
-            )
-        })
+        .map(|profile| extract_journey(&profiles, &connections, transfer_ms, end, profile))
         .take(3)
         .collect()
 }
 
-/// Recursively extends `path`, connection by connection, into a complete journey to `end`.
-///
-/// `path` is the non-empty list of connection taken so far.
-/// At each stop, the profiles are explored starting with the one reaching `end` earliest.
-/// A candidate connection is discarded when the transfer time cannot be met or when it would make the path loop.
-/// Returns `None` if no journey extends `path`.
-fn to_journey_list_rec(
+/// Rebuilds the journey starting at `starting_profile`, leg by leg, until it reaches `end`.
+fn extract_journey(
     profiles: &[Vec<Profile>],
     connections: &[Connection],
     transfer_ms: u32,
     end: StopId,
-    path: Vec<ConnectionId>,
-) -> Option<Vec<ConnectionId>> {
-    let last_connection = connections[*path.last().unwrap()];
-    let start: StopId = last_connection.arrival;
+    starting_profile: &Profile,
+) -> Vec<Leg> {
+    let mut journey = Vec::new();
+    let mut stop_profile = starting_profile;
 
-    if start == end {
-        return Some(path);
-    }
+    loop {
+        journey.push(stop_profile.leg);
+        let exit_connection = connections[stop_profile.leg.exit_connection_id];
 
-    // Try profiles from the one reaching the target earliest (see profiles construction) and stop at the first solution found
-    profiles[start].iter().rev().find_map(|profile| {
-        let out_conn_id = profile.out_connection;
-
-        let out_conn = connections[out_conn_id];
-
-        let next_stop = out_conn.arrival;
-        // The traveler only needs `transfer_ms` when changing trains
-        let earliest_next_departure_ms = if out_conn.trip == last_connection.trip {
-            last_connection.arrival_ms
-        } else {
-            last_connection.arrival_ms + transfer_ms
-        };
-
-        if path
-            .iter()
-            .any(|connection_id| connections[*connection_id].departure == next_stop)
-            || start == next_stop
-            || out_conn.departure_ms < earliest_next_departure_ms
-        {
-            return None;
+        if exit_connection.arrival == end {
+            return journey;
         }
 
-        let mut new_path = path.clone();
-        new_path.push(out_conn_id);
+        let next = profiles[exit_connection.arrival]
+            .iter()
+            .rfind(|profile| profile.departure_ms >= exit_connection.arrival_ms + transfer_ms);
 
-        to_journey_list_rec(profiles, connections, transfer_ms, end, new_path)
-    })
+        stop_profile = next.expect("next existence is guaranteed by the scan");
+    }
 }
