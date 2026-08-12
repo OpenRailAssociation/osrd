@@ -10,6 +10,7 @@ import GrantsManagerSubjects from './GrantsManagerSubjects';
 
 function getGrantLabel(userPrivileges: Set<Privilege>): keyof typeof GRANTS_LABEL {
   if (userPrivileges.has('can_delete')) return 'OWNER';
+  if (userPrivileges.has('has_access')) return 'OWNER'; // custom privilege for project access
   if (userPrivileges.has('can_write')) return 'WRITER';
   if (userPrivileges.has('can_read')) return 'READER';
   if (userPrivileges.has('can_restricted_read')) return 'RESTRICTED_READER';
@@ -35,7 +36,7 @@ const GrantsManager = ({
   const [displayGrantSection, setDisplayGrantSection] = useState(false);
 
   const grantLabel = getGrantLabel(userPrivileges);
-  const canRead = userPrivileges.has('can_read');
+  const canRead = userPrivileges.has('can_read') || userPrivileges.has('has_access');
 
   return (
     <div className="grant-manager">
