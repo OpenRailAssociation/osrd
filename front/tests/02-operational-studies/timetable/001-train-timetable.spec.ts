@@ -86,6 +86,7 @@ test.describe('Train schedules management', { tag: ['@op', '@train-schedules'] }
   /** *************** Test 2 **************** */
   test('Loading train schedules and verifying simulation result for paced trains', async ({
     scenarioTimetableSection,
+    pacedTrainSection,
   }) => {
     test.slow(); // Verifying all occurrences of paced trains can take some time, this test will be reworked later to optimize it
     await test.step('Verify invalid message, then filter valid paced trains', async () => {
@@ -102,7 +103,7 @@ test.describe('Train schedules management', { tag: ['@op', '@train-schedules'] }
     });
 
     await test.step('Verify paced train simulation results', async () => {
-      await scenarioTimetableSection.verifyPacedTrainSimulations(VALID_PACED_TRAINS);
+      await pacedTrainSection.verifyPacedTrainSimulations(VALID_PACED_TRAINS);
     });
   });
 

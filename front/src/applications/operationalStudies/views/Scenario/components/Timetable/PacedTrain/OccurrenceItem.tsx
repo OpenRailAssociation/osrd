@@ -257,7 +257,7 @@ const OccurrenceItem = ({
               </div>
             </div>
           </div>
-          <div className="rolling-stock">
+          <div className="rolling-stock" data-testid="rolling-stock">
             {rollingStock && <RollingStock2Img rollingStock={rollingStock} />}
           </div>
         </div>

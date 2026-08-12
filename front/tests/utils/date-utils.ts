@@ -60,3 +60,12 @@ export function formatDateToDayMonthYear(dateString: string): string {
 export function getISODate(offsetDays = DATE_OFFSET.TODAY, timeZone = 'Europe/Paris'): string {
   return dayjs().tz(timeZone).add(offsetDays, 'day').format('YYYY-MM-DD');
 }
+
+/**
+ * Returns today's date as a short date string (DD/MM/YY) in a specific timezone.
+ *
+ * @param timeZone - Target timezone (default: Europe/Paris)
+ */
+export function getTodayShortDate(timeZone = 'Europe/Paris'): string {
+  return dayjs().tz(timeZone).format('DD/MM/YY');
+}

@@ -1,14 +1,23 @@
-import { expect } from '@playwright/test';
-
 import type { Scenario, Project, Study, Infra, TrainSchedule } from 'common/api/osrdEditoastApi';
 
 import {
   fastRollingStockName,
-  slowRollingStockName,
   trainScheduleProjectName,
   trainScheduleStudyName,
 } from '../../assets/constants/project-const';
-import { ADDED_EXCEPTION_MENU_BUTTONS } from '../../assets/paced-train/const';
+import {
+  ADDED_EXCEPTION_DATE,
+  ADDED_EXCEPTION_MENU_BUTTONS,
+  ADDED_EXCEPTION_OCCURRENCE_DETAILS,
+  ADDED_EXCEPTION_OCCURRENCES_COUNT,
+  ADDED_EXCEPTION_SERVICE_WINDOW_HOURS,
+  ADDED_EXCEPTION_SERVICE_WINDOW_MINUTES,
+  ADDED_EXCEPTION_INTERVAL_MINUTES,
+  ADDED_EXCEPTION_TIME,
+  EDITED_EXCEPTION_NEW_REQUESTED_ARRIVAL,
+  EDITED_EXCEPTION_OCCURRENCES_AFTER_RESET,
+  EDITED_EXCEPTION_OCCURRENCES_WITH_EXCEPTIONS,
+} from '../../assets/paced-train/const';
 import test from '../../page-object-fixture';
 import { generateUniqueName, waitForInfraStateToBeCached } from '../../utils';
 import { getInfra, getProject, getStudy } from '../../utils/api-utils';
@@ -83,14 +92,7 @@ test.describe('Paced train exceptions', { tag: ['@op', '@paced-trains', '@except
   test(
     'Edit a paced train and handle exceptions',
     { tag: '@smoke' },
-    async ({
-      pacedTrainSection,
-      scenarioTimetableSection,
-      rollingStockSelector,
-      operationalStudiesPage,
-    }) => {
-      const editedPacedTrainData = trains[5];
-
+    async ({ pacedTrainSection, headerPage, timesStopsTablePage }) => {
       await test.step('Open action buttons for paced train at index 5', async () => {
         await pacedTrainSection.getActionButtonsLocators({
           trainIndex: 5,
@@ -100,68 +102,26 @@ test.describe('Paced train exceptions', { tag: ['@op', '@paced-trains', '@except
         });
       });
 
-      await test.step('Edit the paced train', async () => {
-        await pacedTrainSection.openPacedTrainEditor(5);
-        await scenarioTimetableSection.verifyEditTrainScheduleButtonVisibility();
+      await test.step('Update rolling stock via the header', async () => {
+        await pacedTrainSection.selectPacedTrainModel(5);
+        await headerPage.expandHeader();
+        await headerPage.setRollingStock(fastRollingStockName);
       });
 
-      await test.step('Update rolling stock', async () => {
-        await rollingStockSelector.openRollingstockModal();
-        await rollingStockSelector.searchRollingstock(fastRollingStockName);
-        await rollingStockSelector.selectRollingStockCard({
-          name: fastRollingStockName,
-          confirmSelection: true,
-        });
-        await expect(rollingStockSelector.selectedRollingStockName).toHaveText(
-          fastRollingStockName
+      await test.step('Update departure time via the times and stops table', async () => {
+        const originRow = timesStopsTablePage.getRow(0);
+        await timesStopsTablePage.editRequestedArrival(
+          originRow,
+          EDITED_EXCEPTION_NEW_REQUESTED_ARRIVAL
         );
-      });
-
-      await test.step('Update departure time and submit edit', async () => {
-        await operationalStudiesPage.setTrainScheduleStartTime('12:00');
-        await operationalStudiesPage.submitTrainScheduleEdit();
-        await operationalStudiesPage.checkToastHasBeenLaunched(
-          frTranslations.timetable.pacedTrainUpdated
-        );
+        await timesStopsTablePage.waitForSimulation();
       });
 
       await test.step('Verify all occurrences (4 occurrences including 1 added exception)', async () => {
-        await pacedTrainSection.verifyOccurrenceDetails(
-          {
-            name: `${editedPacedTrainData.train_name}/+`,
-            startTime: '21:00',
-            arrivalTime: '21:03',
-            rollingStock: fastRollingStockName,
-          },
-          0
-        );
-        await pacedTrainSection.verifyOccurrenceDetails(
-          {
-            name: `${editedPacedTrainData.train_name} 1`,
-            startTime: '12:00',
-            arrivalTime: '12:07',
-            rollingStock: slowRollingStockName,
-          },
-          1
-        );
-        await pacedTrainSection.verifyOccurrenceDetails(
-          {
-            name: `${editedPacedTrainData.train_name} 3`,
-            startTime: '13:00',
-            arrivalTime: '13:03',
-            rollingStock: fastRollingStockName,
-          },
-          2
-        );
-        await pacedTrainSection.verifyOccurrenceDetails(
-          {
-            name: `${editedPacedTrainData.train_name} 5`,
-            startTime: '14:00',
-            arrivalTime: '14:03',
-            rollingStock: fastRollingStockName,
-          },
-          3
-        );
+        await pacedTrainSection.expandPacedTrainOccurrenceList(5);
+        for (const [index, occurrence] of EDITED_EXCEPTION_OCCURRENCES_WITH_EXCEPTIONS.entries()) {
+          await pacedTrainSection.verifyOccurrenceDetails(occurrence, index);
+        }
       });
 
       await test.step('Reset all exceptions', async () => {
@@ -169,33 +129,9 @@ test.describe('Paced train exceptions', { tag: ['@op', '@paced-trains', '@except
       });
 
       await test.step('Verify occurrences after reset', async () => {
-        await pacedTrainSection.verifyOccurrenceDetails(
-          {
-            name: `${editedPacedTrainData.train_name} 1`,
-            startTime: '12:00',
-            arrivalTime: '12:03',
-            rollingStock: editedPacedTrainData.rolling_stock_name,
-          },
-          0
-        );
-        await pacedTrainSection.verifyOccurrenceDetails(
-          {
-            name: `${editedPacedTrainData.train_name} 3`,
-            startTime: '13:00',
-            arrivalTime: '13:03',
-            rollingStock: editedPacedTrainData.rolling_stock_name,
-          },
-          1
-        );
-        await pacedTrainSection.verifyOccurrenceDetails(
-          {
-            name: `${editedPacedTrainData.train_name} 5`,
-            startTime: '14:00',
-            arrivalTime: '14:03',
-            rollingStock: editedPacedTrainData.rolling_stock_name,
-          },
-          2
-        );
+        for (const [index, occurrence] of EDITED_EXCEPTION_OCCURRENCES_AFTER_RESET.entries()) {
+          await pacedTrainSection.verifyOccurrenceDetails(occurrence, index);
+        }
       });
 
       await test.step('Check action buttons count after reset (4 buttons instead of 5)', async () => {
@@ -210,46 +146,46 @@ test.describe('Paced train exceptions', { tag: ['@op', '@paced-trains', '@except
 
   /** *************** Test 2 **************** */
   test('Modify a paced train and create added exception', async ({
+    page,
     pacedTrainSection,
-    scenarioTimetableSection,
-    operationalStudiesPage,
+    headerPage,
+    timesStopsTablePage,
   }) => {
-    const editedPacedTrainData = trains[1];
-
-    await test.step('Edit paced train at index 1', async () => {
-      await pacedTrainSection.openPacedTrainEditor(1);
-      await scenarioTimetableSection.verifyEditTrainScheduleButtonVisibility();
+    await test.step('Select the paced train and expand the header', async () => {
+      await pacedTrainSection.selectPacedTrainModel(1);
+      await headerPage.expandHeader();
     });
 
-    await test.step('Check inputs before editing paced train', async () => {
-      await operationalStudiesPage.checkInputsBeforeEditingAPacedTrain(
-        frTranslations,
-        editedPacedTrainData.paced!.time_window,
-        editedPacedTrainData.paced!.interval
+    await test.step('Check cadence and window before adding an exception', async () => {
+      await headerPage.verifyServiceCadenceAndWindow(
+        ADDED_EXCEPTION_INTERVAL_MINUTES,
+        ADDED_EXCEPTION_SERVICE_WINDOW_HOURS,
+        ADDED_EXCEPTION_SERVICE_WINDOW_MINUTES
       );
+      await headerPage.verifyExtraOccurrencesToggleLabel(0);
     });
 
     await test.step('Add an exception for the paced train', async () => {
-      await operationalStudiesPage.createPacedTrainException('2025-08-08', '12:00:00');
+      await headerPage.toggleExtraOccurrences();
+      await headerPage.createExtraOccurrence(ADDED_EXCEPTION_DATE, ADDED_EXCEPTION_TIME);
+      await timesStopsTablePage.waitForSimulation();
     });
 
-    await test.step('Submit edit and verify the occurrences count (5)', async () => {
-      await operationalStudiesPage.submitTrainScheduleEdit();
-      await pacedTrainSection.expectOccurrencesListLength(5);
-      await operationalStudiesPage.checkToastHasBeenLaunched(
-        frTranslations.timetable.pacedTrainUpdated
-      );
+    await test.step('Verify the occurrences count (5)', async () => {
+      await pacedTrainSection.expandPacedTrainOccurrenceList(1);
+      await pacedTrainSection.expectOccurrencesListLength(ADDED_EXCEPTION_OCCURRENCES_COUNT);
     });
 
     await test.step('Verify details of the added exception occurrence (index 4)', async () => {
-      await pacedTrainSection.verifyOccurrenceDetails(
-        {
-          name: `${editedPacedTrainData.train_name}/+`,
-          startTime: '12:00',
-          arrivalTime: '12:07',
-        },
-        4
-      );
+      try {
+        await pacedTrainSection.verifyOccurrenceDetails(ADDED_EXCEPTION_OCCURRENCE_DETAILS, 4);
+      } catch {
+        // TODO: remove the try catch when this https://github.com/OpenRailAssociation/osrd/issues/17794 is resolved
+        await page.reload();
+        await pacedTrainSection.selectPacedTrainModel(1);
+        await pacedTrainSection.expandPacedTrainOccurrenceList(1);
+        await pacedTrainSection.verifyOccurrenceDetails(ADDED_EXCEPTION_OCCURRENCE_DETAILS, 4);
+      }
     });
 
     await test.step('Check tooltip and occurrence menu for added exception', async () => {
