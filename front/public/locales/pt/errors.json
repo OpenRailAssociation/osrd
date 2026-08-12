@@ -156,6 +156,7 @@
     },
     "operation": {
       "EmptyId": "Uma cadeia de caracteres vazia é proibida como indentificador",
+      "InvalidPatch": "Um erro de instrução JSON ocorreu",
       "ModifyId": "A operação de atualização tenta modificar o id do objeto, o que é proibido",
       "ObjectNotFound": "Objeto '{{obj_id}}' não encontrado na infraestrutura '{{infra_id}}'"
     },
@@ -175,7 +176,57 @@
     },
     "postgres": {
       "Host": "Anfitrião inválido '{{hostname}}'",
-      "Password": "Palavra-passe inválida"
+      "Password": "Palavra-passe inválida",
+      "Port": "Porta '{{port}}' inválida",
+      "Username": "Identificador inválido"
+    },
+    "project": {
+      "Database": "Erro interno",
+      "ImageError": "A imagem fornecida é inválida",
+      "ImageNotFound": "Imagem '{{document_key}}' não encontrada",
+      "NotFound": "Projeto '{{project_id}}' não encontrado"
+    },
+    "railjson": {
+      "UnsupportedVersion": "Versão do railjson não suportada"
+    },
+    "rollingstocks": {
+      "BasePowerClassEmpty": "A classe de potência de base não pode estar vazia",
+      "CannotCreateCompoundImage": "Não é possível copiar a imagem separada na imagem composta",
+      "CannotReadImage": "Não é possível ler a imagem",
+      "Database": "Erro interno (base de dados)",
+      "IsLocked": "Material circulante '{{rolling_stock_id}}' está bloqueado",
+      "IsUsed": "Material circulante '{{rolling_stock_id}}' está a ser utilizado",
+      "KeyNotFound": "Material circulante '{{rolling_stock_key.key}}' não encontrado",
+      "NameAlreadyUsed": "Já existe um material circulante com o nome '{{name}}'"
+    },
+    "round_trips": {
+      "Database": "Erro interno (base de dados)",
+      "DuplicateTrainIds": "As informações transmitidas contêm identificadores de comboio duplicados, o que não é permitido",
+      "TimetableNotFound": "Horário '{{timetable_id}}' não encontrado"
+    },
+    "scenario": {
+      "Database": "Erro interno (base de dados)",
+      "InfraNotFound": "Infraestrutura '{{infra_id}}' não encontrada",
+      "NotFound": "Cenário não encontrado",
+      "StudyNotFound": "Estudo '{{study_id}}' não encontrado",
+      "TimetableNotFound": "Horário '{{timetable_id}}' não encontrado"
+    },
+    "search": {
+      "ArgMissing": "Argumento do tipo {{expected}} em falta na posição {{arg_pos}}",
+      "ArgTypeMismatch": "Argumento do tipo {{expected}} esperado na posição {{arg_pos}}, mas foi recebido {{actual}}",
+      "EmptyArray": "As tabelas vazias não são permitidas",
+      "IntegerConversion": "Impossível de converter para i64",
+      "InvalidColumnName": "Nome de coluna inválida",
+      "InvalidFunctionIdentifier": "O identificador da função deve ser uma cadeia de caracteres",
+      "InvalidSyntax": "Sintaxe inválida",
+      "ObjectType": "O tipo de objeto é inválido",
+      "RuntimeTypeCheckFail": "Tipo esperado {{expected}}, mas em vez disso foi recebido '{{value}}' do tipo {{actual}}",
+      "SearchEngineError": "Erro interno do motor de pesquisa",
+      "UndefinedFunction": "Função não definida",
+      "UndefinedOverload": "Nenhuma sobrecarga adequada",
+      "UnexpectedArg": "Argumento inesperado encontrado",
+      "UnexpectedColumn": "Coluna inesperada",
+      "UnexpectedErsatz": "Um valor do tipo {{expected}} era esperado, mas '{{value}}' foi encontrado"
     }
   }
 }
