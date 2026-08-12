@@ -35,7 +35,7 @@ test.describe('Itinerary Modal, Default ', { tag: ['@op', '@itinerary-modal'] },
 
   test.beforeEach(
     'Navigate to scenario page and wait for infrastructure to be loaded',
-    async ({ page, operationalStudiesPage }) => {
+    async ({ page, scenarioTimetableSection }) => {
       ({ project, study, scenario } = await createScenario());
 
       await page.goto(
@@ -43,7 +43,7 @@ test.describe('Itinerary Modal, Default ', { tag: ['@op', '@itinerary-modal'] },
       );
 
       await waitForInfraStateToBeCached(infra.id);
-      await operationalStudiesPage.openItineraryModal();
+      await scenarioTimetableSection.openItineraryModal();
     }
   );
 

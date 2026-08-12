@@ -1,9 +1,6 @@
 import type { OccurrenceDetails, PacedTrainDetails } from '../../utils/types';
 
-export const DEFAULT_PACED_TRAIN_SETTINGS: Pick<PacedTrainDetails, 'timeWindow' | 'interval'> = {
-  timeWindow: '120',
-  interval: '60',
-};
+export const DEFAULT_PACED_TRAIN_SERVICE_INTERVAL = '60';
 
 export const PACED_TRAIN_SETTINGS_TEST: Pick<PacedTrainDetails, 'timeWindow' | 'interval'> = {
   timeWindow: '180',

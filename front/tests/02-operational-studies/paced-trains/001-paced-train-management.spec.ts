@@ -11,34 +11,60 @@ import type {
 
 import {
   ADD_PACED_TRAIN_OCCURRENCES_DETAILS,
+  DEFAULT_PACED_TRAIN_SERVICE_INTERVAL,
   DUPLICATED_PACED_TRAIN_DETAILS,
   DUPLICATED_PACED_TRAIN_OCCURRENCES_DETAILS,
   NEW_PACED_TRAIN_SETTINGS,
 } from '../../assets/constants/operational-studies-const';
 import { dualModeRollingStockName } from '../../assets/constants/project-const';
+import { NO_COMPOSITION_CODE_VALUE } from '../../assets/constants/train-header-const';
 import {
   DUPLICATED_PACED_TRAIN_INDEX,
   TOTAL_PACED_TRAINS,
   TOTAL_PACED_TRAINS_WITH_DUPLICATE,
 } from '../../assets/constants/train-schedules-count';
 import { FREIGHT_TRAIN, HIGH_SPEED_TRAIN_COLOR } from '../../assets/operation-studies/train-const';
+import {
+  DEFAULT_MIDNIGHT_HOUR,
+  DEFAULT_PACED_TRAIN_NAME,
+  DEFAULT_PACED_TRAIN_ROW_COUNT,
+  DEFAULT_PACED_TRAIN_SERVICE_WINDOW_HOURS,
+  DEFAULT_PACED_TRAIN_SERVICE_WINDOW_MINUTES,
+  MID_EAST_STATION_REQUESTED_ARRIVAL,
+  MID_EAST_STATION_STOP_DURATION_DIGITS,
+  MID_WEST_STATION_MARGIN_UNIT,
+  MID_WEST_STATION_MARGIN_VALUE,
+  MID_WEST_STATION_REQUESTED_ARRIVAL,
+  MID_WEST_STATION_STOP_DURATION_DIGITS,
+  NEW_PACED_TRAIN_DEPARTURE_DATE,
+  NEW_PACED_TRAIN_ROUTE_SEARCH,
+  NEW_PACED_TRAIN_SERVICE_WINDOW_HOURS,
+  NEW_PACED_TRAIN_SERVICE_WINDOW_MINUTES,
+  WEST_STATION_MARGIN_UNIT,
+  WEST_STATION_MARGIN_VALUE,
+  WEST_STATION_REQUESTED_ARRIVAL,
+} from '../../assets/paced-train/const';
 import { pacedTrainOutputData } from '../../assets/paced-train/output-table-data';
 import test from '../../page-object-fixture';
 import { waitForInfraStateToBeCached } from '../../utils';
 import { getInfra } from '../../utils/api-utils';
-import { cleanWhitespace } from '../../utils/data-normalizer';
-import { createDateInSpecialTimeZone } from '../../utils/date-utils';
+import { getTodayShortDate } from '../../utils/date-utils';
 import { readJsonFile } from '../../utils/file-utils';
 import createScenario from '../../utils/scenario';
 import sendTrains from '../../utils/send-trains';
 import { deleteScenario } from '../../utils/teardown-utils';
 import type {
-  CellData,
   CommonTranslations,
   FlatTranslations,
   ManageTrainScheduleTranslations,
   TimetableFilterTranslations,
 } from '../../utils/types';
+import {
+  ROCKET_SEARCH_INPUT,
+  ROLLING_STOCK_DEFAULT_CATEGORY,
+  ROLLING_STOCK_NAME,
+  ROLLING_STOCK_NAME_QUERY,
+} from '../itineraryModal/itinerary-modal.consts';
 
 const frManageTrainScheduleTranslations: ManageTrainScheduleTranslations = readJsonFile<{
   manageTrainSchedule: ManageTrainScheduleTranslations;
@@ -61,14 +87,9 @@ const frTranslations = {
   ...frCommonTranslations,
 };
 
-const initialInputsData: CellData[] = readJsonFile(
-  './tests/assets/operation-studies/times-and-stops/initial-inputs.json'
-);
-
 const trains: TrainSchedule[] = readJsonFile('./tests/assets/trains/trains.json');
 
 test.describe('Paced train management', { tag: ['@op', '@paced-trains'] }, () => {
-  test.slow(); // TODO remove this once this PR is merged: #16969
   let project: Project;
   let study: Study;
   let scenario: Scenario;
@@ -95,92 +116,158 @@ test.describe('Paced train management', { tag: ['@op', '@paced-trains'] }, () =>
   });
 
   /** *************** Test 1 **************** */
-  test('Verify default behaviors with paced train mode', async ({ operationalStudiesPage }) => {
-    await test.step('Open train schedule form', async () => {
-      await operationalStudiesPage.openTrainScheduleForm();
+  test('Verify default behaviors with paced train', async ({
+    scenarioTimetableSection,
+    itineraryModalPage,
+    headerPage,
+    timesStopsTablePage,
+    pacedTrainSection,
+  }) => {
+    await test.step('Open the itinerary modal and fill in a new train', async () => {
+      await scenarioTimetableSection.openItineraryModal();
+      await itineraryModalPage.selectRollingStock(
+        ROLLING_STOCK_NAME_QUERY,
+        ROLLING_STOCK_NAME,
+        ROLLING_STOCK_DEFAULT_CATEGORY
+      );
+      await itineraryModalPage.fillTrainName(DEFAULT_PACED_TRAIN_NAME);
+      await itineraryModalPage.launchRocketSearch(ROCKET_SEARCH_INPUT);
     });
 
-    await test.step('Verify default inputs/buttons', async () => {
-      const midnight = createDateInSpecialTimeZone(scenario.creation_date, 'Europe/Paris')
-        .set('hours', 0)
-        .set('minutes', 0)
-        .set('seconds', 0)
-        .set('milliseconds', 0)
-        .toDate();
-      await operationalStudiesPage.checkInputsAndButtons(frTranslations, midnight.toISOString());
+    await test.step('Create a service (paced) train', async () => {
+      await itineraryModalPage.createServiceTrain();
+      await itineraryModalPage.checkTrainPresenceInTimetable(DEFAULT_PACED_TRAIN_NAME);
     });
 
-    await test.step('Verify tabs default behavior', async () => {
-      await operationalStudiesPage.checkTabs();
+    await test.step('Verify default cadence and window in the header', async () => {
+      await pacedTrainSection.selectPacedTrainModel(0);
+      await headerPage.expandHeader();
+      await headerPage.verifyServiceCadenceAndWindow(
+        DEFAULT_PACED_TRAIN_SERVICE_INTERVAL,
+        DEFAULT_PACED_TRAIN_SERVICE_WINDOW_HOURS,
+        DEFAULT_PACED_TRAIN_SERVICE_WINDOW_MINUTES
+      );
     });
 
-    await test.step('Enable paced train mode and verify inputs', async () => {
-      await operationalStudiesPage.checkPacedTrainModeAndVerifyInputs(frTranslations);
+    await test.step('Verify default values in the expanded header form', async () => {
+      await headerPage.verifyExpandedFormFields({
+        name: DEFAULT_PACED_TRAIN_NAME,
+        departureDate: getTodayShortDate(),
+        initialVelocity: '0',
+        category: ROLLING_STOCK_DEFAULT_CATEGORY,
+        rollingStock: ROLLING_STOCK_NAME,
+        compositionCode: NO_COMPOSITION_CODE_VALUE,
+        recoveryMargin: 'STANDARD',
+        comfort: 'STANDARD',
+        useElectricalProfiles: true,
+        labels: [],
+      });
     });
 
-    await test.step('Test paced train mode behavior', async () => {
-      await operationalStudiesPage.testPacedTrainMode(frTranslations);
+    await test.step('Verify the times and stops table reflects the default itinerary', async () => {
+      await timesStopsTablePage.verifyTimesStopsDataSheetVisibility();
+      await timesStopsTablePage.verifyDataRowCount(DEFAULT_PACED_TRAIN_ROW_COUNT);
+
+      const westStationRow = timesStopsTablePage.getRow(0);
+      await timesStopsTablePage.verifyRequestedArrivalValue(westStationRow, DEFAULT_MIDNIGHT_HOUR);
     });
   });
 
   /** *************** Test 2 **************** */
   test(
-    'Add a paced train and verify its timetable details',
+    'Create a paced train and verify its simulation results',
     { tag: '@smoke' },
     async ({
       browserName,
-      operationalStudiesPage,
-      rollingStockSelector,
-      routeTab,
-      timesAndStopsTab,
+      itineraryModalPage,
+      headerPage,
       scenarioTimetableSection,
       pacedTrainSection,
       opSimulationResultPage,
       timesStopsTablePage,
     }) => {
-      await test.step('Open train schedule form', async () => {
-        await operationalStudiesPage.openTrainScheduleForm();
+      // This test creates a paced train, edits every stop, and waits for a simulation after each
+      // edit, so it can exceed the default timeout under heavy parallel test load.
+      test.slow();
+
+      await test.step('Open the itinerary modal and fill in a new paced train', async () => {
+        await scenarioTimetableSection.openItineraryModal();
+        await itineraryModalPage.selectRollingStock(
+          dualModeRollingStockName,
+          `${dualModeRollingStockName} - dual-mode`,
+          FREIGHT_TRAIN.category
+        );
+        await itineraryModalPage.fillTrainName(NEW_PACED_TRAIN_SETTINGS.name);
+        await itineraryModalPage.launchRocketSearch(NEW_PACED_TRAIN_ROUTE_SEARCH);
       });
 
-      await test.step('Fill paced train inputs', async () => {
-        await operationalStudiesPage.fillPacedTrainSettings(NEW_PACED_TRAIN_SETTINGS);
-      });
-
-      await test.step('Select rolling stock', async () => {
-        await rollingStockSelector.selectRollingStock(dualModeRollingStockName);
-      });
-
-      await test.step('Select itinerary and verify distance', async () => {
-        await operationalStudiesPage.openRouteTab();
-        await routeTab.performPathfindingByMainCode({
-          originMainCode: 'WS',
-          destinationMainCode: 'NES',
-        });
-        await operationalStudiesPage.checkPathfindingDistance('46.050 km');
-      });
-
-      await test.step('Fill Times & Stops table with initial inputs', async () => {
-        await operationalStudiesPage.openTimesAndStopsTab();
-        await timesAndStopsTab.verifyActiveRowsCount(2);
-
-        for (const cell of initialInputsData) {
-          const translatedHeader = cleanWhitespace(frTranslations[cell.header]);
-          await timesAndStopsTab.fillTableCellByStationAndHeader(
-            cell.stationName,
-            translatedHeader,
-            cell.value,
-            cell.marginForm
-          );
-        }
-      });
-
-      await test.step('Create paced train and return to results', async () => {
-        await operationalStudiesPage.createTrainSchedule();
-        await operationalStudiesPage.checkToastHasBeenLaunched(frTranslations.pacedTrains.added);
+      await test.step('Create a service (paced) train', async () => {
+        await itineraryModalPage.createServiceTrain();
+        await itineraryModalPage.checkTrainPresenceInTimetable(NEW_PACED_TRAIN_SETTINGS.name);
       });
 
       await test.step('Verify list contains exactly one paced train', async () => {
         await scenarioTimetableSection.verifyTrainSchedulesCount(1);
+      });
+
+      await test.step('Set the paced train departure date, cadence and window via the header', async () => {
+        await pacedTrainSection.selectPacedTrainModel(0);
+        await headerPage.expandHeader();
+        await headerPage.setDepartureDate(NEW_PACED_TRAIN_DEPARTURE_DATE);
+        await headerPage.setServiceCadenceMinutes(NEW_PACED_TRAIN_SETTINGS.interval);
+        await headerPage.setServiceWindow(
+          NEW_PACED_TRAIN_SERVICE_WINDOW_HOURS,
+          NEW_PACED_TRAIN_SERVICE_WINDOW_MINUTES
+        );
+        await headerPage.collapseHeader();
+      });
+
+      await test.step('Fill Times & Stops table with initial inputs', async () => {
+        await timesStopsTablePage.verifyTimesStopsDataSheetVisibility();
+        await timesStopsTablePage.verifyDataRowCount(4);
+
+        const westStationRow = timesStopsTablePage.getRow(0);
+        await timesStopsTablePage.editRequestedArrival(
+          westStationRow,
+          WEST_STATION_REQUESTED_ARRIVAL
+        );
+        await timesStopsTablePage.waitForSimulation();
+        await timesStopsTablePage.editRequestedMarginWithUnit(
+          westStationRow,
+          WEST_STATION_MARGIN_VALUE,
+          WEST_STATION_MARGIN_UNIT
+        );
+        await timesStopsTablePage.waitForSimulation();
+
+        const midWestStationRow = timesStopsTablePage.getRow(1);
+        await timesStopsTablePage.editRequestedMarginWithUnit(
+          midWestStationRow,
+          MID_WEST_STATION_MARGIN_VALUE,
+          MID_WEST_STATION_MARGIN_UNIT
+        );
+        await timesStopsTablePage.waitForSimulation();
+        await timesStopsTablePage.editRequestedArrival(
+          midWestStationRow,
+          MID_WEST_STATION_REQUESTED_ARRIVAL
+        );
+        await timesStopsTablePage.waitForSimulation();
+        await timesStopsTablePage.editStopDuration(
+          midWestStationRow,
+          MID_WEST_STATION_STOP_DURATION_DIGITS
+        );
+        await timesStopsTablePage.waitForSimulation();
+
+        const midEastStationRow = timesStopsTablePage.getRow(2);
+        await timesStopsTablePage.editRequestedArrival(
+          midEastStationRow,
+          MID_EAST_STATION_REQUESTED_ARRIVAL
+        );
+        await timesStopsTablePage.waitForSimulation();
+        await timesStopsTablePage.editStopDuration(
+          midEastStationRow,
+          MID_EAST_STATION_STOP_DURATION_DIGITS
+        );
+        await timesStopsTablePage.waitForSimulation();
       });
 
       await test.step('Verify paced train is selected when clicked', async () => {
@@ -220,7 +307,6 @@ test.describe('Paced train management', { tag: ['@op', '@paced-trains'] }, () =>
     page,
     scenarioTimetableSection,
     pacedTrainSection,
-    operationalStudiesPage,
   }) => {
     await test.step('Set paced trains via API and reload to initialize list', async () => {
       await sendTrains(trainScheduleSet.id, trains.slice(0, 7));
@@ -236,7 +322,7 @@ test.describe('Paced train management', { tag: ['@op', '@paced-trains'] }, () =>
 
     await test.step('Duplicate first paced train and verify toast notification', async () => {
       await pacedTrainSection.duplicatePacedTrain();
-      await operationalStudiesPage.checkToastHasBeenLaunched(
+      await scenarioTimetableSection.checkToastHasBeenLaunched(
         frTranslations.timetable.pacedTrainAdded
       );
     });

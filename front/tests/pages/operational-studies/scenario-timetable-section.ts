@@ -6,7 +6,6 @@ import type {
   FlatTranslations,
   TimetableFilterTranslations,
 } from '../../utils/types';
-import PacedTrainSection from './paced-train-section';
 import OpSimulationResultPage from './simulation-results-page';
 
 type ScenarioTranslations = {
@@ -19,13 +18,13 @@ const frTranslations: ScenarioTranslations = readJsonFile<{
 
 class ScenarioTimetableSection extends OpSimulationResultPage {
   private readonly invalidTrainSchedulesMessage: Locator;
-  private readonly trainSchedules: Locator;
+  readonly trainSchedules: Locator;
   private readonly timetableBoardWrapper: Locator;
   private readonly timetableSelectAllButton: Locator;
   private readonly timetableSelectOptionsButton: Locator;
   private readonly timetableTotalTrainLabel: Locator;
   private readonly deleteAllTrainsButton: Locator;
-  private readonly confirmationModalDeleteButton: Locator;
+  readonly confirmationModalDeleteButton: Locator;
   private readonly timetableFilterButton: Locator;
   private readonly timetableFilterButtonClose: Locator;
   private readonly timetableLabelFilterInputLabel: Locator;
@@ -52,6 +51,7 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
   private readonly trainName: Locator;
   readonly itineraryModal: Locator;
   readonly closeItineraryModalButton: Locator;
+  private readonly addTrainScheduleButton: Locator;
 
   constructor(page: Page) {
     super(page);
@@ -99,6 +99,7 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
     this.trainName = page.getByTestId('train-name');
     this.itineraryModal = page.getByTestId('itinerary-modal');
     this.closeItineraryModalButton = page.getByTestId('close-itinerary-modal');
+    this.addTrainScheduleButton = page.getByTestId('scenarios-add-train-schedule-button');
   }
 
   private static getUniqueTrainButton(UniqueTrainSelector: Locator): Locator {
@@ -113,7 +114,7 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
     return pacedTrainSelector.getByTestId('paced-train-interval');
   }
 
-  static getOccurrences(pacedTrain: Locator): Locator {
+  getOccurrences(pacedTrain: Locator): Locator {
     return pacedTrain.getByTestId('occurrence-item');
   }
 
@@ -304,34 +305,6 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
     await this.timetableFilterButtonClose.click();
   }
 
-  // Iterate over each paced train occurrences and verify the visibility of simulation results
-  async verifyPacedTrainSimulations(pacedTrainCount: number): Promise<void> {
-    const pacedTrainSection = new PacedTrainSection(this.page);
-    for (let pacedTrainIndex = 0; pacedTrainIndex < pacedTrainCount; pacedTrainIndex += 1) {
-      const pacedTrain = this.trainSchedules.nth(pacedTrainIndex);
-      await expect(pacedTrain).toBeVisible();
-
-      await pacedTrainSection.expandPacedTrainOccurrenceList(pacedTrainIndex);
-
-      const occurrences = ScenarioTimetableSection.getOccurrences(pacedTrain); // retrieves all occurrence for this mission
-
-      const count = await occurrences.count();
-      for (let occurrenceIndex = 0; occurrenceIndex < count; occurrenceIndex += 1) {
-        const occurrenceButton = occurrences.nth(occurrenceIndex);
-
-        const isSelected =
-          (await occurrenceButton.getAttribute('class'))?.includes('selected') ?? false;
-        if (!isSelected) {
-          await occurrenceButton.click();
-        }
-
-        await this.verifySimulationResultsVisibility();
-      }
-
-      await pacedTrainSection.collapsePacedTrainOccurrenceList(pacedTrainIndex);
-    }
-  }
-
   // Iterate over each unique train and verify the visibility of simulation results
   async verifyEachUniqueTrainSimulation(uniqueTrainCount: number): Promise<void> {
     await expect(this.trainSchedules.first()).toBeVisible();
@@ -344,6 +317,11 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
       await this.projectTrain(currentUniqueTrainIndex);
       await this.verifySimulationResultsVisibility();
     }
+  }
+
+  async openItineraryModal() {
+    await this.addTrainScheduleButton.click();
+    await expect(this.itineraryModal).toBeVisible();
   }
 
   // TODO: This function must be modified after we drop the old itinerary interface

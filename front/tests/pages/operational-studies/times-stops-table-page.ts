@@ -480,10 +480,14 @@ class TimesStopsTablePage extends OpSimulationResultPage {
   }
 
   async verifyTimesStopsTableContent(expectedRows: TimesStopsTableRow[]): Promise<void> {
+    await this.waitForSimulation();
     await expect(this.dataRows).toHaveCount(expectedRows.length);
-    const rows = await this.dataRows.all();
-    const actualRows = await Promise.all(rows.map((row) => this.extractRow(row)));
-    expect(actualRows).toEqual(expectedRows);
+    await expect
+      .poll(async () => {
+        const rows = await this.dataRows.all();
+        return Promise.all(rows.map((row) => this.extractRow(row)));
+      })
+      .toEqual(expectedRows);
   }
 }
 

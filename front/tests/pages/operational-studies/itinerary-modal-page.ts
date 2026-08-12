@@ -1,6 +1,7 @@
 import { expect, type Locator, type Page } from '@playwright/test';
 
 class ItineraryModalPage {
+  private readonly itineraryModal: Locator;
   private readonly itineraryModalFormHeader: Locator;
   private readonly itineraryModalFormBody: Locator;
   private readonly itineraryModalFormFooter: Locator;
@@ -9,7 +10,7 @@ class ItineraryModalPage {
   private readonly itineraryModalCancelButton: Locator;
   private readonly itineraryModalAddSingleTrainButton: Locator;
   private readonly itineraryModalAddServiceTrainButton: Locator;
-  private readonly createTimetableItemButton: Locator;
+  private readonly itineraryModalEditTrainButton: Locator;
   private readonly comboBox: Locator;
   private readonly pathStepWrapper: Locator;
   private readonly opSuggestion: Locator;
@@ -33,6 +34,7 @@ class ItineraryModalPage {
   private readonly timetableItemName: Locator;
 
   constructor(page: Page) {
+    this.itineraryModal = page.getByTestId('itinerary-modal');
     this.itineraryModalFormHeader = page.getByTestId('itinerary-modal-form-header');
     this.itineraryModalFormBody = page.getByTestId('itinerary-modal-form-body');
     this.itineraryModalFormFooter = page.getByTestId('itinerary-modal-form-footer');
@@ -45,7 +47,7 @@ class ItineraryModalPage {
     this.itineraryModalAddServiceTrainButton = page.getByTestId(
       'itinerary-modal-add-service-train-button'
     );
-    this.createTimetableItemButton = page.getByTestId('create-train-schedule-button');
+    this.itineraryModalEditTrainButton = page.getByTestId('itinerary-modal-edit-train-button');
     this.comboBox = page.getByTestId('path-step-combo-box');
     this.pathStepWrapper = page.getByTestId('path-step-wrapper');
     this.opSuggestion = page.getByTestId('op-suggestion');
@@ -66,7 +68,8 @@ class ItineraryModalPage {
     this.segmentedControlInputPass = page.getByTestId('segmented-control-pass');
     this.segmentedControlInputStop = page.getByTestId('segmented-control-stop');
     this.timetableItem = page.getByTestId('scenario-train-schedule');
-    this.timetableItemName = this.timetableItem.getByTestId('train-name');
+    // Unique trains use 'train-name', paced trains use 'paced-train-name'.
+    this.timetableItemName = this.timetableItem.getByTestId(/^(train-name|paced-train-name)$/);
   }
 
   private getOpNameClearIcon(pathStepIndex: number): Locator {
@@ -204,9 +207,13 @@ class ItineraryModalPage {
     await expect(this.pathStepMarker).toHaveCount(count);
   }
 
-  async checkItineraryReverse(expectedFirstValue: string, expectedSecondValue: string) {
+  async reverseItinerary() {
     await expect(this.itineraryReverseButton).toBeVisible();
     await this.itineraryReverseButton.click();
+  }
+
+  async checkItineraryReverse(expectedFirstValue: string, expectedSecondValue: string) {
+    await this.reverseItinerary();
     await expect(this.comboBox.first()).toHaveValue(expectedFirstValue);
     await expect(this.comboBox.nth(1)).toHaveValue(expectedSecondValue);
     await expect(this.pathStepCounter.nth(2)).toHaveText('');
@@ -245,8 +252,19 @@ class ItineraryModalPage {
   async createTrain() {
     await expect(this.itineraryModalAddSingleTrainButton).toBeVisible();
     await this.itineraryModalAddSingleTrainButton.click();
-    await expect(this.createTimetableItemButton).toBeVisible();
-    await this.createTimetableItemButton.click();
+    await expect(this.itineraryModal).not.toBeVisible();
+  }
+
+  async createServiceTrain() {
+    await expect(this.itineraryModalAddServiceTrainButton).toBeVisible();
+    await this.itineraryModalAddServiceTrainButton.click();
+    await expect(this.itineraryModal).not.toBeVisible();
+  }
+
+  async submitEdit() {
+    await expect(this.itineraryModalEditTrainButton).toBeVisible();
+    await this.itineraryModalEditTrainButton.click();
+    await expect(this.itineraryModal).not.toBeVisible();
   }
 
   async checkTrainPresenceInTimetable(name: string) {

@@ -13,6 +13,13 @@ import {
   EDITED_OCCURRENCE_NAME,
   EXCEPTION_ACTIVE_OCCURRENCE_MENU_BUTTONS,
   INITIAL_OCCURRENCE_NAME,
+  OCCURRENCE_EDITION_COMPOSITION_CODE,
+  OCCURRENCE_EDITION_REMAINING_OCCURRENCES,
+  OCCURRENCE_EDITION_REQUESTED_DEPARTURE,
+  OCCURRENCE_EDITION_RESTORED_OCCURRENCE,
+  OCCURRENCE_EDITION_ROUTE_SEARCH,
+  OCCURRENCE_EDITION_STOP_DURATION_DIGITS,
+  OCCURRENCE_EDITION_STOP_ROW_FILTER,
 } from '../../assets/paced-train/const';
 import test from '../../page-object-fixture';
 import { generateUniqueName, waitForInfraStateToBeCached } from '../../utils';
@@ -92,7 +99,7 @@ test.describe(
     });
 
     /** *************** Test 1 **************** */
-    test('Edit an indexed occurrence', async ({ pacedTrainSection, operationalStudiesPage }) => {
+    test('Edit an indexed occurrence', async ({ page, pacedTrainSection, headerPage }) => {
       await test.step('Open paced train and check initial menu (first occurrence)', async () => {
         await pacedTrainSection.expandPacedTrainOccurrenceList(0);
         await pacedTrainSection.checkOccurrenceActionMenu({
@@ -102,15 +109,11 @@ test.describe(
         });
       });
 
-      await test.step('Edit occurrence name and save', async () => {
-        await pacedTrainSection.clickOccurrenceMenuButton('edit');
-        await operationalStudiesPage.setTrainScheduleName(EDITED_OCCURRENCE_NAME);
-        await operationalStudiesPage.updateTrainSchedule(
-          frTranslations.pacedTrains.updatePacedTrain
-        );
-        await operationalStudiesPage.checkToastHasBeenLaunched(
-          frTranslations.timetable.pacedTrainUpdated
-        );
+      await test.step('Select the occurrence and edit its name via the header', async () => {
+        await page.keyboard.press('Escape'); // Close the occurrence action menu opened above
+        await pacedTrainSection.clickOnOccurrence(0);
+        await headerPage.expandHeader();
+        await headerPage.setName(EDITED_OCCURRENCE_NAME);
       });
 
       await test.step('Verify edited occurrence tooltip and menu', async () => {
@@ -154,66 +157,57 @@ test.describe(
 
     /** *************** Test 2 **************** */
     test('Edit added exception', async ({
+      page,
       pacedTrainSection,
-      operationalStudiesPage,
-      rollingStockSelector,
-      timesAndStopsTab,
-      routeTab,
-      simulationSettingsTab,
+      headerPage,
+      itineraryModalPage,
+      timesStopsTablePage,
     }) => {
-      const PACED_TRAIN_NUMBER = 4;
-      const addedOccurrenceIndex = 1;
-      const editedPacedTrainData = trains[PACED_TRAIN_NUMBER];
-
       await test.step('Open paced train and check initial menu state', async () => {
-        await pacedTrainSection.expandPacedTrainOccurrenceList(PACED_TRAIN_NUMBER);
+        await pacedTrainSection.expandPacedTrainOccurrenceList(4);
         await pacedTrainSection.checkOccurrenceActionMenu({
-          occurrenceIndex: addedOccurrenceIndex,
+          occurrenceIndex: 1,
           expectedButtons: ADDED_EXCEPTION_MENU_BUTTONS,
           translations: frTranslations,
-          pacedTrainIndex: PACED_TRAIN_NUMBER,
+          pacedTrainIndex: 4,
         });
       });
 
-      await test.step('Open exception edit menu', async () => {
-        await pacedTrainSection.clickOccurrenceMenuButton('edit');
-        await operationalStudiesPage.checkEditOccurrenceButtonsVisibility();
+      await test.step('Select the occurrence and edit rolling stock + speed limit tag via the header', async () => {
+        await page.keyboard.press('Escape');
+        await pacedTrainSection.clickOnOccurrence(1);
+        await headerPage.expandHeader();
+        await headerPage.setRollingStock(electricRollingStockName);
+        await headerPage.selectCompositionCode(OCCURRENCE_EDITION_COMPOSITION_CODE);
+        await timesStopsTablePage.waitForSimulation();
       });
 
-      await test.step('Modify RS, route, start time and simulation params', async () => {
-        await rollingStockSelector.openRollingstockModal();
-        await rollingStockSelector.selectRollingStockCard({
-          name: electricRollingStockName,
-          confirmSelection: true,
+      await test.step('Modify the route via the itinerary modal opened from the header', async () => {
+        await headerPage.openItinerary();
+        await itineraryModalPage.launchRocketSearch(OCCURRENCE_EDITION_ROUTE_SEARCH);
+        await itineraryModalPage.submitEdit();
+        await timesStopsTablePage.waitForSimulation();
+      });
+
+      await test.step('Edit stop duration and start time via the times and stops table', async () => {
+        const midEastStationRow = timesStopsTablePage.dataRows.filter({
+          hasText: OCCURRENCE_EDITION_STOP_ROW_FILTER,
         });
-
-        await operationalStudiesPage.openRouteTab();
-        await routeTab.performPathfindingByMainCode({
-          originMainCode: 'WS',
-          destinationMainCode: 'NES',
-        });
-
-        await operationalStudiesPage.setTrainScheduleStartTime('02:40', '2024-10-16');
-
-        await operationalStudiesPage.openTimesAndStopsTab();
-        await timesAndStopsTab.fillTableCellByStationAndHeader(
-          'Mid_East_station',
-          frTranslations.timeStopTable.stopTime,
-          '18000'
+        await timesStopsTablePage.editStopDuration(
+          midEastStationRow,
+          OCCURRENCE_EDITION_STOP_DURATION_DIGITS
         );
 
-        await operationalStudiesPage.openSimulationSettingsTab();
-        await simulationSettingsTab.selectSpeedLimitTagOption('MA100');
-
-        await operationalStudiesPage.submitTrainScheduleEdit();
-        await operationalStudiesPage.checkToastHasBeenLaunched(
-          frTranslations.timetable.pacedTrainUpdated
+        const originRow = timesStopsTablePage.getRow(0);
+        await timesStopsTablePage.editRequestedDeparture(
+          originRow,
+          OCCURRENCE_EDITION_REQUESTED_DEPARTURE
         );
       });
 
       await test.step('Check exception tooltip after modifications', async () => {
         await pacedTrainSection.checkExceptionTooltip(
-          addedOccurrenceIndex,
+          1,
           frTranslations.timetable.occurrenceType.addedOccurrence,
           frTranslations.timetable.occurrenceChangeGroup.path_and_schedule as ChangeGroup,
           frTranslations.timetable.occurrenceChangeGroup.rolling_stock as ChangeGroup,
@@ -224,53 +218,35 @@ test.describe(
 
       await test.step('Check occurrence menu after modifications', async () => {
         await pacedTrainSection.checkOccurrenceActionMenu({
-          occurrenceIndex: addedOccurrenceIndex,
+          occurrenceIndex: 1,
           expectedButtons: ADDED_AND_MODIFIED_EXCEPTION_MENU_BUTTONS,
           translations: frTranslations,
-          pacedTrainIndex: PACED_TRAIN_NUMBER,
+          pacedTrainIndex: 4,
         });
       });
 
       await test.step('Restore occurrence to model', async () => {
         await pacedTrainSection.clickOccurrenceMenuButton('restore');
-        await pacedTrainSection.verifyOccurrenceDetails(
-          {
-            name: `${editedPacedTrainData.train_name}/+`,
-            startTime: '02:40',
-            arrivalTime: '02:47',
-          },
-          addedOccurrenceIndex
-        );
+        await pacedTrainSection.verifyOccurrenceDetails(OCCURRENCE_EDITION_RESTORED_OCCURRENCE, 1);
 
         await pacedTrainSection.checkOccurrenceActionMenu({
-          occurrenceIndex: addedOccurrenceIndex,
+          occurrenceIndex: 1,
           expectedButtons: ADDED_EXCEPTION_MENU_BUTTONS,
           translations: frTranslations,
-          pacedTrainIndex: PACED_TRAIN_NUMBER,
+          pacedTrainIndex: 4,
         });
       });
 
       await test.step('Delete occurrence and check remaining ones', async () => {
-        await pacedTrainSection.openOccurrenceActionMenu(addedOccurrenceIndex, PACED_TRAIN_NUMBER);
+        await pacedTrainSection.openOccurrenceActionMenu(1, 4);
         await pacedTrainSection.clickOccurrenceMenuButton('delete');
 
-        await pacedTrainSection.expectOccurrencesListLength(2);
-        await pacedTrainSection.verifyOccurrenceDetails(
-          {
-            name: `${editedPacedTrainData.train_name} 1`,
-            startTime: '02:00',
-            arrivalTime: '02:07',
-          },
-          0
+        await pacedTrainSection.expectOccurrencesListLength(
+          OCCURRENCE_EDITION_REMAINING_OCCURRENCES.length
         );
-        await pacedTrainSection.verifyOccurrenceDetails(
-          {
-            name: `${editedPacedTrainData.train_name} 3`,
-            startTime: '03:00',
-            arrivalTime: '03:07',
-          },
-          1
-        );
+        for (const [index, occurrence] of OCCURRENCE_EDITION_REMAINING_OCCURRENCES.entries()) {
+          await pacedTrainSection.verifyOccurrenceDetails(occurrence, index);
+        }
       });
     });
   }
