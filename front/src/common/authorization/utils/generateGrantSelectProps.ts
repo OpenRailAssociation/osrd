@@ -4,7 +4,15 @@ import type { Grant, Privilege, ResourceType } from 'common/authorization/types'
 
 import { GRANTS_LABEL, RESOURCE_TYPE_ALLOWED_GRANTS } from '../consts';
 
-function getRequiredPrivilegesToAddGrant(grant: keyof typeof GRANTS_LABEL): Privilege[] {
+// Privilege that grants ownership over the resource, used to add/revoke the OWNER/NONE grants
+function getOwnerPrivilege(resourceType: ResourceType): Privilege {
+  return resourceType === 'project' ? 'has_access' : 'can_share_ownership';
+}
+
+function getRequiredPrivilegesToAddGrant(
+  grant: keyof typeof GRANTS_LABEL,
+  resourceType: ResourceType
+): Privilege[] {
   switch (grant) {
     case 'RESTRICTED_READER':
       return ['can_share_read'];
@@ -13,10 +21,10 @@ function getRequiredPrivilegesToAddGrant(grant: keyof typeof GRANTS_LABEL): Priv
     case 'WRITER':
       return ['can_share_write'];
     case 'OWNER':
-      return ['can_share_ownership'];
+      return [getOwnerPrivilege(resourceType)];
     // NONE means revoke, and only a owner can do that
     case 'NONE':
-      return ['can_share_ownership'];
+      return [getOwnerPrivilege(resourceType)];
     default:
       return [];
   }
@@ -43,7 +51,7 @@ const generateGrantSelectProps = ({
 
       if (grantsForResource && !grantsForResource.includes(grant)) return acc;
 
-      const requiredPrivileges = getRequiredPrivilegesToAddGrant(grant);
+      const requiredPrivileges = getRequiredPrivilegesToAddGrant(grant, resourceType);
       const isOptionShown = requiredPrivileges.every((privilege) => userPrivileges.has(privilege));
       if (isOptionShown) {
         acc.push({
@@ -65,7 +73,7 @@ const generateGrantSelectProps = ({
     };
   }
 
-  // Search for the subject 's option in the allowed list
+  // Search for the subject's option in the allowed list
   // if the subject's option is not found, we return only its grant and in readonly mode
   const subjectValueIndex = allowedOptions.findIndex((option) => option.value === subjectGrant);
   if (subjectValueIndex < 0) {
@@ -84,7 +92,7 @@ const generateGrantSelectProps = ({
 
   // In case of not owner of the resource, we need to remove all options below the subject one.
   // A user can't revoke a grant if he is not owner
-  if (!userPrivileges.has('can_share_ownership')) {
+  if (!userPrivileges.has(getOwnerPrivilege(resourceType))) {
     const filteredOptions = allowedOptions.filter((_, index) => index >= subjectValueIndex);
     return {
       value: allowedOptions[subjectValueIndex],
