@@ -155,27 +155,6 @@ impl<'c> UserAuthorizer<'c> {
                 // verification function.
                 Some(check)
             }
-
-            Check::CanGiveSubjectProjectGrant(authz::Subject::User(_), project) => {
-                // There is only one level of grant. The issuer must own a grant on the project to
-                // share it to other users.
-                let Ok(grant) = authz::v2::project_effective_grant(self.issuer(), *project)
-                    .access_authorized::<Infallible>(self.openfga)
-                    .access()
-                    .await?;
-
-                match grant {
-                    Some(ProjectGrant::Owner) => None,
-                    None => Some(check),
-                }
-            }
-            Check::CanGiveSubjectProjectGrant(authz::Subject::Group(_), _) => {
-                // The only users to allowed to alter group grants are admins who bypass this entire
-                // verification function: trying to give a grant to a group in the UserAuthorizer should
-                // always be rejected
-                Some(check)
-            }
-
             Check::SubjectEffectiveInfraGrantIsNot(grant, subject, infra) => {
                 let Ok(subject_grant) = authz::v2::infra_effective_grant(*subject, *infra)
                     .access_authorized::<Infallible>(self.openfga)
@@ -183,6 +162,7 @@ impl<'c> UserAuthorizer<'c> {
                     .await?;
                 (subject_grant == Some(*grant)).then_some(check)
             }
+
             Check::CanAlterSubjectRollingStockGrant(
                 subject @ authz::Subject::User(_),
                 rolling_stock,
@@ -242,6 +222,40 @@ impl<'c> UserAuthorizer<'c> {
                 .access_authorized::<Infallible>(self.openfga)
                 .access()
                 .await?;
+                (owners.len() == 1 && owners.contains(subject)).then_some(check)
+            }
+
+            Check::CanGiveSubjectProjectGrant(authz::Subject::User(_), project) => {
+                // There is only one level of grant. The issuer must own a grant on the project to
+                // share it to other users.
+                let Ok(grant) = authz::v2::project_effective_grant(self.issuer(), *project)
+                    .access_authorized::<Infallible>(self.openfga)
+                    .access()
+                    .await?;
+                match grant {
+                    Some(ProjectGrant::Owner) => None,
+                    None => Some(check),
+                }
+            }
+            Check::CanGiveSubjectProjectGrant(authz::Subject::Group(_), _) => {
+                // The only users to allowed to alter group grants are admins who bypass this entire
+                // verification function: trying to give a grant to a group in the UserAuthorizer should
+                // always be rejected
+                Some(check)
+            }
+            Check::SubjectEffectiveProjectGrantIsNot(grant, subject, project) => {
+                let Ok(subject_grant) = authz::v2::project_effective_grant(*subject, *project)
+                    .access_authorized::<Infallible>(self.openfga)
+                    .access()
+                    .await?;
+                (subject_grant == Some(*grant)).then_some(check)
+            }
+            Check::IsNotLastProjectOwner(subject, project) => {
+                let Ok(owners) = authz::v2::project_granted_subjects(*project)
+                    .access_authorized::<Infallible>(self.openfga)
+                    .access()
+                    .await?;
+
                 (owners.len() == 1 && owners.contains(subject)).then_some(check)
             }
         })

@@ -132,7 +132,11 @@ pub fn project_revoke_grant(subject: Subject, project: Project) -> Protected<boo
             }
             .boxed()
         })
-        .with_check(Check::HasRole(Actor::Issuer, Role::Admin))
+        .with_check_iter([
+            Check::HasProjectPrivilege(Actor::Issuer, ProjectPrivilege::HasAccess, project),
+            Check::SubjectEffectiveProjectGrantIsNot(ProjectGrant::Owner, subject, project),
+            Check::IsNotLastProjectOwner(subject, project),
+        ])
 }
 
 pub fn project_privileges(user: User, project: Project) -> Protected<HashSet<ProjectPrivilege>> {
@@ -731,7 +735,9 @@ mod tests {
     #[case::project_revoke_grant(
         project_revoke_grant(Subject::user(1), Project(1)).checks,
         &[
-            Check::HasRole(Actor::Issuer, Role::Admin),
+            Check::HasProjectPrivilege(Actor::Issuer, ProjectPrivilege::HasAccess, Project(1)),
+            Check::SubjectEffectiveProjectGrantIsNot(ProjectGrant::Owner, Subject::user(1), Project(1)),
+            Check::IsNotLastProjectOwner(Subject::user(1), Project(1)),
         ]
     )]
     #[case::project_privileges(
