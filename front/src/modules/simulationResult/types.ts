@@ -12,6 +12,7 @@ import type {
   PathItemLocation,
   PathProperties,
   RollingStockWithLiveries,
+  ScheduleItem,
   SimulationResponseSuccess,
   TrainSchedule,
   PathItem,
@@ -65,6 +66,8 @@ export type TrainSpaceTimeData = {
   departureTime: Date;
   originPathItem: PathItem;
   destinationPathItem: PathItem;
+  schedule?: ScheduleItem[];
+  initialSpeed?: number;
   paced?: TrainScheduleWithDetails['paced'] & {
     exceptionProjections: Map<number, BaseTrainProjection>;
   };
