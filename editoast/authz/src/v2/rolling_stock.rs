@@ -24,6 +24,7 @@ pub fn rolling_stock_privileges(
         async move {
             let (
                 admin,
+                can_restricted_read,
                 can_read,
                 can_share_read,
                 can_write,
@@ -34,6 +35,7 @@ pub fn rolling_stock_privileges(
             ) = openfga
                 .checks((
                     User::role().check(&Role::Admin, &user),
+                    RollingStock::can_restricted_read().check(&user, &rolling_stock),
                     RollingStock::can_read().check(&user, &rolling_stock),
                     RollingStock::can_share_read().check(&user, &rolling_stock),
                     RollingStock::can_write().check(&user, &rolling_stock),
@@ -44,6 +46,9 @@ pub fn rolling_stock_privileges(
                 ))
                 .await?;
             let mut privileges = HashSet::new();
+            privileges.extend(
+                (admin || can_restricted_read).then_some(RollingStockPrivilege::CanRestrictedRead),
+            );
             privileges.extend((admin || can_read).then_some(RollingStockPrivilege::CanRead));
             privileges
                 .extend((admin || can_share_read).then_some(RollingStockPrivilege::CanShareRead));
@@ -61,7 +66,7 @@ pub fn rolling_stock_privileges(
     })
     .with_check(Check::HasRollingStockPrivilege(
         Actor::Issuer,
-        RollingStockPrivilege::CanRead,
+        RollingStockPrivilege::CanRestrictedRead,
         rolling_stock,
     ))
 }
@@ -463,6 +468,7 @@ mod tests {
                 .rolling_stock_privileges(User(1), RollingStock(1))
                 .await,
             HashSet::from_iter([
+                RollingStockPrivilege::CanRestrictedRead,
                 RollingStockPrivilege::CanRead,
                 RollingStockPrivilege::CanShareRead,
                 RollingStockPrivilege::CanWrite,
@@ -488,6 +494,7 @@ mod tests {
                 .rolling_stock_privileges(User(1), RollingStock(1))
                 .await,
             HashSet::from_iter([
+                RollingStockPrivilege::CanRestrictedRead,
                 RollingStockPrivilege::CanRead,
                 RollingStockPrivilege::CanShareRead,
                 RollingStockPrivilege::CanWrite,
@@ -813,7 +820,7 @@ mod tests {
     #[case::rolling_stock_privileges(
         rolling_stock_privileges(User(1), RollingStock(1)).checks,
         &[
-           Check::HasRollingStockPrivilege(Actor::Issuer, RollingStockPrivilege::CanRead, RollingStock(1))
+           Check::HasRollingStockPrivilege(Actor::Issuer, RollingStockPrivilege::CanRestrictedRead, RollingStock(1))
         ]
     )]
     #[rstest]

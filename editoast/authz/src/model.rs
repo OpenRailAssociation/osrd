@@ -268,6 +268,7 @@ fga::relations! {
         writer: User,
         owner: User,
         // Computed
+        can_restricted_read: User,
         can_read: User,
         can_write: User,
         can_delete: User,
