@@ -9,13 +9,16 @@ import {
   TokenInput,
   type CalendarSlot,
 } from '@osrd-project/ui-core';
+import cx from 'classnames';
 import { isEqual } from 'lodash';
 import { useTranslation } from 'react-i18next';
 
+import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import type {
   LightRollingStockWithLiveries,
   PathfindingResult,
   TrainCategory,
+  TimetableType,
 } from 'common/api/osrdEditoastApi';
 import type { Comfort, ConstraintDistribution } from 'common/api/osrdRailwayManagerApi';
 import Banner from 'common/Banner';
@@ -27,8 +30,9 @@ import useCategoryOptions, {
   categoryOptionId,
 } from 'modules/rollingStock/hooks/useCategoryOptions';
 import useFilterRollingStock from 'modules/rollingStock/hooks/useFilterRollingStock';
+import { parseStartTime } from 'modules/trainSchedule/helpers/formatTrainScheduleWithDetails';
 import type { Train } from 'reducers/osrdconf/types';
-import { Duration } from 'utils/duration';
+import { Duration, type StartTime } from 'utils/duration';
 import { usePrevious } from 'utils/hooks/state';
 import { kmhToMs } from 'utils/physics';
 import { isOccurrenceId } from 'utils/trainId';
@@ -68,7 +72,7 @@ export type TrainFieldsState = {
   labels: string[];
   added_exception_date: Date;
   rolling_stock: LightRollingStockWithLiveries | string;
-  departure_date: Date;
+  departure_date: StartTime;
   initial_speed: string | null;
   service_changed_confirmed: boolean;
 };
@@ -94,9 +98,11 @@ function computeInitialSpeedError(
 
 function getFieldsFromTrain(
   train: Train,
-  rollingStocks: LightRollingStockWithLiveries[]
+  rollingStocks: LightRollingStockWithLiveries[],
+  timetableType: TimetableType
 ): TrainFieldsState {
   const rollingStock = rollingStocks.find((rs) => rs.name === train.rolling_stock_name);
+  const startTime = parseStartTime(train.start_time, timetableType);
 
   return {
     train_name: train.train_name,
@@ -111,7 +117,7 @@ function getFieldsFromTrain(
     labels: train.labels ?? [],
     added_exception_date: new Date(train.start_time),
     rolling_stock: rollingStock ?? train.rolling_stock_name,
-    departure_date: new Date(train.start_time),
+    departure_date: startTime,
     initial_speed:
       train.initial_speed === undefined ? null : String(Math.round(train.initial_speed * 36) / 10),
     service_changed_confirmed: !train.paced || train.paced.exceptions.length === 0,
@@ -232,14 +238,15 @@ const ExpandedTrainForm = ({
 }: ExpandedTrainFormProps) => {
   const { t } = useTranslation(['operational-studies', 'translation']);
   const infraID = useInfraID();
+  const { scenario } = useScenarioContext();
   const speedLimitTags = useSpeedLimitTags(infraID);
   const categoryOptions = useCategoryOptions(false);
 
   const { filteredRollingStockList: rollingStocks } = useFilterRollingStock();
 
   const fieldsFromTrain = useMemo(
-    () => getFieldsFromTrain(train, rollingStocks),
-    [train, rollingStocks]
+    () => getFieldsFromTrain(train, rollingStocks, scenario.timetable_type),
+    [train, rollingStocks, scenario.timetable_type]
   );
   const [fields, setFields] = useState<TrainFieldsState>(fieldsFromTrain);
 
@@ -393,7 +400,11 @@ const ExpandedTrainForm = ({
         onPersistTrain={onPersistTrain}
         revertServiceChange={revertServiceChange}
       />
-      <div className="train-form">
+      <div
+        className={cx('train-form', {
+          'calendar-timetable': scenario.timetable_type === 'CALENDAR',
+        })}
+      >
         <div className="train-name" data-testid="train-name">
           <Input
             id="train-header-name-input"
@@ -413,29 +424,31 @@ const ExpandedTrainForm = ({
             }
           />
         </div>
-        <div className="train-departure-date">
-          <DatePicker
-            testIdPrefix="train-header-departure-date"
-            value={fields.departure_date}
-            isRangeMode={false}
-            inputProps={{
-              id: 'train-header-departure-date-input',
-              label: t('manageTrainSchedule.trainHeader.form.departureDate'),
-              small: true,
-            }}
-            onDateChange={(departureDate) => {
-              if (!departureDate) return;
-              const startTimeDate = new Date(train.start_time);
-              departureDate?.setHours(
-                startTimeDate.getHours(),
-                startTimeDate.getMinutes(),
-                startTimeDate.getSeconds()
-              );
-              onFieldImmediateChange('departure_date', departureDate);
-            }}
-            selectableSlot={ANY_DATE_SLOT}
-          />
-        </div>
+        {fields.departure_date instanceof Date && (
+          <div className="train-departure-date">
+            <DatePicker
+              testIdPrefix="train-header-departure-date"
+              value={fields.departure_date}
+              isRangeMode={false}
+              inputProps={{
+                id: 'train-header-departure-date-input',
+                label: t('manageTrainSchedule.trainHeader.form.departureDate'),
+                small: true,
+              }}
+              onDateChange={(departureDate) => {
+                if (!departureDate) return;
+                const startTimeDate = new Date(train.start_time);
+                departureDate?.setHours(
+                  startTimeDate.getHours(),
+                  startTimeDate.getMinutes(),
+                  startTimeDate.getSeconds()
+                );
+                onFieldImmediateChange('departure_date', departureDate);
+              }}
+              selectableSlot={ANY_DATE_SLOT}
+            />
+          </div>
+        )}
         <div className="train-initial-velocity" data-testid="train-header-initial-velocity-field">
           <Input
             id="train-header-initial-velocity-input"

@@ -40,6 +40,10 @@
       margin-top: -8px;
     }
 
+    &:not(.calendar-timetable) .train-initial-velocity {
+      grid-row: span 2;
+    }
+
     label {
       margin-bottom: unset;
     }
