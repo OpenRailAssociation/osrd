@@ -14,7 +14,7 @@ dependencies = [
 ]
 
 [dependency-groups]
-dev = ["pyright~=1.1.410", "ruff~=0.16.1"]
+dev = ["pyright~=1.1.410", "ruff~=0.16.2"]
 
 [build-system]
 requires = ["poetry-core>=2.4.1"]
