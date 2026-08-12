@@ -368,24 +368,25 @@ pub(in crate::views) async fn search_journeys(
         journeys
             .into_iter()
             .map(|journey| {
-                let path_indexed_connections = journey
+                journey
                     .into_iter()
-                    .map(|connection_id| path_indexed_connections[connection_id]);
+                    .map(|leg| {
+                        let enter = path_indexed_connections[leg.enter_connection_id];
+                        let exit = path_indexed_connections[leg.exit_connection_id];
 
-                merge_connections(path_indexed_connections)
-                    .map(|path_indexed_connection| TrainSchedulePart {
-                        train_schedule_id: train_schedule_ids
-                            [path_indexed_connection.connection.trip],
-                        from: TrainSchedulePartBound {
-                            path_step_index: path_indexed_connection.departure_path_index,
-                            op_id: op_ids[path_indexed_connection.connection.departure].clone(),
-                            time_ms: path_indexed_connection.connection.departure_ms,
-                        },
-                        to: TrainSchedulePartBound {
-                            path_step_index: path_indexed_connection.arrival_path_index,
-                            op_id: op_ids[path_indexed_connection.connection.arrival].clone(),
-                            time_ms: path_indexed_connection.connection.arrival_ms,
-                        },
+                        TrainSchedulePart {
+                            train_schedule_id: train_schedule_ids[enter.connection.trip],
+                            from: TrainSchedulePartBound {
+                                path_step_index: enter.departure_path_index,
+                                op_id: op_ids[enter.connection.departure].clone(),
+                                time_ms: enter.connection.departure_ms,
+                            },
+                            to: TrainSchedulePartBound {
+                                path_step_index: exit.arrival_path_index,
+                                op_id: op_ids[exit.connection.arrival].clone(),
+                                time_ms: exit.connection.arrival_ms,
+                            },
+                        }
                     })
                     .collect()
             })
@@ -405,34 +406,4 @@ fn find_op_index(
 ) -> Option<usize> {
     let op_ref_id = op_cache.get_op_ref_id(op_ref)?;
     op_index_by_id.get(&op_ref_id).copied()
-}
-
-/// Merge connections of a same trip taken in a row into a single one.
-fn merge_connections<'a, I>(mut iter: I) -> impl Iterator<Item = PathIndexedConnection> + 'a
-where
-    I: Iterator<Item = PathIndexedConnection> + 'a,
-{
-    let mut prev_connection: Option<PathIndexedConnection> = None;
-
-    std::iter::from_fn(move || {
-        loop {
-            let next_connection = match iter.next() {
-                Some(conn) => conn,
-                None => return prev_connection.take(),
-            };
-
-            match &mut prev_connection {
-                Some(prev_conn) => {
-                    if prev_conn.connection.trip == next_connection.connection.trip {
-                        prev_conn.connection.arrival = next_connection.connection.arrival;
-                        prev_conn.connection.arrival_ms = next_connection.connection.arrival_ms;
-                        prev_conn.arrival_path_index = next_connection.arrival_path_index;
-                    } else {
-                        return prev_connection.replace(next_connection);
-                    }
-                }
-                None => prev_connection = Some(next_connection),
-            }
-        }
-    })
 }
