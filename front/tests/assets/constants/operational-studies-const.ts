@@ -2,11 +2,6 @@ import type { OccurrenceDetails, PacedTrainDetails } from '../../utils/types';
 
 export const DEFAULT_PACED_TRAIN_SERVICE_INTERVAL = '60';
 
-export const PACED_TRAIN_SETTINGS_TEST: Pick<PacedTrainDetails, 'timeWindow' | 'interval'> = {
-  timeWindow: '180',
-  interval: '30',
-};
-
 export const NEW_PACED_TRAIN_SETTINGS: PacedTrainDetails = {
   name: 'Paced train test',
   startTime: '2025-03-15T08:35:40',

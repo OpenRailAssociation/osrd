@@ -23,7 +23,6 @@ class PacedTrainSection extends ScenarioTimetableSection {
   private readonly testedOccurrenceArrivalTime: Locator;
   private readonly testedOccurrenceArrivalTimeLoader: Locator;
   private readonly occurrencesCount: Locator;
-  private readonly manageTrainSchedulePage: Locator;
   private readonly confirmationModalButton: Locator;
   private readonly portalOccurrenceMenu: {
     disable: Locator;
@@ -53,7 +52,6 @@ class PacedTrainSection extends ScenarioTimetableSection {
     this.testedOccurrenceArrivalTimeLoader =
       this.testedPacedTrain.getByTestId('arrival-time-loader');
     this.occurrencesCount = page.getByTestId('occurrences-count');
-    this.manageTrainSchedulePage = page.getByTestId('manage-train-schedule');
     this.confirmationModalButton = page.getByTestId('confirmation-modal-button');
     this.portalOccurrenceMenu = {
       disable: page.getByTestId('occurrence-disable-button'),
@@ -313,19 +311,6 @@ class PacedTrainSection extends ScenarioTimetableSection {
     });
     await actionButtons.duplicateTrain.click();
     await this.collapsePacedTrainOccurrenceList(index);
-  }
-
-  async openPacedTrainEditor(index = 0) {
-    await this.expandPacedTrainOccurrenceList(index);
-    const actionButtons = await this.getActionButtonsLocators({
-      trainIndex: index,
-      trainType: 'paced-train',
-    });
-    await expect(actionButtons.editTrain).toBeVisible();
-    await actionButtons.editTrain.click();
-    // TODO: This function must be modified after we drop the old itinerary interface
-    await this.closeItineraryModalButton.click();
-    await expect(this.manageTrainSchedulePage).toBeVisible();
   }
 
   async projectPacedTrain(index = 0) {
