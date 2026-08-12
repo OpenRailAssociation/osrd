@@ -17,6 +17,11 @@ pub enum Resource {
     Project(authz::Project),
 }
 
+/// Error returned when a [`StandardGrant`] cannot be converted to a resource-specific grant.
+///
+/// Keeps the rejected grant available so endpoints can turn it into the appropriate API error.
+pub(super) struct IncompatibleGrant(pub(super) StandardGrant);
+
 impl Resource {
     pub(super) fn id(&self) -> i64 {
         match self {
@@ -120,6 +125,19 @@ impl From<ProjectGrant> for StandardGrant {
     fn from(grant: ProjectGrant) -> Self {
         match grant {
             ProjectGrant::Owner => Self::Owner,
+        }
+    }
+}
+
+impl TryFrom<StandardGrant> for ProjectGrant {
+    type Error = IncompatibleGrant;
+
+    fn try_from(grant: StandardGrant) -> Result<Self, Self::Error> {
+        match grant {
+            StandardGrant::Owner => Ok(Self::Owner),
+            StandardGrant::RestrictedReader | StandardGrant::Reader | StandardGrant::Writer => {
+                Err(IncompatibleGrant(grant))
+            }
         }
     }
 }

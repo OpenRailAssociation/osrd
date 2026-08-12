@@ -42,6 +42,7 @@
       "Database": "Internal error (database)",
       "Driver": "Erreur interne d'authentification ou d'autorisation, veuillez réessayer ou contacter le support",
       "GrantsApiMisuse": "Mauvaise utilisation de l'API d'autorisation",
+      "IncompatibleGrant": "Grant incompatible avec le type de resource associé",
       "NoSuchUser": "Utilisateur inconnu",
       "UnknownIdentities": "Identités inconnues '{{identities}}'",
       "UnknownResource": "Ressource inconnue",

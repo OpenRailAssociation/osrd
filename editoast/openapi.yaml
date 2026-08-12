@@ -6708,6 +6708,34 @@ components:
           type: string
           enum:
           - editoast:authz:Database
+    EditoastAuthzErrorIncompatibleGrant:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          title: EditoastAuthzErrorIncompatibleGrantContext
+          required:
+          - grant
+          - resource_type
+          properties:
+            grant:
+              type: object
+            resource_type:
+              type: object
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 422
+        type:
+          type: string
+          enum:
+          - editoast:authz:IncompatibleGrant
     EditoastAuthzErrorUnknownIdentities:
       type: object
       required:
@@ -7289,6 +7317,7 @@ components:
       - $ref: '#/components/schemas/EditoastAuthorizationErrorOpenFga'
       - $ref: '#/components/schemas/EditoastAuthorizationErrorUnauthenticated'
       - $ref: '#/components/schemas/EditoastAuthzErrorDatabase'
+      - $ref: '#/components/schemas/EditoastAuthzErrorIncompatibleGrant'
       - $ref: '#/components/schemas/EditoastAuthzErrorUnknownIdentities'
       - $ref: '#/components/schemas/EditoastAuthzErrorUnknownResource'
       - $ref: '#/components/schemas/EditoastAuthzErrorUnknownSubject'

@@ -604,6 +604,21 @@ class EditoastAuthzErrorDatabase(BaseModel):
     type: Literal["editoast:authz:Database"]
 
 
+class EditoastAuthzErrorIncompatibleGrantContext(BaseModel):
+    grant: dict[str, Any]
+    resource_type: dict[str, Any]
+
+
+class EditoastAuthzErrorIncompatibleGrant(BaseModel):
+    context: Annotated[
+        EditoastAuthzErrorIncompatibleGrantContext | None,
+        Field(title="EditoastAuthzErrorIncompatibleGrantContext"),
+    ] = None
+    message: str
+    status: Literal[422]
+    type: Literal["editoast:authz:IncompatibleGrant"]
+
+
 class EditoastAuthzErrorUnknownIdentitiesContext(BaseModel):
     identities: dict[str, Any]
 
@@ -4729,6 +4744,7 @@ class EditoastError(
         | EditoastAuthorizationErrorOpenFga
         | EditoastAuthorizationErrorUnauthenticated
         | EditoastAuthzErrorDatabase
+        | EditoastAuthzErrorIncompatibleGrant
         | EditoastAuthzErrorUnknownIdentities
         | EditoastAuthzErrorUnknownResource
         | EditoastAuthzErrorUnknownSubject
@@ -4907,6 +4923,7 @@ class EditoastError(
         | EditoastAuthorizationErrorOpenFga
         | EditoastAuthorizationErrorUnauthenticated
         | EditoastAuthzErrorDatabase
+        | EditoastAuthzErrorIncompatibleGrant
         | EditoastAuthzErrorUnknownIdentities
         | EditoastAuthzErrorUnknownResource
         | EditoastAuthzErrorUnknownSubject
