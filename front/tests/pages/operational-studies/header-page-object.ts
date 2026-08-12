@@ -35,6 +35,7 @@ class HeaderPageObject extends CommonPage {
   private readonly electricalProfilesCheckbox: Locator;
   private readonly tagsInput: Locator;
   private readonly tagItems: Locator;
+  private readonly scheduleKindToggle: Locator;
   private readonly itineraryButton: Locator;
   readonly serviceCadenceInput: Locator;
   readonly serviceWindowHourInput: Locator;
@@ -85,6 +86,7 @@ class HeaderPageObject extends CommonPage {
     );
     this.tagsInput = this.expandedHeader.getByTestId('train-header-tags-input');
     this.tagItems = this.expandedHeader.getByTestId('train-header-tags-token');
+    this.scheduleKindToggle = this.expandedHeader.getByTestId('train-header-schedule-kind-toggle');
     this.itineraryButton = this.expandedHeader.getByTestId('train-header-itinerary-button');
 
     this.serviceCadenceInput = this.expandedHeader.getByTestId('train-header-service-cadence-m');
@@ -238,6 +240,10 @@ class HeaderPageObject extends CommonPage {
 
   async toggleElectricalProfiles(checked: boolean) {
     await this.electricalProfilesCheckbox.setChecked(checked, { force: true });
+  }
+
+  async toggleScheduleKind(checked: boolean) {
+    await this.scheduleKindToggle.setChecked(checked, { force: true });
   }
 
   async openItinerary() {

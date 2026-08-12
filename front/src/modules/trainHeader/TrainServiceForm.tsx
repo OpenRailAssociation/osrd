@@ -130,6 +130,7 @@ export default function TrainServiceForm({
           <div className="train-schedule-kind">
             <Switch
               id="train-header-schedule-kind-toggle"
+              dataTestId="train-header-schedule-kind-toggle"
               checked={!fields.is_unique}
               label={t('manageTrainSchedule.trainHeader.serviceModelTrain')}
               size="sm"
