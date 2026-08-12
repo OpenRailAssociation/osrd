@@ -32,6 +32,9 @@ export const truncateDateToSecond = (date: Date): Date => {
   return truncated;
 };
 
+export const truncateDateToDay = (date: Date): Date =>
+  new Date(date.getFullYear(), date.getMonth(), date.getDate());
+
 export const formatSuggestedViasToRowVias = (
   operationalPoints: SuggestedOP[],
   pathSteps: PathStep[],
