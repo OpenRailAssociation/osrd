@@ -177,7 +177,6 @@
     .train-extra-occurrence-date {
       background-color: var(--white100);
       padding: 6px 7px;
-      margin-left: 16px;
     }
 
     .train-extra-occurrence-time {
@@ -213,6 +212,10 @@
       span {
         display: contents;
       }
+    }
+
+    .train-extra-occurrence-delete + div {
+      margin-left: 16px;
     }
   }
 

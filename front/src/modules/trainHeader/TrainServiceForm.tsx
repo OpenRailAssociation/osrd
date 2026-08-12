@@ -4,7 +4,9 @@ import { Button, DurationInput, Switch } from '@osrd-project/ui-core';
 import { ChevronUp } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
 
+import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import type { PacedTrain } from 'applications/operationalStudies/types';
+import { parseStartTime } from 'modules/trainSchedule/helpers/formatTrainScheduleWithDetails';
 import type { Train } from 'reducers/osrdconf/types';
 import { MAX_DURATION_MS } from 'utils/duration';
 import { findExceptionInPacedTrainByOccurrenceId } from 'utils/trainExceptions';
@@ -57,6 +59,8 @@ export default function TrainServiceForm({
   revertServiceChange,
 }: TrainServiceFormProps) {
   const { t } = useTranslation(['operational-studies', 'translation']);
+  const { scenario } = useScenarioContext();
+
   const [extraOccurrencesVisible, setExtraOccurrencesVisible] = useState(false);
 
   const pacedTrain = train.paced ? (train as PacedTrain) : null;
@@ -226,7 +230,7 @@ export default function TrainServiceForm({
               .map((occurrence) => (
                 <ExtraOccurrenceRow
                   key={`${occurrence.id}-${occurrence.key}`}
-                  startTime={new Date(occurrence.start_time!.value)}
+                  startTime={parseStartTime(occurrence.start_time!.value, scenario.timetable_type)}
                   onDelete={() => {
                     // TODO_EXCEPTION: remove this when the exception migration will be done
                     if (occurrence.id !== null && occurrence.id !== undefined) {
