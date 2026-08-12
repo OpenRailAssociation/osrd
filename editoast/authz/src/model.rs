@@ -254,7 +254,7 @@ pub enum ProjectPrivilege {
     HasAccess,
 }
 
-#[derive(EnumString, Serialize, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, EnumString, Eq, Hash, Serialize, PartialEq)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 #[strum(serialize_all = "SCREAMING_SNAKE_CASE")]
 pub enum ProjectGrant {
