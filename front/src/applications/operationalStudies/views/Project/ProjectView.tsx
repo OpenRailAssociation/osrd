@@ -22,6 +22,7 @@ import {
   osrdEditoastApi,
 } from 'common/api/osrdEditoastApi';
 import GrantsManager from 'common/authorization/components/GrantsManager';
+import useAuthz from 'common/authorization/hooks/useAuthz';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import OptionsSNCF from 'common/BootstrapSNCF/OptionsSNCF';
 import { Loader, Spinner } from 'common/Loaders';
@@ -32,6 +33,7 @@ import { cleanScenarioLocalStorage } from 'modules/scenario/helpers/utils';
 import { getFeatureFlag } from 'reducers/user/userSelectors';
 import { useProjectImage } from 'utils/hooks/useProjectImage';
 import { budgetFormat } from 'utils/numbers';
+import { useAsyncMemo } from 'utils/useAsyncMemo';
 
 import StudyCard from './StudyCard';
 
@@ -74,6 +76,13 @@ const ProjectView = () => {
   } = osrdEditoastApi.endpoints.getProjectsByProjectId.useQuery(
     projectId ? { projectId: +projectId } : skipToken
   );
+
+  const { getUserPrivileges } = useAuthz();
+  // Get the user privileges for the project
+  const userPrivileges = useAsyncMemo(async () => {
+    const data = await getUserPrivileges({ project: [projectId!] });
+    return data.project || {};
+  }, [getUserPrivileges, projectId]);
 
   const imageUrl = useProjectImage(project?.image);
 
@@ -241,7 +250,15 @@ const ProjectView = () => {
                     </div>
                     {/* TODO: adapt with the good resourceType when back is ready */}
                     {projectGrantsActivated && (
-                      <GrantsManager resourceId={project.id} resourceType="infra" />
+                      <GrantsManager
+                        resourceId={project.id}
+                        resourceType="project"
+                        userPrivileges={
+                          userPrivileges.type === 'ready'
+                            ? userPrivileges.data[project.id]
+                            : undefined
+                        }
+                      />
                     )}
                   </div>
                   <div className={'pl-md-2 col-lg-8 col-md-8'}>
