@@ -77,7 +77,7 @@ test.describe('Scenario page synchronization', { tag: ['@op, @multi-tab-sync'] }
     pacedTrainSection,
     studyPage,
     secondScenarioTimetableSection,
-    secondOperationalStudiesPage,
+    secondTimesStopsTablePage,
   }) => {
     const scenarioUrl = `/operational-studies/projects/${project.id}/studies/${study.id}/scenarios/${scenarioItems.id}`;
 
@@ -108,15 +108,16 @@ test.describe('Scenario page synchronization', { tag: ['@op, @multi-tab-sync'] }
     });
 
     await test.step('Edit a unique train in second tab and verify the update', async () => {
-      await secondScenarioTimetableSection.editTrainSchedule(1);
-      await secondOperationalStudiesPage.setFormattedStartTime('2025-03-15T08:35:40');
-      await secondOperationalStudiesPage.submitTrainScheduleEdit();
-      await secondScenarioTimetableSection.getTrainScheduleArrivalTime('08:43', 1);
+      await secondScenarioTimetableSection.selectUniqueTrainModel(1);
+      await secondTimesStopsTablePage.verifyTimesStopsDataSheetVisibility();
+      const originRow = secondTimesStopsTablePage.getRow(0);
+      await secondTimesStopsTablePage.editRequestedArrival(originRow, '08:35:40');
+      await secondScenarioTimetableSection.getTrainScheduleArrivalTime('08:53', 1);
     });
 
     await test.step('Confirm edit is synchronized back in first tab', async () => {
       await page.bringToFront();
-      await scenarioTimetableSection.getTrainScheduleArrivalTime('08:43', 1);
+      await scenarioTimetableSection.getTrainScheduleArrivalTime('08:53', 1);
     });
 
     await test.step('Go to study page in first tab, verify train count, delete scenario', async () => {
@@ -128,7 +129,7 @@ test.describe('Scenario page synchronization', { tag: ['@op, @multi-tab-sync'] }
     await test.step('Reload second tab and verify scenario is gone', async () => {
       await secondPage.bringToFront();
       await secondPage.reload();
-      await secondOperationalStudiesPage.expectResourceNotFoundPage();
+      await secondScenarioTimetableSection.expectResourceNotFoundPage();
     });
   });
 });

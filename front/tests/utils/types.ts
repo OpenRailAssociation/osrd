@@ -149,14 +149,6 @@ export type ScenarioDetails = {
   electricProfileName?: string;
 };
 
-// Define type for table cell data
-export type CellData = {
-  stationName: string;
-  header: string;
-  value: string;
-  marginForm?: string;
-};
-
 export type PacedTrainDetails = {
   name: string;
   startTime: string;

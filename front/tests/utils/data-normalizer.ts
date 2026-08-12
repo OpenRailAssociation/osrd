@@ -9,16 +9,6 @@ export function cleanWhitespace(text: string | null | undefined): string {
 }
 
 /**
- * Clean whitespace for each string in an array of headers.
- *
- * @param texts - The array of texts strings to clean.
- * @returns {string[]} - The cleaned array of texts.
- */
-export function cleanWhitespaceInArray(texts: string[]): string[] {
-  return texts.map(cleanWhitespace);
-}
-
-/**
  * Remove non-alphanumeric characters from a string.
  *
  * @param text - The input text to clean.

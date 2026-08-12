@@ -41,10 +41,8 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
   private readonly timetableTrainTypeFilterSelectLabel: Locator;
   private readonly timetableTrainTypeFilterSelect: Locator;
   private readonly timetableSpeedLimitTagFilterLabel: Locator;
-  private readonly editTrainButton: Locator;
   private readonly projectTrainButton: Locator;
   private readonly deleteTrainButton: Locator;
-  readonly editTrainScheduleButton: Locator;
   private readonly trainScheduleDepartureTime: Locator;
   private readonly trainScheduleArrivalTime: Locator;
   private readonly trainScheduleArrivalTimeLoader: Locator;
@@ -53,7 +51,6 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
   readonly exportTrainScheduleButton: Locator;
   private readonly trainName: Locator;
   readonly itineraryModal: Locator;
-  readonly closeItineraryModalButton: Locator;
   private readonly addTrainScheduleButton: Locator;
 
   constructor(page: Page) {
@@ -90,10 +87,8 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
     this.timetableSpeedLimitTagFilterLabel = page.getByTestId(
       'timetable-speed-limit-tag-filter-label'
     );
-    this.editTrainButton = page.getByTestId('edit-train');
     this.projectTrainButton = page.getByTestId('project-train');
     this.deleteTrainButton = page.getByTestId('delete-train');
-    this.editTrainScheduleButton = page.getByTestId('submit-edit-train-schedule');
     this.trainScheduleDepartureTime = page.getByTestId('train-schedule-departure-time');
     this.trainScheduleArrivalTime = page.getByTestId('train-schedule-arrival-time');
     this.trainScheduleArrivalTimeLoader = page.getByTestId('arrival-time-loader');
@@ -102,7 +97,6 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
     this.unselectTrainSchedulesButton = page.getByTestId('scenarios-unselect-all-button');
     this.trainName = page.getByTestId('train-name');
     this.itineraryModal = page.getByTestId('itinerary-modal');
-    this.closeItineraryModalButton = page.getByTestId('close-itinerary-modal');
     this.addTrainScheduleButton = page.getByTestId('scenarios-add-train-schedule-button');
   }
 
@@ -328,16 +322,6 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
     await expect(this.itineraryModal).toBeVisible();
   }
 
-  // TODO: This function must be modified after we drop the old itinerary interface
-  async editTrainSchedule(index = 0) {
-    await expect(this.trainSchedules.nth(index)).toBeVisible();
-    await this.trainSchedules.nth(index).hover();
-    await expect(this.editTrainButton.nth(index)).toBeVisible();
-    await this.editTrainButton.nth(index).click();
-    await expect(this.itineraryModal).toBeVisible();
-    await this.closeItineraryModalButton.click();
-  }
-
   async deleteTrainSchedule(index = 0) {
     await expect(this.trainSchedules.nth(index)).toBeVisible();
     await this.trainSchedules.nth(index).click();
@@ -463,10 +447,6 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
     await expect(this.timetableTotalTrainLabel).toHaveText(translation);
   }
 
-  async verifyEditTrainScheduleButtonVisibility() {
-    await expect(this.editTrainScheduleButton).toBeVisible();
-  }
-
   async verifyFirstTrainScheduleIsSelected() {
     const trainSchedule = this.trainSchedules.first();
     await expect(trainSchedule).toBeVisible();
@@ -476,11 +456,6 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
   async verifyInvalidReasons(expectedReason: string[]): Promise<void> {
     await expect(this.invalidTrainSchedulesReasons.first()).toBeVisible();
     await expect(this.invalidTrainSchedulesReasons).toHaveText(expectedReason);
-  }
-
-  async verifyTrainColor(expectedColor: string, index = 0) {
-    await expect(this.trainName.nth(index)).toBeVisible();
-    await expect(this.trainName.nth(index)).toHaveCSS('color', expectedColor);
   }
 }
 

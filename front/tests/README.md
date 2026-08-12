@@ -118,11 +118,12 @@ clean up first:
           003-scenario-management.spec.ts
           ...
 
-        train-creation-tabs/
-          001-op-rolling-stock-tab.spec.ts
-          002-op-route-tab.spec.ts
-          003-op-times-and-stops-tab.spec.ts
-          004-op-simulation-settings-tab.spec.ts
+        simulation-result/
+          001-get-manchette.spec.ts
+          002-times-stops-table-display.spec.ts
+          003-times-stops-table-edits.spec.ts
+          004-train-header-display-and-edition.spec.ts
+          005-simulation-settings.spec.ts
           ...
 
         timetable/
@@ -310,9 +311,9 @@ npx playwright test --debug
 Run a specific test:
 
 ```bash
-npx playwright test 003-op-times-and-stops-tab.spec.ts -g "Update and clear input table row"
+npx playwright test 003-times-stops-table-edits.spec.ts -g "Arrival and departure persistence"
 # or
-npx playwright test train-creation-tabs/003 -g "Update and clear input table row"
+npx playwright test simulation-result/003 -g "Arrival and departure persistence"
 ```
 
 Run tests on a specific browser with custom worker and retry settings:
