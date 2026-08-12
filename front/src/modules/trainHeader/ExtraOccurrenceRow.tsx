@@ -1,9 +1,10 @@
 import { Trash } from '@osrd-project/ui-icons';
 
-import { useDateTimeLocale } from 'utils/date';
+import { useDateTimeLocale, timeToLocaleString } from 'utils/date';
+import type { StartTime } from 'utils/duration';
 
 type ExtraOccurrenceRowProps = {
-  startTime: Date;
+  startTime: StartTime;
   onDelete: () => void;
 };
 
@@ -19,17 +20,19 @@ const ExtraOccurrenceRow = ({ startTime, onDelete }: ExtraOccurrenceRowProps) =>
       >
         <Trash />
       </button>
-      <div
-        className="train-extra-occurrence-date"
-        data-testid="train-header-extra-occurrence-date-value"
-      >
-        {startTime.toLocaleDateString(dateTimeLocale)}
-      </div>
+      {startTime instanceof Date && (
+        <div
+          className="train-extra-occurrence-date"
+          data-testid="train-header-extra-occurrence-date-value"
+        >
+          {startTime.toLocaleDateString(dateTimeLocale)}
+        </div>
+      )}
       <div
         className="train-extra-occurrence-time"
         data-testid="train-header-extra-occurrence-time-value"
       >
-        {startTime.toLocaleTimeString(dateTimeLocale)}
+        {timeToLocaleString(startTime, dateTimeLocale)}
       </div>
     </div>
   );
