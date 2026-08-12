@@ -19,6 +19,9 @@ const frTranslations: ScenarioTranslations = readJsonFile<{
 class ScenarioTimetableSection extends OpSimulationResultPage {
   private readonly invalidTrainSchedulesMessage: Locator;
   readonly trainSchedules: Locator;
+  // trainSchedules mixes paced and unique trains; this filters to unique trains only,
+  // matching the indexing used by unique-train-only locators like trainScheduleArrivalTime.
+  private readonly uniqueTrainSchedules: Locator;
   private readonly timetableBoardWrapper: Locator;
   private readonly timetableSelectAllButton: Locator;
   private readonly timetableSelectOptionsButton: Locator;
@@ -57,6 +60,7 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
     super(page);
     this.invalidTrainSchedulesMessage = page.getByTestId('invalid-train-schedule-message');
     this.trainSchedules = page.getByTestId('scenario-train-schedule');
+    this.uniqueTrainSchedules = this.trainSchedules.filter({ has: page.getByTestId('train-name') });
     this.timetableBoardWrapper = page.getByTestId('timetable-board-wrapper');
     this.timetableTotalTrainLabel = this.timetableBoardWrapper.getByTestId('board-header-name');
     this.timetableSelectAllButton = page.getByTestId('scenarios-select-all-button');
@@ -338,6 +342,21 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
     await expect(this.trainSchedules.nth(index)).toBeVisible();
     await this.trainSchedules.nth(index).click();
     await this.deleteTrainButton.nth(index).click();
+  }
+
+  // Select a unique train so its data is shown in the train header
+  async selectUniqueTrainModel(index = 0) {
+    const trainSchedule = this.uniqueTrainSchedules.nth(index);
+    const uniqueTrainButton = ScenarioTimetableSection.getUniqueTrainButton(trainSchedule);
+    await expect(uniqueTrainButton).toBeVisible();
+    const classAttribute = await trainSchedule.getAttribute('class');
+    const isAlreadySelected = classAttribute?.split(' ').includes('selected') ?? false;
+    if (isAlreadySelected) return;
+    await expect(async () => {
+      // Click near the left edge to avoid hovering over the action buttons
+      await uniqueTrainButton.click({ position: { x: 5, y: 5 } });
+      await expect(trainSchedule).toHaveClass(/selected/);
+    }).toPass();
   }
 
   async projectTrain(index = 0) {
