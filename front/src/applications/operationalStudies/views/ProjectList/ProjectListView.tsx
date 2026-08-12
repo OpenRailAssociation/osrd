@@ -13,6 +13,7 @@ import {
   type ProjectWithStudies,
   type SearchResultItemProject,
 } from 'common/api/osrdEditoastApi';
+import useAuthz from 'common/authorization/hooks/useAuthz';
 import OptionsSNCF from 'common/BootstrapSNCF/OptionsSNCF';
 import { Spinner } from 'common/Loaders';
 import NavBar from 'common/NavBar';
@@ -71,6 +72,7 @@ const ProjectListView = () => {
     ordering: sortOption,
     pageSize: 1000,
   });
+  const { getUserPrivileges } = useAuthz();
   const [isLoading, setIsLoading] = useState(true);
 
   const sortOptions = [
@@ -85,6 +87,12 @@ const ProjectListView = () => {
   ];
 
   const getProjectList = async () => {
+    if (!allProjects || allProjects.results.length === 0) return setProjectsList([]);
+    // const data = await getUserPrivileges({
+    //   project: allProjects.results.map((project) => project.id),
+    //   infra: [],
+    //   rolling_stock: [],
+    // });
     setIsLoading(true);
     if (filter || safeWord !== '') {
       const payload: PostSearchApiArg = {
