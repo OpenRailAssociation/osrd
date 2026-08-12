@@ -34,7 +34,7 @@ import {
 } from 'reducers/simulationResults';
 import { getTrainIdUsedForProjection } from 'reducers/simulationResults/selectors';
 import { useAppDispatch, type AppDispatch } from 'store';
-import { Duration } from 'utils/duration';
+import { Duration, type StartTime, startTimeToMs } from 'utils/duration';
 import { formatEditoastIdToTrainScheduleId, isOccurrenceId } from 'utils/trainId';
 
 import {
@@ -54,7 +54,7 @@ type UpdateTrainScheduleParams = {
   originalTrainSchedule: TrainScheduleWithDetails;
   updatedTrainSchedule: TrainSchedule;
   occurrenceId?: OccurrenceId;
-  addedExceptions: { startTime: Date }[];
+  addedExceptions: { startTime: StartTime }[];
   deletedAddedExceptionId?: number;
   upsertTrainSchedules: (trainSchedules: TrainScheduleResponse[]) => void;
   dispatch: AppDispatch;
@@ -138,7 +138,7 @@ export async function updateTrainSchedule({
   const newAddedExceptions: PacedTrainException[] = addedExceptions.map(
     ({ startTime: exStartTime }) => ({
       key: '', // TODO : remove this when the key will be removed from the model
-      start_time: { value: exStartTime.getTime() },
+      start_time: { value: startTimeToMs(exStartTime) },
     })
   );
 

@@ -13,6 +13,7 @@ import { setFailure } from 'reducers/main';
 import { selectTrainToEdit } from 'reducers/osrdconf/operationalStudiesConf';
 import type { Train } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
+import type { StartTime } from 'utils/duration';
 import { extractEditoastIdFromTrainId, isOccurrenceId } from 'utils/trainId';
 
 import CollapsedTrainOverview from './CollapsedTrainOverview';
@@ -26,7 +27,7 @@ export type TrainHeaderProps = {
 };
 
 export type ExtraOccurrencesChanges = {
-  addedExceptions?: { startTime: Date }[];
+  addedExceptions?: { startTime: StartTime }[];
   deletedAddedExceptionId?: number;
 };
 

@@ -157,6 +157,10 @@
       place-self: center start;
       padding: var(--non-field-spacing);
     }
+
+    #train-add-extra-occurrence-time.ui-duration-input {
+      width: 100%;
+    }
   }
 
   .train-extra-occurrences-list {

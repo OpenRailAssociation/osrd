@@ -70,7 +70,7 @@ export type TrainFieldsState = {
   service_window?: number;
   use_electrical_profiles: boolean | null;
   labels: string[];
-  added_exception_date: Date;
+  added_exception_date: StartTime;
   rolling_stock: LightRollingStockWithLiveries | string;
   departure_date: StartTime;
   initial_speed: string | null;
@@ -115,7 +115,7 @@ function getFieldsFromTrain(
     service_window: train.paced ? Duration.parse(train.paced.time_window).valueOf() : undefined,
     use_electrical_profiles: train?.options?.use_electrical_profiles ?? null,
     labels: train.labels ?? [],
-    added_exception_date: new Date(train.start_time),
+    added_exception_date: startTime,
     rolling_stock: rollingStock ?? train.rolling_stock_name,
     departure_date: startTime,
     initial_speed:
