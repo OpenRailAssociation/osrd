@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect } from 'react';
 
-import { ArrowSwitch, Route, Plus, Rocket, Trash } from '@osrd-project/ui-icons';
+import { ArrowSwitch, Route, Plus, Trash } from '@osrd-project/ui-icons';
 import bbox from '@turf/bbox';
 import type { Position } from 'geojson';
 import { compact, isNil } from 'lodash';
@@ -11,7 +11,6 @@ import { useManageTrainScheduleContext } from 'applications/operationalStudies/h
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { computeBBoxViewport } from 'common/Map/WarpedMap/core/helpers';
 import Pathfinding from 'modules/pathfinding/components/Pathfinding';
-import TypeAndPath from 'modules/pathfinding/components/Pathfinding/TypeAndPath';
 import reversePathSteps from 'modules/pathfinding/helpers/reversePathSteps';
 import { useMapSettings, useMapSettingsActions } from 'reducers/commonMap';
 import { setWarning } from 'reducers/main';
@@ -35,7 +34,6 @@ const Itinerary = ({ rollingStockId }: { rollingStockId: number | undefined }) =
   const pathSteps = useSelector(getPathSteps);
   const powerRestrictions = useSelector(getPowerRestrictions);
 
-  const [displayTypeAndPath, setDisplayTypeAndPath] = useState(false);
   const dispatch = useAppDispatch();
   const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTrainSchedule' });
   const { openModal } = useModal();
@@ -107,22 +105,7 @@ const Itinerary = ({ rollingStockId }: { rollingStockId: number | undefined }) =
     <div className="osrd-config-item">
       <div className="mb-2 d-flex">
         <Pathfinding rollingStockId={rollingStockId} />
-        <button
-          type="button"
-          className="btn btn-sm btn-only-icon btn-white px-3 ml-2"
-          aria-label={t('toggleTrigramSearch')}
-          title={t('toggleTrigramSearch')}
-          onClick={() => setDisplayTypeAndPath(!displayTypeAndPath)}
-          data-testid="rocket-button"
-        >
-          <Rocket />
-        </button>
       </div>
-      {displayTypeAndPath && (
-        <div className="mb-2">
-          <TypeAndPath setDisplayTypeAndPath={setDisplayTypeAndPath} />
-        </div>
-      )}
       {origin && destination && (
         <div className="d-flex flex-row flex-wrap">
           <button
