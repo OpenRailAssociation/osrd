@@ -11,6 +11,7 @@ const MICROSECOND_IN_MS = 0.001;
 const SECOND_IN_MS = 1000;
 const MINUTE_IN_MS = 60 * SECOND_IN_MS;
 const HOUR_IN_MS = 60 * MINUTE_IN_MS;
+const DAY_IN_MS = 24 * HOUR_IN_MS;
 
 export const MAX_DURATION_MS = Number(I64_MAX) * MICROSECOND_IN_MS; // Database will not register anything above this value
 
@@ -18,14 +19,20 @@ const UNIT_IN_MS = {
   second: SECOND_IN_MS,
   minute: MINUTE_IN_MS,
   hour: HOUR_IN_MS,
+  day: DAY_IN_MS,
 };
 
 export class Duration {
   /** Number of milliseconds */
   readonly ms: number;
 
-  constructor({ hours = 0, minutes = 0, seconds = 0, milliseconds = 0 }) {
-    this.ms = hours * HOUR_IN_MS + minutes * MINUTE_IN_MS + seconds * SECOND_IN_MS + milliseconds;
+  constructor({ days = 0, hours = 0, minutes = 0, seconds = 0, milliseconds = 0 }) {
+    this.ms =
+      days * DAY_IN_MS +
+      hours * HOUR_IN_MS +
+      minutes * MINUTE_IN_MS +
+      seconds * SECOND_IN_MS +
+      milliseconds;
   }
 
   static zero = new Duration({});
@@ -84,7 +91,7 @@ export class Duration {
     return new Duration({ milliseconds: Math.abs(this.ms) });
   }
 
-  round(smallestUnit: 'second' | 'minute' | 'hour') {
+  round(smallestUnit: 'second' | 'minute' | 'hour' | 'day') {
     return new Duration({
       milliseconds: Math.round(this.total(smallestUnit)) * UNIT_IN_MS[smallestUnit],
     });
@@ -93,7 +100,7 @@ export class Duration {
   /**
    * Computes the number of units of time that a duration represents.
    */
-  total(unit: 'second' | 'minute' | 'hour'): number {
+  total(unit: 'second' | 'minute' | 'hour' | 'day'): number {
     return this.ms / UNIT_IN_MS[unit];
   }
 
