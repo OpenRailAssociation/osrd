@@ -45,6 +45,7 @@ export const SpaceTimeChart = (props: SpaceTimeChartProps) => {
     hidePathsLabels,
     showTicks,
     hideDates,
+    hourlyMode,
     theme,
     onPan,
     onZoom,
@@ -76,6 +77,7 @@ export const SpaceTimeChart = (props: SpaceTimeChartProps) => {
         hidePathsLabels,
         showTicks,
         hideDates,
+        hourlyMode,
       }),
     [
       operationalPoints,
@@ -93,6 +95,7 @@ export const SpaceTimeChart = (props: SpaceTimeChartProps) => {
       hidePathsLabels,
       showTicks,
       hideDates,
+      hourlyMode,
     ]
   );
 
@@ -147,11 +150,13 @@ export const SpaceTimeChart = (props: SpaceTimeChartProps) => {
       hideGrid: !!hideGrid,
       hidePathsLabels: !!hidePathsLabels,
       showTicks: !!showTicks,
-      hideDates: !!hideDates,
+      hideDates: !!hideDates || !!hourlyMode,
+      hourlyMode: !!hourlyMode,
       theme: fullTheme,
-      captionSize: hideDates
-        ? fullTheme.timeCaptionsSize
-        : fullTheme.dateCaptionsSize + fullTheme.timeCaptionsSize,
+      captionSize:
+        hideDates || hourlyMode
+          ? fullTheme.timeCaptionsSize
+          : fullTheme.dateCaptionsSize + fullTheme.timeCaptionsSize,
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fingerprint]);

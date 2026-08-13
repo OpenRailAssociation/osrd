@@ -746,6 +746,7 @@ const SpaceTimeChartWrapper = ({
             spaceOrigin={
               (waypointsPanelData?.filteredWaypoints ?? operationalPoints).at(0)?.position || 0
             }
+            hourlyMode={timetableType === 'HOURLY'}
           >
             {paths.map((path) => {
               const hover = buildCurveHover(hoveredItem, hoveredTrainId);

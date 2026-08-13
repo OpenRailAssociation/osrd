@@ -1,11 +1,20 @@
 import { useCallback, useContext } from 'react';
 
-import { MINUTE } from '../../common/consts';
+import { HOUR, MINUTE } from '../../common/consts';
 import { MouseContext, TimeChartCanvasContext } from '../../common/context';
 import { computeVisibleTimeMarkers, getCrispLineCoordinate } from '../../common/helpers/time';
 import type { TimeChartContextType, DrawingFunction } from '../../common/types';
 import { BLACK_ALPHA_25, GREY_50 } from '../helpers/colors';
 import { useDraw } from '../hooks/useCanvas';
+
+// Signed `Xh MM` string for hourly pattern mode (e.g. -1h30, 0h05, 2h15).
+function formatHourlyTime(t: number): string {
+  const sign = t < 0 ? '-' : '';
+  const abs = Math.abs(t);
+  const h = Math.floor(abs / HOUR);
+  const m = Math.floor((abs % HOUR) / MINUTE);
+  return `${sign}${h}h${m.toString().padStart(2, '0')}`;
+}
 
 const TimeGraduations = () => {
   const mouseContext = useContext(MouseContext);
@@ -24,6 +33,7 @@ const TimeGraduations = () => {
         swapAxis,
         width,
         height,
+        hourlyMode = false,
         theme: { breakpoints, timeRanges, timeGraduationsStyles, timeGraduationsPriorities },
       }
     ) => {
@@ -72,7 +82,9 @@ const TimeGraduations = () => {
       if (!swapAxis && isHover && !isNaN(mouseX)) {
         const crispX = getCrispLineCoordinate(mouseX, 1);
         const timeValue = getTime(crispX);
-        const timeLabel = new Date(timeValue).toLocaleTimeString();
+        const timeLabel = hourlyMode
+          ? formatHourlyTime(timeValue)
+          : new Date(timeValue).toLocaleTimeString();
 
         ctx.globalAlpha = 1;
 

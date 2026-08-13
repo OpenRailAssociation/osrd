@@ -119,6 +119,13 @@ export type ChartOptions = {
   hideTimeCaptions?: boolean;
   showTicks?: boolean;
   swapAxis?: boolean;
+  /**
+   * When true, the time axis renders hours as signed integers relative to time
+   * origin 0 (…, -2, -1, 0, 1, 2, …) instead of localized clock times, and
+   * date captions are hidden. Meant for repeating patterns (e.g. hourly
+   * timetables).
+   */
+  hourlyMode?: boolean;
 };
 
 export type TimeChartContextType = BaseTimeChartContextType & ChartOptions;
