@@ -2,6 +2,9 @@ import { useCallback } from 'react';
 
 import { Button, Dialog } from '@osrd-project/ui-core';
 import { useTranslation } from 'react-i18next';
+import { useSelector } from 'react-redux';
+
+import { getFeatureFlag } from 'reducers/user/userSelectors';
 
 type ServiceChangeWarningDialogProps = {
   exceptionsCount: number;
@@ -17,6 +20,7 @@ export const ServiceChangeWarningDialog = ({
   const { t } = useTranslation(['operational-studies'], {
     keyPrefix: 'manageTrainSchedule.trainHeader.serviceChangeWarning',
   });
+  const linkingsActivated = useSelector(getFeatureFlag('linkings'));
   const header = useCallback(
     () => <h5 data-testid="train-header-service-change-header">{t('header')}</h5>,
     [t]
@@ -47,7 +51,9 @@ export const ServiceChangeWarningDialog = ({
         className="service-change-warning-explanations"
         data-testid="train-header-service-change-explanations"
       >
-        {t('explanations', { count: exceptionsCount })}
+        {t(linkingsActivated ? 'explanationsWithLinkings' : 'explanations', {
+          count: exceptionsCount,
+        })}
       </p>
     </Dialog>
   );

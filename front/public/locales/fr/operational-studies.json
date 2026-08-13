@@ -548,6 +548,8 @@
       "serviceChangeWarning": {
         "cancel": "Annuler",
         "confirm": "Confirmer",
+        "explanationsWithLinkings_one": "Modifier la cadence ou la plage de répétition supprimera une exception et les enchaînements. Voulez-vous continuer ?",
+        "explanationsWithLinkings_other": "Modifier la cadence ou la plage de répétition supprimera {{count}} exceptions et les enchaînements. Voulez-vous continuer ?",
         "explanations_one": "Modifier la cadence ou la plage de répétition supprimera une exception. Voulez-vous continuer ?",
         "explanations_other": "Modifier la cadence ou la plage de répétition supprimera {{count}} exceptions. Voulez-vous continuer ?",
         "header": "Modèle de service modifié"
