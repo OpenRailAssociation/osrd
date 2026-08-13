@@ -148,39 +148,25 @@ pub struct JourneyListParams {
 ///
 /// See asserts below for more pre-conditions.
 pub fn journey_list(p: JourneyListParams) -> Vec<Vec<Leg>> {
-    let JourneyListParams {
-        stop_count,
-        trip_count,
-        connections,
-        start_ms,
-        start_tolerance,
-        start,
-        end,
-        transfer_ms,
-    } = p;
+    assert!(p.start < p.stop_count);
+    assert!(p.end < p.stop_count);
 
-    assert!(start < stop_count);
-    assert!(end < stop_count);
-
-    if start == end {
+    if p.start == p.end {
         return Vec::new();
     }
 
-    let profiles = scan_connections(stop_count, trip_count, &connections, end, transfer_ms);
+    let profiles = scan_connections(&p);
 
-    let mut start_profiles: Vec<&Profile> = profiles[start]
-        .iter()
-        .filter(|profile| u32::abs_diff(profile.departure_ms, start_ms) <= start_tolerance)
-        .collect();
+    let mut start_profiles: Vec<&Profile> = profiles[p.start].iter().collect();
 
     // TODO: In this first version we try the departures closest to the requested time first.
     // We should use more specific criteria to select the best 3 journeys.
-    start_profiles.sort_unstable_by_key(|profile| u32::abs_diff(profile.departure_ms, start_ms));
+    start_profiles.sort_unstable_by_key(|profile| u32::abs_diff(profile.departure_ms, p.start_ms));
 
     // Explore the profile graph to create up to 3 journeys that a traveler can take to go from start to end.
     start_profiles
         .into_iter()
-        .map(|profile| extract_journey(&profiles, &connections, transfer_ms, end, profile))
+        .map(|profile| extract_journey(&profiles, &p.connections, p.transfer_ms, p.end, profile))
         .take(3)
         .collect()
 }
@@ -189,20 +175,20 @@ pub fn journey_list(p: JourneyListParams) -> Vec<Vec<Leg>> {
 ///
 /// Profiles are ordered by decreasing `departure_ms`.
 /// They are also ordered by decreasing `arrival_ms` since they all lie on the Pareto front.
-fn scan_connections(
-    stop_count: usize,
-    trip_count: usize,
-    connections: &[Connection],
-    end: StopId,
-    transfer_ms: u32,
-) -> Vec<Vec<Profile>> {
-    let mut profiles: Vec<Vec<Profile>> = vec![Vec::new(); stop_count];
+fn scan_connections(p: &JourneyListParams) -> Vec<Vec<Profile>> {
+    let mut profiles: Vec<Vec<Profile>> = vec![Vec::new(); p.stop_count];
 
     // This maps trips to the best TripArrival found over the connections scanned so far
-    let mut trip_arrivals = vec![None; trip_count];
+    let mut trip_arrivals = vec![None; p.trip_count];
 
-    for (connection_id, connection) in connections.iter().enumerate() {
-        let direct = (connection.arrival == end).then_some(TripArrival {
+    for (connection_id, connection) in p.connections.iter().enumerate() {
+        if connection.departure == p.start
+            && u32::abs_diff(connection.departure_ms, p.start_ms) > p.start_tolerance
+        {
+            continue;
+        }
+
+        let direct = (connection.arrival == p.end).then_some(TripArrival {
             arrival_ms: connection.arrival_ms,
             leg_count: 1,
             exit_connection_id: connection_id,
@@ -212,7 +198,7 @@ fn scan_connections(
 
         let transfer = profiles[connection.arrival]
             .iter()
-            .rfind(|profile| profile.departure_ms >= connection.arrival_ms + transfer_ms)
+            .rfind(|profile| profile.departure_ms >= connection.arrival_ms + p.transfer_ms)
             .map(|profile| TripArrival {
                 arrival_ms: profile.arrival_ms,
                 leg_count: profile.leg_count + 1,
