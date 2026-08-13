@@ -452,9 +452,21 @@ const SpaceTimeChartWrapper = ({
 
   const occupancyBlocks = getOccupancyBlocks(cutProjectedTrains);
 
+  // In hourly mode, the Fit button also resets the horizontal view to hour 0.
+  const handleResetZoom = useCallback(() => {
+    manchetteProps.resetZoom();
+    if (timetableType === 'HOURLY') {
+      setTimeOrigin(0);
+      if (spaceTimeChartProps.xOffset) {
+        pan({ dx: -spaceTimeChartProps.xOffset });
+      }
+    }
+  }, [manchetteProps, timetableType, setTimeOrigin, pan, spaceTimeChartProps.xOffset]);
+
   const manchettePropsWithWaypointMenu = useMemo(
     () => ({
       ...manchetteProps,
+      resetZoom: handleResetZoom,
       contents: manchetteProps.contents.map((content) =>
         isInteractiveWaypoint(content)
           ? {
@@ -466,7 +478,7 @@ const SpaceTimeChartWrapper = ({
       activeWaypointId,
       activeWaypointRef,
     }),
-    [manchetteProps, activeWaypointId, handleWaypointClick]
+    [manchetteProps, handleResetZoom, activeWaypointId, handleWaypointClick]
   );
 
   const handleOccupancyZoneDragStart = useCallback((zoneRef: OccupancyZoneReference) => {
