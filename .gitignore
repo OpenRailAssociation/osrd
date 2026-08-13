@@ -14,3 +14,5 @@ __pycache__
 
 # Deployment overrides
 /front/public/overrides/overrides.json
+config.bat
+node_modules

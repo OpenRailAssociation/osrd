@@ -621,7 +621,11 @@
     "simulationSheet": "Simulationsblatt",
     "speedDistanceDiagram": "GSD",
     "speedDistanceSettings": {
+      "accelerating": "Beschleunigung",
+      "coasting": "Auslauf",
       "context": "Kontext",
+      "decelerating": "Verzögerung",
+      "electric": "Elektrisch",
       "electricalProfiles": "Bahnstromprofile",
       "energySource": "Energiequelle",
       "etcs": {
@@ -636,6 +640,7 @@
         "title": "ETCS",
         "transition": "Überg."
       },
+      "incompatible": "Unvereinbar",
       "powerRestrictions": "Leistungsbeschränkungen",
       "reticleInfos": "Fadenkreuz-Infos",
       "slopes": "Längsneigungen",

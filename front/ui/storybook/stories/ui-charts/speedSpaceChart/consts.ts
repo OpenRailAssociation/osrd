@@ -7,6 +7,13 @@ export const defaultTranslations = {
     etcs: 'ETCS',
     electricalProfiles: 'Electrical Profiles',
     powerRestrictions: 'Power Restrictions',
+    reticleValues: {
+      incompatible: 'Incompatible',
+      electric: 'Electric',
+      accelerating: 'Accelerating',
+      decelerating: 'Decelerating',
+      coasting: 'Coasting',
+    },
   },
   layersDisplay: {
     context: 'Context',

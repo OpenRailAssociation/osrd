@@ -690,7 +690,11 @@
     "simulationSheet": "Train path sheet",
     "speedDistanceDiagram": "SDD",
     "speedDistanceSettings": {
+      "accelerating": "Accelerating",
+      "coasting": "Coasting",
       "context": "Context",
+      "decelerating": "Decelerating",
+      "electric": "Electric",
       "electricalProfiles": "Electrical profiles",
       "energySource": "Energy source",
       "etcs": {
@@ -705,6 +709,7 @@
         "title": "ETCS",
         "transition": "Trans."
       },
+      "incompatible": "Incompatible",
       "invalidSimulation": "The selected train can't be simulated",
       "noData": "Data is displayed when a train is selected",
       "powerRestrictions": "Power restrictions",
