@@ -12,6 +12,9 @@ type SpaceTimeChartToolbarProps = {
   disableZoom: boolean;
   toggleZoomMode: () => void;
   setShowSettingsPanel: Dispatch<SetStateAction<boolean>>;
+  linkingMode: boolean;
+  disableLinkingMode: boolean;
+  toggleLinkingMode: () => void;
   className?: string;
   isResetButtonDisabled?: boolean;
 };
@@ -23,6 +26,9 @@ const SpaceTimeChartToolbar = ({
   toggleZoomMode,
   setShowSettingsPanel,
   isResetButtonDisabled,
+  linkingMode,
+  disableLinkingMode,
+  toggleLinkingMode,
 }: SpaceTimeChartToolbarProps) => {
   const linkingsActivated = useSelector(getFeatureFlag('linkings'));
 
@@ -32,11 +38,14 @@ const SpaceTimeChartToolbar = ({
         <button
           data-testid="linking-mode-button"
           type="button"
-          className="linking-button linking-button-disabled"
-          disabled
+          className={cx('linking-button', {
+            'linking-button-clicked': linkingMode,
+            'linking-button-disabled': disableLinkingMode,
+          })}
+          onClick={toggleLinkingMode}
+          disabled={disableLinkingMode}
         >
-          {/* TODO: wire the linking mode toggle behavior */}
-          <Linking />
+          <Linking variant={linkingMode ? 'fill' : 'base'} />
         </button>
       )}
       <button
