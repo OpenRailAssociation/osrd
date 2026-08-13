@@ -4,6 +4,7 @@ use darling::FromMeta;
 use darling::FromVariant;
 use darling::Result;
 use darling::ast;
+use heck::ToSnekCase as _;
 use proc_macro2::Span;
 use quote::quote;
 use syn::ext::IdentExt as _;
@@ -124,7 +125,7 @@ impl Args {
             context: context_on_type,
             args: TypeArgs { status },
         } = self;
-        let label = name.unwrap_or_else(|| ident.to_string());
+        let label = name.unwrap_or_else(|| normalize_label(&ident));
         let mut view_error_impl = ViewErrorImpl::new(ident, label.clone());
 
         match data {
@@ -168,7 +169,7 @@ impl Args {
                         context: context_on_variant,
                         name,
                     } = variant;
-                    let sub_label = name.unwrap_or_else(|| variant_ident.to_string());
+                    let sub_label = name.unwrap_or_else(|| normalize_label(&variant_ident));
                     let pattern = fields.pattern(Some(&variant_ident));
                     if let Some(ForwardedField { binding, ty }) = fields.forwarded_view_error() {
                         view_error_impl.forward_view_error(pattern, binding, ty);
@@ -207,6 +208,16 @@ impl Args {
 
         Ok(Codegen(view_error_impl))
     }
+}
+
+/// Converts to snake_case, stripping any `_errors` or `_error` suffix
+fn normalize_label(ident: &syn::Ident) -> String {
+    let label = ident.unraw().to_string().to_snek_case();
+    label
+        .strip_suffix("_errors")
+        .or_else(|| label.strip_suffix("_error"))
+        .unwrap_or(&label)
+        .to_owned()
 }
 
 // It's convenient to implement extensions on `ast::Fields` as it is used for both

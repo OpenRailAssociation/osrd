@@ -187,7 +187,7 @@ mod tests {
 
             assert_eq!(
                 EditoastError::from(Unit),
-                EditoastError::new("editoast::Unit", 500, "ohno")
+                EditoastError::new("editoast::unit", 500, "ohno")
             );
         }
 
@@ -232,7 +232,7 @@ mod tests {
 
             assert_eq!(
                 EditoastError::from(Transparent(std::io::Error::other("io failure"))),
-                EditoastError::new("editoast::Transparent", 500, "io failure")
+                EditoastError::new("editoast::transparent", 500, "io failure")
             );
         }
 
@@ -272,7 +272,7 @@ mod tests {
 
             assert_eq!(
                 EditoastError::from(Wrapper(Inner::Variant)),
-                EditoastError::new("editoast::Inner::Variant", 500, "inner variant")
+                EditoastError::new("editoast::inner::variant", 500, "inner variant")
             );
         }
     }
@@ -309,7 +309,7 @@ mod tests {
                     std::io::Error::other("io failure"),
                     "context".to_owned(),
                 )),
-                EditoastError::new("editoast::Tuple", 500, "tuple error: context")
+                EditoastError::new("editoast::tuple", 500, "tuple error: context")
                     .context("1", "context")
             );
         }
@@ -384,7 +384,7 @@ mod tests {
                     source: std::io::Error::other("io failure"),
                     context: "details".to_owned(),
                 }),
-                EditoastError::new("editoast::Named", 500, "named error: details")
+                EditoastError::new("editoast::named", 500, "named error: details")
                     .context("context", "details")
             );
         }
@@ -430,27 +430,28 @@ mod tests {
             #[test]
             fn variants() {
                 #[derive(Debug, thiserror::Error, ViewError)]
-                #[view_error(name = "color")]
+                #[view_error(name = "ColorErrors")]
                 enum Color {
                     #[error("red")]
+                    #[view_error(name = "RED_ERROR")]
                     Red,
                     #[error("green")]
                     Green,
                     #[error("blue")]
-                    Blue,
+                    BlueError,
                 }
 
                 assert_eq!(
                     EditoastError::from(Color::Red),
-                    EditoastError::new("editoast::color::Red", 500, "red")
+                    EditoastError::new("editoast::ColorErrors::RED_ERROR", 500, "red")
                 );
                 assert_eq!(
                     EditoastError::from(Color::Green),
-                    EditoastError::new("editoast::color::Green", 500, "green")
+                    EditoastError::new("editoast::ColorErrors::green", 500, "green")
                 );
                 assert_eq!(
-                    EditoastError::from(Color::Blue),
-                    EditoastError::new("editoast::color::Blue", 500, "blue")
+                    EditoastError::from(Color::BlueError),
+                    EditoastError::new("editoast::ColorErrors::blue", 500, "blue")
                 );
             }
         }
@@ -483,12 +484,12 @@ mod tests {
                 );
                 assert_eq!(
                     EditoastError::from(Mixed::Newtype("foo".to_owned())),
-                    EditoastError::new("editoast::mixed::Newtype", 400, "newtype: foo")
+                    EditoastError::new("editoast::mixed::newtype", 400, "newtype: foo")
                         .context("0", "foo")
                 );
                 assert_eq!(
                     EditoastError::from(Mixed::Tuple("foo".to_owned(), 42)),
-                    EditoastError::new("editoast::mixed::Tuple", 500, "tuple: foo, 42")
+                    EditoastError::new("editoast::mixed::tuple", 500, "tuple: foo, 42")
                         .context("0", "foo")
                         .context("1", 42)
                 );
@@ -497,7 +498,7 @@ mod tests {
                         cause: "failure".to_owned(),
                         incident_id: 42,
                     }),
-                    EditoastError::new("editoast::mixed::Rich", 500, "incident 42: failure",)
+                    EditoastError::new("editoast::mixed::rich", 500, "incident 42: failure",)
                         .context("cause", "failure")
                         .context("incident_id", 42)
                 );
@@ -531,7 +532,7 @@ mod tests {
                         context: "details".to_owned(),
                     }),
                     EditoastError::new(
-                        "editoast::Sources::Implicit",
+                        "editoast::sources::implicit",
                         500,
                         "implicit source: details",
                     )
@@ -543,7 +544,7 @@ mod tests {
                         context: "details".to_owned(),
                     }),
                     EditoastError::new(
-                        "editoast::Sources::Explicit",
+                        "editoast::sources::explicit",
                         500,
                         "explicit source: details",
                     )
@@ -551,11 +552,11 @@ mod tests {
                 );
                 assert_eq!(
                     EditoastError::from(Sources::From(std::io::Error::other("io failure"))),
-                    EditoastError::new("editoast::Sources::From", 500, "from: io failure")
+                    EditoastError::new("editoast::sources::from", 500, "from: io failure")
                 );
                 assert_eq!(
                     EditoastError::from(Sources::Transparent(std::io::Error::other("io failure"))),
-                    EditoastError::new("editoast::Sources::Transparent", 500, "io failure")
+                    EditoastError::new("editoast::sources::transparent", 500, "io failure")
                 );
             }
 
@@ -576,7 +577,7 @@ mod tests {
                 assert_eq!(
                     EditoastError::from(Error::DeriveMore(ConversionError("details".to_owned()))),
                     EditoastError::new(
-                        "editoast::Error::DeriveMore",
+                        "editoast::error::derive_more",
                         500,
                         "derive_more: conversion error: details",
                     )
@@ -679,7 +680,7 @@ mod tests {
                     EditoastError::from(Wrapper::Own {
                         detail: "details".to_owned(),
                     }),
-                    EditoastError::new("editoast::Wrapper::Own", 400, "own error: details",)
+                    EditoastError::new("editoast::wrapper::own", 400, "own error: details",)
                         .context("detail", "details")
                 );
             }

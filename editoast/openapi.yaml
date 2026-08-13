@@ -457,7 +457,7 @@ paths:
                     type:
                       type: string
                       enum:
-                      - editoast::DatabaseError::Internal
+                      - editoast::database::internal
         '503':
           description: ''
           content:
@@ -484,7 +484,7 @@ paths:
                     type:
                       type: string
                       enum:
-                      - editoast::DatabaseError::Unavailable
+                      - editoast::database::unavailable
   /documents/{document_key}:
     get:
       tags:
@@ -537,7 +537,7 @@ paths:
                     type:
                       type: string
                       enum:
-                      - editoast::DocumentNotFound
+                      - editoast::document::not_found
         '500':
           description: ''
           content:
@@ -564,7 +564,7 @@ paths:
                     type:
                       type: string
                       enum:
-                      - editoast::DatabaseError::Internal
+                      - editoast::database::internal
         '503':
           description: ''
           content:
@@ -591,7 +591,7 @@ paths:
                     type:
                       type: string
                       enum:
-                      - editoast::DatabaseError::Unavailable
+                      - editoast::database::unavailable
     delete:
       tags:
       - documents
@@ -639,7 +639,7 @@ paths:
                     type:
                       type: string
                       enum:
-                      - editoast::DocumentNotFound
+                      - editoast::document::not_found
         '500':
           description: ''
           content:
@@ -666,7 +666,7 @@ paths:
                     type:
                       type: string
                       enum:
-                      - editoast::DatabaseError::Internal
+                      - editoast::database::internal
         '503':
           description: ''
           content:
@@ -693,7 +693,7 @@ paths:
                     type:
                       type: string
                       enum:
-                      - editoast::DatabaseError::Unavailable
+                      - editoast::database::unavailable
   /electrical_profile_set:
     get:
       tags:

@@ -20,7 +20,7 @@ impl crate::views::error::ViewError for Wrapper {
     fn label(&self) -> &'static str {
         match self {
             Self::Transparent(_0) => crate::views::error::ViewError::label(_0),
-            Self::Own { detail: _detail } => "Wrapper",
+            Self::Own { detail: _detail } => "wrapper",
         }
     }
     fn status(&self) -> axum::http::StatusCode {
@@ -32,7 +32,7 @@ impl crate::views::error::ViewError for Wrapper {
     fn sub_label(&self) -> Option<&'static str> {
         match self {
             Self::Transparent(_0) => crate::views::error::ViewError::sub_label(_0),
-            Self::Own { detail: _detail } => Some("Own"),
+            Self::Own { detail: _detail } => Some("own"),
         }
     }
     fn context(self) -> std::collections::HashMap<String, serde_json::Value> {
@@ -52,8 +52,8 @@ impl crate::views::error::ViewError for Wrapper {
     fn responses() -> Vec<crate::views::error::OpenApiResponse> {
         let mut responses = Vec::from([
             crate::views::error::OpenApiResponse {
-                label: "Wrapper",
-                sub_label: Some("Own"),
+                label: "wrapper",
+                sub_label: Some("own"),
                 message_template: Some("own error: {detail}"),
                 status: axum::http::StatusCode::BAD_REQUEST,
                 context: Vec::from([
