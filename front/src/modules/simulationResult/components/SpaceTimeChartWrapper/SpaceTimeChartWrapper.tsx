@@ -97,6 +97,7 @@ import ProjectionLoadingMessage from './ProjectionLoadingMessage';
 import SettingsPanel from './SettingsPanel';
 import SpaceTimeChartToolbar from './SpaceTimeChartToolbar';
 import TimeRangeObserver from './TimeRangeObserver';
+import useLinkingMode from './useLinkingMode';
 import useWaypointMenu from './useWaypointMenu';
 import WaypointsPanel from './WaypointsPanel';
 
@@ -107,6 +108,8 @@ type SpaceTimeChartWrapperBaseProps = {
   workSchedules?: PostWorkSchedulesProjectPathApiResponse;
   trackOccupancyDiagramsData?: DeployedWaypoint[];
   linkings?: ExistingLinking[];
+  onCreateLinking?: (source: TrainId, target: TrainId) => void;
+  onDeleteLinking?: (linkingId: number) => void;
   onCloseOccupancyLayer?: (waypointId: string) => void;
   projectionLoaderData: {
     totalTrains: number;
@@ -208,6 +211,8 @@ const SpaceTimeChartWrapper = ({
   workSchedules,
   trackOccupancyDiagramsData,
   linkings,
+  onCreateLinking,
+  onDeleteLinking,
   onCloseOccupancyLayer,
   projectionLoaderData: { totalTrains, allTrainsProjected },
   height = MANCHETTE_WITH_SPACE_TIME_CHART_DEFAULT_HEIGHT,
@@ -247,6 +252,13 @@ const SpaceTimeChartWrapper = ({
     document.addEventListener('mousemove', handleMouseMove);
     return () => document.removeEventListener('mousemove', handleMouseMove);
   }, []);
+
+  const hasDeployedWaypoint = !!trackOccupancyDiagramsData?.length;
+  const { linkingMode, toggleLinkingMode, handleLinkingClick } = useLinkingMode({
+    hasDeployedWaypoint,
+    onCreateLinking,
+    onDeleteLinking,
+  });
 
   const [panelSelectionMode, setPanelSelectionMode] = useState<PanelSelectionMode>('compliant');
   const [lastClickedOccurrenceId, setLastClickedOccurrenceId] = useState<OccurrenceId>();
@@ -431,7 +443,7 @@ const SpaceTimeChartWrapper = ({
         linkings: {
           existing: linkings ?? [],
           hoveredId: hoveredLinkingId,
-          showSuggestions: false,
+          showSuggestions: linkingMode,
         },
       }),
     [
@@ -451,6 +463,7 @@ const SpaceTimeChartWrapper = ({
       setDragOverTrackId,
       linkings,
       hoveredLinkingId,
+      linkingMode,
     ]
   );
 
@@ -689,6 +702,8 @@ const SpaceTimeChartWrapper = ({
 
     const element = hoveredItem?.element;
 
+    if (handleLinkingClick(element)) return;
+
     if (
       !element ||
       (!isSegmentPickingElement(element) &&
@@ -822,6 +837,9 @@ const SpaceTimeChartWrapper = ({
             toggleZoomMode={toggleZoomMode}
             setShowSettingsPanel={setShowSettingsPanel}
             isResetButtonDisabled={isResetButtonDisabled}
+            linkingMode={linkingMode}
+            disableLinkingMode={!hasDeployedWaypoint}
+            toggleLinkingMode={toggleLinkingMode}
           />
           {showSettingsPanel && (
             <SettingsPanel

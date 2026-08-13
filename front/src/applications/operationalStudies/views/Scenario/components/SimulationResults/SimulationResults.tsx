@@ -154,7 +154,10 @@ const SimulationResults = ({
     () => trainScheduleProjections.map(({ id }) => id),
     [trainScheduleProjections]
   );
-  const linkings = useLinkings({ timetableId, trainScheduleIds: displayedTrainScheduleIds });
+  const { linkings, createLinking, deleteLinking } = useLinkings({
+    timetableId,
+    trainScheduleIds: displayedTrainScheduleIds,
+  });
 
   const conflictZones = useProjectedConflicts(infraId, conflicts, projectionData?.pathfinding);
 
@@ -292,6 +295,8 @@ const SimulationResults = ({
                   }}
                   trackOccupancyDiagramsData={deployedWaypoints}
                   linkings={linkings}
+                  onCreateLinking={createLinking}
+                  onDeleteLinking={deleteLinking}
                   onCloseOccupancyLayer={(waypointId: string) => toggleWaypoint(waypointId, false)}
                   conflicts={conflictZones}
                   projectionLoaderData={projectionData.projectionLoaderData}
