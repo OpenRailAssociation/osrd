@@ -19,6 +19,8 @@ import {
   isInteractiveWaypoint,
   isOccupancyPickingElement,
   type Track,
+  DEFAULT_ZOOM_MS_PER_PX,
+  timeScaleToZoomValue,
 } from '@osrd-project/ui-charts';
 import { Slider } from '@osrd-project/ui-core';
 import cx from 'classnames';
@@ -130,6 +132,12 @@ type SpaceTimeChartWrapperBaseProps = {
   selectedProjectionId: TrainId;
   trainSchedulesWithDetails?: TrainScheduleWithDetails[];
   pathfindingHasFailed?: boolean;
+  /**
+   * Duration of the hourly timetable pattern; when set, the time axis renders
+   * in hourly pattern mode (signed integer hours around 0). `undefined` for
+   * calendar scenarios.
+   */
+  hourlyTimetableDuration?: Duration;
 };
 
 type SpaceTimeChartWrapperProps = SpaceTimeChartWrapperBaseProps &
@@ -206,6 +214,7 @@ const SpaceTimeChartWrapper = ({
   waypointsPanelIsOpen,
   setWaypointsPanelIsOpen,
   pathfindingHasFailed = false,
+  hourlyTimetableDuration,
 }: SpaceTimeChartWrapperProps) => {
   const { t } = useTranslation('operational-studies');
   const dispatch = useAppDispatch();
@@ -472,6 +481,35 @@ const SpaceTimeChartWrapper = ({
   }, [selectedProjectionId, trainScheduleProjections.length]);
 
   const occupancyBlocks = getOccupancyBlocks(cutProjectedTrains);
+
+  const isZoomAtDefault = xZoom === timeScaleToZoomValue(DEFAULT_ZOOM_MS_PER_PX);
+  const handleResetClick = useCallback(() => {
+    let xPosition: number | undefined;
+
+    if (hourlyTimetableDuration) {
+      if (spaceTimeChartProps.xOffset) {
+        pan({ dx: -spaceTimeChartProps.xOffset });
+      }
+      setTimeOrigin(0);
+      xPosition = 0;
+    }
+
+    if (!isZoomAtDefault) {
+      handleXZoom(timeScaleToZoomValue(DEFAULT_ZOOM_MS_PER_PX), xPosition);
+    }
+  }, [
+    hourlyTimetableDuration,
+    spaceTimeChartProps.xOffset,
+    pan,
+    setTimeOrigin,
+    isZoomAtDefault,
+    handleXZoom,
+  ]);
+
+  const isResetButtonDisabled =
+    isZoomAtDefault &&
+    (!hourlyTimetableDuration ||
+      (spaceTimeChartProps.timeOrigin === 0 && spaceTimeChartProps.xOffset === 0));
 
   const manchettePropsWithWaypointMenu = useMemo(
     () => ({
@@ -762,12 +800,12 @@ const SpaceTimeChartWrapper = ({
           }}
         >
           <SpaceTimeChartToolbar
-            xZoom={xZoom}
-            handleXZoom={handleXZoom}
+            onResetClick={handleResetClick}
             zoomMode={zoomMode}
             disableZoom={!!waypointsPanelData?.deployedWaypoints?.size}
             toggleZoomMode={toggleZoomMode}
             setShowSettingsPanel={setShowSettingsPanel}
+            isResetButtonDisabled={isResetButtonDisabled}
           />
           {showSettingsPanel && (
             <SettingsPanel
@@ -791,6 +829,7 @@ const SpaceTimeChartWrapper = ({
             spaceOrigin={
               (waypointsPanelData?.filteredWaypoints ?? operationalPoints).at(0)?.position || 0
             }
+            hourlyTimetableDuration={hourlyTimetableDuration?.ms}
           >
             {paths.map((path) => {
               const trainId = path.id as TrainId;

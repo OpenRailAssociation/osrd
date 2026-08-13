@@ -45,6 +45,10 @@ const HOURS_FORMATTER = (t: number, pixelsPerMinute: number) =>
     pixelsPerMinute > 1 ? HOUR_OPTIONS_LONG : HOUR_OPTIONS_SHORT
   );
 
+// Signed integer hour count relative to time origin 0, used for the hourly
+// pattern mode (e.g. hourly timetables): …, -2, -1, 0, 1, 2, …
+const HOURLY_HOURS_FORMATTER = (t: number) => `${Math.round(t / HOUR)}`;
+
 const DATES_FORMATER = (t: number) => new Date(t).toLocaleDateString(undefined, DATE_OPTIONS);
 
 const RANGES_FORMATER: ((t: number, pixelsPerMinute: number) => string)[] = [
@@ -60,6 +64,10 @@ const RANGES_FORMATER: ((t: number, pixelsPerMinute: number) => string)[] = [
   HOURS_FORMATTER,
   HOURS_FORMATTER,
 ];
+
+const HOURLY_RANGES_FORMATER = RANGES_FORMATER.map((f) =>
+  f === HOURS_FORMATTER ? HOURLY_HOURS_FORMATTER : f
+);
 
 export const TimeCaptions = () => {
   const drawingFunction = useCallback<DrawingFunction<TimeChartContextType>>(
@@ -85,6 +93,7 @@ export const TimeCaptions = () => {
         swapAxis = false,
         hideTimeCaptions = false,
         hideDates = false,
+        hourlyTimetableDuration,
         showTicks = false,
       }
     ) => {
@@ -109,6 +118,8 @@ export const TimeCaptions = () => {
         return false;
       });
 
+      const rangesFormatter = hourlyTimetableDuration ? HOURLY_RANGES_FORMATER : RANGES_FORMATER;
+
       let labelMarks = computeVisibleTimeMarkers(
         minT,
         maxT,
@@ -117,7 +128,7 @@ export const TimeCaptions = () => {
         (level: number, i: number) => ({
           level,
           styles: timeCaptionsStyles[level],
-          formatter: RANGES_FORMATER[i],
+          formatter: rangesFormatter[i],
         })
       );
       if (!hideDates)

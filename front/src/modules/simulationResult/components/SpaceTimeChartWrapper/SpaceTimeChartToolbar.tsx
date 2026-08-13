@@ -1,6 +1,5 @@
 import type { Dispatch, SetStateAction } from 'react';
 
-import { DEFAULT_ZOOM_MS_PER_PX, timeScaleToZoomValue } from '@osrd-project/ui-charts';
 import { Iterations, Linking, Sliders, ZoomIn } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import { useSelector } from 'react-redux';
@@ -8,22 +7,22 @@ import { useSelector } from 'react-redux';
 import { getFeatureFlag } from 'reducers/user/userSelectors';
 
 type SpaceTimeChartToolbarProps = {
-  xZoom: number;
-  handleXZoom: (newXZoom: number, xPosition?: number) => void;
+  onResetClick: () => void;
   zoomMode: boolean;
   disableZoom: boolean;
   toggleZoomMode: () => void;
   setShowSettingsPanel: Dispatch<SetStateAction<boolean>>;
   className?: string;
+  isResetButtonDisabled?: boolean;
 };
 
 const SpaceTimeChartToolbar = ({
-  xZoom,
-  handleXZoom,
+  onResetClick,
   zoomMode,
   disableZoom,
   toggleZoomMode,
   setShowSettingsPanel,
+  isResetButtonDisabled,
 }: SpaceTimeChartToolbarProps) => {
   const linkingsActivated = useSelector(getFeatureFlag('linkings'));
 
@@ -44,13 +43,10 @@ const SpaceTimeChartToolbar = ({
         data-testid="zoom-reset-button"
         type="button"
         className={cx('reset-button', {
-          'reset-button-disabled': xZoom === timeScaleToZoomValue(DEFAULT_ZOOM_MS_PER_PX),
+          'reset-button-disabled': isResetButtonDisabled,
         })}
-        onClick={() => {
-          if (xZoom !== timeScaleToZoomValue(DEFAULT_ZOOM_MS_PER_PX)) {
-            handleXZoom(timeScaleToZoomValue(DEFAULT_ZOOM_MS_PER_PX));
-          }
-        }}
+        onClick={onResetClick}
+        disabled={isResetButtonDisabled}
       >
         <Iterations />
       </button>
