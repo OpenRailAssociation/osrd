@@ -14,6 +14,11 @@
   "origin": {
     "title": "Origin"
   },
+  "results": {
+    "noResult": "No result",
+    "solution": "Solution {{number}}",
+    "trainPathPrefix": "Train path no. "
+  },
   "search": {
     "button": "Search in ROP",
     "cancel": "Cancel",

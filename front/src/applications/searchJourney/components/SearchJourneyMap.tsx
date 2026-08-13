@@ -33,9 +33,10 @@ const buildMarker = (
 });
 
 /**
- * Shows the origin/destination markers only, no path (no pathfinding for search
- * journey). Uses its own local map state instead of `useMapSettings`/
- * `useMapSettingsActions`, which require `OsrdContextLayout` (not used here).
+ * Shows the origin/destination markers only (no path: the selected solution's
+ * geometry is shown in `SearchJourneyResultsMap` instead). Uses its own local
+ * map state instead of `useMapSettings`/`useMapSettingsActions`, which require
+ * `OsrdContextLayout` (not used here).
  */
 const SearchJourneyMap = () => {
   const infraId = useSelector(getSearchJourneyInfraId);
