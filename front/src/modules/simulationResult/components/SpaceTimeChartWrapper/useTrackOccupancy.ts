@@ -29,7 +29,7 @@ import computePossibleLinkings from './helpers/computePossibleLinkings';
 import getLinkableOccupancyData from './helpers/getLinkableOccupancyData';
 import { EXCEPTION_SUFFIX } from './helpers/makeProjectedTrains';
 import { NO_TRACK_SPECIFIED_SYMBOL, sortTracks } from './helpers/sortTracks';
-import { batchFetchTrackOccupancy } from './helpers/utils';
+import { batchFetch } from './helpers/utils';
 import {
   getMovableOccupancyZone,
   type MovableOccupancyZone,
@@ -366,7 +366,7 @@ const useTrackOccupancy = ({
 
       // Start fetching data:
       if (!currentState) {
-        const abort = batchFetchTrackOccupancy(
+        const abort = batchFetch(
           Array.from(trainScheduleProjectionsById.keys()),
           (ids) =>
             fetchTrackOccupancy(

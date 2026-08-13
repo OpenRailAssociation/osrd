@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-import { batchFetchTrackOccupancy } from '../utils';
+import { batchFetch } from '../utils';
 
 describe('batchFetch', () => {
   beforeEach(() => {
@@ -11,7 +11,7 @@ describe('batchFetch', () => {
     const fetchSpy = vi.fn().mockResolvedValueOnce(['a', 'b']).mockResolvedValueOnce(['c', 'd']);
 
     const onComplete = vi.fn();
-    batchFetchTrackOccupancy([1, 2, 3, 4], fetchSpy, {
+    batchFetch([1, 2, 3, 4], fetchSpy, {
       batchSize: 2,
       onComplete,
     });
@@ -36,7 +36,7 @@ describe('batchFetch', () => {
     const onComplete = vi.fn();
 
     const ids = [1, 2, 3, 4];
-    const abort = batchFetchTrackOccupancy(ids, fetchSpy, {
+    const abort = batchFetch(ids, fetchSpy, {
       batchSize: 2,
       onComplete,
     });
@@ -59,7 +59,7 @@ describe('batchFetch', () => {
     const onProgress = vi.fn();
     const onComplete = vi.fn();
 
-    batchFetchTrackOccupancy([1, 2, 3, 4], fetchSpy, {
+    batchFetch([1, 2, 3, 4], fetchSpy, {
       batchSize: 2,
       onProgress,
       onComplete,
@@ -80,7 +80,7 @@ describe('batchFetch', () => {
     const onError = vi.fn();
     const onComplete = vi.fn();
 
-    batchFetchTrackOccupancy([1, 2], fetchSpy, {
+    batchFetch([1, 2], fetchSpy, {
       onError,
       onComplete,
     });

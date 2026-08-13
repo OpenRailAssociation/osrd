@@ -7,7 +7,6 @@ import type { OccurrenceId } from 'reducers/osrdconf/types';
 import { isOccurrenceId } from 'utils/trainId';
 
 import type { AspectLabel, IndividualTrainProjection } from '../../../types';
-import type { MovableOccupancyZone } from './zones';
 
 export const getWaypointsLocalStorageKey = (
   timetableId: number | undefined,
@@ -20,12 +19,12 @@ export const getWaypointsLocalStorageKey = (
 };
 
 /**
- * Fetches track occupancy data for a large list of IDs in small sequential batches, to avoid
- * overwhelming the server or API.
+ * Fetches data for a large list of IDs in small sequential batches, to avoid overwhelming the
+ * server or API. Reports what has been gathered after each batch, and returns an abort function.
  */
-export function batchFetchTrackOccupancy(
+export function batchFetch<Value>(
   allIDs: number[],
-  fetchTrackOccupancy: (ids: number[]) => Promise<MovableOccupancyZone[]>,
+  fetchBatch: (ids: number[]) => Promise<Value[]>,
   {
     batchSize = 50,
     onProgress = noop,
@@ -33,37 +32,33 @@ export function batchFetchTrackOccupancy(
     onError = noop,
   }: {
     batchSize?: number;
-    onProgress?: (allValuesYet: MovableOccupancyZone[]) => void;
-    onComplete?: (allValues: MovableOccupancyZone[]) => void;
+    onProgress?: (allValuesYet: Value[]) => void;
+    onComplete?: (allValues: Value[]) => void;
     onError?: (err: Error) => void;
   }
 ) {
   let isAborted = false;
-  let allZones: MovableOccupancyZone[] = [];
+  let allValues: Value[] = [];
 
   const handleAbort = () => {
     isAborted = true;
-    allZones = [];
+    allValues = [];
   };
   const handleError = (reason: unknown) => {
     handleAbort();
-    onError(
-      reason instanceof Error
-        ? reason
-        : new Error(`batchFetchTrackOccupancy failed`, { cause: reason })
-    );
+    onError(reason instanceof Error ? reason : new Error('batchFetch failed', { cause: reason }));
   };
 
   const load = async () => {
     for (const batch of chunk(allIDs, batchSize)) {
-      const newValues = await fetchTrackOccupancy(batch);
+      const newValues = await fetchBatch(batch);
       if (isAborted) return;
 
-      allZones = allZones.concat(newValues);
-      onProgress(allZones);
+      allValues = allValues.concat(newValues);
+      onProgress(allValues);
     }
 
-    onComplete(allZones);
+    onComplete(allValues);
   };
 
   load().catch(handleError);
