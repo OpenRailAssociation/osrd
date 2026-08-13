@@ -31,8 +31,9 @@
     right: 7px;
     top: 7px;
     z-index: 10;
-    border: 1px solid var(--black10);
-    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 
     button {
       outline: none;
@@ -40,20 +41,29 @@
       color: var(--black100);
       padding: 0 7px;
 
-      &:first-child {
-        border-radius: 5px 0 0 5px;
-      }
-
-      &:not(:last-child) {
-        border-right: 1px solid var(--black10);
-      }
-
-      &:last-child {
-        border-radius: 0 5px 5px 0;
-      }
-
       &:hover {
         background-color: var(--primary5);
+      }
+    }
+
+    // The linking button stands on its own, the other ones share a single block.
+    .toolbar-group {
+      display: flex;
+      border: 1px solid var(--black10);
+      border-radius: 5px;
+
+      button {
+        &:first-child {
+          border-radius: 5px 0 0 5px;
+        }
+
+        &:not(:last-child) {
+          border-right: 1px solid var(--black10);
+        }
+
+        &:last-child {
+          border-radius: 0 5px 5px 0;
+        }
       }
     }
 
@@ -76,6 +86,33 @@
 
       &:hover {
         background-color: var(--primary90);
+      }
+    }
+
+    .linking-button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 26px;
+      padding: 0;
+      border: 1px solid var(--black10);
+      border-radius: 6px;
+    }
+
+    .linking-button-clicked {
+      // The border would hide the inner ring, which draws the edge on its own.
+      border: none;
+      background-color: var(--white100);
+      color: var(--primary60);
+      // Both rings meet on the edge to make a single blue line, in a lighter halo.
+      box-shadow:
+        0 0 0 0.5px inset var(--primary60),
+        0 0 0 0.5px var(--primary60),
+        0 0 0 1.5px var(--primary10);
+
+      &:hover {
+        background-color: var(--white100);
       }
     }
 
