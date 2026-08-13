@@ -2,7 +2,8 @@ import { useCallback, useRef, useState } from 'react';
 
 import { useSelector } from 'react-redux';
 
-import { osrdEditoastApi, type JourneyProposals } from 'common/api/osrdEditoastApi';
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import { setSearchJourneyResults } from 'reducers/searchJourney';
 import {
   getSearchJourneyDestination,
   getSearchJourneyInfraId,
@@ -10,6 +11,7 @@ import {
   getSearchJourneyStartTime,
   getSearchJourneyTimetableIds,
 } from 'reducers/searchJourney/selectors';
+import { useAppDispatch } from 'store';
 import { Duration } from 'utils/duration';
 
 export const SEARCH_JOURNEY_REQUEST_STATUS = Object.freeze({
@@ -28,6 +30,7 @@ const TRANSFER_MS = 0;
  * Builds and sends the `/search_journeys` payload from the searchJourney store.
  */
 export default function useSearchJourney() {
+  const dispatch = useAppDispatch();
   const infraId = useSelector(getSearchJourneyInfraId);
   const timetableIds = useSelector(getSearchJourneyTimetableIds);
   const origin = useSelector(getSearchJourneyOrigin);
@@ -40,7 +43,6 @@ export default function useSearchJourney() {
   const [requestStatus, setRequestStatus] = useState<
     (typeof SEARCH_JOURNEY_REQUEST_STATUS)[keyof typeof SEARCH_JOURNEY_REQUEST_STATUS]
   >(SEARCH_JOURNEY_REQUEST_STATUS.idle);
-  const [journeys, setJourneys] = useState<JourneyProposals['journeys']>();
   const [error, setError] = useState<Error | null>(null);
 
   const isFormComplete = Boolean(infraId && origin && destination && startTime);
@@ -78,7 +80,7 @@ export default function useSearchJourney() {
     currentRequestRef.current = request;
     try {
       const { journeys: result } = await request.unwrap();
-      setJourneys(result);
+      dispatch(setSearchJourneyResults(result));
       setRequestStatus(SEARCH_JOURNEY_REQUEST_STATUS.success);
     } catch (e) {
       if ((e as Error).name === 'AbortError') {
@@ -90,7 +92,7 @@ export default function useSearchJourney() {
     } finally {
       currentRequestRef.current = null;
     }
-  }, [postSearchJourneys, infraId, timetableIds, origin, destination, startTime]);
+  }, [postSearchJourneys, dispatch, infraId, timetableIds, origin, destination, startTime]);
 
   const cancelSearchJourneyRequest = useCallback(() => {
     currentRequestRef.current?.abort();
@@ -100,7 +102,6 @@ export default function useSearchJourney() {
     launchSearchJourneyRequest,
     cancelSearchJourneyRequest,
     requestStatus,
-    journeys,
     error,
     isFormComplete,
   };
