@@ -16,6 +16,7 @@ import SpaceTimeChartWrapper, {
 } from 'modules/simulationResult/components/SpaceTimeChartWrapper/SpaceTimeChartWrapper';
 import useGetProjectedTrainOperationalPoints from 'modules/simulationResult/components/SpaceTimeChartWrapper/useGetProjectedTrainOperationalPoints';
 import useHandleInvalidProjections from 'modules/simulationResult/components/SpaceTimeChartWrapper/useHandleInvalidProjections';
+import useLinkings from 'modules/simulationResult/components/SpaceTimeChartWrapper/useLinkings';
 import useProjectedConflicts from 'modules/simulationResult/components/SpaceTimeChartWrapper/useProjectedConflicts';
 import useTrackOccupancy from 'modules/simulationResult/components/SpaceTimeChartWrapper/useTrackOccupancy';
 import SpeedDistanceDiagramWrapper from 'modules/simulationResult/components/SpeedDistanceDiagram/SpeedDistanceDiagramWrapper';
@@ -148,6 +149,12 @@ const SimulationResults = ({
     pathOperationalPoints: filteredOperationalPoints,
     trainScheduleProjections,
   });
+
+  const displayedTrainScheduleIds = useMemo(
+    () => trainScheduleProjections.map(({ id }) => id),
+    [trainScheduleProjections]
+  );
+  const linkings = useLinkings({ timetableId, trainScheduleIds: displayedTrainScheduleIds });
 
   const conflictZones = useProjectedConflicts(infraId, conflicts, projectionData?.pathfinding);
 
@@ -284,6 +291,7 @@ const SimulationResults = ({
                     timetableId,
                   }}
                   trackOccupancyDiagramsData={deployedWaypoints}
+                  linkings={linkings}
                   onCloseOccupancyLayer={(waypointId: string) => toggleWaypoint(waypointId, false)}
                   conflicts={conflictZones}
                   projectionLoaderData={projectionData.projectionLoaderData}
