@@ -4,7 +4,7 @@ import MacroEditorState from '../MacroEditorState';
 
 describe('MacroEditorState.parsePathKey', () => {
   test('parses a domestic path key with a country code and secondary code', () => {
-    expect(MacroEditorState.parsePathKey('domestic:FR-ORL/BV')).toEqual({
+    expect(MacroEditorState.parsePathKey('domestic:ORL/BV#FR')).toEqual({
       type: 'operational_point_part_reference',
       operational_point: {
         type: 'domestic',
@@ -28,7 +28,7 @@ describe('MacroEditorState.parsePathKey', () => {
   });
 
   test('parses a domestic path key without a secondary code', () => {
-    expect(MacroEditorState.parsePathKey('domestic:FR-ORL')).toEqual({
+    expect(MacroEditorState.parsePathKey('domestic:ORL#FR')).toEqual({
       type: 'operational_point_part_reference',
       operational_point: {
         type: 'domestic',

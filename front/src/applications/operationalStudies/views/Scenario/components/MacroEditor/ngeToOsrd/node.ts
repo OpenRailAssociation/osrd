@@ -91,7 +91,7 @@ export const handleNodeOperation = async ({
           await updateMacroNode(state, dispatch, {
             ...indexNode,
             ...castNgeNode(node, netzgrafikDto.labels),
-            trigram: node.betriebspunktName,
+            trigram: domesticReference,
             dbId: indexNode.dbId,
             path_item_key: nodeKey,
           });
@@ -118,7 +118,7 @@ export const handleNodeOperation = async ({
         }
       } else {
         // It's an unknown node, we need to create it in the db
-        // We assume that `betriebspunktName` follows the `${country_code}-${main_code}/${secondary_code}` format
+        // We assume that `betriebspunktName` follows the `${main_code}/${secondary_code}#${country_code}` format
         const key = MacroEditorState.getPathKey({
           type: 'operational_point_part_reference',
           operational_point: MacroEditorState.decodeDomesticReference(node.betriebspunktName),
