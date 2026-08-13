@@ -125,12 +125,12 @@ impl OpenApiResponse {
             ObjectBuilder::new()
                 .description(self.message_template)
                 .property(
-                    "error_type",
+                    "type",
                     ObjectBuilder::new()
                         .schema_type(SchemaType::Type(Type::String))
                         .enum_values(Some([unique_label])),
                 )
-                .required("error_type")
+                .required("type")
                 .property(
                     "status",
                     ObjectBuilder::new()

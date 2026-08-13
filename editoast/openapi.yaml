@@ -440,17 +440,13 @@ paths:
                 - type: object
                   description: 'database error: {0}'
                   required:
-                  - error_type
+                  - type
                   - status
                   - message
                   - context
                   properties:
                     context:
                       type: object
-                    error_type:
-                      type: string
-                      enum:
-                      - editoast::DatabaseError::Internal
                     message:
                       type: string
                     status:
@@ -458,6 +454,10 @@ paths:
                       format: int32
                       enum:
                       - '500'
+                    type:
+                      type: string
+                      enum:
+                      - editoast::DatabaseError::Internal
         '503':
           description: ''
           content:
@@ -467,17 +467,13 @@ paths:
                 - type: object
                   description: 'database unavailable: {0}'
                   required:
-                  - error_type
+                  - type
                   - status
                   - message
                   - context
                   properties:
                     context:
                       type: object
-                    error_type:
-                      type: string
-                      enum:
-                      - editoast::DatabaseError::Unavailable
                     message:
                       type: string
                     status:
@@ -485,6 +481,10 @@ paths:
                       format: int32
                       enum:
                       - '503'
+                    type:
+                      type: string
+                      enum:
+                      - editoast::DatabaseError::Unavailable
   /documents/{document_key}:
     get:
       tags:
@@ -514,7 +514,7 @@ paths:
                 - type: object
                   description: Document '{document_key}' not found
                   required:
-                  - error_type
+                  - type
                   - status
                   - message
                   - context
@@ -527,10 +527,6 @@ paths:
                         document_key:
                           type: integer
                           format: int64
-                    error_type:
-                      type: string
-                      enum:
-                      - editoast::DocumentNotFound
                     message:
                       type: string
                     status:
@@ -538,6 +534,10 @@ paths:
                       format: int32
                       enum:
                       - '404'
+                    type:
+                      type: string
+                      enum:
+                      - editoast::DocumentNotFound
         '500':
           description: ''
           content:
@@ -547,17 +547,13 @@ paths:
                 - type: object
                   description: 'database error: {0}'
                   required:
-                  - error_type
+                  - type
                   - status
                   - message
                   - context
                   properties:
                     context:
                       type: object
-                    error_type:
-                      type: string
-                      enum:
-                      - editoast::DatabaseError::Internal
                     message:
                       type: string
                     status:
@@ -565,6 +561,10 @@ paths:
                       format: int32
                       enum:
                       - '500'
+                    type:
+                      type: string
+                      enum:
+                      - editoast::DatabaseError::Internal
         '503':
           description: ''
           content:
@@ -574,17 +574,13 @@ paths:
                 - type: object
                   description: 'database unavailable: {0}'
                   required:
-                  - error_type
+                  - type
                   - status
                   - message
                   - context
                   properties:
                     context:
                       type: object
-                    error_type:
-                      type: string
-                      enum:
-                      - editoast::DatabaseError::Unavailable
                     message:
                       type: string
                     status:
@@ -592,6 +588,10 @@ paths:
                       format: int32
                       enum:
                       - '503'
+                    type:
+                      type: string
+                      enum:
+                      - editoast::DatabaseError::Unavailable
     delete:
       tags:
       - documents
@@ -616,7 +616,7 @@ paths:
                 - type: object
                   description: Document '{document_key}' not found
                   required:
-                  - error_type
+                  - type
                   - status
                   - message
                   - context
@@ -629,10 +629,6 @@ paths:
                         document_key:
                           type: integer
                           format: int64
-                    error_type:
-                      type: string
-                      enum:
-                      - editoast::DocumentNotFound
                     message:
                       type: string
                     status:
@@ -640,6 +636,10 @@ paths:
                       format: int32
                       enum:
                       - '404'
+                    type:
+                      type: string
+                      enum:
+                      - editoast::DocumentNotFound
         '500':
           description: ''
           content:
@@ -649,17 +649,13 @@ paths:
                 - type: object
                   description: 'database error: {0}'
                   required:
-                  - error_type
+                  - type
                   - status
                   - message
                   - context
                   properties:
                     context:
                       type: object
-                    error_type:
-                      type: string
-                      enum:
-                      - editoast::DatabaseError::Internal
                     message:
                       type: string
                     status:
@@ -667,6 +663,10 @@ paths:
                       format: int32
                       enum:
                       - '500'
+                    type:
+                      type: string
+                      enum:
+                      - editoast::DatabaseError::Internal
         '503':
           description: ''
           content:
@@ -676,17 +676,13 @@ paths:
                 - type: object
                   description: 'database unavailable: {0}'
                   required:
-                  - error_type
+                  - type
                   - status
                   - message
                   - context
                   properties:
                     context:
                       type: object
-                    error_type:
-                      type: string
-                      enum:
-                      - editoast::DatabaseError::Unavailable
                     message:
                       type: string
                     status:
@@ -694,6 +690,10 @@ paths:
                       format: int32
                       enum:
                       - '503'
+                    type:
+                      type: string
+                      enum:
+                      - editoast::DatabaseError::Unavailable
   /electrical_profile_set:
     get:
       tags:

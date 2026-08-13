@@ -1620,18 +1620,16 @@ export type PostAuthzGrantsApiArg = {
         revoke: RevokeBody[];
       };
 };
-export type GetAuthzGroupsApiResponse =
-  /** status 200 List all the groups */ {
-    id: number;
-    name: string;
-  }[];
+export type GetAuthzGroupsApiResponse = /** status 200 List all the groups */ {
+  id: number;
+  name: string;
+}[];
 export type GetAuthzGroupsApiArg = void;
-export type GetAuthzMeApiResponse =
-  /** status 200 Get the info of the current user */ {
-    id: number;
-    name: string;
-    roles: Role[];
-  };
+export type GetAuthzMeApiResponse = /** status 200 Get the info of the current user */ {
+  id: number;
+  name: string;
+  roles: Role[];
+};
 export type GetAuthzMeApiArg = void;
 export type PostAuthzMeGrantsApiResponse =
   /** status 200 Get grants info of the current user for the given resources in body */ {
@@ -1646,11 +1644,10 @@ export type PostAuthzMeGrantsApiArg = {
     [key: string]: number[];
   };
 };
-export type GetAuthzMeGroupsApiResponse =
-  /** status 200 Get the groups of the current user */ {
-    id: number;
-    name: string;
-  }[];
+export type GetAuthzMeGroupsApiResponse = /** status 200 Get the groups of the current user */ {
+  id: number;
+  name: string;
+}[];
 export type GetAuthzMeGroupsApiArg = void;
 export type PostAuthzMePrivilegesApiResponse =
   /** status 200 The privileges of the user sending the request over each requested resource. The resource is omitted if it does not exist. An empty privileges list is returned if the user has no privileges over it. */ {
@@ -1665,17 +1662,16 @@ export type PostAuthzMePrivilegesApiArg = {
     [key: string]: number[];
   };
 };
-export type PostAuthzUserInfoApiResponse =
-  /** status 200 Get information on a list of users */ {
-    groups: {
-      id: number;
-      name: string;
-    }[];
+export type PostAuthzUserInfoApiResponse = /** status 200 Get information on a list of users */ {
+  groups: {
     id: number;
-    identities: string[];
     name: string;
-    roles: Role[];
   }[];
+  id: number;
+  identities: string[];
+  name: string;
+  roles: Role[];
+}[];
 export type PostAuthzUserInfoApiArg = {
   /** A list of user IDs and identities to get information on */
   body: {
@@ -1775,10 +1771,9 @@ export type GetIconsBySignalingSystemAndFileNameApiArg = {
   /** File name (svg) */
   fileName: string;
 };
-export type GetInfraApiResponse =
-  /** status 200 All infras, paginated */ PaginationStats & {
-    results: Infra[];
-  };
+export type GetInfraApiResponse = /** status 200 All infras, paginated */ PaginationStats & {
+  results: Infra[];
+};
 export type GetInfraApiArg = {
   page?: number;
   pageSize?: number;
@@ -1790,10 +1785,9 @@ export type PostInfraApiArg = {
     name: string;
   };
 };
-export type PostInfraRailjsonApiResponse =
-  /** status 201 The imported infra id */ {
-    infra: number;
-  };
+export type PostInfraRailjsonApiResponse = /** status 201 The imported infra id */ {
+  infra: number;
+};
 export type PostInfraRailjsonApiArg = {
   /** The name of the infrastructure. */
   name: string;
@@ -1801,11 +1795,10 @@ export type PostInfraRailjsonApiArg = {
   generateData?: boolean;
   railJson: RailJson;
 };
-export type PostInfraRefreshApiResponse =
-  /** status 200  */ {
-    /** The list of infras that were refreshed successfully */
-    infra_refreshed: number[];
-  };
+export type PostInfraRefreshApiResponse = /** status 200  */ {
+  /** The list of infras that were refreshed successfully */
+  infra_refreshed: number[];
+};
 export type PostInfraRefreshApiArg = {
   force?: boolean;
   /** A comma-separated list of infra IDs to refresh
@@ -1923,13 +1916,12 @@ export type PostInfraByInfraIdLockApiArg = {
   /** An existing infra ID */
   infraId: number;
 };
-export type PostInfraByInfraIdMatchOperationalPointsApiResponse =
-  /** status 200
+export type PostInfraByInfraIdMatchOperationalPointsApiResponse = /** status 200
 Take a list of operational point references and return for each of them the
 operational point that it matches on a given infrastructure.
  */ {
-    related_operational_points: (null | RelatedOperationalPoint)[];
-  };
+  related_operational_points: (null | RelatedOperationalPoint)[];
+};
 export type PostInfraByInfraIdMatchOperationalPointsApiArg = {
   /** An existing infra ID */
   infraId: number;
@@ -2122,10 +2114,9 @@ export type PostLevelCrossingOccupancyApiArg = {
     train_ids: number[];
   };
 };
-export type GetLightRollingStockApiResponse =
-  /** status 200  */ PaginationStats & {
-    results: LightRollingStockWithLiveries[];
-  };
+export type GetLightRollingStockApiResponse = /** status 200  */ PaginationStats & {
+  results: LightRollingStockWithLiveries[];
+};
 export type GetLightRollingStockApiArg = {
   page?: number;
   pageSize?: number;
@@ -2194,10 +2185,9 @@ export type DeleteMacroNotesByNoteIdApiResponse = unknown;
 export type DeleteMacroNotesByNoteIdApiArg = {
   noteId: number;
 };
-export type GetProjectsApiResponse =
-  /** status 200 The list of projects */ PaginationStats & {
-    results: ProjectWithStudies[];
-  };
+export type GetProjectsApiResponse = /** status 200 The list of projects */ PaginationStats & {
+  results: ProjectWithStudies[];
+};
 export type GetProjectsApiArg = {
   page?: number;
   pageSize?: number;
@@ -2368,11 +2358,10 @@ export type GetSpritesBySignalingSystemAndFileNameApiArg = {
   /** File name (json, png or svg) */
   fileName: string;
 };
-export type GetStdcmDebugDataByTraceIdApiResponse =
-  /** status 200  */ {
-    failure?: null | SimDebugFailureReport;
-    simulation_data?: null | SimDebugData;
-  };
+export type GetStdcmDebugDataByTraceIdApiResponse = /** status 200  */ {
+  failure?: null | SimDebugFailureReport;
+  simulation_data?: null | SimDebugData;
+};
 export type GetStdcmDebugDataByTraceIdApiArg = {
   /** OpenTelemetry trace ID of the STDCM request */
   traceId: string;
@@ -2397,10 +2386,9 @@ export type DeleteStdcmSearchEnvironmentByEnvIdApiArg = {
   /** An stdcm search environment ID */
   envId: number;
 };
-export type GetStudiesApiResponse =
-  /** status 200 The list of studies */ PaginationStats & {
-    results: StudyWithScenarios[];
-  };
+export type GetStudiesApiResponse = /** status 200 The list of studies */ PaginationStats & {
+  results: StudyWithScenarios[];
+};
 export type GetStudiesApiArg = {
   projectId: number;
   page?: number;
@@ -2606,10 +2594,9 @@ export type GetTimetableByIdTrainSchedulesApiArg = {
   page?: number;
   pageSize?: number;
 };
-export type GetTowedRollingStockApiResponse =
-  /** status 200  */ PaginationStats & {
-    results: TowedRollingStock[];
-  };
+export type GetTowedRollingStockApiResponse = /** status 200  */ PaginationStats & {
+  results: TowedRollingStock[];
+};
 export type GetTowedRollingStockApiArg = {
   page?: number;
   pageSize?: number;
@@ -2724,17 +2711,15 @@ export type PatchTrainSchedulesMoveApiArg = {
     train_schedule_set_id: number;
   };
 };
-export type PostTrainSchedulesOccupancyBlocksApiResponse =
-  /** status 200  */ {
-    [key: string]: OccupancyBlocksTrainScheduleResult;
-  };
+export type PostTrainSchedulesOccupancyBlocksApiResponse = /** status 200  */ {
+  [key: string]: OccupancyBlocksTrainScheduleResult;
+};
 export type PostTrainSchedulesOccupancyBlocksApiArg = {
   occupancyBlockForm: OccupancyBlockForm;
 };
-export type PostTrainSchedulesProjectPathApiResponse =
-  /** status 200 Project Path Output */ {
-    [key: string]: ProjectPathTrainScheduleResult;
-  };
+export type PostTrainSchedulesProjectPathApiResponse = /** status 200 Project Path Output */ {
+  [key: string]: ProjectPathTrainScheduleResult;
+};
 export type PostTrainSchedulesProjectPathApiArg = {
   projectPathForm: ProjectPathForm;
 };
