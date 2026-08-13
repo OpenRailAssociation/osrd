@@ -30,6 +30,7 @@ import {
   getTrainIdUsedForProjection,
 } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
+import type { Duration } from 'utils/duration';
 import {
   extractEditoastIdFromTrainScheduleId,
   extractTrainScheduleIdFromOccurrenceId,
@@ -54,6 +55,10 @@ type SimulationResultsProps = {
   trainSchedulesWithDetails: TrainScheduleWithDetails[];
   conflicts?: Conflict[];
   activeBoards: Set<Board>;
+  /**
+   * Duration of the hourly timetable pattern; `undefined` for calendar scenarios.
+   */
+  hourlyTimetableDuration?: Duration;
   isScrollingToTimeStopsTable: boolean;
   setIsScrollingToTimeStopsTable: React.Dispatch<React.SetStateAction<boolean>>;
 };
@@ -64,6 +69,7 @@ const SimulationResults = ({
   trainSchedulesWithDetails,
   conflicts = NO_CONFLICTS,
   activeBoards,
+  hourlyTimetableDuration,
   isScrollingToTimeStopsTable,
   setIsScrollingToTimeStopsTable,
 }: SimulationResultsProps) => {
@@ -288,6 +294,7 @@ const SimulationResults = ({
                   waypointsPanelIsOpen={waypointsPanelIsOpen}
                   setWaypointsPanelIsOpen={setWaypointsPanelIsOpen}
                   pathfindingHasFailed={projectionData?.pathfindingStatus === 'failed'}
+                  hourlyTimetableDuration={hourlyTimetableDuration}
                 />
               )}
             </div>

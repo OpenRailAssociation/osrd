@@ -87,6 +87,7 @@ const ScenarioContent = ({ activeBoards, toggleBoard }: ScenarioContentProps) =>
     projectionData,
     conflicts,
     isConflictsLoading,
+    hourlyTimetableDuration,
     upsertTrainSchedules,
     removeTrainSchedules,
     updateTrainScheduleDepartureTime,
@@ -248,6 +249,7 @@ const ScenarioContent = ({ activeBoards, toggleBoard }: ScenarioContentProps) =>
                     conflicts={conflicts}
                     trainSchedulesWithDetails={trainSchedulesWithDetails}
                     activeBoards={activeBoards}
+                    hourlyTimetableDuration={hourlyTimetableDuration}
                     isScrollingToTimeStopsTable={isScrollingToTimeStopsTable}
                     setIsScrollingToTimeStopsTable={setIsScrollingToTimeStopsTable}
                   />

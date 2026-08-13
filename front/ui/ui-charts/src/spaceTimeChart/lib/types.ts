@@ -120,6 +120,14 @@ export type SpaceTimeChartProps = {
   hidePathsLabels?: boolean;
   hideDates?: boolean;
   showTicks?: boolean;
+  /**
+   * When set, the time axis renders hours as signed integers relative to time
+   * origin 0 (…, -2, -1, 0, 1, 2, …) instead of localized clock times, and
+   * date captions are hidden. The value is the length (in ms) of one hourly
+   * timetable pattern iteration, so downstream layers (markers, pattern bars)
+   * can reuse it. Meant for repeating patterns (e.g. hourly timetables).
+   */
+  hourlyTimetableDuration?: number;
 
   // Custom styles:
   theme?: Partial<SpaceTimeChartTheme>;
