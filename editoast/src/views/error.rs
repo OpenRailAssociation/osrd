@@ -466,6 +466,7 @@ mod tests {
                 #[view_error(name = "mixed", context)]
                 enum Mixed {
                     #[error("unit")]
+                    #[view_error(name = "custom_unit")]
                     Unit,
                     #[error("newtype: {0}")]
                     #[view_error(status = BAD_REQUEST)]
@@ -478,7 +479,7 @@ mod tests {
 
                 assert_eq!(
                     EditoastError::from(Mixed::Unit),
-                    EditoastError::new("editoast::mixed::Unit", 500, "unit")
+                    EditoastError::new("editoast::mixed::custom_unit", 500, "unit")
                 );
                 assert_eq!(
                     EditoastError::from(Mixed::Newtype("foo".to_owned())),

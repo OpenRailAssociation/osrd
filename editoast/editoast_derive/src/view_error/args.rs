@@ -69,6 +69,8 @@ struct VariantArgs {
     status: StatusCodeArg,
     #[darling(default)]
     context: bool,
+    #[darling(default)]
+    name: Option<String>,
 }
 
 #[derive(Debug, FromField)]
@@ -164,8 +166,9 @@ impl Args {
                         attrs: ErrorAttrs { thiserror },
                         status,
                         context: context_on_variant,
+                        name,
                     } = variant;
-                    let sub_label = variant_ident.to_string();
+                    let sub_label = name.unwrap_or_else(|| variant_ident.to_string());
                     let pattern = fields.pattern(Some(&variant_ident));
                     if let Some(ForwardedField { binding, ty }) = fields.forwarded_view_error() {
                         view_error_impl.forward_view_error(pattern, binding, ty);
