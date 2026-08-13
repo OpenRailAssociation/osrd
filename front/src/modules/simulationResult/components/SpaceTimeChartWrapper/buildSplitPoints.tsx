@@ -10,6 +10,7 @@ import {
 import { keyBy, sortBy } from 'lodash';
 
 import type { CategoryColors } from 'applications/operationalStudies/types';
+import trashIcon from 'assets/pictures/trash-white.svg';
 import { Spinner } from 'common/Loaders';
 import getPathStyleV2 from 'modules/simulationResult/helpers/getPathStyleV2';
 import type { CurveStyleInput } from 'modules/simulationResult/types';
@@ -18,6 +19,7 @@ import type { SelectedTrain } from 'reducers/simulationResults/types';
 import { extractTrainScheduleIdFromOccurrenceId, isOccurrenceId } from 'utils/trainId';
 
 import type { PanelSelectionMode } from './CurveSelectionSidePanel';
+import buildWaypointLinkings, { type ExistingLinking } from './helpers/linkings';
 import type { MovableOccupancyZone, DeployedWaypoint } from './helpers/zones';
 
 type Path = {
@@ -42,6 +44,11 @@ type BuildSplitPointsProps = {
   isDraggingOccupancyZoneId?: (waypointId: string, trainId: TrainId) => boolean;
   activeTrackId?: string;
   onTrackDragOver?: (trackId: string | undefined) => void;
+  linkings?: {
+    existing: ExistingLinking[];
+    hoveredId?: string;
+    showSuggestions: boolean;
+  };
 };
 
 export function buildSplitPoints({
@@ -58,6 +65,7 @@ export function buildSplitPoints({
   isDraggingOccupancyZoneId,
   activeTrackId,
   onTrackDragOver,
+  linkings,
 }: BuildSplitPointsProps): SplitPoint[] {
   if (!occupancyZonesLayers?.length) return [];
 
@@ -80,7 +88,15 @@ export function buildSplitPoints({
     occupancyZonesLayers,
     ({ operationalPointPosition }) => operationalPointPosition
   ).map(
-    ({ waypointId, operationalPointName, operationalPointPosition, zones, tracks, loading }) => {
+    ({
+      waypointId,
+      operationalPointName,
+      operationalPointPosition,
+      zones,
+      possibleLinkings,
+      tracks,
+      loading,
+    }) => {
       const baseZones = zones ?? [];
       const zonesCountByTrainScheduleId = countZonesByTrainScheduleId(baseZones);
 
@@ -123,6 +139,20 @@ export function buildSplitPoints({
         ];
       });
 
+      const { linkings: waypointLinkings, brokenLinkings } = buildWaypointLinkings({
+        zones: baseZones,
+        possibleLinkings,
+        existingLinkings: linkings?.existing ?? [],
+        trainNames: (trainId) => pathsById[trainId]?.label,
+        showSuggestions: linkings?.showSuggestions ?? false,
+      });
+      // A linking takes the colors of the train departing after it:
+      const coloredLinkings = waypointLinkings.flatMap(({ targetTrainId, ...linking }) => {
+        const path = pathsById[targetTrainId];
+        if (!path) return [];
+        return [{ ...linking, colors: path.colors, hover: linking.id === linkings?.hoveredId }];
+      });
+
       const waypoint = {
         id: waypointId,
         name: (
@@ -153,6 +183,9 @@ export function buildSplitPoints({
             tracks={tracks || []}
             occupancyZones={occupancyZones.filter((zone) => !isDraggingOccupancyZone(zone))}
             draggingOccupancyZones={occupancyZones.filter(isDraggingOccupancyZone)}
+            linkings={coloredLinkings}
+            brokenLinkings={brokenLinkings}
+            deleteIconUrl={trashIcon}
             onClose={() => onCloseOccupancyLayer?.(waypointId)}
             onDragOver={onTrackDragOver}
             topPadding={BASE_WAYPOINT_HEIGHT}

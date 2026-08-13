@@ -18,6 +18,7 @@ import {
   isPointPickingElement,
   isInteractiveWaypoint,
   isOccupancyPickingElement,
+  isLinkingPickingElement,
   type Track,
   DEFAULT_ZOOM_MS_PER_PX,
   timeScaleToZoomValue,
@@ -82,6 +83,7 @@ import cutSpaceTimeCurves from './helpers/cutSpaceTimeCurves';
 import formatSpaceTimeCurves from './helpers/formatSpaceTimeCurves';
 import getPanelOccurrenceCounts from './helpers/getPanelOccurrenceCounts';
 import getTrainExceptionTypes from './helpers/getTrainExceptionTypes';
+import type { ExistingLinking } from './helpers/linkings';
 import makeProjectedTrains from './helpers/makeProjectedTrains';
 import { getOccupancyBlocks } from './helpers/utils';
 import {
@@ -104,6 +106,7 @@ type SpaceTimeChartWrapperBaseProps = {
   conflicts?: Conflict[];
   workSchedules?: PostWorkSchedulesProjectPathApiResponse;
   trackOccupancyDiagramsData?: DeployedWaypoint[];
+  linkings?: ExistingLinking[];
   onCloseOccupancyLayer?: (waypointId: string) => void;
   projectionLoaderData: {
     totalTrains: number;
@@ -204,6 +207,7 @@ const SpaceTimeChartWrapper = ({
   conflicts = NO_CONFLICTS,
   workSchedules,
   trackOccupancyDiagramsData,
+  linkings,
   onCloseOccupancyLayer,
   projectionLoaderData: { totalTrains, allTrainsProjected },
   height = MANCHETTE_WITH_SPACE_TIME_CHART_DEFAULT_HEIGHT,
@@ -357,6 +361,11 @@ const SpaceTimeChartWrapper = ({
     [hoveredItem, hoveredTrainId, trainSchedulesWithDetailsById]
   );
 
+  const hoveredLinkingId =
+    hoveredItem?.element && isLinkingPickingElement(hoveredItem.element)
+      ? hoveredItem.element.linkingId
+      : undefined;
+
   // If we're dealing a unique train or a path_and_schedule exception, use the
   // ID as-is so that only this single occupancy zone gets dragged. Otherwise,
   // we're dealing with a compliant occurrence: extract the paced train ID so
@@ -419,6 +428,11 @@ const SpaceTimeChartWrapper = ({
         isDraggingOccupancyZoneId,
         activeTrackId: dragOverTrackId,
         onTrackDragOver: setDragOverTrackId,
+        linkings: {
+          existing: linkings ?? [],
+          hoveredId: hoveredLinkingId,
+          showSuggestions: false,
+        },
       }),
     [
       trackOccupancyDiagramsData,
@@ -435,6 +449,8 @@ const SpaceTimeChartWrapper = ({
       isDraggingOccupancyZoneId,
       dragOverTrackId,
       setDragOverTrackId,
+      linkings,
+      hoveredLinkingId,
     ]
   );
 
