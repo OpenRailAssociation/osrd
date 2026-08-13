@@ -49,6 +49,7 @@ export default function useSearchJourneySolutionDetails(solution?: SearchJourney
   const [geometry, setGeometry] = useState<GeoJsonLineString>();
   const [markers, setMarkers] = useState<MarkerInformation[]>([]);
   const [trainNames, setTrainNames] = useState<Record<number, string>>({});
+  const [operationalPointNames, setOperationalPointNames] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
@@ -57,6 +58,7 @@ export default function useSearchJourneySolutionDetails(solution?: SearchJourney
       setGeometry(undefined);
       setMarkers([]);
       setTrainNames({});
+      setOperationalPointNames({});
       return undefined;
     }
 
@@ -71,23 +73,34 @@ export default function useSearchJourneySolutionDetails(solution?: SearchJourney
 
         for (const part of solution) {
           const path = await dispatch(
-            osrdEditoastApi.endpoints.getTrainSchedulesByIdPath.initiate({
-              id: part.train_schedule_id,
-              infraId,
-              beginIndex: part.from.path_step_index,
-              endIndex: part.to.path_step_index,
-            })
+            osrdEditoastApi.endpoints.getTrainSchedulesByIdPath.initiate(
+              {
+                id: part.train_schedule_id,
+                infraId,
+                beginIndex: part.from.path_step_index,
+                endIndex: part.to.path_step_index,
+              },
+              { subscribe: false }
+            )
           ).unwrap();
 
           if (path.status === 'success') {
             allTrackRanges.push(...path.path.track_section_ranges);
+          } else if (
+            path.failed_status === 'pathfinding_not_found' &&
+            path.error_type === 'incompatible_constraints'
+          ) {
+            allTrackRanges.push(...path.relaxed_constraints_path.path.track_section_ranges);
           }
 
           if (!(part.train_schedule_id in newTrainNames)) {
             const trainSchedule = await dispatch(
-              osrdEditoastApi.endpoints.getTrainSchedulesById.initiate({
-                id: part.train_schedule_id,
-              })
+              osrdEditoastApi.endpoints.getTrainSchedulesById.initiate(
+                {
+                  id: part.train_schedule_id,
+                },
+                { subscribe: false }
+              )
             ).unwrap();
             newTrainNames[part.train_schedule_id] = trainSchedule.train_name;
           }
@@ -96,25 +109,31 @@ export default function useSearchJourneySolutionDetails(solution?: SearchJourney
         let newGeometry: GeoJsonLineString | undefined;
         if (allTrackRanges.length > 0) {
           const pathProperties = await dispatch(
-            osrdEditoastApi.endpoints.postInfraByInfraIdPathProperties.initiate({
-              infraId,
-              pathPropertiesInput: { track_section_ranges: allTrackRanges },
-            })
+            osrdEditoastApi.endpoints.postInfraByInfraIdPathProperties.initiate(
+              {
+                infraId,
+                pathPropertiesInput: { track_section_ranges: allTrackRanges },
+              },
+              { subscribe: false }
+            )
           ).unwrap();
           newGeometry = pathProperties.geometry;
         }
 
         const stops = buildStops(solution);
         const { related_operational_points: relatedOps } = await dispatch(
-          osrdEditoastApi.endpoints.postInfraByInfraIdMatchOperationalPoints.initiate({
-            infraId,
-            body: {
-              operational_point_references: stops.map((stop) => ({
-                type: 'id' as const,
-                operational_point: stop.opId,
-              })),
+          osrdEditoastApi.endpoints.postInfraByInfraIdMatchOperationalPoints.initiate(
+            {
+              infraId,
+              body: {
+                operational_point_references: stops.map((stop) => ({
+                  type: 'id' as const,
+                  operational_point: stop.opId,
+                })),
+              },
             },
-          })
+            { subscribe: false }
+          )
         ).unwrap();
         const newMarkers: MarkerInformation[] = stops.flatMap((stop, index) => {
           const relatedOp = relatedOps[index];
@@ -132,11 +151,20 @@ export default function useSearchJourneySolutionDetails(solution?: SearchJourney
             },
           ];
         });
+        const newOperationalPointNames = stops.reduce<Record<string, string>>(
+          (names, stop, index) => {
+            const relatedOp = relatedOps[index];
+            if (relatedOp) names[stop.opId] = relatedOp.name;
+            return names;
+          },
+          {}
+        );
 
         if (!cancelled) {
           setGeometry(newGeometry);
           setMarkers(newMarkers);
           setTrainNames(newTrainNames);
+          setOperationalPointNames(newOperationalPointNames);
         }
       } catch (e) {
         if (!cancelled) setError(e as Error);
@@ -150,5 +178,5 @@ export default function useSearchJourneySolutionDetails(solution?: SearchJourney
     };
   }, [infraId, solution, dispatch]);
 
-  return { geometry, markers, trainNames, loading, error };
+  return { geometry, markers, trainNames, operationalPointNames, loading, error };
 }

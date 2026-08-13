@@ -14,14 +14,41 @@
     margin: 12px 0;
   }
 
-  .search-journey-config {
-    display: flex;
+  .search-journey-content-grid {
+    display: grid;
+    grid-template-columns: [content-col] auto [map-col] 1fr;
+    grid-template-rows: [form-row] auto [results-row] auto;
+    column-gap: 32px;
+    row-gap: 24px;
+    align-items: start;
+    position: relative;
+
+    &--with-results {
+      &::before {
+        content: '';
+        grid-column: 1 / -1;
+        grid-row: results-row;
+        align-self: stretch;
+        justify-self: stretch;
+        margin: -24px -32px -32px;
+        background-color: var(--ambientA15);
+      }
+    }
+  }
+
+  .search-journey-results-section {
+    grid-column: content-col;
+    grid-row: results-row;
+    padding-top: 85px;
   }
 
   .search-journey-parameters {
+    grid-column: content-col;
+    grid-row: form-row;
     display: grid;
     grid-template-columns: [consist-col] 322px auto [via-col] 1fr;
     column-gap: 13px;
+    padding-bottom: 16px;
   }
 
   .consist-wrapper {
@@ -34,15 +61,18 @@
     display: flex;
     gap: 12px;
     flex-direction: column;
+
+    .extremity-wrapper + .extremity-wrapper {
+      margin-top: 12px;
+    }
   }
 
   .search-journey-map {
-    margin-left: 32px;
-    width: 100%;
+    grid-column: map-col;
+    grid-row: form-row;
     min-width: 450px;
     height: calc(100vh - 120px);
-    position: sticky;
-    top: 32px;
+    position: relative;
   }
 
   .search-journey-launch-request {
@@ -116,6 +146,135 @@
 
   50% {
     opacity: 0.25;
+  }
+}
+
+.search-journey-results-map {
+  grid-column: map-col;
+  grid-row: results-row;
+  min-width: 450px;
+  height: 60vh;
+  margin-top: calc(85px + 63px + 12px);
+  position: relative;
+}
+
+.search-journey-results {
+  grid-column: content-col;
+  display: grid;
+  grid-template-rows: 63px auto;
+  row-gap: 12px;
+
+  &--empty {
+    color: var(--grey50);
+    text-align: center;
+    padding: 32px;
+  }
+
+  &__segments {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+}
+
+.search-journey-solution-navigator {
+  display: flex;
+  gap: 8px;
+
+  &__tab {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    padding: 8px 16px;
+    border-radius: 4px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    background-color: white;
+
+    &.selected {
+      border-color: var(--primary60);
+      font-weight: 600;
+    }
+  }
+
+  &__tab-departure {
+    color: var(--grey50);
+    font-family: 'IBMPlexSans-Regular', 'IBM Plex Sans', system-ui, sans-serif;
+    font-size: 0.75rem;
+    font-weight: 400;
+  }
+
+  &__tab-title {
+    font-family: 'IBMPlexSans-SemiBold', 'IBM Plex Sans', system-ui, sans-serif;
+    font-size: 18px;
+    font-weight: 600;
+  }
+}
+
+.solution-segment-card {
+  display: flex;
+  align-items: stretch;
+  height: 80px;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow:
+    0 1px 2px 0 rgba(0, 0, 0, 0.1),
+    0 2px 2px -1px rgba(24, 68, 239, 0.16);
+
+  &__left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex: 1 1 auto;
+    padding: 8px 16px;
+    background-color: var(--ambientA5);
+  }
+
+  &__index {
+    flex: 0 0 56px;
+    color: var(--info60);
+    font-family: 'IBMPlexSans-Regular', 'IBM Plex Sans', system-ui, sans-serif;
+    font-size: 32px;
+    font-weight: 400;
+    text-align: center;
+  }
+
+  &__endpoints {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    gap: 4px;
+  }
+
+  &__endpoint {
+    display: flex;
+    gap: 6px;
+
+    span:last-child {
+      font-family: 'IBMPlexSans-Regular', 'IBM Plex Sans', system-ui, sans-serif;
+      font-size: 16px;
+      font-weight: 400;
+
+      &.font-weight-bold {
+        font-family: 'IBMPlexSans-SemiBold', 'IBM Plex Sans', system-ui, sans-serif;
+        font-weight: 600 !important;
+      }
+    }
+  }
+
+  &__right {
+    flex: 0 0 450px;
+    display: flex;
+    align-items: center;
+    padding-left: 24px;
+    background-color: var(--white100);
+  }
+
+  &__train-name {
+    color: var(--grey50);
+    font-family: 'IBMPlexSans-Regular', 'IBM Plex Sans', system-ui, sans-serif;
+    font-size: 18px;
+    font-weight: 400;
   }
 }
 
