@@ -553,8 +553,9 @@ export const handleUpdateTrainSchedule = async ({
     ...trainScheduleBase,
     train_name: trainrun.name,
     labels,
-    // Reset margins because they contain references to path items
+    // Reset margins and power restrictions because they contain references to path items
     margins: undefined,
+    power_restrictions: undefined,
     paced,
     category,
     ...forwardPathAndSchedule,
@@ -610,8 +611,9 @@ export const handleUpdateTrainSchedule = async ({
       ...oldReturnTrainBase,
       train_name: trainrun.name,
       labels,
-      // Reset margins because they contain references to path items
+      // Reset margins and power restrictions because they contain references to path items
       margins: undefined,
+      power_restrictions: undefined,
       paced: returnPaced,
       category,
       ...returnPathAndSchedule,
