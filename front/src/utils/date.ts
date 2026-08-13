@@ -58,6 +58,17 @@ export const timeToLocaleString = (time: StartTime, locale: Intl.Locale): string
   time instanceof Duration ? durationToElapsedString(time, true) : time.toLocaleTimeString(locale);
 
 /**
+ * Formats an elapsed time in milliseconds (e.g. a `search_journeys` step's `time_ms`,
+ * anchored on 1970-01-01 00:00:00 UTC) as an "HH:mm" clock time. Uses UTC getters so
+ * the result isn't shifted by the browser's local timezone.
+ */
+export const msSinceMidnightToTime = (ms: number): string => {
+  // Keep only the time of day.
+  const date = new Date(ms % 86400000);
+  return `${String(date.getUTCHours()).padStart(2, '0')}:${String(date.getUTCMinutes()).padStart(2, '0')}`;
+};
+
+/**
  * Format a start time to a string rounded to the nearest minute: a locale-aware clock
  * time for a Date (calendar timetable), or an "H:mm" elapsed time for a Duration
  * (offset from the start of an hourly timetable, which has no locale/calendar meaning).
