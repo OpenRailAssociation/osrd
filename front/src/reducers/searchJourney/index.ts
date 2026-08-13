@@ -1,6 +1,8 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import type { Draft } from 'immer';
 
+import type { TrainSchedulePart } from 'common/api/osrdEditoastApi';
+
 export type SearchJourneyOperationalPoint = {
   id: string;
   mainCode: string;
@@ -17,12 +19,17 @@ export type SearchJourneyStartTime = {
   minutes: number;
 };
 
+/** A single journey proposal: an ordered list of train schedule segments. */
+export type SearchJourneySolution = TrainSchedulePart[];
+
 export type SearchJourneyState = {
   infraId?: number;
   timetableIds: number[];
   startTime?: SearchJourneyStartTime;
   origin?: SearchJourneyOperationalPoint;
   destination?: SearchJourneyOperationalPoint;
+  journeys?: SearchJourneySolution[];
+  selectedSolutionIndex?: number;
 };
 
 export const searchJourneyInitialState: SearchJourneyState = {
@@ -31,6 +38,8 @@ export const searchJourneyInitialState: SearchJourneyState = {
   startTime: undefined,
   origin: undefined,
   destination: undefined,
+  journeys: undefined,
+  selectedSolutionIndex: undefined,
 };
 
 export const searchJourneySlice = createSlice({
@@ -63,6 +72,17 @@ export const searchJourneySlice = createSlice({
     ) {
       state.destination = action.payload;
     },
+    /** Set the journeys returned by POST /search_journeys, selecting the first one by default. */
+    setSearchJourneyResults(
+      state: Draft<SearchJourneyState>,
+      action: PayloadAction<SearchJourneySolution[]>
+    ) {
+      state.journeys = action.payload;
+      state.selectedSolutionIndex = action.payload.length > 0 ? 0 : undefined;
+    },
+    selectSearchJourneySolution(state: Draft<SearchJourneyState>, action: PayloadAction<number>) {
+      state.selectedSolutionIndex = action.payload;
+    },
     resetSearchJourneyConfig() {
       return searchJourneyInitialState;
     },
@@ -74,6 +94,8 @@ export const {
   updateSearchJourneyStartTime,
   updateSearchJourneyOrigin,
   updateSearchJourneyDestination,
+  setSearchJourneyResults,
+  selectSearchJourneySolution,
   resetSearchJourneyConfig,
 } = searchJourneySlice.actions;
 
