@@ -47,3 +47,29 @@ export function getSpacePixels(
     ? [spacePixelFromStart]
     : [spacePixelFromStart, spacePixelFromEnd];
 }
+
+export type StopRange = { position: number; minTime: number; maxTime: number };
+
+/**
+ * Groups path points into stop time ranges: one range per maximal run at the
+ * same operational-point position. Separate visits to a position stay separate
+ * (their halos must not bridge the gap between them).
+ */
+export function computeStops(points: DataPoint[], stopPositions: Set<number>): StopRange[] {
+  const stops: StopRange[] = [];
+  let current: StopRange | null = null;
+  for (let i = 1; i < points.length; i++) {
+    const { position, time } = points[i];
+    const isStop = points[i - 1].position === position && stopPositions.has(position);
+    if (!isStop) {
+      if (current) stops.push(current);
+      current = null;
+    } else if (current) {
+      current.maxTime = time;
+    } else {
+      current = { position, minTime: points[i - 1].time, maxTime: time };
+    }
+  }
+  if (current) stops.push(current);
+  return stops;
+}

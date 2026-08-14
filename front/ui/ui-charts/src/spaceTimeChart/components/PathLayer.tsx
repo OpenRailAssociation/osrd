@@ -16,7 +16,7 @@ import type {
 import { SpaceTimeChartCanvasContext } from '../lib/context';
 import { type OperationalPoint, type PathData, type SpaceTimeChartContextType } from '../lib/types';
 import { drawAliasedDisc, drawAliasedLine } from '../utils/canvas';
-import { getPathDirection, getSpacePixels } from '../utils/paths';
+import { computeStops, getPathDirection, getSpacePixels } from '../utils/paths';
 import { getSpaceBreakpoints } from '../utils/scales';
 
 const DEFAULT_PICKING_TOLERANCE = 5;
@@ -254,30 +254,21 @@ export const PathLayer = ({
   const drawStops = useCallback<DrawingFunction<SpaceTimeChartContextType>>(
     (ctx, { getTimePixel, getSpacePixel, operationalPoints, swapAxis }) => {
       const stopPositions = new Set(operationalPoints.map((p) => p.position));
-      path.points.forEach(({ position, time }, i, a) => {
-        if (i) {
-          const { position: prevPosition, time: prevTime } = a[i - 1];
-          if (prevPosition === position && stopPositions.has(position)) {
-            // Only draw the stop when there is no flat step
-            // (i.e. when there's only one space pixel):
-            const rawPixels = getSpacePixels(getSpacePixel, position);
-            if (rawPixels.length === 1) {
-              // Use the raw coordinate so the stop sits exactly on the
-              // curve. Adjusting it for sharper rendering would move the
-              // stop, and one side would look thicker than the other.
-              const spacePixel = rawPixels[0];
-              ctx.beginPath();
-              if (!swapAxis) {
-                ctx.moveTo(getTimePixel(prevTime), spacePixel);
-                ctx.lineTo(getTimePixel(time), spacePixel);
-              } else {
-                ctx.moveTo(spacePixel, getTimePixel(prevTime));
-                ctx.lineTo(spacePixel, getTimePixel(time));
-              }
-              ctx.stroke();
-            }
-          }
+      computeStops(path.points, stopPositions).forEach(({ position, minTime, maxTime }) => {
+        // Only draw the stop when there is no flat step (i.e. one space pixel):
+        const rawPixels = getSpacePixels(getSpacePixel, position);
+        if (rawPixels.length !== 1) return;
+        // Use the raw coordinate so the stop sits exactly on the curve.
+        const spacePixel = rawPixels[0];
+        ctx.beginPath();
+        if (!swapAxis) {
+          ctx.moveTo(getTimePixel(minTime), spacePixel);
+          ctx.lineTo(getTimePixel(maxTime), spacePixel);
+        } else {
+          ctx.moveTo(spacePixel, getTimePixel(minTime));
+          ctx.lineTo(spacePixel, getTimePixel(maxTime));
         }
+        ctx.stroke();
       });
     },
     [path]
