@@ -1,3 +1,9 @@
+export type PropagationMode =
+  | 'shiftAllWaypoints'
+  | 'fromDeparture'
+  | 'atThisWaypoint'
+  | 'toDestination';
+
 type TimesStopsTableMargin = {
   requestedTheoretical: string;
   computedTheoretical: string;

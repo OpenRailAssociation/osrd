@@ -7,7 +7,8 @@ import {
   removeWhitespace,
   stripTimeColons,
 } from '../../utils/data-normalizer';
-import type { TimesStopsTableRow } from '../../utils/times-stops-table-types';
+import { addSecondsToHms, parseDurationDisplay, toSeconds } from '../../utils/date-utils';
+import type { PropagationMode, TimesStopsTableRow } from '../../utils/times-stops-table-types';
 import OpSimulationResultPage from './simulation-results-page';
 
 class TimesStopsTablePage extends OpSimulationResultPage {
@@ -15,6 +16,14 @@ class TimesStopsTablePage extends OpSimulationResultPage {
   readonly dateSeparatorRows: Locator;
   private readonly newTimesStopsTable: Locator;
   private readonly durationCellClearButton: Locator;
+  private readonly timePropagationMenu: Locator;
+
+  private readonly propagationModeTestIds: Record<PropagationMode, string> = {
+    shiftAllWaypoints: 'propagation-mode-shift-all-waypoints',
+    fromDeparture: 'propagation-mode-from-departure',
+    atThisWaypoint: 'propagation-mode-at-this-waypoint',
+    toDestination: 'propagation-mode-to-destination',
+  };
 
   constructor(page: Page) {
     super(page);
@@ -22,13 +31,13 @@ class TimesStopsTablePage extends OpSimulationResultPage {
     this.dateSeparatorRows = this.timesStopsDataSheet.getByTestId('day-change-banner');
     this.newTimesStopsTable = this.timesStopsDataSheet.getByTestId('times-stops-table-new');
     this.durationCellClearButton = this.page.getByTestId('duration-cell-clear-btn');
+    this.timePropagationMenu = this.page.getByTestId('propagation-menu-wrapper');
   }
 
   getRow(index: number): Locator {
     return this.dataRows.nth(index);
   }
 
-  // Read textContent without waiting for a missing element. Returns '' when absent.
   private async optionalText(locator: Locator): Promise<string> {
     if ((await locator.count()) === 0) return '';
     return (await locator.textContent()) ?? '';
@@ -216,12 +225,62 @@ class TimesStopsTablePage extends OpSimulationResultPage {
     await expect(this.stepStatusCell(row)).toContainClass(expectedStatus);
   }
 
+  async getRequestedArrivalValue(row: Locator): Promise<string> {
+    return this.requestedArrivalInput(row).inputValue();
+  }
+
+  async getRequestedDepartureValue(row: Locator): Promise<string> {
+    return this.requestedDepartureInput(row).inputValue();
+  }
+
   async verifyRequestedArrivalValue(row: Locator, value: string): Promise<void> {
     await expect(this.requestedArrivalInput(row)).toHaveValue(value);
   }
 
   async verifyRequestedDepartureValue(row: Locator, value: string): Promise<void> {
     await expect(this.requestedDepartureInput(row)).toHaveValue(value);
+  }
+
+  async verifyRequestedArrivalUnchanged(row: Locator, previousValue: string): Promise<void> {
+    await expect(this.requestedArrivalInput(row)).toHaveValue(previousValue);
+  }
+
+  async verifyRequestedArrivalShiftedBy(
+    row: Locator,
+    previousValue: string,
+    oldEditValue: string,
+    newEditValue: string
+  ): Promise<void> {
+    const delta = toSeconds(newEditValue) - toSeconds(oldEditValue);
+    await expect(this.requestedArrivalInput(row)).toHaveValue(
+      addSecondsToHms(previousValue, delta)
+    );
+  }
+
+  async verifyRequestedDepartureUnchanged(row: Locator, previousValue: string): Promise<void> {
+    await expect(this.requestedDepartureInput(row)).toHaveValue(previousValue);
+  }
+
+  async verifyRequestedDepartureShiftedBy(
+    row: Locator,
+    previousValue: string,
+    oldEditValue: string,
+    newEditValue: string
+  ): Promise<void> {
+    const delta = toSeconds(newEditValue) - toSeconds(oldEditValue);
+    await expect(this.requestedDepartureInput(row)).toHaveValue(
+      addSecondsToHms(previousValue, delta)
+    );
+  }
+
+  async verifyDepartureMatchesArrivalPlusStopDuration(row: Locator): Promise<void> {
+    const [arrival, departure, duration] = await Promise.all([
+      this.requestedArrivalInput(row).inputValue(),
+      this.requestedDepartureInput(row).inputValue(),
+      this.durationCell(row).textContent(),
+    ]);
+    const expectedDeparture = addSecondsToHms(arrival, parseDurationDisplay(duration ?? ''));
+    expect(departure).toBe(expectedDeparture);
   }
 
   async verifyDataRowCount(count: number): Promise<void> {
@@ -238,6 +297,18 @@ class TimesStopsTablePage extends OpSimulationResultPage {
 
   async verifyComputedDepartureChanged(row: Locator, previousText: string): Promise<void> {
     await expect(this.computedDeparture(row)).not.toHaveText(previousText);
+  }
+
+  async verifyComputedArrivalUnchanged(row: Locator, previousText: string): Promise<void> {
+    await expect(this.computedArrival(row)).toHaveText(previousText);
+  }
+
+  async verifyComputedDepartureUnchanged(row: Locator, previousText: string): Promise<void> {
+    await expect(this.computedDeparture(row)).toHaveText(previousText);
+  }
+
+  async verifyComputedArrivalEmpty(row: Locator): Promise<void> {
+    await expect(this.computedArrival(row)).toHaveText('');
   }
 
   async verifyComputedArrivalNotEmpty(row: Locator): Promise<void> {
@@ -258,14 +329,6 @@ class TimesStopsTablePage extends OpSimulationResultPage {
 
   async getComputedDepartureText(row: Locator): Promise<string> {
     return (await this.computedDeparture(row).textContent()) ?? '';
-  }
-
-  async getRealMarginText(row: Locator): Promise<string> {
-    return (
-      (await this.realMargin(row)
-        .textContent()
-        .catch(() => '')) ?? ''
-    );
   }
 
   async clickSignalReceptionClosed(row: Locator): Promise<void> {
@@ -306,6 +369,65 @@ class TimesStopsTablePage extends OpSimulationResultPage {
     await input.press('Enter');
   }
 
+  /**
+   * Re-types over an already-committed time value without pressing Enter, which opens the
+   * propagation menu (left visible for the caller to inspect or act on). The menu only appears
+   * when the cell already holds a value (a first edit on an empty cell never shows it).
+   */
+  private async retypeOverExistingValue(input: Locator, timeValue: string): Promise<void> {
+    await input.click();
+    await input.press('ArrowLeft');
+    await input.press('ArrowLeft');
+    await input.pressSequentially(stripTimeColons(timeValue));
+  }
+
+  async openRequestedArrivalPropagationMenu(row: Locator, timeValue: string): Promise<void> {
+    await this.retypeOverExistingValue(this.requestedArrivalInput(row), timeValue);
+  }
+
+  async openRequestedDeparturePropagationMenu(row: Locator, timeValue: string): Promise<void> {
+    await this.retypeOverExistingValue(this.requestedDepartureInput(row), timeValue);
+  }
+
+  async editRequestedArrivalWithPropagation(
+    row: Locator,
+    timeValue: string,
+    mode: PropagationMode
+  ): Promise<void> {
+    await this.openRequestedArrivalPropagationMenu(row, timeValue);
+    await this.selectPropagationMode(mode);
+  }
+
+  async editRequestedDepartureWithPropagation(
+    row: Locator,
+    timeValue: string,
+    mode: PropagationMode
+  ): Promise<void> {
+    await this.openRequestedDeparturePropagationMenu(row, timeValue);
+    await this.selectPropagationMode(mode);
+  }
+
+  async selectPropagationMode(mode: PropagationMode): Promise<void> {
+    await this.page.getByTestId(this.propagationModeTestIds[mode]).click();
+  }
+
+  async verifyPropagationMenuVisible(): Promise<void> {
+    await expect(this.timePropagationMenu).toBeVisible();
+  }
+
+  async verifyPropagationMenuHidden(): Promise<void> {
+    await expect(this.timePropagationMenu).not.toBeVisible();
+  }
+
+  async verifyPropagationModeDisabled(mode: PropagationMode, disabled: boolean): Promise<void> {
+    const button = this.page.getByTestId(this.propagationModeTestIds[mode]);
+    if (disabled) {
+      await expect(button).toBeDisabled();
+    } else {
+      await expect(button).toBeEnabled();
+    }
+  }
+
   async clearRequestedArrival(row: Locator): Promise<void> {
     await this.requestedArrivalInput(row).click();
     await this.durationCellClearButton.click();
@@ -317,13 +439,21 @@ class TimesStopsTablePage extends OpSimulationResultPage {
     await this.durationCell(row).press('Enter');
   }
 
-  async editRequestedMargin(row: Locator, value: string): Promise<void> {
+  async editRequestedMargin(
+    row: Locator,
+    value: string,
+    unit: 'percent' | 'minPer100km' = 'percent'
+  ): Promise<void> {
     const placeholder = this.marginCellPlaceholder(row);
     if (await placeholder.isVisible()) {
       await placeholder.click();
     } else {
       await this.marginCellEditable(row).click();
     }
+    if (unit === 'minPer100km') {
+      await this.switchMarginUnit(row, unit);
+    }
+    await this.verifyActiveMarginUnit(row, unit);
     await this.marginCellInput(row).fill(value);
     await this.marginCellInput(row).press('Enter');
   }
@@ -386,22 +516,6 @@ class TimesStopsTablePage extends OpSimulationResultPage {
     const btn =
       unit === 'percent' ? this.marginUnitBtnPercent(row) : this.marginUnitBtnMinPer100km(row);
     await btn.click();
-  }
-
-  async editRequestedMarginWithUnit(
-    row: Locator,
-    value: string,
-    unit: 'percent' | 'minPer100km'
-  ): Promise<void> {
-    const placeholder = this.marginCellPlaceholder(row);
-    if (await placeholder.isVisible()) {
-      await placeholder.click();
-    } else {
-      await this.marginCellEditable(row).click();
-    }
-    await this.switchMarginUnit(row, unit);
-    await this.marginCellInput(row).fill(value);
-    await this.marginCellInput(row).press('Enter');
   }
 
   // Wait for simulation triggered by a previous edit to complete.

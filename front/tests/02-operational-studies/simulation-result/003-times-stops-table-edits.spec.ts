@@ -8,6 +8,8 @@ import {
   MARGIN_MIN_PER_100KM_VALUE,
   MARGIN_UNIT_MIN_PER_100KM,
   NO_POWER_RESTRICTION_VALUE,
+  PARTIAL_ARRIVAL_COMMITTED,
+  PARTIAL_ARRIVAL_INPUT_NO_SECONDS,
   REQUESTED_ARRIVAL_VIA_B,
   REQUESTED_DEPARTURE_VIA_B,
   ROW_INDEX_ORIGIN,
@@ -74,6 +76,26 @@ test.describe('Times Stops Table — Edits', { tag: ['@op', '@times-stops'] }, (
         await timesStopsTablePage.clearRequestedArrival(via2Row);
         await timesStopsTablePage.verifyRequestedArrivalValue(via2Row, EMPTY_TIME_PLACEHOLDER);
         await timesStopsTablePage.verifyComputedArrivalAttached(via2Row);
+      });
+
+      await test.step('Requested arrival typed without seconds commits and survives a reload', async () => {
+        const waypointRow = timesStopsTablePage.getRow(ROW_INDEX_WAYPOINT);
+        await timesStopsTablePage.editRequestedArrival(
+          waypointRow,
+          PARTIAL_ARRIVAL_INPUT_NO_SECONDS
+        );
+        await timesStopsTablePage.verifyRequestedArrivalValue(
+          waypointRow,
+          PARTIAL_ARRIVAL_COMMITTED
+        );
+        await timesStopsTablePage.waitForSimulation();
+
+        await timesStopsTablePage.page.reload();
+        await timesStopsTablePage.verifyTimesStopsDataSheetVisibility();
+        await timesStopsTablePage.verifyRequestedArrivalValue(
+          timesStopsTablePage.getRow(ROW_INDEX_WAYPOINT),
+          PARTIAL_ARRIVAL_COMMITTED
+        );
       });
     }
   );
@@ -187,7 +209,7 @@ test.describe('Times Stops Table — Edits', { tag: ['@op', '@times-stops'] }, (
     });
 
     await test.step(`Switching unit to ${MARGIN_MIN_PER_100KM_DISPLAY} and committing updates the display accordingly`, async () => {
-      await timesStopsTablePage.editRequestedMarginWithUnit(
+      await timesStopsTablePage.editRequestedMargin(
         waypointRow,
         MARGIN_MIN_PER_100KM_VALUE,
         MARGIN_UNIT_MIN_PER_100KM

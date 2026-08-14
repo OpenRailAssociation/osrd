@@ -200,6 +200,45 @@ class PacedTrainSection extends ScenarioTimetableSection {
     }
   }
 
+  async getOccurrenceStartTime(occurrenceIndex: number): Promise<string> {
+    return (await this.testedOccurrenceStartTime.nth(occurrenceIndex).textContent()) ?? '';
+  }
+
+  async getOccurrenceArrivalTime(occurrenceIndex: number): Promise<string> {
+    return (await this.testedOccurrenceArrivalTime.nth(occurrenceIndex).textContent()) ?? '';
+  }
+
+  async verifyOccurrenceStartTimeChanged(occurrenceIndex: number, previousText: string) {
+    await expect(this.testedOccurrenceStartTime.nth(occurrenceIndex)).not.toHaveText(previousText);
+  }
+
+  async verifyOccurrenceStartTimeUnchanged(occurrenceIndex: number, previousText: string) {
+    await expect(this.testedOccurrenceStartTime.nth(occurrenceIndex)).toHaveText(previousText);
+  }
+
+  async verifyOccurrenceArrivalTimeChanged(occurrenceIndex: number, previousText: string) {
+    await expect(this.testedOccurrenceArrivalTime.nth(occurrenceIndex)).not.toHaveText(
+      previousText
+    );
+  }
+
+  async verifyOccurrenceArrivalTimeUnchanged(occurrenceIndex: number, previousText: string) {
+    await expect(this.testedOccurrenceArrivalTime.nth(occurrenceIndex)).toHaveText(previousText);
+  }
+
+  async verifyOccurrenceArrivalTimeEmpty(occurrenceIndex: number) {
+    await expect(this.testedOccurrenceArrivalTime.nth(occurrenceIndex)).toHaveText('');
+  }
+
+  async verifyOccurrenceInvalid(occurrenceIndex: number, invalid: boolean) {
+    const occurrenceItem = this.getNthOccurrence(occurrenceIndex).root;
+    if (invalid) {
+      await expect(occurrenceItem).toHaveClass(/invalid/);
+    } else {
+      await expect(occurrenceItem).not.toHaveClass(/invalid/);
+    }
+  }
+
   async getActionButtonsLocators({
     trainIndex,
     trainType,
