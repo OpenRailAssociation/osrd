@@ -77,6 +77,7 @@ use crate::views::projection::compute_projected_train_path_op;
 use crate::views::projection::compute_projected_train_path_op_without_simulation;
 use crate::views::projection::compute_projected_train_paths;
 use crate::views::rolling_stock::RollingStockError;
+use crate::views::rolling_stock::filter_readable_occurrences;
 use crate::views::timetable::PhysicsConsistParameters;
 use crate::views::timetable::occupancy_blocks::OccupancyBlockForm;
 use crate::views::timetable::occupancy_blocks::OccupancyBlocks;
@@ -1212,56 +1213,105 @@ pub(in crate::views) async fn project_path(
         })
         .collect();
 
-    // Check user privilege on the rolling stocks of the occurrences: they are all simulated
-    crate::authorizers::require_readable_rolling_stocks(
-        simulation_contexts
-            .iter()
-            .map(|context| context.train_schedule.rolling_stock_name.clone()),
-        conn,
+    // A simulation context is either a train schedule or one of its exceptions. The contexts are
+    // consumed here: their train schedules are simulated as they are, and never cloned.
+    let occurrences = simulation_contexts
+        .into_iter()
+        .map(|context| {
+            let occurrence_id = match context.exception_id {
+                Some(exception_id) => {
+                    OccurrenceId::new_created(context.train_schedule_id, exception_id)
+                }
+                None => OccurrenceId::new_base(context.train_schedule_id, 0),
+            };
+            (occurrence_id, context.train_schedule)
+        })
+        .collect_vec();
+    let occurrences_ids = occurrences
+        .iter()
+        .map(|(occurrence_id, _)| occurrence_id.clone())
+        .collect_vec();
+
+    // Check user privilege on the rolling stocks of the occurrences.
+    // Those the user cannot read are not simulated, and are projected like invalid trains.
+    let occurrences_by_rolling_stock = occurrences
+        .into_iter()
+        .map(|(id, occurrence)| (occurrence.rolling_stock_name.clone(), (id, occurrence)))
+        .into_group_map();
+
+    let rolling_stock_names = occurrences_by_rolling_stock.keys().cloned().collect_vec();
+    let rolling_stocks: Vec<RollingStock> =
+        RollingStock::retrieve_batch_unchecked(&mut conn.clone(), rolling_stock_names)
+            .await
+            .map_err(RollingStockError::from)?;
+
+    let (readable_ids, readable_train_schedules): (Vec<_>, Vec<_>) = filter_readable_occurrences(
+        occurrences_by_rolling_stock,
+        &rolling_stocks,
         &authn_state,
         &openfga,
     )
-    .await?;
+    .await?
+    .into_iter()
+    .unzip();
 
-    let project_path_result = compute_projected_train_paths(
+    let simulated_projections = compute_projected_train_paths(
         conn,
         core_client,
         valkey_client,
         track_section_ranges,
         infra,
-        &simulation_contexts
-            .iter()
-            .map(|c| c.train_schedule.clone())
-            .collect::<Vec<_>>(),
+        &readable_train_schedules,
         electrical_profile_set_id,
         config.app_version.as_deref(),
     )
-    .await?
-    .into_iter()
-    .collect::<Vec<_>>();
+    .await?;
+    let projections = readable_ids
+        .into_iter()
+        .zip(simulated_projections)
+        .collect::<HashMap<_, _>>();
 
+    // The occurrences that were not simulated share the same empty projection, like invalid trains
+    let unsimulated = Arc::<Vec<SpaceTimeCurve>>::default();
     let mut base_project_path = Default::default();
 
-    let results = simulation_contexts.into_iter().enumerate().fold(
+    let results = occurrences_ids.into_iter().fold(
         HashMap::<i64, ProjectPathTrainScheduleResult>::new(),
-        |mut results, (index, simulation_context)| {
-            if let Some(exception_id) = simulation_context.exception_id {
-                if !Arc::ptr_eq(&base_project_path, &project_path_result[index]) {
-                    results
-                        .get_mut(&simulation_context.train_schedule_id)
-                        .expect("train_schedule_id should exist")
-                        .exceptions
-                        .insert(exception_id, (*project_path_result[index]).clone());
+        |mut results, occurrence_id| {
+            let projection = projections
+                .get(&occurrence_id)
+                .unwrap_or(&unsimulated)
+                .clone();
+            match occurrence_id {
+                OccurrenceId::Created {
+                    train_schedule_id,
+                    exception_id,
                 }
-            } else {
-                results.insert(
-                    simulation_context.train_schedule_id,
-                    ProjectPathTrainScheduleResult {
-                        train_schedule: (*project_path_result[index]).clone(),
-                        exceptions: HashMap::new(),
-                    },
-                );
-                base_project_path = project_path_result[index].clone();
+                | OccurrenceId::Modified {
+                    train_schedule_id,
+                    exception_id,
+                    ..
+                } => {
+                    if !Arc::ptr_eq(&base_project_path, &projection) {
+                        results
+                            .get_mut(&train_schedule_id)
+                            .expect("train_schedule_id should exist")
+                            .exceptions
+                            .insert(exception_id, (*projection).clone());
+                    }
+                }
+                OccurrenceId::Base {
+                    train_schedule_id, ..
+                } => {
+                    results.insert(
+                        train_schedule_id,
+                        ProjectPathTrainScheduleResult {
+                            train_schedule: (*projection).clone(),
+                            exceptions: HashMap::new(),
+                        },
+                    );
+                    base_project_path = projection;
+                }
             };
             results
         },
@@ -1342,17 +1392,33 @@ pub(in crate::views) async fn project_path_op(
 
     // Check user privilege on the rolling stocks of the occurrences.
     // Without a simulation, no rolling stock is involved: the check is skipped.
-    if use_simulation {
-        crate::authorizers::require_readable_rolling_stocks(
-            occurrences
-                .iter()
-                .map(|occurrence| occurrence.rolling_stock_name.clone()),
-            conn,
+    let readable_occurrence_ids = if use_simulation {
+        let occurrences_by_rolling_stock = occurrences_ids
+            .iter()
+            .cloned()
+            .zip(occurrences.iter().cloned())
+            .map(|(id, occurrence)| (occurrence.rolling_stock_name.clone(), (id, occurrence)))
+            .into_group_map();
+
+        let rolling_stock_names = occurrences_by_rolling_stock.keys().cloned().collect_vec();
+        let rolling_stocks: Vec<RollingStock> =
+            RollingStock::retrieve_batch_unchecked(&mut conn.clone(), rolling_stock_names)
+                .await
+                .map_err(RollingStockError::from)?;
+
+        filter_readable_occurrences(
+            occurrences_by_rolling_stock,
+            &rolling_stocks,
             &authn_state,
             &openfga,
         )
-        .await?;
-    }
+        .await?
+        .into_iter()
+        .map(|(occurrence_id, _)| occurrence_id)
+        .collect::<HashSet<_>>()
+    } else {
+        occurrences_ids.iter().cloned().collect()
+    };
 
     // Transform operational point references into a list of path item locations
     let path_item_locations_projection = operational_points_refs
@@ -1385,23 +1451,49 @@ pub(in crate::views) async fn project_path_op(
     )?;
 
     let projected_trains = if use_simulation {
-        compute_projected_train_path_op(
+        // Occurrences whose rolling stock the user cannot read are not simulated: like invalid trains
+        let occurrences_count = occurrences.len();
+        let (readable, unreadable): (Vec<_>, Vec<_>) = occurrences
+            .into_iter()
+            .enumerate()
+            .partition(|(index, _)| readable_occurrence_ids.contains(&occurrences_ids[*index]));
+        let (unreadable_indexes, unreadable_occurrences): (Vec<_>, Vec<_>) =
+            unreadable.into_iter().unzip();
+        let (readable_indexes, readable_occurrences): (Vec<_>, Vec<_>) =
+            readable.into_iter().unzip();
+
+        let simulated_projections = compute_projected_train_path_op(
             conn,
             valkey_client,
             core_client,
-            &occurrences,
+            &readable_occurrences,
             &op_cache,
-            operational_points_projection,
+            &operational_points_projection,
             infra,
             electrical_profile_set_id,
             config.app_version.as_deref(),
         )
-        .await?
+        .await?;
+        let unsimulated_projections = compute_projected_train_path_op_without_simulation(
+            &unreadable_occurrences,
+            &op_cache,
+            &operational_points_projection,
+        );
+
+        let mut projected_trains = vec![Arc::<Vec<SpaceTimeCurve>>::default(); occurrences_count];
+        for (index, projection) in readable_indexes
+            .into_iter()
+            .zip(simulated_projections)
+            .chain(unreadable_indexes.into_iter().zip(unsimulated_projections))
+        {
+            projected_trains[index] = projection;
+        }
+        projected_trains
     } else {
         compute_projected_train_path_op_without_simulation(
             &occurrences,
             &op_cache,
-            operational_points_projection,
+            &operational_points_projection,
         )
     };
 
@@ -4020,7 +4112,8 @@ mod tests {
         assert_eq!(response.len(), 2);
     }
 
-    /// Projecting a train whose rolling stock the user cannot read is forbidden
+    /// A train whose rolling stock the user cannot read is projected: like an invalid train, it is
+    /// not simulated and its projection is empty
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn project_path_without_rolling_stock_permission() {
         // SETUP
@@ -4045,7 +4138,8 @@ mod tests {
             .await;
 
         // TEST
-        app.post("/train_schedules/project_path")
+        let response: HashMap<i64, ProjectPathTrainScheduleResult> = app
+            .post("/train_schedules/project_path")
             .json(&json!({
                 "infra_id": small_infra.id,
                 "timetable_id": timetable.id,
@@ -4062,10 +4156,19 @@ mod tests {
             }))
             .by_user(&user.info)
             .await
-            .assert_status_forbidden();
+            .assert_status_ok()
+            .json();
+
+        // EXPECT
+        let projection = response
+            .get(&paced_train.id)
+            .expect("the train should be projected");
+        assert!(projection.train_schedule.is_empty());
+        assert!(projection.exceptions.is_empty());
     }
 
-    /// With a simulation, projecting a train whose rolling stock the user cannot read is forbidden
+    /// Even with a simulation, a train whose rolling stock the user cannot read is projected: like
+    /// an invalid train, it is projected without simulation
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn project_path_op_without_rolling_stock_permission() {
         let app = test_app!()
@@ -4088,22 +4191,28 @@ mod tests {
             .create()
             .await;
 
-        app.post("/train_schedules/project_path_op")
-            .json(&json!({
-                "infra_id": small_infra.id,
-                "timetable_id": timetable.id,
-                "electrical_profile_set_id": null,
-                "train_ids": vec![paced_train.id],
-                "operational_points_refs": [
-                    { "type": "domestic", "country_code": "FR", "main_code": "MWS", "secondary_code": "BV" },
-                    { "type": "id", "operational_point": "Mid_East_station" },
-                ],
-                "operational_points_distances": [10000],
-                "use_simulation": true,
-            }))
-            .by_user(&user.info)
-            .await
-            .assert_status_forbidden();
+        let project = async |use_simulation: bool| -> serde_json::Value {
+            app.post("/train_schedules/project_path_op")
+                .json(&json!({
+                    "infra_id": small_infra.id,
+                    "timetable_id": timetable.id,
+                    "electrical_profile_set_id": null,
+                    "train_ids": vec![paced_train.id],
+                    "operational_points_refs": [
+                        { "type": "domestic", "country_code": "FR", "main_code": "MWS", "secondary_code": "BV" },
+                        { "type": "id", "operational_point": "Mid_East_station" },
+                    ],
+                    "operational_points_distances": [10000],
+                    "use_simulation": use_simulation,
+                }))
+                .by_user(&user.info)
+                .await
+                .assert_status_ok()
+                .json()
+        };
+
+        // The train is projected as if no simulation had been requested
+        assert_eq!(project(true).await, project(false).await);
     }
 
     /// Without a simulation, no rolling stock is involved: projecting a train whose rolling stock
@@ -4150,6 +4259,187 @@ mod tests {
             .json();
 
         assert!(response.contains_key(&paced_train.id));
+    }
+
+    /// Trains whose rolling stock the user cannot read don't prevent the other trains of the
+    /// request from being simulated
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn project_path_with_partial_rolling_stock_permission() {
+        let app = test_app!()
+            .core_client(mocked_core_pathfinding_sim_and_proj().into())
+            .build();
+        let db_pool = app.db_pool();
+
+        let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
+        let (timetable, train_schedule_set) =
+            create_timetable_with_train_schedule_set(&mut db_pool.get_ok()).await;
+        let readable_rolling_stock =
+            create_fast_rolling_stock(&mut db_pool.get_ok(), "readable_rolling_stock").await;
+        let unreadable_rolling_stock =
+            create_fast_rolling_stock(&mut db_pool.get_ok(), "unreadable_rolling_stock").await;
+        let readable_train = simple_paced_train_changeset(train_schedule_set.id)
+            .train_name("readable".into())
+            .rolling_stock_name(readable_rolling_stock.name.clone())
+            .create(&mut db_pool.get_ok())
+            .await
+            .expect("failed to create train schedule");
+        let unreadable_train = simple_paced_train_changeset(train_schedule_set.id)
+            .train_name("unreadable".into())
+            .rolling_stock_name(unreadable_rolling_stock.name.clone())
+            .create(&mut db_pool.get_ok())
+            .await
+            .expect("failed to create train schedule");
+
+        // a user that can read the infra and only one of the two rolling stocks
+        let user = app
+            .user("partially-authorized", "Partially authorized")
+            .with_infra_grant(small_infra.id, authz::InfraGrant::Reader)
+            .with_rolling_stock_grant(readable_rolling_stock.id, authz::RollingStockGrant::Reader)
+            .with_roles([authz::Role::OperationalStudies])
+            .create()
+            .await;
+        // a user that can read both rolling stocks: both trains are simulated
+        let authorized_user = app
+            .user("authorized", "Authorized")
+            .with_infra_grant(small_infra.id, authz::InfraGrant::Reader)
+            .with_rolling_stock_grant(readable_rolling_stock.id, authz::RollingStockGrant::Reader)
+            .with_rolling_stock_grant(
+                unreadable_rolling_stock.id,
+                authz::RollingStockGrant::Reader,
+            )
+            .with_roles([authz::Role::OperationalStudies])
+            .create()
+            .await;
+
+        let project = async |user: &authz::identity::UserInfo| -> HashMap<i64, ProjectPathTrainScheduleResult> {
+            app.post("/train_schedules/project_path")
+                .json(&json!({
+                    "infra_id": small_infra.id,
+                    "timetable_id": timetable.id,
+                    "electrical_profile_set_id": null,
+                    "ids": vec![readable_train.id, unreadable_train.id],
+                    "track_section_ranges": [
+                        {
+                            "track_section": "TA1",
+                            "begin": 0,
+                            "end": 100,
+                            "direction": "START_TO_STOP"
+                        }
+                    ],
+                }))
+                .by_user(user)
+                .await
+                .assert_status_ok()
+                .json()
+        };
+
+        let response = project(&user.info).await;
+        let simulated = project(&authorized_user.info).await;
+
+        // The unreadable train isn't simulated: its projection is empty
+        assert!(response[&unreadable_train.id].train_schedule.is_empty());
+        // The readable train is simulated all the same
+        assert_eq!(
+            serde_json::to_value(&response[&readable_train.id]).unwrap(),
+            serde_json::to_value(&simulated[&readable_train.id]).unwrap(),
+            "the readable train should be simulated"
+        );
+        // Otherwise the assertion above holds no matter how the projections are assembled
+        assert!(!simulated[&unreadable_train.id].train_schedule.is_empty());
+    }
+
+    /// Trains whose rolling stock the user cannot read don't prevent the other trains of the
+    /// request from being simulated
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn project_path_op_with_partial_rolling_stock_permission() {
+        let app = test_app!()
+            .core_client(mocked_core_pathfinding_sim_and_proj().into())
+            .build();
+        let db_pool = app.db_pool();
+
+        let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
+        let (timetable, train_schedule_set) =
+            create_timetable_with_train_schedule_set(&mut db_pool.get_ok()).await;
+        let readable_rolling_stock =
+            create_fast_rolling_stock(&mut db_pool.get_ok(), "readable_rolling_stock").await;
+        let unreadable_rolling_stock =
+            create_fast_rolling_stock(&mut db_pool.get_ok(), "unreadable_rolling_stock").await;
+        let readable_train = simple_paced_train_changeset(train_schedule_set.id)
+            .train_name("readable".into())
+            .rolling_stock_name(readable_rolling_stock.name.clone())
+            .create(&mut db_pool.get_ok())
+            .await
+            .expect("failed to create train schedule");
+        let unreadable_train = simple_paced_train_changeset(train_schedule_set.id)
+            .train_name("unreadable".into())
+            .rolling_stock_name(unreadable_rolling_stock.name.clone())
+            .create(&mut db_pool.get_ok())
+            .await
+            .expect("failed to create train schedule");
+
+        // a user that can read the infra and only one of the two rolling stocks
+        let user = app
+            .user("partially-authorized", "Partially authorized")
+            .with_infra_grant(small_infra.id, authz::InfraGrant::Reader)
+            .with_rolling_stock_grant(readable_rolling_stock.id, authz::RollingStockGrant::Reader)
+            .with_roles([authz::Role::OperationalStudies])
+            .create()
+            .await;
+        // a user that can read both rolling stocks: both trains are simulated
+        let authorized_user = app
+            .user("authorized", "Authorized")
+            .with_infra_grant(small_infra.id, authz::InfraGrant::Reader)
+            .with_rolling_stock_grant(readable_rolling_stock.id, authz::RollingStockGrant::Reader)
+            .with_rolling_stock_grant(
+                unreadable_rolling_stock.id,
+                authz::RollingStockGrant::Reader,
+            )
+            .with_roles([authz::Role::OperationalStudies])
+            .create()
+            .await;
+
+        let project = async |user: &authz::identity::UserInfo,
+                             use_simulation: bool|
+               -> serde_json::Value {
+            app.post("/train_schedules/project_path_op")
+                .json(&json!({
+                    "infra_id": small_infra.id,
+                    "timetable_id": timetable.id,
+                    "electrical_profile_set_id": null,
+                    "train_ids": vec![readable_train.id, unreadable_train.id],
+                    "operational_points_refs": [
+                        { "type": "domestic", "country_code": "FR", "main_code": "MWS", "secondary_code": "BV" },
+                        { "type": "id", "operational_point": "Mid_East_station" },
+                    ],
+                    "operational_points_distances": [10000],
+                    "use_simulation": use_simulation,
+                }))
+                .by_user(user)
+                .await
+                .assert_status_ok()
+                .json()
+        };
+
+        let response = project(&user.info, true).await;
+        let simulated = project(&authorized_user.info, true).await;
+        let unsimulated = project(&user.info, false).await;
+        let readable_train_id = readable_train.id.to_string();
+        let unreadable_train_id = unreadable_train.id.to_string();
+
+        // The readable train is simulated, the other one is projected without simulation
+        assert_eq!(
+            response[&readable_train_id], simulated[&readable_train_id],
+            "the readable train should be simulated"
+        );
+        assert_eq!(
+            response[&unreadable_train_id], unsimulated[&unreadable_train_id],
+            "the unreadable train should be projected without simulation"
+        );
+        // Otherwise the assertions above hold no matter how the projections are assembled
+        assert_ne!(
+            simulated[&unreadable_train_id],
+            unsimulated[&unreadable_train_id]
+        );
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
