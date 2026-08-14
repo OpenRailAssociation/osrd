@@ -714,7 +714,7 @@ pub async fn compute_projected_train_path_op<T: TrainScheduleLike>(
     core_client: Arc<CoreClient>,
     train_schedules: &[T],
     op_cache: &OperationalPointCache,
-    operational_points_projection: OperationalPointProjection,
+    operational_points_projection: &OperationalPointProjection,
     infra: &Infra,
     electrical_profile_set_id: Option<i64>,
     app_version: Option<&str>,
@@ -763,7 +763,7 @@ pub async fn compute_projected_train_path_op<T: TrainScheduleLike>(
         let curves = Arc::new(project_train_path_op(
             &train_to_project,
             op_cache,
-            &operational_points_projection,
+            operational_points_projection,
         ));
 
         for index in context.indexes {
@@ -839,7 +839,7 @@ fn project_train_path_op(
 pub fn compute_projected_train_path_op_without_simulation<T: TrainScheduleLike>(
     train_schedules: &[T],
     op_cache: &OperationalPointCache,
-    operational_points_projection: OperationalPointProjection,
+    operational_points_projection: &OperationalPointProjection,
 ) -> Vec<Arc<Vec<SpaceTimeCurve>>> {
     train_schedules
         .iter()
@@ -848,7 +848,7 @@ pub fn compute_projected_train_path_op_without_simulation<T: TrainScheduleLike>(
             Arc::new(project_train_path_op(
                 &train_to_project,
                 op_cache,
-                &operational_points_projection,
+                operational_points_projection,
             ))
         })
         .collect_vec()
