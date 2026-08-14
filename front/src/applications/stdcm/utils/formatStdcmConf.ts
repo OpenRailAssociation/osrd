@@ -12,7 +12,7 @@ import type { OsrdStdcmConfState, StandardAllowance } from 'reducers/osrdconf/ty
 import type { Duration } from 'utils/duration';
 import { kmhToMs, tToKg } from 'utils/physics';
 
-import { stdcmPathStepToPathItemLocation } from '.';
+import { canPathStepBacktrack, stdcmPathStepToPathItemLocation } from '.';
 import { StdcmStopTypes } from '../types';
 import createMargin from './createMargin';
 
@@ -34,7 +34,8 @@ export const checkStdcmConf = (
   dispatch: Dispatch,
   t: TFunction,
   dateTimeLocale: Intl.Locale,
-  osrdconf: OsrdStdcmConfState
+  osrdconf: OsrdStdcmConfState,
+  backtrackEnabled: boolean
 ): ValidStdcmConfig | null => {
   const {
     stdcmPathSteps: pathSteps,
@@ -181,7 +182,10 @@ export const checkStdcmConf = (
 
     return {
       duration,
-      pathfinding_item: { location: formattedLocation, can_backtrack: false },
+      pathfinding_item: {
+        location: formattedLocation,
+        can_backtrack: backtrackEnabled && canPathStepBacktrack(step),
+      },
       timing_data: timingData,
     };
   });
