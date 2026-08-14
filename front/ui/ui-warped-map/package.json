@@ -34,7 +34,7 @@
   },
   "dependencies": {
     "@turf/along": "^7.3.5",
-    "@turf/bbox": "^7.3.5",
+    "@turf/bbox": "^7.4.0",
     "@turf/bbox-clip": "^7.3.5",
     "@turf/bearing": "^7.3.5",
     "@turf/bezier-spline": "^7.3.5",
