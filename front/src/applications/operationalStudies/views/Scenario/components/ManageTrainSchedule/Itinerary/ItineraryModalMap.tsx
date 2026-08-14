@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type PropsWithChildren } from 'react';
 
+import { skipToken } from '@reduxjs/toolkit/query';
 import type { Feature, Position } from 'geojson';
 import { useTranslation } from 'react-i18next';
 import type { MapLayerMouseEvent, MapRef } from 'react-map-gl/maplibre';
@@ -16,6 +17,7 @@ import MapButtons from 'common/Map/Buttons/MapButtons';
 import PathStepMarker, { PATH_STEP_MARKER_STATE } from 'common/Map/components/PathStepMarker';
 import { SnappedMarker } from 'common/Map/Layers';
 import { MapContextProvider } from 'common/Map/useMapContext';
+import { computeBBoxViewport } from 'common/Map/WarpedMap/core/helpers';
 import { useInfraID } from 'common/osrdContext';
 import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
 import Itinerary from 'modules/simulationResult/components/SimulationResultsMap/RenderItinerary';
@@ -103,6 +105,25 @@ const ItineraryModalMap = ({
   const lastRealStepIndex = pathSteps ? pathSteps.length - (lastStepHasLocation ? 1 : 2) : -1;
 
   const isNewPlacement = isMapSelectionMode;
+  const locatedStepsCount = useMemo(
+    () => pathSteps?.filter((step) => step.location !== null).length ?? 0,
+    [pathSteps]
+  );
+
+  const { data: infraBbox } = osrdEditoastApi.endpoints.getInfraByInfraIdBbox.useQuery(
+    infraID ? { infraId: infraID } : skipToken
+  );
+
+  useMemo(() => {
+    if (infraBbox === undefined) return;
+    if (locatedStepsCount >= 2) return;
+    const { min_lat, min_lon, max_lat, max_lon } = infraBbox!;
+
+    const newViewport = computeBBoxViewport([min_lon, min_lat, max_lon, max_lat], viewport, {
+      padding: 64,
+    });
+    updateViewport(newViewport);
+  }, [infraBbox, locatedStepsCount]);
 
   useEffect(() => {
     if (!isMapSelectionMode) {
