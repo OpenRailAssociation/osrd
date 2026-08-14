@@ -55,7 +55,7 @@
     "@turf/nearest-point": "^7.3.5",
     "@turf/nearest-point-on-line": "^7.1.0",
     "@turf/simplify": "^7.3.5",
-    "@turf/transform-translate": "^7.3.5",
+    "@turf/transform-translate": "^7.4.0",
     "lodash": "^4.18.1"
   },
   "peerDependencies": {
