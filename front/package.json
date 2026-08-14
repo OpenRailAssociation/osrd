@@ -21,7 +21,7 @@
     "@osrd-project/ui-charts": "0.0.1-dev",
     "@osrd-project/ui-core": "0.0.1-dev",
     "@osrd-project/ui-icons": "0.0.1-dev",
-    "@react-pdf/renderer": "^4.5.1",
+    "@react-pdf/renderer": "^4.6.0",
     "@redux-devtools/extension": "^4.0.0",
     "@reduxjs/toolkit": "^2.12.0",
     "@rjsf/core": "^6.7.1",
