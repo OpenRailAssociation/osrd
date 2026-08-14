@@ -249,11 +249,16 @@ describe('getCurveStyle', () => {
       expect(style.stop?.opacity).toBeUndefined();
     });
 
-    it.each(['active', 'passivePrimary', 'passiveSecondary'] as const)(
-      'should raise the stop opacity to 0.4 on a %s (selected) curve',
+    it('should raise the stop opacity to 0.4 on an active curve', () => {
+      const style = getCurveStyle('active', { colors, isSimulated: true });
+      expect(style.stop?.opacity).toBe(0.4);
+    });
+
+    it.each(['passivePrimary', 'passiveSecondary'] as const)(
+      'should raise the stop opacity to 0.7 on a %s (passive) curve',
       (state) => {
         const style = getCurveStyle(state, { colors, isSimulated: true });
-        expect(style.stop?.opacity).toBe(0.4);
+        expect(style.stop?.opacity).toBe(0.7);
       }
     );
 

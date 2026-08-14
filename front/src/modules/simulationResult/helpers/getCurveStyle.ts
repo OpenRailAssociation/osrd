@@ -22,6 +22,7 @@ const FONT_WEIGHT_BOLD = 600;
 const OUT_OF_SELECTION_OPACITY = 0.6;
 const OUT_OF_DRAG_OPACITY = 0.6;
 const STOP_OPACITY_SELECTED = 0.4;
+const STOP_OPACITY_PASSIVE = 0.7;
 const STOP_OPACITY_HOVERED = 0.5;
 const TOD_SELECTED_BAR_HEIGHT = 4;
 const TOD_HALO_THICKNESS = 4;
@@ -105,7 +106,7 @@ const getBaseStyle = (state: CurveVisualState, train: TrainForStyle): CurveStyle
   const passivePrimaryStyle: CurveStyle = {
     color: colors.base,
     opacity: 1,
-    stop: { opacity: STOP_OPACITY_SELECTED },
+    stop: { opacity: STOP_OPACITY_PASSIVE },
     outline:
       isSimulated === true ? { offset: 0, width: 3, color: colors.surface } : INVALID_OUTLINE,
     label: {
@@ -118,7 +119,7 @@ const getBaseStyle = (state: CurveVisualState, train: TrainForStyle): CurveStyle
   const passiveSecondaryStyle: CurveStyle = {
     color: colors.base,
     opacity: 1,
-    stop: { opacity: STOP_OPACITY_SELECTED },
+    stop: { opacity: STOP_OPACITY_PASSIVE },
     outline:
       isSimulated === true ? { offset: 0, width: 2, color: colors.surface } : INVALID_OUTLINE,
     label: {
