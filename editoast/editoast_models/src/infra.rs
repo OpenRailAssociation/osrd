@@ -11,12 +11,15 @@ use chrono::DateTime;
 use chrono::Utc;
 use diesel::ExpressionMethods;
 use diesel::QueryDsl;
+use diesel::QueryableByName;
 use diesel::delete;
 use diesel::sql_query;
 use diesel::sql_types::BigInt;
+use diesel::sql_types::Nullable;
 use diesel_async::RunQueryDsl;
 use editoast_derive::Model;
 use educe::Educe;
+use schemas::primitives::BoundingBox;
 use serde::Deserialize;
 use serde::Serialize;
 use strum::IntoEnumIterator;
@@ -114,6 +117,38 @@ impl Infra {
             .await?;
 
         Ok(())
+    }
+
+    pub async fn bbox(&self, conn: &mut DbConnection) -> Result<Option<BoundingBox>, crate::Error> {
+        use diesel::sql_types::Float8;
+
+        #[derive(Debug, QueryableByName)]
+        struct Bbox {
+            #[diesel(sql_type = Nullable<Float8>)]
+            min_lon: Option<f64>,
+            #[diesel(sql_type = Nullable<Float8>)]
+            min_lat: Option<f64>,
+            #[diesel(sql_type = Nullable<Float8>)]
+            max_lon: Option<f64>,
+            #[diesel(sql_type = Nullable<Float8>)]
+            max_lat: Option<f64>,
+        }
+
+        let res = sql_query("SELECT ST_XMin(env) as min_lon, ST_YMin(env) as min_lat, ST_XMax(env) as max_lon, ST_YMax(env) as max_lat FROM (SELECT ST_Transform(ST_SetSRID(ST_Extent(geographic), 3857), 4326) as env FROM infra_layer_track_section WHERE infra_id = $1) AS bbox_query")
+            .bind::<BigInt, _>(self.id)
+            .get_result::<Bbox>(conn.write().await.deref_mut())
+            .await
+            ?;
+
+        Ok(match (res.min_lon, res.min_lat, res.max_lon, res.max_lat) {
+            (Some(min_lon), Some(min_lat), Some(max_lon), Some(max_lat)) => Some(BoundingBox {
+                min_lon,
+                min_lat,
+                max_lon,
+                max_lat,
+            }),
+            _ => None,
+        })
     }
 
     pub async fn clone(
