@@ -8,11 +8,17 @@ use authz::RollingStockPrivilege;
 use authz::v2;
 use authz::v2::rolling_stock_privileges;
 use axum::Extension;
+use models::train_schedule::OccurrenceId;
+use schemas::TrainOccurrence;
 
+use std::collections::HashMap;
+use std::collections::HashSet;
 use std::io::Cursor;
 use std::sync::Arc;
 
 use authz::Role;
+use authz::v2::Authorizer as _;
+use authz::v2::ResourcesList;
 use axum::extract::Json;
 use axum::extract::Multipart;
 use axum::extract::Path;
@@ -778,6 +784,55 @@ async fn create_compound_image(
         .create(conn)
         .await?;
     Ok(compound_image)
+}
+
+/// Discards the occurrences whose rolling stock the user isn't allowed to read
+pub(in crate::views) async fn filter_readable_occurrences(
+    train_occurrences: HashMap<String, Vec<(OccurrenceId, TrainOccurrence)>>,
+    rolling_stocks: &[RollingStock],
+    authn_state: &crate::authentication::State,
+    openfga: &fga::Client,
+) -> Result<Vec<(OccurrenceId, TrainOccurrence)>> {
+    // The request bypasses authorization
+    let Some(user) = authn_state.user() else {
+        return Ok(train_occurrences.into_values().flatten().collect());
+    };
+
+    // Listing the readable rolling stocks cannot be rejected: the issuer is already authenticated
+    let Ok(authorized_rolling_stocks) = SystemAuthorizer::new_infallible(openfga)
+        .authorize(authz::v2::rolling_stock_list(
+            user,
+            RollingStockPrivilege::CanRead,
+        ))
+        .await?
+        .access()
+        .await?;
+
+    let authorized_rolling_stocks = match authorized_rolling_stocks {
+        ResourcesList::All => return Ok(train_occurrences.into_values().flatten().collect()),
+        ResourcesList::Privileged(authorized_rolling_stocks) => authorized_rolling_stocks,
+    };
+
+    let authorized_rolling_stock_ids = authorized_rolling_stocks
+        .into_iter()
+        .map(|rolling_stock| rolling_stock.0)
+        .collect::<HashSet<_>>();
+
+    // Occurrences are grouped by rolling stock name, the authorization by id
+
+    let authorized_rolling_stock_names = rolling_stocks
+        .iter()
+        .filter(|rs| authorized_rolling_stock_ids.contains(&rs.id))
+        .map(|rs| rs.name.clone())
+        .collect::<HashSet<_>>();
+
+    Ok(train_occurrences
+        .into_iter()
+        .filter(|(rolling_stock_name, _)| {
+            authorized_rolling_stock_names.contains(rolling_stock_name)
+        })
+        .flat_map(|(_, occurrences)| occurrences)
+        .collect())
 }
 
 #[cfg(test)]
