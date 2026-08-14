@@ -674,7 +674,8 @@
     "featureFlags": {
       "hourlyTimetables": "Activer les trames 2h",
       "linkings": "Activer les enchaînements",
-      "projectGrants": "Activer la gestion des permissions projets"
+      "projectGrants": "Activer la gestion des permissions projets",
+      "stdcmBacktrack": "Activer le rebroussement STDCM"
     },
     "help": "Aide",
     "impersonation": "Se faire passer pour un utilisateur",

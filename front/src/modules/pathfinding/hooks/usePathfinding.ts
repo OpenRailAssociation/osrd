@@ -279,7 +279,9 @@ const usePathfinding = ({
       const pathfindingInput = getPathfindingQuery({
         infraId,
         rollingStock,
-        pathSteps: steps.filter((step) => !step.isInvalid).map((step) => step?.location),
+        pathSteps: steps
+          .filter((step) => !step.isInvalid)
+          .map((step) => ({ location: step.location, can_backtrack: false })),
         speedLimitByTag:
           options.speedLimitTag !== undefined ? options.speedLimitTag : speedLimitByTag,
       });

@@ -2,6 +2,8 @@ import type { PathItemLocation, PostSimilarTrainsApiResponse } from 'common/api/
 import { type MarkerInformation, MARKER_TYPE } from 'common/Map/components/ItineraryMarkers';
 import type { StdcmPathStep } from 'reducers/osrdconf/types';
 
+import { StdcmStopTypes } from '../types';
+
 export const getTimesInfoFromDate = (date?: Date | null) =>
   date
     ? {
@@ -118,3 +120,8 @@ export const stdcmPathStepToPathItemLocation = (
     },
   };
 };
+
+export const canPathStepBacktrack = (pathStep: StdcmPathStep): boolean =>
+  pathStep.isVia &&
+  (pathStep.stopType === StdcmStopTypes.SERVICE_STOP ||
+    pathStep.stopType === StdcmStopTypes.DRIVER_SWITCH);

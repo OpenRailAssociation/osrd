@@ -28,6 +28,7 @@ import { setFailure } from 'reducers/main';
 import { addStdcmSimulations } from 'reducers/osrdconf/stdcmConf';
 import { getStdcmConf, getStdcmInfraID } from 'reducers/osrdconf/stdcmConf/selectors';
 import { updateSelectedTrain } from 'reducers/simulationResults';
+import { getFeatureFlag } from 'reducers/user/userSelectors';
 import { useAppDispatch } from 'store';
 import { useDateTimeLocale } from 'utils/date';
 import { castErrorToFailure } from 'utils/error';
@@ -53,6 +54,7 @@ const useStdcm = ({
   const dateTimeLocale = useDateTimeLocale();
   const osrdconf = useSelector(getStdcmConf);
   const infraId = useSelector(getStdcmInfraID);
+  const backtrackEnabled = useSelector(getFeatureFlag('stdcmBacktrack'));
   const abortRequests = useRef<Array<() => void>>(null);
   const isCancelledRef = useRef(false);
   const progressPoints = useRef<StdcmProgressPoints>([]);
@@ -247,7 +249,7 @@ const useStdcm = ({
     isCancelledRef.current = false;
     progressPoints.current = [];
 
-    const validConfig = checkStdcmConf(dispatch, t, dateTimeLocale, osrdconf);
+    const validConfig = checkStdcmConf(dispatch, t, dateTimeLocale, osrdconf, backtrackEnabled);
     if (!validConfig) return;
 
     setCurrentStdcmRequestStatus(STDCM_REQUEST_STATUS.pending);
