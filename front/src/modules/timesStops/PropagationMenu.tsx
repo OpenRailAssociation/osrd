@@ -21,6 +21,7 @@ const PropagationMenu = ({ isOpen, anchorRef, items, wrapperClassName }: Propaga
       <div
         role="presentation"
         className={`propagation-menu-wrapper ${wrapperClassName ?? ''}`}
+        data-testid="propagation-menu-wrapper"
         onMouseDown={(e) => e.preventDefault()}
       >
         <OSRDMenu items={items} className="propagation-menu" />

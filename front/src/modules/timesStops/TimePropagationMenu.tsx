@@ -58,24 +58,28 @@ const TimePropagationMenu = ({
       title: `${shiftAllWaypointsDeltaLabel} ${t('shiftAllWaypoints')}`,
       icon: <ArrowBoth />,
       onClick: selectMode('shiftAllWaypoints'),
+      dataTestID: 'propagation-mode-shift-all-waypoints',
     },
     {
       title: `${fromDepartureDeltaLabel} ${t('fromDeparture')}`,
       icon: <ArrowUp />,
       disabled: disableFromDeparture,
       onClick: selectMode('fromDeparture'),
+      dataTestID: 'propagation-mode-from-departure',
     },
     {
       title: `${atThisWaypointDeltaLabel} ${t('atThisWaypoint')}`,
       icon: <Dot variant="base" />,
       className: 'selected',
       onClick: selectMode('atThisWaypoint'),
+      dataTestID: 'propagation-mode-at-this-waypoint',
     },
     {
       title: `${toDestinationDeltaLabel} ${t('toDestination')}`,
       icon: <ArrowDown />,
       disabled: disableToDestination,
       onClick: selectMode('toDestination'),
+      dataTestID: 'propagation-mode-to-destination',
     },
   ];
 
