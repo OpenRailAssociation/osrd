@@ -2,6 +2,7 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 
 import { useTranslation } from 'react-i18next';
 
+import useScenario from 'applications/operationalStudies/hooks/useScenario';
 import OSRDTooltip from 'common/OSRDTooltip';
 import { useSubCategoryContext } from 'common/SubCategoryContext';
 import isMainCategory from 'modules/rollingStock/helpers/category';
@@ -13,6 +14,14 @@ import { getTrainCategoryClassName } from './../../../applications/operationalSt
 const MAX_TAG_ROWS = 2;
 const TRAIN_NAME_TAG_GAP = 4; // must match .trains-name --tag-gap in SCSS
 const OTHER_TAG_WIDTH = 36; // width for "+NN" tag (3ch + padding)
+
+// Format a positive duration in milliseconds as a signed `hh:mm` string.
+const formatHm = (ms: number): string => {
+  const totalMinutes = Math.floor(ms / 60_000);
+  const h = Math.floor(totalMinutes / 60);
+  const m = totalMinutes % 60;
+  return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+};
 
 const fitsWithinRows = (widths: number[], availableWidth: number, gap: number) => {
   let rows = 1;
@@ -42,10 +51,14 @@ const fitsWithinRows = (widths: number[], availableWidth: number, gap: number) =
 const ConflictCard = ({ conflict }: { conflict: ConflictWithTrainNames }) => {
   const { t } = useTranslation('operational-studies', { keyPrefix: 'main' });
   const dateTimeLocale = useDateTimeLocale();
-  const start_time = new Date(conflict.start_time).toLocaleTimeString(dateTimeLocale);
-  const end_time = new Date(conflict.start_time + conflict.duration).toLocaleTimeString(
-    dateTimeLocale
-  );
+  const { scenario: { timetable_type: timetableType } = {} } = useScenario();
+  const isHourly = timetableType === 'HOURLY';
+  const start_time = isHourly
+    ? formatHm(conflict.start_time)
+    : new Date(conflict.start_time).toLocaleTimeString(dateTimeLocale);
+  const end_time = isHourly
+    ? formatHm(conflict.duration)
+    : new Date(conflict.start_time + conflict.duration).toLocaleTimeString(dateTimeLocale);
   const start_date = new Date(conflict.start_time).toLocaleDateString(dateTimeLocale);
   const totalTrains = conflict.trainsData.length;
 
@@ -138,9 +151,11 @@ const ConflictCard = ({ conflict }: { conflict: ConflictWithTrainNames }) => {
             {end_time}
           </div>
         </div>
-        <div className="departure-date" title={start_date}>
-          {start_date}
-        </div>
+        {!isHourly && (
+          <div className="departure-date" title={start_date}>
+            {start_date}
+          </div>
+        )}
       </div>
 
       <div className="trains-name" ref={trainsContainerRef}>
