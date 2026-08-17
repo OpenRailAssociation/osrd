@@ -9,9 +9,9 @@ use axum::extract::State;
 use chrono::Duration;
 use common::units::millisecond;
 use common::units::quantities::Offset;
-use editoast_models::prelude::*;
 use itertools::Itertools as _;
 use itertools::izip;
+use models::prelude::*;
 use schemas::timetable_type::TimetableType;
 use serde::Deserialize;
 use serde::Serialize;
@@ -35,9 +35,9 @@ use core_client::simulation::RoutingRequirement;
 use core_client::simulation::RoutingZoneRequirement;
 use core_client::simulation::SpacingRequirement;
 use database::DbConnection;
-use editoast_models::Infra;
-use editoast_models::timetable::TimetableWithTrains;
-use editoast_models::train_schedule::OccurrenceId;
+use models::Infra;
+use models::timetable::TimetableWithTrains;
+use models::train_schedule::OccurrenceId;
 use schemas::TrainOccurrence;
 use schemas::train_schedule::TrainScheduleLike as _;
 use uuid::Uuid;
@@ -111,13 +111,13 @@ type Interval = (u64, u64);
 pub(in crate::views) async fn retrieve_trains(
     mut conn: DbConnection,
     timetable_id: i64,
-) -> Result<(TimetableType, Vec<editoast_models::TrainSchedule>)> {
+) -> Result<(TimetableType, Vec<models::TrainSchedule>)> {
     let timetable_trains =
         TimetableWithTrains::retrieve_or_fail(conn.clone(), timetable_id, || {
             TimetableError::NotFound { timetable_id }
         })
         .await?;
-    let trains = editoast_models::TrainSchedule::retrieve_batch_unchecked(
+    let trains = models::TrainSchedule::retrieve_batch_unchecked(
         &mut conn,
         timetable_trains.paced_train_ids,
     )
@@ -154,7 +154,7 @@ pub(super) fn build_conflict_core_request(
 }
 
 pub(super) fn compute_hourly_pattern_period(
-    paced_trains: &[editoast_models::TrainSchedule],
+    paced_trains: &[models::TrainSchedule],
 ) -> Option<Duration> {
     let paced_train_lcm = paced_trains
         .iter()
@@ -347,19 +347,18 @@ pub(in crate::views) async fn conflicts(
 
     let train_schedules_ids = trains.iter().map(|t| t.id).collect_vec();
 
-    let mut exceptions =
-        editoast_models::TrainScheduleException::retrieve_exceptions_by_train_schedules(
-            &mut conn.clone(),
-            timetable_id,
-            &train_schedules_ids,
-        )
-        .await?
-        .into_iter()
-        .map_into::<schemas::TrainScheduleException>()
-        .into_group_map_by(|e| e.train_schedule_id);
+    let mut exceptions = models::TrainScheduleException::retrieve_exceptions_by_train_schedules(
+        &mut conn.clone(),
+        timetable_id,
+        &train_schedules_ids,
+    )
+    .await?
+    .into_iter()
+    .map_into::<schemas::TrainScheduleException>()
+    .into_group_map_by(|e| e.train_schedule_id);
 
     let train_schedules_with_exceptions: Vec<(
-        editoast_models::TrainSchedule,
+        models::TrainSchedule,
         Vec<schemas::TrainScheduleException>,
     )> = trains
         .into_iter()
@@ -462,7 +461,7 @@ mod tests {
     use core_client::simulation::RoutingRequirement;
     use core_client::simulation::RoutingZoneRequirement;
     use core_client::simulation::SpacingRequirement;
-    use editoast_models::train_schedule::TrainScheduleChangeset;
+    use models::train_schedule::TrainScheduleChangeset;
     use reqwest::StatusCode;
     use rstest::rstest;
 

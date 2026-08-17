@@ -328,7 +328,7 @@ pub mod tests {
     use core_client::pathfinding::TrackRange;
     use core_client::simulation::CompleteReportTrain;
     use core_client::simulation::ReportTrain;
-    use editoast_models::OperationalPointModel;
+    use models::OperationalPointModel;
     use pretty_assertions::assert_eq;
     use reqwest::StatusCode;
     use rstest::rstest;

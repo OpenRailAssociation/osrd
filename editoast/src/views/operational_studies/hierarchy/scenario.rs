@@ -9,7 +9,7 @@ use chrono::Utc;
 use database::DbConnection;
 use database::DbConnectionPoolV2;
 use editoast_derive::EditoastError;
-use editoast_models::prelude::*;
+use models::prelude::*;
 use serde::Deserialize;
 use serde::Serialize;
 use serde_with::rust::double_option;
@@ -26,12 +26,12 @@ use crate::error::Result;
 use crate::views::pagination::PaginatedList as _;
 use crate::views::pagination::PaginationQueryParams;
 use crate::views::pagination::PaginationStats;
-use editoast_models::Infra;
-use editoast_models::project::Project;
-use editoast_models::scenario::Scenario;
-use editoast_models::study::Study;
-use editoast_models::tags::Tags;
-use editoast_models::timetable::Timetable;
+use models::Infra;
+use models::project::Project;
+use models::scenario::Scenario;
+use models::study::Study;
+use models::tags::Tags;
+use models::timetable::Timetable;
 
 #[derive(IntoParams, Deserialize)]
 pub(in crate::views) struct ScenarioIdParam {
@@ -89,28 +89,28 @@ pub enum ScenarioError {
 
     #[error(transparent)]
     #[editoast_error(status = 500)]
-    #[from(editoast_models::Error, database::DatabaseError)]
-    Database(editoast_models::Error),
+    #[from(models::Error, database::DatabaseError)]
+    Database(models::Error),
 }
 
-impl From<editoast_models::scenario::Error> for ScenarioError {
-    fn from(e: editoast_models::scenario::Error) -> Self {
+impl From<models::scenario::Error> for ScenarioError {
+    fn from(e: models::scenario::Error) -> Self {
         match e {
-            editoast_models::scenario::Error::NotFound { scenario_id } => {
+            models::scenario::Error::NotFound { scenario_id } => {
                 ScenarioError::NotFound { scenario_id }
             }
-            editoast_models::scenario::Error::Database(e) => ScenarioError::Database(e),
+            models::scenario::Error::Database(e) => ScenarioError::Database(e),
         }
     }
 }
 
-impl From<editoast_models::study::Error> for ScenarioError {
-    fn from(e: editoast_models::study::Error) -> Self {
+impl From<models::study::Error> for ScenarioError {
+    fn from(e: models::study::Error) -> Self {
         match e {
-            editoast_models::study::Error::NotFound { study_id } => {
+            models::study::Error::NotFound { study_id } => {
                 ScenarioError::StudyNotFound { study_id }
             }
-            editoast_models::study::Error::Database(e) => ScenarioError::Database(e),
+            models::study::Error::Database(e) => ScenarioError::Database(e),
         }
     }
 }

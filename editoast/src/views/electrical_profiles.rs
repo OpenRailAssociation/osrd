@@ -17,9 +17,9 @@ use thiserror::Error;
 use utoipa::IntoParams;
 
 use crate::error::Result;
-use editoast_models::ElectricalProfileSet;
-use editoast_models::LightElectricalProfileSet;
-use editoast_models::prelude::*;
+use models::ElectricalProfileSet;
+use models::LightElectricalProfileSet;
+use models::prelude::*;
 
 #[derive(IntoParams)]
 #[allow(unused)]
@@ -161,7 +161,7 @@ pub enum ElectricalProfilesError {
     NotFound { electrical_profile_set_id: i64 },
     #[error(transparent)]
     #[editoast_error(status = 500)]
-    Database(#[from] editoast_models::Error),
+    Database(#[from] models::Error),
 }
 
 #[cfg(test)]

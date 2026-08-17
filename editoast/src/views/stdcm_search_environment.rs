@@ -13,9 +13,9 @@ use chrono::DateTime;
 use chrono::Utc;
 use database::DbConnectionPoolV2;
 use editoast_derive::EditoastError;
-use editoast_models::prelude::*;
-use editoast_models::stdcm_search_environment::StdcmSearchEnvironment;
 use itertools::Itertools;
+use models::prelude::*;
+use models::stdcm_search_environment::StdcmSearchEnvironment;
 use serde::Deserialize;
 use serde::Serialize;
 use serde::de::Error as SerdeError;
@@ -39,7 +39,7 @@ enum StdcmSearchEnvError {
 
     #[error(transparent)]
     #[editoast_error(status = 500)]
-    Database(#[from] editoast_models::Error),
+    Database(#[from] models::Error),
 }
 
 #[derive(Default, Deserialize, Serialize, ToSchema)]
@@ -133,11 +133,11 @@ impl Serialize for StdcmSearchEnvironmentCreateForm {
 }
 
 impl From<StdcmSearchEnvironmentCreateForm>
-    for editoast_models::stdcm_search_environment::StdcmSearchEnvironmentChangeset
+    for models::stdcm_search_environment::StdcmSearchEnvironmentChangeset
 {
     fn from(form: StdcmSearchEnvironmentCreateForm) -> Self {
         let speed_limits = form.speed_limits.unwrap_or_default();
-        editoast_models::stdcm_search_environment::StdcmSearchEnvironment::changeset()
+        models::stdcm_search_environment::StdcmSearchEnvironment::changeset()
             .infra_id(form.infra_id)
             .electrical_profile_set_id(form.electrical_profile_set_id)
             .work_schedule_group_id(form.work_schedule_group_id)
@@ -155,10 +155,10 @@ impl From<StdcmSearchEnvironmentCreateForm>
     }
 }
 
-impl From<editoast_models::stdcm_search_environment::StdcmSearchEnvironment>
+impl From<models::stdcm_search_environment::StdcmSearchEnvironment>
     for StdcmSearchEnvironmentResponse
 {
-    fn from(from: editoast_models::stdcm_search_environment::StdcmSearchEnvironment) -> Self {
+    fn from(from: models::stdcm_search_environment::StdcmSearchEnvironment) -> Self {
         let speed_limits = if !from.speed_limit_tags.is_empty() {
             Some(SpeedLimits {
                 speed_limit_tags: from.speed_limit_tags,
@@ -302,10 +302,10 @@ pub mod tests {
     use chrono::DurationRound;
     use chrono::TimeZone;
     use chrono::Utc;
-    use editoast_models::Timetable;
+    use models::Timetable;
     use pretty_assertions::assert_eq;
 
-    use editoast_models::stdcm_search_environment::fixtures::stdcm_search_env_fixtures;
+    use models::stdcm_search_environment::fixtures::stdcm_search_env_fixtures;
 
     use super::*;
     use crate::error::InternalError;
@@ -422,7 +422,7 @@ pub mod tests {
         ) = stdcm_search_env_fixtures(&mut pool.get_ok()).await;
 
         let hourly_timetable = Timetable::changeset()
-            .timetable_type(editoast_models::timetable_type::TimetableType(
+            .timetable_type(models::timetable_type::TimetableType(
                 schemas::timetable_type::TimetableType::Hourly,
             ))
             .create(&mut pool.get_ok())

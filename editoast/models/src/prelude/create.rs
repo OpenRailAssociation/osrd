@@ -40,7 +40,7 @@ pub trait CreateBatch: Model {
     ///
     /// Returns a collection of the created rows.
     /// ```no_run
-    /// # use editoast_models::prelude::*;
+    /// # use models::prelude::*;
     /// # use database::DbConnection;
     /// # #[derive(Debug, PartialEq, Eq, Hash)]
     /// # struct Document;

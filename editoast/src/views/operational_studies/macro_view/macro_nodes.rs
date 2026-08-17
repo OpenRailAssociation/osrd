@@ -20,10 +20,10 @@ use crate::error::Result;
 use crate::views::pagination::PaginatedList;
 use crate::views::pagination::PaginationQueryParams;
 use crate::views::pagination::PaginationStats;
-use editoast_models::macro_node::MacroNode;
-use editoast_models::prelude::*;
-use editoast_models::scenario::Scenario;
-use editoast_models::tags::Tags;
+use models::macro_node::MacroNode;
+use models::prelude::*;
+use models::scenario::Scenario;
+use models::tags::Tags;
 
 #[derive(Debug, Error, EditoastError, derive_more::From)]
 #[editoast_error(base_id = "macro_node")]
@@ -38,17 +38,17 @@ enum MacroNodeError {
 
     #[error(transparent)]
     #[editoast_error(status = 500)]
-    #[from(editoast_models::Error, database::DatabaseError)]
-    Database(editoast_models::Error),
+    #[from(models::Error, database::DatabaseError)]
+    Database(models::Error),
 }
 
-impl From<editoast_models::scenario::Error> for MacroNodeError {
-    fn from(e: editoast_models::scenario::Error) -> Self {
+impl From<models::scenario::Error> for MacroNodeError {
+    fn from(e: models::scenario::Error) -> Self {
         match e {
-            editoast_models::scenario::Error::NotFound { scenario_id } => {
+            models::scenario::Error::NotFound { scenario_id } => {
                 MacroNodeError::ScenarioNotFound { scenario_id }
             }
-            editoast_models::scenario::Error::Database(e) => MacroNodeError::Database(e),
+            models::scenario::Error::Database(e) => MacroNodeError::Database(e),
         }
     }
 }

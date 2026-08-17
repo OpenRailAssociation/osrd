@@ -20,7 +20,7 @@ use utoipa::ToSchema;
 use crate::error::Result;
 use crate::views::timetable::simulation;
 use crate::views::timetable::simulation::train_simulation_ordered_batch;
-use editoast_models::Infra;
+use models::Infra;
 
 /// Occupancy block output is described by time-space points and blocks
 pub type OccupancyBlocks = Vec<SignalUpdate>;

@@ -13,9 +13,9 @@ use clap::Args;
 use clap::Subcommand;
 use database::DbConnection;
 use database::DbConnectionPoolV2;
-use editoast_models::Group;
-use editoast_models::prelude::*;
 use itertools::Itertools as _;
+use models::Group;
+use models::prelude::*;
 use strum::IntoEnumIterator;
 use tracing::info;
 
@@ -113,12 +113,12 @@ async fn parse_and_fetch_subject(subject: &String, conn: DbConnection) -> anyhow
     let id = if let Ok(id) = subject.parse::<i64>() {
         id
     } else {
-        editoast_models::User::retrieve_by_identity(subject, conn.clone())
+        models::User::retrieve_by_identity(subject, conn.clone())
             .await?
             .ok_or_else(|| anyhow!("No user with identity '{subject}' found"))?
             .id
     };
-    let subject = if let Some(user) = editoast_models::User::retrieve(conn.clone(), id).await? {
+    let subject = if let Some(user) = models::User::retrieve(conn.clone(), id).await? {
         let identities = user.get_identities(conn.clone()).await?;
         Subject::new_user(
             id,

@@ -5,12 +5,12 @@ use authz::v2::Authorizer;
 use clap::Args;
 use clap::Subcommand;
 use database::DbConnectionPoolV2;
-use editoast_models::Group;
-use editoast_models::User;
-use editoast_models::authn::user::AddIdentitiesError;
-use editoast_models::authn::user::UserWithIdentities;
-use editoast_models::prelude::*;
 use futures::TryStreamExt as _;
+use models::Group;
+use models::User;
+use models::authn::user::AddIdentitiesError;
+use models::authn::user::UserWithIdentities;
+use models::prelude::*;
 use std::collections::HashSet;
 use std::sync::Arc;
 
@@ -95,7 +95,7 @@ pub async fn list_user(
         },
         async {
             let conn = &mut pool.get().await?;
-            let groups = editoast_models::Group::list(conn, Default::default()).await?;
+            let groups = models::Group::list(conn, Default::default()).await?;
             anyhow::Ok(groups)
         }
     );
@@ -146,7 +146,7 @@ pub async fn add_user(
     if skip_if_exists {
         for identity in &identities {
             let conn = pool.get().await?;
-            let user = editoast_models::User::retrieve_by_identity(identity, conn).await?;
+            let user = models::User::retrieve_by_identity(identity, conn).await?;
             if user.is_some() {
                 println!("Skipped: Identity '{identity}' already exists");
                 return Ok(());
@@ -154,8 +154,7 @@ pub async fn add_user(
         }
     }
     let conn = pool.get().await?;
-    let created_user =
-        editoast_models::User::register(conn, identities, name.unwrap_or_default()).await?;
+    let created_user = models::User::register(conn, identities, name.unwrap_or_default()).await?;
     println!("User added with id: {}", created_user.id);
     Ok(())
 }
@@ -169,14 +168,14 @@ pub async fn user_info(
     let uid = if let Ok(id) = id_or_identity.parse::<i64>() {
         id
     } else {
-        editoast_models::User::retrieve_by_identity(&id_or_identity, pool.get().await?)
+        models::User::retrieve_by_identity(&id_or_identity, pool.get().await?)
             .await?
             .ok_or_else(|| anyhow!("No user with identity '{id_or_identity}' found"))?
             .id
     };
     let openfga = openfga_config.into_client().await?;
     let system = SystemAuthorizer::new_infallible(&openfga);
-    let Some(user) = editoast_models::User::retrieve(pool.get().await?, uid).await? else {
+    let Some(user) = models::User::retrieve(pool.get().await?, uid).await? else {
         tracing::error!(user.id = uid, "User not found");
         return Ok(());
     };
@@ -210,14 +209,14 @@ pub async fn delete_user(
     let uid = if let Ok(id) = user.parse::<i64>() {
         id
     } else {
-        editoast_models::User::retrieve_by_identity(&user, pool.get().await?)
+        models::User::retrieve_by_identity(&user, pool.get().await?)
             .await?
             .ok_or_else(|| anyhow!("No user with identity '{user}' found"))?
             .id
     };
 
     let conn = &mut pool.get().await?;
-    let deleted = editoast_models::User::delete_static(conn, uid).await?;
+    let deleted = models::User::delete_static(conn, uid).await?;
 
     if deleted {
         tracing::info!("user '{user}' deleted");
@@ -239,9 +238,9 @@ pub async fn add_identities(
 ) -> anyhow::Result<()> {
     let conn = pool.get().await?;
     let user = match (user_id, user_identity) {
-        (Some(user_id), None) => editoast_models::User::retrieve(conn.clone(), user_id).await?,
+        (Some(user_id), None) => models::User::retrieve(conn.clone(), user_id).await?,
         (None, Some(identity)) => {
-            editoast_models::User::retrieve_by_identity(&identity, conn.clone()).await?
+            models::User::retrieve_by_identity(&identity, conn.clone()).await?
         }
         (Some(_), Some(_)) => unreachable!("ensured by clap"),
         (None, None) => bail!("either a user ID or a user identity must be provided"),
@@ -266,8 +265,8 @@ pub async fn add_identities(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use editoast_models::authn::user::User;
     use itertools::Itertools as _;
+    use models::authn::user::User;
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn add_identities_multiple_times() {

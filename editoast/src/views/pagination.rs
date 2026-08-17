@@ -5,7 +5,7 @@ use serde::Serialize;
 use utoipa::ToSchema;
 
 use crate::error::Result;
-use editoast_models::prelude::*;
+use models::prelude::*;
 
 /// Statistics about a paginated editoast response
 ///

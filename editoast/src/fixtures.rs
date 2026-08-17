@@ -2,21 +2,21 @@ use chrono::Duration as ChronoDuration;
 use chrono::Utc;
 use database::DbConnection;
 
-use editoast_models::CatalogEntry;
-use editoast_models::ElectricalProfileSet;
-use editoast_models::SubCategory;
-use editoast_models::WorkSchedule;
-use editoast_models::WorkScheduleGroup;
-use editoast_models::prelude::*;
-use editoast_models::project::Project;
-use editoast_models::rolling_stock::RollingStock;
-use editoast_models::scenario::Scenario;
-use editoast_models::study::Study;
-use editoast_models::tags::Tags;
-use editoast_models::timetable::Timetable;
-use editoast_models::timetable_train_schedule_set::TimetableTrainScheduleSet;
-use editoast_models::towed_rolling_stock::TowedRollingStock;
-use editoast_models::train_schedule_exception::TrainScheduleException;
+use models::CatalogEntry;
+use models::ElectricalProfileSet;
+use models::SubCategory;
+use models::WorkSchedule;
+use models::WorkScheduleGroup;
+use models::prelude::*;
+use models::project::Project;
+use models::rolling_stock::RollingStock;
+use models::scenario::Scenario;
+use models::study::Study;
+use models::tags::Tags;
+use models::timetable::Timetable;
+use models::timetable_train_schedule_set::TimetableTrainScheduleSet;
+use models::towed_rolling_stock::TowedRollingStock;
+use models::train_schedule_exception::TrainScheduleException;
 use schemas::TrainScheduleExceptionChangeGroups;
 use schemas::infra::InfraObject;
 use schemas::paced_train::Paced;
@@ -26,8 +26,8 @@ use schemas::primitives::OSRDObject;
 use schemas::rolling_stock::SubCategoryColor;
 
 use crate::infra_cache::operation::create::apply_create_operation;
-use editoast_models::Infra;
-use editoast_models::TrainScheduleSet;
+use models::Infra;
+use models::TrainScheduleSet;
 
 pub async fn create_project(conn: &mut DbConnection, name: &str) -> Project {
     Project::fake(name)
@@ -66,7 +66,7 @@ pub async fn create_hourly_timetable_with_train_schedule_set(
 
 pub async fn create_timetable_with_simple_paced_train(
     conn: &mut DbConnection,
-) -> (Timetable, editoast_models::TrainSchedule) {
+) -> (Timetable, models::TrainSchedule) {
     let (timetable, train_schedule_set) = create_timetable_with_train_schedule_set(conn).await;
     let train_schedule = create_simple_paced_train(conn, train_schedule_set.id).await;
 
@@ -90,7 +90,7 @@ pub async fn create_train_schedule_set(conn: &mut DbConnection) -> TrainSchedule
 
 pub async fn create_hourly_timetable(conn: &mut DbConnection) -> Timetable {
     Timetable::changeset()
-        .timetable_type(editoast_models::timetable_type::TimetableType(
+        .timetable_type(models::timetable_type::TimetableType(
             schemas::timetable_type::TimetableType::Hourly,
         ))
         .create(conn)
@@ -100,7 +100,7 @@ pub async fn create_hourly_timetable(conn: &mut DbConnection) -> Timetable {
 
 pub async fn create_hourly_train_schedule_set(conn: &mut DbConnection) -> TrainScheduleSet {
     TrainScheduleSet::changeset()
-        .timetable_type(editoast_models::timetable_type::TimetableType(
+        .timetable_type(models::timetable_type::TimetableType(
             schemas::timetable_type::TimetableType::Hourly,
         ))
         .name(None)
@@ -147,15 +147,15 @@ pub fn simple_paced_train_base() -> TrainSchedule {
 
 pub fn simple_paced_train_changeset(
     train_schedule_set_id: i64,
-) -> Changeset<editoast_models::TrainSchedule> {
-    Changeset::<editoast_models::TrainSchedule>::from(simple_paced_train_base())
+) -> Changeset<models::TrainSchedule> {
+    Changeset::<models::TrainSchedule>::from(simple_paced_train_base())
         .train_schedule_set_id(train_schedule_set_id)
 }
 
 pub async fn create_simple_paced_train(
     conn: &mut DbConnection,
     train_schedule_set_id: i64,
-) -> editoast_models::TrainSchedule {
+) -> models::TrainSchedule {
     simple_paced_train_changeset(train_schedule_set_id)
         .create(conn)
         .await
@@ -347,7 +347,7 @@ pub async fn create_work_schedules_fixture_set(
 
 pub fn simple_sub_category(
     code: &str,
-    main_category: editoast_models::rolling_stock::TrainMainCategory,
+    main_category: models::rolling_stock::TrainMainCategory,
 ) -> Changeset<SubCategory> {
     SubCategory::changeset()
         .code(code.to_string())

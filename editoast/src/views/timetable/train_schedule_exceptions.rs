@@ -9,9 +9,9 @@ use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use database::DbConnectionPoolV2;
 use editoast_derive::EditoastError;
-use editoast_models::prelude::*;
-use editoast_models::timetable::Timetable;
-use editoast_models::train_schedule_exception::TrainScheduleExceptionChangeset;
+use models::prelude::*;
+use models::timetable::Timetable;
+use models::train_schedule_exception::TrainScheduleExceptionChangeset;
 use schemas::TrainScheduleException;
 use schemas::TrainScheduleExceptionChangeGroups;
 use serde::Deserialize;
@@ -56,13 +56,13 @@ pub enum TrainScheduleExceptionError {
     #[editoast_error(status = 400)]
     OccurrenceIndexAlreadyUsed { occurrence_index: String },
     #[error(transparent)]
-    Database(editoast_models::Error),
+    Database(models::Error),
 }
 
-impl From<editoast_models::Error> for TrainScheduleExceptionError {
-    fn from(e: editoast_models::Error) -> Self {
+impl From<models::Error> for TrainScheduleExceptionError {
+    fn from(e: models::Error) -> Self {
         match e {
-            editoast_models::Error::UniqueViolation {
+            models::Error::UniqueViolation {
                 constraint,
                 column,
                 value,
@@ -106,7 +106,7 @@ pub(in crate::views) struct TrainScheduleExceptionForm {
 
 impl From<TrainScheduleExceptionForm> for TrainScheduleExceptionChangeset {
     fn from(train_schedule_exception_form: TrainScheduleExceptionForm) -> Self {
-        editoast_models::TrainScheduleException::changeset()
+        models::TrainScheduleException::changeset()
             .train_schedule_id(train_schedule_exception_form.train_schedule_id)
             .occurrence_index(train_schedule_exception_form.occurrence_index)
             .disabled(train_schedule_exception_form.disabled)
@@ -137,7 +137,7 @@ pub(in crate::views) async fn create_train_schedule_exception(
     })
     .await?;
 
-    let train_schedule = editoast_models::TrainSchedule::retrieve_or_fail(
+    let train_schedule = models::TrainSchedule::retrieve_or_fail(
         conn.clone(),
         train_schedule_exception_form.train_schedule_id,
         || TrainScheduleExceptionError::TrainScheduleNotFound {
@@ -203,7 +203,7 @@ pub(in crate::views) async fn delete(
 ) -> Result<impl IntoResponse> {
     let conn = &mut db_pool.get().await?;
 
-    editoast_models::TrainScheduleException::delete_batch_or_fail(conn, exception_ids, |count| {
+    models::TrainScheduleException::delete_batch_or_fail(conn, exception_ids, |count| {
         TrainScheduleExceptionError::BatchNotFound { count }
     })
     .await?;
@@ -231,7 +231,7 @@ pub(in crate::views) async fn update(
 
     let train_schedule_id = train_schedule_exception_form.train_schedule_id;
 
-    let train_schedule = editoast_models::TrainSchedule::retrieve_or_fail(
+    let train_schedule = models::TrainSchedule::retrieve_or_fail(
         conn.clone(),
         train_schedule_exception_form.train_schedule_id,
         || TrainScheduleExceptionError::TrainScheduleNotFound { train_schedule_id },
@@ -274,11 +274,11 @@ pub(in crate::views) async fn update(
 #[cfg(test)]
 mod tests {
     use common::units::millisecond;
-    use editoast_models;
-    use editoast_models::TrainScheduleException;
-    use editoast_models::prelude::Retrieve;
-    use editoast_models::prelude::*;
-    use editoast_models::train_schedule_exception::TrainScheduleExceptionChangeset;
+    use models;
+    use models::TrainScheduleException;
+    use models::prelude::Retrieve;
+    use models::prelude::*;
+    use models::train_schedule_exception::TrainScheduleExceptionChangeset;
     use schemas::TrainScheduleExceptionChangeGroups;
     use schemas::paced_train::StartTimeChangeGroup;
     use schemas::paced_train::TrainNameChangeGroup;
@@ -491,13 +491,11 @@ mod tests {
             .await
             .assert_status_no_content();
 
-        let updated_exception = editoast_models::TrainScheduleException::retrieve(
-            pool.get_ok(),
-            train_schedule_exception.id,
-        )
-        .await
-        .expect("Failed to retrieve exception")
-        .expect("Retrieved exception is absent");
+        let updated_exception =
+            models::TrainScheduleException::retrieve(pool.get_ok(), train_schedule_exception.id)
+                .await
+                .expect("Failed to retrieve exception")
+                .expect("Retrieved exception is absent");
 
         assert_eq!(updated_exception.occurrence_index, Some(2));
         assert_eq!(

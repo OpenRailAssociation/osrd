@@ -1,17 +1,17 @@
 use database::DbConnectionPoolV2;
-use editoast_models::timetable::Timetable;
+use models::timetable::Timetable;
 use std::sync::Arc;
 
-use editoast_models::TrainScheduleSet;
+use models::TrainScheduleSet;
 
 use crate::client::OpenfgaConfig;
-use editoast_models::Group;
-use editoast_models::Infra;
-use editoast_models::User;
-use editoast_models::prelude::*;
 use fga::client::UntypedTuple;
 use fga::client::UserOrUserset;
 use futures::TryStreamExt as _;
+use models::Group;
+use models::Infra;
+use models::User;
+use models::prelude::*;
 use std::collections::HashSet;
 
 struct ExistingEntities {
@@ -212,10 +212,10 @@ mod tests {
     use crate::fixtures::create_empty_infra;
     use crate::fixtures::create_scenario_fixtures_set;
     use crate::fixtures::create_timetable;
-    use editoast_models::SearchJourneyEnvironment;
-    use editoast_models::search_journey_environment::fixtures::search_journey_env_fixtures;
-    use editoast_models::stdcm_search_environment::StdcmSearchEnvironment;
-    use editoast_models::stdcm_search_environment::fixtures::stdcm_search_env_fixtures;
+    use models::SearchJourneyEnvironment;
+    use models::search_journey_environment::fixtures::search_journey_env_fixtures;
+    use models::stdcm_search_environment::StdcmSearchEnvironment;
+    use models::stdcm_search_environment::fixtures::stdcm_search_env_fixtures;
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn test_clean_orphaned_timetables() {
@@ -337,7 +337,7 @@ mod tests {
             (authz::Infra(existing.id), authz::Infra(orphan.id))
         };
         let existing_user = authz::User(
-            editoast_models::User::register(
+            models::User::register(
                 db_pool.get_ok(),
                 vec!["alice".to_owned()],
                 "Alice".to_owned(),
@@ -347,14 +347,10 @@ mod tests {
             .id,
         );
         let orphan_user = authz::User(
-            editoast_models::User::register(
-                db_pool.get_ok(),
-                vec!["bob".to_owned()],
-                "Bob".to_owned(),
-            )
-            .await
-            .unwrap()
-            .id,
+            models::User::register(db_pool.get_ok(), vec!["bob".to_owned()], "Bob".to_owned())
+                .await
+                .unwrap()
+                .id,
         );
         let existing_group = authz::Group(
             Group::upsert(db_pool.get_ok(), "existing-group".into())
@@ -390,10 +386,10 @@ mod tests {
         // Delete orphan entities from DB
         {
             let conn = &mut db_pool.get_ok();
-            editoast_models::authn::user::User::delete_static(conn, orphan_user.0)
+            models::authn::user::User::delete_static(conn, orphan_user.0)
                 .await
                 .unwrap();
-            editoast_models::Group::delete_static(conn, orphan_group.0)
+            models::Group::delete_static(conn, orphan_group.0)
                 .await
                 .unwrap();
             Infra::delete_static(conn, orphan_infra.0).await.unwrap();

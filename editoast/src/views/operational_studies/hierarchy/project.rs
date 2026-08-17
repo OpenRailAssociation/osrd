@@ -9,7 +9,7 @@ use chrono::Utc;
 use database::DbConnection;
 use database::DbConnectionPoolV2;
 use editoast_derive::EditoastError;
-use editoast_models::prelude::*;
+use models::prelude::*;
 use serde::Deserialize;
 use serde::Serialize;
 use serde_with::rust::double_option;
@@ -24,9 +24,9 @@ use crate::error::Result;
 use crate::views::pagination::PaginatedList;
 use crate::views::pagination::PaginationQueryParams;
 use crate::views::pagination::PaginationStats;
-use editoast_models::Document;
-use editoast_models::project::Project;
-use editoast_models::tags::Tags;
+use models::Document;
+use models::project::Project;
+use models::tags::Tags;
 
 #[derive(Debug, Error, EditoastError, derive_more::From)]
 #[editoast_error(base_id = "project")]
@@ -42,18 +42,18 @@ pub enum ProjectError {
     #[error("The provided image is not valid: {error}")]
     ImageError { error: String },
     #[error(transparent)]
-    #[from(editoast_models::Error, database::DatabaseError)]
+    #[from(models::Error, database::DatabaseError)]
     #[editoast_error(status = 500)]
-    Database(editoast_models::Error),
+    Database(models::Error),
 }
 
-impl From<editoast_models::project::Error> for ProjectError {
-    fn from(e: editoast_models::project::Error) -> Self {
+impl From<models::project::Error> for ProjectError {
+    fn from(e: models::project::Error) -> Self {
         match e {
-            editoast_models::project::Error::NotFound { project_id } => {
+            models::project::Error::NotFound { project_id } => {
                 ProjectError::NotFound { project_id }
             }
-            editoast_models::project::Error::Database(e) => ProjectError::Database(e),
+            models::project::Error::Database(e) => ProjectError::Database(e),
         }
     }
 }
@@ -117,10 +117,7 @@ pub struct ProjectWithStudyCount {
 }
 
 impl ProjectWithStudyCount {
-    async fn try_fetch(
-        conn: DbConnection,
-        project: Project,
-    ) -> Result<Self, editoast_models::Error> {
+    async fn try_fetch(conn: DbConnection, project: Project) -> Result<Self, models::Error> {
         let studies_count = project.studies_count(conn).await?;
         Ok(Self {
             project,

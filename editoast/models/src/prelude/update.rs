@@ -50,7 +50,7 @@ pub trait Save<K: Send>: Model {
     /// # Example
     ///
     /// ```no_run
-    /// # use editoast_models::prelude::*;
+    /// # use models::prelude::*;
     /// # use database::DbConnection;
     /// # #[derive(Debug, PartialEq, Eq, Hash)]
     /// # struct Document { title: String }
@@ -154,7 +154,7 @@ where
     /// that were not found.
     ///
     /// ```no_run
-    /// # use editoast_models::prelude::*;
+    /// # use models::prelude::*;
     /// # use database::DbConnection;
     /// # use std::collections::HashSet;
     /// # #[derive(Debug, PartialEq, Eq, Hash)]
@@ -208,7 +208,7 @@ where
     /// Just like [UpdateBatch::update_batch] but the returned models are paired with their key
     ///
     /// ```no_run
-    /// # use editoast_models::prelude::*;
+    /// # use models::prelude::*;
     /// # use database::DbConnection;
     /// # use std::collections::{BTreeMap, HashSet};
     /// # #[derive(Debug, PartialEq, Eq, Hash)]
@@ -265,7 +265,7 @@ where
     /// is the set of ids that were not found.
     ///
     /// ```no_run
-    /// # use editoast_models::prelude::*;
+    /// # use models::prelude::*;
     /// # use database::DbConnection;
     /// # use std::collections::HashSet;
     /// # #[derive(Debug, PartialEq, Eq, Hash)]
@@ -319,7 +319,7 @@ where
     /// Just like [UpdateBatch::update_batch_or_fail] but the returned models are paired with their key
     ///
     /// ```no_run
-    /// # use editoast_models::prelude::*;
+    /// # use models::prelude::*;
     /// # use database::DbConnection;
     /// # use std::collections::{BTreeMap, HashSet};
     /// # #[derive(Debug, PartialEq, Eq, Hash)]

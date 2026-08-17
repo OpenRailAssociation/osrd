@@ -10,11 +10,11 @@ use crate::views::timetable::simulation;
 use crate::views::timetable::simulation::SimulationResponseSuccess;
 use crate::views::timetable::simulation::train_simulation_ordered_batch;
 use authz::v2;
-use editoast_models::Infra;
-use editoast_models::LevelCrossingModel;
-use editoast_models::Timetable;
-use editoast_models::TrainSchedule;
-use editoast_models::train_schedule::OccurrenceId;
+use models::Infra;
+use models::LevelCrossingModel;
+use models::Timetable;
+use models::TrainSchedule;
+use models::train_schedule::OccurrenceId;
 
 use axum::Extension;
 use axum::extract::Json;
@@ -26,10 +26,10 @@ use core_client::pathfinding::TrackRange;
 use core_client::simulation::ReportTrain;
 use database::DbConnection;
 use editoast_derive::EditoastError;
-use editoast_models::TrainScheduleException;
-use editoast_models::prelude::*;
-use editoast_models::rolling_stock::RollingStock;
 use itertools::Itertools;
+use models::TrainScheduleException;
+use models::prelude::*;
+use models::rolling_stock::RollingStock;
 use schemas::TrainOccurrence;
 use schemas::infra::Direction;
 use schemas::infra::LevelCrossing;
@@ -63,7 +63,7 @@ enum LevelCrossingError {
     UnsupportedTimetableType,
     #[error(transparent)]
     #[editoast_error(status = 500)]
-    Database(#[from] editoast_models::Error),
+    Database(#[from] models::Error),
 }
 
 #[derive(Debug, Default, Clone, Serialize, Deserialize, ToSchema)]
@@ -583,7 +583,7 @@ mod tests {
             .await
             .expect("Failed to create level crossing");
 
-        let train = editoast_models::TrainSchedule::default()
+        let train = models::TrainSchedule::default()
             .into_changeset()
             .train_schedule_set_id(train_schedule_set.id)
             .rolling_stock_name(rolling_stock.name)

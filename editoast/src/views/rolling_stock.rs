@@ -17,18 +17,18 @@ use axum::response::IntoResponse;
 use database::DbConnection;
 use database::DbConnectionPoolV2;
 use editoast_derive::EditoastError;
-use editoast_models::Document;
-use editoast_models::RollingStockImage;
-use editoast_models::prelude::*;
-use editoast_models::rolling_stock;
-use editoast_models::rolling_stock::RollingStock;
-use editoast_models::rolling_stock::ScenarioReference;
-use editoast_models::rolling_stock_livery::RollingStockLivery;
 use image::DynamicImage;
 use image::GenericImage;
 use image::ImageBuffer;
 use image::ImageFormat;
 use image::ImageReader;
+use models::Document;
+use models::RollingStockImage;
+use models::prelude::*;
+use models::rolling_stock;
+use models::rolling_stock::RollingStock;
+use models::rolling_stock::ScenarioReference;
+use models::rolling_stock_livery::RollingStockLivery;
 use serde::Deserialize;
 use serde::Serialize;
 use strum::Display;
@@ -114,8 +114,8 @@ pub enum RollingStockError {
 
     #[error(transparent)]
     #[editoast_error(status = 500)]
-    #[from(editoast_models::Error, database::DatabaseError)]
-    Database(editoast_models::Error),
+    #[from(models::Error, database::DatabaseError)]
+    Database(models::Error),
 }
 
 #[derive(Debug, Error)]
@@ -671,8 +671,8 @@ async fn create_compound_image(
 
 #[cfg(test)]
 pub mod tests {
-    use editoast_models::rolling_stock::TrainMainCategory;
     use itertools::Itertools;
+    use models::rolling_stock::TrainMainCategory;
     use pretty_assertions::assert_eq;
     use serde_json::json;
     use uuid::Uuid;
@@ -689,7 +689,7 @@ pub mod tests {
     use crate::fixtures::simple_paced_train_changeset;
     use crate::views::test_app;
     use crate::views::test_app::TestApp;
-    use editoast_models::rolling_stock::RollingStock;
+    use models::rolling_stock::RollingStock;
 
     impl TestApp {
         fn rolling_stock_create_request(

@@ -4,11 +4,11 @@ use axum::extract::Path;
 use axum::extract::State;
 use axum::response::IntoResponse;
 use editoast_derive::EditoastError;
-use editoast_models::Timetable;
-use editoast_models::TrainScheduleLinking;
-use editoast_models::prelude::*;
-use editoast_models::train_schedule_linking::TrainScheduleLinkingChangeset;
 use itertools::Itertools;
+use models::Timetable;
+use models::TrainScheduleLinking;
+use models::prelude::*;
+use models::train_schedule_linking::TrainScheduleLinkingChangeset;
 use reqwest::StatusCode;
 use schemas::timetable_type::TimetableType;
 use serde::Deserialize;
@@ -119,13 +119,13 @@ enum LinkingError {
     #[error(transparent)]
     #[from(forward)]
     #[serde(skip)]
-    Database(editoast_models::Error),
+    Database(models::Error),
 }
 
-impl From<editoast_models::Error> for LinkingError {
-    fn from(err: editoast_models::Error) -> Self {
+impl From<models::Error> for LinkingError {
+    fn from(err: models::Error) -> Self {
         match &err {
-            editoast_models::Error::UniqueViolation {
+            models::Error::UniqueViolation {
                 constraint,
                 column: _,
                 value,
@@ -177,7 +177,7 @@ pub(in crate::views) async fn list(
     use database::tables::train_schedule_linking::dsl;
     use diesel::BoolExpressionMethods;
     use diesel::prelude::*;
-    use editoast_models::prelude::*;
+    use models::prelude::*;
 
     let conn = &mut db_pool.get().await?;
     Timetable::exists_or_fail(conn, timetable_id, || LinkingError::TimetableNotFound {
@@ -346,8 +346,8 @@ mod tests {
     use std::collections::HashSet;
 
     use authz::Role;
-    use editoast_models::prelude::Create;
-    use editoast_models::prelude::Model;
+    use models::prelude::Create;
+    use models::prelude::Model;
     use reqwest::StatusCode;
     use serde_json::json;
 

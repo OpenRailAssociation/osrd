@@ -6,9 +6,9 @@ use axum::Extension;
 use axum::extract::Json;
 use axum::extract::State;
 use editoast_derive::EditoastError;
-use editoast_models::Infra;
-use editoast_models::prelude::*;
 use itertools::Itertools;
+use models::Infra;
+use models::prelude::*;
 use profile_connection_scan::Connection;
 use schemas::timetable_type::TimetableType;
 use schemas::train_schedule::OperationalPointPartReference;
@@ -39,7 +39,7 @@ enum Error {
 
     #[error(transparent)]
     #[editoast_error(status = 500)]
-    Database(#[from] editoast_models::Error),
+    Database(#[from] models::Error),
 
     #[error("invalid input: {message}")]
     #[editoast_error(status = 400)]

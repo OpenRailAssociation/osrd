@@ -22,8 +22,8 @@ use crate::views::AuthorizationError;
 use crate::views::infra::InfraApiError;
 use crate::views::infra::InfraIdParam;
 use crate::views::params::List;
-use editoast_models::Infra;
-use editoast_models::prelude::*;
+use models::Infra;
+use models::prelude::*;
 
 #[derive(Debug, Display, Clone, Copy, Deserialize, ToSchema)]
 enum WaypointType {

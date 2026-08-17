@@ -15,9 +15,9 @@ use crate::error::Result;
 use crate::views::AuthorizationError;
 use crate::views::infra::InfraApiError;
 use crate::views::infra::InfraIdParam;
-use editoast_models::Infra;
-use editoast_models::TrackSectionModel;
-use editoast_models::prelude::*;
+use models::Infra;
+use models::TrackSectionModel;
+use models::prelude::*;
 
 #[derive(Debug, Error, EditoastError)]
 #[editoast_error(base_id = "infra:lines")]

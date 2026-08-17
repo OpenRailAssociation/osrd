@@ -10,7 +10,7 @@ use schemas::primitives::OSRDObject;
 use std::ops::DerefMut;
 
 use super::OperationError;
-use editoast_models::infra_objects::get_table;
+use models::infra_objects::get_table;
 
 pub async fn apply_create_operation<'r>(
     infra_object: &'r InfraObject,
@@ -36,8 +36,8 @@ pub async fn apply_create_operation<'r>(
 #[cfg(test)]
 pub mod tests {
     use database::DbConnection;
-    use editoast_models::Infra;
-    use editoast_models::prelude::*;
+    use models::Infra;
+    use models::prelude::*;
     use schemas::infra::BufferStop;
     use schemas::infra::Detector;
     use schemas::infra::Electrification;

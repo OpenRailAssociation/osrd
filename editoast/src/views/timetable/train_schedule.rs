@@ -25,15 +25,15 @@ use core_task::pathfinding_request_from_consist_constraints;
 use database::DbConnection;
 use database::DbConnectionPoolV2;
 use editoast_derive::EditoastError;
-use editoast_models::TrainScheduleException;
-use editoast_models::prelude::*;
-use editoast_models::round_trips::TrainScheduleRoundTrips;
-use editoast_models::train_schedule::BaseTrainOrOccurrenceId;
-use editoast_models::train_schedule::train_schedule_schema_from_model;
 use futures::StreamExt as _;
 use itertools::Either;
 use itertools::Itertools as _;
 use itertools::izip;
+use models::TrainScheduleException;
+use models::prelude::*;
+use models::round_trips::TrainScheduleRoundTrips;
+use models::train_schedule::BaseTrainOrOccurrenceId;
+use models::train_schedule::train_schedule_schema_from_model;
 use reqwest::StatusCode;
 use schemas::infra::OperationalPoint;
 use schemas::paced_train::TrainSchedule;
@@ -80,11 +80,11 @@ use crate::views::timetable::simulation::build_sim_schedule_items;
 use crate::views::timetable::simulation::train_simulation_ordered_batch;
 use crate::views::timetable::track_occupancy;
 use crate::views::timetable::track_occupancy::PathItemRelativeLocation;
-use editoast_models::Infra;
-use editoast_models::TrainScheduleSet;
-use editoast_models::rolling_stock::RollingStock;
-use editoast_models::train_schedule::OccurrenceId;
-use editoast_models::train_schedule::TrainScheduleChangeset;
+use models::Infra;
+use models::TrainScheduleSet;
+use models::rolling_stock::RollingStock;
+use models::train_schedule::OccurrenceId;
+use models::train_schedule::TrainScheduleChangeset;
 
 #[derive(Debug, Error, EditoastError, derive_more::From)]
 #[editoast_error(base_id = "train_schedule")]
@@ -125,8 +125,8 @@ enum TrainScheduleError {
 
     #[error(transparent)]
     #[editoast_error(status = 500)]
-    #[from(editoast_models::Error, database::DatabaseError)]
-    Database(editoast_models::Error),
+    #[from(models::Error, database::DatabaseError)]
+    Database(models::Error),
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
@@ -137,8 +137,8 @@ pub(in crate::views) struct TrainScheduleResponse {
     pub train_schedule: TrainSchedule,
 }
 
-impl From<editoast_models::TrainSchedule> for TrainScheduleResponse {
-    fn from(value: editoast_models::TrainSchedule) -> Self {
+impl From<models::TrainSchedule> for TrainScheduleResponse {
+    fn from(value: models::TrainSchedule) -> Self {
         Self {
             id: value.id,
             train_schedule_set_id: value.train_schedule_set_id,
@@ -171,7 +171,7 @@ pub(in crate::views) async fn get_by_id(
     let conn = &mut db_pool.get().await?;
 
     let train_schedule =
-        editoast_models::TrainSchedule::retrieve_or_fail(conn.clone(), train_schedule_id, || {
+        models::TrainSchedule::retrieve_or_fail(conn.clone(), train_schedule_id, || {
             TrainScheduleError::NotFound { train_schedule_id }
         })
         .await?;
@@ -203,12 +203,11 @@ pub(in crate::views) async fn update_train_schedule(
         .get()
         .await?
         .transaction(async move |tx| {
-            let train_schedule = editoast_models::TrainSchedule::retrieve_or_fail(
-                tx.clone(),
-                train_schedule_id,
-                || TrainScheduleError::NotFound { train_schedule_id },
-            )
-            .await?;
+            let train_schedule =
+                models::TrainSchedule::retrieve_or_fail(tx.clone(), train_schedule_id, || {
+                    TrainScheduleError::NotFound { train_schedule_id }
+                })
+                .await?;
 
             if !train_schedule.has_same_pace(train_schedule_base.clone().paced.as_ref()) {
                 TrainScheduleException::delete_exceptions_for_train_schedule(
@@ -253,7 +252,7 @@ pub(in crate::views) async fn delete(
     }): Json<TrainScheduleIds>,
 ) -> Result<impl IntoResponse> {
     let conn = &mut db_pool.get().await?;
-    editoast_models::TrainSchedule::delete_batch_or_fail(conn, train_schedule_ids, |count| {
+    models::TrainSchedule::delete_batch_or_fail(conn, train_schedule_ids, |count| {
         TrainScheduleError::BatchNotFound { count }
     })
     .await?;
@@ -372,8 +371,8 @@ pub(in crate::views) async fn simulation_summary(
 
     /////
     // Generate the train simulation inputs
-    let train_schedules: Vec<editoast_models::TrainSchedule> =
-        editoast_models::TrainSchedule::retrieve_batch_or_fail(
+    let train_schedules: Vec<models::TrainSchedule> =
+        models::TrainSchedule::retrieve_batch_or_fail(
             conn,
             train_schedule_ids.clone(),
             |missing| TrainScheduleError::BatchNotFound {
@@ -628,7 +627,7 @@ pub(in crate::views) async fn get_path(
     }
 
     let train_schedule =
-        editoast_models::TrainSchedule::retrieve_or_fail(conn.clone(), train_schedule_id, || {
+        models::TrainSchedule::retrieve_or_fail(conn.clone(), train_schedule_id, || {
             TrainScheduleError::NotFound { train_schedule_id }
         })
         .await?;
@@ -776,12 +775,11 @@ pub(in crate::views) async fn simulation(
     }
 
     // Retrieve train_schedule or fail
-    let train_schedule = editoast_models::TrainSchedule::retrieve_or_fail(
-        db_pool.get().await?,
-        train_schedule_id,
-        || TrainScheduleError::NotFound { train_schedule_id },
-    )
-    .await?;
+    let train_schedule =
+        models::TrainSchedule::retrieve_or_fail(db_pool.get().await?, train_schedule_id, || {
+            TrainScheduleError::NotFound { train_schedule_id }
+        })
+        .await?;
 
     let train_schedule = match exception_id {
         Some(exception_id) => {
@@ -911,12 +909,11 @@ pub(in crate::views) async fn etcs_braking_curves(
     }
 
     // Retrieve train schedule or fail
-    let train_schedule = editoast_models::TrainSchedule::retrieve_or_fail(
-        db_pool.get().await?,
-        train_schedule_id,
-        || TrainScheduleError::NotFound { train_schedule_id },
-    )
-    .await?;
+    let train_schedule =
+        models::TrainSchedule::retrieve_or_fail(db_pool.get().await?, train_schedule_id, || {
+            TrainScheduleError::NotFound { train_schedule_id }
+        })
+        .await?;
 
     let train_occurrence = match exception_id {
         Some(exception_id) => {
@@ -1076,14 +1073,12 @@ pub(in crate::views) async fn project_path(
 
     let conn = &mut db_pool.get().await?;
 
-    let train_schedules: Vec<editoast_models::TrainSchedule> =
-        editoast_models::TrainSchedule::retrieve_batch_or_fail(
-            conn,
-            train_schedule_ids,
-            |missing| TrainScheduleError::BatchNotFound {
+    let train_schedules: Vec<models::TrainSchedule> =
+        models::TrainSchedule::retrieve_batch_or_fail(conn, train_schedule_ids, |missing| {
+            TrainScheduleError::BatchNotFound {
                 count: missing.len(),
-            },
-        )
+            }
+        })
         .await?;
 
     let train_schedule_ids = train_schedules.iter().map(|t| t.id).collect::<Vec<_>>();
@@ -1206,14 +1201,12 @@ pub(in crate::views) async fn project_path_op(
 
     let conn = &mut db_pool.get().await?;
 
-    let train_schedules: Vec<editoast_models::TrainSchedule> =
-        editoast_models::TrainSchedule::retrieve_batch_or_fail(
-            conn,
-            train_ids.clone(),
-            |missing| TrainScheduleError::BatchNotFound {
+    let train_schedules: Vec<models::TrainSchedule> =
+        models::TrainSchedule::retrieve_batch_or_fail(conn, train_ids.clone(), |missing| {
+            TrainScheduleError::BatchNotFound {
                 count: missing.len(),
-            },
-        )
+            }
+        })
         .await?;
 
     let mut exceptions = TrainScheduleException::retrieve_exceptions_by_train_schedules(
@@ -1391,25 +1384,23 @@ pub(in crate::views) async fn occupancy_blocks(
 
     let conn = &mut db_pool.get().await?;
 
-    let train_schedules: Vec<_> = editoast_models::TrainSchedule::retrieve_batch_or_fail(
-        conn,
-        train_schedule_ids,
-        |missing| TrainScheduleError::BatchNotFound {
-            count: missing.len(),
-        },
-    )
-    .await?;
+    let train_schedules: Vec<_> =
+        models::TrainSchedule::retrieve_batch_or_fail(conn, train_schedule_ids, |missing| {
+            TrainScheduleError::BatchNotFound {
+                count: missing.len(),
+            }
+        })
+        .await?;
 
-    let mut exceptions =
-        editoast_models::TrainScheduleException::retrieve_exceptions_by_train_schedules(
-            conn,
-            timetable_id,
-            &train_schedules.iter().map(|t| t.id).collect::<Vec<_>>(),
-        )
-        .await?
-        .into_iter()
-        .map_into::<schemas::TrainScheduleException>()
-        .into_group_map_by(|e| e.train_schedule_id);
+    let mut exceptions = models::TrainScheduleException::retrieve_exceptions_by_train_schedules(
+        conn,
+        timetable_id,
+        &train_schedules.iter().map(|t| t.id).collect::<Vec<_>>(),
+    )
+    .await?
+    .into_iter()
+    .map_into::<schemas::TrainScheduleException>()
+    .into_group_map_by(|e| e.train_schedule_id);
 
     let simulation_contexts: Vec<SimulationContext> = train_schedules
         .iter()
@@ -1558,8 +1549,8 @@ pub(in crate::views) async fn track_occupancy(
 
     let conn = &mut db_pool.get().await?;
 
-    let train_schedules: Vec<editoast_models::TrainSchedule> =
-        editoast_models::TrainSchedule::retrieve_batch_or_fail(
+    let train_schedules: Vec<models::TrainSchedule> =
+        models::TrainSchedule::retrieve_batch_or_fail(
             conn,
             train_schedule_ids.clone(),
             |missing| TrainScheduleError::BatchNotFound {
@@ -1856,7 +1847,7 @@ pub(in crate::views) async fn move_train_schedules_to_another_train_schedule_set
     })
     .await?;
 
-    let train_schedules: Vec<_> = editoast_models::TrainSchedule::retrieve_batch_or_fail(
+    let train_schedules: Vec<_> = models::TrainSchedule::retrieve_batch_or_fail(
         &mut db_pool.get().await?,
         train_schedule_ids.clone(),
         |missing| TrainScheduleError::BatchNotFound {
@@ -1902,7 +1893,7 @@ pub(in crate::views) async fn move_train_schedules_to_another_train_schedule_set
     TrainScheduleRoundTrips::delete_batch(&mut db_pool.get().await?, to_break).await?;
 
     // Update the train_schedule_set_id of the paced trains
-    let _: (Vec<_>, _) = editoast_models::TrainSchedule::changeset()
+    let _: (Vec<_>, _) = models::TrainSchedule::changeset()
         .train_schedule_set_id(train_schedule_set_id)
         .update_batch(&mut db_pool.get().await?, train_schedule_ids)
         .await?;
@@ -1928,10 +1919,10 @@ mod tests {
     use core_client::simulation::ReportTrain;
     use core_client::simulation::SpeedLimitProperties;
     use database::DbConnectionPoolV2;
-    use editoast_models::TrainScheduleException;
+    use models::TrainScheduleException;
 
-    use editoast_models::rolling_stock::TrainMainCategory;
-    use editoast_models::timetable::Timetable;
+    use models::rolling_stock::TrainMainCategory;
+    use models::timetable::Timetable;
     use pretty_assertions::assert_eq;
     use rstest::rstest;
     use schemas::TrainScheduleExceptionChangeGroups;
@@ -1982,8 +1973,8 @@ mod tests {
     use crate::views::timetable::simulation::SummaryResponse;
     use crate::views::timetable::simulation_empty_response;
     use axum_test::TestResponse;
-    use editoast_models::train_schedule::OccurrenceId;
-    use editoast_models::train_schedule::TrainScheduleChangeset;
+    use models::train_schedule::OccurrenceId;
+    use models::train_schedule::TrainScheduleChangeset;
 
     pub fn new_op_with_main_code_and_local_track_name(
         id: &str,
@@ -2068,7 +2059,7 @@ mod tests {
         assert_eq!(response.len(), 1);
 
         let created_paced_train =
-            editoast_models::TrainSchedule::retrieve(pool.get_ok(), response.first().unwrap().id)
+            models::TrainSchedule::retrieve(pool.get_ok(), response.first().unwrap().id)
                 .await
                 .expect("Failed to retrieve updated paced train")
                 .expect("Updated paced train not found");
@@ -2185,11 +2176,10 @@ mod tests {
         .await
         .assert_status_no_content();
 
-        let updated_paced_train =
-            editoast_models::TrainSchedule::retrieve(pool.get_ok(), paced_train.id)
-                .await
-                .expect("Failed to retrieve updated paced train")
-                .expect("Updated paced train not found");
+        let updated_paced_train = models::TrainSchedule::retrieve(pool.get_ok(), paced_train.id)
+            .await
+            .expect("Failed to retrieve updated paced train")
+            .expect("Updated paced train not found");
 
         assert_eq!(
             paced_train_base,
@@ -2212,7 +2202,7 @@ mod tests {
             .await
             .assert_status_no_content();
 
-        let exists = editoast_models::TrainSchedule::exists(&mut pool.get_ok(), train_schedule.id)
+        let exists = models::TrainSchedule::exists(&mut pool.get_ok(), train_schedule.id)
             .await
             .expect("Failed to retrieve train_schedule");
 
@@ -2256,7 +2246,7 @@ mod tests {
         app: TestApp,
         infra_id: i64,
         timetable: Timetable,
-        train_schedule: editoast_models::TrainSchedule,
+        train_schedule: models::TrainSchedule,
         exception: TrainScheduleException,
     }
 
@@ -2443,7 +2433,7 @@ mod tests {
             rolling_stock_name: "R2D2".into(),
             comfort: Comfort::AirConditioning,
         });
-        let exception = editoast_models::TrainScheduleException::changeset()
+        let exception = models::TrainScheduleException::changeset()
             .change_groups(change_group)
             .update(&mut app.db_pool().get_ok(), train_schedule.id)
             .await
@@ -3281,7 +3271,7 @@ mod tests {
             create_fast_rolling_stock(&mut db_pool.get_ok(), "simulation_rolling_stock").await;
         let (timetable, train_schedule_set) =
             create_timetable_with_train_schedule_set(&mut db_pool.get_ok()).await;
-        let train_schedule = editoast_models::TrainSchedule::default()
+        let train_schedule = models::TrainSchedule::default()
             .into_changeset()
             .train_schedule_set_id(train_schedule_set.id)
             .rolling_stock_name(rolling_stock.name)
@@ -3415,10 +3405,9 @@ mod tests {
             .await
             .assert_status_no_content();
 
-        let train_schedule =
-            editoast_models::TrainSchedule::retrieve(db_pool.get_ok(), train_schedule.id)
-                .await
-                .expect("Failed to retrieve train schedule");
+        let train_schedule = models::TrainSchedule::retrieve(db_pool.get_ok(), train_schedule.id)
+            .await
+            .expect("Failed to retrieve train schedule");
         assert_eq!(
             train_schedule.unwrap().train_schedule_set_id,
             train_schedule_set_to_move.id

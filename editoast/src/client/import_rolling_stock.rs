@@ -7,9 +7,9 @@ use clap::Args;
 use colored::Colorize as _;
 use database::DbConnectionPoolV2;
 
-use editoast_models::TowedRollingStock;
-use editoast_models::prelude::*;
-use editoast_models::rolling_stock::RollingStock;
+use models::TowedRollingStock;
+use models::prelude::*;
+use models::rolling_stock::RollingStock;
 
 #[derive(Args, Clone, Debug)]
 #[command(about, long_about = "Import a rolling stock given a json file")]

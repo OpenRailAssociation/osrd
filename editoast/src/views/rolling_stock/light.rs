@@ -6,11 +6,11 @@ use common::units;
 use common::units::quantities::Length;
 use database::DbConnection;
 use database::DbConnectionPoolV2;
-use editoast_models::prelude::*;
-use editoast_models::rolling_stock::RollingStock;
-use editoast_models::rolling_stock::TrainMainCategory;
-use editoast_models::rolling_stock_livery::RollingStockLivery;
 use itertools::Itertools as _;
+use models::prelude::*;
+use models::rolling_stock::RollingStock;
+use models::rolling_stock::TrainMainCategory;
+use models::rolling_stock_livery::RollingStockLivery;
 use schemas::rolling_stock::EffortCurves;
 use schemas::rolling_stock::LoadingGaugeType;
 use schemas::rolling_stock::ModeEffortCurves;
@@ -274,7 +274,7 @@ mod tests {
     use pretty_assertions::assert_eq;
     use std::collections::HashSet;
 
-    use editoast_models::prelude::*;
+    use models::prelude::*;
     use schemas::RollingStock;
 
     use super::LightRollingStockWithLiveries;
@@ -357,7 +357,7 @@ mod tests {
             .zip(std::iter::repeat(&db_pool).map(|p| p.get()))
             .map(|(rs_id, conn)| async move {
                 let mut conn = conn.await?;
-                let rs = Changeset::<editoast_models::rolling_stock::RollingStock>::from(
+                let rs = Changeset::<models::rolling_stock::RollingStock>::from(
                     RollingStock::from(schemas::fixtures::simple_rolling_stock()),
                 )
                 .name(format!(

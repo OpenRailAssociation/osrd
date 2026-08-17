@@ -17,9 +17,9 @@ use crate::AppState;
 use crate::authentication;
 use crate::error::Result;
 use crate::views::AuthorizationError;
-use editoast_models::Infra;
-use editoast_models::infra::ObjectQueryable;
-use editoast_models::prelude::*;
+use models::Infra;
+use models::infra::ObjectQueryable;
+use models::prelude::*;
 
 #[derive(Debug, Error, EditoastError)]
 #[editoast_error(base_id = "infra:objects")]

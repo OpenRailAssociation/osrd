@@ -39,8 +39,8 @@ use crate::views::AuthorizationError;
 use crate::views::path::PathfindingError;
 use crate::views::path::operational_point_cache::OperationalPointCache;
 use crate::views::timetable::PhysicsConsistParameters;
-use editoast_models::Infra;
-use editoast_models::prelude::*;
+use models::Infra;
+use models::prelude::*;
 use serde_with::DefaultOnNull;
 use serde_with::serde_as;
 
