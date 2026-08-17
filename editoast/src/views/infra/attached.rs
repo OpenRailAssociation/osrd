@@ -84,7 +84,7 @@ pub(in crate::views) async fn attached(
 
     if let authentication::State::Authenticated { user, .. } = &authn_state {
         v2::infra_privileges(*user, authz::Infra(infra_id))
-            .map(async |privileges| privileges.contains(&authz::InfraPrivilege::CanRestrictedRead))
+            .map(async |privileges| privileges.contains(&authz::InfraPrivilege::CanRead))
             .ok_or(AuthorizationError::Forbidden)
             .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
             .await??;
