@@ -841,6 +841,8 @@ internal fun decelerationCurve(
     return curve
 }
 
+data class Decision(val trainState: TrainState, val constraint: Constraint?)
+
 fun step(
     context: EnvelopeSimContext,
     constraints: Iterable<Constraint>,
@@ -852,10 +854,10 @@ fun step(
     val mergedState =
         constraints
             .asSequence()
-            .flatMap {
-                val nextStates = it.enactDecision(context, currentState)
+            .flatMap { constraint ->
+                val nextStates = constraint.enactDecision(context, currentState)
 
-                tracer?.decisions(it, nextStates)
+                tracer?.decisions(constraint, nextStates)
 
                 for (nextState in nextStates) {
                     check(currentState.position <= nextState.position) {
@@ -869,11 +871,24 @@ fun step(
                     }
                 }
 
-                nextStates
+                nextStates.asSequence().map { trainState -> Decision(trainState, constraint) }
             }
-            .reduceOrNull { mostConstrained, decision ->
-                decision.merge(currentState, mostConstrained)
-            } ?: return currentState.accelerate(context)
+            .reduceOrNull { a, b ->
+                val mergedState = b.trainState.merge(currentState, a.trainState)
+
+                check(currentState.position <= mergedState.position) {
+                    "merge between ${a.constraint} and ${b.constraint} made train go backwards"
+                }
+                check(currentState.time < mergedState.time) {
+                    "merge between ${a.constraint} and ${b.constraint} didn't advance time"
+                }
+                check(mergedState.time - currentState.time <= context.timeStep.seconds) {
+                    "merge between ${a.constraint} and ${b.constraint} advanced too much time"
+                }
+
+                Decision(mergedState, null)
+            }
+            ?.trainState ?: return currentState.accelerate(context)
 
     tracer?.mergedState(mergedState)
 
