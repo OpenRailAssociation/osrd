@@ -8,7 +8,6 @@ import { useTimetableContext } from 'applications/operationalStudies/hooks/useTi
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type { TrainScheduleWithDetails } from 'modules/trainSchedule/types';
 import { setFailure } from 'reducers/main';
-import type { TrainScheduleToEditData } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 
@@ -24,7 +23,6 @@ type TimetableProps = {
   handleDeleteTrainSchedules: () => void;
   isSelectMode: boolean;
   setIsSelectMode: (isSelectMode: boolean) => void;
-  trainScheduleToEditData?: TrainScheduleToEditData;
   trainSchedulesWithDetails: TrainScheduleWithDetails[];
   refreshNge: () => Promise<void>;
   selectedTrainScheduleIds: number[];
@@ -36,7 +34,6 @@ const Timetable = ({
   handleDeleteTrainSchedules,
   isSelectMode,
   setIsSelectMode,
-  trainScheduleToEditData,
   trainSchedulesWithDetails,
   refreshNge,
   selectedTrainScheduleIds,
@@ -160,7 +157,6 @@ const Timetable = ({
         />
         <TrainList
           setSelectedTrainScheduleIds={setSelectedTrainScheduleIds}
-          trainScheduleToEditData={trainScheduleToEditData}
           trainSchedulesWithDetails={filteredTrainSchedules}
           selectedTrainScheduleIds={selectedTrainScheduleIds}
           projectingOnSimulatedPathException={projectingOnSimulatedPathException}
