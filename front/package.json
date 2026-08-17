@@ -39,7 +39,7 @@
     "@turf/boolean-point-in-polygon": "^7.3.0",
     "@turf/center": "^7.4.0",
     "@turf/combine": "^7.4.0",
-    "@turf/destination": "^7.3.5",
+    "@turf/destination": "^7.4.0",
     "@turf/distance": "^7.4.0",
     "@turf/explode": "^7.4.0",
     "@turf/helpers": "^7.3.5",
