@@ -75,15 +75,25 @@ export default function TrainServiceForm({
   const extraOccurrences =
     train.paced?.exceptions?.filter((exp) => exp.occurrence_index === undefined) ?? [];
 
-  const serviceIntervalError = useMemo(
-    () => (isPacedTrain ? computeServiceTimingError(fields.service_interval) : null),
-    [isPacedTrain, fields.service_interval]
-  );
+  const intervalHasChanged = fields.service_interval !== fieldsFromTrain.service_interval;
+  const windowHasChanged = fields.service_window !== fieldsFromTrain.service_window;
 
-  const serviceWindowError = useMemo(
-    () => (isPacedTrain ? computeServiceTimingError(fields.service_window) : null),
-    [isPacedTrain, fields.service_window]
-  );
+  const intervalOutsideWindowError =
+    fields.service_interval &&
+    fields.service_window &&
+    fields.service_interval > fields.service_window
+      ? ('intervalOutsideWindow' as const)
+      : null;
+
+  const serviceIntervalError = useMemo(() => {
+    if (!isPacedTrain || !intervalHasChanged) return null;
+    return computeServiceTimingError(fields.service_interval) ?? intervalOutsideWindowError;
+  }, [isPacedTrain, fields.service_interval, intervalHasChanged, intervalOutsideWindowError]);
+
+  const serviceWindowError = useMemo(() => {
+    if (!isPacedTrain || !windowHasChanged) return null;
+    return computeServiceTimingError(fields.service_window) ?? intervalOutsideWindowError;
+  }, [isPacedTrain, fields.service_window, intervalHasChanged, intervalOutsideWindowError]);
 
   const erroneousFields = useMemo(
     () =>
