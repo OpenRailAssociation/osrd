@@ -33,7 +33,7 @@
     "lint:fix": "oxlint . --fix && oxfmt . --write"
   },
   "dependencies": {
-    "@turf/along": "^7.3.5",
+    "@turf/along": "^7.4.0",
     "@turf/bbox": "^7.4.0",
     "@turf/bbox-clip": "^7.4.0",
     "@turf/bearing": "^7.4.0",
