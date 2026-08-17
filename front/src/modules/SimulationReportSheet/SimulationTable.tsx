@@ -1,9 +1,10 @@
 import { Fragment } from 'react';
 
 import { Table, TR, TH, TD } from '@ag-media/react-pdf-table';
-import { Link, Text, View } from '@react-pdf/renderer';
+import { Image, Link, Text, View } from '@react-pdf/renderer';
 import { useTranslation } from 'react-i18next';
 
+import iconTurnaround from 'assets/simulationReportSheet/turnaround-16@4x.png';
 import { mmToKm } from 'utils/physics';
 
 import styles from './styles/SimulationReportStyleSheet';
@@ -116,7 +117,14 @@ const SimulationTable = ({
                   <TD style={styles.simulation.stopColumn}>{String(row.endTime)}</TD>
                 </View>
                 <View style={styles.simulation.passageWidth}>
-                  <TD style={row.stylesByColumn.passageStop}>{String(row.passageStop)}</TD>
+                  <View style={styles.simulation.passageStopContainer}>
+                    {row.isBackTrack && (
+                      <View style={styles.simulation.backtrackIconContainer}>
+                        <Image src={iconTurnaround} style={styles.simulation.backtrackIcon} />
+                      </View>
+                    )}
+                    <TD style={row.stylesByColumn.passageStop}>{String(row.passageStop)}</TD>
+                  </View>
                 </View>
                 <View style={styles.simulation.startWidth}>
                   <TD style={styles.simulation.stopColumn}>{String(row.startTime)}</TD>

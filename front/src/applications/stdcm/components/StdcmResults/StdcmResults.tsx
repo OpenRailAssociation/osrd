@@ -129,6 +129,7 @@ const StdcmResults = ({
       simulation: outputs.results.simulation,
       simulationPathSteps: outputs.results.simulationPathSteps,
       departureTime: new Date(outputs.results.departure_time),
+      pathfindingResult: outputs.results.pathfinding_result,
     }).filter(({ weight, stopType }) => stopType || (weight && weight >= MINIMUM_OP_WEIGHT));
   }, [outputs]);
 

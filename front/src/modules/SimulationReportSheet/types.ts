@@ -48,6 +48,7 @@ export type SimulationTableRow = {
   referenceEngine: string;
   stopTypeLabel?: string;
   stopType?: string;
+  isBackTrack?: boolean;
   rowStyle: Style;
   consistChanges?: {
     currentConsist: {

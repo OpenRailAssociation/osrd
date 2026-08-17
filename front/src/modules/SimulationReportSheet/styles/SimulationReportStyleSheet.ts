@@ -613,6 +613,26 @@ const styles = {
       marginLeft: '8',
       marginVertical: '1',
     },
+    passageStopContainer: {
+      position: 'relative',
+      justifyContent: 'center',
+    },
+    backtrackIconContainer: {
+      position: 'absolute',
+      top: '1',
+      left: '-14',
+      width: '48',
+      height: '24',
+      borderRadius: '12',
+      backgroundColor: '#000000',
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingLeft: '6',
+    },
+    backtrackIcon: {
+      width: '16',
+      height: '16',
+    },
     td: {
       fontSize: '14',
       fontWeight: 'normal',
