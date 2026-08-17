@@ -116,13 +116,12 @@ pub(in crate::views) async fn pathfinding_view(
     })
     .await?;
 
-    if let authentication::State::Authenticated { user, .. } = &authn_state {
-        v2::infra_privileges(*user, authz::Infra(infra_id))
-            .map(async |privileges| privileges.contains(&authz::InfraPrivilege::CanRestrictedRead))
-            .ok_or(AuthorizationError::Forbidden)
-            .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
-            .await??;
-    }
+    v2::infra_privilege_check(
+        authz::Infra(infra_id),
+        authz::InfraPrivilege::CanRestrictedRead,
+    )
+    .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
+    .await?;
 
     let infra_cache = InfraCache::get_or_load(
         &mut db_pool.get().await?,

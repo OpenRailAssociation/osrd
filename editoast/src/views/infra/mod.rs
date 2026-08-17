@@ -256,13 +256,9 @@ pub(in crate::views) async fn get(
     })
     .await?;
 
-    if let authentication::State::Authenticated { user, .. } = &authn_state {
-        v2::infra_privileges(*user, authz::Infra(infra_id))
-            .map(async |privileges| privileges.contains(&authz::InfraPrivilege::CanRestrictedRead))
-            .ok_or(AuthorizationError::Forbidden)
-            .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
-            .await??;
-    }
+    v2::infra_privilege_check(authz::Infra(infra_id), InfraPrivilege::CanRestrictedRead)
+        .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
+        .await?;
 
     Ok(Json(infra))
 }
@@ -352,13 +348,9 @@ pub(in crate::views) async fn clone(
     })
     .await?;
 
-    if let authentication::State::Authenticated { user, .. } = &authn_state {
-        v2::infra_privileges(*user, authz::Infra(infra_id))
-            .map(async |privileges| privileges.contains(&authz::InfraPrivilege::CanRead))
-            .ok_or(AuthorizationError::Forbidden)
-            .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
-            .await??;
-    }
+    v2::infra_privilege_check(authz::Infra(infra_id), InfraPrivilege::CanRead)
+        .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
+        .await?;
 
     let cloned_infra = infra.clone(&mut conn, name).await?;
 
@@ -403,13 +395,9 @@ pub(in crate::views) async fn delete(
     Extension(authn_state): Extension<authentication::State>,
     Path(InfraIdParam { infra_id }): Path<InfraIdParam>,
 ) -> Result<impl IntoResponse> {
-    if let authentication::State::Authenticated { user, .. } = &authn_state {
-        v2::infra_privileges(*user, authz::Infra(infra_id))
-            .map(async |privileges| privileges.contains(&authz::InfraPrivilege::CanDelete))
-            .ok_or(AuthorizationError::Forbidden)
-            .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
-            .await??;
-    }
+    v2::infra_privilege_check(authz::Infra(infra_id), InfraPrivilege::CanDelete)
+        .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
+        .await?;
 
     if Infra::fast_delete_static(db_pool.get().await?, infra_id).await? {
         Ok(StatusCode::NO_CONTENT)
@@ -480,13 +468,9 @@ pub(in crate::views) async fn bbox(
     .await?;
 
     // Check user privilege on infra
-    if let authentication::State::Authenticated { user, .. } = &authn_state {
-        v2::infra_privileges(*user, authz::Infra(infra_id))
-            .map(async |privileges| privileges.contains(&authz::InfraPrivilege::CanRestrictedRead))
-            .ok_or(AuthorizationError::Forbidden)
-            .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
-            .await??;
-    }
+    v2::infra_privilege_check(authz::Infra(infra_id), InfraPrivilege::CanRestrictedRead)
+        .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
+        .await?;
 
     Ok(Json(infra.bbox(&mut db_pool.get().await?).await?))
 }
@@ -516,13 +500,9 @@ pub(in crate::views) async fn get_switch_types(
     })
     .await?;
 
-    if let authentication::State::Authenticated { user, .. } = &authn_state {
-        v2::infra_privileges(*user, authz::Infra(infra_id))
-            .map(async |privileges| privileges.contains(&authz::InfraPrivilege::CanRestrictedRead))
-            .ok_or(AuthorizationError::Forbidden)
-            .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
-            .await??;
-    }
+    v2::infra_privilege_check(authz::Infra(infra_id), InfraPrivilege::CanRestrictedRead)
+        .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
+        .await?;
 
     let selection_settings =
         SelectionSettings::new().filter(move || SwitchTypeModel::INFRA_ID.eq(infra.id));
@@ -569,13 +549,9 @@ pub(in crate::views) async fn get_speed_limit_tags(
     })
     .await?;
 
-    if let authentication::State::Authenticated { user, .. } = &authn_state {
-        v2::infra_privileges(*user, authz::Infra(infra_id))
-            .map(async |privileges| privileges.contains(&authz::InfraPrivilege::CanRestrictedRead))
-            .ok_or(AuthorizationError::Forbidden)
-            .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
-            .await??;
-    }
+    v2::infra_privilege_check(authz::Infra(infra_id), InfraPrivilege::CanRestrictedRead)
+        .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
+        .await?;
 
     let infra_tags = infra.get_speed_limit_tags(&mut conn).await?;
     let union_tags: HashSet<String> = infra_tags
@@ -619,13 +595,9 @@ pub(in crate::views) async fn get_voltages(
     })
     .await?;
 
-    if let authentication::State::Authenticated { user, .. } = &authn_state {
-        v2::infra_privileges(*user, authz::Infra(infra_id))
-            .map(async |privileges| privileges.contains(&authz::InfraPrivilege::CanRestrictedRead))
-            .ok_or(AuthorizationError::Forbidden)
-            .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
-            .await??;
-    }
+    v2::infra_privilege_check(authz::Infra(infra_id), InfraPrivilege::CanRestrictedRead)
+        .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
+        .await?;
 
     let voltages = infra
         .get_voltages(&mut db_pool.get().await?, include_rolling_stock_modes)
@@ -679,13 +651,9 @@ pub(in crate::views) async fn lock(
         db_pool, openfga, ..
     }): State<AppState>,
 ) -> Result<impl IntoResponse> {
-    if let authentication::State::Authenticated { user, .. } = &authn_state {
-        v2::infra_privileges(*user, authz::Infra(infra_id))
-            .map(async |privileges| privileges.contains(&authz::InfraPrivilege::CanWrite))
-            .ok_or(AuthorizationError::Forbidden)
-            .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
-            .await??;
-    }
+    v2::infra_privilege_check(authz::Infra(infra_id), InfraPrivilege::CanWrite)
+        .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
+        .await?;
 
     set_locked(db_pool.get().await?, infra_id, true).await?;
     Ok(StatusCode::NO_CONTENT)
@@ -709,13 +677,9 @@ pub(in crate::views) async fn unlock(
         db_pool, openfga, ..
     }): State<AppState>,
 ) -> Result<impl IntoResponse> {
-    if let authentication::State::Authenticated { user, .. } = &authn_state {
-        v2::infra_privileges(*user, authz::Infra(infra_id))
-            .map(async |privileges| privileges.contains(&authz::InfraPrivilege::CanWrite))
-            .ok_or(AuthorizationError::Forbidden)
-            .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
-            .await??;
-    }
+    v2::infra_privilege_check(authz::Infra(infra_id), InfraPrivilege::CanWrite)
+        .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
+        .await?;
 
     set_locked(db_pool.get().await?, infra_id, false).await?;
     Ok(StatusCode::NO_CONTENT)
@@ -790,13 +754,9 @@ pub(in crate::views) async fn match_operational_points(
         operational_point_references,
     }): Json<MatchOperationalPointsForm>,
 ) -> Result<Json<MatchOperationalPointsResponse>> {
-    if let authentication::State::Authenticated { user, .. } = &authn_state {
-        v2::infra_privileges(*user, authz::Infra(infra_id))
-            .map(async |privileges| privileges.contains(&authz::InfraPrivilege::CanRestrictedRead))
-            .ok_or(AuthorizationError::Forbidden)
-            .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
-            .await??;
-    }
+    v2::infra_privilege_check(authz::Infra(infra_id), InfraPrivilege::CanRestrictedRead)
+        .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
+        .await?;
     let mut conn = db_pool.get().await?;
     let op_cache = OperationalPointCache::load_from_operational_points(
         conn.clone(),

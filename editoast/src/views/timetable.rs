@@ -299,13 +299,12 @@ pub(in crate::views) async fn requirements(
         electrical_profile_set_id,
     }): Query<ElectricalProfileSetIdQueryParam>,
 ) -> Result<Json<TrainRequirementsPage>> {
-    if let authentication::State::Authenticated { user, .. } = &authn_state {
-        v2::infra_privileges(*user, authz::Infra(infra_id))
-            .map(async |privileges| privileges.contains(&authz::InfraPrivilege::CanRestrictedRead))
-            .ok_or(AuthorizationError::Forbidden)
-            .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
-            .await??;
-    }
+    v2::infra_privilege_check(
+        authz::Infra(infra_id),
+        authz::InfraPrivilege::CanRestrictedRead,
+    )
+    .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
+    .await?;
 
     let conn = &mut db_pool.get().await?;
 
@@ -485,13 +484,12 @@ pub(in crate::views) async fn get_local_track_names(
         infra_id,
     }): Json<LocalTrackNamesForm>,
 ) -> Result<Json<HashMap<NonBlankString, HashSet<NonBlankString>>>> {
-    if let authentication::State::Authenticated { user, .. } = &authn_state {
-        v2::infra_privileges(*user, authz::Infra(infra_id))
-            .map(async |privileges| privileges.contains(&authz::InfraPrivilege::CanRestrictedRead))
-            .ok_or(AuthorizationError::Forbidden)
-            .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
-            .await??;
-    }
+    v2::infra_privilege_check(
+        authz::Infra(infra_id),
+        authz::InfraPrivilege::CanRestrictedRead,
+    )
+    .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
+    .await?;
 
     timeout(std::time::Duration::from_secs(240), async move {
         let conn = &mut db_pool.get().await?;

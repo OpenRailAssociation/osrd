@@ -100,13 +100,12 @@ pub(in crate::views) async fn post(
     let conn = &mut db_pool.get().await?;
     let infra_version = retrieve_infra_version(conn, infra_id).await?;
 
-    if let authentication::State::Authenticated { user, .. } = &authn_state {
-        v2::infra_privileges(*user, authz::Infra(infra_id))
-            .map(async |privileges| privileges.contains(&authz::InfraPrivilege::CanRestrictedRead))
-            .ok_or(AuthorizationError::Forbidden)
-            .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
-            .await??;
-    }
+    v2::infra_privilege_check(
+        authz::Infra(infra_id),
+        authz::InfraPrivilege::CanRestrictedRead,
+    )
+    .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
+    .await?;
 
     use core_task::Task as _;
     let path_properties = PathPropertiesRequest {
