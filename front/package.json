@@ -30,7 +30,7 @@
     "@sdziadkowiec/react-datasheet-grid": "^4.12.3",
     "@tanstack/react-table": "^8.21.3",
     "@tanstack/react-virtual": "^3.14.9",
-    "@turf/along": "^7.3.5",
+    "@turf/along": "^7.4.0",
     "@turf/bbox": "^7.4.0",
     "@turf/bbox-clip": "^7.4.0",
     "@turf/bearing": "^7.4.0",
