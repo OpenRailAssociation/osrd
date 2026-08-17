@@ -58,21 +58,6 @@ export const timeToLocaleString = (time: StartTime, locale: Intl.Locale): string
   time instanceof Duration ? durationToElapsedString(time, true) : time.toLocaleTimeString(locale);
 
 /**
- * Converts a time-of-day (hours/minutes, no date) into the equivalent offset in
- * milliseconds since midnight.
- * @param hours - The hour (0-23).
- * @param minutes - The minute (0-59).
- * @returns The equivalent time in milliseconds since midnight.
- */
-export const timeToMsSinceMidnight = ({
-  hours,
-  minutes,
-}: {
-  hours: number;
-  minutes: number;
-}): number => (hours * 60 + minutes) * 60 * 1000;
-
-/**
  * Format a start time to a string rounded to the nearest minute: a locale-aware clock
  * time for a Date (calendar timetable), or an "H:mm" elapsed time for a Duration
  * (offset from the start of an hourly timetable, which has no locale/calendar meaning).

@@ -10,7 +10,7 @@ import {
   getSearchJourneyStartTime,
   getSearchJourneyTimetableIds,
 } from 'reducers/searchJourney/selectors';
-import { timeToMsSinceMidnight } from 'utils/date';
+import { Duration } from 'utils/duration';
 
 export const SEARCH_JOURNEY_REQUEST_STATUS = Object.freeze({
   idle: 'IDLE',
@@ -70,7 +70,7 @@ export default function useSearchJourney() {
             secondary_code: destination.secondaryCode,
           },
         },
-        start_ms: timeToMsSinceMidnight(startTime),
+        start_ms: new Duration(startTime).ms,
         start_tolerance: START_TOLERANCE_MS,
         transfer_ms: TRANSFER_MS,
       },
