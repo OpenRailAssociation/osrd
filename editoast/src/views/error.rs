@@ -18,7 +18,9 @@ use utoipa::openapi::schema::SchemaType;
 /// Describes a view error and provides the necessary information to build the API response
 ///
 /// Not meant to be implemented directly. Use the `derive(ViewError)` proc-macro instead.
-pub(crate) trait ViewError: std::error::Error + utoipa::IntoResponses + Sized {
+pub(in crate::views) trait ViewError:
+    std::error::Error + utoipa::IntoResponses + Sized
+{
     fn responses() -> Vec<OpenApiResponse>;
     fn label(&self) -> &'static str;
     fn status(&self) -> http::StatusCode;
@@ -65,12 +67,12 @@ pub(crate) trait ViewError: std::error::Error + utoipa::IntoResponses + Sized {
 
 #[derive(Debug, serde::Serialize)]
 #[cfg_attr(test, derive(PartialEq, Eq))]
-pub(crate) struct EditoastError {
-    pub(crate) r#type: String,
+pub(in crate::views) struct EditoastError {
+    pub(in crate::views) r#type: String,
     #[serde(with = "crate::error::StatusCodeRemoteDef")]
-    pub(crate) status: http::StatusCode,
-    pub(crate) message: String,
-    pub(crate) context: HashMap<String, serde_json::Value>,
+    pub(in crate::views) status: http::StatusCode,
+    pub(in crate::views) message: String,
+    pub(in crate::views) context: HashMap<String, serde_json::Value>,
 }
 
 impl<T: ViewError> From<T> for EditoastError {
@@ -90,17 +92,17 @@ impl axum::response::IntoResponse for EditoastError {
     }
 }
 
-pub(crate) struct OpenApiResponse {
-    pub(crate) label: &'static str,
-    pub(crate) sub_label: Option<&'static str>,
-    pub(crate) status: http::StatusCode,
-    pub(crate) message_template: Option<&'static str>,
-    pub(crate) context: Vec<ContextEntry>,
+pub(in crate::views) struct OpenApiResponse {
+    pub(in crate::views) label: &'static str,
+    pub(in crate::views) sub_label: Option<&'static str>,
+    pub(in crate::views) status: http::StatusCode,
+    pub(in crate::views) message_template: Option<&'static str>,
+    pub(in crate::views) context: Vec<ContextEntry>,
 }
 
-pub(crate) struct ContextEntry {
-    pub(crate) key: &'static str,
-    pub(crate) schema: RefOr<Schema>,
+pub(in crate::views) struct ContextEntry {
+    pub(in crate::views) key: &'static str,
+    pub(in crate::views) schema: RefOr<Schema>,
 }
 
 impl OpenApiResponse {
