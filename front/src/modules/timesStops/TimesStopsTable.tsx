@@ -339,7 +339,7 @@ const TimesStopsTable = ({
         {...info}
         referenceDate={getDepartureReferenceDate(row, startTime)}
         prefillValue={row.computedDeparture}
-        clearButtonTitle={t('clearCellTitle')}
+        clearButtonTitle={t('clearRequestedDepartureTime')}
         onEnterKeyDown={() => focusCellBelow(info.row.index, 'requestedDeparture')}
         onTabKeyDown={(direction) =>
           focusRequestedCellOnTab(info.row.index, 'requestedDeparture', direction)
@@ -382,7 +382,7 @@ const TimesStopsTable = ({
   const returnStopDurationCell = (info: CellContext<TimesStopsRowNew, Duration | null>) => (
     <DurationCell
       ref={registerTimeCellRef(info.row.index, 'stopDuration')}
-      clearButtonTitle={t('clearCellTitle')}
+      clearButtonTitle={t('clearStopDuration')}
       {...info}
       onCommit={(seconds, propagationMode) =>
         info.table.options.meta!.onStopDurationChange(info.row.original, seconds, propagationMode)
@@ -466,7 +466,7 @@ const TimesStopsTable = ({
         {...info}
         referenceDate={getArrivalReferenceDate(row, allRows, startTime)}
         prefillValue={row.computedArrival}
-        clearButtonTitle={t('clearCellTitle')}
+        clearButtonTitle={t('clearRequestedArrivalTime')}
         onEnterKeyDown={() => focusCellBelow(info.row.index, 'requestedArrival')}
         onTabKeyDown={(direction) =>
           focusRequestedCellOnTab(info.row.index, 'requestedArrival', direction)
