@@ -15,8 +15,8 @@ use std::collections::HashSet;
 use tracing::error;
 
 use crate::error::Result;
-use editoast_models::OperationalPointModel;
-use editoast_models::TrackSectionModel;
+use models::OperationalPointModel;
+use models::TrackSectionModel;
 
 use super::pathfinding::PathfindingFailure;
 
@@ -395,11 +395,7 @@ impl OperationalPointCache {
 /// Collect the ids of the operational points from the path items
 fn collect_path_item_ids(
     operational_points: &[OperationalPointReference],
-) -> (
-    Vec<editoast_models::infra_objects::Domestic>,
-    Vec<u32>,
-    Vec<String>,
-) {
+) -> (Vec<models::infra_objects::Domestic>, Vec<u32>, Vec<String>) {
     let mut domestics: HashSet<(String, String, Option<String>)> = HashSet::new();
     let mut ops_uic: HashSet<u32> = HashSet::new();
     let mut ops_id: HashSet<String> = HashSet::new();
@@ -449,7 +445,7 @@ async fn retrieve_op_from_uic(
 async fn retrieve_op_from_domestics(
     conn: &mut DbConnection,
     infra_id: i64,
-    domestics: &[editoast_models::infra_objects::Domestic],
+    domestics: &[models::infra_objects::Domestic],
 ) -> Result<Vec<OperationalPointModel>> {
     OperationalPointModel::retrieve_from_domestics(conn, infra_id, domestics)
         .await

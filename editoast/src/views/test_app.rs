@@ -393,17 +393,11 @@ impl TestApp {
     fn authz_subject(&self, subject_id: i64) -> authz::Subject {
         let mut conn = self.app_state.db_pool.get_ok();
         block_on(async move {
-            use editoast_models::prelude::*;
+            use models::prelude::*;
 
-            if editoast_models::User::exists(&mut conn, subject_id)
-                .await
-                .unwrap()
-            {
+            if models::User::exists(&mut conn, subject_id).await.unwrap() {
                 authz::Subject::User(authz::User(subject_id))
-            } else if editoast_models::Group::exists(&mut conn, subject_id)
-                .await
-                .unwrap()
-            {
+            } else if models::Group::exists(&mut conn, subject_id).await.unwrap() {
                 authz::Subject::Group(authz::Group(subject_id))
             } else {
                 panic!("Subject with ID '{subject_id}' does not exist");
@@ -516,10 +510,9 @@ impl<'a> UserBuilder<'a> {
         }
 
         let authz::identity::UserInfo { identities, name } = info.clone();
-        let user =
-            editoast_models::User::register(app.db_pool().get().await.unwrap(), identities, name)
-                .await
-                .expect("User should be created successfully");
+        let user = models::User::register(app.db_pool().get().await.unwrap(), identities, name)
+            .await
+            .expect("User should be created successfully");
         if app.enable_authorization {
             v2::add_roles(authz::Subject::user(user.id), roles)
                 .authorize(&special_authorizers::Authorize(&app.app_state.openfga))
@@ -614,11 +607,10 @@ impl<'a> GroupBuilder<'a> {
             );
         }
 
-        let id =
-            editoast_models::Group::upsert(app.db_pool().get().await.unwrap(), info.name.clone())
-                .await
-                .expect("group should be created successfully")
-                .id;
+        let id = models::Group::upsert(app.db_pool().get().await.unwrap(), info.name.clone())
+            .await
+            .expect("group should be created successfully")
+            .id;
         let group = authz::identity::Group { id, info };
         if app.enable_authorization {
             let group_auth = authz::Group(group.id);

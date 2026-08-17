@@ -19,7 +19,7 @@ use crate::error::Result;
 use crate::views::pagination::PaginatedList;
 use crate::views::pagination::PaginationQueryParams;
 use crate::views::pagination::PaginationStats;
-use editoast_models::prelude::*;
+use models::prelude::*;
 
 #[derive(Debug, Error, EditoastError, derive_more::From)]
 #[editoast_error(base_id = "sub_categories")]
@@ -32,17 +32,15 @@ enum SubCategoryError {
     CodeAlreadyUsed { code: String },
     #[error(transparent)]
     #[editoast_error(status = 500)]
-    #[from(editoast_models::Error)]
-    Database(editoast_models::sub_category::Error),
+    #[from(models::Error)]
+    Database(models::sub_category::Error),
 }
 
-impl From<editoast_models::sub_category::Error> for SubCategoryError {
-    fn from(e: editoast_models::sub_category::Error) -> Self {
+impl From<models::sub_category::Error> for SubCategoryError {
+    fn from(e: models::sub_category::Error) -> Self {
         match e {
-            editoast_models::sub_category::Error::CodeAlreadyUsed { code } => {
-                Self::CodeAlreadyUsed { code }
-            }
-            editoast_models::sub_category::Error::Database(error) => Self::from(error),
+            models::sub_category::Error::CodeAlreadyUsed { code } => Self::CodeAlreadyUsed { code },
+            models::sub_category::Error::Database(error) => Self::from(error),
         }
     }
 }
@@ -70,11 +68,11 @@ pub(in crate::views) async fn get_sub_categories(
 ) -> Result<Json<SubCategoryPage>> {
     let mut conn = db_pool.get().await?;
 
-    let (sub_categories, stats) = editoast_models::SubCategory::list_paginated(
+    let (sub_categories, stats) = models::SubCategory::list_paginated(
         &mut conn,
         pagination
             .into_selection_settings()
-            .order_by(move || editoast_models::SubCategory::ID.asc()),
+            .order_by(move || models::SubCategory::ID.asc()),
     )
     .await?;
 
@@ -99,10 +97,9 @@ pub(in crate::views) async fn create_sub_categories(
 ) -> Result<Json<Vec<SubCategory>>> {
     let conn = &mut db_pool.get().await?;
 
-    let sub_categories: Vec<Changeset<editoast_models::SubCategory>> =
-        data.into_iter().map_into().collect();
+    let sub_categories: Vec<Changeset<models::SubCategory>> = data.into_iter().map_into().collect();
 
-    let sub_categories: Vec<_> = editoast_models::SubCategory::create_batch(conn, sub_categories)
+    let sub_categories: Vec<_> = models::SubCategory::create_batch(conn, sub_categories)
         .await
         .map_err(SubCategoryError::from)?;
 
@@ -145,25 +142,23 @@ async fn delete_sub_category_and_fallback_to_main(
     conn: &mut DbConnection,
     code: String,
 ) -> Result<()> {
-    let sub_category =
-        editoast_models::SubCategory::retrieve_or_fail(conn.clone(), code.clone(), || {
-            SubCategoryError::NotFound { code: code.clone() }
-        })
-        .await?;
+    let sub_category = models::SubCategory::retrieve_or_fail(conn.clone(), code.clone(), || {
+        SubCategoryError::NotFound { code: code.clone() }
+    })
+    .await?;
 
     let sub_category_code = Some(sub_category.code.clone());
-    let paced_trains_ids: Vec<i64> = editoast_models::TrainSchedule::list(
+    let paced_trains_ids: Vec<i64> = models::TrainSchedule::list(
         conn,
-        SelectionSettings::new().filter(move || {
-            editoast_models::TrainSchedule::SUB_CATEGORY.eq(sub_category_code.clone())
-        }),
+        SelectionSettings::new()
+            .filter(move || models::TrainSchedule::SUB_CATEGORY.eq(sub_category_code.clone())),
     )
     .await?
     .into_iter()
     .map(|paced_train| paced_train.id)
     .collect();
 
-    let _: (Vec<_>, _) = editoast_models::TrainSchedule::changeset()
+    let _: (Vec<_>, _) = models::TrainSchedule::changeset()
         .main_category(Some(sub_category.main_category.clone()))
         .sub_category(None)
         .update_batch(conn, paced_trains_ids)
@@ -175,7 +170,7 @@ async fn delete_sub_category_and_fallback_to_main(
 
 #[cfg(test)]
 pub mod tests {
-    use editoast_models::rolling_stock::TrainMainCategory;
+    use models::rolling_stock::TrainMainCategory;
     use pretty_assertions::assert_eq;
 
     use schemas::rolling_stock::SubCategory;
@@ -186,7 +181,7 @@ pub mod tests {
     use crate::fixtures::simple_sub_category;
     use crate::views::sub_categories::SubCategoryPage;
     use crate::views::test_app;
-    use editoast_models::prelude::*;
+    use models::prelude::*;
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn sub_category_post() {
@@ -218,26 +213,22 @@ pub mod tests {
             .json();
         let created_sub_category1 = response.first().unwrap();
 
-        let sub_category_1 = editoast_models::SubCategory::retrieve(
-            db_pool.get_ok(),
-            created_sub_category1.code.clone(),
-        )
-        .await
-        .expect("Failed to retrieve sub category")
-        .expect("Sub category not found")
-        .into();
+        let sub_category_1 =
+            models::SubCategory::retrieve(db_pool.get_ok(), created_sub_category1.code.clone())
+                .await
+                .expect("Failed to retrieve sub category")
+                .expect("Sub category not found")
+                .into();
 
         assert_eq!(created_sub_category1, &sub_category_1);
 
         let created_sub_category2 = response.get(1).unwrap();
-        let sub_category_2 = editoast_models::SubCategory::retrieve(
-            db_pool.get_ok(),
-            created_sub_category2.code.clone(),
-        )
-        .await
-        .expect("Failed to retrieve sub category")
-        .expect("Sub category not found")
-        .into();
+        let sub_category_2 =
+            models::SubCategory::retrieve(db_pool.get_ok(), created_sub_category2.code.clone())
+                .await
+                .expect("Failed to retrieve sub category")
+                .expect("Sub category not found")
+                .into();
 
         assert_eq!(created_sub_category2, &sub_category_2);
     }
@@ -335,17 +326,15 @@ pub mod tests {
         .await
         .assert_status_no_content();
 
-        let paced_train_1 =
-            editoast_models::TrainSchedule::retrieve(db_pool.get_ok(), paced_train_1.id)
-                .await
-                .expect("Failed to retrieve paced train")
-                .expect("Paced train 1 not found");
+        let paced_train_1 = models::TrainSchedule::retrieve(db_pool.get_ok(), paced_train_1.id)
+            .await
+            .expect("Failed to retrieve paced train")
+            .expect("Paced train 1 not found");
 
-        let paced_train_2 =
-            editoast_models::TrainSchedule::retrieve(db_pool.get_ok(), paced_train_2.id)
-                .await
-                .expect("Failed to retrieve paced train")
-                .expect("Paced train 2 not found");
+        let paced_train_2 = models::TrainSchedule::retrieve(db_pool.get_ok(), paced_train_2.id)
+            .await
+            .expect("Failed to retrieve paced train")
+            .expect("Paced train 2 not found");
 
         assert_eq!(paced_train_1.sub_category, None);
         assert_eq!(paced_train_2.sub_category, None);
@@ -363,12 +352,10 @@ pub mod tests {
             ))
         );
 
-        let exists = editoast_models::SubCategory::exists(
-            &mut db_pool.get_ok(),
-            created_sub_category.code.clone(),
-        )
-        .await
-        .expect("Failed to retrieve sub category");
+        let exists =
+            models::SubCategory::exists(&mut db_pool.get_ok(), created_sub_category.code.clone())
+                .await
+                .expect("Failed to retrieve sub category");
 
         assert!(!exists);
     }

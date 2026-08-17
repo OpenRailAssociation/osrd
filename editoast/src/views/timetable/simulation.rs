@@ -55,8 +55,8 @@ use crate::views::timetable::Infra;
 use crate::views::timetable::PathfindingResult;
 use crate::views::timetable::PhysicsConsistParameters;
 use crate::views::timetable::simulation;
-use editoast_models::prelude::*;
-use editoast_models::rolling_stock::RollingStock;
+use models::prelude::*;
+use models::rolling_stock::RollingStock;
 use schemas::primitives::NonBlankString;
 use schemas::primitives::PositiveDuration;
 

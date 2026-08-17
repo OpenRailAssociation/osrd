@@ -10,8 +10,8 @@ use editoast_derive::EditoastError;
 use thiserror::Error;
 
 use crate::error::Result;
-use editoast_models::Infra;
-use editoast_models::prelude::*;
+use models::Infra;
+use models::prelude::*;
 
 #[derive(Debug, Error, EditoastError)]
 #[editoast_error(base_id = "pathfinding")]
@@ -21,7 +21,7 @@ pub enum PathfindingError {
     InfraNotFound { infra_id: i64 },
     #[error(transparent)]
     #[editoast_error(status = 500)]
-    Database(#[from] editoast_models::Error),
+    Database(#[from] models::Error),
 }
 
 async fn retrieve_infra_version(conn: &mut DbConnection, infra_id: i64) -> Result<i64> {

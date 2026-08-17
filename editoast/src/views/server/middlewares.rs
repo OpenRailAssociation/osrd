@@ -7,7 +7,7 @@ use axum::extract::Request;
 use axum::extract::State;
 use axum::middleware::Next;
 use axum::response::Response;
-use editoast_models::authn::user::AddIdentitiesError;
+use models::authn::user::AddIdentitiesError;
 
 use crate::AppState;
 use crate::authentication::AuthenticationParameters;
@@ -88,7 +88,7 @@ pub(in crate::views) async fn authentication_validation_middleware(
     mut req: Request,
     next: Next,
 ) -> Result<Response> {
-    fn warn_on_name_mismatch(user: &editoast_models::User, identity: &str, header_name: &str) {
+    fn warn_on_name_mismatch(user: &models::User, identity: &str, header_name: &str) {
         if user.name != header_name {
             tracing::warn!(
                 identity,
@@ -99,12 +99,7 @@ pub(in crate::views) async fn authentication_validation_middleware(
         }
     }
 
-    fn zip_roles(
-        user: editoast_models::User,
-    ) -> (
-        Option<editoast_models::User>,
-        ::authz::v2::Protected<Vec<Role>>,
-    ) {
+    fn zip_roles(user: models::User) -> (Option<models::User>, ::authz::v2::Protected<Vec<Role>>) {
         let subject = ::authz::Subject::user(user.id);
         (Some(user), ::authz::v2::subject_roles(subject))
     }
@@ -112,17 +107,10 @@ pub(in crate::views) async fn authentication_validation_middleware(
     async fn register_origin_user(
         conn: database::DbConnection,
         (identity, name): (&str, &str),
-    ) -> Result<(
-        Option<editoast_models::User>,
-        ::authz::v2::Protected<Vec<Role>>,
-    )> {
+    ) -> Result<(Option<models::User>, ::authz::v2::Protected<Vec<Role>>)> {
         tracing::info!(identity, name, "registering new user");
-        let user = match editoast_models::User::register(
-            conn,
-            vec![identity.to_owned()],
-            name.to_owned(),
-        )
-        .await
+        let user = match models::User::register(conn, vec![identity.to_owned()], name.to_owned())
+            .await
         {
             Ok(user) => user,
             Err(AddIdentitiesError::DuplicateIdentity(_)) => {
@@ -138,7 +126,7 @@ pub(in crate::views) async fn authentication_validation_middleware(
 
     async fn check_impersonation_privilege(
         openfga: &fga::Client,
-        user: &editoast_models::User,
+        user: &models::User,
     ) -> Result<()> {
         let Ok(roles) = ::authz::v2::subject_roles(::authz::Subject::user(user.id))
             .access_authorized::<Infallible>(openfga)
@@ -155,8 +143,7 @@ pub(in crate::views) async fn authentication_validation_middleware(
         crate::authentication::Mode::Authenticated { identity, name } => {
             let conn = db_pool.get().await?;
             conn.transaction(async |conn| {
-                let user =
-                    editoast_models::User::retrieve_by_identity(identity, conn.clone()).await?;
+                let user = models::User::retrieve_by_identity(identity, conn.clone()).await?;
                 Ok::<_, crate::error::InternalError>(if let Some(user) = user {
                     warn_on_name_mismatch(&user, identity, name);
                     zip_roles(user)
@@ -176,14 +163,8 @@ pub(in crate::views) async fn authentication_validation_middleware(
                 let (impersonator, impersonated) = tokio::try_join!(
                     // The batching API is annoying, that's the best I can do concisely for now. We should
                     // work on the DB user management that got worse since we added multiple identities support.
-                    editoast_models::User::retrieve_by_identity(
-                        impersonator_identity,
-                        conn.clone()
-                    ),
-                    editoast_models::User::retrieve_by_identity(
-                        impersonated_identity,
-                        conn.clone()
-                    )
+                    models::User::retrieve_by_identity(impersonator_identity, conn.clone()),
+                    models::User::retrieve_by_identity(impersonated_identity, conn.clone())
                 )?;
                 if let Some(impersonator) = impersonator {
                     warn_on_name_mismatch(&impersonator, impersonator_identity, impersonator_name);
@@ -228,7 +209,7 @@ pub(in crate::views) async fn authentication_validation_middleware(
 
     let authz_user = user
         .as_ref()
-        .map(|editoast_models::User { id, .. }| ::authz::User(*id));
+        .map(|models::User { id, .. }| ::authz::User(*id));
     let state = crate::authentication::State::try_new(authn, authz_user, roles.clone())?;
     span.record("authz.state", tracing::field::debug(&state));
     req.extensions_mut().insert(state);

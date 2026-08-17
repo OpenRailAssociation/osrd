@@ -10,10 +10,10 @@ use axum::extract::State;
 use axum::response::IntoResponse;
 use database::DbConnectionPoolV2;
 use editoast_derive::EditoastError;
-use editoast_models::prelude::*;
-use editoast_models::round_trips::TrainScheduleRoundTrips;
-use editoast_models::timetable::Timetable;
 use itertools::Itertools;
+use models::prelude::*;
+use models::round_trips::TrainScheduleRoundTrips;
+use models::timetable::Timetable;
 use serde::Deserialize;
 use serde::Serialize;
 use std::collections::HashSet;
@@ -36,7 +36,7 @@ enum RoundTripsError {
     #[error("Database error")]
     #[editoast_error(status = 500)]
     #[from(forward)]
-    Database(editoast_models::Error),
+    Database(models::Error),
 }
 
 /// Represents a collection of round trips and one-way

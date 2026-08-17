@@ -44,8 +44,8 @@ use crate::views::AuthorizationError;
 use crate::views::infra::InfraApiError;
 use crate::views::infra::InfraIdParam;
 use database::DbConnection;
-use editoast_models::Infra;
-use editoast_models::prelude::*;
+use models::Infra;
+use models::prelude::*;
 use schemas::infra::InfraObject;
 
 /// Edit the content of an infrastructure
@@ -985,7 +985,7 @@ pub mod tests {
     use crate::views::test_app;
     use crate::views::test_app::TestApp;
     use crate::views::test_app::TestRequestExt as _;
-    use editoast_models::infra::ObjectQueryable;
+    use models::infra::ObjectQueryable;
 
     async fn setup_split_track_test() -> (TestApp, Infra, User) {
         let app = test_app!().build();

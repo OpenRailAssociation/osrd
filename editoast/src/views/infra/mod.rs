@@ -24,9 +24,9 @@ use common::geometry::GeoJsonPoint;
 use database::DbConnection;
 use database::DbConnectionPoolV2;
 use editoast_derive::EditoastError;
-use editoast_models::prelude::*;
 use geos::Geom;
 use itertools::Itertools;
+use models::prelude::*;
 use schemas::infra::SwitchType;
 use schemas::primitives::BoundingBox;
 use schemas::primitives::Identifier;
@@ -56,8 +56,8 @@ use crate::views::pagination::PaginationQueryParams;
 use crate::views::params;
 use crate::views::path::operational_point_cache::OperationalPointCache;
 use authz::Role;
-use editoast_models::Infra;
-use editoast_models::SwitchTypeModel;
+use models::Infra;
+use models::SwitchTypeModel;
 use schemas::infra::OperationalPoint;
 use schemas::infra::OperationalPointPart;
 use schemas::infra::builtin_node_types_list;
@@ -73,7 +73,7 @@ pub enum InfraApiError {
 
     #[error(transparent)]
     #[editoast_error(status = 500)]
-    Database(#[from] editoast_models::Error),
+    Database(#[from] models::Error),
 }
 
 #[derive(Debug, Default, Clone, Serialize, Deserialize, IntoParams, ToSchema)]
@@ -918,9 +918,9 @@ pub mod tests {
     use crate::infra_cache::operation::create::apply_create_operation;
     use crate::views::test_app;
     use crate::views::test_app::TestRequestExt as _;
-    use editoast_models::infra::DEFAULT_INFRA_VERSION;
-    use editoast_models::infra_objects::get_geometry_layer_table;
-    use editoast_models::infra_objects::get_table;
+    use models::infra::DEFAULT_INFRA_VERSION;
+    use models::infra_objects::get_geometry_layer_table;
+    use models::infra_objects::get_table;
     use schemas::train_schedule::OperationalPointReference;
 
     mod post_clone {

@@ -22,11 +22,11 @@ use crate::AppState;
 use crate::error::Result;
 use crate::map::get_cache_tile_key;
 use crate::map::get_view_cache_prefix;
-use editoast_models::map::ALLOWED_VIEWS;
-use editoast_models::map::GeoJsonAndData;
-use editoast_models::map::MAP_LAYER_NAMES;
-use editoast_models::map::MAP_LAYERS;
-use editoast_models::map::create_and_fill_mvt_tile;
+use models::map::ALLOWED_VIEWS;
+use models::map::GeoJsonAndData;
+use models::map::MAP_LAYER_NAMES;
+use models::map::MAP_LAYERS;
+use models::map::create_and_fill_mvt_tile;
 
 #[derive(Debug, Error, EditoastError)]
 #[editoast_error(base_id = "layers", default_status = 404)]

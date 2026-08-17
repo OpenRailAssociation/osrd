@@ -1,5 +1,5 @@
 use deadpool_redis::redis::AsyncCommands;
-use editoast_models::map::MAP_LAYER_NAMES;
+use models::map::MAP_LAYER_NAMES;
 
 use crate::error::Result;
 

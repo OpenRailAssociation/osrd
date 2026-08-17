@@ -2,12 +2,12 @@ use clap::Args;
 use clap::Subcommand;
 use database::DbConnection;
 use database::DbConnectionPoolV2;
-use editoast_models::Infra;
-use editoast_models::prelude::*;
-use editoast_models::scenario::Scenario;
-use editoast_models::search_journey_environment::SearchJourneyEnvironment;
-use editoast_models::search_journey_environment::SearchJourneyEnvironmentWithTimetables;
-use editoast_models::timetable::Timetable;
+use models::Infra;
+use models::prelude::*;
+use models::scenario::Scenario;
+use models::search_journey_environment::SearchJourneyEnvironment;
+use models::search_journey_environment::SearchJourneyEnvironmentWithTimetables;
+use models::timetable::Timetable;
 use std::collections::HashSet;
 
 #[derive(Subcommand, Debug)]
@@ -125,7 +125,7 @@ mod tests {
     use super::*;
     use crate::fixtures::create_scenario_fixtures_set;
     use database::DbConnectionPoolV2;
-    use editoast_models::search_journey_environment::fixtures::search_journey_env_fixtures;
+    use models::search_journey_environment::fixtures::search_journey_env_fixtures;
     use std::collections::HashSet;
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]

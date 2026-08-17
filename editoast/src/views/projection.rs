@@ -30,7 +30,7 @@ use crate::views::path::projection::TrackLocationFromPath;
 use crate::views::timetable::simulation;
 use crate::views::timetable::simulation::SimulationResponseSuccess;
 use crate::views::timetable::simulation::train_simulation_ordered_batch;
-use editoast_models::Infra;
+use models::Infra;
 
 #[derive(Debug, Deserialize, ToSchema)]
 pub struct ProjectPathForm {

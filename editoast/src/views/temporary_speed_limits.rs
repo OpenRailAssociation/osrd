@@ -6,7 +6,7 @@ use chrono::DateTime;
 use chrono::Utc;
 use database::DbConnectionPoolV2;
 use editoast_derive::EditoastError;
-use editoast_models::prelude::*;
+use models::prelude::*;
 use schemas::infra::DirectionalTrackRange;
 use serde::Deserialize;
 use serde::Serialize;
@@ -18,9 +18,9 @@ use utoipa::ToSchema;
 
 use crate::error::Result;
 use authz::Role;
-use editoast_models::TemporarySpeedLimit;
-use editoast_models::TemporarySpeedLimitGroup;
-use editoast_models::temporary_speed_limits;
+use models::TemporarySpeedLimit;
+use models::TemporarySpeedLimitGroup;
+use models::temporary_speed_limits;
 
 #[derive(Deserialize, ToSchema)]
 #[serde(remote = "Self")]
@@ -95,7 +95,7 @@ enum TemporarySpeedLimitError {
     NameAlreadyUsed { name: String },
     #[error(transparent)]
     #[editoast_error(status = 500)]
-    Database(#[from] editoast_models::Error),
+    Database(#[from] models::Error),
 }
 
 impl From<temporary_speed_limits::TslGroupError> for TemporarySpeedLimitError {
@@ -159,7 +159,7 @@ mod tests {
     use chrono::DateTime;
     use chrono::Duration;
     use chrono::Utc;
-    use editoast_models::TemporarySpeedLimitGroup;
+    use models::TemporarySpeedLimitGroup;
 
     use schemas::infra::Direction;
     use schemas::infra::DirectionalTrackRange;
@@ -168,7 +168,7 @@ mod tests {
 
     use crate::views::temporary_speed_limits::TemporarySpeedLimitCreateResponse;
     use crate::views::test_app;
-    use editoast_models::TemporarySpeedLimit;
+    use models::TemporarySpeedLimit;
 
     struct TimePeriod {
         start_date_time: DateTime<Utc>,

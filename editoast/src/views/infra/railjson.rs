@@ -27,8 +27,8 @@ use crate::infra_cache::InfraCache;
 use crate::views::AuthorizationError;
 use crate::views::infra::InfraApiError;
 use crate::views::infra::InfraIdParam;
-use editoast_models::Infra;
-use editoast_models::prelude::*;
+use models::Infra;
+use models::prelude::*;
 use schemas::primitives::ObjectType;
 
 /// Serialize an infra
@@ -156,12 +156,12 @@ pub enum RailJsonError {
     UnsupportedVersion { actual: String, expected: String },
     #[error(transparent)]
     #[editoast_error(forward)]
-    Database(editoast_models::Error),
+    Database(models::Error),
 }
 
-impl From<editoast_models::railjson::RailJsonError> for RailJsonError {
-    fn from(err: editoast_models::railjson::RailJsonError) -> Self {
-        use editoast_models::railjson::RailJsonError as ModelsRailJsonError;
+impl From<models::railjson::RailJsonError> for RailJsonError {
+    fn from(err: models::railjson::RailJsonError) -> Self {
+        use models::railjson::RailJsonError as ModelsRailJsonError;
         match err {
             ModelsRailJsonError::UnsupportedVersion { actual, expected } => {
                 RailJsonError::UnsupportedVersion { actual, expected }

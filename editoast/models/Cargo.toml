@@ -1,5 +1,5 @@
 [package]
-name = "editoast_models"
+name = "models"
 license.workspace = true
 version.workspace = true
 edition.workspace = true
@@ -48,7 +48,7 @@ uuid.workspace = true
 [dev-dependencies]
 # The feature 'testing' is needed for all of the doc-tests
 database = { path = "../database", features = ["testing"] }
-editoast_models = { path = "./", features = ["testing"] }
+models = { path = "./", features = ["testing"] }
 pretty_assertions.workspace = true
 rstest.workspace = true
 schemas = { path = "../schemas", features = ["testing"] }

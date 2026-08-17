@@ -8,7 +8,7 @@ use core_client::mq_client::MqClientError;
 use core_client::worker_load::WorkerLoadRequest;
 use core_client::worker_load::WorkerLoadResponse;
 use editoast_derive::EditoastError;
-use editoast_models::prelude::*;
+use models::prelude::*;
 use serde::Deserialize;
 use serde::Serialize;
 use thiserror::Error;
@@ -18,8 +18,8 @@ use crate::AppState;
 use crate::authentication;
 use crate::error::Result;
 use crate::views::AuthorizationError;
-use editoast_models::Infra;
-use editoast_models::timetable::Timetable;
+use models::Infra;
+use models::timetable::Timetable;
 
 #[derive(Serialize, Deserialize, ToSchema)]
 pub(in crate::views) struct WorkerLoadForm {
@@ -54,7 +54,7 @@ pub enum WorkerLoadError {
 
     #[error(transparent)]
     #[editoast_error(status = 500)]
-    Database(#[from] editoast_models::Error),
+    Database(#[from] models::Error),
 
     #[error(transparent)]
     #[editoast_error(status = 500)]

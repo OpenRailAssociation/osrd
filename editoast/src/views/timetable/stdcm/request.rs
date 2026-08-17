@@ -27,10 +27,10 @@ use utoipa::ToSchema;
 use crate::error::Result;
 use crate::views::path::operational_point_cache::OperationalPointCache;
 use crate::views::path::pathfinding::PathfindingFailure;
-use editoast_models::TemporarySpeedLimit;
-use editoast_models::TowedRollingStock;
-use editoast_models::WorkSchedule;
-use editoast_models::prelude::*;
+use models::TemporarySpeedLimit;
+use models::TowedRollingStock;
+use models::WorkSchedule;
+use models::prelude::*;
 
 use super::StdcmError;
 

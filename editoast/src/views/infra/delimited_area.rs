@@ -13,10 +13,10 @@ use axum::Json;
 use axum::extract::Path;
 use axum::extract::State;
 use editoast_derive::EditoastError;
-use editoast_models::Infra;
-use editoast_models::prelude::*;
 use itertools::Either;
 use itertools::Itertools;
+use models::Infra;
+use models::prelude::*;
 use schemas::infra::Direction;
 use schemas::infra::DirectionalTrackRange;
 use schemas::infra::Endpoint;
@@ -518,7 +518,7 @@ mod tests {
     use crate::views::test_app::TestRequestExt as _;
     use authz::InfraGrant;
     use authz::Role;
-    use editoast_models::Infra;
+    use models::Infra;
 
     use schemas::infra::Direction;
     use schemas::infra::DirectionalTrackRange;

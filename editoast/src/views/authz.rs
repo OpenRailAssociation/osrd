@@ -25,14 +25,14 @@ use axum::response::IntoResponse;
 use axum::response::Json;
 use database::DbConnectionPoolV2;
 use editoast_derive::EditoastError;
-use editoast_models::Group;
-use editoast_models::Infra;
-use editoast_models::RollingStock;
-use editoast_models::User;
-use editoast_models::authn::user::UserWithIdentities;
-use editoast_models::prelude::*;
 use futures::TryStreamExt;
 use itertools::Itertools;
+use models::Group;
+use models::Infra;
+use models::RollingStock;
+use models::User;
+use models::authn::user::UserWithIdentities;
+use models::prelude::*;
 use serde::Deserialize;
 use serde::Serialize;
 use strum::Display;
@@ -79,7 +79,7 @@ enum AuthzError {
     UnknownIdentities { identities: HashSet<String> },
     #[error(transparent)]
     #[editoast_error(status = 500)]
-    Database(#[from] editoast_models::Error),
+    Database(#[from] models::Error),
 }
 
 #[derive(Serialize, ToSchema)]
@@ -104,7 +104,7 @@ pub(in crate::views) struct WhoamiResponse {
 )]
 pub(in crate::views) async fn whoami(
     Extension(authn_state): Extension<crate::authentication::State>,
-    Extension(user): Extension<Option<editoast_models::User>>,
+    Extension(user): Extension<Option<models::User>>,
 ) -> Result<Json<WhoamiResponse>> {
     match authn_state {
         crate::authentication::State::Skip => Err(AuthorizationError::Unauthenticated)?,
@@ -150,7 +150,7 @@ pub(in crate::views) async fn user_groups(
 
     let groups_id = user_groups.into_iter().map(|authz::Group(id)| id);
     let (result, missing_ids) =
-        editoast_models::Group::retrieve_batch(&mut db_pool.get().await?, groups_id).await?;
+        models::Group::retrieve_batch(&mut db_pool.get().await?, groups_id).await?;
 
     if !missing_ids.is_empty() {
         tracing::warn!(
@@ -275,7 +275,7 @@ pub(in crate::views) async fn users_info(
     let Ok(results) = v2::Protected::from_iter(user_groups.into_iter().map(
         |(
             UserWithIdentities {
-                user: editoast_models::User { id, name },
+                user: models::User { id, name },
                 identities,
             },
             groups,
@@ -440,7 +440,7 @@ pub(in crate::views) async fn user_privileges(
 async fn retrieve_missing_resource_ids(
     mut conn: database::DbConnection,
     resources: impl IntoIterator<Item = (ResourceType, i64)>,
-) -> std::result::Result<HashMap<ResourceType, HashSet<i64>>, editoast_models::Error> {
+) -> std::result::Result<HashMap<ResourceType, HashSet<i64>>, models::Error> {
     let mut resources = resources
         .into_iter()
         .into_group_map()
@@ -810,25 +810,27 @@ pub(in crate::views) async fn update_grants(
         let mut conn = db_pool.get().await?;
         let mut conn2 = conn.clone();
         let (users, groups) = tokio::try_join!(
-            editoast_models::User::list(
+            models::User::list(
                 &mut conn,
                 SelectionSettings::new().filter({
                     let ids = subjects_id.clone();
-                    move || editoast_models::User::ID.eq_any(ids.clone())
+                    move || models::User::ID.eq_any(ids.clone())
                 })
             ),
-            editoast_models::Group::list(
+            models::Group::list(
                 &mut conn2,
                 SelectionSettings::new()
-                    .filter(move || editoast_models::Group::ID.eq_any(subjects_id.clone()))
+                    .filter(move || models::Group::ID.eq_any(subjects_id.clone()))
             )
         )?;
         users
             .into_iter()
-            .map(|editoast_models::User { id, .. }| (id, authz::Subject::User(authz::User(id))))
-            .chain(groups.into_iter().map(|editoast_models::Group { id, .. }| {
-                (id, authz::Subject::Group(authz::Group(id)))
-            }))
+            .map(|models::User { id, .. }| (id, authz::Subject::User(authz::User(id))))
+            .chain(
+                groups
+                    .into_iter()
+                    .map(|models::Group { id, .. }| (id, authz::Subject::Group(authz::Group(id)))),
+            )
             .collect::<HashMap<_, _>>()
     };
 
@@ -3093,7 +3095,7 @@ mod tests {
             .assert_status_forbidden();
 
         assert_eq!(
-            editoast_models::User::retrieve_by_identity(&identity, app.db_pool().get_ok()).await,
+            models::User::retrieve_by_identity(&identity, app.db_pool().get_ok()).await,
             Ok(None),
             "new user should not be registered"
         );

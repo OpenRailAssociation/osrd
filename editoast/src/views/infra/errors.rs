@@ -24,8 +24,8 @@ use crate::views::AuthorizationError;
 use crate::views::infra::InfraIdParam;
 use crate::views::pagination::PaginationQueryParams;
 use crate::views::pagination::PaginationStats;
-use editoast_models::Infra;
-use editoast_models::prelude::*;
+use models::Infra;
+use models::prelude::*;
 
 use super::InfraApiError;
 

@@ -10,7 +10,7 @@ use serde::Serialize;
 use std::ops::DerefMut;
 
 use super::OperationError;
-use editoast_models::infra_objects::get_table;
+use models::infra_objects::get_table;
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash, Deserialize, Serialize, utoipa::ToSchema)]
 #[serde(deny_unknown_fields)]
@@ -40,7 +40,7 @@ impl DeleteOperation {
                 obj_id: self.obj_id.clone(),
                 infra_id,
             }),
-            Err(err) => Err(editoast_models::Error::from(err).into()),
+            Err(err) => Err(models::Error::from(err).into()),
         }
     }
 }
@@ -69,8 +69,8 @@ mod tests {
 
     use database::DbConnection;
     use database::DbConnectionPoolV2;
-    use editoast_models::Infra;
-    use editoast_models::prelude::*;
+    use models::Infra;
+    use models::prelude::*;
     use schemas::infra::BufferStop;
     use schemas::infra::Detector;
     use schemas::infra::Electrification;

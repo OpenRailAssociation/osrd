@@ -63,11 +63,11 @@ use crate::views::timetable::PhysicsConsistParameters;
 use crate::views::timetable::simulation;
 use crate::views::timetable::simulation::SimulationResponseSuccess;
 use crate::views::timetable::simulation::consist_train_simulation_batch;
-use editoast_models::Infra;
-use editoast_models::WorkSchedule;
-use editoast_models::prelude::*;
-use editoast_models::rolling_stock::RollingStock;
-use editoast_models::timetable::Timetable;
+use models::Infra;
+use models::WorkSchedule;
+use models::prelude::*;
+use models::rolling_stock::RollingStock;
+use models::timetable::Timetable;
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, ToSchema)]
 #[serde(tag = "status", rename_all = "snake_case")]
@@ -146,7 +146,7 @@ enum StdcmError {
     #[error(transparent)]
     #[from(forward)]
     #[serde(skip)]
-    Database(editoast_models::Error),
+    Database(models::Error),
 }
 
 #[derive(Debug, Default, Clone, Serialize, Deserialize, IntoParams, ToSchema)]
@@ -1305,7 +1305,7 @@ mod tests {
     ) {
         // GIVEN
 
-        use editoast_models::WorkSchedule;
+        use models::WorkSchedule;
         let work_schedules = [WorkSchedule {
             id: rand::random::<i64>(),
             start_date_time: DateTime::parse_from_rfc3339(ws_start_time)

@@ -8,8 +8,8 @@ use clap::Subcommand;
 use database::DbConnectionPoolV2;
 use schemas::infra::ElectricalProfileSetData;
 
-use editoast_models::ElectricalProfileSet;
-use editoast_models::prelude::*;
+use models::ElectricalProfileSet;
+use models::prelude::*;
 
 #[derive(Subcommand, Debug)]
 pub enum ElectricalProfilesCommands {

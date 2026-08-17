@@ -62,8 +62,8 @@ use crate::infra_cache::object_cache::TrackSectionCache;
 use crate::infra_cache::operation::CacheOperation;
 use cache::Client as ValkeyClient;
 use database::DbConnection;
-use editoast_models::Infra;
-use editoast_models::railjson::find_all_schemas;
+use models::Infra;
+use models::railjson::find_all_schemas;
 use schemas::infra::InfraObject;
 use schemas::primitives::BoundingBox;
 
@@ -1011,7 +1011,7 @@ pub enum CacheOperationError {
     #[error("{obj_type} '{obj_id}', a duplicate already exists")]
     DuplicateIdsProvided { obj_type: String, obj_id: String },
     #[error(transparent)]
-    DatabaseError(#[from] editoast_models::Error),
+    DatabaseError(#[from] models::Error),
     #[error(transparent)]
     ValkeyPoolError(#[from] deadpool_redis::PoolError),
     #[error(transparent)]
@@ -1028,13 +1028,13 @@ impl PartialEq for CacheOperationError {
 
 impl From<diesel::result::Error> for CacheOperationError {
     fn from(err: diesel::result::Error) -> Self {
-        Self::DatabaseError(editoast_models::Error::from(err))
+        Self::DatabaseError(models::Error::from(err))
     }
 }
 
 impl From<database::DatabaseError> for CacheOperationError {
     fn from(err: database::DatabaseError) -> Self {
-        Self::DatabaseError(editoast_models::Error::from(err))
+        Self::DatabaseError(models::Error::from(err))
     }
 }
 
@@ -1083,8 +1083,8 @@ pub mod tests {
 
     use database::DbConnection;
     use database::DbConnectionPoolV2;
-    use editoast_models::Infra;
-    use editoast_models::prelude::*;
+    use models::Infra;
+    use models::prelude::*;
     use schemas::infra::ApplicableDirections;
     use schemas::infra::ApplicableDirectionsTrackRange;
     use schemas::infra::BufferStop;
