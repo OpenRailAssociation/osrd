@@ -3,6 +3,7 @@ import { useSelector } from 'react-redux';
 
 import { useItineraryModalContext } from 'applications/operationalStudies/hooks/useItineraryModalContext';
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
+import { useTimetableContext } from 'applications/operationalStudies/hooks/useTimetableContext';
 import {
   checkChangeGroups,
   updatePacedTrainExceptionsList,
@@ -26,13 +27,6 @@ import {
 } from 'modules/trainSchedule/helpers/updateTrainScheduleHelpers';
 import type { TrainScheduleWithDetails } from 'modules/trainSchedule/types';
 import { setFailure, setSuccess } from 'reducers/main';
-import { clearAddedExceptionsList } from 'reducers/osrdconf/operationalStudiesConf';
-import {
-  getName,
-  getStartTime,
-  getOperationalStudiesConf,
-  getAddedExceptions,
-} from 'reducers/osrdconf/operationalStudiesConf/selectors';
 import type { OccurrenceId, TrainScheduleToEditData } from 'reducers/osrdconf/types';
 import {
   updateAlreadySelectedTrainId,
@@ -52,6 +46,7 @@ import {
   validateTrainSchedule,
   type TrainScheduleConfErrorCode,
 } from '../helpers/validateTrainSchedule';
+import type { ItineraryModalTrainState } from '../Itinerary/ItineraryModal';
 
 type UpdateTrainScheduleParams = {
   timetableId: number;
@@ -279,8 +274,9 @@ export async function updateTrainSchedule({
 }
 
 const useUpdateTrainSchedule = (
+  trainState: ItineraryModalTrainState,
   setIsWorking: (isWorking: boolean) => void,
-  upsertTrainSchedules: (trainSchedules: TrainScheduleResponse[]) => void
+  onTrainUpdated: () => void
 ) => {
   const { t } = useTranslation('operational-studies', {
     keyPrefix: 'manageTrainSchedule',
@@ -289,13 +285,10 @@ const useUpdateTrainSchedule = (
 
   const { timetableId } = useScenarioContext();
 
-  const confName = useSelector(getName);
-  const simulationConf = useSelector(getOperationalStudiesConf);
   const trainIdUsedForProjection = useSelector(getTrainIdUsedForProjection);
-  const startTime = useSelector(getStartTime);
-  const addedExceptions = useSelector(getAddedExceptions);
 
-  const { closeItineraryModal, trainScheduleToEditData } = useItineraryModalContext();
+  const { trainScheduleToEditData } = useItineraryModalContext();
+  const { upsertTrainSchedules } = useTimetableContext();
 
   const onUpdateSuccess = (editData: TrainScheduleToEditData) => {
     const { trainScheduleId } = editData;
@@ -305,10 +298,10 @@ const useUpdateTrainSchedule = (
     dispatch(
       setSuccess({
         title:
-          simulationConf.editingTrainType === 'uniqueTrain'
+          trainState.editingTrainType === 'uniqueTrain'
             ? t('uniqueTrainUpdated')
             : t('pacedTrainUpdated'),
-        text: `${confName}: ${startTime.toLocaleString()}`,
+        text: `${trainState.name}: ${trainState.startTime.toLocaleString()}`,
       })
     );
     dispatch(updateAlreadySelectedTrainId(editedTrainId));
@@ -324,8 +317,7 @@ const useUpdateTrainSchedule = (
       dispatch(updateTrainIdUsedForProjection(formatEditoastIdToTrainScheduleId(trainScheduleId)));
     }
 
-    dispatch(clearAddedExceptionsList());
-    closeItineraryModal();
+    onTrainUpdated();
   };
 
   return async () => {
@@ -336,13 +328,14 @@ const useUpdateTrainSchedule = (
     try {
       const result = await updateTrainSchedule({
         upsertTrainSchedules,
-        trainScheduleId: trainScheduleToEditData.trainScheduleId,
-        originalTrainSchedule: trainScheduleToEditData.originalTrainSchedule,
+        trainScheduleId: trainScheduleToEditData.trainSchedule.id,
+        originalTrainSchedule:
+          trainScheduleToEditData.originalTrainSchedule ?? trainScheduleToEditData.trainSchedule,
         occurrenceId: trainScheduleToEditData.occurrenceId,
         dispatch,
         timetableId,
-        addedExceptions,
-        updatedTrainSchedule: formatTrainSchedulePayload(simulationConf),
+        addedExceptions: trainState.addedExceptions,
+        updatedTrainSchedule: formatTrainSchedulePayload(trainState),
       });
 
       if (result.success) {

@@ -17,7 +17,6 @@ import { Loader } from 'common/Loaders';
 import { useSubCategoryContext } from 'common/SubCategoryContext';
 import { isPacedTrainWithDetails } from 'modules/trainSchedule/helpers/pacedTrain';
 import type { TrainScheduleWithDetails } from 'modules/trainSchedule/types';
-import { selectTrainToEdit } from 'reducers/osrdconf/operationalStudiesConf';
 import type { OccurrenceId } from 'reducers/osrdconf/types';
 import {
   getSelectedTrain,
@@ -146,13 +145,10 @@ const TrainList = ({
       originalPacedTrain?: TrainScheduleWithDetails,
       occurrenceId?: OccurrenceId
     ) => {
-      dispatch(
-        selectTrainToEdit({ trainSchedule: trainScheduleToEdit, isOccurrence: !!occurrenceId })
-      );
       const editData: TrainScheduleToEditData = {
-        trainScheduleId: trainScheduleToEdit.id,
+        trainSchedule: trainScheduleToEdit,
         // param originalPacedTrain is defined only when editing an occurrence
-        originalTrainSchedule: originalPacedTrain ?? trainScheduleToEdit,
+        originalTrainSchedule: originalPacedTrain,
         occurrenceId,
       };
       openItineraryModalToEdit(editData);
@@ -176,7 +172,7 @@ const TrainList = ({
                 workerStatus === 'READY' &&
                 selectedTrainId === formatEditoastIdToTrainScheduleId(trainSchedule.id)
               }
-              isModified={trainSchedule.id === trainScheduleToEditData?.trainScheduleId}
+              isModified={trainSchedule.id === trainScheduleToEditData?.trainSchedule.id}
               selectTrainToEdit={selectTrainScheduleToEdit}
               setSelectedTrainScheduleIds={setSelectedTrainScheduleIds}
               projectionPathIsUsed={
@@ -196,7 +192,7 @@ const TrainList = ({
               handleSelectPacedTrain={handleSelectTrainSchedule}
               isOccurrencesListOpen={expandedTrainScheduleIds.has(trainSchedule.id)}
               handleOpenOccurrencesList={handleExpandTrainSchedule}
-              isOnEdit={trainSchedule.id === trainScheduleToEditData?.trainScheduleId}
+              isOnEdit={trainSchedule.id === trainScheduleToEditData?.trainSchedule.id}
               selectedTrainId={selectedTrainId}
               setSelectedTrainScheduleIds={setSelectedTrainScheduleIds}
               infraIsCached={workerStatus === 'READY'}
@@ -224,7 +220,7 @@ const TrainList = ({
       selectedTrainId,
       setSelectedTrainScheduleIds,
       subCategories,
-      trainScheduleToEditData?.trainScheduleId,
+      trainScheduleToEditData?.trainSchedule.id,
       timetableMode,
       trainIdUsedForProjection,
       workerStatus,

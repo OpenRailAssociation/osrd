@@ -6,15 +6,14 @@ import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 import { v4 as uuidV4 } from 'uuid';
 
-import { useManageTrainScheduleContext } from 'applications/operationalStudies/hooks/useManageTrainScheduleContext';
 import type {
-  PathItem,
   PostSearchApiArg,
   SearchPayload,
   SearchResultItemOperationalPoint,
 } from 'common/api/osrdEditoastApi';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { useInfraID } from 'common/osrdContext';
+import type { PathStepV2 } from 'reducers/osrdconf/types';
 import { useDebounce } from 'utils/hooks/useDebounce';
 import {
   isCursorSurroundedBySpace,
@@ -27,9 +26,11 @@ type SearchConstraintType = (string | number | string[])[];
 
 const monospaceOneCharREMWidth = 0.6225;
 
-const TypeAndPath = () => {
-  const { launchPathfinding } = useManageTrainScheduleContext();
+type TypeAndPathProps = {
+  onSubmit: (pathSteps: PathStepV2[]) => void;
+};
 
+const TypeAndPath = ({ onSubmit }: TypeAndPathProps) => {
   const [inputText, setInputText] = useState('');
   const [opList, setOpList] = useState<SearchResultItemOperationalPoint[]>([]);
   const infraId = useInfraID();
@@ -129,7 +130,7 @@ const TypeAndPath = () => {
 
   const handleSubmit = async () => {
     if (infraId && opList.length > 0) {
-      const pathSteps: PathItem[] = opList
+      const pathSteps: PathStepV2[] = opList
         .filter((op) => op.main_code !== '')
         .map(({ main_code, secondary_code, country_code }) => ({
           id: uuidV4(),
@@ -142,9 +143,13 @@ const TypeAndPath = () => {
               type: 'domestic',
             },
           },
+          arrival: null,
+          stopFor: null,
+          theoreticalMargin: null,
+          receptionSignal: null,
         }));
 
-      launchPathfinding(pathSteps);
+      onSubmit(pathSteps);
       setInputText('');
       setSearch('');
     }

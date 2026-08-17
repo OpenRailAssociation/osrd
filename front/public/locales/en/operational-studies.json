@@ -348,8 +348,6 @@
     "uniqueTrain_zero": "0 trains"
   },
   "manageTrainSchedule": {
-    "addPacedTrain": "Add a service",
-    "addUniqueTrain": "Add a train",
     "addVia": "Add this waypoint",
     "addVias": "Add waypoints",
     "allowances": {
@@ -412,10 +410,8 @@
       "title_on": "{{count}} on {{total}} incompatible constraints"
     },
     "infraLoading": "Infrastructure is loading…",
-    "inputOPMainCodes": "Enter the trigrams of operational points you want to the path to go through, separated by a space.",
     "inputOPMainCodesExample": "E.g., LSN CIG CCS",
     "invalidTrainScheduleStep": "At least one of the waypoints could not be recognized",
-    "inverseOD": "Reverse itinerary",
     "itineraryModal": {
       "addLocationOnMap": "Add a location on the map",
       "addPoint": "Add point",
@@ -506,7 +502,6 @@
     "removeVia": "Remove this waypoint",
     "returnToSimulationResults": "Go back to simulation results",
     "rollingstock": "Rolling stock",
-    "saving": "Saving… please wait",
     "showTrainSettings": "Show",
     "speedLimitByTagAbbrev": "Comp. code",
     "tabs": {
@@ -517,7 +512,6 @@
       "unrecognizedRollingStock": "Unrecognized rolling stock : {{rollingStockName}}",
       "unspecifiedRollingStock": "Rolling stock not specified"
     },
-    "toggleTrigramSearch": "Toggle trigram search",
     "trainAdded": "Train added",
     "trainHeader": {
       "allowances": {
