@@ -5,6 +5,7 @@ import {
   type SimilarTrainWithSecondaryCode,
   type StdcmPathProperties,
   type StdcmResultsOperationalPoint,
+  type StdcmSuccessResponse,
   StdcmStopTypes,
 } from 'applications/stdcm/types';
 import type { SimulationResponseSuccess } from 'common/api/osrdEditoastApi';
@@ -281,6 +282,26 @@ function consolidateOvertakesToSingleSteps(
   return consolidatedSteps;
 }
 
+function consolidateBacktrackSteps(
+  steps: StdcmResultsOperationalPoint[],
+  pathfindingResult: StdcmSuccessResponse['pathfinding_result']
+): StdcmResultsOperationalPoint[] {
+  const backtrackPathItemIndexes = pathfindingResult.backtrack_path_items ?? [];
+  if (!backtrackPathItemIndexes.length) return steps;
+  const backtrackPositions = backtrackPathItemIndexes.map(
+    (index) => pathfindingResult.path_item_positions[index]
+  );
+  const isBacktrackStep = (step: StdcmResultsOperationalPoint) =>
+    backtrackPositions.includes(step.positionOnPath);
+
+  return steps.filter((step, index) => {
+    const nextStep = steps[index + 1];
+    const isSameStepBeforeBacktrack =
+      nextStep && nextStep.opId === step.opId && isBacktrackStep(nextStep);
+    return !isSameStepBeforeBacktrack;
+  });
+}
+
 /**
  * @param operationalPoints List of operational points
  * @param suggestedOperationalPoints List of suggested operational points to be formated and enriched
@@ -288,6 +309,7 @@ function consolidateOvertakesToSingleSteps(
  * @param simulation Simulation response containing final output positions and times
  * @param simulationPathSteps List of simulation path steps
  * @param departureTime Departure time in hh:mm format
+ * @param pathfindingResult Pathfinding result, used to detect and consolidate backtrack points
  * @returns A list of formated operational points with weight, times and stop durations
  */
 export function getOperationalPointsWithTimes({
@@ -297,6 +319,7 @@ export function getOperationalPointsWithTimes({
   simulation,
   simulationPathSteps,
   departureTime,
+  pathfindingResult,
 }: {
   operationalPoints: StdcmPathProperties['operational_points'];
   suggestedOperationalPoints: SuggestedOP[];
@@ -304,6 +327,7 @@ export function getOperationalPointsWithTimes({
   simulation: SimulationResponseSuccess;
   simulationPathSteps: StdcmPathStep[];
   departureTime: Date;
+  pathfindingResult: StdcmSuccessResponse['pathfinding_result'];
 }): StdcmResultsOperationalPoint[] {
   const { positions, times, speeds } = simulation.final_output;
 
@@ -334,7 +358,10 @@ export function getOperationalPointsWithTimes({
     stopPositions,
     { positions, times, speeds, departureTime }
   );
-  const formattedConsolidatedOps = consolidateOvertakesToSingleSteps(formattedOpsWithAllStops);
+  const formattedConsolidatedOps = consolidateBacktrackSteps(
+    consolidateOvertakesToSingleSteps(formattedOpsWithAllStops),
+    pathfindingResult
+  );
 
   return formattedConsolidatedOps.map((op) => ({
     ...op,
