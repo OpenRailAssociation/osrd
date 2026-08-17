@@ -364,8 +364,6 @@
     "errorMessages": {
       "error": "Une erreur est survenue",
       "hardErrorInfra": "L'infrastructure comporte des erreurs et ne peut être utilisée sans être corrigée au préalable.",
-      "intervalTooHigh": "La cadence de la mission ne doit pas être trop grande",
-      "intervalTooLow": "La cadence de la mission doit être supérieure d'au moins une minute",
       "invalidInitialSpeed": "La vitesse initiale doit être arrondie au dixième",
       "mandatoryField": "Champ obligatoire",
       "nameLengthLimit": "Le nom ne doit pas dépasser 128 caractères",
@@ -382,9 +380,15 @@
       "noTrainCount": "La quantité de trains demandée doit être supérieure à zéro",
       "noTrainStep": "Le pas d'incrément du nom du train doit être supérieur à zéro",
       "originTimeOutsideWindow": "La date de départ doit être comprise entre le {{low}} et le {{high}}",
+      "pacedTrainInterval": {
+        "tooHigh": "La cadence de la mission ne doit pas être trop grande",
+        "tooLow": "La cadence de la mission doit être supérieure d'au moins une minute"
+      },
+      "pacedTrainTimeWindow": {
+        "tooHigh": "La durée de la plage de répétition ne doit pas être trop grande",
+        "tooLow": "La durée de la plage de répétition doit être d'au moins une minute"
+      },
       "requiredField": "Champ obligatoire.",
-      "timeWindowTooHigh": "La durée de la plage de répétition ne doit pas être trop grande",
-      "timeWindowTooLow": "La durée de la plage de répétition doit être d'au moins une minute",
       "tooHighInput": "Doit être < 43800",
       "tooLowInput": "Doit être > 0",
       "trainScheduleTitle": "Une erreur est survenue",
