@@ -1,13 +1,16 @@
 import { useCallback } from 'react';
 
+import { AMBIENT_COLORS } from '@osrd-project/ui-core';
+
 import { HOUR, MINUTE } from '../../common/consts';
 import { TimeChartCanvasContext } from '../../common/context';
-import { WHITE_ALPHA_75 } from '../../common/helpers/colors';
+import { BLACK_ALPHA_10 } from '../../common/helpers/colors';
 import { computeVisibleTimeMarkers, getCrispLineCoordinate } from '../../common/helpers/time';
 import { useDraw } from '../../common/hooks/useCanvas';
 import type { DrawingFunction, TimeChartContextType } from '../../common/types';
 
 const MARGIN = 100;
+const TOP_CAPTION_HEIGHT = 24;
 
 const MINUTE_OPTIONS: Intl.DateTimeFormatOptions = {
   minute: '2-digit',
@@ -128,8 +131,8 @@ export const TimeCaptions = () => {
       // Render caption background:
       ctx.fillStyle = background;
       if (!swapAxis) {
-        ctx.fillStyle = WHITE_ALPHA_75;
-        ctx.fillRect(0, 0, width, 24);
+        ctx.fillStyle = AMBIENT_COLORS.ambientB5;
+        ctx.fillRect(0, 0, width, TOP_CAPTION_HEIGHT);
         ctx.fillStyle = background;
         ctx.fillRect(0, spaceAxisSize, timeAxisSize, captionSize);
       } else {
@@ -196,6 +199,14 @@ export const TimeCaptions = () => {
           ctx.lineTo(x, timeAxisSize);
         }
         ctx.stroke();
+        if (!swapAxis) {
+          ctx.strokeStyle = BLACK_ALPHA_10;
+          ctx.beginPath();
+          const yTop = getCrispLineCoordinate(TOP_CAPTION_HEIGHT, ctx.lineWidth);
+          ctx.moveTo(0, yTop);
+          ctx.lineTo(timeAxisSize, yTop);
+          ctx.stroke();
+        }
       }
     },
     []
