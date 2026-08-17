@@ -114,6 +114,12 @@ const StdcmResults = ({
   const isSelectedSimulationRetained =
     retainedSimulationIndex !== undefined && selectedSimulation.index === retainedSimulationIndex;
 
+  const backtrackPathItemIndexes = useMemo(
+    () =>
+      hasSimulationResults ? (outputs.results.pathfinding_result.backtrack_path_items ?? []) : [],
+    [hasSimulationResults, outputs]
+  );
+
   const operationalPointsList = useMemo(() => {
     if (!hasSimulationResults) return [];
     return getOperationalPointsWithTimes({
@@ -128,14 +134,20 @@ const StdcmResults = ({
 
   const markersInfo = useMemo(() => {
     if (hasSimulationResults) {
-      return extractMarkersInfo(outputs.results.simulationPathSteps);
+      return extractMarkersInfo(outputs.results.simulationPathSteps, backtrackPathItemIndexes);
     }
     // Still display the requested waypoints on the map when explaining a path-not-found result.
     if (pathNotFoundOutputs) {
       return extractMarkersInfo(selectedSimulation.inputs.pathSteps);
     }
     return [];
-  }, [hasSimulationResults, outputs, pathNotFoundOutputs, selectedSimulation.inputs.pathSteps]);
+  }, [
+    hasSimulationResults,
+    outputs,
+    backtrackPathItemIndexes,
+    pathNotFoundOutputs,
+    selectedSimulation.inputs.pathSteps,
+  ]);
 
   const [similarTrains, setSimilarTrains] = useState<SimilarTrainWithSecondaryCode[]>([]);
   const [areSegmentsLoading, setAreSegmentsLoading] = useState(true);

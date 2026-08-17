@@ -14,7 +14,7 @@ import { computeBBoxViewport } from 'common/Map/WarpedMap/core/helpers';
 import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
 import type { MapSettings, Viewport } from 'reducers/commonMap/types';
 
-import PathStepMarker from './components/PathStepMarker';
+import PathStepMarker, { PATH_STEP_MARKER_STATE } from './components/PathStepMarker';
 import { MapContextProvider } from './useMapContext';
 
 type DefaultBaseMapProps = {
@@ -148,6 +148,9 @@ const DefaultBaseMap = ({
                 testId={`${mapId}-marker-${marker.pointType}`}
                 coordinates={marker.coordinates}
                 markerIndicator={`${index + 1}`}
+                name={marker.name}
+                markerState={marker.isBackTrack ? PATH_STEP_MARKER_STATE.REVERSE : undefined}
+                isBackTrack={marker.isBackTrack}
               />
             ) : null}
           </Fragment>
