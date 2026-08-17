@@ -3,7 +3,10 @@ import { useCallback, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { Virtualizer } from 'virtua';
 
-import { useItineraryModalContext } from 'applications/operationalStudies/hooks/useItineraryModalContext';
+import {
+  useItineraryModalContext,
+  type TrainScheduleToEditData,
+} from 'applications/operationalStudies/hooks/useItineraryModalContext';
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import type {
   TrainSchedulesByTrainScheduleSet,
@@ -15,7 +18,7 @@ import { useSubCategoryContext } from 'common/SubCategoryContext';
 import { isPacedTrainWithDetails } from 'modules/trainSchedule/helpers/pacedTrain';
 import type { TrainScheduleWithDetails } from 'modules/trainSchedule/types';
 import { selectTrainToEdit } from 'reducers/osrdconf/operationalStudiesConf';
-import type { OccurrenceId, TrainScheduleToEditData } from 'reducers/osrdconf/types';
+import type { OccurrenceId } from 'reducers/osrdconf/types';
 import {
   getSelectedTrain,
   getTrainIdUsedForProjection,
@@ -33,7 +36,6 @@ import UniqueTrainItem from './UniqueTrainItem';
 
 type TrainListProps = {
   setSelectedTrainScheduleIds: React.Dispatch<React.SetStateAction<number[]>>;
-  trainScheduleToEditData?: TrainScheduleToEditData;
   trainSchedulesWithDetails: TrainScheduleWithDetails[];
   selectedTrainScheduleIds: number[];
   projectingOnSimulatedPathException: boolean | undefined;
@@ -54,7 +56,6 @@ const formatDepartureDate = (d: Date, locale: Intl.Locale) =>
 
 const TrainList = ({
   setSelectedTrainScheduleIds,
-  trainScheduleToEditData,
   trainSchedulesWithDetails,
   selectedTrainScheduleIds,
   projectingOnSimulatedPathException,
@@ -69,6 +70,8 @@ const TrainList = ({
   expandedTrainScheduleSetIds,
   setShowTrainScheduleSetDialog,
 }: TrainListProps) => {
+  const { trainScheduleToEditData } = useItineraryModalContext();
+
   const dateTimeLocale = useDateTimeLocale();
 
   const { workerStatus, timetableId, scenario } = useScenarioContext();

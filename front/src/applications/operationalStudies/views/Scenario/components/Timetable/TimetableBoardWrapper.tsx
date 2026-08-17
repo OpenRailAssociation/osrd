@@ -12,7 +12,7 @@ import { useSubCategoryContext } from 'common/SubCategoryContext';
 import { deleteTrainSchedules } from 'modules/trainSchedule/helpers/updateTrainScheduleHelpers';
 import type { TrainScheduleWithDetails } from 'modules/trainSchedule/types';
 import { setFailure, setSuccess } from 'reducers/main';
-import type { TrainScheduleToEditData, TrainId } from 'reducers/osrdconf/types';
+import type { TrainId } from 'reducers/osrdconf/types';
 import { updateSelectedTrain } from 'reducers/simulationResults';
 import { getSelectedTrain } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
@@ -25,7 +25,6 @@ import Timetable from './Timetable';
 import { copyTrainSchedulesToClipboard } from './utils';
 
 type TimetableBoardWrapperProps = {
-  trainScheduleToEditData?: TrainScheduleToEditData;
   trainSchedulesWithDetails: TrainScheduleWithDetails[];
   refreshNge: () => Promise<void>;
   projectingOnSimulatedPathException: boolean | undefined;
@@ -34,7 +33,6 @@ type TimetableBoardWrapperProps = {
 };
 
 const TimetableBoardWrapper = ({
-  trainScheduleToEditData,
   trainSchedulesWithDetails,
   refreshNge,
   projectingOnSimulatedPathException,
@@ -286,7 +284,6 @@ const TimetableBoardWrapper = ({
         isSelectMode={isSelectMode}
         setIsSelectMode={setIsSelectMode}
         handleDeleteTrainSchedules={handleDeleteTrainSchedules}
-        trainScheduleToEditData={trainScheduleToEditData}
         trainSchedulesWithDetails={trainSchedulesWithDetails}
         refreshNge={refreshNge}
         projectingOnSimulatedPathException={projectingOnSimulatedPathException}
