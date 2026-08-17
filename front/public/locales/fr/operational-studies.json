@@ -381,10 +381,12 @@
       "noTrainStep": "Le pas d'incrément du nom du train doit être supérieur à zéro",
       "originTimeOutsideWindow": "La date de départ doit être comprise entre le {{low}} et le {{high}}",
       "pacedTrainInterval": {
+        "intervalOutsideWindow": "La cadence de la mission doit être inférieure à la durée de la plage de répétition",
         "tooHigh": "La cadence de la mission ne doit pas être trop grande",
         "tooLow": "La cadence de la mission doit être supérieure d'au moins une minute"
       },
       "pacedTrainTimeWindow": {
+        "intervalOutsideWindow": "La durée de la plage de répétition doit être supérieure à la cadence de la mission",
         "tooHigh": "La durée de la plage de répétition ne doit pas être trop grande",
         "tooLow": "La durée de la plage de répétition doit être d'au moins une minute"
       },

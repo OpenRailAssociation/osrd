@@ -381,10 +381,12 @@
       "noTrainStep": "The increment step of the train must be greater than zero",
       "originTimeOutsideWindow": "Departure date must be between {{low}} and {{high}}",
       "pacedTrainInterval": {
+        "intervalOutsideWindow": "Cadence must be lower than repeat window",
         "tooHigh": "The cadence of the service must not be too high",
         "tooLow": "The cadence of the service has to be at least one minute"
       },
       "pacedTrainTimeWindow": {
+        "intervalOutsideWindow": "Repeat window must be greater than cadence",
         "tooHigh": "The duration of the repetition time range must not be too high",
         "tooLow": "The duration of the repetition time range has to be at least one minute"
       },

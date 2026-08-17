@@ -131,6 +131,14 @@ function applyFieldsToPaced(fields: TrainFieldsState, train: Train): Train['pace
     };
   }
 
+  if (
+    fields.service_interval &&
+    fields.service_window &&
+    fields.service_interval > fields.service_window
+  ) {
+    return train.paced;
+  }
+
   return train.paced
     ? {
         exceptions: train.paced.exceptions,
