@@ -516,29 +516,46 @@ data class NeutralSection(
             val newSpeedDelta =
                 (nextState.speed - currentState.speed) * newPositionDelta / oldPositionDelta
 
-            if (newTimeDelta > 0.microseconds) {
-                return listOf(
+            return if (newTimeDelta > 0.microseconds) {
+                listOf(
                     nextState.copy(
                         time = currentState.time + newTimeDelta,
                         position = end,
                         speed = currentState.speed + newSpeedDelta,
                         pantograph =
-                            currentState.pantograph
-                                .advance(newTimeDelta, context.rollingStock)
-                                .raise(),
+                            if (lowerPantograph)
+                                currentState.pantograph
+                                    .advance(newTimeDelta, context.rollingStock)
+                                    .raise()
+                            else PantographState.up(),
                     )
                 )
+            } else if (lowerPantograph) {
+                listOf(
+                    nextState.copy(
+                        pantograph =
+                            currentState.pantograph
+                                .raise()
+                                .advance(nextState.time - currentState.time, context.rollingStock)
+                    )
+                )
+            } else {
+                listOf(nextState)
             }
         }
 
-        return listOf(
-            nextState.copy(
-                pantograph =
-                    currentState.pantograph
-                        .lower()
-                        .advance(nextState.time - currentState.time, context.rollingStock)
+        return if (lowerPantograph) {
+            listOf(
+                nextState.copy(
+                    pantograph =
+                        currentState.pantograph
+                            .lower()
+                            .advance(nextState.time - currentState.time, context.rollingStock)
+                )
             )
-        )
+        } else {
+            listOf()
+        }
     }
 
     override fun truncateStep(
