@@ -17,6 +17,7 @@ uv run datamodel-codegen \
     --collapse-root-models \
     --output-model-type pydantic_v2.BaseModel \
     --use-default \
+    --strict-nullable \
     --set-default-enum-member \
     --enum-field-as-literal one \
     --use-annotated \

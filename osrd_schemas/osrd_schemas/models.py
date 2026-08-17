@@ -3897,7 +3897,7 @@ class StdcmResponseInternalError(BaseModel):
 
 
 class StdcmSearchEnvironment(BaseModel):
-    allowed_tracks: dict[str, list[str]] | None
+    allowed_tracks: dict[str, list[str]]
     """
     Map of a key (ex. loading gauge) with their allowed track section ids.
     """
@@ -3951,7 +3951,7 @@ class StdcmSearchEnvironmentCreateForm(BaseModel):
 
 
 class StdcmSearchEnvironmentResponse(BaseModel):
-    allowed_tracks: dict[str, list[str]] | None
+    allowed_tracks: dict[str, list[str]]
     """
     Map of a gauge with their authorized track section ids.
     None means no zones restrictions.
@@ -4117,7 +4117,7 @@ class TowedRollingStockForm(BaseModel):
     Velocity in m·s⁻¹
     """
     name: str
-    railjson_version: str | None = "3.4"
+    railjson_version: str = "3.4"
     rolling_resistance: RollingResistancePerWeight
     startup_acceleration: float
     """
@@ -6612,7 +6612,7 @@ class RollingStockForm(BaseModel):
     Mapping of power restriction code to power class
     """
     primary_category: TrainMainCategory
-    railjson_version: str | None = "3.4"
+    railjson_version: str = "3.4"
     raise_pantograph_time: Annotated[float | None, Field(examples=[15.0])] = None
     """
      The time it takes to raise this train's pantograph in seconds.
@@ -7347,25 +7347,25 @@ class Paced(BaseModel):
 
 class TrainSchedule(BaseModel):
     category: TrainCategoryMain | TrainCategorySub | None = None
-    comfort: Comfort | None = Comfort.STANDARD
+    comfort: Comfort = Comfort.STANDARD
     constraint_distribution: Distribution = Distribution.STANDARD
-    initial_speed: float | None = 0.0
-    labels: list[str] | None = []
-    margins: Annotated[Margins | None, Field(validate_default=True)] = {
+    initial_speed: float = 0.0
+    labels: list[str] = []
+    margins: Annotated[Margins, Field(validate_default=True)] = {
         "boundaries": [],
         "values": ["0%"],
     }
-    options: Annotated[TrainScheduleOptions | None, Field(validate_default=True)] = {
+    options: Annotated[TrainScheduleOptions, Field(validate_default=True)] = {
         "stops_at_end_of_block": False,
         "use_electrical_profiles": True,
         "use_speed_limits_for_simulation": True,
     }
     path: Annotated[list[PathItem], Field(validate_default=True)] = []
     power_restrictions: Annotated[
-        list[PowerRestriction] | None, Field(validate_default=True)
+        list[PowerRestriction], Field(validate_default=True)
     ] = []
     rolling_stock_name: str = ""
-    schedule: Annotated[list[ScheduleItem] | None, Field(validate_default=True)] = []
+    schedule: Annotated[list[ScheduleItem], Field(validate_default=True)] = []
     speed_limit_tag: NonBlankString | None = None
     start_time: OffsetInMs = 0
     """
