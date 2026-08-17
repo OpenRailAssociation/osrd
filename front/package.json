@@ -48,7 +48,7 @@
     "@turf/line-intersect": "^7.4.0",
     "@turf/line-slice": "^7.3.5",
     "@turf/line-slice-along": "^7.4.0",
-    "@turf/line-split": "^7.3.5",
+    "@turf/line-split": "^7.4.0",
     "@turf/nearest-point": "^7.4.0",
     "@turf/simplify": "^7.3.5",
     "@turf/transform-translate": "^7.4.0",
