@@ -470,12 +470,28 @@ data class NeutralSection(
     val end: PreciseDistance,
     /** Whether the pantograph must be lowered when entering the zone */
     val lowerPantograph: Boolean,
-) : Constraint {
+) : Constraint, Updatable {
+    /** Whether the pantograph has been fully raised after leaving the neutral section */
+    private var raisedPantograph: Boolean = false
+
+    override fun reset() {
+        raisedPantograph = false
+    }
+
+    override fun update(oldState: TrainState, newState: TrainState) {
+        raisedPantograph =
+            raisedPantograph ||
+                (newState.position >= end && (!lowerPantograph || newState.pantograph.isUp()))
+    }
+
     override fun enactDecision(
         context: EnvelopeSimContext,
         currentState: TrainState,
     ): List<TrainState> {
-        if (currentState.position < start) {
+        if (
+            currentState.position < start ||
+                (currentState.position >= end && (!lowerPantograph || raisedPantograph))
+        ) {
             return listOf()
         }
 
