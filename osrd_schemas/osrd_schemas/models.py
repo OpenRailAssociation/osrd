@@ -7347,23 +7347,32 @@ class Paced(BaseModel):
 
 class TrainSchedule(BaseModel):
     category: TrainCategoryMain | TrainCategorySub | None = None
-    comfort: Comfort | None = None
-    constraint_distribution: Distribution
-    initial_speed: float | None = None
-    labels: list[str] | None = None
-    margins: Margins | None = None
-    options: TrainScheduleOptions | None = None
-    path: list[PathItem]
-    power_restrictions: list[PowerRestriction] | None = None
-    rolling_stock_name: str
-    schedule: list[ScheduleItem] | None = None
+    comfort: Comfort | None = Comfort.STANDARD
+    constraint_distribution: Distribution = Distribution.STANDARD
+    initial_speed: float | None = 0.0
+    labels: list[str] | None = []
+    margins: Annotated[Margins | None, Field(validate_default=True)] = {
+        "boundaries": [],
+        "values": ["0%"],
+    }
+    options: Annotated[TrainScheduleOptions | None, Field(validate_default=True)] = {
+        "stops_at_end_of_block": False,
+        "use_electrical_profiles": True,
+        "use_speed_limits_for_simulation": True,
+    }
+    path: Annotated[list[PathItem], Field(validate_default=True)] = []
+    power_restrictions: Annotated[
+        list[PowerRestriction] | None, Field(validate_default=True)
+    ] = []
+    rolling_stock_name: str = ""
+    schedule: Annotated[list[ScheduleItem] | None, Field(validate_default=True)] = []
     speed_limit_tag: NonBlankString | None = None
-    start_time: OffsetInMs
+    start_time: OffsetInMs = 0
     """
     For calendar timetables: elapsed ms since 1970-01-01T00:00:00Z.
     For hourly timetables: elapsed ms since the timetable start.
     """
-    train_name: str
+    train_name: str = ""
     paced: Paced | None = None
 
 

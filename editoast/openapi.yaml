@@ -16608,25 +16608,43 @@ components:
             oneOf:
             - type: 'null'
             - $ref: '#/components/schemas/TrainCategory'
+            default: null
           comfort:
-            $ref: '#/components/schemas/Comfort'
+            oneOf:
+            - $ref: '#/components/schemas/Comfort'
+            default: STANDARD
           constraint_distribution:
-            $ref: '#/components/schemas/Distribution'
+            oneOf:
+            - $ref: '#/components/schemas/Distribution'
+            default: STANDARD
           initial_speed:
             type: number
             format: double
+            default: 0.0
           labels:
             type: array
             items:
               type: string
+            default: []
           margins:
-            $ref: '#/components/schemas/Margins'
+            oneOf:
+            - $ref: '#/components/schemas/Margins'
+            default:
+              boundaries: []
+              values:
+              - 0%
           options:
-            $ref: '#/components/schemas/TrainScheduleOptions'
+            oneOf:
+            - $ref: '#/components/schemas/TrainScheduleOptions'
+            default:
+              stops_at_end_of_block: false
+              use_electrical_profiles: true
+              use_speed_limits_for_simulation: true
           path:
             type: array
             items:
               $ref: '#/components/schemas/PathItem'
+            default: []
           power_restrictions:
             type: array
             items:
@@ -16645,24 +16663,30 @@ components:
                 value:
                   type: string
               additionalProperties: false
+            default: []
           rolling_stock_name:
             type: string
+            default: ''
           schedule:
             type: array
             items:
               $ref: '#/components/schemas/ScheduleItem'
+            default: []
           speed_limit_tag:
             oneOf:
             - type: 'null'
             - $ref: '#/components/schemas/NonBlankString'
+            default: null
           start_time:
             type: integer
             format: int64
             description: |-
               For calendar timetables: elapsed ms since 1970-01-01T00:00:00Z.
               For hourly timetables: elapsed ms since the timetable start.
+            default: 0
           train_name:
             type: string
+            default: ''
       - type: object
         properties:
           paced:

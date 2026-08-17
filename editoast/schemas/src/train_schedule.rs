@@ -51,6 +51,7 @@ use crate::rolling_stock::TrainCategory;
 
 #[serde_as]
 #[derive(Debug, Default, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
+#[schema(default)]
 #[serde(remote = "Self")]
 pub struct TrainOccurrence {
     pub train_name: String,
@@ -62,6 +63,7 @@ pub struct TrainOccurrence {
     /// For hourly timetables: elapsed ms since the timetable start.
     #[serde(with = "common::units::millisecond::i64")]
     #[schema(value_type = i64)]
+    #[schema(default = 0)]
     pub start_time: Offset,
     pub path: Vec<PathItem>,
     #[serde(default)]
