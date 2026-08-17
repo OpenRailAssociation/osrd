@@ -380,6 +380,7 @@ const StdcmResults = ({
                     consist={selectedSimulation.inputs.consist}
                     isSimulationRetained={isSelectedSimulationRetained}
                     operationalPointsList={operationalPointsList}
+                    backtrackPathItemIndexes={backtrackPathItemIndexes}
                     simulationIndex={selectedSimulation.index}
                   />
                   {isSelectedSimulationRetained && (
