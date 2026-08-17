@@ -1,7 +1,7 @@
 import { Fragment, useState, type JSX } from 'react';
 
 import { Button } from '@osrd-project/ui-core';
-import { ArrowRight, CheckCircle, Container } from '@osrd-project/ui-icons';
+import { ArrowRight, CheckCircle, Container, Turnaround } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
@@ -24,6 +24,7 @@ type SimulationTableProps = {
   consist: StdcmSimulationInputs['consist'];
   isSimulationRetained: boolean;
   operationalPointsList: StdcmResultsOperationalPoint[];
+  backtrackPathItemIndexes: number[];
   simulationIndex: number;
 };
 
@@ -32,6 +33,7 @@ const StdcmResultsTable = ({
   consist,
   isSimulationRetained,
   operationalPointsList,
+  backtrackPathItemIndexes,
   simulationIndex,
 }: SimulationTableProps) => {
   const { t } = useTranslation('stdcm');
@@ -49,6 +51,10 @@ const StdcmResultsTable = ({
   };
 
   const operationalPointRows: JSX.Element[] = [];
+
+  const backtrackPositions = backtrackPathItemIndexes.map(
+    (index) => stdcmData.pathfinding_result.path_item_positions[index]
+  );
 
   let currentConsist: ConsistData = {
     totalLength: consist.totalLength!,
@@ -68,6 +74,7 @@ const StdcmResultsTable = ({
     const isPathStep = isFirstStep || isLastStep || isRequestedPathStep;
     const isNotExtremity = !isFirstStep && !isLastStep;
 
+    const isBackTrackPathItem = backtrackPositions.includes(step.positionOnPath);
     const extremityStepMass =
       (isLastStep && lastDefinedConsistChange?.totalMass) || consist.totalMass!;
     const displayedMass = isNotExtremity ? step.consistChange?.totalMass : extremityStepMass;
@@ -87,7 +94,14 @@ const StdcmResultsTable = ({
       operationalPointRows.push(
         <Fragment key={`op-list-row-${index}`}>
           <tr className={cx({ isPathStep, 'even-row': isEvenRow, 'odd-row': !isEvenRow })}>
-            <td className={cx('index', { 'muted-text': !isPathStep })}>{index + 1}</td>
+            <td className={cx('index', { 'muted-text': !isPathStep })}>
+              {index + 1}
+              {isBackTrackPathItem && (
+                <div className="backtrack-icon">
+                  <Turnaround className="backtrack-svg" />
+                </div>
+              )}
+            </td>
             <td className="name">
               {isNotExtremity &&
               !isRequestedPathStep &&
@@ -95,6 +109,9 @@ const StdcmResultsTable = ({
               step.stopDuration === null
                 ? '='
                 : step.name || t('reportSheet.unknown')}
+              {isBackTrackPathItem && (
+                <div className="backtrack-label">{t('simulation.results.backtrack')}</div>
+              )}
             </td>
             <td className={cx('ch', { 'muted-text': !isPathStep })}>{step.secondaryCode}</td>
             <td className="stop">

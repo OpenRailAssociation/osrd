@@ -140,6 +140,7 @@
     "getSimulation": "Get the simulation",
     "infoMessage": "This simulation doesn't ensure the availability of the path.",
     "results": {
+      "backtrack": "Backtrack",
       "blockingWorkSchedule": "work after {{name}} between {{startTime}} and {{endTime}}",
       "changeSearchCriteria": "You can modify your search criteria to find a solution.",
       "displayAll": "Display all operational points",

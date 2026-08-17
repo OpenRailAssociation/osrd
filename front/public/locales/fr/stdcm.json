@@ -140,6 +140,7 @@
     "getSimulation": "Obtenir la simulation",
     "infoMessage": "Cette simulation n'offre pas la garantie de disponibilité du sillon.",
     "results": {
+      "backtrack": "Rebroussement",
       "blockingWorkSchedule": "travaux après {{name}} entre {{startTime}} et {{endTime}}",
       "changeSearchCriteria": "Vous pouvez modifier vos critères de recherche pour trouver une solution.",
       "displayAll": "Afficher tous les jalons",

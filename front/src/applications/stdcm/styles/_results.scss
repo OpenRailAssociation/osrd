@@ -280,6 +280,23 @@
               text-align: center;
               padding: 1px 9px;
             }
+            .backtrack-icon {
+              display: flex;
+              justify-content: flex-end;
+              color: var(--info60);
+              padding: 3px 0 11px 0;
+            }
+            .backtrack-svg {
+              display: flex;
+              justify-content: center;
+              align-items: center;
+            }
+            .backtrack-label {
+              color: var(--info60);
+              font-weight: normal;
+              padding: 3px 0 11px 0;
+            }
+
             .weight {
               width: 128px;
               padding-left: 40px;
