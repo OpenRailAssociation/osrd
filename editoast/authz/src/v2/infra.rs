@@ -312,6 +312,10 @@ pub fn infra_privileges(user: User, infra: Infra) -> Protected<HashSet<InfraPriv
     ))
 }
 
+pub fn infra_privilege_check(infra: Infra, privilege: InfraPrivilege) -> Protected<()> {
+    Protected::value(()).with_check(Check::HasInfraPrivilege(Actor::Issuer, privilege, infra))
+}
+
 /// Return an operation that checks the list of subjects which have the given grant on an infra.
 pub fn infra_granted_subjects(infra: Infra, grant: InfraGrant) -> Protected<Vec<Subject>> {
     fn get_granted_users(infra: Infra, grant: InfraGrant) -> Protected<Vec<User>> {
