@@ -358,8 +358,6 @@
     "errorMessages": {
       "error": "An error has occurred",
       "hardErrorInfra": "The infrastructure contains errors and cannot be used without first being corrected.",
-      "intervalTooHigh": "The cadence of the service must not be too high",
-      "intervalTooLow": "The cadence of the service has to be at least one minute",
       "invalidInitialSpeed": "The initial speed must be rounded to the nearest tenth",
       "mandatoryField": "Required field",
       "nameLengthLimit": "The name must not exceed 128 characters",
@@ -375,9 +373,15 @@
       "noTrainCount": "The quantity of requested trains must be greater than zero",
       "noTrainStep": "The increment step of the train must be greater than zero",
       "originTimeOutsideWindow": "Departure date must be between {{low}} and {{high}}",
+      "pacedTrainInterval": {
+        "tooHigh": "The cadence of the service must not be too high",
+        "tooLow": "The cadence of the service has to be at least one minute"
+      },
+      "pacedTrainTimeWindow": {
+        "tooHigh": "The duration of the repetition time range must not be too high",
+        "tooLow": "The duration of the repetition time range has to be at least one minute"
+      },
       "requiredField": "Required field.",
-      "timeWindowTooHigh": "The duration of the repetition time range must not be too high",
-      "timeWindowTooLow": "The duration of the repetition time range has to be at least one minute",
       "tooHighInput": "Must be < 43800",
       "tooLowInput": "Must be > 0",
       "trainScheduleTitle": "An error has occurred",

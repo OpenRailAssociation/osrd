@@ -22,11 +22,11 @@ import ExtraOccurrenceForm from './ExtraOccurrenceForm';
 import ExtraOccurrenceRow from './ExtraOccurrenceRow';
 import { ServiceChangeWarningDialog } from './ServiceChangeWarningDialog';
 
-export type ServiceTimingError = 'TOO_LOW' | 'TOO_HIGH' | null;
+export type ServiceTimingError = 'tooLow' | 'tooHigh' | null;
 
 export function computeServiceTimingError(serviceTiming?: number): ServiceTimingError {
-  if (!serviceTiming) return 'TOO_LOW';
-  if (serviceTiming > MAX_DURATION_MS) return 'TOO_HIGH';
+  if (!serviceTiming) return 'tooLow';
+  if (serviceTiming > MAX_DURATION_MS) return 'tooHigh';
   return null;
 }
 
@@ -163,10 +163,9 @@ export default function TrainServiceForm({
                     serviceIntervalError
                       ? {
                           status: 'error',
-                          message:
-                            serviceIntervalError === 'TOO_HIGH'
-                              ? t('manageTrainSchedule.errorMessages.intervalTooHigh')
-                              : t('manageTrainSchedule.errorMessages.intervalTooLow'),
+                          message: t(
+                            `manageTrainSchedule.errorMessages.pacedTrainInterval.${serviceIntervalError}`
+                          ),
                         }
                       : undefined
                   }
@@ -186,10 +185,9 @@ export default function TrainServiceForm({
                     serviceWindowError
                       ? {
                           status: 'error',
-                          message:
-                            serviceWindowError === 'TOO_HIGH'
-                              ? t('manageTrainSchedule.errorMessages.timeWindowTooHigh')
-                              : t('manageTrainSchedule.errorMessages.timeWindowTooLow'),
+                          message: t(
+                            `manageTrainSchedule.errorMessages.pacedTrainTimeWindow.${serviceWindowError}`
+                          ),
                         }
                       : undefined
                   }
