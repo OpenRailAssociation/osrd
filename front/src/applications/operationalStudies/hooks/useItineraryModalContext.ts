@@ -4,8 +4,8 @@ import type { TrainScheduleWithDetails } from 'modules/trainSchedule/types';
 import type { OccurrenceId } from 'reducers/osrdconf/types';
 
 export type TrainScheduleToEditData = {
-  trainScheduleId: number;
-  originalTrainSchedule: TrainScheduleWithDetails;
+  trainSchedule: TrainScheduleWithDetails;
+  originalTrainSchedule?: TrainScheduleWithDetails;
   occurrenceId?: OccurrenceId;
 };
 

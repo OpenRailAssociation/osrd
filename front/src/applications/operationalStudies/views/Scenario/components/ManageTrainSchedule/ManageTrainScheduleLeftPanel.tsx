@@ -1,36 +1,37 @@
-import { useCallback, useContext, useState } from 'react';
+import { useCallback, useContext } from 'react';
 
 import { ChevronLeft, Pencil } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
-import { useItineraryModalContext } from 'applications/operationalStudies/hooks/useItineraryModalContext';
-import { useTimetableContext } from 'applications/operationalStudies/hooks/useTimetableContext';
+import {
+  useItineraryModalContext,
+  type TrainScheduleToEditData,
+} from 'applications/operationalStudies/hooks/useItineraryModalContext';
 import { EditedElementContainerContext } from 'applications/operationalStudies/views/Scenario/components/EditedElementContainerContext';
 import CheckboxRadioSNCF from 'common/BootstrapSNCF/CheckboxRadioSNCF';
 import { ConfirmModal, useModal } from 'common/BootstrapSNCF/ModalSNCF';
-import DotsLoader from 'common/DotsLoader';
 import { toggleEditingTrainType } from 'reducers/osrdconf/operationalStudiesConf';
 import {
   getEditingTrainType,
   getOperationalStudiesConf,
 } from 'reducers/osrdconf/operationalStudiesConf/selectors';
-import type { TrainScheduleToEditData } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 
-import CreateTrainScheduleButton from './CreateTrainScheduleButton';
-import useUpdateTrainSchedule from './hooks/useUpdateTrainSchedule';
 import PacedTrainSettings from './PacedTrainSettings';
 
 export type ManageTrainScheduleLeftPanelProps = {
   closeViewAndOpenTableBoard: (closeView: () => void) => void;
 };
 
+// TODO: This component should be removed as soon as possible, as it's not functional anymore
+//       now that we got rid of the operationalStudiesConf store.
+
 /**
  * Create/edit unique trains and paced trains
  */
 const ManageTrainScheduleLeftPanel = ({
-  closeViewAndOpenTableBoard,
+  closeViewAndOpenTableBoard: _unused,
 }: ManageTrainScheduleLeftPanelProps) => {
   const { setEditedElementContainer } = useContext(EditedElementContainerContext);
   const dispatch = useAppDispatch();
@@ -38,27 +39,22 @@ const ManageTrainScheduleLeftPanel = ({
   const editingTrainType = useSelector(getEditingTrainType);
   const osrdConf = useSelector(getOperationalStudiesConf);
 
-  const { upsertTrainSchedules } = useTimetableContext();
   const { trainScheduleToEditData, closeItineraryModal } = useItineraryModalContext();
 
   const { openModal, closeModal } = useModal();
-
-  const [isWorking, setIsWorking] = useState(false);
 
   const leaveManageTrainSchedule = () => {
     closeItineraryModal();
   };
 
-  const updateTimetable = useUpdateTrainSchedule(setIsWorking, upsertTrainSchedules);
-
-  const getEditLabel = (_itemToEdit: TrainScheduleToEditData) => {
-    if (!_itemToEdit.originalTrainSchedule.paced && editingTrainType === 'uniqueTrain') {
+  const getEditLabel = (itemToEdit: TrainScheduleToEditData) => {
+    if (!itemToEdit.trainSchedule.paced && editingTrainType === 'uniqueTrain') {
       return t('updateUniqueTrain');
     }
-    if (_itemToEdit.originalTrainSchedule.paced && editingTrainType !== 'uniqueTrain') {
+    if (itemToEdit.trainSchedule.paced && editingTrainType !== 'uniqueTrain') {
       return editingTrainType === 'pacedTrain' ? t('updatePacedTrain') : t('updateOccurrence');
     }
-    return !_itemToEdit.originalTrainSchedule.paced
+    return !itemToEdit.trainSchedule.paced
       ? t('turnUniqueTrainIntoPacedTrain')
       : t('turnPacedTrainIntoUniqueTrain');
   };
@@ -66,18 +62,17 @@ const ManageTrainScheduleLeftPanel = ({
   const openConfirmModal = useCallback(() => {
     if (
       trainScheduleToEditData &&
-      trainScheduleToEditData.originalTrainSchedule.paced &&
-      trainScheduleToEditData.originalTrainSchedule.paced.exceptions.length > 0 &&
+      trainScheduleToEditData.trainSchedule.paced &&
+      trainScheduleToEditData.trainSchedule.paced.exceptions.length > 0 &&
       (osrdConf.timeWindow.toISOString() !==
-        trainScheduleToEditData.originalTrainSchedule.paced.timeWindow.toISOString() ||
+        trainScheduleToEditData.trainSchedule.paced.timeWindow.toISOString() ||
         osrdConf.interval.toISOString() !==
-          trainScheduleToEditData.originalTrainSchedule.paced.interval.toISOString())
+          trainScheduleToEditData.trainSchedule.paced.interval.toISOString())
     ) {
       openModal(
         <ConfirmModal
           title={t('pacedTrains.resetExceptionsConfirmation')}
           onConfirm={() => {
-            updateTimetable();
             closeModal();
           }}
           onCancel={closeModal}
@@ -85,18 +80,8 @@ const ManageTrainScheduleLeftPanel = ({
         />,
         'sm'
       );
-    } else {
-      updateTimetable();
     }
-  }, [
-    closeModal,
-    osrdConf.interval,
-    osrdConf.timeWindow,
-    trainScheduleToEditData,
-    updateTimetable,
-    openModal,
-    t,
-  ]);
+  }, [closeModal, osrdConf.interval, osrdConf.timeWindow, trainScheduleToEditData, openModal, t]);
 
   return (
     <div className="scenario-timetable-manage-train-schedule left-column">
@@ -132,37 +117,18 @@ const ManageTrainScheduleLeftPanel = ({
         )}
 
         {trainScheduleToEditData === undefined && (
-          <>
-            {isWorking ? (
-              <button
-                className="btn btn-primary disabled mb-2"
-                type="button"
-                aria-label={t('saving')}
-                title={t('saving')}
-              >
-                <DotsLoader />
-              </button>
-            ) : (
-              <CreateTrainScheduleButton
-                setIsWorking={setIsWorking}
-                closeManageTrainScheduleAndOpenTableBoard={() =>
-                  closeViewAndOpenTableBoard(leaveManageTrainSchedule)
-                }
-              />
-            )}
-            <div className="osrd-config-item-container paced-trains-container">
-              <CheckboxRadioSNCF
-                type="checkbox"
-                label={t('pacedTrains.defineService')}
-                id="define-paced-train"
-                name="define-paced-train"
-                containerClassName="mb-0"
-                checked={editingTrainType === 'pacedTrain'}
-                onChange={() => dispatch(toggleEditingTrainType())}
-              />
-              {editingTrainType === 'pacedTrain' && <PacedTrainSettings />}
-            </div>
-          </>
+          <div className="osrd-config-item-container paced-trains-container">
+            <CheckboxRadioSNCF
+              type="checkbox"
+              label={t('pacedTrains.defineService')}
+              id="define-paced-train"
+              name="define-paced-train"
+              containerClassName="mb-0"
+              checked={editingTrainType === 'pacedTrain'}
+              onChange={() => dispatch(toggleEditingTrainType())}
+            />
+            {editingTrainType === 'pacedTrain' && <PacedTrainSettings />}
+          </div>
         )}
       </div>
       <div

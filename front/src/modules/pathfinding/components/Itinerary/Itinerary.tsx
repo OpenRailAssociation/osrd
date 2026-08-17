@@ -1,9 +1,9 @@
 import { useCallback, useEffect } from 'react';
 
-import { ArrowSwitch, Route, Plus, Trash } from '@osrd-project/ui-icons';
+import { Route, Plus, Trash } from '@osrd-project/ui-icons';
 import bbox from '@turf/bbox';
 import type { Position } from 'geojson';
-import { compact, isNil } from 'lodash';
+import { isNil } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
@@ -11,7 +11,6 @@ import { useManageTrainScheduleContext } from 'applications/operationalStudies/h
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { computeBBoxViewport } from 'common/Map/WarpedMap/core/helpers';
 import Pathfinding from 'modules/pathfinding/components/Pathfinding';
-import reversePathSteps from 'modules/pathfinding/helpers/reversePathSteps';
 import { useMapSettings, useMapSettingsActions } from 'reducers/commonMap';
 import { setWarning } from 'reducers/main';
 import {
@@ -74,13 +73,6 @@ const Itinerary = ({ rollingStockId }: { rollingStockId: number | undefined }) =
     }
   };
 
-  const inverseOD = () => {
-    notifyRestrictionResetWarning();
-    // No step should be null when inverseOD is called (as start and arrival need to be defined), so compact should let the array unchanged but constrain the type
-    const cPathSteps = compact(pathSteps);
-    launchPathfinding(reversePathSteps(cPathSteps));
-  };
-
   const resetPathfinding = () => {
     notifyRestrictionResetWarning();
     launchPathfinding([null, null]);
@@ -129,15 +121,6 @@ const Itinerary = ({ rollingStockId }: { rollingStockId: number | undefined }) =
               <Plus />
             </button>
           )}
-          <button
-            data-testid="reverse-itinerary-button"
-            className="col ml-1 my-1 btn bg-warning btn-sm"
-            type="button"
-            onClick={inverseOD}
-          >
-            <span className="mr-1">{t('inverseOD')}</span>
-            <ArrowSwitch />
-          </button>
           <button
             data-testid="delete-itinerary-button"
             type="button"

@@ -1,18 +1,13 @@
 import { describe, expect, it } from 'vitest';
 
-import { defaultMapSettings } from 'reducers/commonMap';
-import type { OperationalStudiesConfState } from 'reducers/osrdconf/types';
 import { Duration } from 'utils/duration';
 
+import type { ItineraryModalTrainState } from '../../Itinerary/ItineraryModal';
 import { formatTrainSchedulePayload } from '../formatTrainSchedulePayload';
 
 describe('formatTrainSchedulePayload', () => {
-  const rawOsrdconf: OperationalStudiesConfState = {
-    timetableID: 184,
+  const rawTrainState: ItineraryModalTrainState = {
     rollingStockName: 'rollingStock1',
-    rollingStockID: 1,
-    infraID: 2,
-    infraIsLocked: false,
     name: 'test',
     startTime: new Date('2025-06-02T12:45:00.000Z'),
     initialSpeed: 0,
@@ -61,7 +56,6 @@ describe('formatTrainSchedulePayload', () => {
         coordinates: [-0.16408630124250465, 49.46600036530178],
       },
     ],
-    mapSettings: defaultMapSettings,
     constraintDistribution: 'MARECO',
     usingElectricalProfiles: true,
     usingSpeedLimits: true,
@@ -75,7 +69,7 @@ describe('formatTrainSchedulePayload', () => {
 
   describe('User creates a paced train', () => {
     it('should return a TrainSchedule payload with paced fields and empty exceptions', () => {
-      const newTrainSchedulePayload = formatTrainSchedulePayload(rawOsrdconf);
+      const newTrainSchedulePayload = formatTrainSchedulePayload(rawTrainState);
       expect(newTrainSchedulePayload).toEqual({
         category: {
           main_category: 'FREIGHT_TRAIN',
@@ -135,11 +129,11 @@ describe('formatTrainSchedulePayload', () => {
 
   describe('User creates a unique train', () => {
     it('should return a TrainSchedule payload without paced fields', () => {
-      const osrdconfUniqueTrain: OperationalStudiesConfState = {
-        ...rawOsrdconf,
+      const uniqueTrainState: ItineraryModalTrainState = {
+        ...rawTrainState,
         editingTrainType: 'uniqueTrain',
       };
-      const newTrainSchedulePayload = formatTrainSchedulePayload(osrdconfUniqueTrain);
+      const newTrainSchedulePayload = formatTrainSchedulePayload(uniqueTrainState);
       expect(newTrainSchedulePayload.paced).toBeUndefined();
       expect(newTrainSchedulePayload.train_name).toBe('test');
       expect(newTrainSchedulePayload.rolling_stock_name).toBe('rollingStock1');
@@ -148,15 +142,15 @@ describe('formatTrainSchedulePayload', () => {
 
   describe('The new origin has an arrival time (origin was deleted)', () => {
     it('should fold the first waypoint arrival into the start time and shift the others', () => {
-      const osrdconf: OperationalStudiesConfState = {
-        ...rawOsrdconf,
+      const trainState: ItineraryModalTrainState = {
+        ...rawTrainState,
         pathSteps: [
-          { ...rawOsrdconf.pathSteps[0]!, arrival: Duration.parse('PT10M') },
-          { ...rawOsrdconf.pathSteps[1]!, arrival: Duration.parse('PT25M') },
+          { ...rawTrainState.pathSteps[0]!, arrival: Duration.parse('PT10M') },
+          { ...rawTrainState.pathSteps[1]!, arrival: Duration.parse('PT25M') },
         ],
       };
 
-      const payload = formatTrainSchedulePayload(osrdconf);
+      const payload = formatTrainSchedulePayload(trainState);
 
       expect(payload.start_time).toBe(new Date('2025-06-02T12:55:00.000Z').getTime());
       expect(payload.schedule).toEqual([

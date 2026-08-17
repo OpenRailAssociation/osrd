@@ -350,8 +350,6 @@
     "uniqueTrain_zero": "0 Zug"
   },
   "manageTrainSchedule": {
-    "addPacedTrain": "Leistung hinzufügen",
-    "addUniqueTrain": "Zug hinzufügen",
     "addVia": "Diesen Wegepunkt hinzufügen",
     "addVias": "Wegepunkte hinzufügen",
     "allowances": {
@@ -412,10 +410,8 @@
       "title_on": "{{count}} von {{total}} verletzten Beschränkungen"
     },
     "infraLoading": "Infrastruktur wird geladen…",
-    "inputOPMainCodes": "Geben Sie die Kürzel der zu durchfahrenden Betriebsstellen ein, getrennt durch Leerzeichen.",
     "inputOPMainCodesExample": "Bsp.: HHA HGÖ FKS",
     "invalidTrainScheduleStep": "Mindestens ein Wegepunkt konnte nicht erkannt werden.",
-    "inverseOD": "Route umkehren",
     "itineraryModal": {
       "addLocationOnMap": "Betriebsstelle auf der Karte hinzufügen",
       "alertInvalidOP": "Mindestens ein Wegepunkt konnte nicht erkannt werden",
@@ -481,7 +477,6 @@
     "removeVia": "Diesen Wegepunkt entfernen",
     "returnToSimulationResults": "Zurück zu Simulationsergebnissen",
     "rollingstock": "Schienenfahrzeug",
-    "saving": "Wird gespeichert… bitte warten",
     "showTrainSettings": "Anzeigen",
     "speedLimitByTagAbbrev": "Gesch.-Code",
     "tabs": {
@@ -494,7 +489,6 @@
       "unrecognizedRollingStock": "Unbekanntes Schienenfahrzeug: {{rollingStockName}}",
       "unspecifiedRollingStock": "Schienenfahrzeug nicht angegeben"
     },
-    "toggleTrigramSearch": "Betriebsstellenkürzelsuche umschalten",
     "trainAdded": "Zug hinzugefügt",
     "trainLabels": "Tags",
     "trainScheduleDepartureTime": "Abfahrtszeit",

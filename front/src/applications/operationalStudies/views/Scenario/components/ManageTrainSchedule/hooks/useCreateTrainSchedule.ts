@@ -1,7 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { useSelector } from 'react-redux';
 
-import { useItineraryModalContext } from 'applications/operationalStudies/hooks/useItineraryModalContext';
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import { useTimetableContext } from 'applications/operationalStudies/hooks/useTimetableContext';
 import type { TrainScheduleResponse } from 'common/api/osrdEditoastApi';
@@ -10,11 +8,6 @@ import {
   createTrainSchedules,
 } from 'modules/trainSchedule/helpers/updateTrainScheduleHelpers';
 import { setFailure, setSuccess } from 'reducers/main';
-import { clearAddedExceptionsList } from 'reducers/osrdconf/operationalStudiesConf';
-import {
-  getAddedExceptions,
-  getOperationalStudiesConf,
-} from 'reducers/osrdconf/operationalStudiesConf/selectors';
 import { updateSelectedTrain } from 'reducers/simulationResults';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
@@ -22,8 +15,10 @@ import { formatEditoastIdToTrainScheduleId } from 'utils/trainId';
 
 import { formatTrainSchedulePayload } from '../helpers/formatTrainSchedulePayload';
 import { validateTrainSchedule } from '../helpers/validateTrainSchedule';
+import type { ItineraryModalTrainState } from '../Itinerary/ItineraryModal';
 
 export function useCreateTrainSchedule(
+  trainState: ItineraryModalTrainState,
   setIsWorking: (isWorking: boolean) => void,
   onTrainCreated: () => void
 ) {
@@ -33,18 +28,13 @@ export function useCreateTrainSchedule(
   const { sandboxId, timetableId } = useScenarioContext();
   const { upsertTrainSchedules } = useTimetableContext();
 
-  const simulationConf = useSelector(getOperationalStudiesConf);
-  const addedExceptions = useSelector(getAddedExceptions);
-
-  const { closeItineraryModal } = useItineraryModalContext();
-
-  const isPacedTrainMode = simulationConf.editingTrainType === 'pacedTrain';
+  const isPacedTrainMode = trainState.editingTrainType === 'pacedTrain';
 
   return async () => {
     setIsWorking(true);
 
     try {
-      const newTrainSchedulePayload = formatTrainSchedulePayload(simulationConf);
+      const newTrainSchedulePayload = formatTrainSchedulePayload(trainState);
 
       const validationErrors = validateTrainSchedule(newTrainSchedulePayload);
       if (validationErrors.length) {
@@ -72,7 +62,7 @@ export function useCreateTrainSchedule(
 
       let trainScheduleToUpsert = formattedNewTrainSchedule;
 
-      const newAddedExceptions = addedExceptions.map(({ startTime: exStartTime }) => ({
+      const newAddedExceptions = trainState.addedExceptions.map(({ startTime: exStartTime }) => ({
         key: '', // TODO : remove this when the key will be removed from the model
         start_time: { value: exStartTime.getTime() },
       }));
@@ -116,15 +106,11 @@ export function useCreateTrainSchedule(
       dispatch(
         setSuccess({
           title: isPacedTrainMode ? t('pacedTrains.added') : t('trainAdded'),
-          text: `${simulationConf.name}: ${simulationConf.startTime.toLocaleTimeString()}`,
+          text: `${trainState.name}: ${trainState.startTime.toLocaleTimeString()}`,
         })
       );
-      if (simulationConf.editingTrainType === 'pacedTrain') {
-        dispatch(clearAddedExceptionsList());
-      }
       upsertTrainSchedules([trainScheduleToUpsert]);
 
-      closeItineraryModal();
       onTrainCreated();
     } catch (e) {
       dispatch(setFailure(castErrorToFailure(e)));

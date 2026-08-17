@@ -348,8 +348,6 @@
     "uniqueTrain_zero": "0 train"
   },
   "manageTrainSchedule": {
-    "addPacedTrain": "Ajouter une mission",
-    "addUniqueTrain": "Ajouter un train",
     "addVia": "Ajouter ce point de passage",
     "addVias": "Ajout de points de passage",
     "allowances": {
@@ -412,10 +410,8 @@
       "title_on": "{{count}} sur {{total}} contraintes incompatibles"
     },
     "infraLoading": "Infra en cours de chargement…",
-    "inputOPMainCodes": "Entrez la liste des trigrammes des points remarquables composant l'itinéraire souhaité.",
     "inputOPMainCodesExample": "Ex : LSN CIG CCS",
     "invalidTrainScheduleStep": "Au moins un des points de passage n'a pas été reconnu",
-    "inverseOD": "Inverser l'itinéraire",
     "itineraryModal": {
       "addLocationOnMap": "Ajouter un point remarquable sur la carte",
       "addPoint": "Ajouter",
@@ -506,7 +502,6 @@
     "removeVia": "Retirer ce via",
     "returnToSimulationResults": "Retourner aux résultats de simulation",
     "rollingstock": "Matériel",
-    "saving": "Enregistrement en cours… veuillez patienter",
     "showTrainSettings": "Afficher",
     "speedLimitByTagAbbrev": "Code compo.",
     "tabs": {
@@ -517,7 +512,6 @@
       "unrecognizedRollingStock": "Matériel non reconnu : {{rollingStockName}}",
       "unspecifiedRollingStock": "Matériel roulant non renseigné"
     },
-    "toggleTrigramSearch": "Basculer l'affichage de la recherche par trigramme",
     "trainAdded": "Train ajouté",
     "trainHeader": {
       "allowances": {

@@ -84,16 +84,17 @@ const TrainHeader = ({ train, path, trainSchedulesWithDetails }: TrainHeaderProp
   };
 
   const onItineraryOpened = useCallback(() => {
+    const trainSchedule = occurrenceId
+      ? applyOccurrenceOnPacedTrain(originalTrainSchedule, train, occurrenceId, rollingStocks)
+      : originalTrainSchedule;
     dispatch(
       selectTrainToEdit({
-        trainSchedule: occurrenceId
-          ? applyOccurrenceOnPacedTrain(originalTrainSchedule, train, occurrenceId, rollingStocks)
-          : originalTrainSchedule,
+        trainSchedule,
         isOccurrence: !!occurrenceId,
       })
     );
     openItineraryModalToEdit({
-      trainScheduleId,
+      trainSchedule,
       originalTrainSchedule: originalTrainSchedule ?? train,
       occurrenceId,
     });

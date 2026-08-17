@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import {
   ItineraryModalContext,
   type ItineraryModalContextType,
+  type TrainScheduleToEditData,
 } from 'applications/operationalStudies/hooks/useItineraryModalContext';
 import { ManageTrainScheduleContextProvider } from 'applications/operationalStudies/hooks/useManageTrainScheduleContext';
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
@@ -24,7 +25,7 @@ import ScenarioLoaderMessage from 'modules/scenario/components/ScenarioLoaderMes
 import ChronogramWrapper from 'modules/simulationResult/components/Chronogram/ChronogramWrapper';
 import type { PanelSelectionMode } from 'modules/simulationResult/components/SpaceTimeChartWrapper/CurveSelectionSidePanel';
 import { setFailure } from 'reducers/main';
-import type { TrainId, TrainScheduleToEditData } from 'reducers/osrdconf/types';
+import type { TrainId } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 import { usePrevious } from 'utils/hooks/state';
@@ -38,6 +39,7 @@ import ItineraryModal from './ManageTrainSchedule/Itinerary/ItineraryModal';
 import NGE from './NGE';
 import { HIDDEN_CHART_TOP_HEIGHT } from './SimulationResults/SimulationResults';
 import TimetableBoardWrapper from './Timetable/TimetableBoardWrapper';
+import { computeLatestMidnight } from './Timetable/utils';
 
 type ScenarioContentProps = {
   activeBoards: Set<Board>;
@@ -210,6 +212,14 @@ const ScenarioContent = ({ activeBoards, toggleBoard }: ScenarioContentProps) =>
 
   const handleNGELoad = () => setNGEIsLoading(false);
 
+  const defaultStartTime = useMemo(
+    () =>
+      scenario.timetable_type === 'CALENDAR'
+        ? computeLatestMidnight(trainSchedules ?? [], new Date())
+        : undefined,
+    [scenario.timetable_type, trainSchedules]
+  );
+
   return (
     <TimetableContext.Provider value={timetableContext}>
       <ItineraryModalContext.Provider value={itineraryModalContext}>
@@ -217,7 +227,11 @@ const ScenarioContent = ({ activeBoards, toggleBoard }: ScenarioContentProps) =>
           <main className="mastcontainer mastcontainer-no-mastnav scenario scenario-content-v2">
             {itineraryModalOpen && (
               <ManageTrainScheduleContextProvider>
-                <ItineraryModal onTrainCreated={openAndScrollToTableBoard} />
+                <ItineraryModal
+                  onTrainCreated={openAndScrollToTableBoard}
+                  trainScheduleToEditData={trainScheduleToEditData}
+                  defaultStartTime={defaultStartTime}
+                />
               </ManageTrainScheduleContextProvider>
             )}
             <div
