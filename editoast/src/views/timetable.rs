@@ -70,6 +70,8 @@ use crate::authentication;
 use crate::error::Result;
 use crate::views::AuthorizationError;
 use crate::views::path::operational_point_cache::OperationalPointCache;
+use crate::views::rolling_stock::RollingStockError;
+use crate::views::rolling_stock::filter_readable_occurrences;
 use crate::views::timetable::simulation::SimulationResponseSuccess;
 use editoast_models::Infra;
 use editoast_models::TrainScheduleSet;
@@ -273,7 +275,7 @@ pub struct ElectricalProfileSetIdQueryParam {
 }
 
 /// Retrieve the list of requirements of the timetable (invalid trains are ignored)
-#[editoast_derive::route]
+#[editoast_derive::route(authz::Role::OperationalStudies)]
 #[utoipa::path(
     get, path = "",
     tag = "timetable",
@@ -282,13 +284,13 @@ pub struct ElectricalProfileSetIdQueryParam {
         (status = 200, description = "The paginated list of timetable requirements", body = inline(TrainRequirementsPage)),
     ),
 )]
-// TODO test the endpoint
 pub(in crate::views) async fn requirements(
     State(AppState {
         db_pool,
         valkey_client,
         core_client,
         config,
+        regulator,
         ..
     }): State<AppState>,
     Extension(authn_state): Extension<authentication::State>,
@@ -299,8 +301,12 @@ pub(in crate::views) async fn requirements(
         electrical_profile_set_id,
     }): Query<ElectricalProfileSetIdQueryParam>,
 ) -> Result<Json<TrainRequirementsPage>> {
-    if !matches!(&authn_state, authentication::State::Skip) {
-        return Err(AuthorizationError::Forbidden.into());
+    if let authentication::State::Authenticated { user, .. } = &authn_state {
+        v2::infra_privileges(*user, authz::Infra(infra_id))
+            .map(async |privileges| privileges.contains(&authz::InfraPrivilege::CanRestrictedRead))
+            .ok_or(AuthorizationError::Forbidden)
+            .run::<AuthorizationError, _>(&authn_state.authorizer(regulator.openfga()))
+            .await??;
     }
 
     let conn = &mut db_pool.get().await?;
@@ -340,8 +346,8 @@ pub(in crate::views) async fn requirements(
         .into_iter()
         .into_group_map_by(|e| e.train_schedule_id);
 
-    // No rolling stock authorization is needed here: the endpoint is restricted to core above
-    let (occurrence_ids, occurrences): (Vec<_>, Vec<_>) = paced_trains
+    // Collect all occurrences from all trains
+    let occurrences = paced_trains
         .iter()
         .flat_map(|train_schedule| {
             let exceptions = exceptions
@@ -352,7 +358,30 @@ pub(in crate::views) async fn requirements(
                 .collect_vec();
             train_schedule.iter_occurrences(&exceptions).collect_vec()
         })
-        .unzip();
+        .collect_vec();
+
+    // An exception may use another rolling stock than the train schedule it belongs to
+    let rolling_stock_names: HashSet<_> = occurrences
+        .iter()
+        .map(|(_, occurrence)| occurrence.rolling_stock_name.clone())
+        .collect();
+    let rolling_stocks: Vec<editoast_models::rolling_stock::RollingStock> =
+        editoast_models::rolling_stock::RollingStock::retrieve_batch_unchecked(
+            conn,
+            rolling_stock_names,
+        )
+        .await
+        .map_err(RollingStockError::from)?;
+
+    let occurrences = filter_readable_occurrences(
+        occurrences.into_iter().collect(),
+        &rolling_stocks,
+        &authn_state,
+        regulator.openfga(),
+    )
+    .await?;
+
+    let (occurrence_ids, occurrences): (Vec<_>, Vec<_>) = occurrences.into_iter().unzip();
 
     let simulations = train_simulation_ordered_batch(
         conn,
@@ -955,6 +984,7 @@ mod tests {
 
     use super::*;
     use crate::error::InternalError;
+    use crate::fixtures::create_fast_rolling_stock;
     use crate::fixtures::create_small_infra;
     use crate::fixtures::create_timetable;
     use crate::fixtures::create_timetable_with_simple_paced_train;
@@ -962,7 +992,10 @@ mod tests {
     use crate::fixtures::create_train_schedule_exception;
     use crate::fixtures::create_train_schedule_set;
     use crate::fixtures::simple_paced_train_base;
+    use crate::fixtures::simple_paced_train_changeset;
     use crate::views::test_app;
+    use crate::views::test_app::TestRequestExt as _;
+    use crate::views::tests::mocked_core_pathfinding_sim_and_proj;
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn get_unexisting_timetable() {
@@ -1131,6 +1164,78 @@ mod tests {
             .assert_status_not_found()
             .json();
         assert_eq!(&response.error_type, "editoast:timetable:NotFound")
+    }
+
+    /// Creates a timetable holding one paced train per given rolling stock name
+    async fn create_requirements_fixtures(
+        app: &crate::views::test_app::TestApp,
+        rolling_stock_names: &[&str],
+    ) -> (Infra, Timetable, Vec<editoast_models::TrainSchedule>) {
+        let db_pool = app.db_pool();
+        let infra = create_small_infra(&mut db_pool.get_ok()).await;
+        let (timetable, train_schedule_set) =
+            create_timetable_with_train_schedule_set(&mut db_pool.get_ok()).await;
+        let mut trains = vec![];
+        for rolling_stock_name in rolling_stock_names {
+            create_fast_rolling_stock(&mut db_pool.get_ok(), rolling_stock_name).await;
+            let train = simple_paced_train_changeset(train_schedule_set.id)
+                .train_name((*rolling_stock_name).to_owned())
+                .rolling_stock_name((*rolling_stock_name).to_owned())
+                .create(&mut db_pool.get_ok())
+                .await
+                .expect("failed to create paced train");
+            trains.push(train);
+        }
+        (infra, timetable, trains)
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn requirements_filters_out_unreadable_trains_only() {
+        let app = test_app!()
+            .core_client(mocked_core_pathfinding_sim_and_proj().into())
+            .build();
+        let (infra, timetable, trains) =
+            create_requirements_fixtures(&app, &["readable_rolling_stock", "unreadable_rs"]).await;
+        let readable_train = &trains[0];
+        let readable_rolling_stock = editoast_models::rolling_stock::RollingStock::retrieve(
+            app.db_pool().get_ok(),
+            readable_train.rolling_stock_name.clone(),
+        )
+        .await
+        .expect("failed to retrieve the rolling stock")
+        .expect("the rolling stock should exist");
+
+        // a user granted a read access on the rolling stock of the first train only
+        let user = app
+            .user("authorized", "Authorized")
+            .with_infra_grant(infra.id, authz::InfraGrant::Reader)
+            .with_rolling_stock_grant(readable_rolling_stock.id, authz::RollingStockGrant::Reader)
+            .with_roles([authz::Role::OperationalStudies])
+            .create()
+            .await;
+
+        let page: TrainRequirementsPage = app
+            .get(&format!(
+                "/timetable/{}/requirements?infra_id={}",
+                timetable.id, infra.id
+            ))
+            .by_user(&user.info)
+            .await
+            .assert_status_ok()
+            .json();
+
+        // Only the occurrences of the readable train are reported
+        let reported: HashSet<_> = page
+            .results
+            .iter()
+            .map(|requirements| requirements.train_id.clone())
+            .collect();
+        let expected: HashSet<_> = readable_train
+            .iter_occurrences(&[])
+            .map(|(occurrence_id, _)| occurrence_id.to_string())
+            .collect();
+        assert!(!expected.is_empty());
+        assert_eq!(reported, expected);
     }
 
     #[test]
