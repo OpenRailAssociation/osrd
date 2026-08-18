@@ -164,7 +164,7 @@ export const useTimesStopsColumns = <T extends TimesStopsRow>(
       },
       {
         ...keyColumn('arrival', timeColumn(isOutputTable)),
-        title: t('arrivalTime'),
+        title: t('requestedArrival'),
         headerClassName: 'padded-header',
         ...fixedWidth(isOutputTable ? 105 : 125),
 
@@ -180,7 +180,7 @@ export const useTimesStopsColumns = <T extends TimesStopsRow>(
       },
       {
         ...keyColumn('departure', timeColumn(isOutputTable)),
-        title: headerWithTitleTagIfShortened(t('departureTime'), t('departureTimeFull')),
+        title: headerWithTitleTagIfShortened(t('requestedDeparture'), t('departureTimeFull')),
         headerClassName: 'padded-header',
         ...fixedWidth(isOutputTable ? 105 : 125),
 
