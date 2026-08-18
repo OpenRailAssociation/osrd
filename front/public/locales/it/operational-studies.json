@@ -25,9 +25,6 @@
     "itineraryModal": {
       "opType": "Tipo",
       "track": "Binario"
-    },
-    "pacedTrains": {
-      "add": "Aggiungere"
     }
   },
   "study": {

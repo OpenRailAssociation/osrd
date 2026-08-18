@@ -30,7 +30,6 @@
     "trainSchedulesCount_other": "{{count}} Züge"
   },
   "importTrains": {
-    "and": "und",
     "cancel": "Abbrechen",
     "chooseFile": "Durchsuchen… Keine Datei ausgewählt.",
     "download": "Herunterladen",
@@ -57,7 +56,6 @@
   "main": {
     "Routing": "Fahrwege",
     "Spacing": "Abstand",
-    "advancedFiltersPlaceholder": "Filtern nach Baureihe, Serie, Detail",
     "conflicts": {
       "conflictsCount_one": "{{count}} Konflikt",
       "conflictsCount_other": "{{count}} Konflikte",
@@ -88,7 +86,6 @@
       "unableToDeleteScenarioMessage": "Szenario löschen nicht möglich"
     },
     "filterPlaceholder": "Filter, Tags",
-    "infrastructure": "Infrastruktur",
     "lessDetails": "Weniger Details anzeigen",
     "linearMode": "Linear",
     "loadingConflicts": "Konflikte werden geladen…",
@@ -212,7 +209,6 @@
       "advancedFilterLabel": "Schienenfahrzeug",
       "choosePath": "Diesen Pfad wählen",
       "closeFilter": "Filter schließen",
-      "compositionCodes": "Zusammensetzungsschlüssel",
       "copy": "Kopieren",
       "delete": "Löschen",
       "deletePacedTrainAndUniqueTrainSelectionConfirmation": "Bestätigen Sie die Löschung von $t(main.pacedTrain, { 'count': {{selectedPacedTrainsCount}} }) und $t(main.uniqueTrain, { 'count': {{selectedUniqueTrainsCount}} })?",
@@ -232,7 +228,6 @@
         "not_found_in_blocks": "Fehlender Streckenblock.",
         "not_found_in_routes": "Fehlende Route.",
         "not_found_in_tracks": "Fehlende Strecke.",
-        "pathfinding_failure": "Kein Weg gefunden.",
         "pathfinding_not_found": "Wegefindung nicht gefunden",
         "rolling_stock_not_found": "Schienenfahrzeug nicht gefunden.",
         "simulation_failed": "Simulation fehlgeschlagen",
@@ -339,7 +334,6 @@
       "update": "Bearbeiten",
       "validityFilter": "Gültigkeit der Züge"
     },
-    "toggleTimetable": "Fahrplananzeige umschalten",
     "uniqueTrainCountSelected_one": "1/{{totalCount}} Zug ausgewählt",
     "uniqueTrainCountSelected_other": "{{count}}/{{totalCount}} Züge ausgewählt",
     "uniqueTrainCount_one": "1/{{totalCount}} Zug",
@@ -350,19 +344,12 @@
     "uniqueTrain_zero": "0 Zug"
   },
   "manageTrainSchedule": {
-    "addVia": "Diesen Wegepunkt hinzufügen",
-    "addVias": "Wegepunkte hinzufügen",
     "allowances": {
       "distribution-linear": "Linear",
-      "distribution-mareco": "Mareco",
-      "standard-allowance": "Zeitpuffer"
+      "distribution-mareco": "Mareco"
     },
     "anyTrack": "Beliebige Strecke",
-    "category": "Kategorie",
     "categoryMismatch": "Die Kombination von Schienenfahrzeug und Kategorie ist ungewöhnlich",
-    "deleteRoute": "Route entfernen",
-    "deleteVias": "Wegepunkte entfernen",
-    "destination": "Ziel",
     "errorMessages": {
       "error": "Ein Fehler ist aufgetreten",
       "hardErrorInfra": "Die Infrastruktur enthält Fehler und kann ohne vorherige Behebung nicht genutzt werden.",
@@ -389,7 +376,6 @@
       "trainScheduleTitle": "Ein Fehler ist aufgetreten",
       "unableToRetrieveTags": "Tags konnten nicht abgerufen werden"
     },
-    "hideTrainSettings": "Ausblenden",
     "incompatibleConstraints": {
       "filters": {
         "activateAll": "Alle Beschränkungen anzeigen",
@@ -408,9 +394,7 @@
       "title": "{{total}} verletzte Beschränkungen",
       "title_on": "{{count}} von {{total}} verletzten Beschränkungen"
     },
-    "infraLoading": "Infrastruktur wird geladen…",
     "inputOPMainCodesExample": "Bsp.: HHA HGÖ FKS",
-    "invalidTrainScheduleStep": "Mindestens ein Wegepunkt konnte nicht erkannt werden.",
     "itineraryModal": {
       "addLocationOnMap": "Betriebsstelle auf der Karte hinzufügen",
       "alertInvalidOP": "Mindestens ein Wegepunkt konnte nicht erkannt werden",
@@ -419,7 +403,6 @@
       "frameAll": "Auf alle Wegepunkte auf der Karte zentrieren",
       "invalidOP": "Nicht erkannter Punkt: ",
       "moveLocationOnMap": "Betriebsstelle auf der Karte verschieben",
-      "next": "Weiter",
       "opId": "Betriebsstellenkennung",
       "opName": "Betriebsstellenname",
       "opType": "Typ",
@@ -428,90 +411,29 @@
       "stop": "Halt",
       "track": "Gleis",
       "trainName": "Zugname",
-      "trigram": "Betriebsstellenkürzel",
       "uic": "UIC"
     },
     "launchPathFinding": "Wegefindung starten",
-    "manageVias": "Wegepunkteverwaltung",
     "missingPathSteps": "Mindestens ein Wegepunkt wurde im Netz nicht gefunden.",
-    "noDestinationChosen": "Ziel nicht definiert",
-    "noOriginChosen": "Startpunkt nicht definiert",
-    "noPlaceChosen": "Kein Halt/Wegepunkt definiert",
     "noSpeedLimitByTag": "Keiner",
-    "origin": "Startpunkt",
     "pacedTrainUpdated": "Leistung aktualisiert",
     "pacedTrains": {
-      "add": "Hinzufügen",
-      "addExtraOccurrences": "Zusätzliche Vorkommen außerhalb des Takts hinzufügen",
-      "added": "Leistung hinzugefügt",
-      "defineService": "Leistung definieren",
-      "departureDay": "Abfahrtstag",
-      "departureTime": "Abfahrtszeit",
-      "interval": "Takt der Leistung",
-      "resetExceptionsConfirmation": "Die Änderung des Takts/der Dauer der Leistung setzt die Ausnahmen zurück. Möchten Sie fortfahren?",
-      "timeWindow": "Dauer des Wiederholungszeitraums"
+      "added": "Leistung hinzugefügt"
     },
-    "pathfinding": "Wegefindung",
-    "pathfindingDone": "Wegefindung abgeschlossen.",
-    "pathfindingError": "Fehler bei der Wegefindung: {{errorMessage}}.",
     "pathfindingErrors": {
       "incompatible_constraints": "Inkompatible Beschränkungen",
-      "invalid_path_item": "Wegepunkt nicht gefunden.",
-      "invalid_path_items": "Wegepunkt nicht gefunden",
       "not_enough_path_items": "Fehlende Parameter für Wegefindung: Abfahrt, Ankunft, Schienenfahrzeug",
       "not_found_in_blocks": "Streckenblock fehlt",
       "not_found_in_routes": "Route fehlt",
       "not_found_in_tracks": "Strecke fehlt",
-      "pathfinding_failure": "Kein Weg gefunden",
       "rolling_stock_not_found": "Schienenfahrzeug nicht gefunden",
       "zero_length_path": "Abfahrt und Ankunft sind identisch"
     },
-    "pathfindingInProgress": "Wegefindung läuft…",
-    "pathfindingMissingParams": "Fehlende Parameter für Wegefindung: {{missingElements}}.",
-    "pathfindingNoState": "Keine Wegefindung.",
-    "powerRestriction": "Leistungsbeschränkungsschlüssel",
-    "powerRestrictionEmptyExplanationText": "Das ausgewählte Schienenfahrzeug hat keine Leistungsbeschränkungen. Sie können diese im Schienenfahrzeug-Editor bearbeiten.",
-    "powerRestrictionExplanationText": "Wenn in einem Intervall keine Leistungsbeschränkung angegeben ist, wird die Simulation die Nennleistung verwenden.",
     "refineSearchForMoreResults": "Konkretisieren Sie Ihre Suche für mehr Ergebnisse.",
-    "removeVia": "Diesen Wegepunkt entfernen",
-    "returnToSimulationResults": "Zurück zu Simulationsergebnissen",
     "rollingstock": "Schienenfahrzeug",
-    "showTrainSettings": "Anzeigen",
     "speedLimitByTagAbbrev": "Gesch.-Code",
-    "tabs": {
-      "addingSettings": "Einstellung hinzufügen",
-      "allowances": "Zeitpuffer",
-      "pathFinding": "Route",
-      "rollingStock": "Schienenfahrzeug",
-      "simulationSettings": "Simulationseinstellungen",
-      "timesStops": "Zeiten und Halte",
-      "unrecognizedRollingStock": "Unbekanntes Schienenfahrzeug: {{rollingStockName}}",
-      "unspecifiedRollingStock": "Schienenfahrzeug nicht angegeben"
-    },
     "trainAdded": "Zug hinzugefügt",
-    "trainLabels": "Tags",
-    "trainScheduleDepartureTime": "Abfahrtszeit",
-    "trainScheduleInitialSpeed": "Anfangsgeschwindigkeit",
-    "trainScheduleName": "Nummer, Name",
-    "turnPacedTrainIntoUniqueTrain": "Diese Leistung in einen einzelnen Zug umwandeln",
-    "turnUniqueTrainIntoPacedTrain": "Diesen einzelnen Zug in eine Leistung umwandeln",
-    "unavailableDistance": "Abstand nicht verfügbar",
-    "uniqueTrainUpdated": "Einzelner Zug aktualisiert",
-    "updateOccurrence": "Dieses Vorkommen bearbeiten",
-    "updatePacedTrain": "Leistung bearbeiten",
-    "updateUniqueTrain": "Zug bearbeiten",
-    "usingElectricalProfiles": "Bahnstromprofile verwenden",
-    "via": "Wegepunkt",
-    "viewItineraryOnMap": "Route auf der Karte ansehen",
-    "warningMessages": {
-      "inconsistent_one": "Das folgende Intervall enthält Unstimmigkeiten. Die Standard-Geschwindigkeitskurven werden dafür verwendet.",
-      "inconsistent_other": "Die folgenden Intervalle enthalten Unstimmigkeiten. Die Standard-Geschwindigkeitskurven werden dafür verwendet.",
-      "missingPowerRestriction": "- Fehlende Leistungsbeschränkung zwischen {{begin}}m und {{end}}m.",
-      "modeNotHandled": "- Zwischen {{begin}}m und {{end}}m sollte keine Leistungsbeschränkung angegeben werden, da der Bahnstrommodus {{electrification}} nicht unterstützt wird.",
-      "pathfindingChange": "Wegefindung geändert",
-      "powerRestrictionInvalidCombination": "- {{powerRestrictionCode}} ist inkompatibel mit dem Bahnstromsystem {{electrification}} des Wegs zwischen {{begin}}m und {{end}}m.",
-      "powerRestrictionsReset": "Leistungsbeschränkungen wurden zurückgesetzt."
-    }
+    "uniqueTrainUpdated": "Einzelner Zug aktualisiert"
   },
   "operational-studies-management": {
     "delete": "Löschen",
@@ -717,7 +639,6 @@
     "studyStates": {
       "finish": "Abgeschlossen",
       "inProgress": "In Durchführung",
-      "nothingSelected": "— Nichts —",
       "started": "Gestartet"
     },
     "studyTags": "Tags",

@@ -1,13 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
 
 import { useTranslation } from 'react-i18next';
-import { useSelector } from 'react-redux';
 
 import type { Comfort, LightRollingStockWithLiveries } from 'common/api/osrdEditoastApi';
 import OptionsSNCF from 'common/BootstrapSNCF/OptionsSNCF';
 import type { Option } from 'common/BootstrapSNCF/OptionsSNCF';
 import { comfort2pictogram } from 'modules/rollingStock/components/RollingStockSelector/RollingStockHelpers';
-import { getRollingStockComfort } from 'reducers/osrdconf/operationalStudiesConf/selectors';
 
 type RollingStockCardButtonsProps = {
   rollingStock: LightRollingStockWithLiveries;
@@ -22,8 +20,7 @@ const RollingStockCardButtons = ({
 }: RollingStockCardButtonsProps) => {
   const { t } = useTranslation();
 
-  const currentComfortInStore = useSelector(getRollingStockComfort);
-  const [comfort, setComfort] = useState<string>(currentComfortInStore);
+  const [comfort, setComfort] = useState<string>('STANDARD');
 
   const comfortOptions = useMemo(() => {
     const options: Option[] = [
@@ -57,16 +54,8 @@ const RollingStockCardButtons = ({
   }, [curvesComfortList]);
 
   useEffect(() => {
-    if (curvesComfortList.length === 0) {
-      setComfort('STANDARD');
-    } else {
-      setComfort(
-        curvesComfortList.includes(currentComfortInStore)
-          ? currentComfortInStore
-          : curvesComfortList[0]
-      );
-    }
-  }, [curvesComfortList, currentComfortInStore]);
+    setComfort(curvesComfortList.at(0) ?? 'STANDARD');
+  }, [curvesComfortList]);
 
   return (
     <div className="rollingstock-footer-buttons">

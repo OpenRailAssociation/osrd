@@ -2,10 +2,10 @@ import { Button } from '@osrd-project/ui-core';
 import { useTranslation } from 'react-i18next';
 
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
-import type { OperationalStudiesConfState } from 'reducers/osrdconf/types';
+import type { EditingTrainType } from 'reducers/osrdconf/types';
 
 // TODO: Define a proper type here as soon as we get rid of the old modal store
-export type FooterTrainType = OperationalStudiesConfState['editingTrainType'];
+export type FooterTrainType = EditingTrainType;
 
 export type ItineraryModalFooterProps = {
   mode: 'new' | 'edit';

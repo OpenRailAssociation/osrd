@@ -713,7 +713,6 @@
       "none": "None"
     },
     "chooseRollingStock": "Select a rolling stock to display information",
-    "comfort": "Comfort",
     "comfortAcceleration": "Comfort acceleration",
     "comfortLevels": "Comfort levels",
     "comfortTypes": {
@@ -807,7 +806,6 @@
     "rollingResistanceB": "Viscosity friction (b)",
     "rollingResistanceC": "Aerodynamic drag (c)",
     "rollingResistanceFormula": "R(v) = a + bv + cv²",
-    "rollingstockChoice": "Choose a rolling stock",
     "selectRollingStock": "Select",
     "shortCategoriesOptions": {
       "COMMUTER_TRAIN": "Commuter",

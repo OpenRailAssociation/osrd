@@ -16,16 +16,13 @@ function createStore(
   });
 }
 
-const testSpeedLimitByTag = (
-  slice: OperationalStudiesConfSlice | StdcmConfSlice,
-  newTag: string | null
-) => {
+const testSpeedLimitByTag = (slice: StdcmConfSlice, newTag: string | null) => {
   const store = createStore(slice);
   store.dispatch(slice.actions.updateSpeedLimitByTag(newTag));
   return store.getState()[slice.name];
 };
 
-const testCommonConfReducers = (slice: OperationalStudiesConfSlice | StdcmConfSlice) => {
+const testCommonConfReducers = (slice: StdcmConfSlice) => {
   let defaultStore: ReturnType<typeof createStore>;
 
   beforeEach(() => {
