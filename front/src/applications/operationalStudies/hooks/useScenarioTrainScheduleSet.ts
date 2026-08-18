@@ -369,15 +369,13 @@ export default function useScenarioTrainScheduleSet(
 
     return Array.from(trainScheduleSetsById.values())
       .sort((a, b) => sortTrainScheduleSets(a, b, catalogEntriesIndex))
-      .map(
-        (trainScheduleSet): TrainSchedulesByTrainScheduleSet => ({
-          trainScheduleSet,
-          trains: trainsByTrainScheduleSetId.get(trainScheduleSet.id) || [],
-          catalog: trainScheduleSet.catalog_entry_id
-            ? catalogEntriesIndex.get(trainScheduleSet.catalog_entry_id)
-            : undefined, // can happen if it's the sandbox
-        })
-      );
+      .map((trainScheduleSet): TrainSchedulesByTrainScheduleSet => ({
+        trainScheduleSet,
+        trains: trainsByTrainScheduleSetId.get(trainScheduleSet.id) || [],
+        catalog: trainScheduleSet.catalog_entry_id
+          ? catalogEntriesIndex.get(trainScheduleSet.catalog_entry_id)
+          : undefined, // can happen if it's the sandbox
+      }));
   }, [trainScheduleSets, catalogEntries, trainSchedulesWithDetails]);
 
   const manageTrainScheduleSet = useMemo(
