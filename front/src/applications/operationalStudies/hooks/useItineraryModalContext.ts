@@ -3,15 +3,21 @@ import { createContext, useContext } from 'react';
 import type { TrainScheduleWithDetails } from 'modules/trainSchedule/types';
 import type { OccurrenceId } from 'reducers/osrdconf/types';
 
+/**
+ * Data of the train schedule that will be edited by the ItineraryModal.
+ *
+ * If it's an occurrence, also carries the parent paced train the occurrence is
+ * derived from, and its occurrence ID.
+ */
 export type TrainScheduleToEditData = {
   trainSchedule: TrainScheduleWithDetails;
-  originalTrainSchedule?: TrainScheduleWithDetails;
+  parentPacedTrain?: TrainScheduleWithDetails;
   occurrenceId?: OccurrenceId;
 };
 
 /**
- * ItineraryModalContextType holds data relevant to open or close the itinerary modal
- * on the right train schedule or occurrence to edit.
+ * Context that allows components to open or close the itinerary modal on a specific
+ * train schedule or occurrence to edit, or a blank one to create a new train.
  */
 export type ItineraryModalContextType = {
   openItineraryModalToCreate: () => void;
