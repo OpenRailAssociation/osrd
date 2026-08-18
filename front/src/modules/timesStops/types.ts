@@ -163,13 +163,19 @@ export type PowerRestrictionUpdate = {
   value: string | null;
 };
 
+export type BatchTimesUpdate = {
+  rows: TimesStopsRowNew[];
+  field: RequestedTimeField;
+};
+
 export type CellUpdate =
   | ArrivalUpdate
   | StopDurationUpdate
   | DepartureUpdate
   | ReceptionSignalUpdate
   | RequestedMarginUpdate
-  | PowerRestrictionUpdate;
+  | PowerRestrictionUpdate
+  | BatchTimesUpdate;
 
 export type OptimisticEdit =
   | { field: 'requestedArrival'; value: StartTime | null }

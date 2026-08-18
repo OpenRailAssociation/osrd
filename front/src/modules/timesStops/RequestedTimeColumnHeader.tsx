@@ -25,6 +25,8 @@ const RequestedTimeColumnHeader = ({
   field,
   isSimulationValid,
   rows,
+  onFillEmpty,
+  onOverwriteAll,
   onMouseEnterOverwriteAll,
   onMouseEnterFillEmpty,
   onMouseLeave,
@@ -42,7 +44,11 @@ const RequestedTimeColumnHeader = ({
     {
       title: `${t(`columnHeader.${field}.overwriteAll`, { count: overwriteRequestTimesCount })}`,
       icon: <ArrowLeft />,
-      onClick: () => {},
+      onClick: () => {
+        setOpen(false);
+        onOverwriteAll();
+        onMouseLeave();
+      },
       onMouseEnter: () => {
         onMouseEnterOverwriteAll();
       },
@@ -56,7 +62,11 @@ const RequestedTimeColumnHeader = ({
     items.push({
       title: `${t(`columnHeader.${field}.fillEmpty`, { count: fillRequestTimesCount })}`,
       icon: <ArrowLeft />,
-      onClick: () => {},
+      onClick: () => {
+        setOpen(false);
+        onFillEmpty();
+        onMouseLeave();
+      },
       onMouseEnter: () => {
         onMouseEnterFillEmpty();
       },

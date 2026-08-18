@@ -7,7 +7,7 @@ import {
   subtractStartTime,
 } from 'utils/duration';
 
-import type { ArrivalUpdate, CellUpdate, PropagationMode } from '../types';
+import type { ArrivalUpdate, BatchTimesUpdate, CellUpdate, PropagationMode } from '../types';
 import { truncateStartTimeToSecond } from './utils';
 
 export const ONE_DAY = new Duration({ hours: 24 });
@@ -18,8 +18,9 @@ export type PropagationResult = {
   updatedStartTime: StartTime;
 };
 
-const isOriginArrivalUpdate = (update: CellUpdate): update is ArrivalUpdate =>
-  update.field === 'requestedArrival' && update.row.opOnPathIndex === 0;
+const isOriginArrivalUpdate = (
+  update: Exclude<CellUpdate, BatchTimesUpdate>
+): update is ArrivalUpdate => update.field === 'requestedArrival' && update.row.opOnPathIndex === 0;
 
 const toHmsDuration = (date: StartTime) =>
   date instanceof Date
@@ -201,7 +202,7 @@ export const adjustFollowingWaypointsForMidnight = (
 };
 
 export const propagateTime = (
-  update: CellUpdate,
+  update: Exclude<CellUpdate, BatchTimesUpdate>,
   selectedTrain: Train,
   timetableType: TimetableType
 ): PropagationResult | undefined => {

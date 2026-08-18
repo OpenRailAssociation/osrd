@@ -73,6 +73,7 @@ declare module '@tanstack/react-table' {
     onReceptionSignalChange: (row: TimesStopsRowNew, signal: ReceptionSignal | undefined) => void;
     onRequestedMarginChange: (row: TimesStopsRowNew, requestedMargin: MarginValue | null) => void;
     onPowerRestrictionChange: (row: TimesStopsRowNew, value: string | null) => void;
+    onApplyTimesFromSimulation: (field: RequestedTimeField, mode: TimeFillMode) => void;
   }
 }
 
@@ -159,6 +160,7 @@ type TimesStopsTableProps = {
   onReceptionSignalChange: (row: TimesStopsRowNew, signal: ReceptionSignal | undefined) => void;
   onRequestedMarginChange: (row: TimesStopsRowNew, value: MarginValue | null) => void;
   onPowerRestrictionChange: (row: TimesStopsRowNew, value: string | null) => void;
+  onApplyTimesFromSimulation: (field: RequestedTimeField, mode: TimeFillMode) => void;
 };
 
 const columnHelper = createColumnHelper<TimesStopsRowNew>();
@@ -194,6 +196,7 @@ const TimesStopsTable = ({
   onReceptionSignalChange,
   onRequestedMarginChange,
   onPowerRestrictionChange,
+  onApplyTimesFromSimulation,
 }: TimesStopsTableProps) => {
   const { t } = useTranslation('translation', { keyPrefix: 'timeStopTable' });
   const dateTimeLocale = useDateTimeLocale();
@@ -566,8 +569,10 @@ const TimesStopsTable = ({
           field={field}
           isSimulationValid={isValid}
           rows={allRows}
-          onFillEmpty={() => {}}
-          onOverwriteAll={() => {}}
+          onFillEmpty={() => info.table.options.meta!.onApplyTimesFromSimulation(field, 'fill')}
+          onOverwriteAll={() =>
+            info.table.options.meta!.onApplyTimesFromSimulation(field, 'overwrite')
+          }
           onMouseEnterFillEmpty={() => onMouseEnterTimeColumnMenu(allRows, field, 'fill')}
           onMouseEnterOverwriteAll={() => onMouseEnterTimeColumnMenu(allRows, field, 'overwrite')}
           onMouseLeave={() => setHighlightedRowIds(new Set())}
@@ -746,6 +751,7 @@ const TimesStopsTable = ({
       onReceptionSignalChange,
       onRequestedMarginChange,
       onPowerRestrictionChange,
+      onApplyTimesFromSimulation,
     },
   });
 
