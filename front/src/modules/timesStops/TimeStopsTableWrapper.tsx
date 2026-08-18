@@ -259,7 +259,7 @@ const TimeStopsTableWrapper = ({
           rowId: singleEdit.rowId,
           field: 'stopDurationWithArrival',
           value: {
-            stop: update.value !== null ? new Duration({ seconds: update.value }) : null,
+            stop: update.value,
             arrival: editedRowArrivalEdit.value ?? propagationResult.updatedStartTime,
           },
         }
@@ -336,22 +336,22 @@ const TimeStopsTableWrapper = ({
 
   const handleStopDurationChange = (
     row: TimesStopsRowNew,
-    durationSeconds: number | null,
+    duration: Duration | null,
     propagationMode: StopPropagationMode
   ) => {
     const singleEdit: PendingEdit = {
       rowId: row.id,
       field: 'stopDuration',
-      value: durationSeconds !== null ? new Duration({ seconds: durationSeconds }) : null,
+      value: duration,
     };
     commitEdit(
       buildEditsForStopDurationUpdate(singleEdit, {
         row,
         field: 'stopDuration',
-        value: durationSeconds,
+        value: duration,
         propagationMode,
       }),
-      () => updateStopDuration(row, durationSeconds, propagationMode)
+      () => updateStopDuration(row, duration, propagationMode)
     );
   };
 

@@ -134,7 +134,7 @@ export type ArrivalUpdate = {
 export type StopDurationUpdate = {
   row: TimesStopsRowNew;
   field: 'stopDuration';
-  value: number | null;
+  value: Duration | null;
   propagationMode: StopPropagationMode;
 };
 
