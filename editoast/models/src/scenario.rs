@@ -68,15 +68,6 @@ impl Scenario {
         Timetable::train_schedules_count(self.timetable_id, conn).await
     }
 
-    pub async fn update_last_modified(
-        &mut self,
-        conn: &mut DbConnection,
-    ) -> Result<(), crate::Error> {
-        self.last_modification = Utc::now();
-        self.save(conn).await?;
-        Ok(())
-    }
-
     /// Opens a transaction, retrieves the [Scenario], its [Study] and [Project] and
     /// calls the provided closure with these objects
     ///
