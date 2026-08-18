@@ -330,7 +330,7 @@ const useUpdateTrainSchedule = (
         upsertTrainSchedules,
         trainScheduleId: trainScheduleToEditData.trainSchedule.id,
         originalTrainSchedule:
-          trainScheduleToEditData.originalTrainSchedule ?? trainScheduleToEditData.trainSchedule,
+          trainScheduleToEditData.parentPacedTrain ?? trainScheduleToEditData.trainSchedule,
         occurrenceId: trainScheduleToEditData.occurrenceId,
         dispatch,
         timetableId,

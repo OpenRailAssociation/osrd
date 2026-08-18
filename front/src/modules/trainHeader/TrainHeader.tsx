@@ -95,7 +95,7 @@ const TrainHeader = ({ train, path, trainSchedulesWithDetails }: TrainHeaderProp
     );
     openItineraryModalToEdit({
       trainSchedule,
-      originalTrainSchedule: originalTrainSchedule ?? train,
+      parentPacedTrain: originalTrainSchedule ?? train,
       occurrenceId,
     });
   }, [

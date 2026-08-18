@@ -142,13 +142,13 @@ const TrainList = ({
   const selectTrainScheduleToEdit = useCallback(
     (
       trainScheduleToEdit: TrainScheduleWithDetails,
-      originalPacedTrain?: TrainScheduleWithDetails,
+      parentPacedTrain?: TrainScheduleWithDetails,
       occurrenceId?: OccurrenceId
     ) => {
       const editData: TrainScheduleToEditData = {
         trainSchedule: trainScheduleToEdit,
-        // param originalPacedTrain is defined only when editing an occurrence
-        originalTrainSchedule: originalPacedTrain,
+        // param parentPacedTrain is defined only when editing an occurrence
+        parentPacedTrain,
         occurrenceId,
       };
       openItineraryModalToEdit(editData);
