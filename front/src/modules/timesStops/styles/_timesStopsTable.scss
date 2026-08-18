@@ -48,13 +48,39 @@
       th {
         background: color-mix(in srgb, var(--black100) 5%, var(--ambientB5) 100%);
 
-        .th-content {
+        // Exclude the requested time columns so the triangle button is not affected by the mask-image
+        .th-content:not(:has(.requested-time-column-header-wrapper)) {
           overflow: hidden;
           display: -webkit-box;
           -webkit-box-orient: vertical;
           -webkit-line-clamp: 2;
           line-clamp: 2;
           mask-image: linear-gradient(to right, black 80%, transparent 100%);
+        }
+      }
+    }
+
+    .requested-time-column-header-wrapper {
+      display: flex;
+      flex-direction: column;
+
+      .requested-time-column-header-toggle {
+        align-self: end;
+
+        // To be able to keep the same height for the header, the triangle button
+        // needs to slightly overflow the header title
+        margin: -5px -4px -5px;
+
+        &--disabled {
+          cursor: not-allowed;
+        }
+
+        .requested-time-column-header-toggle-icon-open {
+          color: var(--primary80);
+        }
+
+        .requested-time-column-header-toggle-icon-closed {
+          color: var(--black25);
         }
       }
     }

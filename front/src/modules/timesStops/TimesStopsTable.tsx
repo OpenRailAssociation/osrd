@@ -8,6 +8,7 @@ import {
   getCoreRowModel,
   useReactTable,
   type CellContext,
+  type HeaderContext,
   type Row,
   type RowData,
 } from '@tanstack/react-table';
@@ -26,9 +27,16 @@ import DurationCell, { type DurationCellHandle } from './DurationCell';
 import type { PowerRestrictionBlockInfo } from './helpers/powerRestrictionIncompatibility';
 import { onStopSignalToReceptionSignal, truncateStartTimeToDay } from './helpers/utils';
 import MarginCell from './MarginCell';
+import RequestedTimeColumnHeader from './RequestedTimeColumnHeader';
 import StartTimeCell from './StartTimeCell';
 import type { TimeCellHandle } from './TimeCell';
-import type { MarginValue, PropagationMode, StopPropagationMode, TimesStopsRowNew } from './types';
+import type {
+  MarginValue,
+  PropagationMode,
+  RequestedTimeField,
+  StopPropagationMode,
+  TimesStopsRowNew,
+} from './types';
 
 declare module '@tanstack/react-table' {
   // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
@@ -534,6 +542,26 @@ const TimesStopsTable = ({
     );
   };
 
+  const returnRequestedTimelHeader = (field: RequestedTimeField) => {
+    const requestedTimeHeader = (info: HeaderContext<TimesStopsRowNew, Date | null>) => {
+      const { allRows } = info.table.options.meta!;
+      return (
+        <RequestedTimeColumnHeader
+          field={field}
+          isSimulationValid={isValid}
+          rows={allRows}
+          onFillEmpty={() => {}}
+          onOverwriteAll={() => {}}
+          onMouseEnterFillEmpty={() => {}}
+          onMouseEnterOverwriteAll={() => {}}
+          onMouseLeave={() => {}}
+        />
+      );
+    };
+    requestedTimeHeader.displayName = 'RequestedTimeHeader';
+    return requestedTimeHeader;
+  };
+
   const columns = useMemo(
     () => [
       columnHelper.display({
@@ -569,12 +597,12 @@ const TimesStopsTable = ({
         },
       }),
       columnHelper.accessor('requestedArrival', {
-        header: () => t('arrivalTime'),
+        header: returnRequestedTimelHeader('requestedArrival'),
         cell: returnArrivalTimeCell,
         meta: {
           className: 'col-requested-arrival col-with-clock-time',
           tabbable: true,
-          title: t('arrivalTime'),
+          title: t('requestedArrival'),
         },
       }),
       columnHelper.accessor('computedArrival', {
@@ -595,12 +623,12 @@ const TimesStopsTable = ({
         },
       }),
       columnHelper.accessor('requestedDeparture', {
-        header: () => t('departureTime'),
+        header: returnRequestedTimelHeader('requestedDeparture'),
         cell: returnDepartureTimeCell,
         meta: {
           className: 'col-requested-departure col-with-clock-time',
           tabbable: true,
-          title: t('departureTime'),
+          title: t('requestedDeparture'),
         },
       }),
       columnHelper.accessor('computedDeparture', {

@@ -841,16 +841,28 @@
     }
   },
   "timeStopTable": {
-    "arrivalTime": "arrivée demandée",
     "calculatedArrivalTime": "arrivée calculée",
     "calculatedDepartureTime": "départ calculé",
     "calculatedDepartureTimeFull": "départ calculé",
     "clearRequestedArrivalTime": "Effacer l'arrivée demandée",
     "clearRequestedDepartureTime": "Effacer le départ demandé",
     "clearStopDuration": "Effacer le temps d'arrêt",
+    "columnHeader": {
+      "requestedArrival": {
+        "fillEmpty_one": "Appliquer l'arrivée calculée au {{count}} point de passage non demandé",
+        "fillEmpty_other": "Appliquer les arrivées calculées aux {{count}} points de passage non demandés",
+        "overwriteAll_one": "Appliquer l'arrivée calculée au {{count}} point de passage",
+        "overwriteAll_other": "Appliquer les arrivées calculées aux {{count}} points de passage"
+      },
+      "requestedDeparture": {
+        "fillEmpty_one": "Appliquer le départ calculé au {{count}} point de passage non demandé",
+        "fillEmpty_other": "Appliquer les départs calculés aux {{count}} points de passage non demandés",
+        "overwriteAll_one": "Appliquer le départ calculé au {{count}} point de passage",
+        "overwriteAll_other": "Appliquer les départs calculés aux {{count}} points de passage"
+      }
+    },
     "computedTheoreticalMargin": "marge théorique calculée",
     "dayCounter": "J+{{count}}",
-    "departureTime": "départ demandé",
     "departureTimeFull": "départ demandé",
     "diffMargins": "diff. marges",
     "diffMarginsFull": "différence entre les marges",
@@ -872,6 +884,8 @@
     "realMargin": "marge réelle",
     "receptionOnClosedSignal": "signal fermé",
     "receptionOnClosedSignalFull": "réception sur signal fermé",
+    "requestedArrival": "arrivée demandée",
+    "requestedDeparture": "départ demandé",
     "requestedTheoreticalMargin": "marge théorique demandée",
     "secondaryCode": "code secondaire",
     "shortSlipDistance": "faible glissement",

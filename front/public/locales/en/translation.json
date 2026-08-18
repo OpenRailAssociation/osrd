@@ -841,16 +841,28 @@
     }
   },
   "timeStopTable": {
-    "arrivalTime": "requested arrival time",
     "calculatedArrivalTime": "calculated arrival time",
     "calculatedDepartureTime": "calculated depart. time",
     "calculatedDepartureTimeFull": "calculated departure time",
     "clearRequestedArrivalTime": "Clear the requested arrival time",
     "clearRequestedDepartureTime": "Clear the requested departure time",
     "clearStopDuration": "Clear the stopping time",
+    "columnHeader": {
+      "requestedArrival": {
+        "fillEmpty_one": "Apply computed arrival time to {{count}} unrequested way point",
+        "fillEmpty_other": "Apply computed arrival times to {{count}} unrequested way points",
+        "overwriteAll_one": "Apply computed arrival time to {{count}} way point",
+        "overwriteAll_other": "Apply computed arrival times to {{count}} way points"
+      },
+      "requestedDeparture": {
+        "fillEmpty_one": "Apply computed departure time to {{count}} unrequested way point",
+        "fillEmpty_other": "Apply computed departure times to {{count}} unrequested way points",
+        "overwriteAll_one": "Apply computed departure time to {{count}} way point",
+        "overwriteAll_other": "Apply computed departure times to {{count}} way points"
+      }
+    },
     "computedTheoreticalMargin": "computed theoretical margin",
     "dayCounter": "D+{{count}}",
-    "departureTime": "requested depart. time",
     "departureTimeFull": "requested departure time",
     "diffMargins": "margins diff.",
     "diffMarginsFull": "margins difference",
@@ -872,6 +884,8 @@
     "realMargin": "real margin",
     "receptionOnClosedSignal": "closed signal",
     "receptionOnClosedSignalFull": "reception on closed signal",
+    "requestedArrival": "requested arrival time",
+    "requestedDeparture": "requested depart. time",
     "requestedTheoreticalMargin": "requested theoretical margin",
     "secondaryCode": "secondary code",
     "shortSlipDistance": "short slip distance",

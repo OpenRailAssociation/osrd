@@ -201,3 +201,6 @@ export type MarginsCoreComputed = MarginsCoreBase & {
 };
 
 export type MarginsCore = null | MarginsCoreBase | MarginsCoreComputed;
+
+export type RequestedTimeField = 'requestedArrival' | 'requestedDeparture';
+export type TimeFillMode = 'fill' | 'overwrite';
