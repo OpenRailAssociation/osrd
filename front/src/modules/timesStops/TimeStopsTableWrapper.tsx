@@ -14,6 +14,7 @@ import { Duration, type StartTime, addDurationToStartTime, startTimeToMs } from 
 
 import { ONE_DAY } from './consts';
 import { computeOptimisticRow, propagationToEdits } from './helpers/cellUpdate';
+import { getRowsToUpdateFromSimulation } from './helpers/fillTimesFromSimulation';
 import { computePowerRestrictionWarnings } from './helpers/powerRestrictionIncompatibility';
 import { propagateStopDuration } from './helpers/stopDurationPropagation';
 import { propagateTime } from './helpers/timePropagation';
@@ -29,6 +30,9 @@ import {
   type MarginValue,
   type TimesStopsRowNew,
   type UpdateCellStatus,
+  type TimeFillMode,
+  type RequestedTimeField,
+  type BatchTimesUpdate,
 } from './types';
 
 type TimeStopsTableWrapperProps = {
@@ -170,6 +174,7 @@ const TimeStopsTableWrapper = ({
     updateReceptionSignal,
     updateRequestedMargin,
     updatePowerRestrictions,
+    updateMultipleTimes,
   } = useUpdateTimesStopsTable(selectedTrain, rows, trainSchedulesWithDetails);
 
   // True if we are still waiting for fresh simulation data after a user edit.
@@ -228,7 +233,7 @@ const TimeStopsTableWrapper = ({
 
   const buildEditsForUpdate = (
     singleEdit: PendingEdit,
-    update: CellUpdate & { propagationMode: PropagationMode }
+    update: Exclude<CellUpdate, BatchTimesUpdate> & { propagationMode: PropagationMode }
   ): PendingEdit[] => {
     const propagationResult = propagateTime(update, selectedTrain, scenario.timetable_type);
     if (!propagationResult) return [singleEdit];
@@ -388,6 +393,19 @@ const TimeStopsTableWrapper = ({
       updatePowerRestrictions(row, value)
     );
 
+  const handleApplyTimesFromSimulation = (field: RequestedTimeField, mode: TimeFillMode): void => {
+    const computedField = field === 'requestedArrival' ? 'computedArrival' : 'computedDeparture';
+    const targetRows = getRowsToUpdateFromSimulation(rows, field, mode).filter(
+      (row) => row.opOnPathIndex !== 0
+    );
+    const edits: PendingEdit[] = targetRows.map((row) => ({
+      rowId: row.id,
+      field,
+      value: row[computedField],
+    }));
+    commitEdit(edits, () => updateMultipleTimes(targetRows, field));
+  };
+
   return (
     <TimesStopsTable
       rows={optimisticRows}
@@ -403,6 +421,7 @@ const TimeStopsTableWrapper = ({
       onReceptionSignalChange={handleReceptionSignalChange}
       onRequestedMarginChange={handleRequestedMarginChange}
       onPowerRestrictionChange={handlePowerRestrictionChange}
+      onApplyTimesFromSimulation={handleApplyTimesFromSimulation}
     />
   );
 };

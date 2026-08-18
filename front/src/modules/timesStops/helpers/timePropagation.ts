@@ -8,12 +8,19 @@ import {
 } from 'utils/duration';
 
 import { ONE_DAY } from '../consts';
-import type { ArrivalUpdate, CellUpdate, PropagationMode, PropagationResult } from '../types';
+import type {
+  ArrivalUpdate,
+  BatchTimesUpdate,
+  CellUpdate,
+  PropagationMode,
+  PropagationResult,
+} from '../types';
 import { propagateStopDuration } from './stopDurationPropagation';
 import { truncateStartTimeToSecond, formatSignedDelta } from './utils';
 
-const isOriginArrivalUpdate = (update: CellUpdate): update is ArrivalUpdate =>
-  update.field === 'requestedArrival' && update.row.opOnPathIndex === 0;
+const isOriginArrivalUpdate = (
+  update: Exclude<CellUpdate, BatchTimesUpdate>
+): update is ArrivalUpdate => update.field === 'requestedArrival' && update.row.opOnPathIndex === 0;
 
 const toHmsDuration = (date: StartTime) =>
   date instanceof Date
@@ -186,7 +193,7 @@ export const adjustFollowingWaypointsForMidnight = (
 };
 
 export const propagateTime = (
-  update: CellUpdate,
+  update: Exclude<CellUpdate, BatchTimesUpdate>,
   selectedTrain: Train,
   timetableType: TimetableType
 ): PropagationResult | undefined => {
