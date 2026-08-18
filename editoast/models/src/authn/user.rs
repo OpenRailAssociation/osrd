@@ -1,6 +1,5 @@
 use std::ops::DerefMut;
 
-use authz::identity::UserIdentity;
 use database::DbConnection;
 use database::tables::authn_user;
 use database::tables::authn_user_identity;
@@ -94,7 +93,7 @@ impl User {
     pub async fn get_identities(
         &self,
         conn: DbConnection,
-    ) -> Result<Vec<UserIdentity>, database::DatabaseError> {
+    ) -> Result<Vec<String>, database::DatabaseError> {
         Ok(authn_user_identity::table
             .select(authn_user_identity::identity)
             .filter(authn_user_identity::user_id.eq(self.id))
@@ -105,7 +104,7 @@ impl User {
     /// Return the [User] with the provided identity, if any
     #[tracing::instrument(skip_all, fields(identity), ret(level = "debug"), err)]
     pub async fn retrieve_by_identity(
-        identity: &UserIdentity,
+        identity: &str,
         conn: DbConnection,
     ) -> Result<Option<User>, database::DatabaseError> {
         Ok(authn_user::table
