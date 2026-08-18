@@ -111,7 +111,10 @@ data class SpacingResourceGenerator(
     // but data for the same zone in different directions can't be merged
     private val ongoingZoneRequirements = mutableMapOf<ZonePathId, OngoingZoneRequirement>()
 
-    private var isPathComplete: Boolean = false // TODO PEB: rename this
+    // Either the path is complete, i.e. the destination has been seen, and the sub-path ends at
+    // this destination, or the sub-path ends at a
+    // backtracking.
+    private var isSubPathComplete: Boolean = false
     private var reachedFirstSignal: Boolean = false // TODO PEB: rename this
 
     /**
@@ -122,20 +125,17 @@ data class SpacingResourceGenerator(
         newBlockRanges: List<BlockRange>,
         newRouteRanges: List<RouteRange>,
         newStops: List<PathStop>,
-        isPathComplete: Boolean,
+        isSubPathComplete: Boolean,
     ) {
         // Some assertions on the inputs
         val previousPathEnd = getCurrentPathEndOffset()
         val newPathEnd = newBlockRanges.last().pathEnd
-        val emptyPathExtension = previousPathEnd == newPathEnd
-        // require(!this.isPathComplete || emptyPathExtension) // TODO PEB: remove
         require(newBlockRanges.first().pathBegin == previousPathEnd)
         require(newRouteRanges.first().pathBegin == previousPathEnd)
         require(newPathEnd == newRouteRanges.last().pathEnd)
         require(newStops.all { it.pathOffset in previousPathEnd..newPathEnd })
 
-        this.isPathComplete = isPathComplete
-        // if (emptyPathExtension) return // TODO PEB: remove
+        this.isSubPathComplete = isSubPathComplete
 
         val newZoneRanges =
             newBlockRanges.mapSubObjects(blockInfra::getBlockZonePaths, rawInfra::getZonePathLength)
@@ -242,7 +242,7 @@ data class SpacingResourceGenerator(
         res.zoneRanges.addAll(zoneRanges)
         res.closedSignalStops.addAll(closedSignalStops)
         res.pendingSignals.addAll(pendingSignals)
-        res.isPathComplete = isPathComplete
+        res.isSubPathComplete = isSubPathComplete
         res.reachedFirstSignal = reachedFirstSignal
         for ((zone, data) in ongoingZoneRequirements) res.ongoingZoneRequirements[zone] =
             data.copy()
@@ -358,7 +358,7 @@ data class SpacingResourceGenerator(
     ): SignalingTrainState? {
         val nextSignalOffset =
             pendingSignals.map { it.offset }.firstOrNull { it > signalData.offset }
-                ?: if (isPathComplete) callbacks.currentPathOffset else return null
+                ?: if (isSubPathComplete) callbacks.currentPathOffset else return null
         val maxSpeedInSignalArea =
             callbacks.maxSpeedInRange(signalData.sightOffset, nextSignalOffset)
         class SignalingTrainStateImpl(override val speed: Speed) : SignalingTrainState
@@ -381,7 +381,7 @@ data class SpacingResourceGenerator(
         // (i.e. the zone after the end of the path is still required)
         // TODO PEB: adapt for backtracking case?
         val lastZoneIndex = zoneRanges.lastIndex + 1
-        if (!isPathComplete) {
+        if (!isSubPathComplete) {
             if (
                 isZoneIndexRequiredForSignal(
                     simulationData,
