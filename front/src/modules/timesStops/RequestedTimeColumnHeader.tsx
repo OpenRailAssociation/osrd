@@ -25,6 +25,9 @@ const RequestedTimeColumnHeader = ({
   field,
   isSimulationValid,
   rows,
+  onMouseEnterOverwriteAll,
+  onMouseEnterFillEmpty,
+  onMouseLeave,
 }: RequestedTimeColumnHeaderProps) => {
   const { t } = useTranslation('translation', {
     keyPrefix: 'timeStopTable',
@@ -40,8 +43,12 @@ const RequestedTimeColumnHeader = ({
       title: `${t(`columnHeader.${field}.overwriteAll`, { count: overwriteRequestTimesCount })}`,
       icon: <ArrowLeft />,
       onClick: () => {},
-      onMouseEnter: () => {},
-      onMouseLeave: () => {},
+      onMouseEnter: () => {
+        onMouseEnterOverwriteAll();
+      },
+      onMouseLeave: () => {
+        onMouseLeave();
+      },
     },
   ];
 
@@ -50,8 +57,12 @@ const RequestedTimeColumnHeader = ({
       title: `${t(`columnHeader.${field}.fillEmpty`, { count: fillRequestTimesCount })}`,
       icon: <ArrowLeft />,
       onClick: () => {},
-      onMouseEnter: () => {},
-      onMouseLeave: () => {},
+      onMouseEnter: () => {
+        onMouseEnterFillEmpty();
+      },
+      onMouseLeave: () => {
+        onMouseLeave();
+      },
     });
   }
 
