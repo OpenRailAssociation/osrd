@@ -1,4 +1,3 @@
-
 use std::ops::DerefMut as _;
 
 use database::DbConnection;
