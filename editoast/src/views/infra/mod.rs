@@ -130,7 +130,7 @@ pub(in crate::views) async fn refresh(
 
     let infras_list = if infras.is_empty() {
         // Retrieve all available infra
-        Infra::all(&mut db_pool.get().await?).await
+        Infra::list(&mut db_pool.get().await?, Default::default()).await?
     } else {
         // Retrieve given infras
         Infra::retrieve_batch_or_fail(&mut db_pool.get().await?, infras, |missing| {

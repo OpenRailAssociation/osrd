@@ -44,29 +44,6 @@ pub enum Error {
 }
 
 impl Study {
-    pub async fn update_last_modified(
-        &mut self,
-        conn: &mut DbConnection,
-    ) -> Result<(), crate::Error> {
-        self.last_modification = Utc::now();
-        self.save(conn).await?;
-        Ok(())
-    }
-
-    pub async fn scenarios_count(&self, conn: DbConnection) -> Result<u64, crate::Error> {
-        use database::tables::scenario::dsl;
-        use diesel::dsl::*;
-        use diesel::prelude::*;
-        use diesel_async::RunQueryDsl;
-
-        let count = dsl::scenario
-            .select(count_star())
-            .filter(dsl::study_id.eq(self.id))
-            .get_result::<i64>(&mut conn.write().await)
-            .await?;
-        Ok(count as u64)
-    }
-
     /// Opens a transaction, retrieves the [Study] and its [Project] and calls the provided closure with these
     ///
     /// The last modification field of these objects are updated before the transaction is committed.

@@ -34,6 +34,7 @@ use crate::views::pagination::PaginationStats;
 use models::prelude::*;
 use models::project::Error as ProjectModelError;
 use models::project::Project;
+use models::scenario::Scenario;
 use models::study::Error as StudyModelError;
 use models::study::Study;
 use models::tags::Tags;
@@ -394,9 +395,9 @@ pub struct StudyWithScenarioCount {
 }
 
 impl StudyWithScenarioCount {
-    pub async fn try_fetch(conn: DbConnection, study: Study) -> Result<Self> {
-        let scenarios_count = study
-            .scenarios_count(conn)
+    pub async fn try_fetch(mut conn: DbConnection, study: Study) -> Result<Self> {
+        let settings = SelectionSettings::new().filter(move || Scenario::STUDY_ID.eq(study.id));
+        let scenarios_count = Scenario::count(&mut conn, settings)
             .await
             .map_err(StudyError::from)?;
         Ok(Self {

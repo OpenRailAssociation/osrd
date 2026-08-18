@@ -69,30 +69,6 @@ pub enum Error {
 }
 
 impl Project {
-    /// This function takes a filled project and update to now the last_modification field
-    pub async fn update_last_modified(
-        &mut self,
-        conn: &mut DbConnection,
-    ) -> Result<(), crate::Error> {
-        self.last_modification = Utc::now();
-        self.save(conn).await?;
-        Ok(())
-    }
-
-    pub async fn studies_count(&self, conn: DbConnection) -> Result<u64, crate::Error> {
-        use database::tables::study::dsl;
-        use diesel::dsl::*;
-        use diesel::prelude::*;
-        use diesel_async::RunQueryDsl;
-
-        let studies_count = dsl::study
-            .select(count_star())
-            .filter(dsl::project_id.eq(self.id))
-            .get_result::<i64>(&mut conn.write().await)
-            .await?;
-        Ok(studies_count as u64)
-    }
-
     /// Updates a project's image and deletes the old one if it is not used by another project
     #[tracing::instrument(skip(conn), ret, err)]
     pub async fn update_and_prune_document(

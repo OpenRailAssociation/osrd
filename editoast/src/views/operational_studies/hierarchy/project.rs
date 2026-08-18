@@ -1,13 +1,3 @@
-use super::OperationalStudiesOrderingParam;
-use crate::AppState;
-use crate::authentication;
-use crate::authorizers::SystemAuthorizer;
-use crate::error::InternalError;
-use crate::error::Result;
-use crate::views::AuthorizationError;
-use crate::views::pagination::PaginatedList;
-use crate::views::pagination::PaginationQueryParams;
-use crate::views::pagination::PaginationStats;
 use authz::ProjectPrivilege;
 use authz::Role;
 use authz::v2::project_privilege_check;
@@ -23,6 +13,7 @@ use database::DbConnection;
 use database::DbConnectionPoolV2;
 use editoast_derive::EditoastError;
 use models::Document;
+use models::Study;
 use models::prelude::*;
 use models::project::Project;
 use models::tags::Tags;
@@ -33,6 +24,17 @@ use std::sync::Arc;
 use thiserror::Error;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
+
+use super::OperationalStudiesOrderingParam;
+use crate::AppState;
+use crate::authentication;
+use crate::authorizers::SystemAuthorizer;
+use crate::error::InternalError;
+use crate::error::Result;
+use crate::views::AuthorizationError;
+use crate::views::pagination::PaginatedList;
+use crate::views::pagination::PaginationQueryParams;
+use crate::views::pagination::PaginationStats;
 
 #[derive(Debug, Error, EditoastError, derive_more::From)]
 #[editoast_error(base_id = "project")]
@@ -123,8 +125,9 @@ pub struct ProjectWithStudyCount {
 }
 
 impl ProjectWithStudyCount {
-    async fn try_fetch(conn: DbConnection, project: Project) -> Result<Self, models::Error> {
-        let studies_count = project.studies_count(conn).await?;
+    async fn try_fetch(mut conn: DbConnection, project: Project) -> Result<Self, models::Error> {
+        let settings = SelectionSettings::new().filter(move || Study::PROJECT_ID.eq(project.id));
+        let studies_count = Study::count(&mut conn, settings).await?;
         Ok(Self {
             project,
             studies_count,

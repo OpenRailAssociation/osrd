@@ -25,20 +25,6 @@ pub struct TrainScheduleSet {
 }
 
 impl TrainScheduleSet {
-    pub async fn train_schedule_count(
-        train_schedule_set_id: i64,
-        conn: &mut DbConnection,
-    ) -> Result<i64, database::DatabaseError> {
-        use database::tables::train_schedule::dsl;
-
-        dsl::train_schedule
-            .filter(dsl::train_schedule_set_id.eq(train_schedule_set_id))
-            .count()
-            .get_result(conn.write().await.deref_mut())
-            .await
-            .map_err(Into::into)
-    }
-
     /// Deletes train schedule sets that are not published or linked to a timetable
     pub async fn delete_orphaned(conn: &mut DbConnection) -> Result<usize, crate::Error> {
         use database::tables::timetable_train_schedule_set::dsl as tt_dsl;

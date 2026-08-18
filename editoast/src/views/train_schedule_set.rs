@@ -46,8 +46,9 @@ impl TrainScheduleSetResponse {
         conn: &mut DbConnection,
         train_schedule_set: TrainScheduleSet,
     ) -> Result<Self> {
-        let train_schedule_count =
-            TrainScheduleSet::train_schedule_count(train_schedule_set.id, conn).await? as u64;
+        let settings = SelectionSettings::new()
+            .filter(move || models::TrainSchedule::TRAIN_SCHEDULE_SET_ID.eq(train_schedule_set.id));
+        let train_schedule_count = models::TrainSchedule::count(conn, settings).await?;
         Ok(Self {
             train_schedule_set,
             train_schedule_count,
