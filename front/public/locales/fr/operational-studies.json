@@ -349,19 +349,12 @@
     "uniqueTrain_zero": "0 train"
   },
   "manageTrainSchedule": {
-    "addVia": "Ajouter ce point de passage",
-    "addVias": "Ajout de points de passage",
     "allowances": {
       "distribution-linear": "Linéaire",
-      "distribution-mareco": "Mareco",
-      "standard-allowance": "Marge de régularité"
+      "distribution-mareco": "Mareco"
     },
     "anyTrack": "Toutes voies",
-    "category": "Catégorie",
     "categoryMismatch": "L’association du matériel roulant et de la catégorie est atypique",
-    "deleteRoute": "Supprimer l'itinéraire",
-    "deleteVias": "Supprimer les étapes",
-    "destination": "Destination",
     "errorMessages": {
       "error": "Une erreur est survenue",
       "hardErrorInfra": "L'infrastructure comporte des erreurs et ne peut être utilisée sans être corrigée au préalable.",
@@ -390,7 +383,6 @@
       "trainScheduleTitle": "Une erreur est survenue",
       "unableToRetrieveTags": "Impossible de récupérer les étiquettes"
     },
-    "hideTrainSettings": "Masquer",
     "incompatibleConstraints": {
       "filters": {
         "activateAll": "Afficher toutes les contraintes",
@@ -409,9 +401,7 @@
       "title": "{{total}} contraintes incompatibles",
       "title_on": "{{count}} sur {{total}} contraintes incompatibles"
     },
-    "infraLoading": "Infra en cours de chargement…",
     "inputOPMainCodesExample": "Ex : LSN CIG CCS",
-    "invalidTrainScheduleStep": "Au moins un des points de passage n'a pas été reconnu",
     "itineraryModal": {
       "addLocationOnMap": "Ajouter un point remarquable sur la carte",
       "addPoint": "Ajouter",
@@ -459,29 +449,13 @@
       "unknownTrack": "Voie inconnue à {{names}}"
     },
     "launchPathFinding": "Lancer la recherche d'itinéraire",
-    "manageVias": "Gestion des étapes",
     "missingPathSteps": "Au moins un point de passage n'a pas été trouvé dans l'infrastructure",
-    "noDestinationChosen": "Arrivée non définie",
-    "noOriginChosen": "Départ non défini",
-    "noPlaceChosen": "Aucun point de passage/arrêt défini",
     "noRollingStock": "Pas de matériel roulant. Ce train sera en non calcul.",
     "noSpeedLimitByTag": "Aucun",
-    "origin": "Origine",
     "pacedTrainUpdated": "Mission modifiée",
     "pacedTrains": {
-      "add": "Ajouter",
-      "addExtraOccurrences": "Ajouter des occurrences hors cadence",
-      "added": "Mission ajoutée",
-      "defineService": "Définir une mission",
-      "departureDay": "Jour de départ",
-      "departureTime": "Heure de départ",
-      "interval": "Cadence de la mission",
-      "resetExceptionsConfirmation": "La modification de la cadence/durée de la mission réinitialisera les exceptions. Voulez-vous continuer ?",
-      "timeWindow": "Durée de la plage de répétition"
+      "added": "Mission ajoutée"
     },
-    "pathfinding": "Recherche d’itinéraire",
-    "pathfindingDone": "Recherche d'itinéraire terminée.",
-    "pathfindingError": "Erreur dans la recherche d’itinéraire : {{errorMessage}}.",
     "pathfindingErrors": {
       "incompatible_constraints": "Contraintes incompatibles",
       "not_enough_path_items": "Éléments manquants pour la recherche : Origine, Destination, Matériel roulant",
@@ -493,26 +467,9 @@
       "unauthorized_rolling_stock": "Vous n'êtes pas autorisé à utiliser ce matériel roulant",
       "zero_length_path": "L'origine et la destination sont identiques"
     },
-    "pathfindingInProgress": "Recherche d’itinéraire en cours…",
-    "pathfindingMissingParams": "Éléments manquants pour la recherche : {{missingElements}}.",
-    "pathfindingNoState": "Aucune recherche itinéraire.",
-    "powerRestriction": "Code de restriction de puissance",
-    "powerRestrictionEmptyExplanationText": "Le matériel roulant sélectionné ne possède pas de restrictions de puissance. Vous pouvez en créer dans l'éditeur de matériel roulant.",
-    "powerRestrictionExplanationText": "Si aucune restriction de puissance n'est renseignée sur un intervalle, le calcul de marche sera réalisé en utilisant la puissance nominale.",
     "refineSearchForMoreResults": "Affinez votre recherche pour plus de résultats",
-    "removeVia": "Retirer ce via",
-    "returnToSimulationResults": "Retourner aux résultats de simulation",
     "rollingstock": "Matériel",
-    "showTrainSettings": "Afficher",
     "speedLimitByTagAbbrev": "Code compo.",
-    "tabs": {
-      "pathFinding": "Itinéraire",
-      "rollingStock": "Matériel",
-      "simulationSettings": "Paramètres de simulation",
-      "timesStops": "Horaires et arrêts",
-      "unrecognizedRollingStock": "Matériel non reconnu : {{rollingStockName}}",
-      "unspecifiedRollingStock": "Matériel roulant non renseigné"
-    },
     "trainAdded": "Train ajouté",
     "trainHeader": {
       "allowances": {
@@ -556,30 +513,8 @@
       "serviceModelTrain": "Train modèle de mission",
       "serviceOccurrence": "Occurrence de mission"
     },
-    "trainLabels": "Étiquettes",
-    "trainScheduleDepartureTime": "Heure de départ",
-    "trainScheduleInitialSpeed": "Vitesse initiale",
-    "trainScheduleName": "Numéro, nom",
-    "turnPacedTrainIntoUniqueTrain": "Transformer cette mission en train",
-    "turnUniqueTrainIntoPacedTrain": "Transformer ce train en mission",
-    "unavailableDistance": "Distance indisponible",
     "uniqueTrainUpdated": "Train unique modifié",
-    "unknownRollingStock": "Matériel roulant inconnu. Ce train sera en non calcul.",
-    "updateOccurrence": "Modifier cette occurrence",
-    "updatePacedTrain": "Modifier la mission",
-    "updateUniqueTrain": "Modifier le train",
-    "usingElectricalProfiles": "Utiliser les profils électriques",
-    "via": "Étape",
-    "viewItineraryOnMap": "Voir l'itinéraire sur la carte",
-    "warningMessages": {
-      "inconsistent_one": "Un intervalle comporte des incohérences. La courbe effort vitesse par défaut sera utilisée pour celui-ci.",
-      "inconsistent_other": "Plusieurs intervalles comportent des incohérences. Les courbes effort vitesse par défaut seront utilisées pour ceux-ci.",
-      "missingPowerRestriction": "- Restriction de puissance manquante entre {{begin}}m et {{end}}m.",
-      "modeNotHandled": "- Aucune restriction de puissance ne devrait être renseignée entre {{begin}}m and {{end}}m comme le matériel roulant ne supporte pas l'électrification {{electrification}}.",
-      "pathfindingChange": "Changement de chemin",
-      "powerRestrictionInvalidCombination": "- Code {{powerRestrictionCode}} incompatible avec l'électrification à {{electrification}} de l'itinéraire entre {{begin}}m et {{end}}m.",
-      "powerRestrictionsReset": "Les restrictions de puissance ont été réinitialisées."
-    }
+    "unknownRollingStock": "Matériel roulant inconnu. Ce train sera en non calcul."
   },
   "operational-studies-management": {
     "delete": "Supprimer",

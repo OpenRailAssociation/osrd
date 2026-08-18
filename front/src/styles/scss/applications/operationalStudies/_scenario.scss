@@ -330,41 +330,6 @@
     background-color: var(--coolgray1);
   }
 
-  .scenario-timetable-manage-train-schedule {
-    .scenario-timetable-manage-train-schedule-header {
-      display: flex;
-      flex-direction: column;
-      padding: 8px 8px 0;
-
-      .custom-control-label {
-        padding-top: 0;
-      }
-
-      .input-icon {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
-
-      .paced-trains-container {
-        padding: 12px;
-      }
-    }
-
-    .scenario-timetable-manage-train-schedule-body {
-      padding: 8px;
-    }
-
-    #timetable-edited-element {
-      padding: 14px 24px;
-      @include hide-train-details;
-
-      .scenario-timetable-train {
-        @extend %scenario-timetable-train;
-      }
-    }
-  }
-
   .scenario-sidemenu {
     height: 100%;
     display: flex;

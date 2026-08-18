@@ -28,7 +28,6 @@ import MenuTriggerButton from 'common/MenuTriggerButton';
 import UploadFileModal from 'common/uploadFileModal';
 import type { TrainScheduleWithDetails } from 'modules/trainSchedule/types';
 import { setFailure } from 'reducers/main';
-import { resetItineraryForm } from 'reducers/osrdconf/operationalStudiesConf';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 
@@ -38,11 +37,7 @@ import RoundTripsModal from '../RoundTrips/RoundTripsModal';
 import FilterPanel from './FilterPanel';
 import SelectionToolBar from './TimetableSelectionToolbar';
 import type { TimetableFilters, TimetableMode } from './types';
-import {
-  computeLatestMidnight,
-  exportTrainSchedules,
-  timetableHasInvalidTrainSchedule,
-} from './utils';
+import { exportTrainSchedules, timetableHasInvalidTrainSchedule } from './utils';
 
 type TimetableToolbarProps = {
   timetableFilters: TimetableFilters;
@@ -80,7 +75,7 @@ const TimetableToolbar = ({
   const { t } = useTranslation(['operational-studies', 'translation'], { keyPrefix: 'main' });
   const dispatch = useAppDispatch();
 
-  const { infraId, timetableId, scenario } = useScenarioContext();
+  const { infraId, timetableId } = useScenarioContext();
   const { trainSchedules } = useTimetableContext();
 
   const { data: trainScheduleRoundTripsData } =
@@ -234,14 +229,6 @@ const TimetableToolbar = ({
             data-testid="scenarios-add-train-schedule-button"
             title={t('timetable.addTrainSchedule')}
             onClick={() => {
-              dispatch(
-                resetItineraryForm({
-                  startTime:
-                    scenario.timetable_type === 'CALENDAR'
-                      ? computeLatestMidnight(trainSchedulesList, new Date())
-                      : undefined,
-                })
-              );
               openItineraryModalToCreate();
             }}
             type="button"

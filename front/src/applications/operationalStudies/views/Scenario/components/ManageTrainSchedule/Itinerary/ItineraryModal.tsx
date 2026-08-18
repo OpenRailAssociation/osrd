@@ -105,11 +105,12 @@ export type ItineraryModalTrainState = {
   speedLimitByTag?: string;
 };
 
-function blankNewTrainState(
+export function blankNewTrainState(
   startTime: StartTime | undefined,
   timetableType: TimetableType
 ): ItineraryModalTrainState {
   startTime ??= timetableType === 'CALENDAR' ? new Date() : Duration.zero;
+
   return {
     name: '',
     startTime,
@@ -134,7 +135,7 @@ function blankNewTrainState(
   };
 }
 
-function setupStateWithTrainSchedule(
+export function setupStateWithTrainSchedule(
   trainSchedule: TrainScheduleWithDetails,
   timetableType: TimetableType,
   isOccurrence?: boolean

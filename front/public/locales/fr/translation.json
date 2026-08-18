@@ -714,7 +714,6 @@
       "none": "Aucun"
     },
     "chooseRollingStock": "Sélectionnez un matériel roulant pour en afficher les informations",
-    "comfort": "Confort",
     "comfortAcceleration": "Accélération « confort »",
     "comfortLevels": "Niveaux de confort",
     "comfortTypes": {
@@ -808,7 +807,6 @@
     "rollingResistanceB": "Frottements visqueux (b)",
     "rollingResistanceC": "Résistance aérodynamique (c)",
     "rollingResistanceFormula": "R(v) = a + bv + cv²",
-    "rollingstockChoice": "Choisissez un matériel roulant",
     "selectRollingStock": "Sélectionner",
     "shortCategoriesOptions": {
       "COMMUTER_TRAIN": "Banlieue",

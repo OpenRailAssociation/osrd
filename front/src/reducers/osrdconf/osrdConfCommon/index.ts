@@ -3,14 +3,11 @@ import type { Draft } from 'immer';
 
 import { defaultMapSettings, buildMapStateReducer } from 'reducers/commonMap';
 import { type InfraStateReducers, buildInfraStateReducers, infraState } from 'reducers/infra';
-import type {
-  OperationalStudiesConfSlice,
-  OperationalStudiesConfSliceActions,
-} from 'reducers/osrdconf/operationalStudiesConf';
-import type { OperationalStudiesConfSelectors } from 'reducers/osrdconf/operationalStudiesConf/selectors';
 import type { StdcmConfSlice, StdcmConfSliceActions } from 'reducers/osrdconf/stdcmConf';
 import type { StdcmConfSelectors } from 'reducers/osrdconf/stdcmConf/selectors';
 import type { OsrdConfState } from 'reducers/osrdconf/types';
+
+import type { OperationalStudiesConfSlice } from '../operationalStudiesConf';
 
 export const defaultCommonConf: OsrdConfState = {
   projectID: undefined,
@@ -46,8 +43,8 @@ export function buildCommonConfReducers<S extends OsrdConfState>(): CommonConfRe
   };
 }
 
-export type ConfSlice = StdcmConfSlice | OperationalStudiesConfSlice;
+export type ConfSlice = OperationalStudiesConfSlice | StdcmConfSlice;
 
-export type ConfSliceActions = StdcmConfSliceActions | OperationalStudiesConfSliceActions;
+export type ConfSliceActions = StdcmConfSliceActions;
 
-export type ConfSelectors = StdcmConfSelectors | OperationalStudiesConfSelectors;
+export type ConfSelectors = StdcmConfSelectors;

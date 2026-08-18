@@ -8,7 +8,6 @@ import {
   type ItineraryModalContextType,
   type TrainScheduleToEditData,
 } from 'applications/operationalStudies/hooks/useItineraryModalContext';
-import { ManageTrainScheduleContextProvider } from 'applications/operationalStudies/hooks/useManageTrainScheduleContext';
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import useScenarioData from 'applications/operationalStudies/hooks/useScenarioData';
 import {
@@ -231,13 +230,11 @@ const ScenarioContent = ({ activeBoards, toggleBoard }: ScenarioContentProps) =>
         <EditedElementContainerProvider>
           <main className="mastcontainer mastcontainer-no-mastnav scenario scenario-content-v2">
             {itineraryModalOpen && (
-              <ManageTrainScheduleContextProvider>
-                <ItineraryModal
-                  onTrainCreated={openAndScrollToTableBoard}
-                  trainScheduleToEditData={trainScheduleToEditData}
-                  defaultStartTime={defaultStartTime}
-                />
-              </ManageTrainScheduleContextProvider>
+              <ItineraryModal
+                onTrainCreated={openAndScrollToTableBoard}
+                trainScheduleToEditData={trainScheduleToEditData}
+                defaultStartTime={defaultStartTime}
+              />
             )}
             <div
               data-testid="scenario-left-column"
