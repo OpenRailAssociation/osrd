@@ -821,29 +821,6 @@ class EditoastDelimitedAreaErrorInvalidLocations(BaseModel):
     type: Literal["editoast:delimited_area:InvalidLocations"]
 
 
-class EditoastDocumentErrorsDatabase(BaseModel):
-    context: Annotated[
-        dict[str, Any] | None, Field(title="EditoastDocumentErrorsDatabaseContext")
-    ] = None
-    message: str
-    status: Literal[500]
-    type: Literal["editoast:document:Database"]
-
-
-class EditoastDocumentErrorsNotFoundContext(BaseModel):
-    document_key: int
-
-
-class EditoastDocumentErrorsNotFound(BaseModel):
-    context: Annotated[
-        EditoastDocumentErrorsNotFoundContext | None,
-        Field(title="EditoastDocumentErrorsNotFoundContext"),
-    ] = None
-    message: str
-    status: Literal[404]
-    type: Literal["editoast:document:NotFound"]
-
-
 class EditoastEditionErrorInfraIsLockedContext(BaseModel):
     infra_id: int
 
@@ -4675,8 +4652,6 @@ class EditoastError(
         | EditoastCoreErrorUnparsableErrorOutput
         | EditoastDatabaseAccessErrorDatabaseAccessError
         | EditoastDelimitedAreaErrorInvalidLocations
-        | EditoastDocumentErrorsDatabase
-        | EditoastDocumentErrorsNotFound
         | EditoastEditionErrorInfraIsLocked
         | EditoastEditionErrorSplitTrackSectionBadOffset
         | EditoastElectricalProfilesErrorDatabase
@@ -4853,8 +4828,6 @@ class EditoastError(
         | EditoastCoreErrorUnparsableErrorOutput
         | EditoastDatabaseAccessErrorDatabaseAccessError
         | EditoastDelimitedAreaErrorInvalidLocations
-        | EditoastDocumentErrorsDatabase
-        | EditoastDocumentErrorsNotFound
         | EditoastEditionErrorInfraIsLocked
         | EditoastEditionErrorSplitTrackSectionBadOffset
         | EditoastElectricalProfilesErrorDatabase

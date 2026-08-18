@@ -7,10 +7,9 @@ use axum::http::StatusCode;
 use axum::http::header::CACHE_CONTROL;
 use axum::http::header::CONTENT_TYPE;
 use axum::response::IntoResponse;
-use editoast_derive::EditoastError;
+use editoast_derive::ViewError;
 use serde::Serialize;
 use std::sync::Arc;
-use thiserror::Error;
 use utoipa::ToSchema;
 
 use crate::error::Result;
@@ -18,15 +17,34 @@ use database::DbConnectionPoolV2;
 use editoast_models::Document;
 use editoast_models::prelude::*;
 
-#[derive(Error, Debug, EditoastError)]
-#[editoast_error(base_id = "document")]
-pub enum DocumentErrors {
-    #[error("Document '{document_key}' not found")]
-    #[editoast_error(status = 404)]
-    NotFound { document_key: i64 },
+#[derive(Debug, thiserror::Error, ViewError)]
+pub(in crate::views) enum DatabaseError {
+    #[error("database error: {0}")]
+    #[view_error(status = INTERNAL_SERVER_ERROR)]
+    Internal(#[from] editoast_models::Error),
+    #[error("database unavailable: {0}")]
+    #[view_error(status = SERVICE_UNAVAILABLE)]
+    Unavailable(#[from] database::DatabasePoolError),
+}
+
+#[derive(Debug, thiserror::Error, ViewError)]
+#[error("Document '{document_key}' not found")]
+#[view_error(status = NOT_FOUND, context, name = "document::not_found")]
+pub(in crate::views) struct DocumentNotFound {
+    document_key: i64,
+}
+
+#[derive(Debug, thiserror::Error, ViewError, derive_more::From)]
+pub(in crate::views) enum DocumentError {
     #[error(transparent)]
-    #[editoast_error(status = 500)]
-    Database(#[from] editoast_models::Error),
+    NotFound(
+        #[from]
+        #[view_error]
+        DocumentNotFound,
+    ),
+    #[error(transparent)]
+    #[from(forward)]
+    Database(#[view_error] DatabaseError),
 }
 
 /// Returns a document of any type
@@ -44,15 +62,18 @@ pub enum DocumentErrors {
             content_type = "application/octet-stream",
             body = String,
         ),
+        DocumentError,
     )
 )]
 pub(in crate::views) async fn get(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Path(document_id): Path<i64>,
-) -> Result<impl IntoResponse> {
+) -> Result<impl IntoResponse, DocumentError> {
     let conn = &mut db_pool.get().await?;
-    let doc = Document::retrieve_or_fail(conn.clone(), document_id, || DocumentErrors::NotFound {
-        document_key: document_id,
+    let doc = Document::retrieve_or_fail(conn.clone(), document_id, || {
+        DocumentError::NotFound(DocumentNotFound {
+            document_key: document_id,
+        })
     })
     .await?;
     Ok((
@@ -81,13 +102,14 @@ struct NewDocumentResponse {
     request_body(content_type = "application/octet-stream", content = String),
     responses(
         (status = 201, description = "The document was created", body = NewDocumentResponse),
+        DatabaseError,
     )
 )]
 pub(in crate::views) async fn post(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
     axum_extra::TypedHeader(content_type): axum_extra::TypedHeader<headers::ContentType>,
     bytes: Bytes,
-) -> Result<impl IntoResponse> {
+) -> Result<impl IntoResponse, DatabaseError> {
     let content_type = content_type.to_string();
 
     // Create document
@@ -117,15 +139,18 @@ pub(in crate::views) async fn post(
     ),
     responses(
         (status = 204, description = "The document was deleted"),
+        DocumentError,
     )
 )]
 pub(in crate::views) async fn delete(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Path(document_id): Path<i64>,
-) -> Result<impl IntoResponse> {
+) -> Result<impl IntoResponse, DocumentError> {
     let conn = &mut db_pool.get().await?;
-    Document::delete_static_or_fail(conn, document_id, || DocumentErrors::NotFound {
-        document_key: document_id,
+    Document::delete_static_or_fail(conn, document_id, || {
+        DocumentError::NotFound(DocumentNotFound {
+            document_key: document_id,
+        })
     })
     .await?;
     Ok(StatusCode::NO_CONTENT)
