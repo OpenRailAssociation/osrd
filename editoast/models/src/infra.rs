@@ -90,16 +90,6 @@ impl InfraChangeset {
 }
 
 impl Infra {
-    pub async fn all(conn: &mut DbConnection) -> Vec<Infra> {
-        dsl::infra
-            .load(conn.write().await.deref_mut())
-            .await
-            .expect("List infra query failed")
-            .into_iter()
-            .map(Self::from_row)
-            .collect()
-    }
-
     pub async fn bump_version(&mut self, conn: &mut DbConnection) -> Result<(), crate::Error> {
         self.version += 1;
         self.modified = Utc::now();
