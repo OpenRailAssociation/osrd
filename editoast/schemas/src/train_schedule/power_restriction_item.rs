@@ -5,6 +5,7 @@ use utoipa::ToSchema;
 
 #[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize, ToSchema)]
 #[serde(deny_unknown_fields)]
+#[schema(title = "PowerRestrictionItem")]
 pub struct PowerRestrictionItem {
     #[schema(inline)]
     pub from: NonBlankString,

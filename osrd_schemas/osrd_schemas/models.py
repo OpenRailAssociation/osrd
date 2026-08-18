@@ -13,7 +13,7 @@ from typing_extensions import TypeAliasType
 from .overrides import OffsetInMs
 
 
-class PowerRestriction(BaseModel):
+class PowerRestrictionItem(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
@@ -3208,15 +3208,6 @@ class PathfindingTrackLocationInput(BaseModel):
     )
     position: float
     track: Annotated[str, Field(max_length=255, min_length=1)]
-
-
-class PowerRestrictionItem(BaseModel):
-    model_config = ConfigDict(
-        extra="forbid",
-    )
-    from_: Annotated[str, Field(alias="from", min_length=1)]
-    to: Annotated[str, Field(min_length=1)]
-    value: str
 
 
 class TrackSectionRange(BaseModel):
@@ -7352,7 +7343,7 @@ class TrainSchedule(BaseModel):
     margins: Margins | None = None
     options: TrainScheduleOptions | None = None
     path: list[PathItem]
-    power_restrictions: list[PowerRestriction] | None = None
+    power_restrictions: list[PowerRestrictionItem] | None = None
     rolling_stock_name: str
     schedule: list[ScheduleItem] | None = None
     speed_limit_tag: NonBlankString | None = None

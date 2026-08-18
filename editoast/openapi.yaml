@@ -13204,6 +13204,7 @@ components:
       - PT2H
     PowerRestrictionItem:
       type: object
+      title: PowerRestrictionItem
       required:
       - from
       - to
@@ -16623,6 +16624,7 @@ components:
             type: array
             items:
               type: object
+              title: PowerRestrictionItem
               required:
               - from
               - to
