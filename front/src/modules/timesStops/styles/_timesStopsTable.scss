@@ -427,6 +427,34 @@
       }
     }
 
+    .requested-cell-highlighted-departure,
+    .requested-cell-highlighted-arrival {
+      --hl-top: 1;
+      --hl-right: 1;
+      --hl-bottom: 1;
+      --hl-left: 1;
+
+      box-shadow:
+        // inner ring, 1px inset
+        inset 0 calc(1px * var(--hl-top)) 0 0 var(--primary80),
+        inset calc(-1px * var(--hl-right)) 0 0 0 var(--primary80),
+        inset 0 calc(-1px * var(--hl-bottom)) 0 0 var(--primary80),
+        inset calc(1px * var(--hl-left)) 0 0 0 var(--primary80),
+        // outer ring, 4px inset
+        inset 0 calc(4px * var(--hl-top)) 0 0 var(--primary10),
+        inset calc(-4px * var(--hl-right)) 0 0 0 var(--primary10),
+        inset 0 calc(-4px * var(--hl-bottom)) 0 0 var(--primary10),
+        inset calc(4px * var(--hl-left)) 0 0 0 var(--primary10);
+
+      &.requested-cell-highlighted--connect-top {
+        --hl-top: 0;
+      }
+
+      &.requested-cell-highlighted--connect-bottom {
+        --hl-bottom: 0;
+      }
+    }
+
     /* Computed / uncomputed cells */
     td[class^='col-']::before {
       content: '';

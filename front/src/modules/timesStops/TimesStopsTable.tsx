@@ -1,4 +1,4 @@
-import React, { useCallback, Fragment, useMemo, useRef } from 'react';
+import React, { useCallback, Fragment, useMemo, useRef, useState } from 'react';
 
 import { Checkbox } from '@osrd-project/ui-core';
 import { Alert, Moon, TriangleDown } from '@osrd-project/ui-icons';
@@ -24,6 +24,7 @@ import { useDateTimeLocale } from 'utils/date';
 import { type Duration, type StartTime, subtractStartTime } from 'utils/duration';
 
 import DurationCell, { type DurationCellHandle } from './DurationCell';
+import { getRowsToUpdateFromSimulation } from './helpers/fillTimesFromSimulation';
 import type { PowerRestrictionBlockInfo } from './helpers/powerRestrictionIncompatibility';
 import { onStopSignalToReceptionSignal, truncateStartTimeToDay } from './helpers/utils';
 import MarginCell from './MarginCell';
@@ -35,6 +36,7 @@ import type {
   PropagationMode,
   RequestedTimeField,
   StopPropagationMode,
+  TimeFillMode,
   TimesStopsRowNew,
 } from './types';
 
@@ -201,6 +203,9 @@ const TimesStopsTable = ({
   const cellTabOrderRef = useRef<Map<string, TimeCellTabEntry>>(new Map());
   const startTimeCellType: 'time' | 'duration' =
     scenario.timetable_type === 'CALENDAR' ? 'time' : 'duration';
+
+  const [highlightedRowIds, setHighlightedRowIds] = useState<Set<string>>(new Set());
+  const [mouseOverTimeField, setMouseOverTimeField] = useState<RequestedTimeField>();
 
   const registerTimeCellRef = useCallback(
     (rowIndex: number, columnId: string) => (handle: TabbableCellHandle | null) => {
@@ -542,6 +547,17 @@ const TimesStopsTable = ({
     );
   };
 
+  const onMouseEnterTimeColumnMenu = (
+    allRows: TimesStopsRowNew[],
+    field: RequestedTimeField,
+    mode: TimeFillMode
+  ) => {
+    const rowsToHighlight = getRowsToUpdateFromSimulation(allRows, field, mode);
+
+    setHighlightedRowIds(new Set(rowsToHighlight.map((row) => row.id)));
+    setMouseOverTimeField(field);
+  };
+
   const returnRequestedTimelHeader = (field: RequestedTimeField) => {
     const requestedTimeHeader = (info: HeaderContext<TimesStopsRowNew, Date | null>) => {
       const { allRows } = info.table.options.meta!;
@@ -552,9 +568,9 @@ const TimesStopsTable = ({
           rows={allRows}
           onFillEmpty={() => {}}
           onOverwriteAll={() => {}}
-          onMouseEnterFillEmpty={() => {}}
-          onMouseEnterOverwriteAll={() => {}}
-          onMouseLeave={() => {}}
+          onMouseEnterFillEmpty={() => onMouseEnterTimeColumnMenu(allRows, field, 'fill')}
+          onMouseEnterOverwriteAll={() => onMouseEnterTimeColumnMenu(allRows, field, 'overwrite')}
+          onMouseLeave={() => setHighlightedRowIds(new Set())}
         />
       );
     };
@@ -861,6 +877,15 @@ const TimesStopsTable = ({
             const dayOffset = effectiveDayOffsets[rowIndex];
             const prevDayOffset = rowIndex > 0 ? effectiveDayOffsets[rowIndex - 1] : 0;
             const hasDayChanged = dayOffset > prevDayOffset;
+            const nextDayOffset =
+              rowIndex < tableRows.length - 1 ? effectiveDayOffsets[rowIndex + 1] : dayOffset;
+            const nextHasDayChanged = nextDayOffset > dayOffset;
+
+            const isCellHighlighted = (idx: number, field: string) =>
+              mouseOverTimeField === field &&
+              idx >= 0 &&
+              idx < tableRows.length &&
+              highlightedRowIds.has(tableRows[idx].original.id);
 
             let dayChangeLabel = null;
             if (hasDayChanged) {
@@ -920,6 +945,18 @@ const TimesStopsTable = ({
                           cell.column.id === 'powerRestriction' &&
                           table.options.meta!.powerRestrictionBlocks.get(row.original.id)
                             ?.hasWarning,
+                        'requested-cell-highlighted-arrival':
+                          cell.column.id === 'requestedArrival' &&
+                          highlightedRowIds.has(row.original.id) &&
+                          mouseOverTimeField === 'requestedArrival',
+                        'requested-cell-highlighted-departure':
+                          cell.column.id === 'requestedDeparture' &&
+                          highlightedRowIds.has(row.original.id) &&
+                          mouseOverTimeField === 'requestedDeparture',
+                        'requested-cell-highlighted--connect-top':
+                          !hasDayChanged && isCellHighlighted(rowIndex - 1, cell.column.id),
+                        'requested-cell-highlighted--connect-bottom':
+                          !nextHasDayChanged && isCellHighlighted(rowIndex + 1, cell.column.id),
                       })}
                       data-testid={cell.column.columnDef.meta?.['data-testid']}
                     >

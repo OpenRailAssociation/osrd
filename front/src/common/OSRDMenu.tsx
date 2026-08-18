@@ -6,6 +6,8 @@ export type OSRDMenuItem = {
   title: string;
   icon: React.ReactNode;
   onClick?: () => void;
+  onMouseEnter?: () => void;
+  onMouseLeave?: () => void;
   disabled?: boolean;
   disabledMessage?: string;
   dataTestID?: string;
@@ -27,6 +29,8 @@ const OSRDMenu = ({ menuRef, items, className }: OSRDMenuProps) => (
         disabled,
         disabledMessage,
         onClick,
+        onMouseEnter,
+        onMouseLeave,
         dataTestID,
         className: itemClassName,
       }) => (
@@ -37,6 +41,8 @@ const OSRDMenu = ({ menuRef, items, className }: OSRDMenuProps) => (
           type="button"
           className={cx('menu-item', itemClassName)}
           onClick={onClick}
+          onMouseEnter={onMouseEnter}
+          onMouseLeave={onMouseLeave}
           data-testid={dataTestID}
         >
           <span className="icon">{icon}</span>
