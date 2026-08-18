@@ -32,7 +32,7 @@ export default async function getPNGBlob(
   return new Promise((resolve, reject) => {
     canvas.toBlob((blob) => {
       if (blob) resolve(blob);
-      else reject();
+      else reject(new Error('Failed to create PNG image from canvas'));
     }, 'image/png');
   });
 }
