@@ -12,22 +12,22 @@
     "access": "public"
   },
   "type": "module",
-  "module": "./dist/index.esm.js",
+  "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "main": "./dist/index.esm.js",
+  "main": "./dist/index.js",
   "files": [
     "/dist"
   ],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "default": "./dist/index.esm.js"
+      "default": "./dist/index.js"
     }
   },
   "scripts": {
     "svgo": "svgo icons --config svgo.config.js",
     "clean": "rimraf dist",
-    "build": "node ./scripts/build.js && rollup -c --failAfterWarnings",
+    "build": "node ./scripts/build.js && tsdown --fail-on-warn",
     "prepublishOnly": "npm run clean && npm run build"
   },
   "peerDependencies": {
@@ -35,7 +35,6 @@
   },
   "devDependencies": {
     "cheerio": "^1.2.0",
-    "svgo": "4.0.2",
-    "@rollup/plugin-typescript": "^12.3.0"
+    "svgo": "4.0.2"
   }
 }

@@ -415,13 +415,11 @@
           "**/*.spec.tsx",
           "**/build.js",
           "**/playwright.config.ts",
-          "**/rollup.config.js",
           "**/scripts/**",
           "**/tests/**",
           "**/vite.config.ts",
           "**/vitest.config.mts",
-          "**/vitest.setup.ts",
-          "rollup-base.config.js"
+          "**/vitest.setup.ts"
         ]
       }
     ],
@@ -552,18 +550,6 @@
         "storybook/no-uninstalled-addons": "error"
       },
       "jsPlugins": ["eslint-plugin-storybook"]
-    },
-    {
-      "files": ["rollup-base.config.js"],
-      "rules": {
-        "import-js/no-extraneous-dependencies": [
-          "error",
-          {
-            "devDependencies": true,
-            "packageDir": ["./base", "./ui/base"]
-          }
-        ]
-      }
     },
     {
       "files": ["scripts/**/*", "tests/reporter/**/*"],
