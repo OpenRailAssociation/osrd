@@ -8,22 +8,13 @@ edition.workspace = true
 testing = []
 
 [dependencies]
-aws-lc-rs.workspace = true
-derive_more.workspace = true
-diesel.workspace = true
-diesel-async.workspace = true
-futures.workspace = true
-futures-util.workspace = true
-opentelemetry-semantic-conventions.workspace = true
-postgis_diesel.workspace = true
+aws-lc-rs = { version = "1.17.1", default-features = false }
 rustls-native-certs.workspace = true
+sea-orm.workspace = true
 sha1.workspace = true
 sqlx.workspace = true
-thiserror.workspace = true
 tokio.workspace = true
-tokio-postgres.workspace = true
-tokio-rustls.workspace = true
+tokio-rustls = "0.26"
 tracing.workspace = true
 url.workspace = true
 uuid.workspace = true
-x509-cert.workspace = true

@@ -1,47 +1,32 @@
-mod tracing_instrumentation;
-
 #[cfg(any(test, feature = "testing"))]
 use std::fmt::Write as _;
-use std::ops::Deref;
-use std::ops::DerefMut;
-use std::sync::Arc;
 
-use crate::postgres_rustls;
-use diesel::ConnectionError;
-use diesel::ConnectionResult;
-use diesel::sql_query;
-use diesel_async::AsyncConnection;
-use diesel_async::AsyncPgConnection;
-use diesel_async::RunQueryDsl;
-use diesel_async::pooled_connection::AsyncDieselConnectionManager;
-use diesel_async::pooled_connection::ManagerConfig;
-use diesel_async::pooled_connection::deadpool::Object;
-use diesel_async::pooled_connection::deadpool::Pool;
-use futures::Future;
-use futures::future::BoxFuture;
-use futures_util::FutureExt as _;
-use tokio::sync::OnceCell;
+use sea_orm::DatabaseConnection;
+use sea_orm::DbErr;
+use sea_orm::SqlxPostgresConnector;
+use sea_orm::entity::prelude::async_trait::async_trait;
 #[cfg(any(test, feature = "testing"))]
 use sha1::Digest as _;
 #[cfg(any(test, feature = "testing"))]
 use sha1::Sha1;
-use tokio::sync::OwnedRwLockWriteGuard;
-use tokio::sync::RwLock;
-use tokio_rustls::rustls;
-use tracing::Instrument as _;
-use tracing::debug_span;
+use sqlx::ConnectOptions as _;
+use sqlx::PgPool;
+use sqlx::postgres::PgConnectOptions;
+use sqlx::postgres::PgPoolOptions;
 use tracing::trace;
 use url::Url;
-
-use crate::DatabaseError;
-
-pub type DbConnectionConfig = AsyncDieselConnectionManager<AsyncPgConnection>;
 
 #[cfg(any(test, feature = "testing"))]
 static TEMPLATE_CREATION_MUTEX: tokio::sync::Mutex<()> = tokio::sync::Mutex::const_new(());
 
 #[cfg(any(test, feature = "testing"))]
+const TEST_DATABASE_NAME_PREFIX: &str = "osrd_test_";
+
+#[cfg(any(test, feature = "testing"))]
 static MIGRATIONS: sqlx::migrate::Migrator = sqlx::migrate!("../migrations");
+
+#[cfg(any(test, feature = "testing"))]
+const INIT_TEST_DB_SQL: &str = include_str!("../sql/init_test_db.sql");
 
 #[cfg(any(test, feature = "testing"))]
 fn migration_fingerprint() -> String {
@@ -55,8 +40,7 @@ fn migration_fingerprint() -> String {
         }]);
         hasher.update(migration.sql.as_str().as_bytes());
     }
-    let init_test_db = include_bytes!("../sql/init_test_db.sql");
-    hasher.update(init_test_db);
+    hasher.update(INIT_TEST_DB_SQL.as_bytes());
     let digest = hasher.finalize();
     let mut fingerprint = String::with_capacity(digest.len() * 2);
     for byte in digest {
@@ -66,61 +50,57 @@ fn migration_fingerprint() -> String {
 }
 
 #[cfg(any(test, feature = "testing"))]
-async fn db_exists(url: &str) -> bool {
-    match AsyncPgConnection::establish(url).await {
-        Ok(_) => true,
-        Err(ConnectionError::CouldntSetupConfiguration(diesel::result::Error::DatabaseError(
-            _,
-            err,
-        ))) if err.message().ends_with("does not exist") => false,
-        Err(_) => panic!("Couldn't connect to database"),
-    }
+async fn db_exists(admin_pool: &PgPool, name: &str) -> Result<bool, sqlx::Error> {
+    sqlx::query_scalar("SELECT EXISTS (SELECT FROM pg_database WHERE datname = $1)")
+        .bind(name)
+        .fetch_one(admin_pool)
+        .await
 }
 
 #[cfg(any(test, feature = "testing"))]
 async fn template_creation(
-    osrd_conn: DbConnection,
+    admin_pool: &PgPool,
 ) -> Result<String, Box<dyn std::error::Error + Send + Sync>> {
     // Prevents other tests from interfering during template creation and avoids conflicts
 
     let _lock = TEMPLATE_CREATION_MUTEX.lock().await;
     let template_name = format!("osrd_template_{}", migration_fingerprint());
+    let db_exists = db_exists(admin_pool, &template_name).await?;
 
-    let template_url_postgres: Url =
-        format!("postgresql://postgres:password@127.0.0.1/{template_name}")
-            .parse()
-            .unwrap();
+    if !db_exists {
+        let create = format!("CREATE DATABASE {template_name} WITH OWNER osrd");
+        match sqlx::raw_sql(sqlx::AssertSqlSafe(create))
+            .execute(admin_pool)
+            .await
+        {
+            Ok(_) => {
+                let template_url_postgres: Url =
+                    format!("postgresql://postgres:password@127.0.0.1/{template_name}")
+                        .parse()
+                        .unwrap();
+                let template_pool = create_connection_pool(template_url_postgres, 1).await?;
+                sqlx::raw_sql(INIT_TEST_DB_SQL)
+                    .execute(&template_pool)
+                    .await?;
+                template_pool.close().await;
+            }
+            Err(error) => {
+                // If the database already exists, it means that a concurrent test run has already created it.
+                // In this specific case, we can safely ignore the error.
+                if !error
+                    .as_database_error()
+                    .is_some_and(|error| error.code().as_deref() == Some("42P04"))
+                {
+                    return Err(error.into());
+                }
+            }
+        }
+    }
+
     let template_url_osrd: Url = format!("postgresql://osrd:password@127.0.0.1/{template_name}")
         .parse()
         .unwrap();
-
-    let db_exists = db_exists(template_url_postgres.as_str()).await;
-
-    if !db_exists {
-        diesel::sql_query(format!("CREATE DATABASE {template_name} WITH OWNER osrd"))
-            .execute(&mut osrd_conn.write().await)
-            .await
-            .or_else(|e| {
-                // If the database already exists, it means that a concurrent test run has already created it.
-                // In this specific case, we can safely ignore the error.
-                if let diesel::result::Error::DatabaseError(_, ref err) = e
-                    && err.message().ends_with("already exists")
-                {
-                    Ok(0)
-                } else {
-                    Err(e)
-                }
-            })?;
-
-        let template_pool = create_connection_pool(template_url_postgres.clone(), 1)?;
-        let mut conn = template_pool.get().await?;
-
-        use diesel_async::SimpleAsyncConnection as _;
-        let sql_content = include_str!("../sql/init_test_db.sql");
-        conn.batch_execute(sql_content).await?;
-    }
-
-    let template_pool = sqlx::PgPool::connect(template_url_osrd.as_str()).await?;
+    let template_pool = create_connection_pool(template_url_osrd, 1).await?;
     MIGRATIONS.run(&template_pool).await?;
     template_pool.close().await;
 
@@ -129,108 +109,18 @@ async fn template_creation(
 
 #[cfg(any(test, feature = "testing"))]
 async fn create_test_database(
-    osrd_conn: DbConnection,
+    admin_pool: &PgPool,
     db_name: String,
 ) -> Result<(String, String), Box<dyn std::error::Error + Send + Sync>> {
-    let template_name = template_creation(osrd_conn.clone()).await?;
+    let template_name = template_creation(admin_pool).await?;
 
-    diesel::sql_query(format!(
-        "CREATE DATABASE {db_name} WITH TEMPLATE {template_name} OWNER osrd"
-    ))
-    .execute(&mut osrd_conn.write().await)
-    .await?;
+    let create = format!("CREATE DATABASE {db_name} WITH TEMPLATE {template_name} OWNER osrd");
+    sqlx::raw_sql(sqlx::AssertSqlSafe(create))
+        .execute(admin_pool)
+        .await?;
     let test_database_url = format!("postgresql://osrd:password@localhost/{db_name}");
 
     Ok((db_name, test_database_url))
-}
-
-#[derive(Clone)]
-pub struct DbConnection {
-    inner: Arc<RwLock<Object<AsyncPgConnection>>>,
-}
-
-pub struct WriteHandle {
-    guard: OwnedRwLockWriteGuard<Object<AsyncPgConnection>>,
-}
-
-impl DbConnection {
-    pub fn new(inner: Arc<RwLock<Object<AsyncPgConnection>>>) -> Self {
-        Self { inner }
-    }
-
-    pub async fn write(&self) -> WriteHandle {
-        WriteHandle {
-            guard: self.inner.clone().write_owned().await,
-        }
-    }
-
-    // Implementation of this function is taking a strong inspiration from
-    // https://docs.rs/diesel/2.1.6/src/diesel/connection/transaction_manager.rs.html#50-71
-    // Sadly, this function is private so we can't use it.
-    //
-    // :WARNING: If you ever need to modify this function, please take a look at the
-    // original `diesel` function, they probably do it right more than us.
-    pub async fn transaction<R, E, F, Fut>(&self, callback: F) -> std::result::Result<R, E>
-    where
-        F: FnOnce(Self) -> Fut,
-        Fut: Future<Output = std::result::Result<R, E>>,
-        E: From<DatabaseError>,
-    {
-        use diesel_async::TransactionManager as _;
-
-        type TxManager = <AsyncPgConnection as AsyncConnection>::TransactionManager;
-
-        {
-            let mut handle = self.write().await;
-            TxManager::begin_transaction(handle.deref_mut())
-                .await
-                .map_err(DatabaseError)?;
-        }
-
-        match callback(self.clone()).await {
-            Ok(result) => {
-                let mut handle = self.write().await;
-                TxManager::commit_transaction(handle.deref_mut())
-                    .await
-                    .map_err(DatabaseError)?;
-                Ok(result)
-            }
-            Err(callback_error) => {
-                let mut handle = self.write().await;
-                match TxManager::rollback_transaction(handle.deref_mut()).await {
-                    Ok(()) | Err(diesel::result::Error::BrokenTransactionManager) => {
-                        Err(callback_error)
-                    }
-                    Err(rollback_error) => Err(E::from(DatabaseError(rollback_error))),
-                }
-            }
-        }
-    }
-
-    pub async fn rollback_transaction(&self) -> Result<(), DatabaseError> {
-        use diesel_async::TransactionManager as _;
-
-        let mut handle = self.write().await;
-        <AsyncPgConnection as AsyncConnection>::TransactionManager::rollback_transaction(
-            handle.deref_mut(),
-        )
-        .await
-        .map_err(DatabaseError)
-    }
-}
-
-impl Deref for WriteHandle {
-    type Target = AsyncPgConnection;
-
-    fn deref(&self) -> &Self::Target {
-        self.guard.deref()
-    }
-}
-
-impl DerefMut for WriteHandle {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        self.guard.deref_mut()
-    }
 }
 
 /// Wrapper for connection pooling with support for test database isolation on `cfg(test)`
@@ -241,293 +131,177 @@ impl DerefMut for WriteHandle {
 /// This ensures complete isolation between tests without requiring transaction rollbacks.
 /// The test database is automatically created when the pool is initialized and cleaned up when dropped.
 ///
-/// A new pool is expected to be initialized for each test, see `DbConnectionPoolV2::for_tests`.
+/// A new pool is expected to be initialized for each test, see [`Db::for_tests`].
 #[derive(Clone)]
-pub struct DbConnectionPoolV2 {
-    pool: Arc<Pool<AsyncPgConnection>>,
-    #[cfg(any(test, feature = "testing"))]
-    osrd_pool: Arc<Pool<AsyncPgConnection>>,
-    #[cfg(any(test, feature = "testing"))]
-    test_db_name: String,
-}
+pub struct Db(DatabaseConnection);
 
-#[cfg(any(test, feature = "testing"))]
-impl Default for DbConnectionPoolV2 {
-    fn default() -> Self {
-        Self::for_tests()
-    }
-}
-
-#[derive(Debug, thiserror::Error)]
-#[error("an error occurred while building the database pool: '{0}'")]
-pub struct DatabasePoolBuildError(#[from] diesel_async::pooled_connection::deadpool::BuildError);
-
-#[derive(Debug, thiserror::Error, derive_more::From)]
-pub enum DatabasePoolError {
-    #[error("an error occurred while getting a connection from the database pool: '{0}'")]
-    PoolError(#[from] diesel_async::pooled_connection::deadpool::PoolError),
-    #[error(transparent)]
-    #[from(forward)]
-    DatabaseError(DatabaseError),
-}
-
-impl DbConnectionPoolV2 {
-    /// Get inner pool for retro compatibility
-    pub fn pool_v1(&self) -> Arc<Pool<AsyncPgConnection>> {
-        self.pool.clone()
-    }
-
+impl Db {
     /// Creates a connection pool with the given settings
     ///
-    /// In a testing environment, you should use `DbConnectionPoolV2::for_tests` instead.
-    pub async fn try_initialize(url: Url, max_size: usize) -> Result<Self, DatabasePoolBuildError> {
-        let pool = create_connection_pool(url, max_size)?.into();
-        #[cfg(any(test, feature = "testing"))]
-        let pool = Self {
-            pool,
-            osrd_pool: create_connection_pool(
-                "postgresql://postgres:password@localhost/osrd"
-                    .parse()
-                    .unwrap(),
-                1,
-            )?
-            .into(),
-            test_db_name: "default".to_string(),
-        };
-        #[cfg(not(any(test, feature = "testing")))]
-        let pool = Self { pool };
-        Ok(pool)
+    /// In a testing environment, you should use [`Db::for_tests`] instead.
+    pub async fn try_initialize(url: Url, max_size: usize) -> Result<Self, sqlx::Error> {
+        let pool = create_connection_pool(url, max_size).await?;
+        Ok(Self(SqlxPostgresConnector::from_sqlx_postgres_pool(pool)))
     }
 
-    /// Get a connection from the pool
-    ///
-    /// This function behaves differently in test mode.
-    ///
-    /// # Production mode
-    ///
-    /// In production mode, this function will just return a connection from the pool, which may
-    /// hold several opened. This function is intended to be a drop-in replacement for the
-    /// `deadpool`'s `get` function.
-    /// ```
-    #[tracing::instrument(skip_all)]
-    pub async fn get(&self) -> Result<DbConnection, DatabasePoolError> {
-        use diesel_async::AsyncConnection as _;
-
-        let pool_status = self.pool.status();
-        let pool_status_span = debug_span!(
-            "database.pool.get",
-            pool.size = pool_status.size,
-            pool.available = pool_status.available,
-            pool.waiting = pool_status.waiting
-        );
-        let mut connection = self.pool.get().instrument(pool_status_span).await?;
-        connection.set_instrumentation(tracing_instrumentation::TracingInstrumentation::default());
-        Ok(DbConnection::new(Arc::new(RwLock::new(connection))))
+    /// Returns the SQLx interface to the shared pool.
+    pub fn sqlx(&self) -> &PgPool {
+        self.0.get_postgres_connection_pool()
     }
 
-    /// Gets a test connection from the pool synchronously, failing if the connection is not available
-    ///
-    /// In unit tests, this is the preferred way to get a connection
-    ///
-    /// See [DbConnectionPoolV2::get] for more information on how connections should be used
-    /// in tests.
-    #[cfg(any(test, feature = "testing"))]
-    pub fn get_ok(&self) -> DbConnection {
-        futures::executor::block_on(self.get()).expect("Failed to get test connection")
-    }
-
-    /// Returns an infinite iterator of futures resolving to connections acquired from the pool
-    ///
-    /// Meant to be used in conjunction with `zip` in order to instantiate a bunch of tasks to spawn.
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// # trait DoSomething: Sized {
-    /// #   async fn do_something(self, conn: &mut database::DbConnection) -> Result<(), database::db_connection_pool::DatabasePoolError> {
-    /// #     // Do something with the connection
-    /// #     Ok(())
-    /// #   }
-    /// # }
-    /// # impl DoSomething for u8 {}
-    /// # #[tokio::main]
-    /// # async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>> {
-    /// #   let items = vec![0_u8; 2];
-    ///    #[cfg(not(any(test, feature = "testing")))]
-    ///    let pool = {
-    ///        let url = "postgresql://postgres:password@localhost/osrd".parse().unwrap();
-    ///        futures::executor::block_on(database::DbConnectionPoolV2::try_initialize(url, 1)).unwrap()
-    ///    };
-    ///    #[cfg(any(test, feature = "testing"))]
-    ///    let pool = database::DbConnectionPoolV2::for_tests();
-    ///    let operations =
-    ///        items.into_iter()
-    ///            .zip(pool.iter_conn())
-    ///            .map(|(item, conn)| async move {
-    ///                let mut conn = conn.await?; // note the await here
-    ///                item.do_something(&mut conn).await
-    ///            });
-    ///    let results = futures::future::try_join_all(operations).await?;
-    ///    // you may acquire a new connection afterwards
-    /// #   Ok(())
-    /// # }
-    /// ```
-    pub fn iter_conn(
-        &self,
-    ) -> impl Iterator<Item = impl Future<Output = Result<DbConnection, DatabasePoolError>> + '_>
-    {
-        std::iter::repeat_with(|| self.get())
+    pub async fn ping(&self) -> Result<(), DbErr> {
+        self.0.ping().await?;
+        trace!("Database ping successful");
+        Ok(())
     }
 
     #[cfg(any(test, feature = "testing"))]
     async fn new_test(test_name: String) -> Result<Self, Box<dyn std::error::Error + Send + Sync>> {
-        let osrd_pool = Arc::new(create_connection_pool(
-            "postgresql://postgres:password@localhost/osrd"
-                .parse()
-                .unwrap(),
-            1,
-        )?);
-        let osrd_conn = osrd_pool.get().await?;
-        let osrd_conn = DbConnection::new(Arc::new(RwLock::new(osrd_conn)));
-        let (test_db_name, test_db_url) = create_test_database(osrd_conn, test_name).await?;
+        let osrd_url: Url = "postgresql://postgres:password@localhost/osrd"
+            .parse()
+            .unwrap();
+        let admin_url = create_connection_pool(osrd_url, 1).await?;
+        let (_, test_db_url) = create_test_database(&admin_url, test_name).await?;
+        admin_url.close().await;
+
         let url = Url::parse(&test_db_url).expect("Failed to parse postgresql url");
         tracing::info!(%url, "Using test database URL");
-        let pool = create_connection_pool(url, 2)?.into();
-        Ok(Self {
-            pool,
-            osrd_pool,
-            test_db_name,
-        })
+        let pool = create_connection_pool(url, 2).await?;
+        Ok(Self(SqlxPostgresConnector::from_sqlx_postgres_pool(pool)))
     }
 
     /// Create a connection pool for testing purposes.
+    ///
+    /// This API requires a multi-thread Tokio runtime as current-thread is not supported for cleanup reasons.
     #[cfg(any(test, feature = "testing"))]
-    pub fn for_tests() -> Self {
+    pub async fn for_tests() -> Self {
         let uuid_str = uuid::Uuid::new_v4().to_string().replace('-', "_");
-        let test_name = format!("test_{uuid_str}");
-        futures::executor::block_on(Self::new_test(test_name))
+        let test_name = format!("{TEST_DATABASE_NAME_PREFIX}{uuid_str}");
+        Self::new_test(test_name)
+            .await
             .expect("Failed to create test database")
     }
 }
 
+// Allows Db to be used where a regular sea_orm::DatabaseConnection is expected.
+#[async_trait]
+impl sea_orm::ConnectionTrait for Db {
+    fn get_database_backend(&self) -> sea_orm::DatabaseBackend {
+        self.0.get_database_backend()
+    }
+
+    async fn execute_raw(&self, stmt: sea_orm::Statement) -> Result<sea_orm::ExecResult, DbErr> {
+        self.0.execute_raw(stmt).await
+    }
+
+    async fn execute_unprepared(&self, sql: &str) -> Result<sea_orm::ExecResult, DbErr> {
+        self.0.execute_unprepared(sql).await
+    }
+
+    async fn query_one_raw(
+        &self,
+        stmt: sea_orm::Statement,
+    ) -> Result<Option<sea_orm::QueryResult>, DbErr> {
+        self.0.query_one_raw(stmt).await
+    }
+
+    async fn query_all_raw(
+        &self,
+        stmt: sea_orm::Statement,
+    ) -> Result<Vec<sea_orm::QueryResult>, DbErr> {
+        self.0.query_all_raw(stmt).await
+    }
+}
+
 #[cfg(any(test, feature = "testing"))]
-impl Drop for DbConnectionPoolV2 {
+impl Drop for Db {
     fn drop(&mut self) {
         use tokio::sync::oneshot::error::TryRecvError;
 
-        let name = self.test_db_name.clone();
-        let osrd_pool = self.osrd_pool.clone();
+        let name = self
+            .sqlx()
+            .connect_options()
+            .get_database()
+            .expect("Database URL should have a database name")
+            .to_owned();
+
+        // The `testing` feature also applies this destructor to databases created with
+        // `try_initialize`; only names generated by `for_tests` are safe to delete.
+        if !name.starts_with(TEST_DATABASE_NAME_PREFIX) {
+            return;
+        }
+
+        let pool = self.0.get_postgres_connection_pool().clone();
         let (tx, mut rx) = tokio::sync::oneshot::channel::<Result<(), ()>>();
         tokio::spawn(async move {
-            let mut conn = osrd_pool.get().await.expect("Failed to get connection");
+            pool.close().await;
+            let osrd_url: Url = "postgresql://postgres:password@localhost/osrd"
+                .parse()
+                .unwrap();
+            let osrd_pool = create_connection_pool(osrd_url, 1)
+                .await
+                .expect("Failed to create admin connection pool");
             // close all opened connections to ensure we can drop the database
-            diesel::sql_query(format!(
-                "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = '{name}'"
-            ))
-            .execute(&mut conn)
+            sqlx::query(
+                "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = $1",
+            )
+            .bind(&name)
+            .execute(&osrd_pool)
             .await
             .expect("Failed to terminate connections");
-            diesel::sql_query(format!("DROP DATABASE IF EXISTS {name}"))
-                .execute(&mut conn)
+            let drop_database = format!("DROP DATABASE IF EXISTS {name}");
+            sqlx::raw_sql(sqlx::AssertSqlSafe(drop_database))
+                .execute(&osrd_pool)
                 .await
                 .expect("Failed to drop database");
             tx.send(Ok(())).unwrap();
         });
         // can't block the executor thread, must wait for tokio to run the task to completeness
+        // (incompatible with current-thread runtime)
         while let Err(TryRecvError::Empty) = rx.try_recv() {}
     }
 }
 
-#[derive(Debug, thiserror::Error)]
-#[error("could not ping the database: '{0}'")]
-pub struct PingError(#[from] diesel::result::Error);
-
-pub async fn ping_database(conn: &mut DbConnection) -> Result<(), PingError> {
-    sql_query("SELECT 1")
-        .execute(conn.write().await.deref_mut())
-        .await?;
-    trace!("Database ping successful");
-    Ok(())
-}
-
-fn create_connection_pool(
-    url: Url,
-    max_size: usize,
-) -> Result<Pool<AsyncPgConnection>, DatabasePoolBuildError> {
-    let mut manager_config = ManagerConfig::default();
-    manager_config.custom_setup = Box::new(establish_connection);
-    let manager = DbConnectionConfig::new_with_config(url, manager_config);
-    Ok(Pool::builder(manager).max_size(max_size).build()?)
-}
-
-/// Get TLS root certificates necessary to verify server certificates.
-///
-/// This function fetches root certificates from the OS. Another option would be to bundle them in
-/// the binary, but it would mean we can't go through corporate proxies using custom root
-/// certificates. More pros and cons from one of rustls' maintainers here:
-/// https://github.com/rust-lang/rustup/issues/3400#issuecomment-1683762630
-async fn root_certificates() -> Arc<rustls::RootCertStore> {
-    static ROOT_CERTIFICATES: OnceCell<Arc<rustls::RootCertStore>> = OnceCell::const_new();
-
-    ROOT_CERTIFICATES
-        .get_or_init(async || {
-            // use spawn_blocking because load_native_certs may read from disk
-            // Panic on error, so that other get_or_init attempts can be made
-            tokio::task::spawn_blocking(|| {
-                let mut roots = rustls::RootCertStore::empty();
-                for cert in
-                    rustls_native_certs::load_native_certs().expect("could not load platform certs")
-                {
-                    roots.add(cert).unwrap();
-                }
-                Arc::new(roots)
-            })
-            .await
-            .unwrap()
-        })
+async fn create_connection_pool(url: Url, max_size: usize) -> Result<PgPool, sqlx::Error> {
+    let max_connections = u32::try_from(max_size).expect("database pool size exceeds u32::MAX");
+    let options = url
+        .as_str()
+        .parse::<PgConnectOptions>()?
+        .disable_statement_logging();
+    PgPoolOptions::new()
+        .max_connections(max_connections)
+        .connect_with(options)
         .await
-        .clone()
-}
-
-fn establish_connection(config: &str) -> BoxFuture<'_, ConnectionResult<AsyncPgConnection>> {
-    let fut = async {
-        let tls_config = Arc::new(
-            rustls::ClientConfig::builder()
-                .with_root_certificates(root_certificates().await)
-                .with_no_client_auth(),
-        );
-        let tls = postgres_rustls::MakeTlsConnector::new(tls_config);
-        let (client, conn) = tokio_postgres::connect(config, tls)
-            .await
-            .map_err(|e| ConnectionError::BadConnection(e.to_string()))?;
-        // The connection object performs the actual communication with the database,
-        // so spawn it off to run on its own.
-        tokio::spawn(async move {
-            if let Err(e) = conn.await {
-                tracing::error!("connection error: {}", e);
-            }
-        });
-        AsyncPgConnection::try_from(client).await
-    };
-    fut.boxed()
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
 
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
     async fn test_connection_pool() {
-        let uuid_str = uuid::Uuid::new_v4().to_string().replace('-', "_");
-        let test_name = format!("test_{uuid_str}");
-        let db = DbConnectionPoolV2::new_test(test_name).await.unwrap();
+        let db = Db::for_tests().await;
+        db.ping().await.unwrap();
 
-        let osrd_conn = db.osrd_pool.get().await.expect("Failed to get connection");
-        let osrd_conn = DbConnection::new(Arc::new(RwLock::new(osrd_conn)));
+        let database_name = db
+            .sqlx()
+            .connect_options()
+            .get_database()
+            .unwrap()
+            .to_owned();
+        assert!(database_name.starts_with(TEST_DATABASE_NAME_PREFIX));
 
-        diesel::sql_query("SELECT 1".to_string())
-            .execute(&mut osrd_conn.write().await)
-            .await
-            .expect("Failed to execute query");
+        let osrd_url: Url = "postgresql://postgres:password@localhost/osrd"
+            .parse()
+            .unwrap();
+        let osrd_pool = create_connection_pool(osrd_url, 1).await.unwrap();
+        let template_name = format!("osrd_template_{}", migration_fingerprint());
+        let template_exists: bool =
+            sqlx::query_scalar("SELECT EXISTS (SELECT FROM pg_database WHERE datname = $1)")
+                .bind(template_name)
+                .fetch_one(&osrd_pool)
+                .await
+                .unwrap();
+        assert!(template_exists);
     }
 }

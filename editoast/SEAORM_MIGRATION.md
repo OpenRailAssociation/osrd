@@ -87,7 +87,7 @@ These figures describe the pre-baseline Diesel history and should be refreshed i
 
 ```rust
 #[derive(Clone)]
-pub struct Db(Arc<DatabaseConnection>);
+pub struct Db(DatabaseConnection);
 ```
 
 Construction should follow one pool, two interfaces:
@@ -140,9 +140,9 @@ The simple first implementation should:
 5. clone the template for each test database;
 6. construct a SQLx application pool for the clone and wrap it in SeaORM;
 7. close pools before attempting database deletion;
-8. perform cleanup asynchronously, without `block_on` or a busy waiting loop.
+8. preserve the existing drop-triggered cleanup behavior while replacing its Diesel queries with SQLx.
 
-The test API remains `Db::for_tests().await`; do not expose a public close or cleanup method. Dropping the final `Db` clone enqueues cleanup exactly once on a process-wide worker with its own long-lived Tokio runtime. The final-drop path obtains the underlying pool through `get_postgres_connection_pool()`, identifies the test database from its connect options, and sends the pool handle and database name to the worker. The worker closes the shared pool, terminates remaining sessions, and drops the database independently of the runtime that created it. Do not redesign the rest of the testing framework.
+The test API remains `Db::for_tests().await`; do not expose a public close or cleanup method. Dropping a test `Db` obtains the underlying pool and database name from the connection, then spawns asynchronous cleanup that closes the pool, terminates remaining sessions, and drops the database. Do not redesign the rest of the testing framework.
 
 ### Models
 
@@ -484,15 +484,16 @@ Implementation record:
 - validation commands: `cargo clippy --all-targets --all-features --workspace`, `cargo nextest run --package database --package models`, JSON and Docker Compose configuration checks, and a repository-wide Diesel migration-command scan;
 - final test result: 76 passed with no failures.
 
-### Revision 3 — introduce SeaORM entities and value-type implementations
+### Revision 4 — introduce SeaORM entities and value-type implementations
 
 Goal: establish production entity shapes and custom value implementations before broad query conversion.
+
+This revision is delayed because its database-backed integration does not make sense before the database crate has migrated to SeaORM and SQLx.
 
 Diesel dependencies may remain where existing consumers still require them, but this revision must not add a dual runtime pool or compatibility query path.
 
 Work:
 
-- Add `sea-orm = "2.0"` with direct SQLx pinned to `=0.9.0`; commit the resolved SeaORM 2.0.2 / SQLx 0.9.0 graph in `Cargo.lock`.
 - Generate entities directly into their final module-qualified locations in the `models` crate, with no generated prelude.
 - Exclude extension objects and geometry-heavy tables used only through specialized SQL; curate ordinary CRUD entities with geometry fields.
 - Keep generated modules module-qualified and do not add aliases.
@@ -528,12 +529,13 @@ Review focus:
 - keep `ForeignJson<T>` limited to the small persistence implementation modeled on the `FromJsonQueryResult` expansion;
 - keep documented exceptions narrow and local.
 
-### Revision 4 — replace the database crate with `Db`
+### Revision 3 — replace the database crate with `Db`
 
 Goal: make `database` SeaORM/SQLx-native while preserving test isolation.
 
 Work:
 
+- Add `sea-orm = "2.0"` with direct SQLx pinned to `=0.9.0`; commit the resolved SeaORM 2.0.2 / SQLx 0.9.0 graph in `Cargo.lock`.
 - Introduce async `Db` construction.
 - Build a SQLx `PgPool` with the verified TLS behavior and pool settings, with SQLx statement logging disabled.
 - Wrap the same pool in SeaORM.
@@ -541,11 +543,11 @@ Work:
 - Replace embedded Diesel migration execution with SQLx migrations.
 - Port template/test database creation, cloning, and deletion.
 - Make template invalidation hash every ordered migration's version, migration type, and complete bytes plus the complete bytes of `database/sql/init_test_db.sql`.
-- Keep `Db` as `Db(Arc<DatabaseConnection>)`. On final clone drop, obtain the SQLx pool and test database name from the connection, then enqueue cleanup exactly once on a process-wide worker with its own long-lived Tokio runtime; do not add a public explicit-close protocol or another connection-holder struct.
+- Keep `Db` as `Db(DatabaseConnection)`, since `DatabaseConnection` is already cheaply cloneable. On drop, obtain the SQLx pool and test database name from the connection and spawn the same asynchronous cleanup sequence as before.
 - Preserve SQLSTATE, constraint, column, and detail from both direct SQLx errors and SeaORM's underlying PostgreSQL errors.
 - Port ping/health support.
 - Preserve database creation collision handling and backend termination before drops.
-- Remove deadpool, Diesel connection instrumentation, `DbConnectionPoolV2`, `DbConnection`, manual connection acquisition, `iter_conn`, and all `block_on`/busy-wait behavior from the crate.
+- Remove deadpool, Diesel connection instrumentation, `DbConnectionPoolV2`, `DbConnection`, manual connection acquisition, and `iter_conn` from the crate.
 - Preserve the verified `Prefer`/`Require` TLS behavior.
 - Enable SeaORM `debug-print` through the existing subscriber and verify one query marker is emitted exactly once without a SQLx statement duplicate.
 
@@ -553,22 +555,21 @@ Validation:
 
 - `cargo check --package database`;
 - `cargo clippy --package database --all-targets --all-features`;
-- database unit/integration tests;
-- parallel isolated-test-database creation;
-- template reuse and invalidation;
-- cleanup after dropping clones in different orders, including after the creating Tokio runtime has stopped;
-- exactly-once cleanup when the final clone is dropped, with the shared pool closed before database deletion;
-- parallel create/drop cycles and an assertion that no prefixed test database leaked;
-- fresh migration application through the SQLx pool and SeaORM queries through the wrapped pool;
-- `Prefer` and `Require` TLS success/failure cases against TLS and plaintext services;
-- unique `23505`, check `23514`, and foreign-key `23503` error-detail extraction through direct SQLx and SeaORM;
-- exactly one SeaORM query event for a representative interpolated marker and no SQLx statement duplicate.
+- one test that creates `Db::for_tests().await`, pings it, checks its generated database name, and verifies that its template database exists.
 
 Expected stack state:
 
 - `database` builds and lints;
 - Diesel-dependent descendants may be broken until their own revisions;
 - no compatibility connection wrapper is added to hide that breakage.
+
+Implementation record:
+
+- Jujutsu change ID: `ymlwvkww`;
+- status: complete for the `database` crate;
+- validation commands: `cargo check --locked --package database --all-features`, `cargo clippy --locked --package database --all-targets --all-features -- -D warnings`, and `cargo nextest run --locked --package database`;
+- test database migration: `202608061648080000_baseline.sql`; 1 test passed;
+- known descendant breakage: callers still using the removed Diesel connection and table APIs.
 
 ### Revision 5 — migrate the `models` crate
 
@@ -860,8 +861,8 @@ Suggested tracking table:
 | --- | --- | --- | --- | --- |
 | Diesel schema baseline | complete | `nwnxqktv` | database, models, relevant tests | Historical migrations removed; Diesel runner remains active until cutover |
 | SQLx migration workflow | complete | `nmsxlqmn` | workspace clippy, database/models tests, migration tooling and fresh/cutover DB exercises | SQLx is the only database CLI after cutover |
-| entities and value implementations | not started | — | models | — |
-| database `Db` | not started | — | database | Diesel descendants expected broken |
+| entities and value implementations | delayed | — | models | Revision 4; delayed until after the database crate migration |
+| database `Db` | complete | `ymlwvkww` | database | Revision 3; Diesel descendants expected broken |
 | models | not started | — | models, database | root Editoast expected broken |
 | `src/error.rs` | not started | — | review checkpoint only | root validation deferred |
 | `src/fixtures.rs` | not started | — | review checkpoint only | root validation deferred |
@@ -964,7 +965,7 @@ Mitigation: keep every transaction on exactly one query stack, never reacquire f
 
 Risk: pools remain alive when cloned databases are dropped.
 
-Mitigation: reference-counted ownership, exactly-once drop-driven cleanup on the final clone, an internal cleanup worker independent of the creating Tokio runtime, termination fallback, and parallel teardown tests. Destructors do not run after every abrupt process termination, so document stale prefixed-database discovery and cleanup by a later run or an operator; do not claim `Drop` covers process abort or kill.
+Mitigation: drop-driven asynchronous cleanup, termination fallback, and parallel teardown tests. Cleanup requires a running Tokio runtime, and destructors do not run after every abrupt process termination, so document stale prefixed-database discovery and cleanup by a later run or an operator; do not claim `Drop` covers process abort or kill.
 
 ### Dynamic SQL
 
