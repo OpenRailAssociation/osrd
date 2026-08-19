@@ -1,1 +1,1 @@
-export { DurationInput, DurationInputProps } from './DurationInput';
+export { DurationInput, type DurationInputProps } from './DurationInput';
