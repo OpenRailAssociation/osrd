@@ -98,7 +98,7 @@ const IncompatibleConstraints = ({
           layersId: ['pathfinding-incompatible-constraints'],
         });
         if (nearestResult?.feature && nearestResult?.feature.properties.ids) {
-          setHoveredConstraint(new Set(JSON.parse(nearestResult.feature.properties.ids)));
+          setHoveredConstraint(new Set(nearestResult.feature.properties.ids));
         } else {
           setHoveredConstraint(new Set([]));
         }
@@ -113,7 +113,7 @@ const IncompatibleConstraints = ({
         });
         if (nearestResult?.feature && nearestResult?.feature.properties.ids) {
           setSelectedConstraint((prev) => {
-            const nextSelected = JSON.parse(nearestResult.feature.properties.ids);
+            const nextSelected = nearestResult.feature.properties.ids;
             if (isArray(nextSelected)) {
               // if we click on the same selected value
               // => we clear the selection
