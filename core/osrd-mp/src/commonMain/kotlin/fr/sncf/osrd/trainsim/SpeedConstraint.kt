@@ -77,38 +77,50 @@ private fun tryEnactCurveDecision(
     val startSpeedLimit =
         curve.lerp(currentState.position.micrometers)?.micrometersPerSecond ?: return null
 
-    if (currentState.speed == startSpeedLimit) {
+    return if (currentState.speed == startSpeedLimit) {
         // The stock is on the curve, so we return the next point on the curve.
-
-        // Snap on the curve
-        val startSpeed = startSpeedLimit
-
-        val nextPointIndex =
-            curve.firstStrictlyAfter(currentState.position.micrometers) ?: return null
-        val endPosition = curve.xs[nextPointIndex].micrometers
-        val endSpeed = curve.ys[nextPointIndex].micrometersPerSecond
-        val positionDelta = endPosition - currentState.position
-        val timeDelta =
-            if (endSpeed + startSpeed == 0.micrometersPerSecond) {
-                return TrainState(
-                    time = currentState.time + context.timeStep.seconds,
-                    position = currentState.position,
-                    speed = 0.micrometersPerSecond,
-                )
-            } else {
-                (2 * positionDelta) / (endSpeed + startSpeed)
-            }
-        return currentState
-            .accelerate(context)
-            .copy(time = currentState.time + timeDelta, position = endPosition, speed = endSpeed)
-            .truncate(currentState, currentState.time + context.timeStep.seconds)
+        curve.advance(currentState, currentState.time + context.timeStep.seconds)
     } else if (currentState.speed < startSpeedLimit) {
         // The stock is below the curve
-
-        return currentState.accelerate(context).truncate(currentState, curve)
+        currentState.accelerate(context).truncate(currentState, curve)
     } else {
         // The stock is above the curve
-
-        return currentState.brake(context).truncate(currentState, curve)
+        currentState.brake(context).truncate(currentState, curve)
     }
+}
+
+/**
+ * Assuming this is a speed curve, fast-forward to the next point, up to the given time [to], from
+ * the given state [from].
+ *
+ * [from] must be on the curve, and must be strictly before [to].
+ */
+private fun Curve.advance(from: TrainState, to: PreciseDuration): TrainState? {
+    require(from.time < to)
+
+    val fromSpeed = lerp(from.position.micrometers)?.micrometersPerSecond ?: return null
+    require(fromSpeed == from.speed)
+
+    val nextPointIndex = firstStrictlyAfter(from.position.micrometers) ?: return null
+    val toPosition = xs[nextPointIndex].micrometers
+    val toSpeed = ys[nextPointIndex].micrometersPerSecond
+
+    val positionDelta = toPosition - from.position
+    val timeDelta =
+        if (toSpeed + from.speed == 0.micrometersPerSecond) {
+            return TrainState(
+                time = to,
+                position = from.position,
+                speed = 0.micrometersPerSecond,
+            )
+        } else {
+            (2 * positionDelta) / (toSpeed + from.speed)
+        }
+
+    return TrainState(
+            time = from.time + timeDelta,
+            position = toPosition,
+            speed = toSpeed,
+        )
+        .truncate(from, to)
 }
