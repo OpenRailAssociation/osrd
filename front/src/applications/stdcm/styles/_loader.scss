@@ -8,12 +8,13 @@
     0 6px 21px -5px rgba(24, 68, 239, 0.26),
     0 16px 30px -5px rgba(0, 0, 0, 0.16),
     0 3px 5px -2px rgba(0, 0, 0, 0.1);
+  --loader-left-offset: 346px;
 
   &.loader-fixed-bottom {
     position: fixed;
     bottom: 32px;
     top: unset;
-    margin-left: 348px;
+    margin-left: var(--loader-left-offset);
 
     &.with-slide-animation {
       animation: slideUp 0.8s ease-in-out;
@@ -32,7 +33,7 @@
     position: fixed;
     top: 32px;
     bottom: unset;
-    margin-left: 348px;
+    margin-left: var(--loader-left-offset);
   }
 
   @keyframes fade-in {
