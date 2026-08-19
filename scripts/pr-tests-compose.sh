@@ -42,7 +42,13 @@ if  {
             [ "$#" -ne 3 ]
     }; then
 
-    echo "Usage: $0 ( [pr-number] (up | up-and-load-backup [osrd.backup]) | down | down-and-clean )" >&2
+    (
+        echo "Usage:"
+        echo "  $0 [pr-number] up"
+        echo "  $0 [pr-number] up-and-load-backup [osrd.backup]"
+        echo "  $0 down"
+        echo "  $0 down-and-clean"
+    ) >&2
     exit 1
 
 fi
