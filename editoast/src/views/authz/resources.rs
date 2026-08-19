@@ -12,6 +12,7 @@ use crate::views::authz::ResourceType;
 pub enum Resource {
     Infra(authz::Infra),
     RollingStock(authz::RollingStock),
+    Project(authz::Project),
 }
 
 impl Resource {
@@ -19,12 +20,14 @@ impl Resource {
         match self {
             Resource::Infra(authz::Infra(id)) => *id,
             Resource::RollingStock(authz::RollingStock(id)) => *id,
+            Resource::Project(authz::Project(id)) => *id,
         }
     }
     pub(super) fn get_type(&self) -> ResourceType {
         match self {
             Resource::Infra(_) => ResourceType::Infra,
             Resource::RollingStock(_) => ResourceType::RollingStock,
+            Resource::Project(_) => ResourceType::Project,
         }
     }
 }

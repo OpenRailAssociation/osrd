@@ -53,13 +53,14 @@ enum SubjectType {
     Group,
 }
 
-#[derive(Display, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, ToSchema)]
+#[derive(Debug, Display, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, ToSchema)]
 #[serde(rename_all = "snake_case")]
 #[strum(serialize_all = "snake_case")]
-#[cfg_attr(test, derive(Debug, EnumIter))]
+#[cfg_attr(test, derive(EnumIter))]
 pub(in crate::views) enum ResourceType {
     Infra,
     RollingStock,
+    Project,
 }
 
 #[derive(Debug, thiserror::Error, EditoastError)]
@@ -356,6 +357,7 @@ pub(in crate::views) async fn user_privileges(
                         ResourceType::RollingStock => {
                             Resource::RollingStock(authz::RollingStock(id))
                         }
+                        ResourceType::Project => Resource::Project(authz::Project(id)),
                     })
             });
             let protected_privileges = resources.into_iter().map(|resource| match resource {
@@ -367,6 +369,7 @@ pub(in crate::views) async fn user_privileges(
                         .collect_into::<HashSet<StandardPrivilege>>()
                         .zip(v2::Protected::value(resource))
                 }
+                _resource @ Resource::Project(_project) => todo!(),
             });
             let authorizer = authn_state.authorizer(&openfga);
             let accesses = authorizer.authorize_all(protected_privileges).await?;
@@ -517,12 +520,12 @@ pub(in crate::views) async fn user_grants(
                     authz::v2::infra_effective_grant(authz::Subject::user(user), authz::Infra(*id))
                         .map_some_into::<StandardGrant>()
                 }
-
                 ResourceType::RollingStock => authz::v2::rolling_stock_effective_grant(
                     authz::Subject::user(user),
                     authz::RollingStock(*id),
                 )
                 .map_some_into::<StandardGrant>(),
+                ResourceType::Project => todo!(),
             }
             .authorize(&authorizer)
             .await?
@@ -640,6 +643,7 @@ pub(in crate::views) async fn resource_granted_users(
                 .await?
                 .map_err(|_| AuthorizationError::Forbidden)?
         }
+        ResourceType::Project => todo!(),
     };
 
     // NOTE: the same subject can appear in multiple lists. This can happen
@@ -883,6 +887,7 @@ impl GrantBody {
             ResourceType::RollingStock => {
                 authz::v2::rolling_stock_set_grant(*subject, resource_id.into(), grant.into())
             }
+            ResourceType::Project => todo!(),
         })
     }
 }
@@ -905,6 +910,7 @@ impl RevokeBody {
             ResourceType::RollingStock => {
                 authz::v2::rolling_stock_revoke_grant(*subject, resource_id.into())
             }
+            ResourceType::Project => todo!(),
         })
     }
 }
@@ -1261,6 +1267,7 @@ mod tests {
                 ResourceType::RollingStock => {
                     assert_eq!(subjects.len(), 8);
                 }
+                ResourceType::Project => todo!(),
             }
         }
     }
@@ -1412,6 +1419,7 @@ mod tests {
             let resource_id = match resource_type {
                 ResourceType::Infra => infra.id,
                 ResourceType::RollingStock => rolling_stock.id,
+                ResourceType::Project => todo!(),
             };
             let subjects: Vec<SubjectGrant> = app
                 .get(&format!("/authz/{}/{}", resource_type, resource_id))
@@ -1503,6 +1511,7 @@ mod tests {
                     .await,
                 Some(RollingStockGrant::Writer)
             ),
+            ResourceType::Project => todo!(),
         }
 
         // Remove the user grant from the API
@@ -1536,6 +1545,7 @@ mod tests {
                     .await,
                 None
             ),
+            ResourceType::Project => todo!(),
         }
     }
 
@@ -1604,6 +1614,7 @@ mod tests {
                 )
                 .await
             }
+            ResourceType::Project => todo!(),
         }
     }
 
@@ -1660,6 +1671,7 @@ mod tests {
                 app.assert_rolling_stock_grant(resource_id, reader.id, None)
                     .await
             }
+            ResourceType::Project => todo!(),
         };
     }
 
@@ -1716,6 +1728,7 @@ mod tests {
                 app.assert_rolling_stock_grant(resource_id, owner.id, None)
                     .await
             }
+            ResourceType::Project => todo!(),
         };
     }
 
@@ -1780,6 +1793,7 @@ mod tests {
                 app.assert_rolling_stock_grant(resource_id, bob.id, Some(RollingStockGrant::Owner))
                     .await
             }
+            ResourceType::Project => todo!(),
         };
     }
 
@@ -1841,6 +1855,7 @@ mod tests {
                 )
                 .await;
             }
+            ResourceType::Project => todo!(),
         }
     }
 
@@ -1909,6 +1924,7 @@ mod tests {
                 app.assert_rolling_stock_grant(resource_id, bob.id, Some(RollingStockGrant::Owner))
                     .await
             }
+            ResourceType::Project => todo!(),
         }
 
         app.post("/authz/grants")
@@ -1942,6 +1958,7 @@ mod tests {
                 )
                 .await;
             }
+            ResourceType::Project => todo!(),
         }
     }
 
@@ -1997,6 +2014,7 @@ mod tests {
                 )
                 .await
             }
+            ResourceType::Project => todo!(),
         }
     }
 
@@ -2063,6 +2081,7 @@ mod tests {
                 )
                 .await
             }
+            ResourceType::Project => todo!(),
         }
     }
 
@@ -2129,6 +2148,7 @@ mod tests {
                 )
                 .await;
             }
+            ResourceType::Project => todo!(),
         }
 
         app.post("/authz/grants")
@@ -2155,6 +2175,7 @@ mod tests {
                 )
                 .await
             }
+            ResourceType::Project => todo!(),
         }
     }
 
@@ -2210,6 +2231,7 @@ mod tests {
                 )
                 .await;
             }
+            ResourceType::Project => todo!(),
         }
     }
 
@@ -2265,6 +2287,7 @@ mod tests {
                 )
                 .await;
             }
+            ResourceType::Project => todo!(),
         }
     }
 
@@ -2331,6 +2354,7 @@ mod tests {
                 )
                 .await;
             }
+            ResourceType::Project => todo!(),
         }
     }
 
@@ -2397,6 +2421,7 @@ mod tests {
                 )
                 .await;
             }
+            ResourceType::Project => todo!(),
         }
     }
 
@@ -2501,6 +2526,7 @@ mod tests {
                 )
                 .await;
             }
+            ResourceType::Project => todo!(),
         }
     }
 
@@ -2616,6 +2642,7 @@ mod tests {
                 app.assert_rolling_stock_grant(resource_id, *alice, Some(RollingStockGrant::Owner))
                     .await; // inherited group grant superseded by direct user grant
             }
+            ResourceType::Project => todo!(),
         }
 
         app.post("/authz/grants")
@@ -2659,6 +2686,7 @@ mod tests {
                     Some(RollingStockGrant::Reader)
                 ); // bob's direct grant is still there
             }
+            ResourceType::Project => todo!(),
         }
     }
 
@@ -2719,6 +2747,7 @@ mod tests {
                 app.assert_rolling_stock_grant(resource_id, group.id, None)
                     .await;
             }
+            ResourceType::Project => todo!(),
         }
     }
 
@@ -2869,6 +2898,7 @@ mod tests {
                 app.assert_rolling_stock_grant(resource_id, user.0, None)
                     .await;
             }
+            ResourceType::Project => todo!(),
         }
         app.post("/authz/grants")
             .skip_authz()
@@ -2905,6 +2935,7 @@ mod tests {
                     Some(RollingStockGrant::Owner)
                 );
             }
+            ResourceType::Project => todo!(),
         }
     }
 
@@ -2947,6 +2978,7 @@ mod tests {
                 app.assert_rolling_stock_grant(resource_id, user.0, Some(RollingStockGrant::Owner))
                     .await
             }
+            ResourceType::Project => todo!(),
         };
         app.post("/authz/grants")
             .skip_authz()
@@ -2968,6 +3000,7 @@ mod tests {
                 app.assert_rolling_stock_grant(resource_id, user.0, None)
                     .await
             }
+            ResourceType::Project => todo!(),
         };
     }
 
