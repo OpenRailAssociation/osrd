@@ -851,29 +851,29 @@ fun step(
 ): TrainState {
     tracer?.stepStart(currentState)
 
-    val mergedState =
-        constraints
-            .asSequence()
-            .flatMap { constraint ->
-                val nextStates = constraint.enactDecision(context, currentState)
+    val decisions =
+        constraints.asSequence().flatMap { constraint ->
+            val nextStates = constraint.enactDecision(context, currentState)
 
-                tracer?.decisions(constraint, nextStates)
+            tracer?.decisions(constraint, nextStates)
 
-                for (nextState in nextStates) {
-                    check(currentState.position <= nextState.position) {
-                        "constraint $constraint made train go backwards"
-                    }
-                    check(currentState.time < nextState.time) {
-                        "constraint $constraint didn't advance time"
-                    }
-                    check(nextState.time - currentState.time <= context.timeStep.seconds) {
-                        "constraint $constraint advanced too much time"
-                    }
+            for (nextState in nextStates) {
+                check(currentState.position <= nextState.position) {
+                    "constraint $constraint made train go backwards"
                 }
-
-                nextStates.asSequence().map { trainState -> Decision(trainState, constraint) }
+                check(currentState.time < nextState.time) {
+                    "constraint $constraint didn't advance time"
+                }
+                check(nextState.time - currentState.time <= context.timeStep.seconds) {
+                    "constraint $constraint advanced too much time"
+                }
             }
-            .reduceOrNull { a, b ->
+
+            nextStates.asSequence().map { trainState -> Decision(trainState, constraint) }
+        } + Decision(currentState.accelerate(context), null)
+    val mergedState =
+        decisions
+            .reduce { a, b ->
                 val mergedState = b.trainState.merge(currentState, a.trainState)
 
                 check(currentState.position <= mergedState.position) {
@@ -888,7 +888,7 @@ fun step(
 
                 Decision(mergedState, null)
             }
-            ?.trainState ?: return currentState.accelerate(context)
+            .trainState
 
     tracer?.mergedState(mergedState)
 
