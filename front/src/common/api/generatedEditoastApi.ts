@@ -2977,7 +2977,7 @@ export type PostWorkerLoadApiArg = {
   };
 };
 export type StandardGrant = 'RESTRICTED_READER' | 'READER' | 'WRITER' | 'OWNER';
-export type ResourceType = 'infra' | 'rolling_stock';
+export type ResourceType = 'infra' | 'rolling_stock' | 'project';
 export type GrantBody = {
   grant: StandardGrant;
   resource_id: number;

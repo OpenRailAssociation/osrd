@@ -101,17 +101,29 @@ export default function useAuthz() {
     async (resourceType: ResourceType, resourceId: number, privileges: Privilege[]) => {
       let infras: number[];
       let rolling_stocks: number[];
+      let projects: number[];
       switch (resourceType) {
         case 'rolling_stock':
           infras = [];
           rolling_stocks = [resourceId];
+          projects = [];
           break;
         case 'infra':
           infras = [resourceId];
           rolling_stocks = [];
+          projects = [];
+          break;
+        case 'project':
+          infras = [];
+          rolling_stocks = [];
+          projects = [resourceId];
           break;
       }
-      const result = await getUserPrivileges({ infra: infras, rolling_stock: rolling_stocks });
+      const result = await getUserPrivileges({
+        infra: infras,
+        rolling_stock: rolling_stocks,
+        project: projects,
+      });
       const userPrivileges = result[resourceType] ? result[resourceType][resourceId] : new Set();
       return privileges.every((privilege) => userPrivileges.has(privilege));
     },
