@@ -29,9 +29,16 @@ postgis_diesel.workspace = true
 pretty_assertions.workspace = true
 regex.workspace = true
 schemas.workspace = true
+sea-orm = { workspace = true, features = [
+  "macros",
+  "postgres-array",
+  "with-chrono",
+  "with-json",
+] }
 serde.workspace = true
 serde_json.workspace = true
 serde_norway.workspace = true
+sqlx = { workspace = true, features = ["chrono", "json"] }
 strum.workspace = true
 thiserror.workspace = true
 tokio.workspace = true

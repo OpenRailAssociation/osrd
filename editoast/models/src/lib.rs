@@ -18,6 +18,7 @@ pub mod round_trips;
 pub mod scenario;
 pub mod search_journey_environment;
 pub mod search_journey_environment_timetable;
+pub mod sea_orm_types;
 pub mod stdcm_search_environment;
 pub mod study;
 pub mod sub_category;
