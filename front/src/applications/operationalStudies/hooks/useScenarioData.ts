@@ -439,7 +439,7 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
   const results = useMemo(
     () => ({
       trainSchedulesWithDetails,
-      trainSchedules,
+      trainSchedulesById,
       projectionData: projectionPath
         ? {
             ...projectionPath,
@@ -461,7 +461,7 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
     }),
     [
       trainSchedulesWithDetails,
-      trainSchedules,
+      trainSchedulesById,
       projectionPath,
       projectedTrains,
       allTrainsProjected,

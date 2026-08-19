@@ -156,7 +156,7 @@ export default function useOccupancyZoneDrop({
         },
       }).unwrap();
 
-      const rawTrainSchedule = trainSchedules.find((ts) => ts.id === trainSchedule.id)!;
+      const rawTrainSchedule = trainSchedules.get(trainSchedule.id)!;
       upsertTrainSchedules([
         {
           ...rawTrainSchedule,
@@ -209,7 +209,7 @@ export default function useOccupancyZoneDrop({
       if (exception) {
         await updateExceptionPath(exception, trainSchedule, newPath);
       } else {
-        const rawTrainSchedule = trainSchedules.find((ts) => ts.id === trainSchedule.id)!;
+        const rawTrainSchedule = trainSchedules.get(trainSchedule.id)!;
         const updatedTrainSchedule = {
           ...rawTrainSchedule,
           path: newPath,

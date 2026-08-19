@@ -1,4 +1,4 @@
-import { useContext, useState } from 'react';
+import { useContext, useMemo, useState } from 'react';
 
 import {
   Alert,
@@ -153,6 +153,8 @@ const TimetableToolbar = ({
     }
   };
 
+  const trainSchedulesList = useMemo(() => [...trainSchedules.values()], [trainSchedules]);
+
   return (
     <>
       {areInvalidTrainSchedules && (
@@ -176,7 +178,7 @@ const TimetableToolbar = ({
             data-testid="scenarios-select-options-button"
             title={t('timetable.selectOptions')}
             onClick={toggleisSelectMode}
-            disabled={trainSchedules.length === 0}
+            disabled={trainSchedules.size === 0}
             type="button"
           >
             <CheckBox />
@@ -188,7 +190,7 @@ const TimetableToolbar = ({
             data-testid="scenarios-show-train-details-button"
             title={showTrainDetails ? t('lessDetails') : t('moreDetails')}
             onClick={toggleShowTrainDetails}
-            disabled={trainSchedules.length === 0}
+            disabled={trainSchedules.size === 0}
             type="button"
           >
             <Note />
@@ -198,7 +200,7 @@ const TimetableToolbar = ({
             data-testid="scenarios-manage-round-trips-button"
             title={t('roundTripsModal.manageRoundTrips')}
             onClick={() => setRoundTripsModalIsOpen(true)}
-            disabled={trainSchedules.length === 0}
+            disabled={trainSchedules.size === 0}
             type="button"
           >
             <ArrowSwitch />
@@ -236,7 +238,7 @@ const TimetableToolbar = ({
                 resetItineraryForm({
                   startTime:
                     scenario.timetable_type === 'CALENDAR'
-                      ? computeLatestMidnight(trainSchedules, new Date())
+                      ? computeLatestMidnight(trainSchedulesList, new Date())
                       : undefined,
                 })
               );
@@ -255,7 +257,7 @@ const TimetableToolbar = ({
             data-testid="timetable-filter-button"
             title={t('timetable.toggleFilters')}
             onClick={toggleFilterPanel}
-            disabled={trainSchedules.length === 0}
+            disabled={trainSchedules.size === 0}
             type="button"
           >
             <Filter />
@@ -314,7 +316,7 @@ const TimetableToolbar = ({
           setRoundTripsModalIsOpen={setRoundTripsModalIsOpen}
           infraId={infraId}
           timetableId={timetableId}
-          trainSchedules={trainSchedules}
+          trainSchedules={trainSchedulesList}
           refreshNge={refreshNge}
         />
       )}

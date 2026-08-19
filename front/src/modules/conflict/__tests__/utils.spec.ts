@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 
 import type { TrainScheduleResponse } from 'common/api/osrdEditoastApi';
+import { mapBy } from 'utils/types';
 
 import type { ConflictWithTrainNames } from '../types';
 import addTrainNamesToConflicts, {
@@ -33,7 +34,7 @@ describe('addTrainNamesToConflicts', () => {
       ],
     });
 
-    const [enriched] = addTrainNamesToConflicts([conflict], trains);
+    const [enriched] = addTrainNamesToConflicts([conflict], mapBy(trains, 'id'));
     expect(enriched.trainsData.map((train) => train.name)).toEqual(['TS 1234', 'PT 4583', 'ABC']);
   });
 });

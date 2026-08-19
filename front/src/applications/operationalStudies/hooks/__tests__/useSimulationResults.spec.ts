@@ -150,7 +150,7 @@ describe.skip('useSimulationResults', () => {
   };
 
   const timetableContext: TimetableContextType = {
-    trainSchedules: [],
+    trainSchedules: new Map(),
     removeTrainSchedules: () => {},
     upsertTrainSchedules: () => {},
     updateTrainScheduleDepartureTime: async () => {},

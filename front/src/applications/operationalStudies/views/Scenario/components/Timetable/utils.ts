@@ -46,13 +46,13 @@ export const formatTrainDuration = (duration: Duration) =>
   dayjs.duration(duration.ms).format('HH[h]mm');
 
 const formatTrainSchedulesForExport = (
-  trainSchedules: TrainScheduleResponse[],
+  trainSchedules: Map<number, TrainScheduleResponse>,
   selectedTimeTableIdsFromClick: number[]
 ) => {
   const trainScheduleIndexByEditoastId = new Map<number, number>();
 
-  const formattedTrainSchedules = trainSchedules
-    .filter(({ id }) => selectedTimeTableIdsFromClick.includes(id))
+  const formattedTrainSchedules = selectedTimeTableIdsFromClick
+    .map((id) => trainSchedules.get(id)!)
     .reduce<TrainSchedule[]>((acc, trainSchedule) => {
       trainScheduleIndexByEditoastId.set(trainSchedule.id, acc.length);
       acc.push(omit(trainSchedule, ['id', 'train_schedule_set_id']));
@@ -67,7 +67,7 @@ const formatTrainSchedulesForExport = (
 
 export const copyTrainSchedulesToClipboard = async (
   selectedTimeTableIdsFromClick: number[],
-  trainSchedules: TrainScheduleResponse[]
+  trainSchedules: Map<number, TrainScheduleResponse>
 ) => {
   const { formattedTrainSchedules } = formatTrainSchedulesForExport(
     trainSchedules,
@@ -127,7 +127,7 @@ type TimetableExportPayload = {
 };
 
 export const buildTimetableExportPayload = (
-  trainSchedules: TrainScheduleResponse[],
+  trainSchedules: Map<number, TrainScheduleResponse>,
   selectedTimeTableIdsFromClick: number[],
   roundTrips?: RoundTrips
 ): TimetableExportPayload => {
@@ -149,11 +149,9 @@ export const buildTimetableExportPayload = (
 
 export const exportTrainSchedules = (
   selectedTimeTableIdsFromClick: number[],
-  trainSchedules: TrainScheduleResponse[],
+  trainSchedules: Map<number, TrainScheduleResponse>,
   roundTrips?: RoundTrips
 ) => {
-  if (!trainSchedules) return;
-
   const payload = buildTimetableExportPayload(
     trainSchedules,
     selectedTimeTableIdsFromClick,

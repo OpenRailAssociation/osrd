@@ -115,8 +115,8 @@ const Timetable = ({
           },
         }).unwrap();
 
-        const trainsToUpsert = trainSchedules
-          .filter((train) => trainScheduleIdsToMove.includes(train.id))
+        const trainsToUpsert = trainScheduleIdsToMove
+          .map((id) => trainSchedules.get(id)!)
           .map((train) => ({
             ...train,
             train_schedule_set_id: trainScheduleSetId,

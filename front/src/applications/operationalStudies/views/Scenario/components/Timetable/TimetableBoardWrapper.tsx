@@ -56,7 +56,7 @@ const TimetableBoardWrapper = ({
 
   const { totalPacedTrainCount, totalUniqueTrainCount } = useMemo(
     () =>
-      trainSchedules.reduce(
+      [...trainSchedules.values()].reduce(
         (acc, trainSchedule) => {
           if (!trainSchedule.paced) {
             acc.totalUniqueTrainCount += 1;
@@ -154,7 +154,7 @@ const TimetableBoardWrapper = ({
 
       removeTrainSchedules(selectedTrainScheduleIds);
 
-      if (trainSchedules.length - selectedTrainScheduleIds.length === 0) {
+      if (trainSchedules.size - selectedTrainScheduleIds.length === 0) {
         setIsSelectMode(false);
       }
 
