@@ -46,8 +46,8 @@ The first implementation is intentionally conservative. It should preserve exist
 - Fresh databases execute the SQLx baseline normally.
 - Existing databases must mark the SQLx baseline as applied without executing it, using `sqlx migrate override skip` with the baseline target version.
 - The SQLx migration table is `_sqlx_migrations`; the legacy Diesel history is not used after cutover.
-- Declare SeaORM as `sea-orm = "2.0"` and commit the resolved dependency graph in `Cargo.lock`.
-- The SQLx library and `sqlx-cli` versions must match and be pinned deliberately.
+- Declare SeaORM as `sea-orm = "2.0"`; the accepted locked resolution is SeaORM 2.0.2.
+- Pin direct SQLx and `sqlx-cli` to `=0.9.0` and commit the resolved dependency graph in `Cargo.lock`.
 
 ## Audit snapshot
 
@@ -82,25 +82,30 @@ These figures are a planning snapshot and should be refreshed before implementat
 
 ### Database crate
 
-`database::Db` owns a SeaORM `DatabaseConnection`, backed by a SQLx PostgreSQL pool.
+`database::Db` is a cheaply cloneable newtype around the SeaORM connection:
+
+```rust
+#[derive(Clone)]
+pub struct Db(Arc<DatabaseConnection>);
+```
 
 Construction should follow one pool, two interfaces:
 
 1. construct and configure a SQLx `PgPool`;
 2. run SQLx migrations against that pool when setting up fresh/test databases;
-3. construct SeaORM from the same pool using `SqlxPostgresConnector::from_sqlx_postgres_pool`;
-4. store the resulting SeaORM `DatabaseConnection` in `Db`.
+3. construct SeaORM from a clone of that pool using `SqlxPostgresConnector::from_sqlx_postgres_pool`;
+4. store only the resulting `DatabaseConnection` in `Db` and expose its underlying PostgreSQL pool through `DatabaseConnection::get_postgres_connection_pool()`.
 
 There must not be a separate application SQLx pool and SeaORM pool.
 
 `Db` should:
 
 - be cheaply cloneable;
-- expose the SeaORM connection through a narrow, conventional API such as `AsRef<DatabaseConnection>` or a named accessor;
-- allow access to the underlying PostgreSQL pool only for SQLx checked queries, migrations, and low-level operations;
+- expose narrow `sea_orm()` and `sqlx()` accessors;
+- restrict the underlying PostgreSQL pool to SQLx checked queries, migrations, and low-level operations;
 - provide async construction for production and tests;
 - provide database ping/health behavior without manually acquiring a connection;
-- contain only the extra state required for test-database ownership and cleanup.
+- contain no additional application-pool wrapper state.
 
 The following abstractions disappear:
 
@@ -111,6 +116,15 @@ The following abstractions disappear:
 - `iter_conn`;
 - Diesel migration harnesses;
 - the deadpool Diesel pool.
+
+### TLS policy
+
+Preserve the current URL-controlled/default behavior:
+
+- `Prefer` attempts TLS with certificate verification disabled and permits plaintext fallback only when that mode allows it;
+- `Require` accepts the configured self-signed TLS service and rejects a plaintext-only service.
+
+Exercise both success and failure paths rather than inferring equivalence from connection-option names.
 
 ### Test databases
 
@@ -127,7 +141,7 @@ The simple first implementation should:
 7. close pools before attempting database deletion;
 8. perform cleanup asynchronously, without `block_on` or a busy waiting loop.
 
-The test API remains `Db::for_tests().await`; do not expose a public close or cleanup method. `Db` is internally reference counted, test-database ownership is held by the shared inner state, and dropping the final clone schedules cleanup exactly once. Cleanup must not depend on the lifetime of the test's Tokio runtime: use an internal long-lived asynchronous cleanup worker or an equivalent drop-driven mechanism covered by lifecycle stress tests. Do not redesign the rest of the testing framework.
+The test API remains `Db::for_tests().await`; do not expose a public close or cleanup method. Dropping the final `Db` clone enqueues cleanup exactly once on a process-wide worker with its own long-lived Tokio runtime. The final-drop path obtains the underlying pool through `get_postgres_connection_pool()`, identifies the test database from its connect options, and sends the pool handle and database name to the worker. The worker closes the shared pool, terminates remaining sessions, and drops the database independently of the runtime that created it. Do not redesign the rest of the testing framework.
 
 ### Models
 
@@ -148,6 +162,7 @@ Use generated SeaORM entities as a starting point, then curate them for:
 - explicit relationships, including the current manual `train_schedule_round_trips.left_id` relationship;
 - custom PostgreSQL enums;
 - custom Rust value wrappers;
+- ordinary PostGIS fields that can be curated with the local GEOS/EWKB value boundary;
 - tables that should be excluded from entity generation.
 
 Exclude at least:
@@ -157,6 +172,8 @@ Exclude at least:
 - other extension/infrastructure objects that are not application CRUD entities.
 
 Do not omit `train_schedule`. It must have a normal `train_schedule::Entity` and `train_schedule::Model`, even though interval fields require special handling.
+
+Do not omit an ordinary CRUD entity solely because it has a PostGIS `geometry` field. Exclude geometry-heavy infrastructure tables only when their actual use remains specialized SQL.
 
 ### Query policy
 
@@ -187,13 +204,15 @@ For dynamic queries:
 - Use a SQLx transaction only when the whole transaction family is implemented through SQLx.
 - A static raw query inside a SeaORM transaction must execute as a SeaORM statement on that `DatabaseTransaction`; compile-time SQLx checking is deliberately waived for that query and replaced with a focused integration/rollback test.
 - Let model/helper functions accept the owning stack's database or transaction executor where this reduces duplication.
-- Transaction boundaries may be rearranged when it makes the diff easier to review, provided externally observable behavior and atomicity are preserved.
+- Preserve existing transaction boundaries exactly during the mechanical migration. Any boundary change requires a separate, explicitly justified revision after parity is established.
 - Never reach back to `Db` or its pool from inside a transaction callback; doing so would acquire a different connection.
 - Do not introduce a project-specific connection wrapper to mimic `DbConnection`.
 
 ## Custom value-type strategy
 
-Custom value types replace the field transformations previously generated by `editoast_derive::Model`. They are ordinary, explicit SeaORM/SQLx types rather than a new ORM abstraction.
+Start with the exact Rust type wanted in `Model`. Use SeaORM's built-in mappings and derives when they support that type. Introduce a local wrapper only for an actual representation or validation boundary, such as UOM quantities, validated numeric enums, `chrono::Duration`, or GEOS geometry, plus the single `ForeignJson<T>` orphan-rule boundary for JSON payloads owned by other crates.
+
+A wrapper provides only the traits required for SeaORM/SQLx interoperability and small domain conversions; it must not become a reusable CRUD or model framework. Do not derive or implement Serde merely to make a field persistable. Serde remains appropriate for actual JSON payloads and public API formats.
 
 ### Unit quantities
 
@@ -208,20 +227,15 @@ Use small local wrappers backed by the actual database representation, for examp
 - seconds backed by `f64`;
 - millisecond offsets backed by `i64`.
 
-Each wrapper should:
-
-- derive or implement SeaORM `ValueType`, `TryGetable`, `Nullable`, and value conversion;
-- convert to and from the corresponding UOM quantity;
-- preserve existing serde and OpenAPI representations;
-- provide only small conversion/accessor conveniences, not generic model behavior.
-
-Use primitive-backed local wrappers and keep UOM quantities at the conversion boundary.
+Use transparent primitive-backed local wrappers that derive SeaORM `DeriveValueType` and SQLx `Type`, with explicit conversions to and from the corresponding UOM quantity. Keep UOM quantities at the domain boundary and preserve their existing public serde/OpenAPI representation there.
 
 ### JSON fields
 
-Prefer a local transparent JSON wrapper using SeaORM JSON support and `TryGetableFromJson`, with explicit SQLx `Json<T>` use in checked raw queries.
+Store a concrete Rust payload type directly in the model when that type is local to `models`. Derive `FromJsonQueryResult` alongside its existing Serde derives and declare the entity field as `#[sea_orm(column_type = "JsonBinary")]`.
 
-Use a generic transparent wrapper and keep its trait bounds no broader than the affected fields require.
+For payloads owned by another crate, use exactly one private transparent persistence wrapper named `ForeignJson<T>`. This is the only generic persistence wrapper allowed. It exists solely to satisfy Rust's orphan rules without adding SeaORM dependencies to `schemas`; it must expose only construction, extraction, transparent Serde, and the traits required by SeaORM. Before implementing it, consult the expansion of SeaORM 2.0.2's `FromJsonQueryResult` derive and mirror that small implementation rather than inventing a broader abstraction. Transparent Serde preserves the payload's JSON shape; where an API-exposed entity field needs it, use a field-level OpenAPI `value_type` override for the underlying payload so the wrapper does not alter the published schema.
+
+Checked SQLx queries select the same column as `sqlx::types::Json<Payload>` explicitly; they do not use `ForeignJson<T>`.
 
 ### String and remote fields
 
@@ -231,44 +245,27 @@ Use a generic transparent wrapper and keep its trait bounds no broader than the 
 
 ### Integer-backed Rust enums
 
-The current macro stores several Rust enums as `SMALLINT`.
-
-Use a small local numeric adapter or concrete numeric enum wrappers that:
-
-- encode through `i16`;
-- validate decoding;
-- preserve the existing JSON/OpenAPI enum shape;
-- avoid repeating CRUD behavior.
-
-Use a small local numeric adapter, with concrete wrappers only where a field needs distinct validation or API conversion.
+The current macro stores several Rust enums as `SMALLINT`. Model them directly with SeaORM `DeriveActiveEnum` using their validated `i16` representation. Invalid database discriminants must produce a SeaORM database type error rather than panic. Preserve each enum's existing JSON/OpenAPI shape, and add SQLx type support only when the enum is used by a direct checked SQLx query.
 
 ### PostgreSQL enums
 
 `timetable_type` and `train_main_category` are real PostgreSQL enum types.
 
-- Model them as local SeaORM `ActiveEnum`s.
+- Model them as local SeaORM `ActiveEnum`s with `DeriveActiveEnum`.
 - Mirror the database variant names exactly.
 - Add explicit conversions to and from the corresponding `schemas` enums.
 - Implement/derive SQLx type support when checked raw queries use them.
 - Test scalar, optional scalar, and array round trips.
 
-### Arrays whose PostgreSQL elements may be null
+### PostgreSQL arrays
 
-PostgreSQL array types permit null elements even though application models generally expose `Vec<T>`. The existing `non_null_array` transformation silently discards null elements.
+Use SeaORM's direct vector mappings; no array wrapper is required.
 
-Preserve that behavior at the Rust decoding boundary; do not normalize deployed data as part of this migration.
+- All current application array domains prohibit null elements, including fields currently annotated with `non_null_array`; model them as `Vec<T>`.
+- Treat column nullability separately: a nullable array column is `Option<Vec<T>>`.
+- Do not add nullable-element array support unless a future schema change introduces such a domain.
 
-Use a reusable local wrapper, conceptually `NonNullArray<T>(Vec<T>)`, with these semantics:
-
-- reads decode the database value as `Vec<Option<T>>` and flatten it;
-- writes encode only `Vec<T>`, so application writes never create null elements;
-- serde exposes the ordinary `Vec<T>` representation;
-- conversion and dereference/accessor behavior remain small and explicit;
-- the implementation delegates to SeaORM's PostgreSQL-array value support and, where needed, SQLx decoding through the underlying PostgreSQL row.
-
-Attempt one generic implementation with constrained bounds. If SeaORM's derives or enum-array support make that disproportionate, generate a few concrete wrappers for strings, IDs, and `TrainMainCategory` instead.
-
-Use a plain `Vec<T>` for arrays that do not currently need null-flattening semantics. Add round-trip tests that include an explicit null element for wrappers that do.
+Test insert, select, update, `RETURNING`, empty arrays, and relevant enum arrays for the production array element types.
 
 ### PostgreSQL intervals
 
@@ -279,32 +276,38 @@ There are two unrelated `PgInterval` types:
 
 `train_schedule::Entity` remains mandatory.
 
-Implement a local model value type that preserves the existing `chrono::Duration` semantics:
+Keep `chrono::Duration` semantics behind a small local `IntervalValue(chrono::Duration)` model field. The entity declares `#[sea_orm(save_as = "interval")]` on each interval field.
 
-1. expose `ColumnType::Interval(None, None)` as its SeaORM column type;
-2. decode and encode through SQLx's runtime `PgInterval` using SeaORM's PostgreSQL row/query-result integration;
-3. preserve Diesel's current decoding rule of one PostgreSQL month as 30 days;
-4. use the same value type for entity reads and writes;
-5. test select, insert, update, every interval filter used by the application, and SQLx checked raw queries.
+The implementation responsibilities are narrow:
 
-Keep the entity, interval value type, and interval-specific expressions in the `train_schedule` module. Do not replace the entity with a SQLx-only model or change interval columns to integer columns in this migration.
+- `TryGetable` uses `QueryResult::try_get_from_sqlx_postgres::<sqlx::postgres::types::PgInterval, _>` so normal `Entity` reads retain PostgreSQL's native binary `INTERVAL` type;
+- `From<IntervalValue> for Value` emits the private string representation used by `ActiveModel` writes and query-builder filters;
+- `ValueType::column_type` returns `ColumnType::Interval(None, None)`;
+- `ValueType::try_from` parses only that private representation for SeaORM's type-erased value APIs; it is not the PostgreSQL row-decoding path or a general PostgreSQL interval parser;
+- `Nullable` supplies the typed null for `Option<IntervalValue>`.
+
+Do not select intervals as text or use `interval_send()`/`BYTEA` for reads. Keeping the result typed as `INTERVAL` lets SQLx decode its native `months`, `days`, and `microseconds` inside SeaORM's query-result hook.
+
+SeaQuery has no runtime interval `Value`, so writes and filters bind `Value::String`; `save_as = "interval"` casts it at the PostgreSQL boundary. The private value contains signed whole 30-day months, remaining whole days, and the signed sub-day microsecond remainder. Reads combine the native components with checked `chrono::Duration` operations using Diesel's convention of 30 days per month. Writes use the canonical inverse: every complete 30-day portion becomes a PostgreSQL month.
+
+Keep `train_schedule::Entity` and use this normal SeaORM model path for select, insert, update, `RETURNING`, and filters. Do not add a SQLx write/filter fallback or change interval columns to integers.
+
+Production tests must cover `NULL`, zero, positive and negative components, months, mixed values, durations longer than a day, insert, update, filters, native component checks, and an explicit no-panic/out-of-range case. Use the most precise `DbErr::Type` context the trait boundary permits; do not claim overflow propagation is validated until that focused test passes. The conversion is deliberately lossy with respect to calendar-month identity because `chrono::Duration` has no calendar months.
 
 ### PostGIS geometry
 
-SQLx support for PostgreSQL's built-in `POINT`, `LINE`, `PATH`, and related types does not cover the PostGIS extension's `geometry` type.
+For an ordinary entity field whose application representation is GEOS, use a small local `GeometryValue(geos::Geometry)`. It owns no cached bytes and uses EWKB only as a transient database representation:
 
-Do not create a generic SeaORM PostGIS geometry value type during this migration.
+- `From<GeometryValue> for Value` generates EWKB and returns `Value::Bytes`;
+- `TryGetable` receives EWKB bytes and constructs the GEOS value immediately;
+- `ValueType::try_from` handles SeaORM's type-erased value APIs and is not the normal row-read path;
+- no Serde implementation is added unless that geometry is independently part of a serialized API.
 
-For existing geometry queries:
+Declare each field as `#[sea_orm(select_as = "bytea", save_as = "geometry")]`. The PostGIS `geometry`/`bytea` cast supplies EWKB, which preserves SRID 3857 without a separate `ST_SRID` query or post-read restoration. Validate the required SRID before writes; PostgreSQL continues to enforce declared geometry subtypes.
 
-- preserve current GeoJSON-producing SQL where it already works;
-- use `ST_AsBinary(geometry)` to obtain `bytea` only where a GEOS object is actually required;
-- construct GEOS geometry with `geos::Geometry::new_from_wkb`;
-- carry or set SRID explicitly because ordinary WKB does not preserve it;
-- for necessary writes, bind WKB as `bytea` and use `ST_GeomFromWKB(..., srid)`;
-- keep geometry conversion inside the owning model, `generated_data`, or map query module.
+EWKB generation is fallible in GEOS while `From<T> for Value` is infallible. Validate construction, geometry invariants, and SRID before that boundary so a conversion failure is a documented invariant violation rather than routine input handling.
 
-Geometry-heavy layer tables remain raw-query boundaries and are excluded from generated entities.
+Keep SQLx/raw SQL for PostGIS-heavy computations, dynamic layer queries, bulk generated-data work, and existing queries returning GeoJSON or primitives. Geometry-heavy infrastructure tables may remain excluded for those reasons, but do not exclude an ordinary CRUD entity solely because one of its fields has PostGIS type `geometry`.
 
 ## Behavior that must be preserved
 
@@ -320,7 +323,9 @@ Geometry-heavy layer tables remain raw-query boundaries and are excluded from ge
 - list, count, and list-and-count semantics;
 - externally visible transaction/atomicity behavior.
 
-SeaORM's broad `DbErr` categories are not sufficient for all existing errors. Inspect the underlying SQLx/PostgreSQL database error and preserve SQLSTATE, constraint, column, and detail parsing where the current HTTP error contract depends on it.
+SeaORM's broad `DbErr` categories are not sufficient for all existing errors. Inspect both direct SQLx errors and SeaORM's underlying SQLx/PostgreSQL error, preserving SQLSTATE, constraint, column, and detail parsing where the current HTTP error contract depends on it. Keep regression cases for unique `23505`, check `23514`, and foreign-key `23503` violations.
+
+The old `non_null_array` transformation disappears; the corresponding fields become direct `Vec<T>` values.
 
 ### CRUD semantics
 
@@ -359,7 +364,8 @@ Replace the current custom Diesel query tracing with SeaORM's simplest documente
 
 - enable SeaORM's `debug-print` feature and feed its events into the existing `tracing` subscriber, following [SeaORM's debug-log guidance](https://www.sea-ql.org/SeaORM/docs/install-and-config/debug-log/);
 - interpolated bind values are allowed in logs;
-- disable SQLx statement logging to avoid duplicate query events;
+- disable SQLx statement logging on the shared pool;
+- verify a representative marker appears in exactly one SeaORM query event and no duplicate SQLx statement event;
 - do not recreate the Diesel tracing wrappers, spans, helpers, or attributes;
 - document the intentional observability change in the final operational documentation.
 
@@ -406,7 +412,7 @@ Goal: make SQLx the only migration system.
 
 Work:
 
-- Add pinned SQLx migration dependencies and a matching pinned `sqlx-cli` installation path.
+- Pin direct SQLx and `sqlx-cli` to `=0.9.0` and provide a matching CLI installation path.
 - Remove the historical Diesel migration directories and activate the existing final simple SQLx baseline without moving or rewriting it.
 - Configure the migration directory consistently for the CLI and `sqlx::migrate!()`.
 - Set `migrate.defaults.migration-type = "reversible"` in `sqlx.toml`; do not rely on type inference from the simple baseline.
@@ -453,22 +459,23 @@ Diesel dependencies may remain where existing consumers still require them, but 
 
 Work:
 
-- Add `sea-orm = "2.0"`, select the compatible SQLx version, and commit the resolved versions in `Cargo.lock`.
+- Add `sea-orm = "2.0"` with direct SQLx pinned to `=0.9.0`; commit the resolved SeaORM 2.0.2 / SQLx 0.9.0 graph in `Cargo.lock`.
 - Generate entities directly into their final module-qualified locations in the `models` crate, with no generated prelude.
-- Exclude PostGIS layer/infrastructure tables.
+- Exclude extension objects and geometry-heavy tables used only through specialized SQL; curate ordinary CRUD entities with geometry fields.
 - Keep generated modules module-qualified and do not add aliases.
 - Curate relationships and key metadata.
-- Add focused production implementations and regression tests for:
+- Add focused production implementations for:
   - one ordinary entity;
   - `rolling_stock` as the representative transformed entity;
   - unit wrappers;
-  - the generic transparent JSON wrapper;
+  - local concrete JSONB payloads using `FromJsonQueryResult` and `JsonBinary`;
+  - foreign JSONB payloads using the single private `ForeignJson<T>` wrapper, implemented by consulting and mirroring the small `FromJsonQueryResult` expansion;
   - `Tags`;
-  - the local numeric enum adapter;
+  - direct `DeriveActiveEnum` mappings for numeric and PostgreSQL enums;
   - PostgreSQL scalar/optional/array enums;
-  - non-null array decoding from an array containing a null element;
-  - `train_schedule` intervals, including model reads and writes;
-  - one PostGIS point and one line/multiline WKB-to-GEOS conversion.
+  - direct `Vec<T>` array fields;
+  - `train_schedule` intervals through SeaORM model reads, `ActiveModel` writes, `RETURNING`, and filters;
+  - one point and one line through a local GEOS/EWKB model field, including SeaORM insert, select, update, and `RETURNING`.
 - Record generated CLI arguments and manual edits so regeneration is reproducible.
 - Generate and check in the SQLx offline metadata for every checked query introduced by this revision.
 
@@ -476,17 +483,16 @@ Validation:
 
 - `cargo check --package models`;
 - `cargo clippy --package models --all-targets --all-features`;
-- run every custom-type round-trip test against PostgreSQL;
-- verify serde and OpenAPI shapes against current model fixtures;
-- verify positive, negative, and mixed month/day/microsecond interval conversions against the current Diesel behavior;
-- verify PostGIS SRID handling;
-- inspect generated SQL for representative create, retrieve, update, list, and delete operations.
-- build `models` with no live `DATABASE_URL`, using the checked-in SQLx metadata.
+- inspect the generated entity shapes and the custom trait implementations;
+- run a locked `models` build with `DATABASE_URL` unset and `SQLX_OFFLINE=true`, using the checked-in SQLx metadata;
+- defer database-backed CRUD and round-trip validation to the models migration revision, where `Db` and the converted model operations are expected to work together. Do not add a temporary SeaORM test pool, compatibility path, or transitional test helper here.
 
 Review focus:
 
 - this is a type-shape and code-generation revision, not a broad business-query rewrite;
+- database integration is deliberately validated in the models migration revision rather than through scaffolding in this revision;
 - reject any wrapper that grows into a replacement ORM layer;
+- keep `ForeignJson<T>` limited to the small persistence implementation modeled on the `FromJsonQueryResult` expansion;
 - keep documented exceptions narrow and local.
 
 ### Revision 4 — replace the database crate with `Db`
@@ -496,17 +502,19 @@ Goal: make `database` SeaORM/SQLx-native while preserving test isolation.
 Work:
 
 - Introduce async `Db` construction.
-- Build a SQLx `PgPool` with equivalent TLS behavior and pool settings.
+- Build a SQLx `PgPool` with the verified TLS behavior and pool settings, with SQLx statement logging disabled.
 - Wrap the same pool in SeaORM.
+- Expose only the narrow `sea_orm()` and `sqlx()` accessors.
 - Replace embedded Diesel migration execution with SQLx migrations.
 - Port template/test database creation, cloning, and deletion.
-- Make template invalidation hash the complete ordered migration manifest and `database/sql/init_test_db.sql`.
-- Put test-database ownership in `Db`'s reference-counted inner state and schedule cleanup exactly once when the final clone is dropped; do not add a public explicit-close protocol.
-- Replace string-matched database errors with PostgreSQL SQLSTATE where possible.
+- Make template invalidation hash every ordered migration's version, migration type, and complete bytes plus the complete bytes of `database/sql/init_test_db.sql`.
+- Keep `Db` as `Db(Arc<DatabaseConnection>)`. On final clone drop, obtain the SQLx pool and test database name from the connection, then enqueue cleanup exactly once on a process-wide worker with its own long-lived Tokio runtime; do not add a public explicit-close protocol or another connection-holder struct.
+- Preserve SQLSTATE, constraint, column, and detail from both direct SQLx errors and SeaORM's underlying PostgreSQL errors.
 - Port ping/health support.
 - Preserve database creation collision handling and backend termination before drops.
 - Remove deadpool, Diesel connection instrumentation, `DbConnectionPoolV2`, `DbConnection`, manual connection acquisition, `iter_conn`, and all `block_on`/busy-wait behavior from the crate.
-- Keep TLS policy unchanged.
+- Preserve the verified `Prefer`/`Require` TLS behavior.
+- Enable SeaORM `debug-print` through the existing subscriber and verify one query marker is emitted exactly once without a SQLx statement duplicate.
 
 Validation:
 
@@ -516,8 +524,12 @@ Validation:
 - parallel isolated-test-database creation;
 - template reuse and invalidation;
 - cleanup after dropping clones in different orders, including after the creating Tokio runtime has stopped;
-- exactly-once cleanup when the final clone is dropped, with pools closed before database deletion;
-- fresh migration application through the SQLx pool and SeaORM queries through the wrapped pool.
+- exactly-once cleanup when the final clone is dropped, with the shared pool closed before database deletion;
+- parallel create/drop cycles and an assertion that no prefixed test database leaked;
+- fresh migration application through the SQLx pool and SeaORM queries through the wrapped pool;
+- `Prefer` and `Require` TLS success/failure cases against TLS and plaintext services;
+- unique `23505`, check `23514`, and foreign-key `23503` error-detail extraction through direct SQLx and SeaORM;
+- exactly one SeaORM query event for a representative interpolated marker and no SQLx statement duplicate.
 
 Expected stack state:
 
@@ -544,6 +556,7 @@ Work:
 - Keep every transaction on a single query stack; use SeaORM statements for raw SQL inside SeaORM transactions and SQLx transactions only for all-SQLx transaction families.
 - Migrate `infra_objects` without retaining the custom derive. A declarative macro may remain only if it emits ordinary SeaORM entities transparently and does not recreate generic CRUD behavior; otherwise expand it into explicit modules.
 - Keep `train_schedule::Entity` and the local interval value type for reads and writes.
+- Keep eligible GEOS-valued CRUD fields on ordinary entities through the local EWKB boundary; reserve raw SQL for specialized spatial work.
 - Remove:
   - `models/src/prelude.rs` and its submodules;
   - every `use crate::prelude::*`;
@@ -570,13 +583,21 @@ Validation:
 - `cargo check --package models`;
 - `cargo clippy --package models --all-targets --all-features`;
 - all `models` tests;
+- run the database-backed custom-value validation deferred from the entity/type revision:
+  - local JSON payloads and foreign payloads through `ForeignJson<T>`, with unchanged JSON and OpenAPI shapes;
+  - unit wrappers;
+  - numeric and PostgreSQL scalar, optional-scalar, and array enums;
+  - every production PostgreSQL array element type, including empty arrays, insert, select, update, and `RETURNING`;
+  - positive, negative, mixed, and out-of-range interval behavior through select, insert, update, `RETURNING`, and filters;
+  - geometry kind, coordinates, and SRID 3857 through direct SeaORM model CRUD, with GeoJSON as an independent control;
 - targeted CRUD parity tests per operation family;
 - serialization/OpenAPI snapshots or equivalent assertions;
 - batch-limit tests;
 - transaction rollback tests;
 - error-response parity tests;
-- query-result/order/pagination parity tests.
-- offline `models` build using the metadata owned by this revision.
+- query-result/order/pagination parity tests;
+- round trips for every eligible ordinary-model geometry subtype;
+- locked offline `models` build with `DATABASE_URL` unset, `SQLX_OFFLINE=true`, and the metadata owned by this revision.
 
 Expected stack state:
 
@@ -597,7 +618,7 @@ Goal: replace root Diesel/deadpool error conversion with SeaORM/SQLx error conve
 Work:
 
 - Preserve existing HTTP error types, status codes, and context.
-- Extract SQLSTATE, constraint, column, and detail information from SeaORM's underlying SQLx/PostgreSQL error where required.
+- Extract SQLSTATE, constraint, column, and detail information from direct SQLx errors and SeaORM's underlying SQLx/PostgreSQL error where required.
 - Remove only the Diesel/deadpool error implementations owned by `src/error.rs`.
 
 Checkpoint review:
@@ -608,7 +629,7 @@ Checkpoint review:
 
 Final-revision validation:
 
-- unique/check/foreign-key error parity tests;
+- unique `23505`, check `23514`, and foreign-key `23503` error parity tests;
 - representative route error/status tests.
 
 ### Revision 7 — migrate `src/fixtures.rs`
@@ -643,7 +664,7 @@ Work:
 - Convert Diesel DSL deletes/updates to SeaORM or checked SQLx.
 - Preserve current SQL text, result mapping, transaction boundaries, and bulk behavior wherever possible.
 - Keep PostGIS operations in SQL and return existing GeoJSON/primitive results unless GEOS objects are required.
-- Use WKB-to-GEOS only at explicit geometry boundaries.
+- Use WKB/EWKB-to-GEOS only at explicit specialized-query boundaries, preserving the current SRID semantics.
 - Generate and assign SQLx offline metadata for every checked query owned by this revision.
 
 Checkpoint review:
@@ -657,6 +678,7 @@ Final-revision validation:
 
 - run generated-data tests against representative infrastructure;
 - compare generated row counts and representative geometries;
+- cover every production PostGIS geometry subtype and specialized spatial query family owned by this submodule;
 - compare SQL/query plans for known heavy operations.
 
 ### Revision 9 — migrate `src/infra_cache`
@@ -778,7 +800,7 @@ Validation:
 - server startup and health check;
 - representative CLI database commands;
 - OpenAPI generation comparison;
-- SQLx offline workspace build using checked-in metadata and no live `DATABASE_URL`;
+- locked SQLx offline workspace build using checked-in metadata with `DATABASE_URL` unset and `SQLX_OFFLINE=true`;
 - workspace-wide search for forbidden Diesel/custom-model remnants;
 - after the targeted checks pass, `cargo nextest run --workspace`;
 - `cargo clippy --all-targets --all-features --workspace`.
@@ -829,6 +851,7 @@ Because the migrated `src` paths are modules of the same `editoast` crate, the w
 - When a direct `src` submodule revision cannot compile independently, generate its metadata from the fully migrated descendant/tip and assign the resulting query metadata files back to the owning revision. Do not defer ownership to the root-restoration revision.
 - Add a documented local command or `just` recipe for preparation/checking.
 - Ensure Docker/cargo-chef build contexts include `.sqlx` before query macros compile.
+- Require locked offline validation with `DATABASE_URL` unset and `SQLX_OFFLINE=true`.
 - Do not add new CI enforcement in this migration.
 
 ## Baseline and cutover runbook requirements
@@ -870,27 +893,21 @@ Mitigation: separate runbooks, preflight schema/version checks, backup, and `sql
 
 ### Entity generation and PostGIS
 
-Risk: automatic generation emits unusable geometry fields or extension tables.
+Risk: automatic generation emits extension objects as entities or treats usable geometry-valued CRUD fields as unusable.
 
-Mitigation: explicit exclusion list, curated entities, and raw SQL geometry boundaries.
+Mitigation: exclude extension objects and tables used only by specialized spatial SQL, but curate eligible CRUD fields with the local `GeometryValue`, transient EWKB, `select_as = "bytea"`, and `save_as = "geometry"`. Validate SRID and GEOS invariants before the infallible value-conversion boundary.
 
 ### Interval binding
 
-Risk: SeaORM can describe and decode an interval column but the selected SeaQuery version cannot bind a runtime interval value.
+Risk: SeaQuery has no runtime interval `Value`, and interval component conversion can overflow at the model boundary.
 
-Mitigation: retain `train_schedule::Entity`, reproduce the existing month-to-duration rule in the local value type, and cover interval reads, writes, and filters with database round-trip tests.
-
-### Nullable array elements
-
-Risk: decoding a PostgreSQL array containing a null into `Vec<T>` fails or changes current flattening behavior.
-
-Mitigation: `NonNullArray` decoding wrapper, explicit null-element test, and non-null application writes.
+Mitigation: retain `train_schedule::Entity`; decode native `PgInterval` through SeaORM's PostgreSQL query-result hook; bind the private signed month/day/microsecond string through `save_as = "interval"`; and cover reads, inserts, updates, `RETURNING`, filters, native components, and explicit no-panic/out-of-range behavior.
 
 ### Error response drift
 
 Risk: SeaORM collapses constraint errors and changes HTTP responses.
 
-Mitigation: inspect underlying PostgreSQL errors and maintain parity tests for unique/check/foreign-key violations.
+Mitigation: inspect direct SQLx errors and SeaORM's underlying PostgreSQL errors, maintaining parity tests for unique `23505`, check `23514`, and foreign-key `23503` violations.
 
 ### Pagination/order drift
 
@@ -914,7 +931,7 @@ Mitigation: keep every transaction on exactly one query stack, never reacquire f
 
 Risk: pools remain alive when cloned databases are dropped.
 
-Mitigation: reference-counted ownership, exactly-once drop-driven cleanup on the final clone, an internal cleanup worker independent of the creating Tokio runtime, termination fallback, and parallel teardown tests. Destructors do not run after every abrupt process termination, so document stale prefixed-database discovery and operator cleanup as the recovery path; do not claim `Drop` covers process abort or kill.
+Mitigation: reference-counted ownership, exactly-once drop-driven cleanup on the final clone, an internal cleanup worker independent of the creating Tokio runtime, termination fallback, and parallel teardown tests. Destructors do not run after every abrupt process termination, so document stale prefixed-database discovery and cleanup by a later run or an operator; do not claim `Drop` covers process abort or kill.
 
 ### Dynamic SQL
 
@@ -952,8 +969,11 @@ The migration is complete when:
 - `database::Db` is asynchronous and wraps SeaORM over the same SQLx pool used for migrations/checked queries;
 - test databases remain isolated and reliable without `block_on`;
 - application entities are module-qualified SeaORM entities with no aliases or model prelude;
-- `train_schedule::Entity` exists and interval behavior is covered by round-trip tests;
-- geometry-layer tables remain explicit raw-query boundaries;
+- local concrete JSONB payloads use `FromJsonQueryResult`/`JsonBinary` directly, while foreign payloads use only the private transparent `ForeignJson<T>` wrapper modeled on that derive's expansion;
+- PostgreSQL arrays use direct `Vec<T>` fields and round-trip every production element type;
+- `train_schedule::Entity` supports interval select, insert, update, `RETURNING`, and filters through native `PgInterval` reads and the field-level interval cast, including out-of-range behavior;
+- eligible geometry-valued CRUD entities use the local GEOS/EWKB field boundary with kind, coordinate, and SRID preservation for every production subtype;
+- specialized PostGIS computations and geometry-heavy infrastructure tables remain explicit raw-query boundaries;
 - eligible static SQL is compile-checked by SQLx with checked-in offline metadata;
 - each checked query's offline metadata is owned by the same revision as the query;
 - dynamic SQL is allowlisted/bound/tested;
@@ -961,6 +981,9 @@ The migration is complete when:
 - Diesel, diesel-async, diesel-migrations, deadpool Diesel, schema files, and Diesel CLI tooling have no remaining consumers;
 - external API, error, ordering, pagination, batch, and transaction parity tests pass;
 - no transaction mixes SeaORM and SQLx execution;
+- direct SQLx and `sqlx-cli` are pinned to 0.9.0, with the locked dependency graph recorded;
+- locked offline builds pass with `DATABASE_URL` unset and `SQLX_OFFLINE=true`;
+- `Prefer`/`Require` TLS behavior, PostgreSQL error details, and exactly-once SeaORM query logging match the verified design;
 - `database`, `models`, and root `editoast` build and lint;
 - no new offline-metadata CI enforcement has been added;
 - no transitional or throwaway comments, tests, helpers, types, features, or configuration remain;
@@ -994,6 +1017,5 @@ Final searches should account for deliberate historical/documentation mentions a
 - [SQLx CLI `override skip` implementation](https://github.com/transact-rs/sqlx/blob/main/sqlx-cli/src/opt.rs)
 - [SQLx runtime PostgreSQL interval](https://docs.rs/sqlx/latest/sqlx/postgres/types/struct.PgInterval.html)
 - [SeaQuery interval column qualifier](https://docs.rs/sea-query/latest/sea_query/table/enum.PgInterval.html)
-- [PostGIS `ST_AsBinary`](https://postgis.net/docs/ST_AsBinary.html)
-- [PostGIS `ST_GeomFromWKB`](https://postgis.net/docs/ST_GeomFromWKB.html)
+- [PostGIS `ST_AsEWKB`](https://postgis.net/docs/ST_AsEWKB.html)
 - [GEOS WKB construction](https://docs.rs/geos/latest/geos/struct.Geometry.html#method.new_from_wkb)
