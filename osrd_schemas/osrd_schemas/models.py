@@ -3376,6 +3376,7 @@ class RequirementType(Enum):
 class ResourceType(Enum):
     infra = "infra"
     rolling_stock = "rolling_stock"
+    project = "project"
 
 
 class RevokeBody(BaseModel):
