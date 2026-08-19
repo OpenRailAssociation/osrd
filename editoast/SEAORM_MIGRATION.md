@@ -1,6 +1,6 @@
 # Diesel to SeaORM migration plan
 
-Status: planning  
+Status: in progress  
 Last updated: 2026-08-19
 
 ## Objective
@@ -35,15 +35,15 @@ The first implementation is intentionally conservative. It should preserve exist
 - The final database wrapper is named `Db`.
 - `Db` and its test APIs must be asynchronous and must not call `block_on`.
 - Preserve the current PostgreSQL TLS behavior. Changing certificate policy or TLS implementation behavior is out of scope.
-- Use down migrations for all new SQLx migrations after the baseline. The SQLx baseline is a non-revertible simple migration with no down file.
+- Keep the baseline non-revertible in both migration systems: it has only `up.sql` while Diesel owns migrations, then becomes a simple SQLx migration with no down file at cutover. Use down migrations for every new SQLx migration after the baseline.
 - Check in SQLx offline query metadata, but do not add a new CI `cargo sqlx prepare --check` enforcement step in this migration.
 - Necessary replacements of existing Diesel migration commands in CI are in scope; new offline-metadata CI policy is not.
 
 ## Confirmed deployment assumptions
 
-- Every deployed database will be upgraded to the last Diesel migration before the SQLx cutover.
+- Every deployed database will be upgraded through Diesel to baseline version `2026-08-06-164808-0000` before the SQLx cutover. This is the same version as the latest removed historical migration, so an already-current database reports the replacement Diesel baseline as applied without executing it.
 - Partially migrated Diesel databases do not need to be supported.
-- Fresh databases execute the SQLx baseline normally.
+- Before cutover, fresh databases execute the Diesel baseline normally. After cutover, fresh databases execute the moved SQLx baseline normally.
 - Existing databases must mark the SQLx baseline as applied without executing it, using `sqlx migrate override skip` with the baseline target version.
 - The SQLx migration table is `_sqlx_migrations`; the legacy Diesel history is not used after cutover.
 - Declare SeaORM as `sea-orm = "2.0"`; the accepted locked resolution is SeaORM 2.0.2.
@@ -51,7 +51,7 @@ The first implementation is intentionally conservative. It should preserve exist
 
 ## Audit snapshot
 
-These figures are a planning snapshot and should be refreshed before implementation if the branch moves substantially:
+These figures describe the pre-baseline Diesel history and should be refreshed if the source branch moves substantially:
 
 - 132 Diesel migration directories and 264 up/down files;
 - 65 up migrations containing data manipulation;
@@ -74,7 +74,8 @@ These figures are a planning snapshot and should be refreshed before implementat
 - Use SQLx reversible file names for migrations after the baseline:
   - `<version>_<description>.up.sql`
   - `<version>_<description>.down.sql`
-- The SQLx baseline is a simple, non-revertible `<version>_<description>.sql` migration with no down file.
+- Until the SQLx cutover, the baseline remains a non-revertible Diesel migration at `<diesel-version>_baseline/up.sql`, with no `down.sql`.
+- At cutover, move and rename that unchanged SQL to the simple, non-revertible SQLx form `<numeric-version>_baseline.sql`, with no down file.
 - Configure `sqlx.toml` with `migrate.defaults.migration-type = "reversible"` so the simple baseline does not cause later `sqlx migrate add` commands to infer more simple migrations.
 - Embed migrations for test-database setup with `sqlx::migrate!()`.
 - Add the build-script/path tracking recommended by SQLx so adding a migration retriggers compilation.
@@ -373,9 +374,9 @@ Replace the current custom Diesel query tracing with SeaORM's simplest documente
 
 The descriptions below are intended revision boundaries, not commands to execute. Every revision contributes only final implementation material. Rewrite the stack as needed to preserve these boundaries, never push, and leave all squashing to the plan owner.
 
-### Revision 1 — produce the final SQLx baseline
+### Revision 1 — replace the Diesel history with a schema baseline
 
-Goal: derive and review the final non-revertible SQLx baseline while leaving the active Diesel migration stack unchanged until the cutover revision.
+Goal: derive and review the final schema baseline, replace the historical Diesel migration stack with it, and keep the active Diesel runner working until the SQLx cutover revision.
 
 Work:
 
@@ -385,10 +386,12 @@ Work:
 - Audit and include required seed/reference data separately.
 - Preserve extensions and external initialization assumptions from `database/sql/init_test_db.sql` and deployment initialization.
 - Audit functions, triggers, enums, sequences/identity behavior, indexes, constraints, views/materialized views, grants, and comments.
-- Choose a valid numeric SQLx version that represents the already-applied latest Diesel state.
-- Add the complete baseline once, at its final path and with its final simple SQLx `<version>_<description>.sql` filename.
-- Leave the existing Diesel migration directories and active migration runner unchanged in this revision.
-- Do not create a Diesel `up.sql`/`down.sql` wrapper, compatibility helper, or transitional comment around the baseline.
+- Give the Diesel baseline the same migration version as the latest removed Diesel migration, so databases already at that version continue to report it as applied.
+- Add the complete baseline as `<latest-diesel-version>_baseline/up.sql`, with no `down.sql`.
+- Remove all historical Diesel migration directories after deriving and validating the baseline.
+- Leave the active Diesel runner and its commands unchanged in this revision.
+- Keep the baseline SQL directly executable by both Diesel and SQLx; in particular, do not leave pg_dump session settings such as an empty `search_path` that prevent Diesel from recording the applied migration.
+- Do not add a compatibility helper, a dummy down migration, or a transitional comment around the baseline.
 
 Validation:
 
@@ -396,15 +399,29 @@ Validation:
 - compare normalized `pg_dump --schema-only` output;
 - compare catalog inventories for extensions, enum values/order, functions, triggers, constraints, indexes, sequences, and views;
 - compare required reference data;
-- execute the final baseline SQL against a fresh initialized database;
-- verify the existing Diesel migration stack remains unchanged and still reaches the comparison schema;
+- execute the final baseline through Diesel against a fresh initialized database;
+- verify a database at the removed latest Diesel migration version reports the replacement baseline as already applied;
+- verify the baseline is non-revertible and is the only remaining Diesel migration;
 - build/lint `database` and `models` and run their relevant database tests.
 
 Review focus:
 
 - the baseline should describe the final schema, not replay historical states;
 - every included data statement must have an explicit reason;
-- the baseline file is already in its final SQLx form and will not be moved or rewritten by the cutover revision.
+- the Diesel baseline version must exactly match the latest removed Diesel version;
+- the cutover revision will only move and rename the baseline SQL into SQLx's simple migration form; it must not rewrite its SQL.
+
+Implementation record:
+
+- status: complete;
+- Jujutsu change ID: `nwnxqktv`;
+- resolved Diesel version and path: `2026-08-06-164808-0000_baseline/up.sql`;
+- reserved SQLx cutover version and path: `202608061648080000_baseline.sql`;
+- the historical 132 directories and 264 up/down files were removed;
+- normalized schema dumps, catalog inventories, application data, and sequence states matched between the historical stack and the baseline;
+- no application reference rows required a separate data payload;
+- validation commands: `cargo check --package database --package models`, `cargo clippy --package database --package models --all-targets --all-features`, and `cargo nextest run --package database --package models`;
+- final test result: 76 passed, with two existing nextest leak annotations and no failures.
 
 ### Revision 2 — install SQLx migrations and CLI workflow
 
@@ -413,7 +430,8 @@ Goal: make SQLx the only migration system.
 Work:
 
 - Pin direct SQLx and `sqlx-cli` to `=0.9.0` and provide a matching CLI installation path.
-- Remove the historical Diesel migration directories and activate the existing final simple SQLx baseline without moving or rewriting it.
+- Move and rename `<latest-diesel-version>_baseline/up.sql` to the simple SQLx filename `<numeric-version>_baseline.sql` without rewriting its SQL.
+- Remove the now-empty Diesel baseline directory and activate the moved baseline through SQLx.
 - Configure the migration directory consistently for the CLI and `sqlx::migrate!()`.
 - Set `migrate.defaults.migration-type = "reversible"` in `sqlx.toml`; do not rely on type inference from the simple baseline.
 - Add migration path build-script tracking.
@@ -436,8 +454,8 @@ Work:
 
 Validation:
 
-- run the baseline on a fresh initialized database;
-- use `override skip` on a clone produced by the old Diesel stack;
+- run the moved baseline on a fresh initialized database;
+- use `override skip` on a clone produced by the Diesel baseline;
 - verify `sqlx migrate info` reports identical installed state afterward;
 - verify `sqlx.toml` explicitly configures future `sqlx migrate add` operations as reversible;
 - verify that, when only the baseline remains applied, `sqlx migrate revert` reports that no migration is available to revert and leaves the baseline row installed;
@@ -446,7 +464,7 @@ Validation:
 
 Review focus:
 
-- baseline SQL is activated without being moved or rewritten;
+- baseline SQL is moved and renamed once without being rewritten;
 - the SQLx baseline cannot be reverted through the normal CLI;
 - the skip command is never used for fresh databases or future migrations;
 - no new CI policy is introduced.
@@ -825,7 +843,7 @@ Suggested tracking table:
 
 | Revision | Status | Jujutsu ID | Required build/lint scope | Known breakage / notes |
 | --- | --- | --- | --- | --- |
-| final SQLx baseline | not started | — | database, models, relevant tests | Diesel migration runner unchanged |
+| Diesel schema baseline | complete | `nwnxqktv` | database, models, relevant tests | Historical migrations removed; Diesel runner remains active until cutover |
 | SQLx migration workflow | not started | — | migration tooling and fresh/cutover DB exercises | — |
 | entities and value implementations | not started | — | models | — |
 | database `Db` | not started | — | database | Diesel descendants expected broken |

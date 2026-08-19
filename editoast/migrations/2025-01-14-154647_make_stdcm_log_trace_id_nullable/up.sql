@@ -1,1 +1,0 @@
-ALTER TABLE stdcm_logs ALTER COLUMN trace_id DROP NOT NULL;

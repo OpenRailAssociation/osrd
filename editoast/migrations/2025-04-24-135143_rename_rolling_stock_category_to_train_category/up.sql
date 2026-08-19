@@ -1,2 +1,0 @@
-ALTER TYPE rolling_stock_category
-RENAME TO train_category

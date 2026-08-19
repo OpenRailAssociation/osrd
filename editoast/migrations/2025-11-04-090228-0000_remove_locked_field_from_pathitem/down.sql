@@ -1,2 +1,0 @@
--- Not required since locked and deleted fields had a default values
-select true;

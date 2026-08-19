@@ -1,1 +1,0 @@
-ALTER TABLE stdcm_search_environment DROP COLUMN IF EXISTS operational_points_id_filtered;
