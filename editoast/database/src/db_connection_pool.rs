@@ -132,8 +132,23 @@ async fn create_test_database(
 /// The test database is automatically created when the pool is initialized and cleaned up when dropped.
 ///
 /// A new pool is expected to be initialized for each test, see [`Db::for_tests`].
-#[derive(Clone)]
-pub struct Db(DatabaseConnection);
+pub struct Db(
+    DatabaseConnection,
+    #[cfg(any(test, feature = "testing"))] bool,
+);
+
+impl Clone for Db {
+    fn clone(&self) -> Self {
+        #[cfg(any(test, feature = "testing"))]
+        {
+            Self(self.0.clone(), false)
+        }
+        #[cfg(not(any(test, feature = "testing")))]
+        {
+            Self(self.0.clone())
+        }
+    }
+}
 
 impl Db {
     /// Creates a connection pool with the given settings
@@ -141,7 +156,15 @@ impl Db {
     /// In a testing environment, you should use [`Db::for_tests`] instead.
     pub async fn try_initialize(url: Url, max_size: usize) -> Result<Self, sqlx::Error> {
         let pool = create_connection_pool(url, max_size).await?;
-        Ok(Self(SqlxPostgresConnector::from_sqlx_postgres_pool(pool)))
+        let connection = SqlxPostgresConnector::from_sqlx_postgres_pool(pool);
+        #[cfg(any(test, feature = "testing"))]
+        {
+            Ok(Self(connection, false))
+        }
+        #[cfg(not(any(test, feature = "testing")))]
+        {
+            Ok(Self(connection))
+        }
     }
 
     /// Returns the SQLx interface to the shared pool.
@@ -167,7 +190,10 @@ impl Db {
         let url = Url::parse(&test_db_url).expect("Failed to parse postgresql url");
         tracing::info!(%url, "Using test database URL");
         let pool = create_connection_pool(url, 2).await?;
-        Ok(Self(SqlxPostgresConnector::from_sqlx_postgres_pool(pool)))
+        Ok(Self(
+            SqlxPostgresConnector::from_sqlx_postgres_pool(pool),
+            true,
+        ))
     }
 
     /// Create a connection pool for testing purposes.
@@ -213,10 +239,75 @@ impl sea_orm::ConnectionTrait for Db {
     }
 }
 
+#[async_trait]
+impl sea_orm::TransactionTrait for Db {
+    type Transaction = sea_orm::DatabaseTransaction;
+
+    async fn begin(&self) -> Result<Self::Transaction, sea_orm::DbErr> {
+        sea_orm::TransactionTrait::begin(&self.0).await
+    }
+
+    async fn begin_with_config(
+        &self,
+        isolation_level: Option<sea_orm::IsolationLevel>,
+        access_mode: Option<sea_orm::AccessMode>,
+    ) -> Result<Self::Transaction, sea_orm::DbErr> {
+        sea_orm::TransactionTrait::begin_with_config(&self.0, isolation_level, access_mode).await
+    }
+
+    async fn begin_with_options(
+        &self,
+        options: sea_orm::TransactionOptions,
+    ) -> Result<Self::Transaction, sea_orm::DbErr> {
+        sea_orm::TransactionTrait::begin_with_options(&self.0, options).await
+    }
+
+    async fn transaction<F, T, E>(&self, callback: F) -> Result<T, sea_orm::TransactionError<E>>
+    where
+        F: for<'c> FnOnce(
+                &'c Self::Transaction,
+            ) -> std::pin::Pin<
+                Box<dyn std::future::Future<Output = Result<T, E>> + Send + 'c>,
+            > + Send,
+        T: Send,
+        E: std::fmt::Display + std::fmt::Debug + Send,
+    {
+        sea_orm::TransactionTrait::transaction(&self.0, callback).await
+    }
+
+    async fn transaction_with_config<F, T, E>(
+        &self,
+        callback: F,
+        isolation_level: Option<sea_orm::IsolationLevel>,
+        access_mode: Option<sea_orm::AccessMode>,
+    ) -> Result<T, sea_orm::TransactionError<E>>
+    where
+        F: for<'c> FnOnce(
+                &'c Self::Transaction,
+            ) -> std::pin::Pin<
+                Box<dyn std::future::Future<Output = Result<T, E>> + Send + 'c>,
+            > + Send,
+        T: Send,
+        E: std::fmt::Display + std::fmt::Debug + Send,
+    {
+        sea_orm::TransactionTrait::transaction_with_config(
+            &self.0,
+            callback,
+            isolation_level,
+            access_mode,
+        )
+        .await
+    }
+}
+
 #[cfg(any(test, feature = "testing"))]
 impl Drop for Db {
     fn drop(&mut self) {
         use tokio::sync::oneshot::error::TryRecvError;
+
+        if !self.1 {
+            return;
+        }
 
         let name = self
             .sqlx()
