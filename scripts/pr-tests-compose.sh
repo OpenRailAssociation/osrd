@@ -33,6 +33,7 @@ if  {
     } ||
     {
         [ "$#" -eq 1 ] &&
+            [ "$1" != "rmi" ] &&
             [ "$1" != "down" ] &&
             [ "$1" != "down-and-clean" ]
     } ||
@@ -48,6 +49,7 @@ if  {
         echo "  $0 [pr-number] up-and-load-backup [osrd.backup]"
         echo "  $0 down"
         echo "  $0 down-and-clean"
+        echo "  $0 rmi"
     ) >&2
     exit 1
 
@@ -81,6 +83,15 @@ elif [ "$1" = "down-and-clean" ]; then
 
     # shellcheck disable=SC2086
     docker rmi ${osrd_images}
+
+elif [ "$1" = "rmi" ]; then
+
+    images=$(docker images --format 'table {{.Repository}}:{{.Tag}} {{.ID}}' |
+        awk '/^ghcr.io\/openrailassociation\/osrd-edge\/osrd-(core|editoast|gateway|osrdyne):pr-[0-9]+(-front)? / { print $2 }')
+
+    # shellcheck disable=SC2086
+    docker rmi ${images:?no images to delete}
+
 elif [ "$2" = "up" ] || [ "$2" = "up-and-load-backup" ]; then
 
     export PR_NB="pr-$1"
