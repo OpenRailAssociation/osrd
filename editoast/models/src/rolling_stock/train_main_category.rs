@@ -1,68 +1,69 @@
-use std::io::Write;
-use std::ops::Deref;
-use std::str::FromStr;
+#![allow(clippy::enum_variant_names)]
 
-use database::tables::sql_types;
-use diesel::deserialize::FromSql;
-use diesel::deserialize::FromSqlRow;
-use diesel::expression::AsExpression;
-use diesel::pg::Pg;
-use diesel::pg::PgValue;
-use diesel::serialize::Output;
-use diesel::serialize::ToSql;
+use sea_orm::entity::prelude::*;
 use serde::Deserialize;
 use serde::Serialize;
+use utoipa::ToSchema;
 
+#[allow(clippy::enum_variant_names)]
 #[derive(
-    Debug, Clone, PartialEq, Serialize, Deserialize, FromSqlRow, AsExpression, utoipa::ToSchema,
+    Clone, Copy, Debug, Deserialize, DeriveActiveEnum, EnumIter, Eq, PartialEq, Serialize, ToSchema,
 )]
-#[diesel(sql_type = sql_types::TrainMainCategory)]
-pub struct TrainMainCategory(pub schemas::rolling_stock::TrainMainCategory);
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+#[sea_orm(rs_type = "Enum", db_type = "Enum", enum_name = "train_main_category")]
+pub enum TrainMainCategory {
+    #[sea_orm(string_value = "HIGH_SPEED_TRAIN")]
+    HighSpeedTrain,
+    #[sea_orm(string_value = "INTERCITY_TRAIN")]
+    IntercityTrain,
+    #[sea_orm(string_value = "REGIONAL_TRAIN")]
+    RegionalTrain,
+    #[sea_orm(string_value = "NIGHT_TRAIN")]
+    NightTrain,
+    #[sea_orm(string_value = "COMMUTER_TRAIN")]
+    CommuterTrain,
+    #[sea_orm(string_value = "FREIGHT_TRAIN")]
+    FreightTrain,
+    #[sea_orm(string_value = "FAST_FREIGHT_TRAIN")]
+    FastFreightTrain,
+    #[sea_orm(string_value = "TRAM_TRAIN")]
+    TramTrain,
+    #[sea_orm(string_value = "TOURISTIC_TRAIN")]
+    TouristicTrain,
+    #[sea_orm(string_value = "WORK_TRAIN")]
+    WorkTrain,
+}
 
-impl FromSql<sql_types::TrainMainCategory, Pg> for TrainMainCategory {
-    fn from_sql(value: PgValue) -> diesel::deserialize::Result<Self> {
-        let s = std::str::from_utf8(value.as_bytes()).map_err(|_| "Invalid UTF-8 data")?;
-        schemas::rolling_stock::TrainMainCategory::from_str(s)
-            .map(TrainMainCategory)
-            .map_err(|_| "Unrecognized enum variant for TrainCategory".into())
+impl From<schemas::rolling_stock::TrainMainCategory> for TrainMainCategory {
+    fn from(value: schemas::rolling_stock::TrainMainCategory) -> Self {
+        match value {
+            schemas::rolling_stock::TrainMainCategory::HighSpeedTrain => Self::HighSpeedTrain,
+            schemas::rolling_stock::TrainMainCategory::IntercityTrain => Self::IntercityTrain,
+            schemas::rolling_stock::TrainMainCategory::RegionalTrain => Self::RegionalTrain,
+            schemas::rolling_stock::TrainMainCategory::NightTrain => Self::NightTrain,
+            schemas::rolling_stock::TrainMainCategory::CommuterTrain => Self::CommuterTrain,
+            schemas::rolling_stock::TrainMainCategory::FreightTrain => Self::FreightTrain,
+            schemas::rolling_stock::TrainMainCategory::FastFreightTrain => Self::FastFreightTrain,
+            schemas::rolling_stock::TrainMainCategory::TramTrain => Self::TramTrain,
+            schemas::rolling_stock::TrainMainCategory::TouristicTrain => Self::TouristicTrain,
+            schemas::rolling_stock::TrainMainCategory::WorkTrain => Self::WorkTrain,
+        }
     }
 }
 
-impl ToSql<sql_types::TrainMainCategory, Pg> for TrainMainCategory {
-    fn to_sql<'b>(&'b self, out: &mut Output<'b, '_, Pg>) -> diesel::serialize::Result {
-        let variant: &str = &self.0.to_string();
-        out.write_all(variant.as_bytes())?;
-        Ok(diesel::serialize::IsNull::No)
-    }
-}
-
-impl Deref for TrainMainCategory {
-    type Target = schemas::rolling_stock::TrainMainCategory;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
-}
-
-#[derive(Clone, Debug, PartialEq, Deserialize, Serialize, utoipa::ToSchema)]
-pub struct TrainMainCategories(pub Vec<TrainMainCategory>);
-
-impl From<Vec<Option<TrainMainCategory>>> for TrainMainCategories {
-    fn from(categories: Vec<Option<TrainMainCategory>>) -> Self {
-        Self(categories.into_iter().flatten().collect())
-    }
-}
-
-impl From<TrainMainCategories> for Vec<Option<TrainMainCategory>> {
-    fn from(categories: TrainMainCategories) -> Self {
-        categories.0.into_iter().map(Some).collect()
-    }
-}
-
-impl Deref for TrainMainCategories {
-    type Target = Vec<TrainMainCategory>;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
+impl From<TrainMainCategory> for schemas::rolling_stock::TrainMainCategory {
+    fn from(value: TrainMainCategory) -> Self {
+        match value {
+            TrainMainCategory::HighSpeedTrain => Self::HighSpeedTrain,
+            TrainMainCategory::IntercityTrain => Self::IntercityTrain,
+            TrainMainCategory::RegionalTrain => Self::RegionalTrain,
+            TrainMainCategory::NightTrain => Self::NightTrain,
+            TrainMainCategory::CommuterTrain => Self::CommuterTrain,
+            TrainMainCategory::FreightTrain => Self::FreightTrain,
+            TrainMainCategory::FastFreightTrain => Self::FastFreightTrain,
+            TrainMainCategory::TramTrain => Self::TramTrain,
+            TrainMainCategory::TouristicTrain => Self::TouristicTrain,
+            TrainMainCategory::WorkTrain => Self::WorkTrain,
+        }
     }
 }

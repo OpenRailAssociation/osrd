@@ -1,35 +1,28 @@
-use std::ops::DerefMut;
+use database::Db;
 
-use database::DbConnection;
-use diesel::QueryableByName;
-use diesel::sql_query;
-use diesel::sql_types::BigInt;
-use diesel::sql_types::Bool;
-use diesel::sql_types::Text;
-use diesel_async::RunQueryDsl;
+use crate::infra;
 
-use super::Infra;
-#[derive(QueryableByName)]
+#[derive(sqlx::FromRow)]
 pub struct RouteFromWaypointResult {
-    #[diesel(sql_type = Text)]
     pub route_id: String,
-    #[diesel(sql_type = Bool)]
     pub is_entry_point: bool,
 }
 
-impl Infra {
+impl infra::Model {
     pub async fn get_routes_from_waypoint(
         &self,
-        conn: &mut DbConnection,
+        db: Db,
         waypoint_id: &String,
         waypoint_type: String,
-    ) -> Result<Vec<RouteFromWaypointResult>, database::DatabaseError> {
-        let routes = sql_query(include_str!("sql/get_routes_from_waypoint.sql"))
-            .bind::<BigInt, _>(self.id)
-            .bind::<Text, _>(&waypoint_id)
-            .bind::<Text, _>(waypoint_type)
-            .load::<RouteFromWaypointResult>(conn.write().await.deref_mut())
-            .await?;
-        Ok(routes)
+    ) -> Result<Vec<RouteFromWaypointResult>, crate::Error> {
+        Ok(sqlx::query_file_as!(
+            RouteFromWaypointResult,
+            "src/infra/sql/get_routes_from_waypoint.sql",
+            self.id,
+            waypoint_id,
+            waypoint_type
+        )
+        .fetch_all(db.sqlx())
+        .await?)
     }
 }

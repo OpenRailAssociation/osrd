@@ -5,17 +5,13 @@ version.workspace = true
 edition.workspace = true
 
 [features]
-testing = []
+testing = ["schemas/testing"]
 
 [dependencies]
 chrono.workspace = true
 common.workspace = true
 database.workspace = true
 derive_more.workspace = true
-diesel.workspace = true
-diesel-async.workspace = true
-diesel_json.workspace = true
-editoast_derive.workspace = true
 educe.workspace = true
 fga.workspace = true
 futures.workspace = true
@@ -25,7 +21,6 @@ itertools.workspace = true
 mvt.workspace = true
 opentelemetry-semantic-conventions.workspace = true
 phf.workspace = true
-postgis_diesel.workspace = true
 pretty_assertions.workspace = true
 regex.workspace = true
 schemas.workspace = true
@@ -34,6 +29,7 @@ sea-orm = { workspace = true, features = [
   "postgres-array",
   "with-chrono",
   "with-json",
+  "with-uuid",
 ] }
 serde.workspace = true
 serde_json.workspace = true

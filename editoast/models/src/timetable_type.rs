@@ -1,47 +1,45 @@
-use database::tables::sql_types;
-use diesel::deserialize::FromSqlRow;
-use diesel::expression::AsExpression;
+use sea_orm::entity::prelude::*;
 use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
 
-use std::io::Write;
-use std::ops::Deref;
-use std::str::FromStr;
-
-use diesel::deserialize::FromSql;
-use diesel::pg::Pg;
-use diesel::pg::PgValue;
-use diesel::serialize::Output;
-use diesel::serialize::ToSql;
-
 #[derive(
-    Debug, Clone, PartialEq, Default, Serialize, Deserialize, FromSqlRow, AsExpression, ToSchema,
+    Clone,
+    Copy,
+    Debug,
+    Default,
+    Deserialize,
+    DeriveActiveEnum,
+    EnumIter,
+    Eq,
+    PartialEq,
+    Serialize,
+    ToSchema,
 )]
-#[diesel(sql_type = sql_types::TimetableType)]
-pub struct TimetableType(pub schemas::timetable_type::TimetableType);
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+#[sea_orm(rs_type = "Enum", db_type = "Enum", enum_name = "timetable_type")]
+pub enum TimetableType {
+    #[default]
+    #[sea_orm(string_value = "CALENDAR")]
+    Calendar,
+    #[sea_orm(string_value = "HOURLY")]
+    Hourly,
+}
 
-impl FromSql<sql_types::TimetableType, Pg> for TimetableType {
-    fn from_sql(value: PgValue) -> diesel::deserialize::Result<Self> {
-        let s = std::str::from_utf8(value.as_bytes()).map_err(|_| "Invalid UTF-8 data")?;
-        schemas::timetable_type::TimetableType::from_str(s)
-            .map(TimetableType)
-            .map_err(|_| "Unrecognized enum variant for TimetableType".into())
+impl From<schemas::timetable_type::TimetableType> for TimetableType {
+    fn from(value: schemas::timetable_type::TimetableType) -> Self {
+        match value {
+            schemas::timetable_type::TimetableType::Calendar => Self::Calendar,
+            schemas::timetable_type::TimetableType::Hourly => Self::Hourly,
+        }
     }
 }
 
-impl ToSql<sql_types::TimetableType, Pg> for TimetableType {
-    fn to_sql<'b>(&'b self, out: &mut Output<'b, '_, Pg>) -> diesel::serialize::Result {
-        let variant: &str = &self.0.to_string();
-        out.write_all(variant.as_bytes())?;
-        Ok(diesel::serialize::IsNull::No)
-    }
-}
-
-impl Deref for TimetableType {
-    type Target = schemas::timetable_type::TimetableType;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
+impl From<TimetableType> for schemas::timetable_type::TimetableType {
+    fn from(value: TimetableType) -> Self {
+        match value {
+            TimetableType::Calendar => Self::Calendar,
+            TimetableType::Hourly => Self::Hourly,
+        }
     }
 }

@@ -19,13 +19,11 @@ use super::*;
 #[derive(Clone, Copy, Debug, DeriveActiveEnum, EnumIter, Eq, PartialEq)]
 #[sea_orm(rs_type = "i16", db_type = "SmallInteger")]
 enum TestEnum {
-    #[sea_orm(num_value = 0)]
-    Zero,
-    #[sea_orm(num_value = 1)]
-    One,
+    Zero = 0,
+    One = 1,
 }
 
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize, utoipa::ToSchema)]
 struct Payload {
     name: String,
     count: i64,
@@ -97,6 +95,19 @@ fn geometry(wkt: &str) -> Geometry {
 
 #[test]
 fn foreign_json_and_units_keep_their_wire_shapes() {
+    assert_eq!(
+        serde_json::to_value(<ForeignJson<Payload> as utoipa::PartialSchema>::schema()).unwrap(),
+        serde_json::json!({"$ref": "#/components/schemas/Payload"})
+    );
+    assert_eq!(
+        serde_json::to_value(<Meters as utoipa::PartialSchema>::schema()).unwrap(),
+        serde_json::to_value(<f64 as utoipa::PartialSchema>::schema()).unwrap()
+    );
+    assert_eq!(
+        serde_json::to_value(<Milliseconds as utoipa::PartialSchema>::schema()).unwrap(),
+        serde_json::to_value(<i64 as utoipa::PartialSchema>::schema()).unwrap()
+    );
+
     let payload = Payload {
         name: "example".to_owned(),
         count: 3,

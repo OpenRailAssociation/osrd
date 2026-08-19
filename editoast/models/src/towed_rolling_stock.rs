@@ -1,85 +1,84 @@
-use common::units;
-use common::units::quantities::Acceleration;
-use common::units::quantities::Deceleration;
-use common::units::quantities::Length;
-use common::units::quantities::Mass;
-use common::units::quantities::Velocity;
-use editoast_derive::Model;
 use schemas::rolling_stock::RollingResistancePerWeight;
+use sea_orm::ActiveValue::Set;
+use sea_orm::entity::prelude::*;
 use serde::Deserialize;
 use serde::Serialize;
+use utoipa::ToSchema;
 
-use crate::prelude::*;
+use crate::sea_orm_types::ForeignJson;
+use crate::sea_orm_types::Kilograms;
+use crate::sea_orm_types::Meters;
+use crate::sea_orm_types::MetersPerSecond;
+use crate::sea_orm_types::MetersPerSecondSquared;
 
-#[editoast_derive::annotate_units]
-#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Model, utoipa::ToSchema)]
-#[model(table = database::tables::towed_rolling_stock)]
-#[model(gen(ops = crud, batch_ops = r, list))]
-#[model(changeset(public))]
-pub struct TowedRollingStock {
+#[derive(Clone, Debug, DeriveEntityModel, Deserialize, PartialEq, Serialize, ToSchema)]
+#[sea_orm(table_name = "towed_rolling_stock")]
+pub struct Model {
+    #[sea_orm(primary_key)]
     pub id: i64,
-    #[model(identifier)]
+    #[sea_orm(unique)]
     pub name: String,
     pub label: String,
     pub railjson_version: String,
     pub locked: bool,
-
-    #[serde(with = "units::kilogram")]
-    #[model(uom_unit = "units::kilogram")]
-    pub mass: Mass,
-    #[serde(with = "units::meter")]
-    #[model(uom_unit = "units::meter")]
-    pub length: Length,
-    #[serde(default, with = "units::meter_per_second::option")]
-    #[model(uom_unit = "units::meter_per_second::option")]
-    pub max_speed: Option<Velocity>,
-    #[model(uom_unit = "units::meter_per_second_squared")]
-    #[serde(with = "units::meter_per_second_squared")]
-    pub comfort_acceleration: Acceleration,
-    #[model(uom_unit = "units::meter_per_second_squared")]
-    #[serde(with = "units::meter_per_second_squared")]
-    pub startup_acceleration: Acceleration,
+    #[sea_orm(column_type = "Double")]
+    pub mass: Kilograms,
+    #[sea_orm(column_type = "Double")]
+    pub length: Meters,
+    #[sea_orm(column_type = "Double", nullable)]
+    pub max_speed: Option<MetersPerSecond>,
+    #[sea_orm(column_type = "Double")]
+    pub comfort_acceleration: MetersPerSecondSquared,
+    #[sea_orm(column_type = "Double")]
+    pub startup_acceleration: MetersPerSecondSquared,
     pub inertia_coefficient: f64,
-    #[model(json)]
-    pub rolling_resistance: RollingResistancePerWeight,
-    #[model(uom_unit = "units::meter_per_second_squared")]
-    #[serde(with = "units::meter_per_second_squared")]
-    pub const_gamma: Deceleration,
-
+    #[sea_orm(column_type = "JsonBinary")]
+    pub rolling_resistance: ForeignJson<RollingResistancePerWeight>,
+    #[sea_orm(column_type = "Double")]
+    pub const_gamma: MetersPerSecondSquared,
     pub version: i64,
 }
 
-impl From<TowedRollingStock> for schemas::TowedRollingStock {
-    fn from(model: TowedRollingStock) -> Self {
+#[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
+pub enum Relation {}
+
+impl ActiveModelBehavior for ActiveModel {}
+
+impl From<Model> for schemas::TowedRollingStock {
+    fn from(model: Model) -> Self {
         Self {
             name: model.name,
             label: model.label,
             railjson_version: model.railjson_version,
-            mass: model.mass,
-            length: model.length,
-            comfort_acceleration: model.comfort_acceleration,
-            startup_acceleration: model.startup_acceleration,
+            mass: model.mass.into(),
+            length: model.length.into(),
+            comfort_acceleration: model.comfort_acceleration.into(),
+            startup_acceleration: model.startup_acceleration.into(),
             inertia_coefficient: model.inertia_coefficient,
-            rolling_resistance: model.rolling_resistance,
-            const_gamma: model.const_gamma,
-            max_speed: model.max_speed,
+            rolling_resistance: model.rolling_resistance.into_inner(),
+            const_gamma: model.const_gamma.into(),
+            max_speed: model.max_speed.map(Into::into),
         }
     }
 }
 
-impl From<schemas::TowedRollingStock> for TowedRollingStockChangeset {
-    fn from(towed_rolling_stock: schemas::TowedRollingStock) -> Self {
-        TowedRollingStock::changeset()
-            .name(towed_rolling_stock.name)
-            .label(towed_rolling_stock.label)
-            .railjson_version(towed_rolling_stock.railjson_version)
-            .mass(towed_rolling_stock.mass)
-            .length(towed_rolling_stock.length)
-            .comfort_acceleration(towed_rolling_stock.comfort_acceleration)
-            .startup_acceleration(towed_rolling_stock.startup_acceleration)
-            .inertia_coefficient(towed_rolling_stock.inertia_coefficient)
-            .rolling_resistance(towed_rolling_stock.rolling_resistance)
-            .const_gamma(towed_rolling_stock.const_gamma)
-            .max_speed(towed_rolling_stock.max_speed)
+impl From<schemas::TowedRollingStock> for ActiveModel {
+    fn from(model: schemas::TowedRollingStock) -> Self {
+        Self {
+            name: Set(model.name),
+            label: Set(model.label),
+            railjson_version: Set(model.railjson_version),
+            mass: Set(model.mass.into()),
+            length: Set(model.length.into()),
+            comfort_acceleration: Set(model.comfort_acceleration.into()),
+            startup_acceleration: Set(model.startup_acceleration.into()),
+            inertia_coefficient: Set(model.inertia_coefficient),
+            rolling_resistance: Set(ForeignJson::new(model.rolling_resistance)),
+            const_gamma: Set(model.const_gamma.into()),
+            max_speed: Set(model.max_speed.map(Into::into)),
+            locked: Set(false),
+            version: Set(0),
+            ..Default::default()
+        }
     }
 }

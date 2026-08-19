@@ -1,25 +1,17 @@
-use std::ops::DerefMut;
-
-use database::DbConnection;
-use diesel::QueryableByName;
-use diesel::sql_query;
-use diesel::sql_types::BigInt;
-use diesel::sql_types::Text;
-use diesel_async::RunQueryDsl;
+use database::Db;
 use schemas::primitives::ObjectType;
 
-use super::Infra;
+use crate::infra;
 use crate::infra_objects::get_table;
 
-#[derive(QueryableByName, Default)]
+#[derive(Default, sqlx::FromRow)]
 pub struct RailJsonData {
-    #[diesel(sql_type = Text)]
     pub railjson: String,
 }
 
-impl Infra {
+impl infra::Model {
     pub async fn get_railjson(
-        conn: &mut DbConnection,
+        db: Db,
         infra_id: i64,
         object_type: &ObjectType,
     ) -> Result<Vec<RailJsonData>, crate::Error> {
@@ -27,10 +19,9 @@ impl Infra {
         let query = format!(
             "SELECT (x.data)::text AS railjson FROM {table_name} x WHERE x.infra_id = $1 ORDER BY x.obj_id"
         );
-        let railjson_data = sql_query(query)
-            .bind::<BigInt, _>(infra_id)
-            .load::<RailJsonData>(conn.write().await.deref_mut())
-            .await?;
-        Ok(railjson_data)
+        Ok(sqlx::query_as(sqlx::AssertSqlSafe(query))
+            .bind(infra_id)
+            .fetch_all(db.sqlx())
+            .await?)
     }
 }

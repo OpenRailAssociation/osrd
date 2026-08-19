@@ -1,12 +1,4 @@
-use std::ops::DerefMut;
-
-use database::DbConnection;
-use diesel::prelude::*;
-use diesel::sql_query;
-use diesel::sql_types::Integer;
-use diesel::sql_types::Jsonb;
-use diesel::sql_types::Text;
-use diesel_async::RunQueryDsl;
+use database::Db;
 use geos::geojson::Geometry;
 use geos::geojson::Value as GeoJsonValue;
 use mvt::Feature;
@@ -21,29 +13,27 @@ use serde_json::Value as JsonValue;
 use super::Layer;
 use super::View;
 
-#[derive(Clone, QueryableByName, Queryable, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize, sqlx::FromRow)]
 pub struct GeoJsonAndData {
-    #[diesel(sql_type = Text)]
     pub geo_json: String,
-    #[diesel(sql_type = Jsonb)]
     pub data: JsonValue,
 }
 
 impl GeoJsonAndData {
     pub async fn get_records(
-        conn: &mut DbConnection,
+        db: Db,
         layer: &Layer,
         view: &View,
         infra: i64,
         (x, y, z): (u64, u64, u64),
-    ) -> Result<Vec<GeoJsonAndData>, database::DatabaseError> {
+    ) -> Result<Vec<GeoJsonAndData>, crate::Error> {
         let geo_json_query = get_geo_json_sql_query(layer.table_name, view);
-        let records = sql_query(geo_json_query)
-            .bind::<Integer, _>(z as i32)
-            .bind::<Integer, _>(x as i32)
-            .bind::<Integer, _>(y as i32)
-            .bind::<Integer, _>(infra as i32)
-            .get_results::<GeoJsonAndData>(conn.write().await.deref_mut())
+        let records = sqlx::query_as::<_, GeoJsonAndData>(sqlx::AssertSqlSafe(geo_json_query))
+            .bind(z as i32)
+            .bind(x as i32)
+            .bind(y as i32)
+            .bind(infra as i32)
+            .fetch_all(db.sqlx())
             .await?;
 
         Ok(records)

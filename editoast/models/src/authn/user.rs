@@ -1,19 +1,74 @@
-use std::ops::DerefMut;
-
-use database::DbConnection;
-use database::tables::authn_user;
-use database::tables::authn_user_identity;
-use diesel::prelude::*;
-use diesel_async::RunQueryDsl;
-use editoast_derive::Model;
+use database::Db;
+use futures::StreamExt as _;
+use futures::TryStreamExt as _;
 use itertools::Itertools as _;
+use sea_orm::ActiveModelTrait as _;
+use sea_orm::ActiveValue::Set;
+use sea_orm::ColumnTrait as _;
+use sea_orm::DatabaseBackend;
+use sea_orm::EntityTrait as _;
+use sea_orm::FromQueryResult;
+use sea_orm::QueryFilter as _;
+use sea_orm::QuerySelect as _;
+use sea_orm::Statement;
+use sea_orm::StreamTrait as _;
+use sea_orm::TransactionTrait as _;
+use sea_orm::entity::prelude::*;
 
-#[derive(Debug, Clone, PartialEq, Eq, Model)]
-#[model(table = database::tables::authn_user)]
-#[model(gen(ops = rd, batch_ops = r, list))]
-pub struct User {
+#[derive(Clone, Debug, DeriveEntityModel, Eq, PartialEq)]
+#[sea_orm(table_name = "authn_user")]
+pub struct Model {
+    #[sea_orm(primary_key)]
     pub id: i64,
+    #[sea_orm(column_type = "Text")]
     pub name: String,
+}
+
+#[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
+pub enum Relation {
+    #[sea_orm(has_many = "identity::Entity")]
+    Identity,
+}
+
+impl Related<identity::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::Identity.def()
+    }
+}
+
+impl ActiveModelBehavior for ActiveModel {}
+
+mod identity {
+    use sea_orm::entity::prelude::*;
+
+    #[derive(Clone, Debug, DeriveEntityModel, Eq, PartialEq)]
+    #[sea_orm(table_name = "authn_user_identity")]
+    pub struct Model {
+        #[sea_orm(primary_key)]
+        pub id: i64,
+        pub user_id: i64,
+        #[sea_orm(column_type = "Text", unique)]
+        pub identity: String,
+    }
+
+    #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
+    pub enum Relation {
+        #[sea_orm(
+            belongs_to = "super::Entity",
+            from = "Column::UserId",
+            to = "super::Column::Id",
+            on_delete = "Cascade"
+        )]
+        User,
+    }
+
+    impl Related<super::Entity> for Entity {
+        fn to() -> RelationDef {
+            Relation::User.def()
+        }
+    }
+
+    impl ActiveModelBehavior for ActiveModel {}
 }
 
 #[derive(Debug, thiserror::Error, derive_more::From)]
@@ -25,25 +80,49 @@ pub enum AddIdentitiesError {
     Error(crate::Error),
 }
 
-impl User {
-    /// Inserts a new [User], fails if the identity is already associated with another user
-    #[tracing::instrument(skip(conn), ret(level = "debug"), err)]
+impl Model {
+    /// Inserts a new [Model], fails if the identity is already associated with another user
+    #[tracing::instrument(skip(db), ret(level = "debug"), err)]
     pub async fn register(
-        conn: DbConnection,
+        db: Db,
         identities: Vec<String>,
         name: String,
-    ) -> Result<User, AddIdentitiesError> {
-        conn.transaction(async move |conn| {
-            let id = diesel::dsl::insert_into(authn_user::table)
-                .values(authn_user::name.eq(&name))
-                .returning(authn_user::id)
-                .get_result::<i64>(&mut conn.write().await)
+    ) -> Result<Self, AddIdentitiesError> {
+        db.transaction::<_, _, AddIdentitiesError>(move |txn| {
+            Box::pin(async move {
+                let user = ActiveModel {
+                    name: Set(name),
+                    ..Default::default()
+                }
+                .insert(txn)
                 .await?;
-            let user = Self { id, name };
-            user.add_identities(conn, identities).await?;
-            Ok(user)
+                let active_models =
+                    identities
+                        .into_iter()
+                        .map(|identity_value| identity::ActiveModel {
+                            user_id: Set(user.id),
+                            identity: Set(identity_value),
+                            ..Default::default()
+                        });
+                if let Err(error) = identity::Entity::insert_many(active_models).exec(txn).await {
+                    let error = crate::Error::from(error);
+                    return match error.unique_violation() {
+                        Some(violation)
+                            if violation.constraint == "authn_user_identity_identity_key" =>
+                        {
+                            Err(AddIdentitiesError::DuplicateIdentity(violation.value))
+                        }
+                        _ => Err(error.into()),
+                    };
+                }
+                Ok(user)
+            })
         })
         .await
+        .map_err(|error| match error {
+            sea_orm::TransactionError::Connection(error) => crate::Error::from(error).into(),
+            sea_orm::TransactionError::Transaction(error) => error,
+        })
     }
 
     /// Add one or more identity to this user
@@ -53,35 +132,29 @@ impl User {
     #[tracing::instrument(skip_all, err)]
     pub async fn add_identities(
         &self,
-        conn: DbConnection,
+        db: Db,
         identities: impl IntoIterator<Item = String>,
     ) -> Result<(), AddIdentitiesError> {
-        let mut conn = conn.write().await;
-        match diesel::dsl::insert_into(authn_user_identity::table)
-            .values(
-                identities
-                    .into_iter()
-                    .map(|identity| {
-                        (
-                            authn_user_identity::user_id.eq(self.id),
-                            authn_user_identity::identity.eq(identity),
-                        )
-                    })
-                    .collect_vec(),
-            )
-            .execute(&mut conn)
-            .await
-            .map_err(crate::Error::from)
-        {
+        let active_models = identities
+            .into_iter()
+            .map(|identity_value| identity::ActiveModel {
+                user_id: Set(self.id),
+                identity: Set(identity_value),
+                ..Default::default()
+            });
+        match identity::Entity::insert_many(active_models).exec(&db).await {
             Ok(_) => Ok(()),
-            Err(crate::Error::UniqueViolation {
-                constraint,
-                column: _,
-                value,
-            }) if &constraint == "authn_user_identity_identity_key" => {
-                Err(AddIdentitiesError::DuplicateIdentity(value))
+            Err(error) => {
+                let error = crate::Error::from(error);
+                match error.unique_violation() {
+                    Some(violation)
+                        if violation.constraint == "authn_user_identity_identity_key" =>
+                    {
+                        Err(AddIdentitiesError::DuplicateIdentity(violation.value))
+                    }
+                    _ => Err(error.into()),
+                }
             }
-            Err(err) => Err(AddIdentitiesError::from(err)),
         }
     }
 
@@ -90,57 +163,52 @@ impl User {
     /// Remember a model is valid in the scope of its transaction. So better run
     /// this method in a transaction to avoid races.
     #[tracing::instrument(skip_all, err)]
-    pub async fn get_identities(
-        &self,
-        conn: DbConnection,
-    ) -> Result<Vec<String>, database::DatabaseError> {
-        Ok(authn_user_identity::table
-            .select(authn_user_identity::identity)
-            .filter(authn_user_identity::user_id.eq(self.id))
-            .load::<String>(conn.write().await.deref_mut())
-            .await?)
+    pub async fn get_identities(&self, db: Db) -> Result<Vec<String>, crate::Error> {
+        identity::Entity::find()
+            .select_only()
+            .column(identity::Column::Identity)
+            .filter(identity::Column::UserId.eq(self.id))
+            .into_tuple()
+            .all(&db)
+            .await
+            .map_err(crate::Error::from)
     }
 
-    /// Return the [User] with the provided identity, if any
+    /// Return the [Model] with the provided identity, if any
     #[tracing::instrument(skip_all, fields(identity), ret(level = "debug"), err)]
     pub async fn retrieve_by_identity(
         identity: &str,
-        conn: DbConnection,
-    ) -> Result<Option<User>, database::DatabaseError> {
-        Ok(authn_user::table
-            .inner_join(authn_user_identity::table)
-            .select(authn_user::all_columns)
-            .filter(authn_user_identity::identity.eq(identity))
-            .first::<(i64, String)>(conn.write().await.deref_mut())
+        db: Db,
+    ) -> Result<Option<Self>, crate::Error> {
+        Entity::find()
+            .inner_join(identity::Entity)
+            .filter(identity::Column::Identity.eq(identity))
+            .one(&db)
             .await
-            .optional()?
-            .map(|(id, name)| User { id, name }))
+            .map_err(crate::Error::from)
     }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct UserWithIdentities {
-    pub user: User,
+    pub user: Model,
     pub identities: Vec<String>,
 }
 
-#[derive(diesel::QueryableByName)]
+#[derive(FromQueryResult)]
 struct UserWithIdentitiesRow {
-    #[diesel(sql_type = diesel::sql_types::BigInt)]
     id: i64,
-    #[diesel(sql_type = diesel::sql_types::Text)]
     name: String,
     // authn_user_identities has a non-null constraint on identities so array items cannot be null
     // and a trigger ensures a user has at least one identity, so the array itself cannot be null
     // or empty
-    #[diesel(sql_type = diesel::sql_types::Array<diesel::sql_types::Text>)]
     identities: Vec<String>,
 }
 
 impl From<UserWithIdentitiesRow> for UserWithIdentities {
     fn from(row: UserWithIdentitiesRow) -> Self {
         Self {
-            user: User {
+            user: Model {
                 id: row.id,
                 name: row.name,
             },
@@ -151,14 +219,10 @@ impl From<UserWithIdentitiesRow> for UserWithIdentities {
 
 impl UserWithIdentities {
     pub async fn stream(
-        conn: database::DbConnection,
-    ) -> Result<
-        impl futures::stream::TryStream<Ok = Self, Error = database::DatabaseError>,
-        database::DatabaseError,
-    > {
-        use futures::TryStreamExt as _;
-
-        let query = diesel::sql_query(
+        db: Db,
+    ) -> Result<impl futures::TryStream<Ok = Self, Error = crate::Error>, crate::Error> {
+        let statement = Statement::from_string(
+            DatabaseBackend::Postgres,
             r#"
             SELECT u.id, u.name, ARRAY_AGG(i.identity) as identities
             FROM authn_user u
@@ -166,25 +230,24 @@ impl UserWithIdentities {
             GROUP BY u.id
             "#,
         );
-
-        Ok(query
-            .load_stream::<UserWithIdentitiesRow>(&mut conn.write().await)
-            .await?
-            .map_ok(Self::from)
-            .map_err(database::DatabaseError::from))
+        let rows = db.stream_raw(statement).await?;
+        Ok(rows.map(move |row| {
+            let _ = &db;
+            row.map_err(crate::Error::from).and_then(|row| {
+                UserWithIdentitiesRow::from_query_result(&row, "")
+                    .map(Into::into)
+                    .map_err(crate::Error::from)
+            })
+        }))
     }
 
     /// Streams users whose identifiers match the provided list
     pub async fn stream_by_id(
-        conn: database::DbConnection,
+        db: Db,
         ids: &[i64],
-    ) -> Result<
-        impl futures::stream::TryStream<Ok = Self, Error = database::DatabaseError>,
-        database::DatabaseError,
-    > {
-        use futures::TryStreamExt as _;
-
-        let query = diesel::sql_query(
+    ) -> Result<impl futures::TryStream<Ok = Self, Error = crate::Error>, crate::Error> {
+        let statement = Statement::from_sql_and_values(
+            DatabaseBackend::Postgres,
             r#"
             SELECT u.id, u.name, ARRAY_AGG(i.identity) as identities
             FROM authn_user u
@@ -192,27 +255,30 @@ impl UserWithIdentities {
             WHERE u.id = ANY($1)
             GROUP BY u.id
             "#,
-        )
-        .bind::<diesel::sql_types::Array<diesel::sql_types::BigInt>, _>(ids);
-
-        Ok(query
-            .load_stream::<UserWithIdentitiesRow>(&mut conn.write().await)
-            .await?
-            .map_ok(Self::from)
-            .map_err(database::DatabaseError::from))
+            [ids.to_vec().into()],
+        );
+        let rows = db.stream_raw(statement).await?;
+        Ok(rows.map(move |row| {
+            let _ = &db;
+            row.map_err(crate::Error::from).and_then(|row| {
+                UserWithIdentitiesRow::from_query_result(&row, "")
+                    .map(Into::into)
+                    .map_err(crate::Error::from)
+            })
+        }))
     }
 
     /// Streams users whose one of their identities match the provided list
     pub async fn stream_by_identity(
-        conn: database::DbConnection,
+        db: Db,
         identities: &[impl AsRef<str> + Send],
-    ) -> Result<
-        impl futures::stream::TryStream<Ok = Self, Error = database::DatabaseError>,
-        database::DatabaseError,
-    > {
-        use futures::TryStreamExt as _;
-
-        let query = diesel::sql_query(
+    ) -> Result<impl futures::TryStream<Ok = Self, Error = crate::Error>, crate::Error> {
+        let identities = identities
+            .iter()
+            .map(|identity| identity.as_ref().to_owned())
+            .collect_vec();
+        let statement = Statement::from_sql_and_values(
+            DatabaseBackend::Postgres,
             r#"
             SELECT u.id, u.name, ARRAY_AGG(i.identity) as identities
             FROM authn_user u
@@ -224,51 +290,53 @@ impl UserWithIdentities {
             )
             GROUP BY u.id
             "#,
-        )
-        .bind::<diesel::sql_types::Array<diesel::sql_types::Text>, _>(
-            identities.iter().map(AsRef::as_ref).collect_vec(),
+            [identities.into()],
         );
-
-        Ok(query
-            .load_stream::<UserWithIdentitiesRow>(&mut conn.write().await)
-            .await?
-            .map_ok(Self::from)
-            .map_err(database::DatabaseError::from))
+        let rows = db.stream_raw(statement).await?;
+        Ok(rows.map(move |row| {
+            let _ = &db;
+            row.map_err(crate::Error::from).and_then(|row| {
+                UserWithIdentitiesRow::from_query_result(&row, "")
+                    .map(Into::into)
+                    .map_err(crate::Error::from)
+            })
+        }))
     }
 
     /// Retrieves a user along with their identities using one of their identities
     pub async fn retrieve_by_identity(
-        conn: database::DbConnection,
+        db: Db,
         identity: impl AsRef<str> + Send,
-    ) -> Result<Option<Self>, database::DatabaseError> {
-        use futures::stream::TryStreamExt as _;
+    ) -> Result<Option<Self>, crate::Error> {
         let identities = [identity];
-        let mut stream = Self::stream_by_identity(conn, &identities).await?;
-        stream.try_next().await
+        Self::stream_by_identity(db, &identities)
+            .await?
+            .try_next()
+            .await
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use futures::stream::TryStreamExt as _;
     use pretty_assertions::assert_eq;
+
+    use super::*;
+    use crate::authn::user;
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn register_twice_fails() {
-        let pool = database::DbConnectionPoolV2::for_tests();
-        let conn = pool.get_ok();
+        let db = Db::for_tests().await;
 
         let identity = "toto".to_string();
         let name = "Toto".to_string();
 
         // First registration should succeed
-        let user1 = User::register(conn.clone(), vec![identity.clone()], name.clone())
+        let user1 = user::Model::register(db.clone(), vec![identity.clone()], name.clone())
             .await
             .expect("First registration should succeed");
 
         // Verify the user can be retrieved
-        let retrieved = User::retrieve_by_identity(&identity, conn.clone())
+        let retrieved = user::Model::retrieve_by_identity(&identity, db.clone())
             .await
             .expect("Query should succeed")
             .expect("User should exist");
@@ -276,8 +344,8 @@ mod tests {
         assert_eq!(user1, retrieved);
 
         // Second registration with the same identity should fail
-        let result = User::register(
-            conn.clone(),
+        let result = user::Model::register(
+            db.clone(),
             vec![identity.clone()],
             "Toto Imposter".to_string(),
         )
@@ -291,21 +359,20 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn stream() {
-        let pool = database::DbConnectionPoolV2::for_tests();
-        let conn = pool.get_ok();
+        let db = Db::for_tests().await;
 
-        let alice = User::register(
-            conn.clone(),
+        let alice = user::Model::register(
+            db.clone(),
             vec!["alice".to_owned(), "alice.alt".to_owned()],
             "Alice".to_owned(),
         )
         .await
         .unwrap();
-        let bob = User::register(conn.clone(), vec!["bob".to_owned()], "Bob".to_string())
+        let bob = user::Model::register(db.clone(), vec!["bob".to_owned()], "Bob".to_string())
             .await
             .unwrap();
 
-        let users = UserWithIdentities::stream(conn)
+        let users = UserWithIdentities::stream(db)
             .await
             .unwrap()
             .try_collect::<Vec<_>>()
@@ -326,28 +393,25 @@ mod tests {
             ]
         );
     }
+
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn add_duplicate_identity_fails() {
-        let pool = database::DbConnectionPoolV2::for_tests();
-        let conn = pool.get_ok();
+        let db = Db::for_tests().await;
 
-        let user = User::register(conn.clone(), vec!["toto".to_owned()], "Toto".to_owned())
+        let user = user::Model::register(db.clone(), vec!["toto".to_owned()], "Toto".to_owned())
             .await
             .unwrap();
 
-        user.add_identities(
-            conn.clone(),
-            vec!["titi".to_owned(), "grosminet".to_owned()],
-        )
-        .await
-        .expect("adding new identities should succeed");
+        user.add_identities(db.clone(), vec!["titi".to_owned(), "grosminet".to_owned()])
+            .await
+            .expect("adding new identities should succeed");
 
-        user.add_identities(conn.clone(), vec!["toto".to_owned()])
+        user.add_identities(db.clone(), vec!["toto".to_owned()])
             .await
             .expect_err("adding duplicate identity should fail");
 
         assert_eq!(
-            user.get_identities(conn)
+            user.get_identities(db)
                 .await
                 .unwrap()
                 .iter()
@@ -359,21 +423,20 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn stream_by_id() {
-        let pool = database::DbConnectionPoolV2::for_tests();
-        let conn = pool.get_ok();
+        let db = Db::for_tests().await;
 
-        let alice = User::register(
-            conn.clone(),
+        let alice = user::Model::register(
+            db.clone(),
             vec!["alice".to_owned(), "alice.alt".to_owned()],
             "Alice".to_owned(),
         )
         .await
         .expect("Alice should be created");
-        let bob = User::register(conn.clone(), vec!["bob".to_owned()], "Bob".to_string())
+        let bob = user::Model::register(db.clone(), vec!["bob".to_owned()], "Bob".to_string())
             .await
             .expect("Bob should be created");
 
-        let users = UserWithIdentities::stream_by_id(conn.clone(), &[alice.id, bob.id, -1])
+        let users = UserWithIdentities::stream_by_id(db, &[alice.id, bob.id, -1])
             .await
             .expect("stream should be created")
             .try_collect::<Vec<_>>()
@@ -396,21 +459,20 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn stream_by_identity() {
-        let pool = database::DbConnectionPoolV2::for_tests();
-        let conn = pool.get_ok();
+        let db = Db::for_tests().await;
 
-        let alice = User::register(
-            conn.clone(),
+        let alice = user::Model::register(
+            db.clone(),
             vec!["alice".to_owned(), "alice.alt".to_owned()],
             "Alice".to_owned(),
         )
         .await
         .expect("Alice should be created");
-        let bob = User::register(conn.clone(), vec!["bob".to_owned()], "Bob".to_string())
+        let bob = user::Model::register(db.clone(), vec!["bob".to_owned()], "Bob".to_string())
             .await
             .expect("Bob should be created");
 
-        let users = UserWithIdentities::stream_by_identity(conn.clone(), &["alice", "bob"])
+        let users = UserWithIdentities::stream_by_identity(db.clone(), &["alice", "bob"])
             .await
             .expect("stream should be created")
             .try_collect::<Vec<_>>()
@@ -432,7 +494,7 @@ mod tests {
         );
 
         assert_eq!(
-            UserWithIdentities::retrieve_by_identity(conn.clone(), "alice.alt")
+            UserWithIdentities::retrieve_by_identity(db.clone(), "alice.alt")
                 .await
                 .unwrap(),
             Some(UserWithIdentities {
@@ -441,7 +503,7 @@ mod tests {
             })
         );
         assert_eq!(
-            UserWithIdentities::retrieve_by_identity(conn.clone(), "charlie")
+            UserWithIdentities::retrieve_by_identity(db.clone(), "charlie")
                 .await
                 .unwrap(),
             None

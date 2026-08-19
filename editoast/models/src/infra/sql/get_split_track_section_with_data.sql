@@ -1,8 +1,8 @@
 SELECT 
-    obj_id,
-    railjson,
-	ST_AsGeoJSON( ST_Transform(ST_GeometryN( splitted, 1 ), 4326) )::jsonb as left_geo,
-	ST_AsGeoJSON( ST_Transform(ST_GeometryN( splitted, 2 ), 4326) )::jsonb as right_geo
+    obj_id AS "obj_id!",
+    railjson AS "railjson: sqlx::types::Json<schemas::infra::TrackSection>",
+	ST_AsGeoJSON( ST_Transform(ST_GeometryN( splitted, 1 ), 4326) )::jsonb AS "left_geo!: sqlx::types::Json<geos::geojson::Geometry>",
+	ST_AsGeoJSON( ST_Transform(ST_GeometryN( splitted, 2 ), 4326) )::jsonb AS "right_geo!: sqlx::types::Json<geos::geojson::Geometry>"
 FROM (
     SELECT 
         obj_id,

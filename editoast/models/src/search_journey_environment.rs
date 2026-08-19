@@ -1,105 +1,135 @@
-use database::DbConnection;
-use diesel::QueryableByName;
-use diesel::sql_query;
-use diesel::sql_types::Array;
-use diesel::sql_types::BigInt;
-use diesel_async::RunQueryDsl;
-use editoast_derive::Model;
 use std::collections::HashSet;
-use std::ops::DerefMut;
 
-use crate::SearchJourneyEnvironmentTimetable;
-use crate::prelude::*;
+use database::Db;
+use sea_orm::ActiveModelTrait as _;
+use sea_orm::ActiveValue::Set;
+use sea_orm::EntityTrait as _;
+use sea_orm::TransactionTrait as _;
+use sea_orm::entity::prelude::*;
 
-#[derive(Clone, Debug, Model)]
-#[model(table = database::tables::search_journey_environment)]
-#[model(gen(ops = c))]
-#[cfg_attr(any(test, feature = "testing"), derive(PartialEq))]
-pub struct SearchJourneyEnvironment {
+use crate::search_journey_environment_timetable;
+
+#[derive(Clone, Debug, DeriveEntityModel, Eq, PartialEq)]
+#[sea_orm(table_name = "search_journey_environment")]
+pub struct Model {
+    #[sea_orm(primary_key)]
     pub id: i64,
     pub infra_id: i64,
 }
 
-impl SearchJourneyEnvironment {
+#[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
+pub enum Relation {
+    #[sea_orm(
+        belongs_to = "super::infra::Entity",
+        from = "Column::InfraId",
+        to = "super::infra::Column::Id"
+    )]
+    Infra,
+    #[sea_orm(has_many = "super::search_journey_environment_timetable::Entity")]
+    Timetable,
+}
+
+impl Related<super::infra::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::Infra.def()
+    }
+}
+
+impl Related<super::search_journey_environment_timetable::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::Timetable.def()
+    }
+}
+
+impl ActiveModelBehavior for ActiveModel {}
+
+impl Model {
     /// Creates an environment with infra_id and linked to timetable_ids
     pub async fn create_with_timetables(
         infra_id: i64,
         timetable_ids: HashSet<i64>,
-        conn: &mut DbConnection,
+        db: Db,
     ) -> Result<Self, crate::Error> {
-        conn.transaction(async move |mut conn| {
-            let env = Self::changeset()
-                .infra_id(infra_id)
-                .create(&mut conn)
+        db.transaction::<_, _, crate::Error>(move |txn| {
+            Box::pin(async move {
+                let environment = ActiveModel {
+                    infra_id: Set(infra_id),
+                    ..Default::default()
+                }
+                .insert(txn)
                 .await?;
-            for timetable_id in timetable_ids {
-                SearchJourneyEnvironmentTimetable::changeset()
-                    .search_journey_environment_id(env.id)
-                    .timetable_id(timetable_id)
-                    .create(&mut conn)
-                    .await?;
-            }
-            Ok(env)
+                if !timetable_ids.is_empty() {
+                    let links = timetable_ids.into_iter().map(|timetable_id| {
+                        search_journey_environment_timetable::ActiveModel {
+                            search_journey_environment_id: Set(environment.id),
+                            timetable_id: Set(timetable_id),
+                            ..Default::default()
+                        }
+                    });
+                    super::search_journey_environment_timetable::Entity::insert_many(links)
+                        .exec(txn)
+                        .await?;
+                }
+                Ok(environment)
+            })
         })
         .await
+        .map_err(Into::into)
     }
 }
 
 /// A search journey environment with its timetable ids.
-#[derive(Debug, Clone, QueryableByName)]
-#[cfg_attr(any(test, feature = "testing"), derive(PartialEq))]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct SearchJourneyEnvironmentWithTimetables {
-    #[diesel(sql_type = BigInt)]
     pub id: i64,
-    #[diesel(sql_type = BigInt)]
     pub infra_id: i64,
-    #[diesel(sql_type = Array<BigInt>)]
     pub timetable_ids: Vec<i64>,
 }
 
 impl SearchJourneyEnvironmentWithTimetables {
     /// Returns the most recent env with its timetable ids or None if there is no env
-    pub async fn retrieve_latest(conn: &mut DbConnection) -> Result<Option<Self>, crate::Error> {
-        let result = sql_query(
-            "SELECT search_journey_environment.*,
-                array_remove(array_agg(search_journey_environment_timetable.timetable_id), NULL) AS timetable_ids
+    pub async fn retrieve_latest(db: Db) -> Result<Option<Self>, crate::Error> {
+        Ok(sqlx::query_as!(
+            Self,
+            "SELECT search_journey_environment.id,
+                search_journey_environment.infra_id,
+                array_remove(array_agg(search_journey_environment_timetable.timetable_id), NULL) AS \"timetable_ids!\"
             FROM search_journey_environment
             LEFT JOIN search_journey_environment_timetable
                 ON search_journey_environment.id = search_journey_environment_timetable.search_journey_environment_id
             GROUP BY search_journey_environment.id
-            ORDER BY search_journey_environment.id DESC LIMIT 1",
+            ORDER BY search_journey_environment.id DESC LIMIT 1"
         )
-        .get_result::<Self>(conn.write().await.deref_mut())
-        .await;
-        match result {
-            Ok(result) => Ok(Some(result)),
-            Err(diesel::result::Error::NotFound) => Ok(None),
-            Err(err) => Err(err.into()),
-        }
+        .fetch_optional(db.sqlx())
+        .await?)
     }
 }
 
 #[cfg(any(test, feature = "testing"))]
 pub mod fixtures {
+    use database::Db;
+
     use super::*;
-    use crate::Infra;
-    use crate::timetable::Timetable;
+    use crate::infra;
+    use crate::timetable;
 
-    pub async fn search_journey_env_fixtures(conn: &mut DbConnection) -> (Infra, Vec<Timetable>) {
-        let infra = Infra::changeset()
-            .name("empty_infra".to_owned())
-            .last_railjson_version()
-            .create(conn)
-            .await
-            .expect("Failed to create empty infra");
+    pub async fn search_journey_env_fixtures(db: Db) -> (infra::Model, Vec<timetable::Model>) {
+        let infra = infra::ActiveModel {
+            name: Set("empty_infra".to_owned()),
+            ..Default::default()
+        }
+        .last_railjson_version()
+        .insert(&db)
+        .await
+        .expect("Failed to create empty infra");
 
-        let timetable_1 = Timetable::changeset()
-            .create(conn)
+        let timetable_1 = <timetable::ActiveModel as Default>::default()
+            .insert(&db)
             .await
             .expect("Failed to create timetable");
 
-        let timetable_2 = Timetable::changeset()
-            .create(conn)
+        let timetable_2 = <timetable::ActiveModel as Default>::default()
+            .insert(&db)
             .await
             .expect("Failed to create timetable");
 
@@ -111,68 +141,80 @@ pub mod fixtures {
 mod tests {
     use super::fixtures::search_journey_env_fixtures;
     use super::*;
-    use database::DbConnectionPoolV2;
-    use database::tables::search_journey_environment_timetable::dsl;
-    use diesel::ExpressionMethods;
-    use diesel::QueryDsl;
+    use database::Db;
     use pretty_assertions::assert_eq;
+    use sea_orm::QuerySelect as _;
+    use sea_orm::Set;
     use std::collections::HashSet;
+
+    use crate::infra;
+    use crate::search_journey_environment;
+    use crate::timetable;
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn test_create_with_timetables() {
-        let db_pool = DbConnectionPoolV2::for_tests();
-        let conn = &mut db_pool.get_ok();
+        let db = Db::for_tests().await;
 
-        let (infra, timetables) = search_journey_env_fixtures(conn).await;
+        let (infra, timetables) = search_journey_env_fixtures(db.clone()).await;
         let timetable_ids: HashSet<i64> = timetables.iter().map(|t| t.id).collect();
 
-        let env =
-            SearchJourneyEnvironment::create_with_timetables(infra.id, timetable_ids.clone(), conn)
-                .await
-                .expect("Failed to create search journey environment");
+        let env = search_journey_environment::Model::create_with_timetables(
+            infra.id,
+            timetable_ids.clone(),
+            db.clone(),
+        )
+        .await
+        .expect("Failed to create search journey environment");
 
         assert_eq!(env.infra_id, infra.id);
 
-        let linked_timetable_ids: HashSet<i64> = dsl::search_journey_environment_timetable
-            .filter(dsl::search_journey_environment_id.eq(env.id))
-            .select(dsl::timetable_id)
-            .load::<i64>(conn.write().await.deref_mut())
-            .await
-            .expect("Failed to load linked timetable_ids")
-            .into_iter()
-            .collect();
+        let linked_timetable_ids: HashSet<i64> =
+            super::super::search_journey_environment_timetable::Entity::find()
+                .select_only()
+                .column(
+                    super::super::search_journey_environment_timetable::Column::TimetableId,
+                )
+                .filter(
+                    super::super::search_journey_environment_timetable::Column::SearchJourneyEnvironmentId
+                        .eq(env.id),
+                )
+                .into_tuple()
+                .all(&db)
+                .await
+                .expect("Failed to load linked timetable_ids")
+                .into_iter()
+                .collect();
 
         assert_eq!(linked_timetable_ids, timetable_ids);
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn test_create_with_timetables_rejects_non_calendar() {
-        use crate::Infra;
-        use crate::timetable::Timetable;
-        use crate::timetable_type::TimetableType;
+        use super::super::timetable_type::TimetableType;
 
-        let db_pool = DbConnectionPoolV2::for_tests();
-        let conn = &mut db_pool.get_ok();
+        let db = Db::for_tests().await;
 
-        let infra = Infra::changeset()
-            .name("empty_infra".to_owned())
-            .last_railjson_version()
-            .create(conn)
-            .await
-            .expect("Failed to create empty infra");
+        let infra = infra::ActiveModel {
+            name: Set("empty_infra".to_owned()),
+            ..Default::default()
+        }
+        .last_railjson_version()
+        .insert(&db)
+        .await
+        .expect("Failed to create empty infra");
 
-        let hourly_timetable = Timetable::changeset()
-            .timetable_type(TimetableType(
-                schemas::timetable_type::TimetableType::Hourly,
-            ))
-            .create(conn)
-            .await
-            .expect("Failed to create hourly timetable");
+        let hourly_timetable = timetable::ActiveModel {
+            timetable_type: Set(TimetableType::Hourly),
+            ..Default::default()
+        }
+        .insert(&db)
+        .await
+        .expect("Failed to create hourly timetable");
 
-        let result = SearchJourneyEnvironment::create_with_timetables(
+        let result = search_journey_environment::Model::create_with_timetables(
             infra.id,
             HashSet::from([hourly_timetable.id]),
-            conn,
+            db.clone(),
         )
         .await;
         assert!(
@@ -180,7 +222,7 @@ mod tests {
             "Linking a non-CALENDAR timetable must be rejected"
         );
 
-        let latest = SearchJourneyEnvironmentWithTimetables::retrieve_latest(conn)
+        let latest = SearchJourneyEnvironmentWithTimetables::retrieve_latest(db.clone())
             .await
             .expect("retrieve_latest should not fail");
         assert_eq!(latest, None);
@@ -188,24 +230,28 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn test_retrieve_latest() {
-        let db_pool = DbConnectionPoolV2::for_tests();
-        let conn = &mut db_pool.get_ok();
+        let db = Db::for_tests().await;
 
-        let (infra, timetables) = search_journey_env_fixtures(conn).await;
+        let (infra, timetables) = search_journey_env_fixtures(db.clone()).await;
         let timetable_ids: HashSet<i64> = timetables.iter().map(|t| t.id).collect();
 
-        let _first = SearchJourneyEnvironment::changeset()
-            .infra_id(infra.id)
-            .create(conn)
-            .await
-            .expect("Failed to create search journey environment");
+        let _first = search_journey_environment::ActiveModel {
+            infra_id: Set(infra.id),
+            ..Default::default()
+        }
+        .insert(&db)
+        .await
+        .expect("Failed to create search journey environment");
 
-        let latest =
-            SearchJourneyEnvironment::create_with_timetables(infra.id, timetable_ids.clone(), conn)
-                .await
-                .expect("Failed to create search journey environment");
+        let latest = search_journey_environment::Model::create_with_timetables(
+            infra.id,
+            timetable_ids.clone(),
+            db.clone(),
+        )
+        .await
+        .expect("Failed to create search journey environment");
 
-        let result = SearchJourneyEnvironmentWithTimetables::retrieve_latest(conn)
+        let result = SearchJourneyEnvironmentWithTimetables::retrieve_latest(db.clone())
             .await
             .expect("Failed to retrieve latest search journey environment")
             .expect("No search journey environment found");
@@ -219,8 +265,8 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn test_retrieve_latest_empty() {
-        let db_pool = DbConnectionPoolV2::for_tests();
-        let result = SearchJourneyEnvironmentWithTimetables::retrieve_latest(&mut db_pool.get_ok())
+        let db = Db::for_tests().await;
+        let result = SearchJourneyEnvironmentWithTimetables::retrieve_latest(db.clone())
             .await
             .expect("retrieve_latest should not fail on an empty table");
         assert_eq!(result, None);

@@ -1,29 +1,22 @@
-use std::ops::DerefMut;
-
-use database::DbConnection;
-use diesel::QueryableByName;
-use diesel::sql_query;
-use diesel::sql_types::Text;
-use diesel_async::RunQueryDsl;
+use database::Db;
 use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
 
-use super::RollingStock;
+use crate::rolling_stock;
 
-#[derive(QueryableByName, Debug, Clone, Serialize, Deserialize, ToSchema)]
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema, sqlx::FromRow)]
 pub struct PowerRestriction {
-    #[diesel(sql_type = Text)]
     pub power_restriction: String,
 }
 
-impl RollingStock {
-    pub async fn get_power_restrictions(
-        conn: &mut DbConnection,
-    ) -> Result<Vec<PowerRestriction>, database::DatabaseError> {
-        let power_restrictions = sql_query(include_str!("sql/get_power_restrictions.sql"))
-            .load::<PowerRestriction>(conn.write().await.deref_mut())
-            .await?;
-        Ok(power_restrictions)
+impl rolling_stock::Model {
+    pub async fn get_power_restrictions(db: Db) -> Result<Vec<PowerRestriction>, crate::Error> {
+        Ok(sqlx::query_file_as!(
+            PowerRestriction,
+            "src/rolling_stock/sql/get_power_restrictions.sql"
+        )
+        .fetch_all(db.sqlx())
+        .await?)
     }
 }

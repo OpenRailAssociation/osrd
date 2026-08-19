@@ -1,8 +1,11 @@
+use sea_orm::DeriveValueType;
 use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Default, ToSchema)]
+#[derive(
+    Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Default, ToSchema, DeriveValueType,
+)]
 pub struct Tags(Vec<String>);
 
 impl Tags {
@@ -15,14 +18,14 @@ impl Tags {
     }
 }
 
-impl From<Vec<Option<String>>> for Tags {
-    fn from(value: Vec<Option<String>>) -> Self {
-        Self(value.into_iter().flatten().collect())
+impl From<Vec<String>> for Tags {
+    fn from(value: Vec<String>) -> Self {
+        Self(value)
     }
 }
 
-impl From<Tags> for Vec<Option<String>> {
+impl From<Tags> for Vec<String> {
     fn from(value: Tags) -> Self {
-        value.0.into_iter().map(Some).collect()
+        value.0
     }
 }

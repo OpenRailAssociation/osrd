@@ -24,8 +24,10 @@ use sea_orm::sea_query::ValueTypeErr;
 use serde::Deserialize;
 use serde::Serialize;
 use serde::de::DeserializeOwned;
+use sqlx::Type;
+use utoipa::ToSchema;
 
-#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
+#[derive(Clone, Debug, Deserialize, PartialEq, Serialize, ToSchema)]
 #[serde(transparent)]
 pub struct ForeignJson<T>(T);
 
@@ -134,7 +136,9 @@ where
 
 impl<T> sea_orm::sea_query::postgres_array::NotU8 for ForeignJson<T> {}
 
-#[derive(Clone, Copy, Debug, DeriveValueType, Deserialize, PartialEq, Serialize, sqlx::Type)]
+#[derive(
+    Clone, Copy, Debug, DeriveValueType, Deserialize, PartialEq, Serialize, Type, ToSchema,
+)]
 #[serde(transparent)]
 #[sqlx(transparent)]
 pub struct Meters(f64);
@@ -151,7 +155,9 @@ impl From<Meters> for quantities::Length {
     }
 }
 
-#[derive(Clone, Copy, Debug, DeriveValueType, Deserialize, PartialEq, Serialize, sqlx::Type)]
+#[derive(
+    Clone, Copy, Debug, DeriveValueType, Deserialize, PartialEq, Serialize, Type, ToSchema,
+)]
 #[serde(transparent)]
 #[sqlx(transparent)]
 pub struct MetersPerSecond(f64);
@@ -168,7 +174,9 @@ impl From<MetersPerSecond> for quantities::Velocity {
     }
 }
 
-#[derive(Clone, Copy, Debug, DeriveValueType, Deserialize, PartialEq, Serialize, sqlx::Type)]
+#[derive(
+    Clone, Copy, Debug, DeriveValueType, Deserialize, PartialEq, Serialize, Type, ToSchema,
+)]
 #[serde(transparent)]
 #[sqlx(transparent)]
 pub struct Seconds(f64);
@@ -185,7 +193,9 @@ impl From<Seconds> for quantities::Time {
     }
 }
 
-#[derive(Clone, Copy, Debug, DeriveValueType, Deserialize, PartialEq, Serialize, sqlx::Type)]
+#[derive(
+    Clone, Copy, Debug, DeriveValueType, Deserialize, PartialEq, Serialize, Type, ToSchema,
+)]
 #[serde(transparent)]
 #[sqlx(transparent)]
 pub struct MetersPerSecondSquared(f64);
@@ -202,7 +212,9 @@ impl From<MetersPerSecondSquared> for quantities::Acceleration {
     }
 }
 
-#[derive(Clone, Copy, Debug, DeriveValueType, Deserialize, PartialEq, Serialize, sqlx::Type)]
+#[derive(
+    Clone, Copy, Debug, DeriveValueType, Deserialize, PartialEq, Serialize, Type, ToSchema,
+)]
 #[serde(transparent)]
 #[sqlx(transparent)]
 pub struct Kilograms(f64);
@@ -219,7 +231,9 @@ impl From<Kilograms> for quantities::Mass {
     }
 }
 
-#[derive(Clone, Copy, Debug, DeriveValueType, Deserialize, PartialEq, Serialize, sqlx::Type)]
+#[derive(
+    Clone, Copy, Debug, DeriveValueType, Deserialize, PartialEq, Serialize, Type, ToSchema,
+)]
 #[serde(transparent)]
 #[sqlx(transparent)]
 pub struct Milliseconds(i64);

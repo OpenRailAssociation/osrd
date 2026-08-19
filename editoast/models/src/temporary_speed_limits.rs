@@ -1,17 +1,37 @@
-use chrono::DateTime;
-use chrono::Utc;
-use editoast_derive::Model;
-use schemas::infra::DirectionalTrackRange;
-use serde::Serialize;
+pub mod group {
+    use sea_orm::entity::prelude::*;
 
-#[derive(Debug, Clone, Model)]
-#[model(table = database::tables::temporary_speed_limit_group)]
-#[model(gen(ops = crd, batch_ops = c, list))]
-#[model(error(create = TslGroupError, update = TslGroupError))]
-pub struct TemporarySpeedLimitGroup {
-    pub id: i64,
-    pub creation_date: DateTime<Utc>,
-    pub name: String,
+    #[derive(Clone, Debug, DeriveEntityModel, Eq, PartialEq)]
+    #[sea_orm(table_name = "temporary_speed_limit_group")]
+    pub struct Model {
+        #[sea_orm(primary_key)]
+        pub id: i64,
+        pub creation_date: chrono::DateTime<chrono::Utc>,
+        #[sea_orm(unique)]
+        pub name: String,
+    }
+
+    #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
+    pub enum Relation {
+        #[sea_orm(has_many = "super::speed_limit::Entity")]
+        SpeedLimit,
+        #[sea_orm(has_many = "crate::stdcm_search_environment::Entity")]
+        StdcmSearchEnvironment,
+    }
+
+    impl Related<super::speed_limit::Entity> for Entity {
+        fn to() -> RelationDef {
+            Relation::SpeedLimit.def()
+        }
+    }
+
+    impl Related<crate::stdcm_search_environment::Entity> for Entity {
+        fn to() -> RelationDef {
+            Relation::StdcmSearchEnvironment.def()
+        }
+    }
+
+    impl ActiveModelBehavior for ActiveModel {}
 }
 
 #[derive(Debug, thiserror::Error)]
@@ -24,30 +44,57 @@ pub enum TslGroupError {
 }
 
 impl From<crate::Error> for TslGroupError {
-    fn from(e: crate::Error) -> Self {
-        match e {
-            crate::Error::UniqueViolation {
-                constraint,
-                column,
-                value,
-            } if constraint == "temporary_speed_limit_group_name_key" && column == "name" => {
-                Self::NameAlreadyUsed { name: value }
-            }
-            e => Self::Database(e),
+    fn from(error: crate::Error) -> Self {
+        if let Some(violation) = error.unique_violation()
+            && violation.constraint == "temporary_speed_limit_group_name_key"
+            && violation.column == "name"
+        {
+            return Self::NameAlreadyUsed {
+                name: violation.value,
+            };
         }
+        Self::Database(error)
     }
 }
 
-#[derive(Debug, Serialize, Clone, Model)]
-#[model(table = database::tables::temporary_speed_limit)]
-#[model(gen(ops = cr, batch_ops = c, list))]
-pub struct TemporarySpeedLimit {
-    pub id: i64,
-    pub start_date_time: DateTime<Utc>,
-    pub end_date_time: DateTime<Utc>,
-    pub speed_limit: f64,
-    #[model(json)]
-    pub track_ranges: Vec<DirectionalTrackRange>,
-    pub obj_id: String,
-    pub temporary_speed_limit_group_id: i64,
+pub mod speed_limit {
+    use schemas::infra::DirectionalTrackRange;
+    use sea_orm::entity::prelude::*;
+    use serde::Serialize;
+
+    use crate::sea_orm_types::ForeignJson;
+
+    #[derive(Clone, Debug, DeriveEntityModel, PartialEq, Serialize, utoipa::ToSchema)]
+    #[sea_orm(table_name = "temporary_speed_limit")]
+    pub struct Model {
+        #[sea_orm(primary_key)]
+        pub id: i64,
+        pub start_date_time: chrono::DateTime<chrono::Utc>,
+        pub end_date_time: chrono::DateTime<chrono::Utc>,
+        #[sea_orm(column_type = "Double")]
+        pub speed_limit: f64,
+        #[sea_orm(column_type = "JsonBinary")]
+        pub track_ranges: ForeignJson<Vec<DirectionalTrackRange>>,
+        pub obj_id: String,
+        pub temporary_speed_limit_group_id: i64,
+    }
+
+    #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
+    pub enum Relation {
+        #[sea_orm(
+            belongs_to = "super::group::Entity",
+            from = "Column::TemporarySpeedLimitGroupId",
+            to = "super::group::Column::Id",
+            on_delete = "Cascade"
+        )]
+        Group,
+    }
+
+    impl Related<super::group::Entity> for Entity {
+        fn to() -> RelationDef {
+            Relation::Group.def()
+        }
+    }
+
+    impl ActiveModelBehavior for ActiveModel {}
 }

@@ -1,13 +1,27 @@
 use chrono::Utc;
+use database::Db;
 use schemas::infra::RAILJSON_VERSION;
 use schemas::infra::RailJson;
 use schemas::infra::major_version;
+use sea_orm::ColumnTrait;
+use sea_orm::EntityTrait;
+use sea_orm::QueryFilter;
+use sea_orm::TransactionTrait;
+use sea_orm::prelude::Expr;
 
-use crate::infra_objects::*;
-use crate::prelude::*;
-use database::DbConnection;
-
-use super::Infra;
+use crate::infra;
+use crate::infra_objects::buffer_stop;
+use crate::infra_objects::detector;
+use crate::infra_objects::electrification;
+use crate::infra_objects::level_crossing;
+use crate::infra_objects::neutral_section;
+use crate::infra_objects::operational_point;
+use crate::infra_objects::route;
+use crate::infra_objects::signal;
+use crate::infra_objects::speed_section;
+use crate::infra_objects::switch;
+use crate::infra_objects::switch_type;
+use crate::infra_objects::track_section;
 
 #[derive(Debug, derive_more::From, thiserror::Error, PartialEq)]
 pub enum RailJsonError {
@@ -23,7 +37,7 @@ pub enum RailJsonError {
 /// All objects are attached to a given infra.
 ///
 pub async fn persist_railjson(
-    connection: &mut DbConnection,
+    db: Db,
     infra_id: i64,
     railjson: RailJson,
 ) -> Result<(), RailJsonError> {
@@ -50,103 +64,67 @@ pub async fn persist_railjson(
         });
     }
 
-    connection
-        .clone()
-        .transaction(|conn| {
-            Box::pin(async move {
-                let _ = TrackSectionModel::create_batch::<_, Vec<_>>(
-                    &mut conn.clone(),
-                    TrackSectionModel::from_infra_schemas(infra_id, track_sections),
-                )
-                .await?;
-
-                let _ = BufferStopModel::create_batch::<_, Vec<_>>(
-                    &mut conn.clone(),
-                    BufferStopModel::from_infra_schemas(infra_id, buffer_stops),
-                )
-                .await?;
-
-                let _ = ElectrificationModel::create_batch::<_, Vec<_>>(
-                    &mut conn.clone(),
-                    ElectrificationModel::from_infra_schemas(infra_id, electrifications),
-                )
-                .await?;
-
-                let _ = DetectorModel::create_batch::<_, Vec<_>>(
-                    &mut conn.clone(),
-                    DetectorModel::from_infra_schemas(infra_id, detectors),
-                )
-                .await?;
-
-                let _ = OperationalPointModel::create_batch::<_, Vec<_>>(
-                    &mut conn.clone(),
-                    OperationalPointModel::from_infra_schemas(infra_id, operational_points),
-                )
-                .await?;
-
-                let _ = RouteModel::create_batch::<_, Vec<_>>(
-                    &mut conn.clone(),
-                    RouteModel::from_infra_schemas(infra_id, routes),
-                )
-                .await?;
-
-                let _ = SignalModel::create_batch::<_, Vec<_>>(
-                    &mut conn.clone(),
-                    SignalModel::from_infra_schemas(infra_id, signals),
-                )
-                .await?;
-
-                let _ = SwitchModel::create_batch::<_, Vec<_>>(
-                    &mut conn.clone(),
-                    SwitchModel::from_infra_schemas(infra_id, switches),
-                )
-                .await?;
-
-                let _ = SpeedSectionModel::create_batch::<_, Vec<_>>(
-                    &mut conn.clone(),
-                    SpeedSectionModel::from_infra_schemas(infra_id, speed_sections),
-                )
-                .await?;
-
-                let _ = SwitchTypeModel::create_batch::<_, Vec<_>>(
-                    &mut conn.clone(),
-                    SwitchTypeModel::from_infra_schemas(infra_id, extended_switch_types),
-                )
-                .await?;
-
-                let _ = NeutralSectionModel::create_batch::<_, Vec<_>>(
-                    &mut conn.clone(),
-                    NeutralSectionModel::from_infra_schemas(infra_id, neutral_sections),
-                )
-                .await?;
-
-                let _ = LevelCrossingModel::create_batch::<_, Vec<_>>(
-                    &mut conn.clone(),
-                    LevelCrossingModel::from_infra_schemas(infra_id, level_crossings),
-                )
-                .await?;
-
-                Infra::changeset()
-                    .modified(Utc::now())
-                    .update(&mut conn.clone(), infra_id)
+    db.transaction::<_, (), crate::Error>(|txn| {
+        Box::pin(async move {
+            let rows = track_section::Model::from_infra_schemas(infra_id, track_sections);
+            if !rows.is_empty() {
+                track_section::Entity::insert_many(rows).exec(txn).await?;
+            }
+            let rows = buffer_stop::Model::from_infra_schemas(infra_id, buffer_stops);
+            if !rows.is_empty() {
+                buffer_stop::Entity::insert_many(rows).exec(txn).await?;
+            }
+            let rows = electrification::Model::from_infra_schemas(infra_id, electrifications);
+            if !rows.is_empty() {
+                electrification::Entity::insert_many(rows).exec(txn).await?;
+            }
+            let rows = detector::Model::from_infra_schemas(infra_id, detectors);
+            if !rows.is_empty() {
+                detector::Entity::insert_many(rows).exec(txn).await?;
+            }
+            let rows = operational_point::Model::from_infra_schemas(infra_id, operational_points);
+            if !rows.is_empty() {
+                operational_point::Entity::insert_many(rows)
+                    .exec(txn)
                     .await?;
-                Ok(())
-            })
-        })
-        .await
-}
+            }
+            let rows = route::Model::from_infra_schemas(infra_id, routes);
+            if !rows.is_empty() {
+                route::Entity::insert_many(rows).exec(txn).await?;
+            }
+            let rows = signal::Model::from_infra_schemas(infra_id, signals);
+            if !rows.is_empty() {
+                signal::Entity::insert_many(rows).exec(txn).await?;
+            }
+            let rows = switch::Model::from_infra_schemas(infra_id, switches);
+            if !rows.is_empty() {
+                switch::Entity::insert_many(rows).exec(txn).await?;
+            }
+            let rows = speed_section::Model::from_infra_schemas(infra_id, speed_sections);
+            if !rows.is_empty() {
+                speed_section::Entity::insert_many(rows).exec(txn).await?;
+            }
+            let rows = switch_type::Model::from_infra_schemas(infra_id, extended_switch_types);
+            if !rows.is_empty() {
+                switch_type::Entity::insert_many(rows).exec(txn).await?;
+            }
+            let rows = neutral_section::Model::from_infra_schemas(infra_id, neutral_sections);
+            if !rows.is_empty() {
+                neutral_section::Entity::insert_many(rows).exec(txn).await?;
+            }
+            let rows = level_crossing::Model::from_infra_schemas(infra_id, level_crossings);
+            if !rows.is_empty() {
+                level_crossing::Entity::insert_many(rows).exec(txn).await?;
+            }
 
-pub async fn find_all_schemas<T, C>(
-    conn: &mut DbConnection,
-    infra_id: i64,
-) -> Result<C, database::DatabaseError>
-where
-    T: ModelBackedSchema,
-    C: FromIterator<T>,
-{
-    Ok(T::Model::find_all::<Vec<_>>(conn, infra_id)
-        .await?
-        .into_iter()
-        .map(Into::into)
-        .collect())
+            infra::Entity::update_many()
+                .col_expr(infra::Column::Modified, Expr::value(Utc::now()))
+                .filter(infra::Column::Id.eq(infra_id))
+                .exec(txn)
+                .await?;
+            Ok(())
+        })
+    })
+    .await
+    .map_err(RailJsonError::from)
 }

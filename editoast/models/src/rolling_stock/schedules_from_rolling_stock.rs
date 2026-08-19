@@ -1,22 +1,17 @@
-use std::ops::DerefMut;
-
-use diesel::prelude::*;
-use diesel_async::RunQueryDsl;
-use itertools::Itertools;
+use database::Db;
+use sea_orm::ColumnTrait as _;
+use sea_orm::EntityTrait as _;
+use sea_orm::FromQueryResult;
+use sea_orm::JoinType;
+use sea_orm::QueryFilter as _;
+use sea_orm::QuerySelect as _;
+use sea_orm::RelationTrait as _;
 use serde::Serialize;
 use utoipa::ToSchema;
 
-use database::DbConnection;
-use database::tables::project;
-use database::tables::rolling_stock;
-use database::tables::scenario;
-use database::tables::study;
-use database::tables::timetable_train_schedule_set;
-use database::tables::train_schedule;
+use crate::rolling_stock;
 
-use super::RollingStock;
-
-#[derive(Debug, Serialize, ToSchema)]
+#[derive(Debug, FromQueryResult, Serialize, ToSchema)]
 #[cfg_attr(
     any(test, feature = "testing"),
     derive(PartialEq, Eq, PartialOrd, Ord, serde::Deserialize)
@@ -30,53 +25,44 @@ pub struct ScenarioReference {
     pub scenario_name: String,
 }
 
-impl From<SchedulesFromRollingStock> for ScenarioReference {
-    fn from(value: SchedulesFromRollingStock) -> Self {
-        let (project_id, project_name, study_id, study_name, scenario_id, scenario_name) = value;
-        ScenarioReference {
-            project_id,
-            project_name,
-            study_id,
-            study_name,
-            scenario_id,
-            scenario_name,
-        }
-    }
-}
-
-type SchedulesFromRollingStock = (i64, String, i64, String, i64, String);
-
-impl RollingStock {
-    pub async fn get_usage(
-        &self,
-        conn: &mut DbConnection,
-    ) -> Result<Vec<ScenarioReference>, database::DatabaseError> {
-        let schedules: Vec<_> = train_schedule::table
-            .inner_join(
-                rolling_stock::table.on(train_schedule::rolling_stock_name.eq(rolling_stock::name)),
+impl rolling_stock::Model {
+    pub async fn get_usage(&self, db: Db) -> Result<Vec<ScenarioReference>, crate::Error> {
+        super::super::train_schedule::Entity::find()
+            .select_only()
+            .column_as(super::super::project::Column::Id, "project_id")
+            .column_as(super::super::project::Column::Name, "project_name")
+            .column_as(super::super::study::Column::Id, "study_id")
+            .column_as(super::super::study::Column::Name, "study_name")
+            .column_as(super::super::scenario::Column::Id, "scenario_id")
+            .column_as(super::super::scenario::Column::Name, "scenario_name")
+            .join(
+                JoinType::InnerJoin,
+                super::super::train_schedule::Relation::TrainScheduleSet.def(),
             )
-            .inner_join(
-                timetable_train_schedule_set::table.on(train_schedule::train_schedule_set_id
-                    .eq(timetable_train_schedule_set::train_schedule_set_id)),
+            .join_rev(
+                JoinType::InnerJoin,
+                super::super::timetable_train_schedule_set::Relation::TrainScheduleSet.def(),
             )
-            .inner_join(
-                scenario::table
-                    .on(timetable_train_schedule_set::timetable_id.eq(scenario::timetable_id))
-                    .inner_join(study::table.inner_join(project::table)),
+            .join(
+                JoinType::InnerJoin,
+                super::super::timetable_train_schedule_set::Relation::Timetable.def(),
             )
-            .select((
-                project::id,
-                project::name,
-                study::id,
-                study::name,
-                scenario::id,
-                scenario::name,
-            ))
-            .filter(rolling_stock::id.eq(self.id))
-            .filter(train_schedule::id.is_not_null())
-            .load::<SchedulesFromRollingStock>(conn.write().await.deref_mut())
-            .await?;
-        let schedules = schedules.into_iter().map_into().collect();
-        Ok(schedules)
+            .join_rev(
+                JoinType::InnerJoin,
+                super::super::scenario::Relation::Timetable.def(),
+            )
+            .join(
+                JoinType::InnerJoin,
+                super::super::scenario::Relation::Study.def(),
+            )
+            .join(
+                JoinType::InnerJoin,
+                super::super::study::Relation::Project.def(),
+            )
+            .filter(super::super::train_schedule::Column::RollingStockName.eq(&self.name))
+            .into_model::<ScenarioReference>()
+            .all(&db)
+            .await
+            .map_err(crate::Error::from)
     }
 }

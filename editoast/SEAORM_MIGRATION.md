@@ -1,7 +1,7 @@
 # Diesel to SeaORM migration plan
 
 Status: in progress  
-Last updated: 2026-08-19
+Last updated: 2026-08-26
 
 ## Objective
 
@@ -234,7 +234,7 @@ Use transparent primitive-backed local wrappers that derive SeaORM `DeriveValueT
 
 Store a concrete Rust payload type directly in the model when that type is local to `models`. Derive `FromJsonQueryResult` alongside its existing Serde derives and declare the entity field as `#[sea_orm(column_type = "JsonBinary")]`.
 
-For payloads owned by another crate, use exactly one private transparent persistence wrapper named `ForeignJson<T>`. This is the only generic persistence wrapper allowed. It exists solely to satisfy Rust's orphan rules without adding SeaORM dependencies to `schemas`; it must expose only construction, extraction, transparent Serde, and the traits required by SeaORM. Before implementing it, consult the expansion of SeaORM 2.0.2's `FromJsonQueryResult` derive and mirror that small implementation rather than inventing a broader abstraction. Transparent Serde preserves the payload's JSON shape; where an API-exposed entity field needs it, use a field-level OpenAPI `value_type` override for the underlying payload so the wrapper does not alter the published schema.
+For payloads owned by another crate, use exactly one public transparent persistence wrapper named `ForeignJson<T>`, with a private inner value. It is public because it appears in public model fields. This is the only generic persistence wrapper allowed. It exists solely to satisfy Rust's orphan rules without adding SeaORM dependencies to `schemas`; it must expose only construction, extraction, transparent Serde, and the traits required by SeaORM. Before implementing it, consult the expansion of SeaORM 2.0.2's `FromJsonQueryResult` derive and mirror that small implementation rather than inventing a broader abstraction. Transparent Serde preserves the payload's JSON shape; where an API-exposed entity field needs it, use a field-level OpenAPI `value_type` override for the underlying payload so the wrapper does not alter the published schema.
 
 Checked SQLx queries select the same column as `sqlx::types::Json<Payload>` explicitly; they do not use `ForeignJson<T>`.
 
@@ -277,15 +277,15 @@ There are two unrelated `PgInterval` types:
 
 `train_schedule::Entity` remains mandatory.
 
-Keep `chrono::Duration` semantics behind a small local `IntervalValue(chrono::Duration)` model field. The entity declares `#[sea_orm(save_as = "interval")]` on each interval field.
+Keep `chrono::Duration` semantics behind a small local `Interval(chrono::Duration)` model field. The entity declares `#[sea_orm(save_as = "interval")]` on each interval field.
 
 The implementation responsibilities are narrow:
 
 - `TryGetable` uses `QueryResult::try_get_from_sqlx_postgres::<sqlx::postgres::types::PgInterval, _>` so normal `Entity` reads retain PostgreSQL's native binary `INTERVAL` type;
-- `From<IntervalValue> for Value` emits the private string representation used by `ActiveModel` writes and query-builder filters;
+- `From<Interval> for Value` emits the private string representation used by `ActiveModel` writes and query-builder filters;
 - `ValueType::column_type` returns `ColumnType::Interval(None, None)`;
 - `ValueType::try_from` parses only that private representation for SeaORM's type-erased value APIs; it is not the PostgreSQL row-decoding path or a general PostgreSQL interval parser;
-- `Nullable` supplies the typed null for `Option<IntervalValue>`.
+- `Nullable` supplies the typed null for `Option<Interval>`.
 
 Do not select intervals as text or use `interval_send()`/`BYTEA` for reads. Keeping the result typed as `INTERVAL` lets SQLx decode its native `months`, `days`, and `microseconds` inside SeaORM's query-result hook.
 
@@ -297,9 +297,9 @@ Production tests must cover `NULL`, zero, positive and negative components, mont
 
 ### PostGIS geometry
 
-For an ordinary entity field whose application representation is GEOS, use a small local `GeometryValue(geos::Geometry)`. It owns no cached bytes and uses EWKB only as a transient database representation:
+For an ordinary entity field whose application representation is GEOS, use a small local `Geometry(geos::Geometry)`. It owns no cached bytes and uses EWKB only as a transient database representation:
 
-- `From<GeometryValue> for Value` generates EWKB and returns `Value::Bytes`;
+- `From<Geometry> for Value` generates EWKB and returns `Value::Bytes`;
 - `TryGetable` receives EWKB bytes and constructs the GEOS value immediately;
 - `ValueType::try_from` handles SeaORM's type-erased value APIs and is not the normal row-read path;
 - no Serde implementation is added unless that geometry is independently part of a serialized API.
@@ -484,51 +484,6 @@ Implementation record:
 - validation commands: `cargo clippy --all-targets --all-features --workspace`, `cargo nextest run --package database --package models`, JSON and Docker Compose configuration checks, and a repository-wide Diesel migration-command scan;
 - final test result: 76 passed with no failures.
 
-### Revision 4 — introduce SeaORM entities and value-type implementations
-
-Goal: establish production entity shapes and custom value implementations before broad query conversion.
-
-This revision is delayed because its database-backed integration does not make sense before the database crate has migrated to SeaORM and SQLx.
-
-Diesel dependencies may remain where existing consumers still require them, but this revision must not add a dual runtime pool or compatibility query path.
-
-Work:
-
-- Generate entities directly into their final module-qualified locations in the `models` crate, with no generated prelude.
-- Exclude extension objects and geometry-heavy tables used only through specialized SQL; curate ordinary CRUD entities with geometry fields.
-- Keep generated modules module-qualified and do not add aliases.
-- Curate relationships and key metadata.
-- Add focused production implementations for:
-  - one ordinary entity;
-  - `rolling_stock` as the representative transformed entity;
-  - unit wrappers;
-  - local concrete JSONB payloads using `FromJsonQueryResult` and `JsonBinary`;
-  - foreign JSONB payloads using the single private `ForeignJson<T>` wrapper, implemented by consulting and mirroring the small `FromJsonQueryResult` expansion;
-  - `Tags`;
-  - direct `DeriveActiveEnum` mappings for numeric and PostgreSQL enums;
-  - PostgreSQL scalar/optional/array enums;
-  - direct `Vec<T>` array fields;
-  - `train_schedule` intervals through SeaORM model reads, `ActiveModel` writes, `RETURNING`, and filters;
-  - one point and one line through a local GEOS/EWKB model field, including SeaORM insert, select, update, and `RETURNING`.
-- Record generated CLI arguments and manual edits so regeneration is reproducible.
-- Generate and check in the SQLx offline metadata for every checked query introduced by this revision.
-
-Validation:
-
-- `cargo check --package models`;
-- `cargo clippy --package models --all-targets --all-features`;
-- inspect the generated entity shapes and the custom trait implementations;
-- run a locked `models` build with `DATABASE_URL` unset and `SQLX_OFFLINE=true`, using the checked-in SQLx metadata;
-- defer database-backed CRUD and round-trip validation to the models migration revision, where `Db` and the converted model operations are expected to work together. Do not add a temporary SeaORM test pool, compatibility path, or transitional test helper here.
-
-Review focus:
-
-- this is a type-shape and code-generation revision, not a broad business-query rewrite;
-- database integration is deliberately validated in the models migration revision rather than through scaffolding in this revision;
-- reject any wrapper that grows into a replacement ORM layer;
-- keep `ForeignJson<T>` limited to the small persistence implementation modeled on the `FromJsonQueryResult` expansion;
-- keep documented exceptions narrow and local.
-
 ### Revision 3 — replace the database crate with `Db`
 
 Goal: make `database` SeaORM/SQLx-native while preserving test isolation.
@@ -571,73 +526,65 @@ Implementation record:
 - test database migration: `202608061648080000_baseline.sql`; 1 test passed;
 - known descendant breakage: callers still using the removed Diesel connection and table APIs.
 
-### Revision 5 — migrate the `models` crate
+### Models revision 1 — add SeaORM column wrappers
 
-Goal: remove Diesel and the custom model abstraction from `models` completely.
+Goal: introduce only the persistence boundary types needed by the later model migration.
 
 Work:
 
-- Use the curated entities already placed in their final module-qualified locations.
-- Convert straightforward CRUD mechanically to SeaORM.
-- Convert static raw SQL to checked SQLx queries where eligible.
-- Keep dynamic SQL runtime-checked with focused tests.
-- Preserve alternative and composite identifier behavior through explicit filters.
-- Preserve batch missing-ID reporting and chunking.
-- Preserve create/update/delete affected-row semantics.
-- Preserve error conversion and constraint details.
-- Port pagination, list/count, and list-and-count behavior.
-- Port model-specific transactions to one query stack, using SeaORM transactions by default.
-- Keep every transaction on a single query stack; use SeaORM statements for raw SQL inside SeaORM transactions and SQLx transactions only for all-SQLx transaction families.
-- Migrate `infra_objects` without retaining the custom derive. A declarative macro may remain only if it emits ordinary SeaORM entities transparently and does not recreate generic CRUD behavior; otherwise expand it into explicit modules.
-- Keep `train_schedule::Entity` and the local interval value type for reads and writes.
-- Keep eligible GEOS-valued CRUD fields on ordinary entities through the local EWKB boundary; reserve raw SQL for specialized spatial work.
-- Remove:
-  - `models/src/prelude.rs` and its submodules;
-  - every `use crate::prelude::*`;
-  - `#[derive(Model)]` and every `#[model(...)]` attribute;
-  - the `Model` derive implementation from `editoast_derive`;
-  - now-unused derive dependencies;
-  - Diesel, diesel-async, Diesel schema, and Diesel JSON dependencies from `models` when no longer used.
-- Generate and check in SQLx offline metadata for every checked query added or changed in this revision.
+- add the `models` dependencies required by the wrappers;
+- add the public `sea_orm_types` module with public `ForeignJson<T>` and its private inner value, `Interval`, `Geometry`, `Meters`, `MetersPerSecond`, `Seconds`, `MetersPerSecondSquared`, `Kilograms`, and `Milliseconds`;
+- keep the wrappers narrow: transparent Serde only for `ForeignJson<T>`, checked 30-day-month interval conversion, transient validated SRID-3857 EWKB, and direct UOM conversions;
+- add no entities, query migrations, tests, compatibility code, or derive removal.
 
-Suggested internal review order within the revision:
+Implementation record:
 
-1. plain single-key entities;
-2. unique/composite identifier entities;
-3. JSON/unit/enum/array entities;
-4. rolling stock and timetable families;
-5. infrastructure object macro/entities;
-6. complex raw SQL;
-7. pagination and batch helpers;
-8. error mapping;
-9. derive/prelude removal.
+- status: complete;
+- Jujutsu change ID: `ryuypnqs`;
+- validation: intentionally not run because this revision is an incomplete persistence boundary by design.
 
-Validation:
+### Models revision 2 — migrate models to SeaORM
 
-- `cargo check --package models`;
-- `cargo clippy --package models --all-targets --all-features`;
-- all `models` tests;
-- run the database-backed custom-value validation deferred from the entity/type revision:
-  - local JSON payloads and foreign payloads through `ForeignJson<T>`, with unchanged JSON and OpenAPI shapes;
-  - unit wrappers;
-  - numeric and PostgreSQL scalar, optional-scalar, and array enums;
-  - every production PostgreSQL array element type, including empty arrays, insert, select, update, and `RETURNING`;
-  - positive, negative, mixed, and out-of-range interval behavior through select, insert, update, `RETURNING`, and filters;
-  - geometry kind, coordinates, and SRID 3857 through direct SeaORM model CRUD, with GeoJSON as an independent control;
-- targeted CRUD parity tests per operation family;
-- serialization/OpenAPI snapshots or equivalent assertions;
-- batch-limit tests;
-- transaction rollback tests;
-- error-response parity tests;
-- query-result/order/pagination parity tests;
-- round trips for every eligible ordinary-model geometry subtype;
-- locked offline `models` build with `DATABASE_URL` unset, `SQLX_OFFLINE=true`, and the metadata owned by this revision.
+Goal: remove Diesel and the custom model abstraction from `models` while keeping each entity beside its existing queries.
 
-Expected stack state:
+Work:
 
-- `models` and `database` build and lint;
-- `editoast` may be broken because call sites still use the removed custom API;
-- there is no custom prelude or alias layer.
+- define curated `Model`, `Entity`, `ActiveModel`, `Column`, and relationship types in the existing model/query modules; do not add a generated entity tree or compatibility aliases;
+- create the entities in the same revision as their query migration;
+- convert ordinary CRUD, filters, joins, ordering, pagination, and transactions mechanically to SeaORM, retaining checked SQLx or bound runtime SQL only for aggregate, dynamic, spatial, or otherwise unreasonable ORM queries;
+- preserve existing public function prototypes except that `Db` parameters are passed by ownership and borrowed only at the immediate execution call;
+- preserve comments, tests, identifiers, affected-row and not-found behavior, batch chunking and missing-ID reporting, ordering, pagination/count scope, transaction boundaries, and PostgreSQL constraint details;
+- keep the infrastructure-object macro only as a narrow generator of nested SeaORM entity modules and their schema conversions;
+- expose the revision 1 wrappers in public fields, using OpenAPI field overrides for wrapped foreign JSON payloads;
+- make the crate error a struct wrapping `DbErr`, with associated recognition helpers for unique, check, and foreign-key violations;
+- remove the custom model prelude, old root model re-exports, all custom model derive uses, and the `models` Diesel dependencies;
+- generate and check in package-scoped SQLx offline metadata for every retained checked query.
+
+Implementation record:
+
+- status: complete;
+- Jujutsu change ID: `zwrpwtsn`;
+- `UserWithIdentities` queries use SeaORM's selector streaming interface and each returned stream owns its `Db`;
+- package-scoped SQLx metadata is checked in under `models/.sqlx`, and `env -u DATABASE_URL SQLX_OFFLINE=true cargo check --locked --package models --all-features` passes;
+- successful validation commands: `just format`, `cargo check --locked --package models --all-targets --all-features`, `cargo clippy --locked --package models --all-targets --all-features -- -D warnings`, `cargo nextest run --locked --package models`, and `cargo check --locked --package database --all-features`;
+- final test result: 76 passed with no failures;
+- custom-value coverage includes JSON and UOM shapes, scalar/optional/array enums, interval select/insert/update/`RETURNING`/filters including overflow, and point/line EWKB and SRID round trips;
+- expected descendant state: `models` and `database` build; `cargo check --locked --package editoast` fails as expected at unmigrated callers of the removed Diesel pool, custom model prelude, and old root model exports, until the direct call-site migration revisions.
+
+### Models revision 3 — remove the `Model` derive
+
+Goal: delete the now-unused procedural macro separately so its mechanical removal is independently reviewable.
+
+Work:
+
+- remove the `Model` proc-macro entry point, documentation, implementation, macro-specific tests, and snapshots from `editoast_derive`;
+- retain every other derive and every dependency still used by them.
+
+Implementation record:
+
+- status: complete;
+- Jujutsu change ID: `kzlvnkrl`;
+- validation: intentionally not run for this dedicated deletion revision.
 
 ### Direct `src` submodule revisions
 
@@ -861,9 +808,10 @@ Suggested tracking table:
 | --- | --- | --- | --- | --- |
 | Diesel schema baseline | complete | `nwnxqktv` | database, models, relevant tests | Historical migrations removed; Diesel runner remains active until cutover |
 | SQLx migration workflow | complete | `nmsxlqmn` | workspace clippy, database/models tests, migration tooling and fresh/cutover DB exercises | SQLx is the only database CLI after cutover |
-| entities and value implementations | delayed | — | models | Revision 4; delayed until after the database crate migration |
 | database `Db` | complete | `ymlwvkww` | database | Revision 3; Diesel descendants expected broken |
-| models | not started | — | models, database | root Editoast expected broken |
+| SeaORM column wrappers | complete | `ryuypnqs` | intentionally not validated | wrappers only; no entities or tests |
+| models | complete | `zwrpwtsn` | models, database | 76 model tests passed; package-scoped SQLx metadata generated; root Editoast expected broken |
+| remove `Model` derive | complete | `kzlvnkrl` | intentionally not validated | dedicated mechanical deletion |
 | `src/error.rs` | not started | — | review checkpoint only | root validation deferred |
 | `src/fixtures.rs` | not started | — | review checkpoint only | root validation deferred |
 | `src/generated_data` | not started | — | review checkpoint only | tests deferred to final revision |
@@ -929,7 +877,7 @@ Mitigation: separate runbooks, preflight schema/version checks, backup, and `sql
 
 Risk: automatic generation emits extension objects as entities or treats usable geometry-valued CRUD fields as unusable.
 
-Mitigation: exclude extension objects and tables used only by specialized spatial SQL, but curate eligible CRUD fields with the local `GeometryValue`, transient EWKB, `select_as = "bytea"`, and `save_as = "geometry"`. Validate SRID and GEOS invariants before the infallible value-conversion boundary.
+Mitigation: exclude extension objects and tables used only by specialized spatial SQL, but curate eligible CRUD fields with the local `Geometry`, transient EWKB, `select_as = "bytea"`, and `save_as = "geometry"`. Validate SRID and GEOS invariants before the infallible value-conversion boundary.
 
 ### Interval binding
 
@@ -1003,7 +951,7 @@ The migration is complete when:
 - `database::Db` is asynchronous and wraps SeaORM over the same SQLx pool used for migrations/checked queries;
 - test databases remain isolated and reliable without `block_on`;
 - application entities are module-qualified SeaORM entities with no aliases or model prelude;
-- local concrete JSONB payloads use `FromJsonQueryResult`/`JsonBinary` directly, while foreign payloads use only the private transparent `ForeignJson<T>` wrapper modeled on that derive's expansion;
+- local concrete JSONB payloads use `FromJsonQueryResult`/`JsonBinary` directly, while foreign payloads use only the public transparent `ForeignJson<T>` wrapper with a private inner value, modeled on that derive's expansion;
 - PostgreSQL arrays use direct `Vec<T>` fields and round-trip every production element type;
 - `train_schedule::Entity` supports interval select, insert, update, `RETURNING`, and filters through native `PgInterval` reads and the field-level interval cast, including out-of-range behavior;
 - eligible geometry-valued CRUD entities use the local GEOS/EWKB field boundary with kind, coordinate, and SRID preservation for every production subtype;

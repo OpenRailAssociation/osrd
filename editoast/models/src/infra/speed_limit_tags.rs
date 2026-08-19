@@ -1,32 +1,22 @@
-use std::ops::DerefMut;
-
-use database::DbConnection;
-use diesel::QueryableByName;
-use diesel::sql_query;
-use diesel::sql_types::BigInt;
-use diesel::sql_types::Text;
-use diesel_async::RunQueryDsl;
+use database::Db;
 use serde::Deserialize;
 use serde::Serialize;
 
-use super::Infra;
+use crate::infra;
 
-#[derive(QueryableByName, Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, sqlx::FromRow)]
 pub struct SpeedLimitTags {
-    #[diesel(sql_type = Text)]
     pub tag: String,
 }
 
-impl Infra {
-    pub async fn get_speed_limit_tags(
-        &self,
-        conn: &mut DbConnection,
-    ) -> Result<Vec<SpeedLimitTags>, database::DatabaseError> {
-        let query = include_str!("sql/get_speed_limit_tags.sql");
-        let speed_limits_tags = sql_query(query)
-            .bind::<BigInt, _>(self.id)
-            .load::<SpeedLimitTags>(conn.write().await.deref_mut())
-            .await?;
-        Ok(speed_limits_tags)
+impl infra::Model {
+    pub async fn get_speed_limit_tags(&self, db: Db) -> Result<Vec<SpeedLimitTags>, crate::Error> {
+        Ok(sqlx::query_file_as!(
+            SpeedLimitTags,
+            "src/infra/sql/get_speed_limit_tags.sql",
+            self.id
+        )
+        .fetch_all(db.sqlx())
+        .await?)
     }
 }

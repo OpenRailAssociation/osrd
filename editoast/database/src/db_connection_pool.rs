@@ -239,6 +239,23 @@ impl sea_orm::ConnectionTrait for Db {
     }
 }
 
+impl sea_orm::StreamTrait for Db {
+    type Stream<'a> = sea_orm::QueryStream;
+
+    fn get_database_backend(&self) -> sea_orm::DatabaseBackend {
+        sea_orm::StreamTrait::get_database_backend(&self.0)
+    }
+
+    fn stream_raw<'a>(
+        &'a self,
+        stmt: sea_orm::Statement,
+    ) -> std::pin::Pin<
+        Box<dyn std::future::Future<Output = Result<Self::Stream<'a>, sea_orm::DbErr>> + Send + 'a>,
+    > {
+        sea_orm::StreamTrait::stream_raw(&self.0, stmt)
+    }
+}
+
 #[async_trait]
 impl sea_orm::TransactionTrait for Db {
     type Transaction = sea_orm::DatabaseTransaction;

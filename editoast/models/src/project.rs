@@ -1,61 +1,95 @@
-use chrono::DateTime;
 use chrono::Utc;
-use database::DbConnection;
-use editoast_derive::Model;
+use database::Db;
+use sea_orm::ActiveModelTrait as _;
+use sea_orm::ActiveValue::Set;
+use sea_orm::ConnectionTrait;
+use sea_orm::DatabaseTransaction;
+use sea_orm::EntityTrait as _;
+use sea_orm::TransactionTrait;
+use sea_orm::entity::prelude::*;
 use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
 
-use crate::document::Document;
-use crate::prelude::*;
 use crate::tags::Tags;
 
-#[derive(Clone, Debug, Serialize, Deserialize, Model, ToSchema, PartialEq)]
-#[model(table = database::tables::project)]
-#[model(gen(ops = crud, batch_ops = r, list))]
-pub struct Project {
+#[derive(Clone, Debug, DeriveEntityModel, Deserialize, Eq, PartialEq, Serialize, ToSchema)]
+#[sea_orm(table_name = "project")]
+pub struct Model {
+    #[sea_orm(primary_key)]
     pub id: i64,
     pub name: String,
     pub objectives: Option<String>,
     pub description: Option<String>,
     pub funders: Option<String>,
     pub budget: Option<i32>,
-    pub creation_date: DateTime<Utc>,
-    pub last_modification: DateTime<Utc>,
-    #[model(remote = "Vec<Option<String>>")]
+    pub creation_date: chrono::DateTime<chrono::Utc>,
+    pub last_modification: chrono::DateTime<chrono::Utc>,
     pub tags: Tags,
-    #[model(column = database::tables::project::image_id)]
+    #[sea_orm(column_name = "image_id")]
     pub image: Option<i64>,
 }
 
-#[tracing::instrument(skip(conn), ret, err)]
-async fn try_delete_document(conn: &DbConnection, doc_id: i64) -> Result<(), crate::Error> {
-    let res = conn
-        .transaction(async move |mut conn| {
-            match Document::delete_static(&mut conn, doc_id).await {
-                Ok(false) => unreachable!(
-                    "cannot happen as the Document has to be there because of the FK on `image`"
-                ),
-                Ok(true) => Ok(()),
-                // We want the delete to occur in a transaction in order to rollback it if the deletion fails.
-                // The deletion can fail if the document is still used by another project (FK violation). This
-                // is acceptable, it's what this function does.
-                // However, if a FK violation occurs, the transaction must rolloback otherwise each subsequent
-                // query will fail. If the violation occurs, `e` is an `Err`, therefore we return it in order
-                // to let `transaction` rollback. We then match on the error below in order to accept the
-                // FK violation, which is not an error in our workflow.
-                Err(e) => Err(e),
-            }
+#[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
+pub enum Relation {
+    #[sea_orm(
+        belongs_to = "super::document::Entity",
+        from = "Column::Image",
+        to = "super::document::Column::Id",
+        on_update = "Cascade",
+        on_delete = "Restrict"
+    )]
+    Document,
+    #[sea_orm(has_many = "super::study::Entity")]
+    Study,
+}
+
+impl Related<super::document::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::Document.def()
+    }
+}
+
+impl Related<super::study::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::Study.def()
+    }
+}
+
+impl ActiveModelBehavior for ActiveModel {}
+
+#[tracing::instrument(skip(txn), ret, err)]
+async fn try_delete_document(
+    txn: &(impl ConnectionTrait + TransactionTrait),
+    doc_id: i64,
+) -> Result<(), crate::Error> {
+    let result = txn
+        .transaction::<_, _, crate::Error>(|txn| {
+            Box::pin(async move {
+                let result = super::document::Entity::delete_by_id(doc_id)
+                    .exec(txn)
+                    .await?;
+                if result.rows_affected == 0 {
+                    unreachable!(
+                        "cannot happen as the Document has to be there because of the FK on `image`"
+                    );
+                }
+                Ok(())
+            })
         })
-        .await;
-    match res {
+        .await
+        .map_err(crate::Error::from);
+    match result {
         Ok(_) => Ok(()),
-        Err(crate::Error::ForeignKeyViolation { constraint })
-            if constraint == "project_image_id_fkey" =>
-        {
-            Ok(())
-        }
-        Err(e) => Err(e),
+        // We want the delete to occur in a transaction in order to rollback it if the deletion fails.
+        // The deletion can fail if the document is still used by another project (FK violation). This
+        // is acceptable, it's what this function does.
+        // However, if a FK violation occurs, the transaction must rolloback otherwise each subsequent
+        // query will fail. If the violation occurs, `e` is an `Err`, therefore we return it in order
+        // to let `transaction` rollback. We then match on the error below in order to accept the
+        // FK violation, which is not an error in our workflow.
+        Err(error) if error.is_foreign_key_violation("project_image_id_fkey") => Ok(()),
+        Err(error) => Err(error),
     }
 }
 
@@ -68,111 +102,131 @@ pub enum Error {
     Database(crate::Error),
 }
 
-impl Project {
+impl Model {
     /// Updates a project's image and deletes the old one if it is not used by another project
-    #[tracing::instrument(skip(conn), ret, err)]
+    #[tracing::instrument(skip(db), ret, err)]
     pub async fn update_and_prune_document(
         &mut self,
-        conn: &mut DbConnection,
+        db: Db,
         new_doc_id: Option<i64>,
     ) -> Result<(), crate::Error> {
-        conn.transaction(async move |mut conn| {
-            let old_doc_id = self.image;
-            self.image = new_doc_id;
-            self.save(&mut conn).await?;
-            if new_doc_id != old_doc_id
-                && let Some(old_doc_id) = old_doc_id
-            {
-                try_delete_document(&conn, old_doc_id).await?;
-            }
-            Ok::<_, crate::Error>(())
+        let project_id = self.id;
+        let old_doc_id = self.image;
+        self.image = new_doc_id;
+        db.transaction::<_, _, crate::Error>(move |txn| {
+            Box::pin(async move {
+                ActiveModel {
+                    id: Set(project_id),
+                    image: Set(new_doc_id),
+                    ..Default::default()
+                }
+                .update(txn)
+                .await?;
+                if new_doc_id != old_doc_id
+                    && let Some(old_doc_id) = old_doc_id
+                {
+                    try_delete_document(txn, old_doc_id).await?;
+                }
+                Ok(())
+            })
         })
-        .await?;
-        Ok(())
+        .await
+        .map_err(Into::into)
     }
 
     /// Deletes a project and prunes the image if it is not used by another project
-    #[tracing::instrument(skip(conn), ret, err)]
-    pub async fn delete_and_prune_document(
-        self,
-        conn: &mut DbConnection,
-    ) -> Result<(), crate::Error> {
-        conn.transaction(async move |mut conn| {
-            if !self.delete(&mut conn).await? {
-                tracing::warn!(
-                    project_id = self.id,
-                    "project to delete not found, probable race condition"
-                );
-            }
-            if let Some(doc_id) = self.image {
-                try_delete_document(&conn, doc_id).await?;
-            }
-            Ok(())
+    #[tracing::instrument(skip(db), ret, err)]
+    pub async fn delete_and_prune_document(self, db: Db) -> Result<(), crate::Error> {
+        db.transaction::<_, _, crate::Error>(move |txn| {
+            Box::pin(async move {
+                let result = Entity::delete_by_id(self.id).exec(txn).await?;
+                if result.rows_affected == 0 {
+                    tracing::warn!(
+                        project_id = self.id,
+                        "project to delete not found, probable race condition"
+                    );
+                }
+                if let Some(doc_id) = self.image {
+                    try_delete_document(txn, doc_id).await?;
+                }
+                Ok(())
+            })
         })
         .await
+        .map_err(Into::into)
     }
 
-    /// Opens a transaction querying a [Project] and calls the provided function with it
+    /// Opens a transaction querying a [Model] and calls the provided function with it
     ///
-    /// The [Project::last_modification] field is updated to the current time after the function is called.
-    #[tracing::instrument(skip(conn, f), err)]
-    pub async fn transactional_content_update<T, E, F, Fut>(
-        conn: DbConnection,
+    /// The [Model::last_modification] field is updated to the current time after the function is called.
+    #[tracing::instrument(skip(db, f), err)]
+    pub async fn transactional_content_update<T, E, F>(
+        db: Db,
         project_id: i64,
         f: F,
     ) -> Result<Result<T, E>, Error>
     where
-        F: FnOnce(DbConnection, Self) -> Fut,
-        Fut: Future<Output = Result<T, E>>,
+        F: for<'a> AsyncFnOnce(&'a DatabaseTransaction, Self) -> Result<T, E> + Send,
+        T: Send,
+        E: Send,
     {
-        conn.transaction(async move |mut conn| {
-            let project =
-                Self::retrieve_or_fail(conn.clone(), project_id, || Error::NotFound { project_id })
-                    .await?;
-
-            let id = project.id;
-            let res = f(conn.clone(), project).await;
-            let res = match res {
-                Ok(t) => t,
-                Err(e) => return Ok(Err(e)),
-            };
-
-            Project::changeset()
-                .last_modification(Utc::now())
-                .update(&mut conn, id)
-                .await?;
-
-            Ok(Ok(res))
-        })
-        .await
+        let txn = db.begin().await?;
+        let project = Entity::find_by_id(project_id)
+            .one(&txn)
+            .await?
+            .ok_or(Error::NotFound { project_id })?;
+        let result = match f(&txn, project).await {
+            Ok(result) => result,
+            Err(error) => {
+                txn.commit().await?;
+                return Ok(Err(error));
+            }
+        };
+        ActiveModel {
+            id: Set(project_id),
+            last_modification: Set(Utc::now()),
+            ..Default::default()
+        }
+        .update(&txn)
+        .await?;
+        txn.commit().await?;
+        Ok(Ok(result))
     }
 }
 
 #[cfg(any(test, feature = "testing"))]
-impl Project {
-    pub fn fake(name: impl Into<String>) -> Changeset<Self> {
-        Self::changeset()
-            .name(name.into())
-            .budget(Some(0))
-            .creation_date(Utc::now())
-            .last_modification(Utc::now())
-            .tags(Tags::default())
+impl ActiveModel {
+    pub fn fake(name: impl Into<String>) -> Self {
+        Self {
+            name: Set(name.into()),
+            budget: Set(Some(0)),
+            creation_date: Set(Utc::now()),
+            last_modification: Set(Utc::now()),
+            tags: Set(Tags::default()),
+            ..Default::default()
+        }
     }
 }
 
 #[cfg(test)]
 pub mod tests {
-    use super::*;
-
-    use database::DbConnectionPoolV2;
+    use database::Db;
     use pretty_assertions::assert_eq;
+    use sea_orm::ActiveModelTrait as _;
+    use sea_orm::EntityTrait as _;
+    use sea_orm::IntoActiveModel as _;
+    use sea_orm::QueryOrder as _;
+    use sea_orm::Set;
+
+    use crate::document;
+    use crate::project;
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn project_creation() {
-        let db_pool = DbConnectionPoolV2::for_tests();
+        let db = Db::for_tests().await;
         let project_name = "test_project_name";
-        let created_project = Project::fake(project_name)
-            .create(&mut db_pool.get_ok())
+        let created_project = project::ActiveModel::fake(project_name)
+            .insert(&db)
             .await
             .expect("Failed to create project");
         assert_eq!(created_project.name, project_name);
@@ -180,14 +234,15 @@ pub mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn project_retrieve() {
-        let db_pool = DbConnectionPoolV2::for_tests();
-        let created_project = Project::fake("test_project_name")
-            .create(&mut db_pool.get_ok())
+        let db = Db::for_tests().await;
+        let created_project = project::ActiveModel::fake("test_project_name")
+            .insert(&db)
             .await
             .expect("Failed to create project");
 
         // Get a project
-        let project = Project::retrieve(db_pool.get_ok(), created_project.id)
+        let project = project::Entity::find_by_id(created_project.id)
+            .one(&db)
             .await
             .expect("Failed to retrieve project")
             .expect("Project not found");
@@ -197,9 +252,9 @@ pub mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn project_update() {
-        let db_pool = DbConnectionPoolV2::for_tests();
-        let mut created_project = Project::fake("test_project_name")
-            .create(&mut db_pool.get_ok())
+        let db = Db::for_tests().await;
+        let mut created_project = project::ActiveModel::fake("test_project_name")
+            .insert(&db)
             .await
             .expect("Failed to create project");
 
@@ -207,14 +262,16 @@ pub mod tests {
         let project_budget = Some(1000);
 
         // Patch a project
-        created_project.name = project_name.to_owned();
-        created_project.budget = project_budget;
-        created_project
-            .save(&mut db_pool.get_ok())
+        let mut active_project = created_project.into_active_model();
+        active_project.name = Set(project_name.to_owned());
+        active_project.budget = Set(project_budget);
+        created_project = active_project
+            .update(&db)
             .await
             .expect("Failed to update project");
 
-        let project = Project::retrieve(db_pool.get_ok(), created_project.id)
+        let project = project::Entity::find_by_id(created_project.id)
+            .one(&db)
             .await
             .expect("Failed to retrieve project")
             .expect("Project not found");
@@ -225,22 +282,21 @@ pub mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn sort_project() {
-        let db_pool = DbConnectionPoolV2::for_tests();
-        Project::fake("test_project_name_1")
-            .create(&mut db_pool.get_ok())
+        let db = Db::for_tests().await;
+        project::ActiveModel::fake("test_project_name_1")
+            .insert(&db)
             .await
             .expect("Failed to create project");
-        Project::fake("test_project_name_2")
-            .create(&mut db_pool.get_ok())
+        project::ActiveModel::fake("test_project_name_2")
+            .insert(&db)
             .await
             .expect("Failed to create project");
 
-        let projects = Project::list(
-            &mut db_pool.get_ok(),
-            SelectionSettings::new().order_by(|| Project::NAME.desc()),
-        )
-        .await
-        .expect("Failed to retrieve projects");
+        let projects = project::Entity::find()
+            .order_by_desc(project::Column::Name)
+            .all(&db)
+            .await
+            .expect("Failed to retrieve projects");
 
         for (p1, p2) in projects.iter().zip(projects.iter().skip(1)) {
             let name_1 = p1.name.to_lowercase();
@@ -251,109 +307,126 @@ pub mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn update_project_prune_document() {
-        let db_pool = DbConnectionPoolV2::for_tests();
-        let mut project1 = Project::fake("Project 1")
-            .create(&mut db_pool.get_ok())
+        let db = Db::for_tests().await;
+        let mut project1 = project::ActiveModel::fake("Project 1")
+            .insert(&db)
             .await
             .expect("Failed to create project");
-        let mut project2 = Project::fake("Project 2")
-            .create(&mut db_pool.get_ok())
+        let mut project2 = project::ActiveModel::fake("Project 2")
+            .insert(&db)
             .await
             .expect("Failed to create project");
-        let image = Document::changeset()
-            .content_type("data/text".to_owned())
-            .data("wassup?".bytes().collect())
-            .create(&mut db_pool.get_ok())
-            .await
-            .unwrap();
-        let image2 = Document::changeset()
-            .content_type("data/text".to_owned())
-            .data("ohno".bytes().collect())
-            .create(&mut db_pool.get_ok())
-            .await
-            .unwrap();
+        let image = document::ActiveModel {
+            content_type: Set("data/text".to_owned()),
+            data: Set(b"wassup?".to_vec()),
+            ..Default::default()
+        }
+        .insert(&db)
+        .await
+        .expect("Failed to create document");
+        let image2 = document::ActiveModel {
+            content_type: Set("data/text".to_owned()),
+            data: Set(b"ohno".to_vec()),
+            ..Default::default()
+        }
+        .insert(&db)
+        .await
+        .expect("Failed to create document");
 
         project1
-            .update_and_prune_document(&mut db_pool.get_ok(), Some(image.id))
+            .update_and_prune_document(db.clone(), Some(image.id))
             .await
             .expect("should work");
         project2
-            .update_and_prune_document(&mut db_pool.get_ok(), Some(image.id))
+            .update_and_prune_document(db.clone(), Some(image.id))
             .await
             .expect("should work");
 
         project2
-            .update_and_prune_document(&mut db_pool.get_ok(), None)
+            .update_and_prune_document(db.clone(), None)
             .await
             .expect("should work - image is still used by project1");
         assert!(
-            Document::exists(&mut db_pool.get_ok(), image.id)
+            document::Entity::find_by_id(image.id)
+                .one(&db)
                 .await
                 .unwrap()
+                .is_some()
         );
 
         project1
-            .update_and_prune_document(&mut db_pool.get_ok(), Some(image2.id))
+            .update_and_prune_document(db.clone(), Some(image2.id))
             .await
             .expect("should work");
         assert!(
-            !Document::exists(&mut db_pool.get_ok(), image.id)
+            document::Entity::find_by_id(image.id)
+                .one(&db)
                 .await
-                .unwrap(),
+                .unwrap()
+                .is_none(),
             "image should be deleted"
         );
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn delete_project_prune_document() {
-        let db_pool = DbConnectionPoolV2::for_tests();
+        let db = Db::for_tests().await;
 
-        let mut project1 = Project::fake("Project 1")
-            .create(&mut db_pool.get_ok())
+        let mut project1 = project::ActiveModel::fake("Project 1")
+            .insert(&db)
             .await
             .expect("Failed to create project");
-        let mut project2 = Project::fake("Project 2")
-            .create(&mut db_pool.get_ok())
+        let mut project2 = project::ActiveModel::fake("Project 2")
+            .insert(&db)
             .await
             .expect("Failed to create project");
-        let mut project3 = Project::fake("Project 3")
-            .create(&mut db_pool.get_ok())
+        let mut project3 = project::ActiveModel::fake("Project 3")
+            .insert(&db)
             .await
             .expect("Failed to create project");
-        let project4 = Project::fake("Project 4")
-            .create(&mut db_pool.get_ok())
+        let project4 = project::ActiveModel::fake("Project 4")
+            .insert(&db)
             .await
             .expect("Failed to create project");
-        let image1 = Document::changeset()
-            .content_type("data/text".to_owned())
-            .data("image 1".bytes().collect())
-            .create(&mut db_pool.get_ok())
-            .await
-            .unwrap();
-        project1.image = Some(image1.id);
-        project1.save(&mut db_pool.get_ok()).await.unwrap();
-        project2.image = Some(image1.id);
-        project2.save(&mut db_pool.get_ok()).await.unwrap();
-        let image2 = Document::changeset()
-            .content_type("data/text".to_owned())
-            .data("image 2".bytes().collect())
-            .create(&mut db_pool.get_ok())
-            .await
-            .unwrap();
-        project3.image = Some(image2.id);
-        project3.save(&mut db_pool.get_ok()).await.unwrap();
+        let image1 = document::ActiveModel {
+            content_type: Set("data/text".to_owned()),
+            data: Set(b"image 1".to_vec()),
+            ..Default::default()
+        }
+        .insert(&db)
+        .await
+        .expect("Failed to create document");
+        let mut project1_active = project1.into_active_model();
+        project1_active.image = Set(Some(image1.id));
+        project1 = project1_active.update(&db).await.unwrap();
+        let mut project2_active = project2.into_active_model();
+        project2_active.image = Set(Some(image1.id));
+        project2 = project2_active.update(&db).await.unwrap();
+        let image2 = document::ActiveModel {
+            content_type: Set("data/text".to_owned()),
+            data: Set(b"image 2".to_vec()),
+            ..Default::default()
+        }
+        .insert(&db)
+        .await
+        .expect("Failed to create document");
+        let mut project3_active = project3.into_active_model();
+        project3_active.image = Set(Some(image2.id));
+        project3 = project3_active.update(&db).await.unwrap();
 
         // project1 -> image1, project2 -> image1, project3 -> image2, project4 -> nothing
 
         let p1_id = project1.id;
         project1
-            .delete_and_prune_document(&mut db_pool.get_ok())
+            .delete_and_prune_document(db.clone())
             .await
             .expect("should work");
         assert!(
-            Document::exists(&mut db_pool.get_ok(), image1.id)
+            document::Entity::find_by_id(image1.id)
+                .one(&db)
                 .await
-                .unwrap(),
+                .unwrap()
+                .is_some(),
             "image should not be deleted - still used by project2"
         );
 
@@ -361,13 +434,15 @@ pub mod tests {
 
         let p3_id = project3.id;
         project3
-            .delete_and_prune_document(&mut db_pool.get_ok())
+            .delete_and_prune_document(db.clone())
             .await
             .expect("should work");
         assert!(
-            !Document::exists(&mut db_pool.get_ok(), image2.id)
+            document::Entity::find_by_id(image2.id)
+                .one(&db)
                 .await
-                .unwrap(),
+                .unwrap()
+                .is_none(),
             "image2 should be deleted"
         );
 
@@ -375,25 +450,47 @@ pub mod tests {
 
         let p4_id = project4.id;
         project4
-            .delete_and_prune_document(&mut db_pool.get_ok())
+            .delete_and_prune_document(db.clone())
             .await
             .expect("should work");
 
         // project2 -> image1
 
         assert!(
-            Project::exists(&mut db_pool.get_ok(), project2.id)
+            project::Entity::find_by_id(project2.id)
+                .one(&db)
                 .await
                 .unwrap()
+                .is_some()
         );
         assert!(
-            Document::exists(&mut db_pool.get_ok(), image1.id)
+            document::Entity::find_by_id(image1.id)
+                .one(&db)
                 .await
                 .unwrap()
+                .is_some()
         );
 
-        assert!(!Project::exists(&mut db_pool.get_ok(), p1_id).await.unwrap());
-        assert!(!Project::exists(&mut db_pool.get_ok(), p3_id).await.unwrap());
-        assert!(!Project::exists(&mut db_pool.get_ok(), p4_id).await.unwrap());
+        assert!(
+            project::Entity::find_by_id(p1_id)
+                .one(&db)
+                .await
+                .unwrap()
+                .is_none()
+        );
+        assert!(
+            project::Entity::find_by_id(p3_id)
+                .one(&db)
+                .await
+                .unwrap()
+                .is_none()
+        );
+        assert!(
+            project::Entity::find_by_id(p4_id)
+                .one(&db)
+                .await
+                .unwrap()
+                .is_none()
+        );
     }
 }

@@ -1,251 +1,223 @@
 use std::collections::HashSet;
-use std::ops::Deref;
-use std::ops::DerefMut;
 
-use editoast_derive::Model;
-use serde::Deserialize;
-use serde::Serialize;
-
-use crate::prelude::*;
-use database::DbConnection;
-use database::tables::*;
+use database::Db;
 use schemas::primitives::ObjectType;
+use sea_orm::ColumnTrait;
+use sea_orm::Condition;
+use sea_orm::EntityTrait;
+use sea_orm::QueryFilter;
+use sea_orm::QuerySelect;
+use sea_orm::prelude::Expr;
+
+use crate::sea_orm_types::ForeignJson;
 
 pub type Domestic = (String, String, Option<String>);
 
 pub trait ModelBackedSchema: Sized {
-    type Model: SchemaModel + Into<Self>;
+    type Model: Into<Self>;
 }
 
-pub trait SchemaModel: Model {
-    type Schema: ModelBackedSchema;
+macro_rules! infra_entity {
+    ($module:ident, $table:literal, $data:path) => {
+        infra_entity!(@ $module, $table, None, $data);
+    };
+    ($module:ident, $table:literal, $layer:literal, $data:path) => {
+        infra_entity!(@ $module, $table, Some($layer), $data);
+    };
+    (@ $module:ident, $table:literal, $layer:expr, $data:path) => {
+        pub mod $module {
+            use std::ops::Deref;
+            use std::ops::DerefMut;
 
-    const TABLE: &'static str;
-    const LAYER_TABLE: Option<&'static str>;
+            use sea_orm::entity::prelude::*;
 
-    /// Creates a changeset for this infra object with a random obj_id and no infra_id set
-    fn new_from_schema(schema: Self::Schema) -> Changeset<Self>;
+            use super::ForeignJson;
 
-    /// Retrieve all objects of this type from the database for a given infra
-    async fn find_all<C: Default + std::iter::Extend<Self> + Send>(
-        conn: &mut DbConnection,
-        infra_id: i64,
-    ) -> Result<C, database::DatabaseError>;
+            #[derive(Clone, Debug, DeriveEntityModel, PartialEq)]
+            #[sea_orm(table_name = $table)]
+            pub struct Model {
+                #[sea_orm(primary_key)]
+                pub id: i64,
+                #[sea_orm(unique_key = "infra_id_obj_id")]
+                pub obj_id: String,
+                #[sea_orm(column_name = "data", column_type = "JsonBinary")]
+                pub schema: ForeignJson<$data>,
+                #[sea_orm(unique_key = "infra_id_obj_id")]
+                pub infra_id: i64,
+            }
+
+            #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
+            pub enum Relation {
+                #[sea_orm(
+                    belongs_to = "crate::infra::Entity",
+                    from = "Column::InfraId",
+                    to = "crate::infra::Column::Id",
+                    on_update = "NoAction",
+                    on_delete = "Cascade"
+                )]
+                Infra,
+            }
+
+            impl Related<crate::infra::Entity> for Entity {
+                fn to() -> RelationDef {
+                    Relation::Infra.def()
+                }
+            }
+
+            impl ActiveModelBehavior for ActiveModel {}
+
+            impl Model {
+                pub const TABLE: &'static str = $table;
+                pub const LAYER_TABLE: Option<&'static str> = $layer;
+
+                /// Creates an active model for this infra object with its object ID and infra ID set
+                pub fn from_schema(infra_id: i64, schema: $data) -> ActiveModel {
+                    // TODO: remove the `id` field of the schemas and replace it by
+                    // a `models::ObjectId` type, whose `Default` yields a new UUID
+                    use schemas::primitives::OSRDIdentified as _;
+
+                    ActiveModel {
+                        obj_id: sea_orm::Set(schema.get_id().clone()),
+                        schema: sea_orm::Set(ForeignJson::new(schema)),
+                        infra_id: sea_orm::Set(infra_id),
+                        ..Default::default()
+                    }
+                }
+
+                /// Converts all schemas into active models of this infra object model
+                ///
+                /// Each active model will have the provided infra_id set.
+                pub fn from_infra_schemas(
+                    infra_id: i64,
+                    schemas: impl IntoIterator<Item = $data>,
+                ) -> Vec<ActiveModel> {
+                    schemas
+                        .into_iter()
+                        .map(|schema| Self::from_schema(infra_id, schema))
+                        .collect()
+                }
+            }
+
+            impl Deref for Model {
+                type Target = $data;
+
+                fn deref(&self) -> &Self::Target {
+                    self.schema.as_ref()
+                }
+            }
+
+            impl DerefMut for Model {
+                fn deref_mut(&mut self) -> &mut Self::Target {
+                    &mut self.schema
+                }
+            }
+
+            impl AsRef<$data> for Model {
+                fn as_ref(&self) -> &$data {
+                    self.schema.as_ref()
+                }
+            }
+
+            impl AsMut<$data> for Model {
+                fn as_mut(&mut self) -> &mut $data {
+                    &mut self.schema
+                }
+            }
+
+            impl From<Model> for $data {
+                fn from(model: Model) -> Self {
+                    model.schema.into_inner()
+                }
+            }
+
+            impl super::ModelBackedSchema for $data {
+                type Model = Model;
+            }
+        }
+    };
 }
 
-macro_rules! infra_model {
-    ($name:ident, $table:ident, $data:path) => {
-        infra_model!(@ $name, $table, None, $data);
-    };
-    ($name:ident, $table:ident, $layer:expr, $data:path) => {
-        infra_model!(@ $name, $table, Some(stringify!($layer)), $data);
-    };
-    (@ $name:ident, $table:ident, $layer:expr, $data:path) => {
-        #[derive(Debug, Clone, Default, Serialize, Deserialize, Model)]
-        #[model(table = $table)]
-        #[model(preferred = (infra_id, obj_id))]
-        #[model(gen(ops = crud, batch_ops = crud, list))]
-        pub struct $name {
-            pub id: i64,
-            pub obj_id: String,
-            #[model(json, column = $table::data)]
-            pub schema: $data,
-            pub infra_id: i64,
-        }
-
-        impl ModelBackedSchema for $data {
-            type Model = $name;
-        }
-
-        impl SchemaModel for $name {
-            type Schema = $data;
-
-            const TABLE: &'static str = stringify!($table);
-            const LAYER_TABLE: Option<&'static str> = $layer;
-
-            fn new_from_schema(schema: Self::Schema) -> Changeset<Self> {
-                // TODO: remove the `id` field of the schemas and replace it by
-                // a `models::ObjectId` type, whose `Default` yields a new UUID
-                use schemas::primitives::OSRDIdentified;
-                let obj_id = schema.get_id().clone();
-                Self::changeset().schema(schema).obj_id(obj_id)
-            }
-
-            async fn find_all<C: Default + std::iter::Extend<Self> + Send>(
-                conn: &mut DbConnection,
-                infra_id: i64,
-            ) -> Result<C, database::DatabaseError> {
-                use diesel::prelude::*;
-                use diesel_async::RunQueryDsl;
-                use futures::TryStreamExt;
-                use $table::dsl;
-                let stream = $table::table
-                    .filter(dsl::infra_id.eq(infra_id))
-                    .load_stream(conn.write().await.deref_mut())
-                    .await?;
-                Ok(futures::TryStreamExt::map_ok(stream, Self::from_row)
-                    .try_collect::<C>()
-                    .await?)
-            }
-        }
-
-        impl $name {
-            /// Converts all schemas into changesets of this infra object model
-            ///
-            /// Each changeset will have a random obj_id and the provided infra_id set.
-            pub fn from_infra_schemas(
-                infra_id: i64,
-                schemas: impl IntoIterator<Item = $data>,
-            ) -> Vec<Changeset<Self>> {
-                schemas
-                    .into_iter()
-                    .map(|schema| Self::new_from_schema(schema).infra_id(infra_id))
-                    .collect()
-            }
-        }
-
-        impl Deref for $name {
-            type Target = $data;
-
-            fn deref(&self) -> &Self::Target {
-                &self.schema
-            }
-        }
-
-        impl DerefMut for $name {
-            fn deref_mut(&mut self) -> &mut Self::Target {
-                &mut self.schema
-            }
-        }
-
-        impl AsRef<$data> for $name {
-            fn as_ref(&self) -> &$data {
-                &self.schema
-            }
-        }
-
-        impl AsMut<$data> for $name {
-            fn as_mut(&mut self) -> &mut $data {
-                &mut self.schema
-            }
-        }
-
-        impl From<$name> for $data {
-            fn from(model: $name) -> Self {
-                model.schema
-            }
-        }
-    };
-}
-
-infra_model!(
-    TrackSectionModel,
-    infra_object_track_section,
-    infra_layer_track_section,
+infra_entity!(
+    track_section,
+    "infra_object_track_section",
+    "infra_layer_track_section",
     schemas::infra::TrackSection
 );
-
-infra_model!(
-    BufferStopModel,
-    infra_object_buffer_stop,
-    infra_layer_buffer_stop,
+infra_entity!(
+    buffer_stop,
+    "infra_object_buffer_stop",
+    "infra_layer_buffer_stop",
     schemas::infra::BufferStop
 );
-
-infra_model!(
-    ElectrificationModel,
-    infra_object_electrification,
-    infra_layer_electrification,
+infra_entity!(
+    electrification,
+    "infra_object_electrification",
+    "infra_layer_electrification",
     schemas::infra::Electrification
 );
-
-infra_model!(
-    DetectorModel,
-    infra_object_detector,
-    infra_layer_detector,
+infra_entity!(
+    detector,
+    "infra_object_detector",
+    "infra_layer_detector",
     schemas::infra::Detector
 );
-
-infra_model!(
-    OperationalPointModel,
-    infra_object_operational_point,
-    infra_layer_operational_point,
+infra_entity!(
+    operational_point,
+    "infra_object_operational_point",
+    "infra_layer_operational_point",
     schemas::infra::OperationalPoint
 );
-
-infra_model!(RouteModel, infra_object_route, schemas::infra::Route);
-
-infra_model!(
-    SignalModel,
-    infra_object_signal,
-    infra_layer_signal,
+infra_entity!(route, "infra_object_route", schemas::infra::Route);
+infra_entity!(
+    signal,
+    "infra_object_signal",
+    "infra_layer_signal",
     schemas::infra::Signal
 );
-
-infra_model!(
-    SwitchModel,
-    infra_object_switch,
-    infra_layer_switch,
+infra_entity!(
+    switch,
+    "infra_object_switch",
+    "infra_layer_switch",
     schemas::infra::Switch
 );
-
-infra_model!(
-    SpeedSectionModel,
-    infra_object_speed_section,
-    infra_layer_speed_section,
+infra_entity!(
+    speed_section,
+    "infra_object_speed_section",
+    "infra_layer_speed_section",
     schemas::infra::SpeedSection
 );
-
-infra_model!(
-    SwitchTypeModel,
-    infra_object_extended_switch_type,
+infra_entity!(
+    switch_type,
+    "infra_object_extended_switch_type",
     schemas::infra::SwitchType
 );
-
-infra_model!(
-    NeutralSectionModel,
-    infra_object_neutral_section,
-    infra_layer_neutral_section,
+infra_entity!(
+    neutral_section,
+    "infra_object_neutral_section",
+    "infra_layer_neutral_section",
     schemas::infra::NeutralSection
 );
-
-infra_model!(
-    LevelCrossingModel,
-    infra_object_level_crossing,
-    infra_layer_level_crossing,
+infra_entity!(
+    level_crossing,
+    "infra_object_level_crossing",
+    "infra_layer_level_crossing",
     schemas::infra::LevelCrossing
 );
 
-// Used to re-export all models in a single module for easier imports
-pub mod models {
-    pub use super::BufferStopModel;
-    pub use super::DetectorModel;
-    pub use super::ElectrificationModel;
-    pub use super::LevelCrossingModel;
-    pub use super::NeutralSectionModel;
-    pub use super::OperationalPointModel;
-    pub use super::RouteModel;
-    pub use super::SignalModel;
-    pub use super::SpeedSectionModel;
-    pub use super::SwitchModel;
-    pub use super::SwitchTypeModel;
-    pub use super::TrackSectionModel;
-}
-
 pub fn get_table(object_type: &ObjectType) -> &'static str {
     match object_type {
-        ObjectType::TrackSection => TrackSectionModel::TABLE,
-        ObjectType::BufferStop => BufferStopModel::TABLE,
-        ObjectType::Electrification => ElectrificationModel::TABLE,
-        ObjectType::Detector => DetectorModel::TABLE,
-        ObjectType::OperationalPoint => OperationalPointModel::TABLE,
-        ObjectType::Route => RouteModel::TABLE,
-        ObjectType::Signal => SignalModel::TABLE,
-        ObjectType::Switch => SwitchModel::TABLE,
-        ObjectType::SpeedSection => SpeedSectionModel::TABLE,
-        ObjectType::SwitchType => SwitchTypeModel::TABLE,
-        ObjectType::NeutralSection => NeutralSectionModel::TABLE,
-        ObjectType::LevelCrossing => LevelCrossingModel::TABLE,
+        ObjectType::TrackSection => track_section::Model::TABLE,
+        ObjectType::BufferStop => buffer_stop::Model::TABLE,
+        ObjectType::Electrification => electrification::Model::TABLE,
+        ObjectType::Detector => detector::Model::TABLE,
+        ObjectType::OperationalPoint => operational_point::Model::TABLE,
+        ObjectType::Route => route::Model::TABLE,
+        ObjectType::Signal => signal::Model::TABLE,
+        ObjectType::Switch => switch::Model::TABLE,
+        ObjectType::SpeedSection => speed_section::Model::TABLE,
+        ObjectType::SwitchType => switch_type::Model::TABLE,
+        ObjectType::NeutralSection => neutral_section::Model::TABLE,
+        ObjectType::LevelCrossing => level_crossing::Model::TABLE,
     }
 }
 
@@ -254,140 +226,130 @@ pub fn get_table(object_type: &ObjectType) -> &'static str {
 /// Returns `None` for objects that doesn't have a layer such as routes or switch types.
 pub fn get_geometry_layer_table(object_type: &ObjectType) -> Option<&'static str> {
     match object_type {
-        ObjectType::TrackSection => TrackSectionModel::LAYER_TABLE,
-        ObjectType::BufferStop => BufferStopModel::LAYER_TABLE,
-        ObjectType::Electrification => ElectrificationModel::LAYER_TABLE,
-        ObjectType::Detector => DetectorModel::LAYER_TABLE,
-        ObjectType::OperationalPoint => OperationalPointModel::LAYER_TABLE,
-        ObjectType::Route => RouteModel::LAYER_TABLE,
-        ObjectType::Signal => SignalModel::LAYER_TABLE,
-        ObjectType::Switch => SwitchModel::LAYER_TABLE,
-        ObjectType::SpeedSection => SpeedSectionModel::LAYER_TABLE,
-        ObjectType::SwitchType => SwitchTypeModel::LAYER_TABLE,
-        ObjectType::NeutralSection => NeutralSectionModel::LAYER_TABLE,
-        ObjectType::LevelCrossing => LevelCrossingModel::LAYER_TABLE,
+        ObjectType::TrackSection => track_section::Model::LAYER_TABLE,
+        ObjectType::BufferStop => buffer_stop::Model::LAYER_TABLE,
+        ObjectType::Electrification => electrification::Model::LAYER_TABLE,
+        ObjectType::Detector => detector::Model::LAYER_TABLE,
+        ObjectType::OperationalPoint => operational_point::Model::LAYER_TABLE,
+        ObjectType::Route => route::Model::LAYER_TABLE,
+        ObjectType::Signal => signal::Model::LAYER_TABLE,
+        ObjectType::Switch => switch::Model::LAYER_TABLE,
+        ObjectType::SpeedSection => speed_section::Model::LAYER_TABLE,
+        ObjectType::SwitchType => switch_type::Model::LAYER_TABLE,
+        ObjectType::NeutralSection => neutral_section::Model::LAYER_TABLE,
+        ObjectType::LevelCrossing => level_crossing::Model::LAYER_TABLE,
     }
 }
 
-impl OperationalPointModel {
+impl operational_point::Model {
     /// Retrieve a list of operational points from the database
-    #[tracing::instrument(skip(conn), err)]
+    #[tracing::instrument(skip(db), err)]
     pub async fn retrieve_from_uic(
-        conn: &mut DbConnection,
+        db: Db,
         infra_id: i64,
         uic: &[u32],
-    ) -> Result<Vec<Self>, database::DatabaseError> {
-        use database::tables::infra_object_operational_point::dsl;
-        use diesel::dsl::sql;
-        use diesel::prelude::*;
-        use diesel::sql_types::*;
-        use diesel_async::RunQueryDsl;
-
+    ) -> Result<Vec<Self>, crate::Error> {
         if uic.is_empty() {
             // We know the result of the SQL query is going to be empty, avoid sending it.
             return Ok(Vec::new());
         }
 
-        let uic: Vec<i64> = uic.iter().map(|&u| i64::from(u)).collect();
-
-        Ok(dsl::infra_object_operational_point
-            .filter(dsl::infra_id.eq(infra_id))
-            .filter(sql::<Nullable<BigInt>>("NULLIF(data->>'uic', 'null')::int").eq_any(uic))
-            .load(&mut conn.write().await)
-            .await?
-            .into_iter()
-            .map(Self::from_row)
-            .collect())
+        let uic = uic.iter().copied().map(i64::from).collect::<Vec<_>>();
+        let query = operational_point::Entity::find()
+            .filter(operational_point::Column::InfraId.eq(infra_id))
+            .filter(Expr::cust_with_values(
+                "NULLIF(data->>'uic', 'null')::bigint = ANY($1)",
+                [uic],
+            ));
+        query.all(&db).await.map_err(crate::Error::from)
     }
 
-    #[tracing::instrument(skip(conn), err)]
+    #[tracing::instrument(skip(db), err)]
     pub async fn retrieve_from_domestics(
-        conn: &mut DbConnection,
+        db: Db,
         infra_id: i64,
         domestics: &[Domestic],
-    ) -> Result<Vec<Self>, database::DatabaseError> {
-        use database::tables::infra_object_operational_point::dsl;
-        use diesel::dsl::sql;
-        use diesel::prelude::*;
-        use diesel::sql_types::*;
-        use diesel_async::RunQueryDsl;
-
+    ) -> Result<Vec<Self>, crate::Error> {
         if domestics.is_empty() {
             // We know the result of the SQL query is going to be empty, avoid sending it.
             return Ok(Vec::new());
         }
-        let mut query = dsl::infra_object_operational_point.into_boxed();
+
+        let mut alternatives = Condition::any();
         for (country_code, main_code, secondary_code) in domestics {
-            query =
-                query.or_filter(dsl::infra_id.eq(infra_id).and(
-                    sql::<Text>("data->>'main_code'").eq(main_code).and(
-                        sql::<Text>("data->>'country_code'").eq(country_code).and(
-                            sql::<Nullable<Text>>("data->>'secondary_code'").eq(secondary_code),
-                        ),
-                    ),
+            let mut domestic = Condition::all()
+                .add(operational_point::Column::InfraId.eq(infra_id))
+                .add(Expr::cust_with_values(
+                    "data->>'country_code' = $1",
+                    [country_code.clone()],
                 ))
+                .add(Expr::cust_with_values(
+                    "data->>'main_code' = $1",
+                    [main_code.clone()],
+                ));
+            domestic = if let Some(secondary_code) = secondary_code {
+                domestic.add(Expr::cust_with_values(
+                    "data->>'secondary_code' = $1",
+                    [secondary_code.clone()],
+                ))
+            } else {
+                domestic.add(Expr::cust("data->>'secondary_code' IS NULL"))
+            };
+            alternatives = alternatives.add(domestic);
         }
-        Ok(query
-            .load(&mut conn.write().await)
-            .await?
-            .into_iter()
-            .map(Self::from_row)
-            .collect())
+
+        operational_point::Entity::find()
+            .filter(alternatives)
+            .all(&db)
+            .await
+            .map_err(crate::Error::from)
     }
 
     /// Retrieve the list of operational points that match the given (object) IDs
     ///
-    /// Use this instead of [`OperationalPointModel::retrieve_batch_unchecked`]
-    /// when all the operational points are known to be in the same infra.
-    #[tracing::instrument(skip(conn), err)]
+    /// Use this instead of an unchecked batch retrieval when all the operational points
+    /// are known to be in the same infra.
+    #[tracing::instrument(skip(db), err)]
     pub async fn retrieve_from_ids(
-        conn: &mut DbConnection,
+        db: Db,
         infra_id: i64,
         ids: &[String],
-    ) -> Result<Vec<Self>, database::DatabaseError> {
-        use database::tables::infra_object_operational_point::dsl;
-        use diesel::prelude::*;
-        use diesel_async::RunQueryDsl;
-
+    ) -> Result<Vec<Self>, crate::Error> {
         if ids.is_empty() {
             // We know the result of the SQL query is going to be empty, avoid sending it.
             return Ok(Vec::new());
         }
 
-        Ok(dsl::infra_object_operational_point
-            .filter(dsl::infra_id.eq(infra_id))
-            .filter(dsl::obj_id.eq_any(ids))
-            .load(&mut conn.write().await)
-            .await?
-            .into_iter()
-            .map(Self::from_row)
-            .collect())
+        operational_point::Entity::find()
+            .filter(operational_point::Column::InfraId.eq(infra_id))
+            .filter(operational_point::Column::ObjId.is_in(ids.iter().cloned()))
+            .all(&db)
+            .await
+            .map_err(crate::Error::from)
     }
 }
 
-impl TrackSectionModel {
+impl track_section::Model {
     /// Checks the existence of a list of track section ids.
     /// Returns only existing ids.
-    #[tracing::instrument(skip(conn), err)]
+    #[tracing::instrument(skip(db), err)]
     pub async fn exists_from_ids(
-        conn: &mut DbConnection,
+        db: Db,
         infra_id: i64,
         ids: &[String],
-    ) -> Result<HashSet<String>, database::DatabaseError> {
-        use database::tables::infra_object_track_section::dsl;
-        use diesel::prelude::*;
-        use diesel_async::RunQueryDsl;
-
+    ) -> Result<HashSet<String>, crate::Error> {
         if ids.is_empty() {
             // We know the result of the SQL query is going to be empty, avoid sending it.
-            return Ok(Default::default());
+            return Ok(HashSet::new());
         }
 
-        Ok(dsl::infra_object_track_section
-            .select(dsl::obj_id)
-            .filter(dsl::infra_id.eq(infra_id))
-            .filter(dsl::obj_id.eq_any(ids))
-            .load::<String>(&mut conn.write().await)
+        Ok(track_section::Entity::find()
+            .select_only()
+            .column(track_section::Column::ObjId)
+            .filter(track_section::Column::InfraId.eq(infra_id))
+            .filter(track_section::Column::ObjId.is_in(ids.iter().cloned()))
+            .into_tuple::<String>()
+            .all(&db)
             .await?
             .into_iter()
             .collect())
@@ -396,25 +358,32 @@ impl TrackSectionModel {
 
 #[cfg(test)]
 mod tests_persist {
-    use super::*;
-    use crate::Infra;
+    use crate::infra;
+    use database::Db;
+    use sea_orm::EntityTrait as _;
+    use sea_orm::Set;
 
     macro_rules! test_persist {
         ($obj:ident, $test_fn:ident) => {
             #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
             async fn $test_fn() {
-                let db_pool = database::DbConnectionPoolV2::for_tests();
+                use super::$obj;
+
+                let db = Db::for_tests().await;
                 let railjson = schemas::fixtures::small_infra();
-                let infra = Infra::changeset()
-                    .name("small_infra".to_owned())
-                    .last_railjson_version()
-                    .persist(railjson, &mut db_pool.get_ok())
-                    .await
-                    .unwrap();
+                let infra = infra::ActiveModel {
+                    name: Set("small_infra".to_owned()),
+                    ..Default::default()
+                }
+                .last_railjson_version()
+                .persist(railjson, db.clone())
+                .await
+                .unwrap();
                 let schemas = (0..10).map(|_| Default::default());
-                let changesets = $obj::from_infra_schemas(infra.id, schemas);
+                let active_models = $obj::Model::from_infra_schemas(infra.id, schemas);
                 assert!(
-                    $obj::create_batch::<_, Vec<_>>(&mut db_pool.get_ok(), changesets)
+                    super::$obj::Entity::insert_many(active_models)
+                        .exec(&db)
                         .await
                         .is_ok()
                 );
@@ -422,44 +391,46 @@ mod tests_persist {
         };
     }
 
-    test_persist!(TrackSectionModel, test_persist_track_section_model);
-    test_persist!(BufferStopModel, test_persist_buffer_stop_model);
-    test_persist!(ElectrificationModel, test_persist_electrification_model);
-    test_persist!(DetectorModel, test_persist_detector_model);
-    test_persist!(OperationalPointModel, test_persist_operational_point_model);
-    test_persist!(RouteModel, test_persist_route_model);
-    test_persist!(SignalModel, test_persist_signal_model);
-    test_persist!(SwitchModel, test_persist_switch_model);
-    test_persist!(SpeedSectionModel, test_persist_speed_section_model);
-    test_persist!(SwitchTypeModel, test_persist_switch_type_model);
-    test_persist!(NeutralSectionModel, test_persist_neutral_section_model);
-    test_persist!(LevelCrossingModel, test_persist_level_crossing_model);
+    test_persist!(track_section, test_persist_track_section_model);
+    test_persist!(buffer_stop, test_persist_buffer_stop_model);
+    test_persist!(electrification, test_persist_electrification_model);
+    test_persist!(detector, test_persist_detector_model);
+    test_persist!(operational_point, test_persist_operational_point_model);
+    test_persist!(route, test_persist_route_model);
+    test_persist!(signal, test_persist_signal_model);
+    test_persist!(switch, test_persist_switch_model);
+    test_persist!(speed_section, test_persist_speed_section_model);
+    test_persist!(switch_type, test_persist_switch_type_model);
+    test_persist!(neutral_section, test_persist_neutral_section_model);
+    test_persist!(level_crossing, test_persist_level_crossing_model);
 }
 
 #[cfg(test)]
 mod tests_retrieve {
-    use database::DbConnectionPoolV2;
+    use super::operational_point;
+    use crate::infra;
+    use database::Db;
     use pretty_assertions::assert_eq;
-
-    use super::*;
-    use crate::Infra;
+    use sea_orm::Set;
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn from_main_codes() {
-        let db_pool = DbConnectionPoolV2::for_tests();
+        let db = Db::for_tests().await;
         let railjson = schemas::fixtures::small_infra();
-        let small_infra = Infra::changeset()
-            .name("small_infra".to_owned())
-            .last_railjson_version()
-            .persist(railjson, &mut db_pool.get_ok())
-            .await
-            .unwrap();
+        let small_infra = infra::ActiveModel {
+            name: Set("small_infra".to_owned()),
+            ..Default::default()
+        }
+        .last_railjson_version()
+        .persist(railjson, db.clone())
+        .await
+        .unwrap();
         let domestics = vec![
             ("FR".to_string(), "MES".to_string(), Some("BV".to_string())),
             ("FR".to_string(), "WS".to_string(), Some("BV".to_string())),
         ];
-        let res = OperationalPointModel::retrieve_from_domestics(
-            &mut db_pool.get_ok(),
+        let res = operational_point::Model::retrieve_from_domestics(
+            db.clone(),
             small_infra.id,
             &domestics,
         )
@@ -471,19 +442,20 @@ mod tests_retrieve {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn from_uic() {
-        let db_pool = DbConnectionPoolV2::for_tests();
+        let db = Db::for_tests().await;
         let railjson = schemas::fixtures::small_infra();
-        let small_infra = Infra::changeset()
-            .name("small_infra".to_owned())
-            .last_railjson_version()
-            .persist(railjson, &mut db_pool.get_ok())
-            .await
-            .unwrap();
+        let small_infra = infra::ActiveModel {
+            name: Set("small_infra".to_owned()),
+            ..Default::default()
+        }
+        .last_railjson_version()
+        .persist(railjson, db.clone())
+        .await
+        .unwrap();
         let uic = vec![8711, 8722];
-        let res =
-            OperationalPointModel::retrieve_from_uic(&mut db_pool.get_ok(), small_infra.id, &uic)
-                .await
-                .expect("Failed to retrieve operational points");
+        let res = operational_point::Model::retrieve_from_uic(db.clone(), small_infra.id, &uic)
+            .await
+            .expect("Failed to retrieve operational points");
 
         assert_eq!(res.len(), 2);
     }

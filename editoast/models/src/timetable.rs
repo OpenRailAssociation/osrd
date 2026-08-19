@@ -1,223 +1,241 @@
-use common::units::millisecond;
-use common::units::quantities::Offset;
-use database::DatabaseError;
-use database::tables::sql_types;
-use diesel::prelude::*;
-use diesel::sql_query;
-use diesel::sql_types::Array;
-use diesel::sql_types::BigInt;
-use diesel_async::RunQueryDsl;
-use editoast_derive::Model;
-use itertools::Itertools;
 use std::collections::HashSet;
-use std::ops::DerefMut;
 
-use database::DbConnection;
+use common::units::quantities::Offset;
+use database::Db;
+use sea_orm::ActiveValue::Set;
+use sea_orm::ColumnTrait as _;
+use sea_orm::EntityTrait as _;
+use sea_orm::PaginatorTrait as _;
+use sea_orm::QueryFilter as _;
+use sea_orm::QuerySelect as _;
+use sea_orm::QueryTrait as _;
+use sea_orm::TransactionTrait as _;
+use sea_orm::entity::prelude::*;
 
-use crate::timetable_train_schedule_set::TimetableTrainScheduleSet;
+use crate::sea_orm_types::Milliseconds;
+use crate::timetable_train_schedule_set;
 use crate::timetable_type::TimetableType;
 
-#[derive(Debug, Default, Clone, Model)]
+#[derive(Clone, Debug, Default, DeriveEntityModel, Eq, PartialEq)]
 #[cfg_attr(test, derive(serde::Deserialize))]
-#[model(table = database::tables::timetable)]
-#[model(gen(ops = crd, list))]
-pub struct Timetable {
+#[sea_orm(table_name = "timetable")]
+pub struct Model {
+    #[sea_orm(primary_key)]
     pub id: i64,
     pub timetable_type: TimetableType,
 }
 
-impl From<Timetable> for Option<i64> {
-    fn from(timetable: Timetable) -> Self {
+#[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
+pub enum Relation {
+    #[sea_orm(has_one = "super::scenario::Entity")]
+    Scenario,
+    #[sea_orm(has_many = "super::search_journey_environment_timetable::Entity")]
+    SearchJourneyEnvironmentTimetable,
+    #[sea_orm(has_many = "super::stdcm_search_environment::Entity")]
+    StdcmSearchEnvironment,
+    #[sea_orm(has_many = "super::timetable_train_schedule_set::Entity")]
+    TimetableTrainScheduleSet,
+    #[sea_orm(has_many = "super::train_schedule_exception::Entity")]
+    TrainScheduleException,
+    #[sea_orm(has_many = "super::train_schedule_linking::Entity")]
+    TrainScheduleLinking,
+}
+
+impl ActiveModelBehavior for ActiveModel {}
+
+impl From<Model> for Option<i64> {
+    fn from(timetable: Model) -> Self {
         Some(timetable.id)
     }
 }
 
-impl Timetable {
-    pub async fn train_schedules_count(
-        timetable_id: i64,
-        conn: &mut DbConnection,
-    ) -> Result<i64, database::DatabaseError> {
-        use database::tables::timetable_train_schedule_set;
-        use database::tables::train_schedule;
-
-        train_schedule::dsl::train_schedule
+impl Model {
+    pub async fn train_schedules_count(timetable_id: i64, db: Db) -> Result<i64, crate::Error> {
+        let train_schedule_set_ids = super::timetable_train_schedule_set::Entity::find()
+            .select_only()
+            .column(super::timetable_train_schedule_set::Column::TrainScheduleSetId)
+            .filter(super::timetable_train_schedule_set::Column::TimetableId.eq(timetable_id))
+            .into_query();
+        let count = super::train_schedule::Entity::find()
             .filter(
-                train_schedule::dsl::train_schedule_set_id.eq_any(
-                    timetable_train_schedule_set::dsl::timetable_train_schedule_set
-                        .select(timetable_train_schedule_set::dsl::train_schedule_set_id)
-                        .filter(timetable_train_schedule_set::dsl::timetable_id.eq(timetable_id)),
-                ),
+                super::train_schedule::Column::TrainScheduleSetId
+                    .in_subquery(train_schedule_set_ids),
             )
-            .count()
-            .get_result(conn.write().await.deref_mut())
-            .await
-            .map_err(Into::into)
+            .count(&db)
+            .await?;
+        Ok(i64::try_from(count).expect("train schedule count exceeds i64::MAX"))
     }
 
     pub async fn get_train_schedule_set_ids_from_timetable(
         timetable_id: i64,
-        conn: &mut DbConnection,
-    ) -> Result<Vec<i64>, database::DatabaseError> {
-        use database::tables::timetable_train_schedule_set::dsl;
-
-        dsl::timetable_train_schedule_set
-            .filter(dsl::timetable_id.eq(timetable_id))
-            .select(dsl::train_schedule_set_id)
-            .load(conn.write().await.deref_mut())
+        db: Db,
+    ) -> Result<Vec<i64>, crate::Error> {
+        super::timetable_train_schedule_set::Entity::find()
+            .select_only()
+            .column(super::timetable_train_schedule_set::Column::TrainScheduleSetId)
+            .filter(super::timetable_train_schedule_set::Column::TimetableId.eq(timetable_id))
+            .into_tuple()
+            .all(&db)
             .await
-            .map_err(Into::into)
+            .map_err(crate::Error::from)
     }
 
     pub async fn gather_start_times(
         timetable_id: i64,
-        conn: &mut DbConnection,
-    ) -> Result<Vec<Offset>, database::DatabaseError> {
-        use database::tables::timetable_train_schedule_set;
-        use database::tables::train_schedule;
-
-        let start_times_milliseconds = train_schedule::dsl::train_schedule
-            .select(train_schedule::dsl::start_time)
+        db: Db,
+    ) -> Result<Vec<Offset>, crate::Error> {
+        let train_schedule_set_ids = super::timetable_train_schedule_set::Entity::find()
+            .select_only()
+            .column(super::timetable_train_schedule_set::Column::TrainScheduleSetId)
+            .filter(super::timetable_train_schedule_set::Column::TimetableId.eq(timetable_id))
+            .into_query();
+        let values: Vec<Milliseconds> = super::train_schedule::Entity::find()
+            .select_only()
+            .column(super::train_schedule::Column::StartTime)
             .filter(
-                train_schedule::dsl::train_schedule_set_id.eq_any(
-                    timetable_train_schedule_set::dsl::timetable_train_schedule_set
-                        .select(timetable_train_schedule_set::dsl::train_schedule_set_id)
-                        .filter(timetable_train_schedule_set::dsl::timetable_id.eq(timetable_id)),
-                ),
+                super::train_schedule::Column::TrainScheduleSetId
+                    .in_subquery(train_schedule_set_ids),
             )
-            .load(conn.write().await.deref_mut())
-            .await
-            .map_err(database::DatabaseError::from)?;
-        Ok(start_times_milliseconds
-            .into_iter()
-            .map(|s| millisecond::i64::new(s))
-            .collect())
+            .into_tuple()
+            .all(&db)
+            .await?;
+        Ok(values.into_iter().map(Offset::from).collect())
     }
 
     pub async fn set_links_train_schedule_set(
         timetable_id: i64,
         train_schedule_set_ids: HashSet<i64>,
-        conn: &mut DbConnection,
+        db: Db,
     ) -> Result<(), crate::Error> {
-        use crate::prelude::*;
-        use database::tables::timetable_train_schedule_set::dsl;
-
         // Transaction to ensure consistency of modifications
-        conn.transaction(async move |mut conn| {
-            // 1. Retrieve the current links
-            let existing_linked_ids: HashSet<i64> = dsl::timetable_train_schedule_set
-                .select(dsl::train_schedule_set_id)
-                .filter(dsl::timetable_id.eq(timetable_id))
-                .load(conn.write().await.deref_mut())
-                .await?
-                .into_iter()
-                .collect();
+        db.transaction::<_, _, crate::Error>(move |txn| {
+            Box::pin(async move {
+                // 1. Retrieve the current links
+                let existing_linked_ids: HashSet<i64> =
+                    super::timetable_train_schedule_set::Entity::find()
+                        .select_only()
+                        .column(super::timetable_train_schedule_set::Column::TrainScheduleSetId)
+                        .filter(
+                            super::timetable_train_schedule_set::Column::TimetableId
+                                .eq(timetable_id),
+                        )
+                        .into_tuple()
+                        .all(txn)
+                        .await?
+                        .into_iter()
+                        .collect();
 
-            // 2. Delete only the links that are NOT in the new list
-            let links_to_delete = existing_linked_ids.difference(&train_schedule_set_ids);
-            diesel::delete(
-                dsl::timetable_train_schedule_set
-                    .filter(dsl::timetable_id.eq(timetable_id))
-                    .filter(dsl::train_schedule_set_id.eq_any(links_to_delete)),
-            )
-            .execute(conn.write().await.deref_mut())
-            .await?;
+                // 2. Delete only the links that are NOT in the new list
+                let links_to_delete = existing_linked_ids
+                    .difference(&train_schedule_set_ids)
+                    .copied()
+                    .collect::<Vec<_>>();
+                if !links_to_delete.is_empty() {
+                    super::timetable_train_schedule_set::Entity::delete_many()
+                        .filter(
+                            super::timetable_train_schedule_set::Column::TimetableId
+                                .eq(timetable_id),
+                        )
+                        .filter(
+                            super::timetable_train_schedule_set::Column::TrainScheduleSetId
+                                .is_in(links_to_delete),
+                        )
+                        .exec(txn)
+                        .await?;
+                }
 
-            // 3. Create missing links
-            let links_to_create = train_schedule_set_ids.difference(&existing_linked_ids);
-            let changesets = links_to_create
-                .map(|train_schedule_set_id| {
-                    TimetableTrainScheduleSet::changeset()
-                        .timetable_id(timetable_id)
-                        .train_schedule_set_id(*train_schedule_set_id)
-                })
-                .collect_vec();
-            let _: Vec<_> = TimetableTrainScheduleSet::create_batch(&mut conn, changesets).await?;
-            Ok(())
+                // 3. Create missing links
+                let links_to_create = train_schedule_set_ids
+                    .difference(&existing_linked_ids)
+                    .map(
+                        |train_schedule_set_id| timetable_train_schedule_set::ActiveModel {
+                            timetable_id: Set(timetable_id),
+                            train_schedule_set_id: Set(*train_schedule_set_id),
+                            ..Default::default()
+                        },
+                    )
+                    .collect::<Vec<_>>();
+                if !links_to_create.is_empty() {
+                    super::timetable_train_schedule_set::Entity::insert_many(links_to_create)
+                        .exec(txn)
+                        .await?;
+                }
+                Ok(())
+            })
         })
         .await
+        .map_err(Into::into)
     }
 
     /// Deletes timetables that are not referenced by any Scenario or StdcmSearchEnvironment
     /// Returns the number of deleted timetables
-    pub async fn delete_orphaned(
-        conn: &mut DbConnection,
-    ) -> Result<usize, database::DatabaseError> {
-        use database::tables::scenario::dsl as scenario_dsl;
-        use database::tables::search_journey_environment_timetable::dsl as timetable_search_journey_env_dsl;
-        use database::tables::stdcm_search_environment::dsl as stdcm_dsl;
-        use database::tables::timetable::dsl as timetable_dsl;
-
-        diesel::delete(timetable_dsl::timetable)
-            .filter(diesel::dsl::not(diesel::dsl::exists(
-                scenario_dsl::scenario.filter(scenario_dsl::timetable_id.eq(timetable_dsl::id)),
-            )))
-            .filter(diesel::dsl::not(diesel::dsl::exists(
-                stdcm_dsl::stdcm_search_environment
-                    .filter(stdcm_dsl::timetable_id.eq(timetable_dsl::id)),
-            )))
-            .filter(diesel::dsl::not(diesel::dsl::exists(
-                timetable_search_journey_env_dsl::search_journey_environment_timetable
-                    .filter(timetable_search_journey_env_dsl::timetable_id.eq(timetable_dsl::id)),
-            )))
-            .execute(conn.write().await.deref_mut())
-            .await
-            .map_err(Into::into)
+    pub async fn delete_orphaned(db: Db) -> Result<usize, crate::Error> {
+        let scenarios = super::scenario::Entity::find()
+            .select_only()
+            .column(super::scenario::Column::TimetableId)
+            .into_query();
+        let stdcm_environments = super::stdcm_search_environment::Entity::find()
+            .select_only()
+            .column(super::stdcm_search_environment::Column::TimetableId)
+            .into_query();
+        let search_environments = super::search_journey_environment_timetable::Entity::find()
+            .select_only()
+            .column(super::search_journey_environment_timetable::Column::TimetableId)
+            .into_query();
+        let result = Entity::delete_many()
+            .filter(Column::Id.not_in_subquery(scenarios))
+            .filter(Column::Id.not_in_subquery(stdcm_environments))
+            .filter(Column::Id.not_in_subquery(search_environments))
+            .exec(&db)
+            .await?;
+        Ok(usize::try_from(result.rows_affected)
+            .expect("deleted timetable count exceeds usize::MAX"))
     }
 }
 
 /// Should be used to retrieve a timetable with its paced trains
-#[derive(Debug, Clone, QueryableByName)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct TimetableWithTrains {
-    #[diesel(sql_type = BigInt)]
     pub id: i64,
-    #[diesel(sql_type = sql_types::TimetableType)]
     pub timetable_type: TimetableType,
-    #[diesel(sql_type = Array<BigInt>)]
     pub paced_train_ids: Vec<i64>,
 }
 
 impl TimetableWithTrains {
-    pub async fn retrieve(
-        conn: DbConnection,
-        timetable_id: i64,
-    ) -> Result<Option<Self>, DatabaseError> {
-        let result = sql_query(
-            "SELECT timetable.*,
-        array_remove(array_agg(train_schedule.id), NULL) as paced_train_ids
+    pub async fn retrieve(db: Db, timetable_id: i64) -> Result<Option<Self>, crate::Error> {
+        Ok(sqlx::query_as!(
+            Self,
+            "SELECT timetable.id,
+        timetable.timetable_type AS \"timetable_type: TimetableType\",
+        array_remove(array_agg(train_schedule.id), NULL) AS \"paced_train_ids!\"
         FROM timetable
         JOIN timetable_train_schedule_set ON timetable.id = timetable_train_schedule_set.timetable_id
         LEFT JOIN train_schedule ON timetable_train_schedule_set.train_schedule_set_id = train_schedule.train_schedule_set_id
         WHERE timetable.id = $1
         GROUP BY timetable.id",
+            timetable_id
         )
-        .bind::<BigInt, _>(timetable_id)
-        .get_result::<TimetableWithTrains>(conn.write().await.deref_mut())
-        .await;
-        match result {
-            Ok(result) => Ok(Some(result)),
-            Err(diesel::result::Error::NotFound) => Ok(None),
-            Err(err) => Err(err.into()),
-        }
+        .fetch_optional(db.sqlx())
+        .await?)
     }
 
-    pub async fn retrieve_or_fail<E, F>(conn: DbConnection, id: i64, fail: F) -> Result<Self, E>
+    pub async fn retrieve_or_fail<E, F>(db: Db, id: i64, fail: F) -> Result<Self, E>
     where
-        E: From<DatabaseError>,
+        E: From<crate::Error>,
         F: FnOnce() -> E + Send,
     {
-        match Self::retrieve(conn, id).await {
-            Ok(Some(obj)) => Ok(obj),
-            Ok(None) => Err(fail()),
-            Err(e) => Err(E::from(e)),
-        }
+        Self::retrieve(db, id)
+            .await
+            .map_err(E::from)?
+            .ok_or_else(fail)
     }
 }
 
-impl From<TimetableWithTrains> for Timetable {
-    fn from(timetable_with_trains: TimetableWithTrains) -> Self {
+impl From<TimetableWithTrains> for Model {
+    fn from(value: TimetableWithTrains) -> Self {
         Self {
-            id: timetable_with_trains.id,
-            timetable_type: timetable_with_trains.timetable_type,
+            id: value.id,
+            timetable_type: value.timetable_type,
         }
     }
 }

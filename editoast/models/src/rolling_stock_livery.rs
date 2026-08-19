@@ -1,13 +1,7 @@
+use database::Db;
+use sea_orm::EntityTrait as _;
+use sea_orm::entity::prelude::*;
 use utoipa::ToSchema;
-
-use database::DbConnection;
-use editoast_derive::Model;
-
-use crate::Document;
-use crate::prelude::*;
-
-#[cfg(test)]
-use serde::Deserialize;
 
 /// Rolling Stock Livery
 ///
@@ -20,39 +14,84 @@ use serde::Deserialize;
 ///
 /// /!\ Its compound image is not deleted by cascade if the livery is removed.
 ///
-#[derive(Debug, Clone, Default, Model, ToSchema)]
-#[cfg_attr(test, derive(Deserialize))]
-#[model(table = database::tables::rolling_stock_livery)]
-#[model(gen(ops = crd, list))]
-pub struct RollingStockLivery {
+#[derive(Clone, Debug, Default, DeriveEntityModel, Eq, PartialEq, ToSchema)]
+#[cfg_attr(test, derive(serde::Deserialize))]
+#[sea_orm(table_name = "rolling_stock_livery")]
+pub struct Model {
+    #[sea_orm(primary_key)]
     pub id: i64,
+    #[sea_orm(unique_key = "rolling_stock_livery_rolling_stock_id_name_key")]
     pub name: String,
+    #[sea_orm(unique_key = "rolling_stock_livery_rolling_stock_id_name_key")]
     pub rolling_stock_id: i64,
+    #[sea_orm(unique)]
     pub compound_image_id: Option<i64>,
 }
 
-impl From<RollingStockLivery> for schemas::rolling_stock::RollingStockLivery {
-    fn from(livery_model: RollingStockLivery) -> Self {
+#[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
+pub enum Relation {
+    #[sea_orm(
+        belongs_to = "super::document::Entity",
+        from = "Column::CompoundImageId",
+        to = "super::document::Column::Id",
+        on_delete = "SetNull"
+    )]
+    Document,
+    #[sea_orm(
+        belongs_to = "super::rolling_stock::Entity",
+        from = "Column::RollingStockId",
+        to = "super::rolling_stock::Column::Id",
+        on_delete = "Cascade"
+    )]
+    RollingStock,
+    #[sea_orm(has_many = "super::rolling_stock_image::Entity")]
+    RollingStockImage,
+}
+
+impl Related<super::document::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::Document.def()
+    }
+}
+
+impl Related<super::rolling_stock::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::RollingStock.def()
+    }
+}
+
+impl Related<super::rolling_stock_image::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::RollingStockImage.def()
+    }
+}
+
+impl ActiveModelBehavior for ActiveModel {}
+
+impl From<Model> for schemas::rolling_stock::RollingStockLivery {
+    fn from(model: Model) -> Self {
         Self {
-            id: livery_model.id,
-            name: livery_model.name,
-            rolling_stock_id: livery_model.rolling_stock_id,
-            compound_image_id: livery_model.compound_image_id,
+            id: model.id,
+            name: model.name,
+            rolling_stock_id: model.rolling_stock_id,
+            compound_image_id: model.compound_image_id,
         }
     }
 }
 
-impl RollingStockLivery {
-    pub async fn delete_with_compound_image(
-        &self,
-        conn: &mut DbConnection,
-    ) -> Result<bool, crate::Error> {
-        let livery = RollingStockLivery::delete_static(conn, self.id).await?;
-        if let Some(image_id) = self.compound_image_id {
-            let doc_delete_result = Document::delete_static(conn, image_id).await?;
-            return Ok(doc_delete_result);
-        }
-        Ok(livery)
+impl Model {
+    pub async fn delete_with_compound_image(&self, db: Db) -> Result<bool, crate::Error> {
+        let livery_deleted = Entity::delete_by_id(self.id).exec(&db).await?.rows_affected > 0;
+        let document_deleted = if let Some(image_id) = self.compound_image_id {
+            super::document::Entity::delete_by_id(image_id)
+                .exec(&db)
+                .await?
+                .rows_affected
+                > 0
+        } else {
+            livery_deleted
+        };
+        Ok(document_deleted)
     }
 }
 
@@ -60,62 +99,73 @@ impl RollingStockLivery {
 pub mod tests {
     use super::*;
 
-    use database::DbConnectionPoolV2;
-    use schemas::RollingStock;
+    use crate::document;
+    use crate::rolling_stock;
+    use crate::rolling_stock_livery;
+    use database::Db;
+    use sea_orm::Set;
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn create_delete_rolling_stock_livery() {
-        let db_pool = DbConnectionPoolV2::for_tests();
+        let db = Db::for_tests().await;
 
-        let image = crate::Document::changeset()
-            .content_type("text/fake_data".into())
-            .data(vec![])
-            .create(&mut db_pool.get_ok())
-            .await
-            .expect("Failed to create document");
-
-        let rs = Changeset::<crate::rolling_stock::RollingStock>::from(RollingStock::from(
-            schemas::fixtures::simple_rolling_stock(),
-        ))
-        .name("test_create_delete_rolling_stock_livery".into())
-        .locked(false)
-        .version(0)
-        .create(&mut db_pool.get_ok())
+        let image = document::ActiveModel {
+            content_type: Set("text/fake_data".into()),
+            data: Set(vec![]),
+            ..Default::default()
+        }
+        .insert(&db)
         .await
-        .expect("Failed to create rolling stock");
+        .expect("Failed to create document");
 
-        let rs_livery = RollingStockLivery::changeset()
-            .name("test_create_delete_rolling_stock_livery".into())
-            .rolling_stock_id(rs.id)
-            .compound_image_id(Some(image.id))
-            .create(&mut db_pool.get_ok())
+        let rolling_stock = schemas::RollingStock::<
+            schemas::rolling_stock::RollingResistancePerWeight,
+        >::from(schemas::fixtures::simple_rolling_stock());
+        let mut rolling_stock: rolling_stock::ActiveModel = rolling_stock.into();
+        rolling_stock.name = Set("test_create_delete_rolling_stock_livery".into());
+        let rs = rolling_stock
+            .insert(&db)
             .await
-            .expect("Failed to create rolling stock livery");
+            .expect("Failed to create rolling stock");
+
+        let rs_livery = rolling_stock_livery::ActiveModel {
+            name: Set("test_create_delete_rolling_stock_livery".into()),
+            rolling_stock_id: Set(rs.id),
+            compound_image_id: Set(Some(image.id)),
+            ..Default::default()
+        }
+        .insert(&db)
+        .await
+        .expect("Failed to create rolling stock livery");
+
+        assert!(Entity::find_by_id(rs_livery.id).one(&db).await.is_ok());
 
         assert!(
-            RollingStockLivery::retrieve(db_pool.get_ok(), rs_livery.id)
+            crate::document::Entity::find_by_id(image.id)
+                .one(&db)
                 .await
                 .is_ok()
         );
 
-        assert!(Document::retrieve(db_pool.get_ok(), image.id).await.is_ok());
-
+        let livery_id = rs_livery.id;
         assert!(
             rs_livery
-                .delete_with_compound_image(&mut db_pool.get_ok())
+                .delete_with_compound_image(db.clone())
                 .await
                 .is_ok()
         );
 
         assert!(
-            RollingStockLivery::retrieve(db_pool.get_ok(), rs_livery.id)
+            Entity::find_by_id(livery_id)
+                .one(&db)
                 .await
                 .expect("Failed to retrieve rolling stock livery")
                 .is_none()
         );
 
         assert!(
-            Document::retrieve(db_pool.get_ok(), image.id)
+            crate::document::Entity::find_by_id(image.id)
+                .one(&db)
                 .await
                 .expect("Failed to retrieve document")
                 .is_none()

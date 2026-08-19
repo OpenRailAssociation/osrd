@@ -1,52 +1,64 @@
-use crate::rolling_stock::TrainMainCategory;
-use editoast_derive::Model;
-use schemas::rolling_stock::SubCategoryColor;
+use sea_orm::ActiveValue::Set;
+use sea_orm::entity::prelude::*;
 use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
 
-use crate::prelude::*; // HACK: remove after all models are in this crate
+use crate::rolling_stock::SubCategoryColor;
+use crate::rolling_stock::TrainMainCategory;
 
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Model, ToSchema)]
-#[model(table = database::tables::sub_categories)]
-#[model(error(create = Error, update = Error))]
-#[model(gen(ops = crud, batch_ops = crd, list))]
-pub struct SubCategory {
+#[derive(Clone, Debug, DeriveEntityModel, Eq, PartialEq, Serialize, Deserialize, ToSchema)]
+#[sea_orm(table_name = "sub_categories")]
+pub struct Model {
+    #[sea_orm(primary_key)]
     pub id: i64,
-    #[model(identifier)]
+    #[sea_orm(unique)]
     pub code: String,
     pub name: String,
     pub main_category: TrainMainCategory,
-    #[model(remote = "String")]
     pub color: SubCategoryColor,
-    #[model(remote = "String")]
     pub background_color: SubCategoryColor,
-    #[model(remote = "String")]
     pub hovered_color: SubCategoryColor,
 }
 
-impl From<SubCategory> for schemas::rolling_stock::SubCategory {
-    fn from(value: SubCategory) -> Self {
+#[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
+pub enum Relation {
+    #[sea_orm(has_many = "super::train_schedule::Entity")]
+    TrainSchedule,
+}
+
+impl Related<super::train_schedule::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::TrainSchedule.def()
+    }
+}
+
+impl ActiveModelBehavior for ActiveModel {}
+
+impl From<Model> for schemas::rolling_stock::SubCategory {
+    fn from(value: Model) -> Self {
         Self {
             code: value.code,
             name: value.name,
-            main_category: value.main_category.0,
-            color: value.color,
-            background_color: value.background_color,
-            hovered_color: value.hovered_color,
+            main_category: value.main_category.into(),
+            color: value.color.into(),
+            background_color: value.background_color.into(),
+            hovered_color: value.hovered_color.into(),
         }
     }
 }
 
-impl From<schemas::rolling_stock::SubCategory> for SubCategoryChangeset {
-    fn from(sub_category: schemas::rolling_stock::SubCategory) -> Self {
-        SubCategory::changeset()
-            .code(sub_category.code)
-            .name(sub_category.name)
-            .main_category(TrainMainCategory(sub_category.main_category))
-            .color(sub_category.color)
-            .background_color(sub_category.background_color)
-            .hovered_color(sub_category.hovered_color)
+impl From<schemas::rolling_stock::SubCategory> for ActiveModel {
+    fn from(value: schemas::rolling_stock::SubCategory) -> Self {
+        Self {
+            code: Set(value.code),
+            name: Set(value.name),
+            main_category: Set(value.main_category.into()),
+            color: Set(value.color.into()),
+            background_color: Set(value.background_color.into()),
+            hovered_color: Set(value.hovered_color.into()),
+            ..Default::default()
+        }
     }
 }
 
@@ -60,62 +72,71 @@ pub enum Error {
 }
 
 impl From<crate::Error> for Error {
-    fn from(e: crate::Error) -> Self {
-        match e {
-            crate::Error::UniqueViolation {
-                constraint,
-                column,
-                value,
-            } if constraint == "sub_categories_code_key" && column == "code" => {
-                Self::CodeAlreadyUsed { code: value }
-            }
-            e => Self::Database(e),
+    fn from(error: crate::Error) -> Self {
+        if let Some(violation) = error.unique_violation()
+            && violation.constraint == "sub_categories_code_key"
+            && violation.column == "code"
+        {
+            return Self::CodeAlreadyUsed {
+                code: violation.value,
+            };
         }
+        Self::Database(error)
+    }
+}
+
+impl From<sea_orm::DbErr> for Error {
+    fn from(error: sea_orm::DbErr) -> Self {
+        Self::from(crate::Error::from(error))
     }
 }
 
 #[cfg(any(test, feature = "testing"))]
-impl SubCategory {
+impl ActiveModel {
     pub fn fake(
         code: &str,
         name: &str,
         main_category: schemas::rolling_stock::TrainMainCategory,
-    ) -> Changeset<Self> {
-        Self::changeset()
-            .code(code.to_string())
-            .name(name.to_string())
-            .main_category(TrainMainCategory(main_category))
-            .color(SubCategoryColor::from("#FF0000".to_string()))
-            .background_color(SubCategoryColor::from("#00FF00".to_string()))
-            .hovered_color(SubCategoryColor::from("#0000FF".to_string()))
+    ) -> Self {
+        Self {
+            code: Set(code.to_owned()),
+            name: Set(name.to_owned()),
+            main_category: Set(main_category.into()),
+            color: Set("#FF0000".to_owned().into()),
+            background_color: Set("#00FF00".to_owned().into()),
+            hovered_color: Set("#0000FF".to_owned().into()),
+            ..Default::default()
+        }
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use database::DbConnectionPoolV2;
+    use crate::sub_category;
+    use database::Db;
 
     #[tokio::test(flavor = "multi_thread")]
     async fn unique_code() {
-        let db_pool = DbConnectionPoolV2::for_tests();
+        let db = Db::for_tests().await;
 
-        let _sub_category1 = SubCategory::fake(
+        let _sub_category1 = sub_category::ActiveModel::fake(
             "code",
             "First Category",
             schemas::rolling_stock::TrainMainCategory::FreightTrain,
         )
-        .create(&mut db_pool.get_ok())
+        .insert(&db)
         .await
         .expect("Failed to create first sub category");
 
-        let result = SubCategory::fake(
+        let result = sub_category::ActiveModel::fake(
             "code",
             "Second Category",
             schemas::rolling_stock::TrainMainCategory::CommuterTrain,
         )
-        .create(&mut db_pool.get_ok())
-        .await;
+        .insert(&db)
+        .await
+        .map_err(Error::from);
 
         match result {
             Err(Error::CodeAlreadyUsed { code }) => {
