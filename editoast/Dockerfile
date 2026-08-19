@@ -22,16 +22,8 @@ RUN apk add --no-cache build-base mold libpq-dev geos-dev zstd-dev
 ENV RUSTFLAGS="-C target-feature=-crt-static -C link-arg=-fuse-ld=mold"
 ENV ZSTD_SYS_USE_PKG_CONFIG=1
 
-ADD --checksum=sha256:6c1f2d6c9791bc11c905fb7b4f013a5f9c761ba048467265754b1e87827e7154 https://github.com/osrd-project/diesel_cli_bin/releases/download/diesel-cli-v2.3.9/diesel_cli-2.3.9-x86_64-unknown-linux-musl.tar.gz /tmp/diesel_cli.tar.gz
-RUN set -eux; \
-    arch="$(uname -m)"; \
-    mkdir -p /cargo_editoast/bin; \
-    if [ "$arch" = "x86_64" ]; then \
-        tar -xzf /tmp/diesel_cli.tar.gz -C /cargo_editoast/bin; \
-    else \
-        cargo install diesel_cli --no-default-features --features postgres; \
-    fi
-RUN rm /tmp/diesel_cli.tar.gz
+# TODO: download and unpack a prebuilt archive
+RUN cargo install sqlx-cli --version '=0.9.0' --locked --no-default-features --features native-tls,postgres,sqlx-toml
 
 COPY --from=static_assets . /assets
 
@@ -93,7 +85,7 @@ RUN apk add --no-cache jemalloc curl ca-certificates geos libpq postgresql16-cli
 COPY --from=run_builder /cargo_editoast/bin/editoast /usr/local/bin/editoast
 COPY --from=run_builder /cargo_editoast/bin/fga_migrations /usr/local/bin/fga_migrations
 COPY --from=run_builder /editoast/migrations /migrations
-COPY --from=base_builder /cargo_editoast/bin/diesel /usr/local/bin/diesel
+COPY --from=base_builder /cargo_editoast/bin/sqlx /usr/local/bin/sqlx
 COPY --from=openfga/cli:v0.6.5 /fga /usr/local/bin/fga
 COPY --from=editoast_assets /assets /assets
 

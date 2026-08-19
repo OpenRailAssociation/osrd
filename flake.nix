@@ -59,7 +59,6 @@
 
             # Tools & Libs
             pinnedSqlxCli
-            diesel-cli # still needed to regenerate Diesel's schema until the entity cutover
             cargo-watch
             taplo
             uv

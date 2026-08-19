@@ -71,7 +71,6 @@ diesel = { version = "2.3", default-features = false, features = [
 ] }
 diesel-async = { version = "0.9", default-features = false, features = [
   "deadpool",
-  "migrations",
   "postgres",
 ] }
 diesel_json = "0.3.0"
@@ -129,6 +128,14 @@ serde_with = { version = "3.21.0", default-features = false, features = [
   "macros",
 ] }
 sha1 = "0.11"
+sqlx = { version = "=0.9.0", default-features = false, features = [
+  "macros",
+  "migrate",
+  "postgres",
+  "runtime-tokio",
+  "sqlx-toml",
+  "tls-native-tls",
+] }
 stdext = "0.3.3"
 strum = { version = "0.28.0", features = ["derive"] }
 syn = "3.0"

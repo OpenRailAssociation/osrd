@@ -13,6 +13,7 @@ For both tests or run:
 - [libpq](https://www.postgresql.org/docs/current/libpq.html) (may be packaged as `libpq-dev`)
 - [libgeos](https://libgeos.org/usage/install/) (may be packaged as `libgeos-dev`)
 - [fga CLI](https://github.com/openfga/cli)
+- [SQLx CLI](https://github.com/launchbadge/sqlx/tree/main/sqlx-cli) 0.9.0
 - a C toolchain
 - [zlib](https://www.zlib.net/) (may be packaged as `zlib1g-dev`)
 - [pkg-config](https://www.freedesktop.org/wiki/Software/pkg-config/)
@@ -27,8 +28,8 @@ Additionally, editoast requires the following services to be running:
 
 ```sh
 # apply osrd database migrations
-$ cargo install diesel_cli --no-default-features --features postgres
-$ diesel migration run --locked-schema  # avoids bumping modification date (then rebuild)
+$ cargo install sqlx-cli --version '=0.9.0' --locked --no-default-features --features native-tls,postgres,sqlx-toml
+$ sqlx migrate run
 # apply openfga migrations
 $ (cd fga_migrations && cargo run -- apply)
 # build the assets
@@ -224,13 +225,29 @@ configuration for own URL and editoast's prefix).
 > editoast authz rejecting some requests), providing the correct `ROOT_URL` to
 > editoast might be the solution.
 
-## Editoast diesel tables model update
+## Database migrations
 
-After creating a new migration, one should update `database/src/tables.rs` with
+New migrations are reversible by default, as configured in `sqlx.toml`:
 
 ```sh
-$ diesel migration run  # without locking schema
+$ sqlx migrate add <description>
+$ sqlx migrate run
 ```
+
+Applied SQLx migration files are immutable because SQLx validates their checksums. Until the
+SeaORM entity cutover, `database/src/tables.rs` remains the checked-in schema snapshot inherited
+from the final Diesel state.
+
+For a fresh database, apply the baseline normally with `sqlx migrate run`. For an existing
+database already upgraded through Diesel migration `2026-08-06-164808-0000`, record the equivalent
+SQLx baseline without executing it, then use normal migration runs for every later migration:
+
+```sh
+$ sqlx migrate override skip --target-version 202608061648080000
+$ sqlx migrate run
+```
+
+Never use `override skip` for a fresh database or for migrations after the baseline.
 
 ## OpenApi generation
 

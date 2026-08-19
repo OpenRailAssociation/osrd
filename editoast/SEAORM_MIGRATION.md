@@ -446,7 +446,7 @@ Work:
   - Editoast README and developer instructions;
   - existing CI database initialization commands;
   - CLI messages that instruct users to run Diesel migrations.
-- Remove Diesel CLI installation where it is no longer needed for migrations.
+- Remove Diesel CLI installation and configuration completely.
 - Document the two deployment paths:
   - fresh database: `sqlx migrate run`;
   - existing fully migrated database: `sqlx migrate override skip --target-version <baseline>`, followed by normal future migration runs.
@@ -468,6 +468,21 @@ Review focus:
 - the SQLx baseline cannot be reverted through the normal CLI;
 - the skip command is never used for fresh databases or future migrations;
 - no new CI policy is introduced.
+
+Implementation record:
+
+- status: complete;
+- Jujutsu change ID: `nmsxlqmn`;
+- pinned direct SQLx and every SQLx CLI installation path to `=0.9.0`;
+- moved the byte-identical baseline to `migrations/202608061648080000_baseline.sql` and removed Diesel migration embedding;
+- embedded SQLx migrations in the database test path, with build-script tracking and template names derived from the complete ordered migration manifest plus `init_test_db.sql`;
+- replaced every repository deployment, development, CI, container, chart, cleanup, and CLI migration command with SQLx and removed Diesel CLI completely;
+- verified fresh baseline application and `override skip` on a clone of the Diesel baseline produce identical `sqlx migrate info` state;
+- verified `sqlx migrate revert` reports no migration available and leaves baseline version `202608061648080000` installed;
+- verified the configuration creates reversible `.up.sql`/`.down.sql` files despite the simple baseline;
+- built the complete runtime image and verified it contains `sqlx-cli 0.9.0` and the moved baseline;
+- validation commands: `cargo clippy --all-targets --all-features --workspace`, `cargo nextest run --package database --package models`, JSON and Docker Compose configuration checks, and a repository-wide Diesel migration-command scan;
+- final test result: 76 passed with no failures.
 
 ### Revision 3 — introduce SeaORM entities and value-type implementations
 
@@ -806,7 +821,7 @@ Work:
 - Update command dispatch to create only the database handle it needs and avoid duplicate server pool construction.
 - Remove the root `#[macro_use] extern crate diesel`.
 - Remove root Diesel/diesel-async dependencies and remaining schema-generation artifacts when no consumer remains.
-- Remove any remaining Diesel CLI/runtime image material not already removed in the migration-system revision.
+- Remove the remaining Diesel runtime and schema-generation material.
 - Regenerate the complete workspace SQLx offline metadata from the fully migrated, compilable stack; keep every metadata file assigned to the revision that introduced its query, with this revision owning only root-level or final-correction metadata.
 
 Validation:
@@ -844,7 +859,7 @@ Suggested tracking table:
 | Revision | Status | Jujutsu ID | Required build/lint scope | Known breakage / notes |
 | --- | --- | --- | --- | --- |
 | Diesel schema baseline | complete | `nwnxqktv` | database, models, relevant tests | Historical migrations removed; Diesel runner remains active until cutover |
-| SQLx migration workflow | not started | — | migration tooling and fresh/cutover DB exercises | — |
+| SQLx migration workflow | complete | `nmsxlqmn` | workspace clippy, database/models tests, migration tooling and fresh/cutover DB exercises | SQLx is the only database CLI after cutover |
 | entities and value implementations | not started | — | models | — |
 | database `Db` | not started | — | database | Diesel descendants expected broken |
 | models | not started | — | models, database | root Editoast expected broken |

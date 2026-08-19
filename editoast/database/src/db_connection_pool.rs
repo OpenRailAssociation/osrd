@@ -1,5 +1,7 @@
 mod tracing_instrumentation;
 
+#[cfg(any(test, feature = "testing"))]
+use std::fmt::Write as _;
 use std::ops::Deref;
 use std::ops::DerefMut;
 use std::sync::Arc;
@@ -19,6 +21,10 @@ use futures::Future;
 use futures::future::BoxFuture;
 use futures_util::FutureExt as _;
 use tokio::sync::OnceCell;
+#[cfg(any(test, feature = "testing"))]
+use sha1::Digest as _;
+#[cfg(any(test, feature = "testing"))]
+use sha1::Sha1;
 use tokio::sync::OwnedRwLockWriteGuard;
 use tokio::sync::RwLock;
 use tokio_rustls::rustls;
@@ -35,7 +41,29 @@ pub type DbConnectionConfig = AsyncDieselConnectionManager<AsyncPgConnection>;
 static TEMPLATE_CREATION_MUTEX: tokio::sync::Mutex<()> = tokio::sync::Mutex::const_new(());
 
 #[cfg(any(test, feature = "testing"))]
-const MIGRATIONS: diesel_migrations::EmbeddedMigrations = diesel_migrations::embed_migrations!();
+static MIGRATIONS: sqlx::migrate::Migrator = sqlx::migrate!("../migrations");
+
+#[cfg(any(test, feature = "testing"))]
+fn migration_fingerprint() -> String {
+    let mut hasher = Sha1::new();
+    for migration in MIGRATIONS.iter() {
+        hasher.update(migration.version.to_be_bytes());
+        hasher.update([match migration.migration_type {
+            sqlx::migrate::MigrationType::Simple => 0,
+            sqlx::migrate::MigrationType::ReversibleUp => 1,
+            sqlx::migrate::MigrationType::ReversibleDown => 2,
+        }]);
+        hasher.update(migration.sql.as_str().as_bytes());
+    }
+    let init_test_db = include_bytes!("../sql/init_test_db.sql");
+    hasher.update(init_test_db);
+    let digest = hasher.finalize();
+    let mut fingerprint = String::with_capacity(digest.len() * 2);
+    for byte in digest {
+        write!(fingerprint, "{byte:02x}").expect("writing to a string cannot fail");
+    }
+    fingerprint
+}
 
 #[cfg(any(test, feature = "testing"))]
 async fn db_exists(url: &str) -> bool {
@@ -55,19 +83,8 @@ async fn template_creation(
 ) -> Result<String, Box<dyn std::error::Error + Send + Sync>> {
     // Prevents other tests from interfering during template creation and avoids conflicts
 
-    use diesel::migration::MigrationSource;
-    use diesel::pg::Pg;
-    use diesel_async::AsyncMigrationHarness;
-    use diesel_migrations::MigrationHarness as _;
-
     let _lock = TEMPLATE_CREATION_MUTEX.lock().await;
-    let last_migration_name = MigrationSource::<Pg>::migrations(&MIGRATIONS)?
-        .last()
-        .map(|migration| migration.name())
-        .map(ToString::to_string)
-        .map(|name| name.replace('-', "_"))
-        .unwrap_or_else(|| String::from("no_migration"));
-    let template_name = format!("osrd_template_{last_migration_name}");
+    let template_name = format!("osrd_template_{}", migration_fingerprint());
 
     let template_url_postgres: Url =
         format!("postgresql://postgres:password@127.0.0.1/{template_name}")
@@ -103,9 +120,9 @@ async fn template_creation(
         conn.batch_execute(sql_content).await?;
     }
 
-    let template_pool = create_connection_pool(template_url_osrd, 1)?;
-    let mut migration_harness = AsyncMigrationHarness::new(template_pool.get().await?);
-    migration_harness.run_pending_migrations(MIGRATIONS)?;
+    let template_pool = sqlx::PgPool::connect(template_url_osrd.as_str()).await?;
+    MIGRATIONS.run(&template_pool).await?;
+    template_pool.close().await;
 
     Ok(template_name)
 }

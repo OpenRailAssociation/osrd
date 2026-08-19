@@ -1,0 +1,5 @@
+[migrate]
+migrations-dir = "migrations"
+
+[migrate.defaults]
+migration-type = "reversible"

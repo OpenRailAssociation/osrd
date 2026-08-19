@@ -8,7 +8,7 @@ help:
 run:
     ./assets/sprites/generate-atlas.sh
     ./assets/fonts/generate-glyphs.sh
-    diesel migration run --locked-schema
+    sqlx migrate run
     cargo run --package fga_migrations -- apply
     @echo 'Authorizing "mock/mocked" user. Make sure the gateway user matches.'
     cargo run -- user add --skip-if-exists "Example User" "mock/mocked"
@@ -19,7 +19,7 @@ run:
 # Install required dependencies
 install:
     @echo 'This recipe won’t install binaries. Please use `cargo install`, `cargo binstall` or your preferred tool to install'
-    @echo " - diesel_cli"
+    @echo " - sqlx-cli (=0.9.0, with native-tls, postgres and sqlx-toml features)"
     @echo " - spreet"
     @echo " - build_pbf_glyphs"
 

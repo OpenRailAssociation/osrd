@@ -12,12 +12,13 @@ aws-lc-rs.workspace = true
 derive_more.workspace = true
 diesel.workspace = true
 diesel-async.workspace = true
-diesel_migrations = { version = "2.3.2" }
 futures.workspace = true
 futures-util.workspace = true
 opentelemetry-semantic-conventions.workspace = true
 postgis_diesel.workspace = true
 rustls-native-certs.workspace = true
+sha1.workspace = true
+sqlx.workspace = true
 thiserror.workspace = true
 tokio.workspace = true
 tokio-postgres.workspace = true

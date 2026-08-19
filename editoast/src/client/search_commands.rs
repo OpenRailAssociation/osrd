@@ -22,12 +22,12 @@ pub enum SearchCommands {
 #[derive(Args, Debug)]
 #[command(
     about,
-    long_about = "Generate a migration's up.sql and down.sql content for a search object"
+    long_about = "Fill a reversible SQLx migration's .up.sql and .down.sql files for a search object"
 )]
 pub struct MakeMigrationArgs {
     /// The search object to generate a migration for
     object: String,
-    /// The directory of the migration
+    /// The path to the SQLx .up.sql migration file
     migration: PathBuf,
     #[arg(short, long)]
     /// Overwrites the existing up.sql and down.sql files' content
@@ -63,14 +63,17 @@ pub fn make_search_migration(args: MakeMigrationArgs) -> anyhow::Result<()> {
     if !search_config.has_migration() {
         anyhow::bail!("No migration defined for {object}");
     }
-    if !migration.is_dir() {
+    let Some(up_file_name) = migration.file_name().and_then(|name| name.to_str()) else {
         anyhow::bail!(
-            "{} is not a directory",
+            "{} is not a migration file",
             migration.to_str().unwrap_or("<unprintable path>")
         );
-    }
-    let up_path = migration.join("up.sql");
-    let down_path = migration.join("down.sql");
+    };
+    let Some(migration_name) = up_file_name.strip_suffix(".up.sql") else {
+        anyhow::bail!("SQLx up migration files must end with .up.sql");
+    };
+    let up_path = migration.clone();
+    let down_path = migration.with_file_name(format!("{migration_name}.down.sql"));
     let up_path_str = up_path.to_str().unwrap_or("<unprintable path>").to_owned();
     let down_path_str = down_path
         .to_str()
@@ -102,10 +105,9 @@ pub fn make_search_migration(args: MakeMigrationArgs) -> anyhow::Result<()> {
         println!("➡️  Wrote to {down_path_str}");
     }
     println!(
-        "✅ Migration {} generated!\n🚨 Don't forget to run {} or {} to apply it",
+        "✅ Migration {} generated!\n🚨 Don't forget to run {} to apply it",
         migration.to_str().unwrap_or("<unprintable path>"),
-        "diesel migration run --locked-schema".bold(),
-        "diesel migration redo --locked-schema".bold(),
+        "sqlx migrate run".bold(),
     );
     Ok(())
 }
