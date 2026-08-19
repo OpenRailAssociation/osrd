@@ -42,7 +42,7 @@ const timetableContextWrapper = ({ children }: { children: ReactNode }) =>
     TimetableContext.Provider,
     {
       value: {
-        trainSchedules: [],
+        trainSchedules: new Map(),
         removeTrainSchedules: () => {},
         upsertTrainSchedules: mockUpsertTrainSchedules,
         updateTrainScheduleDepartureTime: async () => {},

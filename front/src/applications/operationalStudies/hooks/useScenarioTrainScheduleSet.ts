@@ -193,7 +193,7 @@ export default function useScenarioTrainScheduleSet(
       }).unwrap();
 
       // copy all the trains that were attached to the old published tss
-      const trainsToCopy: TrainSchedule[] = trainSchedules
+      const trainsToCopy: TrainSchedule[] = [...trainSchedules.values()]
         .filter((trainSchedule) => trainSchedule.train_schedule_set_id === trainScheduleSet.id)
         .map((trainSchedule) => {
           const {

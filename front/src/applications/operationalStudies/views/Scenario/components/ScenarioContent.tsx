@@ -86,7 +86,7 @@ const ScenarioContent = ({ activeBoards, toggleBoard }: ScenarioContentProps) =>
 
   const {
     trainSchedulesWithDetails,
-    trainSchedules,
+    trainSchedulesById,
     projectionData,
     conflicts,
     isConflictsLoading,
@@ -105,11 +105,7 @@ const ScenarioContent = ({ activeBoards, toggleBoard }: ScenarioContentProps) =>
     totalConflictsCount,
     selectedTrainConflictsCount,
     displayedConflicts,
-  } = useConflictsFilter(
-    useMemo(() => trainSchedules || [], [trainSchedules]),
-    conflicts,
-    isConflictsLoading
-  );
+  } = useConflictsFilter(trainSchedulesById, conflicts, isConflictsLoading);
 
   const macroEditorState = useRef<MacroEditorState>(null);
   const lastNgeOperationPromise = useRef(Promise.resolve());
@@ -164,13 +160,13 @@ const ScenarioContent = ({ activeBoards, toggleBoard }: ScenarioContentProps) =>
 
   const timetableContext = useMemo(
     (): TimetableContextType => ({
-      trainSchedules: trainSchedules ?? [],
+      trainSchedules: trainSchedulesById,
       upsertTrainSchedules: upsertTrainSchedulesWithNge,
       removeTrainSchedules: removeTrainSchedulesWithNge,
       updateTrainScheduleDepartureTime: updateTrainScheduleDepartureTimeWithNge,
     }),
     [
-      trainSchedules,
+      trainSchedulesById,
       upsertTrainSchedulesWithNge,
       removeTrainSchedulesWithNge,
       updateTrainScheduleDepartureTimeWithNge,
@@ -217,9 +213,9 @@ const ScenarioContent = ({ activeBoards, toggleBoard }: ScenarioContentProps) =>
   const defaultStartTime = useMemo(
     () =>
       scenario.timetable_type === 'CALENDAR'
-        ? computeLatestMidnight(trainSchedules ?? [], new Date())
+        ? computeLatestMidnight([...trainSchedulesById.values()], new Date())
         : Duration.zero,
-    [scenario.timetable_type, trainSchedules]
+    [scenario.timetable_type, trainSchedulesById]
   );
 
   return (

@@ -72,14 +72,8 @@ function getConflictTrainCategories(
 
 export default function addTrainNamesToConflicts(
   conflicts: Conflict[],
-  trainSchedules: TrainScheduleResponse[]
+  trainMap: Map<number, TrainScheduleResponse>
 ): ConflictWithTrainNames[] {
-  const trainMap: Map<number, TrainScheduleResponse> = new Map();
-
-  for (const trainSchedule of trainSchedules) {
-    trainMap.set(trainSchedule.id, trainSchedule);
-  }
-
   return conflicts.map((conflict) => {
     const names = getConflictTrainNames(conflict, trainMap);
     const categories = getConflictTrainCategories(conflict, trainMap);
