@@ -3,7 +3,7 @@ import { type Dictionary, isEqual, omit } from 'lodash';
 
 import type {
   OperationalPointReference,
-  CorePathfindingResultSuccess,
+  CorePathfindingResult,
   PathItemLocation,
   PathProperties,
   RelatedOperationalPoint,
@@ -275,7 +275,7 @@ export const sortPathOperationalPoints = (ops: PathWaypoint[], path: PathItem[])
 export const preparePathPropertiesData = (
   electricalProfiles: SimulationResponseSuccess['electrical_profiles'] | undefined,
   { slopes, curves, electrifications, operational_points, geometry }: PathProperties,
-  { path_item_positions, length }: CorePathfindingResultSuccess,
+  { path_item_positions, length }: CorePathfindingResult,
   trainSchedulePath: TrainSchedule['path'],
   t: TFunction<'operational-studies'>
 ): PathPropertiesFormatted => {

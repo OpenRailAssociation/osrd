@@ -386,7 +386,6 @@ mod tests {
 
     use chrono::TimeDelta;
     use core_client::mocking::MockingClient;
-    use core_client::pathfinding::PathfindingResultSuccess;
     use core_client::pathfinding::TrainPath;
     use reqwest::StatusCode;
     use schemas::infra::LevelCrossingPart;
@@ -449,8 +448,8 @@ mod tests {
         assert!(result.is_none());
     }
 
-    fn pathfinding_result_success() -> PathfindingResultSuccess {
-        PathfindingResultSuccess {
+    fn pathfinding_result_success() -> core_client::pathfinding::PathfindingResult {
+        core_client::pathfinding::PathfindingResult {
             path: TrainPath {
                 blocks: vec![],
                 routes: vec![],

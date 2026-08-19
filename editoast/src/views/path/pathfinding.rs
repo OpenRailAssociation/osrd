@@ -18,7 +18,6 @@ use core_client::pathfinding::PathfindingCoreResult;
 use core_client::pathfinding::PathfindingInputError;
 use core_client::pathfinding::PathfindingNotFound;
 use core_client::pathfinding::PathfindingRequest;
-use core_client::pathfinding::PathfindingResultSuccess;
 use database::DbConnection;
 use educe::Educe;
 use itertools::Itertools;
@@ -156,7 +155,7 @@ impl From<PathfindingInput> for core_task::PathfindingConsist {
 #[serde(tag = "status", rename_all = "snake_case")]
 #[schema(title_variants)]
 pub enum PathfindingResult {
-    Success(PathfindingResultSuccess),
+    Success(core_client::pathfinding::PathfindingResult),
     Failure(PathfindingFailure),
 }
 
@@ -489,7 +488,6 @@ pub mod tests {
     use core_client::mocking::MockingClient;
     use core_client::pathfinding::InvalidPathItem;
     use core_client::pathfinding::PathfindingInputError;
-    use core_client::pathfinding::PathfindingResultSuccess;
     use core_client::pathfinding::TrainPath;
     use pretty_assertions::assert_eq;
     use schemas::rolling_stock::LoadingGaugeType;
@@ -523,7 +521,7 @@ pub mod tests {
     }
 
     fn pathfinding_result(length: u64) -> PathfindingResult {
-        PathfindingResult::Success(PathfindingResultSuccess {
+        PathfindingResult::Success(core_client::pathfinding::PathfindingResult {
             path: TrainPath {
                 blocks: vec![],
                 routes: vec![],
