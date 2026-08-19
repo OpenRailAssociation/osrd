@@ -36,6 +36,7 @@ import { type PostWorkSchedulesProjectPathApiResponse } from 'common/api/osrdEdi
 import { useSubCategoryContext } from 'common/SubCategoryContext';
 import { configureHandlePan } from 'modules/simulationResult/components/SpaceTimeChartWrapper/helpers/configureHandlePan';
 import getPathStyleV2 from 'modules/simulationResult/helpers/getPathStyleV2';
+import repeatConflictsInRange from 'modules/simulationResult/helpers/repeatConflictsInRange';
 import type {
   CurveStyleExceptionType,
   CurveStyleInput,
@@ -324,9 +325,17 @@ const SpaceTimeChartWrapper = ({
   );
 
   // Cut the spacetime chart curves if the first or last waypoints are hidden
-  const { cutProjectedTrains, cutConflicts } = useMemo(
+  const { cutProjectedTrains, cutConflicts: cutBaseConflicts } = useMemo(
     () => cutSpaceTimeCurves(projectedTrains, conflicts, operationalPoints, waypointsPanelData),
     [waypointsPanelData?.filteredWaypoints, projectedTrains, conflicts, operationalPoints]
+  );
+
+  const cutConflicts = useMemo(
+    () =>
+      repeatTimeRange && hourlyTimetableDuration
+        ? repeatConflictsInRange(cutBaseConflicts, hourlyTimetableDuration, repeatTimeRange)
+        : cutBaseConflicts,
+    [cutBaseConflicts, hourlyTimetableDuration, repeatTimeRange]
   );
 
   const trainSchedulesWithDetailsById = useMemo(

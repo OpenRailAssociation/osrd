@@ -11,6 +11,32 @@ export type TimeRange = {
   end: Duration;
 };
 
+/**
+ * Compute the list of time offsets a periodic item needs to be repeated on to
+ * fill a time range.
+ *
+ * maxItemDuration expands the range on the left side, so that occurrences
+ * starting before but ending after range.start stay visible.
+ */
+export function getTimetableRepeatOffsets({
+  period,
+  maxItemDuration,
+  range,
+}: {
+  period: Duration;
+  maxItemDuration: Duration;
+  range: TimeRange;
+}): Duration[] {
+  const repeatStartIndex = Math.floor(range.start.sub(maxItemDuration).ms / period.ms);
+  const repeatEndIndex = Math.ceil(range.end.ms / period.ms);
+
+  const offsets: Duration[] = [];
+  for (let i = repeatStartIndex; i < repeatEndIndex; i++) {
+    offsets.push(new Duration({ milliseconds: i * period.ms }));
+  }
+  return offsets;
+}
+
 function getProjectionTravelTime(curves: BaseTrainProjection['spaceTimeCurves']): Duration {
   const times = curves.flatMap((curve) => curve.times);
   return new Duration({ milliseconds: Math.max(...times) - Math.min(...times) });
@@ -43,18 +69,9 @@ export default function getTrainScheduleRepeatOffsets(
     }
   }
 
-  // Expand the range on the left side to ensure an occurrence starting before
-  // but arriving after range.start is visible
-  const effectiveRangeStart = range.start.sub(maxTravelTime);
-
-  const timeWindow = trainSchedule.paced.timeWindow;
-  const repeatStartIndex = Math.floor(effectiveRangeStart.ms / timeWindow.ms);
-  const repeatEndIndex = Math.ceil(range.end.ms / timeWindow.ms);
-
-  const offsets: Duration[] = [];
-  for (let i = repeatStartIndex; i < repeatEndIndex; i++) {
-    offsets.push(new Duration({ milliseconds: i * timeWindow.ms }));
-  }
-
-  return offsets;
+  return getTimetableRepeatOffsets({
+    period: trainSchedule.paced.timeWindow,
+    maxItemDuration: maxTravelTime,
+    range,
+  });
 }
