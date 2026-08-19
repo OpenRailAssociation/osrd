@@ -273,6 +273,10 @@ class ItineraryModalPage {
     await expect(this.timetableItemName).toHaveText(name);
   }
 
+  async verifyTrainColorInTimetable(color: string) {
+    await expect(this.timetableItemName).toHaveCSS('color', color);
+  }
+
   async fillPathStepByName(index: number, searchValue: string, expectedSuggestionText: string) {
     await this.comboBox.nth(index).click();
     await this.comboBox.nth(index).fill(searchValue);
