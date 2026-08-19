@@ -125,11 +125,9 @@ test.describe('Paced train management', { tag: ['@op', '@paced-trains'] }, () =>
   }) => {
     await test.step('Open the itinerary modal and fill in a new train', async () => {
       await scenarioTimetableSection.openItineraryModal();
-      await itineraryModalPage.selectRollingStock(
-        ROLLING_STOCK_NAME_QUERY,
-        ROLLING_STOCK_NAME,
-        ROLLING_STOCK_DEFAULT_CATEGORY
-      );
+      await itineraryModalPage.fillRollingStock(ROLLING_STOCK_NAME_QUERY);
+      await itineraryModalPage.checkRollingStock(ROLLING_STOCK_NAME);
+      await itineraryModalPage.checkCategory(ROLLING_STOCK_DEFAULT_CATEGORY);
       await itineraryModalPage.fillTrainName(DEFAULT_PACED_TRAIN_NAME);
       await itineraryModalPage.launchRocketSearch(ROCKET_SEARCH_INPUT);
     });
@@ -192,11 +190,9 @@ test.describe('Paced train management', { tag: ['@op', '@paced-trains'] }, () =>
 
       await test.step('Open the itinerary modal and fill in a new paced train', async () => {
         await scenarioTimetableSection.openItineraryModal();
-        await itineraryModalPage.selectRollingStock(
-          dualModeRollingStockName,
-          `${dualModeRollingStockName} - dual-mode`,
-          FREIGHT_TRAIN.category
-        );
+        await itineraryModalPage.fillRollingStock(dualModeRollingStockName);
+        await itineraryModalPage.checkRollingStock(`${dualModeRollingStockName} - dual-mode`);
+        await itineraryModalPage.checkCategory(FREIGHT_TRAIN.category);
         await itineraryModalPage.fillTrainName(NEW_PACED_TRAIN_SETTINGS.name);
         await itineraryModalPage.launchRocketSearch(NEW_PACED_TRAIN_ROUTE_SEARCH);
       });
