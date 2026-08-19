@@ -1,0 +1,45 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT search_journey_environment.id,\n                search_journey_environment.infra_id,\n                array_remove(array_agg(search_journey_environment_timetable.timetable_id), NULL) AS \"timetable_ids!\"\n            FROM search_journey_environment\n            LEFT JOIN search_journey_environment_timetable\n                ON search_journey_environment.id = search_journey_environment_timetable.search_journey_environment_id\n            GROUP BY search_journey_environment.id\n            ORDER BY search_journey_environment.id DESC LIMIT 1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int8",
+        "origin": {
+          "Table": {
+            "table": "search_journey_environment",
+            "name": "id"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "infra_id",
+        "type_info": "Int8",
+        "origin": {
+          "Table": {
+            "table": "search_journey_environment",
+            "name": "infra_id"
+          }
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "timetable_ids!",
+        "type_info": "Int8Array",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": [
+      false,
+      false,
+      null
+    ]
+  },
+  "hash": "6be4e4307fd18ff74407d43ea3b1104f40560714ec05462a2285875504354d0d"
+}

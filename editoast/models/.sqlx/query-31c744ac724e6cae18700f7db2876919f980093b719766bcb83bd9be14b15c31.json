@@ -1,0 +1,21 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "WITH modes AS (\n    SELECT key,\n        value\n    FROM rolling_stock,\n        jsonb_each(rolling_stock.effort_curves->'modes')\n)\nSELECT DISTINCT modes.key AS \"voltage!\"\nFROM modes\nWHERE (modes.value->>'is_electric')::boolean\nUNION\nSELECT DISTINCT ((data->'voltage')->>0) AS \"voltage!\"\nFROM infra_object_electrification\nORDER BY \"voltage!\"\n",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "voltage!",
+        "type_info": "Text",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "31c744ac724e6cae18700f7db2876919f980093b719766bcb83bd9be14b15c31"
+}

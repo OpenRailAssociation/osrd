@@ -1,0 +1,23 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT DISTINCT jsonb_object_keys(data->'speed_limit_by_tag') AS \"tag!\"\nFROM infra_object_speed_section\nWHERE infra_id = $1\nORDER BY \"tag!\"\n",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "tag!",
+        "type_info": "Text",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int8"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "0ce6a06f11e6d5db79552ddc6b786b7859ae065933a13fc737266654dc79c58f"
+}

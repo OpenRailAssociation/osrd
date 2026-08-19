@@ -1,0 +1,57 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT timetable.id,\n        timetable.timetable_type AS \"timetable_type: TimetableType\",\n        array_remove(array_agg(train_schedule.id), NULL) AS \"paced_train_ids!\"\n        FROM timetable\n        JOIN timetable_train_schedule_set ON timetable.id = timetable_train_schedule_set.timetable_id\n        LEFT JOIN train_schedule ON timetable_train_schedule_set.train_schedule_set_id = train_schedule.train_schedule_set_id\n        WHERE timetable.id = $1\n        GROUP BY timetable.id",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int8",
+        "origin": {
+          "Table": {
+            "table": "timetable",
+            "name": "id"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "timetable_type: TimetableType",
+        "type_info": {
+          "Custom": {
+            "name": "timetable_type",
+            "kind": {
+              "Enum": [
+                "CALENDAR",
+                "HOURLY"
+              ]
+            }
+          }
+        },
+        "origin": {
+          "Table": {
+            "table": "timetable",
+            "name": "timetable_type"
+          }
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "paced_train_ids!",
+        "type_info": "Int8Array",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int8"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      null
+    ]
+  },
+  "hash": "c2784d9e72a633cd6940392964df994a2a745ed7beeae929ae39f60dc7c247cd"
+}

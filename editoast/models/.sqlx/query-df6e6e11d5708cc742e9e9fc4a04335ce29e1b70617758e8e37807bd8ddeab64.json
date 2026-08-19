@@ -1,0 +1,44 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT ST_XMin(env) as min_lon, ST_YMin(env) as min_lat, ST_XMax(env) as max_lon, ST_YMax(env) as max_lat FROM (SELECT ST_Transform(ST_SetSRID(ST_Extent(geographic), 3857), 4326) as env FROM infra_layer_track_section WHERE infra_id = $1) AS bbox_query",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "min_lon",
+        "type_info": "Float8",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 1,
+        "name": "min_lat",
+        "type_info": "Float8",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 2,
+        "name": "max_lon",
+        "type_info": "Float8",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 3,
+        "name": "max_lat",
+        "type_info": "Float8",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int8"
+      ]
+    },
+    "nullable": [
+      null,
+      null,
+      null,
+      null
+    ]
+  },
+  "hash": "df6e6e11d5708cc742e9e9fc4a04335ce29e1b70617758e8e37807bd8ddeab64"
+}

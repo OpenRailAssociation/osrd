@@ -1,0 +1,56 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT \n    obj_id AS \"obj_id!\",\n    railjson AS \"railjson: sqlx::types::Json<schemas::infra::TrackSection>\",\n\tST_AsGeoJSON( ST_Transform(ST_GeometryN( splitted, 1 ), 4326) )::jsonb AS \"left_geo!: sqlx::types::Json<geos::geojson::Geometry>\",\n\tST_AsGeoJSON( ST_Transform(ST_GeometryN( splitted, 2 ), 4326) )::jsonb AS \"right_geo!: sqlx::types::Json<geos::geojson::Geometry>\"\nFROM (\n    SELECT \n        obj_id,\n        railjson,\n        ST_SPLIT(\n            ST_Snap(\n                geometry::geometry,\n                geo_split_point::geometry,\n                ST_Distance(geometry::geometry, geo_split_point::geometry)*1.01\n            ),\n            geo_split_point::geometry\n        ) as splitted\n    FROM \n        (SELECT\n            object_table.obj_id as obj_id,\n            object_table.data as railjson,\n            ST_Transform(layer_table.geographic, 4326)::geography as geometry,\n            ST_LineInterpolatePoint(\n                ST_Transform(layer_table.geographic, 4326),\n                $3::float,\n                True\n            ) as geo_split_point\n        FROM infra_object_track_section AS object_table\n            LEFT JOIN infra_layer_track_section AS layer_table ON layer_table.infra_id = object_table.infra_id\n            AND object_table.obj_id = layer_table.obj_id\n        WHERE object_table.infra_id = $1\n            AND object_table.obj_id = $2\n        )\n\t);\n",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "obj_id!",
+        "type_info": "Varchar",
+        "origin": {
+          "Table": {
+            "table": "infra_object_track_section",
+            "name": "obj_id"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "railjson: sqlx::types::Json<schemas::infra::TrackSection>",
+        "type_info": "Jsonb",
+        "origin": {
+          "Table": {
+            "table": "infra_object_track_section",
+            "name": "data"
+          }
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "left_geo!: sqlx::types::Json<geos::geojson::Geometry>",
+        "type_info": "Jsonb",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 3,
+        "name": "right_geo!: sqlx::types::Json<geos::geojson::Geometry>",
+        "type_info": "Jsonb",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int8",
+        "Text",
+        "Float8"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      null,
+      null
+    ]
+  },
+  "hash": "b5605a495587b9c9bf0204dd147af140dab905c16cc78df6730607e3246b82cf"
+}

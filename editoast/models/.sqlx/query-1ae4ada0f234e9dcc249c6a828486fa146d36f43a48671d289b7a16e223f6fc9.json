@@ -1,0 +1,23 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT DISTINCT ((data->'voltage')->>0) AS \"voltage!\"\nFROM infra_object_electrification\nWHERE infra_id = $1\nORDER BY \"voltage!\"\n",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "voltage!",
+        "type_info": "Text",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int8"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "1ae4ada0f234e9dcc249c6a828486fa146d36f43a48671d289b7a16e223f6fc9"
+}

@@ -1,0 +1,32 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT routes.obj_id as \"route_id!\",\n    TRUE as \"is_entry_point!\"\nfrom infra_object_route as routes\nwhere infra_id = $1\n    and routes.data->'entry_point'->>'id' = $2\n    AND routes.data->'entry_point'->>'type' = $3\nUNION\nSELECT routes.obj_id as \"route_id!\",\n    FALSE as \"is_entry_point!\"\nfrom infra_object_route as routes\nwhere infra_id = $1\n    and routes.data->'exit_point'->>'id' = $2\n    AND routes.data->'exit_point'->>'type' = $3\n",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "route_id!",
+        "type_info": "Varchar",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 1,
+        "name": "is_entry_point!",
+        "type_info": "Bool",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int8",
+        "Text",
+        "Text"
+      ]
+    },
+    "nullable": [
+      null,
+      null
+    ]
+  },
+  "hash": "f669196c457a3cd4dad7d759ee24bf3b78670332ab7472594c74c7222500634f"
+}
