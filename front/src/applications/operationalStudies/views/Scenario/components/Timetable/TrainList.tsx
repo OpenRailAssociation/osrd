@@ -133,7 +133,7 @@ const TrainList = ({
     return currentDepartureDates.map((date) => {
       const show = date !== previousDepartureDate;
       // TODO: fix this lint
-      // eslint-disable-next-line react-hooks-js/immutability
+      // eslint-disable-next-line react/immutability
       if (show) previousDepartureDate = date;
       return show;
     });

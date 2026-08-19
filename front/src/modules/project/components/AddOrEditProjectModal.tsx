@@ -135,7 +135,7 @@ export default function AddOrEditProjectModal({
         if (tempProjectImage) {
           const imageId = await uploadImage(tempProjectImage);
           // TODO: fix this lint
-          // eslint-disable-next-line react-hooks-js/immutability
+          // eslint-disable-next-line react/immutability
           if (imageId) currentProject.image = imageId;
         }
         const request = postProject({
