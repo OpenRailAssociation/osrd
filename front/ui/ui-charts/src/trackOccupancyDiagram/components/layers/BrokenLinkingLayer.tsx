@@ -22,6 +22,7 @@ import type { BrokenLinking, BrokenLinkingPickingElement, Track } from '../../li
 import {
   BADGE_FONT,
   drawBrokenLinking,
+  getBadgeName,
   getBrokenLinkingBadgeGeometry,
 } from '../helpers/drawElements/drawBrokenLinkings';
 import { getOccupancyZonesY } from '../helpers/drawElements/drawOccupancyZones';
@@ -79,7 +80,9 @@ const BrokenLinkingLayer = ({
       }
       const yOffset =
         topPadding + CANVAS_PADDING + trackIndex * TRACK_HEIGHT_CONTAINER + OCCUPANCY_ZONE_Y_START;
-      const nameWidth = measureContext.measureText(brokenLinking.name).width;
+      const nameWidth = measureContext.measureText(
+        getBadgeName(measureContext, brokenLinking.name)
+      ).width;
       return { brokenLinking, yOffset, nameWidth };
     });
   }, [brokenLinkings, topPadding, tracks, measureContext]);

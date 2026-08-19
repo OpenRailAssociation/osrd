@@ -1,7 +1,8 @@
 import type { BrokenLinking } from '../../../lib/types';
-import { drawText } from '../../utils';
+import { drawText, truncateTextToWidth } from '../../utils';
 
 const BADGE_NAME_MARGIN = 8;
+const BADGE_MAX_NAME_WIDTH = 100;
 const BADGE_ICON_SIZE = 16;
 const BADGE_GAP = 4;
 const BADGE_RADIUS = 6;
@@ -15,6 +16,10 @@ const BADGE_REST_BACKGROUND = 'rgba(234, 167, 43, 0.3)';
 const BADGE_REST_TEXT = 'rgb(125, 82, 30)';
 const BADGE_HIGHLIGHTED_BACKGROUND = 'rgb(217, 28, 28)';
 const BADGE_HIGHLIGHTED_TEXT = 'rgb(255, 255, 255)';
+
+/** The name a badge shows: a long one is cut, so that a badge never outgrows its block. */
+export const getBadgeName = (ctx: CanvasRenderingContext2D, name: string) =>
+  truncateTextToWidth(ctx, name, BADGE_MAX_NAME_WIDTH);
 
 export type BadgeGeometry = {
   boxLeft: number;
@@ -86,7 +91,8 @@ export const drawBrokenLinking = (
 ) => {
   ctx.save();
   ctx.font = BADGE_FONT;
-  const nameWidth = ctx.measureText(brokenLinking.name).width;
+  const name = getBadgeName(ctx, brokenLinking.name);
+  const nameWidth = ctx.measureText(name).width;
   const { boxLeft, boxTop, boxWidth, boxHeight, nameX, iconX } = getBrokenLinkingBadgeGeometry({
     x,
     yCenter,
@@ -103,7 +109,7 @@ export const drawBrokenLinking = (
 
   drawText({
     ctx,
-    text: brokenLinking.name,
+    text: name,
     x: nameX,
     y: yCenter,
     color: highlighted ? BADGE_HIGHLIGHTED_TEXT : BADGE_REST_TEXT,
