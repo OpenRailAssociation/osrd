@@ -81,6 +81,7 @@ test.describe('Simulation settings tab', { tag: ['@op', '@simulation-settings-ta
         await itineraryModalPage.launchRocketSearch('WS MWS MES SES');
         await itineraryModalPage.createTrain();
         await itineraryModalPage.checkTrainPresenceInTimetable(TRAIN_NAME);
+        await itineraryModalPage.verifyTrainColorInTimetable(FREIGHT_TRAIN.color);
       });
 
       await test.step('Set the Mid_East_station stop duration, common to every scenario', async () => {
