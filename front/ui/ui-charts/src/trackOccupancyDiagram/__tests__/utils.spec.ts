@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { getLabelMarks, getTickPattern } from '../components/utils';
+import { getLabelMarks, getTickPattern, truncateTextToWidth } from '../components/utils';
 
 describe('getTickPattern', () => {
   const fiveMinutes = ['05', '10', '20', '25', '35', '40', '50', '55'];
@@ -67,5 +67,28 @@ describe('getLabelMarks', () => {
     expect(getLabelMarks(timeRanges, Infinity, Infinity, labelLevels)).toEqual({});
     expect(getLabelMarks(timeRanges, -Infinity, 2 * HOUR, labelLevels)).toEqual({});
     expect(getLabelMarks(timeRanges, NaN, NaN, labelLevels)).toEqual({});
+  });
+});
+
+describe('truncateTextToWidth', () => {
+  // A context measuring one pixel per character, to keep the widths readable.
+  const ctx = {
+    measureText: (text: string) => ({ width: text.length }),
+  } as CanvasRenderingContext2D;
+
+  it('should leave a text which fits untouched', () => {
+    expect(truncateTextToWidth(ctx, 'short', 10)).toBe('short');
+  });
+
+  it('should cut a text which does not fit and end it with an ellipsis', () => {
+    expect(truncateTextToWidth(ctx, 'far too long', 6)).toBe('far t…');
+  });
+
+  it('should keep no character when even one does not fit', () => {
+    expect(truncateTextToWidth(ctx, 'far too long', 1)).toBe('…');
+  });
+
+  it('should not cut a character written on several code units in half', () => {
+    expect(truncateTextToWidth(ctx, '😂😂😂', 4)).toBe('😂…');
   });
 });
