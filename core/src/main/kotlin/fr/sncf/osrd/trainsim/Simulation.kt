@@ -174,7 +174,10 @@ fun runSimulation(
     val provisionalStates = mutableListOf(TrainState.zero)
 
     margins.forEach { lower, upper, margin ->
-        val lowerI = maxEffortStates.binarySearch(lower.toPrecise())
+        val lowerI = provisionalStates.size - 1
+        check(provisionalStates[lowerI].position == maxEffortStates[lowerI].position)
+        check(provisionalStates[lowerI].position == lower.toPrecise())
+
         val upperI = maxEffortStates.binarySearch(upper.toPrecise())
 
         val prevUpperI = max(lowerI - 1, 0)
