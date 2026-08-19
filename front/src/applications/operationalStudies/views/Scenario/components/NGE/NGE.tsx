@@ -67,21 +67,21 @@ const NGE = ({ activeFilterSettingId, dto, onOperation, onLoad }: NGEProps) => {
 
   useEffect(() => {
     if (ngeRootElement && i18n.language) {
-      // eslint-disable-next-line react-hooks-js/immutability
+      // eslint-disable-next-line react/immutability
       ngeRootElement.language = i18n.language;
     }
   }, [i18n.language, ngeRootElement]);
 
   useEffect(() => {
     if (ngeRootElement && dto) {
-      // eslint-disable-next-line react-hooks-js/immutability
+      // eslint-disable-next-line react/immutability
       ngeRootElement.netzgrafikDto = dto;
     }
   }, [dto, ngeRootElement]);
 
   useEffect(() => {
     if (ngeRootElement && activeFilterSettingId !== undefined) {
-      // eslint-disable-next-line react-hooks-js/immutability
+      // eslint-disable-next-line react/immutability
       ngeRootElement.activeFilterSettingId = activeFilterSettingId;
     }
   }, [activeFilterSettingId, ngeRootElement]);

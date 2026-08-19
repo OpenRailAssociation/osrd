@@ -55,10 +55,10 @@ const Wrapper = ({
       id: `op-${i}`,
       label: `Operational point n°${i + 1}`,
       // TODO: fix this lint
-      /* eslint-disable-next-line react-hooks-js/immutability */
+      /* eslint-disable-next-line react/immutability */
       position: (position += random(50 * KILOMETER, 150 * KILOMETER)),
       // TODO: fix this lint
-      // eslint-disable-next-line react-hooks-js/purity
+      // eslint-disable-next-line react/purity
       importanceLevel: !i || i === operationalPointsCount - 1 || Math.random() > 0.8 ? 1 : 2,
     }));
   }, [operationalPointsCount]);

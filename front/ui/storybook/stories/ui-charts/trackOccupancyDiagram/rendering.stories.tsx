@@ -24,7 +24,7 @@ const TrackOccupancyDiagramStory = ({
 
   useEffect(() => {
     // TODO: fix this lint
-    /* eslint-disable-next-line react-hooks-js/set-state-in-effect */
+    /* eslint-disable-next-line react/set-state-in-effect */
     setSelectedPathId(`${trainId}`);
   }, [trainId]);
 

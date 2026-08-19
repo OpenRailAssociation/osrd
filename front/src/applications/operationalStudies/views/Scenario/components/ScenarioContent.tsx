@@ -130,7 +130,7 @@ const ScenarioContent = ({ activeBoards, toggleBoard }: ScenarioContentProps) =>
     const dto = await loadNgeDto(state, scenario.timetable_id, dispatch, t);
     macroEditorState.current = state;
     setNgeDto(dto);
-    // eslint-disable-next-line react-hooks-js/use-memo
+    // eslint-disable-next-line react/use-memo
   }, [dispatch, infraId, scenario.id, scenario.timetable_id, activeBoards.has('macro')]);
 
   const upsertTrainSchedulesWithNge = useCallback(

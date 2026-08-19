@@ -60,7 +60,7 @@ const SpaceTimeHorizontalZoomWrapper = ({
   });
   useEffect(() => {
     // TODO: fix this lint
-    /* eslint-disable-next-line react-hooks-js/set-state-in-effect */
+    /* eslint-disable-next-line react/set-state-in-effect */
     setState((prev) => ({ ...prev, xOffset: offset }));
   }, [offset]);
   const handleZoom = (zoomValue: number, position = DEFAULT_WIDTH / 2) => {
