@@ -8,6 +8,7 @@ import AnchoredMenu from 'common/AnchoredMenu';
 import OSRDMenu, { type OSRDMenuItem } from 'common/OSRDMenu';
 
 import { getRowsToUpdateFromSimulation } from './helpers/fillTimesFromSimulation';
+import OverwriteAllConfirmDialog from './OverwriteAllConfirmDialog';
 import type { RequestedTimeField, TimesStopsRowNew } from './types';
 
 type RequestedTimeColumnHeaderProps = {
@@ -36,6 +37,7 @@ const RequestedTimeColumnHeader = ({
   });
 
   const [isOpen, setOpen] = useState<boolean>(false);
+  const [isOverwriteAllConfirmOpen, setOverwriteAllConfirmOpen] = useState<boolean>(false);
 
   const fillRequestTimesCount = getRowsToUpdateFromSimulation(rows, field, 'fill').length;
   const overwriteRequestTimesCount = getRowsToUpdateFromSimulation(rows, field, 'overwrite').length;
@@ -46,8 +48,8 @@ const RequestedTimeColumnHeader = ({
       icon: <ArrowLeft />,
       onClick: () => {
         setOpen(false);
-        onOverwriteAll();
         onMouseLeave();
+        setOverwriteAllConfirmOpen(true);
       },
       onMouseEnter: () => {
         onMouseEnterOverwriteAll();
@@ -116,6 +118,16 @@ const RequestedTimeColumnHeader = ({
           </div>
         )}
       </AnchoredMenu>
+      {isOverwriteAllConfirmOpen && (
+        <OverwriteAllConfirmDialog
+          count={overwriteRequestTimesCount}
+          onCancel={() => setOverwriteAllConfirmOpen(false)}
+          onConfirm={() => {
+            onOverwriteAll();
+            setOverwriteAllConfirmOpen(false);
+          }}
+        />
+      )}
     </div>
   );
 };

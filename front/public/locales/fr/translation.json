@@ -848,6 +848,13 @@
     "clearRequestedDepartureTime": "Effacer le départ demandé",
     "clearStopDuration": "Effacer le temps d'arrêt",
     "columnHeader": {
+      "overwriteAllConfirm": {
+        "body_one": "Cela va écraser l'heure demandée de {{count}} point de passage avec l'heure calculée. Voulez-vous continuer ?",
+        "body_other": "Cela va écraser les heures demandées de {{count}} points de passage avec les heures calculées. Voulez-vous continuer ?",
+        "cancel": "Annuler",
+        "confirm": "Confirmer",
+        "title": "Écraser les heures demandées"
+      },
       "requestedArrival": {
         "fillEmpty_one": "Appliquer l'arrivée calculée au {{count}} point de passage non demandé",
         "fillEmpty_other": "Appliquer les arrivées calculées aux {{count}} points de passage non demandés",

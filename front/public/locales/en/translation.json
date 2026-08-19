@@ -848,6 +848,13 @@
     "clearRequestedDepartureTime": "Clear the requested departure time",
     "clearStopDuration": "Clear the stopping time",
     "columnHeader": {
+      "overwriteAllConfirm": {
+        "body_one": "This will overwrite the requested time of {{count}} way point with the computed time. Do you want to continue?",
+        "body_other": "This will overwrite the requested times of {{count}} way points with the computed times. Do you want to continue?",
+        "cancel": "Cancel",
+        "confirm": "Confirm",
+        "title": "Overwrite requested times"
+      },
       "requestedArrival": {
         "fillEmpty_one": "Apply computed arrival time to {{count}} unrequested way point",
         "fillEmpty_other": "Apply computed arrival times to {{count}} unrequested way points",
