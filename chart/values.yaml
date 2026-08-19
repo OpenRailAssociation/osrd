@@ -390,9 +390,9 @@ services:
     annotations: {}
     # -- (object) Init job configuration
     init:
-      # -- (bool) Wheter to run editoast init pod for diesel migration
+      # -- (bool) Whether to run the Editoast init pod for SQLx migrations
       enabled: true
-      # -- (string) Command to run after diesel migration
+      # -- (string) Command to run before SQLx migrations
       extend: ""
       # @schema
       # type: [object]

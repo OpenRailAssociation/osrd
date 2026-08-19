@@ -440,13 +440,13 @@
               "properties": {
                 "enabled": {
                   "default": true,
-                  "description": "Wheter to run editoast init pod for diesel migration",
+                  "description": "Whether to run the Editoast init pod for SQLx migrations",
                   "title": "enabled",
                   "type": "boolean"
                 },
                 "extend": {
                   "default": "",
-                  "description": "Command to run after diesel migration",
+                  "description": "Command to run before SQLx migrations",
                   "title": "extend",
                   "type": "string"
                 },

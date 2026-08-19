@@ -36,6 +36,10 @@
           "rustfmt"
           "rust-analyzer"
         ];
+        pinnedSqlxCli =
+          assert pkgs.lib.assertMsg (pkgs.sqlx-cli.version == "0.9.0")
+            "nixpkgs sqlx-cli must remain pinned to 0.9.0";
+          pkgs.sqlx-cli;
       in
       with pkgs;
       {
@@ -54,7 +58,8 @@
             playwright-driver.browsers
 
             # Tools & Libs
-            diesel-cli
+            pinnedSqlxCli
+            diesel-cli # still needed to regenerate Diesel's schema until the entity cutover
             cargo-watch
             taplo
             uv

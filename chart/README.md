@@ -74,8 +74,8 @@ The CI will fail if the committed schema doesn't match the generated output.
 | services.editoast.cronjob.labels | object | `{}` | labels to add to cronjob pod |
 | services.editoast.cronjob.schedule | string, null | `"3 1 * * mon-fri"` | cronjob format time of execution. Set to null to disable |
 | services.editoast.init | object | `{"enabled":true,"extend":"","labels":{}}` | Init job configuration |
-| services.editoast.init.enabled | bool | `true` | Wheter to run editoast init pod for diesel migration |
-| services.editoast.init.extend | string | `""` | Command to run after diesel migration |
+| services.editoast.init.enabled | bool | `true` | Whether to run the Editoast init pod for SQLx migrations |
+| services.editoast.init.extend | string | `""` | Command to run before SQLx migrations |
 | services.editoast.init.labels | object | `{}` | Labels for init pod |
 | services.editoast.permanent_storage_class | string, null | `nil` | storage class for permanent storage |
 | services.editoast.permanent_storage_size | string, null | `nil` | size in Kubernetes format for editoast shared storage mount in all hosts. null to disable permanent storage |

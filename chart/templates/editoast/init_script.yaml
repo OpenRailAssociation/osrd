@@ -10,5 +10,5 @@ data:
     {{- with .Values.services.editoast.init.extend }}
     {{ . | nindent 4 }}
     {{- end }}
-    fga_migrations apply && diesel migration run
+    fga_migrations apply && sqlx migrate run
 {{- end }}

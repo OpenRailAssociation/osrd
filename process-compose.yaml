@@ -32,7 +32,7 @@ processes:
     working_dir: "${OSRD_PATH}/editoast/"
     command: |
       cargo run --package fga_migrations -- apply
-      diesel migration run --locked-schema
+      sqlx migrate run
       cargo run -- user add --skip-if-exists 'Example User' 'mock/mocked'
       cargo run -- roles add 'mock/mocked' Admin
       cargo run -- runserver

@@ -465,7 +465,7 @@ jobs:
             -e CI="true" \
             -e FGA_API_URL="http://localhost:8091" \
             ${{ fromJSON(needs.build-editoast-test.outputs.stable_tags).editoast-test }} \
-            /bin/sh -c "diesel migration run --locked-schema && RUST_LOG=error RUST_BACKTRACE=1 cargo test --workspace -- --test-threads=4"
+            /bin/sh -c "sqlx migrate run && RUST_LOG=error RUST_BACKTRACE=1 cargo test --workspace -- --test-threads=4"
 
           exit $(docker wait editoast-test)
 
