@@ -6,6 +6,7 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 import 'styles/scss/vendor/bootstrap-sncf/site-intern.scss';
 
 import { Loader } from 'common/Loaders';
+import 'common/Map/init';
 import App from 'main/app';
 import { persistor, store } from 'store';
 
