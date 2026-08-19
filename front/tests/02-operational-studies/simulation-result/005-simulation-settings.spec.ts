@@ -72,11 +72,11 @@ test.describe('Simulation settings tab', { tag: ['@op', '@simulation-settings-ta
 
       await test.step('Create a unique train with an explicit route (WS - MWS - MES - SES)', async () => {
         await scenarioTimetableSection.openItineraryModal();
-        await itineraryModalPage.selectRollingStock(
-          improbableRollingStockName,
-          `${improbableRollingStockName} - UniqueRollingStock`,
-          FREIGHT_TRAIN.category
+        await itineraryModalPage.fillRollingStock(improbableRollingStockName);
+        await itineraryModalPage.checkRollingStock(
+          `${improbableRollingStockName} - UniqueRollingStock`
         );
+        await itineraryModalPage.checkCategory(FREIGHT_TRAIN.category);
         await itineraryModalPage.fillTrainName(TRAIN_NAME);
         await itineraryModalPage.launchRocketSearch('WS MWS MES SES');
         await itineraryModalPage.createTrain();
