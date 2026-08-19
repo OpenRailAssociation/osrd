@@ -1909,17 +1909,33 @@ pub(in crate::views) async fn track_occupancy(
 
     // Check user privilege on the rolling stocks of the occurrences.
     // Without a simulation, no rolling stock is involved: the check is skipped.
-    if use_simulation {
-        crate::authorizers::require_readable_rolling_stocks(
-            trains
-                .iter()
-                .map(|occurrence| occurrence.rolling_stock_name.clone()),
-            conn,
+    let readable_occurrence_ids = if use_simulation {
+        let occurrences_by_rolling_stock = train_ids
+            .iter()
+            .cloned()
+            .zip(trains.iter().cloned())
+            .map(|(id, occurrence)| (occurrence.rolling_stock_name.clone(), (id, occurrence)))
+            .into_group_map();
+
+        let rolling_stock_names = occurrences_by_rolling_stock.keys().cloned().collect_vec();
+        let rolling_stocks: Vec<RollingStock> =
+            RollingStock::retrieve_batch_unchecked(&mut conn.clone(), rolling_stock_names)
+                .await
+                .map_err(RollingStockError::from)?;
+
+        filter_readable_occurrences(
+            occurrences_by_rolling_stock,
+            &rolling_stocks,
             &authn_state,
             &openfga,
         )
-        .await?;
-    }
+        .await?
+        .into_iter()
+        .map(|(occurrence_id, _)| occurrence_id)
+        .collect::<HashSet<_>>()
+    } else {
+        train_ids.iter().cloned().collect()
+    };
 
     let op_location =
         PathItemLocation::OperationalPointPartReference(OperationalPointPartReference {
@@ -1942,6 +1958,15 @@ pub(in crate::views) async fn track_occupancy(
     let occupancies = match operational_point {
         Some(operational_point) => {
             if use_simulation {
+                // Occurrences whose rolling stock the user cannot read are not simulated: like
+                // invalid trains, their occupancy is computed from their schedule only
+                let (readable, unreadable): (Vec<_>, Vec<_>) = izip!(train_ids, trains)
+                    .partition(|(train_id, _)| readable_occurrence_ids.contains(train_id));
+                let (readable_ids, readable_trains): (Vec<_>, Vec<_>) =
+                    readable.into_iter().unzip();
+                let (unreadable_ids, unreadable_trains): (Vec<_>, Vec<_>) =
+                    unreadable.into_iter().unzip();
+
                 let simulation_params = TrackOccupancySimulationParams {
                     conn,
                     valkey_client,
@@ -1950,14 +1975,24 @@ pub(in crate::views) async fn track_occupancy(
                     electrical_profile_set_id,
                     app_version: config.app_version.as_deref(),
                 };
-                find_track_occupancy_for_known_operational_point_with_simulation(
-                    train_ids,
-                    trains,
-                    &op_cache,
-                    operational_point,
-                    simulation_params,
-                )
-                .await?
+                let mut occupancies =
+                    find_track_occupancy_for_known_operational_point_with_simulation(
+                        readable_ids,
+                        readable_trains,
+                        &op_cache,
+                        operational_point,
+                        simulation_params,
+                    )
+                    .await?;
+                occupancies.extend(
+                    find_track_occupancy_for_known_operational_point_without_simulation(
+                        unreadable_ids,
+                        unreadable_trains,
+                        &op_cache,
+                        operational_point,
+                    ),
+                );
+                occupancies
             } else {
                 find_track_occupancy_for_known_operational_point_without_simulation(
                     train_ids,
@@ -4683,12 +4718,19 @@ mod tests {
         .await
     }
 
-    /// With a simulation, a train whose rolling stock the user cannot read is forbidden
+    /// Even with a simulation, a train whose rolling stock the user cannot read is reported: like
+    /// an invalid train, its occupancy is computed without simulation
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn track_occupancy_without_rolling_stock_permission() {
-        init_track_occupancy_test_without_rolling_stock_permission(true)
-            .await
-            .assert_status_forbidden();
+        let track_occupancies: Vec<TrackSectionOccupancy> =
+            init_track_occupancy_test_without_rolling_stock_permission(true)
+                .await
+                .assert_status_ok()
+                .json();
+
+        // The very same result as without a simulation
+        assert_eq!(track_occupancies.len(), 1);
+        assert_eq!(track_occupancies[0].trains.len(), 4);
     }
 
     /// Without a simulation, no rolling stock is involved: the train is reported even though the
