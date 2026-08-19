@@ -3,8 +3,6 @@ import { useContext, useMemo, useState, type PropsWithChildren } from 'react';
 import type { Geometry } from 'geojson';
 import type { TFunction } from 'i18next';
 import { isEmpty, isNil } from 'lodash';
-import maplibregl from 'maplibre-gl';
-import { Protocol } from 'pmtiles';
 import { withTranslation } from 'react-i18next';
 import ReactMapGL, { AttributionControl, ScaleControl, type MapRef } from 'react-map-gl/maplibre';
 import { useSelector } from 'react-redux';
@@ -49,9 +47,6 @@ type MapProps<S extends CommonToolState = CommonToolState> = {
   mapRef: React.RefObject<MapRef | null>;
   infraID: number | undefined;
 };
-
-const protocol = new Protocol();
-maplibregl.addProtocol('pmtiles', protocol.tile);
 
 const MapUnplugged = ({
   mapRef,
