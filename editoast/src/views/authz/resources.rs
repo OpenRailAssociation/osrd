@@ -7,6 +7,7 @@ use authz::RollingStockGrant;
 use authz::RollingStockPrivilege;
 use authz::v2;
 use authz::v2::Protected;
+use itertools::Itertools as _;
 use serde::Deserialize;
 use serde::Serialize;
 use strum::Display;
@@ -24,6 +25,7 @@ pub(super) trait ViewResource {
     fn id(&self) -> i64;
     fn resource_type(&self) -> ResourceType;
 
+    fn privileges(&self, user: authz::User) -> Protected<HashSet<Self::Privilege>>;
     fn granted_subjects(&self, grant: Self::Grant) -> Protected<Vec<authz::Subject>>;
 }
 
@@ -37,6 +39,10 @@ impl ViewResource for authz::Infra {
 
     fn resource_type(&self) -> ResourceType {
         ResourceType::Infra
+    }
+
+    fn privileges(&self, user: authz::User) -> Protected<HashSet<Self::Privilege>> {
+        v2::infra_privileges(user, *self)
     }
 
     fn granted_subjects(&self, grant: Self::Grant) -> Protected<Vec<authz::Subject>> {
@@ -54,6 +60,10 @@ impl ViewResource for authz::RollingStock {
 
     fn resource_type(&self) -> ResourceType {
         ResourceType::RollingStock
+    }
+
+    fn privileges(&self, user: authz::User) -> Protected<HashSet<Self::Privilege>> {
+        v2::rolling_stock_privileges(user, *self)
     }
 
     fn granted_subjects(&self, grant: Self::Grant) -> Protected<Vec<authz::Subject>> {
@@ -84,6 +94,17 @@ impl ViewResource for Resource {
         }
     }
 
+    fn privileges(&self, user: authz::User) -> Protected<HashSet<Self::Privilege>> {
+        match self {
+            Resource::Infra(infra) => infra
+                .privileges(user)
+                .map(async |p| p.into_iter().map_into().collect()),
+            Resource::RollingStock(rolling_stock) => rolling_stock
+                .privileges(user)
+                .map(async |p| p.into_iter().map_into().collect()),
+        }
+    }
+
     fn granted_subjects(&self, grant: Self::Grant) -> Protected<Vec<authz::Subject>> {
         match self {
             Resource::Infra(infra) => infra.granted_subjects(grant.into()),
@@ -97,6 +118,26 @@ impl Resource {
         match rtype {
             ResourceType::Infra => Resource::Infra(authz::Infra(id)),
             ResourceType::RollingStock => Resource::RollingStock(authz::RollingStock(id)),
+        }
+    }
+
+    pub(super) fn extract_from_check(check: v2::Check) -> Option<Self> {
+        match check {
+            v2::Check::HasInfraPrivilege(_, _, infra)
+            | v2::Check::CanAlterSubjectInfraGrant(_, infra, _)
+            | v2::Check::SubjectEffectiveInfraGrantIsNot(_, _, infra)
+            | v2::Check::IsNotLastInfraOwner(_, infra) => Some(Self::Infra(infra)),
+
+            v2::Check::HasRollingStockPrivilege(_, _, rolling_stock)
+            | v2::Check::CanAlterSubjectRollingStockGrant(_, rolling_stock, _)
+            | v2::Check::SubjectEffectiveRollingStockGrantIsNot(_, _, rolling_stock)
+            | v2::Check::IsNotLastRollingStockOwner(_, rolling_stock) => {
+                Some(Self::RollingStock(rolling_stock))
+            }
+
+            v2::Check::HasProjectPrivilege(_, _, _project)
+            | v2::Check::CanGiveSubjectProjectGrant(_, _project) => todo!(),
+            v2::Check::HasRole(_, _) => None,
         }
     }
 }

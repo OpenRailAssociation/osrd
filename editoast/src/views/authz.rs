@@ -336,38 +336,16 @@ pub(in crate::views) async fn user_privileges(
     Extension(authn_state): Extension<crate::authentication::State>,
     Json(resources_ids): Json<HashMap<ResourceType, Vec<i64>>>,
 ) -> Result<Json<HashMap<ResourceType, Vec<ResourcePrivileges>>>> {
-    let mut result = HashMap::<_, Vec<_>>::new();
-    let missing_resources = retrieve_missing_resource_ids(
-        db_pool.get().await?,
-        resources_ids.iter().flat_map(|(resource_type, ids)| {
-            std::iter::repeat(*resource_type).zip(ids.iter().copied())
-        }),
-    )
-    .await?;
+    // Missing resources are not an error under this API: omit them before authorization.
+    let (resources, _) = fetch_resources(db_pool.get().await?, resources_ids).await?;
 
+    let mut result = HashMap::<_, Vec<_>>::new();
     match &authn_state {
         crate::authentication::State::Authenticated { user, .. } => {
-            let resources = resources_ids.into_iter().flat_map(|(resource_type, ids)| {
-                let missing_ids = &missing_resources[&resource_type];
-                // Missing resources are not an error under this API: omit them before authorization.
-                ids.into_iter()
-                    .filter(|id| !missing_ids.contains(id))
-                    .map(move |id| match resource_type {
-                        ResourceType::Infra => Resource::Infra(authz::Infra(id)),
-                        ResourceType::RollingStock => {
-                            Resource::RollingStock(authz::RollingStock(id))
-                        }
-                    })
-            });
-            let protected_privileges = resources.into_iter().map(|resource| match resource {
-                resource @ Resource::Infra(infra) => v2::infra_privileges(*user, infra)
-                    .collect_into::<HashSet<StandardPrivilege>>()
-                    .zip(v2::Protected::value(resource)),
-                resource @ Resource::RollingStock(rolling_stock) => {
-                    v2::rolling_stock_privileges(*user, rolling_stock)
-                        .collect_into::<HashSet<StandardPrivilege>>()
-                        .zip(v2::Protected::value(resource))
-                }
+            let protected_privileges = resources.into_iter().map(|resource| {
+                resource
+                    .privileges(*user)
+                    .zip(v2::Protected::value(resource))
             });
             let authorizer = authn_state.authorizer(&openfga);
             let accesses = authorizer.authorize_all(protected_privileges).await?;
@@ -381,27 +359,10 @@ pub(in crate::views) async fn user_privileges(
                             },
                         );
                     }
-                    Err(Check::HasInfraPrivilege(
-                        Actor::Issuer,
-                        InfraPrivilege::CanRestrictedRead,
-                        infra,
-                    )) => {
-                        result
-                            .entry(ResourceType::Infra)
-                            .or_default()
-                            .push(ResourcePrivileges {
-                                resource_id: *infra,
-                                privileges: HashSet::new(),
-                            });
-                    }
-                    Err(Check::HasRollingStockPrivilege(
-                        Actor::Issuer,
-                        RollingStockPrivilege::CanRead,
-                        rolling_stock,
-                    )) => {
-                        result.entry(ResourceType::RollingStock).or_default().push(
+                    Err(check) if let Some(resource) = Resource::extract_from_check(check) => {
+                        result.entry(resource.resource_type()).or_default().push(
                             ResourcePrivileges {
-                                resource_id: *rolling_stock,
+                                resource_id: resource.id(),
                                 privileges: HashSet::new(),
                             },
                         );
@@ -421,16 +382,14 @@ pub(in crate::views) async fn user_privileges(
                 StandardPrivilege::CanShareOwnership,
                 StandardPrivilege::CanRevoke,
             ]);
-            for (resource_type, ids) in resources_ids {
-                let missing_ids = &missing_resources[&resource_type];
-                result.entry(resource_type).or_default().extend(
-                    ids.into_iter()
-                        .filter(|id| !missing_ids.contains(id))
-                        .map(|resource_id| ResourcePrivileges {
-                            resource_id,
-                            privileges: privileges.clone(),
-                        }),
-                );
+            for resource in resources {
+                result
+                    .entry(resource.resource_type())
+                    .or_default()
+                    .push(ResourcePrivileges {
+                        resource_id: resource.id(),
+                        privileges: privileges.clone(),
+                    });
             }
         }
     }
