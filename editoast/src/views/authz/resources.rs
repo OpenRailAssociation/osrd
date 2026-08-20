@@ -28,6 +28,8 @@ pub(super) trait ViewResource {
     fn privileges(&self, user: authz::User) -> Protected<HashSet<Self::Privilege>>;
     fn effective_grant(&self, subject: authz::Subject) -> Protected<Option<Self::Grant>>;
     fn granted_subjects(&self, grant: Self::Grant) -> Protected<Vec<authz::Subject>>;
+    fn set_grant(&self, subject: authz::Subject, grant: Self::Grant) -> Protected<()>;
+    fn revoke_grant(&self, subject: authz::Subject) -> Protected<bool>;
 }
 
 impl ViewResource for authz::Infra {
@@ -53,6 +55,14 @@ impl ViewResource for authz::Infra {
     fn granted_subjects(&self, grant: Self::Grant) -> Protected<Vec<authz::Subject>> {
         v2::infra_granted_subjects(*self, grant)
     }
+
+    fn set_grant(&self, subject: authz::Subject, grant: Self::Grant) -> Protected<()> {
+        v2::infra_set_grant(subject, *self, grant)
+    }
+
+    fn revoke_grant(&self, subject: authz::Subject) -> Protected<bool> {
+        v2::infra_revoke_grant(subject, *self)
+    }
 }
 
 impl ViewResource for authz::RollingStock {
@@ -77,6 +87,14 @@ impl ViewResource for authz::RollingStock {
 
     fn granted_subjects(&self, grant: Self::Grant) -> Protected<Vec<authz::Subject>> {
         v2::rolling_stock_granted_subjects(*self, grant)
+    }
+
+    fn set_grant(&self, subject: authz::Subject, grant: Self::Grant) -> Protected<()> {
+        v2::rolling_stock_set_grant(subject, *self, grant)
+    }
+
+    fn revoke_grant(&self, subject: authz::Subject) -> Protected<bool> {
+        v2::rolling_stock_revoke_grant(subject, *self)
     }
 }
 
@@ -129,6 +147,20 @@ impl ViewResource for Resource {
         match self {
             Resource::Infra(infra) => infra.granted_subjects(grant.into()),
             Resource::RollingStock(rolling_stock) => rolling_stock.granted_subjects(grant.into()),
+        }
+    }
+
+    fn set_grant(&self, subject: authz::Subject, grant: Self::Grant) -> Protected<()> {
+        match self {
+            Resource::Infra(infra) => infra.set_grant(subject, grant.into()),
+            Resource::RollingStock(rolling_stock) => rolling_stock.set_grant(subject, grant.into()),
+        }
+    }
+
+    fn revoke_grant(&self, subject: authz::Subject) -> Protected<bool> {
+        match self {
+            Resource::Infra(infra) => infra.revoke_grant(subject),
+            Resource::RollingStock(rolling_stock) => rolling_stock.revoke_grant(subject),
         }
     }
 }

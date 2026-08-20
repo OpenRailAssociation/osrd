@@ -25,8 +25,6 @@ use editoast_derive::EditoastError;
 use futures::TryStreamExt;
 use itertools::Itertools;
 use models::Group;
-use models::Infra;
-use models::RollingStock;
 use models::User;
 use models::authn::user::UserWithIdentities;
 use models::prelude::*;
@@ -50,7 +48,9 @@ enum SubjectType {
     Group,
 }
 
-#[derive(Display, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, ToSchema)]
+#[derive(
+    Display, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, ToSchema,
+)]
 #[serde(rename_all = "snake_case")]
 #[strum(serialize_all = "snake_case")]
 #[cfg_attr(test, derive(Debug, EnumIter))]
@@ -392,33 +392,6 @@ pub(in crate::views) async fn user_privileges(
     Ok(Json(result))
 }
 
-async fn retrieve_missing_resource_ids(
-    mut conn: database::DbConnection,
-    resources: impl IntoIterator<Item = (ResourceType, i64)>,
-) -> std::result::Result<HashMap<ResourceType, HashSet<i64>>, models::Error> {
-    let mut resources = resources
-        .into_iter()
-        .into_group_map()
-        .into_iter()
-        .map(|(resource_type, ids)| (resource_type, ids.into_iter().collect()))
-        .collect::<HashMap<ResourceType, HashSet<i64>>>();
-    let infra_ids = resources.remove(&ResourceType::Infra).unwrap_or_default();
-    let rolling_stock_ids = resources
-        .remove(&ResourceType::RollingStock)
-        .unwrap_or_default();
-
-    let mut infra_conn = conn.clone();
-    let ((_, missing_infras), (_, missing_rolling_stocks)) = tokio::try_join!(
-        Infra::retrieve_batch::<_, Vec<_>>(&mut infra_conn, infra_ids),
-        RollingStock::retrieve_batch::<_, Vec<_>>(&mut conn, rolling_stock_ids),
-    )?;
-
-    Ok(HashMap::from([
-        (ResourceType::Infra, missing_infras),
-        (ResourceType::RollingStock, missing_rolling_stocks),
-    ]))
-}
-
 #[derive(Serialize, ToSchema)]
 #[cfg_attr(test, derive(Debug, Deserialize, PartialEq))]
 pub(in crate::views) struct UserResourceGrant {
@@ -672,30 +645,26 @@ pub(in crate::views) async fn update_grants(
 ) -> Result<impl IntoResponse> {
     {
         let conn = db_pool.get().await?;
-        let missing_resources = match &body {
-            BodyUpdateGrants::Grant(grants) => {
-                retrieve_missing_resource_ids(
-                    conn,
-                    grants
-                        .iter()
-                        .map(|grant| (grant.resource_type, grant.resource_id)),
-                )
-                .await?
-            }
-            BodyUpdateGrants::Revoke(revokes) => {
-                retrieve_missing_resource_ids(
-                    conn,
-                    revokes
-                        .iter()
-                        .map(|revoke| (revoke.resource_type, revoke.resource_id)),
-                )
-                .await?
-            }
-        };
-        let missing_resource_id = [ResourceType::Infra, ResourceType::RollingStock]
-            .into_iter()
-            .find_map(|resource_type| missing_resources[&resource_type].iter().min().copied());
-        if let Some(resource_id) = missing_resource_id {
+        // We don't need the resources, they're built back later.
+        let (_, missing) = fetch_resources(
+            conn,
+            match &body {
+                BodyUpdateGrants::Grant(grants) => grants
+                    .iter()
+                    .map(|grant| (grant.resource_type, grant.resource_id))
+                    .into_group_map(),
+                BodyUpdateGrants::Revoke(revokes) => revokes
+                    .iter()
+                    .map(|revoke| (revoke.resource_type, revoke.resource_id))
+                    .into_group_map(),
+            },
+        )
+        .await?;
+        if let Some(rtype) = missing.keys().min() {
+            let resource_id = *missing
+                .get(rtype)
+                .and_then(|ids| ids.iter().min())
+                .expect("");
             return Err(AuthzError::UnknownResource { resource_id }.into());
         }
     }
@@ -734,7 +703,6 @@ pub(in crate::views) async fn update_grants(
     };
 
     let authorizer = authn_state.authorizer(&openfga);
-
     match body {
         BodyUpdateGrants::Grant(grants) => {
             let prot = grants
@@ -775,14 +743,7 @@ impl GrantBody {
         let subject = subjects
             .get(&subject_id)
             .ok_or_else(|| AuthzError::UnknownSubject { subject_id })?;
-        Ok(match resource_type {
-            ResourceType::Infra => {
-                authz::v2::infra_set_grant(*subject, resource_id.into(), grant.into())
-            }
-            ResourceType::RollingStock => {
-                authz::v2::rolling_stock_set_grant(*subject, resource_id.into(), grant.into())
-            }
-        })
+        Ok(Resource::new(resource_type, resource_id).set_grant(*subject, grant))
     }
 }
 
@@ -799,12 +760,7 @@ impl RevokeBody {
         let subject = subjects
             .get(&subject_id)
             .ok_or_else(|| AuthzError::UnknownSubject { subject_id })?;
-        Ok(match resource_type {
-            ResourceType::Infra => authz::v2::infra_revoke_grant(*subject, resource_id.into()),
-            ResourceType::RollingStock => {
-                authz::v2::rolling_stock_revoke_grant(*subject, resource_id.into())
-            }
-        })
+        Ok(Resource::new(resource_type, resource_id).revoke_grant(*subject))
     }
 }
 
@@ -834,6 +790,7 @@ mod tests {
     use authz::RollingStockGrant;
     use authz::v2::TestClientExt as _;
     use axum::http::StatusCode;
+    use models::Infra;
     use pretty_assertions::assert_eq;
     use rstest::rstest;
     use serde_json::json;
