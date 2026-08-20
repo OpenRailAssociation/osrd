@@ -2,9 +2,11 @@ import React, { useMemo, useState } from 'react';
 
 import {
   TrackOccupancyStandalone,
+  isBrokenLinkingPickingElement,
   isLinkingPickingElement,
   useHoveredPickingElement,
 } from '@osrd-project/ui-charts';
+import type { PickingElement } from '@osrd-project/ui-charts';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import '@osrd-project/ui-charts/dist/theme.css';
@@ -15,28 +17,47 @@ import trashIcon from './assets/trash-white.svg';
 
 import './styles/track-occupancy.css';
 
-const TrackOccupancyLinkingsStory = () => {
-  const { hoveredElement, handleHoveredChildUpdate } =
-    useHoveredPickingElement(isLinkingPickingElement);
+/** Both kinds of linking answer to the mouse, so both drive the pointer cursor. */
+const isAnyLinkingPickingElement = (element: PickingElement) =>
+  isLinkingPickingElement(element) || isBrokenLinkingPickingElement(element);
+
+const TrackOccupancyLinkingsStory = ({ editingLinkings }: { editingLinkings: boolean }) => {
+  const { hoveredElement, handleHoveredChildUpdate } = useHoveredPickingElement(
+    isAnyLinkingPickingElement
+  );
   const [brokenLinkings, setBrokenLinkings] = useState(BROKEN_LINKINGS);
 
+  const hovered = editingLinkings ? hoveredElement : undefined;
+  const hoveredLinkingId =
+    hovered && isLinkingPickingElement(hovered) ? hovered.linkingId : undefined;
+  const hoveredBadge = hovered && isBrokenLinkingPickingElement(hovered) ? hovered : undefined;
+
   const linkings = useMemo(
+    () => LINKINGS.map((linking) => ({ ...linking, hover: linking.id === hoveredLinkingId })),
+    [hoveredLinkingId]
+  );
+  const hoveredBrokenLinkings = useMemo(
     () =>
-      LINKINGS.map((linking) => ({ ...linking, hover: linking.id === hoveredElement?.linkingId })),
-    [hoveredElement]
+      brokenLinkings.map((brokenLinking) => ({
+        ...brokenLinking,
+        hover:
+          brokenLinking.id === hoveredBadge?.brokenLinkingId &&
+          brokenLinking.direction === hoveredBadge.direction,
+      })),
+    [brokenLinkings, hoveredBadge]
   );
 
   return (
     <div
       id="track-occupancy-diagram-linkings-story"
       className="bg-ambientB-10"
-      style={{ cursor: hoveredElement ? 'pointer' : undefined }}
+      style={{ cursor: hovered ? 'pointer' : undefined }}
     >
       <TrackOccupancyStandalone
         tracks={TRACKS}
         occupancyZones={LINKING_OCCUPANCY_ZONES}
         linkings={linkings}
-        brokenLinkings={brokenLinkings}
+        brokenLinkings={hoveredBrokenLinkings}
         deleteIconUrl={trashIcon}
         onDeleteBrokenLinking={(id) =>
           setBrokenLinkings((prev) => prev.filter((brokenLinking) => brokenLinking.id !== id))
@@ -51,7 +72,18 @@ const TrackOccupancyLinkingsStory = () => {
 const meta: Meta<typeof TrackOccupancyLinkingsStory> = {
   title: 'TrackOccupancyDiagram/Linkings',
   component: TrackOccupancyLinkingsStory,
-  render: () => <TrackOccupancyLinkingsStory />,
+  args: {
+    editingLinkings: true,
+  },
+  argTypes: {
+    editingLinkings: {
+      name: 'Editing linkings?',
+      description:
+        'Linkings only answer to the mouse while the user may create and delete them: off, hovering one neither highlights it nor offers to delete it.',
+      control: { type: 'boolean' },
+    },
+  },
+  render: (args) => <TrackOccupancyLinkingsStory {...args} />,
   tags: ['autodocs'],
 };
 
