@@ -9,19 +9,59 @@ use utoipa::ToSchema;
 
 use crate::views::authz::ResourceType;
 
+pub(super) trait ViewResource {
+    // Privileges only exist in responses.
+    type Privilege: Into<StandardPrivilege>;
+    // But grants are in both requests and responses.
+    type Grant: From<StandardGrant> + Into<StandardGrant>;
+
+    fn id(&self) -> i64;
+    fn resource_type(&self) -> ResourceType;
+}
+
+impl ViewResource for authz::Infra {
+    type Privilege = InfraPrivilege;
+    type Grant = InfraGrant;
+
+    fn id(&self) -> i64 {
+        **self
+    }
+
+    fn resource_type(&self) -> ResourceType {
+        ResourceType::Infra
+    }
+}
+
+impl ViewResource for authz::RollingStock {
+    type Privilege = RollingStockPrivilege;
+    type Grant = RollingStockGrant;
+
+    fn id(&self) -> i64 {
+        **self
+    }
+
+    fn resource_type(&self) -> ResourceType {
+        ResourceType::RollingStock
+    }
+}
+
 pub enum Resource {
     Infra(authz::Infra),
     RollingStock(authz::RollingStock),
 }
 
-impl Resource {
-    pub(super) fn id(&self) -> i64 {
+impl ViewResource for Resource {
+    type Privilege = StandardPrivilege;
+    type Grant = StandardGrant;
+
+    fn id(&self) -> i64 {
         match self {
             Resource::Infra(authz::Infra(id)) => *id,
             Resource::RollingStock(authz::RollingStock(id)) => *id,
         }
     }
-    pub(super) fn get_type(&self) -> ResourceType {
+
+    fn resource_type(&self) -> ResourceType {
         match self {
             Resource::Infra(_) => ResourceType::Infra,
             Resource::RollingStock(_) => ResourceType::RollingStock,

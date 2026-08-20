@@ -7,6 +7,7 @@ use crate::error::Result;
 use crate::views::authz::resources::Resource;
 use crate::views::authz::resources::StandardGrant;
 use crate::views::authz::resources::StandardPrivilege;
+use crate::views::authz::resources::ViewResource as _;
 use ::authz;
 use ::authz::InfraGrant;
 use ::authz::InfraPrivilege;
@@ -373,13 +374,12 @@ pub(in crate::views) async fn user_privileges(
             for access in v2::Access::access_all(accesses).await? {
                 match access {
                     Ok((privileges, resource)) => {
-                        result
-                            .entry(resource.get_type())
-                            .or_default()
-                            .push(ResourcePrivileges {
+                        result.entry(resource.resource_type()).or_default().push(
+                            ResourcePrivileges {
                                 resource_id: resource.id(),
                                 privileges,
-                            });
+                            },
+                        );
                     }
                     Err(Check::HasInfraPrivilege(
                         Actor::Issuer,
