@@ -26,6 +26,7 @@ pub(super) trait ViewResource {
     fn resource_type(&self) -> ResourceType;
 
     fn privileges(&self, user: authz::User) -> Protected<HashSet<Self::Privilege>>;
+    fn effective_grant(&self, subject: authz::Subject) -> Protected<Option<Self::Grant>>;
     fn granted_subjects(&self, grant: Self::Grant) -> Protected<Vec<authz::Subject>>;
 }
 
@@ -43,6 +44,10 @@ impl ViewResource for authz::Infra {
 
     fn privileges(&self, user: authz::User) -> Protected<HashSet<Self::Privilege>> {
         v2::infra_privileges(user, *self)
+    }
+
+    fn effective_grant(&self, subject: authz::Subject) -> Protected<Option<Self::Grant>> {
+        v2::infra_effective_grant(subject, *self)
     }
 
     fn granted_subjects(&self, grant: Self::Grant) -> Protected<Vec<authz::Subject>> {
@@ -64,6 +69,10 @@ impl ViewResource for authz::RollingStock {
 
     fn privileges(&self, user: authz::User) -> Protected<HashSet<Self::Privilege>> {
         v2::rolling_stock_privileges(user, *self)
+    }
+
+    fn effective_grant(&self, subject: authz::Subject) -> Protected<Option<Self::Grant>> {
+        v2::rolling_stock_effective_grant(subject, *self)
     }
 
     fn granted_subjects(&self, grant: Self::Grant) -> Protected<Vec<authz::Subject>> {
@@ -102,6 +111,17 @@ impl ViewResource for Resource {
             Resource::RollingStock(rolling_stock) => rolling_stock
                 .privileges(user)
                 .map(async |p| p.into_iter().map_into().collect()),
+        }
+    }
+
+    fn effective_grant(&self, subject: authz::Subject) -> Protected<Option<Self::Grant>> {
+        match self {
+            Resource::Infra(infra) => infra
+                .effective_grant(subject)
+                .map(async |g| g.map(Self::Grant::from)),
+            Resource::RollingStock(rolling_stock) => rolling_stock
+                .effective_grant(subject)
+                .map(async |g| g.map(Self::Grant::from)),
         }
     }
 

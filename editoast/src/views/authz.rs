@@ -11,13 +11,9 @@ use crate::views::authz::resources::ViewResource as _;
 use crate::views::authz::resources::fetch_resources;
 use ::authz;
 use ::authz::InfraGrant;
-use ::authz::InfraPrivilege;
 use ::authz::Role;
-use authz::RollingStockPrivilege;
 use authz::v2;
-use authz::v2::Actor;
 use authz::v2::Authorizer;
-use authz::v2::Check;
 use axum::Extension;
 use axum::extract::Path;
 use axum::extract::State;
@@ -450,67 +446,40 @@ pub(in crate::views) async fn user_grants(
         db_pool, openfga, ..
     }): State<AppState>,
     Extension(authn_state): Extension<crate::authentication::State>,
-    Json(body): Json<HashMap<ResourceType, Vec<i64>>>,
+    Json(resources_ids): Json<HashMap<ResourceType, Vec<i64>>>,
 ) -> Result<Json<HashMap<ResourceType, Vec<UserResourceGrant>>>> {
     let user = authn_state
         .user()
         .ok_or(AuthorizationError::Unauthenticated)?;
-    let authorizer = authn_state.authorizer(&openfga);
-    let mut response = HashMap::<_, Vec<UserResourceGrant>>::new();
-    let missing_resources = retrieve_missing_resource_ids(
-        db_pool.get().await?,
-        body.iter().flat_map(|(resource_type, ids)| {
-            std::iter::repeat(*resource_type).zip(ids.iter().copied())
-        }),
-    )
-    .await?;
     // Missing resources are not an error under this API: omit them before authorization.
-    // TODO build all protected at once, zip them and batch send them with `authorize_all`
-    for (resource_type, ids) in &body {
-        for id in ids {
-            if missing_resources[resource_type].contains(id) {
+    let (resources, _) = fetch_resources(db_pool.get().await?, resources_ids).await?;
+
+    let protected_privileges = resources.into_iter().map(|resource| {
+        resource
+            .effective_grant(authz::Subject::user(user))
+            .zip(v2::Protected::value(resource))
+    });
+    let authorizer = authn_state.authorizer(&openfga);
+    let accesses = authorizer.authorize_all(protected_privileges).await?;
+
+    let mut response = HashMap::<_, Vec<UserResourceGrant>>::new();
+    for res in v2::Access::access_all(accesses).await? {
+        match res {
+            Ok((Some(grant), resource)) => response
+                .entry(resource.resource_type())
+                .or_default()
+                .push(UserResourceGrant {
+                    id: resource.id(),
+                    grant,
+                }),
+            Ok((None, _)) => continue,
+            Err(check) if let Some(resource) = Resource::extract_from_check(check) => {
+                tracing::warn!(type = %resource.resource_type(), id = resource.id(), "user cannot access resource — skipping");
                 continue;
             }
-            let grant_access = match resource_type {
-                ResourceType::Infra => {
-                    authz::v2::infra_effective_grant(authz::Subject::user(user), authz::Infra(*id))
-                        .map_some_into::<StandardGrant>()
-                }
-
-                ResourceType::RollingStock => authz::v2::rolling_stock_effective_grant(
-                    authz::Subject::user(user),
-                    authz::RollingStock(*id),
-                )
-                .map_some_into::<StandardGrant>(),
-            }
-            .authorize(&authorizer)
-            .await?
-            .access()
-            .await?;
-            let grant = match grant_access {
-                Ok(Some(grant)) => grant,
-                Ok(None) => continue,
-                Err(Check::HasInfraPrivilege(Actor::Issuer, InfraPrivilege::CanRead, infra)) => {
-                    tracing::warn!(%infra, "user cannot read infra — skipping");
-                    continue;
-                }
-                Err(Check::HasRollingStockPrivilege(
-                    Actor::Issuer,
-                    RollingStockPrivilege::CanRead,
-                    rolling_stock,
-                )) => {
-                    tracing::warn!(%rolling_stock, "user cannot read rolling stock — skipping");
-                    continue;
-                }
-                Err(_) => return Err(AuthorizationError::Forbidden.into()),
-            };
-            response
-                .entry(*resource_type)
-                .or_default()
-                .push(UserResourceGrant { id: *id, grant });
-        }
+            Err(_) => return Err(AuthorizationError::Forbidden.into()),
+        };
     }
-
     Ok(Json(response))
 }
 
