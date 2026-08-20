@@ -18,6 +18,7 @@ import {
   isPointPickingElement,
   isInteractiveWaypoint,
   isOccupancyPickingElement,
+  isBrokenLinkingPickingElement,
   isLinkingPickingElement,
   type Track,
   DEFAULT_ZOOM_MS_PER_PX,
@@ -373,10 +374,7 @@ const SpaceTimeChartWrapper = ({
     [hoveredItem, hoveredTrainId, trainSchedulesWithDetailsById]
   );
 
-  const hoveredLinkingId =
-    hoveredItem?.element && isLinkingPickingElement(hoveredItem.element)
-      ? hoveredItem.element.linkingId
-      : undefined;
+  const hoveredLinking = linkingMode ? hoveredItem?.element : undefined;
 
   // If we're dealing a unique train or a path_and_schedule exception, use the
   // ID as-is so that only this single occupancy zone gets dragged. Otherwise,
@@ -442,7 +440,7 @@ const SpaceTimeChartWrapper = ({
         onTrackDragOver: setDragOverTrackId,
         linkings: {
           existing: linkings ?? [],
-          hoveredId: hoveredLinkingId,
+          hovered: hoveredLinking,
           showSuggestions: linkingMode,
         },
       }),
@@ -462,7 +460,7 @@ const SpaceTimeChartWrapper = ({
       dragOverTrackId,
       setDragOverTrackId,
       linkings,
-      hoveredLinkingId,
+      hoveredLinking,
       linkingMode,
     ]
   );
@@ -825,7 +823,10 @@ const SpaceTimeChartWrapper = ({
                 : hoveredItem &&
                     (isSegmentPickingElement(hoveredItem.element) ||
                       isPointPickingElement(hoveredItem.element) ||
-                      isOccupancyPickingElement(hoveredItem.element))
+                      isOccupancyPickingElement(hoveredItem.element) ||
+                      (linkingMode &&
+                        (isLinkingPickingElement(hoveredItem.element) ||
+                          isBrokenLinkingPickingElement(hoveredItem.element))))
                   ? 'pointer'
                   : undefined,
           }}

@@ -1,6 +1,5 @@
-import { useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
-import { MouseContext } from '../../../common';
 import { hexToRgb, indexToColor } from '../../../common/helpers/colors';
 import { drawAliasedRect } from '../../../common/helpers/utils';
 import { useDraw, usePicking } from '../../../common/hooks/useCanvas';
@@ -48,7 +47,6 @@ const BrokenLinkingLayer = ({
   topPadding: number;
   deleteIconUrl?: string;
 }) => {
-  const mouseContext = useContext(MouseContext);
   const [imageElement, setImageElement] = useState<HTMLImageElement>();
   // TODO: extract this image loading into a shared ui-charts hook (same as WorkScheduleLayer)
   useEffect(() => {
@@ -86,9 +84,7 @@ const BrokenLinkingLayer = ({
     });
   }, [brokenLinkings, topPadding, tracks, measureContext]);
 
-  const hoveredElement = mouseContext.hoveredItem?.element;
-  const hoveredBrokenLinking =
-    hoveredElement && isBrokenLinkingPickingElement(hoveredElement) ? hoveredElement : undefined;
+  const hoveredLinkingId = brokenLinkings.find(({ hover }) => hover)?.id;
 
   const drawingFunction = useCallback<DrawingFunction<SpaceTimeChartContextType>>(
     (ctx, stcContext) => {
@@ -96,10 +92,9 @@ const BrokenLinkingLayer = ({
         const x = stcContext.getTimePixel(brokenLinking.time);
         const yCenter =
           getOccupancyZonesY(stcContext, position) + yOffset + OCCUPANCY_ZONE_HEIGHT / 2;
-        const highlighted = hoveredBrokenLinking?.brokenLinkingId === brokenLinking.id;
+        const highlighted = brokenLinking.id === hoveredLinkingId;
         // only the hovered badge shows the delete icon
-        const showDelete =
-          highlighted && hoveredBrokenLinking?.direction === brokenLinking.direction;
+        const showDelete = !!brokenLinking.hover;
 
         drawBrokenLinking(ctx, {
           x,
@@ -110,7 +105,7 @@ const BrokenLinkingLayer = ({
         });
       });
     },
-    [badges, position, hoveredBrokenLinking, imageElement]
+    [badges, position, hoveredLinkingId, imageElement]
   );
 
   const pickingFunction = useCallback<PickingDrawingFunction<SpaceTimeChartContextType>>(

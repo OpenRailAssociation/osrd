@@ -5,6 +5,9 @@ import {
   TrackOccupancyCanvas,
   TrackOccupancyManchette,
   WaypointComponent,
+  isBrokenLinkingPickingElement,
+  isLinkingPickingElement,
+  type PickingElement,
   type SplitPoint,
 } from '@osrd-project/ui-charts';
 import { keyBy, sortBy } from 'lodash';
@@ -46,7 +49,7 @@ type BuildSplitPointsProps = {
   onTrackDragOver?: (trackId: string | undefined) => void;
   linkings?: {
     existing: ExistingLinking[];
-    hoveredId?: string;
+    hovered?: PickingElement;
     showSuggestions: boolean;
   };
 };
@@ -70,6 +73,11 @@ export function buildSplitPoints({
   if (!occupancyZonesLayers?.length) return [];
 
   const pathsById = keyBy(paths, ({ id }) => id);
+
+  const { hovered } = linkings ?? {};
+  const hoveredLinkingId =
+    hovered && isLinkingPickingElement(hovered) ? hovered.linkingId : undefined;
+  const hoveredBadge = hovered && isBrokenLinkingPickingElement(hovered) ? hovered : undefined;
 
   const countZonesByTrainScheduleId = (zones: MovableOccupancyZone[] = []) => {
     const counts = new Map<TrainId, Map<string, number>>();
@@ -146,11 +154,17 @@ export function buildSplitPoints({
         trainNames: (trainId) => pathsById[trainId]?.label,
         showSuggestions: linkings?.showSuggestions ?? false,
       });
+      const hoveredBadges = brokenLinkings.map((brokenLinking) => ({
+        ...brokenLinking,
+        hover:
+          brokenLinking.id === hoveredBadge?.brokenLinkingId &&
+          brokenLinking.direction === hoveredBadge.direction,
+      }));
       // A linking takes the colors of the train departing after it:
       const coloredLinkings = waypointLinkings.flatMap(({ targetTrainId, ...linking }) => {
         const path = pathsById[targetTrainId];
         if (!path) return [];
-        return [{ ...linking, colors: path.colors, hover: linking.id === linkings?.hoveredId }];
+        return [{ ...linking, colors: path.colors, hover: linking.id === hoveredLinkingId }];
       });
 
       const waypoint = {
@@ -184,7 +198,7 @@ export function buildSplitPoints({
             occupancyZones={occupancyZones.filter((zone) => !isDraggingOccupancyZone(zone))}
             draggingOccupancyZones={occupancyZones.filter(isDraggingOccupancyZone)}
             linkings={coloredLinkings}
-            brokenLinkings={brokenLinkings}
+            brokenLinkings={hoveredBadges}
             deleteIconUrl={trashIcon}
             onClose={() => onCloseOccupancyLayer?.(waypointId)}
             onDragOver={onTrackDragOver}

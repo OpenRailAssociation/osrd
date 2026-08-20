@@ -58,6 +58,7 @@ export type BrokenLinking = {
   direction: 'forward' | 'backward';
   time: number;
   name: string;
+  hover?: boolean;
 };
 
 export type LinkingPickingElement = PickingElement & {
