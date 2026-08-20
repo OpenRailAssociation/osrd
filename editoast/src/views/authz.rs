@@ -8,11 +8,11 @@ use crate::views::authz::resources::Resource;
 use crate::views::authz::resources::StandardGrant;
 use crate::views::authz::resources::StandardPrivilege;
 use crate::views::authz::resources::ViewResource as _;
+use crate::views::authz::resources::fetch_resources;
 use ::authz;
 use ::authz::InfraGrant;
 use ::authz::InfraPrivilege;
 use ::authz::Role;
-use authz::RollingStockGrant;
 use authz::RollingStockPrivilege;
 use authz::v2;
 use authz::v2::Actor;
@@ -592,55 +592,26 @@ pub(in crate::views) async fn resource_granted_users(
     Path(ResourceTypeParam { resource_type }): Path<ResourceTypeParam>,
     Path(ResourceIdParam { resource_id }): Path<ResourceIdParam>,
 ) -> Result<Json<Vec<SubjectGrant>>> {
-    let mut conn = db_pool.get().await?;
-    let openfga = &openfga;
-    let authorizer = authn_state.authorizer(openfga);
-    // Ask OpenFGA about grants on the resource
-    let ((readers, writers), owners) = match resource_type {
-        ResourceType::Infra => {
-            let infra = authz::Infra(resource_id);
-            Infra::exists_or_fail(&mut conn, resource_id, || AuthzError::UnknownResource {
-                resource_id,
-            })
-            .await?;
-            authorizer
-                .authorize(
-                    authz::v2::infra_granted_subjects(infra, InfraGrant::Reader)
-                        .zip(authz::v2::infra_granted_subjects(infra, InfraGrant::Writer))
-                        .zip(authz::v2::infra_granted_subjects(infra, InfraGrant::Owner)),
-                )
-                .await?
-                .access()
-                .await?
-                .map_err(|_| AuthorizationError::Forbidden)?
+    let conn = db_pool.get().await?;
+    let resource = {
+        let (mut resources, missing) = fetch_resources(
+            conn.clone(),
+            HashMap::from([(resource_type, vec![resource_id])]),
+        )
+        .await?;
+        if !missing.is_empty() {
+            return Err(AuthzError::UnknownResource { resource_id }.into());
         }
-        ResourceType::RollingStock => {
-            let rolling_stock = authz::RollingStock(resource_id);
-            RollingStock::exists_or_fail(&mut conn, resource_id, || AuthzError::UnknownResource {
-                resource_id,
-            })
-            .await?;
-            authorizer
-                .authorize(
-                    authz::v2::rolling_stock_granted_subjects(
-                        rolling_stock,
-                        RollingStockGrant::Reader,
-                    )
-                    .zip(authz::v2::rolling_stock_granted_subjects(
-                        rolling_stock,
-                        RollingStockGrant::Writer,
-                    ))
-                    .zip(authz::v2::rolling_stock_granted_subjects(
-                        rolling_stock,
-                        RollingStockGrant::Owner,
-                    )),
-                )
-                .await?
-                .access()
-                .await?
-                .map_err(|_| AuthorizationError::Forbidden)?
-        }
+        resources
+            .pop()
+            .expect("if none are missing, then we have some")
     };
+    let ((readers, writers), owners) = resource
+        .granted_subjects(StandardGrant::Reader)
+        .zip(resource.granted_subjects(StandardGrant::Writer))
+        .zip(resource.granted_subjects(StandardGrant::Owner))
+        .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
+        .await?;
 
     // NOTE: the same subject can appear in multiple lists. This can happen
     // if a user inherits a grant from one of its groups and also has a direct grant.

@@ -1,10 +1,16 @@
+use std::collections::HashMap;
+use std::collections::HashSet;
+
 use authz::InfraGrant;
 use authz::InfraPrivilege;
 use authz::RollingStockGrant;
 use authz::RollingStockPrivilege;
+use authz::v2;
+use authz::v2::Protected;
 use serde::Deserialize;
 use serde::Serialize;
 use strum::Display;
+use tracing::Instrument as _;
 use utoipa::ToSchema;
 
 use crate::views::authz::ResourceType;
@@ -17,6 +23,8 @@ pub(super) trait ViewResource {
 
     fn id(&self) -> i64;
     fn resource_type(&self) -> ResourceType;
+
+    fn granted_subjects(&self, grant: Self::Grant) -> Protected<Vec<authz::Subject>>;
 }
 
 impl ViewResource for authz::Infra {
@@ -30,6 +38,10 @@ impl ViewResource for authz::Infra {
     fn resource_type(&self) -> ResourceType {
         ResourceType::Infra
     }
+
+    fn granted_subjects(&self, grant: Self::Grant) -> Protected<Vec<authz::Subject>> {
+        v2::infra_granted_subjects(*self, grant)
+    }
 }
 
 impl ViewResource for authz::RollingStock {
@@ -42,6 +54,10 @@ impl ViewResource for authz::RollingStock {
 
     fn resource_type(&self) -> ResourceType {
         ResourceType::RollingStock
+    }
+
+    fn granted_subjects(&self, grant: Self::Grant) -> Protected<Vec<authz::Subject>> {
+        v2::rolling_stock_granted_subjects(*self, grant)
     }
 }
 
@@ -67,6 +83,64 @@ impl ViewResource for Resource {
             Resource::RollingStock(_) => ResourceType::RollingStock,
         }
     }
+
+    fn granted_subjects(&self, grant: Self::Grant) -> Protected<Vec<authz::Subject>> {
+        match self {
+            Resource::Infra(infra) => infra.granted_subjects(grant.into()),
+            Resource::RollingStock(rolling_stock) => rolling_stock.granted_subjects(grant.into()),
+        }
+    }
+}
+
+impl Resource {
+    pub(super) fn new(rtype: ResourceType, id: i64) -> Self {
+        match rtype {
+            ResourceType::Infra => Resource::Infra(authz::Infra(id)),
+            ResourceType::RollingStock => Resource::RollingStock(authz::RollingStock(id)),
+        }
+    }
+}
+
+pub(super) type MissingResources = HashMap<ResourceType, HashSet<i64>>;
+
+#[tracing::instrument(skip_all, err)]
+pub(super) async fn fetch_resources(
+    mut conn: database::DbConnection,
+    mut ids: HashMap<ResourceType, Vec<i64>>,
+) -> Result<(Vec<Resource>, MissingResources), models::Error> {
+    use models::prelude::*;
+
+    let mut rs_conn = conn.clone();
+    let ((infras, missing_infras), (rolling_stocks, missing_rolling_stocks)) = tokio::try_join!(
+        models::Infra::retrieve_batch::<_, Vec<_>>(
+            &mut conn,
+            ids.remove(&ResourceType::Infra).unwrap_or_default()
+        )
+        .in_current_span(),
+        models::RollingStock::retrieve_batch::<_, Vec<_>>(
+            &mut rs_conn,
+            ids.remove(&ResourceType::RollingStock).unwrap_or_default()
+        )
+        .in_current_span(),
+    )?;
+    debug_assert!(ids.is_empty(), "some resource type has been overlooked");
+
+    let found = infras
+        .into_iter()
+        .map(|res| Resource::new(ResourceType::Infra, res.id))
+        .chain(
+            rolling_stocks
+                .into_iter()
+                .map(|res| Resource::new(ResourceType::RollingStock, res.id)),
+        )
+        .collect::<Vec<_>>();
+    let mut missing = HashMap::new();
+    missing.extend((!missing_infras.is_empty()).then_some((ResourceType::Infra, missing_infras)));
+    missing.extend(
+        (!missing_rolling_stocks.is_empty())
+            .then_some((ResourceType::RollingStock, missing_rolling_stocks)),
+    );
+    Ok((found, missing))
 }
 
 #[derive(Serialize, Deserialize, ToSchema)]
