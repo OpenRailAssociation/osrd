@@ -16,14 +16,19 @@ import { formatEditoastIdToTrainScheduleId } from 'utils/trainId';
 
 import { getOccurrencesIds, isPacedTrainBase } from './pacedTrain';
 
+/**
+ * Fetch a train schedule along with its exceptions, which are tied to a timetable.
+ */
 export async function fetchTrainSchedule(
   id: number,
+  timetableId: number,
   dispatch: AppDispatch
 ): Promise<TrainScheduleResponse> {
   const trainSchedule = await dispatch(
-    osrdEditoastApi.endpoints.getTrainSchedulesById.initiate(
+    osrdEditoastApi.endpoints.getTimetableByIdTrainSchedulesAndTrainScheduleId.initiate(
       {
-        id,
+        id: timetableId,
+        trainScheduleId: id,
       },
       { subscribe: false }
     )

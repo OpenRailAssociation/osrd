@@ -27,6 +27,11 @@ export default class MacroEditorState {
   scenarioId: number;
 
   /**
+   * Timetable id
+   */
+  timetableId: number;
+
+  /**
    * Type of the scenario timetable. It drives how `start_time` is interpreted on both
    * sides of the NGE bridge: an absolute date for `CALENDAR`, an offset from the
    * timetable start for `HOURLY`.
@@ -93,7 +98,12 @@ export default class MacroEditorState {
   /**
    * Default constructor
    */
-  constructor(infraId: number, scenarioId: number, timetableType: TimetableType) {
+  constructor(
+    infraId: number,
+    scenarioId: number,
+    timetableId: number,
+    timetableType: TimetableType
+  ) {
     this.nodeLabels = new Set<string>([]);
     this.trainrunLabels = new Set<string>([]);
     this.noteLabels = new Set<string>([]);
@@ -103,6 +113,7 @@ export default class MacroEditorState {
     this.ngeNoteIdToDbId = new Map();
     this.infraId = infraId;
     this.scenarioId = scenarioId;
+    this.timetableId = timetableId;
     this.timetableType = timetableType;
     this.trainrunFrequencies = [];
     this.trainrunCategories = [];

@@ -129,7 +129,12 @@ const ScenarioContent = ({ activeBoards, toggleBoard }: ScenarioContentProps) =>
 
   const refreshNge = useCallback(async () => {
     if (!activeBoards.has('macro')) return;
-    const state = new MacroEditorState(infraId, scenario.id, scenario.timetable_type);
+    const state = new MacroEditorState(
+      infraId,
+      scenario.id,
+      scenario.timetable_id,
+      scenario.timetable_type
+    );
 
     const dto = await loadNgeDto(state, scenario.timetable_id, dispatch, t);
     macroEditorState.current = state;
