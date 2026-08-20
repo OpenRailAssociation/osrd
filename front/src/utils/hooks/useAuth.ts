@@ -3,11 +3,7 @@ import { useCallback, useEffect } from 'react';
 import { skipToken } from '@reduxjs/toolkit/query';
 import { useDispatch, useSelector } from 'react-redux';
 
-import {
-  addTagTypes,
-  osrdEditoastApi,
-  type SearchResultItemUser,
-} from 'common/api/osrdEditoastApi';
+import { osrdEditoastApi, type SearchResultItemUser } from 'common/api/osrdEditoastApi';
 import { osrdGatewayApi } from 'common/api/osrdGatewayApi';
 import { setImpersonatedUser, updateAuthzUser } from 'reducers/user';
 import { getIsUserLogged, getImpersonatedUser, getUsername } from 'reducers/user/userSelectors';
@@ -57,7 +53,7 @@ function useAuth() {
       impersonated = undefined;
     }
     dispatch(setImpersonatedUser(impersonated));
-    dispatch(osrdEditoastApi.util.invalidateTags(addTagTypes.map((t) => ({ type: t }))));
+    dispatch(osrdEditoastApi.util.resetApiState());
   }, []);
 
   return {
