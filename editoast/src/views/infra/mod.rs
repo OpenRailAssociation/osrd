@@ -324,7 +324,7 @@ pub(in crate::views) struct CloneQuery {
 }
 
 /// Duplicate an infra
-#[editoast_derive::route(authz::Role::OperationalStudies)]
+#[editoast_derive::route]
 #[utoipa::path(
     post, path = "",
     tag = "infra",
@@ -894,7 +894,6 @@ pub mod tests {
             let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
             let user = app
                 .user("thomas", "Thomas")
-                .with_roles([Role::OperationalStudies])
                 .with_infra_grant(empty_infra.id, InfraGrant::Reader)
                 .create()
                 .await;
@@ -927,7 +926,6 @@ pub mod tests {
             let small_infra_id = small_infra.id;
             let user = app
                 .user("thomas", "Thomas")
-                .with_roles([Role::OperationalStudies])
                 .with_infra_grant(small_infra_id, InfraGrant::Reader)
                 .create()
                 .await;
@@ -997,6 +995,32 @@ pub mod tests {
                 // check that we have the same number of objects in each table for both infras
                 assert_eq!(val[0], val[1]);
             }
+        }
+
+        #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+        async fn cloning_requires_reader_grant() {
+            let app = test_app!().build();
+            let db_pool = app.db_pool();
+            let infra = create_empty_infra(&mut db_pool.get_ok()).await;
+            let user_reader = app
+                .user("alice", "Alice")
+                .with_infra_grant(infra.id, InfraGrant::Reader)
+                .create()
+                .await;
+            let user_no_grant = app
+                .user("bob", "Bob")
+                .with_infra_grant(infra.id, InfraGrant::RestrictedReader)
+                .create()
+                .await;
+
+            app.post(format!("/infra/{}/clone/?name=cloned_infra", infra.id).as_str())
+                .by_user(user_reader.as_ref())
+                .await
+                .assert_status_ok();
+            app.post(format!("/infra/{}/clone/?name=cloned_infra", infra.id).as_str())
+                .by_user(user_no_grant.as_ref())
+                .await
+                .assert_status_forbidden();
         }
     }
 
