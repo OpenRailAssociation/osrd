@@ -560,7 +560,11 @@ export const handleUpdateTrainSchedule = async ({
 }) => {
   const trainScheduleIds = state.trainScheduleIdByNgeId.get(trainrun.id);
   if (!trainScheduleIds) return;
-  const oldForwardTrainSchedule = await fetchTrainSchedule(trainScheduleIds[0], dispatch);
+  const oldForwardTrainSchedule = await fetchTrainSchedule(
+    trainScheduleIds[0],
+    state.timetableId,
+    dispatch
+  );
   const trainrunSections = getContinuousTrainrunSectionsByTrainrunId(netzgrafikDto, trainrun.id);
   const labels = getTrainrunLabels(netzgrafikDto, trainrun);
   const baseStartTime = parseStartTime(oldForwardTrainSchedule.start_time, state.timetableType);
@@ -643,7 +647,11 @@ export const handleUpdateTrainSchedule = async ({
 
   if (trainScheduleIds[1]) {
     // update return if already present
-    const oldReturnTrainSchedule = await fetchTrainSchedule(trainScheduleIds[1], dispatch);
+    const oldReturnTrainSchedule = await fetchTrainSchedule(
+      trainScheduleIds[1],
+      state.timetableId,
+      dispatch
+    );
     const { id: _return_id, ...oldReturnTrainBase } = oldReturnTrainSchedule;
     const newReturnTrainBase: Omit<TrainScheduleResponse, 'id'> = {
       ...oldReturnTrainBase,
