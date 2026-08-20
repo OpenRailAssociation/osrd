@@ -208,6 +208,11 @@ class PathfindingInputErrorNotEnoughPathItems(BaseModel):
     error_type: Literal["not_enough_path_items"]
 
 
+class PathfindingInputErrorUnauthorizedRollingStock(BaseModel):
+    error_type: Literal["unauthorized_rolling_stock"]
+    rolling_stock_id: int
+
+
 class PathfindingInputErrorRollingStockNotFound(BaseModel):
     error_type: Literal["rolling_stock_not_found"]
     rolling_stock_name: str
@@ -3127,12 +3132,19 @@ class PathfindingFailurePathfindingInputError3(
 
 
 class PathfindingFailurePathfindingInputError4(
-    PathfindingInputErrorRollingStockNotFound, PathfindingFailurePathfindingInputError1
+    PathfindingInputErrorUnauthorizedRollingStock,
+    PathfindingFailurePathfindingInputError1,
 ):
     pass
 
 
 class PathfindingFailurePathfindingInputError5(
+    PathfindingInputErrorRollingStockNotFound, PathfindingFailurePathfindingInputError1
+):
+    pass
+
+
+class PathfindingFailurePathfindingInputError6(
     PathfindingInputErrorZeroLengthPath, PathfindingFailurePathfindingInputError1
 ):
     pass
@@ -3162,24 +3174,31 @@ class PathfindingOutput(BaseModel):
     track_ranges: list[DirectionalTrackRange]
 
 
-class PathfindingFailurePathfindingInputError7(BaseModel):
+class PathfindingFailurePathfindingInputError8(BaseModel):
     failed_status: Literal["pathfinding_input_error"]
 
 
-class PathfindingFailurePathfindingInputError9(
-    PathfindingInputErrorNotEnoughPathItems, PathfindingFailurePathfindingInputError7
-):
-    pass
-
-
 class PathfindingFailurePathfindingInputError10(
-    PathfindingInputErrorRollingStockNotFound, PathfindingFailurePathfindingInputError7
+    PathfindingInputErrorNotEnoughPathItems, PathfindingFailurePathfindingInputError8
 ):
     pass
 
 
 class PathfindingFailurePathfindingInputError11(
-    PathfindingInputErrorZeroLengthPath, PathfindingFailurePathfindingInputError7
+    PathfindingInputErrorUnauthorizedRollingStock,
+    PathfindingFailurePathfindingInputError8,
+):
+    pass
+
+
+class PathfindingFailurePathfindingInputError12(
+    PathfindingInputErrorRollingStockNotFound, PathfindingFailurePathfindingInputError8
+):
+    pass
+
+
+class PathfindingFailurePathfindingInputError13(
+    PathfindingInputErrorZeroLengthPath, PathfindingFailurePathfindingInputError8
 ):
     pass
 
@@ -3767,7 +3786,7 @@ class SummaryResponsePathfindingInputError3(
 
 
 class SummaryResponsePathfindingInputError4(
-    PathfindingInputErrorRollingStockNotFound, SummaryResponsePathfindingInputError1
+    PathfindingInputErrorUnauthorizedRollingStock, SummaryResponsePathfindingInputError1
 ):
     """
     InputError
@@ -3775,6 +3794,14 @@ class SummaryResponsePathfindingInputError4(
 
 
 class SummaryResponsePathfindingInputError5(
+    PathfindingInputErrorRollingStockNotFound, SummaryResponsePathfindingInputError1
+):
+    """
+    InputError
+    """
+
+
+class SummaryResponsePathfindingInputError6(
     PathfindingInputErrorZeroLengthPath, SummaryResponsePathfindingInputError1
 ):
     """
@@ -5403,25 +5430,27 @@ class PathfindingInputErrorInvalidPathItems2(BaseModel):
     items: list[Item]
 
 
-class PathfindingFailurePathfindingInputError8(
-    PathfindingInputErrorInvalidPathItems2, PathfindingFailurePathfindingInputError7
+class PathfindingFailurePathfindingInputError9(
+    PathfindingInputErrorInvalidPathItems2, PathfindingFailurePathfindingInputError8
 ):
     pass
 
 
-class PathfindingFailurePathfindingInputError6(
+class PathfindingFailurePathfindingInputError7(
     RootModel[
-        PathfindingFailurePathfindingInputError8
-        | PathfindingFailurePathfindingInputError9
+        PathfindingFailurePathfindingInputError9
         | PathfindingFailurePathfindingInputError10
         | PathfindingFailurePathfindingInputError11
+        | PathfindingFailurePathfindingInputError12
+        | PathfindingFailurePathfindingInputError13
     ]
 ):
     root: Annotated[
-        PathfindingFailurePathfindingInputError8
-        | PathfindingFailurePathfindingInputError9
+        PathfindingFailurePathfindingInputError9
         | PathfindingFailurePathfindingInputError10
-        | PathfindingFailurePathfindingInputError11,
+        | PathfindingFailurePathfindingInputError11
+        | PathfindingFailurePathfindingInputError12
+        | PathfindingFailurePathfindingInputError13,
         Field(title="PathfindingFailurePathfindingInputError"),
     ]
 
@@ -6033,6 +6062,7 @@ class CorePathfindingInputError(
     RootModel[
         PathfindingInputErrorInvalidPathItems
         | PathfindingInputErrorNotEnoughPathItems
+        | PathfindingInputErrorUnauthorizedRollingStock
         | PathfindingInputErrorRollingStockNotFound
         | PathfindingInputErrorZeroLengthPath
     ]
@@ -6040,6 +6070,7 @@ class CorePathfindingInputError(
     root: (
         PathfindingInputErrorInvalidPathItems
         | PathfindingInputErrorNotEnoughPathItems
+        | PathfindingInputErrorUnauthorizedRollingStock
         | PathfindingInputErrorRollingStockNotFound
         | PathfindingInputErrorZeroLengthPath
     )
@@ -6732,6 +6763,7 @@ class ResponsePathfindingFailed(BaseModel):
         | PathfindingFailurePathfindingInputError3
         | PathfindingFailurePathfindingInputError4
         | PathfindingFailurePathfindingInputError5
+        | PathfindingFailurePathfindingInputError6
         | PathfindingFailurePathfindingNotFound2
         | PathfindingFailurePathfindingNotFound3
         | PathfindingFailurePathfindingNotFound4
@@ -6824,7 +6856,8 @@ class TrainScheduleSimulationSummaryResult(BaseModel):
         | SummaryResponsePathfindingInputError2
         | SummaryResponsePathfindingInputError3
         | SummaryResponsePathfindingInputError4
-        | SummaryResponsePathfindingInputError5,
+        | SummaryResponsePathfindingInputError5
+        | SummaryResponsePathfindingInputError6,
     ]
     """
     The key is the `exception_id`
@@ -6840,6 +6873,7 @@ class TrainScheduleSimulationSummaryResult(BaseModel):
         | SummaryResponsePathfindingInputError3
         | SummaryResponsePathfindingInputError4
         | SummaryResponsePathfindingInputError5
+        | SummaryResponsePathfindingInputError6
     )
 
 
