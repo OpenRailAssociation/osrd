@@ -323,6 +323,7 @@ export const DurationInput = ({
     >
       <div
         ref={containerRef}
+        id={id}
         className={cx('ui-duration-input', { small })}
         role="group"
         aria-label="Duration Input"
