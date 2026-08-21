@@ -497,7 +497,7 @@ const useTrackOccupancy = ({
               getTrackOccupancyOperationalPointReference(pathOpsByWaypointId.get(waypointId)),
               waypointId,
               {
-                [draggedTrainId]: newTrainData,
+                [draggedEditoastId]: newTrainData,
               }
             );
 
