@@ -7,6 +7,7 @@ import {
 } from 'modules/trainSchedule/helpers/pacedTrain';
 import type { SimulatedException } from 'modules/trainSchedule/types';
 import type { OccurrenceId, TrainId } from 'reducers/osrdconf/types';
+import { Duration } from 'utils/duration';
 import {
   extractEditoastIdFromTrainScheduleId,
   extractOccurrenceIndexFromOccurrenceId,
@@ -117,7 +118,7 @@ async function handleAllOccurrencesDrag({
 
   // initialDepartureTime is the model departure at drag start, so the offset is absolute
   // (no per-frame accumulation). The exceptions are shifted from their captured originals.
-  const offset = newDepartureTime.getTime() - initialDepartureTime.getTime();
+  const offset = Duration.subtractDate(newDepartureTime, initialDepartureTime);
   const baseExceptions = originalPacedExceptions ?? draggedTrain.paced.exceptions;
   const newTrainData: TrainSpaceTimeData = {
     ...draggedTrain,

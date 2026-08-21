@@ -33,6 +33,7 @@ import {
 } from 'modules/trainSchedule/helpers/updateTrainScheduleHelpers';
 import type { TrainId } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
+import { Duration } from 'utils/duration';
 import {
   extractEditoastIdFromTrainScheduleId,
   extractTrainScheduleIdFromOccurrenceId,
@@ -68,7 +69,7 @@ function computeShiftedExceptions(
   panelSelectionMode?: PanelSelectionMode
 ): PacedTrainException[] | undefined {
   if (panelSelectionMode !== 'all' || !trainSchedule.paced) return undefined;
-  const offset = newDeparture.getTime() - trainSchedule.start_time;
+  const offset = Duration.subtractDate(newDeparture, new Date(trainSchedule.start_time));
   return shiftPacedExceptions(trainSchedule.paced.exceptions, offset);
 }
 
