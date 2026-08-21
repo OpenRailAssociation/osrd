@@ -368,23 +368,13 @@ pub(in crate::views) async fn user_privileges(
             }
         }
         crate::authentication::State::Skip => {
-            let privileges = HashSet::from([
-                StandardPrivilege::CanRestrictedRead,
-                StandardPrivilege::CanRead,
-                StandardPrivilege::CanShareRead,
-                StandardPrivilege::CanWrite,
-                StandardPrivilege::CanShareWrite,
-                StandardPrivilege::CanDelete,
-                StandardPrivilege::CanShareOwnership,
-                StandardPrivilege::CanRevoke,
-            ]);
             for resource in resources {
                 result
                     .entry(resource.resource_type())
                     .or_default()
                     .push(ResourcePrivileges {
                         resource_id: resource.id(),
-                        privileges: privileges.clone(),
+                        privileges: resource.all_privileges(),
                     });
             }
         }
@@ -975,16 +965,7 @@ mod tests {
             .collect::<HashMap<_, _>>();
         assert_eq!(
             privileges.remove(&infra).unwrap(),
-            HashSet::from([
-                StandardPrivilege::CanRestrictedRead,
-                StandardPrivilege::CanRead,
-                StandardPrivilege::CanShareRead,
-                StandardPrivilege::CanWrite,
-                StandardPrivilege::CanShareWrite,
-                StandardPrivilege::CanDelete,
-                StandardPrivilege::CanShareOwnership,
-                StandardPrivilege::CanRevoke,
-            ])
+            Resource::new(ResourceType::Infra, infra).all_privileges(),
         );
     }
 

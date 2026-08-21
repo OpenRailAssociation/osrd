@@ -11,6 +11,7 @@ use itertools::Itertools as _;
 use serde::Deserialize;
 use serde::Serialize;
 use strum::Display;
+use strum::VariantArray as _;
 use tracing::Instrument as _;
 use utoipa::ToSchema;
 
@@ -18,12 +19,14 @@ use crate::views::authz::ResourceType;
 
 pub(super) trait ViewResource {
     // Privileges only exist in responses.
-    type Privilege: Into<StandardPrivilege>;
+    type Privilege: Into<StandardPrivilege> + std::hash::Hash + Eq;
     // But grants are in both requests and responses.
     type Grant: From<StandardGrant> + Into<StandardGrant>;
 
     fn id(&self) -> i64;
     fn resource_type(&self) -> ResourceType;
+
+    fn all_privileges(&self) -> HashSet<Self::Privilege>;
 
     fn privileges(&self, user: authz::User) -> Protected<HashSet<Self::Privilege>>;
     fn effective_grant(&self, subject: authz::Subject) -> Protected<Option<Self::Grant>>;
@@ -42,6 +45,10 @@ impl ViewResource for authz::Infra {
 
     fn resource_type(&self) -> ResourceType {
         ResourceType::Infra
+    }
+
+    fn all_privileges(&self) -> HashSet<Self::Privilege> {
+        InfraPrivilege::VARIANTS.iter().cloned().collect()
     }
 
     fn privileges(&self, user: authz::User) -> Protected<HashSet<Self::Privilege>> {
@@ -75,6 +82,10 @@ impl ViewResource for authz::RollingStock {
 
     fn resource_type(&self) -> ResourceType {
         ResourceType::RollingStock
+    }
+
+    fn all_privileges(&self) -> HashSet<Self::Privilege> {
+        RollingStockPrivilege::VARIANTS.iter().cloned().collect()
     }
 
     fn privileges(&self, user: authz::User) -> Protected<HashSet<Self::Privilege>> {
@@ -118,6 +129,17 @@ impl ViewResource for Resource {
         match self {
             Resource::Infra(_) => ResourceType::Infra,
             Resource::RollingStock(_) => ResourceType::RollingStock,
+        }
+    }
+
+    fn all_privileges(&self) -> HashSet<Self::Privilege> {
+        match self {
+            Resource::Infra(infra) => infra.all_privileges().into_iter().map_into().collect(),
+            Resource::RollingStock(rolling_stock) => rolling_stock
+                .all_privileges()
+                .into_iter()
+                .map_into()
+                .collect(),
         }
     }
 

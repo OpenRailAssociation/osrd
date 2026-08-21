@@ -98,7 +98,9 @@ pub struct User(pub i64);
 )]
 pub struct Group(pub i64);
 
-#[derive(Debug, Clone, Copy, Display, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[derive(
+    Debug, Clone, Copy, Display, PartialEq, Eq, Hash, strum::VariantArray, Serialize, Deserialize,
+)]
 #[serde(rename_all = "snake_case")]
 #[strum(serialize_all = "snake_case")]
 #[allow(clippy::enum_variant_names)] // needed due to "Can" prefix
@@ -161,7 +163,9 @@ pub struct RollingStock(pub i64);
 #[cfg_attr(test, derive(PartialOrd, Ord))]
 pub struct Infra(pub i64);
 
-#[derive(Debug, Clone, Copy, Display, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[derive(
+    Debug, Clone, Copy, Display, PartialEq, Eq, Hash, strum::VariantArray, Serialize, Deserialize,
+)]
 #[serde(rename_all = "snake_case")]
 #[strum(serialize_all = "snake_case")]
 #[allow(clippy::enum_variant_names)]
