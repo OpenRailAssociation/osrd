@@ -22,6 +22,7 @@ type DragDeps = {
   setTrainScheduleProjections: (newProjections: TrainSpaceTimeData[]) => void;
   handleTrainDragInTrackOccupancy: (args: {
     draggedTrainId: TrainId;
+    selectionMode: PanelSelectionMode;
     newTrainData: TrainSpaceTimeData;
     offset: Duration;
     stopPanning: boolean;
@@ -84,6 +85,7 @@ async function handleSingleOccurrenceDrag({
   const offset = Duration.subtractDate(newDepartureTime, initialDepartureTime);
   await handleTrainDragInTrackOccupancy({
     draggedTrainId,
+    selectionMode: 'single',
     stopPanning: false,
     offset,
     newTrainData: previewTrain,
@@ -97,6 +99,7 @@ async function handleSingleOccurrenceDrag({
   await updateTrainScheduleDepartureTime(draggedTrainId, newDepartureTime, 'single');
   await handleTrainDragInTrackOccupancy({
     draggedTrainId,
+    selectionMode: 'single',
     stopPanning: true,
     offset,
     newTrainData: previewTrain,
@@ -130,6 +133,7 @@ async function handleAllOccurrencesDrag({
 
   await handleTrainDragInTrackOccupancy({
     draggedTrainId,
+    selectionMode: 'all',
     stopPanning: false,
     offset,
     newTrainData,
@@ -142,6 +146,7 @@ async function handleAllOccurrencesDrag({
   await updateTrainScheduleDepartureTime(draggedTrainId, newDepartureTime, 'all');
   await handleTrainDragInTrackOccupancy({
     draggedTrainId,
+    selectionMode: 'all',
     stopPanning: true,
     offset,
     newTrainData,
@@ -165,6 +170,7 @@ async function handleModelDrag({
   const offset = Duration.subtractDate(newDepartureTime, initialDepartureTime);
   await handleTrainDragInTrackOccupancy({
     draggedTrainId,
+    selectionMode: 'compliant',
     stopPanning: false,
     offset,
     newTrainData,
@@ -176,6 +182,7 @@ async function handleModelDrag({
   await updateTrainScheduleDepartureTime(draggedTrainId, newDepartureTime);
   await handleTrainDragInTrackOccupancy({
     draggedTrainId,
+    selectionMode: 'compliant',
     stopPanning: true,
     offset,
     newTrainData,
