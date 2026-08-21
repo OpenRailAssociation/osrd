@@ -235,8 +235,11 @@ export const propagateTime = (
         'fromDeparture',
         timetableType
       );
-    // Use the exact typed value as updatedStartTime (avoids inheriting sub-second ms from current start_time)
-    return result && newValue ? { ...result, updatedStartTime: newValue } : result;
+    // Keep the computed start time: the typed value's day is only inferred from HH:mm:ss
+    // Truncate the sub-second part inherited from start_time.
+    return result
+      ? { ...result, updatedStartTime: truncateStartTimeToSecond(result.updatedStartTime) }
+      : result;
   }
 
   if (update.propagationMode === 'atThisWaypoint' || !update.row.pathStepId) return undefined;

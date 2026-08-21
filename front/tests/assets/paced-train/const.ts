@@ -68,13 +68,9 @@ export const MID_EAST_STATION_STOP_DURATION_DIGITS = '0204';
 export const EDITED_EXCEPTION_TRAIN_NAME = IMPORTED_PACED_TRAIN_DETAILS[5].name;
 export const EDITED_EXCEPTION_NEW_REQUESTED_ARRIVAL = '12:00:00';
 
+// Occurrences are listed by start time. Setting the origin arrival to 12:00 moves the model
+// back on the same day, so the added exception at 21:00 comes last.
 export const EDITED_EXCEPTION_OCCURRENCES_WITH_EXCEPTIONS: OccurrenceDetails[] = [
-  {
-    name: `${EDITED_EXCEPTION_TRAIN_NAME}/+`,
-    startTime: '21:00',
-    arrivalTime: '21:03',
-    rollingStock: fastRollingStockName,
-  },
   {
     name: `${EDITED_EXCEPTION_TRAIN_NAME} 1`,
     startTime: '12:00',
@@ -91,6 +87,12 @@ export const EDITED_EXCEPTION_OCCURRENCES_WITH_EXCEPTIONS: OccurrenceDetails[] =
     name: `${EDITED_EXCEPTION_TRAIN_NAME} 5`,
     startTime: '14:00',
     arrivalTime: '14:03',
+    rollingStock: fastRollingStockName,
+  },
+  {
+    name: `${EDITED_EXCEPTION_TRAIN_NAME}/+`,
+    startTime: '21:00',
+    arrivalTime: '21:03',
     rollingStock: fastRollingStockName,
   },
 ];
