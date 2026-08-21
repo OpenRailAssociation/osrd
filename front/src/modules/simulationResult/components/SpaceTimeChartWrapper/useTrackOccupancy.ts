@@ -165,11 +165,11 @@ const useTrackOccupancy = ({
     async (
       opRef: OperationalPointReference | undefined | null,
       waypointId: string,
-      trainsCollection: Record<number, TrainSpaceTimeData>
+      trainsCollection: Map<number, TrainSpaceTimeData>
     ): Promise<MovableOccupancyZone[]> => {
       if (!opRef) return [];
 
-      const trainScheduleIds = Object.values(trainsCollection).map((train) => train.id);
+      const trainScheduleIds = [...trainsCollection.values()].map((train) => train.id);
 
       const trackOccupancyPayload =
         trainScheduleIds.length > 0
@@ -204,7 +204,7 @@ const useTrackOccupancy = ({
           for (const occupation of trains) {
             const itemId = occupation.train_schedule_id;
             const trainScheduleId = formatEditoastIdToTrainScheduleId(itemId);
-            const train = trainsCollection[itemId];
+            const train = trainsCollection.get(itemId);
 
             if (!train) throw new Error(`No train found for id ${itemId}`);
 
@@ -372,7 +372,7 @@ const useTrackOccupancy = ({
             fetchTrackOccupancy(
               getTrackOccupancyOperationalPointReference(waypoint),
               waypointId,
-              Object.fromEntries(ids.map((id) => [id, trainScheduleProjectionsById.get(id)!]))
+              new Map(ids.map((id) => [id, trainScheduleProjectionsById.get(id)!]))
             ),
           {
             batchSize: 50,
@@ -423,9 +423,7 @@ const useTrackOccupancy = ({
           );
           if (!opRef) return;
 
-          const trains = Object.fromEntries(Array.from(trainScheduleProjectionsById.entries()));
-
-          fetchTrackOccupancy(opRef, waypointId, trains).then((newZones) => {
+          fetchTrackOccupancy(opRef, waypointId, trainScheduleProjectionsById).then((newZones) => {
             if (!newZones.length) return;
 
             updatePathOperationalPointState(waypointId, (state) =>
@@ -496,9 +494,7 @@ const useTrackOccupancy = ({
             const newZones = await fetchTrackOccupancy(
               getTrackOccupancyOperationalPointReference(pathOpsByWaypointId.get(waypointId)),
               waypointId,
-              {
-                [draggedEditoastId]: newTrainData,
-              }
+              new Map([[draggedEditoastId, newTrainData]])
             );
 
             if (newZones.length)
@@ -669,7 +665,7 @@ const useTrackOccupancy = ({
         const newZones = await fetchTrackOccupancy(
           getTrackOccupancyOperationalPointReference(pathOpsByWaypointId.get(waypointId)),
           waypointId,
-          Object.fromEntries(
+          new Map(
             [...addedTrainIDs, ...modifiedTrainIDs].map((id) => [
               id,
               trainScheduleProjectionsById.get(id)!,
