@@ -3,10 +3,13 @@ import { chunk, noop, omit } from 'lodash';
 
 import type { TrainScheduleResponse } from 'common/api/osrdEditoastApi';
 import { ASPECT_LABELS_COLORS } from 'modules/simulationResult/consts';
-import type { OccurrenceId } from 'reducers/osrdconf/types';
-import { isOccurrenceId } from 'utils/trainId';
+import type { CurveStyleExceptionType } from 'modules/simulationResult/types';
+import type { OccurrenceId, TrainId } from 'reducers/osrdconf/types';
+import type { SelectedTrain } from 'reducers/simulationResults/types';
+import { isOccurrenceId, extractTrainScheduleIdFromTrainId } from 'utils/trainId';
 
 import type { AspectLabel, IndividualTrainProjection } from '../../../types';
+import type { PanelSelectionMode } from '../CurveSelectionSidePanel';
 
 export const getWaypointsLocalStorageKey = (
   timetableId: number | undefined,
@@ -84,3 +87,28 @@ export const getOccupancyBlocks = (trains: IndividualTrainProjection[]): Occupan
       blinking: block.blinking,
     }));
   });
+
+export const isTrainSelected = (
+  trainId: TrainId,
+  chart: 'std' | 'tod',
+  exceptionTypes: CurveStyleExceptionType[],
+  selection: SelectedTrain,
+  selectionMode: PanelSelectionMode
+) => {
+  if (chart !== selection.by) {
+    return false;
+  }
+  const trainScheduleId = extractTrainScheduleIdFromTrainId(trainId);
+  const selectedTrainScheduleId = extractTrainScheduleIdFromTrainId(selection.id);
+  if (trainScheduleId !== selectedTrainScheduleId) {
+    return false;
+  }
+  switch (selectionMode) {
+    case 'all':
+      return true;
+    case 'single':
+      return trainId === selection.id;
+    case 'compliant':
+      return !exceptionTypes.includes(chart === 'std' ? 'start_time' : 'path_and_schedule');
+  }
+};
