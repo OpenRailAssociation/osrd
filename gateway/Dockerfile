@@ -3,7 +3,7 @@
 ##############
 # Cargo chef #
 ##############
-FROM lukemathwalker/cargo-chef:0.1.77-rust-1.97.1-alpine3.24 AS chef
+FROM lukemathwalker/cargo-chef:0.1.78-rust-1.97.1-alpine3.24 AS chef
 WORKDIR /gateway
 ENV CARGO_HOME=/cargo_gateway
 ENV PATH="/cargo_editoast/bin:$PATH"
