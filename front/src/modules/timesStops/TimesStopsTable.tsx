@@ -91,7 +91,7 @@ const getArrivalReferenceDate = (
     (r) => r.opOnPathIndex < row.opOnPathIndex && (r.requestedDeparture || r.requestedArrival)
   );
 
-  if (!previousRow) return startTime;
+  if (!previousRow) return truncateStartTimeToDay(startTime) as Date;
 
   const refDate = previousRow.requestedDeparture ?? previousRow.requestedArrival ?? startTime;
   if (!(refDate instanceof Date)) {
