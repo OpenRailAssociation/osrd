@@ -26,11 +26,12 @@ import { mapBy } from 'utils/types';
 
 import { usePrevious } from '../../../../utils/hooks/state';
 import type { BaseTrainProjection, ProjectionWaypoint, TrainSpaceTimeData } from '../../types';
+import type { PanelSelectionMode } from './CurveSelectionSidePanel';
 import computePossibleLinkings from './helpers/computePossibleLinkings';
 import getLinkableOccupancyData from './helpers/getLinkableOccupancyData';
 import { EXCEPTION_SUFFIX } from './helpers/makeProjectedTrains';
 import { NO_TRACK_SPECIFIED_SYMBOL, sortTracks } from './helpers/sortTracks';
-import { batchFetch } from './helpers/utils';
+import { batchFetch, isTrainSelected } from './helpers/utils';
 import {
   getMovableOccupancyZone,
   type MovableOccupancyZone,
@@ -92,6 +93,7 @@ const useTrackOccupancy = ({
   toggleWaypoint: (waypointId: string, selectedState?: boolean) => void;
   updateTrackOccupanciesOnDrag: (options: {
     draggedTrainId: TrainId;
+    selectionMode: PanelSelectionMode;
     offset: Duration;
     newTrainData: TrainSpaceTimeData;
     stopPanning: boolean;
@@ -448,11 +450,13 @@ const useTrackOccupancy = ({
   const updateTrackOccupanciesOnDrag = useCallback(
     async ({
       draggedTrainId,
+      selectionMode,
       newTrainData,
       offset,
       stopPanning,
     }: {
       draggedTrainId: TrainId;
+      selectionMode: PanelSelectionMode;
       offset: Duration;
       newTrainData: TrainSpaceTimeData;
       stopPanning: boolean;
@@ -462,16 +466,19 @@ const useTrackOccupancy = ({
       else draggedTrainScheduleIds.current.add(draggedEditoastId);
 
       // Update actual state:
-      const draggedTrainScheduleId = formatEditoastIdToTrainScheduleId(draggedEditoastId);
       const impactedPathOperationalPointIDs = new Set<string>();
       const newState = { ...pathOperationalPointsState };
       forEach(newState, (opState, waypointId) => {
         if (opState.selected) {
           forEach(opState.zones.data, (zone) => {
             if (
-              isOccurrenceId(zone.trainId) &&
-              extractTrainScheduleIdFromOccurrenceId(zone.trainId) === draggedTrainScheduleId &&
-              !zone.exceptionTypes.includes('start_time')
+              isTrainSelected(
+                zone.trainId,
+                'std',
+                zone.exceptionTypes,
+                { id: draggedTrainId, by: 'std' },
+                selectionMode
+              )
             ) {
               impactedPathOperationalPointIDs.add(waypointId);
               zone.startTime = zone.dbStartTime + offset.ms;
