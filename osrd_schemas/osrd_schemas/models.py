@@ -3022,6 +3022,53 @@ class PatchOperationCopyOperation(CopyOperation):
     op: Literal["copy"]
 
 
+class PathItemRelativeLocationExactPathItem(BaseModel):
+    """
+    Position of an operational point on a path, relative to the input path items.
+    If the OP matches an input path item, it is located using this path item's ID,
+    else, if the path just passes by the OP, it is located using its previous and following path items IDs
+    """
+
+    path_item_id: Annotated[str, Field(min_length=1)]
+    """
+    Path item ID, when the operational point matches an item in the input path
+    """
+    type: Literal["exact_path_item"]
+
+
+class PathItemRelativeLocationBetweenPathItems(BaseModel):
+    """
+    Position of an operational point on a path, relative to the input path items.
+    If the OP matches an input path item, it is located using this path item's ID,
+    else, if the path just passes by the OP, it is located using its previous and following path items IDs
+    """
+
+    following_path_item_id: Annotated[str, Field(min_length=1)]
+    """
+    Following path item ID, when the operational point is not one of the input path items
+    """
+    previous_path_item_id: Annotated[str, Field(min_length=1)]
+    """
+    Previous path item ID, when the operational point is not one of the input path items
+    """
+    type: Literal["between_path_items"]
+
+
+class PathItemRelativeLocation(
+    RootModel[
+        PathItemRelativeLocationExactPathItem | PathItemRelativeLocationBetweenPathItems
+    ]
+):
+    root: (
+        PathItemRelativeLocationExactPathItem | PathItemRelativeLocationBetweenPathItems
+    )
+    """
+    Position of an operational point on a path, relative to the input path items.
+    If the OP matches an input path item, it is located using this path item's ID,
+    else, if the path just passes by the OP, it is located using its previous and following path items IDs
+    """
+
+
 class Curves(BaseModel):
     """
     Property f64 values along a path. Each value is associated to a range of the path.

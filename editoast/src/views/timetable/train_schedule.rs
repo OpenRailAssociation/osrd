@@ -1483,7 +1483,6 @@ pub(in crate::views) struct TrackOccupancy {
     #[serde(flatten)]
     #[schema(inline)]
     time_window: TimeWindow,
-    #[schema(inline)]
     path_item_relative_location: PathItemRelativeLocation,
 }
 

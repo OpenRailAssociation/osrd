@@ -4761,41 +4761,7 @@ paths:
                           - path_item_relative_location
                           properties:
                             path_item_relative_location:
-                              oneOf:
-                              - type: object
-                                title: PathItemRelativeLocationExactPathItem
-                                required:
-                                - path_item_id
-                                - type
-                                properties:
-                                  path_item_id:
-                                    $ref: '#/components/schemas/NonBlankString'
-                                    description: Path item ID, when the operational point matches an item in the input path
-                                  type:
-                                    type: string
-                                    enum:
-                                    - exact_path_item
-                              - type: object
-                                title: PathItemRelativeLocationBetweenPathItems
-                                required:
-                                - previous_path_item_id
-                                - following_path_item_id
-                                - type
-                                properties:
-                                  following_path_item_id:
-                                    $ref: '#/components/schemas/NonBlankString'
-                                    description: Following path item ID, when the operational point is not one of the input path items
-                                  previous_path_item_id:
-                                    $ref: '#/components/schemas/NonBlankString'
-                                    description: Previous path item ID, when the operational point is not one of the input path items
-                                  type:
-                                    type: string
-                                    enum:
-                                    - between_path_items
-                              description: |-
-                                Position of an operational point on a path, relative to the input path items.
-                                If the OP matches an input path item, it is located using this path item's ID,
-                                else, if the path just passes by the OP, it is located using its previous and following path items IDs
+                              $ref: '#/components/schemas/PathItemRelativeLocation'
   /train_schedules/{id}:
     get:
       tags:
@@ -12858,6 +12824,42 @@ components:
               - operational_point_part_reference
         title: PathItemLocationOperationalPointPartReference
       description: The location of a path waypoint
+    PathItemRelativeLocation:
+      oneOf:
+      - type: object
+        title: PathItemRelativeLocationExactPathItem
+        required:
+        - path_item_id
+        - type
+        properties:
+          path_item_id:
+            $ref: '#/components/schemas/NonBlankString'
+            description: Path item ID, when the operational point matches an item in the input path
+          type:
+            type: string
+            enum:
+            - exact_path_item
+      - type: object
+        title: PathItemRelativeLocationBetweenPathItems
+        required:
+        - previous_path_item_id
+        - following_path_item_id
+        - type
+        properties:
+          following_path_item_id:
+            $ref: '#/components/schemas/NonBlankString'
+            description: Following path item ID, when the operational point is not one of the input path items
+          previous_path_item_id:
+            $ref: '#/components/schemas/NonBlankString'
+            description: Previous path item ID, when the operational point is not one of the input path items
+          type:
+            type: string
+            enum:
+            - between_path_items
+      description: |-
+        Position of an operational point on a path, relative to the input path items.
+        If the OP matches an input path item, it is located using this path item's ID,
+        else, if the path just passes by the OP, it is located using its previous and following path items IDs
     PathProperties:
       type: object
       description: Properties along a path. Each property is optional since it depends on what the user requests.
