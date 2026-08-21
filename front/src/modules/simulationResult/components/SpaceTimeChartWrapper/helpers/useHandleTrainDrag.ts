@@ -23,7 +23,7 @@ type DragDeps = {
   handleTrainDragInTrackOccupancy: (args: {
     draggedTrainId: TrainId;
     newTrainData: TrainSpaceTimeData;
-    initialDepartureTime: Date;
+    offset: Duration;
     stopPanning: boolean;
   }) => Promise<void>;
 };
@@ -54,6 +54,7 @@ async function handleSingleOccurrenceDrag({
   replaceProjection,
   draggedTrainId,
   newDepartureTime,
+  initialDepartureTime,
   stopPanning,
   originalPacedExceptions,
 }: DragContext & { draggedTrainId: OccurrenceId }) {
@@ -80,10 +81,11 @@ async function handleSingleOccurrenceDrag({
 
   // Register the train as "being dragged" (stopPanning: false) so the trains-update effect in
   // useTrackOccupancy skips it instead of refetching its occupancy on every frame.
+  const offset = Duration.subtractDate(newDepartureTime, initialDepartureTime);
   await handleTrainDragInTrackOccupancy({
     draggedTrainId,
     stopPanning: false,
-    initialDepartureTime: draggedTrain.departureTime,
+    offset,
     newTrainData: previewTrain,
   });
   setTrainScheduleProjections(replaceProjection(previewTrain));
@@ -96,7 +98,7 @@ async function handleSingleOccurrenceDrag({
   await handleTrainDragInTrackOccupancy({
     draggedTrainId,
     stopPanning: true,
-    initialDepartureTime: draggedTrain.departureTime,
+    offset,
     newTrainData: previewTrain,
   });
 }
@@ -129,7 +131,7 @@ async function handleAllOccurrencesDrag({
   await handleTrainDragInTrackOccupancy({
     draggedTrainId,
     stopPanning: false,
-    initialDepartureTime,
+    offset,
     newTrainData,
   });
   setTrainScheduleProjections(replaceProjection(newTrainData));
@@ -141,7 +143,7 @@ async function handleAllOccurrencesDrag({
   await handleTrainDragInTrackOccupancy({
     draggedTrainId,
     stopPanning: true,
-    initialDepartureTime,
+    offset,
     newTrainData,
   });
 }
@@ -160,10 +162,11 @@ async function handleModelDrag({
 }: DragContext & { draggedTrainId: TrainId }) {
   const newTrainData: TrainSpaceTimeData = { ...draggedTrain, departureTime: newDepartureTime };
 
+  const offset = Duration.subtractDate(newDepartureTime, initialDepartureTime);
   await handleTrainDragInTrackOccupancy({
     draggedTrainId,
     stopPanning: false,
-    initialDepartureTime,
+    offset,
     newTrainData,
   });
   setTrainScheduleProjections(replaceProjection(newTrainData));
@@ -174,7 +177,7 @@ async function handleModelDrag({
   await handleTrainDragInTrackOccupancy({
     draggedTrainId,
     stopPanning: true,
-    initialDepartureTime,
+    offset,
     newTrainData,
   });
 }

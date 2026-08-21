@@ -13,6 +13,7 @@ import { computeIndexedOccurrenceStartTime } from 'modules/trainSchedule/helpers
 import type { SimulatedException } from 'modules/trainSchedule/types';
 import type { TrainId } from 'reducers/osrdconf/types';
 import { getIsSimulationEnabled } from 'reducers/simulationResults/selectors';
+import type { Duration } from 'utils/duration';
 import {
   extractEditoastIdFromTrainScheduleId,
   extractTrainScheduleIdFromOccurrenceId,
@@ -89,14 +90,9 @@ const useTrackOccupancy = ({
 }): {
   deployedWaypoints: DeployedWaypoint[];
   toggleWaypoint: (waypointId: string, selectedState?: boolean) => void;
-  updateTrackOccupanciesOnDrag: ({
-    draggedTrainId,
-    newTrainData,
-    initialDepartureTime,
-    stopPanning,
-  }: {
+  updateTrackOccupanciesOnDrag: (options: {
     draggedTrainId: TrainId;
-    initialDepartureTime: Date;
+    offset: Duration;
     newTrainData: TrainSpaceTimeData;
     stopPanning: boolean;
   }) => Promise<void>;
@@ -453,11 +449,11 @@ const useTrackOccupancy = ({
     async ({
       draggedTrainId,
       newTrainData,
-      initialDepartureTime,
+      offset,
       stopPanning,
     }: {
       draggedTrainId: TrainId;
-      initialDepartureTime: Date;
+      offset: Duration;
       newTrainData: TrainSpaceTimeData;
       stopPanning: boolean;
     }) => {
@@ -478,9 +474,8 @@ const useTrackOccupancy = ({
               !zone.exceptionTypes.includes('start_time')
             ) {
               impactedPathOperationalPointIDs.add(waypointId);
-              const offset = newTrainData.departureTime.getTime() - initialDepartureTime.getTime();
-              zone.startTime = zone.dbStartTime + offset;
-              zone.endTime = zone.dbEndTime + offset;
+              zone.startTime = zone.dbStartTime + offset.ms;
+              zone.endTime = zone.dbEndTime + offset.ms;
             }
           });
         }
