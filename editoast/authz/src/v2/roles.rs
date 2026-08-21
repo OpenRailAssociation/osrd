@@ -2,6 +2,7 @@ use std::collections::HashSet;
 
 use fga::model::Relation as _;
 use futures::FutureExt as _;
+use tracing::Instrument as _;
 
 use crate::Group;
 use crate::Role;
@@ -19,6 +20,7 @@ pub fn subject_roles(subject: Subject) -> Protected<Vec<Role>> {
                 Subject::Group(group) => Role::list_roles(openfga, Group::role(), group).await,
             }
         }
+        .instrument(tracing::debug_span!("authz::subject_roles", ?subject))
         .boxed()
     })
 }
@@ -26,6 +28,7 @@ pub fn subject_roles(subject: Subject) -> Protected<Vec<Role>> {
 /// Gives the subject the specified roles
 ///
 /// Idempotent but not atomic due to the lack of transactions in OpenFGA.
+#[tracing::instrument(fields(subject, roles))]
 pub fn add_roles(subject: Subject, roles: HashSet<Role>) -> Protected<()> {
     subject_roles(subject)
         .then(move |openfga, existing_roles| {
@@ -48,6 +51,7 @@ pub fn add_roles(subject: Subject, roles: HashSet<Role>) -> Protected<()> {
                 writes.execute().await?;
                 Ok(())
             }
+            .in_current_span()
             .boxed()
         })
         .with_check(Check::HasRole(Actor::Issuer, Role::Admin))
@@ -56,6 +60,7 @@ pub fn add_roles(subject: Subject, roles: HashSet<Role>) -> Protected<()> {
 /// Removes the specified roles from the subject
 ///
 /// Idempotent but not atomic due to the lack of transactions in OpenFGA.
+#[tracing::instrument(fields(subject, roles))]
 pub fn remove_roles(subject: Subject, roles: HashSet<Role>) -> Protected<()> {
     subject_roles(subject)
         .then(move |openfga, existing_roles| {
@@ -78,6 +83,7 @@ pub fn remove_roles(subject: Subject, roles: HashSet<Role>) -> Protected<()> {
                 writes.execute().await?;
                 Ok(())
             }
+            .in_current_span()
             .boxed()
         })
         .with_check(Check::HasRole(Actor::Issuer, Role::Admin))

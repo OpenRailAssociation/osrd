@@ -11,6 +11,7 @@ pub use project::*;
 pub use roles::*;
 pub use rolling_stock::*;
 pub use test_client_ext::TestClientExt;
+use tracing::Instrument as _;
 
 use std::collections::HashSet;
 
@@ -146,14 +147,18 @@ pub trait Authorizer {
     /// Also note that you'll have to then deal with each potential rejection
     /// individually. If they're all the same to you, consider using
     /// [Protected::from_iter] instead.
+    #[tracing::instrument(name = "authz::Authorizer::authorize_all", skip_all)]
     async fn authorize_all<'a, T>(
         &'a self,
         data: impl IntoIterator<Item = Protected<T>>,
     ) -> Result<Vec<Access<'a, T, Self::Rejection>>, Self::Error> {
-        futures::future::join_all(data.into_iter().map(|d| self.authorize(d)))
-            .await
-            .into_iter()
-            .collect::<Result<Vec<_>, _>>()
+        futures::future::join_all(
+            data.into_iter()
+                .map(|d| self.authorize(d).in_current_span()),
+        )
+        .await
+        .into_iter()
+        .collect::<Result<Vec<_>, _>>()
     }
 }
 
@@ -181,9 +186,10 @@ impl<T> Protected<T> {
     /// A rejection is considered an error here as well.
     ///
     /// Convenient to obtain one-liners and ease error handling.
+    #[tracing::instrument(name = "authz::Protected::run", skip_all, err(Debug))]
     pub async fn run<E, A>(self, authorizer: &A) -> Result<T, E>
     where
-        E: From<A::Rejection> + From<A::Error> + From<OpenFgaError>,
+        E: From<A::Rejection> + From<A::Error> + From<OpenFgaError> + std::fmt::Debug,
         A: Authorizer,
     {
         authorizer
@@ -214,9 +220,25 @@ impl<T> Protected<T> {
 }
 
 impl<T: Send + 'static> Protected<T> {
+    pub fn instrument<F>(self, span: F) -> Self
+    where
+        F: FnOnce() -> tracing::Span,
+        F: Send + 'static,
+    {
+        let Self { op, checks } = self;
+        Self {
+            op: Box::new(move |openfga| op(openfga).instrument(span()).boxed()),
+            checks,
+        }
+    }
+
+    pub fn in_current_span(self) -> Self {
+        self.instrument(tracing::Span::current)
+    }
+
     /// A [Protected] value that always succeeds with the provided value
     pub fn value(t: T) -> Self {
-        Self::new(move |_| async move { Ok(t) }.boxed())
+        Self::new(move |_| async move { Ok(t) }.in_current_span().boxed())
     }
 
     pub fn then<U: Send + 'static>(
@@ -232,6 +254,7 @@ impl<T: Send + 'static> Protected<T> {
                     let t = op(openfga).await?;
                     f(openfga, t).await
                 }
+                .in_current_span()
                 .boxed()
             }),
             checks,
@@ -264,7 +287,9 @@ impl<T: Send + 'static> Protected<T> {
         checks.extend(other_checks);
         Protected {
             op: Box::new(move |openfga| {
-                async move { tokio::try_join!(op(openfga), other_op(openfga)) }.boxed()
+                async move { tokio::try_join!(op(openfga), other_op(openfga)) }
+                    .in_current_span()
+                    .boxed()
             }),
             checks,
         }
@@ -309,7 +334,7 @@ where
 
 impl<T: Default> Default for Protected<T> {
     fn default() -> Self {
-        Self::new(|_| async { Ok(T::default()) }.boxed())
+        Self::new(|_| async { Ok(T::default()) }.in_current_span().boxed())
     }
 }
 
@@ -318,6 +343,7 @@ impl<T: Send + 'static> FromIterator<Protected<T>> for Protected<Vec<T>> {
     ///
     /// If you need to handle individual rejections, consider using
     /// [Authorizer::authorize_all] instead.
+    #[tracing::instrument(name = "authz::Protected::from_iter", skip_all)]
     fn from_iter<I: IntoIterator<Item = Protected<T>>>(iter: I) -> Self {
         let mut checks = HashSet::new();
         let mut ops = Vec::new();
@@ -328,9 +354,10 @@ impl<T: Send + 'static> FromIterator<Protected<T>> for Protected<Vec<T>> {
         Self {
             op: Box::new(move |openfga| {
                 async move {
-                    let futures = ops.into_iter().map(|op| op(openfga));
+                    let futures = ops.into_iter().map(|op| op(openfga).in_current_span());
                     futures::future::try_join_all(futures).await
                 }
+                .in_current_span()
                 .boxed()
             }),
             checks,
@@ -344,6 +371,7 @@ impl<'a, T, R> Access<'a, T, R> {
     /// Returns the value if bypassed, logging a warning.
     ///
     /// Never match on the double Result, match on the Access itself if needed.
+    #[tracing::instrument(name = "authz::Access::access", skip_all, err)]
     pub async fn access(self) -> Result<Result<T, R>, OpenFgaError> {
         match self {
             Access::Authorized(AuthorizedOperation { op, client }) => op(client).await.map(Ok),
@@ -359,10 +387,16 @@ impl<'a, T, R> Access<'a, T, R> {
     ///
     /// If you don't need to handle individual rejections, consider using
     /// [Protected::from_iter] beforehand.
+    #[tracing::instrument(name = "authz::Access::access_all", skip_all, err)]
     pub async fn access_all(
         accesses: impl IntoIterator<Item = Access<'_, T, R>>,
     ) -> Result<Vec<Result<T, R>>, OpenFgaError> {
-        futures::future::try_join_all(accesses.into_iter().map(|access| access.access())).await
+        futures::future::try_join_all(
+            accesses
+                .into_iter()
+                .map(|access| access.access().in_current_span()),
+        )
+        .await
     }
 }
 
