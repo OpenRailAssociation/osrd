@@ -1,16 +1,8 @@
-import type { Scenario, Project, Study, Infra, TrainSchedule } from 'common/api/osrdEditoastApi';
+import type { TrainSchedule } from 'common/api/osrdEditoastApi';
 
-import {
-  trainScheduleProjectName,
-  trainScheduleStudyName,
-} from '../../assets/constants/project-const';
 import test from '../../page-object-fixture';
-import { generateUniqueName, waitForInfraStateToBeCached } from '../../utils';
-import { getInfra, getProject, getStudy } from '../../utils/api-utils';
+import setupScenarioFixture from '../../scenario-fixture';
 import { readJsonFile } from '../../utils/file-utils';
-import createScenario from '../../utils/scenario';
-import sendTrains from '../../utils/send-trains';
-import { deleteScenario } from '../../utils/teardown-utils';
 import type { TimetableFilterTranslations } from '../../utils/types';
 
 const trains: TrainSchedule[] = readJsonFile('./tests/assets/trains/trains.json');
@@ -20,47 +12,25 @@ const frTranslations: TimetableFilterTranslations = readJsonFile<{
 }>('public/locales/fr/operational-studies.json').main;
 
 test.describe('Netzgrafik Editor', { tag: ['@op', '@nge'] }, () => {
-  let project: Project;
-  let study: Study;
-  let scenarioItems: Scenario;
-  let infra: Infra;
-
-  test.beforeAll('Fetch project, study and infrastructure', async () => {
-    project = await getProject(trainScheduleProjectName);
-    study = await getStudy(project.id, trainScheduleStudyName);
-    infra = await getInfra();
-  });
-
-  test.beforeEach('Open scenario and enable only macro view', async ({ page, ngePage }) => {
+  test.beforeEach('Clear local storage before loading the scenario', async ({ page }) => {
     // scenario header is persisted in local storage, clear it before loading the scenario
     await page.addInitScript(() => {
       window.localStorage.clear();
     });
-    await test.step('Create, open scenario and wait for infra to be loaded', async () => {
-      const { scenario, trainScheduleSet } = await createScenario(
-        generateUniqueName('nge-scenario'),
-        project.id,
-        study.id,
-        infra.id
-      );
+  });
 
-      scenarioItems = scenario;
+  setupScenarioFixture({
+    scenarioNamePrefix: 'nge-scenario',
+    trains: trains.slice(11, 12),
+    scope: 'test',
+  });
 
-      await sendTrains(trainScheduleSet.id, trains.slice(11, 12));
-
-      await page.goto(
-        `/operational-studies/projects/${project.id}/studies/${study.id}/scenarios/${scenarioItems.id}`
-      );
-      await waitForInfraStateToBeCached(infra.id);
-    });
-    await test.step('Enable macro view while keeping the default train list visible', async () => {
+  test.beforeEach(
+    'Enable macro view while keeping the default train list visible',
+    async ({ ngePage }) => {
       await ngePage.enableMacroViewWithDefaultTrainList();
-    });
-  });
-
-  test.afterEach('Delete the created scenario', async () => {
-    await deleteScenario(study.id, scenarioItems.name);
-  });
+    }
+  );
 
   /** *************** Test 1 **************** */
   test('Verify NGE train data', async ({ ngePage }) => {

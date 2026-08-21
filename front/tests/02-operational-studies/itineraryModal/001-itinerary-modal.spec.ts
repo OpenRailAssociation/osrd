@@ -1,10 +1,6 @@
-import type { Infra, Project, Scenario, Study } from 'common/api/osrdEditoastApi';
-
+import { globalProjectName, globalStudyName } from '../../assets/constants/project-const';
 import test from '../../page-object-fixture';
-import { waitForInfraStateToBeCached } from '../../utils';
-import { getInfra } from '../../utils/api-utils';
-import createScenario from '../../utils/scenario';
-import { deleteScenario } from '../../utils/teardown-utils';
+import setupScenarioFixture from '../../scenario-fixture';
 import {
   COMPOSITION_CODE,
   NORTH_STATION_BV,
@@ -24,31 +20,16 @@ import {
 } from './itinerary-modal.consts';
 
 test.describe('Itinerary Modal, Default ', { tag: ['@op', '@itinerary-modal'] }, () => {
-  let project: Project;
-  let study: Study;
-  let scenario: Scenario;
-  let infra: Infra;
-
-  test.beforeAll('Fetch infrastructure', async () => {
-    infra = await getInfra();
+  setupScenarioFixture({
+    scenarioNamePrefix: 'itinerary-modal-scenario',
+    trains: [],
+    scope: 'test',
+    projectName: globalProjectName,
+    studyName: globalStudyName,
   });
 
-  test.beforeEach(
-    'Navigate to scenario page and wait for infrastructure to be loaded',
-    async ({ page, scenarioTimetableSection }) => {
-      ({ project, study, scenario } = await createScenario());
-
-      await page.goto(
-        `/operational-studies/projects/${project.id}/studies/${study.id}/scenarios/${scenario.id}`
-      );
-
-      await waitForInfraStateToBeCached(infra.id);
-      await scenarioTimetableSection.openItineraryModal();
-    }
-  );
-
-  test.afterEach('Delete the created scenario', async () => {
-    await deleteScenario(study.id, scenario.name);
+  test.beforeEach('Open the itinerary modal', async ({ scenarioTimetableSection }) => {
+    await scenarioTimetableSection.openItineraryModal();
   });
 
   /** *************** Test 1 **************** */
