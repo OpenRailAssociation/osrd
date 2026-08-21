@@ -495,9 +495,10 @@ const useTrackOccupancy = ({
             if (newZones.length)
               setPathOperationalPointsState((state) => {
                 const opState = state[waypointId];
-                opState.zones.data = opState.zones.data?.map((zone) =>
-                  zone.trainId === draggedTrainId ? newZones[0] : zone
-                );
+                opState.zones.data = opState.zones.data?.map((zone) => {
+                  const newZone = newZones.find(({ trainId }) => trainId === zone.trainId);
+                  return newZone ?? zone;
+                });
                 return state;
               });
           })
