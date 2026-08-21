@@ -322,13 +322,10 @@ mod tests {
     use authz::v2::Actor;
     use authz::v2::Check;
     use authz::v2::Protected;
-    use database::DbConnectionPoolV2;
     use fga::model::Relation as _;
     use rstest::rstest;
 
     use super::*;
-    use crate::fixtures::create_empty_infra;
-    use crate::fixtures::create_fast_rolling_stock;
 
     async fn openfga() -> fga::Client {
         let openfga = fga::test_client!("authz@");
@@ -340,24 +337,6 @@ mod tests {
         .await
         .expect("FGA migrations should succeed");
         openfga
-    }
-
-    async fn create_user(pool: &DbConnectionPoolV2, name: &str) -> authz::User {
-        authz::User(
-            models::User::register(pool.get_ok(), vec![name.to_owned()], name.to_owned())
-                .await
-                .expect("user should be created")
-                .id,
-        )
-    }
-
-    async fn create_group(pool: &DbConnectionPoolV2, name: &str) -> authz::Group {
-        authz::Group(
-            models::Group::upsert(pool.get_ok(), name.to_owned())
-                .await
-                .expect("group should be created")
-                .id,
-        )
     }
 
     async fn authorize<A>(authorizer: &A, check: Check) -> Result<(), <A as Authorizer>::Rejection>
@@ -422,8 +401,7 @@ mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn user_authorizer_issuer_role() {
         let openfga = openfga().await;
-        let pool = DbConnectionPoolV2::for_tests();
-        let user = create_user(&pool, "user").await;
+        let user = authz::User(1);
         let user_authorizer = UserAuthorizer::new(user, vec![Role::OperationalStudies], &openfga);
 
         let check = Check::HasRole(Actor::Issuer, Role::OperationalStudies);
@@ -436,9 +414,8 @@ mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn user_authorizer_user_role() {
         let openfga = openfga().await;
-        let pool = DbConnectionPoolV2::for_tests();
-        let issuer = create_user(&pool, "issuer").await;
-        let target = create_user(&pool, "target").await;
+        let issuer = authz::User(1);
+        let target = authz::User(2);
         openfga
             .write_tuples(&[authz::User::role().tuple(&Role::Stdcm, &target)])
             .await
@@ -455,10 +432,9 @@ mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn user_authorizer_issuer_infra_privilege() {
         let openfga = openfga().await;
-        let pool = DbConnectionPoolV2::for_tests();
-        let owner = create_user(&pool, "owner").await;
-        let no_grant = create_user(&pool, "no-grant").await;
-        let infra = authz::Infra(create_empty_infra(&mut pool.get_ok()).await.id);
+        let owner = authz::User(1);
+        let no_grant = authz::User(2);
+        let infra = authz::Infra(1);
         openfga
             .write_tuples(&[authz::Infra::owner().tuple(&owner, &infra)])
             .await
@@ -476,14 +452,9 @@ mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn user_authorizer_issuer_rolling_stock_privilege() {
         let openfga = openfga().await;
-        let pool = DbConnectionPoolV2::for_tests();
-        let owner = create_user(&pool, "owner").await;
-        let no_grant = create_user(&pool, "no-grant").await;
-        let rolling_stock = authz::RollingStock(
-            create_fast_rolling_stock(&mut pool.get_ok(), "rolling_stock")
-                .await
-                .id,
-        );
+        let owner = authz::User(1);
+        let no_grant = authz::User(2);
+        let rolling_stock = authz::RollingStock(1);
         openfga
             .write_tuples(&[authz::RollingStock::owner().tuple(&owner, &rolling_stock)])
             .await
@@ -509,10 +480,9 @@ mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn user_authorizer_user_infra_privilege() {
         let openfga = openfga().await;
-        let pool = DbConnectionPoolV2::for_tests();
-        let issuer = create_user(&pool, "issuer").await;
-        let target = create_user(&pool, "target").await;
-        let infra = authz::Infra(create_empty_infra(&mut pool.get_ok()).await.id);
+        let issuer = authz::User(1);
+        let target = authz::User(2);
+        let infra = authz::Infra(1);
         openfga
             .write_tuples(&[authz::Infra::writer().tuple(&target, &infra)])
             .await
@@ -779,14 +749,9 @@ mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn user_authorizer_user_rolling_stock_privilege() {
         let openfga = openfga().await;
-        let pool = DbConnectionPoolV2::for_tests();
-        let issuer = create_user(&pool, "issuer").await;
-        let target = create_user(&pool, "target").await;
-        let rolling_stock = authz::RollingStock(
-            create_fast_rolling_stock(&mut pool.get_ok(), "rolling_stock")
-                .await
-                .id,
-        );
+        let issuer = authz::User(1);
+        let target = authz::User(2);
+        let rolling_stock = authz::RollingStock(1);
         openfga
             .write_tuples(&[authz::RollingStock::writer().tuple(&target, &rolling_stock)])
             .await
@@ -811,10 +776,9 @@ mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn user_authorizer_subject_effective_infra_grant_is_not() {
         let openfga = openfga().await;
-        let pool = DbConnectionPoolV2::for_tests();
-        let issuer = create_user(&pool, "issuer").await;
-        let target = create_user(&pool, "target").await;
-        let infra = authz::Infra(create_empty_infra(&mut pool.get_ok()).await.id);
+        let issuer = authz::User(1);
+        let target = authz::User(2);
+        let infra = authz::Infra(1);
         openfga
             .write_tuples(&[authz::Infra::owner().tuple(&target, &infra)])
             .await
@@ -839,14 +803,9 @@ mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn user_authorizer_subject_effective_rolling_stock_grant_is_not() {
         let openfga = openfga().await;
-        let pool = DbConnectionPoolV2::for_tests();
-        let issuer = create_user(&pool, "issuer").await;
-        let target = create_user(&pool, "target").await;
-        let rolling_stock = authz::RollingStock(
-            create_fast_rolling_stock(&mut pool.get_ok(), "rolling_stock")
-                .await
-                .id,
-        );
+        let issuer = authz::User(1);
+        let target = authz::User(2);
+        let rolling_stock = authz::RollingStock(1);
         openfga
             .write_tuples(&[authz::RollingStock::owner().tuple(&target, &rolling_stock)])
             .await
@@ -871,11 +830,10 @@ mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn user_authorizer_subject_effective_infra_grant_is_not_checks_inherited_grant() {
         let openfga = openfga().await;
-        let pool = DbConnectionPoolV2::for_tests();
-        let issuer = create_user(&pool, "issuer").await;
-        let target = create_user(&pool, "target").await;
-        let group = create_group(&pool, "owners").await;
-        let infra = authz::Infra(create_empty_infra(&mut pool.get_ok()).await.id);
+        let issuer = authz::User(1);
+        let target = authz::User(2);
+        let group = authz::Group(1);
+        let infra = authz::Infra(1);
         openfga
             .prepare_writes()
             .write(&authz::Group::member().tuple(&target, &group))
@@ -896,15 +854,10 @@ mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn user_authorizer_subject_effective_rolling_stock_grant_is_not_checks_inherited_grant() {
         let openfga = openfga().await;
-        let pool = DbConnectionPoolV2::for_tests();
-        let issuer = create_user(&pool, "issuer").await;
-        let target = create_user(&pool, "target").await;
-        let group = create_group(&pool, "owners").await;
-        let rolling_stock = authz::RollingStock(
-            create_fast_rolling_stock(&mut pool.get_ok(), "rolling_stock")
-                .await
-                .id,
-        );
+        let issuer = authz::User(1);
+        let target = authz::User(2);
+        let group = authz::Group(1);
+        let rolling_stock = authz::RollingStock(1);
         openfga
             .prepare_writes()
             .write(&authz::Group::member().tuple(&target, &group))
@@ -928,12 +881,11 @@ mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn user_authorizer_is_not_last_infra_owner_user() {
         let openfga = openfga().await;
-        let pool = DbConnectionPoolV2::for_tests();
-        let issuer = create_user(&pool, "issuer").await;
-        let owner = create_user(&pool, "owner").await;
-        let other_owner = create_user(&pool, "other-owner").await;
-        let no_grant = create_user(&pool, "no-grant").await;
-        let infra = authz::Infra(create_empty_infra(&mut pool.get_ok()).await.id);
+        let issuer = authz::User(1);
+        let owner = authz::User(2);
+        let other_owner = authz::User(3);
+        let no_grant = authz::User(4);
+        let infra = authz::Infra(1);
         openfga
             .write_tuples(&[authz::Infra::owner().tuple(&owner, &infra)])
             .await
@@ -957,16 +909,11 @@ mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn user_authorizer_is_not_last_rolling_stock_owner_user() {
         let openfga = openfga().await;
-        let pool = DbConnectionPoolV2::for_tests();
-        let issuer = create_user(&pool, "issuer").await;
-        let owner = create_user(&pool, "owner").await;
-        let other_owner = create_user(&pool, "other-owner").await;
-        let no_grant = create_user(&pool, "no-grant").await;
-        let rolling_stock = authz::RollingStock(
-            create_fast_rolling_stock(&mut pool.get_ok(), "rolling_stock")
-                .await
-                .id,
-        );
+        let issuer = authz::User(1);
+        let owner = authz::User(2);
+        let other_owner = authz::User(3);
+        let no_grant = authz::User(4);
+        let rolling_stock = authz::RollingStock(1);
         openfga
             .write_tuples(&[authz::RollingStock::owner().tuple(&owner, &rolling_stock)])
             .await
@@ -991,10 +938,9 @@ mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn user_authorizer_is_not_last_infra_owner_group() {
         let openfga = openfga().await;
-        let pool = DbConnectionPoolV2::for_tests();
-        let issuer = create_user(&pool, "issuer").await;
-        let group = create_group(&pool, "group").await;
-        let infra = authz::Infra(create_empty_infra(&mut pool.get_ok()).await.id);
+        let issuer = authz::User(1);
+        let group = authz::Group(1);
+        let infra = authz::Infra(1);
         openfga
             .write_tuples(&[
                 authz::Infra::owner().tuple(authz::Group::member().userset(&group), &infra)
@@ -1010,14 +956,9 @@ mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn user_authorizer_is_not_last_rolling_stock_owner_group() {
         let openfga = openfga().await;
-        let pool = DbConnectionPoolV2::for_tests();
-        let issuer = create_user(&pool, "issuer").await;
-        let group = create_group(&pool, "group").await;
-        let rolling_stock = authz::RollingStock(
-            create_fast_rolling_stock(&mut pool.get_ok(), "rolling_stock")
-                .await
-                .id,
-        );
+        let issuer = authz::User(1);
+        let group = authz::Group(1);
+        let rolling_stock = authz::RollingStock(1);
         openfga
             .write_tuples(&[authz::RollingStock::owner()
                 .tuple(authz::Group::member().userset(&group), &rolling_stock)])
@@ -1069,8 +1010,7 @@ mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn user_authorizer_admin_bypass(#[case] check: Check) {
         let openfga = openfga().await;
-        let pool = DbConnectionPoolV2::for_tests();
-        let user = create_user(&pool, "admin").await;
+        let user = authz::User(1);
         let user_authorizer = UserAuthorizer::new(user, vec![Role::Admin], &openfga);
 
         assert_eq!(authorize(&user_authorizer, check).await, Ok(()));
