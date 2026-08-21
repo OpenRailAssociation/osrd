@@ -10,6 +10,9 @@ use url::Url;
 pub enum Stream {
     Stderr,
     Stdout,
+    /// Setup the logging with `tracing_subscriber::fmt::TestWriter`,
+    /// which enables libtest output capturing.
+    TestWriter,
 }
 
 #[derive(Debug)]
@@ -50,10 +53,10 @@ pub fn create_tracing_subscriber<T: SpanExporter + 'static>(
         .pretty()
         .with_file(true)
         .with_line_number(false);
-    let fmt_layer = if tracing_config.stream == Stream::Stderr {
-        fmt_layer.with_writer(std::io::stderr).boxed()
-    } else {
-        fmt_layer.boxed()
+    let fmt_layer = match tracing_config.stream {
+        Stream::Stderr => fmt_layer.with_writer(std::io::stderr).boxed(),
+        Stream::Stdout => fmt_layer.boxed(),
+        Stream::TestWriter => fmt_layer.with_test_writer().boxed(),
     };
     // https://docs.rs/tracing-subscriber/latest/tracing_subscriber/layer/index.html#runtime-configuration-with-layers
     let telemetry_layer = match tracing_config.telemetry {
