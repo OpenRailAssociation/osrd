@@ -293,20 +293,9 @@ mod tests {
     use crate::InfraPrivilege;
     use crate::RollingStock;
     use crate::RollingStockPrivilege;
+    use crate::authz_client;
 
     use super::*;
-
-    async fn openfga() -> fga::Client {
-        let openfga = fga::test_client!("authz@");
-        fga_migrations::run_migrations(
-            openfga.clone(),
-            fga::test_client!("migrations@"),
-            fga_migrations::TargetMigration::Latest,
-        )
-        .await
-        .expect("FGA migrations should succeed");
-        openfga
-    }
 
     async fn authorize<A>(authorizer: &A, check: Check) -> Result<(), <A as Authorizer>::Rejection>
     where
@@ -361,7 +350,7 @@ mod tests {
     ))]
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn system_authorizer_ignores_non_sanity_checks(#[case] check: Check) {
-        let openfga = openfga().await;
+        let openfga = authz_client!();
         let system = SystemAuthorizer::new_infallible(&openfga);
 
         assert_eq!(authorize(&system, check).await, Ok(()));
@@ -369,7 +358,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn user_authorizer_issuer_role() {
-        let openfga = openfga().await;
+        let openfga = authz_client!();
         let user = User(1);
         let user_authorizer = UserAuthorizer::new(user, vec![Role::OperationalStudies], &openfga);
 
@@ -382,7 +371,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn user_authorizer_user_role() {
-        let openfga = openfga().await;
+        let openfga = authz_client!();
         let issuer = User(1);
         let target = User(2);
         openfga
@@ -400,7 +389,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn user_authorizer_issuer_infra_privilege() {
-        let openfga = openfga().await;
+        let openfga = authz_client!();
         let owner = User(1);
         let no_grant = User(2);
         let infra = Infra(1);
@@ -420,7 +409,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn user_authorizer_issuer_rolling_stock_privilege() {
-        let openfga = openfga().await;
+        let openfga = authz_client!();
         let owner = User(1);
         let no_grant = User(2);
         let rolling_stock = RollingStock(1);
@@ -448,7 +437,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn user_authorizer_user_infra_privilege() {
-        let openfga = openfga().await;
+        let openfga = authz_client!();
         let issuer = User(1);
         let target = User(2);
         let infra = Infra(1);
@@ -541,7 +530,7 @@ mod tests {
             #[case] grant: InfraGrant,
             #[case] ok: bool,
         ) {
-            let openfga = openfga().await;
+            let openfga = authz_client!();
             let user_authorizer = UserAuthorizer::new(issuer, vec![], &openfga);
 
             openfga
@@ -656,7 +645,7 @@ mod tests {
             #[case] grant: RollingStockGrant,
             #[case] ok: bool,
         ) {
-            let openfga = openfga().await;
+            let openfga = authz_client!();
             let user_authorizer = UserAuthorizer::new(issuer, vec![], &openfga);
 
             openfga
@@ -692,7 +681,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn user_authorizer_user_rolling_stock_privilege() {
-        let openfga = openfga().await;
+        let openfga = authz_client!();
         let issuer = User(1);
         let target = User(2);
         let rolling_stock = RollingStock(1);
@@ -719,7 +708,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn user_authorizer_subject_effective_infra_grant_is_not() {
-        let openfga = openfga().await;
+        let openfga = authz_client!();
         let issuer = User(1);
         let target = User(2);
         let infra = Infra(1);
@@ -743,7 +732,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn user_authorizer_subject_effective_rolling_stock_grant_is_not() {
-        let openfga = openfga().await;
+        let openfga = authz_client!();
         let issuer = User(1);
         let target = User(2);
         let rolling_stock = RollingStock(1);
@@ -770,7 +759,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn user_authorizer_subject_effective_infra_grant_is_not_checks_inherited_grant() {
-        let openfga = openfga().await;
+        let openfga = authz_client!();
         let issuer = User(1);
         let target = User(2);
         let group = Group(1);
@@ -791,7 +780,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn user_authorizer_subject_effective_rolling_stock_grant_is_not_checks_inherited_grant() {
-        let openfga = openfga().await;
+        let openfga = authz_client!();
         let issuer = User(1);
         let target = User(2);
         let group = Group(1);
@@ -815,7 +804,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn user_authorizer_is_not_last_infra_owner_user() {
-        let openfga = openfga().await;
+        let openfga = authz_client!();
         let issuer = User(1);
         let owner = User(2);
         let other_owner = User(3);
@@ -843,7 +832,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn user_authorizer_is_not_last_rolling_stock_owner_user() {
-        let openfga = openfga().await;
+        let openfga = authz_client!();
         let issuer = User(1);
         let owner = User(2);
         let other_owner = User(3);
@@ -871,7 +860,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn user_authorizer_is_not_last_infra_owner_group() {
-        let openfga = openfga().await;
+        let openfga = authz_client!();
         let issuer = User(1);
         let group = Group(1);
         let infra = Infra(1);
@@ -887,7 +876,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn user_authorizer_is_not_last_rolling_stock_owner_group() {
-        let openfga = openfga().await;
+        let openfga = authz_client!();
         let issuer = User(1);
         let group = Group(1);
         let rolling_stock = RollingStock(1);
@@ -942,7 +931,7 @@ mod tests {
     ))]
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn user_authorizer_admin_bypass(#[case] check: Check) {
-        let openfga = openfga().await;
+        let openfga = authz_client!();
         let user = User(1);
         let user_authorizer = UserAuthorizer::new(user, vec![Role::Admin], &openfga);
 
