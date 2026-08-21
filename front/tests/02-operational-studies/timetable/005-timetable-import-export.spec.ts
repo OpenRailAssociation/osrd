@@ -1,10 +1,6 @@
-import type { Scenario, Project, Study, Infra } from 'common/api/osrdEditoastApi';
+import type { Scenario } from 'common/api/osrdEditoastApi';
 
-import {
-  trainScheduleProjectName,
-  trainScheduleScenarioName,
-  trainScheduleStudyName,
-} from '../../assets/constants/project-const';
+import { trainScheduleScenarioName } from '../../assets/constants/project-const';
 import {
   TOTAL_PACED_TRAINS,
   TOTAL_UNIQUE_TRAINS,
@@ -15,11 +11,9 @@ import {
   UNIQUE_TRAIN_DETAILS,
 } from '../../assets/constants/train-schedules-details';
 import test from '../../page-object-fixture';
-import { generateUniqueName, waitForInfraStateToBeCached } from '../../utils';
-import { getInfra, getProject, getScenario, getStudy } from '../../utils/api-utils';
+import setupScenarioFixture from '../../scenario-fixture';
+import { getScenario } from '../../utils/api-utils';
 import { readJsonFile } from '../../utils/file-utils';
-import createScenario from '../../utils/scenario';
-import { deleteScenario } from '../../utils/teardown-utils';
 import type { CommonTranslations, TimetableFilterTranslations } from '../../utils/types';
 
 const frTimetableTranslations: TimetableFilterTranslations = readJsonFile<{
@@ -36,44 +30,23 @@ test.describe(
   'Timetable import and export',
   { tag: ['@op', '@train-schedules', '@import', '@export'] },
   () => {
-    let project: Project;
-    let study: Study;
-    let scenario: Scenario;
     let scenarioToExport: Scenario;
-    let infra: Infra;
 
     let downloadDir: string;
     let downloadedFilePath: string;
 
-    test.beforeAll('Fetch project, study and infrastructure', async () => {
-      project = await getProject(trainScheduleProjectName);
-      study = await getStudy(project.id, trainScheduleStudyName);
-      scenarioToExport = await getScenario(study.id, trainScheduleScenarioName);
-      infra = await getInfra();
+    const scenarioContext = setupScenarioFixture({
+      scenarioNamePrefix: 'import-export-scenario',
+      trains: [],
+      scope: 'test',
     });
 
-    test.beforeEach('Open scenario ', async ({ page, importExportPage }) => {
-      await test.step('Create, open scenario and wait for infra to be loaded', async () => {
-        scenario = (
-          await createScenario(
-            generateUniqueName('import-export-scenario'),
-            project.id,
-            study.id,
-            infra.id
-          )
-        ).scenario;
-        await page.goto(
-          `/operational-studies/projects/${project.id}/studies/${study.id}/scenarios/${scenario.id}`
-        );
-        await waitForInfraStateToBeCached(infra.id);
-      });
-      await test.step('Verify timetable is empty', async () => {
-        await importExportPage.verifyTimetableIsEmpty(frTranslations.timetable.noTrainSchedule);
-      });
+    test.beforeAll('Fetch the scenario to export', async () => {
+      scenarioToExport = await getScenario(scenarioContext.study.id, trainScheduleScenarioName);
     });
 
-    test.afterEach('Delete the created scenario', async () => {
-      await deleteScenario(study.id, scenario.name);
+    test.beforeEach('Verify timetable is empty', async ({ importExportPage }) => {
+      await importExportPage.verifyTimetableIsEmpty(frTranslations.timetable.noTrainSchedule);
     });
 
     test(
@@ -81,6 +54,7 @@ test.describe(
       { tag: '@smoke' },
       async ({ page, importExportPage, trainScheduleDetailSection }, testInfo) => {
         await test.step('Open scenario to export and verify initial train schedules count', async () => {
+          const { project, study } = scenarioContext;
           await page.goto(
             `/operational-studies/projects/${project.id}/studies/${study.id}/scenarios/${scenarioToExport.id}`
           );
@@ -106,8 +80,9 @@ test.describe(
         });
 
         await test.step('Import train schedules JSON and close dialog in the target scenario', async () => {
+          const { project, study, scenarioItems } = scenarioContext;
           await page.goto(
-            `/operational-studies/projects/${project.id}/studies/${study.id}/scenarios/${scenario.id}`
+            `/operational-studies/projects/${project.id}/studies/${study.id}/scenarios/${scenarioItems.id}`
           );
           await importExportPage.openImportTrainScheduleUploadDialog();
           await importExportPage.uploadTrainScheduleFile(

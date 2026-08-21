@@ -1,16 +1,8 @@
-import type { Scenario, Project, Study, Infra, TrainSchedule } from 'common/api/osrdEditoastApi';
+import type { TrainSchedule } from 'common/api/osrdEditoastApi';
 
-import {
-  trainScheduleProjectName,
-  trainScheduleStudyName,
-} from '../../assets/constants/project-const';
 import test from '../../page-object-fixture';
-import { generateUniqueName, waitForInfraStateToBeCached } from '../../utils';
-import { getInfra, getProject, getStudy } from '../../utils/api-utils';
+import setupScenarioFixture from '../../scenario-fixture';
 import { readJsonFile } from '../../utils/file-utils';
-import createScenario from '../../utils/scenario';
-import sendTrains from '../../utils/send-trains';
-import { deleteScenario } from '../../utils/teardown-utils';
 import type {
   CommonTranslations,
   ManageTrainScheduleTranslations,
@@ -41,32 +33,9 @@ test.skip(
 );
 
 test.describe('Scenario page synchronization', { tag: ['@op, @multi-tab-sync'] }, () => {
-  let project: Project;
-  let study: Study;
-  let scenarioItems: Scenario;
-  let infra: Infra;
-
-  test.beforeAll(
-    'Setup project, study, infra and create scenario with trainSchedules',
-    async () => {
-      project = await getProject(trainScheduleProjectName);
-      study = await getStudy(project.id, trainScheduleStudyName);
-      infra = await getInfra();
-      const { scenario, trainScheduleSet } = await createScenario(
-        generateUniqueName('scenario-page-synchronization'),
-        project.id,
-        study.id,
-        infra.id
-      );
-      scenarioItems = scenario;
-
-      const selectedTrains = [...trains.slice(0, 2), ...trains.slice(7, 9)];
-      await sendTrains(trainScheduleSet.id, selectedTrains);
-    }
-  );
-
-  test.afterAll('Close pages', async () => {
-    await deleteScenario(study.id, scenarioItems.name);
+  const scenarioContext = setupScenarioFixture({
+    scenarioNamePrefix: 'scenario-page-synchronization',
+    trains: [...trains.slice(0, 2), ...trains.slice(7, 9)],
   });
 
   /** *************** Test 1 **************** */
@@ -79,12 +48,8 @@ test.describe('Scenario page synchronization', { tag: ['@op, @multi-tab-sync'] }
     secondScenarioTimetableSection,
     secondTimesStopsTablePage,
   }) => {
+    const { project, study, scenarioItems } = scenarioContext;
     const scenarioUrl = `/operational-studies/projects/${project.id}/studies/${study.id}/scenarios/${scenarioItems.id}`;
-
-    await test.step('Open first tab on scenario page and wait infra cache', async () => {
-      await page.goto(scenarioUrl);
-      await waitForInfraStateToBeCached(infra.id);
-    });
 
     await test.step('Open second tab on same scenario page', async () => {
       await secondPage.goto(scenarioUrl);

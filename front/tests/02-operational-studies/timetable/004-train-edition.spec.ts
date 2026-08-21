@@ -1,9 +1,5 @@
-import type { Scenario, Project, Study, Infra, TrainSchedule } from 'common/api/osrdEditoastApi';
+import type { TrainSchedule } from 'common/api/osrdEditoastApi';
 
-import {
-  trainScheduleProjectName,
-  trainScheduleStudyName,
-} from '../../assets/constants/project-const';
 import { FREIGHT_TRAIN, HIGH_SPEED_TRAIN_COLOR } from '../../assets/operation-studies/train-const';
 import {
   PACED_TRAIN_OCCURRENCE_COUNT,
@@ -14,12 +10,8 @@ import {
   TIME_WINDOW_MINUTES,
 } from '../../assets/paced-train/const';
 import test from '../../page-object-fixture';
-import { generateUniqueName, waitForInfraStateToBeCached } from '../../utils';
-import { getInfra, getProject, getStudy } from '../../utils/api-utils';
+import setupScenarioFixture from '../../scenario-fixture';
 import { readJsonFile } from '../../utils/file-utils';
-import createScenario from '../../utils/scenario';
-import sendTrains from '../../utils/send-trains';
-import { deleteScenario } from '../../utils/teardown-utils';
 import type {
   CommonTranslations,
   ManageTrainScheduleTranslations,
@@ -44,37 +36,10 @@ const frTranslations = {
 const trains: TrainSchedule[] = readJsonFile('./tests/assets/trains/trains.json');
 
 test.describe('Train edition', { tag: ['@op', '@paced-trains', '@unique-trains'] }, () => {
-  let project: Project;
-  let study: Study;
-  let scenarioItems: Scenario;
-  let infra: Infra;
-
-  test.beforeAll('Fetch project, study and infrastructure', async () => {
-    project = await getProject(trainScheduleProjectName);
-    study = await getStudy(project.id, trainScheduleStudyName);
-    infra = await getInfra();
-  });
-
-  test.beforeEach('Setup scenario with one unique train and one paced train', async ({ page }) => {
-    const { scenario, trainScheduleSet } = await createScenario(
-      generateUniqueName('edit-train-scenario'),
-      project.id,
-      study.id,
-      infra.id
-    );
-    scenarioItems = scenario;
-
-    const selectedTrains = [...trains.slice(0, 1), ...trains.slice(7, 8)];
-    await sendTrains(trainScheduleSet.id, selectedTrains);
-
-    await page.goto(
-      `/operational-studies/projects/${project.id}/studies/${study.id}/scenarios/${scenarioItems.id}`
-    );
-    await waitForInfraStateToBeCached(infra.id);
-  });
-
-  test.afterEach('Delete the created scenario', async () => {
-    await deleteScenario(study.id, scenarioItems.name);
+  setupScenarioFixture({
+    scenarioNamePrefix: 'edit-train-scenario',
+    trains: [...trains.slice(0, 1), ...trains.slice(7, 8)],
+    scope: 'test',
   });
 
   /** *************** Test 1 **************** */

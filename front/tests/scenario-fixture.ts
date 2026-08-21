@@ -1,4 +1,11 @@
-import type { Infra, Project, Scenario, Study, TrainSchedule } from 'common/api/osrdEditoastApi';
+import type {
+  Infra,
+  Project,
+  Scenario,
+  Study,
+  TrainSchedule,
+  TrainScheduleSet,
+} from 'common/api/osrdEditoastApi';
 
 import { trainScheduleProjectName, trainScheduleStudyName } from './assets/constants/project-const';
 import test from './page-object-fixture';
@@ -13,6 +20,7 @@ export type ScenarioContext = {
   study: Study;
   infra: Infra;
   scenarioItems: Scenario;
+  trainScheduleSet: TrainScheduleSet;
 };
 
 export type ScenarioFixtureOptions = {
@@ -21,10 +29,16 @@ export type ScenarioFixtureOptions = {
   /**
    * - 'suite' (default): a single scenario shared by the whole suite of tests
    * - 'test': a fresh scenario before each test
+   * - 'none': no scenario is created/deleted or navigated to; only project, study and
+   *   infra are fetched.
    */
-  scope?: 'suite' | 'test';
+  scope?: 'suite' | 'test' | 'none';
   projectName?: string;
   studyName?: string;
+  /**
+   * Links the scenario to an electrical profile set.
+   */
+  electricalProfileId?: () => number | null;
 };
 
 /**
@@ -35,15 +49,13 @@ export type ScenarioFixtureOptions = {
  * @returns {ScenarioContext} - The project, study, infrastructure and scenario used by the tests.
  */
 
-//TODO: only the simulation-result tests use this fixture so far, the other test files still
-// duplicate their scenario setup and teardown code and should be migrated to it as well.
-
 export default function setupScenarioFixture({
   scenarioNamePrefix,
   trains,
   scope = 'suite',
   projectName = trainScheduleProjectName,
   studyName = trainScheduleStudyName,
+  electricalProfileId,
 }: ScenarioFixtureOptions): ScenarioContext {
   const scenarioContext = {} as ScenarioContext;
 
@@ -53,14 +65,20 @@ export default function setupScenarioFixture({
     scenarioContext.infra = await getInfra();
   });
 
+  if (scope === 'none') {
+    return scenarioContext;
+  }
+
   const createScenarioWithTrains = async () => {
     const { scenario, trainScheduleSet } = await createScenario(
       generateUniqueName(scenarioNamePrefix),
       scenarioContext.project.id,
       scenarioContext.study.id,
-      scenarioContext.infra.id
+      scenarioContext.infra.id,
+      electricalProfileId?.()
     );
     scenarioContext.scenarioItems = scenario;
+    scenarioContext.trainScheduleSet = trainScheduleSet;
     await sendTrains(trainScheduleSet.id, trains, scenario.timetable_id);
   };
 

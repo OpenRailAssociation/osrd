@@ -1,42 +1,37 @@
-import type {
-  ElectricalProfileSet,
-  Infra,
-  Project,
-  Scenario,
-  Study,
-} from 'common/api/osrdEditoastApi';
+import type { ElectricalProfileSet, Scenario } from 'common/api/osrdEditoastApi';
 
-import { infrastructureName } from '../../assets/constants/project-const';
+import {
+  globalProjectName,
+  globalStudyName,
+  infrastructureName,
+} from '../../assets/constants/project-const';
 import {
   SCENARIO_DATA,
   SCENARIO_URLS,
   UPDATED_SCENARIO_DATA,
 } from '../../assets/operation-studies/scenario-const';
 import test from '../../page-object-fixture';
+import setupScenarioFixture from '../../scenario-fixture';
 import { generateUniqueName, waitForInfraStateToBeCached } from '../../utils';
-import {
-  deleteApiRequest,
-  getInfra,
-  getProject,
-  getStudy,
-  setElectricalProfile,
-} from '../../utils/api-utils';
+import { deleteApiRequest, setElectricalProfile } from '../../utils/api-utils';
 import createScenario from '../../utils/scenario';
 import { deleteScenario } from '../../utils/teardown-utils';
 
 test.describe('Scenario management', { tag: ['@op', '@scenario', '@management'] }, () => {
-  let project: Project;
-  let study: Study;
   let scenario: Scenario;
-  let infra: Infra;
   let electricalProfileSet: ElectricalProfileSet;
 
   const createdScenarios: { projectId: number; studyId: number; name: string }[] = [];
 
-  test.beforeAll('Fetch project, study and add electrical profiles ', async () => {
-    project = await getProject();
-    study = await getStudy(project.id);
-    infra = await getInfra();
+  const scenarioContext = setupScenarioFixture({
+    scenarioNamePrefix: 'scenario-management-scenario',
+    trains: [],
+    scope: 'none',
+    projectName: globalProjectName,
+    studyName: globalStudyName,
+  });
+
+  test.beforeAll('Add electrical profiles', async () => {
     electricalProfileSet = await setElectricalProfile();
   });
 
@@ -48,6 +43,7 @@ test.describe('Scenario management', { tag: ['@op', '@scenario', '@management'] 
 
   /** *************** Test 1 **************** */
   test('Create a new scenario', { tag: '@smoke' }, async ({ page, scenarioPage }) => {
+    const { project, study, infra } = scenarioContext;
     const scenarioName = generateUniqueName(SCENARIO_DATA.name);
     createdScenarios.push({ projectId: project.id, studyId: study.id, name: scenarioName });
 
@@ -79,8 +75,9 @@ test.describe('Scenario management', { tag: ['@op', '@scenario', '@management'] 
 
   /** *************** Test 2 **************** */
   test('Update an existing scenario', { tag: '@smoke' }, async ({ page, scenarioPage }) => {
+    const { project, study } = scenarioContext;
     await test.step('Create a base scenario', async () => {
-      ({ project, study, scenario } = await createScenario());
+      ({ scenario } = await createScenario());
     });
 
     const updatedScenarioName = generateUniqueName(`${SCENARIO_DATA.name}(updated)`);
@@ -134,8 +131,9 @@ test.describe('Scenario management', { tag: ['@op', '@scenario', '@management'] 
 
   /** *************** Test 3 **************** */
   test('Delete a scenario', async ({ page, scenarioPage }) => {
+    const { project, study, infra } = scenarioContext;
     await test.step('Create a scenario to delete', async () => {
-      ({ project, study, scenario } = await createScenario());
+      ({ scenario } = await createScenario());
       createdScenarios.push({ projectId: project.id, studyId: study.id, name: scenario.name });
     });
 
