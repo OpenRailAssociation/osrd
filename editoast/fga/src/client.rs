@@ -234,6 +234,7 @@ impl Continuation {
 fn setup_tracing() {
     tracing_subscriber::fmt()
         .with_env_filter(tracing_subscriber::EnvFilter::from_default_env())
+        .with_test_writer()
         .without_time()
         .pretty()
         .try_init()

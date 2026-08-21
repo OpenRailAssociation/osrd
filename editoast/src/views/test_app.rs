@@ -181,7 +181,7 @@ impl TestAppBuilder {
             None
         };
         let tracing_config = TracingConfig {
-            stream: Stream::Stdout,
+            stream: Stream::TestWriter,
             telemetry,
             directives: vec![],
             span_uploading: SpanUploading::BackgroundBatched,
