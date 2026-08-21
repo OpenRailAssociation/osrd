@@ -168,7 +168,7 @@ impl DocumentedRouter {
     }
 }
 
-#[tracing::instrument(name = "role verification", skip_all, fields(?required_role, decision = tracing::field::Empty))]
+#[tracing::instrument(name = "mdware:role_verification", skip_all, fields(?required_role, decision = tracing::field::Empty))]
 async fn verify_role(
     required_role: authz::Role,
     authn_state: crate::authentication::State,

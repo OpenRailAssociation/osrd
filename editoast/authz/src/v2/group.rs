@@ -3,6 +3,7 @@ use std::collections::HashSet;
 use fga::client::UserList;
 use fga::model::Relation as _;
 use futures::FutureExt as _;
+use tracing::Instrument as _;
 
 use crate::Group;
 use crate::Role;
@@ -11,6 +12,7 @@ use crate::v2::Actor;
 use crate::v2::Check;
 use crate::v2::Protected;
 
+#[tracing::instrument(fields(group))]
 pub fn group_members(group: Group) -> Protected<Vec<User>> {
     Protected::new(move |openfga| {
         async move {
@@ -26,10 +28,12 @@ pub fn group_members(group: Group) -> Protected<Vec<User>> {
             );
             Ok(users)
         }
+        .in_current_span()
         .boxed()
     })
 }
 
+#[tracing::instrument(fields(user))]
 pub fn user_groups(user: User) -> Protected<Vec<Group>> {
     Protected::new(move |openfga| {
         async move {
@@ -43,6 +47,7 @@ pub fn user_groups(user: User) -> Protected<Vec<Group>> {
             );
             Ok(users)
         }
+        .in_current_span()
         .boxed()
     })
 }
@@ -50,6 +55,7 @@ pub fn user_groups(user: User) -> Protected<Vec<Group>> {
 /// Adds some members to a group
 ///
 /// Idempotent but not atomic due to the lack of transactions in OpenFGA.
+#[tracing::instrument(fields(group, members))]
 pub fn add_members(group: Group, members: HashSet<User>) -> Protected<()> {
     group_members(group)
         .then(move |openfga, existing_members| {
@@ -64,6 +70,7 @@ pub fn add_members(group: Group, members: HashSet<User>) -> Protected<()> {
                 writes.execute().await?;
                 Ok(())
             }
+            .in_current_span()
             .boxed()
         })
         .with_check(Check::HasRole(Actor::Issuer, Role::Admin))
@@ -72,6 +79,7 @@ pub fn add_members(group: Group, members: HashSet<User>) -> Protected<()> {
 /// Removes some members from a group
 ///
 /// Idempotent but not atomic due to the lack of transactions in OpenFGA.
+#[tracing::instrument(fields(group, members))]
 pub fn remove_members(group: Group, members: HashSet<User>) -> Protected<()> {
     group_members(group)
         .then(move |openfga, existing_members| {
@@ -86,6 +94,7 @@ pub fn remove_members(group: Group, members: HashSet<User>) -> Protected<()> {
                 writes.execute().await?;
                 Ok(())
             }
+            .in_current_span()
             .boxed()
         })
         .with_check(Check::HasRole(Actor::Issuer, Role::Admin))
