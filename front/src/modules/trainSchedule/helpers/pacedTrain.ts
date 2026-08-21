@@ -48,10 +48,10 @@ export const hasNoChangeGroups = (exception: PacedTrainException) =>
 
 export function shiftPacedExceptions(
   exceptions: PacedTrainException[],
-  timeDiffMs: number
+  timeDiff: Duration
 ): PacedTrainException[] {
   return exceptions.map((exc) =>
-    exc.start_time ? { ...exc, start_time: { value: exc.start_time.value + timeDiffMs } } : exc
+    exc.start_time ? { ...exc, start_time: { value: exc.start_time.value + timeDiff.ms } } : exc
   );
 }
 
