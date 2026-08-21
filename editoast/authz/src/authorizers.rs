@@ -106,7 +106,7 @@ impl<'c> UserAuthorizer<'c> {
         Subject::User(self.user)
     }
 
-    #[tracing::instrument(target = "UserAutorizer::check", skip_all, fields(?check, issuer = ?self.user, roles = ?self.roles), ret(level = "trace"), err)]
+    #[tracing::instrument(name = "authz::UserAutorizer::check", skip_all, fields(?check, issuer = ?self.user, roles = ?self.roles), ret(level = "trace"), err)]
     async fn check<'ch>(&self, check: &'ch Check) -> Result<Option<&'ch Check>, Error> {
         Ok(match check {
             Check::HasRole(Actor::Issuer, role) if !self.roles.contains(role) => Some(check),
@@ -247,7 +247,7 @@ impl Authorizer for UserAuthorizer<'_> {
     type Rejection = Check;
     type Error = Error;
 
-    #[tracing::instrument(skip_all)]
+    #[tracing::instrument(name = "authz::UserAuthorizer::authorize", skip_all, fields(issuer = ?self.user, roles = ?self.roles, n_checks = ?data.checks.len()), err)]
     async fn authorize<'a, T>(
         &'a self,
         data: Protected<T>,

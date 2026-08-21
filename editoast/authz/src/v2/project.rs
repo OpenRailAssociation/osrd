@@ -3,6 +3,7 @@ use std::collections::HashSet;
 use fga::client::UserList;
 use fga::model::Relation as _;
 use futures::FutureExt;
+use tracing::Instrument as _;
 
 use crate::Group;
 use crate::ProjectPrivilege;
@@ -21,6 +22,7 @@ use crate::v2::subject_roles;
 ///
 /// A user can have *indirect grants* on a resource through group membership.
 /// For those, use [`project_effective_grant`].
+#[tracing::instrument(fields(subject, project))]
 pub fn project_direct_grant(subject: Subject, project: Project) -> Protected<Option<ProjectGrant>> {
     Protected::new(move |openfga| {
         async move {
@@ -41,6 +43,7 @@ pub fn project_direct_grant(subject: Subject, project: Project) -> Protected<Opt
 
             Ok(is_owner.then_some(ProjectGrant::Owner))
         }
+        .in_current_span()
         .boxed()
     })
 }
@@ -48,6 +51,7 @@ pub fn project_direct_grant(subject: Subject, project: Project) -> Protected<Opt
 /// Returns the effective grant a subject has on an [Project]
 ///
 /// For direct grants, see [`project_direct_grant`].
+#[tracing::instrument(fields(subject, project))]
 pub fn project_effective_grant(
     subject: Subject,
     project: Project,
@@ -65,10 +69,12 @@ pub fn project_effective_grant(
 
             Ok(is_owner.then_some(ProjectGrant::Owner))
         }
+        .in_current_span()
         .boxed()
     })
 }
 
+#[tracing::instrument(fields(subject, project))]
 pub fn project_set_grant(subject: Subject, project: Project) -> Protected<()> {
     project_direct_grant(subject, project)
         .then(move |openfga, grant| {
@@ -100,6 +106,7 @@ pub fn project_set_grant(subject: Subject, project: Project) -> Protected<()> {
 
                 Ok(())
             }
+            .in_current_span()
             .boxed()
         })
         .with_check(Check::CanGiveSubjectProjectGrant(subject, project))
@@ -109,6 +116,7 @@ pub fn project_set_grant(subject: Subject, project: Project) -> Protected<()> {
 ///
 /// Returns `true` if a grant was revoked, `false` otherwise, making the operation idempotent.
 /// No transaction is setup as OpenFGA does not support them.
+#[tracing::instrument(fields(subject, project))]
 pub fn project_revoke_grant(subject: Subject, project: Project) -> Protected<bool> {
     // Revoking rules:
     // Only admins can fully revoke grants
@@ -130,11 +138,13 @@ pub fn project_revoke_grant(subject: Subject, project: Project) -> Protected<boo
                 delete.execute().await?;
                 Ok(true)
             }
+            .in_current_span()
             .boxed()
         })
         .with_check(Check::HasRole(Actor::Issuer, Role::Admin))
 }
 
+#[tracing::instrument(fields(user, project))]
 pub fn project_privileges(user: User, project: Project) -> Protected<HashSet<ProjectPrivilege>> {
     Protected::new(move |openfga| {
         async move {
@@ -152,6 +162,7 @@ pub fn project_privileges(user: User, project: Project) -> Protected<HashSet<Pro
             };
             Ok(privilege_set)
         }
+        .in_current_span()
         .boxed()
     })
     .with_check(Check::HasProjectPrivilege(
@@ -162,6 +173,7 @@ pub fn project_privileges(user: User, project: Project) -> Protected<HashSet<Pro
 }
 
 /// Lists all the projects a user has access to
+#[tracing::instrument(fields(user))]
 pub fn project_list(user: User) -> Protected<ResourcesList<Project>> {
     subject_roles(Subject::user(user)).then(move |openfga, roles| {
         async move {
@@ -174,6 +186,7 @@ pub fn project_list(user: User) -> Protected<ResourcesList<Project>> {
                 .await?;
             Ok(ResourcesList::Privileged(authorized_projects))
         }
+        .in_current_span()
         .boxed()
     })
 }
