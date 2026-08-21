@@ -46,8 +46,8 @@ type Operation<T> = dyn for<'c> FnOnce(&'c fga::Client) -> ValueFut<'c, T> + Sen
 #[derive(derive_more::Debug)]
 pub struct Protected<T> {
     #[debug(skip)]
-    op: Box<Operation<T>>,
-    pub checks: HashSet<Check>,
+    pub(crate) op: Box<Operation<T>>,
+    pub(crate) checks: HashSet<Check>,
 }
 
 /// The actor to which some [Check]s applies
@@ -107,11 +107,16 @@ pub enum Access<'a, T, R> {
     /// The operation is authorized, poll the future to get the result of the operation
     ///
     /// See [Access::access].
-    Authorized(ValueFut<'a, T>),
+    Authorized(AuthorizedOperation<'a, T>),
     /// The operation is bypassed, the operation is not run and a substitute value is provided instead
     Bypassed { value: T, reason: &'static str },
     /// The operation is rejected, the protected operation cannot be run and a rejection reason is provided by the [Authorizer]
     Denied { rejection: R },
+}
+
+pub struct AuthorizedOperation<'a, T> {
+    pub(crate) op: Box<Operation<T>>,
+    pub(crate) client: &'a fga::Client,
 }
 
 /// An entity capable of authorizing a [Protected] operation, yielding an [Access]
@@ -188,11 +193,8 @@ impl<T> Protected<T> {
             .map_err(|rejection| E::from(rejection))
     }
 
-    /// Consumes the protection and produces an [Access::Authorized] without performing any check
-    ///
-    /// Only use this in trusted context or in an [Authorizer] implementation after performing the necessary checks.
-    pub fn access_authorized<'a, R>(self, openfga: &'a fga::Client) -> Access<'a, T, R> {
-        Access::Authorized((self.op)(openfga))
+    pub(crate) async fn yolo_run(self, openfga: &fga::Client) -> Result<T, OpenFgaError> {
+        (self.op)(openfga).await
     }
 
     pub fn with_check(self, check: Check) -> Self {
@@ -349,7 +351,7 @@ impl<'a, T, R> Access<'a, T, R> {
     /// Never match on the double Result, match on the Access itself if needed.
     pub async fn access(self) -> Result<Result<T, R>, OpenFgaError> {
         match self {
-            Access::Authorized(fut) => fut.await.map(Ok),
+            Access::Authorized(AuthorizedOperation { op, client }) => op(client).await.map(Ok),
             Access::Denied { rejection } => Ok(Err(rejection)),
             Access::Bypassed { value, reason } => {
                 tracing::warn!(reason, "using admin bypass");
@@ -412,11 +414,7 @@ impl<T: fga::model::Type> ResourcesList<T> {
 pub mod special_authorizers {
     use std::convert::Infallible;
 
-    use crate::v2::Access;
-    use crate::v2::OpenFgaError;
-    use crate::v2::Protected;
-
-    use super::Authorizer;
+    use super::*;
 
     /// Always authorizes without performing any check
     pub struct Authorize<'a>(pub &'a fga::Client);
@@ -431,7 +429,10 @@ pub mod special_authorizers {
             &'a self,
             data: Protected<T>,
         ) -> Result<Access<'a, T, Self::Rejection>, Self::Error> {
-            Ok(data.access_authorized(self.0))
+            Ok(Access::Authorized(AuthorizedOperation {
+                op: data.op,
+                client: self.0,
+            }))
         }
     }
 

@@ -1,6 +1,7 @@
 use std::convert::Infallible;
 
 use authz::Role;
+use authz::SystemAuthorizer;
 use authz::v2::special_authorizers;
 use axum::Extension;
 use axum::extract::Request;
@@ -130,7 +131,8 @@ pub(in crate::views) async fn authentication_validation_middleware(
         user: &models::User,
     ) -> Result<()> {
         let Ok(roles) = ::authz::v2::subject_roles(::authz::Subject::user(user.id))
-            .access_authorized::<Infallible>(openfga)
+            .authorize(&SystemAuthorizer::<Infallible>::new(openfga))
+            .await?
             .access()
             .await?;
         if roles.contains(&Role::Admin) {
