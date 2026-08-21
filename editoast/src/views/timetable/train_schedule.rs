@@ -1464,7 +1464,7 @@ pub(in crate::views) async fn occupancy_blocks(
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
-#[schema(as = PacedTrainTrackOccupancyForm)]
+#[schema(as = TrainScheduleTrackOccupancyForm)]
 pub(in crate::views) struct TrackOccupancyForm {
     train_schedule_ids: Vec<i64>,
     operational_point_reference: OperationalPointReference,
@@ -1475,7 +1475,7 @@ pub(in crate::views) struct TrackOccupancyForm {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ToSchema)]
-#[schema(as = PacedTrainTrackOccupancy)]
+#[schema(as = TrainScheduleTrackOccupancy)]
 pub(in crate::views) struct TrackOccupancy {
     #[serde(flatten)]
     #[schema(inline)]
