@@ -3,6 +3,7 @@ use fga::model::Relation as _;
 use futures::FutureExt;
 use itertools::Itertools as _;
 use std::collections::HashSet;
+use tracing::Instrument as _;
 
 use super::Check;
 use super::Protected;
@@ -18,6 +19,7 @@ use crate::v2::ResourcesList;
 use crate::v2::grant_from_exclusive_bools;
 use crate::v2::subject_roles;
 
+#[tracing::instrument(fields(user, rolling_stock))]
 pub fn rolling_stock_privileges(
     user: User,
     rolling_stock: RollingStock,
@@ -64,6 +66,7 @@ pub fn rolling_stock_privileges(
             );
             Ok(privileges)
         }
+        .in_current_span()
         .boxed()
     })
     .with_check(Check::HasRollingStockPrivilege(
@@ -81,6 +84,7 @@ pub fn rolling_stock_privileges(
 /// are not represented by the same enum, do no work on the same scale nor in the same way.
 ///
 /// Groups only have direct grants. If multiple direct grants are found, this protected operation will panic.
+#[tracing::instrument(fields(subject, rolling_stock))]
 pub fn rolling_stock_effective_grant(
     subject: Subject,
     rolling_stock: RollingStock,
@@ -131,6 +135,7 @@ pub fn rolling_stock_effective_grant(
                 .or_else(|| is_reader.then_some(RollingStockGrant::Reader))
                 .or_else(|| is_restricted_reader.then_some(RollingStockGrant::RestrictedReader)))
         }
+        .in_current_span()
         .boxed()
     })
     .with_check(Check::HasRollingStockPrivilege(
@@ -143,6 +148,7 @@ pub fn rolling_stock_effective_grant(
 /// Sets the (direct) grant a subject has on an [RollingStock].
 ///
 /// No transaction is setup as OpenFGA does not support them.
+#[tracing::instrument(fields(subject, rolling_stock, new_grant))]
 pub fn rolling_stock_set_grant(
     subject: Subject,
     rolling_stock: RollingStock,
@@ -185,6 +191,7 @@ pub fn rolling_stock_set_grant(
                 writes.execute().await?;
                 Ok(())
             }
+            .in_current_span()
             .boxed()
         });
 
@@ -234,10 +241,12 @@ pub fn rolling_stock_set_grant(
 
 /// Return an operation that checks the list of subjects which have the given grant on a rolling
 /// stock.
+#[tracing::instrument(fields(rolling_stock, grant))]
 pub fn rolling_stock_granted_subjects(
     rolling_stock: RollingStock,
     grant: RollingStockGrant,
 ) -> Protected<Vec<Subject>> {
+    #[tracing::instrument(fields(rolling_stock, grant))]
     fn get_granted_users(
         rolling_stock: RollingStock,
         grant: RollingStockGrant,
@@ -270,9 +279,11 @@ pub fn rolling_stock_granted_subjects(
                 }
                 .map(|UserList { users, .. }| users)
             }
+            .in_current_span()
             .boxed()
         })
     }
+    #[tracing::instrument(fields(rolling_stock, grant))]
     fn get_granted_groups(
         rolling_stock: RollingStock,
         grant: RollingStockGrant,
@@ -314,6 +325,7 @@ pub fn rolling_stock_granted_subjects(
                     }
                 }
             }
+            .in_current_span()
             .boxed()
         })
     }
@@ -340,6 +352,7 @@ pub fn rolling_stock_granted_subjects(
 ///
 /// A subject can have at most one direct grant on any resource. Should this
 /// invariant be violated, the protected operation will panic.
+#[tracing::instrument(fields(subject, rolling_stock))]
 pub fn rolling_stock_direct_grant(
     subject: Subject,
     rolling_stock: RollingStock,
@@ -385,6 +398,7 @@ pub fn rolling_stock_direct_grant(
             );
             Ok(grant)
         }
+        .in_current_span()
         .boxed()
     })
 }
@@ -393,6 +407,7 @@ pub fn rolling_stock_direct_grant(
 ///
 /// Returns `true` if a grant was revoked, `false` otherwise, making the operation idempotent.
 /// No transaction is setup as OpenFGA does not support them.
+#[tracing::instrument(fields(subject, rolling_stock))]
 pub fn rolling_stock_revoke_grant(
     subject: Subject,
     rolling_stock: RollingStock,
@@ -434,6 +449,7 @@ pub fn rolling_stock_revoke_grant(
             delete.execute().await?;
             Ok(true)
         }
+        .in_current_span()
         .boxed()
     });
 
