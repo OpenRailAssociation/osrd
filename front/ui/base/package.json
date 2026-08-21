@@ -15,7 +15,7 @@
     "autoprefixer": "^10.5.4",
     "eslint-plugin-import": "^2.29.1",
     "eslint-plugin-react-hooks": "^7.1.1",
-    "eslint-plugin-storybook": "^10.5.7",
+    "eslint-plugin-storybook": "^10.5.8",
     "oxfmt": "^0.63.0",
     "postcss": "^8.5.26",
     "postcss-assets": "^6.0.0",
