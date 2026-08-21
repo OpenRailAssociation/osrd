@@ -11,7 +11,7 @@ use models::prelude::*;
 use std::collections::HashSet;
 use std::sync::Arc;
 
-use crate::authorizers::SystemAuthorizer;
+use authz::SystemAuthorizer;
 
 use super::openfga_config::OpenfgaConfig;
 

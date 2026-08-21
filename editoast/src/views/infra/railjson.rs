@@ -20,13 +20,13 @@ use utoipa::ToSchema;
 
 use crate::AppState;
 use crate::authentication;
-use crate::authorizers::SystemAuthorizer;
 use crate::error::Result;
 use crate::generated_data::InfraGeneratedData as _;
 use crate::infra_cache::InfraCache;
 use crate::views::AuthorizationError;
 use crate::views::infra::InfraApiError;
 use crate::views::infra::InfraIdParam;
+use authz::SystemAuthorizer;
 use models::Infra;
 use models::prelude::*;
 use schemas::primitives::ObjectType;

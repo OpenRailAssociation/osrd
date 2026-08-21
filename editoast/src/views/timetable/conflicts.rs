@@ -21,13 +21,13 @@ use utoipa::ToSchema;
 
 use crate::AppState;
 use crate::authentication;
-use crate::authorizers::SystemAuthorizer;
 use crate::error::Result;
 use crate::views::AuthorizationError;
 use crate::views::infra::InfraIdQueryParam;
 use crate::views::timetable::ElectricalProfileSetIdQueryParam;
 use crate::views::timetable::TimetableError;
 use crate::views::timetable::TimetableIdParam;
+use authz::SystemAuthorizer;
 use core_client::AsCoreRequest as _;
 use core_client::conflict_detection::Conflict as CoreConflict;
 use core_client::conflict_detection::ConflictDetectionRequest;
