@@ -16,8 +16,8 @@ use crate::v2::Actor;
 use crate::v2::Check;
 use crate::v2::Protected;
 use crate::v2::ResourcesList;
+use crate::v2::grant_from_exclusive_bools;
 use crate::v2::subject_roles;
-use crate::v2::validate_direct_grant;
 
 /// Returns the *direct grant* a subject has on an [Infra], if any
 ///
@@ -46,10 +46,16 @@ pub fn infra_direct_grant(subject: Subject, infra: Infra) -> Protected<Option<In
                         .tuple_exists(Infra::owner().tuple(Group::member().userset(group), &infra)),
                 )?,
             };
-            Ok(
-                validate_direct_grant(is_reader, is_writer, is_owner, *infra, subject)
-                    .map(Into::into),
-            )
+            let grant = grant_from_exclusive_bools(
+                subject,
+                infra,
+                &[
+                    (is_reader, InfraGrant::Reader),
+                    (is_writer, InfraGrant::Writer),
+                    (is_owner, InfraGrant::Owner),
+                ],
+            );
+            Ok(grant)
         }
         .boxed()
     })

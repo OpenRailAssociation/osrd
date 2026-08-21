@@ -16,6 +16,7 @@ use std::collections::HashSet;
 
 use futures::FutureExt;
 use futures::future::BoxFuture;
+use itertools::Itertools as _;
 
 use crate::Infra;
 use crate::InfraGrant;
@@ -475,59 +476,34 @@ where
     }
 }
 
-enum Grant {
-    Reader,
-    Writer,
-    Owner,
-}
-
-impl From<Grant> for RollingStockGrant {
-    fn from(grant: Grant) -> Self {
-        match grant {
-            Grant::Reader => RollingStockGrant::Reader,
-            Grant::Writer => RollingStockGrant::Writer,
-            Grant::Owner => RollingStockGrant::Owner,
-        }
-    }
-}
-
-impl From<Grant> for InfraGrant {
-    fn from(grant: Grant) -> Self {
-        match grant {
-            Grant::Reader => InfraGrant::Reader,
-            Grant::Writer => InfraGrant::Writer,
-            Grant::Owner => InfraGrant::Owner,
-        }
-    }
-}
-
-/// Given a list of the existing direct grants on a resource, either return its direct grant
-/// if there is only one or panic if multiple direct grants exist.
-fn validate_direct_grant(
-    is_reader: bool,
-    is_writer: bool,
-    is_owner: bool,
-    resource_id: i64,
+/// Utility function that interprets a bunch of booleans coming from OpenFGA response as a grant.
+///
+/// At most one boolean can be `true`. If multiple are `true`, this function panics as grants
+/// are mutually exclusive.
+fn grant_from_exclusive_bools<R: std::fmt::Debug, G: std::fmt::Debug + Copy>(
     subject: Subject,
-) -> Option<Grant> {
-    match (is_reader, is_writer, is_owner) {
-        (true, false, false) => Some(Grant::Reader),
-        (false, true, false) => Some(Grant::Writer),
-        (false, false, true) => Some(Grant::Owner),
-        (false, false, false) => None,
-        _ => {
-            tracing::error!(
-                is_reader,
-                is_writer,
-                is_owner,
-                ?subject,
-                resource = ?resource_id,
-                "Subject has multiple direct grants on the same resource"
-            );
-            panic!(
-                "Subject '{subject:?}' has multiple direct grants on the same resource '{resource_id:?}', which is not supposed to happen by design. \n\
-                        Detected direct grants: reader: {is_reader}, writer: {is_writer}, owner: {is_owner}"
-            )
-        }
+    resource: R,
+    mapping: &[(bool, G)],
+) -> Option<G> {
+    let mut it = mapping.iter().filter_map(|(b, g)| b.then_some(g));
+    let first = it.next();
+    if let second @ Some(_) = it.next() {
+        let grants = std::iter::once(first)
+            .chain(std::iter::once(second))
+            .flatten()
+            .chain(it)
+            .collect_vec();
+        tracing::error!(
+            ?grants,
+            subject = ?subject,
+            resource = ?resource,
+            "Subject has conflicting direct grants on a resource",
+        );
+        panic!(
+            "Subject '{:?}' has conflicting direct grants on resource '{:?}', which is not supposed to happen by design. \n\
+            Detected direct grants: {:?}",
+            subject, resource, grants
+        )
     }
+    first.copied()
 }
