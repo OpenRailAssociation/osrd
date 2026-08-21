@@ -15,6 +15,7 @@ use crate::User;
 use crate::v2;
 use crate::v2::Access;
 use crate::v2::Actor;
+use crate::v2::AuthorizedOperation;
 use crate::v2::Authorizer;
 use crate::v2::Check;
 use crate::v2::Protected;
@@ -63,7 +64,11 @@ impl<R> Authorizer for SystemAuthorizer<'_, R> {
         &'a self,
         data: Protected<T>,
     ) -> Result<Access<'a, T, Self::Rejection>, Self::Error> {
-        Ok(data.access_authorized(self.openfga))
+        let Protected { op, checks: _ } = data;
+        Ok(Access::Authorized(AuthorizedOperation {
+            op,
+            client: self.openfga,
+        }))
     }
 }
 
@@ -99,42 +104,37 @@ impl<'c> UserAuthorizer<'c> {
             Check::HasRole(Actor::Issuer, role) if !self.roles.contains(role) => Some(check),
             Check::HasRole(Actor::Issuer, _) => None,
             Check::HasRole(Actor::User(user), role) => {
-                let Ok(roles) = v2::subject_roles(Subject::User(*user))
-                    .access_authorized::<Infallible>(self.openfga)
-                    .access()
+                let roles = v2::subject_roles(Subject::User(*user))
+                    .yolo_run(self.openfga)
                     .await?;
                 (!roles.contains(role)).then_some(check)
             }
 
             Check::HasInfraPrivilege(actor, privilege, infra) => {
-                let Ok(privileges) = v2::infra_privileges(*self.actor_user(actor), *infra)
-                    .access_authorized::<Infallible>(self.openfga)
-                    .access()
+                let privileges = v2::infra_privileges(*self.actor_user(actor), *infra)
+                    .yolo_run(self.openfga)
                     .await?;
                 (!privileges.contains(privilege)).then_some(check)
             }
             Check::HasRollingStockPrivilege(actor, privilege, rolling_stock) => {
-                let Ok(privileges) =
+                let privileges =
                     v2::rolling_stock_privileges(*self.actor_user(actor), *rolling_stock)
-                        .access_authorized::<Infallible>(self.openfga)
-                        .access()
+                        .yolo_run(self.openfga)
                         .await?;
                 (!privileges.contains(privilege)).then_some(check)
             }
             Check::HasProjectPrivilege(actor, privilege, project) => {
-                let Ok(privileges) = v2::project_privileges(*self.actor_user(actor), *project)
-                    .access_authorized::<Infallible>(self.openfga)
-                    .access()
+                let privileges = v2::project_privileges(*self.actor_user(actor), *project)
+                    .yolo_run(self.openfga)
                     .await?;
                 (!privileges.contains(privilege)).then_some(check)
             }
 
             Check::CanAlterSubjectInfraGrant(subject @ Subject::User(_), infra, new_grant) => {
                 let issuer = self.issuer();
-                let Ok((issuer_grant, current_grant)) = v2::infra_effective_grant(issuer, *infra)
+                let (issuer_grant, current_grant) = v2::infra_effective_grant(issuer, *infra)
                     .zip(v2::infra_effective_grant(*subject, *infra))
-                    .access_authorized::<Infallible>(self.openfga)
-                    .access()
+                    .yolo_run(self.openfga)
                     .await?;
                 let Some(issuer_grant) = issuer_grant else {
                     // According to the authorization model, non-Admin users must have a grant to share
@@ -160,9 +160,8 @@ impl<'c> UserAuthorizer<'c> {
             Check::CanGiveSubjectProjectGrant(Subject::User(_), project) => {
                 // There is only one level of grant. The issuer must own a grant on the project to
                 // share it to other users.
-                let Ok(grant) = v2::project_effective_grant(self.issuer(), *project)
-                    .access_authorized::<Infallible>(self.openfga)
-                    .access()
+                let grant = v2::project_effective_grant(self.issuer(), *project)
+                    .yolo_run(self.openfga)
                     .await?;
 
                 match grant {
@@ -178,9 +177,8 @@ impl<'c> UserAuthorizer<'c> {
             }
 
             Check::SubjectEffectiveInfraGrantIsNot(grant, subject, infra) => {
-                let Ok(subject_grant) = v2::infra_effective_grant(*subject, *infra)
-                    .access_authorized::<Infallible>(self.openfga)
-                    .access()
+                let subject_grant = v2::infra_effective_grant(*subject, *infra)
+                    .yolo_run(self.openfga)
                     .await?;
                 (subject_grant == Some(*grant)).then_some(check)
             }
@@ -190,11 +188,10 @@ impl<'c> UserAuthorizer<'c> {
                 new_grant,
             ) => {
                 let issuer = self.issuer();
-                let Ok((issuer_grant, current_grant)) =
+                let (issuer_grant, current_grant) =
                     v2::rolling_stock_effective_grant(issuer, *rolling_stock)
                         .zip(v2::rolling_stock_effective_grant(*subject, *rolling_stock))
-                        .access_authorized::<Infallible>(self.openfga)
-                        .access()
+                        .yolo_run(self.openfga)
                         .await?;
                 let Some(issuer_grant) = issuer_grant else {
                     // According to the authorization model, non-Admin users must have a grant to share
@@ -217,24 +214,21 @@ impl<'c> UserAuthorizer<'c> {
                 Some(check)
             }
             Check::SubjectEffectiveRollingStockGrantIsNot(grant, subject, rolling_stock) => {
-                let Ok(subject_grant) = v2::rolling_stock_effective_grant(*subject, *rolling_stock)
-                    .access_authorized::<Infallible>(self.openfga)
-                    .access()
+                let subject_grant = v2::rolling_stock_effective_grant(*subject, *rolling_stock)
+                    .yolo_run(self.openfga)
                     .await?;
                 (subject_grant == Some(*grant)).then_some(check)
             }
             Check::IsNotLastInfraOwner(subject, infra) => {
-                let Ok(owners) = v2::infra_granted_subjects(*infra, InfraGrant::Owner)
-                    .access_authorized::<Infallible>(self.openfga)
-                    .access()
+                let owners = v2::infra_granted_subjects(*infra, InfraGrant::Owner)
+                    .yolo_run(self.openfga)
                     .await?;
                 (owners.len() == 1 && owners.contains(subject)).then_some(check)
             }
             Check::IsNotLastRollingStockOwner(subject, rolling_stock) => {
-                let Ok(owners) =
+                let owners =
                     v2::rolling_stock_granted_subjects(*rolling_stock, RollingStockGrant::Owner)
-                        .access_authorized::<Infallible>(self.openfga)
-                        .access()
+                        .yolo_run(self.openfga)
                         .await?;
                 (owners.len() == 1 && owners.contains(subject)).then_some(check)
             }
@@ -251,23 +245,27 @@ impl Authorizer for UserAuthorizer<'_> {
         &'a self,
         data: Protected<T>,
     ) -> Result<Access<'a, T, Self::Rejection>, Self::Error> {
+        let Protected { op, checks } = data;
         {
             // scoping to tell the borrow checker that checks is consumed before returning
             // access_authorized which takes ownership of data
-            let mut checks = FuturesUnordered::new();
+            let mut checks_fut = FuturesUnordered::new();
             if !self.roles.contains(&Role::Admin) {
-                for check in &data.checks {
-                    checks.push(self.check(check).in_current_span());
+                for check in &checks {
+                    checks_fut.push(self.check(check).in_current_span());
                 }
             }
-            while let Some(result) = checks.next().await {
+            while let Some(result) = checks_fut.next().await {
                 if let Some(check) = result? {
                     tracing::error!(user = ?self.user, ?check, "authorization denied");
                     return Ok(Access::Denied { rejection: *check });
                 }
             }
         }
-        Ok(data.access_authorized(self.openfga))
+        Ok(Access::Authorized(AuthorizedOperation {
+            op,
+            client: self.openfga,
+        }))
     }
 }
 
