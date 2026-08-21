@@ -2846,22 +2846,7 @@ export type PostTrainSchedulesTrackOccupancyApiResponse =
       duration: string;
       time_begin: number;
     } & {
-      /** Position of an operational point on a path, relative to the input path items.
-        If the OP matches an input path item, it is located using this path item's ID,
-        else, if the path just passes by the OP, it is located using its previous and following path items IDs */
-      path_item_relative_location:
-        | {
-            /** Path item ID, when the operational point matches an item in the input path */
-            path_item_id: NonBlankString;
-            type: 'exact_path_item';
-          }
-        | {
-            /** Following path item ID, when the operational point is not one of the input path items */
-            following_path_item_id: NonBlankString;
-            /** Previous path item ID, when the operational point is not one of the input path items */
-            previous_path_item_id: NonBlankString;
-            type: 'between_path_items';
-          };
+      path_item_relative_location: PathItemRelativeLocation;
     })[];
   }[];
 export type PostTrainSchedulesTrackOccupancyApiArg = {
@@ -5339,6 +5324,19 @@ export type TrainScheduleSimulationSummaryResult = {
   };
   train_schedule: SimulationSummaryResult;
 };
+export type PathItemRelativeLocation =
+  | {
+      /** Path item ID, when the operational point matches an item in the input path */
+      path_item_id: NonBlankString;
+      type: 'exact_path_item';
+    }
+  | {
+      /** Following path item ID, when the operational point is not one of the input path items */
+      following_path_item_id: NonBlankString;
+      /** Previous path item ID, when the operational point is not one of the input path items */
+      previous_path_item_id: NonBlankString;
+      type: 'between_path_items';
+    };
 export type CoreSimpleEnvelope = {
   /** List of positions of a train
     Both positions (in mm) and times (in ms) must have the same length */
