@@ -16,8 +16,8 @@ use crate::v2::Actor;
 use crate::v2::Check;
 use crate::v2::Protected;
 use crate::v2::ResourcesList;
+use crate::v2::grant_from_exclusive_bools;
 use crate::v2::subject_roles;
-use crate::v2::validate_direct_grant;
 
 /// Returns the *direct grant* a subject has on an [Infra], if any
 ///
@@ -46,10 +46,16 @@ pub fn infra_direct_grant(subject: Subject, infra: Infra) -> Protected<Option<In
                         .tuple_exists(Infra::owner().tuple(Group::member().userset(group), &infra)),
                 )?,
             };
-            Ok(
-                validate_direct_grant(is_reader, is_writer, is_owner, *infra, subject)
-                    .map(Into::into),
-            )
+            let grant = grant_from_exclusive_bools(
+                subject,
+                infra,
+                &[
+                    (is_reader, InfraGrant::Reader),
+                    (is_writer, InfraGrant::Writer),
+                    (is_owner, InfraGrant::Owner),
+                ],
+            );
+            Ok(grant)
         }
         .boxed()
     })
@@ -86,24 +92,16 @@ pub fn infra_effective_grant(subject: Subject, infra: Infra) -> Protected<Option
                             Infra::owner().check(Group::member().userset(group), &infra),
                         ))
                         .await?;
-                    if matches!(
-                        (is_reader, is_writer, is_owner),
-                        (true, true, _) | (true, _, true) | (_, true, true)
-                    ) {
-                        tracing::error!(
-                            is_reader,
-                            is_writer,
-                            is_owner,
-                            ?subject,
-                            resource = ?infra,
-                            "Group has multiple direct grants on the same resource"
-                        );
-                        panic!(
-                            "Group {subject:?} has multiple direct grants on the same resource {infra:?}, which is not supposed to happen by design. \n\
-                            While a user may have inherited grants from one of their groups, groups do not have inherited grants. \n\
-                            Detected direct grants: reader: {is_reader}, writer: {is_writer}, owner: {is_owner}"
-                        );
-                    }
+                    // panics if multiple grants are detected (groups do not have inherited grants)
+                    let _ = grant_from_exclusive_bools(
+                        subject,
+                        infra,
+                        &[
+                            (is_reader, "reader"),
+                            (is_writer, "writer"),
+                            (is_owner, "owner"),
+                        ],
+                    );
                     (is_reader, is_writer, is_owner)
                 }
             };

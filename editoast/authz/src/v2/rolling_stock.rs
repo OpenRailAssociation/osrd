@@ -15,8 +15,8 @@ use crate::Subject;
 use crate::User;
 use crate::v2::Actor;
 use crate::v2::ResourcesList;
+use crate::v2::grant_from_exclusive_bools;
 use crate::v2::subject_roles;
-use crate::v2::validate_direct_grant;
 
 pub fn rolling_stock_privileges(
     user: User,
@@ -108,24 +108,16 @@ pub fn rolling_stock_effective_grant(
                                 .check(Group::member().userset(group), &rolling_stock),
                         ))
                         .await?;
-                    if matches!(
-                        (is_reader, is_writer, is_owner),
-                        (true, true, _) | (true, _, true) | (_, true, true)
-                    ) {
-                        tracing::error!(
-                            is_reader,
-                            is_writer,
-                            is_owner,
-                            ?subject,
-                            resource = ?rolling_stock,
-                            "Group has multiple direct grants on the same resource"
-                        );
-                        panic!(
-                            "Group {subject:?} has multiple direct grants on the same resource {rolling_stock:?}, which is not supposed to happen by design. \n\
-                            While a user may have inherited grants from one of their groups, groups do not have inherited grants. \n\
-                            Detected direct grants: reader: {is_reader}, writer: {is_writer}, owner: {is_owner}"
-                        );
-                    }
+                    // panics if multiple grants are detected (groups do not have inherited grants)
+                    let _ = grant_from_exclusive_bools(
+                        subject,
+                        rolling_stock,
+                        &[
+                            (is_reader, "reader"),
+                            (is_writer, "writer"),
+                            (is_owner, "owner"),
+                        ],
+                    );
                     (is_reader, is_writer, is_owner)
                 }
             };
@@ -369,10 +361,16 @@ pub fn rolling_stock_direct_grant(
                     ),
                 )?,
             };
-            Ok(
-                validate_direct_grant(is_reader, is_writer, is_owner, *rolling_stock, subject)
-                    .map(Into::into),
-            )
+            let grant = grant_from_exclusive_bools(
+                subject,
+                rolling_stock,
+                &[
+                    (is_reader, RollingStockGrant::Reader),
+                    (is_writer, RollingStockGrant::Writer),
+                    (is_owner, RollingStockGrant::Owner),
+                ],
+            );
+            Ok(grant)
         }
         .boxed()
     })
