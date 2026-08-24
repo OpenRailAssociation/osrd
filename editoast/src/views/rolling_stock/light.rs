@@ -1,6 +1,6 @@
 use authz::RollingStockPrivilege;
+use authz::v2;
 use authz::v2::Authorizer;
-use authz::v2::rolling_stock_privileges;
 use axum::Extension;
 use axum::extract::Json;
 use axum::extract::Path;
@@ -33,6 +33,7 @@ use super::RollingStockNameParam;
 use crate::AppState;
 use crate::authorizers::SystemAuthorizer;
 use crate::error::Result;
+use crate::views::AuthorizationError;
 use crate::views::pagination::PaginatedList;
 use crate::views::pagination::PaginationQueryParams;
 use crate::views::pagination::PaginationStats;
@@ -158,15 +159,12 @@ pub(in crate::views) async fn get(
     Extension(authn_state): Extension<crate::authentication::State>,
     Path(light_rolling_stock_id): Path<i64>,
 ) -> Result<Json<LightRollingStockWithLiveries>> {
-    if let Some(user) = authn_state.user() {
-        let authorizer = authn_state.authorizer(&openfga);
-        crate::authorizers::require(
-            &authorizer,
-            rolling_stock_privileges(user, authz::RollingStock(light_rolling_stock_id)),
-            &RollingStockPrivilege::CanRead,
-        )
-        .await?;
-    }
+    v2::rolling_stock_privilege_check(
+        authz::RollingStock(light_rolling_stock_id),
+        RollingStockPrivilege::CanRead,
+    )
+    .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
+    .await?;
 
     let rolling_stock =
         RollingStock::retrieve_or_fail(db_pool.get().await?, light_rolling_stock_id, || {
@@ -206,15 +204,12 @@ pub(in crate::views) async fn get_by_name(
     )
     .await?;
 
-    if let Some(user) = authn_state.user() {
-        let authorizer = authn_state.authorizer(&openfga);
-        crate::authorizers::require(
-            &authorizer,
-            rolling_stock_privileges(user, authz::RollingStock(rolling_stock.id)),
-            &RollingStockPrivilege::CanRead,
-        )
-        .await?;
-    }
+    v2::rolling_stock_privilege_check(
+        authz::RollingStock(rolling_stock.id),
+        RollingStockPrivilege::CanRead,
+    )
+    .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
+    .await?;
 
     let light_rolling_stock_with_liveries =
         LightRollingStockWithLiveries::try_fetch(&mut db_pool.get().await?, rolling_stock).await?;

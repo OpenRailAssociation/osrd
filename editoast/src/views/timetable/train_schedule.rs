@@ -10,8 +10,6 @@ use authz::InfraPrivilege;
 use authz::RollingStockPrivilege;
 use authz::v2;
 use authz::v2::Authorizer as _;
-use authz::v2::infra_privileges;
-use authz::v2::rolling_stock_privileges;
 use axum::Extension;
 use axum::extract::Json;
 use axum::extract::Path;
@@ -702,15 +700,12 @@ pub(in crate::views) async fn get_path(
         return Ok(Json(PathfindingResult::Failure(failure)));
     };
 
-    if let Some(user) = authn_state.user() {
-        let system_authorizer = SystemAuthorizer::new_infallible(&openfga);
-        crate::authorizers::require(
-            &system_authorizer,
-            rolling_stock_privileges(user, authz::RollingStock(rolling_stock_model.id)),
-            &RollingStockPrivilege::CanRead,
-        )
-        .await?;
-    }
+    v2::rolling_stock_privilege_check(
+        authz::RollingStock(rolling_stock_model.id),
+        RollingStockPrivilege::CanRead,
+    )
+    .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
+    .await?;
 
     let rolling_stock = schemas::RollingStock::<RollingResistanceRaw>::from(rolling_stock_model);
     let consist = PhysicsConsistParameters::from_traction_engine(rolling_stock);
@@ -825,20 +820,12 @@ pub(in crate::views) async fn simulation(
     })
     .await?;
 
-    if let authentication::State::Authenticated { user, .. } = &authn_state {
-        let authorizer = authn_state.authorizer(&openfga);
-        v2::infra_privileges(*user, authz::Infra(infra_id))
-            .map(async |privileges| privileges.contains(&authz::InfraPrivilege::CanRestrictedRead))
-            .ok_or(AuthorizationError::Forbidden)
-            .run::<AuthorizationError, _>(&authorizer)
-            .await??;
-        v2::infra_privilege_check(
-            authz::Infra(infra_id),
-            authz::InfraPrivilege::CanRestrictedRead,
-        )
-        .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
-        .await?;
-    }
+    v2::infra_privilege_check(
+        authz::Infra(infra_id),
+        authz::InfraPrivilege::CanRestrictedRead,
+    )
+    .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
+    .await?;
 
     // Retrieve train_schedule or fail
     let train_schedule =
@@ -868,33 +855,27 @@ pub(in crate::views) async fn simulation(
     };
     // Check user privilege on infra and rolling stock
     // Done here because we need to retrieve the exception if it exists.
-    if let Some(user) = authn_state.user() {
-        let authorizer = authn_state.authorizer(&openfga);
-        crate::authorizers::require(
-            &authorizer,
-            infra_privileges(user, authz::Infra(infra_id)),
-            &InfraPrivilege::CanRead,
-        )
+    v2::infra_privilege_check(authz::Infra(infra_id), InfraPrivilege::CanRead)
+        .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
         .await?;
-        match crate::authorizers::require(
-            &authorizer,
-            rolling_stock_privileges(user, authz::RollingStock(rolling_stock.id)),
-            &RollingStockPrivilege::CanRead,
-        )
-        .await
-        {
-            Ok(()) => {}
-            Err(AuthorizationError::Forbidden) => {
-                return Ok(Json(simulation::Response::PathfindingFailed {
-                    pathfinding_failed: PathfindingFailure::PathfindingInputError(
-                        UnauthorizedRollingStock {
-                            rolling_stock_id: rolling_stock.id,
-                        },
-                    ),
-                }));
-            }
-            Err(err) => return Err(err.into()),
+    match v2::rolling_stock_privilege_check(
+        authz::RollingStock(rolling_stock.id),
+        RollingStockPrivilege::CanRead,
+    )
+    .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
+    .await
+    {
+        Ok(()) => {}
+        Err(AuthorizationError::Forbidden) => {
+            return Ok(Json(simulation::Response::PathfindingFailed {
+                pathfinding_failed: PathfindingFailure::PathfindingInputError(
+                    UnauthorizedRollingStock {
+                        rolling_stock_id: rolling_stock.id,
+                    },
+                ),
+            }));
         }
+        Err(err) => return Err(err.into()),
     }
 
     let consist = PhysicsConsistParameters::from_traction_engine(rolling_stock.into());
@@ -1032,15 +1013,9 @@ pub(in crate::views) async fn etcs_braking_curves(
     )
     .await?;
 
-    if let Some(user) = authn_state.user() {
-        let system_authorizer = SystemAuthorizer::new_infallible(&openfga);
-        crate::authorizers::require(
-            &system_authorizer,
-            rolling_stock_privileges(user, authz::RollingStock(rs.id)),
-            &RollingStockPrivilege::CanRead,
-        )
+    v2::rolling_stock_privilege_check(authz::RollingStock(rs.id), RollingStockPrivilege::CanRead)
+        .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
         .await?;
-    }
 
     // Compute simulation of a train schedule
     let (simulation_result, pathfinding_result) = train_simulation_ordered_batch(

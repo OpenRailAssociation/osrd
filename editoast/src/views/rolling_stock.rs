@@ -6,7 +6,6 @@ type RollingStockForm = schemas::RollingStock<schemas::rolling_stock::RollingRes
 use authz::RollingStockGrant;
 use authz::RollingStockPrivilege;
 use authz::v2;
-use authz::v2::rolling_stock_privileges;
 use axum::Extension;
 use models::train_schedule::OccurrenceId;
 use schemas::TrainOccurrence;
@@ -53,6 +52,7 @@ use crate::authentication;
 use crate::authorizers::SystemAuthorizer;
 use crate::error::InternalError;
 use crate::error::Result;
+use crate::views::AuthorizationError;
 
 #[derive(Debug, Serialize, ToSchema)]
 pub struct RollingStockWithLiveries {
@@ -201,15 +201,12 @@ pub(in crate::views) async fn get(
     Extension(authn_state): Extension<crate::authentication::State>,
     Path(rolling_stock_id): Path<i64>,
 ) -> Result<Json<RollingStockWithLiveries>> {
-    if let Some(user) = authn_state.user() {
-        let authorizer = authn_state.authorizer(&openfga);
-        crate::authorizers::require(
-            &authorizer,
-            rolling_stock_privileges(user, authz::RollingStock(rolling_stock_id)),
-            &RollingStockPrivilege::CanRead,
-        )
-        .await?;
-    }
+    v2::rolling_stock_privilege_check(
+        authz::RollingStock(rolling_stock_id),
+        RollingStockPrivilege::CanRead,
+    )
+    .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
+    .await?;
 
     let rolling_stock = retrieve_existing_rolling_stock(
         &mut db_pool.get().await?,
@@ -244,15 +241,12 @@ pub(in crate::views) async fn get_by_name(
     )
     .await?;
 
-    if let Some(user) = authn_state.user() {
-        let authorizer = authn_state.authorizer(&openfga);
-        crate::authorizers::require(
-            &authorizer,
-            rolling_stock_privileges(user, authz::RollingStock(rolling_stock.id)),
-            &RollingStockPrivilege::CanRead,
-        )
-        .await?;
-    }
+    v2::rolling_stock_privilege_check(
+        authz::RollingStock(rolling_stock.id),
+        RollingStockPrivilege::CanRead,
+    )
+    .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
+    .await?;
 
     let rolling_stock_with_liveries =
         RollingStockWithLiveries::try_fetch(&mut db_pool.get().await?, rolling_stock).await?;
@@ -351,15 +345,12 @@ pub(in crate::views) async fn update(
     Path(rolling_stock_id): Path<i64>,
     Json(rolling_stock_form): Json<RollingStockForm>,
 ) -> Result<Json<RollingStockWithLiveries>> {
-    if let Some(user) = authn_state.user() {
-        let authorizer = authn_state.authorizer(&openfga);
-        crate::authorizers::require(
-            &authorizer,
-            rolling_stock_privileges(user, authz::RollingStock(rolling_stock_id)),
-            &RollingStockPrivilege::CanWrite,
-        )
-        .await?;
-    }
+    v2::rolling_stock_privilege_check(
+        authz::RollingStock(rolling_stock_id),
+        RollingStockPrivilege::CanWrite,
+    )
+    .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
+    .await?;
     let new_rolling_stock = db_pool
         .get()
         .await?
@@ -426,15 +417,12 @@ pub(in crate::views) async fn delete(
     Path(rolling_stock_id): Path<i64>,
     Query(DeleteRollingStockQueryParams { force }): Query<DeleteRollingStockQueryParams>,
 ) -> Result<impl IntoResponse> {
-    if let Some(user) = authn_state.user() {
-        let authorizer = authn_state.authorizer(&openfga);
-        crate::authorizers::require(
-            &authorizer,
-            rolling_stock_privileges(user, authz::RollingStock(rolling_stock_id)),
-            &RollingStockPrivilege::CanDelete,
-        )
-        .await?;
-    }
+    v2::rolling_stock_privilege_check(
+        authz::RollingStock(rolling_stock_id),
+        RollingStockPrivilege::CanDelete,
+    )
+    .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
+    .await?;
 
     let conn = &mut db_pool.get().await?;
 
@@ -500,15 +488,12 @@ pub(in crate::views) async fn update_locked(
     Json(RollingStockLockedUpdateForm { locked }): Json<RollingStockLockedUpdateForm>,
 ) -> Result<impl IntoResponse> {
     let conn = &mut db_pool.get().await?;
-    if let Some(user) = authn_state.user() {
-        let authorizer = authn_state.authorizer(&openfga);
-        crate::authorizers::require(
-            &authorizer,
-            rolling_stock_privileges(user, authz::RollingStock(rolling_stock_id)),
-            &RollingStockPrivilege::CanWrite,
-        )
-        .await?;
-    };
+    v2::rolling_stock_privilege_check(
+        authz::RollingStock(rolling_stock_id),
+        RollingStockPrivilege::CanWrite,
+    )
+    .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
+    .await?;
     RollingStock::changeset()
         .locked(locked)
         .update_or_fail(conn, rolling_stock_id, || RollingStockError::KeyNotFound {
@@ -586,15 +571,12 @@ pub(in crate::views) async fn create_livery(
     Path(rolling_stock_id): Path<i64>,
     form: Multipart,
 ) -> Result<Json<schemas::rolling_stock::RollingStockLivery>> {
-    if let Some(user) = authn_state.user() {
-        let authorizer = authn_state.authorizer(&openfga);
-        crate::authorizers::require(
-            &authorizer,
-            authz::v2::rolling_stock_privileges(user, authz::RollingStock(rolling_stock_id)),
-            &RollingStockPrivilege::CanWrite,
-        )
-        .await?;
-    }
+    v2::rolling_stock_privilege_check(
+        authz::RollingStock(rolling_stock_id),
+        RollingStockPrivilege::CanWrite,
+    )
+    .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
+    .await?;
 
     let conn = &mut db_pool.get().await?;
 
@@ -658,15 +640,12 @@ pub(in crate::views) async fn get_usage(
     Extension(authn_state): Extension<crate::authentication::State>,
     Path(rolling_stock_id): Path<i64>,
 ) -> Result<Json<Vec<ScenarioReference>>> {
-    if let Some(user) = authn_state.user() {
-        let authorizer = authn_state.authorizer(&openfga);
-        crate::authorizers::require(
-            &authorizer,
-            authz::v2::rolling_stock_privileges(user, authz::RollingStock(rolling_stock_id)),
-            &RollingStockPrivilege::CanRestrictedRead,
-        )
-        .await?;
-    };
+    v2::rolling_stock_privilege_check(
+        authz::RollingStock(rolling_stock_id),
+        RollingStockPrivilege::CanRestrictedRead,
+    )
+    .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
+    .await?;
     let mut conn = db_pool.get().await?;
     let rolling_stock = RollingStock::retrieve_or_fail(conn.clone(), rolling_stock_id, || {
         RollingStockError::KeyNotFound {
