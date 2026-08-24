@@ -52,6 +52,9 @@ export default defineConfig(({ mode }) => {
               'ui/ui-warped-data/src',
             ],
           },
+          stylelint: {
+            lintCommand: 'stylelint ./src/**/*.{css,scss} ./ui/**/*.css',
+          },
           overlay: env.OSRD_VITE_OVERLAY !== 'false' && {
             initialIsOpen: env.OSRD_VITE_OVERLAY_OPEN_BY_DEFAULT === 'true',
           },
