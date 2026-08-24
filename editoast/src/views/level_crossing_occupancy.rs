@@ -88,7 +88,7 @@ pub(in crate::views) struct LevelCrossingOccupancy {
 }
 
 /// Get the occupancy of a set of level crossings for a set of trains
-#[editoast_derive::route(authz::Role::OperationalStudies)]
+#[editoast_derive::route]
 #[utoipa::path(
     post, path = "",
     tag = "level_crossing",
@@ -379,7 +379,6 @@ mod tests {
     use crate::views::test_app::test_app;
 
     use authz::InfraGrant;
-    use authz::Role;
     use authz::RollingStockGrant;
     use chrono::TimeDelta;
     use core_client::mocking::MockingClient;
@@ -619,7 +618,6 @@ mod tests {
             .user("authorized", "Authorized")
             .with_infra_grant(form.infra_id, InfraGrant::Reader)
             .with_rolling_stock_grant(rolling_stock.id, RollingStockGrant::Reader)
-            .with_roles([Role::OperationalStudies])
             .create()
             .await;
 
@@ -664,7 +662,6 @@ mod tests {
             .user("authorized", "Authorized")
             .with_infra_grant(form.infra_id, InfraGrant::Reader)
             .with_rolling_stock_grant(rolling_stock.id, RollingStockGrant::Reader)
-            .with_roles([Role::OperationalStudies])
             .create()
             .await;
 
@@ -697,7 +694,6 @@ mod tests {
         let user = app
             .user("unauthorized", "Unauthorized")
             .with_infra_grant(form.infra_id, InfraGrant::Reader)
-            .with_roles([Role::OperationalStudies])
             .create()
             .await;
 
@@ -742,7 +738,6 @@ mod tests {
             .user("authorized", "Authorized")
             .with_infra_grant(form.infra_id, InfraGrant::Reader)
             .with_rolling_stock_grant(readable_rolling_stock.id, RollingStockGrant::Reader)
-            .with_roles([Role::OperationalStudies])
             .create()
             .await;
 
