@@ -27,7 +27,7 @@
   "scripts": {
     "svgo": "svgo icons --config svgo.config.js",
     "clean": "rimraf dist",
-    "build": "node ./scripts/build.js && tsdown --fail-on-warn",
+    "build": "tsdown --fail-on-warn",
     "prepublishOnly": "npm run clean && npm run build"
   },
   "peerDependencies": {
