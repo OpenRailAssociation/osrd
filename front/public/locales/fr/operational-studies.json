@@ -371,7 +371,6 @@
       "mandatoryField": "Champ obligatoire",
       "nameLengthLimit": "Le nom ne doit pas dépasser 128 caractères",
       "noDelta": "L'intervalle entre deux trains doit être d'au moins une minute.",
-      "noDepartureTime": "Veuillez renseigner une heure de départ",
       "noDestination": "La destination n'est pas définie",
       "noName": "Veuillez choisir un nom pour le train",
       "noOrigin": "L'origine n'est pas définie",

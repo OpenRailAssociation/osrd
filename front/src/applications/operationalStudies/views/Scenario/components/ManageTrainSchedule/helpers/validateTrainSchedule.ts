@@ -7,7 +7,6 @@ import { MAX_TIMEWINDOW_MINUTES } from '../consts';
 
 export type TrainScheduleConfErrorCode =
   | 'noOrigin'
-  | 'noDepartureTime'
   | 'noDestination'
   | 'noRollingStock'
   | 'noName'
@@ -21,9 +20,6 @@ export function validateTrainSchedule(train: TrainSchedule): TrainScheduleConfEr
 
   if (train.path[0] === null) {
     errors.push('noOrigin');
-  }
-  if (!train.start_time) {
-    errors.push('noDepartureTime');
   }
   if (train.path.at(-1) === null) {
     errors.push('noDestination');
