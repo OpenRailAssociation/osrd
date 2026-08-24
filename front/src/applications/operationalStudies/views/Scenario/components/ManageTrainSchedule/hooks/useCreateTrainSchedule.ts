@@ -10,6 +10,8 @@ import {
 import { setFailure, setSuccess } from 'reducers/main';
 import { updateSelectedTrain } from 'reducers/simulationResults';
 import { useAppDispatch } from 'store';
+import { useDateTimeLocale, timeToLocaleString } from 'utils/date';
+import { startTimeToMs } from 'utils/duration';
 import { castErrorToFailure } from 'utils/error';
 import { formatEditoastIdToTrainScheduleId } from 'utils/trainId';
 
@@ -24,6 +26,7 @@ export function useCreateTrainSchedule(
 ) {
   const dispatch = useAppDispatch();
   const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTrainSchedule' });
+  const dateTimeLocale = useDateTimeLocale();
 
   const { sandboxId, timetableId } = useScenarioContext();
   const { upsertTrainSchedules } = useTimetableContext();
@@ -64,7 +67,7 @@ export function useCreateTrainSchedule(
 
       const newAddedExceptions = trainState.addedExceptions.map(({ startTime: exStartTime }) => ({
         key: '', // TODO : remove this when the key will be removed from the model
-        start_time: { value: exStartTime.getTime() },
+        start_time: { value: startTimeToMs(exStartTime) },
       }));
 
       if (newAddedExceptions.length > 0) {
@@ -106,7 +109,7 @@ export function useCreateTrainSchedule(
       dispatch(
         setSuccess({
           title: isPacedTrainMode ? t('pacedTrains.added') : t('trainAdded'),
-          text: `${trainState.name}: ${trainState.startTime.toLocaleTimeString()}`,
+          text: `${trainState.name}: ${timeToLocaleString(trainState.startTime, dateTimeLocale)}`,
         })
       );
       upsertTrainSchedules([trainScheduleToUpsert]);

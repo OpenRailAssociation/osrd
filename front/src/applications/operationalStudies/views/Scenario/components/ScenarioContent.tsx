@@ -27,6 +27,7 @@ import type { PanelSelectionMode } from 'modules/simulationResult/components/Spa
 import { setFailure } from 'reducers/main';
 import type { TrainId } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
+import { Duration } from 'utils/duration';
 import { castErrorToFailure } from 'utils/error';
 import { usePrevious } from 'utils/hooks/state';
 
@@ -217,7 +218,7 @@ const ScenarioContent = ({ activeBoards, toggleBoard }: ScenarioContentProps) =>
     () =>
       scenario.timetable_type === 'CALENDAR'
         ? computeLatestMidnight(trainSchedules ?? [], new Date())
-        : undefined,
+        : Duration.zero,
     [scenario.timetable_type, trainSchedules]
   );
 

@@ -34,6 +34,7 @@ import {
 } from 'reducers/simulationResults';
 import { getTrainIdUsedForProjection } from 'reducers/simulationResults/selectors';
 import { useAppDispatch, type AppDispatch } from 'store';
+import { useDateTimeLocale, timeToLocaleString } from 'utils/date';
 import { Duration, type StartTime, startTimeToMs } from 'utils/duration';
 import { formatEditoastIdToTrainScheduleId, isOccurrenceId } from 'utils/trainId';
 
@@ -282,6 +283,7 @@ const useUpdateTrainSchedule = (
     keyPrefix: 'manageTrainSchedule',
   });
   const dispatch = useAppDispatch();
+  const dateTimeLocale = useDateTimeLocale();
 
   const { timetableId } = useScenarioContext();
 
@@ -301,7 +303,7 @@ const useUpdateTrainSchedule = (
           trainState.editingTrainType === 'uniqueTrain'
             ? t('uniqueTrainUpdated')
             : t('pacedTrainUpdated'),
-        text: `${trainState.name}: ${trainState.startTime.toLocaleString()}`,
+        text: `${trainState.name}: ${timeToLocaleString(trainState.startTime, dateTimeLocale)}`,
       })
     );
     dispatch(updateAlreadySelectedTrainId(editedTrainId));
