@@ -500,6 +500,17 @@ pub fn rolling_stock_list(
     })
 }
 
+pub fn rolling_stock_privilege_check(
+    rolling_stock: RollingStock,
+    privilege: RollingStockPrivilege,
+) -> Protected<()> {
+    Protected::value(()).with_check(Check::HasRollingStockPrivilege(
+        Actor::Issuer,
+        privilege,
+        rolling_stock,
+    ))
+}
+
 #[cfg(test)]
 mod tests {
     use rstest::rstest;
