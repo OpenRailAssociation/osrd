@@ -11,42 +11,42 @@
 /* IBM Plex Sans */
 @font-face {
   font-family: 'IBM Plex Sans';
-  src: inline('./fonts/IBMPlexSans-Regular.woff2') format('woff2');
+  src: inline('../../fonts/IBMPlexSans-Regular.woff2') format('woff2');
   font-style: normal;
   font-weight: 400;
 }
 
 @font-face {
   font-family: 'IBM Plex Sans';
-  src: inline('./fonts/IBMPlexSans-Italic.woff2') format('woff2');
+  src: inline('../../fonts/IBMPlexSans-Italic.woff2') format('woff2');
   font-style: italic;
   font-weight: 400;
 }
 
 @font-face {
   font-family: 'IBM Plex Sans';
-  src: inline('./fonts/IBMPlexSans-SemiBold.woff2') format('woff2');
+  src: inline('../../fonts/IBMPlexSans-SemiBold.woff2') format('woff2');
   font-style: normal;
   font-weight: 600;
 }
 
 @font-face {
   font-family: 'IBM Plex Sans';
-  src: inline('./fonts/IBMPlexSans-SemiBoldItalic.woff2') format('woff2');
+  src: inline('../../fonts/IBMPlexSans-SemiBoldItalic.woff2') format('woff2');
   font-style: italic;
   font-weight: 600;
 }
 
 @font-face {
   font-family: 'IBM Plex Sans';
-  src: inline('./fonts/IBMPlexSans-Bold.woff2') format('woff2');
+  src: inline('../../fonts/IBMPlexSans-Bold.woff2') format('woff2');
   font-style: normal;
   font-weight: 700;
 }
 
 @font-face {
   font-family: 'IBM Plex Sans';
-  src: inline('./fonts/IBMPlexSans-BoldItalic.woff2') format('woff2');
+  src: inline('../../fonts/IBMPlexSans-BoldItalic.woff2') format('woff2');
   font-style: italic;
   font-weight: 700;
 }
@@ -54,42 +54,42 @@
 /* IBM Plex Serif */
 @font-face {
   font-family: 'IBM Plex Serif';
-  src: inline('./fonts/IBMPlexSerif-Regular.woff2') format('woff2');
+  src: inline('../../fonts/IBMPlexSerif-Regular.woff2') format('woff2');
   font-style: normal;
   font-weight: 400;
 }
 
 @font-face {
   font-family: 'IBM Plex Serif';
-  src: inline('./fonts/IBMPlexSerif-Italic.woff2') format('woff2');
+  src: inline('../../fonts/IBMPlexSerif-Italic.woff2') format('woff2');
   font-style: italic;
   font-weight: 400;
 }
 
 @font-face {
   font-family: 'IBM Plex Serif';
-  src: inline('./fonts/IBMPlexSerif-SemiBold.woff2') format('woff2');
+  src: inline('../../fonts/IBMPlexSerif-SemiBold.woff2') format('woff2');
   font-style: normal;
   font-weight: 600;
 }
 
 @font-face {
   font-family: 'IBM Plex Serif';
-  src: inline('./fonts/IBMPlexSerif-SemiBoldItalic.woff2') format('woff2');
+  src: inline('../../fonts/IBMPlexSerif-SemiBoldItalic.woff2') format('woff2');
   font-style: italic;
   font-weight: 600;
 }
 
 @font-face {
   font-family: 'IBM Plex Serif';
-  src: inline('./fonts/IBMPlexSerif-Bold.woff2') format('woff2');
+  src: inline('../../fonts/IBMPlexSerif-Bold.woff2') format('woff2');
   font-style: normal;
   font-weight: 700;
 }
 
 @font-face {
   font-family: 'IBM Plex Serif';
-  src: inline('./fonts/IBMPlexSerif-BoldItalic.woff2') format('woff2');
+  src: inline('../../fonts/IBMPlexSerif-BoldItalic.woff2') format('woff2');
   font-style: italic;
   font-weight: 700;
 }
@@ -97,42 +97,42 @@
 /* MONOSPACE */
 @font-face {
   font-family: 'IBM Plex Mono';
-  src: inline('./fonts/IBMPlexMono-Regular.woff2') format('woff2');
+  src: inline('../../fonts/IBMPlexMono-Regular.woff2') format('woff2');
   font-style: normal;
   font-weight: 400;
 }
 
 @font-face {
   font-family: 'IBM Plex Mono';
-  src: inline('./fonts/IBMPlexMono-Italic.woff2') format('woff2');
+  src: inline('../../fonts/IBMPlexMono-Italic.woff2') format('woff2');
   font-style: italic;
   font-weight: 400;
 }
 
 @font-face {
   font-family: 'IBM Plex Mono';
-  src: inline('fonts/IBMPlexMono-SemiBold.woff2') format('woff2');
+  src: inline('../../fonts/IBMPlexMono-SemiBold.woff2') format('woff2');
   font-style: normal;
   font-weight: 600;
 }
 
 @font-face {
   font-family: 'IBM Plex Mono';
-  src: inline('fonts/IBMPlexMono-SemiBoldItalic.woff2') format('woff2');
+  src: inline('../../fonts/IBMPlexMono-SemiBoldItalic.woff2') format('woff2');
   font-style: italic;
   font-weight: 600;
 }
 
 @font-face {
   font-family: 'IBM Plex Mono';
-  src: inline('fonts/IBMPlexMono-Bold.woff2') format('woff2');
+  src: inline('../../fonts/IBMPlexMono-Bold.woff2') format('woff2');
   font-style: normal;
   font-weight: 700;
 }
 
 @font-face {
   font-family: 'IBM Plex Mono';
-  src: inline('fonts/IBMPlexMono-BoldItalic.woff2') format('woff2');
+  src: inline('../../fonts/IBMPlexMono-BoldItalic.woff2') format('woff2');
   font-style: italic;
   font-weight: 700;
 }
