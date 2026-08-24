@@ -103,7 +103,7 @@ pub(in crate::views) async fn list(
         let Ok(authorized_rolling_stocks) = system_authorizer
             .authorize(authz::v2::rolling_stock_list(
                 user,
-                RollingStockPrivilege::CanRead,
+                RollingStockPrivilege::CanRestrictedRead,
             ))
             .await?
             .access()
@@ -161,7 +161,7 @@ pub(in crate::views) async fn get(
 ) -> Result<Json<LightRollingStockWithLiveries>> {
     v2::rolling_stock_privilege_check(
         authz::RollingStock(light_rolling_stock_id),
-        RollingStockPrivilege::CanRead,
+        RollingStockPrivilege::CanRestrictedRead,
     )
     .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
     .await?;
@@ -206,7 +206,7 @@ pub(in crate::views) async fn get_by_name(
 
     v2::rolling_stock_privilege_check(
         authz::RollingStock(rolling_stock.id),
-        RollingStockPrivilege::CanRead,
+        RollingStockPrivilege::CanRestrictedRead,
     )
     .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
     .await?;
@@ -375,8 +375,8 @@ mod tests {
         let _rs_no_grant = create_fast_rolling_stock(&mut db_pool.get_ok(), "rs_no_grant").await;
         let user = app
             .user("user_identity", "user_name")
-            .with_rolling_stock_grant(rs_1.id, RollingStockGrant::Reader)
-            .with_rolling_stock_grant(rs_2.id, RollingStockGrant::Reader)
+            .with_rolling_stock_grant(rs_1.id, RollingStockGrant::RestrictedReader)
+            .with_rolling_stock_grant(rs_2.id, RollingStockGrant::RestrictedReader)
             .create()
             .await;
         let response: LightRollingStockWithLiveriesCountList = app
@@ -429,7 +429,7 @@ mod tests {
 
         let user_restricted_reader = app
             .user("authorized", "Authorized")
-            .with_rolling_stock_grant(rolling_stock.id, authz::RollingStockGrant::Reader)
+            .with_rolling_stock_grant(rolling_stock.id, authz::RollingStockGrant::RestrictedReader)
             .create()
             .await;
 
@@ -451,7 +451,7 @@ mod tests {
 
         let user = app
             .user("authorized", "Authorized")
-            .with_rolling_stock_grant(rolling_stock.id, authz::RollingStockGrant::Reader)
+            .with_rolling_stock_grant(rolling_stock.id, authz::RollingStockGrant::RestrictedReader)
             .create()
             .await;
 
@@ -495,15 +495,15 @@ mod tests {
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn get_light_rolling_stock_requires_reader_grant() {
+    async fn get_light_rolling_stock_requires_restricted_reader_grant() {
         let app = test_app!().build();
         let db_pool = app.db_pool();
         let rolling_stock = create_fast_rolling_stock(&mut db_pool.get_ok(), "rolling_stock").await;
 
         let user_no_grant = app.user("alice", "Alice").create().await;
-        let user_reader = app
+        let user_restricted_reader = app
             .user("bob", "Bob")
-            .with_rolling_stock_grant(rolling_stock.id, RollingStockGrant::Reader)
+            .with_rolling_stock_grant(rolling_stock.id, RollingStockGrant::RestrictedReader)
             .create()
             .await;
 
@@ -512,7 +512,7 @@ mod tests {
             .await
             .assert_status_forbidden();
         app.get(format!("/light_rolling_stock/{}", rolling_stock.id).as_str())
-            .by_user(&user_reader.info)
+            .by_user(&user_restricted_reader.info)
             .await
             .assert_status_ok();
     }
