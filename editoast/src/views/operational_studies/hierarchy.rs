@@ -2,6 +2,8 @@ pub mod project;
 pub mod scenario;
 pub mod study;
 
+use std::sync::LazyLock;
+
 use models::WorkSchedule;
 use models::prelude::*;
 use models::project::Project;
@@ -68,4 +70,12 @@ impl Ordering {
             _ => WorkSchedule::OBJ_ID.asc(),
         }
     }
+}
+
+pub fn enable_project_perm() -> bool {
+    static ENABLER: LazyLock<bool> = LazyLock::new(|| {
+        std::env::var("ENABLE_PROJECT_PERM").unwrap_or_else(|_| "false".to_string()) == "true"
+    });
+
+    *ENABLER
 }
