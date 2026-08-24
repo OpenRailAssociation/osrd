@@ -149,7 +149,7 @@
     "e2e-tests": "playwright test",
     "i18n-api-errors": "tsx ./scripts/i18n-api-errors.ts",
     "i18n-checker": "tsx ./scripts/i18n-checker.ts",
-    "build-ui": "npm run build --workspace ui/ui-icons --workspace ui/ui-core --workspace ui/ui-charts --workspace ui/ui-warped-map"
+    "build-ui": "tsdown --workspace --filter ui-core --filter ui-charts --filter ui-warped-map --filter osrdicons"
   },
   "browserslist": {
     "production": [
