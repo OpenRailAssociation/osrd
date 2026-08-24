@@ -24,6 +24,7 @@ import type {
   TrainCategory,
   Distribution,
   Comfort,
+  TimetableType,
 } from 'common/api/osrdEditoastApi';
 import Banner from 'common/Banner';
 import { computeBBoxViewport } from 'common/Map/WarpedMap/core/helpers';
@@ -39,7 +40,7 @@ import { useMapSettings, useMapSettingsActions } from 'reducers/commonMap';
 import type { PathStep, PathStepMetadata, PathStepV2 } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 import { addElementAtIndex } from 'utils/array';
-import { Duration, startTimeToDate } from 'utils/duration';
+import { Duration, type StartTime, startTimeToDate } from 'utils/duration';
 import useModalFocusTrap from 'utils/hooks/useModalFocusTrap';
 import { msToKmh } from 'utils/physics';
 
@@ -65,7 +66,7 @@ import { computePathStepCoordinates, getOpKey, isOpRefMetadata } from './utils';
 type ItineraryModalProps = {
   onTrainCreated: () => void;
   trainScheduleToEditData?: TrainScheduleToEditData;
-  defaultStartTime?: Date;
+  defaultStartTime?: StartTime;
 };
 
 export type ItineraryModalFormState = {
@@ -79,7 +80,7 @@ export type ItineraryModalFormState = {
 export type ItineraryModalTrainState = {
   name: string;
   category: TrainCategory | null;
-  startTime: Date;
+  startTime: StartTime;
   initialSpeed?: number;
   labels: string[];
   rollingStockId?: number;
@@ -94,16 +95,20 @@ export type ItineraryModalTrainState = {
   timeWindow: Duration;
   interval: Duration;
   addedExceptions: {
-    startTime: Date;
+    startTime: StartTime;
   }[];
   editingTrainType: 'uniqueTrain' | 'pacedTrain' | 'occurrence';
   speedLimitByTag?: string;
 };
 
-function blankNewTrainState(startTime?: Date): ItineraryModalTrainState {
+function blankNewTrainState(
+  startTime: StartTime | undefined,
+  timetableType: TimetableType
+): ItineraryModalTrainState {
+  startTime ??= timetableType === 'CALENDAR' ? new Date() : Duration.zero;
   return {
     name: '',
-    startTime: startTime ?? new Date(),
+    startTime,
     initialSpeed: 0,
     labels: [],
     rollingStockId: undefined,
@@ -170,14 +175,14 @@ const ItineraryModal = ({
   const { t } = useTranslation('operational-studies', {
     keyPrefix: 'manageTrainSchedule.itineraryModal',
   });
-  const { workerStatus } = useScenarioContext();
+  const { workerStatus, scenario } = useScenarioContext();
   const mapSettings = useMapSettings();
   const dispatch = useAppDispatch();
   const { updateViewport } = useMapSettingsActions();
   const infraId = useInfraID();
 
   const [trainState, setTrainState] = useState<ItineraryModalTrainState>(
-    blankNewTrainState(defaultStartTime)
+    blankNewTrainState(defaultStartTime, scenario.timetable_type)
   );
 
   const modalRef = useRef<HTMLDialogElement>(null);
@@ -215,7 +220,7 @@ const ItineraryModal = ({
           category: train.category ?? undefined,
         });
       } else {
-        setTrainState(blankNewTrainState(defaultStartTime));
+        setTrainState(blankNewTrainState(defaultStartTime, scenario.timetable_type));
         setModalFormState({
           name: '',
           rollingStockName: '',
@@ -227,7 +232,7 @@ const ItineraryModal = ({
 
       setWasInitialized(true);
     }
-  }, [wasInitialized, trainScheduleToEditData]);
+  }, [wasInitialized, trainScheduleToEditData, scenario.timetable_type]);
 
   const { categoryColors, currentSubCategory } = useCategoryColors(modalFormState.category);
 

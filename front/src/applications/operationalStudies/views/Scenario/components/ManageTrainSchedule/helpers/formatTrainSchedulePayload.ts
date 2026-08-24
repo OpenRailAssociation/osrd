@@ -38,7 +38,7 @@ function normalizeFirstWaypointTimes(
 export function formatTrainSchedulePayload(trainState: ItineraryModalTrainState): TrainSchedule {
   const { pathSteps, startTime } = normalizeFirstWaypointTimes(
     compact(trainState.pathSteps),
-    trainState.startTime.getTime()
+    startTimeToMs(trainState.startTime)
   );
 
   return {
