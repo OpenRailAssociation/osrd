@@ -272,6 +272,11 @@ const useUpdateTimesStopsTable = (
       let updatedSchedule = selectedTrain.schedule ?? [];
       let currentPath = selectedTrain.path;
 
+      const startTime =
+        scenario.timetable_type === 'CALENDAR'
+          ? new Date(selectedTrain.start_time)
+          : new Duration({ milliseconds: selectedTrain.start_time });
+
       for (const row of update.rows) {
         const { pathStepId, updatedPath: updatedPathForRow } = upsertPathStep(
           row,
@@ -296,8 +301,6 @@ const useUpdateTimesStopsTable = (
           { arrival: row.requestedArrival, stop: row.stopDuration },
           edit
         );
-
-        const startTime = new Date(selectedTrain.start_time);
 
         const { arrival: newArrival, stop_for: newStopFor } = scheduleStateToApiFields(
           newState,
