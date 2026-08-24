@@ -79,7 +79,7 @@ export const propagateStopDuration = (
       )
     : insertScheduleItemInOrder(
         shiftedSchedule,
-        { at: pathStepId, stop_for: newDuration.toISOString() },
+        { at: pathStepId, arrival: null, stop_for: newDuration.toISOString() },
         selectedTrain.path
       );
 
