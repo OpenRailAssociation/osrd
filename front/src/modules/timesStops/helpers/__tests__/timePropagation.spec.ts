@@ -373,7 +373,7 @@ describe('Scenario 4 — +40 min at origin (OP1)', () => {
     requestedArrival: _18H00,
   } as unknown as TimesStopsRowNew;
 
-  // At origin, all modes use HH:mm delta regardless of mode (isOrigin = true).
+  // At origin, all modes use HH:mm delta regardless of mode (isOriginArrival = true).
   describe('formatPropagationDeltaLabelByMode', () => {
     it.each<PropagationMode>([
       'atThisWaypoint',
