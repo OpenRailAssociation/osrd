@@ -209,9 +209,11 @@ const useUpdateTimesStopsTable = (
         });
       } else {
         // Insert new schedule item in path order
-        const newItem: ScheduleItem = { at: pathStepId };
-        if (newArrival !== null && !isOrigin) newItem.arrival = newArrival;
-        if (newStopFor !== null) newItem.stop_for = newStopFor;
+        const newItem: ScheduleItem = {
+          at: pathStepId,
+          arrival: isOrigin ? null : newArrival,
+          stop_for: newStopFor,
+        };
         updatedSchedule = insertScheduleItemInOrder(currentSchedule, newItem, updatedPath);
       }
 

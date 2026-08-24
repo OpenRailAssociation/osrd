@@ -133,7 +133,7 @@ describe('propagateStopDuration', () => {
 
       expect(updatedStartTime).toEqual(new Date('2026-01-01T17:50:00.000Z')); // 18:00 - 10min
       expect(scheduleByAt.op11?.stop_for).toBe('PT10M');
-      expect(scheduleByAt.op11?.arrival).toBeUndefined();
+      expect(scheduleByAt.op11?.arrival).toBeNull();
       expect(scheduleByAt.op17?.arrival).toBe('PT1H'); // 50min + 10min
     });
   });
