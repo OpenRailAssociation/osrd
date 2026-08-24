@@ -60,11 +60,11 @@ export const formatPropagationDeltaLabelByMode = (
   oldValue: Date | null,
   newValue: Date | null,
   mode: PropagationMode,
-  isOrigin = false
+  isOriginArrival = false
 ): string => {
-  // At the origin, propagation always uses HH:mm:ss delta (start_time shift),
+  // At the origin arrival, propagation always uses HH:mm:ss delta (start_time shift),
   // regardless of mode, to keep the label consistent with the actual propagation.
-  const delta = isOrigin
+  const delta = isOriginArrival
     ? computeDelta(oldValue, newValue)
     : computeDeltaForPropagationMode(oldValue, newValue, mode);
   return formatSignedDelta(delta ?? Duration.zero);
