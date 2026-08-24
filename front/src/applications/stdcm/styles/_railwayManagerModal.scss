@@ -225,6 +225,7 @@
       .comment {
         width: 317px;
         min-width: 317px;
+
         .text-area-wrapper {
           display: flex;
           flex: 1;
@@ -242,6 +243,7 @@
         .ui-date-picker {
           width: 183px;
         }
+
         .ui-date-picker {
           margin: 0 13px 0 16px;
         }
@@ -253,9 +255,11 @@
         }
       }
     }
+
     .warning-section {
       background-color: var(--ambientA15);
       padding: 0 58px 50px 54px;
+
       .warning-message {
         padding: 10px 20px;
         min-height: 76px;
@@ -334,15 +338,19 @@
     100% {
       transform: translateX(0);
     }
+
     20% {
       transform: translateX(-5px);
     }
+
     40% {
       transform: translateX(5px);
     }
+
     60% {
       transform: translateX(-5px);
     }
+
     80% {
       transform: translateX(5px);
     }

@@ -22,8 +22,10 @@
 */
 .dropdown.tether-element {
   margin-top: 10px;
+
   // z-index: 1056 to be above the master header
   z-index: 1056;
+
   .dropdown-menu {
     margin-top: 0;
 
@@ -40,6 +42,7 @@
       padding: 0;
       display: flex;
       flex-direction: column;
+
       > * {
         width: 100%;
         padding: 0.5em 1.5em;
@@ -86,6 +89,7 @@
 
   .chips {
     border: none !important;
+
     &.chips-label {
       font-size: 0.9rem;
       line-height: 1.5;
@@ -145,10 +149,12 @@ input {
   &.form-control {
     padding-bottom: 7.2px;
   }
+
   &.form-control-sm {
     padding-bottom: 0;
   }
 }
+
 .input-group-sm input {
   padding-bottom: 7.2px;
 }

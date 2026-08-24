@@ -36,6 +36,7 @@ input {
     .form-control {
       padding-right: $icon-width;
     }
+
     .form-control-icon {
       right: 0;
       padding-right: rem(8px);
@@ -46,6 +47,7 @@ input {
     .form-control {
       padding-left: $icon-width;
     }
+
     .form-control-icon {
       left: 0;
       padding-left: rem(8px);
@@ -171,6 +173,7 @@ input {
 
 .form-control-white {
   background-color: $form-control-white;
+
   &:focus,
   &:active {
     background-color: $form-control-white;

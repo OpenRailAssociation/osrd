@@ -27,7 +27,6 @@
   button.editor-btn {
     box-sizing: border-box;
     font-size: 1.3em;
-
     color: $blue;
     background: $white;
 
@@ -74,12 +73,14 @@
       border: 3px solid $white;
     }
   }
+
   .actions-box {
     background: white;
 
     button:not(.active):not(:disabled) {
       border: 3px solid $blue;
     }
+
     button:disabled {
       border: 3px solid $gray;
     }
@@ -112,6 +113,7 @@
         background-color: var(--grey20);
       }
     }
+
     .hidden {
       display: none;
     }
@@ -122,7 +124,6 @@
     right: 0;
     top: 0;
     padding: 16px;
-
     display: flex;
     flex-direction: column;
 
@@ -141,14 +142,12 @@
     right: 0;
     padding: 16px;
     gap: 16px;
-
     display: flex;
   }
 
   .map-wrapper {
     flex-grow: 1;
     flex-shrink: 1;
-
     position: relative;
     display: flex;
     flex-direction: column;
@@ -227,6 +226,7 @@
   .error-count {
     height: 24px;
   }
+
   #errors-list-container {
     height: 60vh;
     overflow: auto;

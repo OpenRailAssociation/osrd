@@ -45,6 +45,7 @@
   user-select: none;
   background-color: theme-color('primary');
   border: $btn-border-width solid theme-color('primary');
+
   @include button-size(0.5em, 1.125em, $font-size-base, $btn-line-height, $btn-border-radius);
   @include transition($btn-transition);
 

@@ -178,6 +178,7 @@ $colors: (
 :root {
   --border-radius: 4px;
   --breakpoint-lg: 1024px;
+
   @each $color, $value in $colors {
     --#{$color}: #{$value};
     --#{$color}-rgb:
@@ -192,27 +193,35 @@ $colors: (
     0% {
       transform: rotate(0deg);
     }
+
     12% {
       transform: rotate(1deg);
     }
+
     24% {
       transform: rotate(0deg);
     }
+
     36% {
       transform: rotate(-1deg);
     }
+
     47% {
       transform: rotate(0deg);
     }
+
     59% {
       transform: rotate(1deg);
     }
+
     70% {
       transform: rotate(0deg);
     }
+
     85% {
       transform: rotate(-1deg);
     }
+
     100% {
       transform: rotate(0deg);
     }

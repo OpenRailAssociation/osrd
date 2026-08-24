@@ -58,10 +58,10 @@
     display: flex;
     width: 100%;
     bottom: -60px;
+
     .space-time-h-slider-container {
       position: absolute;
       right: 24px;
-
       z-index: 10;
     }
   }

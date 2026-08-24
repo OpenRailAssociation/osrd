@@ -2,6 +2,7 @@
   .search-results-label {
     cursor: pointer;
   }
+
   .search-results {
     display: flex;
     overflow-y: auto;
@@ -29,13 +30,16 @@
         flex-grow: 0;
         flex-shrink: 0;
       }
+
       .name {
         padding: 4px 0 0 0;
+
         .secondary-code {
           margin-left: 4px;
           font-size: 0.9rem;
         }
       }
+
       .uic,
       .line-code {
         margin-left: auto;
@@ -44,6 +48,7 @@
         flex-grow: 0;
         flex-shrink: 0;
       }
+
       .error-line {
         grid-row: 2;
         grid-column: 1/4;
@@ -58,27 +63,34 @@
           color: var(--warning30);
         }
       }
+
       &:hover {
         background-color: var(--coolgray1);
       }
     }
+
     .search-result-table-item {
       cursor: pointer;
       border-radius: 4px;
       min-height: 32px;
+
       td {
         cursor: pointer;
         vertical-align: middle;
         padding: 4px;
       }
+
       font-size: 0.9rem;
+
       img {
         height: 24px;
       }
+
       &:hover {
         background-color: #d7d7d7;
       }
     }
+
     .selected {
       background-color: #d7d7d7;
     }
@@ -89,11 +101,13 @@
   /* Circle center */
   margin-left: -16px;
   margin-top: -16px;
+
   .map-search-marker-title {
     font-weight: bold;
     border-radius: 4px;
     padding: 0 8px;
   }
+
   .map-search-marker-subtitle {
     font-size: 0.9rem;
   }

@@ -14,6 +14,7 @@
   vertical-align: middle;
   user-select: none;
   border: $btn-border-width solid transparent;
+
   @include button-size(
     $btn-padding-y,
     $btn-padding-x,
@@ -38,6 +39,7 @@
   &.disabled,
   &:disabled {
     opacity: $btn-disabled-opacity;
+
     @include box-shadow(none);
   }
 
@@ -49,6 +51,7 @@
   &:not(:disabled):not(.disabled):active,
   &:not(:disabled):not(.disabled).active {
     background-image: none;
+
     @include box-shadow($btn-active-box-shadow);
 
     &:focus {
@@ -144,6 +147,7 @@ fieldset:disabled a.btn {
 
 .btn-sm {
   font-weight: $font-weight-medium;
+
   @include button-size(
     $btn-padding-y-sm,
     $btn-padding-x-sm,
@@ -228,6 +232,7 @@ input[type='button'] {
   background-color: gray('400');
   border: none;
   border-radius: 50%;
+
   @include transition($btn-transition);
 
   @include hover {
@@ -364,6 +369,7 @@ input[type='button'] {
 
 .btn-color-gray {
   color: $btn-color-gray;
+
   &:not(:disabled):not(.disabled) {
     @include hover-focus-active {
       color: theme-color('primary');
@@ -374,6 +380,7 @@ input[type='button'] {
 .btn-color-footer {
   color: $carbon;
   background-color: color('white');
+
   &:not(:disabled):not(.disabled) {
     @include hover-focus-active {
       background-color: #b9b9b9;
