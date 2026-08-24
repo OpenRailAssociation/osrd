@@ -1,4 +1,9 @@
+import { join } from 'node:path';
+
 import { defineConfig } from 'tsdown';
+
+/* eslint-disable-next-line import/extensions */
+import svgToReact from './scripts/svgToReact.ts';
 
 export default defineConfig({
   entry: 'src/index.ts',
@@ -11,5 +16,10 @@ export default defineConfig({
   },
   deps: {
     neverBundle: ['react'],
+  },
+  hooks: {
+    'build:prepare': async () => {
+      svgToReact(join(import.meta.dirname, 'icons'), join(import.meta.dirname, 'src'));
+    },
   },
 });
