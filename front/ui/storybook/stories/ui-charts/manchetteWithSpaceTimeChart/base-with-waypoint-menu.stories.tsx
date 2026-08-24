@@ -63,7 +63,7 @@ const ManchetteWithSpaceTimeWrapper = ({
   ];
 
   // TODO: fix this lint
-  /* eslint-disable-next-line react-hooks-js/refs */
+  /* eslint-disable-next-line react/refs react/capitalized-calls */
   const waypointMenu = AnchoredMenu({
     children: activeWaypointId && <Menu menuRef={menuRef} items={menuItems} />,
     anchorRef: activeWaypointRef,

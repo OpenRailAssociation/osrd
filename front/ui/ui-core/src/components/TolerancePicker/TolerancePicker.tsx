@@ -46,8 +46,7 @@ const TolerancePicker = ({
     const plusToleranceIndex = TOLERANCE_RANGES.findIndex((range) => range.value === plusTolerance);
     if (minusToleranceIndex < 0 || plusToleranceIndex < 0) {
       const invalidTolerance = minusToleranceIndex < 0 ? minusTolerance : plusTolerance;
-      // TODO: fix this lint
-      /* eslint-disable-next-line react-hooks-js/set-state-in-effect */
+
       setWarningStatus({
         status: 'warning',
         message:

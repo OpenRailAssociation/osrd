@@ -201,6 +201,7 @@ export function useDurationInput({
   const handleBlur = useCallback(
     (e: React.FocusEvent<HTMLInputElement>) => {
       const nextTarget = e.relatedTarget as Node | null;
+      /* eslint-disable-next-line react/memo-dependencies */
       if (nextTarget && containerRef.current?.contains(nextTarget)) {
         return;
       }

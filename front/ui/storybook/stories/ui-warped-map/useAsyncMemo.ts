@@ -24,8 +24,6 @@ export function useAsyncMemo<T>(fn: () => Promise<T>, deps: DependencyList): Asy
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     let aborted = false;
-    // TODO: fix this lint
-    // eslint-disable-next-line react-hooks-js/set-state-in-effect
     setState({ type: 'loading', previousData: getAsyncMemoData(state) });
     fn()
       .then((data) => {

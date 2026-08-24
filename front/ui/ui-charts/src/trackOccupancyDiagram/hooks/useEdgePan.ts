@@ -79,6 +79,7 @@ const useEdgePan = ({
 
   // Interrupt current setInterval() when enableY changes or when the
   // component is unmounted
+  /* eslint-disable-next-line react/exhaustive-effect-dependencies */
   useEffect(() => stop, [enableY, stop]);
 
   return { onMouseMove };

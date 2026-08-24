@@ -36,6 +36,7 @@ const AnchoredMenu = ({ children, anchorRef, onDismiss }: AnchoreMenuParams) => 
         left: anchorRefBoundingRect.left,
       });
     }
+    /* eslint-disable-next-line react/exhaustive-effect-dependencies */
   }, [anchorRef, shouldDisplayMenu]);
 
   const handleClick = (event: React.MouseEvent<HTMLDivElement>) => {
