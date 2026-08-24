@@ -185,7 +185,7 @@ pub struct RollingStockNameParam {
 }
 
 /// Get a rolling stock by Id
-#[editoast_derive::route(Role::OperationalStudies)]
+#[editoast_derive::route]
 #[utoipa::path(
     get, path = "",
     tag = "rolling_stock",
@@ -222,7 +222,7 @@ pub(in crate::views) async fn get(
 }
 
 /// Get a rolling stock by name
-#[editoast_derive::route(Role::OperationalStudies)]
+#[editoast_derive::route]
 #[utoipa::path(
     get, path = "",
     tag = "rolling_stock",
@@ -1331,7 +1331,6 @@ pub mod tests {
         let user = app
             .user("authorized", "Authorized")
             .with_rolling_stock_grant(rolling_stock.id, authz::RollingStockGrant::Reader)
-            .with_roles([Role::OperationalStudies])
             .create()
             .await;
 
@@ -1354,7 +1353,6 @@ pub mod tests {
         let user_reader = app
             .user("alice", "Alice")
             .with_rolling_stock_grant(rolling_stock.id, RollingStockGrant::Reader)
-            .with_roles([Role::OperationalStudies])
             .create()
             .await;
         let user_restricted = app
@@ -1402,13 +1400,11 @@ pub mod tests {
         let user_reader = app
             .user("alice", "Alice")
             .with_rolling_stock_grant(rolling_stock.id, RollingStockGrant::Reader)
-            .with_roles([Role::OperationalStudies])
             .create()
             .await;
         let user_restricted = app
             .user("bob", "Bob")
             .with_rolling_stock_grant(rolling_stock.id, RollingStockGrant::RestrictedReader)
-            .with_roles([Role::OperationalStudies])
             .create()
             .await;
 
