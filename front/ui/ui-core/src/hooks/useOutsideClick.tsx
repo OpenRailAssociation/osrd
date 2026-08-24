@@ -15,8 +15,7 @@ const useOutsideClick = (
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-    /* oxlint-disable-next-line react/exhaustive-effect-dependencies */
-  }, [ref, handler]);
+  }, []);
 };
 
 export default useOutsideClick;
