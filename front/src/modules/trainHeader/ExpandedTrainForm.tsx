@@ -17,8 +17,8 @@ import { useScenarioContext } from 'applications/operationalStudies/hooks/useSce
 import type {
   LightRollingStockWithLiveries,
   PathfindingResult,
-  TrainCategory,
   TimetableType,
+  TrainCategory,
 } from 'common/api/osrdEditoastApi';
 import type { Comfort, ConstraintDistribution } from 'common/api/osrdRailwayManagerApi';
 import Banner from 'common/Banner';
@@ -239,14 +239,15 @@ const ExpandedTrainForm = ({
   const { t } = useTranslation(['operational-studies', 'translation']);
   const infraID = useInfraID();
   const { scenario } = useScenarioContext();
+  const timetableType = scenario.timetable_type;
   const speedLimitTags = useSpeedLimitTags(infraID);
   const categoryOptions = useCategoryOptions(false);
 
   const { filteredRollingStockList: rollingStocks } = useFilterRollingStock();
 
   const fieldsFromTrain = useMemo(
-    () => getFieldsFromTrain(train, rollingStocks, scenario.timetable_type),
-    [train, rollingStocks, scenario.timetable_type]
+    () => getFieldsFromTrain(train, rollingStocks, timetableType),
+    [train, rollingStocks, timetableType]
   );
   const [fields, setFields] = useState<TrainFieldsState>(fieldsFromTrain);
 
@@ -402,7 +403,7 @@ const ExpandedTrainForm = ({
       />
       <div
         className={cx('train-form', {
-          'calendar-timetable': scenario.timetable_type === 'CALENDAR',
+          'calendar-timetable': timetableType === 'CALENDAR',
         })}
       >
         <div className="train-name" data-testid="train-name">

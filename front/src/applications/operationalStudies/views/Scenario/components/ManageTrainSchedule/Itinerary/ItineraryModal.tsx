@@ -125,7 +125,8 @@ function blankNewTrainState(
     timeWindow: new Duration({ minutes: 120 }),
     interval: new Duration({ minutes: 60 }),
     addedExceptions: [],
-    editingTrainType: 'uniqueTrain',
+    // An hourly timetable only holds services, never unique trains
+    editingTrainType: timetableType === 'HOURLY' ? 'pacedTrain' : 'uniqueTrain',
   };
 }
 

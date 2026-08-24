@@ -1,6 +1,7 @@
 import { Button } from '@osrd-project/ui-core';
 import { useTranslation } from 'react-i18next';
 
+import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import type { OperationalStudiesConfState } from 'reducers/osrdconf/types';
 
 // TODO: Define a proper type here as soon as we get rid of the old modal store
@@ -24,6 +25,7 @@ export default function ItineraryModalFooter({
   const { t } = useTranslation('operational-studies', {
     keyPrefix: 'manageTrainSchedule.itineraryModal',
   });
+  const { scenario } = useScenarioContext();
 
   return (
     <div className="itinerary-modal-form-footer" data-testid="itinerary-modal-form-footer">
@@ -36,14 +38,16 @@ export default function ItineraryModalFooter({
       />
       {mode === 'new' ? (
         <div className="itinerary-modal-submit-buttons">
-          <Button
-            label={t('submit.addSingleTrain')}
-            variant="Normal"
-            size="medium"
-            onClick={() => onSubmit('uniqueTrain')}
-            dataTestID="itinerary-modal-add-single-train-button"
-            isLoading={isWorking}
-          />
+          {scenario.timetable_type !== 'HOURLY' && (
+            <Button
+              label={t('submit.addSingleTrain')}
+              variant="Normal"
+              size="medium"
+              onClick={() => onSubmit('uniqueTrain')}
+              dataTestID="itinerary-modal-add-single-train-button"
+              isLoading={isWorking}
+            />
+          )}
           <Button
             label={t('submit.addService')}
             variant="Primary"

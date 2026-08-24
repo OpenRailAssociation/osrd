@@ -60,6 +60,7 @@ export default function TrainServiceForm({
 }: TrainServiceFormProps) {
   const { t } = useTranslation(['operational-studies', 'translation']);
   const { scenario } = useScenarioContext();
+  const timetableType = scenario.timetable_type;
 
   const [extraOccurrencesVisible, setExtraOccurrencesVisible] = useState(false);
 
@@ -131,18 +132,20 @@ export default function TrainServiceForm({
         </div>
       ) : (
         <div className="train-service-form">
-          <div className="train-schedule-kind">
-            <Switch
-              id="train-header-schedule-kind-toggle"
-              dataTestId="train-header-schedule-kind-toggle"
-              checked={!fields.is_unique}
-              label={t('manageTrainSchedule.trainHeader.serviceModelTrain')}
-              size="sm"
-              onChange={() => {
-                onFieldImmediateChange('is_unique', !fields.is_unique);
-              }}
-            />
-          </div>
+          {timetableType !== 'HOURLY' && (
+            <div className="train-schedule-kind">
+              <Switch
+                id="train-header-schedule-kind-toggle"
+                dataTestId="train-header-schedule-kind-toggle"
+                checked={!fields.is_unique}
+                label={t('manageTrainSchedule.trainHeader.serviceModelTrain')}
+                size="sm"
+                onChange={() => {
+                  onFieldImmediateChange('is_unique', !fields.is_unique);
+                }}
+              />
+            </div>
+          )}
           {isPacedTrain && (
             <>
               <div className="train-service-interval" data-testid="train-header-service-cadence">
@@ -230,7 +233,7 @@ export default function TrainServiceForm({
               .map((occurrence) => (
                 <ExtraOccurrenceRow
                   key={`${occurrence.id}-${occurrence.key}`}
-                  startTime={parseStartTime(occurrence.start_time!.value, scenario.timetable_type)}
+                  startTime={parseStartTime(occurrence.start_time!.value, timetableType)}
                   onDelete={() => {
                     // TODO_EXCEPTION: remove this when the exception migration will be done
                     if (occurrence.id !== null && occurrence.id !== undefined) {
