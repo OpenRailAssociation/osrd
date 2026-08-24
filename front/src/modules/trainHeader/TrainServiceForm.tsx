@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import type { PacedTrain } from 'applications/operationalStudies/types';
 import { parseStartTime } from 'modules/trainSchedule/helpers/formatTrainScheduleWithDetails';
+import { getDefaultPacedTrainTimeWindow } from 'modules/trainSchedule/helpers/pacedTrain';
 import type { Train } from 'reducers/osrdconf/types';
 import { MAX_DURATION_MS } from 'utils/duration';
 import { findExceptionInPacedTrainByOccurrenceId } from 'utils/trainExceptions';
@@ -179,7 +180,7 @@ export default function TrainServiceForm({
                   units={['h', 'm']}
                   padChar="0"
                   label={t('manageTrainSchedule.trainHeader.form.serviceWindow')}
-                  value={fields.service_window ?? 2 * 3_600_000} // 2h00m
+                  value={fields.service_window ?? getDefaultPacedTrainTimeWindow(timetableType).ms}
                   onChange={(ms: number) => onFieldImmediateChange('service_window', ms)}
                   statusWithMessage={
                     serviceWindowError

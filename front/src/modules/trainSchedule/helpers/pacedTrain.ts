@@ -3,6 +3,7 @@ import type {
   TrainSchedule,
   PacedTrainException,
   TrainScheduleResponse,
+  TimetableType,
 } from 'common/api/osrdEditoastApi';
 import type { OccurrenceId, TrainScheduleId, TrainId } from 'reducers/osrdconf/types';
 import { Duration, addDurationToDate, startTimeToMs, type StartTime } from 'utils/duration';
@@ -29,6 +30,21 @@ import computeOccurrenceName from './computeOccurrenceName';
 
 export const isPacedTrainBase = (trainSchedule: TrainSchedule): trainSchedule is PacedTrain =>
   !!trainSchedule.paced;
+
+export const DEFAULT_PACED_TRAIN_INTERVAL = new Duration({ minutes: 60 });
+
+/**
+ * Default duration (`time_window`) of a newly created service, which depends on the timetable it
+ * is created in: a calendar service spans a full day, while an hourly one spans the default hourly
+ * timetable duration.
+ */
+const DEFAULT_PACED_TRAIN_TIME_WINDOW_BY_TIMETABLE_TYPE: Record<TimetableType, Duration> = {
+  CALENDAR: new Duration({ hours: 24 }),
+  HOURLY: new Duration({ hours: 2 }),
+};
+
+export const getDefaultPacedTrainTimeWindow = (timetableType: TimetableType): Duration =>
+  DEFAULT_PACED_TRAIN_TIME_WINDOW_BY_TIMETABLE_TYPE[timetableType];
 
 export const CHANGE_GROUP_KEYS: (keyof PacedTrainException)[] = [
   'constraint_distribution',

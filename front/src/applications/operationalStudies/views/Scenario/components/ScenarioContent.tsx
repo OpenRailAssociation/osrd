@@ -122,13 +122,20 @@ const ScenarioContent = ({ activeBoards, toggleBoard }: ScenarioContentProps) =>
 
   const refreshNge = useCallback(async () => {
     if (!activeBoards.has('macro')) return;
-    const state = new MacroEditorState(infraId, scenario.id);
+    const state = new MacroEditorState(infraId, scenario.id, scenario.timetable_type);
 
     const dto = await loadNgeDto(state, scenario.timetable_id, dispatch, t);
     macroEditorState.current = state;
     setNgeDto(dto);
+  }, [
+    dispatch,
+    infraId,
+    scenario.id,
+    scenario.timetable_id,
+    scenario.timetable_type,
     // eslint-disable-next-line react/use-memo
-  }, [dispatch, infraId, scenario.id, scenario.timetable_id, activeBoards.has('macro')]);
+    activeBoards.has('macro'),
+  ]);
 
   const upsertTrainSchedulesWithNge = useCallback(
     (updatedTrainSchedules: TrainScheduleResponse[]) => {

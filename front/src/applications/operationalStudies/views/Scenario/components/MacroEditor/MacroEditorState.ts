@@ -6,6 +6,7 @@ import type {
   OperationalPoint,
   OperationalPointReference,
   PathItemLocation,
+  TimetableType,
 } from 'common/api/osrdEditoastApi';
 
 export type NodeIndexed = Omit<MacroNodeResponse, 'id'> & {
@@ -24,6 +25,11 @@ export default class MacroEditorState {
    * Scenario id
    */
   scenarioId: number;
+
+  /**
+   * Type of the timetable the trainruns are created in.
+   */
+  timetableType: TimetableType;
 
   /**
    * Nodes storage
@@ -85,7 +91,7 @@ export default class MacroEditorState {
   /**
    * Default constructor
    */
-  constructor(infraId: number, scenarioId: number) {
+  constructor(infraId: number, scenarioId: number, timetableType: TimetableType) {
     this.nodeLabels = new Set<string>([]);
     this.trainrunLabels = new Set<string>([]);
     this.noteLabels = new Set<string>([]);
@@ -95,6 +101,7 @@ export default class MacroEditorState {
     this.ngeNoteIdToDbId = new Map();
     this.infraId = infraId;
     this.scenarioId = scenarioId;
+    this.timetableType = timetableType;
     this.trainrunFrequencies = [];
     this.trainrunCategories = [];
     this.ngeResource = { id: 1, capacity: 0 };
