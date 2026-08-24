@@ -1,16 +1,19 @@
 .no-mastnav .fullscreen {
   padding-top: 0 !important;
 }
+
 .btn-map-container {
   position: absolute;
   z-index: 2;
   right: 25px;
   top: 80px;
+
   button {
     display: block;
     font-size: 1.5rem;
     margin-bottom: 8px;
   }
+
   &.editor {
     top: 16px;
   }
@@ -61,6 +64,7 @@
 
   .new-btn-map-resetviewport {
     position: relative;
+
     .compass-needle,
     .compass-cardinal {
       position: absolute;
@@ -91,8 +95,10 @@
   @media screen and (min-width: 640px) {
     max-width: 50%;
   }
+
   .sub-section-title {
     cursor: pointer;
+
     i {
       transition: transform 0.6s;
       margin-left: 16px;
@@ -129,12 +135,15 @@
     border-radius: 8px;
     margin-right: 16px;
     padding-right: 8px;
+
     img {
       width: 80px;
       border-radius: 8px 0 0 8px;
       margin-right: 8px;
     }
+
     font-size: 0.9rem;
+
     &:hover,
     &.active {
       background-color: #333;
@@ -145,6 +154,7 @@
 
 .btn-map-resetviewport {
   position: relative;
+
   .compass-needle,
   .compass-cardinal {
     position: absolute;

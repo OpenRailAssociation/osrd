@@ -47,7 +47,9 @@
     margin-bottom: 0.25rem;
     font-size: 0.75rem;
     line-height: 1.25rem;
+
     @apply text-black-50;
+
     margin-left: 2rem;
   }
 
@@ -57,6 +59,7 @@
         outline: solid 0.09375rem #98c0f5;
       }
     }
+
     .checkmark {
       outline: solid 0.125rem #98c0f5;
     }
@@ -71,14 +74,17 @@
       height: 0.875rem;
       outline: solid 0.09375rem #ebebea;
     }
+
     .label {
       line-height: 1.25rem;
       padding-top: 0.125rem;
     }
+
     label {
       font-size: 0.875rem;
       padding-left: 1.5rem;
     }
+
     input:checked ~ .checkmark {
       &:after {
         position: absolute;
@@ -125,6 +131,7 @@
     outline: none;
     cursor: default;
     border: 0.03125rem #d3d1cf solid;
+
     &:after {
       border: none;
       opacity: 1;
@@ -132,6 +139,7 @@
       left: 0px;
     }
   }
+
   input[type='radio']:disabled ~ .checkmark {
     cursor: default;
   }
@@ -152,8 +160,10 @@
     display: flex;
     align-items: center;
   }
+
   &:focus {
     outline: none;
+
     .checkmark {
       &:after {
         top: -4px;
@@ -181,6 +191,7 @@
 
   input[type='radio']:disabled ~ label {
     @apply text-grey-30;
+
     cursor: default;
   }
 
@@ -198,7 +209,9 @@
 
   .label {
     display: block;
+
     @apply text-grey-80;
+
     font-size: 1rem;
     font-weight: 600;
     letter-spacing: 0px;
@@ -210,12 +223,14 @@
       left: -0.5rem;
       top: 1.25rem;
       border-radius: 0.03125rem;
+
       @apply text-info-30;
     }
   }
 
   .subtitle {
     @apply text-grey-50;
+
     font-size: 0.875rem;
     font-weight: 400;
     letter-spacing: 0px;
@@ -228,6 +243,7 @@
     letter-spacing: 0px;
     text-align: left;
     line-height: 1.5rem;
+
     @apply font-semibold;
 
     &.info {
@@ -275,11 +291,14 @@
   .read-only {
     input[type='radio'] {
       cursor: default;
+
       @apply border-grey-60;
     }
+
     span {
       cursor: default;
     }
+
     .hint {
       cursor: default;
     }
@@ -293,6 +312,7 @@
       border: 0.0625rem solid #5c5955;
       outline: none;
       cursor: default;
+
       &:after {
         border: none;
         opacity: 1;
@@ -301,18 +321,23 @@
       }
     }
   }
+
   .read-only {
     input[type='radio'] {
       cursor: default;
+
       @apply border-grey-60;
     }
+
     .radio-label {
       @apply text-grey-50;
     }
+
     input[type='radio']:checked ~ .checkmark {
       background-image: none;
       background-color: white;
       cursor: default;
+
       &::before {
         content: '';
         position: absolute;
@@ -322,13 +347,17 @@
         width: 0.5rem;
         height: 0.5rem;
         border-radius: 50%;
+
         @apply bg-grey-60;
       }
     }
+
     label {
       cursor: default;
+
       @apply text-grey-50;
     }
+
     &:hover {
       .checkmark {
         outline: none;

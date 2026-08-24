@@ -14,14 +14,17 @@
     width: 100%;
     font-size: 1.25rem;
   }
+
   .scenario-explorator-card-head {
     height: 108px;
+
     .scenario-explorator-card-head-img {
       position: absolute;
       overflow: hidden;
       border-radius: 4px;
       height: inherit;
       width: 96px;
+
       img {
         display: flex;
         align-items: center;
@@ -32,21 +35,25 @@
         object-fit: cover;
       }
     }
+
     .scenario-explorator-card-head-content {
       margin-left: 104px;
       font-weight: 500;
       height: 100%;
+
       .scenario-explorator-card-head-content-item {
         display: flex;
         align-items: center;
         margin-bottom: 4px;
         height: 22%;
+
         img {
           border-radius: 4px 0 0 4px;
           background-color: var(--coolgray3);
           padding: 4px;
           height: 100%;
         }
+
         div {
           display: flex;
           align-items: center;
@@ -57,6 +64,7 @@
           border-radius: 0 4px 4px 0;
           font-size: 0.8rem;
         }
+
         .scenario-explorator-card-head-legend {
           display: flex;
           align-items: center;
@@ -69,16 +77,19 @@
           height: 100%;
           width: 104px;
         }
+
         .scenario-explorator-card-head-project {
           border-radius: 0 4px 4px 0;
           background-color: var(--purple);
           width: 100%;
           overflow: hidden;
         }
+
         .scenario-explorator-card-head-study {
           background-color: var(--primary);
           overflow: hidden;
         }
+
         .scenario-explorator-card-head-scenario {
           display: flex;
           align-items: center;
@@ -86,6 +97,7 @@
           font-size: 1rem;
           background-color: var(--secondary);
           overflow: hidden;
+
           .scenario-explorator-card-head-scenario-traincount {
             display: flex;
             align-items: center;
@@ -93,34 +105,41 @@
             padding: 0 4px;
           }
         }
+
         .scenario-explorator-card-head-infra {
           color: var(--secondary);
           border: 1px solid var(--coolgray3);
         }
       }
+
       &.no-image {
         margin-left: 0;
       }
     }
   }
+
   &:hover {
     opacity: 0.5;
   }
 }
+
 .scenario-explorator-modal {
   .scenario-explorator-modal-title {
     display: flex;
     align-items: center;
     gap: 16px;
     width: 100%;
+
     img {
       height: 32px;
     }
   }
+
   .scenario-explorator-modal-part {
     position: relative;
     background-color: var(--coolgray1);
     border-radius: 0 0 4px 4px;
+
     .scenario-explorator-modal-part-title {
       display: flex;
       align-items: center;
@@ -129,9 +148,11 @@
       padding: 8px;
       background-color: var(--coolgray3);
       border-radius: 4px 4px 0 0;
+
       img {
         height: 20px;
       }
+
       h2 {
         flex-grow: 1;
         font-size: 0.9rem;
@@ -141,6 +162,7 @@
         padding: 0;
         text-align: center;
       }
+
       .scenario-explorator-modal-part-title-count {
         font-size: 0.7rem;
         font-weight: bold;
@@ -152,21 +174,25 @@
         padding: 0 4px;
       }
     }
+
     &.projects {
       .scenario-explorator-modal-part-title {
         border-bottom: 4px solid var(--purple);
       }
     }
+
     &.studies {
       .scenario-explorator-modal-part-title {
         border-bottom: 4px solid var(--primary);
       }
     }
+
     &.scenarios {
       .scenario-explorator-modal-part-title {
         border-bottom: 4px solid var(--coolgray9);
       }
     }
+
     .scenario-explorator-modal-part-arrow {
       position: absolute;
       display: flex;
@@ -177,12 +203,14 @@
       font-size: 6rem;
       color: var(--coolgray1);
     }
+
     .scenario-explorator-modal-part-itemslist {
       position: relative;
       width: 100%;
       height: 20vh;
       padding: 8px 0 0;
       overflow: auto;
+
       .minicard {
         display: flex;
         align-items: center;
@@ -196,6 +224,7 @@
         margin: 0 8px 8px;
         border: 2px solid var(--white);
         border-left: none;
+
         .minicard-img {
           position: absolute;
           overflow: hidden;
@@ -203,6 +232,7 @@
           height: 32px;
           width: 32px;
           left: 8px;
+
           img {
             display: flex;
             align-items: center;
@@ -213,33 +243,42 @@
             object-fit: cover;
           }
         }
+
         &:not(.selected, .empty) {
           cursor: pointer;
+
           &:hover {
             background-color: var(--coolgray3);
             border-color: var(--coolgray3);
           }
         }
+
         &:not(.with-image) {
           border-radius: 4px;
           border-left: 2px solid var(--white);
         }
+
         &.with-image {
           margin: 0 0 8px 40px;
           width: calc(100% - 48px);
         }
+
         &.selected {
           cursor: not-allowed;
+
           &.project {
             border-color: var(--purple);
           }
+
           &.study {
             border-color: var(--primary);
           }
+
           &.scenario {
             border-color: var(--coolgray9);
           }
         }
+
         &.empty {
           cursor: not-allowed;
           opacity: 0.5;

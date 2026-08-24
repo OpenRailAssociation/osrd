@@ -1,11 +1,14 @@
 .ui-text-area-field-wrapper {
   width: 100%;
+
   .field-and-status-icon {
     align-items: flex-start !important;
+
     .ui-status-icon {
       margin-top: 0.688rem !important;
     }
   }
+
   .custom-field {
     .text-area-wrapper {
       position: relative;
@@ -28,6 +31,7 @@
         box-shadow:
           0px 0px 0px 0.0625rem rgba(148, 145, 142, 1) inset,
           0px 0.0625rem 0.1875rem rgba(0, 0, 0, 0.5) inset;
+
         @apply bg-black-1 text-black-100;
 
         &:focus {
@@ -38,11 +42,13 @@
           box-shadow:
             0px 0px 0px 0.0625rem rgba(211, 209, 207, 1) inset,
             0px 0px 0px 0.1875rem rgba(255, 255, 255, 1) inset;
+
           @apply text-grey-50 bg-black-2;
         }
 
         &:disabled {
           box-shadow: 0px 0px 0px 0.0625rem rgba(235, 235, 234, 1) inset;
+
           @apply text-grey-30 bg-black-2;
         }
 
@@ -90,6 +96,7 @@
         margin-right: 0.1875rem;
 
         @apply text-grey-30;
+
         font-size: 0.75rem;
         border-radius: 0.188rem;
         padding: 0.25rem;

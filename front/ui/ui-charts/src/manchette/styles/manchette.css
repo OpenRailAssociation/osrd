@@ -14,7 +14,9 @@
     border-top: solid 1px;
     border-right: solid 1px;
     border-radius: 0 0 0 10px;
+
     @apply border-black-25;
+
     display: flex;
     height: 40px;
     position: sticky;
@@ -46,6 +48,7 @@
 
       .zoom-reset {
         @apply text-grey-50;
+
         font-weight: 600;
         font-size: 0.875rem;
       }
@@ -60,6 +63,7 @@
 
   .waypoints-list {
     border-bottom-left-radius: 4px;
+
     @apply bg-white-100;
   }
 }

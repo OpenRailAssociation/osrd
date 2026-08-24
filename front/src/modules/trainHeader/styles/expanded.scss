@@ -139,7 +139,6 @@
   .train-extra-occurrences {
     display: grid;
     grid-template-columns: subgrid;
-
     background-color: var(--ambientB5);
 
     label {
@@ -150,7 +149,6 @@
   .train-add-extra-occurrence-form {
     display: grid;
     grid-template-columns: subgrid;
-
     grid-column: 2 / end-column;
 
     .actions {
@@ -166,7 +164,6 @@
   .train-extra-occurrences-list {
     display: grid;
     grid-template-columns: subgrid;
-
     grid-column: 1 / end-column;
     margin-bottom: 26px;
     row-gap: 2px;
@@ -175,7 +172,6 @@
   .train-extra-occurrence {
     display: grid;
     grid-template-columns: subgrid;
-
     grid-column: 1 / end-column;
 
     .train-extra-occurrence-date {

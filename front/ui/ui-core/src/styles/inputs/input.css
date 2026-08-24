@@ -8,6 +8,7 @@
       box-shadow:
         0px 1px 3px rgba(0, 0, 0, 0.5) inset,
         0px 0px 0px 1px rgba(31, 27, 23, 1) inset;
+
       @apply bg-white-25;
     }
   }
@@ -41,6 +42,7 @@
 
     .clear-icon {
       @apply text-grey-50;
+
       cursor: pointer;
     }
 
@@ -70,6 +72,7 @@
       font-size: 0.875rem;
       text-align: center;
       flex-shrink: 0;
+
       @apply text-grey-80;
     }
 
@@ -77,6 +80,7 @@
       box-shadow:
         0 0 0 0.063rem rgba(211, 209, 207, 1) inset,
         0 0 0 0.188rem rgba(255, 255, 255, 1) inset;
+
       .leading-content {
         @apply text-grey-50;
       }
@@ -84,6 +88,7 @@
 
     &.disabled {
       box-shadow: 0 0 0 0.063rem rgba(235, 235, 234, 1) inset;
+
       .leading-content {
         @apply text-grey-30;
       }
@@ -102,6 +107,7 @@
     box-shadow:
       0 0 0 0.063rem rgba(148, 145, 142, 1) inset,
       0 0.063rem 0.188rem rgba(0, 0, 0, 0.5) inset;
+
     @apply bg-black-1 text-black-100;
 
     &.with-leading-only {
@@ -132,11 +138,13 @@
       box-shadow:
         0 0 0 0.063rem rgba(211, 209, 207, 1) inset,
         0 0 0 0.188rem rgba(255, 255, 255, 1) inset;
+
       @apply text-grey-50 bg-black-2;
     }
 
     &:disabled {
       box-shadow: 0 0 0 0.063rem rgba(235, 235, 234, 1) inset;
+
       @apply text-grey-30 bg-black-2;
     }
 
@@ -198,6 +206,7 @@
       font-size: 0.875rem;
       text-align: center;
       flex-shrink: 0;
+
       @apply text-grey-80;
     }
 
@@ -205,6 +214,7 @@
       box-shadow:
         0 0 0 0.063rem rgba(211, 209, 207, 1) inset,
         0 0 0 0.188rem rgba(255, 255, 255, 1) inset;
+
       .trailing-content {
         @apply text-grey-50;
       }
@@ -212,6 +222,7 @@
 
     &.disabled {
       box-shadow: 0 0 0 0.063rem rgba(235, 235, 234, 1) inset;
+
       .trailing-content {
         @apply text-grey-30;
       }
@@ -222,6 +233,7 @@
     .leading-content-wrapper {
       height: 1.75rem;
       border-radius: 0.188rem 0 0 0.188rem;
+
       .leading-content {
         font-size: 0.75rem;
         line-height: 0.5rem;
