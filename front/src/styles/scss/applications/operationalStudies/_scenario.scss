@@ -40,11 +40,13 @@
         transform: translate(0, -50%);
         border-radius: 5px;
       }
+
       &.not-honored {
         &:before {
           background-color: var(--warning30);
         }
       }
+
       &.invalid {
         &:before {
           background-color: var(--error60);
@@ -87,6 +89,7 @@
         }
       }
     }
+
     .train-time {
       display: flex;
       align-items: center;
@@ -101,9 +104,11 @@
         justify-content: center;
         align-items: center;
         margin: 0 4px;
+
         span {
           padding-bottom: 4px;
         }
+
         &.not-honored-or-too-fast {
           color: var(--warning60);
         }
@@ -137,13 +142,16 @@
     height: 28px;
     flex-wrap: wrap;
     justify-content: space-between;
+
     .more-info-left {
       padding-left: 40px;
+
       .more-info-item {
         display: inline-block;
         margin-right: 16px;
       }
     }
+
     .duration-time {
       text-align: end;
       margin-right: 55px;
@@ -199,6 +207,7 @@
   &.selected {
     background-color: var(--selection20);
     box-shadow: inset 0 -1px 0 0 rgba(0, 0, 0, 0.25);
+
     .rolling-stock::after {
       background: linear-gradient(
         270deg,
@@ -216,6 +225,7 @@
     .checkbox-title::after {
       display: none;
     }
+
     .rolling-stock {
       font-weight: 600;
       color: var(--error80);
@@ -278,13 +288,16 @@
     clip-path: inset(-1px -1px -1px 1px);
     z-index: 4;
   }
+
   .micro-macro-buttons {
     button {
       color: var(--grey60);
       width: 58px;
+
       &:hover {
         color: var(--grey80);
       }
+
       &:active {
         color: var(--grey30);
       }
@@ -349,6 +362,7 @@
       flex: 1;
       min-height: 0;
       background-color: var(--ambientB10);
+
       .scenario-timetable-addtrains-buttons {
         display: flex;
         align-items: center;
@@ -359,14 +373,17 @@
         border-top: 4px rgba(0, 0, 0, 0.05) solid;
         color: var(--primary60);
         font-weight: 600;
+
         button:hover {
           color: var(--primary80);
           text-decoration: underline;
         }
+
         button:active {
           color: var(--primary50);
         }
       }
+
       .filter-selector {
         background-color: transparent;
         border: none;
@@ -374,18 +391,22 @@
         transition: 0.2s;
         padding: 4px 8px;
         border-radius: 4px;
+
         &.on {
           color: var(--white100);
           background-color: var(--secondary);
         }
+
         &:hover {
           background-color: var(--secondary);
           color: var(--white100);
+
           .scenario-details-modify-button-text {
             opacity: 1;
           }
         }
       }
+
       .multiselect-delete {
         border: none;
         padding: 4px 8px;
@@ -394,6 +415,7 @@
         background-color: rgba(var(--red-rgb), 0.75);
         color: var(--white100);
         height: 32px;
+
         &.disabled {
           background-color: rgba(var(--secondary-rgb), 0.5);
         }
@@ -401,6 +423,7 @@
 
       .multiselect-download {
         @extend .multiselect-delete;
+
         background-color: var(--primary);
       }
 
@@ -442,6 +465,7 @@
             display: flex;
             align-items: center;
             min-width: 0;
+
             .train-projected {
               height: 20px;
               width: 20px;
@@ -450,6 +474,7 @@
               border-radius: 4px;
               position: relative;
               flex-shrink: 0;
+
               svg {
                 position: absolute;
                 top: 0;
@@ -457,6 +482,7 @@
                 transform: translate(2px, 2px);
               }
             }
+
             .train-name {
               overflow: hidden;
               text-overflow: ellipsis;
@@ -490,10 +516,12 @@
           color: var(--warning60);
           border-top: solid 1px var(--warning30);
           border-bottom: solid 1px var(--warning30);
+
           svg {
             margin: 16px;
             color: var(--warning30);
           }
+
           .invalid-trains-message {
             height: 24px;
             margin-top: 11px;
@@ -542,6 +570,7 @@
           z-index: 3;
           padding-inline: 10px 4px;
           padding-bottom: 5px;
+
           &.are-invalid-items {
             top: 48px;
           }
@@ -607,14 +636,18 @@
           position: sticky;
           top: calc(var(--sticky-top-base));
           z-index: 2;
+
           /* base top */
           --sticky-top-base: 32px;
+
           &.selection-mode-open {
             --sticky-top-base: 64px;
           }
+
           &.are-invalid-items {
             --sticky-top-base: 80px;
           }
+
           &.selection-mode-open.are-invalid-items {
             --sticky-top-base: 112px;
           }
@@ -628,6 +661,7 @@
           position: sticky;
           top: 32px;
           z-index: 3;
+
           &.are-invalid-items {
             top: 80px;
           }
@@ -642,11 +676,13 @@
 
           .export-selection-button {
             @include toolbar-button-base($is-grey-color: false, $has-active: false);
+
             margin-left: 20px;
           }
 
           .delete-selection-button {
             @include toolbar-button-base($is-grey-color: false, $has-active: false);
+
             margin-left: 24px;
           }
         }
@@ -732,6 +768,7 @@
               font-weight: 600;
               margin-bottom: 4px;
             }
+
             .speed-limit-tag-filter {
               display: flex;
               flex-wrap: wrap;
@@ -962,6 +999,7 @@ $train-category-colors: (
         }
       }
     }
+
     .train-schedule-set-remove-dialog-text {
       span {
         display: block;

@@ -1,5 +1,6 @@
 .ui-manchette-menu {
   @apply bg-grey-5;
+
   width: 305px;
   border: 0.0625rem solid #b6b2af;
   border-radius: 0.5rem;
@@ -26,6 +27,7 @@
 
     .icon {
       @apply text-primary-40;
+
       padding-inline: 1rem;
     }
   }

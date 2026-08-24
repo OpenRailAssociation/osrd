@@ -1,10 +1,11 @@
 @use 'sass:string';
+
 // SNCF color blue green
 $color: var(--primary);
+
 // SNCF color green
 $color-highlight: var(--success);
 $white: var(--white);
-
 $color-nodata: var(--danger);
 $tooltip-bg-color: var(--black);
 $tooltip-padding: 1em;
@@ -38,6 +39,7 @@ $resize-width: 3px;
   &.start-visible {
     border-left-style: solid;
   }
+
   &.end-visible {
     border-right-style: solid;
   }
@@ -49,11 +51,13 @@ $resize-width: 3px;
     flex-wrap: nowrap;
     align-items: center;
     justify-content: space-between;
+
     .zoom-horizontal {
       display: flex;
       flex-direction: row;
       z-index: 2;
       flex-grow: 1;
+
       //height: calc($dataviz-height + $scaling-height);
       .btn {
         background-color: #fff;
@@ -61,6 +65,7 @@ $resize-width: 3px;
         border-top-left-radius: 0;
         border-bottom-left-radius: 0;
         border-left-width: 0;
+
         &:focus,
         &:hover {
           color: #000;
@@ -68,6 +73,7 @@ $resize-width: 3px;
       }
     }
   }
+
   .content {
     .dataviz {
       display: flex;
@@ -81,12 +87,14 @@ $resize-width: 3px;
         flex-direction: column;
         z-index: 2;
         height: calc($dataviz-height + $scaling-height);
+
         .btn {
           background-color: #fff;
           padding: 0 0.25em !important;
           border-top-left-radius: 0;
           border-bottom-left-radius: 0;
           border-left-width: 0;
+
           &:focus,
           &:hover {
             color: #000;
@@ -99,6 +107,7 @@ $resize-width: 3px;
         flex-direction: column;
         z-index: 2;
         height: calc($dataviz-height + $scaling-height);
+
         .btn {
           background-color: #fff;
           color: #1c1c1c;
@@ -106,12 +115,14 @@ $resize-width: 3px;
           border-top-left-radius: 0;
           border-bottom-left-radius: 0;
           border-left-width: 0;
+
           //&:focus,
           &:hover {
             background-color: #1c1c1c;
             color: #ececec;
           }
         }
+
         .btn-selected {
           background-color: #1c1c1c;
           color: #ffffff;
@@ -119,6 +130,7 @@ $resize-width: 3px;
           border-top-left-radius: 0;
           border-bottom-left-radius: 0;
           border-left-width: 0;
+
           //&:focus,
           &:hover {
             background-color: #1c1c1c;
@@ -129,6 +141,7 @@ $resize-width: 3px;
 
       .linear-metadata-visualisation {
         @include unselectable;
+
         flex-grow: 1;
         padding-left: $scaling-y-width;
         pointer-events: auto;
@@ -136,6 +149,7 @@ $resize-width: 3px;
         .data {
           @include unselectable;
           @include horizontal-row;
+
           display: flex;
           flex-wrap: nowrap;
           position: relative;
@@ -143,6 +157,7 @@ $resize-width: 3px;
           &.dragging {
             cursor: grabbing;
           }
+
           &.resizing {
             cursor: col-resize;
           }
@@ -180,6 +195,7 @@ $resize-width: 3px;
 
             &.highlighted {
               background-color: $white;
+
               div.value {
                 background-color: $color-highlight;
               }
@@ -191,16 +207,19 @@ $resize-width: 3px;
 
             div.value {
               @include unselectable;
+
               width: calc(100% - $resize-width);
               flex-grow: 1;
               background-color: $color;
               text-align: center;
               white-space: nowrap;
               overflow-y: hidden;
+
               span {
                 color: #fff;
                 display: block;
                 font-size: 0.6em;
+
                 // trick to hide the value if the div is too small
                 // https://medium.com/swlh/hiding-an-element-when-there-is-no-enough-space-thanos-snap-technique-8a11e31267c0
                 max-height: max(0px, calc((100% - 12px) * 999));
@@ -234,11 +253,13 @@ $resize-width: 3px;
 
         .spacer {
           @include horizontal-row;
+
           height: $spacer-height;
         }
 
         .additional-data {
           @include horizontal-row;
+
           display: flex;
           background: mixw($color, 0.9);
 
@@ -248,10 +269,12 @@ $resize-width: 3px;
 
             div.value {
               @include unselectable;
+
               width: calc(100% - $resize-width);
               flex-grow: 1;
               text-align: center;
               white-space: nowrap;
+
               span {
                 display: block;
                 font-size: 0.8em;
@@ -281,6 +304,7 @@ $resize-width: 3px;
         .scale {
           display: flex;
           justify-content: space-between;
+
           span {
             font-size: 0.6em;
             overflow: hidden;
@@ -295,6 +319,7 @@ $resize-width: 3px;
               justify-content: space-between;
               align-items: center;
               width: 100%;
+
               div {
                 position: relative;
                 top: 0;
@@ -303,10 +328,12 @@ $resize-width: 3px;
               }
             }
           }
+
           &.scale-y {
             flex-direction: column-reverse;
             margin-left: -$scaling-y-width;
             width: $scaling-y-width;
+
             .axis-values {
               display: flex;
               flex-direction: column-reverse;
@@ -315,6 +342,7 @@ $resize-width: 3px;
               width: 100%;
               height: 100%;
               padding-right: 2px;
+
               div {
                 position: relative;
                 top: 0;
@@ -322,16 +350,19 @@ $resize-width: 3px;
                 height: 100%;
                 text-align: center;
               }
+
               p {
                 font-size: 0.6em;
                 margin-bottom: 0;
               }
             }
           }
+
           &.resizing-scale-x {
             border-top: $scaling-height solid;
             height: 50px;
             width: 100%;
+
             div {
               height: 50px;
               text-align: center;
@@ -381,6 +412,7 @@ $resize-width: 3px;
           margin-bottom: 1em;
           border-bottom: 1px solid #fff;
         }
+
         .content {
           div {
             display: flex;
@@ -390,6 +422,7 @@ $resize-width: 3px;
         }
       }
     }
+
     .linear-metadata-selection {
       width: calc(100% - 1em);
       margin: 1em auto;
@@ -404,13 +437,16 @@ $resize-width: 3px;
           margin-bottom: 1em;
         }
       }
+
       .content {
         legend {
           display: none;
         }
+
         .form-group.field-object {
           margin-bottom: 0;
         }
+
         .buttons {
           display: flex;
           justify-content: space-around;

@@ -1,29 +1,36 @@
 .mapkey-items {
   display: flex;
+
   @media screen and (max-width: 640px) {
     display: block;
   }
 }
+
 .mapkey {
   display: block;
   font-size: 0.9rem;
   margin: 16px 16px 0;
   font-weight: lighter;
+
   .mapkey-title {
     border-bottom: 1px solid #555;
     padding-bottom: 4px;
     margin-bottom: 8px;
   }
+
   .mapkey-item {
     display: flex;
     align-items: center;
   }
+
   .mapkey-item-visible {
     display: flex;
   }
+
   .mapkey-icon {
     width: 2em;
     text-align: center;
+
     &.mapkey-icon-deparr {
       position: relative;
       width: 16px;
@@ -35,33 +42,42 @@
       margin: 0 8px 0 0;
     }
   }
+
   .mapkey-icon img {
     height: 1.5em;
   }
+
   .mapkey-line {
     display: block;
     width: 60%;
     margin-left: 20%;
     height: 4px;
   }
+
   .mapkey-v300 {
     background-color: #91d3ff;
   }
+
   .mapkey-v200 {
     background-color: #89f7d8;
   }
+
   .mapkey-v160 {
     background-color: #9eff77;
   }
+
   .mapkey-v100 {
     background-color: #e0fe64;
   }
+
   .mapkey-v60 {
     background-color: #fdf479;
   }
+
   .mapkey-v30 {
     background-color: #fbb286;
   }
+
   .mapkey-v0 {
     background-color: #ef5151;
   }
@@ -72,6 +88,7 @@
     margin-left: 20%;
     height: 6px;
   }
+
   @media screen and (max-width: 640px) {
     font-size: 0.8em;
   }

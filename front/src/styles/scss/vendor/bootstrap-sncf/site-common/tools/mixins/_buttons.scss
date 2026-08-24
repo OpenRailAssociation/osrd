@@ -15,13 +15,18 @@
   $active-color: color-yiq($active-background)
 ) {
   color: $color;
+
   @include gradient-bg($background);
+
   border-color: $border;
+
   @include box-shadow($btn-box-shadow);
 
   @include hover-focus {
     color: $hover-color;
+
     @include gradient-bg($hover-background);
+
     border-color: $hover-border;
   }
 
@@ -39,9 +44,11 @@
   .show > &.dropdown-toggle {
     color: $active-color;
     background-color: $active-background;
+
     @if $enable-gradients {
       background-image: none; // Remove the gradient for the pressed/active state
     }
+
     border-color: $active-border;
   }
 }
@@ -99,6 +106,7 @@
   padding: $padding-y $padding-x;
   font-size: $font-size;
   line-height: $line-height;
+
   // Manually declare to provide an override to the browser default
   @if $enable-rounded {
     border-radius: $border-radius;

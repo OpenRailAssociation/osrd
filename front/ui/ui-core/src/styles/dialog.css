@@ -104,12 +104,15 @@
   .dialog-content.ambientA {
     background-color: var(--color-ambientA-5);
   }
+
   .dialog-content.ambientB {
     background-color: var(--color-ambientB-5);
   }
+
   .dialog-content.ambientC {
     background-color: var(--color-ambientC-5);
   }
+
   .dialog-content.ambientD {
     background-color: var(--color-ambientD-5);
   }

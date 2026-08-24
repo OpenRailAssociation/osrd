@@ -146,6 +146,7 @@
                 &.valid {
                   background-color: var(--info30);
                 }
+
                 &.invalid {
                   background-color: var(--warning30);
                 }
@@ -308,6 +309,7 @@
             color: var(--grey40);
           }
         }
+
         .round-trips-card-body {
           display: flex;
           align-items: center;

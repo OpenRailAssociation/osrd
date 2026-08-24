@@ -10,13 +10,16 @@
     transition: 0.2s;
     padding: 4px 8px;
     border-radius: 4px;
+
     &.on {
       color: white;
       background-color: var(--secondary);
     }
+
     &:hover {
       background-color: var(--secondary);
       color: var(--white);
+
       .scenario-details-modify-button-text {
         opacity: 1;
       }
@@ -30,10 +33,12 @@
     border-color: transparent;
     background-color: rgba(var(--red-rgb), 0.75);
     color: var(--white);
+
     &.disabled {
       background-color: rgba(var(--secondary-rgb), 0.5);
     }
   }
+
   .project-details {
     .project-details-title {
       display: flex;
@@ -41,12 +46,14 @@
       gap: 16px;
       margin-bottom: 8px;
       min-height: 240px;
+
       .project-details-title-img {
         overflow: hidden;
         border-radius: 4px;
         max-height: 30vh;
         height: 100%;
         margin-bottom: 8px;
+
         img {
           display: flex;
           align-items: center;
@@ -56,11 +63,13 @@
           height: 100%;
           object-fit: cover;
         }
+
         @media screen and (max-width: 768px) {
           position: relative;
           height: 160px;
         }
       }
+
       .project-details-title-content {
         .project-details-title-name {
           display: flex;
@@ -70,6 +79,7 @@
           font-size: 2rem;
           font-weight: 500;
           overflow: auto;
+
           .project-details-title-modify-button {
             background-color: transparent;
             border: none;
@@ -78,21 +88,25 @@
             padding: 4px 16px;
             font-size: 1.5rem;
             border-radius: 4px;
+
             .project-details-title-modify-button-text {
               transition: opacity 0.2s;
               opacity: 0;
               font-size: 1.25rem;
               margin-right: 16px;
             }
+
             &:hover {
               background-color: var(--purple);
               color: var(--white);
+
               .project-details-title-modify-button-text {
                 opacity: 1;
               }
             }
           }
         }
+
         h3 {
           color: var(--coolgray9);
           font-size: 0.8rem;
@@ -101,6 +115,7 @@
           padding-bottom: 2.4px;
           margin-bottom: 4px;
         }
+
         .project-details-title-description {
           overflow-y: auto;
           max-height: 20vh;
@@ -109,12 +124,14 @@
           white-space: break-spaces;
           overflow-wrap: anywhere;
         }
+
         .project-details-title-objectives {
           overflow: auto;
           max-height: 20vh;
         }
       }
     }
+
     .project-details-financials {
       display: flex;
       align-items: center;
@@ -123,6 +140,7 @@
       padding: 8px;
       background-color: var(--purple);
       color: var(--white);
+
       .project-details-financials-infos {
         h3 {
           font-size: 0.9rem;
@@ -131,10 +149,12 @@
           margin: 0;
           text-transform: uppercase;
         }
+
         flex-grow: 1;
         overflow: auto;
         margin-right: 8px;
       }
+
       .project-details-financials-amount {
         display: flex;
         align-items: center;
@@ -145,6 +165,7 @@
         color: var(--purple);
         border-radius: 4px;
         padding: 4px 8px;
+
         .project-details-financials-amount-text {
           line-height: 16px;
           text-align: right;
@@ -157,11 +178,13 @@
         }
       }
     }
+
     .project-details-tags {
       display: flex;
       align-items: center;
       flex-wrap: wrap;
       gap: 4px;
+
       .project-details-tags-tag {
         font-size: 0.9rem;
         color: var(--white);

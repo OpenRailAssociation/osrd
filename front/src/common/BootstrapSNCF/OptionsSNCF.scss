@@ -1,13 +1,17 @@
 .options-control {
   border-radius: 7px !important;
+
   .options-item {
     border-radius: 7px;
+
     .options-btn {
       border-radius: 7px;
     }
   }
+
   &.sm {
     padding: 3.2px;
+
     .options-btn {
       border-radius: 7px;
       padding: 4.8px 8px 3.2px;

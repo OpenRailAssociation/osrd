@@ -28,9 +28,11 @@
     color: transparent;
     caret-color: transparent;
     cursor: pointer;
+
     &:focus {
       outline: none;
     }
+
     &::selection {
       background: transparent;
     }

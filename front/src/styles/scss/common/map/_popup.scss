@@ -2,15 +2,19 @@
   &.maplibregl-popup-anchor-bottom .maplibregl-popup-tip {
     border-top-color: var(--secondary);
   }
+
   &.maplibregl-popup-anchor-top .maplibregl-popup-tip {
     border-bottom-color: var(--secondary);
   }
+
   &.maplibregl-popup-anchor-right .maplibregl-popup-tip {
     border-left-color: var(--secondary);
   }
+
   &.maplibregl-popup-anchor-left .maplibregl-popup-tip {
     border-right-color: var(--secondary);
   }
+
   .maplibregl-popup-content {
     background: var(--secondary);
     border-radius: 4px;
@@ -19,16 +23,19 @@
     box-shadow: unset;
     width: 160px;
   }
+
   .details {
     display: flex;
     align-items: center;
     gap: 8px;
     margin-bottom: 8px;
     color: var(--white);
+
     .details-track {
       text-align: center;
       font-size: 1.25rem;
       font-weight: bold;
+
       small {
         display: block;
         font-weight: lighter;
@@ -36,6 +43,7 @@
         line-height: 9.6px;
       }
     }
+
     .details-line {
       font-size: 0.7rem;
       font-weight: lighter;
@@ -43,10 +51,12 @@
       overflow: hidden;
     }
   }
+
   .actions {
     display: flex;
     gap: 8px;
     justify-content: space-between;
+
     button {
       display: flex;
       flex-direction: column;
@@ -56,9 +66,11 @@
       padding: 4px 8px;
     }
   }
+
   select {
     background-color: var(--white);
   }
+
   select:focus {
     background-color: var(--white);
   }

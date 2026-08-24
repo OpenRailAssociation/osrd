@@ -37,6 +37,7 @@
       &::before {
         border-color: $custom-control-indicator-checked-disabled-bg !important;
       }
+
       cursor: default;
     }
 
@@ -44,8 +45,10 @@
       &::before {
         background-color: $custom-control-indicator-checked-disabled-bg !important;
       }
+
       cursor: default;
     }
+
     cursor: default;
   }
   /* stylelint-enable declaration-no-important */
@@ -96,6 +99,7 @@
     &::before {
       @include gradient-bg($custom-checkbox-indicator-indeterminate-bg);
       @include box-shadow($custom-checkbox-indicator-indeterminate-box-shadow);
+
       border-color: $custom-control-indicator-checked-border-color;
     }
 
@@ -155,12 +159,15 @@
     &:not(:indeterminate):checked {
       ~ .custom-control-label {
         color: $value;
+
         &::before {
           background-color: $value;
           border-color: $value;
         }
+
         @include hover-focus-active {
           color: $value;
+
           &::before {
             background-color: $value;
             border-color: $value;
@@ -168,9 +175,11 @@
         }
       }
     }
+
     &:focus ~ .custom-control-label {
       color: $value;
     }
+
     &:focus ~ .custom-control-label::before {
       border-color: $value;
     }
@@ -181,6 +190,7 @@
     &:active,
     &.active {
       color: $value;
+
       &::before {
         border-color: $value;
       }
@@ -343,12 +353,14 @@
     &:not(:first-child) {
       margin-left: rem(8px);
     }
+
     &:not(:last-child) {
       margin-right: rem(8px);
     }
 
     @include hover-focus-active {
       color: theme-color('primary');
+
       &::after {
         position: absolute;
         bottom: rem(-1px);

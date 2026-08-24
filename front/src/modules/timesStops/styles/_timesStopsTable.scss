@@ -119,6 +119,7 @@
           background: var(--white50);
         }
       }
+
       td {
         white-space: nowrap;
         overflow: hidden;
@@ -132,7 +133,6 @@
       --col-confortable-width: 90px;
       --col-padding-inline: 4px;
       --col-confortable-padding-inline: 12px;
-
       --col-used-width: var(--col-width);
       --col-used-padding-inline: var(--col-padding-inline);
     }
@@ -380,6 +380,7 @@
 
       &.power-restriction-incompatible {
         background: var(--warning5);
+
         // Override the cell's `overflow: hidden` so the ::after border (which
         // extends 1px outside the cell via `inset: -1px`) is not clipped.
         overflow: visible;

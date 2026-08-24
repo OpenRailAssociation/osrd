@@ -6,9 +6,11 @@
   width: 100%;
   border-radius: inherit;
   padding-top: 10px;
+
   @apply bg-ambientB-15;
 
   position: relative;
+
   &::before,
   &::after {
     content: '';
@@ -21,10 +23,12 @@
     border-color: var(--color-grey-50);
     border-style: solid;
   }
+
   &::before {
     top: 0;
     border-top-width: 1px;
   }
+
   &::after {
     bottom: 0;
     border-bottom-width: 1px;
@@ -38,6 +42,7 @@
   .waypoint-separator::after {
     height: 0;
   }
+
   .track {
     display: flex;
     justify-content: flex-end;
@@ -48,14 +53,19 @@
       font-family: 'IBM Plex Sans';
       font-weight: 400;
       font-size: 12px;
+
       @apply text-grey-50;
     }
 
     .track-name {
       height: 24px;
+
       @apply bg-grey-70;
+
       border-radius: 4px;
+
       --outer-border-color: rgb(182, 178, 175);
+
       box-shadow:
         0 0 0 2px white,
         0 0 0 2.5px var(--outer-border-color);
@@ -63,6 +73,7 @@
       font-weight: 600;
       font-size: 14px;
       line-height: 20px;
+
       @apply text-white-100;
     }
 
@@ -72,7 +83,9 @@
       width: 17px;
       margin-left: 2.5px;
       margin-right: 1px;
+
       @apply bg-white-50;
+
       border-top: solid 1px rgb(211, 209, 207);
       border-bottom: solid 1px rgb(211, 209, 207);
     }
@@ -80,11 +93,13 @@
     &.active {
       .track-name {
         @apply bg-primary-40;
+
         --outer-border-color: var(--color-primary-50);
       }
 
       .track-rail {
         @apply bg-primary-5;
+
         border-color: var(--color-primary-30);
       }
     }
@@ -135,12 +150,14 @@
   .manchette {
     height: 100%;
   }
+
   .ui-manchette-container {
     width: 200px;
     overflow: hidden;
     flex-shrink: 0;
     height: fit-content;
   }
+
   .manchette-actions {
     position: absolute;
     bottom: 0;

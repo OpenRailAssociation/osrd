@@ -11,24 +11,30 @@
   transition: 0.4s;
   height: 272px;
   z-index: 1;
+
   &:hover,
   &:focus,
   &:active {
     border-color: var(--primary);
+
     button {
       opacity: 1 !important;
     }
   }
+
   &[aria-disabled='true'] {
     pointer-events: none;
     opacity: 0.5;
   }
+
   &.selected {
     border-color: var(--purple);
+
     .selected-mark {
       display: block;
     }
   }
+
   &.empty {
     display: flex;
     align-items: center;
@@ -38,6 +44,7 @@
     color: var(--coolgray5);
     cursor: pointer;
     background-color: transparent;
+
     &:hover,
     &:focus,
     &:active {
@@ -45,27 +52,32 @@
       background-color: var(--coolgray3);
       color: var(--coolgray7);
     }
+
     .legend {
       margin-top: 16px;
       font-size: 1.5rem;
     }
   }
+
   @media screen and (max-width: 1023px) {
     &.empty {
       flex-direction: row;
       align-items: center;
       gap: 16px;
       font-size: 2rem;
+
       .legend {
         margin: 0;
       }
     }
   }
+
   button {
     transition: opacity 0.4s;
     opacity: 0;
     margin-left: auto;
   }
+
   .selected-mark {
     display: none;
     position: absolute;
@@ -75,6 +87,7 @@
     top: -25.6px;
     left: -12.8px;
   }
+
   .study-card-name {
     display: flex;
     transition: 0.4s;
@@ -83,6 +96,7 @@
     padding: 8px 8px 8px;
     background-color: var(--coolgray3);
     color: var(--secondary);
+
     &-text {
       overflow: hidden;
       text-overflow: ellipsis;
@@ -98,6 +112,7 @@
     padding: 4px 8px 0;
     min-height: 24px;
   }
+
   .study-card-description {
     font-size: 0.9rem;
     padding: 0 8px;
@@ -105,6 +120,7 @@
     white-space: break-spaces;
     overflow-wrap: anywhere;
   }
+
   .study-card-financials {
     display: flex;
     align-items: center;
@@ -113,14 +129,17 @@
     margin: 8px 8px 0;
     border-radius: 4px;
     min-height: 56px;
+
     .study-card-financials-infos {
       overflow: auto;
       display: flex;
       gap: 16px;
+
       .study-card-financials-infos-item {
         text-transform: uppercase;
         font-weight: 500;
         font-size: 0.9rem;
+
         h3 {
           font-size: 0.7rem;
           color: var(--coolgray9);
@@ -129,6 +148,7 @@
         }
       }
     }
+
     .study-card-financials-amount {
       display: flex;
       align-items: center;
@@ -140,6 +160,7 @@
       color: var(--coolgray11);
       border-radius: 4px;
       padding: 8px;
+
       .study-card-financials-amount-text {
         font-size: 0.7rem;
         font-weight: 500;
@@ -149,6 +170,7 @@
       }
     }
   }
+
   .study-card-tags {
     display: flex;
     align-items: center;
@@ -158,6 +180,7 @@
     height: 64px;
     overflow: auto;
     font-weight: 500;
+
     .study-card-tags-tag {
       font-size: 0.9rem;
       color: var(--white);
@@ -170,16 +193,19 @@
       white-space: nowrap;
       text-overflow: ellipsis;
       cursor: pointer;
+
       &:hover {
         opacity: 0.65;
       }
     }
   }
+
   .study-card-footer {
     padding-top: 8px;
     display: flex;
     align-items: baseline;
     justify-content: space-between;
+
     .study-card-scenarios-count,
     .study-card-date {
       display: flex;
@@ -192,6 +218,7 @@
       text-align: right;
       font-weight: 500;
       color: var(--coolgray9);
+
       svg {
         height: 8.8px;
         margin-bottom: 2.4px;

@@ -5,6 +5,7 @@
         @apply text-primary-60;
       }
     }
+
     &.range-mode {
       .input {
         caret-color: transparent;
@@ -42,6 +43,7 @@
 
       &:not(.disabled):hover {
         cursor: pointer;
+
         @apply bg-grey-5;
       }
 
@@ -73,8 +75,10 @@
             line-height: 1.25rem;
             text-transform: uppercase;
             margin: 0.313rem 0 1.125rem 0;
+
             @apply text-grey-20;
           }
+
           .calendar-grid-wrapper {
             .calendar-weekday-labels,
             .calendar-days-grid {
@@ -92,9 +96,11 @@
                 line-height: 1rem;
                 width: 3rem;
                 height: 1rem;
+
                 @apply text-grey-80;
               }
             }
+
             .calendar-days-grid {
               margin-bottom: 3rem;
 
@@ -129,18 +135,24 @@
                   &.inside-selectable-slot {
                     &.current-month {
                       @apply bg-grey-5;
+
                       opacity: 1;
+
                       .day {
                         font-weight: 600;
+
                         @apply text-grey-80;
                       }
                     }
 
                     &:not(.current-month) {
                       @apply bg-grey-5;
+
                       opacity: 0.5;
+
                       .day {
                         font-weight: 600;
+
                         @apply text-grey-30;
                       }
                     }
@@ -154,7 +166,9 @@
                         0 0.25rem 0.625rem -0.25rem rgba(60, 138, 255, 0.5),
                         0 0.5rem 1rem -0.375rem rgba(114, 168, 247, 0.29);
                       opacity: 1;
+
                       @apply bg-primary-90;
+
                       .day {
                         @apply text-white-100;
                       }
@@ -168,10 +182,13 @@
                         0 0.25rem 0.625rem -0.25rem rgba(60, 138, 255, 0.5),
                         0 0.5rem 1rem -0.375rem rgba(114, 168, 247, 0.29);
                       opacity: 1;
+
                       @apply bg-primary-90;
+
                       .day {
                         @apply text-white-100;
                       }
+
                       .current-date-highlight {
                         @apply bg-white-100;
                       }
@@ -186,7 +203,9 @@
                         0 0.25rem 0.625rem -0.25rem rgba(60, 138, 255, 0.5),
                         0 0.5rem 1rem -0.375rem rgba(114, 168, 247, 0.29);
                       opacity: 1;
+
                       @apply bg-primary-90;
+
                       .day {
                         @apply text-white-100;
                       }
@@ -198,14 +217,17 @@
 
                     &:not(.within-selected-slot):not(.past):hover {
                       cursor: pointer;
+
                       @apply bg-white-100;
                     }
 
                     &:not(.within-selected-slot):not(.past):active {
                       @apply bg-primary-60;
+
                       .day {
                         @apply text-white-100;
                       }
+
                       .current-date-highlight {
                         @apply bg-white-100;
                       }
@@ -218,12 +240,15 @@
                       @apply bg-grey-20;
                     }
                   }
+
                   &.inside-selectable-slot.past {
                     opacity: 0.5;
+
                     @apply bg-grey-5;
 
                     .day {
                       font-weight: 400;
+
                       @apply text-grey-20;
                     }
                   }
@@ -234,6 +259,7 @@
                     width: 0.625rem;
                     height: 0.188rem;
                     border-radius: 0.125rem;
+
                     @apply bg-grey-60;
                   }
                 }

@@ -2,10 +2,8 @@
 @use '../applications/rollingStockEditor/styles.scss';
 @use '../applications/searchJourney/searchJourney';
 @use '../applications/stdcm/styles/stdcm';
-
 @use '../modules/modules.scss';
 @use '../common/common.scss';
-
 @use 'scss/fonts';
 @use 'scss/variables';
 @use 'scss/overrideBootstrapSNCF';
@@ -13,7 +11,6 @@
 @use 'scss/home';
 @use 'scss/common/common' as common2;
 @use 'scss/common/components';
-
 @use 'scss/applications/editor/editor';
 @use 'scss/applications/operationalStudies' as operationalStudies2;
 @use 'scss/_uiManchette.scss';

@@ -79,7 +79,9 @@
       flex: 1;
       display: flex;
       flex-wrap: wrap;
+
       --tag-gap: 4px;
+
       gap: var(--tag-gap);
       overflow: hidden;
       max-height: 48px; // 2 rows of 20px + gaps
@@ -165,6 +167,7 @@
         }
       }
     }
+
     .conflict-separator {
       position: absolute;
       left: 0;

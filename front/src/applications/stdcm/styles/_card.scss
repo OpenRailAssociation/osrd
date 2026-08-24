@@ -64,6 +64,7 @@
 
     .stdcm-via-icons {
       display: flex;
+
       button {
         font-size: 0.875rem;
         font-weight: 400;
@@ -94,6 +95,7 @@
     .location-line {
       display: flex;
       gap: 16px;
+
       .ci-input {
         width: 312px;
       }
@@ -115,6 +117,7 @@
       .error,
       .info {
         --field-wrapper-padding-bottom: 5px;
+
         .ui-status-message-wrapper-tooltip.tooltip-left {
           left: -4px;
         }
@@ -134,6 +137,7 @@
         .osrd-config-item {
           padding-right: 3px;
         }
+
         .weight {
           width: 119px;
         }

@@ -1,8 +1,10 @@
 @use './scenario';
+
 :root {
   --scenario-header-height: 32px;
   --board-vertical-gap: 16px;
 }
+
 .scenario-header-container {
   .scenario-header {
     position: relative;
@@ -110,6 +112,7 @@
 
         &:hover {
           cursor: pointer;
+
           .scenario-name-label,
           .chevron-btn {
             color: var(--black100);
@@ -174,6 +177,7 @@
               background-color: var(--ambientB5);
             }
           }
+
           // END HANDLE BOARD STATE
         }
       }

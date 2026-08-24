@@ -1,7 +1,9 @@
 .ui-combo-box {
   position: relative;
   width: 100%;
+
   @apply text-grey-80;
+
   font-size: 1rem;
 
   .suggestions-list {
@@ -13,7 +15,9 @@
     list-style: none;
     max-height: calc(2.5rem * var(--number-of-suggestions));
     overflow-y: auto;
+
     @apply bg-white-25;
+
     border-radius: 0.375rem;
     box-shadow:
       0px 6px 21px -5px rgba(24, 68, 239, 0.26),

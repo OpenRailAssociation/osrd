@@ -9,28 +9,35 @@
   transition: border-color 0.4s;
   height: 224px;
   z-index: 1;
+
   &:hover,
   &:focus,
   &:active {
     border-color: var(--coolgray11);
+
     .scenario-card-name {
       color: var(--coolgray3);
       background-color: var(--coolgray11);
     }
+
     button {
       opacity: 1 !important;
     }
   }
+
   &[aria-disabled='true'] {
     pointer-events: none;
     opacity: 0.5;
   }
+
   &.selected {
     border-color: var(--purple);
+
     .selected-mark {
       display: block;
     }
   }
+
   &.empty {
     display: flex;
     align-items: center;
@@ -40,6 +47,7 @@
     color: var(--coolgray5);
     cursor: pointer;
     background-color: transparent;
+
     &:hover,
     &:focus,
     &:active {
@@ -47,11 +55,13 @@
       background-color: var(--coolgray3);
       color: var(--coolgray7);
     }
+
     .legend {
       margin-top: 16px;
       font-size: 1.5rem;
     }
   }
+
   @media screen and (max-width: 1023px) {
     &.empty {
       flex-direction: row;
@@ -59,16 +69,19 @@
       gap: 16px;
       font-size: 2rem;
       min-height: 80px !important;
+
       .legend {
         margin: 0;
       }
     }
   }
+
   button {
     transition: opacity 0.4s;
     opacity: 0;
     margin-left: auto;
   }
+
   .selected-mark {
     display: none;
     position: absolute;
@@ -78,6 +91,7 @@
     top: -25.6px;
     left: -3.2px;
   }
+
   .scenario-card-name {
     display: flex;
     align-items: center;
@@ -86,6 +100,7 @@
     padding: 4px 4px 4px 8px;
     font-size: 1.1rem;
     transition: 0.4s;
+
     &-text {
       overflow: hidden;
       text-overflow: ellipsis;
@@ -100,6 +115,7 @@
     white-space: break-spaces;
     overflow-wrap: anywhere;
   }
+
   .scenario-card-tags {
     display: flex;
     align-items: center;
@@ -109,6 +125,7 @@
     height: 96px;
     overflow: auto;
     font-weight: 500;
+
     .scenario-card-tags-tag {
       font-size: 0.8rem;
       font-weight: 500;
@@ -122,23 +139,28 @@
       white-space: nowrap;
       text-overflow: ellipsis;
       cursor: pointer;
+
       &:hover {
         opacity: 0.65;
       }
     }
   }
+
   .scenario-card-footer {
     display: flex;
     align-items: center;
     justify-content: space-between;
+
     .scenario-card-infra {
       padding: 4px 8px;
       font-size: 0.8rem;
+
       img {
         height: 16px;
         margin-right: 8px;
       }
     }
+
     .scenario-card-trains-count,
     .scenario-card-date {
       display: flex;
@@ -150,6 +172,7 @@
       text-transform: uppercase;
       text-align: right;
       padding: 4px 8px;
+
       svg {
         margin-bottom: 2.4px;
         height: 8px;
