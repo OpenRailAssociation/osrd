@@ -35,7 +35,7 @@ import type { Train } from 'reducers/osrdconf/types';
 import { Duration, type StartTime } from 'utils/duration';
 import { usePrevious } from 'utils/hooks/state';
 import { kmhToMs } from 'utils/physics';
-import { isOccurrenceId } from 'utils/trainId';
+import { isOccurrenceId, isTrainScheduleId } from 'utils/trainId';
 import { createFixedSelectOptions, createStandardSelectOptions } from 'utils/uiCoreHelpers';
 
 import RollingStockField from './RollingStockField';
@@ -301,6 +301,19 @@ const ExpandedTrainForm = ({
   const onFieldImmediateChange = useCallback(
     (fieldName: keyof TrainFieldsState, newValue: TrainFieldsState[typeof fieldName]) => {
       const newFields = { ...fields, [fieldName]: newValue };
+
+      if (
+        fieldName === 'service_interval' &&
+        newFields.service_interval &&
+        isTrainScheduleId(train.id) &&
+        newFields.departure_date instanceof Duration &&
+        newFields.departure_date.ms >= newFields.service_interval
+      ) {
+        // TODO: display warning
+        newFields.departure_date = new Duration({
+          milliseconds: newFields.departure_date.ms % newFields.service_interval,
+        });
+      }
 
       persistTrainIfNeeded(newFields);
       setFields(newFields);
