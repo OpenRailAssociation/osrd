@@ -108,7 +108,7 @@ const propagateFromEditedPoint = (
       pathIndex: selectedTrain.path.findIndex((step) => step.id === item.at),
     }))
     .filter(({ item, pathIndex }) => {
-      if (item.arrival === null) return false;
+      if (!item.arrival) return false;
       return direction === 'fromDeparture'
         ? pathIndex > editedPathIndex
         : pathIndex >= editedPathIndex;
