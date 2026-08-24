@@ -1373,22 +1373,21 @@ pub mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn get_rolling_stock_by_name() {
-        // GIVEN
-        let app = test_app!().skip_authz().build();
+        let app = test_app!().build();
         let db_pool = app.db_pool();
-
-        let rs_name = "fast_rolling_stock_name";
-        let fast_rolling_stock = create_fast_rolling_stock(&mut db_pool.get_ok(), rs_name).await;
-
-        // WHEN
-        let raw_response = app
-            .get(format!("/rolling_stock/name/{rs_name}").as_str())
+        let rolling_stock = create_fast_rolling_stock(&mut db_pool.get_ok(), "rolling_stock").await;
+        let user = app
+            .user("user", "User")
+            .with_rolling_stock_grant(rolling_stock.id, RollingStockGrant::Reader)
+            .create()
             .await;
-
-        // THEN
-        let response: RollingStock = raw_response.assert_status_ok().json();
-
-        assert_eq!(response, fast_rolling_stock);
+        let response: RollingStock = app
+            .get(format!("/rolling_stock/name/{}", rolling_stock.name).as_str())
+            .by_user(user.as_ref())
+            .await
+            .assert_status_ok()
+            .json();
+        assert_eq!(response, rolling_stock);
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -1419,19 +1418,31 @@ pub mod tests {
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn get_unexisting_rolling_stock_by_id() {
-        let app = test_app!().skip_authz().build();
-
-        app.rolling_stock_get_by_id_request(0)
+    async fn get_nonexistent_rolling_stock_by_id() {
+        // Note: the endpoint currently returns 403 Forbidden over 404 Not Found (the opposite of
+        // what happens when retrieving a rolling stock by name). That was not a rational choice but
+        // a random behavior due to the way it is implemented.
+        let app = test_app!().build();
+        let admin = app
+            .user("admin", "Admin")
+            .with_roles([Role::Admin])
+            .create()
+            .await;
+        app.get(format!("/rolling_stock/{}", i64::MAX).as_str())
+            .by_user(admin.as_ref())
             .await
             .assert_status_not_found();
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn get_unexisting_rolling_stock_by_name() {
-        let app = test_app!().skip_authz().build();
-
-        app.get(format!("/rolling_stock/name/{}", "unexisting_rolling_stock_name").as_str())
+    async fn get_nonexistent_rolling_stock_by_name() {
+        // Note: the endpoint currently returns 404 Not Found over 403 Forbidden (the opposite of
+        // what happens when retrieving a rolling stock by id). That was not a rational choice but a
+        // random behavior due to the way it is implemented.
+        let app = test_app!().build();
+        let user = app.user("user", "User").create().await;
+        app.get(format!("/rolling_stock/name/{}", "nonexistent").as_str())
+            .by_user(user.as_ref())
             .await
             .assert_status_not_found();
     }
