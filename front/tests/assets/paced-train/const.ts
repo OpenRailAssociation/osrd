@@ -44,7 +44,8 @@ export const EDITED_PACED_TRAIN_NAME = 'Paced train edited';
 export const PACED_TRAIN_OCCURRENCE_COUNT = 2;
 
 export const DEFAULT_PACED_TRAIN_NAME = 'Default paced train';
-export const DEFAULT_PACED_TRAIN_SERVICE_WINDOW_HOURS = '2';
+// E2E scenarios use calendar timetables, where a new service spans a full day
+export const DEFAULT_PACED_TRAIN_SERVICE_WINDOW_HOURS = '24';
 export const DEFAULT_PACED_TRAIN_SERVICE_WINDOW_MINUTES = '00';
 export const DEFAULT_PACED_TRAIN_ROW_COUNT = 2;
 export const DEFAULT_MIDNIGHT_HOUR = '00:00:00';

@@ -34,7 +34,11 @@ import TypeAndPath from 'modules/pathfinding/components/Pathfinding/TypeAndPath'
 import reversePathSteps from 'modules/pathfinding/helpers/reversePathSteps';
 import usePathfindingV2 from 'modules/pathfinding/hooks/usePathfindingV2';
 import computeBasePathStep from 'modules/trainSchedule/helpers/computeBasePathStep';
-import { isPacedTrainWithDetails } from 'modules/trainSchedule/helpers/pacedTrain';
+import {
+  DEFAULT_PACED_TRAIN_INTERVAL,
+  getDefaultPacedTrainTimeWindow,
+  isPacedTrainWithDetails,
+} from 'modules/trainSchedule/helpers/pacedTrain';
 import type { TrainScheduleWithDetails } from 'modules/trainSchedule/types';
 import { useMapSettings, useMapSettingsActions } from 'reducers/commonMap';
 import type { PathStep, PathStepMetadata, PathStepV2 } from 'reducers/osrdconf/types';
@@ -122,8 +126,8 @@ function blankNewTrainState(
     usingSpeedLimits: true,
     stopsAtEndOfBlock: false,
     powerRestriction: [],
-    timeWindow: new Duration({ minutes: 120 }),
-    interval: new Duration({ minutes: 60 }),
+    timeWindow: getDefaultPacedTrainTimeWindow(timetableType),
+    interval: DEFAULT_PACED_TRAIN_INTERVAL,
     addedExceptions: [],
     // An hourly timetable only holds services, never unique trains
     editingTrainType: timetableType === 'HOURLY' ? 'pacedTrain' : 'uniqueTrain',
@@ -132,6 +136,7 @@ function blankNewTrainState(
 
 function setupStateWithTrainSchedule(
   trainSchedule: TrainScheduleWithDetails,
+  timetableType: TimetableType,
   isOccurrence?: boolean
 ): ItineraryModalTrainState {
   const state: ItineraryModalTrainState = {
@@ -154,8 +159,8 @@ function setupStateWithTrainSchedule(
     powerRestriction: trainSchedule.power_restrictions || [],
     constraintDistribution: trainSchedule.constraint_distribution || 'STANDARD',
     editingTrainType: 'uniqueTrain',
-    timeWindow: new Duration({ minutes: 120 }),
-    interval: new Duration({ minutes: 60 }),
+    timeWindow: getDefaultPacedTrainTimeWindow(timetableType),
+    interval: DEFAULT_PACED_TRAIN_INTERVAL,
     addedExceptions: [],
   };
 
@@ -212,7 +217,13 @@ const ItineraryModal = ({
     if (!wasInitialized) {
       if (trainScheduleToEditData) {
         const train = trainScheduleToEditData.trainSchedule;
-        setTrainState(setupStateWithTrainSchedule(train, !!trainScheduleToEditData.occurrenceId));
+        setTrainState(
+          setupStateWithTrainSchedule(
+            train,
+            scenario.timetable_type,
+            !!trainScheduleToEditData.occurrenceId
+          )
+        );
         setModalFormState({
           name: train.name,
           rollingStockName: train.rollingStockName,

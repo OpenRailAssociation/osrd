@@ -31,6 +31,10 @@ import useCategoryOptions, {
 } from 'modules/rollingStock/hooks/useCategoryOptions';
 import useFilterRollingStock from 'modules/rollingStock/hooks/useFilterRollingStock';
 import { parseStartTime } from 'modules/trainSchedule/helpers/formatTrainScheduleWithDetails';
+import {
+  DEFAULT_PACED_TRAIN_INTERVAL,
+  getDefaultPacedTrainTimeWindow,
+} from 'modules/trainSchedule/helpers/pacedTrain';
 import type { Train } from 'reducers/osrdconf/types';
 import { Duration, type StartTime } from 'utils/duration';
 import { usePrevious } from 'utils/hooks/state';
@@ -44,9 +48,6 @@ import TrainServiceForm, { computeServiceTimingError } from './TrainServiceForm'
 
 // TODO: Passing `undefined` to DatePicker's selectableSlot prop should mean this
 export const ANY_DATE_SLOT: CalendarSlot = { start: new Date(0), end: null };
-
-export const DEFAULT_SERVICE_INTERVAL = new Duration({ minutes: 60 });
-export const DEFAULT_SERVICE_TIME_WINDOW = new Duration({ minutes: 120 });
 
 export type ExpandedTrainFormProps = {
   train: Train;
@@ -124,7 +125,11 @@ function getFieldsFromTrain(
   };
 }
 
-function applyFieldsToPaced(fields: TrainFieldsState, train: Train): Train['paced'] {
+function applyFieldsToPaced(
+  fields: TrainFieldsState,
+  train: Train,
+  timetableType: TimetableType
+): Train['paced'] {
   if (fields.is_unique && !isOccurrenceId(train.id) && fields.service_changed_confirmed) {
     return undefined;
   }
@@ -132,8 +137,8 @@ function applyFieldsToPaced(fields: TrainFieldsState, train: Train): Train['pace
   if (!fields.is_unique && !train.paced) {
     return {
       exceptions: [],
-      interval: DEFAULT_SERVICE_INTERVAL.toISOString(),
-      time_window: DEFAULT_SERVICE_TIME_WINDOW.toISOString(),
+      interval: DEFAULT_PACED_TRAIN_INTERVAL.toISOString(),
+      time_window: getDefaultPacedTrainTimeWindow(timetableType).toISOString(),
     };
   }
 
@@ -152,7 +157,11 @@ function applyFieldsToPaced(fields: TrainFieldsState, train: Train): Train['pace
     : undefined;
 }
 
-function applyFieldsToTrain(fields: TrainFieldsState, train: Train): Train {
+function applyFieldsToTrain(
+  fields: TrainFieldsState,
+  train: Train,
+  timetableType: TimetableType
+): Train {
   const rollingStock = typeof fields.rolling_stock === 'object' ? fields.rolling_stock : undefined;
   const customRollingStock = typeof fields.rolling_stock === 'string' ? fields.rolling_stock : '';
 
@@ -169,7 +178,7 @@ function applyFieldsToTrain(fields: TrainFieldsState, train: Train): Train {
     comfort: fields.comfort === null ? undefined : fields.comfort,
     category: fields.category === null ? suggestedCategory : fields.category,
     labels: fields.labels,
-    paced: applyFieldsToPaced(fields, train),
+    paced: applyFieldsToPaced(fields, train, timetableType),
     rolling_stock_name: rollingStock ? rollingStock.name : customRollingStock,
     options: {
       ...train.options,
@@ -276,13 +285,13 @@ const ExpandedTrainForm = ({
 
   const persistTrainIfNeeded = useCallback(
     (newFields: TrainFieldsState) => {
-      const updatedTrain = applyFieldsToTrain(newFields, train);
+      const updatedTrain = applyFieldsToTrain(newFields, train, timetableType);
 
       if (trainPayloadChanged(updatedTrain, train)) {
         onPersistTrain(updatedTrain);
       }
     },
-    [train, onPersistTrain]
+    [train, onPersistTrain, timetableType]
   );
 
   const onFieldChange = useCallback(
