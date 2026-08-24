@@ -370,7 +370,6 @@
       "mandatoryField": "Pflichtfeld",
       "nameLengthLimit": "Der Name darf 128 Zeichen nicht überschreiten.",
       "noDelta": "Die Zugfolgezeit muss mindestens eine Minute betragen.",
-      "noDepartureTime": "Bitte geben Sie eine Abfahrtszeit ein.",
       "noDestination": "Das Ziel ist nicht definiert.",
       "noName": "Bitte wählen Sie einen Namen für den Zug.",
       "noOrigin": "Der Startpunkt ist nicht definiert.",

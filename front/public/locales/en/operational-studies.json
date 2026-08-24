@@ -371,7 +371,6 @@
       "mandatoryField": "Required field",
       "nameLengthLimit": "The name must not exceed 128 characters",
       "noDelta": "The headway between two trains has to be at least one minute.",
-      "noDepartureTime": "Please enter a departure time",
       "noDestination": "The destination is not defined",
       "noName": "Please choose a name for the train",
       "noOrigin": "The origin is not defined",
