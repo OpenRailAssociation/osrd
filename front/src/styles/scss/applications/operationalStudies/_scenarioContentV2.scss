@@ -7,6 +7,7 @@
     display: flex;
     flex: 1;
     min-height: 0;
+
     .right-column,
     .left-column {
       width: 488px;
@@ -20,6 +21,7 @@
         min-width: 424px;
       }
     }
+
     @media screen and (max-width: 1920px) {
       .right-column,
       .left-column {
@@ -27,6 +29,7 @@
         min-width: 392px;
       }
     }
+
     @media screen and (max-width: 1249px) {
       .right-column,
       .left-column {

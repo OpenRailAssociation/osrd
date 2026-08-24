@@ -4,15 +4,19 @@
   0% {
     transform: translateX(0);
   }
+
   25% {
     transform: translateX(5px);
   }
+
   50% {
     transform: translateX(-5px);
   }
+
   75% {
     transform: translateX(5px);
   }
+
   100% {
     transform: translateX(0);
   }
@@ -33,6 +37,7 @@
   margin: 16px;
   width: 100%;
   height: calc(100vh - 16px);
+
   // The next 2 styles overrides the default max-width and max-height in browsers of the <dialog> element
   max-width: calc(100% - 32px);
   max-height: calc(100vh - 32px);
@@ -123,6 +128,7 @@
           label {
             margin-bottom: 0;
           }
+
           .ui-status-message-wrapper-tooltip {
             width: 100%;
             left: 1px;
@@ -224,6 +230,7 @@
             display: block !important;
           }
         }
+
         .itinerary-icons {
           display: flex;
           justify-content: space-between;
@@ -297,7 +304,6 @@
               --path-step-type-width
             );
           gap: 8px;
-
           font-size: 0.875rem;
           color: var(--grey30);
           padding-block: 9px 1px;
@@ -311,11 +317,13 @@
             margin-left: 1px;
           }
         }
+
         .path-step-wrapper.is-placeholder {
           .invalid-step-message {
             display: none;
           }
         }
+
         // this wrapper is being used to display the "adding location on map" style
         .path-step-wrapper {
           padding-inline: var(--path-step-wrapper-padding-left)
@@ -462,9 +470,11 @@
               &.invalid {
                 background-color: var(--grey50);
               }
+
               &.is-only-step {
                 pointer-events: none;
               }
+
               &.is-trailing-placeholder {
                 pointer-events: none;
               }

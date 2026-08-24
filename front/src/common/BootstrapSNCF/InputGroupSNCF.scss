@@ -4,22 +4,27 @@
     font-size: 0.875rem;
     padding: 2px 24px;
   }
+
   .form-control-container {
     height: 30px;
+
     input.form-control {
       min-height: auto;
       font-size: 0.875rem;
     }
   }
+
   z-index: auto !important;
 
   .dropdown .dropdown-menu[x-placement='bottom-end'] {
     top: 36.8px !important;
   }
+
   .osrd-dropdown-sncf {
     right: 0 !important;
   }
 }
+
 .dropdown-item {
   cursor: pointer;
 }

@@ -2,6 +2,7 @@
   max-height: calc(100vh - 56px);
   display: flex;
   flex-direction: column;
+
   .modal-body {
     overflow-y: auto;
   }
@@ -15,6 +16,7 @@
     height: 100%;
     margin-bottom: 16px;
     padding-right: 16px;
+
     img {
       display: flex;
       align-items: center;
@@ -25,10 +27,12 @@
       height: 100%;
       object-fit: cover;
       transition: opacity 0.2s;
+
       &:hover {
         opacity: 0.75;
       }
     }
+
     .project-edition-modal-picture-placeholder {
       position: relative;
       font-size: 5rem;
@@ -38,6 +42,7 @@
       width: 100%;
       height: 100%;
       transition: 0.2s;
+
       button {
         display: flex;
         justify-content: center;
@@ -49,6 +54,7 @@
         border-radius: 4px;
         padding: 4px;
         transition: 0.2s;
+
         &.remove {
           position: absolute;
           z-index: 1;
@@ -79,40 +85,48 @@
         width: 100%;
         height: 100%;
         cursor: pointer;
+
         .project-edition-modal-picture-placeholder-text {
           font-weight: 500;
           font-size: 1rem;
           color: var(--coolgray9);
         }
       }
+
       &:hover {
         background-color: var(--coolgray3);
         color: var(--coolgray9);
       }
     }
+
     @media (max-width: 767px) {
       position: relative;
       min-height: 15vh;
       padding-right: 0;
     }
   }
+
   .project-edition-modal-title {
     display: flex;
     align-items: center;
     gap: 16px;
     width: 100%;
+
     img {
       height: 32px;
     }
   }
+
   .project-edition-modal-name {
     height: 96px;
   }
+
   .project-edition-modal-description {
     textarea {
       min-height: auto;
     }
   }
+
   .project-edition-modal-objectives {
     textarea {
       height: 17vh;
@@ -121,8 +135,10 @@
       font-family: monospace;
     }
   }
+
   .project-edition-modal-objectives-md {
     height: 100%;
+
     .project-edition-modal-objectives-md-render {
       overflow: auto;
       height: 17vh;

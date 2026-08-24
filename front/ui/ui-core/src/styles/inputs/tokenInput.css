@@ -4,6 +4,7 @@
     letter-spacing: 0;
     text-align: left;
     line-height: 24px;
+
     @apply text-grey-80 font-sans font-semibold;
   }
 
@@ -16,6 +17,7 @@
     box-shadow:
       0 1px 3px inset var(--color-black-50),
       0 0 0 1px inset var(--color-grey-40);
+
     @apply bg-black-1;
 
     .token-item-wrapper {
@@ -36,11 +38,13 @@
         text-align: left;
         line-height: 20px;
         user-select: none;
+
         @apply text-black-100;
       }
 
       .token-close-btn {
         margin: 4px 4px 4px 0;
+
         @apply text-black-25;
       }
 
@@ -61,6 +65,7 @@
 
       &:active {
         box-shadow: 0 0 0 1px rgb(32, 30, 222) inset;
+
         @apply text-white-50;
 
         .token-close-btn {
@@ -74,6 +79,7 @@
       margin: 4px;
       min-width: 100px;
       flex: 1;
+
       @apply bg-transparent;
     }
   }
@@ -88,8 +94,10 @@
       min-height: 27px;
       padding: 3px;
       gap: 4px;
+
       .token-item-wrapper {
         margin: 0;
+
         .token-label {
           margin: 0 5.5px 2px 6px;
           font-size: 12px;

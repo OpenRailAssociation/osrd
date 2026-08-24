@@ -35,6 +35,7 @@
       align-items: center;
       min-width: 450px;
       width: 450px;
+
       .osrd-config-item-container {
         .col-3,
         .col-6 {
@@ -68,6 +69,7 @@
       align-self: end;
       overflow: hidden;
       padding-bottom: 12px;
+
       img {
         object-fit: cover;
         object-position: left;
@@ -107,10 +109,12 @@
       0% {
         opacity: 0;
         height: 0;
+
         // To make the new block poping from above the clicked button
         transform: translateY(-45px);
         margin-bottom: -30px; // To make the button clicked bounce top
       }
+
       100% {
         opacity: 1;
         height: 296px; // height of add OP button + intermedita OP card
@@ -181,6 +185,7 @@
         &:not(:last-child) {
           margin-bottom: 18px;
         }
+
         button {
           border-radius: 5px;
           border: 0.5px solid rgba(121, 118, 113, 1);
@@ -252,9 +257,11 @@
     .banner-content {
       padding: 0 0 16px 378px;
       background: linear-gradient(180deg, rgba(239, 243, 245) 40px, rgba(233, 239, 242) 40px);
+
       &:has(.pathfinding-status) {
         padding: 0;
       }
+
       .status {
         width: 466px;
         display: flex;
@@ -312,6 +319,7 @@
           0 0 0 4px rgba(255, 255, 255, 1) inset,
           0 0 0 5px rgb(112, 193, 229) inset,
           0 3px 7px -3px rgba(28, 28, 217, 0.4);
+
         &-success {
           color: var(--success60);
           background-color: var(--success5);
@@ -326,13 +334,16 @@
           animation: pathfinding-success 2.7s;
         }
       }
+
       @keyframes pathfinding-success {
         0% {
           opacity: 1;
         }
+
         74% {
           opacity: 1;
         }
+
         100% {
           opacity: 0;
         }

@@ -1,8 +1,10 @@
 @use './scenario';
+
 :root {
   --scenario-header-height: 32px;
   --board-vertical-gap: 16px;
 }
+
 .scenario-header-container {
   font-family: 'IBM Plex Sans', sans-serif;
 
@@ -119,6 +121,7 @@
 
         &:hover {
           cursor: pointer;
+
           .scenario-name-label,
           .chevron-btn {
             color: var(--black100);
@@ -183,6 +186,7 @@
               background-color: var(--ambientB5);
             }
           }
+
           // END HANDLE BOARD STATE
         }
       }

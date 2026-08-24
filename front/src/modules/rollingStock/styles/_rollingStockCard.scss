@@ -9,10 +9,12 @@
   &.solid {
     opacity: 1 !important;
   }
+
   &.inactive:not(:hover) {
     transition: 0.5s;
     opacity: 0.5;
   }
+
   &:hover:not(.active) {
     .rollingstock-card-header,
     .rollingstock-card-body,
@@ -22,8 +24,10 @@
       border-color: #333;
     }
   }
+
   &.active {
     cursor: default;
+
     .rollingstock-card-header,
     .rollingstock-card-body,
     .rollingstock-footer {
@@ -35,6 +39,7 @@
     padding: 0 8px;
     border-left: 2px solid var(--coolgray3);
     border-right: 2px solid var(--coolgray3);
+
     &.opened-rollingstock-card-body {
       border-left: 2px solid var(--blue);
       border-right: 2px solid var(--blue);
@@ -42,6 +47,7 @@
 
     .rollingstock-body-img {
       overflow: hidden;
+
       img {
         max-width: 100%;
         height: 32px;
@@ -58,18 +64,23 @@
     border-left: 2px solid var(--coolgray3);
     border-right: 2px solid var(--coolgray3);
     border-bottom: 2px solid var(--coolgray3);
+
     .rollingstock-footer-specs {
       padding: 8px 8px 4px;
+
       svg {
         vertical-align: text-top;
         font-size: 0.9rem;
         margin-right: 3px;
       }
+
       small {
         font-size: 80%;
       }
+
       font-size: 0.8rem;
     }
+
     .rollingstock-footer-buttons {
       display: flex;
       align-items: center;
@@ -79,9 +90,11 @@
       border-radius: 0 0 4px 4px;
       color: var(--light);
       background-color: var(--coolgray3);
+
       .rollingstock-footer-button-with-picto {
         display: flex;
         align-items: center;
+
         span {
           display: flex;
           padding: 0 4px 1.6px 0;
@@ -100,16 +113,19 @@
   border-left: 2px solid var(--coolgray3);
   border-right: 2px solid var(--coolgray3);
   cursor: pointer;
+
   .rollingstock-title {
     white-space: nowrap;
     height: 24px;
     overflow: hidden;
+
     .rollingstock-info {
       display: flex;
       align-items: center;
       height: 24px;
       justify-content: space-between;
       min-width: 0;
+
       .rollingstock-info-begin {
         height: 24px;
         display: flex;
@@ -124,17 +140,21 @@
           text-overflow: ellipsis;
           white-space: nowrap;
         }
+
         .rollingstock-info-unit {
           &.UM2 {
             color: #6e1e78;
           }
+
           &.UM3 {
             color: #a1006b;
           }
+
           font-weight: bold;
           margin-left: 4px;
           font-size: 0.7rem;
         }
+
         .rollingstock-info-subseries {
           margin-left: 4px;
           text-transform: uppercase;
@@ -144,6 +164,7 @@
           white-space: nowrap;
         }
       }
+
       .rollingstock-info-middle {
         white-space: nowrap;
         text-overflow: ellipsis;
@@ -154,6 +175,7 @@
         font-size: 0.6rem;
         line-height: 9.6px;
       }
+
       .rollingstock-info-end {
         display: flex;
         align-items: center;
@@ -174,6 +196,7 @@
   border-right: 2px solid var(--coolgray3);
   font-size: 0.8rem;
   font-weight: lighter;
+
   .rollingstock-detail-container-img {
     position: absolute;
     z-index: 0;
@@ -184,6 +207,7 @@
     opacity: 0.35;
     padding-top: 16px; // Need padding...because
     padding-bottom: 16px;
+
     .rollingstock-detail-img {
       display: flex;
       align-items: baseline;
@@ -191,6 +215,7 @@
       white-space: nowrap;
       transform: scale(1.5); // Have to scale whole <img> because electric trains with pantograph have taller pictures
       transform-origin: left;
+
       img {
         max-height: 64px;
         display: inline-block;
@@ -199,6 +224,7 @@
       }
     }
   }
+
   .loader {
     margin: 0;
     padding: 32px 0;

@@ -11,6 +11,7 @@
     border-radius: 5px 5px 0 0;
     height: 136px;
     width: 100%;
+
     .extra-column {
       width: 64px;
 
@@ -20,6 +21,7 @@
           background-color: var(--coolgray1) !important;
         }
       }
+
       &.isWarning {
         input {
           outline: solid 2px var(--yellow);
@@ -39,19 +41,24 @@
     border-radius: 5px;
     justify-content: space-between;
     overflow: hidden;
+
     &-name {
       flex: 1;
       overflow: hidden;
       text-overflow: ellipsis;
     }
+
     &.with-extra-column {
       flex: 1;
     }
+
     &.selected {
       box-shadow: inset 0 0 0 2px var(--blue);
     }
+
     &.hovered {
       box-shadow: inset 0 0 0 2px #30338380;
+
       .selector-trash-icon {
         color: var(--red);
         visibility: visible;
@@ -61,6 +68,7 @@
         border-radius: 0 5px 5px 0;
         text-align: center;
         padding-top: 1.6px;
+
         &:hover {
           color: var(--white);
           background-color: var(--red);
@@ -71,6 +79,7 @@
 
   &-itemslist-wrapper::after {
     --size: 30px;
+
     content: '';
     position: absolute;
     display: block;
@@ -111,6 +120,7 @@
     width: 100%;
     text-align: center;
     font-size: x-large;
+
     &.disabled {
       background-color: var(--coolgray1);
       color: var(--coolgray3);

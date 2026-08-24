@@ -7,6 +7,7 @@
   &.cached {
     color: var(--success30);
   }
+
   &.loading {
     color: var(--info60);
   }
@@ -28,6 +29,7 @@
     animation: dot-flashing 0.5s infinite linear alternate;
     animation-delay: 0.25s;
   }
+
   .infra-loader:nth-child(3) {
     animation: dot-flashing 0.5s infinite linear alternate;
     animation-delay: 0.5s;
@@ -37,6 +39,7 @@
     0% {
       color: var(--info60);
     }
+
     50%,
     100% {
       color: var(--info30);
