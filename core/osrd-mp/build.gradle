@@ -38,3 +38,4 @@ dependencies {
 // https://slack-chats.kotlinlang.org/t/16066381/after-modularizing-a-project-using-a-ksp-processor-i-get-the#765bfaa9-c0df-4a39-ae43-d0132561f5b7
 tasks.named('compileKotlinJvm') { dependsOn('kspCommonMainKotlinMetadata') }
 tasks.named('compileKotlinLinuxX64') { dependsOn('kspCommonMainKotlinMetadata') }
+tasks.withType(com.google.devtools.ksp.gradle.KspAATask).configureEach { if (name != 'kspCommonMainKotlinMetadata') dependsOn('kspCommonMainKotlinMetadata') }
