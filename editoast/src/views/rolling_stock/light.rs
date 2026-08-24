@@ -353,8 +353,17 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn list_light_rolling_stock() {
-        let app = test_app!().skip_authz().build();
-        app.get("/light_rolling_stock").await.assert_status_ok();
+        // TODO update this test:
+        // - Create and persist rolling stocks in the DB.
+        // - Give the user retricted reading rights on some of them
+        // - Assert that the list of returned rolling stocks matches the light representation of the
+        //   authorized rolling stocks for the user.
+        let app = test_app!().build();
+        let user = app.user("user", "User").create().await;
+        app.get("/light_rolling_stock")
+            .by_user(user.as_ref())
+            .await
+            .assert_status_ok();
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -414,89 +423,98 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn get_light_rolling_stock() {
-        // GIVEN
         let app = test_app!().build();
         let db_pool = app.db_pool();
+        let rolling_stock = create_fast_rolling_stock(&mut db_pool.get_ok(), "rolling_stock").await;
 
-        let rs_name = "fast_rolling_stock_name";
-        let fast_rolling_stock = create_fast_rolling_stock(&mut db_pool.get_ok(), rs_name).await;
-
-        // a user with a read grant on the rolling stock
-        let user = app
+        let user_restricted_reader = app
             .user("authorized", "Authorized")
-            .with_rolling_stock_grant(fast_rolling_stock.id, authz::RollingStockGrant::Reader)
+            .with_rolling_stock_grant(rolling_stock.id, authz::RollingStockGrant::Reader)
             .create()
             .await;
 
-        // WHEN
         let response: LightRollingStockWithLiveries = app
-            .get(format!("/light_rolling_stock/{}", fast_rolling_stock.id).as_str())
-            .by_user(&user.info)
+            .get(format!("/light_rolling_stock/{}", rolling_stock.id).as_str())
+            .by_user(user_restricted_reader.as_ref())
             .await
             .assert_status_ok()
             .json();
 
-        // THEN
-        assert_eq!(response.rolling_stock.id, fast_rolling_stock.id);
+        assert_eq!(response.rolling_stock.id, rolling_stock.id);
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn get_light_rolling_stock_by_name() {
-        // GIVEN
         let app = test_app!().build();
         let db_pool = app.db_pool();
+        let rolling_stock = create_fast_rolling_stock(&mut db_pool.get_ok(), "rolling_stock").await;
 
-        let rs_name = "fast_rolling_stock_name";
-        let fast_rolling_stock = create_fast_rolling_stock(&mut db_pool.get_ok(), rs_name).await;
-
-        // a user with a read grant on the rolling stock
         let user = app
             .user("authorized", "Authorized")
-            .with_rolling_stock_grant(fast_rolling_stock.id, authz::RollingStockGrant::Reader)
+            .with_rolling_stock_grant(rolling_stock.id, authz::RollingStockGrant::Reader)
             .create()
             .await;
 
-        // WHEN
         let response: LightRollingStockWithLiveries = app
-            .get(format!("/light_rolling_stock/name/{rs_name}").as_str())
+            .get(format!("/light_rolling_stock/name/{}", rolling_stock.name).as_str())
             .by_user(&user.info)
             .await
             .assert_status_ok()
             .json();
 
-        // THEN
-        assert_eq!(response.rolling_stock.id, fast_rolling_stock.id);
-        assert_eq!(response.rolling_stock.name, fast_rolling_stock.name);
+        assert_eq!(response.rolling_stock.id, rolling_stock.id);
+        assert_eq!(response.rolling_stock.name, rolling_stock.name);
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn get_unexisting_light_rolling_stock() {
-        let app = test_app!().skip_authz().build();
-
-        app.get(format!("/light_rolling_stock/{}", -1).as_str())
+    async fn get_nonexistent_light_rolling_stock_by_id() {
+        // Note: the endpoint currently returns 403 Forbidden over 404 Not Found. This is not by
+        // design but a random behavior due to the way it is implemented.
+        let app = test_app!().build();
+        let admin = app
+            .user("admin", "Admin")
+            .with_roles([Role::Admin])
+            .create()
+            .await;
+        app.get(format!("/light_rolling_stock/{}", i64::MAX).as_str())
+            .by_user(admin.as_ref())
             .await
             .assert_status_not_found();
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn get_light_rolling_stock_without_permission() {
+    async fn get_nonexistent_light_rolling_stock_by_name() {
+        // Note: the endpoint currently returns 404 Not Found over 403 Forbidden. This is not by
+        // design but a random behavior due to the way it is implemented.
+        let app = test_app!().build();
+        let user = app.user("admin", "Admin").create().await;
+        app.get(format!("/light_rolling_stock/name/{}", "nonexistent_rolling_stock").as_str())
+            .by_user(user.as_ref())
+            .await
+            .assert_status_not_found();
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn get_light_rolling_stock_requires_reader_grant() {
         let app = test_app!().build();
         let db_pool = app.db_pool();
+        let rolling_stock = create_fast_rolling_stock(&mut db_pool.get_ok(), "rolling_stock").await;
 
-        let fast_rolling_stock =
-            create_fast_rolling_stock(&mut db_pool.get_ok(), "fast_rolling_stock_name").await;
-
-        // a user that has the role to reach the endpoint but no read grant on the rolling stock
-        let user = app
-            .user("unauthorized", "Unauthorized")
-            .with_roles([authz::Role::OperationalStudies])
+        let user_no_grant = app.user("alice", "Alice").create().await;
+        let user_reader = app
+            .user("bob", "Bob")
+            .with_rolling_stock_grant(rolling_stock.id, RollingStockGrant::Reader)
             .create()
             .await;
 
-        app.get(format!("/light_rolling_stock/{}", fast_rolling_stock.id).as_str())
-            .by_user(&user.info)
+        app.get(format!("/light_rolling_stock/{}", rolling_stock.id).as_str())
+            .by_user(&user_no_grant.info)
             .await
             .assert_status_forbidden();
+        app.get(format!("/light_rolling_stock/{}", rolling_stock.id).as_str())
+            .by_user(&user_reader.info)
+            .await
+            .assert_status_ok();
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
