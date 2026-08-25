@@ -1,7 +1,6 @@
 .notifications {
   position: fixed;
-  bottom: 1em;
-  right: 1em;
+  inset: auto 1em 1em auto;
   z-index: 3000;
 
   .toast {
