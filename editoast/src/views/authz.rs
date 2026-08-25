@@ -38,6 +38,7 @@ use serde::Serialize;
 use strum::Display;
 #[cfg(test)]
 use strum::EnumIter;
+use strum::IntoEnumIterator;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
 
@@ -596,7 +597,7 @@ pub(in crate::views) async fn resource_granted_users(
     let openfga = &openfga;
     let authorizer = authn_state.authorizer(openfga);
     // Ask OpenFGA about grants on the resource
-    let ((readers, writers), owners) = match resource_type {
+    let mut grants = match resource_type {
         ResourceType::Infra => {
             let infra = authz::Infra(resource_id);
             Infra::exists_or_fail(&mut conn, resource_id, || AuthzError::UnknownResource {
@@ -605,9 +606,12 @@ pub(in crate::views) async fn resource_granted_users(
             .await?;
             authorizer
                 .authorize(
-                    authz::v2::infra_granted_subjects(infra, InfraGrant::Reader)
-                        .zip(authz::v2::infra_granted_subjects(infra, InfraGrant::Writer))
-                        .zip(authz::v2::infra_granted_subjects(infra, InfraGrant::Owner)),
+                    InfraGrant::iter()
+                        .map(|grant| {
+                            authz::v2::infra_granted_subjects(infra, grant)
+                                .map(async move |p| (p, StandardGrant::from(grant)))
+                        })
+                        .collect(),
                 )
                 .await?
                 .access()
@@ -622,18 +626,12 @@ pub(in crate::views) async fn resource_granted_users(
             .await?;
             authorizer
                 .authorize(
-                    authz::v2::rolling_stock_granted_subjects(
-                        rolling_stock,
-                        RollingStockGrant::Reader,
-                    )
-                    .zip(authz::v2::rolling_stock_granted_subjects(
-                        rolling_stock,
-                        RollingStockGrant::Writer,
-                    ))
-                    .zip(authz::v2::rolling_stock_granted_subjects(
-                        rolling_stock,
-                        RollingStockGrant::Owner,
-                    )),
+                    RollingStockGrant::iter()
+                        .map(|grant| {
+                            authz::v2::rolling_stock_granted_subjects(rolling_stock, grant)
+                                .map(async move |p| (p, StandardGrant::from(grant)))
+                        })
+                        .collect(),
                 )
                 .await?
                 .access()
@@ -646,16 +644,17 @@ pub(in crate::views) async fn resource_granted_users(
     // if a user inherits a grant from one of its groups and also has a direct grant.
     // Implicit grants are not the same thing as privileges: they are not the same object,
     // are not represented by the same enum, do no work on the same scale or in the same way.
-    // The deduplication happens in the map collection below, but the order of the chaining
-    // is important to ensure the higher grant is kept in case of duplicates (last item wins).
-    let mut subjects_grant = readers
+    // The deduplication happens in the map collection below, but the sorting is important to
+    // ensure the higher grant is kept in case of duplicates (last item wins).
+    grants.sort_by_key(|(_, grant)| *grant);
+
+    let mut subjects_grant = grants
         .into_iter()
-        .map(|s| (s, InfraGrant::Reader))
-        .chain(writers.into_iter().map(|s| (s, InfraGrant::Writer)))
-        .chain(owners.into_iter().map(|s| (s, InfraGrant::Owner)))
-        .map(|(subject, grant)| match subject {
-            authz::Subject::User(authz::User(id)) => (id, grant),
-            authz::Subject::Group(authz::Group(id)) => (id, grant),
+        .flat_map(|(subjects, grant)| {
+            subjects.into_iter().map(move |subject| match subject {
+                authz::Subject::User(authz::User(id)) => (id, grant),
+                authz::Subject::Group(authz::Group(id)) => (id, grant),
+            })
         })
         .collect::<HashMap<_, _>>();
 
@@ -713,8 +712,7 @@ pub(in crate::views) async fn resource_granted_users(
             };
             let grant = subjects_grant
                 .remove(&id)
-                .expect("subjects_id is a subset of subjects_grant keys by construction")
-                .into();
+                .expect("subjects_id is a subset of subjects_grant keys by construction");
             Some(SubjectGrant {
                 id,
                 name,
