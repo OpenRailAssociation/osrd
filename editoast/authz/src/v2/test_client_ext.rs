@@ -108,7 +108,8 @@ pub trait TestClientExt {
     async fn project_set_grant(&self, subject: Subject, project: Project) -> ();
     async fn project_privileges(&self, user: User, project: Project) -> HashSet<ProjectPrivilege>;
     async fn project_list(&self, user: User) -> ResourcesList<Project>;
-    async fn project_granted_subjects(&self, project: Project) -> Vec<Subject>;
+    async fn project_granted_subjects(&self, project: Project, grant: ProjectGrant)
+    -> Vec<Subject>;
     async fn rolling_stock_list(
         &self,
         user: User,
@@ -358,10 +359,13 @@ impl TestClientExt for fga::Client {
         authorize.access_value(project_list(user)).await.unwrap()
     }
 
-    // As thre is only the `ProjectGrant::Owner` grant available, it returns all the project's owners
-    async fn project_granted_subjects(&self, project: Project) -> Vec<Subject> {
+    async fn project_granted_subjects(
+        &self,
+        project: Project,
+        grant: ProjectGrant,
+    ) -> Vec<Subject> {
         special_authorizers::Authorize(self)
-            .access_value(project_granted_subjects(project))
+            .access_value(project_granted_subjects(project, grant))
             .await
             .unwrap()
     }

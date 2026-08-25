@@ -179,30 +179,38 @@ pub fn project_list(user: User) -> Protected<ResourcesList<Project>> {
 }
 
 /// Return an operation that checks the list of subjects which have the owner grant on a project.
-pub fn project_granted_subjects(project: Project) -> Protected<Vec<Subject>> {
-    fn get_granted_users(project: Project) -> Protected<Vec<User>> {
+pub fn project_granted_subjects(project: Project, grant: ProjectGrant) -> Protected<Vec<Subject>> {
+    fn get_granted_users(project: Project, grant: ProjectGrant) -> Protected<Vec<User>> {
         Protected::new(move |openfga| {
             async move {
-                openfga
-                    .list_users(Project::owner().query_users(&project))
-                    .await
-                    .map(|UserList { users, .. }| users)
+                match grant {
+                    ProjectGrant::Owner => openfga
+                        .list_users(Project::owner().query_users(&project))
+                        .await
+                        .map(|UserList { users, .. }| users),
+                }
             }
             .boxed()
         })
     }
-    fn get_granted_groups(project: Project) -> Protected<Vec<Group>> {
+    fn get_granted_groups(project: Project, grant: ProjectGrant) -> Protected<Vec<Group>> {
         Protected::new(move |openfga| {
             async move {
-                openfga
-                    .list_usersets(Project::owner().query_usersets(Group::member(), &project))
-                    .await
+                match grant {
+                    ProjectGrant::Owner => {
+                        openfga
+                            .list_usersets(
+                                Project::owner().query_usersets(Group::member(), &project),
+                            )
+                            .await
+                    }
+                }
             }
             .boxed()
         })
     }
-    get_granted_users(project)
-        .zip(get_granted_groups(project))
+    get_granted_users(project, grant)
+        .zip(get_granted_groups(project, grant))
         .map(async move |(users, groups)| {
             users
                 .into_iter()
@@ -682,7 +690,9 @@ mod tests {
             .await;
 
         let mut expected = vec![Subject::user(1), Subject::user(2), Subject::user(3)];
-        let mut response = openfga.project_granted_subjects(Project(1)).await;
+        let mut response = openfga
+            .project_granted_subjects(Project(1), ProjectGrant::Owner)
+            .await;
         expected.sort();
         response.sort();
 
@@ -703,7 +713,9 @@ mod tests {
             .unwrap();
 
         let mut expected = vec![Subject::user(1), Subject::user(2), Subject::group(1)];
-        let mut response = openfga.project_granted_subjects(Project(1)).await;
+        let mut response = openfga
+            .project_granted_subjects(Project(1), ProjectGrant::Owner)
+            .await;
         expected.sort();
         response.sort();
 
@@ -738,7 +750,7 @@ mod tests {
         &[]
     )]
     #[case::project_granted_subjects(
-        project_granted_subjects(Project(1)).checks,
+        project_granted_subjects(Project(1), ProjectGrant::Owner).checks,
         &[
             Check::HasProjectPrivilege(Actor::Issuer, ProjectPrivilege::HasAccess, Project(1))
         ]
