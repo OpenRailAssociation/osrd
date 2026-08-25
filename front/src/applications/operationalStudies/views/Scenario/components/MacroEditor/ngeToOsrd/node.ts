@@ -70,6 +70,7 @@ export const handleNodeOperation = async ({
               MacroEditorState.decodeDomesticReference(domesticReference);
             const { main_code } = decodedDomesticReference;
             let { secondary_code, country_code } = decodedDomesticReference;
+            // TODO: be permissive here? allow typing "MES", "MES/BV", "MES/BV#FR" or "MES#FR"
             if (!secondary_code || country_code === '??') {
               const fetched = await fetchStationSecondaryCodeCountryCode(
                 decodedDomesticReference,
@@ -90,7 +91,7 @@ export const handleNodeOperation = async ({
           await updateMacroNode(state, dispatch, {
             ...indexNode,
             ...castNgeNode(node, netzgrafikDto.labels),
-            trigram: domesticReference,
+            trigram: node.betriebspunktName, // keep what the user typed
             dbId: indexNode.dbId,
             path_item_key: nodeKey,
           });

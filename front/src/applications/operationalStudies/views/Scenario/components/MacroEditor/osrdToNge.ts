@@ -317,7 +317,7 @@ export const loadAndIndexNge = async (
             pathItem.location.type === 'operational_point_part_reference' &&
             pathItem.location.operational_point.type === 'domestic'
               ? pathItem.location.operational_point.main_code
-              : null,
+              : null, // TODO: do something for the uic trigrams?
           labels: [],
           // we put the nodes on a grid
           position_x: (nbNodesIndexed % 8) * 200,
