@@ -1,4 +1,7 @@
+use authz::ProjectPrivilege;
 use authz::Role;
+use authz::v2::project_privilege_check;
+use axum::Extension;
 use axum::extract::Json;
 use axum::extract::Path;
 use axum::extract::Query;
@@ -21,8 +24,12 @@ use utoipa::ToSchema;
 use super::OperationalStudiesOrderingParam;
 use super::project::ProjectError;
 use super::study::StudyError;
+use crate::AppState;
+use crate::authentication;
 use crate::error::InternalError;
 use crate::error::Result;
+use crate::views::AuthorizationError;
+use crate::views::operational_studies::hierarchy::enable_project_perm;
 use crate::views::pagination::PaginatedList as _;
 use crate::views::pagination::PaginationQueryParams;
 use crate::views::pagination::PaginationStats;
@@ -329,7 +336,10 @@ pub(in crate::views) async fn patch(
     )
 )]
 pub(in crate::views) async fn get(
-    State(db_pool): State<Arc<DbConnectionPoolV2>>,
+    State(AppState {
+        db_pool, openfga, ..
+    }): State<AppState>,
+    Extension(authn_state): Extension<authentication::State>,
     Path(ScenarioIdParam { scenario_id }): Path<ScenarioIdParam>,
 ) -> Result<Json<ScenarioResponse>> {
     let (details, project, study) = db_pool
@@ -359,6 +369,12 @@ pub(in crate::views) async fn get(
             ))
         })
         .await?;
+
+    if enable_project_perm() {
+        project_privilege_check(authz::Project(project.id), ProjectPrivilege::HasAccess)
+            .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
+            .await?;
+    }
 
     Ok(Json(ScenarioResponse::new(details, project, study)))
 }
@@ -418,17 +434,23 @@ pub(in crate::views) async fn list(
 
 #[cfg(test)]
 mod tests {
+    use authz::ProjectGrant;
     use pretty_assertions::assert_eq;
 
+    use rstest::rstest;
     use serde_json::json;
 
     use super::*;
+    #[cfg(test)]
+    use crate::fixtures::ScenarioFixtureSet;
     use crate::fixtures::create_empty_infra;
     use crate::fixtures::create_project;
     use crate::fixtures::create_scenario_fixtures_set;
     use crate::fixtures::create_study;
     use crate::fixtures::create_timetable;
     use crate::views::test_app;
+    use crate::views::test_app::TestApp;
+    use crate::views::test_app::TestRequestExt as _;
 
     pub fn scenario_url(scenario_id: Option<i64>) -> String {
         format!(
@@ -437,17 +459,93 @@ mod tests {
         )
     }
 
+    #[rstest]
+    #[case::owner(
+        test_app!().build(),
+        create_scenario_fixtures_set(&mut app.db_pool().get_ok(), "scenario").await,
+        app
+            .user("owner", "Owner")
+            .with_roles([Role::OperationalStudies])
+            .with_project_grant(fixtures.project_id, ProjectGrant::Owner)
+            .create()
+            .await
+    )]
+    #[case::admin(
+        test_app!().build(),
+        create_scenario_fixtures_set(&mut app.db_pool().get_ok(), "scenario").await,
+        app
+            .user("admin", "Admin")
+            .with_roles([Role::Admin])
+            .create()
+            .await
+    )]
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn get_scenario() {
-        let app = test_app!().skip_authz().build();
-        let pool = app.db_pool();
-
-        let fixtures = create_scenario_fixtures_set(&mut pool.get_ok(), "test_scenario_name").await;
-
-        let url = scenario_url(Some(fixtures.scenario.id));
-        let response: ScenarioResponse = app.get(&url).await.assert_status_ok().json();
+    async fn scenarios_get(
+        #[case] app: TestApp,
+        #[case] fixtures: ScenarioFixtureSet,
+        #[case] user: authz::identity::User,
+    ) {
+        let response: ScenarioResponse = app
+            .get(&format!("/scenarios/{}", fixtures.scenario.id))
+            .by_user(user.as_ref())
+            .await
+            .assert_status_ok()
+            .json();
 
         assert_eq!(response.scenario, fixtures.scenario);
+    }
+
+    #[rstest]
+    #[case::no_role(
+        test_app!().build(),
+        create_scenario_fixtures_set(&mut app.db_pool().get_ok(), "scenario").await,
+        app
+            .user("user", "User")
+            .with_project_grant(fixtures.project_id, ProjectGrant::Owner)
+            .create()
+            .await
+    )]
+    #[case::no_grant(
+        test_app!().build(),
+        create_scenario_fixtures_set(&mut app.db_pool().get_ok(), "scenario").await,
+        app
+            .user("user2", "User2")
+            .with_roles([Role::OperationalStudies])
+            .create()
+            .await
+    )]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn scenario_get_forbidden(
+        #[case] app: TestApp,
+        #[case] fixtures: ScenarioFixtureSet,
+        #[case] user: authz::identity::User,
+    ) {
+        // Remove this condition when feature is done
+        if !enable_project_perm() && user.info.name == "User2" {
+            return;
+        }
+
+        app.get(&format!("/scenarios/{}", fixtures.scenario.id))
+            .by_user(user.as_ref())
+            .await
+            .assert_status_forbidden();
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn project_get_not_found() {
+        let app = test_app!().build();
+        let ScenarioFixtureSet { scenario, .. } =
+            create_scenario_fixtures_set(&mut app.db_pool().get_ok(), "scenario").await;
+        let user = app
+            .user("user", "User")
+            .with_roles([Role::OperationalStudies])
+            .create()
+            .await;
+
+        app.get(&format!("/scenarios/{}", scenario.id + 1000))
+            .by_user(user.as_ref())
+            .await
+            .assert_status_not_found();
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
