@@ -156,15 +156,15 @@ const SimulationWarpedMap = ({
     ] as LngLatBoundsLike;
   }, [chart, state]);
 
-  const itineraryState: Feature<LineString> | null = useMemo(() => {
-    if (pathGeometry) return lineString(pathGeometry.coordinates);
+  const itineraryState: Feature<LineString>[] | null = useMemo(() => {
+    if (pathGeometry) return pathGeometry.coordinates.map((coordinates) => lineString(coordinates));
     return null;
   }, [pathGeometry]);
 
   const warpedItinerary = useMemo(() => {
     if (itineraryState && state.type === 'dataLoaded')
       // we don't clip the path
-      return state.transform(itineraryState, false) || undefined;
+      return itineraryState.map((i) => state.transform(i, false) || undefined);
     return undefined;
   }, [itineraryState, state]);
 
@@ -180,7 +180,8 @@ const SimulationWarpedMap = ({
    */
   useEffect(() => {
     setState({ type: 'loading' });
-    if (pathGeometry) updateWarpedMapState(pathGeometry.coordinates);
+    if (pathGeometry)
+      pathGeometry.coordinates.forEach((coordinates) => updateWarpedMapState(coordinates));
   }, [pathGeometry]);
 
   /**
@@ -238,14 +239,17 @@ const SimulationWarpedMap = ({
               borderRadius: 4,
             }}
           >
-            <WarpedMap
-              osrdLayers={layers}
-              bbox={state.warpedBBox}
-              osrdData={state.osrd}
-              osmData={state.osm}
-              itinerary={warpedItinerary}
-              boundingBox={mode === 'auto' ? syncedBoundingBox : undefined}
-            />
+            {warpedItinerary?.map((wI, idx) => (
+              <WarpedMap
+                key={`simulation-warped-map-${idx}`}
+                osrdLayers={layers}
+                bbox={state.warpedBBox}
+                osrdData={state.osrd}
+                osmData={state.osm}
+                itinerary={wI}
+                boundingBox={mode === 'auto' ? syncedBoundingBox : undefined}
+              />
+            ))}
             <div className="buttons">
               <button
                 type="button"
