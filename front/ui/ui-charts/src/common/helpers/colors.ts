@@ -9,6 +9,7 @@ const INDICES_TO_COLORS: Record<number, string> = {};
 export const BLACK_100 = 'rgb(0, 0, 0)';
 export const BLACK_ALPHA_10 = 'rgba(0, 0, 0, 0.1)';
 export const BLACK_ALPHA_25 = 'rgba(0, 0, 0, 0.25)';
+export const BLACK_ALPHA_50 = 'rgba(0, 0, 0, 0.5)';
 
 export const GREY_90 = 'rgb(31, 27, 23)';
 export const GREY_50 = 'rgb(121, 118, 113)';

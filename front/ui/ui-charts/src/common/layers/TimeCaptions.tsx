@@ -10,7 +10,7 @@ import { useDraw } from '../../common/hooks/useCanvas';
 import type { DrawingFunction, TimeChartContextType } from '../../common/types';
 
 const MARGIN = 100;
-const TOP_CAPTION_HEIGHT = 24;
+export const TOP_CAPTION_HEIGHT = 24;
 
 const MINUTE_OPTIONS: Intl.DateTimeFormatOptions = {
   minute: '2-digit',
