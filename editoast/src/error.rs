@@ -339,8 +339,8 @@ impl From<fga::client::Error> for InternalError {
     }
 }
 
-impl From<crate::authorizers::Error> for InternalError {
-    fn from(crate::authorizers::Error(inner): crate::authorizers::Error) -> Self {
+impl From<authz::Error> for InternalError {
+    fn from(authz::Error(inner): authz::Error) -> Self {
         inner.into()
     }
 }

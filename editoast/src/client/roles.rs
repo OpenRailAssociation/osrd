@@ -19,7 +19,7 @@ use models::prelude::*;
 use strum::IntoEnumIterator;
 use tracing::info;
 
-use crate::authorizers::SystemAuthorizer;
+use authz::SystemAuthorizer;
 
 use super::openfga_config::OpenfgaConfig;
 

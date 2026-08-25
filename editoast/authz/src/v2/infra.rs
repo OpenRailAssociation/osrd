@@ -4,6 +4,7 @@ use fga::client::UserList;
 use fga::model::Relation as _;
 use futures::FutureExt as _;
 use itertools::Itertools as _;
+use tracing::Instrument as _;
 
 use crate::Group;
 use crate::Infra;
@@ -51,6 +52,11 @@ pub fn infra_direct_grant(subject: Subject, infra: Infra) -> Protected<Option<In
                     .map(Into::into),
             )
         }
+        .instrument(tracing::debug_span!(
+            "authz::infra_direct_grant",
+            ?subject,
+            ?infra
+        ))
         .boxed()
     })
 }
@@ -113,6 +119,11 @@ pub fn infra_effective_grant(subject: Subject, infra: Infra) -> Protected<Option
                 .or_else(|| is_writer.then_some(InfraGrant::Writer))
                 .or_else(|| is_reader.then_some(InfraGrant::Reader)))
         }
+        .instrument(tracing::debug_span!(
+            "authz::infra_effective_grant",
+            ?subject,
+            ?infra
+        ))
         .boxed()
     })
     .with_check(Check::HasInfraPrivilege(
@@ -158,6 +169,12 @@ pub fn infra_set_grant(subject: Subject, infra: Infra, new_grant: InfraGrant) ->
             writes.execute().await?;
             Ok(())
         }
+        .instrument(tracing::debug_span!(
+            "authz::infra_set_grant",
+            ?subject,
+            ?infra,
+            ?new_grant
+        ))
         .boxed()
     });
 
@@ -242,6 +259,11 @@ pub fn infra_revoke_grant(subject: Subject, infra: Infra) -> Protected<bool> {
             delete.execute().await?;
             Ok(true)
         }
+        .instrument(tracing::debug_span!(
+            "authz::infra_revoke_grant",
+            ?subject,
+            ?infra
+        ))
         .boxed()
     });
 
@@ -303,6 +325,11 @@ pub fn infra_privileges(user: User, infra: Infra) -> Protected<HashSet<InfraPriv
             privileges.extend((admin || can_revoke).then_some(InfraPrivilege::CanRevoke));
             Ok(privileges)
         }
+        .instrument(tracing::debug_span!(
+            "authz::infra_privileges",
+            ?user,
+            ?infra
+        ))
         .boxed()
     })
     .with_check(Check::HasInfraPrivilege(
@@ -313,7 +340,11 @@ pub fn infra_privileges(user: User, infra: Infra) -> Protected<HashSet<InfraPriv
 }
 
 pub fn infra_privilege_check(infra: Infra, privilege: InfraPrivilege) -> Protected<()> {
-    Protected::value(()).with_check(Check::HasInfraPrivilege(Actor::Issuer, privilege, infra))
+    Protected::value(())
+        .with_check(Check::HasInfraPrivilege(Actor::Issuer, privilege, infra))
+        .instrument(move || {
+            tracing::debug_span!("authz::infra_privilege_check", ?infra, ?privilege)
+        })
 }
 
 /// Return an operation that checks the list of subjects which have the given grant on an infra.
@@ -346,6 +377,7 @@ pub fn infra_granted_subjects(infra: Infra, grant: InfraGrant) -> Protected<Vec<
             .boxed()
         })
     }
+
     fn get_granted_groups(infra: Infra, grant: InfraGrant) -> Protected<Vec<Group>> {
         Protected::new(move |openfga| {
             async move {
@@ -377,6 +409,7 @@ pub fn infra_granted_subjects(infra: Infra, grant: InfraGrant) -> Protected<Vec<
             .boxed()
         })
     }
+
     get_granted_users(infra, grant)
         .zip(get_granted_groups(infra, grant))
         .map(async move |(users, groups)| {
@@ -391,60 +424,68 @@ pub fn infra_granted_subjects(infra: Infra, grant: InfraGrant) -> Protected<Vec<
             InfraPrivilege::CanRead,
             infra,
         ))
+        .instrument(move || tracing::debug_span!("authz::infra_granted_subjects", ?infra, ?grant))
 }
 
 pub fn infra_list(user: User, privilege: InfraPrivilege) -> Protected<ResourcesList<Infra>> {
-    subject_roles(Subject::user(user)).then(move |openfga, roles| {
-        async move {
-            if roles.contains(&Role::Admin) {
-                return Ok(ResourcesList::All);
+    subject_roles(Subject::user(user))
+        .then(move |openfga, roles| {
+            async move {
+                if roles.contains(&Role::Admin) {
+                    return Ok(ResourcesList::All);
+                }
+                let authorized_infras = match privilege {
+                    InfraPrivilege::CanRestrictedRead => {
+                        openfga
+                            .list_objects(Infra::can_restricted_read().query_objects(&user))
+                            .await?
+                    }
+                    InfraPrivilege::CanRead => {
+                        openfga
+                            .list_objects(Infra::can_read().query_objects(&user))
+                            .await?
+                    }
+                    InfraPrivilege::CanShareRead => {
+                        openfga
+                            .list_objects(Infra::can_share_read().query_objects(&user))
+                            .await?
+                    }
+                    InfraPrivilege::CanWrite => {
+                        openfga
+                            .list_objects(Infra::can_write().query_objects(&user))
+                            .await?
+                    }
+                    InfraPrivilege::CanShareWrite => {
+                        openfga
+                            .list_objects(Infra::can_share_write().query_objects(&user))
+                            .await?
+                    }
+                    InfraPrivilege::CanDelete => {
+                        openfga
+                            .list_objects(Infra::can_delete().query_objects(&user))
+                            .await?
+                    }
+                    InfraPrivilege::CanShareOwnership => {
+                        openfga
+                            .list_objects(Infra::can_share_ownership().query_objects(&user))
+                            .await?
+                    }
+                    InfraPrivilege::CanRevoke => {
+                        openfga
+                            .list_objects(Infra::can_revoke().query_objects(&user))
+                            .await?
+                    }
+                };
+                Ok(ResourcesList::Privileged(authorized_infras))
             }
-            let authorized_infras = match privilege {
-                InfraPrivilege::CanRestrictedRead => {
-                    openfga
-                        .list_objects(Infra::can_restricted_read().query_objects(&user))
-                        .await?
-                }
-                InfraPrivilege::CanRead => {
-                    openfga
-                        .list_objects(Infra::can_read().query_objects(&user))
-                        .await?
-                }
-                InfraPrivilege::CanShareRead => {
-                    openfga
-                        .list_objects(Infra::can_share_read().query_objects(&user))
-                        .await?
-                }
-                InfraPrivilege::CanWrite => {
-                    openfga
-                        .list_objects(Infra::can_write().query_objects(&user))
-                        .await?
-                }
-                InfraPrivilege::CanShareWrite => {
-                    openfga
-                        .list_objects(Infra::can_share_write().query_objects(&user))
-                        .await?
-                }
-                InfraPrivilege::CanDelete => {
-                    openfga
-                        .list_objects(Infra::can_delete().query_objects(&user))
-                        .await?
-                }
-                InfraPrivilege::CanShareOwnership => {
-                    openfga
-                        .list_objects(Infra::can_share_ownership().query_objects(&user))
-                        .await?
-                }
-                InfraPrivilege::CanRevoke => {
-                    openfga
-                        .list_objects(Infra::can_revoke().query_objects(&user))
-                        .await?
-                }
-            };
-            Ok(ResourcesList::Privileged(authorized_infras))
-        }
-        .boxed()
-    })
+            .instrument(tracing::debug_span!(
+                "authz::infra_list::op",
+                ?user,
+                ?privilege
+            ))
+            .boxed()
+        })
+        .instrument(move || tracing::debug_span!("authz::infra_list", ?user, ?privilege))
 }
 
 #[cfg(test)]

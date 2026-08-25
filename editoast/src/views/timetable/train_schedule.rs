@@ -61,7 +61,6 @@ use utoipa::ToSchema;
 
 use super::AppState;
 use crate::authentication;
-use crate::authorizers::SystemAuthorizer;
 use crate::error::EditoastError as _;
 use crate::error::Result;
 use crate::views::AuthorizationError;
@@ -92,6 +91,7 @@ use crate::views::timetable::simulation::build_sim_schedule_items;
 use crate::views::timetable::simulation::train_simulation_ordered_batch;
 use crate::views::timetable::track_occupancy;
 use crate::views::timetable::track_occupancy::PathItemRelativeLocation;
+use authz::SystemAuthorizer;
 use models::Infra;
 use models::TrainScheduleSet;
 use models::rolling_stock::RollingStock;

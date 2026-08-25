@@ -473,8 +473,8 @@ pub enum AuthorizationError {
     DbError(#[from] database::db_connection_pool::DatabasePoolError),
 }
 
-impl From<crate::authorizers::Error> for AuthorizationError {
-    fn from(crate::authorizers::Error(fga_error): crate::authorizers::Error) -> Self {
+impl From<::authz::Error> for AuthorizationError {
+    fn from(::authz::Error(fga_error): ::authz::Error) -> Self {
         Self::from(fga_error)
     }
 }

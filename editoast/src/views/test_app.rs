@@ -42,12 +42,12 @@ use tower_http::trace::TraceLayer;
 use url::Url;
 
 use crate::AppState;
-use crate::authorizers::SystemAuthorizer;
 use crate::generated_data::speed_limit_tags_config::SpeedLimitTagIds;
 use crate::infra_cache::InfraCache;
 use crate::views::service_router;
 use crate::views::timetable::similar_trains::trains_traffic::TrainTraffic;
 use crate::views::timetable::similar_trains::trains_traffic::TrainsTrafficPool;
+use authz::SystemAuthorizer;
 use fga::client::DEFAULT_OPENFGA_MAX_CHECKS_PER_BATCH_CHECK;
 use fga::client::DEFAULT_OPENFGA_MAX_TUPLES_PER_WRITE;
 

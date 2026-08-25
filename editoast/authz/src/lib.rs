@@ -1,3 +1,4 @@
+mod authorizers;
 pub mod identity;
 mod model;
 pub mod v2;
@@ -32,5 +33,8 @@ macro_rules! authz_client {
     }};
 }
 
+pub use authorizers::Error;
+pub use authorizers::SystemAuthorizer;
+pub use authorizers::UserAuthorizer;
 #[cfg(test)]
 use authz_client;
