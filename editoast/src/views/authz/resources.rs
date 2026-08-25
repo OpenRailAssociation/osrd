@@ -39,9 +39,10 @@ impl Resource {
     }
 }
 
-#[derive(Serialize, Deserialize, ToSchema, Debug, Display)]
+#[derive(
+    Clone, Copy, Serialize, Deserialize, ToSchema, Debug, Display, PartialEq, Eq, PartialOrd, Ord,
+)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
-#[cfg_attr(test, derive(PartialEq))]
 pub(super) enum StandardGrant {
     RestrictedReader,
     Reader,

@@ -114,7 +114,18 @@ pub enum InfraPrivilege {
 }
 
 #[derive(
-    Debug, Display, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize,
+    Debug,
+    Display,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    Hash,
+    Serialize,
+    Deserialize,
+    EnumIter,
 )]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 #[strum(serialize_all = "SCREAMING_SNAKE_CASE")]
@@ -254,7 +265,7 @@ pub enum ProjectPrivilege {
     HasAccess,
 }
 
-#[derive(Clone, Copy, Debug, EnumString, Eq, Hash, Serialize, PartialEq)]
+#[derive(Clone, Copy, Debug, EnumString, Eq, Hash, Serialize, PartialEq, EnumIter)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 #[strum(serialize_all = "SCREAMING_SNAKE_CASE")]
 pub enum ProjectGrant {
