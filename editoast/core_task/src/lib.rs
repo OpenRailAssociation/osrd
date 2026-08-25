@@ -1,3 +1,4 @@
+mod batched_cache;
 mod envs;
 mod path_properties;
 
@@ -5,6 +6,7 @@ use std::hash::Hash;
 use std::sync::Arc;
 
 // Crate-level exports
+pub use batched_cache::Cache;
 pub use envs::TrainSet;
 pub use envs::core::CoreEnv;
 pub use envs::pathfinding::PathItemConstraint;
@@ -21,11 +23,10 @@ pub use envs::simulation::SimulationTrain;
 pub use envs::simulation::SimulationTrainParameters;
 
 use futures::stream;
-use itertools::Itertools as _;
-use itertools::izip;
+
 use serde::de::DeserializeOwned;
 use serde::ser::Serialize;
-use tokio_stream::wrappers::UnboundedReceiverStream;
+
 use tracing::Instrument;
 
 /// Interface required by [SimulationEnv] and friends for [Correlated] keys
@@ -147,89 +148,6 @@ impl<CorrelationKey, T> From<Correlated<CorrelationKey, T>> for (CorrelationKey,
     }
 }
 
-/// Fetch data from the valkey cache for a vector of correlated inputs
-///
-/// Cache misses are returned at None
-async fn batch_fetch_from_cache<T, CorrelationKey: 'static>(
-    inputs: Vec<Correlated<CorrelationKey, T>>,
-    vk_client: Arc<cache::Client>,
-) -> Box<dyn Iterator<Item = (T, CorrelationKey, String, Option<<T as Task>::Output>)>>
-where
-    T: Task + 'static,
-{
-    // We sort the keys so that unit tests can predictably mock redis requests.
-    // That's because redis-test doesn't find a matching request in the list, but
-    // just pops the first one and asserts.
-    #[cfg(test)]
-    let inputs = inputs
-        .into_iter()
-        .map(|input| {
-            let key = input.data.key(vk_client.app_version());
-            (input, key)
-        })
-        .sorted_by_key(|(_, key)| key.clone())
-        .map(|(input, _)| input)
-        .collect_vec();
-
-    let (correlation_keys, inputs) = inputs
-        .into_iter()
-        .map_into()
-        .unzip::<_, _, Vec<_>, Vec<_>>();
-    let cache_keys = inputs
-        .iter()
-        .map(|input| input.key(vk_client.app_version()))
-        .collect_vec();
-
-    // we have to clone because of json_get_bulk's API x Rust 2024 new rules
-    let keys = cache_keys.clone();
-
-    let mut vkconn = vk_client.get_connection().await.unwrap();
-    match vkconn.json_get_bulk::<_, T::Output>(keys.as_slice()).await {
-        Ok(cached_values) => Box::new(izip!(inputs, correlation_keys, cache_keys, cached_values)),
-        Err(e) => {
-            tracing::error!(?e, "task stream: cache read error — computing task output");
-            let cached_values = vec![None; inputs.len()];
-            Box::new(izip!(inputs, correlation_keys, cache_keys, cached_values))
-        }
-    }
-}
-
-/// Writes into the cache in batches
-///
-/// It opens a channel that will be dropped when the CacheWriter will be dropped
-/// This will close the UnboundedReceiverStream in a separate tokio task and finish the work
-struct CacheWriter {
-    pub cache_write_tx: tokio::sync::mpsc::UnboundedSender<(String, serde_json::Value)>,
-}
-
-impl CacheWriter {
-    fn new(vk_client: Arc<cache::Client>, cache_write_cache_size: usize) -> Self {
-        use futures::StreamExt;
-        let (cache_write_tx, cache_write_rx) = tokio::sync::mpsc::unbounded_channel();
-        // 'write_cache' task, writes input key-value pairs to cache, logging errors
-        tokio::spawn(
-            async move {
-                UnboundedReceiverStream::new(cache_write_rx)
-                    .chunks(cache_write_cache_size)
-                    .for_each(|buffer| async {
-                        let mut vkconn = vk_client.get_connection().await.unwrap();
-                        if let Err(e) = vkconn.json_set_bulk(buffer).await {
-                            tracing::error!(?e, "task stream: cache write failure")
-                        }
-                    })
-                    .await;
-            }
-            .in_current_span(),
-        );
-
-        Self { cache_write_tx }
-    }
-
-    fn batched_write(&self, cache_key: String, serialized: serde_json::Value) -> Option<()> {
-        self.cache_write_tx.send((cache_key, serialized)).ok()
-    }
-}
-
 /// Extends streams to provide [TaskStreamExt::run]
 ///
 /// The stream must contain [Correlated] task requests. In practice, the `CorrelationKey`
@@ -291,6 +209,7 @@ where
          *                                   via for_each_concurrent)
          */
 
+        let cache = Arc::new(Cache::new(vk_client.clone(), T::CACHE_WRITES_BATCH_SIZE));
         let (cache_read_tx, mut cache_read_rx) = tokio::sync::mpsc::unbounded_channel::<(
             T, // input
             CorrelationKey,
@@ -303,10 +222,10 @@ where
             // and sends a bunch of data to the 'aggregation' task
             tokio::spawn(
                 self.chunks(T::CACHE_READS_BATCH_SIZE)
-                    .zip(stream::repeat(vk_client.clone()))
+                    .zip(stream::repeat(cache.clone()))
                     .zip(stream::repeat(cache_read_tx))
-                    .for_each_concurrent(None, async move |((inputs, vk_client), cache_read_tx)| {
-                        for cache_result in batch_fetch_from_cache(inputs, vk_client).await {
+                    .for_each_concurrent(None, async move |((inputs, cache), cache_read_tx)| {
+                        for cache_result in cache.fetch(inputs).await {
                             cache_read_tx.send(cache_result).ok();
                         }
                     })
@@ -314,7 +233,6 @@ where
             );
         }
 
-        let cache = CacheWriter::new(vk_client.clone(), T::CACHE_WRITES_BATCH_SIZE);
         let (results_tx, results_rx) = futures::channel::mpsc::unbounded::<
             Correlated<CorrelationKey, Result<T::Output, T::Error>>,
         >();
