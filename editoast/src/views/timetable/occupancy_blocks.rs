@@ -30,12 +30,14 @@ pub struct TrainBlockOccupancyDetails {
     pub signal_critical_positions: Vec<SignalCriticalPosition>,
     pub zone_updates: Vec<ZoneUpdate>,
     pub simulation_end_time: u64,
+    pub train_path: Arc<TrainPath>,
 }
 
 async fn extract_block_occupancy_details<T: TrainScheduleLike>(
     simulations: Vec<Arc<simulation::Response>>,
     train_schedules: &[T],
-) -> Vec<Option<TrainBlockOccupancyDetails>> {
+    train_path: Arc<TrainPath>,
+) -> Vec<TrainBlockOccupancyDetails> {
     assert_eq!(train_schedules.len(), simulations.len());
 
     simulations
@@ -61,25 +63,25 @@ async fn extract_block_occupancy_details<T: TrainScheduleLike>(
                 simulation_end_time: *sim.final_output.report_train.times.last().unwrap(),
                 signal_critical_positions: sim.final_output.signal_critical_positions.clone(),
                 zone_updates: sim.final_output.zone_updates.clone(),
+                train_path: train_path.clone(),
             })
         })
         .collect()
 }
 
-impl TrainBlockOccupancyDetails {
+impl TrainBlockOccupancyDetails<'_> {
     // Compute hash input of the occupancy block of a train schedule on a path
     pub fn compute_occupancy_block_hash_with_versioning(
         &self,
         infra_id: i64,
         infra_version: i64,
-        path: &TrainPath,
         app_version: Option<&str>,
     ) -> String {
         let osrd_version = app_version.unwrap_or_default();
         let mut hasher = DefaultHasher::new();
         self.signal_critical_positions.hash(&mut hasher);
         self.zone_updates.hash(&mut hasher);
-        path.hash(&mut hasher);
+        self.train_path.hash(&mut hasher);
         let hash_simulation_input = hasher.finish();
         format!("occupancy_block_{osrd_version}.{infra_id}.{infra_version}.{hash_simulation_input}")
     }
@@ -99,7 +101,7 @@ pub(super) async fn compute_batch_signal_updates<'a>(
     core: Arc<CoreClient>,
     infra: &Infra,
     path: &'a TrainPath,
-    trains_details: &'a [TrainBlockOccupancyDetails],
+    trains_details: &'a [TrainBlockOccupancyDetails<'_>],
 ) -> Result<Vec<Vec<SignalUpdate>>> {
     if trains_details.is_empty() {
         return Ok(vec![]);
@@ -152,7 +154,9 @@ pub(super) async fn compute_occupancy_blocks<T: TrainScheduleLike>(
     .collect();
 
     // 2. Extracts train simulation details and computes unique hashes for projected train paths.
-    let trains_details = extract_block_occupancy_details(simulations, trains_schedules).await;
+    let filtered =
+        extract_block_occupancy_details(simulations, trains_schedules, Arc::new(path.clone()))
+            .await;
 
     let train_hashes_to_idx: HashMap<String, Vec<usize>> = trains_details
         .iter()
@@ -164,7 +168,6 @@ pub(super) async fn compute_occupancy_blocks<T: TrainScheduleLike>(
                     train_details.compute_occupancy_block_hash_with_versioning(
                         infra.id,
                         infra.version,
-                        &path,
                         app_version,
                     ),
                 )
