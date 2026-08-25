@@ -26,7 +26,7 @@ import type { TrainScheduleWithDetails } from 'modules/trainSchedule/types';
 import type { OccurrenceId, TrainScheduleId, Train } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 import { replaceElementAtIndex } from 'utils/array';
-import { Duration, startTimeToMs } from 'utils/duration';
+import { Duration, startTimeToMs, subtractStartTime } from 'utils/duration';
 import {
   extractEditoastIdFromTrainScheduleId,
   extractTrainScheduleIdFromOccurrenceId,
@@ -62,6 +62,7 @@ import type {
   TimesStopsRow,
   UpdateCellStatus,
   BatchTimesUpdate,
+  ReferenceBaseArrivalUpdate,
 } from '../types';
 
 /** The train fields an edit can change. */
@@ -335,6 +336,32 @@ const useUpdateTimesStopsTable = (
     [selectedTrain, allRows, scenario.timetable_type]
   );
 
+  const computeReferenceBaseArrival = useCallback(
+    (update: ReferenceBaseArrivalUpdate): ComputedUpdate => {
+      const { pathStepId, updatedPath } = upsertPathStep(update.row, selectedTrain.path, allRows);
+
+      const currentSchedule = selectedTrain.schedule ?? [];
+      const startTime = getTruncatedToSecondStartTime(selectedTrain, scenario.timetable_type);
+
+      const referenceBaseArrival =
+        update.value !== null ? subtractStartTime(update.value, startTime).toISOString() : null;
+
+      const updatedSchedule = upsertScheduleItem(currentSchedule, updatedPath, {
+        at: pathStepId,
+        reference_base_arrival: referenceBaseArrival,
+      });
+
+      return {
+        patch: {
+          path: updatedPath,
+          schedule: updatedSchedule,
+        },
+        edits: [{ rowId: update.row.id, field: 'referenceBaseArrival', value: update.value }],
+      };
+    },
+    [selectedTrain, allRows, scenario.timetable_type]
+  );
+
   /** Compute the updated train fields for a cell update, and the edits to display meanwhile. */
   const computeTrainUpdate = useCallback(
     (update: CellUpdate): ComputedUpdate => {
@@ -342,6 +369,7 @@ const useUpdateTimesStopsTable = (
       if (update.field === 'powerRestriction') return computePowerRestrictionUpdate(update);
       if (update.field === 'requestedTheoreticalMargin') return computeMarginUpdate(update);
       if (update.field === 'receptionSignal') return computeReceptionSignalUpdate(update);
+      if (update.field === 'referenceBaseArrival') return computeReferenceBaseArrival(update);
       return computeTimesUpdate(update);
     },
     [
@@ -350,6 +378,7 @@ const useUpdateTimesStopsTable = (
       computeMarginUpdate,
       computeReceptionSignalUpdate,
       computeTimesUpdate,
+      computeReferenceBaseArrival,
     ]
   );
 

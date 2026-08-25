@@ -64,6 +64,7 @@ type BuildTableRowParams = {
   startDate: StartTime;
   schedule?: ScheduleItem;
   computedArrival?: Duration;
+  computedBaseArrival?: Duration;
   invalidPathStep?: boolean;
   scheduleNotHonored?: boolean;
   marginNotHonored?: boolean;
@@ -72,6 +73,7 @@ type BuildTableRowParams = {
   shortSlipDistance?: boolean;
   closedSignal?: boolean;
   margins?: Margins;
+  hasScheduleNotHonored?: boolean;
 };
 
 const buildTableRow = ({
@@ -85,6 +87,7 @@ const buildTableRow = ({
   startDate,
   schedule,
   computedArrival,
+  computedBaseArrival,
   invalidPathStep,
   scheduleNotHonored,
   marginNotHonored,
@@ -93,6 +96,7 @@ const buildTableRow = ({
   shortSlipDistance,
   closedSignal,
   margins,
+  hasScheduleNotHonored,
 }: BuildTableRowParams): TimesStopsRow => {
   const requestedArrival = schedule?.arrival
     ? addDurationToStartTime(startDate, getTruncatedToSecondSchedule(schedule.arrival))
@@ -111,6 +115,12 @@ const buildTableRow = ({
   const computedArrivalDate = isOnTime ? requestedArrival : rawComputedArrivalDate;
 
   const stopDuration = schedule?.stop_for ? getTruncatedToSecondSchedule(schedule.stop_for) : null;
+  const referenceBaseArrival = schedule?.reference_base_arrival
+    ? addDurationToStartTime(
+        startDate,
+        getTruncatedToSecondSchedule(schedule.reference_base_arrival)
+      )
+    : null;
 
   // requestedDeparture = requestedArrival + stopDuration
   const requestedDeparture =
@@ -123,6 +133,13 @@ const buildTableRow = ({
     computedArrivalDate && stopDuration !== null
       ? addDurationToStartTime(computedArrivalDate, stopDuration)
       : null;
+
+  const computedBaseArrivalValue =
+    computedBaseArrival !== undefined
+      ? addDurationToStartTime(startDate, computedBaseArrival)
+      : null;
+
+  const baseArrival = hasScheduleNotHonored ? referenceBaseArrival : computedBaseArrivalValue;
 
   const {
     theoreticalMargin,
@@ -167,6 +184,7 @@ const buildTableRow = ({
     marginsDifference: diffMargins,
     timeFromPreviousOp: null, // TODO : Idem
     totalTravelTime: null, // TODO : Idem
+    baseArrival,
   };
 };
 
@@ -255,6 +273,9 @@ const useTimesStopsTableData = (
     const scheduleByAt = keyBy(selectedTrain.schedule, 'at');
     const pathIdToIndex = new Map(selectedTrain.path.map((step, idx) => [step.id, idx]));
 
+    const hasScheduleNotHonored =
+      !stableIsValid || !stablePathItemRespect?.times.every((time) => time);
+
     const pathStepRowsById = new Map(
       selectedTrain.path.map((pathStep, stepIndex) => {
         const pathStepOp = pathStepOps.get(pathStep.id);
@@ -301,8 +322,13 @@ const useTimesStopsTableData = (
           stablePathItemTimes?.final[stepIndex] !== undefined
             ? getTruncatedToSecondSchedule(stablePathItemTimes.final[stepIndex])
             : undefined;
+        const computedBaseArrival =
+          stablePathItemTimes?.base[stepIndex] !== undefined
+            ? getTruncatedToSecondSchedule(stablePathItemTimes.base[stepIndex])
+            : undefined;
         const scheduleNotHonored = stableIsValid && !stablePathItemRespect?.times[stepIndex];
         const marginNotHonored = stableIsValid && !stablePathItemRespect?.margins[stepIndex];
+
         const margins = computeMargins(
           getTheoreticalMargins(selectedTrain),
           selectedTrain,
@@ -333,6 +359,7 @@ const useTimesStopsTableData = (
           startDate,
           schedule,
           computedArrival,
+          computedBaseArrival,
           invalidPathStep:
             (!matchingOp && pathStepLocation.type === 'operational_point_part_reference') ||
             isRequestedTrackUnknown,
@@ -343,6 +370,7 @@ const useTimesStopsTableData = (
           shortSlipDistance,
           closedSignal: onStopSignal,
           margins,
+          hasScheduleNotHonored,
         });
 
         return [pathStep.id, row];
