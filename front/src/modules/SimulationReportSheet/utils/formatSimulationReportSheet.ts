@@ -365,7 +365,8 @@ export const getStopType = (stopType: StdcmStopTypes | undefined, t: TFunction<'
 // Maps Stdcm path steps to the Step payload expected by the Railway Manager API.
 export const transformStepsToApiFormat = (
   steps: StdcmPathStep[],
-  { originArrivalTime, destinationArrivalTime, beforeTolerance, afterTolerance }: TimingContext
+  { originArrivalTime, destinationArrivalTime, beforeTolerance, afterTolerance }: TimingContext,
+  backtrackPathItems?: number[] | null
 ): RequestedStep[] =>
   steps.map((step, index) => {
     const baseStep: RequestedStep = {
@@ -385,10 +386,15 @@ export const transformStepsToApiFormat = (
             total_length: step.consistChange.totalLength!,
           }
         : undefined;
+
+      const stopType: StdcmStopTypes = backtrackPathItems?.includes(index)
+        ? StdcmStopTypes.BACKTRACK
+        : step.stopType;
+
       return {
         ...baseStep,
         duration: step.stopFor?.ms || 0,
-        type: STOP_TYPE_MAPPING[step.stopType],
+        type: STOP_TYPE_MAPPING[stopType],
         consist_change: formatedConsistChange,
       };
     }
