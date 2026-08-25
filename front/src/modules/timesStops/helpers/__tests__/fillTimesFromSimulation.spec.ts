@@ -28,6 +28,7 @@ const buildRow = (overrides: Partial<TimesStopsRowNew> = {}): TimesStopsRowNew =
   marginsDifference: undefined,
   timeFromPreviousOp: null,
   totalTravelTime: null,
+  baseArrival: null,
   ...overrides,
 });
 
