@@ -1,3 +1,6 @@
+use crate::error::Result;
+use crate::views::timetable::simulation;
+use crate::views::timetable::simulation::train_simulation_ordered_batch;
 use core_client::AsCoreRequest as _;
 use core_client::CoreClient;
 use core_client::pathfinding::TrainPath;
@@ -6,7 +9,9 @@ use core_client::signal_projection::SignalUpdatesRequest;
 use core_client::signal_projection::TrainSimulation;
 use core_client::simulation::SignalCriticalPosition;
 use core_client::simulation::ZoneUpdate;
+use core_task::Cachable;
 use database::DbConnection;
+use models::Infra;
 use schemas::train_schedule::TrainScheduleLike;
 use serde::Deserialize;
 use std::collections::HashMap;
@@ -16,11 +21,6 @@ use std::hash::Hash;
 use std::hash::Hasher as _;
 use std::sync::Arc;
 use utoipa::ToSchema;
-
-use crate::error::Result;
-use crate::views::timetable::simulation;
-use crate::views::timetable::simulation::train_simulation_ordered_batch;
-use models::Infra;
 
 /// Occupancy block output is described by time-space points and blocks
 pub type OccupancyBlocks = Vec<SignalUpdate>;
@@ -74,21 +74,17 @@ async fn extract_block_occupancy_details<T: TrainScheduleLike>(
         .collect()
 }
 
-impl TrainBlockOccupancyDetails {
+impl Cachable for TrainBlockOccupancyDetails {
     // Compute hash input of the occupancy block of a train schedule on a path
-    pub fn compute_occupancy_block_hash_with_versioning(
-        &self,
-        infra_id: i64,
-        infra_version: i64,
-        app_version: Option<&str>,
-    ) -> String {
-        let osrd_version = app_version.unwrap_or_default();
+    fn key(&self, app_version: &str) -> String {
         let mut hasher = DefaultHasher::new();
         self.signal_critical_positions.hash(&mut hasher);
         self.zone_updates.hash(&mut hasher);
         self.train_path.hash(&mut hasher);
         let hash_simulation_input = hasher.finish();
-        format!("occupancy_block_{osrd_version}.{infra_id}.{infra_version}.{hash_simulation_input}")
+        let infra_id = self.infra_id;
+        let infra_version = self.infra_version;
+        format!("occupancy_block_{app_version}.{infra_id}.{infra_version}.{hash_simulation_input}")
     }
 }
 
@@ -106,7 +102,7 @@ pub(super) async fn compute_batch_signal_updates<'a>(
     core: Arc<CoreClient>,
     infra: &Infra,
     path: &'a TrainPath,
-    trains_details: &'a [TrainBlockOccupancyDetails],
+    trains_details: &[TrainBlockOccupancyDetails],
 ) -> Result<Vec<Vec<SignalUpdate>>> {
     if trains_details.is_empty() {
         return Ok(vec![]);
@@ -177,11 +173,7 @@ pub(super) async fn compute_occupancy_blocks<T: TrainScheduleLike>(
         .map(|(index, train_details)| {
             (
                 index,
-                train_details.compute_occupancy_block_hash_with_versioning(
-                    infra.id,
-                    infra.version,
-                    app_version,
-                ),
+                train_details.key(app_version.expect("App version missing")),
             )
         })
         .fold(HashMap::new(), |mut map, (index, hash)| {
