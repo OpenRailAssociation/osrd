@@ -23,6 +23,8 @@ import {
   type Track,
   DEFAULT_ZOOM_MS_PER_PX,
   timeScaleToZoomValue,
+  PeriodicMarker,
+  TrainInfoBar,
 } from '@osrd-project/ui-charts';
 import { Slider } from '@osrd-project/ui-core';
 import cx from 'classnames';
@@ -203,6 +205,12 @@ function formatDragOffset(ms: number): string {
   const sign = ms >= 0 ? '+' : '-';
   const minutes = Math.round(Math.abs(ms) / 60_000);
   return `${sign} ${minutes} min`;
+}
+
+// Format a duration as `Xh YYmin` (e.g. `1h 00min`).
+function formatHourlyDuration(duration: Duration): string {
+  const totalMinutes = Math.round(duration.total('minute'));
+  return `${Math.floor(totalMinutes / 60)}h ${(totalMinutes % 60).toString().padStart(2, '0')}min`;
 }
 
 const SpaceTimeChartWrapper = ({
@@ -677,6 +685,22 @@ const SpaceTimeChartWrapper = ({
       : undefined;
   const showCurvePanel = !!panelCounts;
 
+  const selectedPacedTrain =
+    hourlyTimetableDuration && selectedTrain && isPacedTrainWithDetails(selectedTrain)
+      ? selectedTrain
+      : undefined;
+
+  const selectedPacedTrainColors = useMemo(
+    () =>
+      selectedPacedTrain
+        ? paths.find(
+            (path) =>
+              extractTrainScheduleIdFromTrainId(path.id as TrainId) === selectedTrainScheduleId
+          )?.colors
+        : undefined,
+    [selectedPacedTrain, paths, selectedTrainScheduleId]
+  );
+
   const handlePanelModeChange = (mode: PanelSelectionMode) => {
     setPanelSelectionMode(mode);
 
@@ -938,6 +962,15 @@ const SpaceTimeChartWrapper = ({
               </>
             )}
             <TimeRangeObserver onChange={setChartTimeRange} />
+            {hourlyTimetableDuration && <PeriodicMarker duration={hourlyTimetableDuration.ms} />}
+            {selectedPacedTrain && hourlyTimetableDuration && selectedPacedTrainColors && (
+              <TrainInfoBar
+                duration={selectedPacedTrain.paced.timeWindow.ms}
+                name={selectedPacedTrain.name}
+                intervalLabel={formatHourlyDuration(selectedPacedTrain.paced.timeWindow)}
+                colors={selectedPacedTrainColors}
+              />
+            )}
           </SpaceTimeChart>
           {showCurvePanel && (
             <CurveSelectionSidePanel
