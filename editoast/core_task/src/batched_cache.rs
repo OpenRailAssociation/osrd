@@ -1,4 +1,5 @@
-use crate::{Correlated, Task};
+use crate::Correlated;
+use crate::Task;
 
 use itertools::Itertools as _;
 use itertools::izip;
