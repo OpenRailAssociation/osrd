@@ -226,6 +226,10 @@ const TimeStopsTableWrapper = ({
     commitUpdate({ rows: getRowsToUpdateFromSimulation(rows, field, mode), field });
   };
 
+  const handleReferenceBaseArrivalChange = (row: TimesStopsRow, value: StartTime | null) => {
+    commitUpdate({ row, field: 'referenceBaseArrival', value });
+  };
+
   return (
     <TimesStopsTable
       rows={optimisticRows}
@@ -242,6 +246,7 @@ const TimeStopsTableWrapper = ({
       onRequestedMarginChange={handleRequestedMarginChange}
       onPowerRestrictionChange={handlePowerRestrictionChange}
       onApplyTimesFromSimulation={handleApplyTimesFromSimulation}
+      onReferenceBaseArrivalChange={handleReferenceBaseArrivalChange}
     />
   );
 };
