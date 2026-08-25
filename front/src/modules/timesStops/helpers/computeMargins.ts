@@ -1,6 +1,7 @@
 import type { ScheduleItem } from 'common/api/osrdEditoastApi';
 import type { SimulationSummary } from 'modules/trainSchedule/types';
 import type { Train } from 'reducers/osrdconf/types';
+import { Duration } from 'utils/duration';
 import { ms2sec } from 'utils/timeManipulation';
 
 import { marginsUndefined, MarginUnit } from '../consts';
@@ -74,8 +75,6 @@ function computeMarginsCore(
   const { theoreticalMargin: rawMargin, isBoundary } = stepTheoreticalMarginInfo;
   const theoreticalMargin = parseMarginValue(rawMargin);
 
-  if (!pathItemTimes) return { theoreticalMargin, isBoundary };
-
   // find the next pathStep where constraints are defined
   let nextIndex = path.length - 1;
 
@@ -85,6 +84,61 @@ function computeMarginsCore(
       nextIndex = index;
       break;
     }
+  }
+
+  if (!pathItemTimes) {
+    const nextPathStepId = path[nextIndex].id;
+    const nextSchedule = scheduleByAt[nextPathStepId];
+
+    let finalLostTime: number | undefined;
+    let provisionalLostTime: number | undefined;
+
+    if (nextSchedule?.reference_base_arrival) {
+      const nextReferenceBaseArrival = Duration.parse(nextSchedule.reference_base_arrival);
+
+      if (nextSchedule.arrival) {
+        const nextRequestedArrival = Duration.parse(nextSchedule.arrival);
+
+        // For the first row we have reference base arrival = requested arrival = start date = 0
+        if (pathStepIndex === 0) {
+          finalLostTime = ms2sec(nextRequestedArrival.ms - nextReferenceBaseArrival.ms);
+          provisionalLostTime =
+            ms2sec(nextReferenceBaseArrival.ms) * (theoreticalMargin.value / 100);
+
+          return {
+            finalLostTime,
+            provisionalLostTime,
+            theoreticalMargin,
+            isBoundary,
+          };
+        }
+
+        if (schedule?.reference_base_arrival) {
+          const referenceBaseArrival = Duration.parse(schedule.reference_base_arrival);
+
+          provisionalLostTime = Math.round(
+            ms2sec(nextReferenceBaseArrival.ms - referenceBaseArrival.ms) *
+              (theoreticalMargin.value / 100) // TODO: handle min/100km margin
+          );
+
+          if (schedule.arrival) {
+            const requestedArrival = Duration.parse(schedule.arrival);
+
+            const finalDuration = nextRequestedArrival.ms - requestedArrival.ms;
+            const baseDuration = nextReferenceBaseArrival.ms - referenceBaseArrival.ms;
+
+            finalLostTime = ms2sec(finalDuration - baseDuration);
+          }
+        }
+      }
+    }
+
+    return {
+      finalLostTime,
+      provisionalLostTime,
+      theoreticalMargin,
+      isBoundary,
+    };
   }
 
   // durations to go from the last pathStep with theoretical margin to the next pathStep
@@ -118,14 +172,6 @@ export function computeMargins(
     pathItemTimes
   );
   if (!core) return marginsUndefined;
-  if (!pathItemTimes)
-    return {
-      theoreticalMargin: core.theoreticalMargin,
-      isTheoreticalMarginBoundary: core.isBoundary,
-      theoreticalMarginSeconds: undefined,
-      calculatedMargin: undefined,
-      diffMargins: undefined,
-    };
 
   if (!isCoreComputed(core)) return marginsUndefined;
   const { theoreticalMargin, isBoundary, provisionalLostTime, finalLostTime } = core;

@@ -185,7 +185,7 @@ export const upsertScheduleItem = (
   const newItem = item.at === path[0].id ? { ...item, arrival: null } : item;
 
   // Nothing left to schedule: remove the item entirely
-  if (!newItem.arrival && !newItem.stop_for)
+  if (!newItem.arrival && !newItem.stop_for && !newItem.reference_base_arrival)
     return index < 0 ? undefined : removeElementAtIndex(schedule, index);
 
   return index >= 0

@@ -836,6 +836,7 @@
     }
   },
   "timeStopTable": {
+    "baseArrival": "Marche tendue",
     "calculatedArrivalTime": "arrivée calculée",
     "calculatedDepartureTime": "départ calculé",
     "clearRequestedArrivalTime": "Effacer l'arrivée demandée",
