@@ -839,6 +839,7 @@
     }
   },
   "timeStopTable": {
+    "baseArrival": "Base arrival",
     "calculatedArrivalTime": "calculated arrival time",
     "calculatedDepartureTime": "calculated depart. time",
     "calculatedDepartureTimeFull": "calculated departure time",
