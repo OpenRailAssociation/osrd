@@ -30,18 +30,23 @@ pub struct TrainBlockOccupancyDetails {
     pub signal_critical_positions: Vec<SignalCriticalPosition>,
     pub zone_updates: Vec<ZoneUpdate>,
     pub simulation_end_time: u64,
+    pub train_path: Arc<TrainPath>,
+    infra_id: i64,
+    infra_version: i64,
 }
 
 async fn extract_block_occupancy_details<T: TrainScheduleLike>(
     simulations: Vec<Arc<simulation::Response>>,
     train_schedules: &[T],
-) -> Vec<Option<TrainBlockOccupancyDetails>> {
+    train_path: Arc<TrainPath>,
+    infra: &Infra,
+) -> Vec<TrainBlockOccupancyDetails> {
     assert_eq!(train_schedules.len(), simulations.len());
 
     simulations
         .into_iter()
         .zip(train_schedules)
-        .map(|(sim, train_schedule)| {
+        .filter_map(|(sim, train_schedule)| {
             let simulation::Response::Success(sim) = sim.as_ref() else {
                 // TODO: We should project as input mode
                 return None;
@@ -61,6 +66,9 @@ async fn extract_block_occupancy_details<T: TrainScheduleLike>(
                 simulation_end_time: *sim.final_output.report_train.times.last().unwrap(),
                 signal_critical_positions: sim.final_output.signal_critical_positions.clone(),
                 zone_updates: sim.final_output.zone_updates.clone(),
+                train_path: train_path.clone(),
+                infra_id: infra.id,
+                infra_version: infra.version,
             })
         })
         .collect()
@@ -72,14 +80,13 @@ impl TrainBlockOccupancyDetails {
         &self,
         infra_id: i64,
         infra_version: i64,
-        path: &TrainPath,
         app_version: Option<&str>,
     ) -> String {
         let osrd_version = app_version.unwrap_or_default();
         let mut hasher = DefaultHasher::new();
         self.signal_critical_positions.hash(&mut hasher);
         self.zone_updates.hash(&mut hasher);
-        path.hash(&mut hasher);
+        self.train_path.hash(&mut hasher);
         let hash_simulation_input = hasher.finish();
         format!("occupancy_block_{osrd_version}.{infra_id}.{infra_version}.{hash_simulation_input}")
     }
@@ -156,23 +163,26 @@ pub(super) async fn compute_occupancy_blocks<T: TrainScheduleLike>(
     .collect();
 
     // 2. Extracts train simulation details and computes unique hashes for projected train paths.
-    let trains_details = extract_block_occupancy_details(simulations, trains_schedules).await;
+    let trains_details = extract_block_occupancy_details(
+        simulations,
+        trains_schedules,
+        Arc::new(path.clone()),
+        infra,
+    )
+    .await;
 
     let train_hashes_to_idx: HashMap<String, Vec<usize>> = trains_details
         .iter()
         .enumerate()
-        .filter_map(|(index, train_details)| {
-            train_details.as_ref().map(|train_details| {
-                (
-                    index,
-                    train_details.compute_occupancy_block_hash_with_versioning(
-                        infra.id,
-                        infra.version,
-                        &path,
-                        app_version,
-                    ),
-                )
-            })
+        .map(|(index, train_details)| {
+            (
+                index,
+                train_details.compute_occupancy_block_hash_with_versioning(
+                    infra.id,
+                    infra.version,
+                    app_version,
+                ),
+            )
         })
         .fold(HashMap::new(), |mut map, (index, hash)| {
             map.entry(hash).or_default().push(index);
@@ -199,12 +209,7 @@ pub(super) async fn compute_occupancy_blocks<T: TrainScheduleLike>(
             let index = train_hashes_to_idx[&hash]
                 .first()
                 .expect("indexes should not be empty");
-            occupancy_block_requests.push((
-                hash,
-                trains_details[*index]
-                    .clone()
-                    .expect("train_details must exist if hash is computed"),
-            ));
+            occupancy_block_requests.push((hash, trains_details[*index].clone()));
         }
     }
 
