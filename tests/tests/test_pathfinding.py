@@ -258,8 +258,8 @@ def test_start_ws_v1_path(session: Session, small_infra: Infra):
             "values": [{"type": "electrification", "voltage": "1500V"}],
         },
         "geometry": {
-            "type": "LineString",
-            "coordinates": [[-0.38775, 49.5], [-0.3825, 49.5]],
+            "type": "MultiLineString",
+            "coordinates": [[[-0.38775, 49.5], [-0.3825, 49.5]]],
         },
         "operational_points": [
             {

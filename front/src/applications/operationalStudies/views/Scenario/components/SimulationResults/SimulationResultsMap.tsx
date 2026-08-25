@@ -65,7 +65,9 @@ const SimulationResultMap = ({
   const mapRef = React.useRef<MapRef>(null);
 
   const geojsonPath = useMemo(
-    () => pathProperties && lineString(pathProperties.geometry.coordinates),
+    () =>
+      pathProperties &&
+      pathProperties.geometry.coordinates.map((coordinates) => lineString(coordinates)),
     [pathProperties]
   );
 
@@ -230,7 +232,12 @@ const SimulationResultMap = ({
 
   useEffect(() => {
     if (geojsonPath) {
-      const newViewport = computeBBoxViewport(bbox(geojsonPath), viewport);
+      const allLinesCoordinates = geojsonPath.map((marker) => marker.geometry.coordinates).flat();
+      const box = bbox({
+        type: 'MultiPoint',
+        coordinates: allLinesCoordinates,
+      });
+      const newViewport = computeBBoxViewport(box, viewport);
       updateViewportChange(newViewport);
     } else if (mapMarkers.length > 0) {
       const allMarkersCoordinates = mapMarkers.map((marker) => marker.coordinates);
@@ -273,9 +280,14 @@ const SimulationResultMap = ({
         updatePartialViewPort={updateViewportChange}
         mapSettings={mapSettings}
       >
-        {geojsonPath && (
-          <Itinerary geojsonPath={geojsonPath} layerOrder={LAYER_GROUPS_ORDER[LAYERS.PATH.GROUP]} />
-        )}
+        {geojsonPath &&
+          geojsonPath.map((g, idx) => (
+            <Itinerary
+              key={`simulation-results-map-itinerary-${idx}`}
+              geojsonPath={g}
+              layerOrder={LAYER_GROUPS_ORDER[LAYERS.PATH.GROUP]}
+            />
+          ))}
 
         {pathSteps && mapMarkers.map((marker) => <PathStepMarker key={marker.id} {...marker} />)}
       </BaseMap>

@@ -342,12 +342,18 @@ const ItineraryModalMap = ({
         mapSettings={mapSettings}
         updatePartialViewPort={updateViewportChange}
       >
-        {pathProperties && pathProperties.geometry && (
-          <Itinerary
-            layerOrder={LAYER_GROUPS_ORDER[LAYERS.PATH.GROUP]}
-            geojsonPath={pathProperties.geometry}
-          />
-        )}
+        {pathProperties &&
+          pathProperties.geometry &&
+          pathProperties.geometry.coordinates.map((coordinates, idx) => (
+            <Itinerary
+              key={`itinerary-modal-map-itinerary-${idx}`}
+              layerOrder={LAYER_GROUPS_ORDER[LAYERS.PATH.GROUP]}
+              geojsonPath={{
+                coordinates,
+                type: 'LineString',
+              }}
+            />
+          ))}
         {pathSteps &&
           pathSteps.map((step, index) => {
             const pathStepMetadata = pathStepsMetadata?.get(step.id);

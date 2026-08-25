@@ -3701,7 +3701,7 @@ export type PathProperties = {
     )[];
   };
   /** Geometry of the path */
-  geometry: GeoJsonLineString;
+  geometry: GeoJsonMultiLineString;
   /** Operational points along the path */
   operational_points: CoreOperationalPointOnPath[];
   /** Slopes along the path */

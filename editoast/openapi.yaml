@@ -13001,7 +13001,7 @@ components:
                 description: List of `n+1` values associated to the ranges
           description: Electrification modes and neutral section along the path
         geometry:
-          $ref: '#/components/schemas/GeoJsonLineString'
+          $ref: '#/components/schemas/GeoJsonMultiLineString'
           description: Geometry of the path
         operational_points:
           type: array

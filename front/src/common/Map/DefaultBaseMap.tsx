@@ -5,7 +5,7 @@ import type { Geometry } from 'geojson';
 import { compact } from 'lodash';
 import type { MapRef } from 'react-map-gl/maplibre';
 
-import type { GeoJsonLineString } from 'common/api/osrdEditoastApi';
+import type { GeoJsonMultiLineString } from 'common/api/osrdEditoastApi';
 import BaseMap from 'common/Map/BaseMap';
 import MapButtons from 'common/Map/Buttons/MapButtons';
 import ItineraryLayer from 'common/Map/components/ItineraryLayer';
@@ -20,7 +20,7 @@ import { MapContextProvider } from './useMapContext';
 type DefaultBaseMapProps = {
   mapId: string;
   infraId?: number;
-  geometry?: GeoJsonLineString;
+  geometry?: GeoJsonMultiLineString;
   pathStepMarkers?: MarkerInformation[];
   isFeasible?: boolean;
   mapSettings: MapSettings;
@@ -133,12 +133,18 @@ const DefaultBaseMap = ({
         mapSettings={mapSettings}
         highlightedArea={highlightedArea}
       >
-        <ItineraryLayer
-          layerOrder={LAYER_GROUPS_ORDER[LAYERS.PATH.GROUP]}
-          geometry={geometry}
-          isFeasible={isFeasible}
-          showStdcmAssets
-        />
+        {geometry?.coordinates.map((coordinates, idx) => (
+          <ItineraryLayer
+            key={`default-base-map-itinerary-layer-${idx}`}
+            layerOrder={LAYER_GROUPS_ORDER[LAYERS.PATH.GROUP]}
+            geometry={{
+              coordinates,
+              type: 'LineString',
+            }}
+            isFeasible={isFeasible}
+            showStdcmAssets
+          />
+        ))}
 
         {pathStepMarkers?.map((marker, index) => (
           <Fragment key={marker.id}>

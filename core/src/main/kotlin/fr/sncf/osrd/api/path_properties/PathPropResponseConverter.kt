@@ -4,13 +4,14 @@ import com.google.common.collect.Range
 import fr.sncf.osrd.api.RangeValues
 import fr.sncf.osrd.path.interfaces.PhysicsPath
 import fr.sncf.osrd.path.interfaces.TrainPath
-import fr.sncf.osrd.railjson.schema.geom.RJSLineString
+import fr.sncf.osrd.railjson.schema.geom.RJSMultiLineString
 import fr.sncf.osrd.sim_infra.api.NeutralSection
 import fr.sncf.osrd.sim_infra.api.RawSignalingInfra
 import fr.sncf.osrd.utils.DistanceRangeMap
 import fr.sncf.osrd.utils.DistanceRangeMapImpl
 import fr.sncf.osrd.utils.from
 import fr.sncf.osrd.utils.toRangeMap
+import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Offset
 
 fun makePathPropResponse(pathProperties: TrainPath, rawInfra: RawSignalingInfra): PathPropResponse {
@@ -48,11 +49,22 @@ private fun makeElectrifications(pathProperties: TrainPath): RangeValues<Electri
     return makeRangeValues(DistanceRangeMapImpl.from(mergedMap))
 }
 
-private fun makeGeographic(path: TrainPath): RJSLineString {
-    val lineString = path.getGeo()
-    val coordinates = ArrayList<List<Double>>()
-    for (p in lineString.getPoints()) coordinates.add(listOf(p.lon, p.lat))
-    return RJSLineString("LineString", coordinates)
+private fun makeGeographic(path: TrainPath): RJSMultiLineString {
+    val coordinates = ArrayList<List<List<Double>>>()
+    val boundaries =
+        listOf(Offset<PhysicsPath>(Distance.ZERO)) +
+            path.getBacktrackLocations() +
+            listOf(path.getLength())
+
+    for (i in 0 until boundaries.size - 1) {
+        val from = boundaries[i]
+        val to = boundaries[i + 1]
+        val segment = path.subPath(from, to).getGeo()
+        val segmentCoord = ArrayList<List<Double>>()
+        for (p in segment.getPoints()) segmentCoord.add(listOf(p.lon, p.lat))
+        coordinates.add(segmentCoord)
+    }
+    return RJSMultiLineString("MultiLineString", coordinates)
 }
 
 private fun makeOperationalPoints(
