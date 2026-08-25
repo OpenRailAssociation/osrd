@@ -42,7 +42,7 @@ impl<T> TrainKey for T where T: Clone + Hash + Eq + Send + Sync {}
 /// Features:
 /// - [fn Task::run] that runs a single task
 /// - [trait TaskStreamExt] to batch tasks (requires additional [type Task::Context] bounds)
-pub trait Task: Sized + Send {
+pub trait Task: Sized + Send + Cachable {
     /// Task output
     type Output: DeserializeOwned + Serialize + Clone + Send + Sync + 'static;
     /// Computation error when running a task for cache misses
@@ -61,9 +61,6 @@ pub trait Task: Sized + Send {
     ///
     /// Defaults to the same value as [Self::CACHE_READS_BATCH_SIZE] but can be overridden if needed.
     const CACHE_WRITES_BATCH_SIZE: usize = Self::CACHE_READS_BATCH_SIZE;
-
-    /// Computes the cache key based on task inputs
-    fn key(&self, app_version: &str) -> String;
 
     /// Computes the task output according to inputs and context
     ///
@@ -124,6 +121,12 @@ pub trait Task: Sized + Send {
             }
         }
     }
+}
+
+/// Indicates that the struct can stored in the valkey cache server
+pub trait Cachable {
+    /// Computes the cache key based on task inputs
+    fn key(&self, app_version: &str) -> String;
 }
 
 /// A named tuple for a value with a correlation key

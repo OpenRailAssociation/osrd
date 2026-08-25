@@ -1,4 +1,4 @@
-use crate::{Correlated, Task};
+use crate::{Cachable, Correlated, Task};
 
 use itertools::Itertools as _;
 use itertools::izip;
@@ -72,7 +72,7 @@ impl Cache {
         inputs: Vec<Correlated<CorrelationKey, T>>,
     ) -> impl Iterator<Item = (T, CorrelationKey, String, Option<<T as Task>::Output>)>
     where
-        T: Task + 'static,
+        T: Task + 'static + Cachable,
     {
         // We sort the keys so that unit tests can predictably mock redis requests.
         // That's because redis-test doesn't find a matching request in the list, but
