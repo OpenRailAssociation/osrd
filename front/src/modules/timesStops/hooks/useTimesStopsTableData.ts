@@ -125,6 +125,13 @@ const buildTableRow = ({
       ? addDurationToStartTime(computedArrivalDate, stopDuration)
       : null;
 
+  const referenceBaseArrival = schedule?.reference_base_arrival
+    ? addDurationToStartTime(
+        truncateStartTimeToSecond(startDate),
+        Duration.parse(schedule.reference_base_arrival)
+      )
+    : null;
+
   const {
     theoreticalMargin,
     isTheoreticalMarginBoundary,
@@ -166,6 +173,7 @@ const buildTableRow = ({
     computedTheoreticalMarginSeconds: theoreticalMarginSeconds,
     realMargin: calculatedMargin,
     marginsDifference: diffMargins,
+    referenceBaseArrival,
     timeFromPreviousOp: null, // TODO : Idem
     totalTravelTime: null, // TODO : Idem
   };
