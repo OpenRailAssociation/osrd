@@ -1,4 +1,7 @@
+use authz::ProjectPrivilege;
 use authz::Role;
+use authz::v2::project_privilege_check;
+use axum::Extension;
 use axum::extract::Json;
 use axum::extract::Path;
 use axum::extract::Query;
@@ -20,8 +23,11 @@ use utoipa::ToSchema;
 
 use super::OperationalStudiesOrderingParam;
 use super::project::ProjectError;
+use crate::AppState;
+use crate::authentication;
 use crate::error::InternalError;
 use crate::error::Result;
+use crate::views::AuthorizationError;
 use crate::views::pagination::PaginatedList as _;
 use crate::views::pagination::PaginationQueryParams;
 use crate::views::pagination::PaginationStats;
@@ -244,7 +250,13 @@ pub(in crate::views) async fn delete(
     )
 )]
 pub(in crate::views) async fn get(
-    State(db_pool): State<Arc<DbConnectionPoolV2>>,
+    State(AppState {
+        db_pool,
+        openfga,
+        config,
+        ..
+    }): State<AppState>,
+    Extension(authn_state): Extension<authentication::State>,
     Path(StudyIdParam { study_id }): Path<StudyIdParam>,
 ) -> Result<Json<StudyResponse>> {
     let (study_scenarios, project) = db_pool
@@ -266,6 +278,12 @@ pub(in crate::views) async fn get(
             Ok::<_, InternalError>((study_scenarios, project))
         })
         .await?;
+
+    if config.enable_project_permissions {
+        project_privilege_check(authz::Project(project.id), ProjectPrivilege::HasAccess)
+            .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
+            .await?;
+    }
 
     let study_response = StudyResponse::new(study_scenarios, project);
     Ok(Json(study_response))
@@ -445,15 +463,19 @@ pub(in crate::views) async fn list(
 
 #[cfg(test)]
 pub mod tests {
+    use authz::ProjectGrant;
+    use models::study::Study;
     use pretty_assertions::assert_eq;
 
+    use rstest::rstest;
     use serde_json::json;
 
     use super::*;
     use crate::fixtures::create_project;
     use crate::fixtures::create_study;
     use crate::views::test_app;
-    use models::study::Study;
+    use crate::views::test_app::TestApp;
+    use crate::views::test_app::TestRequestExt as _;
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn study_post() {
@@ -514,35 +536,105 @@ pub mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn study_get() {
-        let app = test_app!().skip_authz().build();
-        let db_pool = app.db_pool();
+        let app = test_app!().build();
+        let project = create_project(&mut app.db_pool().get_ok(), "project").await;
+        let study = create_study(&mut app.db_pool().get_ok(), "study", project.id).await;
+        let user = app
+            .user("owner", "Owner")
+            .with_roles([Role::OperationalStudies])
+            .with_project_grant(project.id, ProjectGrant::Owner)
+            .create()
+            .await;
 
-        let created_project = create_project(&mut db_pool.get_ok(), "test_project_name").await;
-
-        let created_study =
-            create_study(&mut db_pool.get_ok(), "test_study_name", created_project.id).await;
-
-        let response: StudyResponse = app
-            .get(&format!("/studies/{}", created_study.id))
+        let StudyResponse {
+            study: response_study,
+            ..
+        } = app
+            .get(&format!("/studies/{}", study.id))
+            .by_user(user.as_ref())
             .await
             .assert_status_ok()
             .json();
 
-        assert_eq!(response.study, created_study);
-        assert_eq!(response.study.project_id, created_project.id);
+        assert_eq!(response_study, study);
+        assert_eq!(response_study.project_id, project.id);
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn study_get_admins_allowed() {
+        let app = test_app!().build();
+        let project = create_project(&mut app.db_pool().get_ok(), "project").await;
+        let study = create_study(&mut app.db_pool().get_ok(), "study", project.id).await;
+        let admin = app
+            .user("admin", "Admin")
+            .with_roles([Role::Admin])
+            .create()
+            .await;
+
+        app.get(&format!("/studies/{}", study.id))
+            .by_user(admin.as_ref())
+            .await
+            .assert_status_ok();
+    }
+
+    #[rstest]
+    #[case::no_role(
+        test_app!().build(),
+        create_project(&mut app.db_pool().get_ok(), "project").await.id,
+        app
+            .user("bob", "Bob")
+            .with_project_grant(project_id, ProjectGrant::Owner)
+            .create()
+            .await
+    )]
+    #[case::no_grant(
+        test_app!().build(),
+        create_project(&mut app.db_pool().get_ok(), "project").await.id,
+        app
+            .user("bob", "Bob")
+            .with_roles([Role::OperationalStudies])
+            .create()
+            .await
+    )]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn study_get_forbidden(
+        #[case] app: TestApp,
+        #[case] project_id: i64,
+        #[case] user_forbidden: authz::identity::User,
+    ) {
+        let user_authorized = app
+            .user("alice", "Alice")
+            .with_roles([Role::OperationalStudies])
+            .with_project_grant(project_id, ProjectGrant::Owner)
+            .create()
+            .await;
+        let study = create_study(&mut app.db_pool().get_ok(), "study", project_id).await;
+
+        app.get(&format!("/studies/{}", study.id))
+            .by_user(user_forbidden.as_ref())
+            .await
+            .assert_status_forbidden();
+        app.get(&format!("/studies/{}", study.id))
+            .by_user(user_authorized.as_ref())
+            .await
+            .assert_status_ok();
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn study_get_not_found() {
-        let app = test_app!().skip_authz().build();
-        let db_pool = app.db_pool();
+        let app = test_app!().build();
+        let mut conn = app.db_pool().get_ok();
 
-        let created_project = create_project(&mut db_pool.get_ok(), "test_project_name").await;
-
-        let created_study =
-            create_study(&mut db_pool.get_ok(), "test_study_name", created_project.id).await;
+        let created_project = create_project(&mut conn.clone(), "test_project_name").await;
+        let created_study = create_study(&mut conn, "test_study_name", created_project.id).await;
+        let user = app
+            .user("user", "User")
+            .with_roles([Role::OperationalStudies])
+            .create()
+            .await;
 
         app.get(&format!("/studies/{}", created_study.id + 1000))
+            .by_user(user.as_ref())
             .await
             .assert_status_not_found();
     }
