@@ -2,7 +2,6 @@ extern crate proc_macro;
 
 mod annotate_units;
 mod error;
-mod model;
 mod route;
 mod search;
 mod view_error;
@@ -148,106 +147,6 @@ pub fn search_config_store(input: proc_macro::TokenStream) -> proc_macro::TokenS
         .into()
 }
 
-/// # `Model` derive macro
-///
-/// This derive macro provides implementations for common database operations traits.
-///
-/// ## Usage
-///
-/// ```ignore
-/// #[derive(Debug, Default, Clone, Model)]
-/// #[model(table = database::tables::osrd_infra_document)]
-/// pub struct Document {
-///     pub id: i64,
-///     pub content_type: String,
-///     pub data: Vec<u8>,
-/// }
-/// ```
-///
-/// ## Generated content
-///
-/// This macro generates the following trait implementations and types for your given
-/// Model struct `Model`:
-///
-/// * `struct ModelRow`: a struct nearly identical to your model by default, used to
-///   read rows from the database
-/// * `struct ModelChangeset`: a struct that represents a possibly incomplete
-///   set of changes to apply to a row in the database
-/// * `impl Model` that references both structs above
-/// * `impl From<ModelRow> for Model`: a conversion from the row struct to your model
-/// * `impl From<Model> for ModelChangeset`: a conversion from your model to the changeset
-/// * `impl Identifiable<T> for Model` / `impl PreferredId<T> for Model` according to your model specifications,
-///   more about that below
-/// * `impl ModelChangeset`: that contains builder functions in order to conveniently
-///   populate the changeset
-/// * `impl Patch<'a, Model>`: the same builder functions as the changeset, but
-///   for a `Patch` in order to have a better interface
-/// * `impl Retrieve<T> for Model`: if `Model: Identifiable<T>`
-/// * `impl Create<T, Model> for ModelChangeset`: if `Model: Identifiable<T>`
-/// * `impl Update<T, Model> for ModelChangeset`: if `Model: Identifiable<T>`
-/// * `impl Delete for Model`
-/// * `impl DeleteStatic<T> for Model`: if `Model: Identifiable<T>`
-/// * `impl RetrieveBatchUnchecked<T> for Model`: if `Model: Identifiable<T>`
-/// * `impl UpdateBatchUnchecked<T, Model> for ModelChangeset`: if `Model: Identifiable<T>`
-/// * `impl CreateBatch<T, ModelChangeset> for Model`: if `Model: Identifiable<T>`
-/// * `impl DeleteBatch<T> for Model`: if `Model: Identifiable<T>`
-///
-/// ## Options
-/// ### Struct-level options
-///
-/// * `#[model(table = crate::table::osrd_your_table")]` (**REQUIRED**): the path to the diesel table
-/// * `#[model(row(type_name = "YourRowType"))]`: the name of the row struct (defaults to `ModelRow`)
-/// * `#[model(row(derive(ADDITIONAL_DERIVES*,)))]`: additional derives for the row struct (always implicitly derives `Queryable, Selectable`)
-/// * `#[model(row(public))]`: make the row struct fields `pub` (private by default)
-/// * `#[model(changeset(type_name = "YourChangesetType"))]`: the name of the changeset struct (defaults to `ModelChangeset`)
-/// * `#[model(changeset(derive(ADDITIONAL_DERIVES*,)))]`: additional derives for the changeset struct (always implicitly derives `Default, Queryable, QueryableByName, AsChangeset, Insertable`)
-/// * `#[model(changeset(public))]`: make the changeset struct fields `pub` (private by default)
-/// * `#[model(identifier = IDENTIFIER)]` (multiple): just like `#[model(identifier)]` for fields, but at the struct level.
-///   `IDENTIFIER` can be a compound identifier with the syntax `(field1, field2, ...)` (e.g.: `#[model(identifier = (infra_id, obj_id))]`).
-///   This option can be specified multiple times. The same rules applies as for fields.
-/// * `#[model(preferred = PREFERRED)]`: just like `#[model(preferred)]` for fields, but at the struct level.
-///   Compound identifier syntax is supported. This option can be specified only once, including at field level.
-///   It is NOT NECESSARY to also specify `#[model(identifier = PREFERRED)]`.
-/// * `#[model(batch_chunk_size_limit = usize)]` (default: [model::DEFAULT_BATCH_CHUNK_SIZE_LIMIT]): there seem to be a bug from either diesel or libpq that causes
-///   a stack overflow for large batch chunk sizes. Until a better solution is found, this option allows to limit the
-///   size of each chunk on a per-model basis. Increasing this value could lead to stack overflows, decreasing it
-///   might degrade the performance of batch operations.
-///
-/// ### Field-level options
-///
-/// * `#[model(column = "COLUMN")]`: the name of the corresponding column in the database (defaults to the field name)
-/// * `#[model(builder_fn = function_name)]`: the name of the builder function for this field (defaults to the field name)
-/// * `#[model(builder_skip)]`: skip this field in the builder
-/// * `#[model(identifier)]`: this field can be used to uniquely identify a the model row in the database ; generates `impl Identifiable<T> for Model`
-///   This field will be excluded from the changeset and the changeset/patch builder.
-/// * `#[model(preferred)]`: implies `identifier` ; also generates `impl PreferredId<T> for Model`
-/// * `#[model(primary)]`: implies `identifier` ; marks the field as the primary key of the table
-/// * `#[model(json)]`: wraps the row field with `diesel_jsonb::JsonValue` (diesel column type: `diesel_jsonb::Json<T>`)
-/// * `#[model(to_string)]`: calls `to_string()` before writing the field to the database and calls `String::from` after reading (diesel column type: String)
-/// * `#[model(to_enum)]`: is converted as `u8` before writing the field to the database and calls `FromRepr::from_repr` after reading (diesel column type: TinyInt)
-/// * `#[model(remote = "T")]`: calls `Into::<T>::into` before writing the field to the database and calls `T::from` after reading (diesel column type: T)
-/// * `#[model(uom_unit = "path::to::unit")]`: the value is the path to an unit defined in common, e.g. `"common::units::meter"`
-/// * `#[model(geo)]` **TODO**: TBD
-/// * `#[model(non_null_array = "T")]`: wraps type `T` into an `Option<T>` when interfacing with diesel to satisfy the nullable property of postgres arrays
-///
-/// #### A note on identifiers
-///
-/// * *When no `primary` field is specified*, if there is a field named `id`,
-///   *it will be assumed to be the primary key* regardless of its type
-/// * Every model **MUST** have a `primary` field (explicit or not)
-/// * There can only be one `primary` field
-/// * The `primary` field **MUST** be represent the column of the primary key in the database
-///   and be the `diesel_table::PrimaryKey`
-/// * There can only be one `preferred` field
-/// * If no `preferred` field is provided, the `primary` field will be used
-/// * There can be as many `identifier` fields as you want (as long as it makes sense of course)
-#[proc_macro_derive(Model, attributes(model))]
-pub fn model(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
-    let input = parse_macro_input!(input as DeriveInput);
-    model::model(&input)
-        .unwrap_or_else(darling::Error::write_errors)
-        .into()
-}
 
 /// Annotates fields of a structs with documentation and value_type for a better utoipa schema
 ///
