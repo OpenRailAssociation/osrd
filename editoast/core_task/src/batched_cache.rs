@@ -50,16 +50,24 @@ impl Cache {
     /// Fetch data from the valkey cache for a vector cache keys
     ///
     /// Cache misses are returned at None
-    pub async fn fetch_by_keys<'a, Output>(&'a self, cache_keys: Vec<String>) -> Vec<Option<Output>>
+    pub async fn fetch_by_keys<Input, Output>(
+        &self,
+        inputs: &[Input],
+    ) -> (Vec<Option<Output>>, Vec<String>)
     where
+        Input: Cachable + 'static,
         Output: serde::de::DeserializeOwned + Send + Clone + 'static,
     {
+        let cache_keys = inputs
+            .iter()
+            .map(|input| input.key(self.vk_client.app_version()))
+            .collect_vec();
         let mut vkconn = self.vk_client.get_connection().await.unwrap();
         match vkconn.json_get_bulk::<_, Output>(&cache_keys).await {
-            Ok(cached_values) => cached_values,
+            Ok(cached_values) => (cached_values, cache_keys),
             Err(e) => {
                 tracing::error!(?e, "task stream: cache read error — computing task output");
-                vec![None; cache_keys.len()]
+                (vec![None; cache_keys.len()], cache_keys)
             }
         }
     }
@@ -92,12 +100,8 @@ impl Cache {
             .into_iter()
             .map_into()
             .unzip::<_, _, Vec<_>, Vec<_>>();
-        let cache_keys = inputs
-            .iter()
-            .map(|input| input.key(self.vk_client.app_version()))
-            .collect_vec();
 
-        let cached_values = self.fetch_by_keys(cache_keys.clone()).await;
+        let (cached_values, cache_keys) = self.fetch_by_keys(&inputs).await;
         izip!(inputs, correlation_keys, cache_keys, cached_values)
     }
 }

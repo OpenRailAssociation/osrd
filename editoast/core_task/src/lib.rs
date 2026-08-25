@@ -179,7 +179,7 @@ where
 impl<T, InputStream, CorrelationKey> TaskStreamExt<T, CorrelationKey> for InputStream
 where
     CorrelationKey: Send + 'static,
-    T: Task + 'static,
+    T: Task + 'static + Sync,
     T::Context: Clone + Send + Sync,
     InputStream: stream::Stream<Item = Correlated<CorrelationKey, T>> + Send + 'static,
 {
