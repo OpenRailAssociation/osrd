@@ -842,6 +842,7 @@
   },
   "timeStopTable": {
     "arrivalTime": "arrivée demandée",
+    "baseArrival": "Marche tendue",
     "calculatedArrivalTime": "arrivée calculée",
     "calculatedDepartureTime": "départ calculé",
     "calculatedDepartureTimeFull": "départ calculé",
@@ -872,7 +873,6 @@
     "realMargin": "marge réelle",
     "receptionOnClosedSignal": "signal fermé",
     "receptionOnClosedSignalFull": "réception sur signal fermé",
-    "referenceBaseArrival": "Marche tendue",
     "requestedTheoreticalMargin": "marge théorique demandée",
     "secondaryCode": "code secondaire",
     "shortSlipDistance": "faible glissement",

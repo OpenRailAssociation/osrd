@@ -62,6 +62,7 @@ type BuildTableRowParams = {
   startDate: StartTime;
   schedule?: ScheduleItem;
   computedArrival?: Duration;
+  computedBaseArrival?: Duration;
   invalidPathStep?: boolean;
   scheduleNotHonored?: boolean;
   marginNotHonored?: boolean;
@@ -70,6 +71,7 @@ type BuildTableRowParams = {
   shortSlipDistance?: boolean;
   closedSignal?: boolean;
   margins?: Margins;
+  hasScheduleNotHonored?: boolean;
 };
 
 const buildTableRow = ({
@@ -83,6 +85,7 @@ const buildTableRow = ({
   startDate,
   schedule,
   computedArrival,
+  computedBaseArrival,
   invalidPathStep,
   scheduleNotHonored,
   marginNotHonored,
@@ -91,6 +94,7 @@ const buildTableRow = ({
   shortSlipDistance,
   closedSignal,
   margins,
+  hasScheduleNotHonored,
 }: BuildTableRowParams): TimesStopsRowNew => {
   // Truncate sub-second part: schedule.arrival is stored in whole seconds
   // (via Math.floor in diffSeconds in scheduleStateToApiFields())
@@ -131,6 +135,13 @@ const buildTableRow = ({
         Duration.parse(schedule.reference_base_arrival)
       )
     : null;
+
+  const computedBaseArrivalValue =
+    computedBaseArrival !== undefined
+      ? addDurationToStartTime(startDate, computedBaseArrival)
+      : null;
+
+  const baseArrival = hasScheduleNotHonored ? referenceBaseArrival : computedBaseArrivalValue;
 
   const {
     theoreticalMargin,
@@ -173,9 +184,9 @@ const buildTableRow = ({
     computedTheoreticalMarginSeconds: theoreticalMarginSeconds,
     realMargin: calculatedMargin,
     marginsDifference: diffMargins,
-    referenceBaseArrival,
     timeFromPreviousOp: null, // TODO : Idem
     totalTravelTime: null, // TODO : Idem
+    baseArrival,
   };
 };
 
@@ -267,6 +278,9 @@ const useTimesStopsTableData = (
     const scheduleByAt = keyBy(selectedTrain.schedule, 'at');
     const pathIdToIndex = new Map(selectedTrain.path.map((step, idx) => [step.id, idx]));
 
+    const hasScheduleNotHonored =
+      stableIsValid && !stablePathItemRespect?.times.every((time) => time);
+
     const pathStepRowsById = new Map(
       selectedTrain.path.map((pathStep, stepIndex) => {
         const pathStepOp = pathStepOps.get(pathStep.id);
@@ -307,8 +321,13 @@ const useTimesStopsTableData = (
                 milliseconds: stablePathItemTimes.final[stepIndex],
               })
             : undefined;
+        const computedBaseArrival =
+          stablePathItemTimes?.base[stepIndex] !== undefined
+            ? new Duration({ milliseconds: stablePathItemTimes.base[stepIndex] })
+            : undefined;
         const scheduleNotHonored = stableIsValid && !stablePathItemRespect?.times[stepIndex];
         const marginNotHonored = stableIsValid && !stablePathItemRespect?.margins[stepIndex];
+
         const margins = computeMargins(
           getTheoreticalMargins(selectedTrain),
           selectedTrain,
@@ -339,6 +358,7 @@ const useTimesStopsTableData = (
           startDate,
           schedule,
           computedArrival,
+          computedBaseArrival,
           invalidPathStep:
             !matchingOp && pathStepLocation.type === 'operational_point_part_reference',
           scheduleNotHonored,
@@ -348,6 +368,7 @@ const useTimesStopsTableData = (
           shortSlipDistance,
           closedSignal: onStopSignal,
           margins,
+          hasScheduleNotHonored,
         });
 
         return [pathStep.id, row];

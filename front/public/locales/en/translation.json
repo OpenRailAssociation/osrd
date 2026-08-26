@@ -842,6 +842,7 @@
   },
   "timeStopTable": {
     "arrivalTime": "requested arrival time",
+    "baseArrival": "Base arrival",
     "calculatedArrivalTime": "calculated arrival time",
     "calculatedDepartureTime": "calculated depart. time",
     "calculatedDepartureTimeFull": "calculated departure time",
@@ -872,7 +873,6 @@
     "realMargin": "real margin",
     "receptionOnClosedSignal": "closed signal",
     "receptionOnClosedSignalFull": "reception on closed signal",
-    "referenceBaseArrival": "Reference base arrival",
     "requestedTheoreticalMargin": "requested theoretical margin",
     "secondaryCode": "secondary code",
     "shortSlipDistance": "short slip distance",

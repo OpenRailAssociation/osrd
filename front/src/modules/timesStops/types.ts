@@ -73,7 +73,7 @@ export type TimesStopsRowNew = {
   timeFromPreviousOp: Duration | null;
   totalTravelTime: Duration | null;
 
-  referenceBaseArrival: StartTime | null;
+  baseArrival: StartTime | null;
 };
 
 export type TimesStopsRow = {

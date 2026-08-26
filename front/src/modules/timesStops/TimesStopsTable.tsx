@@ -545,22 +545,31 @@ const TimesStopsTable = ({
     );
   };
 
-  const returnReferenceBaseArrival = (info: CellContext<TimesStopsRowNew, StartTime | null>) => {
+  const returnBaseArrival = (info: CellContext<TimesStopsRowNew, StartTime | null>) => {
     const row = info.row.original;
 
-    return (
-      <StartTimeCell
-        type={startTimeCellType}
-        ref={registerTimeCellRef(info.row.index, 'referenceBaseArrival')}
-        cellContext={info}
-        referenceDate={getDepartureReferenceDate(row, startTime)}
-        clearButtonTitle={t('clearRequestedArrivalTime')}
-        onEnterKeyDown={() => focusCellBelow(info.row.index, 'referenceBaseArrival')}
-        onCommit={(date, propagationMode) => {
-          info.table.options.meta!.onReferenceBaseArrivalChange(row, date, propagationMode);
-        }}
-      />
-    );
+    if (scheduleNotHonored || !isValid) {
+      return (
+        <StartTimeCell
+          type={startTimeCellType}
+          ref={registerTimeCellRef(info.row.index, 'baseArrival')}
+          cellContext={info}
+          referenceDate={getDepartureReferenceDate(row, startTime)}
+          clearButtonTitle={t('clearRequestedArrivalTime')}
+          onEnterKeyDown={() => focusCellBelow(info.row.index, 'baseArrival')}
+          onCommit={(date, propagationMode) => {
+            info.table.options.meta!.onReferenceBaseArrivalChange(row, date, propagationMode);
+          }}
+        />
+      );
+    } else {
+      const value = info.getValue();
+      return (
+        <span data-testid="computed-base-arrival">
+          {value ? formatTime(value, dateTimeLocale) : ''}
+        </span>
+      );
+    }
   };
 
   const columns = useMemo(
@@ -710,16 +719,16 @@ const TimesStopsTable = ({
           'data-testid': 'total-travel-time',
         },
       }),
-      columnHelper.accessor('referenceBaseArrival', {
-        header: () => t('referenceBaseArrival'),
-        cell: returnReferenceBaseArrival,
+      columnHelper.accessor('baseArrival', {
+        header: () => t('baseArrival'),
+        cell: returnBaseArrival,
         meta: {
           className: 'col-reference-base-arrivial col-with-clock-time',
           'data-testid': 'reference-base-arrivial',
         },
       }),
     ],
-    [startTime, focusCellBelow, focusRequestedCellOnTab, t]
+    [startTime, focusCellBelow, focusRequestedCellOnTab, t, scheduleNotHonored]
   );
 
   // eslint-disable-next-line react/incompatible-library
