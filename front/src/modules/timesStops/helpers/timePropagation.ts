@@ -9,7 +9,7 @@ import {
 
 import { ONE_DAY } from '../consts';
 import type { ArrivalUpdate, CellUpdate, PropagationMode } from '../types';
-import { truncateStartTimeToSecond } from './utils';
+import { truncateStartTimeToSecond, formatSignedDelta } from './utils';
 
 export type PropagationResult = {
   updatedPath: PathItem[];
@@ -45,15 +45,6 @@ const computeDeltaForPropagationMode = (
     : oldValue && newValue
       ? subtractStartTime(truncateStartTimeToSecond(newValue), truncateStartTimeToSecond(oldValue))
       : null;
-
-export const formatSignedDelta = (delta: Duration) => {
-  const sign = delta.ms >= 0 ? '+' : '-';
-  const label = delta
-    .abs()
-    .round('second')
-    .toLocaleString(undefined, { style: 'digital', hours: '2-digit' });
-  return `${sign}${label}`;
-};
 
 export const formatPropagationDeltaLabelByMode = (
   oldValue: Date | null,

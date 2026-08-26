@@ -5,7 +5,8 @@ import { Duration, subtractDurationFromStartTime } from 'utils/duration';
 import { ONE_DAY } from '../consts';
 import type { StopDurationUpdate } from '../types';
 import { insertScheduleItemInOrder } from './cellUpdate';
-import { formatSignedDelta, type PropagationResult } from './timePropagation';
+import { type PropagationResult } from './timePropagation';
+import { formatSignedDelta } from './utils';
 
 export const formatStopDurationDeltaLabel = (
   oldValue: Duration | null,

@@ -169,6 +169,15 @@ export function formatDigitsAndUnit(fullValue: string | number | undefined, unit
   return `${round(extractedValue, digits)}${NO_BREAK_SPACE}${extractedUnit}`;
 }
 
+export const formatSignedDelta = (delta: Duration) => {
+  const sign = delta.ms >= 0 ? '+' : '-';
+  const label = delta
+    .abs()
+    .round('second')
+    .toLocaleString(undefined, { style: 'digital', hours: '2-digit' });
+  return `${sign}${label}`;
+};
+
 export function disabledTextColumn(
   key: string,
   title: string,
