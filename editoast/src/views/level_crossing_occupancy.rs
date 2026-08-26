@@ -618,7 +618,7 @@ mod tests {
         let user = app
             .user("authorized", "Authorized")
             .with_infra_grant(form.infra_id, InfraGrant::Reader)
-            .with_rolling_stock_grant(rolling_stock.id, RollingStockGrant::Reader)
+            .with_rolling_stock_grant(rolling_stock.id, RollingStockGrant::RestrictedReader)
             .with_roles([Role::OperationalStudies])
             .create()
             .await;
@@ -663,7 +663,7 @@ mod tests {
         let user = app
             .user("authorized", "Authorized")
             .with_infra_grant(form.infra_id, InfraGrant::Reader)
-            .with_rolling_stock_grant(rolling_stock.id, RollingStockGrant::Reader)
+            .with_rolling_stock_grant(rolling_stock.id, RollingStockGrant::RestrictedReader)
             .with_roles([Role::OperationalStudies])
             .create()
             .await;
@@ -741,7 +741,10 @@ mod tests {
         let user = app
             .user("authorized", "Authorized")
             .with_infra_grant(form.infra_id, InfraGrant::Reader)
-            .with_rolling_stock_grant(readable_rolling_stock.id, RollingStockGrant::Reader)
+            .with_rolling_stock_grant(
+                readable_rolling_stock.id,
+                RollingStockGrant::RestrictedReader,
+            )
             .with_roles([Role::OperationalStudies])
             .create()
             .await;

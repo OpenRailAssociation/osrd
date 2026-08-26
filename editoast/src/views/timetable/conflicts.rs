@@ -476,7 +476,7 @@ pub async fn filter_unauthorized_train_schedules_and_exceptions(
     };
     let system_authorizer = SystemAuthorizer::new_infallible(openfga);
     let Ok(authorized_train_schedules) =
-        authz::v2::rolling_stock_list(user, RollingStockPrivilege::CanRead)
+        authz::v2::rolling_stock_list(user, RollingStockPrivilege::CanRestrictedRead)
             .authorize(&system_authorizer)
             .await?
             .access()
