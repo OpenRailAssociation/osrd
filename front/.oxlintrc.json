@@ -564,6 +564,12 @@
           }
         ]
       }
+    },
+    {
+      "files": ["scripts/**/*", "tests/reporter/**/*"],
+      "rules": {
+        "import/extensions": ["error", "ignorePackages"]
+      }
     }
   ]
 }

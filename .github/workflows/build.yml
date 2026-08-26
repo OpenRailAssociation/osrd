@@ -1085,7 +1085,7 @@ jobs:
             -v "$PWD/front/test-results:/app/test-results" \
             ${{ fromJSON(needs.build-front.outputs.stable_tags).front-tests }} \
             sh -c "npx playwright merge-reports --reporter=./tests/reporter/generate-personalized-report.ts ./all-blob-reports \
-              && npx tsx ./tests/reporter/generate-github-summary.ts ./test-results/personalized-report.json ./test-results/summary.md"
+              && node ./tests/reporter/generate-github-summary.ts ./test-results/personalized-report.json ./test-results/summary.md"
           cat front/test-results/summary.md >> $GITHUB_STEP_SUMMARY
 
   check_reuse_compliance:

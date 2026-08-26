@@ -1,6 +1,6 @@
 import fs from 'fs';
 
-import { formatDuration } from '.';
+import { formatDuration } from './index.ts';
 import type { Artifact, GithubSummaryReport, ArtifactResponse } from './playwright-report-types';
 
 const reportPath = process.argv[2];
