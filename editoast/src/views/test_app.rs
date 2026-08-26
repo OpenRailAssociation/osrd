@@ -2,6 +2,7 @@
 //! test axum server, database connection pool, and different mocking
 //! components.
 
+use authz::ProjectGrant;
 use authz::RollingStock;
 use authz::RollingStockGrant;
 use authz::v2;
@@ -453,6 +454,7 @@ pub struct UserBuilder<'a> {
     roles: HashSet<Role>,
     infras_grant: HashMap<i64, InfraGrant>,
     rolling_stock_grants: HashMap<i64, RollingStockGrant>,
+    project_grants: HashMap<i64, ProjectGrant>,
 }
 
 pub struct GroupBuilder<'a> {
@@ -462,6 +464,7 @@ pub struct GroupBuilder<'a> {
     members: HashSet<&'a authz::identity::User>,
     infras_grant: HashMap<i64, InfraGrant>,
     rolling_stock_grants: HashMap<i64, RollingStockGrant>,
+    project_grants: HashMap<i64, ProjectGrant>,
 }
 
 impl<'a> UserBuilder<'a> {
@@ -472,6 +475,7 @@ impl<'a> UserBuilder<'a> {
             roles: Default::default(),
             infras_grant: HashMap::default(),
             rolling_stock_grants: HashMap::default(),
+            project_grants: HashMap::default(),
         }
     }
 
@@ -494,6 +498,11 @@ impl<'a> UserBuilder<'a> {
         self
     }
 
+    pub fn with_project_grant(mut self, project_id: i64, grant: ProjectGrant) -> Self {
+        self.project_grants.insert(project_id, grant);
+        self
+    }
+
     pub async fn create(self) -> authz::identity::User {
         let Self {
             app,
@@ -501,9 +510,13 @@ impl<'a> UserBuilder<'a> {
             roles,
             infras_grant,
             rolling_stock_grants,
+            project_grants,
         } = self;
 
-        if (!roles.is_empty() || !infras_grant.is_empty() || !rolling_stock_grants.is_empty())
+        if (!roles.is_empty()
+            || !infras_grant.is_empty()
+            || !rolling_stock_grants.is_empty()
+            || !project_grants.is_empty())
             && !app.enable_authorization
         {
             panic!("An OpenFGA model must be provided to grant a user roles or infra grants");
@@ -522,25 +535,24 @@ impl<'a> UserBuilder<'a> {
                 .await;
 
             let system = SystemAuthorizer::new_infallible(&app.app_state.openfga);
+            let subject = authz::Subject::user(user.id);
             for (infra_id, grant) in infras_grant.into_iter() {
-                v2::infra_set_grant(
-                    authz::Subject::User(authz::User(user.id)),
-                    authz::Infra(infra_id),
-                    grant,
-                )
-                .authorize(&system)
-                .await
-                .expect("Infra grant should be given successfully")
-                .unwrap_authorized()
-                .await;
+                v2::infra_set_grant(subject, authz::Infra(infra_id), grant)
+                    .authorize(&system)
+                    .await
+                    .expect("Infra grant should be given successfully")
+                    .unwrap_authorized()
+                    .await;
             }
             for (rolling_stock_id, grant) in rolling_stock_grants.into_iter() {
                 app.openfga()
-                    .rolling_stock_set_grant(
-                        RollingStock(rolling_stock_id),
-                        authz::Subject::User(authz::User(user.id)),
-                        grant,
-                    )
+                    .rolling_stock_set_grant(RollingStock(rolling_stock_id), subject, grant)
+                    .await;
+            }
+            for (project_id, grant) in project_grants.into_iter() {
+                debug_assert!(matches!(grant, ProjectGrant::Owner));
+                app.openfga()
+                    .project_set_grant(subject, authz::Project(project_id))
                     .await;
             }
         }
@@ -557,6 +569,7 @@ impl<'a> GroupBuilder<'a> {
             members: Default::default(),
             infras_grant: HashMap::default(),
             rolling_stock_grants: HashMap::default(),
+            project_grants: HashMap::default(),
         }
     }
 
@@ -588,6 +601,11 @@ impl<'a> GroupBuilder<'a> {
         self
     }
 
+    pub fn with_project_grant(mut self, project_id: i64, grant: ProjectGrant) -> Self {
+        self.project_grants.insert(project_id, grant);
+        self
+    }
+
     pub async fn create(self) -> authz::identity::Group {
         let Self {
             app,
@@ -596,6 +614,7 @@ impl<'a> GroupBuilder<'a> {
             members,
             infras_grant,
             rolling_stock_grants,
+            project_grants,
         } = self;
         let needs_openfga = !roles.is_empty()
             || !members.is_empty()
@@ -648,6 +667,12 @@ impl<'a> GroupBuilder<'a> {
                 app.openfga()
                     .rolling_stock_set_grant(RollingStock(rolling_stock_id), subject, grant)
                     .await;
+            }
+            for (project_id, grant) in project_grants.into_iter() {
+                debug_assert!(matches!(grant, ProjectGrant::Owner));
+                app.openfga()
+                    .project_set_grant(subject, authz::Project(project_id))
+                    .await
             }
         }
         group

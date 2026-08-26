@@ -4163,6 +4163,7 @@ class StandardPrivilege(Enum):
     can_delete = "can_delete"
     can_share_ownership = "can_share_ownership"
     can_revoke = "can_revoke"
+    has_access = "has_access"
 
 
 class StartTimeChangeGroup(BaseModel):
