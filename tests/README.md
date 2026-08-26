@@ -6,6 +6,11 @@ To run tests `uv run pytest` after starting docker containers (`docker compose u
 
 To run a list of specific tests, run `uv run pytest -k test_name_1 test_name_2 ...`.
 
+### Authentication
+
+The tests query editoast directly, bypassing the gateway, so they set the
+`x-remote-user-identity` / `x-remote-user-name` headers the gateway would normally inject. They authenticate as `tests/integration`, an admin user `create_admin_user()` creates before every run.
+
 To setup end-to-end (e2e) tests, please see [the dedicated readme](../front/tests/README.md).
 
 ### Create new integration tests

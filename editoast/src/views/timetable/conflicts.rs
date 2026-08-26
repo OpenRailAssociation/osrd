@@ -1,6 +1,6 @@
 use authz::v2;
-use schemas::paced_train::RollingStockChangeGroup;
 use std::collections::HashMap;
+use std::collections::HashSet;
 
 use authz::RollingStockPrivilege;
 use axum::Extension;
@@ -370,13 +370,62 @@ pub(in crate::views) async fn conflicts(
         })
         .collect();
 
-    let train_schedules_with_exceptions = filter_unauthorized_train_schedules_and_exceptions(
-        &openfga,
-        conn.clone(),
-        authn_state,
-        train_schedules_with_exceptions,
-    )
-    .await?;
+    // Discard the train schedules and the exceptions using a rolling stock the user cannot read.
+    let train_schedules_with_exceptions = match authn_state.user() {
+        None => train_schedules_with_exceptions,
+        Some(user) => {
+            let rolling_stock_names: HashSet<_> = train_schedules_with_exceptions
+                .iter()
+                .flat_map(|(train_schedule, exceptions)| {
+                    std::iter::once(train_schedule.rolling_stock_name.clone())
+                        .chain(exceptions.iter().filter_map(exception_rolling_stock_name))
+                })
+                .collect();
+            let rolling_stocks: Vec<_> = models::RollingStock::retrieve_batch_unchecked::<
+                HashSet<String>,
+                _,
+            >(&mut conn.clone(), rolling_stock_names)
+            .await?;
+
+            let Ok(authorized_rolling_stock_names) = rolling_stocks
+                .into_iter()
+                .map(|rolling_stock| {
+                    v2::rolling_stock_privileges(user, authz::RollingStock(rolling_stock.id)).map(
+                        async move |privileges| {
+                            privileges
+                                .contains(&RollingStockPrivilege::CanRead)
+                                .then_some(rolling_stock.name)
+                        },
+                    )
+                })
+                .collect::<v2::Protected<Vec<_>>>()
+                .map(async |names| names.into_iter().flatten().collect::<HashSet<_>>())
+                .authorize(&SystemAuthorizer::new_infallible(&openfga))
+                .await?
+                .access()
+                .await?;
+
+            train_schedules_with_exceptions
+                .into_iter()
+                .filter(|(train_schedule, _)| {
+                    authorized_rolling_stock_names.contains(&train_schedule.rolling_stock_name)
+                })
+                .map(|(train_schedule, exceptions)| {
+                    let exceptions = exceptions
+                        .into_iter()
+                        .filter(|exception| {
+                            exception_rolling_stock_name(exception).is_none_or(
+                                |rolling_stock_name| {
+                                    authorized_rolling_stock_names.contains(&rolling_stock_name)
+                                },
+                            )
+                        })
+                        .collect();
+                    (train_schedule, exceptions)
+                })
+                .collect()
+        }
+    };
 
     // Flatten paced trains occurrences
     let (occurrence_ids, occurrence_trains): (Vec<_>, Vec<_>) = train_schedules_with_exceptions
@@ -537,9 +586,14 @@ mod tests {
     use crate::views::test_app::test_app;
 
     use super::*;
+    use crate::views::path::pathfinding::PathfindingResult;
     use authz::InfraGrant;
     use authz::RollingStockGrant;
     use common::units;
+    use core_client::conflict_detection::ConflictDetectionResponse;
+    use core_client::mocking::MockingClient;
+    use core_client::pathfinding::PathfindingResultSuccess;
+    use core_client::pathfinding::TrainPath;
     use core_client::simulation::RoutingRequirement;
     use core_client::simulation::RoutingZoneRequirement;
     use core_client::simulation::SpacingRequirement;
@@ -549,6 +603,8 @@ mod tests {
     use schemas::TrainScheduleExceptionChangeGroups;
     use schemas::paced_train::RollingStockChangeGroup;
     use schemas::train_schedule::Comfort;
+    use schemas::train_schedule::Margins;
+    use schemas::train_schedule::PathItem;
 
     fn spacing(zone: &str, begin_time: u64, end_time: u64) -> SpacingRequirement {
         SpacingRequirement {
@@ -788,104 +844,106 @@ mod tests {
         assert_eq!(response.error_type, "editoast:timetable:InvalidPeriod");
     }
 
+    /// Only the trains and the exceptions whose rolling stock the user can read are simulated
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn filter_unauthorized_train_schedules() {
-        let app = test_app!().build();
+    async fn conflicts_only_simulates_readable_rolling_stocks() {
+        let mut core = MockingClient::new();
+        core.stub("/pathfinding/blocks")
+            .response(StatusCode::OK)
+            .json(PathfindingResult::Success(PathfindingResultSuccess {
+                path: TrainPath {
+                    blocks: vec![],
+                    routes: vec![],
+                    track_section_ranges: vec![],
+                },
+                length: 1,
+                path_item_positions: vec![0, 10],
+                backtrack_path_items: Some(vec![]),
+            }))
+            .finish();
+        core.stub("/standalone_simulation")
+            .response(StatusCode::OK)
+            .json(crate::views::timetable::simulation_empty_response(2))
+            .finish();
+        core.stub("/conflict_detection")
+            .response(StatusCode::OK)
+            .json(ConflictDetectionResponse { conflicts: vec![] })
+            .finish();
+        let app = test_app!().core_client(core.into()).build();
         let pool = app.db_pool();
+
+        let infra = create_small_infra(&mut pool.get_ok()).await;
         let rs_authorized = create_fast_rolling_stock(&mut pool.get_ok(), "authorized_rs").await;
         let rs_no_grant = create_fast_rolling_stock(&mut pool.get_ok(), "forbidden_rs").await;
         let (timetable, train_schedule_set) =
             create_timetable_with_train_schedule_set(&mut pool.get_ok()).await;
+
         let train_schedule_authorized = simple_paced_train_changeset(train_schedule_set.id)
             .train_name("train_schedule_authorized".into())
             .rolling_stock_name(rs_authorized.name.clone())
+            .path(vec![
+                PathItem::new_operational_point("Mid_West_station"),
+                PathItem::new_operational_point("Mid_East_station"),
+            ])
+            .schedule(vec![])
+            .margins(Margins::default())
+            .power_restrictions(vec![])
             .create(&mut pool.get_ok())
             .await
             .expect("failed to create train schedule");
-        let train_schedule_unauthorized_exception =
-            simple_paced_train_changeset(train_schedule_set.id)
-                .train_name("train_schedule_forbidden_exception".into())
-                .rolling_stock_name(rs_authorized.name.clone())
-                .create(&mut pool.get_ok())
-                .await
-                .expect("failed to create train schedule");
-        let train_schedule_unauthorized = simple_paced_train_changeset(train_schedule_set.id)
+        // Filtered out: its rolling stock is not readable by the user
+        simple_paced_train_changeset(train_schedule_set.id)
             .train_name("train_schedule_no_grant".into())
             .rolling_stock_name(rs_no_grant.name.clone())
+            .path(vec![
+                PathItem::new_operational_point("Mid_East_station"),
+                PathItem::new_operational_point("Mid_West_station"),
+            ])
+            .schedule(vec![])
+            .margins(Margins::default())
+            .power_restrictions(vec![])
             .create(&mut pool.get_ok())
             .await
             .expect("failed to create train schedule");
-        let change_group_authorized = TrainScheduleExceptionChangeGroups {
-            rolling_stock: Some(RollingStockChangeGroup {
-                rolling_stock_name: rs_authorized.name.clone(),
-                comfort: Comfort::AirConditioning,
+        // Filtered out: the occurrence it creates switches to a rolling stock that is not
+        // readable by the user, while its train schedule is kept
+        create_train_schedule_exception(
+            &mut pool.get_ok(),
+            timetable.id,
+            train_schedule_authorized.id,
+            None,
+            None,
+            Some(TrainScheduleExceptionChangeGroups {
+                rolling_stock: Some(RollingStockChangeGroup {
+                    rolling_stock_name: rs_no_grant.name.clone(),
+                    // Differs from the comfort of the train schedule: the occurrence created by
+                    // this exception has its own simulation
+                    comfort: Comfort::Heating,
+                }),
+                ..Default::default()
             }),
-            ..Default::default()
-        };
-        let change_group_no_grant = TrainScheduleExceptionChangeGroups {
-            rolling_stock: Some(RollingStockChangeGroup {
-                rolling_stock_name: rs_no_grant.name.clone(),
-                comfort: Comfort::AirConditioning,
-            }),
-            ..Default::default()
-        };
-        let exception_authorized: schemas::TrainScheduleException =
-            create_train_schedule_exception(
-                &mut pool.get_ok(),
-                timetable.id,
-                train_schedule_authorized.id,
-                None,
-                None,
-                Some(change_group_authorized),
-            )
-            .await
-            .into();
-        let exception_unauthorized: schemas::TrainScheduleException =
-            create_train_schedule_exception(
-                &mut pool.get_ok(),
-                timetable.id,
-                train_schedule_authorized.id,
-                None,
-                None,
-                Some(change_group_no_grant),
-            )
-            .await
-            .into();
-
-        let openfga = app.openfga();
+        )
+        .await;
 
         let user = app
             .user("user", "User")
+            .with_infra_grant(infra.id, InfraGrant::Reader)
             .with_rolling_stock_grant(rs_authorized.id, RollingStockGrant::Reader)
             .create()
             .await;
-        let authn_state = crate::authentication::State::Authenticated {
-            user: authz::User(user.id),
-            roles: vec![],
-        };
-        let train_schedules_with_exceptions = vec![
-            (
-                train_schedule_authorized.clone(),
-                vec![exception_authorized.clone()],
-            ),
-            (
-                train_schedule_unauthorized_exception.clone(),
-                vec![exception_unauthorized],
-            ),
-            (train_schedule_unauthorized, vec![]),
-        ];
-        let authorized_train_schedules = filter_unauthorized_train_schedules_and_exceptions(
-            openfga,
-            pool.get_ok(),
-            authn_state,
-            train_schedules_with_exceptions,
-        )
-        .await
-        .expect("the authorization filter method should succeed");
-        let expected_response = vec![
-            (train_schedule_authorized, vec![exception_authorized]),
-            (train_schedule_unauthorized_exception, vec![]),
-        ];
-        assert_eq!(expected_response, authorized_train_schedules);
+
+        let conflicts: Vec<Conflict> = app
+            .get(
+                format!(
+                    "/timetable/{}/conflicts?infra_id={}",
+                    timetable.id, infra.id
+                )
+                .as_str(),
+            )
+            .by_user(user.as_ref())
+            .await
+            .assert_status_ok()
+            .json();
+        assert!(conflicts.is_empty());
     }
 }
