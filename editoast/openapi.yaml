@@ -15534,6 +15534,7 @@ components:
       - can_delete
       - can_share_ownership
       - can_revoke
+      - has_access
     StartTimeChangeGroup:
       type: object
       required:

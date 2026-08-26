@@ -2998,7 +2998,8 @@ export type StandardPrivilege =
   | 'can_share_write'
   | 'can_delete'
   | 'can_share_ownership'
-  | 'can_revoke';
+  | 'can_revoke'
+  | 'has_access';
 export type SubjectType = 'User' | 'Group';
 export type PaginationStats = {
   /** The total number of items */

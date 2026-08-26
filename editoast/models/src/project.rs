@@ -12,7 +12,7 @@ use crate::tags::Tags;
 
 #[derive(Clone, Debug, Serialize, Deserialize, Model, ToSchema, PartialEq)]
 #[model(table = database::tables::project)]
-#[model(gen(ops = crud, list))]
+#[model(gen(ops = crud, batch_ops = r, list))]
 pub struct Project {
     pub id: i64,
     pub name: String,

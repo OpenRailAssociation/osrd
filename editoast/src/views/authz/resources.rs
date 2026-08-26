@@ -1,5 +1,6 @@
 use authz::InfraGrant;
 use authz::InfraPrivilege;
+use authz::ProjectGrant;
 use authz::RollingStockGrant;
 use authz::RollingStockPrivilege;
 use serde::Deserialize;
@@ -32,9 +33,9 @@ impl Resource {
     }
 }
 
-#[derive(Serialize, Deserialize, ToSchema)]
+#[derive(Serialize, Deserialize, ToSchema, Debug, Display)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
-#[cfg_attr(test, derive(Debug, PartialEq))]
+#[cfg_attr(test, derive(PartialEq))]
 pub(super) enum StandardGrant {
     RestrictedReader,
     Reader,
@@ -55,6 +56,7 @@ pub(super) enum StandardPrivilege {
     CanDelete,
     CanShareOwnership,
     CanRevoke,
+    HasAccess,
 }
 
 macro_rules! impl_standard_privilege_from_into {
@@ -106,3 +108,10 @@ impl_standard_privilege_from_into!(RollingStockPrivilege);
 impl_standard_privilege_from_into!(InfraPrivilege);
 impl_standard_grant_from_into!(RollingStockGrant);
 impl_standard_grant_from_into!(InfraGrant);
+impl From<ProjectGrant> for StandardGrant {
+    fn from(grant: ProjectGrant) -> Self {
+        match grant {
+            ProjectGrant::Owner => Self::Owner,
+        }
+    }
+}

@@ -231,7 +231,19 @@ impl fga::model::Type for Role {
     }
 }
 
-#[derive(fga::Type, fga::Object, derive_more::FromStr, Clone, Copy, Debug, Eq, Hash, PartialEq)]
+#[derive(
+    fga::Type,
+    fga::Object,
+    derive_more::Display,
+    derive_more::From,
+    derive_more::FromStr,
+    Clone,
+    Copy,
+    Debug,
+    Eq,
+    Hash,
+    PartialEq,
+)]
 #[cfg_attr(test, derive(Ord, PartialOrd))]
 pub struct Project(pub i64);
 
