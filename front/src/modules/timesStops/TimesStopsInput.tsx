@@ -1,4 +1,3 @@
-/* eslint-disable react/jsx-no-useless-fragment */
 import { useCallback, useEffect, useState } from 'react';
 
 import { X } from '@osrd-project/ui-icons';
@@ -58,6 +57,7 @@ const createClearViaButton = ({
       </button>
     );
   }
+  /* eslint-disable-next-line react/jsx-no-useless-fragment */
   return <></>;
 };
 

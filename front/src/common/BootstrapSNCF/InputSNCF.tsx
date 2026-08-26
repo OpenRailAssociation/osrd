@@ -1,4 +1,3 @@
-/* eslint-disable jsx-a11y/no-autofocus */
 import React, { type InputHTMLAttributes, type ReactNode } from 'react';
 
 import cx from 'classnames';
@@ -138,6 +137,7 @@ const InputSNCF = ({
           >
             <input
               data-testid={`${id}-input`}
+              /* eslint-disable-next-line jsx-a11y/no-autofocus */
               autoFocus={focus}
               type={type}
               onChange={onChange}

@@ -64,7 +64,7 @@ const Editor = () => {
   const isLocked = useSelector(getInfraLockStatus);
   const editorState = useSelector(getEditorState);
   const { data: switchTypes } = useSwitchTypes(infraID);
-  /* eslint-disable @typescript-eslint/no-explicit-any */
+  /* eslint-disable-next-line typescript/no-explicit-any */
   const [toolAndState, setToolAndState] = useState<FullTool<any>>({
     tool: TOOLS[TOOL_NAMES.SELECTION],
     state: TOOLS[TOOL_NAMES.SELECTION].getInitialState({ infraID, switchTypes }),

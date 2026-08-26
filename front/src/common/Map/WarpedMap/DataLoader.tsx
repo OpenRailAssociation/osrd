@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import { useEffect, useMemo, useState } from 'react';
 
 import { featureCollection } from '@turf/helpers';
@@ -61,6 +60,7 @@ const DataLoader = ({ bbox, getGeoJSONs, layers }: DataLoaderProps) => {
 
     mapRef.fitBounds(bbox, { animate: false });
     setTimeout(() => {
+      /* eslint-disable-next-line no-console */
       console.time(TIME_LABEL);
       setState('render');
     }, 0);
