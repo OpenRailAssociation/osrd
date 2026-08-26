@@ -730,7 +730,7 @@ const TimeCell = ({
           newValue={editedDate}
           onSelectMode={handleSelectPropagationMode}
           disableFromDeparture={column.id === 'requestedArrival' && isFirstRow}
-          disableToDestination={column.id === 'requestedArrival' && isLastRow}
+          disableToDestination={isLastRow}
           isOriginArrival={column.id === 'requestedArrival' && isFirstRow}
         />
       </div>
