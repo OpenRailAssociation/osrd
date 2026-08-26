@@ -70,21 +70,6 @@ macro_rules! impl_standard_privilege_from_into {
                 }
             }
         }
-
-        impl From<StandardPrivilege> for $ty {
-            fn from(privilege: StandardPrivilege) -> Self {
-                match privilege {
-                    StandardPrivilege::CanRestrictedRead => Self::CanRestrictedRead,
-                    StandardPrivilege::CanRead => Self::CanRead,
-                    StandardPrivilege::CanShareRead => Self::CanShareRead,
-                    StandardPrivilege::CanWrite => Self::CanWrite,
-                    StandardPrivilege::CanShareWrite => Self::CanShareWrite,
-                    StandardPrivilege::CanDelete => Self::CanDelete,
-                    StandardPrivilege::CanShareOwnership => Self::CanShareOwnership,
-                    StandardPrivilege::CanRevoke => Self::CanRevoke,
-                }
-            }
-        }
     };
 }
 
