@@ -23,7 +23,7 @@ thiserror = "2.0.18"
 
 # main crate
 actix-cors = "0.7.1"
-actix-files = "0.6"
+actix-files = "0.7"
 actix-session = "0.11"
 actix-web = "4.13"
 actix-web-opentelemetry = { version = "0.22.0", features = ["awc", "metrics"] }
