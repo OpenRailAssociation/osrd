@@ -781,7 +781,7 @@ pub(in crate::views) async fn filter_readable_occurrences(
     let Ok(authorized_rolling_stocks) = SystemAuthorizer::new_infallible(openfga)
         .authorize(authz::v2::rolling_stock_list(
             user,
-            RollingStockPrivilege::CanRead,
+            RollingStockPrivilege::CanRestrictedRead,
         ))
         .await?
         .access()

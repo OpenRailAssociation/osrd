@@ -1013,9 +1013,12 @@ pub(in crate::views) async fn etcs_braking_curves(
     )
     .await?;
 
-    v2::rolling_stock_privilege_check(authz::RollingStock(rs.id), RollingStockPrivilege::CanRead)
-        .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
-        .await?;
+    v2::rolling_stock_privilege_check(
+        authz::RollingStock(rs.id),
+        RollingStockPrivilege::CanRestrictedRead,
+    )
+    .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
+    .await?;
 
     // Compute simulation of a train schedule
     let (simulation_result, pathfinding_result) = train_simulation_ordered_batch(
@@ -1641,7 +1644,7 @@ pub(in crate::views) async fn occupancy_blocks(
                 authz::v2::rolling_stock_privileges(*user, authz::RollingStock(rolling_stock.id))
                     .map(async move |grants| {
                         grants
-                            .contains(&RollingStockPrivilege::CanRead)
+                            .contains(&RollingStockPrivilege::CanRestrictedRead)
                             .then_some(rolling_stock.name.clone())
                     })
             });
@@ -4303,7 +4306,10 @@ mod tests {
         let user = app
             .user("partially-authorized", "Partially authorized")
             .with_infra_grant(small_infra.id, authz::InfraGrant::Reader)
-            .with_rolling_stock_grant(readable_rolling_stock.id, authz::RollingStockGrant::Reader)
+            .with_rolling_stock_grant(
+                readable_rolling_stock.id,
+                authz::RollingStockGrant::RestrictedReader,
+            )
             .with_roles([authz::Role::OperationalStudies])
             .create()
             .await;
@@ -4311,10 +4317,13 @@ mod tests {
         let authorized_user = app
             .user("authorized", "Authorized")
             .with_infra_grant(small_infra.id, authz::InfraGrant::Reader)
-            .with_rolling_stock_grant(readable_rolling_stock.id, authz::RollingStockGrant::Reader)
+            .with_rolling_stock_grant(
+                readable_rolling_stock.id,
+                authz::RollingStockGrant::RestrictedReader,
+            )
             .with_rolling_stock_grant(
                 unreadable_rolling_stock.id,
-                authz::RollingStockGrant::Reader,
+                authz::RollingStockGrant::RestrictedReader,
             )
             .with_roles([authz::Role::OperationalStudies])
             .create()
@@ -4390,7 +4399,10 @@ mod tests {
         let user = app
             .user("partially-authorized", "Partially authorized")
             .with_infra_grant(small_infra.id, authz::InfraGrant::Reader)
-            .with_rolling_stock_grant(readable_rolling_stock.id, authz::RollingStockGrant::Reader)
+            .with_rolling_stock_grant(
+                readable_rolling_stock.id,
+                authz::RollingStockGrant::RestrictedReader,
+            )
             .with_roles([authz::Role::OperationalStudies])
             .create()
             .await;
@@ -4398,10 +4410,13 @@ mod tests {
         let authorized_user = app
             .user("authorized", "Authorized")
             .with_infra_grant(small_infra.id, authz::InfraGrant::Reader)
-            .with_rolling_stock_grant(readable_rolling_stock.id, authz::RollingStockGrant::Reader)
+            .with_rolling_stock_grant(
+                readable_rolling_stock.id,
+                authz::RollingStockGrant::RestrictedReader,
+            )
             .with_rolling_stock_grant(
                 unreadable_rolling_stock.id,
-                authz::RollingStockGrant::Reader,
+                authz::RollingStockGrant::RestrictedReader,
             )
             .with_roles([authz::Role::OperationalStudies])
             .create()
@@ -4656,7 +4671,7 @@ mod tests {
             schedule,
             operational_point_reference,
             use_simulation,
-            Some(authz::RollingStockGrant::Reader),
+            Some(authz::RollingStockGrant::RestrictedReader),
         )
         .await
     }
