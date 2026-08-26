@@ -1,4 +1,16 @@
+use super::OperationalStudiesOrderingParam;
+use crate::AppState;
+use crate::authentication;
+use crate::authorizers::SystemAuthorizer;
+use crate::error::InternalError;
+use crate::error::Result;
+use crate::views::AuthorizationError;
+use crate::views::pagination::PaginatedList;
+use crate::views::pagination::PaginationQueryParams;
+use crate::views::pagination::PaginationStats;
+use authz::ProjectPrivilege;
 use authz::Role;
+use authz::v2::project_privilege_check;
 use axum::Extension;
 use axum::extract::Json;
 use axum::extract::Path;
@@ -10,7 +22,10 @@ use chrono::Utc;
 use database::DbConnection;
 use database::DbConnectionPoolV2;
 use editoast_derive::EditoastError;
+use models::Document;
 use models::prelude::*;
+use models::project::Project;
+use models::tags::Tags;
 use serde::Deserialize;
 use serde::Serialize;
 use serde_with::rust::double_option;
@@ -18,19 +33,6 @@ use std::sync::Arc;
 use thiserror::Error;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
-
-use super::OperationalStudiesOrderingParam;
-use crate::AppState;
-use crate::authentication;
-use crate::authorizers::SystemAuthorizer;
-use crate::error::InternalError;
-use crate::error::Result;
-use crate::views::pagination::PaginatedList;
-use crate::views::pagination::PaginationQueryParams;
-use crate::views::pagination::PaginationStats;
-use models::Document;
-use models::project::Project;
-use models::tags::Tags;
 
 #[derive(Debug, Error, EditoastError, derive_more::From)]
 #[editoast_error(base_id = "project")]
@@ -234,7 +236,13 @@ pub(in crate::views) struct ProjectIdParam {
     )
 )]
 pub(in crate::views) async fn get(
-    State(db_pool): State<Arc<DbConnectionPoolV2>>,
+    State(AppState {
+        db_pool,
+        openfga,
+        config,
+        ..
+    }): State<AppState>,
+    Extension(authn_state): Extension<authentication::State>,
     Path(project_id): Path<i64>,
 ) -> Result<Json<ProjectWithStudyCount>> {
     let conn = db_pool.get().await?;
@@ -242,6 +250,13 @@ pub(in crate::views) async fn get(
         project_id,
     })
     .await?;
+
+    if config.enable_project_permissions {
+        project_privilege_check(authz::Project(project_id), ProjectPrivilege::HasAccess)
+            .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
+            .await?;
+    }
+
     Ok(Json(ProjectWithStudyCount::try_fetch(conn, project).await?))
 }
 
@@ -376,15 +391,15 @@ pub(in crate::views) async fn patch(
 pub mod tests {
     use super::*;
 
+    use crate::fixtures::create_project;
+    use crate::views::test_app::TestApp;
+    use crate::views::test_app::TestRequestExt as _;
+    use crate::views::test_app::test_app;
     use authz::ProjectGrant;
     use authz::v2::TestClientExt as _;
     use pretty_assertions::assert_eq;
-
+    use rstest::rstest;
     use serde_json::json;
-
-    use crate::fixtures::create_project;
-    use crate::views::test_app::TestRequestExt as _;
-    use crate::views::test_app::test_app;
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn project_post() {
@@ -449,18 +464,97 @@ pub mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn project_get() {
-        let app = test_app!().skip_authz().build();
-        let db_pool = app.db_pool();
-
-        let created_project = create_project(&mut db_pool.get_ok(), "test_project_name").await;
-
+        let app = test_app!().build();
+        let project = create_project(&mut app.db_pool().get_ok(), "project").await;
+        let user = app
+            .user("user", "User")
+            .with_roles([Role::OperationalStudies])
+            .with_project_grant(project.id, ProjectGrant::Owner)
+            .create()
+            .await;
         let response: ProjectWithStudyCount = app
-            .get(format!("/projects/{}", created_project.id).as_str())
+            .get(&format!("/projects/{}", project.id))
+            .by_user(user.as_ref())
             .await
             .assert_status_ok()
             .json();
 
-        assert_eq!(response.project, created_project);
+        assert_eq!(response.project, project);
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn project_get_admin_allowed() {
+        let app = test_app!().build();
+        let project = create_project(&mut app.db_pool().get_ok(), "project").await;
+        let admin = app
+            .user("admin", "Admin")
+            .with_roles([Role::Admin])
+            .with_project_grant(project.id, ProjectGrant::Owner)
+            .create()
+            .await;
+        app.get(&format!("/projects/{}", project.id))
+            .by_user(admin.as_ref())
+            .await
+            .assert_status_ok();
+    }
+
+    #[rstest]
+    #[case::no_role(
+        test_app!().build(),
+        create_project(&mut app.db_pool().get_ok(), "project").await,
+        app
+            .user("bob", "Bob")
+            .with_project_grant(project.id, ProjectGrant::Owner)
+            .create()
+            .await
+    )]
+    #[case::no_grant(
+        test_app!().build(),
+        create_project(&mut app.db_pool().get_ok(), "project").await,
+        app
+            .user("bob", "Bob")
+            .with_roles([Role::OperationalStudies])
+            .create()
+            .await
+    )]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn project_get_forbidden(
+        #[case] app: TestApp,
+        #[case] project: Project,
+        #[case] user_forbidden: authz::identity::User,
+    ) {
+        let user_authorized = app
+            .user("alice", "Alice")
+            .with_roles([Role::OperationalStudies])
+            .with_project_grant(project.id, ProjectGrant::Owner)
+            .create()
+            .await;
+        app.get(&format!("/projects/{}", project.id))
+            .by_user(user_forbidden.as_ref())
+            .await
+            .assert_status_forbidden();
+        app.get(&format!("/projects/{}", project.id))
+            .by_user(user_authorized.as_ref())
+            .await
+            .assert_status_ok();
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn project_get_not_found() {
+        let app = test_app!().build();
+        let project_id = create_project(&mut app.db_pool().get_ok(), "project")
+            .await
+            .id;
+        let user = app
+            .user("user", "User")
+            .with_roles([Role::OperationalStudies])
+            .create()
+            .await;
+
+        app.get(&format!("/projects/{}", project_id + 1000))
+            .by_user(user.as_ref())
+            .await
+            .assert_status_not_found();
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
