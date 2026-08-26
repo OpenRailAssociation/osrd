@@ -209,7 +209,6 @@ const TrainScheduleSetForm = ({
             description,
             catalog: catalogEntry!,
             published: false,
-            timetable_type: 'CALENDAR',
           });
         } else {
           onValidation(true);
