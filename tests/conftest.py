@@ -1,4 +1,6 @@
 import json
+import os
+import subprocess
 from collections.abc import Iterator, Mapping
 from dataclasses import dataclass
 from pathlib import Path
@@ -53,10 +55,43 @@ def session() -> Iterator[Session]:
     yield session_no_fixture()
 
 
+TEST_USER_IDENTITY = "tests/integration"
+TEST_USER_NAME = "Integration tests"
+
+# Roles can only be granted through the editoast CLI, so the user is created by running it
+# in the editoast container. Override the name if the container isn't the compose one.
+EDITOAST_CONTAINER = os.environ.get("OSRD_EDITOAST_CONTAINER", "osrd-editoast")
+
+
+def create_admin_user() -> None:
+    """
+    Create the admin user the tests authenticate as, if it doesn't already exist
+
+    Both editoast commands are idempotent, so this can be called before every run.
+    """
+    for command in (
+        ["user", "add", "--skip-if-exists", TEST_USER_NAME, TEST_USER_IDENTITY],
+        ["roles", "add", TEST_USER_IDENTITY, "Admin"],
+    ):
+        process = subprocess.run(
+            ["docker", "exec", EDITOAST_CONTAINER, "editoast", *command],
+            capture_output=True,
+            text=True,
+            check=False,  # the returncode is reported below, with the CLI output
+        )
+        if process.returncode != 0:
+            raise RuntimeError(
+                f"Failed to create the admin user the tests authenticate as: "
+                f"`editoast {' '.join(command)}` in container '{EDITOAST_CONTAINER}' "
+                f"exited with {process.returncode}.\n{process.stderr}"
+            )
+
+
 def session_no_fixture() -> Session:
     """
     Used to generate a session without calling a fixture, useful for standalone scripts (e.g. fuzzer)
     """
+    create_admin_user()
     # A failed request will retry up to 5 times with the following timings [2, 4, 8, 16, 32] for a total of 62 seconds
     retry_strategy = Retry(
         total=5,
@@ -67,7 +102,12 @@ def session_no_fixture() -> Session:
     session = Session()
     session.mount("http://", adapter)
     session.mount("https://", adapter)
-    session.headers.update({"x-osrd-skip-authz": "true"})
+    session.headers.update(
+        {
+            "x-remote-user-identity": TEST_USER_IDENTITY,
+            "x-remote-user-name": TEST_USER_NAME,
+        }
+    )
     return session
 
 
