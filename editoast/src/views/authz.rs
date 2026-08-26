@@ -11,6 +11,7 @@ use ::authz;
 use ::authz::InfraGrant;
 use ::authz::InfraPrivilege;
 use ::authz::Role;
+use authz::ProjectPrivilege;
 use authz::RollingStockGrant;
 use authz::RollingStockPrivilege;
 use authz::v2;
@@ -29,6 +30,7 @@ use futures::TryStreamExt;
 use itertools::Itertools;
 use models::Group;
 use models::Infra;
+use models::Project;
 use models::RollingStock;
 use models::User;
 use models::authn::user::UserWithIdentities;
@@ -454,16 +456,20 @@ async fn retrieve_missing_resource_ids(
     let rolling_stock_ids = resources
         .remove(&ResourceType::RollingStock)
         .unwrap_or_default();
+    let project_ids = resources.remove(&ResourceType::Project).unwrap_or_default();
 
-    let mut infra_conn = conn.clone();
-    let ((_, missing_infras), (_, missing_rolling_stocks)) = tokio::try_join!(
-        Infra::retrieve_batch::<_, Vec<_>>(&mut infra_conn, infra_ids),
-        RollingStock::retrieve_batch::<_, Vec<_>>(&mut conn, rolling_stock_ids),
+    let mut rolling_stock_conn = conn.clone();
+    let mut project_conn = conn.clone();
+    let ((_, missing_infras), (_, missing_rolling_stocks), (_, missing_projects)) = tokio::try_join!(
+        Infra::retrieve_batch::<_, Vec<_>>(&mut conn, infra_ids),
+        RollingStock::retrieve_batch::<_, Vec<_>>(&mut rolling_stock_conn, rolling_stock_ids),
+        Project::retrieve_batch::<_, Vec<_>>(&mut project_conn, project_ids),
     )?;
 
     Ok(HashMap::from([
         (ResourceType::Infra, missing_infras),
         (ResourceType::RollingStock, missing_rolling_stocks),
+        (ResourceType::Project, missing_projects),
     ]))
 }
 
@@ -525,7 +531,11 @@ pub(in crate::views) async fn user_grants(
                     authz::RollingStock(*id),
                 )
                 .map_some_into::<StandardGrant>(),
-                ResourceType::Project => todo!(),
+                ResourceType::Project => authz::v2::project_effective_grant(
+                    authz::Subject::user(user),
+                    authz::Project(*id),
+                )
+                .map_some_into::<StandardGrant>(),
             }
             .authorize(&authorizer)
             .await?
@@ -544,6 +554,14 @@ pub(in crate::views) async fn user_grants(
                     rolling_stock,
                 )) => {
                     tracing::warn!(%rolling_stock, "user cannot read rolling stock — skipping");
+                    continue;
+                }
+                Err(Check::HasProjectPrivilege(
+                    Actor::Issuer,
+                    ProjectPrivilege::HasAccess,
+                    project,
+                )) => {
+                    tracing::warn!(%project, "user does not have access to project — skipping");
                     continue;
                 }
                 Err(_) => return Err(AuthorizationError::Forbidden.into()),
@@ -938,6 +956,7 @@ pub(in crate::views) async fn list_groups(
 
 #[cfg(test)]
 mod tests {
+    use authz::ProjectGrant;
     use authz::RollingStockGrant;
     use authz::v2::TestClientExt as _;
     use axum::http::StatusCode;
@@ -951,6 +970,7 @@ mod tests {
     use crate::error::InternalError;
     use crate::fixtures::create_empty_infra;
     use crate::fixtures::create_fast_rolling_stock;
+    use crate::fixtures::create_project;
     use crate::fixtures::create_small_infra;
     use crate::views::test_app::TestApp;
     use crate::views::test_app::TestRequestExt as _;
@@ -1146,12 +1166,15 @@ mod tests {
         let rs_with_grant = create_fast_rolling_stock(&mut db_pool.get_ok(), "rs_with_grant").await;
         let rs_no_grant = create_fast_rolling_stock(&mut db_pool.get_ok(), "rs_no_grant").await;
         let infra_no_grant = create_small_infra(&mut db_pool.get_ok()).await;
+        let project = create_project(&mut db_pool.get_ok(), "project_with_grant").await;
+        let project_no_grant = create_project(&mut db_pool.get_ok(), "project_no_grant").await;
 
         let user = app
             .user("test", "Test")
             .with_roles([Role::OperationalStudies])
             .with_infra_grant(infra.id, InfraGrant::Reader)
             .with_rolling_stock_grant(rs_with_grant.id, RollingStockGrant::Reader)
+            .with_project_grant(project.id, ProjectGrant::Owner)
             .create()
             .await;
 
@@ -1162,6 +1185,7 @@ mod tests {
             .json(&json!({
                 "infra": [infra.id],
                 "rolling_stock": [rs_with_grant.id],
+                "project": [project.id]
             }))
             .await
             .assert_status_ok()
@@ -1182,11 +1206,19 @@ mod tests {
                 grant: StandardGrant::Reader
             }]
         );
+        assert_eq!(
+            response.get(&ResourceType::Project).unwrap(),
+            &[UserResourceGrant {
+                id: project.id,
+                grant: StandardGrant::Owner
+            }]
+        );
 
         app.group("Group")
             .with_members([&user])
             .with_infra_grant(infra.id, InfraGrant::Writer)
             .with_rolling_stock_grant(rs_with_grant.id, RollingStockGrant::Writer)
+            .with_project_grant(project.id, ProjectGrant::Owner)
             .create()
             .await;
 
@@ -1197,6 +1229,7 @@ mod tests {
             .json(&json!({
                 "infra": [infra.id, infra_no_grant.id, infra_no_grant.id + 1000],
                 "rolling_stock": [rs_with_grant.id, rs_no_grant.id, rs_no_grant.id + 1000],
+                "project": [project.id, project_no_grant.id, project_no_grant.id + 1000]
             }))
             .await
             .assert_status_ok()
@@ -1218,6 +1251,39 @@ mod tests {
                 grant: StandardGrant::Writer
             }]
         );
+        assert_eq!(
+            response.get(&ResourceType::Project).unwrap(),
+            &[UserResourceGrant {
+                id: project.id,
+                grant: StandardGrant::Owner
+            }]
+        );
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn authz_me_grants_user_without_grants() {
+        let app = test_app!().build();
+        let db_pool = app.db_pool();
+        let infra = create_small_infra(&mut db_pool.get_ok()).await;
+        let rolling_stock = create_fast_rolling_stock(&mut db_pool.get_ok(), "rolling_stock").await;
+        let project = create_project(&mut db_pool.get_ok(), "project").await;
+        let user_no_grants = app
+            .user("user", "User")
+            .with_roles([Role::OperationalStudies])
+            .create()
+            .await;
+        let response: HashMap<ResourceType, Vec<UserResourceGrant>> = app
+            .post("/authz/me/grants")
+            .by_user(user_no_grants.as_ref())
+            .json(&json!({
+                "infra": [infra.id],
+                "rolling_stock": [rolling_stock.id],
+                "project": [project.id]
+            }))
+            .await
+            .assert_status_ok()
+            .json();
+        assert_eq!(response, HashMap::new());
     }
 
     // TODO rewrite the test and check which users have grants on which resources.
