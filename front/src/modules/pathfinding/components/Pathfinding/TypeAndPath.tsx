@@ -1,4 +1,3 @@
-/* eslint-disable jsx-a11y/no-autofocus */
 import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { Rocket } from '@osrd-project/ui-icons';
@@ -233,6 +232,7 @@ const TypeAndPath = ({ onSubmit }: TypeAndPathProps) => {
               value={inputText}
               onChange={(e) => handleInput(e.target.value, e.target.selectionStart!)}
               placeholder={t('inputOPMainCodesExample')}
+              /* eslint-disable-next-line jsx-a11y/no-autofocus */
               autoFocus
               data-testid="type-and-path-input"
             />

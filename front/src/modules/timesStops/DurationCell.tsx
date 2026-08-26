@@ -1,5 +1,3 @@
-/* eslint-disable jsx-a11y/no-noninteractive-tabindex */
-/* eslint-disable jsx-a11y/no-static-element-interactions */
 import {
   useReducer,
   useRef,
@@ -552,8 +550,10 @@ const DurationCell = ({
 
   return (
     <>
+      {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions */}
       <div
         ref={containerRef}
+        /* eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex */
         tabIndex={0}
         className="duration-cell"
         data-testid="duration-cell"
