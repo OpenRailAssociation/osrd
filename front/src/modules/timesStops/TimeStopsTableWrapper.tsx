@@ -12,10 +12,11 @@ import type { SimulationSummary, TrainScheduleWithDetails } from 'modules/trainS
 import type { Train } from 'reducers/osrdconf/types';
 import { Duration, type StartTime, addDurationToStartTime, startTimeToMs } from 'utils/duration';
 
+import { ONE_DAY } from './consts';
 import { computeOptimisticRow, propagationToEdits } from './helpers/cellUpdate';
 import { computePowerRestrictionWarnings } from './helpers/powerRestrictionIncompatibility';
 import { propagateStopDuration } from './helpers/stopDurationPropagation';
-import { ONE_DAY, propagateTime } from './helpers/timePropagation';
+import { propagateTime } from './helpers/timePropagation';
 import useTimesStopsTableData from './hooks/useTimesStopsTableData';
 import useUpdateTimesStopsTable from './hooks/useUpdateTimesStopsTable';
 import TimesStopsTable from './TimesStopsTable';
