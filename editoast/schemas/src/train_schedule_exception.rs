@@ -29,6 +29,16 @@ pub struct TrainScheduleException {
     pub change_groups: TrainScheduleExceptionChangeGroups,
 }
 
+impl TrainScheduleException {
+    /// The name of the rolling stock the exception switches to, if it changes it
+    pub fn rolling_stock_name(&self) -> Option<&str> {
+        self.change_groups
+            .rolling_stock
+            .as_ref()
+            .map(|change_group| change_group.rolling_stock_name.as_str())
+    }
+}
+
 #[skip_serializing_none]
 #[serde_as]
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ToSchema)]
