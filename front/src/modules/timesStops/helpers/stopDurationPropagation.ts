@@ -3,9 +3,8 @@ import type { Train } from 'reducers/osrdconf/types';
 import { Duration, subtractDurationFromStartTime } from 'utils/duration';
 
 import { ONE_DAY } from '../consts';
-import type { StopDurationUpdate } from '../types';
+import type { StopDurationUpdate, PropagationResult } from '../types';
 import { insertScheduleItemInOrder } from './cellUpdate';
-import { type PropagationResult } from './timePropagation';
 import { formatSignedDelta } from './utils';
 
 export const formatStopDurationDeltaLabel = (

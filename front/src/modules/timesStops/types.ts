@@ -1,4 +1,9 @@
-import type { PathItemLocation, ReceptionSignal } from 'common/api/osrdEditoastApi';
+import type {
+  PathItemLocation,
+  ReceptionSignal,
+  PathItem,
+  ScheduleItem,
+} from 'common/api/osrdEditoastApi';
 import type { TimeString } from 'common/types';
 import type { SuggestedOP } from 'modules/trainSchedule/types';
 import type { Duration, StartTime } from 'utils/duration';
@@ -119,6 +124,12 @@ export type PropagationMode =
   | 'fromDeparture'
   | 'atThisWaypoint'
   | 'toDestination';
+
+export type PropagationResult = {
+  updatedPath: PathItem[];
+  updatedSchedule: ScheduleItem[];
+  updatedStartTime: StartTime;
+};
 
 export type StopPropagationMode = Exclude<PropagationMode, 'shiftAllWaypoints'>;
 

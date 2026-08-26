@@ -1,4 +1,4 @@
-import type { PathItem, ScheduleItem, TimetableType } from 'common/api/osrdEditoastApi';
+import type { ScheduleItem, TimetableType } from 'common/api/osrdEditoastApi';
 import type { Train } from 'reducers/osrdconf/types';
 import {
   Duration,
@@ -8,14 +8,8 @@ import {
 } from 'utils/duration';
 
 import { ONE_DAY } from '../consts';
-import type { ArrivalUpdate, CellUpdate, PropagationMode } from '../types';
+import type { ArrivalUpdate, CellUpdate, PropagationMode, PropagationResult } from '../types';
 import { truncateStartTimeToSecond, formatSignedDelta } from './utils';
-
-export type PropagationResult = {
-  updatedPath: PathItem[];
-  updatedSchedule: ScheduleItem[];
-  updatedStartTime: StartTime;
-};
 
 const isOriginArrivalUpdate = (update: CellUpdate): update is ArrivalUpdate =>
   update.field === 'requestedArrival' && update.row.opOnPathIndex === 0;
