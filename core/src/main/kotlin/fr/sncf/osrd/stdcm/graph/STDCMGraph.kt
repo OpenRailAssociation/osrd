@@ -18,7 +18,7 @@ import fr.sncf.osrd.stdcm.graph.engineering_allowance.EngineeringAllowanceManage
 import fr.sncf.osrd.stdcm.graph.visited_node_tracking.VisitedNodes
 import fr.sncf.osrd.stdcm.infra_exploration.ExplorerStep
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorerWithEnvelope
-import fr.sncf.osrd.stdcm.infra_exploration.getBacktrackingLocationInLookahead
+import fr.sncf.osrd.stdcm.infra_exploration.nextBacktrackLocation
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface
 import fr.sncf.osrd.stdcm.tracing.FailureExplainer
 import fr.sncf.osrd.utils.units.Offset
@@ -154,13 +154,12 @@ class STDCMGraph(
             // If we're at a non-backtracking stop in the middle of an edge, we want to generate the
             // rest of the edge on the rest of the block, starting at the stop and ending at the end
             // of the block.
-            val backtrackingLocation = explorer.getBacktrackingLocationInLookahead()
             visitedNodesParameters.fingerprint =
                 VisitedNodes.Fingerprint(
                     explorer.getLastEdgeIdentifier(),
                     node.infraExplorer.getStepTracker().nStepsExcludingLookahead,
-                    node.locationOnEdge.distance,
-                    backtrackingLocation,
+                    node.locationOnEdge,
+                    explorer.nextBacktrackLocation(),
                 )
             if (visitedNodes.isVisited(visitedNodesParameters)) return listOf()
             visitedNodes.markAsVisited(visitedNodesParameters)
@@ -169,14 +168,13 @@ class STDCMGraph(
             val extended = extendLookaheadUntil(explorer, 3)
             for (newPath in extended) {
                 if (newPath.getLookahead().isEmpty()) continue
-                val backtrackingLocation = newPath.getBacktrackingLocationInLookahead()
                 newPath.moveForward()
                 visitedNodesParameters.fingerprint =
                     VisitedNodes.Fingerprint(
                         newPath.getLastEdgeIdentifier(),
                         node.infraExplorer.getStepTracker().nStepsExcludingLookahead,
-                        0.meters,
-                        backtrackingLocation,
+                        Offset.zero(),
+                        newPath.nextBacktrackLocation(),
                     )
                 visitedNodesParameters = visitedNodesParameters.copy(explorer = newPath)
                 if (visitedNodes.isVisited(visitedNodesParameters)) continue
@@ -197,14 +195,13 @@ class STDCMGraph(
     fun tryMarkPending(node: STDCMNode): Boolean {
         val explorer = node.infraExplorer
         val locationOnEdge = node.locationOnEdge ?: Offset.zero()
-        val backtrackingLocation = explorer.getBacktrackingLocationInLookahead()
         // TODO: Look into re-using the fingerprint computed in getAdjacentEdges.
         val fingerprint =
             VisitedNodes.Fingerprint(
                 explorer.getLastEdgeIdentifier(),
                 explorer.getStepTracker().nStepsExcludingLookahead,
-                locationOnEdge.distance,
-                backtrackingLocation,
+                locationOnEdge,
+                explorer.nextBacktrackLocation(),
             )
         val params =
             VisitedNodes.Parameters(

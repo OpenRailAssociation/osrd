@@ -1,6 +1,7 @@
 package fr.sncf.osrd.stdcm.graph.visited_node_tracking
 
 import fr.sncf.osrd.api.FullInfra
+import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.sim_infra.api.BlockLocation
 import fr.sncf.osrd.sim_infra.api.DirDetectorId
@@ -12,7 +13,7 @@ import fr.sncf.osrd.stdcm.graph.visited_node_tracking.VisitedNodes.Parameters
 import fr.sncf.osrd.stdcm.infra_exploration.EdgeIdentifier
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorer
 import fr.sncf.osrd.stdcm.infra_exploration.getRemainingBlocks
-import fr.sncf.osrd.utils.units.Distance
+import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
 import kotlin.math.max
 import kotlin.math.min
@@ -53,7 +54,7 @@ data class VisitedNodes(
     data class Fingerprint(
         val identifier: EdgeIdentifier,
         val waypointIndex: Int,
-        val startOffset: Distance,
+        val startOffset: Offset<Block>,
         val backtrackingLocation:
             BlockLocation?, // Can be in another block, later than current edge.
     )
@@ -172,7 +173,7 @@ data class VisitedNodes(
     /** Marks the input as visited */
     fun markAsVisited(parameters: Parameters) {
         val fingerprint = parameters.fingerprint!!
-        if (fingerprint.startOffset == 0.meters && parameters.explorer != null) {
+        if (fingerprint.startOffset.distance == 0.meters && parameters.explorer != null) {
             // The condition avoids discarding the first half of the block containing a step
             minPassedStepsForBlock[parameters.explorer.getCurrentBlock()] =
                 fingerprint.waypointIndex
@@ -183,7 +184,11 @@ data class VisitedNodes(
         visitedRanges.putAll(newRangeMap)
 
         // Mark the visited time range at the start of the current block
-        if (parameters.explorer != null && infra != null && fingerprint.startOffset == 0.meters) {
+        if (
+            parameters.explorer != null &&
+                infra != null &&
+                fingerprint.startOffset.distance == 0.meters
+        ) {
             val block = parameters.explorer.getCurrentBlock()
             val mapAtStepIndex =
                 visitedAtDetector.getOrPut(parameters.fingerprint!!.waypointIndex) {
