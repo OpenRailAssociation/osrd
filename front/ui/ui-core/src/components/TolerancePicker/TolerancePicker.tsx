@@ -1,5 +1,4 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 
 import Input, { type InputProps } from '../Input';
 import Popover from '../InputPopover';
@@ -31,8 +30,11 @@ const TolerancePicker = ({
   testIdPrefix,
   ...inputProps
 }: TolerancePickerProps) => {
-  const formatToleranceValue = (minusIndex: number, plusIndex: number) =>
-    `-${TOLERANCE_RANGES[minusIndex]?.label || ''}/+${TOLERANCE_RANGES[plusIndex]?.label || ''}`;
+  const formatToleranceValue = useCallback(
+    (minusIndex: number, plusIndex: number) =>
+      `-${TOLERANCE_RANGES[minusIndex]?.label || ''}/+${TOLERANCE_RANGES[plusIndex]?.label || ''}`,
+    []
+  );
 
   const [showPicker, setShowPicker] = useState(false);
   const [inputValue, setInputValue] = useState(formatToleranceValue(0, 0));
@@ -47,6 +49,7 @@ const TolerancePicker = ({
     if (minusToleranceIndex < 0 || plusToleranceIndex < 0) {
       const invalidTolerance = minusToleranceIndex < 0 ? minusTolerance : plusTolerance;
 
+      /* eslint-disable-next-line react/set-state-in-effect */
       setWarningStatus({
         status: 'warning',
         message:
@@ -58,7 +61,7 @@ const TolerancePicker = ({
     }
 
     setInputValue(formatToleranceValue(minusToleranceIndex, plusToleranceIndex));
-  }, [minusTolerance, plusTolerance]);
+  }, [formatToleranceValue, minusTolerance, plusTolerance, translateWarningMessage]);
 
   return (
     <div data-testid={testIdPrefix ? `${testIdPrefix}` : undefined} className="ui-tolerance-picker">

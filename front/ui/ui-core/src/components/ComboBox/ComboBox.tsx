@@ -82,23 +82,22 @@ const ComboBox = <T,>({
   const inputRef = useRef<HTMLInputElement>(null);
   const wrapperRef = useRef<HTMLInputElement>(null);
 
-  const removeFocus = () => {
+  const removeFocus = useCallback(() => {
     setIsInputFocused(false);
     setActiveSuggestionIndex(-1);
     setTimeout(() => {
       inputRef.current?.blur();
     }, 0);
     resetSuggestions();
-  };
+  }, [resetSuggestions]);
 
-  /* eslint-disable react-hooks/exhaustive-deps */
   const focusInput = useCallback(() => {
     if (isInputFocused) {
       removeFocus();
     } else {
       inputRef.current?.focus();
     }
-  }, [inputRef, isInputFocused]);
+  }, [inputRef, isInputFocused, removeFocus]);
 
   const normalizedInputValue = useMemo(() => inputValue.trim().toLowerCase(), [inputValue]);
 
@@ -234,12 +233,12 @@ const ComboBox = <T,>({
     setIsInputFocused(true);
   };
 
-  const clearInput = () => {
+  const clearInput = useCallback(() => {
     setInputValue('');
     onChange?.('');
     resetSuggestions();
     focusInput();
-  };
+  }, [resetSuggestions, onChange, focusInput]);
 
   useOutsideClick(showSuggestions || isInputFocused ? wrapperRef : null, onFieldBlur);
 
