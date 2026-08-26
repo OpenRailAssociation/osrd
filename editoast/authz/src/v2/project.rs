@@ -161,6 +161,14 @@ pub fn project_privileges(user: User, project: Project) -> Protected<HashSet<Pro
     ))
 }
 
+pub fn project_privilege_check(project: Project, privilege: ProjectPrivilege) -> Protected<()> {
+    Protected::value(()).with_check(Check::HasProjectPrivilege(
+        Actor::Issuer,
+        privilege,
+        project,
+    ))
+}
+
 /// Lists all the projects a user has access to
 pub fn project_list(user: User) -> Protected<ResourcesList<Project>> {
     subject_roles(Subject::user(user)).then(move |openfga, roles| {
