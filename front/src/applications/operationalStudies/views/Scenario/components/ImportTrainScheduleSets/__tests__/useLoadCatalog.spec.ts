@@ -51,7 +51,7 @@ describe('useLoadCatalog', () => {
     vi.clearAllMocks();
 
     mockUseScenarioContext.mockReturnValue({
-      scenario: { timetable_id: TIMETABLE_ID },
+      scenario: { timetable_id: TIMETABLE_ID, timetable_type: 'CALENDAR' },
     });
 
     getAllCatalogEntries.mockResolvedValue({
@@ -77,11 +77,13 @@ describe('useLoadCatalog', () => {
     expect(getTrainScheduleSets).toHaveBeenCalledWith({
       catalogEntryId: catalogEntryWithTrainScheduleSets.id,
       published: true,
+      timetableType: 'CALENDAR',
     });
 
     expect(getTrainScheduleSets).toHaveBeenCalledWith({
       catalogEntryId: catalogEntryWithoutTrainScheduleSets.id,
       published: true,
+      timetableType: 'CALENDAR',
     });
 
     // Entry with no train schedule sets should be skipped, so the catalog should only contain the entry with trains
@@ -103,6 +105,26 @@ describe('useLoadCatalog', () => {
     );
 
     expect(result.current.error).toBeNull();
+  });
+
+  it('should only request train schedule sets matching the timetable type', async () => {
+    mockUseScenarioContext.mockReturnValue({
+      scenario: { timetable_id: TIMETABLE_ID, timetable_type: 'HOURLY' },
+    });
+
+    const { result } = renderHookWithStore(() => useLoadCatalog());
+
+    await waitFor(() => expect(result.current.data).not.toBeNull());
+
+    expect(getTrainScheduleSets).toHaveBeenCalledWith({
+      catalogEntryId: catalogEntryWithTrainScheduleSets.id,
+      published: true,
+      timetableType: 'HOURLY',
+    });
+
+    expect(getTrainScheduleSets).not.toHaveBeenCalledWith(
+      expect.objectContaining({ timetableType: 'CALENDAR' })
+    );
   });
 
   it('should mark train schedule sets already linked to the timetable as already imported', async () => {
