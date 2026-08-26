@@ -94,7 +94,7 @@ class OccurrenceIdBase(BaseModel):
 
     index: Annotated[int, Field(ge=0)]
     train_schedule_id: int
-    type: Literal["base"]
+    type: Literal["base"] = "base"
 
 
 class OccurrenceIdModified(BaseModel):
@@ -105,7 +105,7 @@ class OccurrenceIdModified(BaseModel):
     exception_id: int
     index: Annotated[int, Field(ge=0)]
     train_schedule_id: int
-    type: Literal["modified"]
+    type: Literal["modified"] = "modified"
 
 
 class OccurrenceIdCreated(BaseModel):
@@ -115,7 +115,7 @@ class OccurrenceIdCreated(BaseModel):
 
     exception_id: int
     train_schedule_id: int
-    type: Literal["created"]
+    type: Literal["created"] = "created"
 
 
 class Boundary(RootModel[int]):
@@ -205,25 +205,25 @@ class SecondaryName(RootModel[str]):
 
 
 class PathfindingInputErrorNotEnoughPathItems(BaseModel):
-    error_type: Literal["not_enough_path_items"]
+    error_type: Literal["not_enough_path_items"] = "not_enough_path_items"
 
 
 class PathfindingInputErrorUnauthorizedRollingStock(BaseModel):
-    error_type: Literal["unauthorized_rolling_stock"]
+    error_type: Literal["unauthorized_rolling_stock"] = "unauthorized_rolling_stock"
     rolling_stock_id: int
 
 
 class PathfindingInputErrorRollingStockNotFound(BaseModel):
-    error_type: Literal["rolling_stock_not_found"]
+    error_type: Literal["rolling_stock_not_found"] = "rolling_stock_not_found"
     rolling_stock_name: str
 
 
 class PathfindingInputErrorZeroLengthPath(BaseModel):
-    error_type: Literal["zero_length_path"]
+    error_type: Literal["zero_length_path"] = "zero_length_path"
 
 
 class PathfindingNotFoundNotFoundInTracks(BaseModel):
-    error_type: Literal["not_found_in_tracks"]
+    error_type: Literal["not_found_in_tracks"] = "not_found_in_tracks"
 
 
 class BacktrackPathItem(RootModel[int]):
@@ -386,7 +386,7 @@ class SpeedLimitSourceGivenTrainTag(BaseModel):
     source of the speed-limit if relevant (tag used)
     """
 
-    speed_limit_source_type: Literal["given_train_tag"]
+    speed_limit_source_type: Literal["given_train_tag"] = "given_train_tag"
     tag: str
 
 
@@ -395,7 +395,7 @@ class SpeedLimitSourceFallbackTag(BaseModel):
     source of the speed-limit if relevant (tag used)
     """
 
-    speed_limit_source_type: Literal["fallback_tag"]
+    speed_limit_source_type: Literal["fallback_tag"] = "fallback_tag"
     tag: str
 
 
@@ -404,7 +404,7 @@ class SpeedLimitSourceUnknownTag(BaseModel):
     source of the speed-limit if relevant (tag used)
     """
 
-    speed_limit_source_type: Literal["unknown_tag"]
+    speed_limit_source_type: Literal["unknown_tag"] = "unknown_tag"
 
 
 class CoreSpeedLimitProperty(BaseModel):
@@ -471,8 +471,8 @@ class EditoastAbortJoinError(BaseModel):
         dict[str, Any] | None, Field(title="EditoastAbortJoinErrorContext")
     ] = None
     message: str
-    status: Literal[500]
-    type: Literal["editoast:JoinError:cancelled"]
+    status: Literal[500] = 500
+    type: Literal["editoast:JoinError:cancelled"] = "editoast:JoinError:cancelled"
 
 
 class EditoastAppHealthErrorCore(BaseModel):
@@ -480,8 +480,8 @@ class EditoastAppHealthErrorCore(BaseModel):
         dict[str, Any] | None, Field(title="EditoastAppHealthErrorCoreContext")
     ] = None
     message: str
-    status: Literal[400]
-    type: Literal["editoast:app_health:Core"]
+    status: Literal[400] = 400
+    type: Literal["editoast:app_health:Core"] = "editoast:app_health:Core"
 
 
 class EditoastAppHealthErrorDatabase(BaseModel):
@@ -489,8 +489,8 @@ class EditoastAppHealthErrorDatabase(BaseModel):
         dict[str, Any] | None, Field(title="EditoastAppHealthErrorDatabaseContext")
     ] = None
     message: str
-    status: Literal[400]
-    type: Literal["editoast:app_health:Database"]
+    status: Literal[400] = 400
+    type: Literal["editoast:app_health:Database"] = "editoast:app_health:Database"
 
 
 class EditoastAppHealthErrorOpenfga(BaseModel):
@@ -498,8 +498,8 @@ class EditoastAppHealthErrorOpenfga(BaseModel):
         dict[str, Any] | None, Field(title="EditoastAppHealthErrorOpenfgaContext")
     ] = None
     message: str
-    status: Literal[400]
-    type: Literal["editoast:app_health:Openfga"]
+    status: Literal[400] = 400
+    type: Literal["editoast:app_health:Openfga"] = "editoast:app_health:Openfga"
 
 
 class EditoastAppHealthErrorTimeout(BaseModel):
@@ -507,8 +507,8 @@ class EditoastAppHealthErrorTimeout(BaseModel):
         dict[str, Any] | None, Field(title="EditoastAppHealthErrorTimeoutContext")
     ] = None
     message: str
-    status: Literal[400]
-    type: Literal["editoast:app_health:Timeout"]
+    status: Literal[400] = 400
+    type: Literal["editoast:app_health:Timeout"] = "editoast:app_health:Timeout"
 
 
 class EditoastAppHealthErrorValkey(BaseModel):
@@ -516,8 +516,8 @@ class EditoastAppHealthErrorValkey(BaseModel):
         dict[str, Any] | None, Field(title="EditoastAppHealthErrorValkeyContext")
     ] = None
     message: str
-    status: Literal[400]
-    type: Literal["editoast:app_health:Valkey"]
+    status: Literal[400] = 400
+    type: Literal["editoast:app_health:Valkey"] = "editoast:app_health:Valkey"
 
 
 class EditoastAttachedErrorTrackNotFoundContext(BaseModel):
@@ -530,8 +530,8 @@ class EditoastAttachedErrorTrackNotFound(BaseModel):
         Field(title="EditoastAttachedErrorTrackNotFoundContext"),
     ] = None
     message: str
-    status: Literal[404]
-    type: Literal["editoast:attached:TrackNotFound"]
+    status: Literal[404] = 404
+    type: Literal["editoast:attached:TrackNotFound"] = "editoast:attached:TrackNotFound"
 
 
 class EditoastAuthorizationErrorDbError(BaseModel):
@@ -539,8 +539,8 @@ class EditoastAuthorizationErrorDbError(BaseModel):
         dict[str, Any] | None, Field(title="EditoastAuthorizationErrorDbErrorContext")
     ] = None
     message: str
-    status: Literal[500]
-    type: Literal["editoast:authorization:DbError"]
+    status: Literal[500] = 500
+    type: Literal["editoast:authorization:DbError"] = "editoast:authorization:DbError"
 
 
 class EditoastAuthorizationErrorForbidden(BaseModel):
@@ -548,8 +548,10 @@ class EditoastAuthorizationErrorForbidden(BaseModel):
         dict[str, Any] | None, Field(title="EditoastAuthorizationErrorForbiddenContext")
     ] = None
     message: str
-    status: Literal[403]
-    type: Literal["editoast:authorization:Forbidden"]
+    status: Literal[403] = 403
+    type: Literal["editoast:authorization:Forbidden"] = (
+        "editoast:authorization:Forbidden"
+    )
 
 
 class EditoastAuthorizationErrorForbiddenImpersonation(BaseModel):
@@ -558,8 +560,10 @@ class EditoastAuthorizationErrorForbiddenImpersonation(BaseModel):
         Field(title="EditoastAuthorizationErrorForbiddenImpersonationContext"),
     ] = None
     message: str
-    status: Literal[403]
-    type: Literal["editoast:authorization:ForbiddenImpersonation"]
+    status: Literal[403] = 403
+    type: Literal["editoast:authorization:ForbiddenImpersonation"] = (
+        "editoast:authorization:ForbiddenImpersonation"
+    )
 
 
 class EditoastAuthorizationErrorImpersonatedUserNotFoundContext(BaseModel):
@@ -572,8 +576,10 @@ class EditoastAuthorizationErrorImpersonatedUserNotFound(BaseModel):
         Field(title="EditoastAuthorizationErrorImpersonatedUserNotFoundContext"),
     ] = None
     message: str
-    status: Literal[404]
-    type: Literal["editoast:authorization:ImpersonatedUserNotFound"]
+    status: Literal[404] = 404
+    type: Literal["editoast:authorization:ImpersonatedUserNotFound"] = (
+        "editoast:authorization:ImpersonatedUserNotFound"
+    )
 
 
 class EditoastAuthorizationErrorOpenFga(BaseModel):
@@ -581,8 +587,8 @@ class EditoastAuthorizationErrorOpenFga(BaseModel):
         dict[str, Any] | None, Field(title="EditoastAuthorizationErrorOpenFgaContext")
     ] = None
     message: str
-    status: Literal[400]
-    type: Literal["editoast:authorization:OpenFga"]
+    status: Literal[400] = 400
+    type: Literal["editoast:authorization:OpenFga"] = "editoast:authorization:OpenFga"
 
 
 class EditoastAuthorizationErrorUnauthenticated(BaseModel):
@@ -591,8 +597,10 @@ class EditoastAuthorizationErrorUnauthenticated(BaseModel):
         Field(title="EditoastAuthorizationErrorUnauthenticatedContext"),
     ] = None
     message: str
-    status: Literal[401]
-    type: Literal["editoast:authorization:Unauthenticated"]
+    status: Literal[401] = 401
+    type: Literal["editoast:authorization:Unauthenticated"] = (
+        "editoast:authorization:Unauthenticated"
+    )
 
 
 class EditoastAuthzErrorDatabase(BaseModel):
@@ -600,8 +608,8 @@ class EditoastAuthzErrorDatabase(BaseModel):
         dict[str, Any] | None, Field(title="EditoastAuthzErrorDatabaseContext")
     ] = None
     message: str
-    status: Literal[500]
-    type: Literal["editoast:authz:Database"]
+    status: Literal[500] = 500
+    type: Literal["editoast:authz:Database"] = "editoast:authz:Database"
 
 
 class EditoastAuthzErrorUnknownIdentitiesContext(BaseModel):
@@ -614,8 +622,10 @@ class EditoastAuthzErrorUnknownIdentities(BaseModel):
         Field(title="EditoastAuthzErrorUnknownIdentitiesContext"),
     ] = None
     message: str
-    status: Literal[404]
-    type: Literal["editoast:authz:UnknownIdentities"]
+    status: Literal[404] = 404
+    type: Literal["editoast:authz:UnknownIdentities"] = (
+        "editoast:authz:UnknownIdentities"
+    )
 
 
 class EditoastAuthzErrorUnknownResourceContext(BaseModel):
@@ -628,8 +638,8 @@ class EditoastAuthzErrorUnknownResource(BaseModel):
         Field(title="EditoastAuthzErrorUnknownResourceContext"),
     ] = None
     message: str
-    status: Literal[404]
-    type: Literal["editoast:authz:UnknownResource"]
+    status: Literal[404] = 404
+    type: Literal["editoast:authz:UnknownResource"] = "editoast:authz:UnknownResource"
 
 
 class EditoastAuthzErrorUnknownSubjectContext(BaseModel):
@@ -642,8 +652,8 @@ class EditoastAuthzErrorUnknownSubject(BaseModel):
         Field(title="EditoastAuthzErrorUnknownSubjectContext"),
     ] = None
     message: str
-    status: Literal[404]
-    type: Literal["editoast:authz:UnknownSubject"]
+    status: Literal[404] = 404
+    type: Literal["editoast:authz:UnknownSubject"] = "editoast:authz:UnknownSubject"
 
 
 class EditoastAuthzErrorUnknownUserContext(BaseModel):
@@ -656,8 +666,8 @@ class EditoastAuthzErrorUnknownUser(BaseModel):
         Field(title="EditoastAuthzErrorUnknownUserContext"),
     ] = None
     message: str
-    status: Literal[404]
-    type: Literal["editoast:authz:UnknownUser"]
+    status: Literal[404] = 404
+    type: Literal["editoast:authz:UnknownUser"] = "editoast:authz:UnknownUser"
 
 
 class EditoastAutoFixesEditoastErrorConflictingFixesOnSameObjectContext(BaseModel):
@@ -673,8 +683,10 @@ class EditoastAutoFixesEditoastErrorConflictingFixesOnSameObject(BaseModel):
         ),
     ] = None
     message: str
-    status: Literal[500]
-    type: Literal["editoast:auto_fixes:ConflictingFixesOnSameObject"]
+    status: Literal[500] = 500
+    type: Literal["editoast:auto_fixes:ConflictingFixesOnSameObject"] = (
+        "editoast:auto_fixes:ConflictingFixesOnSameObject"
+    )
 
 
 class EditoastAutoFixesEditoastErrorFixTrialFailure(BaseModel):
@@ -683,8 +695,10 @@ class EditoastAutoFixesEditoastErrorFixTrialFailure(BaseModel):
         Field(title="EditoastAutoFixesEditoastErrorFixTrialFailureContext"),
     ] = None
     message: str
-    status: Literal[500]
-    type: Literal["editoast:auto_fixes:FixTrialFailure"]
+    status: Literal[500] = 500
+    type: Literal["editoast:auto_fixes:FixTrialFailure"] = (
+        "editoast:auto_fixes:FixTrialFailure"
+    )
 
 
 class EditoastAutoFixesEditoastErrorMaximumIterationReached(BaseModel):
@@ -693,8 +707,10 @@ class EditoastAutoFixesEditoastErrorMaximumIterationReached(BaseModel):
         Field(title="EditoastAutoFixesEditoastErrorMaximumIterationReachedContext"),
     ] = None
     message: str
-    status: Literal[500]
-    type: Literal["editoast:auto_fixes:MaximumIterationReached"]
+    status: Literal[500] = 500
+    type: Literal["editoast:auto_fixes:MaximumIterationReached"] = (
+        "editoast:auto_fixes:MaximumIterationReached"
+    )
 
 
 class EditoastAutoFixesEditoastErrorMissingErrorObject(BaseModel):
@@ -703,8 +719,10 @@ class EditoastAutoFixesEditoastErrorMissingErrorObject(BaseModel):
         Field(title="EditoastAutoFixesEditoastErrorMissingErrorObjectContext"),
     ] = None
     message: str
-    status: Literal[500]
-    type: Literal["editoast:auto_fixes:MissingErrorObject"]
+    status: Literal[500] = 500
+    type: Literal["editoast:auto_fixes:MissingErrorObject"] = (
+        "editoast:auto_fixes:MissingErrorObject"
+    )
 
 
 class EditoastCacheOperationErrorDuplicateIdsProvidedContext(BaseModel):
@@ -718,8 +736,10 @@ class EditoastCacheOperationErrorDuplicateIdsProvided(BaseModel):
         Field(title="EditoastCacheOperationErrorDuplicateIdsProvidedContext"),
     ] = None
     message: str
-    status: Literal[404]
-    type: Literal["editoast:cache_operation:DuplicateIdsProvided"]
+    status: Literal[404] = 404
+    type: Literal["editoast:cache_operation:DuplicateIdsProvided"] = (
+        "editoast:cache_operation:DuplicateIdsProvided"
+    )
 
 
 class EditoastCacheOperationErrorObjectNotFoundContext(BaseModel):
@@ -733,8 +753,10 @@ class EditoastCacheOperationErrorObjectNotFound(BaseModel):
         Field(title="EditoastCacheOperationErrorObjectNotFoundContext"),
     ] = None
     message: str
-    status: Literal[404]
-    type: Literal["editoast:cache_operation:ObjectNotFound"]
+    status: Literal[404] = 404
+    type: Literal["editoast:cache_operation:ObjectNotFound"] = (
+        "editoast:cache_operation:ObjectNotFound"
+    )
 
 
 class EditoastCatalogEntryErrorDatabase(BaseModel):
@@ -742,8 +764,8 @@ class EditoastCatalogEntryErrorDatabase(BaseModel):
         dict[str, Any] | None, Field(title="EditoastCatalogEntryErrorDatabaseContext")
     ] = None
     message: str
-    status: Literal[500]
-    type: Literal["editoast:catalog_entry:Database"]
+    status: Literal[500] = 500
+    type: Literal["editoast:catalog_entry:Database"] = "editoast:catalog_entry:Database"
 
 
 class EditoastCatalogEntryErrorNotFoundContext(BaseModel):
@@ -756,8 +778,8 @@ class EditoastCatalogEntryErrorNotFound(BaseModel):
         Field(title="EditoastCatalogEntryErrorNotFoundContext"),
     ] = None
     message: str
-    status: Literal[404]
-    type: Literal["editoast:catalog_entry:NotFound"]
+    status: Literal[404] = 404
+    type: Literal["editoast:catalog_entry:NotFound"] = "editoast:catalog_entry:NotFound"
 
 
 class EditoastCoreErrorBrokenPipe(BaseModel):
@@ -765,8 +787,8 @@ class EditoastCoreErrorBrokenPipe(BaseModel):
         dict[str, Any] | None, Field(title="EditoastCoreErrorBrokenPipeContext")
     ] = None
     message: str
-    status: Literal[500]
-    type: Literal["editoast:coreclient:BrokenPipe"]
+    status: Literal[500] = 500
+    type: Literal["editoast:coreclient:BrokenPipe"] = "editoast:coreclient:BrokenPipe"
 
 
 class EditoastCoreErrorCoreResponseFormatErrorContext(BaseModel):
@@ -779,8 +801,10 @@ class EditoastCoreErrorCoreResponseFormatError(BaseModel):
         Field(title="EditoastCoreErrorCoreResponseFormatErrorContext"),
     ] = None
     message: str
-    status: Literal[500]
-    type: Literal["editoast:coreclient:CoreResponseFormatError"]
+    status: Literal[500] = 500
+    type: Literal["editoast:coreclient:CoreResponseFormatError"] = (
+        "editoast:coreclient:CoreResponseFormatError"
+    )
 
 
 class EditoastCoreErrorMqClientError(BaseModel):
@@ -788,8 +812,10 @@ class EditoastCoreErrorMqClientError(BaseModel):
         dict[str, Any] | None, Field(title="EditoastCoreErrorMqClientErrorContext")
     ] = None
     message: str
-    status: Literal[500]
-    type: Literal["editoast:coreclient:MqClientError"]
+    status: Literal[500] = 500
+    type: Literal["editoast:coreclient:MqClientError"] = (
+        "editoast:coreclient:MqClientError"
+    )
 
 
 class EditoastCoreErrorUnparsableErrorOutput(BaseModel):
@@ -798,8 +824,10 @@ class EditoastCoreErrorUnparsableErrorOutput(BaseModel):
         Field(title="EditoastCoreErrorUnparsableErrorOutputContext"),
     ] = None
     message: str
-    status: Literal[400]
-    type: Literal["editoast:coreclient:UnparsableErrorOutput"]
+    status: Literal[400] = 400
+    type: Literal["editoast:coreclient:UnparsableErrorOutput"] = (
+        "editoast:coreclient:UnparsableErrorOutput"
+    )
 
 
 class EditoastDatabaseAccessErrorDatabaseAccessError(BaseModel):
@@ -808,8 +836,8 @@ class EditoastDatabaseAccessErrorDatabaseAccessError(BaseModel):
         Field(title="EditoastDatabaseAccessErrorDatabaseAccessErrorContext"),
     ] = None
     message: str
-    status: Literal[500]
-    type: Literal["editoast:DatabaseAccessError"]
+    status: Literal[500] = 500
+    type: Literal["editoast:DatabaseAccessError"] = "editoast:DatabaseAccessError"
 
 
 class EditoastDelimitedAreaErrorInvalidLocationsContext(BaseModel):
@@ -822,8 +850,10 @@ class EditoastDelimitedAreaErrorInvalidLocations(BaseModel):
         Field(title="EditoastDelimitedAreaErrorInvalidLocationsContext"),
     ] = None
     message: str
-    status: Literal[400]
-    type: Literal["editoast:delimited_area:InvalidLocations"]
+    status: Literal[400] = 400
+    type: Literal["editoast:delimited_area:InvalidLocations"] = (
+        "editoast:delimited_area:InvalidLocations"
+    )
 
 
 class EditoastDocumentErrorsDatabase(BaseModel):
@@ -831,8 +861,8 @@ class EditoastDocumentErrorsDatabase(BaseModel):
         dict[str, Any] | None, Field(title="EditoastDocumentErrorsDatabaseContext")
     ] = None
     message: str
-    status: Literal[500]
-    type: Literal["editoast:document:Database"]
+    status: Literal[500] = 500
+    type: Literal["editoast:document:Database"] = "editoast:document:Database"
 
 
 class EditoastDocumentErrorsNotFoundContext(BaseModel):
@@ -845,8 +875,8 @@ class EditoastDocumentErrorsNotFound(BaseModel):
         Field(title="EditoastDocumentErrorsNotFoundContext"),
     ] = None
     message: str
-    status: Literal[404]
-    type: Literal["editoast:document:NotFound"]
+    status: Literal[404] = 404
+    type: Literal["editoast:document:NotFound"] = "editoast:document:NotFound"
 
 
 class EditoastEditionErrorInfraIsLockedContext(BaseModel):
@@ -859,8 +889,10 @@ class EditoastEditionErrorInfraIsLocked(BaseModel):
         Field(title="EditoastEditionErrorInfraIsLockedContext"),
     ] = None
     message: str
-    status: Literal[400]
-    type: Literal["editoast:infra:edition:InfraIsLocked"]
+    status: Literal[400] = 400
+    type: Literal["editoast:infra:edition:InfraIsLocked"] = (
+        "editoast:infra:edition:InfraIsLocked"
+    )
 
 
 class EditoastEditionErrorSplitTrackSectionBadOffsetContext(BaseModel):
@@ -875,8 +907,10 @@ class EditoastEditionErrorSplitTrackSectionBadOffset(BaseModel):
         Field(title="EditoastEditionErrorSplitTrackSectionBadOffsetContext"),
     ] = None
     message: str
-    status: Literal[400]
-    type: Literal["editoast:infra:edition:SplitTrackSectionBadOffset"]
+    status: Literal[400] = 400
+    type: Literal["editoast:infra:edition:SplitTrackSectionBadOffset"] = (
+        "editoast:infra:edition:SplitTrackSectionBadOffset"
+    )
 
 
 class EditoastElectricalProfilesErrorDatabase(BaseModel):
@@ -885,8 +919,10 @@ class EditoastElectricalProfilesErrorDatabase(BaseModel):
         Field(title="EditoastElectricalProfilesErrorDatabaseContext"),
     ] = None
     message: str
-    status: Literal[500]
-    type: Literal["editoast:electrical_profiles:Database"]
+    status: Literal[500] = 500
+    type: Literal["editoast:electrical_profiles:Database"] = (
+        "editoast:electrical_profiles:Database"
+    )
 
 
 class EditoastElectricalProfilesErrorNotFoundContext(BaseModel):
@@ -899,8 +935,10 @@ class EditoastElectricalProfilesErrorNotFound(BaseModel):
         Field(title="EditoastElectricalProfilesErrorNotFoundContext"),
     ] = None
     message: str
-    status: Literal[404]
-    type: Literal["editoast:electrical_profiles:NotFound"]
+    status: Literal[404] = 404
+    type: Literal["editoast:electrical_profiles:NotFound"] = (
+        "editoast:electrical_profiles:NotFound"
+    )
 
 
 class EditoastErrorDatabase(BaseModel):
@@ -908,8 +946,10 @@ class EditoastErrorDatabase(BaseModel):
         dict[str, Any] | None, Field(title="EditoastErrorDatabaseContext")
     ] = None
     message: str
-    status: Literal[500]
-    type: Literal["editoast:search_journeys:Database"]
+    status: Literal[500] = 500
+    type: Literal["editoast:search_journeys:Database"] = (
+        "editoast:search_journeys:Database"
+    )
 
 
 class EditoastErrorInfraNotFoundContext(BaseModel):
@@ -922,8 +962,10 @@ class EditoastErrorInfraNotFound(BaseModel):
         Field(title="EditoastErrorInfraNotFoundContext"),
     ] = None
     message: str
-    status: Literal[404]
-    type: Literal["editoast:search_journeys:InfraNotFound"]
+    status: Literal[404] = 404
+    type: Literal["editoast:search_journeys:InfraNotFound"] = (
+        "editoast:search_journeys:InfraNotFound"
+    )
 
 
 class EditoastErrorInvalidInputContext(BaseModel):
@@ -936,8 +978,10 @@ class EditoastErrorInvalidInput(BaseModel):
         Field(title="EditoastErrorInvalidInputContext"),
     ] = None
     message: str
-    status: Literal[400]
-    type: Literal["editoast:search_journeys:InvalidInput"]
+    status: Literal[400] = 400
+    type: Literal["editoast:search_journeys:InvalidInput"] = (
+        "editoast:search_journeys:InvalidInput"
+    )
 
 
 class EditoastFontErrorsFileNotFoundContext(BaseModel):
@@ -950,8 +994,8 @@ class EditoastFontErrorsFileNotFound(BaseModel):
         Field(title="EditoastFontErrorsFileNotFoundContext"),
     ] = None
     message: str
-    status: Literal[404]
-    type: Literal["editoast:fonts:FileNotFound"]
+    status: Literal[404] = 404
+    type: Literal["editoast:fonts:FileNotFound"] = "editoast:fonts:FileNotFound"
 
 
 class EditoastGeometryErrorUnexpectedGeometryContext(BaseModel):
@@ -965,8 +1009,10 @@ class EditoastGeometryErrorUnexpectedGeometry(BaseModel):
         Field(title="EditoastGeometryErrorUnexpectedGeometryContext"),
     ] = None
     message: str
-    status: Literal[404]
-    type: Literal["editoast:geometry:UnexpectedGeometry"]
+    status: Literal[404] = 404
+    type: Literal["editoast:geometry:UnexpectedGeometry"] = (
+        "editoast:geometry:UnexpectedGeometry"
+    )
 
 
 class EditoastGetObjectsErrorsDuplicateIdsProvided(BaseModel):
@@ -975,8 +1021,10 @@ class EditoastGetObjectsErrorsDuplicateIdsProvided(BaseModel):
         Field(title="EditoastGetObjectsErrorsDuplicateIdsProvidedContext"),
     ] = None
     message: str
-    status: Literal[400]
-    type: Literal["editoast:infra:objects:DuplicateIdsProvided"]
+    status: Literal[400] = 400
+    type: Literal["editoast:infra:objects:DuplicateIdsProvided"] = (
+        "editoast:infra:objects:DuplicateIdsProvided"
+    )
 
 
 class EditoastGetObjectsErrorsObjectIdNotFoundContext(BaseModel):
@@ -989,8 +1037,10 @@ class EditoastGetObjectsErrorsObjectIdNotFound(BaseModel):
         Field(title="EditoastGetObjectsErrorsObjectIdNotFoundContext"),
     ] = None
     message: str
-    status: Literal[400]
-    type: Literal["editoast:infra:objects:ObjectIdNotFound"]
+    status: Literal[400] = 400
+    type: Literal["editoast:infra:objects:ObjectIdNotFound"] = (
+        "editoast:infra:objects:ObjectIdNotFound"
+    )
 
 
 class EditoastIconErrorsFileNotFoundContext(BaseModel):
@@ -1003,8 +1053,8 @@ class EditoastIconErrorsFileNotFound(BaseModel):
         Field(title="EditoastIconErrorsFileNotFoundContext"),
     ] = None
     message: str
-    status: Literal[404]
-    type: Literal["editoast:icons:FileNotFound"]
+    status: Literal[404] = 404
+    type: Literal["editoast:icons:FileNotFound"] = "editoast:icons:FileNotFound"
 
 
 class EditoastInfraApiErrorDatabase(BaseModel):
@@ -1012,8 +1062,8 @@ class EditoastInfraApiErrorDatabase(BaseModel):
         dict[str, Any] | None, Field(title="EditoastInfraApiErrorDatabaseContext")
     ] = None
     message: str
-    status: Literal[500]
-    type: Literal["editoast:infra:Database"]
+    status: Literal[500] = 500
+    type: Literal["editoast:infra:Database"] = "editoast:infra:Database"
 
 
 class EditoastInfraApiErrorNotFoundContext(BaseModel):
@@ -1026,8 +1076,8 @@ class EditoastInfraApiErrorNotFound(BaseModel):
         Field(title="EditoastInfraApiErrorNotFoundContext"),
     ] = None
     message: str
-    status: Literal[404]
-    type: Literal["editoast:infra:NotFound"]
+    status: Literal[404] = 404
+    type: Literal["editoast:infra:NotFound"] = "editoast:infra:NotFound"
 
 
 class EditoastLayersErrorLayerNotFoundContext(BaseModel):
@@ -1041,8 +1091,8 @@ class EditoastLayersErrorLayerNotFound(BaseModel):
         Field(title="EditoastLayersErrorLayerNotFoundContext"),
     ] = None
     message: str
-    status: Literal[404]
-    type: Literal["editoast:layers:LayerNotFound"]
+    status: Literal[404] = 404
+    type: Literal["editoast:layers:LayerNotFound"] = "editoast:layers:LayerNotFound"
 
 
 class EditoastLayersErrorViewNotFoundContext(BaseModel):
@@ -1056,8 +1106,8 @@ class EditoastLayersErrorViewNotFound(BaseModel):
         Field(title="EditoastLayersErrorViewNotFoundContext"),
     ] = None
     message: str
-    status: Literal[404]
-    type: Literal["editoast:layers:ViewNotFound"]
+    status: Literal[404] = 404
+    type: Literal["editoast:layers:ViewNotFound"] = "editoast:layers:ViewNotFound"
 
 
 class EditoastLevelCrossingErrorDatabase(BaseModel):
@@ -1065,8 +1115,10 @@ class EditoastLevelCrossingErrorDatabase(BaseModel):
         dict[str, Any] | None, Field(title="EditoastLevelCrossingErrorDatabaseContext")
     ] = None
     message: str
-    status: Literal[500]
-    type: Literal["editoast:level_crossing:Database"]
+    status: Literal[500] = 500
+    type: Literal["editoast:level_crossing:Database"] = (
+        "editoast:level_crossing:Database"
+    )
 
 
 class EditoastLevelCrossingErrorInfraNotFoundContext(BaseModel):
@@ -1079,8 +1131,10 @@ class EditoastLevelCrossingErrorInfraNotFound(BaseModel):
         Field(title="EditoastLevelCrossingErrorInfraNotFoundContext"),
     ] = None
     message: str
-    status: Literal[404]
-    type: Literal["editoast:level_crossing:InfraNotFound"]
+    status: Literal[404] = 404
+    type: Literal["editoast:level_crossing:InfraNotFound"] = (
+        "editoast:level_crossing:InfraNotFound"
+    )
 
 
 class EditoastLevelCrossingErrorLevelCrossingBatchNotFoundContext(BaseModel):
@@ -1093,8 +1147,10 @@ class EditoastLevelCrossingErrorLevelCrossingBatchNotFound(BaseModel):
         Field(title="EditoastLevelCrossingErrorLevelCrossingBatchNotFoundContext"),
     ] = None
     message: str
-    status: Literal[404]
-    type: Literal["editoast:level_crossing:LevelCrossingBatchNotFound"]
+    status: Literal[404] = 404
+    type: Literal["editoast:level_crossing:LevelCrossingBatchNotFound"] = (
+        "editoast:level_crossing:LevelCrossingBatchNotFound"
+    )
 
 
 class EditoastLevelCrossingErrorTimetableNotFoundContext(BaseModel):
@@ -1107,8 +1163,10 @@ class EditoastLevelCrossingErrorTimetableNotFound(BaseModel):
         Field(title="EditoastLevelCrossingErrorTimetableNotFoundContext"),
     ] = None
     message: str
-    status: Literal[404]
-    type: Literal["editoast:level_crossing:TimetableNotFound"]
+    status: Literal[404] = 404
+    type: Literal["editoast:level_crossing:TimetableNotFound"] = (
+        "editoast:level_crossing:TimetableNotFound"
+    )
 
 
 class EditoastLevelCrossingErrorTrainBatchNotFoundContext(BaseModel):
@@ -1121,8 +1179,10 @@ class EditoastLevelCrossingErrorTrainBatchNotFound(BaseModel):
         Field(title="EditoastLevelCrossingErrorTrainBatchNotFoundContext"),
     ] = None
     message: str
-    status: Literal[404]
-    type: Literal["editoast:level_crossing:TrainBatchNotFound"]
+    status: Literal[404] = 404
+    type: Literal["editoast:level_crossing:TrainBatchNotFound"] = (
+        "editoast:level_crossing:TrainBatchNotFound"
+    )
 
 
 class EditoastLevelCrossingErrorUnsupportedTimetableType(BaseModel):
@@ -1131,8 +1191,10 @@ class EditoastLevelCrossingErrorUnsupportedTimetableType(BaseModel):
         Field(title="EditoastLevelCrossingErrorUnsupportedTimetableTypeContext"),
     ] = None
     message: str
-    status: Literal[422]
-    type: Literal["editoast:level_crossing:UnsupportedTimetableType"]
+    status: Literal[422] = 422
+    type: Literal["editoast:level_crossing:UnsupportedTimetableType"] = (
+        "editoast:level_crossing:UnsupportedTimetableType"
+    )
 
 
 class EditoastLinesErrorsLineNotFoundContext(BaseModel):
@@ -1145,8 +1207,10 @@ class EditoastLinesErrorsLineNotFound(BaseModel):
         Field(title="EditoastLinesErrorsLineNotFoundContext"),
     ] = None
     message: str
-    status: Literal[400]
-    type: Literal["editoast:infra:lines:LineNotFound"]
+    status: Literal[400] = 400
+    type: Literal["editoast:infra:lines:LineNotFound"] = (
+        "editoast:infra:lines:LineNotFound"
+    )
 
 
 class EditoastLinkingErrorBatchNotFoundContext(BaseModel):
@@ -1159,8 +1223,10 @@ class EditoastLinkingErrorBatchNotFound(BaseModel):
         Field(title="EditoastLinkingErrorBatchNotFoundContext"),
     ] = None
     message: str
-    status: Literal[404]
-    type: Literal["editoast:train_schedule_linking:BatchNotFound"]
+    status: Literal[404] = 404
+    type: Literal["editoast:train_schedule_linking:BatchNotFound"] = (
+        "editoast:train_schedule_linking:BatchNotFound"
+    )
 
 
 class EditoastLinkingErrorDatabase(BaseModel):
@@ -1168,8 +1234,10 @@ class EditoastLinkingErrorDatabase(BaseModel):
         dict[str, Any] | None, Field(title="EditoastLinkingErrorDatabaseContext")
     ] = None
     message: str
-    status: Literal[400]
-    type: Literal["editoast:train_schedule_linking:Database"]
+    status: Literal[400] = 400
+    type: Literal["editoast:train_schedule_linking:Database"] = (
+        "editoast:train_schedule_linking:Database"
+    )
 
 
 class EditoastLinkingErrorRequestIncompatibleWithTimetableTypeContext(BaseModel):
@@ -1183,10 +1251,10 @@ class EditoastLinkingErrorRequestIncompatibleWithTimetableType(BaseModel):
         Field(title="EditoastLinkingErrorRequestIncompatibleWithTimetableTypeContext"),
     ] = None
     message: str
-    status: Literal[409]
+    status: Literal[409] = 409
     type: Literal[
         "editoast:train_schedule_linking:RequestIncompatibleWithTimetableType"
-    ]
+    ] = "editoast:train_schedule_linking:RequestIncompatibleWithTimetableType"
 
 
 class EditoastLinkingErrorSourceAlreadyUsedContext(BaseModel):
@@ -1199,8 +1267,10 @@ class EditoastLinkingErrorSourceAlreadyUsed(BaseModel):
         Field(title="EditoastLinkingErrorSourceAlreadyUsedContext"),
     ] = None
     message: str
-    status: Literal[409]
-    type: Literal["editoast:train_schedule_linking:SourceAlreadyUsed"]
+    status: Literal[409] = 409
+    type: Literal["editoast:train_schedule_linking:SourceAlreadyUsed"] = (
+        "editoast:train_schedule_linking:SourceAlreadyUsed"
+    )
 
 
 class EditoastLinkingErrorTargetAlreadyUsedContext(BaseModel):
@@ -1213,8 +1283,10 @@ class EditoastLinkingErrorTargetAlreadyUsed(BaseModel):
         Field(title="EditoastLinkingErrorTargetAlreadyUsedContext"),
     ] = None
     message: str
-    status: Literal[409]
-    type: Literal["editoast:train_schedule_linking:TargetAlreadyUsed"]
+    status: Literal[409] = 409
+    type: Literal["editoast:train_schedule_linking:TargetAlreadyUsed"] = (
+        "editoast:train_schedule_linking:TargetAlreadyUsed"
+    )
 
 
 class EditoastLinkingErrorTimetableNotFoundContext(BaseModel):
@@ -1227,8 +1299,10 @@ class EditoastLinkingErrorTimetableNotFound(BaseModel):
         Field(title="EditoastLinkingErrorTimetableNotFoundContext"),
     ] = None
     message: str
-    status: Literal[404]
-    type: Literal["editoast:train_schedule_linking:TimetableNotFound"]
+    status: Literal[404] = 404
+    type: Literal["editoast:train_schedule_linking:TimetableNotFound"] = (
+        "editoast:train_schedule_linking:TimetableNotFound"
+    )
 
 
 class EditoastListErrorsErrorsWrongErrorTypeProvided(BaseModel):
@@ -1237,8 +1311,10 @@ class EditoastListErrorsErrorsWrongErrorTypeProvided(BaseModel):
         Field(title="EditoastListErrorsErrorsWrongErrorTypeProvidedContext"),
     ] = None
     message: str
-    status: Literal[400]
-    type: Literal["editoast:infra:errors:WrongErrorTypeProvided"]
+    status: Literal[400] = 400
+    type: Literal["editoast:infra:errors:WrongErrorTypeProvided"] = (
+        "editoast:infra:errors:WrongErrorTypeProvided"
+    )
 
 
 class EditoastMacroNodeErrorDatabase(BaseModel):
@@ -1246,8 +1322,8 @@ class EditoastMacroNodeErrorDatabase(BaseModel):
         dict[str, Any] | None, Field(title="EditoastMacroNodeErrorDatabaseContext")
     ] = None
     message: str
-    status: Literal[500]
-    type: Literal["editoast:macro_node:Database"]
+    status: Literal[500] = 500
+    type: Literal["editoast:macro_node:Database"] = "editoast:macro_node:Database"
 
 
 class EditoastMacroNodeErrorNotFoundContext(BaseModel):
@@ -1260,8 +1336,8 @@ class EditoastMacroNodeErrorNotFound(BaseModel):
         Field(title="EditoastMacroNodeErrorNotFoundContext"),
     ] = None
     message: str
-    status: Literal[404]
-    type: Literal["editoast:macro_node:NotFound"]
+    status: Literal[404] = 404
+    type: Literal["editoast:macro_node:NotFound"] = "editoast:macro_node:NotFound"
 
 
 class EditoastMacroNodeErrorScenarioNotFoundContext(BaseModel):
@@ -1274,8 +1350,10 @@ class EditoastMacroNodeErrorScenarioNotFound(BaseModel):
         Field(title="EditoastMacroNodeErrorScenarioNotFoundContext"),
     ] = None
     message: str
-    status: Literal[404]
-    type: Literal["editoast:macro_node:ScenarioNotFound"]
+    status: Literal[404] = 404
+    type: Literal["editoast:macro_node:ScenarioNotFound"] = (
+        "editoast:macro_node:ScenarioNotFound"
+    )
 
 
 class EditoastMacroNoteErrorDatabase(BaseModel):
@@ -1283,8 +1361,8 @@ class EditoastMacroNoteErrorDatabase(BaseModel):
         dict[str, Any] | None, Field(title="EditoastMacroNoteErrorDatabaseContext")
     ] = None
     message: str
-    status: Literal[500]
-    type: Literal["editoast:macro_note:Database"]
+    status: Literal[500] = 500
+    type: Literal["editoast:macro_note:Database"] = "editoast:macro_note:Database"
 
 
 class EditoastMacroNoteErrorNotFoundContext(BaseModel):
@@ -1297,8 +1375,8 @@ class EditoastMacroNoteErrorNotFound(BaseModel):
         Field(title="EditoastMacroNoteErrorNotFoundContext"),
     ] = None
     message: str
-    status: Literal[404]
-    type: Literal["editoast:macro_note:NotFound"]
+    status: Literal[404] = 404
+    type: Literal["editoast:macro_note:NotFound"] = "editoast:macro_note:NotFound"
 
 
 class EditoastMacroNoteErrorScenarioNotFoundContext(BaseModel):
@@ -1311,8 +1389,10 @@ class EditoastMacroNoteErrorScenarioNotFound(BaseModel):
         Field(title="EditoastMacroNoteErrorScenarioNotFoundContext"),
     ] = None
     message: str
-    status: Literal[404]
-    type: Literal["editoast:macro_note:ScenarioNotFound"]
+    status: Literal[404] = 404
+    type: Literal["editoast:macro_note:ScenarioNotFound"] = (
+        "editoast:macro_note:ScenarioNotFound"
+    )
 
 
 class EditoastModelError(BaseModel):
@@ -1320,8 +1400,8 @@ class EditoastModelError(BaseModel):
         dict[str, Any] | None, Field(title="EditoastModelErrorContext")
     ] = None
     message: str
-    status: Literal[500]
-    type: Literal["editoast:model:ModelError"]
+    status: Literal[500] = 500
+    type: Literal["editoast:model:ModelError"] = "editoast:model:ModelError"
 
 
 class EditoastOperationErrorEmptyId(BaseModel):
@@ -1329,8 +1409,8 @@ class EditoastOperationErrorEmptyId(BaseModel):
         dict[str, Any] | None, Field(title="EditoastOperationErrorEmptyIdContext")
     ] = None
     message: str
-    status: Literal[400]
-    type: Literal["editoast:operation:EmptyId"]
+    status: Literal[400] = 400
+    type: Literal["editoast:operation:EmptyId"] = "editoast:operation:EmptyId"
 
 
 class EditoastOperationErrorInvalidPatchContext(BaseModel):
@@ -1343,8 +1423,8 @@ class EditoastOperationErrorInvalidPatch(BaseModel):
         Field(title="EditoastOperationErrorInvalidPatchContext"),
     ] = None
     message: str
-    status: Literal[400]
-    type: Literal["editoast:operation:InvalidPatch"]
+    status: Literal[400] = 400
+    type: Literal["editoast:operation:InvalidPatch"] = "editoast:operation:InvalidPatch"
 
 
 class EditoastOperationErrorModifyId(BaseModel):
@@ -1352,8 +1432,8 @@ class EditoastOperationErrorModifyId(BaseModel):
         dict[str, Any] | None, Field(title="EditoastOperationErrorModifyIdContext")
     ] = None
     message: str
-    status: Literal[400]
-    type: Literal["editoast:operation:ModifyId"]
+    status: Literal[400] = 400
+    type: Literal["editoast:operation:ModifyId"] = "editoast:operation:ModifyId"
 
 
 class EditoastOperationErrorObjectNotFoundContext(BaseModel):
@@ -1367,8 +1447,10 @@ class EditoastOperationErrorObjectNotFound(BaseModel):
         Field(title="EditoastOperationErrorObjectNotFoundContext"),
     ] = None
     message: str
-    status: Literal[404]
-    type: Literal["editoast:operation:ObjectNotFound"]
+    status: Literal[404] = 404
+    type: Literal["editoast:operation:ObjectNotFound"] = (
+        "editoast:operation:ObjectNotFound"
+    )
 
 
 class EditoastOperationalPointProjectionErrorInvalidNumberOfDistancesContext(BaseModel):
@@ -1384,8 +1466,10 @@ class EditoastOperationalPointProjectionErrorInvalidNumberOfDistances(BaseModel)
         ),
     ] = None
     message: str
-    status: Literal[422]
-    type: Literal["editoast:operationalPointProjection:InvalidNumberOfDistances"]
+    status: Literal[422] = 422
+    type: Literal["editoast:operationalPointProjection:InvalidNumberOfDistances"] = (
+        "editoast:operationalPointProjection:InvalidNumberOfDistances"
+    )
 
 
 class EditoastOperationalPointProjectionErrorInvalidNumberOfRefs(BaseModel):
@@ -1396,8 +1480,10 @@ class EditoastOperationalPointProjectionErrorInvalidNumberOfRefs(BaseModel):
         ),
     ] = None
     message: str
-    status: Literal[422]
-    type: Literal["editoast:operationalPointProjection:InvalidNumberOfRefs"]
+    status: Literal[422] = 422
+    type: Literal["editoast:operationalPointProjection:InvalidNumberOfRefs"] = (
+        "editoast:operationalPointProjection:InvalidNumberOfRefs"
+    )
 
 
 class EditoastPanicJoinError(BaseModel):
@@ -1405,8 +1491,8 @@ class EditoastPanicJoinError(BaseModel):
         dict[str, Any] | None, Field(title="EditoastPanicJoinErrorContext")
     ] = None
     message: str
-    status: Literal[500]
-    type: Literal["editoast:JoinError:panic"]
+    status: Literal[500] = 500
+    type: Literal["editoast:JoinError:panic"] = "editoast:JoinError:panic"
 
 
 class EditoastPathfindingErrorDatabase(BaseModel):
@@ -1414,8 +1500,8 @@ class EditoastPathfindingErrorDatabase(BaseModel):
         dict[str, Any] | None, Field(title="EditoastPathfindingErrorDatabaseContext")
     ] = None
     message: str
-    status: Literal[500]
-    type: Literal["editoast:pathfinding:Database"]
+    status: Literal[500] = 500
+    type: Literal["editoast:pathfinding:Database"] = "editoast:pathfinding:Database"
 
 
 class EditoastPathfindingErrorInfraNotFoundContext(BaseModel):
@@ -1428,8 +1514,10 @@ class EditoastPathfindingErrorInfraNotFound(BaseModel):
         Field(title="EditoastPathfindingErrorInfraNotFoundContext"),
     ] = None
     message: str
-    status: Literal[404]
-    type: Literal["editoast:pathfinding:InfraNotFound"]
+    status: Literal[404] = 404
+    type: Literal["editoast:pathfinding:InfraNotFound"] = (
+        "editoast:pathfinding:InfraNotFound"
+    )
 
 
 class EditoastPathfindingViewErrorsEndingTrackLocationNotFound(BaseModel):
@@ -1438,8 +1526,10 @@ class EditoastPathfindingViewErrorsEndingTrackLocationNotFound(BaseModel):
         Field(title="EditoastPathfindingViewErrorsEndingTrackLocationNotFoundContext"),
     ] = None
     message: str
-    status: Literal[400]
-    type: Literal["editoast:infra:pathfinding:EndingTrackLocationNotFound"]
+    status: Literal[400] = 400
+    type: Literal["editoast:infra:pathfinding:EndingTrackLocationNotFound"] = (
+        "editoast:infra:pathfinding:EndingTrackLocationNotFound"
+    )
 
 
 class EditoastPathfindingViewErrorsInvalidNumberOfPathsContext(BaseModel):
@@ -1453,8 +1543,10 @@ class EditoastPathfindingViewErrorsInvalidNumberOfPaths(BaseModel):
         Field(title="EditoastPathfindingViewErrorsInvalidNumberOfPathsContext"),
     ] = None
     message: str
-    status: Literal[400]
-    type: Literal["editoast:infra:pathfinding:InvalidNumberOfPaths"]
+    status: Literal[400] = 400
+    type: Literal["editoast:infra:pathfinding:InvalidNumberOfPaths"] = (
+        "editoast:infra:pathfinding:InvalidNumberOfPaths"
+    )
 
 
 class EditoastPathfindingViewErrorsStartingTrackLocationNotFound(BaseModel):
@@ -1465,8 +1557,10 @@ class EditoastPathfindingViewErrorsStartingTrackLocationNotFound(BaseModel):
         ),
     ] = None
     message: str
-    status: Literal[400]
-    type: Literal["editoast:infra:pathfinding:StartingTrackLocationNotFound"]
+    status: Literal[400] = 400
+    type: Literal["editoast:infra:pathfinding:StartingTrackLocationNotFound"] = (
+        "editoast:infra:pathfinding:StartingTrackLocationNotFound"
+    )
 
 
 class EditoastProjectErrorDatabase(BaseModel):
@@ -1474,8 +1568,8 @@ class EditoastProjectErrorDatabase(BaseModel):
         dict[str, Any] | None, Field(title="EditoastProjectErrorDatabaseContext")
     ] = None
     message: str
-    status: Literal[500]
-    type: Literal["editoast:project:Database"]
+    status: Literal[500] = 500
+    type: Literal["editoast:project:Database"] = "editoast:project:Database"
 
 
 class EditoastProjectErrorImageErrorContext(BaseModel):
@@ -1488,8 +1582,8 @@ class EditoastProjectErrorImageError(BaseModel):
         Field(title="EditoastProjectErrorImageErrorContext"),
     ] = None
     message: str
-    status: Literal[400]
-    type: Literal["editoast:project:ImageError"]
+    status: Literal[400] = 400
+    type: Literal["editoast:project:ImageError"] = "editoast:project:ImageError"
 
 
 class EditoastProjectErrorImageNotFoundContext(BaseModel):
@@ -1502,8 +1596,8 @@ class EditoastProjectErrorImageNotFound(BaseModel):
         Field(title="EditoastProjectErrorImageNotFoundContext"),
     ] = None
     message: str
-    status: Literal[400]
-    type: Literal["editoast:project:ImageNotFound"]
+    status: Literal[400] = 400
+    type: Literal["editoast:project:ImageNotFound"] = "editoast:project:ImageNotFound"
 
 
 class EditoastProjectErrorNotFoundContext(BaseModel):
@@ -1516,8 +1610,8 @@ class EditoastProjectErrorNotFound(BaseModel):
         Field(title="EditoastProjectErrorNotFoundContext"),
     ] = None
     message: str
-    status: Literal[404]
-    type: Literal["editoast:project:NotFound"]
+    status: Literal[404] = 404
+    type: Literal["editoast:project:NotFound"] = "editoast:project:NotFound"
 
 
 class EditoastRailJsonErrorUnsupportedVersionContext(BaseModel):
@@ -1531,8 +1625,10 @@ class EditoastRailJsonErrorUnsupportedVersion(BaseModel):
         Field(title="EditoastRailJsonErrorUnsupportedVersionContext"),
     ] = None
     message: str
-    status: Literal[400]
-    type: Literal["editoast:railjson:UnsupportedVersion"]
+    status: Literal[400] = 400
+    type: Literal["editoast:railjson:UnsupportedVersion"] = (
+        "editoast:railjson:UnsupportedVersion"
+    )
 
 
 class EditoastRollingStockErrorBasePowerClassEmpty(BaseModel):
@@ -1541,8 +1637,10 @@ class EditoastRollingStockErrorBasePowerClassEmpty(BaseModel):
         Field(title="EditoastRollingStockErrorBasePowerClassEmptyContext"),
     ] = None
     message: str
-    status: Literal[400]
-    type: Literal["editoast:rollingstocks:BasePowerClassEmpty"]
+    status: Literal[400] = 400
+    type: Literal["editoast:rollingstocks:BasePowerClassEmpty"] = (
+        "editoast:rollingstocks:BasePowerClassEmpty"
+    )
 
 
 class EditoastRollingStockErrorCannotCreateCompoundImage(BaseModel):
@@ -1551,8 +1649,10 @@ class EditoastRollingStockErrorCannotCreateCompoundImage(BaseModel):
         Field(title="EditoastRollingStockErrorCannotCreateCompoundImageContext"),
     ] = None
     message: str
-    status: Literal[500]
-    type: Literal["editoast:rollingstocks:CannotCreateCompoundImage"]
+    status: Literal[500] = 500
+    type: Literal["editoast:rollingstocks:CannotCreateCompoundImage"] = (
+        "editoast:rollingstocks:CannotCreateCompoundImage"
+    )
 
 
 class EditoastRollingStockErrorCannotReadImage(BaseModel):
@@ -1561,8 +1661,10 @@ class EditoastRollingStockErrorCannotReadImage(BaseModel):
         Field(title="EditoastRollingStockErrorCannotReadImageContext"),
     ] = None
     message: str
-    status: Literal[500]
-    type: Literal["editoast:rollingstocks:CannotReadImage"]
+    status: Literal[500] = 500
+    type: Literal["editoast:rollingstocks:CannotReadImage"] = (
+        "editoast:rollingstocks:CannotReadImage"
+    )
 
 
 class EditoastRollingStockErrorDatabase(BaseModel):
@@ -1570,8 +1672,8 @@ class EditoastRollingStockErrorDatabase(BaseModel):
         dict[str, Any] | None, Field(title="EditoastRollingStockErrorDatabaseContext")
     ] = None
     message: str
-    status: Literal[500]
-    type: Literal["editoast:rollingstocks:Database"]
+    status: Literal[500] = 500
+    type: Literal["editoast:rollingstocks:Database"] = "editoast:rollingstocks:Database"
 
 
 class EditoastRollingStockErrorIsLockedContext(BaseModel):
@@ -1584,8 +1686,8 @@ class EditoastRollingStockErrorIsLocked(BaseModel):
         Field(title="EditoastRollingStockErrorIsLockedContext"),
     ] = None
     message: str
-    status: Literal[409]
-    type: Literal["editoast:rollingstocks:IsLocked"]
+    status: Literal[409] = 409
+    type: Literal["editoast:rollingstocks:IsLocked"] = "editoast:rollingstocks:IsLocked"
 
 
 class EditoastRollingStockErrorIsUsedContext(BaseModel):
@@ -1599,8 +1701,8 @@ class EditoastRollingStockErrorIsUsed(BaseModel):
         Field(title="EditoastRollingStockErrorIsUsedContext"),
     ] = None
     message: str
-    status: Literal[409]
-    type: Literal["editoast:rollingstocks:IsUsed"]
+    status: Literal[409] = 409
+    type: Literal["editoast:rollingstocks:IsUsed"] = "editoast:rollingstocks:IsUsed"
 
 
 class EditoastRollingStockErrorKeyNotFoundContext(BaseModel):
@@ -1613,8 +1715,10 @@ class EditoastRollingStockErrorKeyNotFound(BaseModel):
         Field(title="EditoastRollingStockErrorKeyNotFoundContext"),
     ] = None
     message: str
-    status: Literal[404]
-    type: Literal["editoast:rollingstocks:KeyNotFound"]
+    status: Literal[404] = 404
+    type: Literal["editoast:rollingstocks:KeyNotFound"] = (
+        "editoast:rollingstocks:KeyNotFound"
+    )
 
 
 class EditoastRollingStockErrorLiveryMultipartError(BaseModel):
@@ -1623,8 +1727,10 @@ class EditoastRollingStockErrorLiveryMultipartError(BaseModel):
         Field(title="EditoastRollingStockErrorLiveryMultipartErrorContext"),
     ] = None
     message: str
-    status: Literal[400]
-    type: Literal["editoast:rollingstocks:LiveryMultipartError"]
+    status: Literal[400] = 400
+    type: Literal["editoast:rollingstocks:LiveryMultipartError"] = (
+        "editoast:rollingstocks:LiveryMultipartError"
+    )
 
 
 class EditoastRollingStockErrorNameAlreadyUsedContext(BaseModel):
@@ -1637,8 +1743,10 @@ class EditoastRollingStockErrorNameAlreadyUsed(BaseModel):
         Field(title="EditoastRollingStockErrorNameAlreadyUsedContext"),
     ] = None
     message: str
-    status: Literal[400]
-    type: Literal["editoast:rollingstocks:NameAlreadyUsed"]
+    status: Literal[400] = 400
+    type: Literal["editoast:rollingstocks:NameAlreadyUsed"] = (
+        "editoast:rollingstocks:NameAlreadyUsed"
+    )
 
 
 class EditoastRoundTripsErrorDatabase(BaseModel):
@@ -1646,8 +1754,8 @@ class EditoastRoundTripsErrorDatabase(BaseModel):
         dict[str, Any] | None, Field(title="EditoastRoundTripsErrorDatabaseContext")
     ] = None
     message: str
-    status: Literal[500]
-    type: Literal["editoast:round_trips:Database"]
+    status: Literal[500] = 500
+    type: Literal["editoast:round_trips:Database"] = "editoast:round_trips:Database"
 
 
 class EditoastRoundTripsErrorDuplicateTrainIds(BaseModel):
@@ -1656,8 +1764,10 @@ class EditoastRoundTripsErrorDuplicateTrainIds(BaseModel):
         Field(title="EditoastRoundTripsErrorDuplicateTrainIdsContext"),
     ] = None
     message: str
-    status: Literal[400]
-    type: Literal["editoast:round_trips:DuplicateTrainIds"]
+    status: Literal[400] = 400
+    type: Literal["editoast:round_trips:DuplicateTrainIds"] = (
+        "editoast:round_trips:DuplicateTrainIds"
+    )
 
 
 class EditoastRoundTripsErrorTimetableNotFoundContext(BaseModel):
@@ -1670,8 +1780,10 @@ class EditoastRoundTripsErrorTimetableNotFound(BaseModel):
         Field(title="EditoastRoundTripsErrorTimetableNotFoundContext"),
     ] = None
     message: str
-    status: Literal[404]
-    type: Literal["editoast:round_trips:TimetableNotFound"]
+    status: Literal[404] = 404
+    type: Literal["editoast:round_trips:TimetableNotFound"] = (
+        "editoast:round_trips:TimetableNotFound"
+    )
 
 
 class EditoastScenarioErrorDatabase(BaseModel):
@@ -1679,8 +1791,8 @@ class EditoastScenarioErrorDatabase(BaseModel):
         dict[str, Any] | None, Field(title="EditoastScenarioErrorDatabaseContext")
     ] = None
     message: str
-    status: Literal[500]
-    type: Literal["editoast:scenario:Database"]
+    status: Literal[500] = 500
+    type: Literal["editoast:scenario:Database"] = "editoast:scenario:Database"
 
 
 class EditoastScenarioErrorInfraNotFoundContext(BaseModel):
@@ -1693,8 +1805,8 @@ class EditoastScenarioErrorInfraNotFound(BaseModel):
         Field(title="EditoastScenarioErrorInfraNotFoundContext"),
     ] = None
     message: str
-    status: Literal[404]
-    type: Literal["editoast:scenario:InfraNotFound"]
+    status: Literal[404] = 404
+    type: Literal["editoast:scenario:InfraNotFound"] = "editoast:scenario:InfraNotFound"
 
 
 class EditoastScenarioErrorNotFoundContext(BaseModel):
@@ -1707,8 +1819,8 @@ class EditoastScenarioErrorNotFound(BaseModel):
         Field(title="EditoastScenarioErrorNotFoundContext"),
     ] = None
     message: str
-    status: Literal[404]
-    type: Literal["editoast:scenario:NotFound"]
+    status: Literal[404] = 404
+    type: Literal["editoast:scenario:NotFound"] = "editoast:scenario:NotFound"
 
 
 class EditoastScenarioErrorStudyNotFoundContext(BaseModel):
@@ -1721,8 +1833,8 @@ class EditoastScenarioErrorStudyNotFound(BaseModel):
         Field(title="EditoastScenarioErrorStudyNotFoundContext"),
     ] = None
     message: str
-    status: Literal[404]
-    type: Literal["editoast:scenario:StudyNotFound"]
+    status: Literal[404] = 404
+    type: Literal["editoast:scenario:StudyNotFound"] = "editoast:scenario:StudyNotFound"
 
 
 class EditoastScenarioErrorTimetableNotFoundContext(BaseModel):
@@ -1735,8 +1847,10 @@ class EditoastScenarioErrorTimetableNotFound(BaseModel):
         Field(title="EditoastScenarioErrorTimetableNotFoundContext"),
     ] = None
     message: str
-    status: Literal[404]
-    type: Literal["editoast:scenario:TimetableNotFound"]
+    status: Literal[404] = 404
+    type: Literal["editoast:scenario:TimetableNotFound"] = (
+        "editoast:scenario:TimetableNotFound"
+    )
 
 
 class EditoastSearchApiErrorObjectTypeContext(BaseModel):
@@ -1749,8 +1863,8 @@ class EditoastSearchApiErrorObjectType(BaseModel):
         Field(title="EditoastSearchApiErrorObjectTypeContext"),
     ] = None
     message: str
-    status: Literal[400]
-    type: Literal["editoast:search:ObjectType"]
+    status: Literal[400] = 400
+    type: Literal["editoast:search:ObjectType"] = "editoast:search:ObjectType"
 
 
 class EditoastSearchApiErrorSearchEngineError(BaseModel):
@@ -1759,8 +1873,10 @@ class EditoastSearchApiErrorSearchEngineError(BaseModel):
         Field(title="EditoastSearchApiErrorSearchEngineErrorContext"),
     ] = None
     message: str
-    status: Literal[400]
-    type: Literal["editoast:search:SearchEngineError"]
+    status: Literal[400] = 400
+    type: Literal["editoast:search:SearchEngineError"] = (
+        "editoast:search:SearchEngineError"
+    )
 
 
 class EditoastSimilarTrainsErrorDatabase(BaseModel):
@@ -1768,8 +1884,10 @@ class EditoastSimilarTrainsErrorDatabase(BaseModel):
         dict[str, Any] | None, Field(title="EditoastSimilarTrainsErrorDatabaseContext")
     ] = None
     message: str
-    status: Literal[500]
-    type: Literal["editoast:timetable:similar_trains:Database"]
+    status: Literal[500] = 500
+    type: Literal["editoast:timetable:similar_trains:Database"] = (
+        "editoast:timetable:similar_trains:Database"
+    )
 
 
 class EditoastSimilarTrainsErrorEmptyTrainsTraffic(BaseModel):
@@ -1778,8 +1896,10 @@ class EditoastSimilarTrainsErrorEmptyTrainsTraffic(BaseModel):
         Field(title="EditoastSimilarTrainsErrorEmptyTrainsTrafficContext"),
     ] = None
     message: str
-    status: Literal[400]
-    type: Literal["editoast:timetable:similar_trains:EmptyTrainsTraffic"]
+    status: Literal[400] = 400
+    type: Literal["editoast:timetable:similar_trains:EmptyTrainsTraffic"] = (
+        "editoast:timetable:similar_trains:EmptyTrainsTraffic"
+    )
 
 
 class EditoastSimilarTrainsErrorInvalidPath(BaseModel):
@@ -1788,8 +1908,10 @@ class EditoastSimilarTrainsErrorInvalidPath(BaseModel):
         Field(title="EditoastSimilarTrainsErrorInvalidPathContext"),
     ] = None
     message: str
-    status: Literal[400]
-    type: Literal["editoast:timetable:similar_trains:InvalidPath"]
+    status: Literal[400] = 400
+    type: Literal["editoast:timetable:similar_trains:InvalidPath"] = (
+        "editoast:timetable:similar_trains:InvalidPath"
+    )
 
 
 class EditoastSimilarTrainsErrorRollingStockNotFoundContext(BaseModel):
@@ -1802,8 +1924,10 @@ class EditoastSimilarTrainsErrorRollingStockNotFound(BaseModel):
         Field(title="EditoastSimilarTrainsErrorRollingStockNotFoundContext"),
     ] = None
     message: str
-    status: Literal[400]
-    type: Literal["editoast:timetable:similar_trains:RollingStockNotFound"]
+    status: Literal[400] = 400
+    type: Literal["editoast:timetable:similar_trains:RollingStockNotFound"] = (
+        "editoast:timetable:similar_trains:RollingStockNotFound"
+    )
 
 
 class EditoastSimilarTrainsErrorSpeedLimitNotFoundContext(BaseModel):
@@ -1816,8 +1940,10 @@ class EditoastSimilarTrainsErrorSpeedLimitNotFound(BaseModel):
         Field(title="EditoastSimilarTrainsErrorSpeedLimitNotFoundContext"),
     ] = None
     message: str
-    status: Literal[400]
-    type: Literal["editoast:timetable:similar_trains:SpeedLimitNotFound"]
+    status: Literal[400] = 400
+    type: Literal["editoast:timetable:similar_trains:SpeedLimitNotFound"] = (
+        "editoast:timetable:similar_trains:SpeedLimitNotFound"
+    )
 
 
 class EditoastSpriteErrorsFileNotFoundContext(BaseModel):
@@ -1830,8 +1956,8 @@ class EditoastSpriteErrorsFileNotFound(BaseModel):
         Field(title="EditoastSpriteErrorsFileNotFoundContext"),
     ] = None
     message: str
-    status: Literal[404]
-    type: Literal["editoast:sprites:FileNotFound"]
+    status: Literal[404] = 404
+    type: Literal["editoast:sprites:FileNotFound"] = "editoast:sprites:FileNotFound"
 
 
 class EditoastSpriteErrorsUnknownSignalingSystemContext(BaseModel):
@@ -1844,8 +1970,10 @@ class EditoastSpriteErrorsUnknownSignalingSystem(BaseModel):
         Field(title="EditoastSpriteErrorsUnknownSignalingSystemContext"),
     ] = None
     message: str
-    status: Literal[404]
-    type: Literal["editoast:sprites:UnknownSignalingSystem"]
+    status: Literal[404] = 404
+    type: Literal["editoast:sprites:UnknownSignalingSystem"] = (
+        "editoast:sprites:UnknownSignalingSystem"
+    )
 
 
 class EditoastStdcmDebugErrorJsonParseErrorContext(BaseModel):
@@ -1859,8 +1987,10 @@ class EditoastStdcmDebugErrorJsonParseError(BaseModel):
         Field(title="EditoastStdcmDebugErrorJsonParseErrorContext"),
     ] = None
     message: str
-    status: Literal[500]
-    type: Literal["editoast:stdcm_debug:JsonParseError"]
+    status: Literal[500] = 500
+    type: Literal["editoast:stdcm_debug:JsonParseError"] = (
+        "editoast:stdcm_debug:JsonParseError"
+    )
 
 
 class EditoastStdcmDebugErrorS3ErrorContext(BaseModel):
@@ -1874,8 +2004,8 @@ class EditoastStdcmDebugErrorS3Error(BaseModel):
         Field(title="EditoastStdcmDebugErrorS3ErrorContext"),
     ] = None
     message: str
-    status: Literal[500]
-    type: Literal["editoast:stdcm_debug:S3Error"]
+    status: Literal[500] = 500
+    type: Literal["editoast:stdcm_debug:S3Error"] = "editoast:stdcm_debug:S3Error"
 
 
 class EditoastStdcmDebugErrorS3NotConfigured(BaseModel):
@@ -1884,8 +2014,10 @@ class EditoastStdcmDebugErrorS3NotConfigured(BaseModel):
         Field(title="EditoastStdcmDebugErrorS3NotConfiguredContext"),
     ] = None
     message: str
-    status: Literal[503]
-    type: Literal["editoast:stdcm_debug:S3NotConfigured"]
+    status: Literal[503] = 503
+    type: Literal["editoast:stdcm_debug:S3NotConfigured"] = (
+        "editoast:stdcm_debug:S3NotConfigured"
+    )
 
 
 class EditoastStdcmErrorBatchRollingStockNotFoundContext(BaseModel):
@@ -1898,8 +2030,10 @@ class EditoastStdcmErrorBatchRollingStockNotFound(BaseModel):
         Field(title="EditoastStdcmErrorBatchRollingStockNotFoundContext"),
     ] = None
     message: str
-    status: Literal[404]
-    type: Literal["editoast:stdcm:BatchRollingStockNotFound"]
+    status: Literal[404] = 404
+    type: Literal["editoast:stdcm:BatchRollingStockNotFound"] = (
+        "editoast:stdcm:BatchRollingStockNotFound"
+    )
 
 
 class EditoastStdcmErrorDatabase(BaseModel):
@@ -1907,8 +2041,8 @@ class EditoastStdcmErrorDatabase(BaseModel):
         dict[str, Any] | None, Field(title="EditoastStdcmErrorDatabaseContext")
     ] = None
     message: str
-    status: Literal[400]
-    type: Literal["editoast:stdcm:Database"]
+    status: Literal[400] = 400
+    type: Literal["editoast:stdcm:Database"] = "editoast:stdcm:Database"
 
 
 class EditoastStdcmErrorInfraNotFoundContext(BaseModel):
@@ -1921,8 +2055,8 @@ class EditoastStdcmErrorInfraNotFound(BaseModel):
         Field(title="EditoastStdcmErrorInfraNotFoundContext"),
     ] = None
     message: str
-    status: Literal[400]
-    type: Literal["editoast:stdcm:InfraNotFound"]
+    status: Literal[400] = 400
+    type: Literal["editoast:stdcm:InfraNotFound"] = "editoast:stdcm:InfraNotFound"
 
 
 class EditoastStdcmErrorInvalidConsistLengthContext(BaseModel):
@@ -1936,8 +2070,10 @@ class EditoastStdcmErrorInvalidConsistLength(BaseModel):
         Field(title="EditoastStdcmErrorInvalidConsistLengthContext"),
     ] = None
     message: str
-    status: Literal[400]
-    type: Literal["editoast:stdcm:InvalidConsistLength"]
+    status: Literal[400] = 400
+    type: Literal["editoast:stdcm:InvalidConsistLength"] = (
+        "editoast:stdcm:InvalidConsistLength"
+    )
 
 
 class EditoastStdcmErrorInvalidConsistMassContext(BaseModel):
@@ -1951,8 +2087,10 @@ class EditoastStdcmErrorInvalidConsistMass(BaseModel):
         Field(title="EditoastStdcmErrorInvalidConsistMassContext"),
     ] = None
     message: str
-    status: Literal[400]
-    type: Literal["editoast:stdcm:InvalidConsistMass"]
+    status: Literal[400] = 400
+    type: Literal["editoast:stdcm:InvalidConsistMass"] = (
+        "editoast:stdcm:InvalidConsistMass"
+    )
 
 
 class EditoastStdcmErrorInvalidConsistMaxSpeedContext(BaseModel):
@@ -1966,8 +2104,10 @@ class EditoastStdcmErrorInvalidConsistMaxSpeed(BaseModel):
         Field(title="EditoastStdcmErrorInvalidConsistMaxSpeedContext"),
     ] = None
     message: str
-    status: Literal[400]
-    type: Literal["editoast:stdcm:InvalidConsistMaxSpeed"]
+    status: Literal[400] = 400
+    type: Literal["editoast:stdcm:InvalidConsistMaxSpeed"] = (
+        "editoast:stdcm:InvalidConsistMaxSpeed"
+    )
 
 
 class EditoastStdcmErrorInvalidPathItemsContext(BaseModel):
@@ -1980,8 +2120,8 @@ class EditoastStdcmErrorInvalidPathItems(BaseModel):
         Field(title="EditoastStdcmErrorInvalidPathItemsContext"),
     ] = None
     message: str
-    status: Literal[400]
-    type: Literal["editoast:stdcm:InvalidPathItems"]
+    status: Literal[400] = 400
+    type: Literal["editoast:stdcm:InvalidPathItems"] = "editoast:stdcm:InvalidPathItems"
 
 
 class EditoastStdcmErrorTimetableNotFoundContext(BaseModel):
@@ -1994,8 +2134,10 @@ class EditoastStdcmErrorTimetableNotFound(BaseModel):
         Field(title="EditoastStdcmErrorTimetableNotFoundContext"),
     ] = None
     message: str
-    status: Literal[404]
-    type: Literal["editoast:stdcm:TimetableNotFound"]
+    status: Literal[404] = 404
+    type: Literal["editoast:stdcm:TimetableNotFound"] = (
+        "editoast:stdcm:TimetableNotFound"
+    )
 
 
 class EditoastStdcmErrorTowedRollingStockNotFoundContext(BaseModel):
@@ -2008,8 +2150,10 @@ class EditoastStdcmErrorTowedRollingStockNotFound(BaseModel):
         Field(title="EditoastStdcmErrorTowedRollingStockNotFoundContext"),
     ] = None
     message: str
-    status: Literal[400]
-    type: Literal["editoast:stdcm:TowedRollingStockNotFound"]
+    status: Literal[400] = 400
+    type: Literal["editoast:stdcm:TowedRollingStockNotFound"] = (
+        "editoast:stdcm:TowedRollingStockNotFound"
+    )
 
 
 class EditoastStdcmErrorTrainSimulationFail(BaseModel):
@@ -2018,8 +2162,10 @@ class EditoastStdcmErrorTrainSimulationFail(BaseModel):
         Field(title="EditoastStdcmErrorTrainSimulationFailContext"),
     ] = None
     message: str
-    status: Literal[400]
-    type: Literal["editoast:stdcm:TrainSimulationFail"]
+    status: Literal[400] = 400
+    type: Literal["editoast:stdcm:TrainSimulationFail"] = (
+        "editoast:stdcm:TrainSimulationFail"
+    )
 
 
 class EditoastStdcmSearchEnvErrorDatabase(BaseModel):
@@ -2027,8 +2173,10 @@ class EditoastStdcmSearchEnvErrorDatabase(BaseModel):
         dict[str, Any] | None, Field(title="EditoastStdcmSearchEnvErrorDatabaseContext")
     ] = None
     message: str
-    status: Literal[500]
-    type: Literal["editoast:stdcm_search_env:Database"]
+    status: Literal[500] = 500
+    type: Literal["editoast:stdcm_search_env:Database"] = (
+        "editoast:stdcm_search_env:Database"
+    )
 
 
 class EditoastStdcmSearchEnvErrorNotFoundContext(BaseModel):
@@ -2041,8 +2189,10 @@ class EditoastStdcmSearchEnvErrorNotFound(BaseModel):
         Field(title="EditoastStdcmSearchEnvErrorNotFoundContext"),
     ] = None
     message: str
-    status: Literal[404]
-    type: Literal["editoast:stdcm_search_env:NotFound"]
+    status: Literal[404] = 404
+    type: Literal["editoast:stdcm_search_env:NotFound"] = (
+        "editoast:stdcm_search_env:NotFound"
+    )
 
 
 class EditoastStudyErrorDatabase(BaseModel):
@@ -2050,8 +2200,8 @@ class EditoastStudyErrorDatabase(BaseModel):
         dict[str, Any] | None, Field(title="EditoastStudyErrorDatabaseContext")
     ] = None
     message: str
-    status: Literal[500]
-    type: Literal["editoast:study:Database"]
+    status: Literal[500] = 500
+    type: Literal["editoast:study:Database"] = "editoast:study:Database"
 
 
 class EditoastStudyErrorNotFoundContext(BaseModel):
@@ -2064,8 +2214,8 @@ class EditoastStudyErrorNotFound(BaseModel):
         Field(title="EditoastStudyErrorNotFoundContext"),
     ] = None
     message: str
-    status: Literal[404]
-    type: Literal["editoast:study:NotFound"]
+    status: Literal[404] = 404
+    type: Literal["editoast:study:NotFound"] = "editoast:study:NotFound"
 
 
 class EditoastStudyErrorProjectNotFoundContext(BaseModel):
@@ -2078,8 +2228,8 @@ class EditoastStudyErrorProjectNotFound(BaseModel):
         Field(title="EditoastStudyErrorProjectNotFoundContext"),
     ] = None
     message: str
-    status: Literal[404]
-    type: Literal["editoast:study:ProjectNotFound"]
+    status: Literal[404] = 404
+    type: Literal["editoast:study:ProjectNotFound"] = "editoast:study:ProjectNotFound"
 
 
 class EditoastSubCategoryErrorCodeAlreadyUsedContext(BaseModel):
@@ -2092,8 +2242,10 @@ class EditoastSubCategoryErrorCodeAlreadyUsed(BaseModel):
         Field(title="EditoastSubCategoryErrorCodeAlreadyUsedContext"),
     ] = None
     message: str
-    status: Literal[400]
-    type: Literal["editoast:sub_categories:CodeAlreadyUsed"]
+    status: Literal[400] = 400
+    type: Literal["editoast:sub_categories:CodeAlreadyUsed"] = (
+        "editoast:sub_categories:CodeAlreadyUsed"
+    )
 
 
 class EditoastSubCategoryErrorDatabase(BaseModel):
@@ -2101,8 +2253,10 @@ class EditoastSubCategoryErrorDatabase(BaseModel):
         dict[str, Any] | None, Field(title="EditoastSubCategoryErrorDatabaseContext")
     ] = None
     message: str
-    status: Literal[500]
-    type: Literal["editoast:sub_categories:Database"]
+    status: Literal[500] = 500
+    type: Literal["editoast:sub_categories:Database"] = (
+        "editoast:sub_categories:Database"
+    )
 
 
 class EditoastSubCategoryErrorNotFoundContext(BaseModel):
@@ -2115,8 +2269,10 @@ class EditoastSubCategoryErrorNotFound(BaseModel):
         Field(title="EditoastSubCategoryErrorNotFoundContext"),
     ] = None
     message: str
-    status: Literal[404]
-    type: Literal["editoast:sub_categories:NotFound"]
+    status: Literal[404] = 404
+    type: Literal["editoast:sub_categories:NotFound"] = (
+        "editoast:sub_categories:NotFound"
+    )
 
 
 class EditoastTemporarySpeedLimitErrorDatabase(BaseModel):
@@ -2125,8 +2281,10 @@ class EditoastTemporarySpeedLimitErrorDatabase(BaseModel):
         Field(title="EditoastTemporarySpeedLimitErrorDatabaseContext"),
     ] = None
     message: str
-    status: Literal[500]
-    type: Literal["editoast:temporary_speed_limit:Database"]
+    status: Literal[500] = 500
+    type: Literal["editoast:temporary_speed_limit:Database"] = (
+        "editoast:temporary_speed_limit:Database"
+    )
 
 
 class EditoastTemporarySpeedLimitErrorNameAlreadyUsedContext(BaseModel):
@@ -2139,8 +2297,10 @@ class EditoastTemporarySpeedLimitErrorNameAlreadyUsed(BaseModel):
         Field(title="EditoastTemporarySpeedLimitErrorNameAlreadyUsedContext"),
     ] = None
     message: str
-    status: Literal[400]
-    type: Literal["editoast:temporary_speed_limit:NameAlreadyUsed"]
+    status: Literal[400] = 400
+    type: Literal["editoast:temporary_speed_limit:NameAlreadyUsed"] = (
+        "editoast:temporary_speed_limit:NameAlreadyUsed"
+    )
 
 
 class EditoastTimetableErrorDatabase(BaseModel):
@@ -2148,8 +2308,8 @@ class EditoastTimetableErrorDatabase(BaseModel):
         dict[str, Any] | None, Field(title="EditoastTimetableErrorDatabaseContext")
     ] = None
     message: str
-    status: Literal[500]
-    type: Literal["editoast:timetable:Database"]
+    status: Literal[500] = 500
+    type: Literal["editoast:timetable:Database"] = "editoast:timetable:Database"
 
 
 class EditoastTimetableErrorInfraNotFoundContext(BaseModel):
@@ -2162,8 +2322,10 @@ class EditoastTimetableErrorInfraNotFound(BaseModel):
         Field(title="EditoastTimetableErrorInfraNotFoundContext"),
     ] = None
     message: str
-    status: Literal[404]
-    type: Literal["editoast:timetable:InfraNotFound"]
+    status: Literal[404] = 404
+    type: Literal["editoast:timetable:InfraNotFound"] = (
+        "editoast:timetable:InfraNotFound"
+    )
 
 
 class EditoastTimetableErrorInvalidPeriodContext(BaseModel):
@@ -2176,8 +2338,10 @@ class EditoastTimetableErrorInvalidPeriod(BaseModel):
         Field(title="EditoastTimetableErrorInvalidPeriodContext"),
     ] = None
     message: str
-    status: Literal[422]
-    type: Literal["editoast:timetable:InvalidPeriod"]
+    status: Literal[422] = 422
+    type: Literal["editoast:timetable:InvalidPeriod"] = (
+        "editoast:timetable:InvalidPeriod"
+    )
 
 
 class EditoastTimetableErrorNotFoundContext(BaseModel):
@@ -2190,8 +2354,8 @@ class EditoastTimetableErrorNotFound(BaseModel):
         Field(title="EditoastTimetableErrorNotFoundContext"),
     ] = None
     message: str
-    status: Literal[404]
-    type: Literal["editoast:timetable:NotFound"]
+    status: Literal[404] = 404
+    type: Literal["editoast:timetable:NotFound"] = "editoast:timetable:NotFound"
 
 
 class EditoastTimetableErrorParseErrorContext(BaseModel):
@@ -2204,8 +2368,8 @@ class EditoastTimetableErrorParseError(BaseModel):
         Field(title="EditoastTimetableErrorParseErrorContext"),
     ] = None
     message: str
-    status: Literal[500]
-    type: Literal["editoast:timetable:ParseError"]
+    status: Literal[500] = 500
+    type: Literal["editoast:timetable:ParseError"] = "editoast:timetable:ParseError"
 
 
 class EditoastTimetableErrorTimeout(BaseModel):
@@ -2213,8 +2377,8 @@ class EditoastTimetableErrorTimeout(BaseModel):
         dict[str, Any] | None, Field(title="EditoastTimetableErrorTimeoutContext")
     ] = None
     message: str
-    status: Literal[504]
-    type: Literal["editoast:timetable:Timeout"]
+    status: Literal[504] = 504
+    type: Literal["editoast:timetable:Timeout"] = "editoast:timetable:Timeout"
 
 
 class EditoastTimetableErrorTrainScheduleSetsNotFoundContext(BaseModel):
@@ -2227,8 +2391,10 @@ class EditoastTimetableErrorTrainScheduleSetsNotFound(BaseModel):
         Field(title="EditoastTimetableErrorTrainScheduleSetsNotFoundContext"),
     ] = None
     message: str
-    status: Literal[404]
-    type: Literal["editoast:timetable:TrainScheduleSetsNotFound"]
+    status: Literal[404] = 404
+    type: Literal["editoast:timetable:TrainScheduleSetsNotFound"] = (
+        "editoast:timetable:TrainScheduleSetsNotFound"
+    )
 
 
 class EditoastTowedRollingStockErrorDatabase(BaseModel):
@@ -2237,8 +2403,10 @@ class EditoastTowedRollingStockErrorDatabase(BaseModel):
         Field(title="EditoastTowedRollingStockErrorDatabaseContext"),
     ] = None
     message: str
-    status: Literal[500]
-    type: Literal["editoast:towedrollingstocks:Database"]
+    status: Literal[500] = 500
+    type: Literal["editoast:towedrollingstocks:Database"] = (
+        "editoast:towedrollingstocks:Database"
+    )
 
 
 class EditoastTowedRollingStockErrorIdNotFoundContext(BaseModel):
@@ -2251,8 +2419,10 @@ class EditoastTowedRollingStockErrorIdNotFound(BaseModel):
         Field(title="EditoastTowedRollingStockErrorIdNotFoundContext"),
     ] = None
     message: str
-    status: Literal[404]
-    type: Literal["editoast:towedrollingstocks:IdNotFound"]
+    status: Literal[404] = 404
+    type: Literal["editoast:towedrollingstocks:IdNotFound"] = (
+        "editoast:towedrollingstocks:IdNotFound"
+    )
 
 
 class EditoastTowedRollingStockErrorIsLockedContext(BaseModel):
@@ -2265,8 +2435,10 @@ class EditoastTowedRollingStockErrorIsLocked(BaseModel):
         Field(title="EditoastTowedRollingStockErrorIsLockedContext"),
     ] = None
     message: str
-    status: Literal[409]
-    type: Literal["editoast:towedrollingstocks:IsLocked"]
+    status: Literal[409] = 409
+    type: Literal["editoast:towedrollingstocks:IsLocked"] = (
+        "editoast:towedrollingstocks:IsLocked"
+    )
 
 
 class EditoastTrainScheduleErrorBatchNotFoundContext(BaseModel):
@@ -2279,8 +2451,10 @@ class EditoastTrainScheduleErrorBatchNotFound(BaseModel):
         Field(title="EditoastTrainScheduleErrorBatchNotFoundContext"),
     ] = None
     message: str
-    status: Literal[404]
-    type: Literal["editoast:train_schedule:BatchNotFound"]
+    status: Literal[404] = 404
+    type: Literal["editoast:train_schedule:BatchNotFound"] = (
+        "editoast:train_schedule:BatchNotFound"
+    )
 
 
 class EditoastTrainScheduleErrorDatabase(BaseModel):
@@ -2288,8 +2462,10 @@ class EditoastTrainScheduleErrorDatabase(BaseModel):
         dict[str, Any] | None, Field(title="EditoastTrainScheduleErrorDatabaseContext")
     ] = None
     message: str
-    status: Literal[500]
-    type: Literal["editoast:train_schedule:Database"]
+    status: Literal[500] = 500
+    type: Literal["editoast:train_schedule:Database"] = (
+        "editoast:train_schedule:Database"
+    )
 
 
 class EditoastTrainScheduleErrorExceptionNotFoundContext(BaseModel):
@@ -2302,8 +2478,10 @@ class EditoastTrainScheduleErrorExceptionNotFound(BaseModel):
         Field(title="EditoastTrainScheduleErrorExceptionNotFoundContext"),
     ] = None
     message: str
-    status: Literal[404]
-    type: Literal["editoast:train_schedule:ExceptionNotFound"]
+    status: Literal[404] = 404
+    type: Literal["editoast:train_schedule:ExceptionNotFound"] = (
+        "editoast:train_schedule:ExceptionNotFound"
+    )
 
 
 class EditoastTrainScheduleErrorInfraNotFoundContext(BaseModel):
@@ -2316,8 +2494,10 @@ class EditoastTrainScheduleErrorInfraNotFound(BaseModel):
         Field(title="EditoastTrainScheduleErrorInfraNotFoundContext"),
     ] = None
     message: str
-    status: Literal[404]
-    type: Literal["editoast:train_schedule:InfraNotFound"]
+    status: Literal[404] = 404
+    type: Literal["editoast:train_schedule:InfraNotFound"] = (
+        "editoast:train_schedule:InfraNotFound"
+    )
 
 
 class EditoastTrainScheduleErrorInvalidPathPortionContext(BaseModel):
@@ -2332,8 +2512,10 @@ class EditoastTrainScheduleErrorInvalidPathPortion(BaseModel):
         Field(title="EditoastTrainScheduleErrorInvalidPathPortionContext"),
     ] = None
     message: str
-    status: Literal[400]
-    type: Literal["editoast:train_schedule:InvalidPathPortion"]
+    status: Literal[400] = 400
+    type: Literal["editoast:train_schedule:InvalidPathPortion"] = (
+        "editoast:train_schedule:InvalidPathPortion"
+    )
 
 
 class EditoastTrainScheduleErrorNotFoundContext(BaseModel):
@@ -2346,8 +2528,10 @@ class EditoastTrainScheduleErrorNotFound(BaseModel):
         Field(title="EditoastTrainScheduleErrorNotFoundContext"),
     ] = None
     message: str
-    status: Literal[404]
-    type: Literal["editoast:train_schedule:NotFound"]
+    status: Literal[404] = 404
+    type: Literal["editoast:train_schedule:NotFound"] = (
+        "editoast:train_schedule:NotFound"
+    )
 
 
 class EditoastTrainScheduleErrorPathfindingFailedContext(BaseModel):
@@ -2360,8 +2544,10 @@ class EditoastTrainScheduleErrorPathfindingFailed(BaseModel):
         Field(title="EditoastTrainScheduleErrorPathfindingFailedContext"),
     ] = None
     message: str
-    status: Literal[404]
-    type: Literal["editoast:train_schedule:PathfindingFailed"]
+    status: Literal[404] = 404
+    type: Literal["editoast:train_schedule:PathfindingFailed"] = (
+        "editoast:train_schedule:PathfindingFailed"
+    )
 
 
 class EditoastTrainScheduleErrorRollingStockNotFoundContext(BaseModel):
@@ -2374,8 +2560,10 @@ class EditoastTrainScheduleErrorRollingStockNotFound(BaseModel):
         Field(title="EditoastTrainScheduleErrorRollingStockNotFoundContext"),
     ] = None
     message: str
-    status: Literal[404]
-    type: Literal["editoast:train_schedule:RollingStockNotFound"]
+    status: Literal[404] = 404
+    type: Literal["editoast:train_schedule:RollingStockNotFound"] = (
+        "editoast:train_schedule:RollingStockNotFound"
+    )
 
 
 class EditoastTrainScheduleErrorSimulationFailedContext(BaseModel):
@@ -2388,8 +2576,10 @@ class EditoastTrainScheduleErrorSimulationFailed(BaseModel):
         Field(title="EditoastTrainScheduleErrorSimulationFailedContext"),
     ] = None
     message: str
-    status: Literal[404]
-    type: Literal["editoast:train_schedule:SimulationFailed"]
+    status: Literal[404] = 404
+    type: Literal["editoast:train_schedule:SimulationFailed"] = (
+        "editoast:train_schedule:SimulationFailed"
+    )
 
 
 class EditoastTrainScheduleErrorTrainScheduleSetNotFoundContext(BaseModel):
@@ -2402,8 +2592,10 @@ class EditoastTrainScheduleErrorTrainScheduleSetNotFound(BaseModel):
         Field(title="EditoastTrainScheduleErrorTrainScheduleSetNotFoundContext"),
     ] = None
     message: str
-    status: Literal[404]
-    type: Literal["editoast:train_schedule:TrainScheduleSetNotFound"]
+    status: Literal[404] = 404
+    type: Literal["editoast:train_schedule:TrainScheduleSetNotFound"] = (
+        "editoast:train_schedule:TrainScheduleSetNotFound"
+    )
 
 
 class EditoastTrainScheduleExceptionErrorBatchNotFoundContext(BaseModel):
@@ -2416,8 +2608,10 @@ class EditoastTrainScheduleExceptionErrorBatchNotFound(BaseModel):
         Field(title="EditoastTrainScheduleExceptionErrorBatchNotFoundContext"),
     ] = None
     message: str
-    status: Literal[404]
-    type: Literal["editoast:train_schedule_exception:BatchNotFound"]
+    status: Literal[404] = 404
+    type: Literal["editoast:train_schedule_exception:BatchNotFound"] = (
+        "editoast:train_schedule_exception:BatchNotFound"
+    )
 
 
 class EditoastTrainScheduleExceptionErrorDatabase(BaseModel):
@@ -2426,8 +2620,10 @@ class EditoastTrainScheduleExceptionErrorDatabase(BaseModel):
         Field(title="EditoastTrainScheduleExceptionErrorDatabaseContext"),
     ] = None
     message: str
-    status: Literal[400]
-    type: Literal["editoast:train_schedule_exception:Database"]
+    status: Literal[400] = 400
+    type: Literal["editoast:train_schedule_exception:Database"] = (
+        "editoast:train_schedule_exception:Database"
+    )
 
 
 class EditoastTrainScheduleExceptionErrorInvalidOccurrenceIndexContext(BaseModel):
@@ -2443,8 +2639,10 @@ class EditoastTrainScheduleExceptionErrorInvalidOccurrenceIndex(BaseModel):
         Field(title="EditoastTrainScheduleExceptionErrorInvalidOccurrenceIndexContext"),
     ] = None
     message: str
-    status: Literal[400]
-    type: Literal["editoast:train_schedule_exception:InvalidOccurrenceIndex"]
+    status: Literal[400] = 400
+    type: Literal["editoast:train_schedule_exception:InvalidOccurrenceIndex"] = (
+        "editoast:train_schedule_exception:InvalidOccurrenceIndex"
+    )
 
 
 class EditoastTrainScheduleExceptionErrorNotFoundContext(BaseModel):
@@ -2457,8 +2655,10 @@ class EditoastTrainScheduleExceptionErrorNotFound(BaseModel):
         Field(title="EditoastTrainScheduleExceptionErrorNotFoundContext"),
     ] = None
     message: str
-    status: Literal[404]
-    type: Literal["editoast:train_schedule_exception:NotFound"]
+    status: Literal[404] = 404
+    type: Literal["editoast:train_schedule_exception:NotFound"] = (
+        "editoast:train_schedule_exception:NotFound"
+    )
 
 
 class EditoastTrainScheduleExceptionErrorNotPacedTrainContext(BaseModel):
@@ -2471,8 +2671,10 @@ class EditoastTrainScheduleExceptionErrorNotPacedTrain(BaseModel):
         Field(title="EditoastTrainScheduleExceptionErrorNotPacedTrainContext"),
     ] = None
     message: str
-    status: Literal[400]
-    type: Literal["editoast:train_schedule_exception:NotPacedTrain"]
+    status: Literal[400] = 400
+    type: Literal["editoast:train_schedule_exception:NotPacedTrain"] = (
+        "editoast:train_schedule_exception:NotPacedTrain"
+    )
 
 
 class EditoastTrainScheduleExceptionErrorOccurrenceIndexAlreadyUsedContext(BaseModel):
@@ -2487,8 +2689,10 @@ class EditoastTrainScheduleExceptionErrorOccurrenceIndexAlreadyUsed(BaseModel):
         ),
     ] = None
     message: str
-    status: Literal[400]
-    type: Literal["editoast:train_schedule_exception:OccurrenceIndexAlreadyUsed"]
+    status: Literal[400] = 400
+    type: Literal["editoast:train_schedule_exception:OccurrenceIndexAlreadyUsed"] = (
+        "editoast:train_schedule_exception:OccurrenceIndexAlreadyUsed"
+    )
 
 
 class EditoastTrainScheduleExceptionErrorTimetableNotFoundContext(BaseModel):
@@ -2501,8 +2705,10 @@ class EditoastTrainScheduleExceptionErrorTimetableNotFound(BaseModel):
         Field(title="EditoastTrainScheduleExceptionErrorTimetableNotFoundContext"),
     ] = None
     message: str
-    status: Literal[404]
-    type: Literal["editoast:train_schedule_exception:TimetableNotFound"]
+    status: Literal[404] = 404
+    type: Literal["editoast:train_schedule_exception:TimetableNotFound"] = (
+        "editoast:train_schedule_exception:TimetableNotFound"
+    )
 
 
 class EditoastTrainScheduleExceptionErrorTrainScheduleNotFoundContext(BaseModel):
@@ -2515,8 +2721,10 @@ class EditoastTrainScheduleExceptionErrorTrainScheduleNotFound(BaseModel):
         Field(title="EditoastTrainScheduleExceptionErrorTrainScheduleNotFoundContext"),
     ] = None
     message: str
-    status: Literal[404]
-    type: Literal["editoast:train_schedule_exception:TrainScheduleNotFound"]
+    status: Literal[404] = 404
+    type: Literal["editoast:train_schedule_exception:TrainScheduleNotFound"] = (
+        "editoast:train_schedule_exception:TrainScheduleNotFound"
+    )
 
 
 class EditoastTrainScheduleSetErrorDatabase(BaseModel):
@@ -2525,8 +2733,10 @@ class EditoastTrainScheduleSetErrorDatabase(BaseModel):
         Field(title="EditoastTrainScheduleSetErrorDatabaseContext"),
     ] = None
     message: str
-    status: Literal[500]
-    type: Literal["editoast:train_schedule_set:Database"]
+    status: Literal[500] = 500
+    type: Literal["editoast:train_schedule_set:Database"] = (
+        "editoast:train_schedule_set:Database"
+    )
 
 
 class EditoastTrainScheduleSetErrorNotFoundContext(BaseModel):
@@ -2539,8 +2749,10 @@ class EditoastTrainScheduleSetErrorNotFound(BaseModel):
         Field(title="EditoastTrainScheduleSetErrorNotFoundContext"),
     ] = None
     message: str
-    status: Literal[404]
-    type: Literal["editoast:train_schedule_set:NotFound"]
+    status: Literal[404] = 404
+    type: Literal["editoast:train_schedule_set:NotFound"] = (
+        "editoast:train_schedule_set:NotFound"
+    )
 
 
 class EditoastUnexpectedJoinError(BaseModel):
@@ -2548,8 +2760,10 @@ class EditoastUnexpectedJoinError(BaseModel):
         dict[str, Any] | None, Field(title="EditoastUnexpectedJoinErrorContext")
     ] = None
     message: str
-    status: Literal[500]
-    type: Literal["editoast:JoinError:unhandled_add_case_here"]
+    status: Literal[500] = 500
+    type: Literal["editoast:JoinError:unhandled_add_case_here"] = (
+        "editoast:JoinError:unhandled_add_case_here"
+    )
 
 
 class EditoastWorkScheduleErrorDatabase(BaseModel):
@@ -2557,8 +2771,8 @@ class EditoastWorkScheduleErrorDatabase(BaseModel):
         dict[str, Any] | None, Field(title="EditoastWorkScheduleErrorDatabaseContext")
     ] = None
     message: str
-    status: Literal[500]
-    type: Literal["editoast:work_schedule:Database"]
+    status: Literal[500] = 500
+    type: Literal["editoast:work_schedule:Database"] = "editoast:work_schedule:Database"
 
 
 class EditoastWorkScheduleErrorNameAlreadyUsedContext(BaseModel):
@@ -2571,8 +2785,10 @@ class EditoastWorkScheduleErrorNameAlreadyUsed(BaseModel):
         Field(title="EditoastWorkScheduleErrorNameAlreadyUsedContext"),
     ] = None
     message: str
-    status: Literal[400]
-    type: Literal["editoast:work_schedule:NameAlreadyUsed"]
+    status: Literal[400] = 400
+    type: Literal["editoast:work_schedule:NameAlreadyUsed"] = (
+        "editoast:work_schedule:NameAlreadyUsed"
+    )
 
 
 class EditoastWorkScheduleErrorWorkScheduleGroupNotFoundContext(BaseModel):
@@ -2585,8 +2801,10 @@ class EditoastWorkScheduleErrorWorkScheduleGroupNotFound(BaseModel):
         Field(title="EditoastWorkScheduleErrorWorkScheduleGroupNotFoundContext"),
     ] = None
     message: str
-    status: Literal[404]
-    type: Literal["editoast:work_schedule:WorkScheduleGroupNotFound"]
+    status: Literal[404] = 404
+    type: Literal["editoast:work_schedule:WorkScheduleGroupNotFound"] = (
+        "editoast:work_schedule:WorkScheduleGroupNotFound"
+    )
 
 
 class EditoastWorkerLoadErrorDatabase(BaseModel):
@@ -2594,8 +2812,8 @@ class EditoastWorkerLoadErrorDatabase(BaseModel):
         dict[str, Any] | None, Field(title="EditoastWorkerLoadErrorDatabaseContext")
     ] = None
     message: str
-    status: Literal[500]
-    type: Literal["editoast:worker_load:Database"]
+    status: Literal[500] = 500
+    type: Literal["editoast:worker_load:Database"] = "editoast:worker_load:Database"
 
 
 class EditoastWorkerLoadErrorFetchStatusError(BaseModel):
@@ -2604,8 +2822,10 @@ class EditoastWorkerLoadErrorFetchStatusError(BaseModel):
         Field(title="EditoastWorkerLoadErrorFetchStatusErrorContext"),
     ] = None
     message: str
-    status: Literal[500]
-    type: Literal["editoast:worker_load:FetchStatusError"]
+    status: Literal[500] = 500
+    type: Literal["editoast:worker_load:FetchStatusError"] = (
+        "editoast:worker_load:FetchStatusError"
+    )
 
 
 class EditoastWorkerLoadErrorInfraNotFoundContext(BaseModel):
@@ -2618,8 +2838,10 @@ class EditoastWorkerLoadErrorInfraNotFound(BaseModel):
         Field(title="EditoastWorkerLoadErrorInfraNotFoundContext"),
     ] = None
     message: str
-    status: Literal[404]
-    type: Literal["editoast:worker_load:InfraNotFound"]
+    status: Literal[404] = 404
+    type: Literal["editoast:worker_load:InfraNotFound"] = (
+        "editoast:worker_load:InfraNotFound"
+    )
 
 
 class EditoastWorkerLoadErrorTimetableNotFoundContext(BaseModel):
@@ -2632,8 +2854,10 @@ class EditoastWorkerLoadErrorTimetableNotFound(BaseModel):
         Field(title="EditoastWorkerLoadErrorTimetableNotFoundContext"),
     ] = None
     message: str
-    status: Literal[404]
-    type: Literal["editoast:worker_load:TimetableNotFound"]
+    status: Literal[404] = 404
+    type: Literal["editoast:worker_load:TimetableNotFound"] = (
+        "editoast:worker_load:TimetableNotFound"
+    )
 
 
 class EffortCurve(BaseModel):
@@ -2691,57 +2915,57 @@ class Infra(BaseModel):
 
 
 class InfraErrorTypeDuplicatedGroup(BaseModel):
-    error_type: Literal["duplicated_group"]
+    error_type: Literal["duplicated_group"] = "duplicated_group"
     original_group_path: str
 
 
 class InfraErrorTypeEmptyObject(BaseModel):
-    error_type: Literal["empty_object"]
+    error_type: Literal["empty_object"] = "empty_object"
 
 
 class InfraErrorTypeInvalidGroup(BaseModel):
-    error_type: Literal["invalid_group"]
+    error_type: Literal["invalid_group"] = "invalid_group"
     group: str
     switch_type: str
 
 
 class InfraErrorTypeInvalidRoute(BaseModel):
-    error_type: Literal["invalid_route"]
+    error_type: Literal["invalid_route"] = "invalid_route"
 
 
 class InfraErrorTypeInvalidSwitchPorts(BaseModel):
-    error_type: Literal["invalid_switch_ports"]
+    error_type: Literal["invalid_switch_ports"] = "invalid_switch_ports"
 
 
 class InfraErrorTypeMissingRoute(BaseModel):
-    error_type: Literal["missing_route"]
+    error_type: Literal["missing_route"] = "missing_route"
 
 
 class InfraErrorTypeMissingBufferStop(BaseModel):
     endpoint: Endpoint
-    error_type: Literal["missing_buffer_stop"]
+    error_type: Literal["missing_buffer_stop"] = "missing_buffer_stop"
 
 
 class InfraErrorTypeNodeEndpointsNotUnique(BaseModel):
-    error_type: Literal["node_endpoints_not_unique"]
+    error_type: Literal["node_endpoints_not_unique"] = "node_endpoints_not_unique"
 
 
 class InfraErrorTypeOddBufferStopLocation(BaseModel):
-    error_type: Literal["odd_buffer_stop_location"]
+    error_type: Literal["odd_buffer_stop_location"] = "odd_buffer_stop_location"
 
 
 class InfraErrorTypeUnknownPortName(BaseModel):
-    error_type: Literal["unknown_port_name"]
+    error_type: Literal["unknown_port_name"] = "unknown_port_name"
     port_name: str
 
 
 class InfraErrorTypeUnusedPort(BaseModel):
-    error_type: Literal["unused_port"]
+    error_type: Literal["unused_port"] = "unused_port"
     port_name: str
 
 
 class InfraObjectElectrification(BaseModel):
-    obj_type: Literal["Electrification"]
+    obj_type: Literal["Electrification"] = "Electrification"
     railjson: Electrification
 
 
@@ -2803,21 +3027,21 @@ class LightModeEffortCurves(BaseModel):
 class LinkingOccurrenceIdUnique(BaseModel):
     train_schedule_id: int
     train_schedule_instance_index: int | None = None
-    type: Literal["unique"]
+    type: Literal["unique"] = "unique"
 
 
 class LinkingOccurrenceIdPacedOccurrence(BaseModel):
     occurrence_index: int
     train_schedule_id: int
     train_schedule_instance_index: int | None = None
-    type: Literal["paced_occurrence"]
+    type: Literal["paced_occurrence"] = "paced_occurrence"
 
 
 class LinkingOccurrenceIdAddedException(BaseModel):
     added_exception_id: int
     train_schedule_id: int
     train_schedule_instance_index: int | None = None
-    type: Literal["added_exception"]
+    type: Literal["added_exception"] = "added_exception"
 
 
 class LoadingGaugeType(Enum):
@@ -2888,7 +3112,7 @@ class OccupancyBlocksTrainScheduleResult(BaseModel):
 
 
 class OperationCreate1(BaseModel):
-    operation_type: Literal["CREATE"]
+    operation_type: Literal["CREATE"] = "CREATE"
 
 
 class OperationCreate12(InfraObjectElectrification, OperationCreate1):
@@ -2898,7 +3122,7 @@ class OperationCreate12(InfraObjectElectrification, OperationCreate1):
 class OperationDelete(BaseModel):
     obj_id: str
     obj_type: ObjectType
-    operation_type: Literal["DELETE"]
+    operation_type: Literal["DELETE"] = "DELETE"
 
 
 class LocalTrackName(RootModel[str]):
@@ -2917,7 +3141,7 @@ class OperationalPointReferenceId(BaseModel):
     """
     The object id of an operational point
     """
-    type: Literal["id"]
+    type: Literal["id"] = "id"
 
 
 class SecondaryCode(RootModel[str]):
@@ -2937,7 +3161,7 @@ class OperationalPointReferenceDomestic(BaseModel):
     """
     An optional secondary code to identify a more specific location
     """
-    type: Literal["domestic"]
+    type: Literal["domestic"] = "domestic"
 
 
 class OperationalPointReferenceUic(BaseModel):
@@ -2945,7 +3169,7 @@ class OperationalPointReferenceUic(BaseModel):
     """
     An optional secondary code to identify a more specific location
     """
-    type: Literal["uic"]
+    type: Literal["uic"] = "uic"
     uic: Annotated[int, Field(ge=0)]
     """
     The [UIC](https://en.wikipedia.org/wiki/List_of_UIC_country_codes) code of an operational point
@@ -3008,7 +3232,7 @@ class PatchOperationAddOperation(AddOperation):
     'add' operation
     """
 
-    op: Literal["add"]
+    op: Literal["add"] = "add"
 
 
 class PatchOperationMoveOperation(MoveOperation):
@@ -3016,7 +3240,7 @@ class PatchOperationMoveOperation(MoveOperation):
     'move' operation
     """
 
-    op: Literal["move"]
+    op: Literal["move"] = "move"
 
 
 class PatchOperationCopyOperation(CopyOperation):
@@ -3024,7 +3248,7 @@ class PatchOperationCopyOperation(CopyOperation):
     'copy' operation
     """
 
-    op: Literal["copy"]
+    op: Literal["copy"] = "copy"
 
 
 class PathItemRelativeLocationExactPathItem(BaseModel):
@@ -3038,7 +3262,7 @@ class PathItemRelativeLocationExactPathItem(BaseModel):
     """
     Path item ID, when the operational point matches an item in the input path
     """
-    type: Literal["exact_path_item"]
+    type: Literal["exact_path_item"] = "exact_path_item"
 
 
 class PathItemRelativeLocationBetweenPathItems(BaseModel):
@@ -3056,7 +3280,7 @@ class PathItemRelativeLocationBetweenPathItems(BaseModel):
     """
     Previous path item ID, when the operational point is not one of the input path items
     """
-    type: Literal["between_path_items"]
+    type: Literal["between_path_items"] = "between_path_items"
 
 
 class PathItemRelativeLocation(
@@ -3095,7 +3319,7 @@ class PropertyElectrificationValueElectrification(BaseModel):
     Electrified section with a given voltage
     """
 
-    type: Literal["electrification"]
+    type: Literal["electrification"] = "electrification"
     voltage: str
 
 
@@ -3105,7 +3329,7 @@ class PropertyElectrificationValueNeutralSection(BaseModel):
     """
 
     lower_pantograph: bool
-    type: Literal["neutral_section"]
+    type: Literal["neutral_section"] = "neutral_section"
 
 
 class PropertyElectrificationValueNonElectrified(BaseModel):
@@ -3113,7 +3337,7 @@ class PropertyElectrificationValueNonElectrified(BaseModel):
     Non electrified section
     """
 
-    type: Literal["non_electrified"]
+    type: Literal["non_electrified"] = "non_electrified"
 
 
 class Electrifications(BaseModel):
@@ -3169,7 +3393,7 @@ class Zones(BaseModel):
 
 
 class PathfindingFailurePathfindingInputError1(BaseModel):
-    failed_status: Literal["pathfinding_input_error"]
+    failed_status: Literal["pathfinding_input_error"] = "pathfinding_input_error"
 
 
 class PathfindingFailurePathfindingInputError3(
@@ -3198,7 +3422,7 @@ class PathfindingFailurePathfindingInputError6(
 
 
 class PathfindingFailurePathfindingNotFound1(BaseModel):
-    failed_status: Literal["pathfinding_not_found"]
+    failed_status: Literal["pathfinding_not_found"] = "pathfinding_not_found"
 
 
 class PathfindingFailurePathfindingNotFound4(
@@ -3222,7 +3446,7 @@ class PathfindingOutput(BaseModel):
 
 
 class PathfindingFailurePathfindingInputError8(BaseModel):
-    failed_status: Literal["pathfinding_input_error"]
+    failed_status: Literal["pathfinding_input_error"] = "pathfinding_input_error"
 
 
 class PathfindingFailurePathfindingInputError10(
@@ -3251,7 +3475,7 @@ class PathfindingFailurePathfindingInputError13(
 
 
 class PathfindingFailurePathfindingNotFound7(BaseModel):
-    failed_status: Literal["pathfinding_not_found"]
+    failed_status: Literal["pathfinding_not_found"] = "pathfinding_not_found"
 
 
 class PathfindingFailurePathfindingNotFound10(
@@ -3261,7 +3485,7 @@ class PathfindingFailurePathfindingNotFound10(
 
 
 class PathfindingResultFailure1(BaseModel):
-    status: Literal["failure"]
+    status: Literal["failure"] = "failure"
 
 
 class PathfindingTrackLocationInput(BaseModel):
@@ -3695,15 +3919,15 @@ class SimilarTrainWaypoint(BaseModel):
 
 class ResponseSimulationFailed(BaseModel):
     core_error: InternalError
-    status: Literal["simulation_failed"]
+    status: Literal["simulation_failed"] = "simulation_failed"
 
 
 class ElectricalProfileValueNoProfile(BaseModel):
-    electrical_profile_type: Literal["no_profile"]
+    electrical_profile_type: Literal["no_profile"] = "no_profile"
 
 
 class ElectricalProfileValueProfile(BaseModel):
-    electrical_profile_type: Literal["profile"]
+    electrical_profile_type: Literal["profile"] = "profile"
     handled: bool
     profile: str | None = None
 
@@ -3775,7 +3999,7 @@ class SummaryResponseSuccess(BaseModel):
     The length of this array is the number of path items in the train schedule used as input for the simulation.
     The first value is always `0` (beginning of the path) and the last one, the total time of the simulation (end of the path)
     """
-    status: Literal["success"]
+    status: Literal["success"] = "success"
     time: Annotated[int, Field(ge=0)]
     """
     Travel time in ms
@@ -3787,7 +4011,7 @@ class SummaryResponsePathfindingNotFound1(BaseModel):
     Pathfinding not found
     """
 
-    status: Literal["pathfinding_not_found"]
+    status: Literal["pathfinding_not_found"] = "pathfinding_not_found"
 
 
 class SummaryResponsePathfindingNotFound4(
@@ -3804,7 +4028,7 @@ class SummaryResponseSimulationFailed(BaseModel):
     """
 
     error_type: str
-    status: Literal["simulation_failed"]
+    status: Literal["simulation_failed"] = "simulation_failed"
 
 
 class SummaryResponsePathfindingInputError1(BaseModel):
@@ -3812,7 +4036,7 @@ class SummaryResponsePathfindingInputError1(BaseModel):
     InputError
     """
 
-    status: Literal["pathfinding_input_error"]
+    status: Literal["pathfinding_input_error"] = "pathfinding_input_error"
 
 
 class SummaryResponsePathfindingInputError3(
@@ -3949,12 +4173,12 @@ class StartTimeChangeGroup(BaseModel):
 
 
 class StdcmResponsePathNotFound(BaseModel):
-    status: Literal["path_not_found"]
+    status: Literal["path_not_found"] = "path_not_found"
 
 
 class StdcmResponseInternalError(BaseModel):
     error: InternalError
-    status: Literal["internal_error"]
+    status: Literal["internal_error"] = "internal_error"
 
 
 class StdcmSearchEnvironment(BaseModel):
@@ -4053,19 +4277,19 @@ class SubjectType(Enum):
 
 
 class SupportedSignalingSystemBAL(BaseModel):
-    type: Literal["BAL"]
+    type: Literal["BAL"] = "BAL"
 
 
 class SupportedSignalingSystemBAPR(BaseModel):
-    type: Literal["BAPR"]
+    type: Literal["BAPR"] = "BAPR"
 
 
 class SupportedSignalingSystemTVM300(BaseModel):
-    type: Literal["TVM300"]
+    type: Literal["TVM300"] = "TVM300"
 
 
 class SupportedSignalingSystemTVM430(BaseModel):
-    type: Literal["TVM430"]
+    type: Literal["TVM430"] = "TVM430"
 
 
 class SwitchPortConnection(BaseModel):
@@ -4325,12 +4549,12 @@ class Version(BaseModel):
 
 class WaypointBufferStop(BaseModel):
     id: Annotated[str, Field(max_length=255, min_length=1)]
-    type: Literal["BufferStop"]
+    type: Literal["BufferStop"] = "BufferStop"
 
 
 class WaypointDetector(BaseModel):
     id: Annotated[str, Field(max_length=255, min_length=1)]
-    type: Literal["Detector"]
+    type: Literal["Detector"] = "Detector"
 
 
 class WorkScheduleType(Enum):
@@ -5081,7 +5305,7 @@ class EnergySourceElectrification(BaseModel):
     """
 
     efficiency: Annotated[float, Field(ge=0.0, le=1.0)]
-    energy_source_type: Literal["Electrification"]
+    energy_source_type: Literal["Electrification"] = "Electrification"
     max_input_power: SpeedDependantPower
     max_output_power: SpeedDependantPower
 
@@ -5165,7 +5389,7 @@ class EtcsBrakeParams(BaseModel):
 
 class PointGeometry(BaseModel):
     coordinates: list[float]
-    type: Literal["Point"]
+    type: Literal["Point"] = "Point"
 
 
 class GeoJsonPoint(RootModel[PointGeometry]):
@@ -5180,7 +5404,7 @@ class GrantBody(BaseModel):
 
 
 class InfraObjectSwitchType(BaseModel):
-    obj_type: Literal["SwitchType"]
+    obj_type: Literal["SwitchType"] = "SwitchType"
     railjson: SwitchType
 
 
@@ -5318,7 +5542,7 @@ class OccupancyBlockForm(BaseModel):
 
 
 class InfraObjectLevelCrossing(BaseModel):
-    obj_type: Literal["LevelCrossing"]
+    obj_type: Literal["LevelCrossing"] = "LevelCrossing"
     railjson: LevelCrossing
 
 
@@ -5355,7 +5579,7 @@ class PatchOperationRemoveOperation(RemoveOperation):
     'remove' operation
     """
 
-    op: Literal["remove"]
+    op: Literal["remove"] = "remove"
 
 
 class PatchOperationReplaceOperation(ReplaceOperation):
@@ -5363,7 +5587,7 @@ class PatchOperationReplaceOperation(ReplaceOperation):
     'replace' operation
     """
 
-    op: Literal["replace"]
+    op: Literal["replace"] = "replace"
 
 
 class PatchOperationTestOperation(TestOperation):
@@ -5371,7 +5595,7 @@ class PatchOperationTestOperation(TestOperation):
     'test' operation
     """
 
-    op: Literal["test"]
+    op: Literal["test"] = "test"
 
 
 class PathItemLocationTrackOffset(TrackOffset):
@@ -5379,7 +5603,7 @@ class PathItemLocationTrackOffset(TrackOffset):
     The location of a path waypoint
     """
 
-    type: Literal["track_offset"]
+    type: Literal["track_offset"] = "track_offset"
 
 
 class PathItemLocationOperationalPointPartReference(OperationalPointPartReference):
@@ -5387,7 +5611,9 @@ class PathItemLocationOperationalPointPartReference(OperationalPointPartReferenc
     The location of a path waypoint
     """
 
-    type: Literal["operational_point_part_reference"]
+    type: Literal["operational_point_part_reference"] = (
+        "operational_point_part_reference"
+    )
 
 
 class PathItemLocation(
@@ -5419,7 +5645,7 @@ class Item(BaseModel):
 
 
 class PathfindingInputErrorInvalidPathItems1(BaseModel):
-    error_type: Literal["invalid_path_items"]
+    error_type: Literal["invalid_path_items"] = "invalid_path_items"
     items: list[Item]
 
 
@@ -5430,13 +5656,13 @@ class PathfindingFailurePathfindingInputError2(
 
 
 class PathfindingNotFoundNotFoundInBlocks(BaseModel):
-    error_type: Literal["not_found_in_blocks"]
+    error_type: Literal["not_found_in_blocks"] = "not_found_in_blocks"
     length: Annotated[int, Field(ge=0)]
     track_section_ranges: list[CoreTrackRange]
 
 
 class PathfindingNotFoundNotFoundInRoutes(BaseModel):
-    error_type: Literal["not_found_in_routes"]
+    error_type: Literal["not_found_in_routes"] = "not_found_in_routes"
     length: Annotated[int, Field(ge=0)]
     track_section_ranges: list[CoreTrackRange]
 
@@ -5464,7 +5690,7 @@ class PathfindingItem(BaseModel):
 
 
 class PathfindingInputErrorInvalidPathItems2(BaseModel):
-    error_type: Literal["invalid_path_items"]
+    error_type: Literal["invalid_path_items"] = "invalid_path_items"
     items: list[Item]
 
 
@@ -5813,7 +6039,7 @@ class SummaryResponsePathfindingNotFound3(
 
 
 class PathfindingInputErrorInvalidPathItems3(BaseModel):
-    error_type: Literal["invalid_path_items"]
+    error_type: Literal["invalid_path_items"] = "invalid_path_items"
     items: list[Item]
 
 
@@ -5937,7 +6163,7 @@ class SubCategoryPage(PaginationStats):
 
 class SupportedSignalingSystemEtcsLevel2(BaseModel):
     brake_params: EtcsBrakeParams
-    type: Literal["ETCS_LEVEL2"]
+    type: Literal["ETCS_LEVEL2"] = "ETCS_LEVEL2"
 
 
 class SwitchExtensions(BaseModel):
@@ -6092,7 +6318,7 @@ class CoreIncompatibleConstraints(BaseModel):
 
 
 class PathfindingInputErrorInvalidPathItems(BaseModel):
-    error_type: Literal["invalid_path_items"]
+    error_type: Literal["invalid_path_items"] = "invalid_path_items"
     items: list[Item]
 
 
@@ -6168,7 +6394,7 @@ class EnergySourcePowerPack(BaseModel):
     """
 
     efficiency: Annotated[float, Field(ge=0.0, le=1.0)]
-    energy_source_type: Literal["PowerPack"]
+    energy_source_type: Literal["PowerPack"] = "PowerPack"
     energy_storage: EnergyStorage
     max_input_power: SpeedDependantPower
     max_output_power: SpeedDependantPower
@@ -6180,7 +6406,7 @@ class EnergySourceBattery(BaseModel):
     """
 
     efficiency: Annotated[float, Field(ge=0.0, le=1.0)]
-    energy_source_type: Literal["Battery"]
+    energy_source_type: Literal["Battery"] = "Battery"
     energy_storage: EnergyStorage
     max_input_power: SpeedDependantPower
     max_output_power: SpeedDependantPower
@@ -6188,7 +6414,7 @@ class EnergySourceBattery(BaseModel):
 
 class LineStringGeometry(BaseModel):
     coordinates: list[list[float]]
-    type: Literal["LineString"]
+    type: Literal["LineString"] = "LineString"
 
 
 class GeoJsonLineString(RootModel[LineStringGeometry]):
@@ -6197,7 +6423,7 @@ class GeoJsonLineString(RootModel[LineStringGeometry]):
 
 class MultiLineStringGeometry(BaseModel):
     coordinates: list[list[list[float]]]
-    type: Literal["MultiLineString"]
+    type: Literal["MultiLineString"] = "MultiLineString"
 
 
 class GeoJsonMultiLineString(RootModel[MultiLineStringGeometry]):
@@ -6206,7 +6432,7 @@ class GeoJsonMultiLineString(RootModel[MultiLineStringGeometry]):
 
 class MultiPointGeometry(BaseModel):
     coordinates: list[list[float]]
-    type: Literal["MultiPoint"]
+    type: Literal["MultiPoint"] = "MultiPoint"
 
 
 class GeoJsonMultiPoint(RootModel[MultiPointGeometry]):
@@ -6215,7 +6441,7 @@ class GeoJsonMultiPoint(RootModel[MultiPointGeometry]):
 
 class PolygonGeometry(BaseModel):
     coordinates: list[list[list[float]]]
-    type: Literal["Polygon"]
+    type: Literal["Polygon"] = "Polygon"
 
 
 class GeoJsonPolygon(RootModel[PolygonGeometry]):
@@ -6223,49 +6449,49 @@ class GeoJsonPolygon(RootModel[PolygonGeometry]):
 
 
 class InfraErrorTypeInvalidReference(BaseModel):
-    error_type: Literal["invalid_reference"]
+    error_type: Literal["invalid_reference"] = "invalid_reference"
     reference: ObjectRef
 
 
 class InfraErrorTypeObjectOutOfPath(BaseModel):
-    error_type: Literal["object_out_of_path"]
+    error_type: Literal["object_out_of_path"] = "object_out_of_path"
     reference: ObjectRef
 
 
 class InfraErrorTypeOutOfRange(BaseModel):
-    error_type: Literal["out_of_range"]
+    error_type: Literal["out_of_range"] = "out_of_range"
     expected_range: list[float]
     position: float
     reference: ObjectRef
 
 
 class InfraErrorTypeOverlappingElectrifications(BaseModel):
-    error_type: Literal["overlapping_electrifications"]
+    error_type: Literal["overlapping_electrifications"] = "overlapping_electrifications"
     reference: ObjectRef
 
 
 class InfraErrorTypeOverlappingSpeedSections(BaseModel):
-    error_type: Literal["overlapping_speed_sections"]
+    error_type: Literal["overlapping_speed_sections"] = "overlapping_speed_sections"
     reference: ObjectRef
 
 
 class InfraErrorTypeOverlappingSwitches(BaseModel):
-    error_type: Literal["overlapping_switches"]
+    error_type: Literal["overlapping_switches"] = "overlapping_switches"
     reference: ObjectRef
 
 
 class InfraObjectDetector(BaseModel):
-    obj_type: Literal["Detector"]
+    obj_type: Literal["Detector"] = "Detector"
     railjson: Detector
 
 
 class InfraObjectBufferStop(BaseModel):
-    obj_type: Literal["BufferStop"]
+    obj_type: Literal["BufferStop"] = "BufferStop"
     railjson: BufferStop
 
 
 class InfraObjectRoute(BaseModel):
-    obj_type: Literal["Route"]
+    obj_type: Literal["Route"] = "Route"
     railjson: Route
 
 
@@ -6403,7 +6629,7 @@ class OperationUpdate(BaseModel):
     """
     Representation of JSON Patch (list of patch operations)
     """
-    operation_type: Literal["UPDATE"]
+    operation_type: Literal["UPDATE"] = "UPDATE"
 
 
 class OperationalPointPart(BaseModel):
@@ -6467,7 +6693,7 @@ class PathItem(BaseModel):
 
 
 class PathfindingNotFoundIncompatibleConstraints(BaseModel):
-    error_type: Literal["incompatible_constraints"]
+    error_type: Literal["incompatible_constraints"] = "incompatible_constraints"
     incompatible_constraints: CoreIncompatibleConstraints
     relaxed_constraints_path: CorePathfindingResultSuccess
 
@@ -6529,7 +6755,7 @@ class PathfindingInput(BaseModel):
 
 
 class PathfindingResultSuccess(CorePathfindingResultSuccess):
-    status: Literal["success"]
+    status: Literal["success"] = "success"
 
 
 class PathfindingFailurePathfindingNotFound11(
@@ -6792,7 +7018,7 @@ class SimDebugFailureReport(BaseModel):
 
 
 class ResponseSuccess(SimulationResponseSuccess):
-    status: Literal["success"]
+    status: Literal["success"] = "success"
 
 
 class ResponsePathfindingFailed(BaseModel):
@@ -6807,7 +7033,7 @@ class ResponsePathfindingFailed(BaseModel):
         | PathfindingFailurePathfindingNotFound4
         | PathfindingFailurePathfindingNotFound5
     )
-    status: Literal["pathfinding_failed"]
+    status: Literal["pathfinding_failed"] = "pathfinding_failed"
 
 
 class SummaryResponsePathfindingNotFound5(
@@ -6834,12 +7060,12 @@ class StdcmResponseSuccess(BaseModel):
     departure_time: AwareDatetime
     pathfinding_result: CorePathfindingResultSuccess
     simulation: SimulationResponseSuccess
-    status: Literal["success"]
+    status: Literal["success"] = "success"
 
 
 class StdcmResponsePreprocessingSimulationError(BaseModel):
     error: ResponseSuccess | ResponsePathfindingFailed | ResponseSimulationFailed
-    status: Literal["preprocessing_simulation_error"]
+    status: Literal["preprocessing_simulation_error"] = "preprocessing_simulation_error"
 
 
 class StdcmResponse(
@@ -6967,7 +7193,7 @@ class CorePathfindingNotFound(
 
 class MultiPolygonGeometry(BaseModel):
     coordinates: list[list[list[list[float]]]]
-    type: Literal["MultiPolygon"]
+    type: Literal["MultiPolygon"] = "MultiPolygon"
 
 
 class GeoJsonMultiPolygon(RootModel[MultiPolygonGeometry]):
@@ -7001,22 +7227,22 @@ class InfraError(BaseModel):
 
 
 class InfraObjectTrackSection(BaseModel):
-    obj_type: Literal["TrackSection"]
+    obj_type: Literal["TrackSection"] = "TrackSection"
     railjson: TrackSectionModel
 
 
 class InfraObjectSignal(BaseModel):
-    obj_type: Literal["Signal"]
+    obj_type: Literal["Signal"] = "Signal"
     railjson: Signal
 
 
 class InfraObjectSpeedSection(BaseModel):
-    obj_type: Literal["SpeedSection"]
+    obj_type: Literal["SpeedSection"] = "SpeedSection"
     railjson: SpeedSection
 
 
 class InfraObjectSwitch(BaseModel):
-    obj_type: Literal["Switch"]
+    obj_type: Literal["Switch"] = "Switch"
     railjson: Switch
 
 
@@ -7040,7 +7266,7 @@ class NeutralSection(BaseModel):
 
 
 class InfraObjectNeutralSection(BaseModel):
-    obj_type: Literal["NeutralSection"]
+    obj_type: Literal["NeutralSection"] = "NeutralSection"
     railjson: NeutralSection
 
 
@@ -7263,7 +7489,7 @@ class TrainScheduleExceptionChangeGroups(BaseModel):
 
 
 class InfraObjectOperationalPoint(BaseModel):
-    obj_type: Literal["OperationalPoint"]
+    obj_type: Literal["OperationalPoint"] = "OperationalPoint"
     railjson: OperationalPoint
 
 

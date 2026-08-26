@@ -23,4 +23,5 @@ uv run datamodel-codegen \
     --use-double-quotes \
     --allow-remote-refs \
     --formatters black isort \
-    --type-overrides '{"TrainSchedule.start_time": ".overrides.OffsetInMs", "StartTimeChangeGroup.value": ".overrides.OffsetInMs"}'
+    --type-overrides '{"TrainSchedule.start_time": ".overrides.OffsetInMs", "StartTimeChangeGroup.value": ".overrides.OffsetInMs"}' \
+    --use-one-literal-as-default
