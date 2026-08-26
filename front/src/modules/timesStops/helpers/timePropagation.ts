@@ -195,12 +195,12 @@ export const propagateTime = (
 
   const oldValue = update.row[update.field];
   const newValue = update.value;
-  const isOriginUpdate = isOriginArrivalUpdate(update);
+  const isOriginArrival = isOriginArrivalUpdate(update);
   const isShiftAllPropagation = update.propagationMode === 'shiftAllWaypoints';
   // Origin and shiftAll use HH:mm:ss delta only. toDestination uses full datetime (can produce D+1).
   // fromDeparture uses HH:mm:ss only since start_time absorbs the shift.
   const delta =
-    isOriginUpdate || isShiftAllPropagation
+    isOriginArrival || isShiftAllPropagation
       ? computeDelta(oldValue, newValue)
       : computeDeltaForPropagationMode(oldValue, newValue, update.propagationMode);
   if (delta === null) return undefined;
@@ -219,8 +219,8 @@ export const propagateTime = (
     );
   }
 
-  if (isOriginUpdate || update.propagationMode === 'shiftAllWaypoints') {
-    if (!isOriginUpdate) return propagateShiftAll(delta, selectedTrain, timetableType);
+  if (isOriginArrival || update.propagationMode === 'shiftAllWaypoints') {
+    if (!isOriginArrival) return propagateShiftAll(delta, selectedTrain, timetableType);
     let result: PropagationResult | undefined;
     if (isShiftAllPropagation || update.propagationMode === 'toDestination')
       result = propagateShiftAll(delta, selectedTrain, timetableType);
