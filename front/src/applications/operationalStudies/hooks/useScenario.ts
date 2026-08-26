@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { skipToken } from '@reduxjs/toolkit/query';
 import { useParams } from 'react-router-dom';
 
-import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import { osrdEditoastApi, type TimetableType } from 'common/api/osrdEditoastApi';
 import { useOsrdConfActions } from 'common/osrdContext';
 import { updateTrainIdUsedForProjection } from 'reducers/simulationResults';
 import { useAppDispatch } from 'store';
@@ -68,13 +68,13 @@ const useScenario = () => {
 
   // Ensure a sandbox train schedule set exists and is linked to the timetable
   useEffect(() => {
-    const checkAndCreateSandbox = async (timetableId: number) => {
+    const checkAndCreateSandbox = async (timetableId: number, timetableType: TimetableType) => {
       const sandbox = await postTrainScheduleSets({
         trainScheduleSetForm: {
           name: null, // sandbox never has a name
           description: '',
           published: false,
-          timetable_type: 'CALENDAR',
+          timetable_type: timetableType,
         },
       }).unwrap();
 
@@ -95,8 +95,8 @@ const useScenario = () => {
       return;
     }
 
-    checkAndCreateSandbox(scenario.timetable_id);
-  }, [trainScheduleSets, scenario?.timetable_id]);
+    checkAndCreateSandbox(scenario.timetable_id, scenario.timetable_type);
+  }, [trainScheduleSets, scenario?.timetable_id, scenario?.timetable_type]);
 
   return { scenario, sandboxId };
 };

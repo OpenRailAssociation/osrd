@@ -17,7 +17,12 @@ import type { TrainScheduleSetImportType } from '../views/Scenario/components/Im
 import { sortTrainScheduleSets } from '../views/Scenario/components/Timetable/utils';
 import { useScenarioContext } from './useScenarioContext';
 
-export type TrainScheduleSetFormData = Omit<TrainScheduleSet, 'catalog_entry_id' | 'id'> & {
+// The timetable type is not part of the form: a train schedule set inherits it from the timetable
+// it is created in, and it can never be updated afterwards (a set must stay homogeneous).
+export type TrainScheduleSetFormData = Omit<
+  TrainScheduleSet,
+  'catalog_entry_id' | 'id' | 'timetable_type'
+> & {
   catalog?: { id: number; type: 'selected' } | { name: string; type: 'create' };
 };
 
@@ -48,7 +53,7 @@ export default function useScenarioTrainScheduleSet(
     keyPrefix: 'main.timetable.trainScheduleSets.error',
   });
 
-  const { timetableId } = useScenarioContext();
+  const { timetableId, scenario } = useScenarioContext();
   const { trainSchedules, upsertTrainSchedules } = useTimetableContext();
 
   const { currentData: trainScheduleSets } =
@@ -97,6 +102,7 @@ export default function useScenarioTrainScheduleSet(
         trainScheduleSetForm: {
           ...trainScheduleSetData,
           catalog_entry_id: catalogEntryId,
+          timetable_type: scenario.timetable_type,
         },
       }).unwrap();
 
@@ -115,6 +121,7 @@ export default function useScenarioTrainScheduleSet(
       linkTrainScheduleSetToTimetable,
       timetableId,
       trainScheduleSets,
+      scenario.timetable_type,
     ]
   );
 
@@ -295,7 +302,7 @@ export default function useScenarioTrainScheduleSet(
               catalog_entry_id: item.trainScheduleSet.catalog_entry_id,
               published: false,
               description: item.trainScheduleSet.description,
-              timetable_type: 'CALENDAR',
+              timetable_type: scenario.timetable_type,
             },
           }).unwrap();
 
@@ -333,6 +340,7 @@ export default function useScenarioTrainScheduleSet(
       linkTrainScheduleSetToTimetable,
       timetableId,
       upsertTrainSchedules,
+      scenario.timetable_type,
     ]
   );
 
