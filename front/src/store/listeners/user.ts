@@ -1,14 +1,7 @@
-/* eslint-disable @typescript-eslint/no-use-before-define */
 import { osrdGatewayApi } from 'common/api/osrdGatewayApi';
 import { loginError, loginSuccess, logoutSuccess } from 'reducers/user';
 
 import type { AppStartListening } from './types';
-
-export default function addUserListeners(startListening: AppStartListening) {
-  handleAuthAuthenticateSuccess(startListening);
-  handleAuthAuthenticateFailed(startListening);
-  handleAuthLogoutSuccess(startListening);
-}
 
 function handleAuthAuthenticateSuccess(startListening: AppStartListening) {
   startListening({
@@ -52,4 +45,10 @@ function handleAuthLogoutSuccess(startListening: AppStartListening) {
       listenerApi.dispatch(logoutSuccess());
     },
   });
+}
+
+export default function addUserListeners(startListening: AppStartListening) {
+  handleAuthAuthenticateSuccess(startListening);
+  handleAuthAuthenticateFailed(startListening);
+  handleAuthLogoutSuccess(startListening);
 }

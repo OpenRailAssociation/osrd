@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-use-before-define */
 import { keyColumn, createTextColumn } from '@sdziadkowiec/react-datasheet-grid';
 import dayjs from 'dayjs';
 import type { TFunction } from 'i18next';
@@ -43,6 +42,41 @@ export const truncateStartTimeToDay = (date: StartTime): StartTime => {
     return new Duration({ days: Math.floor(date.total('day')) });
   }
 };
+
+/** Convert receptionSignal enum to onStopSignal boolean */
+export function receptionSignalToSignalBooleans(receptionSignal?: ReceptionSignal) {
+  if (isNil(receptionSignal)) {
+    return { shortSlipDistance: undefined, onStopSignal: undefined };
+  }
+  if (receptionSignal === 'STOP') {
+    return { shortSlipDistance: false, onStopSignal: true };
+  }
+  if (receptionSignal === 'SHORT_SLIP_STOP') {
+    return { shortSlipDistance: true, onStopSignal: true };
+  }
+  return { shortSlipDistance: false, onStopSignal: false };
+}
+
+export function calculateStepTimeAndDays(
+  startTime?: Date | null,
+  duration?: Duration | null
+): TimeExtraDays | undefined {
+  if (!startTime || !duration) {
+    return undefined;
+  }
+
+  const start = dayjs(startTime);
+  const dur = dayjs.duration(duration.ms);
+
+  const waypointArrivalTime = start.add(dur);
+  const daySinceDeparture = waypointArrivalTime.diff(start, 'day');
+  const time: TimeString = waypointArrivalTime.format('HH:mm:ss');
+
+  return {
+    time,
+    daySinceDeparture,
+  };
+}
 
 export const formatSuggestedViasToRowVias = (
   operationalPoints: SuggestedOP[],
@@ -341,27 +375,6 @@ export function durationSinceStartTime(
   return Duration.subtractDate(step.toDate(), startTime);
 }
 
-export function calculateStepTimeAndDays(
-  startTime?: Date | null,
-  duration?: Duration | null
-): TimeExtraDays | undefined {
-  if (!startTime || !duration) {
-    return undefined;
-  }
-
-  const start = dayjs(startTime);
-  const dur = dayjs.duration(duration.ms);
-
-  const waypointArrivalTime = start.add(dur);
-  const daySinceDeparture = waypointArrivalTime.diff(start, 'day');
-  const time: TimeString = waypointArrivalTime.format('HH:mm:ss');
-
-  return {
-    time,
-    daySinceDeparture,
-  };
-}
-
 /** Convert onStopSignal boolean to receptionSignal enum */
 export function onStopSignalToReceptionSignal(
   onStopSignal?: boolean,
@@ -374,20 +387,6 @@ export function onStopSignalToReceptionSignal(
     return shortSlipDistance ? 'SHORT_SLIP_STOP' : 'STOP';
   }
   return 'OPEN';
-}
-
-/** Convert receptionSignal enum to onStopSignal boolean */
-export function receptionSignalToSignalBooleans(receptionSignal?: ReceptionSignal) {
-  if (isNil(receptionSignal)) {
-    return { shortSlipDistance: undefined, onStopSignal: undefined };
-  }
-  if (receptionSignal === 'STOP') {
-    return { shortSlipDistance: false, onStopSignal: true };
-  }
-  if (receptionSignal === 'SHORT_SLIP_STOP') {
-    return { shortSlipDistance: true, onStopSignal: true };
-  }
-  return { shortSlipDistance: false, onStopSignal: false };
 }
 
 export const getOperationalPointName = (
