@@ -7,10 +7,9 @@ import {
   subtractStartTime,
 } from 'utils/duration';
 
+import { ONE_DAY } from '../consts';
 import type { ArrivalUpdate, CellUpdate, PropagationMode } from '../types';
 import { truncateStartTimeToSecond } from './utils';
-
-export const ONE_DAY = new Duration({ hours: 24 });
 
 export type PropagationResult = {
   updatedPath: PathItem[];
