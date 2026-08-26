@@ -9,6 +9,7 @@ import {
 
 import { ONE_DAY } from '../consts';
 import type { ArrivalUpdate, CellUpdate, PropagationMode, PropagationResult } from '../types';
+import { propagateStopDuration } from './stopDurationPropagation';
 import { truncateStartTimeToSecond, formatSignedDelta } from './utils';
 
 const isOriginArrivalUpdate = (update: CellUpdate): update is ArrivalUpdate =>
@@ -203,6 +204,20 @@ export const propagateTime = (
       ? computeDelta(oldValue, newValue)
       : computeDeltaForPropagationMode(oldValue, newValue, update.propagationMode);
   if (delta === null) return undefined;
+
+  // A departure update propagated toDestination is the same delta applied to the stop duration.
+  if (update.field === 'requestedDeparture' && update.propagationMode === 'toDestination') {
+    return propagateStopDuration(
+      {
+        row: update.row,
+        field: 'stopDuration',
+        value: (update.row.stopDuration ?? Duration.zero).add(delta).total('second'),
+        propagationMode: 'toDestination',
+      },
+      selectedTrain,
+      timetableType
+    );
+  }
 
   if (isOriginUpdate || update.propagationMode === 'shiftAllWaypoints') {
     if (!isOriginUpdate) return propagateShiftAll(delta, selectedTrain, timetableType);
