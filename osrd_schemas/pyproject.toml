@@ -1,6 +1,6 @@
 [project]
 name = "osrd_schemas"
-version = "0.2.0"
+version = "0.2.1"
 description = "Auto-generated OSRD pydantic schemas (editoast + railway manager interface openapi)"
 authors = [{ name = "OSRD Contributors", email = "contact@osrd.fr" }]
 requires-python = ">= 3.11"
