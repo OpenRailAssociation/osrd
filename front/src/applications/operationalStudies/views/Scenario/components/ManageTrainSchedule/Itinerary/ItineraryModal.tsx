@@ -857,8 +857,6 @@ const ItineraryModal = ({
             onRollingStockMessageChange={setRollingStockMessage}
             currentSubCategory={currentSubCategory}
             categoryColors={categoryColors}
-            submitAttempted={submitAttempted}
-            isNameEmpty={isNameEmpty}
           />
         </div>
         <div className="itinerary-modal-form-body" data-testid="itinerary-modal-form-body">
