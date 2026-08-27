@@ -279,7 +279,7 @@ const useTimesStopsTableData = (
     const pathIdToIndex = new Map(selectedTrain.path.map((step, idx) => [step.id, idx]));
 
     const hasScheduleNotHonored =
-      stableIsValid && !stablePathItemRespect?.times.every((time) => time);
+      !stableIsValid || !stablePathItemRespect?.times.every((time) => time);
 
     const pathStepRowsById = new Map(
       selectedTrain.path.map((pathStep, stepIndex) => {

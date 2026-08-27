@@ -173,8 +173,6 @@ const useUpdateTimesStopsTable = (
         };
       }
 
-      // referenceBaseArrival: directly update the schedule item's reference_base_arrival field.
-      // Uses the same arrival → duration-relative-to-start_time conversion as the arrival field.
       if (update.field === 'referenceBaseArrival') {
         const { arrival: newReferenceBaseArrival } = scheduleStateToApiFields(
           { arrival: update.value, stop: null },
@@ -501,7 +499,11 @@ const useUpdateTimesStopsTable = (
   );
 
   const updateReferenceBaseArrival = useCallback(
-    (row: TimesStopsRowNew, referenceBaseArrival: StartTime | null, propagationMode: PropagationMode) =>
+    (
+      row: TimesStopsRowNew,
+      referenceBaseArrival: StartTime | null,
+      propagationMode: PropagationMode
+    ) =>
       updateCell({
         row,
         field: 'referenceBaseArrival',

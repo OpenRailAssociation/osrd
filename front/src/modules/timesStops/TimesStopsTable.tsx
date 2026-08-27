@@ -547,14 +547,24 @@ const TimesStopsTable = ({
 
   const returnBaseArrival = (info: CellContext<TimesStopsRowNew, StartTime | null>) => {
     const row = info.row.original;
+    const { allRows } = info.table.options.meta!;
 
-    if (scheduleNotHonored || !isValid) {
+    const isFirstRow = info.row.index === 0;
+
+    if (isFirstRow) {
+      const value = row.requestedArrival;
+      return (
+        <span data-testid="computed-base-arrival">
+          {value ? formatTime(value, dateTimeLocale) : ''}
+        </span>
+      );
+    } else if (scheduleNotHonored || !isValid) {
       return (
         <StartTimeCell
           type={startTimeCellType}
           ref={registerTimeCellRef(info.row.index, 'baseArrival')}
           cellContext={info}
-          referenceDate={getDepartureReferenceDate(row, startTime)}
+          referenceDate={getArrivalReferenceDate(row, allRows, startTime)}
           clearButtonTitle={t('clearRequestedArrivalTime')}
           onEnterKeyDown={() => focusCellBelow(info.row.index, 'baseArrival')}
           onCommit={(date, propagationMode) => {
