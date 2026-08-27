@@ -420,6 +420,7 @@
       "addLocationOnMap": "Add a location on the map",
       "addPoint": "Add point",
       "addPointOnMap": "Add this waypoint using the map",
+      "addTrack": "Add",
       "alertInvalidOP": "At least one of the waypoints could not be recognized",
       "alertMissingDestination": "Destination is not defined",
       "alertMissingOrigin": "Origin is not defined",
