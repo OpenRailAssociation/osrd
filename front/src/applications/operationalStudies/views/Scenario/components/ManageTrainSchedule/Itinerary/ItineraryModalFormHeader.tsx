@@ -1,12 +1,6 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 
-import {
-  ComboBox,
-  Input,
-  Select,
-  useDefaultComboBox,
-  type StatusWithMessage,
-} from '@osrd-project/ui-core';
+import { ComboBox, Input, Select, useDefaultComboBox } from '@osrd-project/ui-core';
 import { skipToken } from '@reduxjs/toolkit/query';
 import { isEqual } from 'lodash';
 import { useTranslation } from 'react-i18next';
@@ -33,8 +27,6 @@ type ItineraryModalFormHeaderProps = {
   onRollingStockMessageChange: (message?: string) => void;
   currentSubCategory?: SubCategory;
   categoryColors: CategoryColors;
-  submitAttempted?: boolean;
-  isNameEmpty?: boolean;
 };
 
 const ItineraryModalFormHeader = ({
@@ -44,8 +36,6 @@ const ItineraryModalFormHeader = ({
   onRollingStockMessageChange,
   currentSubCategory,
   categoryColors,
-  submitAttempted,
-  isNameEmpty,
 }: ItineraryModalFormHeaderProps) => {
   const { t } = useTranslation('operational-studies', {
     keyPrefix: 'manageTrainSchedule',
@@ -122,19 +112,6 @@ const ItineraryModalFormHeader = ({
   // Composition code/speed limit by tag
   const infraID = useInfraID();
   const speedLimitTags = useSpeedLimitTags(infraID);
-
-  // Train schedule name error
-  const [isNameBlurred, setIsNameBlurred] = useState(false);
-
-  const nameError: StatusWithMessage | undefined = useMemo(() => {
-    const shouldShowError = (isNameBlurred || submitAttempted) && isNameEmpty;
-    if (!shouldShowError) return undefined;
-
-    return {
-      status: 'error',
-      message: t('errorMessages.requiredField'),
-    };
-  }, [isNameBlurred, submitAttempted, isNameEmpty, t]);
 
   const rollingStockMessage = useMemo(() => {
     if (!rollingStockValue) {
@@ -241,9 +218,6 @@ const ItineraryModalFormHeader = ({
                 name: e.target.value,
               })
             }
-            onBlur={() => setIsNameBlurred(true)}
-            onFocus={() => setIsNameBlurred(false)}
-            statusWithMessage={nameError}
           />
         </div>
       </div>
