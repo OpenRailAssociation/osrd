@@ -79,7 +79,7 @@ type ItineraryModalProps = {
 };
 
 export type ItineraryModalFormState = {
-  name?: string;
+  name: string;
   rollingStockId?: number;
   rollingStockName: string;
   speedLimitTag?: string;
@@ -178,6 +178,31 @@ export function setupStateWithTrainSchedule(
 
   return state;
 }
+
+const createDefaultTrainName = (stepsWithLocationOrInput: PathStepV2[]): string => {
+  const createDefaultStepName = (pathStep: PathStepV2): string => {
+    const location = pathStep.location;
+    if (!location) return '';
+    switch (location.type) {
+      case 'track_offset':
+        return `${location.track}+${Math.round(location.offset / 1000)}`;
+      case 'operational_point_part_reference': {
+        const op = location.operational_point;
+        switch (op.type) {
+          case 'domestic':
+            return op.main_code;
+          case 'uic':
+            return `UIC ${op.uic}`;
+          case 'id':
+            return `ID ${op.operational_point}`;
+        }
+      }
+    }
+  };
+  const origin = stepsWithLocationOrInput[0];
+  const destination = stepsWithLocationOrInput[stepsWithLocationOrInput.length - 1];
+  return `${createDefaultStepName(origin)} → ${createDefaultStepName(destination)}`;
+};
 
 const ItineraryModal = ({
   onTrainCreated,
@@ -597,7 +622,7 @@ const ItineraryModal = ({
     }
   };
 
-  const isNameEmpty = !modalFormState.name || modalFormState.name.trim() === '';
+  const isNameEmpty = modalFormState.name.trim() === '';
   const [submitAttempted, setSubmitAttempted] = useState(false);
 
   useEffect(() => {
@@ -741,12 +766,15 @@ const ItineraryModal = ({
   const submitItinerary = (trainType?: EditingTrainType) => {
     setSubmitAttempted(true);
     setBannerWiggle((c) => c + 1);
-    if (isNameEmpty) return;
 
     const stepsWithLocationOrInput = pathSteps.filter(
       (step) => !isEmptyStep(step, getInputForStep(step.id))
     );
     if (stepsWithLocationOrInput.length < 2) return;
+
+    const name = isNameEmpty
+      ? createDefaultTrainName(stepsWithLocationOrInput)
+      : modalFormState.name;
 
     const stepsWithStopAtDestination = stepsWithLocationOrInput.map((step, i) =>
       i === stepsWithLocationOrInput.length - 1
@@ -760,7 +788,7 @@ const ItineraryModal = ({
 
     setTrainState((oldTrainState: ItineraryModalTrainState) => ({
       ...oldTrainState,
-      name: modalFormState.name ?? '',
+      name,
       category: modalFormState.category ?? null,
       rollingStockId: modalFormState.rollingStockId,
       rollingStockName: modalFormState.rollingStockName,
