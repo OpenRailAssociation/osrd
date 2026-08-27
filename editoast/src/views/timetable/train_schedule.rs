@@ -347,6 +347,11 @@ pub(in crate::views) async fn simulation_summary(
         ids: train_schedule_ids,
     }): Json<SimulationBatchForm>,
 ) -> Result<Json<HashMap<i64, TrainScheduleSummaryResponse>>> {
+    // The services do not call this endpoint: authorization cannot be skipped
+    let Some(user) = authn_state.user() else {
+        return Err(AuthorizationError::Unauthenticated.into());
+    };
+
     let conn = &mut db_pool.get().await?;
 
     let infra = Infra::retrieve_or_fail(conn.clone(), infra_id, || {
@@ -421,35 +426,32 @@ pub(in crate::views) async fn simulation_summary(
 
     // Check user privilege on the rolling stocks used by the train occurrences.
     // Those the user cannot read are kept aside to be reported per occurrence below.
-    let unauthorized_rolling_stocks = match authn_state.user() {
-        Some(user) => {
-            let system_authorizer = SystemAuthorizer::new_infallible(&openfga);
-            let Ok(authorized_rolling_stocks) = system_authorizer
-                .authorize(authz::v2::rolling_stock_list(
-                    user,
-                    RollingStockPrivilege::CanRead,
-                ))
-                .await?
-                .access()
-                .await?;
-            match authorized_rolling_stocks {
-                authz::v2::ResourcesList::All => HashMap::new(),
-                authz::v2::ResourcesList::Privileged(authorized_rolling_stocks) => {
-                    let authorized_rolling_stock_ids = authorized_rolling_stocks
-                        .into_iter()
-                        .map(|rolling_stock| rolling_stock.0)
-                        .collect::<HashSet<_>>();
-                    rolling_stocks
-                        .iter()
-                        .filter(|rolling_stock| {
-                            !authorized_rolling_stock_ids.contains(&rolling_stock.id)
-                        })
-                        .map(|rolling_stock| (rolling_stock.name.clone(), rolling_stock.id))
-                        .collect()
-                }
+    let unauthorized_rolling_stocks = {
+        let system_authorizer = SystemAuthorizer::new_infallible(&openfga);
+        let Ok(authorized_rolling_stocks) = system_authorizer
+            .authorize(authz::v2::rolling_stock_list(
+                user,
+                RollingStockPrivilege::CanRead,
+            ))
+            .await?
+            .access()
+            .await?;
+        match authorized_rolling_stocks {
+            authz::v2::ResourcesList::All => HashMap::new(),
+            authz::v2::ResourcesList::Privileged(authorized_rolling_stocks) => {
+                let authorized_rolling_stock_ids = authorized_rolling_stocks
+                    .into_iter()
+                    .map(|rolling_stock| rolling_stock.0)
+                    .collect::<HashSet<_>>();
+                rolling_stocks
+                    .iter()
+                    .filter(|rolling_stock| {
+                        !authorized_rolling_stock_ids.contains(&rolling_stock.id)
+                    })
+                    .map(|rolling_stock| (rolling_stock.name.clone(), rolling_stock.id))
+                    .collect()
             }
         }
-        None => HashMap::new(),
     };
 
     let consists = rolling_stocks
@@ -1137,6 +1139,11 @@ pub(in crate::views) async fn project_path(
         electrical_profile_set_id,
     }): Json<ProjectPathForm>,
 ) -> Result<Json<HashMap<i64, ProjectPathTrainScheduleResult>>> {
+    // The services do not call this endpoint: authorization cannot be skipped
+    let Some(user) = authn_state.user() else {
+        return Err(AuthorizationError::Unauthenticated.into());
+    };
+
     let infra = &Infra::retrieve_or_fail(db_pool.get().await?, infra_id, || {
         TrainScheduleError::InfraNotFound { infra_id }
     })
@@ -1223,7 +1230,7 @@ pub(in crate::views) async fn project_path(
     let (readable_ids, readable_train_schedules): (Vec<_>, Vec<_>) = filter_readable_occurrences(
         occurrences_by_rolling_stock,
         &rolling_stocks,
-        &authn_state,
+        user,
         &openfga,
     )
     .await?
@@ -1324,6 +1331,11 @@ pub(in crate::views) async fn project_path_op(
         use_simulation,
     }): Json<ProjectPathOperationalPointForm>,
 ) -> Result<Json<HashMap<i64, ProjectPathTrainScheduleResult>>> {
+    // The services do not call this endpoint: authorization cannot be skipped
+    let Some(user) = authn_state.user() else {
+        return Err(AuthorizationError::Unauthenticated.into());
+    };
+
     let infra = &Infra::retrieve_or_fail(db_pool.get().await?, infra_id, || {
         TrainScheduleError::InfraNotFound { infra_id }
     })
@@ -1384,7 +1396,7 @@ pub(in crate::views) async fn project_path_op(
         filter_readable_occurrences(
             occurrences_by_rolling_stock,
             &rolling_stocks,
-            &authn_state,
+            user,
             &openfga,
         )
         .await?
@@ -1830,6 +1842,11 @@ pub(in crate::views) async fn track_occupancy(
         use_simulation,
     }): Json<TrackOccupancyForm>,
 ) -> Result<Json<Vec<TrackSectionOccupancy>>> {
+    // The services do not call this endpoint: authorization cannot be skipped
+    let Some(user) = authn_state.user() else {
+        return Err(AuthorizationError::Unauthenticated.into());
+    };
+
     v2::infra_privilege_check(
         authz::Infra(infra_id),
         authz::InfraPrivilege::CanRestrictedRead,
@@ -1893,7 +1910,7 @@ pub(in crate::views) async fn track_occupancy(
         filter_readable_occurrences(
             occurrences_by_rolling_stock,
             &rolling_stocks,
-            &authn_state,
+            user,
             &openfga,
         )
         .await?

@@ -115,6 +115,11 @@ pub(in crate::views) async fn occupancy(
         electrical_profile_set_id,
     }): Json<LevelCrossingOccupancyForm>,
 ) -> Result<Json<HashMap<Identifier, Vec<LevelCrossingOccupancy>>>> {
+    // The services do not call this endpoint: authorization cannot be skipped
+    let Some(user) = authn_state.user() else {
+        return Err(AuthorizationError::Unauthenticated.into());
+    };
+
     v2::infra_privilege_check(
         authz::Infra(infra_id),
         authz::InfraPrivilege::CanRestrictedRead,
@@ -187,8 +192,7 @@ pub(in crate::views) async fn occupancy(
         .map_err(RollingStockError::from)?;
 
     let train_occurrences =
-        filter_readable_occurrences(train_occurrences, &rolling_stocks, &authn_state, &openfga)
-            .await?;
+        filter_readable_occurrences(train_occurrences, &rolling_stocks, user, &openfga).await?;
 
     // Extract train schedules for simulation
     let train_schedules = train_occurrences

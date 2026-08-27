@@ -769,14 +769,9 @@ async fn create_compound_image(
 pub(in crate::views) async fn filter_readable_occurrences(
     train_occurrences: HashMap<String, Vec<(OccurrenceId, TrainOccurrence)>>,
     rolling_stocks: &[RollingStock],
-    authn_state: &crate::authentication::State,
+    user: authz::User,
     openfga: &fga::Client,
 ) -> Result<Vec<(OccurrenceId, TrainOccurrence)>> {
-    // The request bypasses authorization
-    let Some(user) = authn_state.user() else {
-        return Ok(train_occurrences.into_values().flatten().collect());
-    };
-
     // Listing the readable rolling stocks cannot be rejected: the issuer is already authenticated
     let Ok(authorized_rolling_stocks) = SystemAuthorizer::new_infallible(openfga)
         .authorize(authz::v2::rolling_stock_list(
