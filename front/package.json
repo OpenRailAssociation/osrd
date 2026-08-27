@@ -17,7 +17,7 @@
     "@ag-media/react-pdf-table": "^2.0.3",
     "@nivo/core": "^0.99.0",
     "@nivo/line": "^0.99.0",
-    "@osrd-project/netzgrafik-frontend": "0.0.0-snapshot.de0f1b2162574742869af7f2c5e5bd1c529bf644",
+    "@osrd-project/netzgrafik-frontend": "0.0.0-snapshot.10a8901c0faf8da985a314b793b324a4707ee3a3",
     "@osrd-project/ui-charts": "0.0.1-dev",
     "@osrd-project/ui-core": "0.0.1-dev",
     "@osrd-project/ui-icons": "0.0.1-dev",
