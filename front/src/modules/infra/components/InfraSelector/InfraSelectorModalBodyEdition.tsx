@@ -53,7 +53,7 @@ const InfraSelectorModalBodyEdition = ({
     // redraw is in the deps to force the reload of the privileges when the user changes his own grant
   }, [getUserPrivileges, JSON.stringify(infrasList.map((infra) => infra.id))]);
 
-  const validateFile = async (fileToValidate: File): Promise<true | string> => {
+  const validateFile = async (fileToValidate: File): Promise<string | null> => {
     if (fileToValidate.size === 0) {
       return t('jsonUpload.emptyFile');
     }
@@ -63,7 +63,7 @@ const InfraSelectorModalBodyEdition = ({
       console.error(e);
       return t('jsonUpload.badJSON');
     }
-    return true;
+    return null;
   };
 
   const handleSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
