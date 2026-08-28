@@ -333,6 +333,9 @@ class WorkerCommand : CliCommand {
      */
     private fun consume(executor: ThreadPoolExecutor): Int {
         val factory = ConnectionFactory()
+        if (ALL_INFRA) {
+            factory.requestedHeartbeat = 43200 // 12 h heartbeat
+        }
         factory.setUri(WORKER_AMQP_URI)
         factory.setSharedExecutor(executor)
         factory.setMaxInboundMessageBodySize(WORKER_MAX_MSG_SIZE)
