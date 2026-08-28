@@ -212,11 +212,11 @@ pub(in crate::views) async fn list(
         }
     };
 
-    let conn = &mut db_pool.get().await?;
+    let (projects, stats) = {
+        let conn = &mut db_pool.get().await?;
+        Project::list_paginated(conn, settings).await?
+    };
 
-    let (projects, stats) = Project::list_paginated(conn, settings).await?;
-
-    dbg!(&projects);
     let results = projects
         .into_iter()
         .zip(db_pool.iter_conn())
@@ -401,7 +401,6 @@ pub mod tests {
     use super::*;
 
     use authz::ProjectGrant;
-    use futures::FutureExt;
     use pretty_assertions::assert_eq;
 
     use rstest::rstest;
