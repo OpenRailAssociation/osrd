@@ -79,7 +79,7 @@ const TrainScheduleSetDialog = ({
               }
               form="train-schedule-set"
               type="submit"
-              className={cx('submit-button', { 'wizz-effect': formHasError })}
+              className={cx({ 'wizz-effect': formHasError })}
               onClick={noop}
               isLoading={loading}
             />

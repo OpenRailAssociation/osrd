@@ -59,11 +59,9 @@ const TrainScheduleDeleteDialog = ({
               onClick={onCancel}
               isDisabled={loading}
             />
-
             <Button
               label={labels.submit}
               onClick={handleDelete}
-              className="submit-button"
               isLoading={loading}
               variant="Destructive"
             />

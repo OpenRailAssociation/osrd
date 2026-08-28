@@ -54,14 +54,7 @@ const LocalCopyTrainScheduleSetDialog = ({
           )}
           <div className="buttons">
             <Button variant="Cancel" label={t('cancel')} onClick={onCancel} isDisabled={loading} />
-            <Button
-              label={t('transformToLocalCopySubmit')}
-              form="train-schedule-set"
-              type="submit"
-              className={cx('submit-button')}
-              onClick={confirm}
-              isLoading={loading}
-            />
+            <Button label={t('transformToLocalCopySubmit')} onClick={confirm} isLoading={loading} />
           </div>
         </>
       }
