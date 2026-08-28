@@ -31,6 +31,7 @@ class SimpleRollingStock(
     override val maxSpeed: Double,
     /** the deceleration of the train, in m/s^2 */
     constGamma: Double,
+    override val raisePantographTime: Double? = null,
 ) : PhysicsRollingStock {
     /** Defined as mass * inertiaCoefficient */
     override val inertia: Double = mass * inertiaCoefficient
@@ -60,6 +61,9 @@ class SimpleRollingStock(
     ): CurvesAndConditions {
         return CurvesAndConditions(distanceRangeMapOf(), distanceRangeMapOf())
     }
+
+    override val isThermal: Boolean
+        get() = true
 
     /**
      * The tractive effort curve shape. It can be either linear (effort proportional to speed), or
