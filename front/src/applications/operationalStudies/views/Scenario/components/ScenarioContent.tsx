@@ -308,26 +308,28 @@ const ScenarioContent = ({ activeBoards, toggleBoard }: ScenarioContentProps) =>
                   </BoardWrapper>
                 )}
                 {/* CHRONOGRAM */}
-                {isInfraLoaded && trainSchedulesWithDetails.length > 0 && (
-                  <BoardWrapper
-                    hidden={!activeBoards.has('chronogram')}
-                    name={t('boards.chronogram')}
-                    resizable={{
-                      height: chronogramHeight,
-                      setHeight: setChronogramHeight,
-                      minHeight: CHRONOGRAM_MIN_HEIGHT,
-                    }}
-                    withFooter
-                  >
-                    <div data-testid="chronogram" className="simulation-chronogram">
-                      <ChronogramWrapper
-                        timetableId={timetableId}
-                        trainSchedulesWithDetails={trainSchedulesWithDetails}
-                        chronogramHeight={chronogramHeight}
-                      />
-                    </div>
-                  </BoardWrapper>
-                )}
+                {scenario.timetable_type === 'CALENDAR' &&
+                  isInfraLoaded &&
+                  trainSchedulesWithDetails.length > 0 && (
+                    <BoardWrapper
+                      hidden={!activeBoards.has('chronogram')}
+                      name={t('boards.chronogram')}
+                      resizable={{
+                        height: chronogramHeight,
+                        setHeight: setChronogramHeight,
+                        minHeight: CHRONOGRAM_MIN_HEIGHT,
+                      }}
+                      withFooter
+                    >
+                      <div data-testid="chronogram" className="simulation-chronogram">
+                        <ChronogramWrapper
+                          timetableId={timetableId}
+                          trainSchedulesWithDetails={trainSchedulesWithDetails}
+                          chronogramHeight={chronogramHeight}
+                        />
+                      </div>
+                    </BoardWrapper>
+                  )}
               </div>
             </div>
             {/* CONFLICTS */}
