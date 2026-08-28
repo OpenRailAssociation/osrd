@@ -180,19 +180,43 @@ pub(in crate::views) struct ProjectWithStudyCountList {
     )
 )]
 pub(in crate::views) async fn list(
-    State(db_pool): State<Arc<DbConnectionPoolV2>>,
+    State(AppState {
+        db_pool, openfga, ..
+    }): State<AppState>,
+    Extension(authn_state): Extension<authentication::State>,
     Query(pagination_params): Query<PaginationQueryParams<1000>>,
     Query(ordering_params): Query<OperationalStudiesOrderingParam>,
 ) -> Result<Json<ProjectWithStudyCountList>> {
     let ordering = ordering_params.ordering;
-    let settings = pagination_params
+    let default_settings = pagination_params
         .into_selection_settings()
         .order_by(move || ordering.as_project_ordering());
+    let settings = match &authn_state {
+        crate::authentication::State::Skip => default_settings,
+        crate::authentication::State::Authenticated { user, .. } => {
+            let authorized_projects = authz::v2::project_list(*user)
+                .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
+                .await?;
+            match authorized_projects {
+                authz::v2::ResourcesList::All => default_settings,
+                authz::v2::ResourcesList::Privileged(authorized_projects) => default_settings
+                    .filter(move || {
+                        Project::ID.eq_any(
+                            authorized_projects
+                                .iter()
+                                .map(|project| project.0)
+                                .collect(),
+                        )
+                    }),
+            }
+        }
+    };
 
     let conn = &mut db_pool.get().await?;
 
     let (projects, stats) = Project::list_paginated(conn, settings).await?;
 
+    dbg!(&projects);
     let results = projects
         .into_iter()
         .zip(db_pool.iter_conn())
@@ -377,6 +401,7 @@ pub mod tests {
     use super::*;
 
     use authz::ProjectGrant;
+    use futures::FutureExt;
     use pretty_assertions::assert_eq;
 
     use rstest::rstest;
@@ -414,23 +439,97 @@ pub mod tests {
         assert_eq!(project.name, project_name);
     }
 
+    #[rstest]
+    #[case::owner(
+        test_app!().build(),
+        app.db_pool().get_ok(),
+        futures::future::join_all((0..3).map(|i| (i, _conn.clone())).map(
+            async move |(i, mut conn)| create_project(&mut conn, &format!("project{i}")).await,
+        ))
+        .await,
+        app
+            .user("user", "User")
+            .with_roles([Role::OperationalStudies])
+            .with_project_grant(expected_projects[0].id, ProjectGrant::Owner)
+            .with_project_grant(expected_projects[1].id, ProjectGrant::Owner)
+            .create()
+            .await,
+        2
+    )]
+    #[case::no_grant(
+        test_app!().build(),
+        app.db_pool().get_ok(),
+        futures::future::join_all((0..3).map(|i| (i, _conn.clone())).map(
+            async move |(i, mut conn)| create_project(&mut conn, &format!("project{i}")).await
+        ))
+        .await,
+        app
+            .user("user", "User")
+            .with_roles([Role::OperationalStudies])
+            .create()
+            .await,
+        0
+    )]
+    #[case::admin(
+        test_app!().build(),
+        app.db_pool().get_ok(),
+        futures::future::join_all((0..3).map(|i| (i, _conn.clone())).map(
+            async move |(i, mut conn)| create_project(&mut conn, &format!("project{i}")).await,
+        ))
+        .await,
+        app
+            .user("user", "User")
+            .with_roles([Role::Admin])
+            .create()
+            .await,
+        3
+    )]
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn project_list() {
-        let app = test_app!().skip_authz().build();
-        let db_pool = app.db_pool();
+    async fn project_list(
+        #[case] app: TestApp,
+        #[case] _conn: DbConnection,
+        #[case] expected_projects: Vec<Project>,
+        #[case] user: authz::identity::User,
+        #[case] expected_length: usize,
+    ) {
+        let response: ProjectWithStudyCountList = app
+            .get("/projects/")
+            .by_user(user.as_ref())
+            .await
+            .assert_status_ok()
+            .json();
 
-        let created_project = create_project(&mut db_pool.get_ok(), "test_project_name").await;
+        let retrieved_projects = response.results;
+        assert_eq!(retrieved_projects.len(), expected_length);
 
-        let response: ProjectWithStudyCountList =
-            app.get("/projects/").await.assert_status_ok().json();
-
-        let project_retrieved = response
-            .results
+        retrieved_projects
             .iter()
-            .find(|p| p.project.id == created_project.id)
-            .unwrap();
+            .for_each(|ProjectWithStudyCount { project, .. }| {
+                let expected_project = expected_projects
+                    .iter()
+                    .find(|p| p.id == project.id)
+                    .unwrap();
 
-        assert_eq!(created_project, project_retrieved.project);
+                assert_eq!(project, expected_project);
+            });
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn project_list_forbidden() {
+        let app = test_app!().build();
+        let project_id = create_project(&mut app.db_pool().get_ok(), "project")
+            .await
+            .id;
+        let user = app
+            .user("user", "User")
+            .with_project_grant(project_id, ProjectGrant::Owner)
+            .create()
+            .await;
+
+        app.get("/projects/")
+            .by_user(user.as_ref())
+            .await
+            .assert_status_forbidden();
     }
 
     #[rstest]
