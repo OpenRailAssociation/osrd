@@ -1,5 +1,5 @@
 import type { PathItemLocation, PostSimilarTrainsApiResponse } from 'common/api/osrdEditoastApi';
-import { type MarkerInformation, MARKER_TYPE } from 'common/Map/components/ItineraryMarkers';
+import { MARKER_TYPE, type MarkerInformation } from 'common/Map/types';
 import type { StdcmPathStep } from 'reducers/osrdconf/types';
 
 import { StdcmStopTypes } from '../types';

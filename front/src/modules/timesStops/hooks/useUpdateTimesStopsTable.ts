@@ -55,7 +55,7 @@ import type {
   PropagationMode,
   StopPropagationMode,
   MarginValue,
-  TimesStopsRowNew,
+  TimesStopsRow,
   UpdateCellStatus,
   BatchTimesUpdate,
   RequestedTimeField,
@@ -85,7 +85,7 @@ const formatRequestedMargin = (requestedMargin: MarginValue | null) => {
  */
 const useUpdateTimesStopsTable = (
   selectedTrain: Train,
-  allRows: TimesStopsRowNew[],
+  allRows: TimesStopsRow[],
   trainSchedulesWithDetails: TrainScheduleWithDetails[]
 ) => {
   const dispatch = useAppDispatch();
@@ -477,7 +477,7 @@ const useUpdateTimesStopsTable = (
   // Functions are included in deps (exception to the project convention) to propagate
   // allRows updates through the entire callback chain.
   const updateArrival = useCallback(
-    (row: TimesStopsRowNew, arrival: StartTime | null, propagationMode: PropagationMode) =>
+    (row: TimesStopsRow, arrival: StartTime | null, propagationMode: PropagationMode) =>
       updateCell({
         row,
         field: 'requestedArrival',
@@ -488,13 +488,13 @@ const useUpdateTimesStopsTable = (
   );
 
   const updateStopDuration = useCallback(
-    (row: TimesStopsRowNew, durationSeconds: number | null, propagationMode: StopPropagationMode) =>
+    (row: TimesStopsRow, durationSeconds: number | null, propagationMode: StopPropagationMode) =>
       updateCell({ row, field: 'stopDuration', value: durationSeconds, propagationMode }),
     [updateCell]
   );
 
   const updateDeparture = useCallback(
-    (row: TimesStopsRowNew, departure: StartTime | null, propagationMode: PropagationMode) =>
+    (row: TimesStopsRow, departure: StartTime | null, propagationMode: PropagationMode) =>
       updateCell({
         row,
         field: 'requestedDeparture',
@@ -505,13 +505,13 @@ const useUpdateTimesStopsTable = (
   );
 
   const updateReceptionSignal = useCallback(
-    (row: TimesStopsRowNew, receptionSignal: ReceptionSignal | undefined) =>
+    (row: TimesStopsRow, receptionSignal: ReceptionSignal | undefined) =>
       updateCell({ row, field: 'receptionSignal', value: receptionSignal }),
     [updateCell]
   );
 
   const updateRequestedMargin = useCallback(
-    (row: TimesStopsRowNew, requestedTheoreticalMargin: MarginValue | null) =>
+    (row: TimesStopsRow, requestedTheoreticalMargin: MarginValue | null) =>
       updateCell({
         row,
         field: 'requestedTheoreticalMargin',
@@ -521,13 +521,13 @@ const useUpdateTimesStopsTable = (
   );
 
   const updatePowerRestrictions = useCallback(
-    (row: TimesStopsRowNew, powerRestriction: string | null) =>
+    (row: TimesStopsRow, powerRestriction: string | null) =>
       updateCell({ row, field: 'powerRestriction', value: powerRestriction }),
     [updateCell]
   );
 
   const updateMultipleTimes = useCallback(
-    (rows: TimesStopsRowNew[], field: RequestedTimeField) => updateCell({ rows, field }),
+    (rows: TimesStopsRow[], field: RequestedTimeField) => updateCell({ rows, field }),
     [updateCell]
   );
 
