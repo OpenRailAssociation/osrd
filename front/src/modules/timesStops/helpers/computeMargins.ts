@@ -158,7 +158,13 @@ export function computeMargins(
 
   if (!isCoreComputed(core)) return marginsUndefined;
   const { theoreticalMargin, isBoundary, provisionalLostTime, finalLostTime } = core;
-  const diffMargins = finalLostTime - provisionalLostTime;
+
+  let diffMargins: number;
+  if (finalLostTime && provisionalLostTime) {
+    diffMargins = finalLostTime - provisionalLostTime;
+  } else {
+    diffMargins = 0;
+  }
 
   return {
     theoreticalMargin,

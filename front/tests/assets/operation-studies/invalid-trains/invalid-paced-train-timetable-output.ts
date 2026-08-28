@@ -17,7 +17,12 @@ export const invalidPacedTrainTimetableOutput: TimesStopsTableRow[] = [
     signalReceptionClosed: false,
     shortSlipDistance: false,
     powerRestriction: '',
-    margin: { requestedTheoretical: '0%', computedTheoretical: '', real: '', difference: '' },
+    margin: {
+      requestedTheoretical: '0%',
+      computedTheoretical: '00m00s',
+      real: '00m00s',
+      difference: '00m00s',
+    },
     timeFromAboveWaypoint: '',
     totalArrivalTime: '',
   },
