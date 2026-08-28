@@ -30,4 +30,5 @@ export type TimesStopsTableRow = {
   margin: TimesStopsTableMargin;
   timeFromAboveWaypoint: string;
   totalArrivalTime: string;
+  referenceBaseArrival: string;
 };

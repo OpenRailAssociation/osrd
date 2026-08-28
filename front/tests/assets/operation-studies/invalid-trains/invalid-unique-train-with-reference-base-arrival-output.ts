@@ -1,7 +1,7 @@
 import { requestedPoint } from '../../../utils/manchette';
 import type { TimesStopsTableRow } from '../../../utils/times-stops-table-types';
 
-export const invalidUniqueTrainTimetableOutput: TimesStopsTableRow[] = [
+export const invalidUniqueTrainWithReferenceBaseArrivalOutput: TimesStopsTableRow[] = [
   {
     index: 1,
     status: '',
@@ -16,7 +16,12 @@ export const invalidUniqueTrainTimetableOutput: TimesStopsTableRow[] = [
     signalReceptionClosed: false,
     shortSlipDistance: false,
     powerRestriction: '',
-    margin: { requestedTheoretical: '5%', computedTheoretical: '', real: '', difference: '' },
+    margin: {
+      requestedTheoretical: '5%',
+      computedTheoretical: '00m03s',
+      real: '01m00s',
+      difference: '-01m03s',
+    },
     timeFromAboveWaypoint: '',
     totalArrivalTime: '',
     referenceBaseArrival: '11:45:43',
@@ -27,7 +32,7 @@ export const invalidUniqueTrainTimetableOutput: TimesStopsTableRow[] = [
     stationName: requestedPoint('1'),
     stationCh: '',
     trackName: 'V1',
-    requestedArrival: '',
+    requestedArrival: '11:46:00',
     calculatedArrival: '',
     stopTime: '',
     requestedDeparture: '',
@@ -35,10 +40,10 @@ export const invalidUniqueTrainTimetableOutput: TimesStopsTableRow[] = [
     signalReceptionClosed: false,
     shortSlipDistance: false,
     powerRestriction: '',
-    margin: { requestedTheoretical: '', computedTheoretical: '', real: '', difference: '' },
+    margin: { requestedTheoretical: '5%', computedTheoretical: '', real: '', difference: '' },
     timeFromAboveWaypoint: '',
     totalArrivalTime: '',
-    referenceBaseArrival: '',
+    referenceBaseArrival: '11:47:00',
   },
   {
     index: 3,
