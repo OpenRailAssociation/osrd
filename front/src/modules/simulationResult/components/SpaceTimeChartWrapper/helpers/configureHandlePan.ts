@@ -210,6 +210,7 @@ export function configureHandlePan({
           originalPacedExceptions,
           pacedGrid,
         });
+        return;
       }
     }
 
