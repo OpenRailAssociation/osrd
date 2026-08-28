@@ -474,7 +474,8 @@ mod tests {
     #[test]
     fn generate_signals_switches() {
         let railjson =
-            crate::osm_to_railjson::parse_osm("src/tests/switches.osm.pbf".into(), true).unwrap();
+            crate::osm_to_railjson::parse_osm("src/tests/switches.osm.pbf".into(), true, None)
+                .unwrap();
 
         assert_eq!(railjson.signals.len(), 382);
         assert_eq!(railjson.detectors.len(), 382);
@@ -509,7 +510,7 @@ mod tests {
         #[case] expected_direction: Direction,
     ) {
         let railjson =
-            crate::osm_to_railjson::parse_osm("src/tests/intersection.osm.pbf".into(), true)
+            crate::osm_to_railjson::parse_osm("src/tests/intersection.osm.pbf".into(), true, None)
                 .unwrap();
 
         assert!(signal_exists(
@@ -523,7 +524,7 @@ mod tests {
     #[test]
     fn generate_signals_intersection_nf() {
         let railjson =
-            crate::osm_to_railjson::parse_osm("src/tests/intersection.osm.pbf".into(), true)
+            crate::osm_to_railjson::parse_osm("src/tests/intersection.osm.pbf".into(), true, None)
                 .unwrap();
 
         assert_eq!(railjson.signals.len(), 8);
@@ -554,7 +555,8 @@ mod tests {
         #[case] expected_direction: Direction,
     ) {
         let railjson =
-            crate::osm_to_railjson::parse_osm("src/tests/tvm_signal.osm.pbf".into(), true).unwrap();
+            crate::osm_to_railjson::parse_osm("src/tests/tvm_signal.osm.pbf".into(), true, None)
+                .unwrap();
 
         assert!(signal_exists(
             &railjson,
