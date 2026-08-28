@@ -160,7 +160,7 @@ const TrainList = ({
     () => (trainSchedules: TrainScheduleWithDetails[]) =>
       trainSchedules.map((trainSchedule, index) => (
         <div key={`timetable-train-card-${trainSchedule.id}`} data-train-id={trainSchedule.id}>
-          {timetableMode === 'calendar' && showDepartureDates[index] && (
+          {timetableMode === 'chronological' && showDepartureDates[index] && (
             <div className="scenario-timetable-departure-date">{currentDepartureDates[index]}</div>
           )}
           {!isPacedTrainWithDetails(trainSchedule) ? (
@@ -229,7 +229,7 @@ const TrainList = ({
 
   return (
     <Virtualizer>
-      {timetableMode === 'calendar' && trainsToItems(trainSchedulesWithDetails)}
+      {timetableMode === 'chronological' && trainsToItems(trainSchedulesWithDetails)}
       {timetableMode === 'trainScheduleSet' &&
         (trainSchedulesByTrainScheduleSets ? (
           trainSchedulesByTrainScheduleSets

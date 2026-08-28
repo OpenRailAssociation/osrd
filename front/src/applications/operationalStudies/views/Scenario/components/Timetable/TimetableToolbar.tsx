@@ -265,11 +265,11 @@ const TimetableToolbar = ({
           <div className="timetable-sort-switch">
             <button
               className={cx('timetable-mode-button', {
-                active: timetableMode === 'calendar',
+                active: timetableMode === 'chronological',
               })}
-              data-testid="timetable-calendar-mode-button"
-              title={t('timetable.modeCalendar')}
-              onClick={() => setTimetableMode('calendar')}
+              data-testid="timetable-chronological-mode-button"
+              title={t('timetable.modeChronological')}
+              onClick={() => setTimetableMode('chronological')}
               type="button"
             >
               <Calendar />
