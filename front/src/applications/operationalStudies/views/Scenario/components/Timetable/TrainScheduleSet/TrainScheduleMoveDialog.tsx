@@ -75,7 +75,6 @@ const TrainScheduleMoveDialog = ({
               label={labels.submit}
               form="train-schedule-set"
               type="submit"
-              className={cx('submit-button')}
               onClick={noop}
               isLoading={loading}
               isDisabled={!trainScheduleSetIdSelected}
