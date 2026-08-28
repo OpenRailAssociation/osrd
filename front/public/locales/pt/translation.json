@@ -202,15 +202,6 @@
     "yes": "Sim"
   },
   "infrastructure": "Infraestrutura",
-  "interval-editor": {
-    "add": "Adicionar",
-    "begin": "Início",
-    "delete": "Eliminar",
-    "end": "FIm",
-    "merge": "Unir com o segmento seguinte",
-    "split": "Dividir",
-    "value": "Valor"
-  },
   "jsonUpload": {
     "emptyFile": "O ficheiro está vazio",
     "uploadError": "Ocorreu um erro enquanto enviava o ficheiro"

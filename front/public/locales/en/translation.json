@@ -566,16 +566,6 @@
     "yes": "Yes"
   },
   "infrastructure": "Infrastructure",
-  "interval-editor": {
-    "add": "Add",
-    "begin": "Start",
-    "delete": "Delete",
-    "end": "End",
-    "merge": "Merge with next segment",
-    "split": "Split",
-    "translate": "Shift",
-    "value": "value"
-  },
   "jsonUpload": {
     "badJSON": "Invalid content. Only RailJSON files are supported (usually .json or .railjson extensions)",
     "emptyFile": "The file is empty",
