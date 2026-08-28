@@ -902,8 +902,15 @@ fun step(
             .fold(mergedState) { mergedState, constraint ->
                 val truncatedState = constraint.truncateStep(context, currentState, mergedState)
 
-                check(currentState.position <= truncatedState.position) { "train went backwards" }
-                check(currentState.time < truncatedState.time) { "step didn't advance time" }
+                check(currentState.position <= truncatedState.position) {
+                    "constraint $constraint went backwards"
+                }
+                check(currentState.time < truncatedState.time) {
+                    "constraint $constraint didn't advance time"
+                }
+                check(truncatedState.time - currentState.time <= context.timeStep.seconds) {
+                    "constraint $constraint advanced too much time"
+                }
 
                 truncatedState
             }
