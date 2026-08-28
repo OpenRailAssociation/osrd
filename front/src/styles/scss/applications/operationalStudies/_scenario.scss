@@ -910,10 +910,6 @@ $train-category-colors: (
       }
     }
 
-    h5 {
-      margin-bottom: 0;
-    }
-
     section {
       padding-top: calc(31px - var(--fieldwrapper-default-padding-top));
       padding-left: calc(80px - var(--fieldwrapper-default-padding-left));
@@ -964,34 +960,6 @@ $train-category-colors: (
       span:nth-child(2) {
         color: var(--error60);
         font-weight: 600;
-      }
-    }
-
-    .train-schedule-set-dialog-footer {
-      display: flex;
-
-      // all the following styles should propbably be modified in osrd-ui
-      align-items: center; // instead of align-content
-      padding-left: 16px;
-      padding-block: 23px;
-
-      .submit-error {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        color: var(--error60);
-        font-weight: 600;
-      }
-
-      &.with-error {
-        background-color: var(--error5);
-        justify-content: space-between;
-      }
-
-      .footer-buttons {
-        display: flex;
-        gap: 24px;
-        flex-shrink: 0;
       }
     }
   }
