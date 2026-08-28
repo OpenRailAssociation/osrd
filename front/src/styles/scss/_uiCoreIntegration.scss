@@ -39,3 +39,9 @@ img {
       no-repeat right 12px center;
   }
 }
+
+// __________________ Dialog  __________________
+// TODO Remove this once bootstrap-sncf is dropped
+.ui-dialog-overlay .dialog-content {
+  font-family: var(--font-sans);
+}

@@ -62,10 +62,6 @@
     border-top: 1px solid var(--black10);
     background-color: var(--ambientB10);
 
-    .radio-label {
-      font-family: 'IBM Plex Sans';
-    }
-
     .ui-radio-button-wrapper {
       padding: 0;
     }
@@ -87,11 +83,6 @@
       gap: 16px;
     }
   }
-}
-
-.scenario-edition-modal-title {
-  font-family: 'IBM Plex Sans';
-  font-style: semi-bold;
 }
 
 .ui-dialog-overlay .dialog-content section.scenario-add-or-edit-modal-body {
