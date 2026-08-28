@@ -1,6 +1,7 @@
 import { useState } from 'react';
 
 import { Search } from '@osrd-project/ui-icons';
+import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 import { VscJson } from 'react-icons/vsc';
 
@@ -155,7 +156,9 @@ const InfraSelectorModalBodyEdition = ({
           />
           <div className="infra-add-error">{errorMessage}</div>
           <div className="infra-add-import">
-            <label className="infra-add-import-input-file with-file">
+            <label className={cx("infra-add-import-input-file", {
+              'with-file': selectedFile
+            })}>
               <VscJson />
               {selectedFile ? (
                 <span className="ml-2" title={selectedFile.name}>
