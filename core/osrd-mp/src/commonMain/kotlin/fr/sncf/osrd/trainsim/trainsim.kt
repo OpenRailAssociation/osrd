@@ -71,7 +71,11 @@ internal fun IntegrationStep.toMicros(): PreciseIntegrationStep =
         acceleration = acceleration.metersPerSecond2,
     )
 
-data class PantographState(val position: Double, val goingUp: Boolean) {
+data class PantographState(
+    /** Position of the pantograph, between 0.0 (fully down) and 1.0 (fully up) */
+    val position: Double,
+    val goingUp: Boolean,
+) {
     init {
         require(position in 0.0..1.0) { "position must be between 0.0 and 1.0" }
     }
