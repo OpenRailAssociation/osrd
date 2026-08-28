@@ -56,19 +56,17 @@ const TrainScheduleSetDialog = ({
 
   return (
     <Dialog
-      className="train-schedule-set-dialog"
+      className={cx('train-schedule-set-dialog', { 'with-error': error !== null })}
       header={<h5>{labels.title}</h5>}
       footer={
         <>
-          <div className="submit-error">
-            {error && (
-              <>
-                <Blocked variant="fill" size="lg" />
-                <span>{error}</span>
-              </>
-            )}
-          </div>
-          <div className="footer-buttons">
+          {error && (
+            <div className="error">
+              <Blocked variant="fill" size="lg" />
+              <span>{error}</span>
+            </div>
+          )}
+          <div className="buttons">
             <Button
               variant="Cancel"
               label={labels.cancel}
@@ -81,14 +79,13 @@ const TrainScheduleSetDialog = ({
               }
               form="train-schedule-set"
               type="submit"
-              className={cx('submit-button', formHasError && 'wizz-effect')}
+              className={cx('submit-button', { 'wizz-effect': formHasError })}
               onClick={noop}
               isLoading={loading}
             />
           </div>
         </>
       }
-      footerClassname={cx('train-schedule-set-dialog-footer', error !== null && 'with-error')}
     >
       <TrainScheduleSetForm
         formId="train-schedule-set"
