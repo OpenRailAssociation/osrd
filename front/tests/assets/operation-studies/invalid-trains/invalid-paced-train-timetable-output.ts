@@ -20,6 +20,7 @@ export const invalidPacedTrainTimetableOutput: TimesStopsTableRow[] = [
     margin: { requestedTheoretical: '0%', computedTheoretical: '', real: '', difference: '' },
     timeFromAboveWaypoint: '',
     totalArrivalTime: '',
+    referenceBaseArrival: '11:45:43',
   },
   {
     index: 2,
@@ -38,6 +39,7 @@ export const invalidPacedTrainTimetableOutput: TimesStopsTableRow[] = [
     margin: { requestedTheoretical: '', computedTheoretical: '', real: '', difference: '' },
     timeFromAboveWaypoint: '',
     totalArrivalTime: '',
+    referenceBaseArrival: '',
   },
   {
     index: 3,
@@ -56,5 +58,6 @@ export const invalidPacedTrainTimetableOutput: TimesStopsTableRow[] = [
     margin: { requestedTheoretical: '', computedTheoretical: '', real: '', difference: '' },
     timeFromAboveWaypoint: '',
     totalArrivalTime: '',
+    referenceBaseArrival: '',
   },
 ];

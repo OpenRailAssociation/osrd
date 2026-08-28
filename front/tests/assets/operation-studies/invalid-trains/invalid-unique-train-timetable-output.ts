@@ -19,6 +19,7 @@ export const invalidUniqueTrainTimetableOutput: TimesStopsTableRow[] = [
     margin: { requestedTheoretical: '5%', computedTheoretical: '', real: '', difference: '' },
     timeFromAboveWaypoint: '',
     totalArrivalTime: '',
+    referenceBaseArrival: '11:45:43',
   },
   {
     index: 2,
@@ -37,6 +38,7 @@ export const invalidUniqueTrainTimetableOutput: TimesStopsTableRow[] = [
     margin: { requestedTheoretical: '', computedTheoretical: '', real: '', difference: '' },
     timeFromAboveWaypoint: '',
     totalArrivalTime: '',
+    referenceBaseArrival: '',
   },
   {
     index: 3,
@@ -55,6 +57,7 @@ export const invalidUniqueTrainTimetableOutput: TimesStopsTableRow[] = [
     margin: { requestedTheoretical: '', computedTheoretical: '', real: '', difference: '' },
     timeFromAboveWaypoint: '',
     totalArrivalTime: '',
+    referenceBaseArrival: '',
   },
   {
     index: 4,
@@ -73,6 +76,7 @@ export const invalidUniqueTrainTimetableOutput: TimesStopsTableRow[] = [
     margin: { requestedTheoretical: '', computedTheoretical: '', real: '', difference: '' },
     timeFromAboveWaypoint: '',
     totalArrivalTime: '',
+    referenceBaseArrival: '',
   },
   {
     index: 5,
@@ -91,6 +95,7 @@ export const invalidUniqueTrainTimetableOutput: TimesStopsTableRow[] = [
     margin: { requestedTheoretical: '5%', computedTheoretical: '', real: '', difference: '' },
     timeFromAboveWaypoint: '',
     totalArrivalTime: '',
+    referenceBaseArrival: '',
   },
   {
     index: 6,
@@ -109,6 +114,7 @@ export const invalidUniqueTrainTimetableOutput: TimesStopsTableRow[] = [
     margin: { requestedTheoretical: '', computedTheoretical: '', real: '', difference: '' },
     timeFromAboveWaypoint: '',
     totalArrivalTime: '',
+    referenceBaseArrival: '',
   },
   {
     index: 7,
@@ -127,5 +133,6 @@ export const invalidUniqueTrainTimetableOutput: TimesStopsTableRow[] = [
     margin: { requestedTheoretical: '', computedTheoretical: '', real: '', difference: '' },
     timeFromAboveWaypoint: '',
     totalArrivalTime: '',
+    referenceBaseArrival: '',
   },
 ];
