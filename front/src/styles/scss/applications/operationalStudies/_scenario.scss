@@ -897,10 +897,6 @@ $train-category-colors: (
 
     max-width: 560px;
 
-    &.delete-dialog {
-      max-width: 680px;
-    }
-
     &:has(.wizz-effect:active) {
       .train-schedule-set-name:has(.error),
       .new-catalog-entry-input:has(.error),
@@ -962,5 +958,8 @@ $train-category-colors: (
         font-weight: 600;
       }
     }
+  }
+  .dialog-content.confirm-dialog {
+    max-width: 680px;
   }
 }

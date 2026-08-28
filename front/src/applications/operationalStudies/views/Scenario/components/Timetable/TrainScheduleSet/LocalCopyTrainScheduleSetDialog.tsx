@@ -41,8 +41,7 @@ const LocalCopyTrainScheduleSetDialog = ({
 
   return (
     <Dialog
-      className={cx('train-schedule-set-dialog', { 'with-error': error !== null })}
-      style={{ maxWidth: '680px' }}
+      className={cx('train-schedule-set-dialog confirm-dialog', { 'with-error': error !== null })}
       header={<h5>{t('transformToLocalCopyDialogTitle')}</h5>}
       footer={
         <>
