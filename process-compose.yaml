@@ -14,6 +14,7 @@ processes:
     command: "gradle run --args='worker'"
     environment:
       - "ALL_INFRA=true"
+      - "WORKER_AMQP_HEARTBEAT=43200"
       - "CORE_EDITOAST_URL=http://localhost:8090"
       - "CORE_MONITOR_TYPE=opentelemetry"
       - "OTEL_SERVICE_NAME=osrd-core"

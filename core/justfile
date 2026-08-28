@@ -9,8 +9,8 @@ help:
 
 # Run the application; does not start other services
 run:
-    @echo "Starting core in single worker mode. If you use osrd-compose add the sw flag"
-    ALL_INFRA=true java {{ javaflags }} -jar build/libs/osrd-all.jar worker --editoast-url http://localhost:8090/
+    @echo "Starting core in single worker mode (and slow RabbitMQ heartbeat). If you use osrd-compose add the sw flag"
+    ALL_INFRA=true WORKER_AMQP_HEARTBEAT=43200 java {{ javaflags }} -jar build/libs/osrd-all.jar worker --editoast-url http://localhost:8090/
 
 # Install required dependencies
 install:
