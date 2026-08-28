@@ -892,11 +892,6 @@ fun step(
 
     tracer?.mergedState(mergedState)
 
-    val maxSpeed = context.rollingStock.maxSpeed.metersPerSecond
-    check(mergedState.speed <= maxSpeed || currentState.speed > maxSpeed) {
-        "train is going too fast"
-    }
-
     val truncatedState =
         constraints
             .fold(mergedState) { mergedState, constraint ->
@@ -915,6 +910,11 @@ fun step(
                 truncatedState
             }
             .truncate(currentState, context.path.length.meters)
+
+    val maxSpeed = context.rollingStock.maxSpeed.metersPerSecond
+    check(truncatedState.speed <= maxSpeed || currentState.speed > maxSpeed) {
+        "train is going too fast (speed=${truncatedState.speed}, max=$maxSpeed)"
+    }
 
     tracer?.truncatedState(truncatedState)
 
