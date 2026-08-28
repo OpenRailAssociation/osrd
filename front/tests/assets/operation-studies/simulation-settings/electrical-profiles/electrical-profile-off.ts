@@ -23,6 +23,7 @@ export const electricalProfileOffData: TimesStopsTableRow[] = [
     },
     timeFromAboveWaypoint: '',
     totalArrivalTime: '',
+    referenceBaseArrival: '11:22:40',
   },
   {
     index: 2,
@@ -41,6 +42,7 @@ export const electricalProfileOffData: TimesStopsTableRow[] = [
     margin: { requestedTheoretical: '', computedTheoretical: '', real: '', difference: '' },
     timeFromAboveWaypoint: '',
     totalArrivalTime: '',
+    referenceBaseArrival: '11:29:42',
   },
   {
     index: 3,
@@ -59,6 +61,7 @@ export const electricalProfileOffData: TimesStopsTableRow[] = [
     margin: { requestedTheoretical: '', computedTheoretical: '', real: '', difference: '' },
     timeFromAboveWaypoint: '',
     totalArrivalTime: '',
+    referenceBaseArrival: '11:35:44',
   },
   {
     index: 4,
@@ -77,5 +80,6 @@ export const electricalProfileOffData: TimesStopsTableRow[] = [
     margin: { requestedTheoretical: '', computedTheoretical: '', real: '', difference: '' },
     timeFromAboveWaypoint: '',
     totalArrivalTime: '',
+    referenceBaseArrival: '11:48:13',
   },
 ];
