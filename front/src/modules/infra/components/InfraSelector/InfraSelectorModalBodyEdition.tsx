@@ -69,7 +69,7 @@ const InfraSelectorModalBodyEdition = ({
   const handleSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
-    event.target.value = '';
+    event.target.value = ''; // Resets the input value to let the onChange retrigger on consecutive inputs with the same file/path, necessary on chrome
 
     setFileSelection({ file, validating: true });
     const status = await validateFile(file);
