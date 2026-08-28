@@ -622,7 +622,7 @@ const TimesStopsTable = ({
     if (isFirstRow) {
       const value = row.requestedArrival;
       return (
-        <span data-testid="computed-base-arrival">
+        <span data-testid="first-base-arrival">
           {value ? formatTime(value, dateTimeLocale) : ''}
         </span>
       );
@@ -810,8 +810,8 @@ const TimesStopsTable = ({
           header: () => t('baseArrival'),
           cell: returnBaseArrival,
           meta: {
-            className: 'col-reference-base-arrivial col-with-clock-time',
-            'data-testid': 'reference-base-arrivial',
+            className: 'col-reference-base-arrival col-with-clock-time',
+            'data-testid': 'reference-base-arrival-cell',
           },
         }),
       ]),
