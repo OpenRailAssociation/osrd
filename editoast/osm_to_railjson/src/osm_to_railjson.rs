@@ -102,7 +102,7 @@ pub fn parse_osm(
     let detectors = signals.iter().map(detector).collect_vec();
 
     debug!("Start generating routes");
-    let routes = generate_routes::routes(&track_sections, &detectors, &buffer_stops, &switches);
+    let routes = generate_routes::routes(&track_sections, &detectors, &buffer_stops, &switches, None);
     debug!("Done, got {} routes", routes.len());
 
     Ok(RailJson {
