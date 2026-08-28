@@ -46,7 +46,7 @@ const Timetable = ({
   const { trainSchedules, upsertTrainSchedules } = useTimetableContext();
 
   const [showTrainDetails, setShowTrainDetails] = useState(false);
-  const [timetableMode, setTimetableMode] = useState<TimetableMode>('calendar');
+  const [timetableMode, setTimetableMode] = useState<TimetableMode>('chronological');
   const [expandedTrainScheduleSetIds, setExpandedTrainScheduleSetIds] = useState<Set<number>>(
     new Set()
   );

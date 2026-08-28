@@ -234,7 +234,7 @@
         "zero_length_path": "Abfahrt und Ankunft sind identisch"
       },
       "invalidTrains": "Einige Züge sind ungültig",
-      "modeCalendar": "Chronologisch sortieren",
+      "modeChronological": "Chronologisch sortieren",
       "modeTrainScheduleSet": "Nach Paket sortieren",
       "noSpeedLimitTagsShort": "Keiner",
       "noTrainSchedule": "Kein Eintrag",

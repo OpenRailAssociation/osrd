@@ -239,7 +239,7 @@
         "zero_length_path": "L'origine et la destination sont identiques"
       },
       "invalidTrains": "Certains trains sont invalides",
-      "modeCalendar": "Trier chronologiquement",
+      "modeChronological": "Trier chronologiquement",
       "modeTrainScheduleSet": "Trier par paquet",
       "noSpeedLimitTagsShort": "Aucun",
       "noTrainSchedule": "Aucune circulation",
