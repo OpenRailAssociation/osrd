@@ -2,8 +2,8 @@ import { describe, it, expect } from 'vitest';
 
 import generateEffortCurvesForTests from 'modules/powerRestriction/helpers/__tests__/generateEffortCurvesForTests';
 
-import type { PowerRestrictionWarnings } from '../../types';
-import { countWarnings, getPowerRestrictionsWarnings } from '../powerRestrictionWarnings';
+import { getPowerRestrictionsWarnings } from '../powerRestrictionWarnings';
+import type { PowerRestrictionWarnings } from '../types';
 import {
   pathElectrificationRanges,
   powerRestrictionRangesMixedIn2Keys,
@@ -229,52 +229,5 @@ describe('getPowerRestrictionsWarnings', () => {
       };
       expect(warnings).toEqual(expectedResult);
     });
-  });
-});
-
-describe('countWarnings', () => {
-  it('should return 0 if no warnings are detected', () => {
-    const warnings = getPowerRestrictionsWarnings(
-      validPowerRestrictionRanges,
-      pathElectrificationRanges,
-      rollingStockModes
-    );
-
-    const totalWarnings = countWarnings(warnings);
-
-    expect(totalWarnings).toEqual(0);
-  });
-  it('should properly count all warnings when they are all in the same key', () => {
-    const warnings = getPowerRestrictionsWarnings(
-      powerRestrictionRangesOnlyNoCode,
-      pathElectrificationRanges,
-      rollingStockModes
-    );
-
-    const totalWarnings = countWarnings(warnings);
-
-    expect(totalWarnings).toEqual(4);
-  });
-  it('should properly count all warnings when they are in multiple keys', () => {
-    const warnings = getPowerRestrictionsWarnings(
-      powerRestrictionRangesMixedIn2Keys,
-      pathElectrificationRanges,
-      rollingStockModes
-    );
-
-    const totalWarnings = countWarnings(warnings);
-
-    expect(totalWarnings).toEqual(4);
-  });
-  it('should properly count all warnings when they are in multiple keys and some ranges are valid', () => {
-    const warnings = getPowerRestrictionsWarnings(
-      powerRestrictionRangesWithValidRanges,
-      pathElectrificationRanges,
-      rollingStockModes
-    );
-
-    const totalWarnings = countWarnings(warnings);
-
-    expect(totalWarnings).toEqual(2);
   });
 });

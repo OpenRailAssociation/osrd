@@ -17,13 +17,13 @@ import {
   startTimeToMs,
 } from 'utils/duration';
 
-import type { OptimisticEdit, PendingEdit, TimesStopsRowNew } from '../types';
+import type { OptimisticEdit, PendingEdit, TimesStopsRow } from '../types';
 import { receptionSignalToSignalBooleans, truncateStartTimeToSecond } from './utils';
 
 /** Compute the insertion index for a new PathStep using row opOnPathIndex values. */
 const computeInsertIndex = (
   editedOpIndex: number,
-  allRows: TimesStopsRowNew[],
+  allRows: TimesStopsRow[],
   currentPath: PathItem[]
 ): number => {
   // Build a map of pathStepId -> opOnPathIndex from rows that are path steps
@@ -42,9 +42,9 @@ const computeInsertIndex = (
 
 /** Find existing PathStep or create a new one at the correct position. */
 export const upsertPathStep = (
-  editedRow: TimesStopsRowNew,
+  editedRow: TimesStopsRow,
   currentPath: PathItem[],
-  allRows: TimesStopsRowNew[]
+  allRows: TimesStopsRow[]
 ): { pathStepId: string; updatedPath: PathItem[] } => {
   if (editedRow.pathStepId) {
     return { pathStepId: editedRow.pathStepId, updatedPath: currentPath };
@@ -184,11 +184,11 @@ export const insertScheduleItemInOrder = (
  * the result with the row (e.g. `{ ...row, ...computeOptimisticRow(row, edit) }`).
  */
 export const computeOptimisticRow = (
-  row: TimesStopsRowNew,
+  row: TimesStopsRow,
   edit: OptimisticEdit
 ): Partial<
   Pick<
-    TimesStopsRowNew,
+    TimesStopsRow,
     | 'requestedArrival'
     | 'stopDuration'
     | 'requestedDeparture'
@@ -241,7 +241,7 @@ export const computeOptimisticRow = (
  */
 export const propagationToEdits = (
   result: { updatedSchedule: ScheduleItem[]; updatedStartTime: StartTime },
-  rows: TimesStopsRowNew[]
+  rows: TimesStopsRow[]
 ): PendingEdit[] =>
   rows.flatMap((row) => {
     const item = result.updatedSchedule.find((s) => s.at === row.pathStepId);
@@ -267,9 +267,7 @@ export const propagationToEdits = (
  * // rows: [{ id: 'A', powerRestriction: null }, { id: 'B', powerRestriction: 'C2' }, { id: 'C', powerRestriction: null }]
  * // → [{ from: 'B', to: 'C', value: 'C2' }]
  */
-export const buildPowerRestrictionsFromRows = (
-  rows: TimesStopsRowNew[]
-): PowerRestrictionItem[] => {
+export const buildPowerRestrictionsFromRows = (rows: TimesStopsRow[]): PowerRestrictionItem[] => {
   const pathStepRows = rows.filter((r) => r.pathStepId);
   const result: PowerRestrictionItem[] = [];
 

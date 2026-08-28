@@ -10,7 +10,6 @@ import type {
   StdcmStopTypes,
 } from 'applications/stdcm/types';
 import type {
-  TrainCategory,
   LoadingGaugeType,
   RelatedOperationalPoint,
   PathItemLocation,
@@ -36,16 +35,6 @@ export type OsrdConfState = InfraState & {
 export type StandardAllowance = {
   type: MarginType;
   value?: number;
-};
-
-export type ItineraryForm = {
-  name: string;
-  category: TrainCategory | null;
-  rollingStockId?: number;
-  rollingStockName: string;
-  speedLimitTag?: string;
-  pathSteps: (PathStep | null)[];
-  trainType?: EditingTrainType;
 };
 
 export type EditingTrainType = 'uniqueTrain' | 'pacedTrain' | 'occurrence';

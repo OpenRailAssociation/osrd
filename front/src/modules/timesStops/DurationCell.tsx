@@ -16,7 +16,7 @@ import CellPlaceholder from './CellPlaceholder';
 import ClearButton from './ClearButton';
 import DurationPropagationMenu from './DurationPropagationMenu';
 import type { TimesStopsTableFeatures } from './TimesStopsTable';
-import type { StopPropagationMode, TimesStopsRowNew } from './types';
+import type { StopPropagationMode, TimesStopsRow } from './types';
 
 type ActiveUnit = 'h' | 'm' | 's';
 
@@ -403,7 +403,7 @@ export type DurationCellHandle = {
   focus: () => void;
 };
 
-type DurationCellProps = CellContext<TimesStopsTableFeatures, TimesStopsRowNew, Duration | null> &
+type DurationCellProps = CellContext<TimesStopsTableFeatures, TimesStopsRow, Duration | null> &
   Omit<React.HTMLAttributes<HTMLDivElement>, 'onChange'> & {
     prefillValue?: Duration | null;
     onEnterKeyDown?: () => void;

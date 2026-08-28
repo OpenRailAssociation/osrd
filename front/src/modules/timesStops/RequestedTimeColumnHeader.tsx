@@ -9,12 +9,12 @@ import OSRDMenu, { type OSRDMenuItem } from 'common/OSRDMenu';
 
 import { getRowsToUpdateFromSimulation } from './helpers/fillTimesFromSimulation';
 import OverwriteAllConfirmDialog from './OverwriteAllConfirmDialog';
-import type { RequestedTimeField, TimesStopsRowNew } from './types';
+import type { RequestedTimeField, TimesStopsRow } from './types';
 
 type RequestedTimeColumnHeaderProps = {
   field: RequestedTimeField;
   isSimulationValid: boolean;
-  rows: TimesStopsRowNew[];
+  rows: TimesStopsRow[];
   onFillEmpty: () => void;
   onOverwriteAll: () => void;
   onMouseEnterFillEmpty: () => void;

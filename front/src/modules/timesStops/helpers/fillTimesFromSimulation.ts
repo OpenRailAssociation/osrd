@@ -1,10 +1,10 @@
-import type { TimesStopsRowNew, RequestedTimeField, TimeFillMode } from '../types';
+import type { TimesStopsRow, RequestedTimeField, TimeFillMode } from '../types';
 
 export const getRowsToUpdateFromSimulation = (
-  rows: TimesStopsRowNew[],
+  rows: TimesStopsRow[],
   field: RequestedTimeField,
   mode: TimeFillMode
-): TimesStopsRowNew[] => {
+): TimesStopsRow[] => {
   const computedField = field === 'requestedArrival' ? 'computedArrival' : 'computedDeparture';
   return rows.filter(
     (row) =>
