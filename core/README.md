@@ -41,8 +41,8 @@ You'll need **Java 21**
 # on Windows
 gradlew.bat shadowJar
 
-# Run as a RabbitMQ single worker for all infra
-ALL_INFRA=true java -jar build/libs/osrd-all.jar worker --editoast-url http://localhost:8090/
+# Run as a RabbitMQ single worker for all infra (and slow RabbitMQ heartbeat for debugging)
+ALL_INFRA=true WORKER_AMQP_HEARTBEAT=43200 java -jar build/libs/osrd-all.jar worker --editoast-url http://localhost:8090/
 
 # Check that an infra can be loaded
 java -jar build/libs/osrd-all.jar load-infra --path infra.json
@@ -115,7 +115,7 @@ For core:
 
 ```sh
 ./osrd-compose host sw down core # if 'core' is running
-./gradlew shadowJar && ALL_INFRA=true java -jar -ea -Xmx12g -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=dump.hprof build/libs/osrd-all.jar worker --editoast-url http://localhost:8090/
+./gradlew shadowJar && ALL_INFRA=true WORKER_AMQP_HEARTBEAT=43200 java -jar -ea -Xmx12g -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=dump.hprof build/libs/osrd-all.jar worker --editoast-url http://localhost:8090/
 ```
 
 For STDCM tests, it's possible to store (heavy) timetable data locally to save

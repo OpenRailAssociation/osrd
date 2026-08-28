@@ -79,6 +79,7 @@ services:
     environment:
       RABBITMQ_DEFAULT_USER: osrd
       RABBITMQ_DEFAULT_PASS: password
+      RABBITMQ_HEARTBEAT: 60
     volumes:
       - "./docker/rabbitmq.conf:/etc/rabbitmq/conf.d/99-osrd.conf"
       - rabbitmq_data:/var/lib/rabbitmq
@@ -158,6 +159,7 @@ services:
       AWS_SECRET_ACCESS_KEY: secret_key
       AWS_ENDPOINT_URL_S3: http://s3:9900
       BUCKET_NAME: osrd
+      WORKER_AMQP_HEARTBEAT: 60
     restart: "no"
     command: "true"
 

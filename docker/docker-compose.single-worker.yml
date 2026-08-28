@@ -3,6 +3,10 @@ services:
     environment:
       - EDITOAST_CORE_SINGLE_WORKER=true
 
+  rabbitmq:
+    environment:
+      - RABBITMQ_HEARTBEAT=43200 # 12h heartbeat
+
   osrdyne:
     volumes: !reset []
     environment:
@@ -13,6 +17,7 @@ services:
     # Launch a single worker handling all infra
     environment:
       - ALL_INFRA=true
+      - WORKER_AMQP_HEARTBEAT=43200 # 12h heartbeat
     container_name: osrd-core-all-infra
     restart: unless-stopped
     command:
