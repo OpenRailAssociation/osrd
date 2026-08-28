@@ -201,9 +201,7 @@ pub(in crate::views) async fn list(
         .into_selection_settings()
         .order_by(move || ordering.as_project_ordering());
 
-    let conn = &mut db_pool.get().await?;
-
-    let (projects, stats) = Project::list_paginated(conn, settings).await?;
+    let (projects, stats) = Project::list_paginated(&mut db_pool.get().await?, settings).await?;
 
     let results = projects
         .into_iter()
