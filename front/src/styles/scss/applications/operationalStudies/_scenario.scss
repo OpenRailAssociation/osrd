@@ -901,8 +901,6 @@ $train-category-colors: (
       max-width: 680px;
     }
 
-    font-family: 'IBM Plex Sans';
-
     &:has(.wizz-effect:active) {
       .train-schedule-set-name:has(.error),
       .new-catalog-entry-input:has(.error),

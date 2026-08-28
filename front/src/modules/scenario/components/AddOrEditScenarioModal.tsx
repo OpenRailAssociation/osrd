@@ -331,7 +331,7 @@ const AddOrEditScenarioModal = ({
         </>
       }
       header={
-        <h1 className="scenario-edition-modal-title">
+        <h1>
           {editionMode ? t('main.scenarioModificationTitle') : t('main.scenarioCreationTitle')}
         </h1>
       }
