@@ -114,6 +114,14 @@ class TimesStopsTablePage extends OpSimulationResultPage {
     return row.getByTestId('op-name-dot');
   }
 
+  private referenceBaseArrivalInput(row: Locator): Locator {
+    return row.getByTestId('reference-base-arrival');
+  }
+
+  private referenceBaseArrival(row: Locator): Locator {
+    return row.getByTestId('reference-base-arrival-cell');
+  }
+
   private marginUnitBtnPercent(row: Locator): Locator {
     return this.requestedTheoreticalMargin(row).getByTestId('margin-unit-btn-percent');
   }
@@ -360,6 +368,32 @@ class TimesStopsTablePage extends OpSimulationResultPage {
     await expect(this.opNameDot(row)).not.toBeAttached();
   }
 
+  async verifyReferenceBaseArrivalInputVisible(row: Locator): Promise<void> {
+    await expect(this.referenceBaseArrival(row)).toBeVisible();
+  }
+
+  async getReferenceBaseArrivalInputValue(row: Locator): Promise<string> {
+    return this.referenceBaseArrivalInput(row).inputValue();
+  }
+
+  async verifyReferenceBaseArrivalChanged(row: Locator, previousValue: string): Promise<void> {
+    await expect(this.referenceBaseArrivalInput(row)).not.toHaveValue(previousValue);
+  }
+
+  async editReferenceBaseArrival(row: Locator, timeValue: string): Promise<void> {
+    const input = this.referenceBaseArrivalInput(row);
+    const isEmpty = (await input.inputValue()) === EMPTY_TIME_PLACEHOLDER;
+    if (isEmpty) {
+      await input.focus();
+    } else {
+      await input.click();
+      await input.press('ArrowLeft');
+      await input.press('ArrowLeft');
+    }
+    await input.pressSequentially(stripTimeColons(timeValue));
+    await input.press('Enter');
+  }
+
   async verifyMarginsDifferencePresent(row: Locator): Promise<void> {
     await expect(this.marginsDifference(row)).toBeVisible();
   }
@@ -432,6 +466,7 @@ class TimesStopsTablePage extends OpSimulationResultPage {
       differenceText,
       timeFromAboveWaypointText,
       totalArrivalTimeText,
+      referenceBaseArrival,
     ] = await Promise.all([
       this.rowIndexCell(row).textContent(),
       this.stepStatusCell(row).getAttribute('class'),
@@ -452,6 +487,7 @@ class TimesStopsTablePage extends OpSimulationResultPage {
       this.optionalText(this.marginsDifference(row)),
       this.timeFromPreviousOp(row).textContent(),
       this.totalTravelTime(row).textContent(),
+      this.referenceBaseArrival(row).textContent(),
     ]);
 
     return {
@@ -476,6 +512,7 @@ class TimesStopsTablePage extends OpSimulationResultPage {
       },
       timeFromAboveWaypoint: cleanWhitespace(timeFromAboveWaypointText),
       totalArrivalTime: cleanWhitespace(totalArrivalTimeText),
+      referenceBaseArrival: cleanWhitespace(referenceBaseArrival),
     };
   }
 

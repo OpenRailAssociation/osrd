@@ -689,6 +689,15 @@ const TimeCell = ({
   const isFirstRow = row.index === 0;
   const isLastRow = row.index === table.getRowModel().rows.length - 1;
 
+  let timeCellTestId: string;
+  if (column?.id === 'requestedArrival') {
+    timeCellTestId = 'requested-arrival';
+  } else if (column?.id === 'baseArrival') {
+    timeCellTestId = 'reference-base-arrival';
+  } else {
+    timeCellTestId = 'requested-departure';
+  }
+
   return (
     <>
       <div className={`time-cell ${state.empty ? 'time-cell--empty' : ''}`}>
@@ -696,9 +705,7 @@ const TimeCell = ({
           ref={inputRef}
           value={state.empty ? 'hh:mm:ss' : formatDisplay(state)}
           className="time-cell__input"
-          data-testid={
-            column?.id === 'requestedArrival' ? 'requested-arrival' : 'requested-departure'
-          }
+          data-testid={timeCellTestId}
           style={{ pointerEvents: state.empty ? 'none' : 'auto' }}
           onChange={(e) => e.preventDefault()}
           onKeyDown={handleKeyDown}
