@@ -192,14 +192,44 @@ pub(in crate::views) struct ProjectWithStudyCountList {
     )
 )]
 pub(in crate::views) async fn list(
-    State(db_pool): State<Arc<DbConnectionPoolV2>>,
+    State(AppState {
+        db_pool,
+        openfga,
+        config,
+        ..
+    }): State<AppState>,
+    Extension(authn_state): Extension<authentication::State>,
     Query(pagination_params): Query<PaginationQueryParams<1000>>,
     Query(ordering_params): Query<OperationalStudiesOrderingParam>,
 ) -> Result<Json<ProjectWithStudyCountList>> {
     let ordering = ordering_params.ordering;
-    let settings = pagination_params
+    let default_settings = pagination_params
         .into_selection_settings()
         .order_by(move || ordering.as_project_ordering());
+    let settings = if config.enable_project_permissions {
+        match &authn_state {
+            crate::authentication::State::Skip => default_settings,
+            crate::authentication::State::Authenticated { user, .. } => {
+                let authorized_projects = authz::v2::project_list(*user)
+                    .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
+                    .await?;
+                match authorized_projects {
+                    authz::v2::ResourcesList::All => default_settings,
+                    authz::v2::ResourcesList::Privileged(authorized_projects) => default_settings
+                        .filter(move || {
+                            Project::ID.eq_any(
+                                authorized_projects
+                                    .iter()
+                                    .map(|project| project.0)
+                                    .collect(),
+                            )
+                        }),
+                }
+            }
+        }
+    } else {
+        default_settings
+    };
 
     let (projects, stats) = Project::list_paginated(&mut db_pool.get().await?, settings).await?;
 
@@ -395,6 +425,7 @@ pub mod tests {
     use crate::views::test_app::test_app;
     use authz::ProjectGrant;
     use authz::v2::TestClientExt as _;
+    use itertools::Itertools as _;
     use pretty_assertions::assert_eq;
     use rstest::rstest;
     use serde_json::json;
@@ -443,21 +474,92 @@ pub mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn project_list() {
-        let app = test_app!().skip_authz().build();
-        let db_pool = app.db_pool();
+        let app = test_app!().build();
+        let project_1 = create_project(&mut app.db_pool().get_ok(), "p1").await;
+        let project_2 = create_project(&mut app.db_pool().get_ok(), "p2").await;
+        let project_3 = create_project(&mut app.db_pool().get_ok(), "p3").await;
+        let user_admin = app
+            .user("admin", "Admin")
+            .with_roles([Role::Admin])
+            .create()
+            .await;
+        let user_no_grant = app
+            .user("alice", "Alice")
+            .with_roles([Role::OperationalStudies])
+            .create()
+            .await;
+        let user_owner = app
+            .user("bob", "Bob")
+            .with_roles([Role::OperationalStudies])
+            .with_project_grant(project_1.id, ProjectGrant::Owner)
+            .with_project_grant(project_2.id, ProjectGrant::Owner)
+            .create()
+            .await;
 
-        let created_project = create_project(&mut db_pool.get_ok(), "test_project_name").await;
-
-        let response: ProjectWithStudyCountList =
-            app.get("/projects/").await.assert_status_ok().json();
-
-        let project_retrieved = response
+        let user_admin_projects = app
+            .get("/projects/")
+            .by_user(user_admin.as_ref())
+            .await
+            .assert_status_ok()
+            .json::<ProjectWithStudyCountList>()
             .results
-            .iter()
-            .find(|p| p.project.id == created_project.id)
-            .unwrap();
+            .into_iter()
+            .map(|project| project.project)
+            .sorted_by_key(|project| project.id)
+            .collect_vec();
+        let user_no_grant_projects = app
+            .get("/projects/")
+            .by_user(user_no_grant.as_ref())
+            .await
+            .assert_status_ok()
+            .json::<ProjectWithStudyCountList>()
+            .results
+            .into_iter()
+            .map(|project| project.project)
+            .sorted_by_key(|project| project.id)
+            .collect_vec();
+        let user_owner_projects = app
+            .get("/projects/")
+            .by_user(user_owner.as_ref())
+            .await
+            .assert_status_ok()
+            .json::<ProjectWithStudyCountList>()
+            .results
+            .into_iter()
+            .map(|project| project.project)
+            .sorted_by_key(|project| project.id)
+            .collect_vec();
 
-        assert_eq!(created_project, project_retrieved.project);
+        // A user with no grant should see nothing:
+        assert_eq!(user_no_grant_projects, vec![]);
+        // An admin should see everything:
+        assert_eq!(
+            user_admin_projects,
+            vec![project_1.clone(), project_2.clone(), project_3]
+        );
+        // A user with grants should only see his projects:
+        assert_eq!(user_owner_projects, vec![project_1, project_2]);
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn project_list_requires_operational_studies_role() {
+        let app = test_app!().build();
+        let _project = create_project(&mut app.db_pool().get_ok(), "project").await;
+        let user_missing_role = app.user("alice", "Alice").create().await;
+        let user_with_role = app
+            .user("bob", "Bob")
+            .with_roles([Role::OperationalStudies])
+            .create()
+            .await;
+
+        app.get("/projects/")
+            .by_user(user_missing_role.as_ref())
+            .await
+            .assert_status_forbidden();
+        app.get("/projects/")
+            .by_user(user_with_role.as_ref())
+            .await
+            .assert_status_ok();
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
