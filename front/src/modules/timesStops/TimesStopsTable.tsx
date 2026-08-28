@@ -554,7 +554,7 @@ const TimesStopsTable = ({
     if (isFirstRow) {
       const value = row.requestedArrival;
       return (
-        <span data-testid="computed-base-arrival">
+        <span data-testid="first-base-arrival">
           {value ? formatTime(value, dateTimeLocale) : ''}
         </span>
       );
