@@ -566,16 +566,6 @@
     "yes": "Oui"
   },
   "infrastructure": "Infrastructure",
-  "interval-editor": {
-    "add": "Ajouter",
-    "begin": "Début",
-    "delete": "Supprimer",
-    "end": "Fin",
-    "merge": "Fusionner avec le segment suivant",
-    "split": "Diviser",
-    "translate": "Translater",
-    "value": "Valeur"
-  },
   "jsonUpload": {
     "badJSON": "Contenu non valide. Seuls les fichiers RailJSON sont pris en charge (habituellement .json ou .railjson)",
     "emptyFile": "Le fichier est vide",

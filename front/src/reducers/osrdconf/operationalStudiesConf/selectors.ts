@@ -12,23 +12,12 @@ const buildOperationalStudiesConfSelectors = () => {
   return {
     ...buildCommonConfSelectors(operationalStudiesConfSlice),
 
-    getOperationalStudiesConf,
-
     getMapSettings: makeOsrdConfSelector('mapSettings'),
   };
 };
 
 const selectors = buildOperationalStudiesConfSelectors();
 
-export const {
-  getRollingStockID: getOperationalStudiesRollingStockID,
-  getSpeedLimitByTag: getOperationalStudiesSpeedLimitByTag,
-
-  getOperationalStudiesConf,
-
-  getMapSettings,
-} = selectors;
-
-export type OperationalStudiesConfSelectors = typeof selectors;
+export const { getMapSettings } = selectors;
 
 export default selectors;
