@@ -42,7 +42,7 @@ const TrainScheduleDeleteDialog = ({
 
   return (
     <Dialog
-      className={cx('train-schedule-set-dialog', 'delete-dialog', { 'with-error': error !== null })}
+      className={cx('train-schedule-set-dialog confirm-dialog', { 'with-error': error !== null })}
       header={<h5>{labels.title}</h5>}
       footer={
         <>
