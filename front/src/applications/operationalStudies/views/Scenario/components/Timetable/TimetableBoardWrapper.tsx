@@ -6,6 +6,7 @@ import { useSelector } from 'react-redux';
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import { useTimetableContext } from 'applications/operationalStudies/hooks/useTimetableContext';
 import BoardWrapper from 'applications/operationalStudies/views/Scenario/components/BoardWrapper';
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import DeleteModal from 'common/BootstrapSNCF/ModalSNCF/DeleteModal';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import { useSubCategoryContext } from 'common/SubCategoryContext';
@@ -41,8 +42,11 @@ const TimetableBoardWrapper = ({
 }: TimetableBoardWrapperProps) => {
   const { openModal } = useContext(ModalContext);
 
-  const { scenario, sandboxId } = useScenarioContext();
+  const { scenario, sandboxId, timetableId } = useScenarioContext();
   const { trainSchedules, removeTrainSchedules, upsertTrainSchedules } = useTimetableContext();
+
+  const [getTimetableRoundTrips] =
+    osrdEditoastApi.endpoints.getTimetableByIdRoundTrips.useLazyQuery();
 
   const { id: selectedTrainId } = useSelector(getSelectedTrain) || {};
 
@@ -187,14 +191,25 @@ const TimetableBoardWrapper = ({
       return;
     }
 
-    await copyTrainSchedulesToClipboard(selectedTrainScheduleIds, trainSchedules);
-    dispatch(
-      setSuccess({
-        title: t('main.copyTimetable.title'),
-        text: t('main.copyTimetable.text', { count: selectedTrainScheduleIds.length }),
-      })
-    );
-  }, [selectedTrainScheduleIds, trainSchedules]);
+    try {
+      const { results: trainScheduleRoundTrips } = await getTimetableRoundTrips({
+        id: timetableId,
+      }).unwrap();
+      await copyTrainSchedulesToClipboard(
+        selectedTrainScheduleIds,
+        trainSchedules,
+        trainScheduleRoundTrips
+      );
+      dispatch(
+        setSuccess({
+          title: t('main.copyTimetable.title'),
+          text: t('main.copyTimetable.text', { count: selectedTrainScheduleIds.length }),
+        })
+      );
+    } catch (e) {
+      dispatch(setFailure(castErrorToFailure(e)));
+    }
+  }, [selectedTrainScheduleIds, trainSchedules, getTimetableRoundTrips, timetableId]);
 
   const handlePaste = useCallback(async () => {
     let data = null;
@@ -238,16 +253,27 @@ const TimetableBoardWrapper = ({
       }
 
       event.preventDefault();
-      await copyTrainSchedulesToClipboard(selectedTrainScheduleIds, trainSchedules);
-      await handleTrainsDelete(selectedTrainId, true);
-      dispatch(
-        setSuccess({
-          title: t('main.cutTimetable.title'),
-          text: t('main.cutTimetable.text', { count: selectedTrainScheduleIds.length }),
-        })
-      );
+      try {
+        const { results: trainScheduleRoundTrips } = await getTimetableRoundTrips({
+          id: timetableId,
+        }).unwrap();
+        await copyTrainSchedulesToClipboard(
+          selectedTrainScheduleIds,
+          trainSchedules,
+          trainScheduleRoundTrips
+        );
+        await handleTrainsDelete(selectedTrainId, true);
+        dispatch(
+          setSuccess({
+            title: t('main.cutTimetable.title'),
+            text: t('main.cutTimetable.text', { count: selectedTrainScheduleIds.length }),
+          })
+        );
+      } catch (e) {
+        dispatch(setFailure(castErrorToFailure(e)));
+      }
     },
-    [selectedTrainScheduleIds, trainSchedules, selectedTrainId]
+    [selectedTrainScheduleIds, trainSchedules, selectedTrainId, getTimetableRoundTrips, timetableId]
   );
 
   const handleDeleteTrainSchedules = () => {

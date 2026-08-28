@@ -65,20 +65,6 @@ const formatTrainSchedulesForExport = (
   };
 };
 
-export const copyTrainSchedulesToClipboard = async (
-  selectedTimeTableIdsFromClick: number[],
-  trainSchedules: Map<number, TrainScheduleResponse>
-) => {
-  const { formattedTrainSchedules } = formatTrainSchedulesForExport(
-    trainSchedules,
-    selectedTimeTableIdsFromClick
-  );
-  const jsonString = JSON.stringify({ train_schedules: formattedTrainSchedules });
-  const blob = new Blob([jsonString], { type: 'text/plain' });
-  const clipboardItem = new ClipboardItem({ [blob.type]: blob });
-  await navigator.clipboard.write([clipboardItem]);
-};
-
 /**
  * turns editoast ids into corresponding indexes in exported arrays
  */
@@ -145,6 +131,22 @@ export const buildTimetableExportPayload = (
     train_schedules: formattedTrainSchedules,
     round_trips: (mappedRoundTrips?.length ?? 0) > 0 ? mappedRoundTrips : undefined,
   };
+};
+
+export const copyTrainSchedulesToClipboard = async (
+  selectedTimeTableIdsFromClick: number[],
+  trainSchedules: Map<number, TrainScheduleResponse>,
+  roundTrips: RoundTrips
+) => {
+  const clipboardPayload = buildTimetableExportPayload(
+    trainSchedules,
+    selectedTimeTableIdsFromClick,
+    roundTrips
+  );
+  const jsonString = JSON.stringify(clipboardPayload);
+  const blob = new Blob([jsonString], { type: 'text/plain' });
+  const clipboardItem = new ClipboardItem({ [blob.type]: blob });
+  await navigator.clipboard.write([clipboardItem]);
 };
 
 export const exportTrainSchedules = (
