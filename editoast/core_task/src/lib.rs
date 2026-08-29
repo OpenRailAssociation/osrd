@@ -1,3 +1,4 @@
+mod batched_cache;
 mod envs;
 mod path_properties;
 
@@ -5,6 +6,7 @@ use std::hash::Hash;
 use std::sync::Arc;
 
 // Crate-level exports
+pub use batched_cache::Cache;
 pub use envs::TrainSet;
 pub use envs::core::CoreEnv;
 pub use envs::pathfinding::PathItemConstraint;
@@ -21,11 +23,10 @@ pub use envs::simulation::SimulationTrain;
 pub use envs::simulation::SimulationTrainParameters;
 
 use futures::stream;
-use itertools::Itertools as _;
-use itertools::izip;
+
 use serde::de::DeserializeOwned;
 use serde::ser::Serialize;
-use tokio_stream::wrappers::UnboundedReceiverStream;
+
 use tracing::Instrument;
 
 /// Interface required by [SimulationEnv] and friends for [Correlated] keys
@@ -41,7 +42,7 @@ impl<T> TrainKey for T where T: Clone + Hash + Eq + Send + Sync {}
 /// Features:
 /// - [fn Task::run] that runs a single task
 /// - [trait TaskStreamExt] to batch tasks (requires additional [type Task::Context] bounds)
-pub trait Task: Sized + Send {
+pub trait Task: Sized + Send + Cachable {
     /// Task output
     type Output: DeserializeOwned + Serialize + Clone + Send + Sync + 'static;
     /// Computation error when running a task for cache misses
@@ -60,9 +61,6 @@ pub trait Task: Sized + Send {
     ///
     /// Defaults to the same value as [Self::CACHE_READS_BATCH_SIZE] but can be overridden if needed.
     const CACHE_WRITES_BATCH_SIZE: usize = Self::CACHE_READS_BATCH_SIZE;
-
-    /// Computes the cache key based on task inputs
-    fn key(&self, app_version: &str) -> String;
 
     /// Computes the task output according to inputs and context
     ///
@@ -125,6 +123,12 @@ pub trait Task: Sized + Send {
     }
 }
 
+/// Indicates that the struct can stored in the valkey cache server
+pub trait Cachable {
+    /// Computes the cache key based on task inputs
+    fn key(&self, app_version: &str) -> String;
+}
+
 /// A named tuple for a value with a correlation key
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct Correlated<CorrelationKey, T> {
@@ -175,7 +179,7 @@ where
 impl<T, InputStream, CorrelationKey> TaskStreamExt<T, CorrelationKey> for InputStream
 where
     CorrelationKey: Send + 'static,
-    T: Task + 'static,
+    T: Task + 'static + Sync,
     T::Context: Clone + Send + Sync,
     InputStream: stream::Stream<Item = Correlated<CorrelationKey, T>> + Send + 'static,
 {
@@ -208,27 +212,7 @@ where
          *                                   via for_each_concurrent)
          */
 
-        let (cache_write_tx, cache_write_rx) =
-            tokio::sync::mpsc::unbounded_channel::<(String, serde_json::Value)>();
-        {
-            let vk_client = vk_client.clone();
-            // 'write_cache' task, writes input key-value pairs to cache, logging errors
-            tokio::spawn(
-                async move {
-                    UnboundedReceiverStream::new(cache_write_rx)
-                        .chunks(T::CACHE_WRITES_BATCH_SIZE)
-                        .for_each(|buffer| async {
-                            let mut vkconn = vk_client.get_connection().await.unwrap();
-                            if let Err(e) = vkconn.json_set_bulk(buffer).await {
-                                tracing::error!(?e, "task stream: cache write failure")
-                            }
-                        })
-                        .await;
-                }
-                .in_current_span(),
-            );
-        }
-
+        let cache = Arc::new(Cache::new(vk_client.clone(), T::CACHE_WRITES_BATCH_SIZE));
         let (cache_read_tx, mut cache_read_rx) = tokio::sync::mpsc::unbounded_channel::<(
             T, // input
             CorrelationKey,
@@ -241,58 +225,12 @@ where
             // and sends a bunch of data to the 'aggregation' task
             tokio::spawn(
                 self.chunks(T::CACHE_READS_BATCH_SIZE)
-                    .zip(stream::repeat(vk_client.clone()))
+                    .zip(stream::repeat(cache.clone()))
                     .zip(stream::repeat(cache_read_tx))
-                    .for_each_concurrent(None, async move |((inputs, vk_client), cache_read_tx)| {
-                        // We sort the keys so that unit tests can predictably mock redis requests.
-                        // That's because redis-test doesn't find a matching request in the list, but
-                        // just pops the first one and asserts.
-                        #[cfg(test)]
-                        let inputs = inputs
-                            .into_iter()
-                            .map(|input| {
-                                let key = input.data.key(vk_client.app_version());
-                                (input, key)
-                            })
-                            .sorted_by_key(|(_, key)| key.clone())
-                            .map(|(input, _)| input)
-                            .collect_vec();
-
-                        let (correlation_keys, inputs) = inputs
-                            .into_iter()
-                            .map_into()
-                            .unzip::<_, _, Vec<_>, Vec<_>>();
-                        let cache_keys = inputs
-                            .iter()
-                            .map(|input| input.key(vk_client.app_version()))
-                            .collect_vec();
-
-                        // we have to clone because of json_get_bulk's API x Rust 2024 new rules
-                        let keys = cache_keys.clone();
-
-                        // Fetch from valkey or compute and write to valkey
-
-                        let mut vkconn = vk_client.get_connection().await.unwrap();
-                        match vkconn.json_get_bulk::<_, T::Output>(keys.as_slice()).await {
-                            Ok(cached_values) => {
-                                for (value, correlation, key, input) in
-                                    izip!(cached_values, correlation_keys, cache_keys, inputs)
-                                {
-                                    cache_read_tx.send((input, correlation, key, value)).ok();
-                                }
-                            }
-                            Err(e) => {
-                                tracing::error!(
-                                    ?e,
-                                    "task stream: cache read error — computing task output"
-                                );
-                                for (key, correlation, input) in
-                                    izip!(cache_keys, correlation_keys, inputs)
-                                {
-                                    cache_read_tx.send((input, correlation, key, None)).ok();
-                                }
-                            }
-                        };
+                    .for_each_concurrent(None, async move |((inputs, cache), cache_read_tx)| {
+                        for cache_result in cache.fetch(inputs).await {
+                            cache_read_tx.send(cache_result).ok();
+                        }
                     })
                     .in_current_span(),
             );
@@ -325,7 +263,7 @@ where
                                         serialized.sort_all_objects();
                                         serialized
                                     };
-                                    cache_write_tx.send((cache_key, serialized)).ok();
+                                    cache.batched_write(cache_key, serialized);
                                     results_tx
                                         .unbounded_send(Correlated::new(correlation_key, Ok(value)))
                                         .ok();

@@ -489,7 +489,7 @@ pub(crate) mod test_data {
                 path,
             )
             .unwrap();
-            use crate::Task as _;
+            use crate::Cachable as _;
             request.key("")
         }
     }
