@@ -3,6 +3,7 @@
   "include": ["."],
   "exclude": ["node_modules", "ui", "build", "test-results", "playwright-report"],
   "compilerOptions": {
+    "allowImportingTsExtensions": true,
     "allowJs": true,
     "allowSyntheticDefaultImports": true,
     "allowUnreachableCode": false,

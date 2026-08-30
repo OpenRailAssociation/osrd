@@ -8,6 +8,9 @@ import { defineConfig, loadEnv } from 'vite';
 import checker from 'vite-plugin-checker';
 import { viteStaticCopy } from 'vite-plugin-static-copy';
 
+// oxlint-disable-next-line import/extensions
+import { tsdownSidecar } from './scripts/tsdown-sidecar.ts';
+
 const require = createRequire(import.meta.url);
 const ngeBase = path.dirname(require.resolve('@osrd-project/netzgrafik-frontend/index.html'));
 
@@ -72,6 +75,7 @@ export default defineConfig(({ mode }) => {
           },
         ],
       }),
+      tsdownSidecar(),
     ],
     build: {
       outDir: 'build',

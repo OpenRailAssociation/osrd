@@ -176,8 +176,14 @@ export default function svgToReact(
       .replace('//ReplaceWithTypes', iconPropsContent.concat(`\n${iconPropsExport}`))
       .replace(/IconReplaceName/g, name);
 
-    // Write the component file for the current icon
-    writeFileSync(join(srcDir, 'components', `${name}.tsx`), file);
+    const outputFilePath = join(srcDir, 'components', `${name}.tsx`);
+    const currentFileContent = existsSync(outputFilePath) ? readFileSync(outputFilePath) : '';
+
+    if (currentFileContent !== file) {
+      // Write the component file for the current icon
+      writeFileSync(outputFilePath, file);
+    }
+
     // Append the current icon's export statement to the index file
     appendFileSync(indexFile, `export { ${name} } from "./components/${name}";\n`);
   }
