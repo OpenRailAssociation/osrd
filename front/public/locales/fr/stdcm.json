@@ -140,10 +140,12 @@
     "getSimulation": "Obtenir la simulation",
     "infoMessage": "Cette simulation n'offre pas la garantie de disponibilité du sillon.",
     "results": {
+      "blockingWorkSchedule": "travaux entre {{startTime}} et {{endTime}}",
       "changeSearchCriteria": "Vous pouvez modifier vos critères de recherche pour trouver une solution.",
       "displayAll": "Afficher tous les jalons",
       "displayMain": "Afficher les jalons principaux",
       "downloadSimulationSheet": "Télécharger la fiche de simulation",
+      "mainConflicts": "Voici les principaux conflits rencontrés :",
       "modal": {
         "LongFRET": "Long parcours Fret (3 régions minimum, 4 en IDF)",
         "addComment": "Commentaire",
@@ -209,8 +211,8 @@
           "hazardousMaterialsNormal": "La simulation sera vérifiée par un horairiste lors du traitement du sillon, et pourrait être irrecevable."
         }
       },
+      "nearestReachedPoint": "Le PR le plus proche de la destination trouvé est <strong>{{name}}</strong> à {{time}}.",
       "notFound": "Aucun passage n'a été trouvé pour cette configuration",
-      "pathNotFound": "Incompatibilité avec des sillons et/ou planches travaux existants.",
       "retainThisSimulation": "Retenir cette simulation",
       "simulationDownstream": "Simulation lancée automatiquement en raison de l’absence de capacité avec les paramètres demandés : la tolérance <underline>avant</underline> l’heure de départ a été augmentée.",
       "simulationName": {
@@ -227,6 +229,7 @@
         "errorMessage": "Nous sommes désolés de ne pas avoir pu traiter votre demande. L’équipe LMR a été notifiée et prendra connaissance de la situation dès que possible.",
         "failed": "Un problème technique est survenu"
       },
+      "tooMuchTraffic": "Trop de circulations sont en conflit sur ce trajet.",
       "transferSheetToRailManager": "Transmettre à GESICO"
     },
     "stopCalculation": "Arrêter"

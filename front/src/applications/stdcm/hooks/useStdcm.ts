@@ -33,6 +33,7 @@ import { useDateTimeLocale } from 'utils/date';
 import { castErrorToFailure } from 'utils/error';
 
 import { adjustInputByDirection, adjustPayloadByDirection } from '../utils/adjustSimulationInputs';
+import fetchPathNotFoundDetails from '../utils/fetchPathNotFoundDetails';
 import fetchPathProperties from '../utils/fetchPathProperties';
 import { checkStdcmConf, formatStdcmPayload } from '../utils/formatStdcmConf';
 import computeChartData from '../utils/stdcmComputeChartData';
@@ -154,7 +155,7 @@ const useStdcm = ({
         speedDistanceDiagramData: chartData,
       };
     } else {
-      outputs = response;
+      outputs = await fetchPathNotFoundDetails(response, infraId, dispatch);
     }
 
     return {
@@ -192,9 +193,6 @@ const useStdcm = ({
   ) => {
     const simulationsToAdd: Omit<StdcmSimulation, 'index'>[] = [];
     try {
-      const currentSimulation = await createSimulation(currentSimulationInputs, payload, response);
-      simulationsToAdd.push(currentSimulation);
-
       setCurrentStdcmRequestStatus(STDCM_REQUEST_STATUS.pending_additional);
 
       const payloadUpstream = adjustPayloadByDirection(payload, 'upstream');
@@ -207,7 +205,11 @@ const useStdcm = ({
       const promiseUpstream = getPostTimetableByIdStdcmPromise(upstream, 'upstream');
       const promiseDownstream = getPostTimetableByIdStdcmPromise(downstream, 'downstream');
 
-      // Run two additional requests for alternative simulations
+      // The failure explanation of the current simulation is fetched while the two
+      // additional requests for alternative simulations are running.
+      const currentSimulation = await createSimulation(currentSimulationInputs, payload, response);
+      simulationsToAdd.push(currentSimulation);
+
       const [resUp, resDown] = await Promise.all([promiseUpstream, promiseDownstream]);
 
       // Handle error cases

@@ -373,6 +373,43 @@
           line-height: 24px;
         }
 
+        .nearest-reached-point {
+          color: rgba(49, 46, 43, 1);
+          font-size: 1rem;
+          line-height: 24px;
+          margin-bottom: 24px;
+        }
+
+        .blocking-work-schedules {
+          margin-bottom: 24px;
+
+          .conflicts-title {
+            display: block;
+            color: rgba(49, 46, 43, 1);
+            font-size: 1rem;
+            line-height: 24px;
+          }
+
+          ul {
+            margin: 0;
+            padding: 0;
+            list-style: none;
+
+            li {
+              color: rgba(49, 46, 43, 1);
+              font-size: 1rem;
+              line-height: 24px;
+            }
+          }
+        }
+
+        .too-much-traffic {
+          color: rgba(49, 46, 43, 1);
+          font-size: 1rem;
+          line-height: 24px;
+          margin-bottom: 24px;
+        }
+
         .alternative-simulations-info {
           padding: 22px 40px 26px 40px;
           text-align: center;
