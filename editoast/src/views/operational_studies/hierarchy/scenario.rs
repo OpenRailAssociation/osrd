@@ -29,7 +29,7 @@ use crate::authentication;
 use crate::error::InternalError;
 use crate::error::Result;
 use crate::views::AuthorizationError;
-use crate::views::operational_studies::hierarchy::enable_project_perm;
+use crate::views::operational_studies::hierarchy::ENABLER;
 use crate::views::pagination::PaginatedList as _;
 use crate::views::pagination::PaginationQueryParams;
 use crate::views::pagination::PaginationStats;
@@ -370,7 +370,7 @@ pub(in crate::views) async fn get(
         })
         .await?;
 
-    if enable_project_perm() {
+    if *ENABLER {
         project_privilege_check(authz::Project(project.id), ProjectPrivilege::HasAccess)
             .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
             .await?;
@@ -521,9 +521,9 @@ mod tests {
         #[case] user: authz::identity::User,
     ) {
         // Remove this condition when feature is done
-        if !enable_project_perm() && user.info.name == "User2" {
-            return;
-        }
+        // if !enable_project_perm() && user.info.name == "User2" {
+        // return;
+        // }
 
         app.get(&format!("/scenarios/{}", fixtures.scenario.id))
             .by_user(user.as_ref())

@@ -72,10 +72,6 @@ impl Ordering {
     }
 }
 
-pub fn enable_project_perm() -> bool {
-    static ENABLER: LazyLock<bool> = LazyLock::new(|| {
-        std::env::var("ENABLE_PROJECT_PERM").unwrap_or_else(|_| "false".to_string()) == "true"
-    });
-
-    *ENABLER
-}
+pub const ENABLER: LazyLock<bool> = LazyLock::new(|| {
+    std::env::var("ENABLE_PROJECT_PERM").unwrap_or_else(|_| "false".to_string()) == "true"
+});

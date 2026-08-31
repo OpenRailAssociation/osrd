@@ -27,7 +27,7 @@ use crate::authentication;
 use crate::error::InternalError;
 use crate::error::Result;
 use crate::views::AuthorizationError;
-use crate::views::operational_studies::hierarchy::enable_project_perm;
+use crate::views::operational_studies::hierarchy::ENABLER;
 use crate::views::pagination::PaginatedList;
 use crate::views::pagination::PaginationQueryParams;
 use crate::views::pagination::PaginationStats;
@@ -236,7 +236,7 @@ pub(in crate::views) async fn get(
     })
     .await?;
 
-    if enable_project_perm() {
+    if *ENABLER {
         project_privilege_check(authz::Project(project_id), ProjectPrivilege::HasAccess)
             .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
             .await?;
@@ -374,6 +374,7 @@ pub(in crate::views) async fn patch(
 
 #[cfg(test)]
 pub mod tests {
+
     use super::*;
 
     use authz::ProjectGrant;
@@ -383,6 +384,7 @@ pub mod tests {
     use serde_json::json;
 
     use crate::fixtures::create_project;
+    use crate::views::operational_studies::hierarchy::ENABLER;
     use crate::views::test_app;
     use crate::views::test_app::TestApp;
     use crate::views::test_app::TestRequestExt as _;
@@ -469,40 +471,62 @@ pub mod tests {
         assert_eq!(response.project, project);
     }
 
-    #[rstest]
-    #[case::no_role(
-        test_app!().build(),
-        create_project(&mut app.db_pool().get_ok(), "project").await.id,
-        app
-            .user("user", "User")
-            .with_project_grant(project_id, ProjectGrant::Owner)
-            .create()
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn project_get_requires_operational_studies_role() {
+        let app = test_app!().build();
+        let project_id = create_project(&mut app.db_pool().get_ok(), "project")
             .await
-    )]
-    #[case::no_grant(
-        test_app!().build(),
-        create_project(&mut app.db_pool().get_ok(), "project").await.id,
-        app
-            .user("user2", "User2")
+            .id;
+        let user_no_role = app.user("user_no_role", "UserNoRole").create().await;
+
+        let user_with_role = app
+            .user("user_with_role", "UserWithRole")
             .with_roles([Role::OperationalStudies])
             .create()
-            .await
-    )]
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn project_get_forbidden(
-        #[case] app: TestApp,
-        #[case] project_id: i64,
-        #[case] user: authz::identity::User,
-    ) {
-        // Remove this condition when feature is done
-        if !enable_project_perm() && user.info.name == "User2" {
-            return;
-        }
+            .await;
 
         app.get(&format!("/projects/{}", project_id))
-            .by_user(user.as_ref())
+            .by_user(user_no_role.as_ref())
             .await
             .assert_status_forbidden();
+
+        app.get(&format!("/projects/{}", project_id))
+            .by_user(user_with_role.as_ref())
+            .await
+            .assert_status_ok();
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn project_get_requires_project_grant() {
+        let mut feature = &mut *ENABLER;
+        *feature = true;
+        let app = test_app!().build();
+        let project_id = create_project(&mut app.db_pool().get_ok(), "project")
+            .await
+            .id;
+        let user_no_grant = app
+            .user("alice", "Alice")
+            .with_roles([Role::OperationalStudies])
+            .create()
+            .await;
+        let user_with_grant = app
+            .user("bob", "Bob")
+            .with_roles([Role::OperationalStudies])
+            .with_project_grant(project_id, ProjectGrant::Owner)
+            .create()
+            .await;
+
+        app.get(&format!("/projects/{}", project_id))
+            .by_user(user_no_grant.as_ref())
+            .await
+            .assert_status_forbidden();
+
+        app.get(&format!("/projects/{}", project_id))
+            .by_user(user_with_grant.as_ref())
+            .await
+            .assert_status_ok();
+
+        *feature = false;
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
