@@ -1,6 +1,8 @@
 use authz::v2;
+use models::TrainScheduleLinking;
 use schemas::paced_train::RollingStockChangeGroup;
 use std::collections::HashMap;
+use std::sync::Arc;
 
 use authz::RollingStockPrivilege;
 use axum::Extension;
@@ -25,6 +27,7 @@ use crate::authorizers::SystemAuthorizer;
 use crate::error::Result;
 use crate::views::AuthorizationError;
 use crate::views::infra::InfraIdQueryParam;
+use crate::views::path::pathfinding::PathfindingResult;
 use crate::views::timetable::ElectricalProfileSetIdQueryParam;
 use crate::views::timetable::TimetableError;
 use crate::views::timetable::TimetableIdParam;
@@ -398,22 +401,63 @@ pub(in crate::views) async fn conflicts(
         })
         .unzip();
 
-    let occurrence_simulations: Vec<_> = super::train_simulation_ordered_batch(
-        &mut db_pool.get().await?,
-        valkey_client.clone(),
-        core_client.clone(),
-        &occurrence_trains,
-        &infra,
-        electrical_profile_set_id,
-        config.app_version.as_deref(),
-    )
-    .await?
-    .into_iter()
-    .map(|(sim, _)| sim)
-    .collect();
+    let (occurrence_simulations, occurrence_pathfindings): (Vec<_>, Vec<_>) =
+        super::train_simulation_ordered_batch(
+            &mut db_pool.get().await?,
+            valkey_client.clone(),
+            core_client.clone(),
+            &occurrence_trains,
+            &infra,
+            electrical_profile_set_id,
+            config.app_version.as_deref(),
+        )
+        .await?
+        .into_iter()
+        .collect();
 
-    let request_items = izip!(occurrence_ids, occurrence_trains, occurrence_simulations)
-        .filter_map(|(train_id, train_schedule, simulation)| {
+    let mut linkings_spacing_requirements: Vec<Vec<SpacingRequirement>> =
+        vec![vec![]; occurrence_ids.len()];
+    let mut linkings_routing_requirements: Vec<Vec<RoutingRequirement>> =
+        vec![vec![]; occurrence_ids.len()];
+
+    let linkings =
+        get_linkings_from_train_schedules(&mut conn.clone(), timetable_id, occurrence_ids.as_ref())
+            .await;
+    let valid_linkings: Vec<_> = linkings
+        .iter()
+        .filter(|&linking| {
+            is_linking_valid(
+                occurrence_trains.as_ref(),
+                occurrence_simulations.as_ref(),
+                occurrence_pathfindings.as_ref(),
+                *linking,
+            )
+        })
+        .collect();
+
+    // Populate linkings_spacing_requirements and linkings_routing_requirements
+    valid_linkings.iter().for_each(|&linking| {
+        let (spacing_requirements, routing_requirements) =
+            get_linking_requirements(&occurrence_trains, &occurrence_simulations, *linking);
+        linkings_spacing_requirements[linking.0] = spacing_requirements;
+        linkings_routing_requirements[linking.0] = routing_requirements;
+    });
+
+    let request_items = izip!(
+        occurrence_ids,
+        occurrence_trains,
+        occurrence_simulations,
+        linkings_spacing_requirements,
+        linkings_routing_requirements
+    )
+    .filter_map(
+        |(
+            train_id,
+            train_schedule,
+            simulation,
+            occurrence_linking_spacing_requirements,
+            occurrence_linking_routing_requirements,
+        )| {
             let super::simulation::Response::Success(simulation) = simulation.as_ref() else {
                 return None;
             };
@@ -426,24 +470,31 @@ pub(in crate::views) async fn conflicts(
             if !respect_times {
                 return None;
             }
+            let mut spacing_requirements = simulation.final_output.spacing_requirements.clone();
+            // Add linking spacing requirements
+            spacing_requirements.extend(occurrence_linking_spacing_requirements);
+            let mut routing_requirements = simulation.final_output.routing_requirements.clone();
+            // Add linking routing requirements
+            routing_requirements.extend(occurrence_linking_routing_requirements);
             Some((
                 train_id,
                 super::make_requirements_absolute(
                     train_schedule.start_time(),
-                    simulation.final_output.spacing_requirements.clone(),
-                    simulation.final_output.routing_requirements.clone(),
+                    spacing_requirements,
+                    routing_requirements,
                 ),
             ))
-        })
-        .flat_map(|(train_id, train_requirements)| match timetable_period {
-            None => vec![(train_id, train_requirements)],
-            Some(period) => build_cyclic_occurrence_requirements(
-                train_id,
-                train_requirements.spacing_requirements,
-                train_requirements.routing_requirements,
-                period,
-            ),
-        });
+        },
+    )
+    .flat_map(|(train_id, train_requirements)| match timetable_period {
+        None => vec![(train_id, train_requirements)],
+        Some(period) => build_cyclic_occurrence_requirements(
+            train_id,
+            train_requirements.spacing_requirements,
+            train_requirements.routing_requirements,
+            period,
+        ),
+    });
 
     let (trains_ids_map, conflict_detection_request) =
         build_conflict_core_request(infra, request_items);
@@ -521,6 +572,202 @@ pub async fn filter_unauthorized_train_schedules_and_exceptions(
                 .collect_vec())
         }
     }
+}
+
+async fn get_linkings_from_train_schedules(
+    conn: &mut DbConnection,
+    timetable_id: i64,
+    occurrence_ids: &[OccurrenceId],
+) -> Vec<(usize, usize)> {
+    let settings = SelectionSettings::new()
+        .filter(move || TrainScheduleLinking::TIMETABLE_ID.eq(timetable_id));
+    let linkings = TrainScheduleLinking::list(conn, settings)
+        .await
+        .expect("Failed to fetch linkings");
+    let flattened_occurrence_ids: Vec<(i64, Option<i64>, Option<i64>)> = occurrence_ids
+        .iter()
+        .map(|occurrence| {
+            (
+                occurrence.train_schedule_id(),
+                occurrence.index().map(|v| v as i64),
+                occurrence.added_exception_id(),
+            )
+        })
+        .collect();
+    let mut occurrence_linkings: Vec<(usize, usize)> = vec![];
+    for linking in linkings {
+        let source_index = flattened_occurrence_ids.iter().position(|&occurrence| {
+            // Workaround because OccurrenceId enum doesn't make any difference between a unique train and a paced occurrence
+            let occurrence_index = if linking.source_added_exception_id.is_some() {
+                None
+            } else {
+                linking.source_occurrence_index.or(Some(0))
+            };
+            occurrence
+                == (
+                    linking.source_train_schedule_id,
+                    occurrence_index,
+                    linking.source_added_exception_id,
+                )
+        });
+        let target_index = flattened_occurrence_ids.iter().position(|&occurrence| {
+            // Workaround because OccurrenceId enum doesn't make any difference between a unique train and a paced occurrence
+            let occurrence_index = if linking.target_added_exception_id.is_some() {
+                None
+            } else {
+                linking.target_occurrence_index.or(Some(0))
+            };
+            occurrence
+                == (
+                    linking.target_train_schedule_id,
+                    occurrence_index,
+                    linking.target_added_exception_id,
+                )
+        });
+        if let (Some(source_index), Some(target_index)) = (source_index, target_index) {
+            occurrence_linkings.push((source_index, target_index))
+        }
+    }
+    occurrence_linkings
+}
+
+fn is_linking_valid(
+    occurrence_trains: &[TrainOccurrence],
+    occurrence_simulations: &[Arc<super::simulation::Response>],
+    occurrence_pathfindings: &[Arc<PathfindingResult>],
+    (source_index, target_index): (usize, usize),
+) -> bool {
+    let source_occurrence = &occurrence_trains[source_index];
+    let target_occurrence = &occurrence_trains[target_index];
+    let source_simulation = &occurrence_simulations[source_index];
+    let source_pathfinding = &occurrence_pathfindings[source_index];
+    let target_pathfinding = &occurrence_pathfindings[target_index];
+
+    let (
+        PathfindingResult::Success(source_pathfinding),
+        PathfindingResult::Success(target_pathfinding),
+    ) = (source_pathfinding.as_ref(), target_pathfinding.as_ref())
+    else {
+        return false;
+    };
+    let source_last_track_range = source_pathfinding
+        .path
+        .track_section_ranges
+        .last()
+        .expect("Pathfinding's section ranges can't be empty");
+
+    let target_first_track_range = target_pathfinding
+        .path
+        .track_section_ranges
+        .first()
+        .expect("Pathfinding's section ranges can't be empty");
+
+    if source_last_track_range.track_section != target_first_track_range.track_section
+        || source_last_track_range.stop() != target_first_track_range.start()
+    {
+        return false;
+    }
+    let super::simulation::Response::Success(source_simulation) = source_simulation.as_ref() else {
+        return false;
+    };
+    let source_simulation_duration = millisecond::i64::new(
+        *source_simulation
+            .final_output
+            .report_train
+            .times
+            .last()
+            .expect("times should not be empty") as i64,
+    );
+    let source_end_time = source_occurrence.start_time() + source_simulation_duration;
+    // The source train arrives after the target train starts
+    if source_end_time > target_occurrence.start_time() {
+        return false;
+    }
+    let source_arrival_schedule_item = source_occurrence
+        .schedule
+        .last()
+        .expect("The train schedule should not be empty");
+    // The source train's arrival is not a stop
+    if source_arrival_schedule_item.stop_for.is_none() {
+        return false;
+    }
+    // The target train's initial speed is not zero
+    if target_occurrence.initial_speed != 0.0 {
+        return false;
+    }
+    true
+}
+
+/// To compute the requirements caused by a linking, we filter the requirements whose end time matches
+/// the simulation's end time, and we create new identic requirements with the source's end time and
+/// target's start time as the begin time and end time
+fn get_linking_requirements(
+    occurrence_trains: &[TrainOccurrence],
+    occurrence_simulations: &[Arc<super::simulation::Response>],
+    (source_index, target_index): (usize, usize),
+) -> (Vec<SpacingRequirement>, Vec<RoutingRequirement>) {
+    let super::simulation::Response::Success(source_simulation) =
+        occurrence_simulations[source_index].as_ref()
+    else {
+        return (vec![], vec![]);
+    };
+    let source_occurrence = &occurrence_trains[source_index];
+    let target_occurrence = &occurrence_trains[target_index];
+    let final_output = &source_simulation.final_output;
+    let spacing_requirements = final_output.spacing_requirements.clone();
+    let routing_requirements = final_output.routing_requirements.clone();
+
+    // The origin for the times is the beginning of the source occurrence
+    let source_end_time = *final_output
+        .report_train
+        .times
+        .last()
+        .expect("times should not be empty");
+    let target_start_time = (target_occurrence.start_time() - source_occurrence.start_time())
+        .get::<uom::si::time::millisecond>() as u64;
+
+    let final_spacing_requirements = spacing_requirements
+        .into_iter()
+        // The requirement's end time must be close (within 10 ms) to the simulation end time
+        .filter(|requirement| source_end_time.abs_diff(requirement.end_time) <= 10);
+    let occurrence_linking_spacing_requirements = final_spacing_requirements
+        .map(|mut requirement| {
+            requirement.begin_time = source_end_time;
+            requirement.end_time = target_start_time;
+            requirement
+        })
+        .collect();
+
+    let final_routing_requirements: Vec<_> = routing_requirements
+        .into_iter()
+        .map(|mut requirement| {
+            requirement
+                .zones
+                // The zone's end time must be close (within 10 ms) to the simulation end time
+                .retain(|zone| source_end_time.abs_diff(zone.end_time) <= 10);
+            requirement
+        })
+        .filter(|requirement| !requirement.zones.is_empty())
+        .collect();
+    let occurrence_linking_routing_requirements: Vec<_> = final_routing_requirements
+        .into_iter()
+        .map(|mut requirement| {
+            requirement.begin_time = source_end_time;
+            requirement.zones = requirement
+                .zones
+                .into_iter()
+                .map(|mut zone| {
+                    zone.end_time = target_start_time;
+                    zone
+                })
+                .collect();
+            requirement
+        })
+        .collect();
+    (
+        occurrence_linking_spacing_requirements,
+        occurrence_linking_routing_requirements,
+    )
 }
 
 #[cfg(test)]
