@@ -42,6 +42,7 @@ export const WHITE_75 = 'rgba(255, 255, 255, 0.75)';
 export const YELLOW_400 = 'rgb(255, 192, 3)';
 
 export const SKY_900 = 'rgb(7, 69, 128)';
+export const SKY_800 = 'rgb(17, 101, 180)';
 export const SKY_700 = 'rgb(33, 112, 185)';
 
 export const STONE_900 = 'rgb(31, 27, 23)';

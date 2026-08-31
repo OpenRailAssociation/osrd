@@ -1,6 +1,6 @@
 import chroma from 'chroma-js';
 
-import { SKY_700, SKY_900, WHITE_100 } from '../../../../common/helpers/colors';
+import { SKY_800, SKY_900, WHITE_100 } from '../../../../common/helpers/colors';
 import type { DrawFunctionParams, EtcsBrakingCurveType, LayerData } from '../../../types';
 import {
   SPEEDS_LINEWIDTH,
@@ -19,7 +19,7 @@ import {
 
 const { CURVE_MARGIN_TOP, CURVE_MARGIN_SIDES } = MARGINS;
 
-const BASE_SPEED_COLOR = chroma(SKY_700);
+const BASE_SPEED_COLOR = chroma(SKY_800);
 const BASE_SPEED_FILL_ALPHA = 0.15;
 const ECO_SPEED_COLOR = chroma(SKY_900);
 
