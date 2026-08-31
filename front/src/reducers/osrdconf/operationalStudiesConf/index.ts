@@ -2,9 +2,10 @@ import { createSlice } from '@reduxjs/toolkit';
 
 import { buildMapStateReducer } from 'reducers/commonMap';
 import { defaultCommonConf, buildCommonConfReducers } from 'reducers/osrdconf/osrdConfCommon';
-import type { OperationalStudiesConfState } from 'reducers/osrdconf/types';
 
-export const operationalStudiesInitialConf: OperationalStudiesConfState = {
+import type { OsrdConfState } from '../types';
+
+export const operationalStudiesInitialConf: OsrdConfState = {
   ...defaultCommonConf,
 };
 
@@ -12,8 +13,8 @@ export const operationalStudiesConfSlice = createSlice({
   name: 'operationalStudiesConf',
   initialState: operationalStudiesInitialConf,
   reducers: {
-    ...buildCommonConfReducers<OperationalStudiesConfState>(),
-    ...buildMapStateReducer<OperationalStudiesConfState>(),
+    ...buildCommonConfReducers<OsrdConfState>(),
+    ...buildMapStateReducer<OsrdConfState>(),
   },
 });
 

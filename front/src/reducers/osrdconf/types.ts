@@ -50,8 +50,6 @@ export type ItineraryForm = {
 
 export type EditingTrainType = 'uniqueTrain' | 'pacedTrain' | 'occurrence';
 
-export type OperationalStudiesConfState = OsrdConfState;
-
 export type OsrdStdcmConfState = OsrdConfState & {
   stdcmPathSteps: StdcmPathStep[];
   margins: {
