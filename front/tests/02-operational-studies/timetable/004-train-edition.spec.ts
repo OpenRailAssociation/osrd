@@ -36,6 +36,9 @@ const frTranslations = {
 const trains: TrainSchedule[] = readJsonFile('./tests/assets/trains/trains.json');
 
 test.describe('Train edition', { tag: ['@op', '@paced-trains', '@unique-trains'] }, () => {
+  //TODO: remove ignorePageErrors when issue #13066 is resolved
+  test.use({ ignorePageErrors: true });
+
   setupScenarioFixture({
     scenarioNamePrefix: 'edit-train-scenario',
     trains: [...trains.slice(0, 1), ...trains.slice(7, 8)],
