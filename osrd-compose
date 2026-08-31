@@ -153,6 +153,11 @@ if has_flag "playwright"; then
     compose_files+=("$OVERRIDE_DIR/docker-compose.playwright.yml")
 fi
 
+# Set to an alternative postgis image if we are running on an arm64-based processor, i.e. Apple Silicon
+# (we don't want to run postgres in Rosetta, and the default postgis/postgis container image is x86_64 only)
+if [[ $(uname -m) == 'arm64' ]] && [ -z "$OSRD_POSTGIS_IMAGE" ]; then
+    export OSRD_POSTGIS_IMAGE='nickblah/postgis:16-postgis-3'
+fi
 
 # Check if DOCKER_SOCKET is already set
 if [ -z "$DOCKER_SOCKET" ]; then

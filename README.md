@@ -78,7 +78,7 @@ xdg-open http://localhost:4000/
 
 Linux or WSL users can use `./osrd-compose host` instead of `docker compose` to enable host networking: it can be useful to launch services in a debugger.
 
-macOS users on Apple Silicon should make sure to set an arm64 image name for Postgres/PostGIS (to prevent slow amd64 emulation). This image name can be set by running `export OSRD_POSTGIS_IMAGE='nickblah/postgis:16-postgis-3'` before the first `docker compose` command.
+macOS users on Apple Silicon should also use `./osrd-compose` to let them use an arm64-native image of Postgres + PostGIS automatically.
 
 The last-minute train (STDCM) module needs additional setup: start by creating a scenario, copy its ID from its URL, then run:
 
