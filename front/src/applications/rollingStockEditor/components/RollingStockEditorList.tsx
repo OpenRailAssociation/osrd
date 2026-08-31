@@ -20,7 +20,7 @@ type RollingStockEditorListProps = {
   setPageMode: React.Dispatch<React.SetStateAction<PageMode>>;
   resetFilters: () => void;
   ref2scroll: RefObject<HTMLInputElement | null>;
-  selectedRollingStock?: RollingStockWithLiveries;
+  selectedRollingStock?: RollingStockWithLiveries | LightRollingStockWithLiveries;
   userPrivilegesByRollingStockId: Record<number, Set<Privilege>>;
 };
 
