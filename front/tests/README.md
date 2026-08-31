@@ -410,6 +410,21 @@ npx playwright test --help
 - **Parallel workers**: no limit in CI, but technically `2` (and `30%` of logical CPU locally, after empirical tries)
 - **Screenshots**: on failure
 
+## ⚠️ Known limitation: no map markers on Firefox
+
+Firefox cannot get a WebGL context inside the Playwright container:
+
+```
+Failed to create WebGL context: AllowWebgl2:false restricts context creation on this system
+Exhausted GL driver options (FEATURE_FAILURE_WEBGL_EXHAUSTED_DRIVERS)
+```
+
+Without WebGL, `react-map-gl` never mounts, so map markers are never displayed.
+This is an old Firefox bug, still open:
+<https://bugzilla.mozilla.org/show_bug.cgi?id=1375585>
+
+👉 Skip marker-related assertions on non-chromium browsers.
+
 ---
 
 # 🧱 8. Page Object Model (POM)
