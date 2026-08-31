@@ -1,4 +1,4 @@
-import type { ScheduleItem, TimetableType } from 'common/api/osrdEditoastApi';
+import type { TimetableType } from 'common/api/osrdEditoastApi';
 import type { Train } from 'reducers/osrdconf/types';
 import {
   Duration,
@@ -121,26 +121,6 @@ const propagateShiftAll = (
     updatedSchedule: selectedTrain.schedule ?? [],
     updatedStartTime: addDurationToStartTime(currentStartTime, delta),
   };
-};
-
-/**
- * For atThisWaypoint: waypoints after the edited point that now fall before it in time
- * must be on the next day.
- */
-export const adjustFollowingWaypointsForMidnight = (
-  newValue: Date,
-  editedPathStepId: string,
-  selectedTrain: Train
-): ScheduleItem[] => {
-  const startTime = new Date(selectedTrain.start_time);
-  const editedPathIndex = selectedTrain.path.findIndex((step) => step.id === editedPathStepId);
-
-  return cascadeArrivals({
-    schedule: selectedTrain.schedule ?? [],
-    path: selectedTrain.path,
-    fromPathIndex: editedPathIndex + 1,
-    baseline: Duration.subtractDate(newValue, startTime),
-  });
 };
 
 export const propagateTime = (

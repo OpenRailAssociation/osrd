@@ -37,6 +37,7 @@ import {
 } from 'utils/trainId';
 
 import { MarginUnit } from '../consts';
+import { cascadeArrivals } from '../helpers/arrivalCascade';
 import {
   upsertPathStep,
   applyScheduleEdit,
@@ -46,7 +47,7 @@ import {
   insertScheduleItemInOrder,
 } from '../helpers/cellUpdate';
 import { propagateStopDuration } from '../helpers/stopDurationPropagation';
-import { adjustFollowingWaypointsForMidnight, propagateTime } from '../helpers/timePropagation';
+import { propagateTime } from '../helpers/timePropagation';
 import type {
   CellUpdate,
   OptimisticEdit,
@@ -226,9 +227,11 @@ const useUpdateTimesStopsTable = (
         update.value instanceof Date &&
         !isOrigin
       ) {
-        updatedSchedule = adjustFollowingWaypointsForMidnight(update.value, pathStepId, {
-          ...selectedTrain,
+        updatedSchedule = cascadeArrivals({
           schedule: updatedSchedule,
+          path: selectedTrain.path,
+          fromPathIndex: selectedTrain.path.findIndex((step) => step.id === pathStepId) + 1,
+          baseline: Duration.subtractDate(update.value, new Date(selectedTrain.start_time)),
         });
       }
 
@@ -240,9 +243,11 @@ const useUpdateTimesStopsTable = (
         newState.departure !== null &&
         newState.departure instanceof Date
       ) {
-        updatedSchedule = adjustFollowingWaypointsForMidnight(newState.departure, pathStepId, {
-          ...selectedTrain,
+        updatedSchedule = cascadeArrivals({
           schedule: updatedSchedule,
+          path: selectedTrain.path,
+          fromPathIndex: selectedTrain.path.findIndex((step) => step.id === pathStepId) + 1,
+          baseline: Duration.subtractDate(newState.departure, new Date(selectedTrain.start_time)),
         });
       }
 

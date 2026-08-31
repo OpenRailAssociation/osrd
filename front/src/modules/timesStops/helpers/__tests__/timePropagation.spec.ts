@@ -4,11 +4,7 @@ import type { Train } from 'reducers/osrdconf/types';
 import { addDurationToStartTime, Duration, type StartTime } from 'utils/duration';
 
 import type { PropagationMode, TimesStopsRowNew } from '../../types';
-import {
-  adjustFollowingWaypointsForMidnight,
-  formatPropagationDeltaLabelByMode,
-  propagateTime,
-} from '../timePropagation';
+import { formatPropagationDeltaLabelByMode, propagateTime } from '../timePropagation';
 
 // time constants
 
@@ -135,14 +131,6 @@ describe('Scenario 1 — +10 min at OP11', () => {
       expect(toComputedArrival(updatedStartTime, scheduleByAt['op17'].arrival!)).toEqual(_19H00); // 18:50 -> 19:00
     });
   });
-
-  describe('adjustFollowingWaypointsForMidnight', () => {
-    it('OP17 still after OP11 → should not trigger midnight crossing', () => {
-      const updatedSchedule = adjustFollowingWaypointsForMidnight(_18H40, 'op11', train);
-      const scheduleByAt = Object.fromEntries(updatedSchedule.map((item) => [item.at, item]));
-      expect(scheduleByAt['op17']?.arrival).toBe('PT50M'); // 50min > 40min (OP11 new offset) → unchanged
-    });
-  });
 });
 
 // Scenario 2 — +30 min at OP11 (18:30 → 19:00)
@@ -221,17 +209,6 @@ describe('Scenario 2 — +30 min at OP11', () => {
       expect(scheduleByAt['op17']?.arrival).toBe('PT50M'); // offset unchanged
       expect(toComputedArrival(updatedStartTime, scheduleByAt['op11'].arrival!)).toEqual(_19H00);
       expect(toComputedArrival(updatedStartTime, scheduleByAt['op17'].arrival!)).toEqual(_19H20);
-    });
-  });
-
-  describe('adjustFollowingWaypointsForMidnight', () => {
-    it('OP17 falls before OP11 → should trigger midnight crossing to next day 18:50', () => {
-      const updatedSchedule = adjustFollowingWaypointsForMidnight(_19H00, 'op11', train);
-      const scheduleByAt = Object.fromEntries(updatedSchedule.map((item) => [item.at, item]));
-      expect(scheduleByAt['op17']?.arrival).toBe('PT24H50M'); // 50min < 60min (OP11 new offset) → midnight crossing (+24h to original offset)
-      expect(toComputedArrival(_18H00, scheduleByAt['op17'].arrival!)).toEqual(
-        _18H50_MIDNIGHT_CROSSING
-      );
     });
   });
 });
@@ -344,21 +321,6 @@ describe('Scenario 3 — -40 min at OP11', () => {
       expect(scheduleByAt['op17']?.arrival).toBe('PT50M'); // offset unchanged
       expect(toComputedArrival(updatedStartTime, scheduleByAt['op11'].arrival!)).toEqual(_17H50); // 18:30 -> 17:50
       expect(toComputedArrival(updatedStartTime, scheduleByAt['op17'].arrival!)).toEqual(_18H10); // 18:50 -> 18:10
-    });
-  });
-
-  describe('adjustFollowingWaypointsForMidnight', () => {
-    it('OP17 falls before OP11 → should trigger midnight crossing to next day 18:50', () => {
-      const updatedSchedule = adjustFollowingWaypointsForMidnight(
-        _17H50_MIDNIGHT_CROSSING,
-        'op11',
-        train
-      );
-      const scheduleByAt = Object.fromEntries(updatedSchedule.map((item) => [item.at, item]));
-      expect(scheduleByAt['op17']?.arrival).toBe('PT24H50M'); // 50min < 23h50m (OP11 new offset) → midnight crossing
-      expect(toComputedArrival(_18H00, scheduleByAt['op17'].arrival!)).toEqual(
-        _18H50_MIDNIGHT_CROSSING
-      );
     });
   });
 });
