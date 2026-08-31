@@ -1,4 +1,5 @@
 use authz::Role;
+use axum::Extension;
 use axum::extract::Json;
 use axum::extract::Path;
 use axum::extract::Query;
@@ -19,6 +20,9 @@ use utoipa::IntoParams;
 use utoipa::ToSchema;
 
 use super::OperationalStudiesOrderingParam;
+use crate::AppState;
+use crate::authentication;
+use crate::authorizers::SystemAuthorizer;
 use crate::error::InternalError;
 use crate::error::Result;
 use crate::views::pagination::PaginatedList;
@@ -137,7 +141,10 @@ impl ProjectWithStudyCount {
     )
 )]
 pub(in crate::views) async fn create(
-    State(db_pool): State<Arc<DbConnectionPoolV2>>,
+    State(AppState {
+        db_pool, openfga, ..
+    }): State<AppState>,
+    Extension(authn_state): Extension<authentication::State>,
     Json(project_create_form): Json<ProjectCreateForm>,
 ) -> Result<impl IntoResponse> {
     let mut conn = db_pool.get().await?;
@@ -149,6 +156,16 @@ pub(in crate::views) async fn create(
         .create(&mut conn)
         .await
         .map_err(ProjectError::from)?;
+
+    if let Some(user) = authn_state.user() {
+        let Ok(()) =
+            authz::v2::project_set_grant(authz::Subject::User(user), authz::Project(project.id))
+                .authorize(&SystemAuthorizer::new_infallible(&openfga))
+                .await?
+                .access()
+                .await?;
+    }
+
     let project_with_studies = ProjectWithStudyCount::try_fetch(conn, project).await?;
 
     Ok((StatusCode::CREATED, Json(project_with_studies)))
@@ -359,22 +376,31 @@ pub(in crate::views) async fn patch(
 pub mod tests {
     use super::*;
 
+    use authz::ProjectGrant;
+    use authz::v2::TestClientExt as _;
     use pretty_assertions::assert_eq;
 
     use serde_json::json;
 
     use crate::fixtures::create_project;
-    use crate::views::test_app;
+    use crate::views::test_app::TestRequestExt as _;
+    use crate::views::test_app::test_app;
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn project_post() {
-        let app = test_app!().skip_authz().build();
+        let app = test_app!().build();
         let pool = app.db_pool();
+        let user = app
+            .user("user", "User")
+            .with_roles([Role::OperationalStudies])
+            .create()
+            .await;
 
         let project_name = "test_project";
 
         let response: ProjectWithStudyCount = app
             .post("/projects")
+            .by_user(user.as_ref())
             .json(&json!({
                 "name": project_name,
                 "description": "",
@@ -385,10 +411,19 @@ pub mod tests {
             .assert_status(StatusCode::CREATED)
             .json();
 
+        // The project should have been created:
         let project = Project::retrieve(pool.get_ok(), response.project.id)
             .await
             .expect("Failed to retrieve project")
             .expect("Project not found");
+
+        // The request issuer should have an owner grant on the project:
+        assert_eq!(
+            app.openfga()
+                .project_direct_grant(authz::Subject::user(user), authz::Project(project.id))
+                .await,
+            Some(ProjectGrant::Owner)
+        );
 
         assert_eq!(project.name, project_name);
     }
