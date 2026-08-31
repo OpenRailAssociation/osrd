@@ -6,8 +6,9 @@ import { GRANTS_LABEL } from '../consts';
 
 function getRequiredPrivilegesToAddGrant(grant: keyof typeof GRANTS_LABEL): Privilege[] {
   switch (grant) {
-    case 'RESTRICTED_READER':
-      return ['can_share_read'];
+    // TODO_GRANT: Able RESTRICTED_READER when backend supports it
+    // case 'RESTRICTED_READER':
+    //   return ['can_share_restricted_read'];
     case 'READER':
       return ['can_share_read'];
     case 'WRITER':
@@ -61,9 +62,14 @@ const generateGrantSelectProps = ({
   // if the subject's option is not found, we return only its grant and in readonly mode
   const subjectValueIndex = allowedOptions.findIndex((option) => option.value === subjectGrant);
   if (subjectValueIndex < 0) {
+    // TODO_GRANT: use Grant type instead of GRANTS_LABEL when backend supports it
+    const subjectGrantLabel =
+      subjectGrant in GRANTS_LABEL
+        ? GRANTS_LABEL[subjectGrant as keyof typeof GRANTS_LABEL]
+        : GRANTS_LABEL.NONE;
     const options = [
       {
-        label: t(`authorization.grants.${GRANTS_LABEL[subjectGrant || 'NONE']}`),
+        label: t(`authorization.grants.${subjectGrantLabel}`),
         value: subjectGrant,
       },
     ];

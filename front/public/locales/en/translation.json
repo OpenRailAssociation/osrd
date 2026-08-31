@@ -464,8 +464,7 @@
       "edit": "write",
       "full": "full access",
       "none": "no access",
-      "read": "read",
-      "restricted_read": "restricted read"
+      "read": "read"
     },
     "permission": "Permission",
     "permissionDenied": "You don't have permission to perform this action",
