@@ -41,7 +41,12 @@ import {
 } from 'modules/trainSchedule/helpers/pacedTrain';
 import type { TrainScheduleWithDetails } from 'modules/trainSchedule/types';
 import { useMapSettings, useMapSettingsActions } from 'reducers/commonMap';
-import type { PathStep, PathStepMetadata, PathStepV2 } from 'reducers/osrdconf/types';
+import type {
+  EditingTrainType,
+  PathStep,
+  PathStepMetadata,
+  PathStepV2,
+} from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 import { addElementAtIndex } from 'utils/array';
 import { Duration, type StartTime, startTimeToDate } from 'utils/duration';
@@ -61,7 +66,7 @@ import type { FeatureInfoClick } from '../types';
 import type { OperationalPointSuggestion } from './ComboBoxCustomList/ListElementComponent';
 import { usePathStepsMetadata } from './hooks/usePathStepsMetadata';
 import IntermediateWaypointsPanel from './IntermediateWaypointsPanel/IntermediateWaypointsPanel';
-import ItineraryModalFooter, { type FooterTrainType } from './ItineraryModalFooter';
+import ItineraryModalFooter from './ItineraryModalFooter';
 import ItineraryModalFormHeader from './ItineraryModalFormHeader';
 import ItineraryModalMap from './ItineraryModalMap';
 import PathStepItem from './PathStepItem';
@@ -733,7 +738,7 @@ const ItineraryModal = ({
   };
 
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const submitItinerary = (trainType?: FooterTrainType) => {
+  const submitItinerary = (trainType?: EditingTrainType) => {
     setSubmitAttempted(true);
     setBannerWiggle((c) => c + 1);
     if (isNameEmpty) return;

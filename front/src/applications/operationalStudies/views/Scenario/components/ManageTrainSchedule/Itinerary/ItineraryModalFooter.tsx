@@ -4,14 +4,11 @@ import { useTranslation } from 'react-i18next';
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import type { EditingTrainType } from 'reducers/osrdconf/types';
 
-// TODO: Define a proper type here as soon as we get rid of the old modal store
-export type FooterTrainType = EditingTrainType;
-
 export type ItineraryModalFooterProps = {
   mode: 'new' | 'edit';
-  trainType: FooterTrainType;
+  trainType: EditingTrainType;
   onCancel: () => void;
-  onSubmit: (trainType?: FooterTrainType) => void;
+  onSubmit: (trainType?: EditingTrainType) => void;
   isWorking: boolean;
 };
 
