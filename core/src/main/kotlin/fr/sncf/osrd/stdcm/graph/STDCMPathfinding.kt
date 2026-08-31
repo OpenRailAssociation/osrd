@@ -138,6 +138,10 @@ class STDCMPathfinding(
 
         assert(steps.last().stop) { "The last stop is supposed to be an actual stop" }
         starts = getStartNodes(graph, consistSchedule)
+
+        // If we are in a dead end, and the destination is not reached, the pathfinding should fail
+        if (starts.isEmpty()) return null
+
         val result = findPathImpl()
         graph.stdcmSimulations.logWarnings()
         if (!result.hasReachedDestination) {
