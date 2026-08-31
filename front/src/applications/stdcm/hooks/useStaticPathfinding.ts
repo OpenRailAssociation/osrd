@@ -18,7 +18,6 @@ import {
   getTrackSectionIdsByLoadingGauge,
 } from 'reducers/osrdconf/stdcmConf/selectors';
 import type { StdcmPathStep } from 'reducers/osrdconf/types';
-import { getFeatureFlag } from 'reducers/user/userSelectors';
 
 import {
   getConsistChanges,
@@ -52,7 +51,6 @@ const useStaticPathfinding = (workerStatus: WorkerStatus, infra: Infra | undefin
   const pathSteps = useSelector(getStdcmPathSteps);
   const [pathStepsLocations, setPathStepsLocations] = useState(pathStepsToLocations(pathSteps));
 
-  const backtrackEnabled = useSelector(getFeatureFlag('stdcmBacktrack'));
   const speedLimitByTag = useSelector(getStdcmSpeedLimitByTag);
   const rollingStock = useStdcmLightRollingStock();
   const loadingGauge = useSelector(getLoadingGauge);
@@ -103,7 +101,7 @@ const useStaticPathfinding = (workerStatus: WorkerStatus, infra: Infra | undefin
 
       const stdcmPathSteps = pathStepsLocations.map((step) => ({
         location: stdcmPathStepToPathItemLocation(step),
-        can_backtrack: backtrackEnabled && step.canBacktrack,
+        can_backtrack: step.canBacktrack,
       }));
 
       const pathSegmentsIndexes = getPathSegmentsIndexes(consistChanges, pathStepsLocations.length);
@@ -138,7 +136,6 @@ const useStaticPathfinding = (workerStatus: WorkerStatus, infra: Infra | undefin
     launchPathfinding();
   }, [
     pathStepsLocations,
-    backtrackEnabled,
     rollingStock,
     speedLimitByTag,
     loadingGauge,
