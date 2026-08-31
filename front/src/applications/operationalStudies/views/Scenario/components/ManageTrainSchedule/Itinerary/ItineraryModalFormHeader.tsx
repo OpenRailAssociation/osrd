@@ -7,14 +7,18 @@ import {
   useDefaultComboBox,
   type StatusWithMessage,
 } from '@osrd-project/ui-core';
+import { skipToken } from '@reduxjs/toolkit/query';
 import { isEqual } from 'lodash';
 import { useTranslation } from 'react-i18next';
 
 import type { CategoryColors } from 'applications/operationalStudies/types';
-import type { LightRollingStockWithLiveries, SubCategory } from 'common/api/osrdEditoastApi';
+import {
+  osrdEditoastApi,
+  type LightRollingStockWithLiveries,
+  type SubCategory,
+} from 'common/api/osrdEditoastApi';
 import { useInfraID } from 'common/osrdContext';
 import useSpeedLimitTags from 'common/SpeedLimitTagSelector/useSpeedLimitTags';
-import useStoreDataForRollingStockSelector from 'modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector';
 import isMainCategory from 'modules/rollingStock/helpers/category';
 import useCategoryOptions from 'modules/rollingStock/hooks/useCategoryOptions';
 import useFilterRollingStock from 'modules/rollingStock/hooks/useFilterRollingStock';
@@ -59,10 +63,15 @@ const ItineraryModalFormHeader = ({
     }
   };
 
-  // RollingStock
-  const { rollingStock } = useStoreDataForRollingStockSelector({
-    rollingStockId: modalFormState.rollingStockId,
-  });
+  const { currentData: rollingStock } =
+    osrdEditoastApi.endpoints.getRollingStockByRollingStockId.useQuery(
+      modalFormState.rollingStockId
+        ? {
+            rollingStockId: modalFormState.rollingStockId,
+          }
+        : skipToken
+    );
+
   const getRollingStockLabel = useCallback((rs: LightRollingStockWithLiveries) => {
     const secondPart = rs.metadata?.series || rs.metadata?.reference || '';
     return secondPart ? `${rs.name} - ${secondPart}` : rs.name;
