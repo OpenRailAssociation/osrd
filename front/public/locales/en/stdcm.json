@@ -140,10 +140,12 @@
     "getSimulation": "Get the simulation",
     "infoMessage": "This simulation doesn't ensure the availability of the path.",
     "results": {
+      "blockingWorkSchedule": "work between {{startTime}} and {{endTime}}",
       "changeSearchCriteria": "You can modify your search criteria to find a solution.",
       "displayAll": "Display all operational points",
       "displayMain": "Display main operational points",
       "downloadSimulationSheet": "Download simulation report sheet",
+      "mainConflicts": "Here are the main conflicts encountered:",
       "modal": {
         "LongFRET": "Long path freight (3 regions minimum, 4 in IDF)",
         "addComment": "Observations",
@@ -209,8 +211,8 @@
           "hazardousMaterialsNormal": "This will be verified by a timetable planner and the simulation may be rejected."
         }
       },
+      "nearestReachedPoint": "The nearest point to the destination reached is <strong>{{name}}</strong> at {{time}}.",
       "notFound": "No path was found for this configuration",
-      "pathNotFound": "Clash with existing train and/or work schedules.",
       "retainThisSimulation": "Retain this simulation",
       "simulationDownstream": "Simulation automatically computed as no capacity was found for the requested criteria: the tolerance <underline>before</underline> departure time was increased.",
       "simulationName": {
@@ -227,6 +229,7 @@
         "errorMessage": "We are sorry that we could not process your request. The LMR team has been notified and will be aware of the situation as soon as possible.",
         "failed": "A technical issue has occurred"
       },
+      "tooMuchTraffic": "Too much traffic is in conflict on this route.",
       "transferSheetToRailManager": "Send to GESICO"
     },
     "stopCalculation": "Stop"

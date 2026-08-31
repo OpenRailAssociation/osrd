@@ -37,6 +37,7 @@ import useDeploymentSettings from 'utils/hooks/useDeploymentSettings';
 
 import SendToRailwayManagerModal from './SendToRailwayManagerModal';
 import StdcmFeedback from './StdcmFeedback';
+import StdcmPathNotFoundDetails from './StdcmPathNotFoundDetails';
 import StdcmResultsTable from './StdcmResultsTable';
 import StdcmSimulationNavigator from './StdcmSimulationNavigator';
 import StdcmSimulationReportSheet from './StdcmSimulationReportSheet';
@@ -101,6 +102,9 @@ const StdcmResults = ({
   const hasSimulationResults = hasResults(outputs);
   const traceId = outputs && ('results' in outputs ? outputs.results.traceId : outputs.traceId);
 
+  // The simulation failed: the outputs only hold the explanation of the failure.
+  const pathNotFoundOutputs = outputs && !hasSimulationResults ? outputs : undefined;
+
   const simulationReportSheetNumber = useMemo(
     () => generateCodeNumber(),
     [selectedSimulation.index]
@@ -121,11 +125,15 @@ const StdcmResults = ({
   }, [outputs]);
 
   const markersInfo = useMemo(() => {
-    if (!hasSimulationResults) {
-      return [];
+    if (hasSimulationResults) {
+      return extractMarkersInfo(outputs.results.simulationPathSteps);
     }
-    return extractMarkersInfo(outputs.results.simulationPathSteps);
-  }, [hasSimulationResults, outputs]);
+    // Still display the requested waypoints on the map when explaining a path-not-found result.
+    if (pathNotFoundOutputs) {
+      return extractMarkersInfo(selectedSimulation.inputs.pathSteps);
+    }
+    return [];
+  }, [hasSimulationResults, outputs, pathNotFoundOutputs, selectedSimulation.inputs.pathSteps]);
 
   const [similarTrains, setSimilarTrains] = useState<SimilarTrainWithSecondaryCode[]>([]);
   const [areSegmentsLoading, setAreSegmentsLoading] = useState(true);
@@ -428,16 +436,12 @@ const StdcmResults = ({
                   )}
                 </div>
               ) : (
-                <div className="simulation-failure">
-                  <span className="title">{t('notFound')}</span>
-                  <span className="change-criteria">{t('pathNotFound')}</span>
-                  <span>{t('changeSearchCriteria')}</span>
-                  {!alternativePath && !displayInfoMessage && (
-                    <div className="alternative-simulations-info">
-                      {t('simulationsWithConflicts')}
-                    </div>
-                  )}
-                </div>
+                pathNotFoundOutputs && (
+                  <StdcmPathNotFoundDetails
+                    outputs={pathNotFoundOutputs}
+                    showAlternativeSimulationsInfo={!alternativePath && !displayInfoMessage}
+                  />
+                )
               )}
               <StdcmFeedback />
             </div>
@@ -446,8 +450,13 @@ const StdcmResults = ({
               <DefaultBaseMap
                 mapId="stdcm-map-result"
                 infraId={infraId}
-                geometry={hasSimulationResults ? outputs?.pathProperties.geometry : undefined}
+                geometry={
+                  hasSimulationResults
+                    ? outputs.pathProperties.geometry
+                    : pathNotFoundOutputs?.partialPathGeometry
+                }
                 pathStepMarkers={markersInfo}
+                // The partial path reached before the simulation failed is drawn in red.
                 isFeasible={hasSimulationResults}
                 mapSettings={mapSettings}
                 updateMapSettings={updateMapSettings}
