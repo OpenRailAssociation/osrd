@@ -34,8 +34,7 @@ export const checkStdcmConf = (
   dispatch: Dispatch,
   t: TFunction,
   dateTimeLocale: Intl.Locale,
-  osrdconf: OsrdStdcmConfState,
-  backtrackEnabled: boolean
+  osrdconf: OsrdStdcmConfState
 ): ValidStdcmConfig | null => {
   const {
     stdcmPathSteps: pathSteps,
@@ -184,7 +183,7 @@ export const checkStdcmConf = (
       duration,
       pathfinding_item: {
         location: formattedLocation,
-        can_backtrack: backtrackEnabled && canPathStepBacktrack(step),
+        can_backtrack: canPathStepBacktrack(step),
       },
       timing_data: timingData,
     };

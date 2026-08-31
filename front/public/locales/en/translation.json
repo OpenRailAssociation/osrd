@@ -674,8 +674,7 @@
     "featureFlags": {
       "hourlyTimetables": "Enable hourly timetables",
       "linkings": "Enable linkings",
-      "projectGrants": "Enable project grants management",
-      "stdcmBacktrack": "Enable STDCM backtracking"
+      "projectGrants": "Enable project grants management"
     },
     "help": "Help",
     "impersonation": "Impersonate user",
