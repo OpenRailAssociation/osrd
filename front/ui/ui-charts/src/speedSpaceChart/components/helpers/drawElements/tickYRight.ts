@@ -1,7 +1,7 @@
 import chroma from 'chroma-js';
 
 import { FONT_SANS } from '../../../../common/consts';
-import { GREY_50 } from '../../../../common/helpers/colors';
+import { GREY_30, GREY_50 } from '../../../../common/helpers/colors';
 import type { DrawFunctionParams } from '../../../types';
 import { MARGINS, TICK_TITLE_MARGINS, RIGHT_TICK_HEIGHT_OFFSET } from '../../const';
 import { clearCanvas, slopesValues } from '../../utils';
@@ -48,7 +48,7 @@ export const drawTickYRight = ({ ctx, width, height, store }: DrawFunctionParams
     const textPositionYRight = tickY + 4;
     const opacity = 1;
 
-    ctx.fillStyle = chroma(GREY_50).alpha(opacity).hex();
+    ctx.fillStyle = chroma(GREY_30).alpha(opacity).hex();
     ctx.fillText(text, textOffsetX, textPositionYRight);
 
     ctx.fillText('‰', width - Y_RIGHT_HORIZONTAL, Y_RIGHT_VERTICAL);
