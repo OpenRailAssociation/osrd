@@ -1,4 +1,4 @@
-import { SECOND, MINUTE, HOUR, FONT_SIZE, FONT_MONO } from '../../common/consts';
+import { SECOND, MINUTE, HOUR, FONT_MONO } from '../../common/consts';
 import {
   BLACK_100,
   SKY_700,
@@ -33,7 +33,7 @@ export const DEFAULT_THEME: SpaceTimeChartTheme = {
     24 * HOUR,
   ],
   pathsStyles: {
-    fontSize: FONT_SIZE,
+    fontSize: 10,
     fontFamily: FONT_MONO,
   },
   spaceGraduationsStyles: {
