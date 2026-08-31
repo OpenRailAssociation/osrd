@@ -87,9 +87,14 @@ const DefaultBaseMap = ({
   };
 
   useEffect(() => {
-    const points = geometry ?? {
-      coordinates: compact(pathStepMarkers.map((step) => step.coordinates)),
-      type: 'LineString',
+    // The markers are taken into account too: when only a part of the path could be
+    // computed, the geometry alone doesn't cover all the requested path steps.
+    const points = {
+      coordinates: [
+        ...(geometry?.coordinates ?? []),
+        ...compact(pathStepMarkers.map((step) => step.coordinates)),
+      ],
+      type: 'LineString' as const,
     };
     if (points.coordinates.length >= 2) {
       const newViewport = computeBBoxViewport(bbox(points), viewport);

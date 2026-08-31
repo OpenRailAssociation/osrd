@@ -1,6 +1,7 @@
 import type { STDCM_REQUEST_STATUS } from 'applications/stdcm/consts';
 import type {
   GeoJsonPoint,
+  GeoJsonLineString,
   Conflict,
   LightRollingStock,
   LightRollingStockWithLiveries,
@@ -32,6 +33,11 @@ export type StdcmSuccessResponse = Extract<StdcmResponseWithTraceId, { status: '
 export type StdcmPathNotFound = Extract<StdcmResponseWithTraceId, { status: 'path_not_found' }>;
 
 export type StdcmResponse = StdcmPathNotFound | StdcmSuccessResponse;
+
+export type StdcmPathNotFoundOutput = StdcmPathNotFound & {
+  /** Geometry of the partial path reached, drawn in red on the result map */
+  partialPathGeometry?: GeoJsonLineString;
+};
 
 export type StdcmPathProperties = PathProperties & {
   manchetteOperationalPoints?: PathWaypoint[];
@@ -147,7 +153,7 @@ export type StdcmConflictsOutput = {
   conflicts: Conflict[];
 };
 
-export type StdcmSimulationOutputs = StdcmResultsOutput | StdcmPathNotFound;
+export type StdcmSimulationOutputs = StdcmResultsOutput | StdcmPathNotFoundOutput;
 
 export type StdcmSimulation = {
   index: number;
