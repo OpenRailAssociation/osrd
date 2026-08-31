@@ -3,12 +3,11 @@ import { operationalStudiesConfSlice } from 'reducers/osrdconf/operationalStudie
 import buildCommonConfSelectors from 'reducers/osrdconf/osrdConfCommon/selectors';
 import { makeSubSelector } from 'utils/selectors';
 
-import type { OperationalStudiesConfState } from '../types';
+import type { OsrdConfState } from '../types';
 
 const buildOperationalStudiesConfSelectors = () => {
   const getOperationalStudiesConf = (state: RootState) => state[operationalStudiesConfSlice.name];
-  const makeOsrdConfSelector =
-    makeSubSelector<OperationalStudiesConfState>(getOperationalStudiesConf);
+  const makeOsrdConfSelector = makeSubSelector<OsrdConfState>(getOperationalStudiesConf);
 
   return {
     ...buildCommonConfSelectors(operationalStudiesConfSlice),
