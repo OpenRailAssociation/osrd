@@ -2,8 +2,8 @@ import type { ScheduleItem, TimetableType } from 'common/api/osrdEditoastApi';
 import type { Train } from 'reducers/osrdconf/types';
 import { Duration, subtractDurationFromStartTime } from 'utils/duration';
 
-import { ONE_DAY } from '../consts';
 import type { StopDurationUpdate, PropagationResult } from '../types';
+import { cascadeArrivals } from './arrivalCascade';
 import { insertScheduleItemInOrder } from './cellUpdate';
 import { formatSignedDelta } from './utils';
 
@@ -55,24 +55,14 @@ export const propagateStopDuration = (
 
   // Shift every scheduled arrival after the edited point by +delta, in path order. Bump +24h
   // if a shifted arrival ends up before the previous one.
-  const affectedItems = currentSchedule
-    .map((item) => ({ item, pathIndex: pathIndexById.get(item.at) ?? -1 }))
-    .filter(({ item, pathIndex }) => !!item.arrival && pathIndex > editedPathIndex)
-    .sort((a, b) => a.pathIndex - b.pathIndex);
-
-  const adjustments = new Map<string, string>();
-  let lastOffset = editedOffset ?? Duration.zero;
-  for (const { item } of affectedItems) {
-    const shifted = Duration.parse(item.arrival!).add(delta);
-    const adjusted = shifted.ms < lastOffset.ms ? shifted.add(ONE_DAY) : shifted;
-    adjustments.set(item.at, adjusted.toISOString());
-    lastOffset = adjusted;
-  }
-
-  // Apply the shifts above, then set the edited point's new duration (its arrival stays the same).
-  const shiftedSchedule = currentSchedule.map((item) =>
-    adjustments.has(item.at) ? { ...item, arrival: adjustments.get(item.at) } : item
-  );
+  // Then set the edited point's new duration (its arrival stays the same).
+  const shiftedSchedule = cascadeArrivals({
+    schedule: currentSchedule,
+    path: selectedTrain.path,
+    fromPathIndex: editedPathIndex + 1,
+    baseline: editedOffset ?? Duration.zero,
+    shift: (arrival) => arrival.add(delta),
+  });
 
   const updatedSchedule: ScheduleItem[] = editedItem
     ? shiftedSchedule.map((item) =>
