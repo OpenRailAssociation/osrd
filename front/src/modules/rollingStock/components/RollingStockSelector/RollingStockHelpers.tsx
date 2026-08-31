@@ -2,7 +2,7 @@ import { BiLockAlt } from 'react-icons/bi';
 import { ImFire } from 'react-icons/im';
 import { IoIosSnow } from 'react-icons/io';
 
-import type { LightRollingStock, RollingStock, Comfort } from 'common/api/osrdEditoastApi';
+import type { LightRollingStock, Comfort } from 'common/api/osrdEditoastApi';
 
 const RollingStockUnit = ({ unit, detail }: { unit: string; detail: string }) => {
   if (unit && unit !== 'US') {
@@ -18,7 +18,7 @@ const RollingStockUnit = ({ unit, detail }: { unit: string; detail: string }) =>
 };
 
 type RollingStockInfoProps = {
-  rollingStock: RollingStock | LightRollingStock;
+  rollingStock: LightRollingStock;
   showSeries?: boolean;
   showMiddle?: boolean;
   showEnd?: boolean;
