@@ -100,7 +100,7 @@ export const drawOccupationZone = (
 
   ctx.lineJoin = 'round';
   ctx.lineCap = 'round';
-  ctx.font = `400 12px ${FONT_MONO}`;
+  ctx.font = `400 10px ${FONT_MONO}`;
 
   const { getTimePixel, getSpacePixel } = stcContext;
   const yStart = getCrispLineCoordinate(getSpacePixel(position), BACKGROUND_HEIGHT);

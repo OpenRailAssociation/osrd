@@ -42,7 +42,7 @@ export const drawOccupancyZonesTexts = ({
   const isBelowBreakpoint = (breakpoint: keyof typeof BREAKPOINTS) =>
     zoneOccupancyLength < BREAKPOINTS[breakpoint];
 
-  ctx.font = `400 12px ${FONT_MONO}`;
+  ctx.font = `400 10px ${FONT_MONO}`;
   const originTextLength = ctx.measureText(zone.originStation || '--').width;
   ctx.font = `${labelFontWeight} 12px ${FONT_SANS}`;
   const nameTextLength = ctx.measureText(zone.trainName).width;
