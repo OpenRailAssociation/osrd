@@ -432,7 +432,13 @@ pub(in crate::views) struct ListStudiesQueryParams {
     )
 )]
 pub(in crate::views) async fn list(
-    State(db_pool): State<Arc<DbConnectionPoolV2>>,
+    State(AppState {
+        db_pool,
+        openfga,
+        config,
+        ..
+    }): State<AppState>,
+    Extension(authn_state): Extension<authentication::State>,
     Query(ListStudiesQueryParams { project_id }): Query<ListStudiesQueryParams>,
     Query(pagination_params): Query<PaginationQueryParams<1000>>,
     Query(ordering_params): Query<OperationalStudiesOrderingParam>,
@@ -448,8 +454,25 @@ pub(in crate::views) async fn list(
         .into_selection_settings()
         .filter(move || Study::PROJECT_ID.eq(project_id))
         .order_by(move || ordering.as_study_ordering());
+    if config.enable_project_permissions {
+        match &authn_state {
+            crate::authentication::State::Skip => (),
+            crate::authentication::State::Authenticated { .. } => {
+                authz::v2::project_privilege_check(
+                    authz::Project(project_id),
+                    ProjectPrivilege::HasAccess,
+                )
+                .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
+                .await?
+            }
+        }
+    }
 
-    let (studies, stats) = Study::list_paginated(&mut db_pool.get().await?, settings).await?;
+    let (studies, stats) = {
+        let conn = &mut db_pool.get().await?;
+        Study::list_paginated(conn, settings).await?
+    };
+
     let results = studies
         .into_iter()
         .zip(db_pool.iter_conn())
@@ -464,6 +487,7 @@ pub(in crate::views) async fn list(
 #[cfg(test)]
 pub mod tests {
     use authz::ProjectGrant;
+    use itertools::Itertools as _;
     use models::study::Study;
     use pretty_assertions::assert_eq;
 
@@ -510,28 +534,106 @@ pub mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn study_list() {
-        let app = test_app!().skip_authz().build();
-        let db_pool = app.db_pool();
+        let app = test_app!().build();
 
-        let created_project = create_project(&mut db_pool.get_ok(), "test_project_name").await;
+        let project_1 = create_project(&mut app.db_pool().get_ok(), "project_1").await;
+        let project_2 = create_project(&mut app.db_pool().get_ok(), "project_2").await;
 
-        let created_study =
-            create_study(&mut db_pool.get_ok(), "test_study_name", created_project.id).await;
+        let study_1 = create_study(&mut app.db_pool().get_ok(), "study_1", project_1.id).await;
+        let study_2 = create_study(&mut app.db_pool().get_ok(), "study_2", project_1.id).await;
+        let _study_3 = create_study(&mut app.db_pool().get_ok(), "study_3", project_2.id).await;
 
-        let response: StudyListResponse = app
+        let user = app
+            .user("user", "User")
+            .with_roles([Role::OperationalStudies])
+            .with_project_grant(project_1.id, ProjectGrant::Owner)
+            .create()
+            .await;
+
+        let user_studies = app
             .get("/studies")
-            .add_query_param("project_id", created_project.id)
+            .by_user(user.as_ref())
+            .add_query_param("project_id", project_1.id)
             .await
             .assert_status_ok()
-            .json();
-
-        let studies_retrieved = response
+            .json::<StudyListResponse>()
             .results
-            .iter()
-            .find(|r| r.study.id == created_study.id)
-            .expect("Study not found");
+            .into_iter()
+            .map(|study| study.study)
+            .sorted_by_key(|study| study.id)
+            .collect_vec();
 
-        assert_eq!(studies_retrieved.study, created_study);
+        // We should only see the studies of project_1:
+        assert_eq!(user_studies, vec![study_1, study_2]);
+    }
+
+    #[rstest]
+    #[case::no_grant(
+        test_app!().build(),
+        create_project(&mut app.db_pool().get_ok(), "project")
+            .await,
+        app
+            .user("user", "User")
+            .with_roles([Role::OperationalStudies])
+            .create()
+            .await,
+        )]
+    #[case::no_role(
+        test_app!().build(),
+        create_project(&mut app.db_pool().get_ok(), "project")
+            .await,
+        app
+            .user("user", "User")
+            .with_project_grant(project.id, ProjectGrant::Owner)
+            .create()
+            .await,
+     )]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn study_list_forbidden(
+        #[case] app: TestApp,
+        #[case] project: Project,
+        #[case] forbidden_user: authz::identity::User,
+    ) {
+        app.get("/studies")
+            .by_user(forbidden_user.as_ref())
+            .add_query_param("project_id", project.id)
+            .await
+            .assert_status_forbidden();
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn study_list_admins_are_allowed() {
+        let app = test_app!().build();
+        let project = create_project(&mut app.db_pool().get_ok(), "project").await;
+        let admin = app
+            .user("admin", "Admin")
+            .with_roles([Role::Admin])
+            .create()
+            .await;
+        app.get("/studies")
+            .by_user(admin.as_ref())
+            .add_query_param("project_id", project.id)
+            .await
+            .assert_status_ok();
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn study_list_not_found() {
+        let app = test_app!().build();
+        let project_id = create_project(&mut app.db_pool().get_ok(), "project")
+            .await
+            .id;
+        let user = app
+            .user("user", "User")
+            .with_roles([Role::OperationalStudies])
+            .create()
+            .await;
+
+        app.get("/studies")
+            .by_user(user.as_ref())
+            .add_query_param("project_id", project_id + 1000)
+            .await
+            .assert_status_not_found();
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
