@@ -1,7 +1,7 @@
 import type { STDCM_REQUEST_STATUS } from 'applications/stdcm/consts';
 import type {
   GeoJsonPoint,
-  GeoJsonLineString,
+  GeoJsonMultiLineString,
   Conflict,
   LightRollingStock,
   LightRollingStockWithLiveries,
@@ -36,7 +36,7 @@ export type StdcmResponse = StdcmPathNotFound | StdcmSuccessResponse;
 
 export type StdcmPathNotFoundOutput = StdcmPathNotFound & {
   /** Geometry of the partial path reached, drawn in red on the result map */
-  partialPathGeometry?: GeoJsonLineString;
+  partialPathGeometry?: GeoJsonMultiLineString;
 };
 
 export type StdcmPathProperties = PathProperties & {

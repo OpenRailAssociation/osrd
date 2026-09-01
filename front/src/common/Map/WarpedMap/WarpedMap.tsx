@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 
 import { featureCollection } from '@turf/helpers';
-import type { Feature, FeatureCollection, LineString } from 'geojson';
+import type { Feature, FeatureCollection, MultiLineString } from 'geojson';
 import { groupBy, map, omit } from 'lodash';
 import type { LngLatBoundsLike } from 'maplibre-gl';
 import ReactMapGL, { Layer, type MapRef, Source } from 'react-map-gl/maplibre';
@@ -30,7 +30,7 @@ type WarpedMapProps = {
   // Data to display on the map (must be transformed already):
   osrdData: Partial<Record<LayerType, FeatureCollection>>;
   osmData: Record<string, FeatureCollection>;
-  itinerary?: Feature<LineString>;
+  itinerary?: Feature<MultiLineString>;
 };
 
 /**

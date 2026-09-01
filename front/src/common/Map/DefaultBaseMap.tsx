@@ -91,7 +91,7 @@ const DefaultBaseMap = ({
     // computed, the geometry alone doesn't cover all the requested path steps.
     const points = {
       coordinates: [
-        ...(geometry?.coordinates ?? []),
+        ...(geometry?.coordinates.flat() ?? []),
         ...compact(pathStepMarkers.map((step) => step.coordinates)),
       ],
       type: 'LineString' as const,
@@ -133,18 +133,12 @@ const DefaultBaseMap = ({
         mapSettings={mapSettings}
         highlightedArea={highlightedArea}
       >
-        {geometry?.coordinates.map((coordinates, idx) => (
-          <ItineraryLayer
-            key={`default-base-map-itinerary-layer-${idx}`}
-            layerOrder={LAYER_GROUPS_ORDER[LAYERS.PATH.GROUP]}
-            geometry={{
-              coordinates,
-              type: 'LineString',
-            }}
-            isFeasible={isFeasible}
-            showStdcmAssets
-          />
-        ))}
+        <ItineraryLayer
+          layerOrder={LAYER_GROUPS_ORDER[LAYERS.PATH.GROUP]}
+          geometry={geometry}
+          isFeasible={isFeasible}
+          showStdcmAssets
+        />
 
         {pathStepMarkers?.map((marker, index) => (
           <Fragment key={marker.id}>

@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 
 import bbox from '@turf/bbox';
-import { lineString } from '@turf/helpers';
+import { lineString, multiLineString } from '@turf/helpers';
 import length from '@turf/length';
-import type { Feature, FeatureCollection, LineString } from 'geojson';
+import type { Feature, FeatureCollection, LineString, MultiLineString } from 'geojson';
 import { clamp, first, isEmpty, isNil, last, mapValues, omitBy } from 'lodash';
 import type { LngLatBoundsLike } from 'maplibre-gl';
 import { PiLinkBold, PiLinkBreakBold } from 'react-icons/pi';
@@ -156,15 +156,15 @@ const SimulationWarpedMap = ({
     ] as LngLatBoundsLike;
   }, [chart, state]);
 
-  const itineraryState: Feature<LineString>[] | null = useMemo(() => {
-    if (pathGeometry) return pathGeometry.coordinates.map((coordinates) => lineString(coordinates));
+  const itineraryState: Feature<MultiLineString> | null = useMemo(() => {
+    if (pathGeometry) return multiLineString(pathGeometry.coordinates);
     return null;
   }, [pathGeometry]);
 
   const warpedItinerary = useMemo(() => {
     if (itineraryState && state.type === 'dataLoaded')
       // we don't clip the path
-      return itineraryState.map((i) => state.transform(i, false) || undefined);
+      return state.transform(itineraryState, false) || undefined;
     return undefined;
   }, [itineraryState, state]);
 
@@ -239,17 +239,14 @@ const SimulationWarpedMap = ({
               borderRadius: 4,
             }}
           >
-            {warpedItinerary?.map((wI, idx) => (
-              <WarpedMap
-                key={`simulation-warped-map-${idx}`}
-                osrdLayers={layers}
-                bbox={state.warpedBBox}
-                osrdData={state.osrd}
-                osmData={state.osm}
-                itinerary={wI}
-                boundingBox={mode === 'auto' ? syncedBoundingBox : undefined}
-              />
-            ))}
+            <WarpedMap
+              osrdLayers={layers}
+              bbox={state.warpedBBox}
+              osrdData={state.osrd}
+              osmData={state.osm}
+              itinerary={warpedItinerary}
+              boundingBox={mode === 'auto' ? syncedBoundingBox : undefined}
+            />
             <div className="buttons">
               <button
                 type="button"

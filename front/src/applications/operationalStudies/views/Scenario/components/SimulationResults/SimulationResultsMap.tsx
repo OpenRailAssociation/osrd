@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
 import bbox from '@turf/bbox';
-import { lineString } from '@turf/helpers';
+import { multiLineString } from '@turf/helpers';
 import { compact } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import type { MapRef } from 'react-map-gl/maplibre';
@@ -65,9 +65,7 @@ const SimulationResultMap = ({
   const mapRef = React.useRef<MapRef>(null);
 
   const geojsonPath = useMemo(
-    () =>
-      pathProperties &&
-      pathProperties.geometry.coordinates.map((coordinates) => lineString(coordinates)),
+    () => pathProperties && multiLineString(pathProperties.geometry.coordinates),
     [pathProperties]
   );
 
@@ -232,12 +230,7 @@ const SimulationResultMap = ({
 
   useEffect(() => {
     if (geojsonPath) {
-      const allLinesCoordinates = geojsonPath.map((marker) => marker.geometry.coordinates).flat();
-      const box = bbox({
-        type: 'MultiPoint',
-        coordinates: allLinesCoordinates,
-      });
-      const newViewport = computeBBoxViewport(box, viewport);
+      const newViewport = computeBBoxViewport(bbox(geojsonPath), viewport);
       updateViewportChange(newViewport);
     } else if (mapMarkers.length > 0) {
       const allMarkersCoordinates = mapMarkers.map((marker) => marker.coordinates);
@@ -280,14 +273,9 @@ const SimulationResultMap = ({
         updatePartialViewPort={updateViewportChange}
         mapSettings={mapSettings}
       >
-        {geojsonPath &&
-          geojsonPath.map((g, idx) => (
-            <Itinerary
-              key={`simulation-results-map-itinerary-${idx}`}
-              geojsonPath={g}
-              layerOrder={LAYER_GROUPS_ORDER[LAYERS.PATH.GROUP]}
-            />
-          ))}
+        {geojsonPath && (
+          <Itinerary geojsonPath={geojsonPath} layerOrder={LAYER_GROUPS_ORDER[LAYERS.PATH.GROUP]} />
+        )}
 
         {pathSteps && mapMarkers.map((marker) => <PathStepMarker key={marker.id} {...marker} />)}
       </BaseMap>

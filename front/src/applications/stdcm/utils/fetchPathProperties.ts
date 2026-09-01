@@ -67,18 +67,11 @@ const fetchPathProperties = async (
       },
     }));
 
-    const suggestedOperationalPoints: SuggestedOP[] = result.geometry.coordinates
-      .map((coordinates) =>
-        formatSuggestedOperationalPoints(
-          operationalPointsWithMetadata,
-          {
-            coordinates,
-            type: 'LineString',
-          },
-          pathfinding_result.length
-        )
-      )
-      .flat();
+    const suggestedOperationalPoints: SuggestedOP[] = formatSuggestedOperationalPoints(
+      operationalPointsWithMetadata,
+      result.geometry,
+      pathfinding_result.length
+    );
 
     return {
       manchetteOperationalPoints: operationalPointsWithUniqueIds,

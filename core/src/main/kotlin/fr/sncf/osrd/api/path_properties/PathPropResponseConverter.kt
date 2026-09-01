@@ -56,9 +56,7 @@ private fun makeGeographic(path: TrainPath): RJSMultiLineString {
             path.getBacktrackLocations() +
             listOf(path.getLength())
 
-    for (i in 0 until boundaries.size - 1) {
-        val from = boundaries[i]
-        val to = boundaries[i + 1]
+    for ((from, to) in boundaries.zipWithNext()) {
         val segment = path.subPath(from, to).getGeo()
         val segmentCoord = ArrayList<List<Double>>()
         for (p in segment.getPoints()) segmentCoord.add(listOf(p.lon, p.lat))
