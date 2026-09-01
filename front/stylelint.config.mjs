@@ -25,7 +25,6 @@ export default {
     'scss/no-global-function-names': null,
     'scss/operator-no-newline-after': null,
     'selector-class-pattern': null,
-    'selector-pseudo-element-colon-notation': null,
     'shorthand-property-no-redundant-values': null,
   },
 };

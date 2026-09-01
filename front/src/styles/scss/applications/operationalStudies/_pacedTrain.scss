@@ -1,7 +1,7 @@
 .paced-train {
   @mixin right-side-status-indicator {
     .warning {
-      &:before {
+      &::before {
         content: '';
         position: absolute;
         top: 24px;
@@ -16,7 +16,7 @@
 
     .warning-invalid,
     .invalid {
-      &:before {
+      &::before {
         background-color: var(--error60);
       }
     }

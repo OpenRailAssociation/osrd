@@ -181,7 +181,7 @@
   height: 1px;
   background-color: transparent;
 
-  &:before {
+  &::before {
     content: '';
     position: absolute;
     bottom: 25%;

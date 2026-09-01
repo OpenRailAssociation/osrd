@@ -30,7 +30,7 @@
     align-items: center;
 
     &.warning {
-      &:before {
+      &::before {
         content: '';
         position: absolute;
         top: 50%;
@@ -42,13 +42,13 @@
       }
 
       &.not-honored {
-        &:before {
+        &::before {
           background-color: var(--warning30);
         }
       }
 
       &.invalid {
-        &:before {
+        &::before {
           background-color: var(--error60);
         }
       }

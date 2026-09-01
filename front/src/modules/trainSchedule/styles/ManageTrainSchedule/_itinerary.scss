@@ -9,7 +9,7 @@
       outline: none !important;
     }
 
-    &:before {
+    &::before {
       content: '';
       position: absolute;
       top: 25%;
@@ -20,7 +20,7 @@
       border-top: 2px solid gray;
     }
 
-    &:after {
+    &::after {
       content: '';
       position: absolute;
       bottom: 25%;
