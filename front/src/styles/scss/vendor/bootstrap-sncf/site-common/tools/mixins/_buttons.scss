@@ -38,8 +38,8 @@
     border-color: $btn-disabled-border-color;
   }
 
-  &:not(:disabled):not(.disabled):active,
-  &:not(:disabled):not(.disabled).active,
+  &:not(:disabled, .disabled):active,
+  &:not(:disabled, .disabled).active,
   .show > &.dropdown-toggle {
     color: $active-color;
     background-color: $active-background;
@@ -80,8 +80,8 @@
     background-color: transparent;
   }
 
-  &:not(:disabled):not(.disabled):active,
-  &:not(:disabled):not(.disabled).active,
+  &:not(:disabled, .disabled):active,
+  &:not(:disabled, .disabled).active,
   .show > &.dropdown-toggle {
     color: color-yiq($active-background);
     background-color: $active-background;

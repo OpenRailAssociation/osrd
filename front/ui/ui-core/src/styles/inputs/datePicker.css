@@ -215,13 +215,13 @@
                       border-radius: 0.375rem;
                     }
 
-                    &:not(.within-selected-slot):not(.past):hover {
+                    &:not(.within-selected-slot, .past):hover {
                       cursor: pointer;
 
                       @apply bg-white-100;
                     }
 
-                    &:not(.within-selected-slot):not(.past):active {
+                    &:not(.within-selected-slot, .past):active {
                       @apply bg-primary-60;
 
                       .day {

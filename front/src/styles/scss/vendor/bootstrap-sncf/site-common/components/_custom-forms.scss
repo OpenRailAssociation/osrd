@@ -128,7 +128,7 @@
   align-items: center;
 
   .custom-control-input {
-    &:not(:disabled):not(.disabled):indeterminate {
+    &:not(:disabled, .disabled):indeterminate {
       ~ .custom-control-label {
         color: $custom-control-checked-color;
 
