@@ -1,4 +1,3 @@
-use core_client::AsCoreRequest;
 use core_client::CoreClient;
 use core_client::pathfinding::TrainPath;
 use core_client::signal_projection::SignalUpdate;
@@ -6,14 +5,12 @@ use core_client::signal_projection::SignalUpdatesRequest;
 use core_client::signal_projection::TrainSimulation;
 use core_client::simulation::SignalCriticalPosition;
 use core_client::simulation::ZoneUpdate;
+use core_task::Task;
 use database::DbConnection;
 use schemas::train_schedule::TrainScheduleLike;
 use serde::Deserialize;
-use std::collections::HashMap;
 use std::collections::HashSet;
-use std::collections::hash_map::DefaultHasher;
 use std::hash::Hash;
-use std::hash::Hasher;
 use std::sync::Arc;
 use utoipa::ToSchema;
 
@@ -32,7 +29,7 @@ pub struct TrainBlockOccupancyDetails {
     pub simulation_end_time: u64,
 }
 
-async fn extract_block_occupancy_details<T: TrainScheduleLike>(
+fn extract_block_occupancy_details<T: TrainScheduleLike>(
     simulations: Vec<Arc<simulation::Response>>,
     train_schedules: &[T],
 ) -> Vec<Option<TrainBlockOccupancyDetails>> {
@@ -64,25 +61,6 @@ async fn extract_block_occupancy_details<T: TrainScheduleLike>(
             })
         })
         .collect()
-}
-
-impl TrainBlockOccupancyDetails {
-    // Compute hash input of the occupancy block of a train schedule on a path
-    pub fn compute_occupancy_block_hash_with_versioning(
-        &self,
-        infra_id: i64,
-        infra_version: i64,
-        path: &TrainPath,
-        app_version: Option<&str>,
-    ) -> String {
-        let osrd_version = app_version.unwrap_or_default();
-        let mut hasher = DefaultHasher::new();
-        self.signal_critical_positions.hash(&mut hasher);
-        self.zone_updates.hash(&mut hasher);
-        path.hash(&mut hasher);
-        let hash_simulation_input = hasher.finish();
-        format!("occupancy_block_{osrd_version}.{infra_id}.{infra_version}.{hash_simulation_input}")
-    }
 }
 
 #[derive(Debug, Deserialize, ToSchema)]
@@ -118,7 +96,7 @@ pub(super) async fn compute_batch_signal_updates<'a>(
             .collect(),
     };
 
-    let response = request.fetch(&core).await?;
+    let response = request.compute(core).await?;
 
     Ok(response.signal_updates)
 }
@@ -134,8 +112,6 @@ pub(super) async fn compute_occupancy_blocks<T: TrainScheduleLike>(
     electrical_profile_set_id: Option<i64>,
     app_version: Option<&str>,
 ) -> Result<Vec<Arc<OccupancyBlocks>>> {
-    let mut valkey_conn = valkey_client.get_connection().await?;
-
     // 1. Get train simulations
     let simulations = train_simulation_ordered_batch(
         conn,
@@ -152,63 +128,23 @@ pub(super) async fn compute_occupancy_blocks<T: TrainScheduleLike>(
     .collect();
 
     // 2. Extracts train simulation details and computes unique hashes for projected train paths.
-    let trains_details = extract_block_occupancy_details(simulations, trains_schedules).await;
+    let trains_details = extract_block_occupancy_details(simulations, trains_schedules);
 
-    let train_hashes_to_idx: HashMap<String, Vec<usize>> = trains_details
+    // train_details might contain None. We will send to core only valid trains_details
+    // This Vec allows to associate the train with the position in the array sent to core
+    let train_index_to_core_request_index: Vec<_> = trains_details
         .iter()
         .enumerate()
-        .filter_map(|(index, train_details)| {
-            train_details.as_ref().map(|train_details| {
-                (
-                    index,
-                    train_details.compute_occupancy_block_hash_with_versioning(
-                        infra.id,
-                        infra.version,
-                        &path,
-                        app_version,
-                    ),
-                )
-            })
-        })
-        .fold(HashMap::new(), |mut map, (index, hash)| {
-            map.entry(hash).or_default().push(index);
-            map
-        });
-
-    let train_hashes: Vec<_> = train_hashes_to_idx.keys().cloned().collect();
-
-    // 3. Retrieve cached occupancy blocks
-    let cached_blocks = valkey_conn
-        .json_get_bulk::<_, OccupancyBlocks>(&train_hashes)
-        .await?;
-
-    let mut occupancy_blocks_result = vec![Arc::default(); trains_schedules.len()];
-    let mut occupancy_block_requests = vec![];
-    for (hash, occupancy_block) in train_hashes.into_iter().zip(cached_blocks) {
-        if let Some(occupancy_block) = occupancy_block {
-            let indexes = &train_hashes_to_idx[&hash];
-            let occupancy_block = Arc::new(occupancy_block);
-            for index in indexes {
-                occupancy_blocks_result[*index] = occupancy_block.clone();
-            }
-        } else {
-            let index = train_hashes_to_idx[&hash]
-                .first()
-                .expect("indexes should not be empty");
-            occupancy_block_requests.push((
-                hash,
-                trains_details[*index]
-                    .clone()
-                    .expect("train_details must exist if hash is computed"),
-            ));
-        }
-    }
-
-    // 4. Compute space time curves and signal updates for all miss cache
-    let train_details_to_requests: Vec<_> = occupancy_block_requests
-        .iter()
-        .map(|(_, train_details)| train_details.clone())
+        .flat_map(|(idx, details)| details.as_ref().map(|_| idx))
         .collect();
+
+    // 3. Compute space time curves and signal updates
+    // The results are cached through core_task
+    let train_details_to_requests: Vec<_> = trains_details
+        .into_iter()
+        .flat_map(|train_details| train_details)
+        .collect();
+
     let signal_updates = compute_batch_signal_updates(
         core_client.clone(),
         infra,
@@ -217,21 +153,11 @@ pub(super) async fn compute_occupancy_blocks<T: TrainScheduleLike>(
     )
     .await?;
 
-    // 5. Store block occupancies in the cache
-    let occupancy_blocks: Vec<_> = occupancy_block_requests
-        .iter()
-        .map(|(hash, _)| hash.to_string())
-        .zip(signal_updates.clone())
-        .collect();
-    valkey_conn.json_set_bulk(occupancy_blocks.clone()).await?;
-
-    // 6. Build block occupancy response
-    for (hash, occupancy_blocks) in occupancy_blocks.into_iter() {
-        let indexes = &train_hashes_to_idx[&hash];
-        let occupancy_blocks = Arc::new(occupancy_blocks);
-        for index in indexes {
-            occupancy_blocks_result[*index] = occupancy_blocks.clone();
-        }
+    // 4. Build block occupancy response
+    let mut occupancy_blocks_result = vec![Arc::default(); trains_schedules.len()];
+    for (index, occupancy_blocks) in signal_updates.into_iter().enumerate() {
+        occupancy_blocks_result[train_index_to_core_request_index[index]] =
+            Arc::new(occupancy_blocks);
     }
 
     Ok(occupancy_blocks_result)
