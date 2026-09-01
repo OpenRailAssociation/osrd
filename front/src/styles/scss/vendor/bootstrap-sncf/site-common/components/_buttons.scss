@@ -42,12 +42,12 @@
   }
 
   // Opinionated: add "hand" cursor to non-disabled .btn elements
-  &:not(:disabled):not(.disabled) {
+  &:not(:disabled, .disabled) {
     cursor: pointer;
   }
 
-  &:not(:disabled):not(.disabled):active,
-  &:not(:disabled):not(.disabled).active {
+  &:not(:disabled, .disabled):active,
+  &:not(:disabled, .disabled).active {
     background-image: none;
 
     @include box-shadow($btn-active-box-shadow);
@@ -233,7 +233,7 @@ input[type='button'] {
     border-color: $btn-disabled-border-color;
   }
 
-  &:not(:disabled):not(.disabled).box-shadow {
+  &:not(:disabled, .disabled).box-shadow {
     box-shadow: 0 4px 10px 0 rgba(0, 0, 0, 0.2);
 
     @include hover {
@@ -248,7 +248,7 @@ input[type='button'] {
       color: nth($value, 3);
       background-color: nth($value, 1);
 
-      &:not(:disabled):not(.disabled) {
+      &:not(:disabled, .disabled) {
         &:hover,
         &:focus,
         &:active {
@@ -346,7 +346,7 @@ input[type='button'] {
 .btn-color-gray {
   color: $btn-color-gray;
 
-  &:not(:disabled):not(.disabled) {
+  &:not(:disabled, .disabled) {
     @include hover-focus-active {
       color: theme-color('primary');
     }
@@ -357,7 +357,7 @@ input[type='button'] {
   color: $carbon;
   background-color: color('white');
 
-  &:not(:disabled):not(.disabled) {
+  &:not(:disabled, .disabled) {
     @include hover-focus-active {
       background-color: #b9b9b9;
     }

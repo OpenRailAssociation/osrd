@@ -77,7 +77,7 @@
   .actions-box {
     background: white;
 
-    button:not(.active):not(:disabled) {
+    button:not(.active, :disabled) {
       border: 3px solid $blue;
     }
 

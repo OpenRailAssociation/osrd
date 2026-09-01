@@ -145,7 +145,8 @@
         }
 
         &:has(.op-suggestion-secondary-code:hover)
-          .op-suggestion-secondary-code:first-child:not(:hover):not(
+          .op-suggestion-secondary-code:first-child:not(
+            :hover,
             .op-suggestion-secondary-code--best
           ) {
           background-color: rgba(227, 237, 252, 1);
