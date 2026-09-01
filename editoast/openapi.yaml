@@ -5930,6 +5930,35 @@ components:
           description: |-
             The path offset in mm of each path item given as input of the pathfinding
             The first value is always `0` (beginning of the path) and the last one is always equal to the `length` of the path in mm
+    CorePropertyGeometryProjection:
+      type: object
+      description: |-
+        Projection to map topological offset to geometric offset (or reversed).
+        topo_offsets and geom_offsets are the same size
+      required:
+      - topo_offsets
+      - geom_offsets
+      properties:
+        geom_offsets:
+          type: array
+          items:
+            type: integer
+            format: int64
+            minimum: 0
+          description: |-
+            Geometric offsets in millimeters.
+            Starts with 0 and is increasing.
+          minItems: 2
+        topo_offsets:
+          type: array
+          items:
+            type: integer
+            format: int64
+            minimum: 0
+          description: |-
+            Topological offsets in millimeters.
+            Starts with 0 and is increasing.
+          minItems: 2
     CoreReportTrain:
       type: object
       required:
@@ -12883,6 +12912,7 @@ components:
       - geometry
       - operational_points
       - zones
+      - geom_projection
       properties:
         curves:
           oneOf:
@@ -12967,6 +12997,9 @@ components:
                         - non_electrified
                 description: List of `n+1` values associated to the ranges
           description: Electrification modes and neutral section along the path
+        geom_projection:
+          $ref: '#/components/schemas/CorePropertyGeometryProjection'
+          description: Curve to map topologic offset to geometric offset on the path
         geometry:
           $ref: '#/components/schemas/GeoJsonLineString'
           description: Geometry of the path

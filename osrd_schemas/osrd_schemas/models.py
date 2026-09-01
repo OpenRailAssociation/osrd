@@ -234,6 +234,32 @@ class PathItemPosition(RootModel[int]):
     root: Annotated[int, Field(ge=0)]
 
 
+class GeomOffset(RootModel[int]):
+    root: Annotated[int, Field(ge=0)]
+
+
+class TopoOffset(RootModel[int]):
+    root: Annotated[int, Field(ge=0)]
+
+
+class CorePropertyGeometryProjection(BaseModel):
+    """
+    Projection to map topological offset to geometric offset (or reversed).
+    topo_offsets and geom_offsets are the same size
+    """
+
+    geom_offsets: Annotated[list[GeomOffset], Field(min_length=2)]
+    """
+    Geometric offsets in millimeters.
+    Starts with 0 and is increasing.
+    """
+    topo_offsets: Annotated[list[TopoOffset], Field(min_length=2)]
+    """
+    Topological offsets in millimeters.
+    Starts with 0 and is increasing.
+    """
+
+
 class PathItemTime(RootModel[int]):
     root: Annotated[int, Field(ge=0)]
 
@@ -7103,6 +7129,10 @@ class PathProperties(BaseModel):
     electrifications: Electrifications
     """
     Electrification modes and neutral section along the path
+    """
+    geom_projection: CorePropertyGeometryProjection
+    """
+    Curve to map topologic offset to geometric offset on the path
     """
     geometry: GeoJsonLineString
     """
