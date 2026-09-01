@@ -201,8 +201,28 @@ jobs:
             exit 0
           fi
 
+          is_github_synthetic_merge() {
+            local hash="$1"
+
+            local committer
+            local subject
+
+            committer="$(git show --no-patch --format='%cn <%ce>' "$hash")"
+            subject="$(git show --no-patch --format='%s' "$hash")"
+
+            [[ "$committer" == "GitHub <noreply@github.com>" ]] &&
+              [[ "$subject" =~ ^Merge\ [0-9a-f]{40}\ into\ [0-9a-f]{40}$ ]]
+          }
+
           commit_titles() {
-            git log --format=%s origin/"$BASE"..HEAD --skip=1
+            git log --format=%H origin/"$BASE"..HEAD |
+              while read -r hash; do
+                if is_github_synthetic_merge "$hash"; then
+                  continue
+                fi
+
+                git show --no-patch --format=%s "$hash"
+              done
           }
 
           commit_titles | TERM=xterm-color .github/scripts/check-commit-titles.sh
