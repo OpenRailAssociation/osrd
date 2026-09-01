@@ -1,9 +1,11 @@
 /* custom forms
    ========================================================================== */
 
-// Checkboxes and radios
-//
-// Base class takes care of all the key behavioral aspects.
+/*
+ * Checkboxes and radios
+ *
+ * Base class takes care of all the key behavioral aspects.
+ */
 
 .custom-control-input {
   &:not(:disabled):checked,
@@ -54,9 +56,11 @@
   /* stylelint-enable declaration-no-important */
 }
 
-// Custom control indicators
-//
-// Build the custom controls out of psuedo-elements.
+/*
+ * Custom control indicators
+ *
+ * Build the custom controls out of psuedo-elements.
+ */
 
 .custom-control-label {
   padding: 0;
@@ -122,9 +126,11 @@
   }
 }
 
-// Checkboxes
-//
-// Tweak just a few things for checkboxes.
+/*
+ * Checkboxes
+ *
+ * Tweak just a few things for checkboxes.
+ */
 
 .custom-checkbox {
   display: flex;
@@ -214,9 +220,11 @@
   }
 }
 
-// Switch
-//
-// Binary checkboxe.
+/*
+ * Switch
+ *
+ * Binary checkboxes.
+ */
 
 .switch-control {
   position: relative;
@@ -292,9 +300,11 @@
   // stylelint-enable selector-no-qualifying-type
 }
 
-// Options
-//
-// Radios options
+/*
+ * Options
+ *
+ * Radios options
+ */
 
 .options-control {
   display: inline-flex;
