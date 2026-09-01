@@ -70,6 +70,13 @@ const compressedQuery = async <Response>(
 //type Foo = typeof generatedEditoastApi.endpoints.getTimetableByIdTrainSchedules.Types.ResultType;
 //const foo: Foo = 42;
 
+//type Endpoints = (typeof osrdEditoastApi)['endpoints'];
+type Endpoints = {
+  getTimetableByIdTrainSchedules: (typeof generatedEditoastApi)['endpoints']['getTimetableByIdTrainSchedules'],
+  getInfra: (typeof generatedEditoastApi)['endpoints']['getInfra'],
+};
+
+type PaginatedEndpointKey = 'getTimetableByIdTrainSchedules' | 'getInfra';
 type PaginatedEndpoint =
   | typeof generatedEditoastApi.endpoints.getTimetableByIdTrainSchedules
   | typeof generatedEditoastApi.endpoints.getInfra;
@@ -80,21 +87,32 @@ type PaginatedEndpoint =
 
 //const a: number = foo/*<typeof generatedEditoastApi.endpoints.getTimetableByIdTrainSchedules>*/(generatedEditoastApi.endpoints.getTimetableByIdTrainSchedules);
 
-const fetchAllPages = async <Endpoint extends PaginatedEndpoint>(
-  endpoint: Endpoint,
-  args: Endpoint['Types']['QueryArg'],
+type PaginatedEndpointArg<E> = E extends { Types: { QueryArg: infer A } }
+  ? (A extends { page?: number } ? A : never)
+  : never;
+type PaginatedEndpointResult<E> = E extends { Types: { ResultType: { results: (infer R)[] } } }
+  ? R
+  : never;
+type Mdr = PaginatedEndpointResult<PaginatedEndpoint>;
+
+const fetchAllPages = async <
+  E extends PaginatedEndpoint,
+  I extends PaginatedEndpointArg<E>,
+  R extends PaginatedEndpointResult<E>
+>(
+  endpoint: E,
+  //args: PaginatedEndpointArg<'getTimetableByIdTrainSchedules'>,
+  args: I,
   dispatch: ThunkDispatch<unknown, unknown, Action>
-): Promise<Endpoint['Types']['ResultType']['results']> => {
+): Promise<PaginatedEndpointResult<'getTimetableByIdTrainSchedules' | 'getInfra'>[]> => {
   let page = 1;
   let reachEnd = false;
-  const results: Endpoint['Types']['ResultType']['results'] = [];
+  const results: R[] = [];
   while (!reachEnd) {
     const data = await dispatch(
       endpoint.initiate(
-        {
-          ...args,
-          page,
-        },
+        //{ ...args, page },
+        Object.assign(args, { page }),
         { subscribe: false }
       )
     ).unwrap();
