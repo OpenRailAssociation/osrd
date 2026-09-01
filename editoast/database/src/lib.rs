@@ -1,4 +1,5 @@
 pub mod db_connection_pool;
+mod postgres_rustls;
 pub mod tables;
 mod tables_patch;
 

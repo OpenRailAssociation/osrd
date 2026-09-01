@@ -4,6 +4,7 @@ use std::ops::Deref;
 use std::ops::DerefMut;
 use std::sync::Arc;
 
+use crate::postgres_rustls;
 use diesel::ConnectionError;
 use diesel::ConnectionResult;
 use diesel::sql_query;
@@ -17,11 +18,10 @@ use diesel_async::pooled_connection::deadpool::Pool;
 use futures::Future;
 use futures::future::BoxFuture;
 use futures_util::FutureExt as _;
-use openssl::ssl::SslConnector;
-use openssl::ssl::SslMethod;
-use openssl::ssl::SslVerifyMode;
+use tokio::sync::OnceCell;
 use tokio::sync::OwnedRwLockWriteGuard;
 use tokio::sync::RwLock;
+use tokio_rustls::rustls;
 use tracing::Instrument as _;
 use tracing::debug_span;
 use tracing::trace;
@@ -443,11 +443,43 @@ fn create_connection_pool(
     Ok(Pool::builder(manager).max_size(max_size).build()?)
 }
 
+/// Get TLS root certificates necessary to verify server certificates.
+///
+/// This function fetches root certificates from the OS. Another option would be to bundle them in
+/// the binary, but it would mean we can't go through corporate proxies using custom root
+/// certificates. More pros and cons from one of rustls' maintainers here:
+/// https://github.com/rust-lang/rustup/issues/3400#issuecomment-1683762630
+async fn root_certificates() -> Arc<rustls::RootCertStore> {
+    static ROOT_CERTIFICATES: OnceCell<Arc<rustls::RootCertStore>> = OnceCell::const_new();
+
+    ROOT_CERTIFICATES
+        .get_or_init(async || {
+            // use spawn_blocking because load_native_certs may read from disk
+            // Panic on error, so that other get_or_init attempts can be made
+            tokio::task::spawn_blocking(|| {
+                let mut roots = rustls::RootCertStore::empty();
+                for cert in
+                    rustls_native_certs::load_native_certs().expect("could not load platform certs")
+                {
+                    roots.add(cert).unwrap();
+                }
+                Arc::new(roots)
+            })
+            .await
+            .unwrap()
+        })
+        .await
+        .clone()
+}
+
 fn establish_connection(config: &str) -> BoxFuture<'_, ConnectionResult<AsyncPgConnection>> {
     let fut = async {
-        let mut connector_builder = SslConnector::builder(SslMethod::tls()).unwrap();
-        connector_builder.set_verify(SslVerifyMode::NONE);
-        let tls = postgres_openssl::MakeTlsConnector::new(connector_builder.build());
+        let tls_config = Arc::new(
+            rustls::ClientConfig::builder()
+                .with_root_certificates(root_certificates().await)
+                .with_no_client_auth(),
+        );
+        let tls = postgres_rustls::MakeTlsConnector::new(tls_config);
         let (client, conn) = tokio_postgres::connect(config, tls)
             .await
             .map_err(|e| ConnectionError::BadConnection(e.to_string()))?;
