@@ -1,9 +1,9 @@
 @use '../applications/operationalStudies/operationalStudies';
-@use '../applications/rollingStockEditor/styles.scss';
+@use '../applications/rollingStockEditor/styles';
 @use '../applications/searchJourney/searchJourney';
 @use '../applications/stdcm/styles/stdcm';
-@use '../modules/modules.scss';
-@use '../common/common.scss';
+@use '../modules/modules';
+@use '../common/common';
 @use 'scss/fonts';
 @use 'scss/variables';
 @use 'scss/overrideBootstrapSNCF';
@@ -13,7 +13,7 @@
 @use 'scss/common/components';
 @use 'scss/applications/editor/editor';
 @use 'scss/applications/operationalStudies' as operationalStudies2;
-@use 'scss/_uiManchette.scss';
-@use 'scss/uiSpeedSpaceChart.scss';
+@use 'scss/uiManchette';
+@use 'scss/uiSpeedSpaceChart';
 @use 'scss/uiSpaceTimeChart';
-@use 'scss/_uiCoreIntegration.scss';
+@use 'scss/uiCoreIntegration';
