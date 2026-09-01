@@ -103,6 +103,10 @@ async fn run() -> anyhow::Result<()> {
         client::TelemetryKind::Opentelemetry => Some(client.telemetry_config.clone().into()),
     };
 
+    let enable_project_permissions = std::env::var("ENABLE_PROJECT_PERMISSIONS")
+        .unwrap_or_else(|_| "false".to_string())
+        == "true";
+
     let tracing_config = TracingConfig {
         stream: EditoastMode::from_client(&client).into(),
         telemetry,
@@ -138,7 +142,15 @@ async fn run() -> anyhow::Result<()> {
 
     match client.command {
         Commands::Runserver(args) => {
-            runserver(*args, pg_config, valkey_config, openfga_config, app_version).await
+            runserver(
+                *args,
+                pg_config,
+                valkey_config,
+                openfga_config,
+                app_version,
+                enable_project_permissions,
+            )
+            .await
         }
         Commands::ImportRollingStock(args) => import_rolling_stock(args, db_pool.into()).await,
         Commands::ImportTowedRollingStock(args) => {

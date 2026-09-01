@@ -89,6 +89,7 @@ pub(crate) struct TestAppBuilder {
     enable_telemetry: bool,
     root_url: Option<Url>,
     trains_traffic: TrainsTrafficPool,
+    enable_project_permissions: bool,
 }
 
 impl TestAppBuilder {
@@ -102,6 +103,7 @@ impl TestAppBuilder {
             enable_telemetry: true,
             root_url: None,
             trains_traffic: TrainsTrafficPool::new(),
+            enable_project_permissions: false,
         }
     }
 
@@ -138,6 +140,12 @@ impl TestAppBuilder {
         self
     }
 
+    #[expect(unused)]
+    pub fn enable_project_permissions(mut self) -> Self {
+        self.enable_project_permissions = true;
+        self
+    }
+
     pub fn build(self) -> TestApp {
         // Generate test server config
         let config = ServerConfig {
@@ -170,6 +178,7 @@ impl TestAppBuilder {
             },
             trains_traffic: Arc::new(RwLock::new(self.trains_traffic)),
             s3_config: None,
+            enable_project_permissions: self.enable_project_permissions,
         };
 
         // Setup tracing

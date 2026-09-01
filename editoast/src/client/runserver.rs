@@ -97,6 +97,7 @@ pub async fn runserver(
     valkey_config: ValkeyConfig,
     openfga: OpenfgaConfig,
     app_version: Option<String>,
+    enable_project_permissions: bool,
 ) -> anyhow::Result<()> {
     let trains_traffic = Arc::new(RwLock::new(TrainsTrafficPool::new()));
     if let Some(traffic_file) = trains_traffic_path.clone() {
@@ -125,6 +126,7 @@ pub async fn runserver(
         app_version,
         trains_traffic,
         s3_config: build_s3_config(s3),
+        enable_project_permissions,
     };
 
     let server = views::Server::new(config).await?;

@@ -87,6 +87,7 @@ pub struct ServerConfig {
     pub app_version: Option<String>,
     pub s3_config: Option<S3Config>,
     pub trains_traffic: Arc<RwLock<timetable::similar_trains::trains_traffic::TrainsTrafficPool>>,
+    pub enable_project_permissions: bool,
 }
 
 pub struct Server {
