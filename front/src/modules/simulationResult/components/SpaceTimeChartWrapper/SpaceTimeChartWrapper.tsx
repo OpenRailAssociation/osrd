@@ -419,10 +419,7 @@ const SpaceTimeChartWrapper = ({
 
       // When dragging a paced train, mark all compliant occupancy zones as
       // being dragged
-      if (
-        isOccurrenceId(trainId) &&
-        extractTrainScheduleIdFromOccurrenceId(trainId) !== draggingOccupancyZoneBaseTrainId
-      ) {
+      if (extractTrainScheduleIdFromTrainId(trainId) !== draggingOccupancyZoneBaseTrainId) {
         return false;
       }
       const { exception } = findTrainScheduleAndException(trainSchedulesWithDetails ?? [], trainId);
