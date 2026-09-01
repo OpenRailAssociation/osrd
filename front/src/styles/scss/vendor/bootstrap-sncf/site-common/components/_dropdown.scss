@@ -1,7 +1,6 @@
 /* dropdown
    ========================================================================== */
 
-// stylelint-disable declaration-no-important
 .dropdown-toggle {
   display: inline-flex;
   align-items: center;
@@ -188,7 +187,6 @@
     right: rem(17px);
   }
 }
-// stylelint-enable declaration-no-important
 
 .dropdown-header {
   font-size: $font-size-xs;
@@ -246,7 +244,6 @@
   }
 
   // The dropdown menu
-  // stylelint-disable declaration-no-important
   .dropdown-menu:not(.dropdown-menu-mastheader) {
     .dropdown &,
     .dropup & {
@@ -318,7 +315,6 @@
     right: 0 !important;
     left: auto !important;
   }
-  // stylelint-enable declaration-no-important
 
   .dropdown-item {
     .dropdown &,

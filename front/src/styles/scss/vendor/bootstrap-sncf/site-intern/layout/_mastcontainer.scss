@@ -1,7 +1,6 @@
 /* mastcontainer
    ========================================================================== */
 
-/* stylelint-disable selector-max-class */
 @include media-breakpoint-down(sm) {
   .mastcontainer {
     .mastheader + & {
@@ -87,4 +86,3 @@
     }
   }
 }
-/* stylelint-enable selector-max-class */
