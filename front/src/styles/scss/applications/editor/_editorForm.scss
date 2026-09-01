@@ -37,6 +37,7 @@ form.rjsf {
 
   // Reset of glyphicons that are used in jsonschema-form for arrays
   .glyphicon::before {
+    /* stylelint-disable-next-line font-family-no-missing-generic-family-keyword */
     font-family: icons !important;
     font-style: normal;
     font-weight: normal !important;
