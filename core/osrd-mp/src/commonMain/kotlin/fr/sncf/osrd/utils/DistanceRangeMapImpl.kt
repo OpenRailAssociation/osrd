@@ -12,7 +12,22 @@ data class DistanceRangeMapImpl<T>(
     constructor(
         entries: Iterable<DistanceRangeMap.RangeMapEntry<T>> = emptyList()
     ) : this(MutableDistanceArrayList(), ArrayList()) {
-        putMany(entries)
+        if (!isSortedContiguous(entries.asSequence())) {
+            putMany(entries)
+            return
+        }
+        val firstEntry = entries.firstOrNull() ?: return
+        bounds.add(firstEntry.lower)
+        for (entry in entries) {
+            values.lastOrNull().let { prevValue ->
+                if (prevValue == entry.value) {
+                    bounds[bounds.size - 1] = entry.upper
+                    continue
+                }
+            }
+            bounds.add(entry.upper)
+            values.add(entry.value)
+        }
     }
 
     override fun isContinuous(): Boolean {
@@ -466,3 +481,7 @@ data class DistanceRangeMapImpl<T>(
     // This declaration is needed for the extension methods in kt-osrd-utils
     companion object
 }
+
+private fun <T> isSortedContiguous(entries: Sequence<DistanceRangeMap.RangeMapEntry<T>>): Boolean =
+    entries.all { a -> !a.isEmpty() } &&
+        entries.zipWithNext { a, b -> a.upper == b.lower }.all { it }
