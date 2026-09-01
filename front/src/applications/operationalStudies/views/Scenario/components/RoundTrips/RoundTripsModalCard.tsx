@@ -5,7 +5,6 @@ import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 import { BsXCircleFill } from 'react-icons/bs';
 
-import AnchoredMenu from 'common/AnchoredMenu';
 import type { SubCategory } from 'common/api/osrdEditoastApi';
 import type { OSRDMenuItem } from 'common/OSRDMenu';
 import OSRDMenu from 'common/OSRDMenu';
@@ -39,6 +38,7 @@ const RoundTripsModalCard = ({
   const { t } = useTranslation('operational-studies', { keyPrefix: 'main.roundTripsModal' });
   const menuRef = useRef<HTMLDivElement>(null);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
+  const popoverRef = useRef<HTMLDivElement>(null);
   const stopsRef = useRef<HTMLDivElement>(null);
   const statusRef = useRef<HTMLDivElement>(null);
 
@@ -59,6 +59,8 @@ const RoundTripsModalCard = ({
     status,
   } = pairingItem;
 
+  const closeMenu = () => popoverRef.current?.hidePopover();
+
   const getStatusIcon = (itemStatus: 'todo' | 'oneWays' | 'roundTrips') => {
     if (itemStatus === 'todo') {
       return <Square />;
@@ -67,10 +69,6 @@ const RoundTripsModalCard = ({
       return <ArrowRight />;
     }
     return <ArrowSwitch />;
-  };
-
-  const closeMenu = () => {
-    setIsMenuOpen(false);
   };
 
   const statusTooltipBody = (
@@ -124,15 +122,6 @@ const RoundTripsModalCard = ({
     return [restore];
   }, [menuItems, status]);
 
-  const menu = AnchoredMenu({
-    children: isMenuOpen && (
-      <OSRDMenu menuRef={menuRef} items={filteredMenuItems} className="round-trips-menu" />
-    ),
-    anchorRef: menuButtonRef,
-    onDismiss: closeMenu,
-    container: document.querySelector('.round-trips-modal'),
-  });
-
   const currentSubCategory = findSubCategory(subCategories, category);
 
   return (
@@ -176,16 +165,22 @@ const RoundTripsModalCard = ({
           type="button"
           data-testid="round-trips-card-menu-button"
           className="card-menu"
+          popoverTarget={`round-trips-card-menu-button-${pairingItem.id}`}
           title={t('openRoundTripsMenu')}
           disabled={isCandidate}
-          onClick={(e) => {
-            e.stopPropagation();
-            setIsMenuOpen(true);
-          }}
         >
           <KebabHorizontal />
         </button>
-        {menu}
+        <div
+          ref={popoverRef}
+          popover="auto"
+          id={`round-trips-card-menu-button-${pairingItem.id}`}
+          onToggle={(e) => setIsMenuOpen(e.newState === 'open')}
+        >
+          {isMenuOpen && (
+            <OSRDMenu menuRef={menuRef} items={filteredMenuItems} className="round-trips-menu" />
+          )}
+        </div>
       </div>
       <div className="round-trips-card-body">
         <div
