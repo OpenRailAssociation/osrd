@@ -3,7 +3,7 @@ import { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'r
 import { isEqual } from 'lodash';
 
 import { PICKING_LAYERS, LAYERS } from '../consts';
-import { rgbToHex, colorToIndex } from '../helpers/colors';
+import { colorToIndex } from '../helpers/colors';
 import getPNGBlob from '../helpers/png';
 import { getPickingScalingRatio } from '../helpers/utils';
 import type {
@@ -307,8 +307,7 @@ export function useCanvas<T extends BaseChartContextType>(
           1
         ).data;
         if (a === 255) {
-          const color = rgbToHex(r, g, b);
-          const index = colorToIndex(color);
+          const index = colorToIndex([r, g, b]);
           const element = pickingState.pickingElements[layer][index];
           newHoveredItem = {
             layer,
