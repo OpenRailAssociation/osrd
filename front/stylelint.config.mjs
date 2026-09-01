@@ -3,7 +3,6 @@ export default {
   extends: ['stylelint-config-standard-scss'],
   rules: {
     'alpha-value-notation': null,
-    'at-rule-no-vendor-prefix': null,
     'color-function-alias-notation': null,
     'color-function-notation': null,
     'color-hex-length': null,
