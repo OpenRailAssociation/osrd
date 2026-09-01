@@ -42,10 +42,13 @@ class BacktrackingTests {
                 null,
             )!!
         val runTime = firstBlockEnvelope.totalTime
+        // Backtracking to correct the speed adds a bit more than 25s to the block's envelope end
+        // time.
+        // Test success with runTime +30s.
         val occupancyGraph =
             ImmutableMultimap.of(
                 block,
-                OccupancySegment(runTime + 1, Double.POSITIVE_INFINITY, 0.meters, 1000.meters),
+                OccupancySegment(runTime + 30, Double.POSITIVE_INFINITY, 0.meters, 1000.meters),
             )
         val res =
             STDCMPathfindingBuilder()
@@ -57,6 +60,20 @@ class BacktrackingTests {
         Assertions.assertTrue(res is STDCMCompleteResult)
         val resSuccess = res as STDCMCompleteResult
         occupancyTest(resSuccess, occupancyGraph)
+        // Test failure with runTime + 25s.
+        val occupancyGraphFail =
+            ImmutableMultimap.of(
+                block,
+                OccupancySegment(runTime + 25, Double.POSITIVE_INFINITY, 0.meters, 1000.meters),
+            )
+        val resFail =
+            STDCMPathfindingBuilder()
+                .setInfra(infra.fullInfra())
+                .setStartLocations(setOf(BlockLocation(block, Offset(0.meters))))
+                .setEndLocations(setOf(BlockLocation(block, Offset(1000.meters))))
+                .setUnavailableTimes(occupancyGraphFail)
+                .run() ?: return
+        Assertions.assertTrue(resFail is STDCMPartialResult)
     }
 
     /**
@@ -70,9 +87,8 @@ class BacktrackingTests {
          */
         val infra = DummyInfra()
         val firstBlock = infra.addBlock("a", "b", 1000.meters)
-        infra.addBlock("b", "c", 10.meters)
-        infra.addBlock("c", "d", 10.meters)
-        val lastBlock = infra.addBlock("d", "e", 10.meters)
+        val secondBlock = infra.addBlock("b", "c", 10.meters)
+        val lastBlock = infra.addBlock("c", "d", 10.meters)
         val firstBlockEnvelope =
             simulateBlock(
                 infraExplorerFromBlock(
@@ -90,11 +106,51 @@ class BacktrackingTests {
                 null,
                 null,
             )!!
-        val runTime = firstBlockEnvelope.totalTime
+        val secondBlockEnvelope =
+            simulateBlock(
+                infraExplorerFromBlock(
+                    infra,
+                    infra,
+                    TestTrains.REALISTIC_FAST_TRAIN.length.meters,
+                    secondBlock,
+                ),
+                firstBlockEnvelope.endSpeed,
+                Offset(0.meters),
+                TestTrains.REALISTIC_FAST_TRAIN,
+                Comfort.STANDARD,
+                2.0,
+                null,
+                null,
+                null,
+            )!!
+        val lastBlockEnvelope =
+            simulateBlock(
+                infraExplorerFromBlock(
+                    infra,
+                    infra,
+                    TestTrains.REALISTIC_FAST_TRAIN.length.meters,
+                    lastBlock,
+                ),
+                secondBlockEnvelope.endSpeed,
+                Offset(0.meters),
+                TestTrains.REALISTIC_FAST_TRAIN,
+                Comfort.STANDARD,
+                2.0,
+                null,
+                null,
+                null,
+            )!!
+        val runTime =
+            listOf(firstBlockEnvelope, secondBlockEnvelope, lastBlockEnvelope).sumOf {
+                it.totalTime
+            }
+        // Backtracking to correct the speed adds a bit more than 25s to the blocks' envelope end
+        // time.
+        // Test success with runTime +30s.
         val occupancyGraph =
             ImmutableMultimap.of(
                 lastBlock,
-                OccupancySegment(runTime + 10, Double.POSITIVE_INFINITY, 0.meters, 10.meters),
+                OccupancySegment(runTime + 30, Double.POSITIVE_INFINITY, 0.meters, 10.meters),
             )
         val res =
             STDCMPathfindingBuilder()
@@ -106,6 +162,20 @@ class BacktrackingTests {
         Assertions.assertTrue(res is STDCMCompleteResult)
         val resSuccess = res as STDCMCompleteResult
         occupancyTest(resSuccess, occupancyGraph)
+        // Test failure with runTime + 25s.
+        val occupancyGraphFail =
+            ImmutableMultimap.of(
+                lastBlock,
+                OccupancySegment(runTime + 25, Double.POSITIVE_INFINITY, 0.meters, 10.meters),
+            )
+        val resFail =
+            STDCMPathfindingBuilder()
+                .setInfra(infra.fullInfra())
+                .setStartLocations(setOf(BlockLocation(firstBlock, Offset(0.meters))))
+                .setEndLocations(setOf(BlockLocation(lastBlock, Offset(5.meters))))
+                .setUnavailableTimes(occupancyGraphFail)
+                .run() ?: return
+        Assertions.assertTrue(resFail is STDCMPartialResult)
     }
 
     /**
@@ -138,21 +208,38 @@ class BacktrackingTests {
                 null,
             )!!
         val runTime = firstBlockEnvelope.totalTime
-        val occupancyGraph =
+        // Backtracking to correct the speed adds a bit more than 20s to the first block's envelope
+        // end time.
+        // Test success with runTime +25s.
+        val occupancyGraphSuccess =
             ImmutableMultimap.of(
                 firstBlock,
-                OccupancySegment(runTime + 22, Double.POSITIVE_INFINITY, 0.meters, 1000.meters),
+                OccupancySegment(runTime + 25, Double.POSITIVE_INFINITY, 0.meters, 1000.meters),
             )
         val res =
             STDCMPathfindingBuilder()
                 .setInfra(infra.fullInfra())
                 .setStartLocations(setOf(BlockLocation(firstBlock, Offset(0.meters))))
                 .setEndLocations(setOf(BlockLocation(secondBlock, Offset(5.meters))))
-                .setUnavailableTimes(occupancyGraph)
+                .setUnavailableTimes(occupancyGraphSuccess)
                 .run() ?: return
         Assertions.assertTrue(res is STDCMCompleteResult)
         val resSuccess = res as STDCMCompleteResult
-        occupancyTest(resSuccess, occupancyGraph)
+        occupancyTest(resSuccess, occupancyGraphSuccess)
+        // Test failure with runTime + 20s.
+        val occupancyGraphFail =
+            ImmutableMultimap.of(
+                firstBlock,
+                OccupancySegment(runTime + 20, Double.POSITIVE_INFINITY, 0.meters, 1000.meters),
+            )
+        val resFail =
+            STDCMPathfindingBuilder()
+                .setInfra(infra.fullInfra())
+                .setStartLocations(setOf(BlockLocation(firstBlock, Offset(0.meters))))
+                .setEndLocations(setOf(BlockLocation(secondBlock, Offset(5.meters))))
+                .setUnavailableTimes(occupancyGraphFail)
+                .run() ?: return
+        Assertions.assertTrue(resFail is STDCMPartialResult)
     }
 
     /** Test that we can backtrack several times over the same edges */
