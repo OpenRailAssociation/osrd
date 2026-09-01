@@ -1,3 +1,5 @@
+@use 'sass:map';
+
 /* forms
    ========================================================================== */
 // stylelint-disable selector-no-qualifying-type
@@ -5,7 +7,7 @@
 $icon-width: rem(48px);
 
 label {
-  margin-bottom: map-get($spacers, 2);
+  margin-bottom: map.get($spacers, 2);
   font-weight: $font-weight-medium;
 }
 

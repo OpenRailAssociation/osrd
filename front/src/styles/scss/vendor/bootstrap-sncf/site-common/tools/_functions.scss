@@ -1,9 +1,12 @@
+@use 'sass:math';
+@use 'sass:meta';
+
 /* functions
    ========================================================================== */
 
 // parse int
 @function parse-int($number) {
-  @if type-of($number) == 'number' {
+  @if meta.type-of($number) == 'number' {
     @return $number / ($number * 0 + 1);
   }
 
@@ -12,9 +15,9 @@
 
 // units to rem
 @function rem($value) {
-  @if type-of($value) == 'number' {
+  @if meta.type-of($value) == 'number' {
     $number: parse-int($value);
-    $unit: unit($value);
+    $unit: math.unit($value);
 
     @if $number == 0 or $unit == 'rem' {
       @return $value;
