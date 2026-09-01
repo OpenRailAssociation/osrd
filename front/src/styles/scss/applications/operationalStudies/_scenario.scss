@@ -261,7 +261,7 @@
 
 .scenario {
   background-color: var(--ambientB15);
-  font-family: 'IBM Plex Sans';
+  font-family: 'IBM Plex Sans', sans-serif;
 
   @keyframes fadein {
     from {
@@ -428,7 +428,7 @@
       }
 
       .scenario-timetable-trains {
-        font-family: 'IBM Plex Sans';
+        font-family: 'IBM Plex Sans', sans-serif;
         background: var(--ambientB15);
         overflow: auto;
         min-height: 0;
@@ -942,7 +942,7 @@ $train-category-colors: (
       max-width: 680px;
     }
 
-    font-family: 'IBM Plex Sans';
+    font-family: 'IBM Plex Sans', sans-serif;
 
     &:has(.wizz-effect:active) {
       .train-schedule-set-name:has(.error),

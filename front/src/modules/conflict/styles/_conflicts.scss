@@ -6,7 +6,7 @@
   background-color: var(--ambientB10);
 
   .scenario-conflicts-content {
-    font-family: 'IBM Plex Sans';
+    font-family: 'IBM Plex Sans', sans-serif;
     background: var(--ambientB15);
     overflow: auto;
     min-height: 0;
@@ -38,7 +38,7 @@
       flex-direction: column;
 
       .conflict-type {
-        font-family: 'IBM Plex Sans';
+        font-family: 'IBM Plex Sans', sans-serif;
         color: var(--error60);
         font-size: 14px;
         height: 20px;

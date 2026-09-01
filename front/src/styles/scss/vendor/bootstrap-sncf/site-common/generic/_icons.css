@@ -1,5 +1,5 @@
 @font-face {
-  font-family: 'icons';
+  font-family: icons;
   src:
     url('/assets/fonts/icons/icons.eot?473fe4c85d583bba4d10858566a1d238?#iefix')
       format('embedded-opentype'),
@@ -14,6 +14,7 @@ i {
 }
 
 i:before {
+  /* stylelint-disable-next-line font-family-no-missing-generic-family-keyword */
   font-family: icons !important;
   font-style: normal;
   font-weight: normal !important;
