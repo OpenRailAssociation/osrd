@@ -487,7 +487,7 @@ class EngineeringAllowanceTests {
         val firstBlock = infra.addBlock("a", "b")
         val secondBlock = infra.addBlock("b", "c")
         val thirdBlock = infra.addBlock("c", "d")
-        val forthBlock = infra.addBlock("d", "e")
+        val fourthBlock = infra.addBlock("d", "e")
         val occupancyGraph =
             ImmutableMultimap.of(
                 firstBlock,
@@ -496,14 +496,14 @@ class EngineeringAllowanceTests {
                 OccupancySegment(0.0, 800.0, 0.meters, 100.meters),
                 thirdBlock,
                 OccupancySegment(0.0, 1_200.0, 0.meters, 100.meters),
-                forthBlock,
+                fourthBlock,
                 OccupancySegment(0.0, 1_200.0, 0.meters, 100.meters),
             )
         val res =
             STDCMPathfindingBuilder()
                 .setInfra(infra.fullInfra())
                 .setStartLocations(setOf(BlockLocation(firstBlock, Offset(0.meters))))
-                .setEndLocations(setOf(BlockLocation(forthBlock, Offset(1.meters))))
+                .setEndLocations(setOf(BlockLocation(fourthBlock, Offset(1.meters))))
                 .setUnavailableTimes(occupancyGraph)
                 .setMaxRunTime(POSITIVE_INFINITY)
                 .run()
