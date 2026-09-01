@@ -13,7 +13,7 @@ import type {
 } from 'geojson';
 import { minBy } from 'lodash';
 
-import type { GeoJsonLineString } from 'common/api/osrdEditoastApi';
+import type { GeoJsonLineString, GeoJsonMultiLineString } from 'common/api/osrdEditoastApi';
 
 export function getTangent(
   tangentPoint: Position,
@@ -147,24 +147,56 @@ export function nearestPointOnLine(
  * Given a track's geometry and length and an offset from the start of the track (in mm),
  * returns the coordinates of the point for the given offset.
  */
-export function getPointOnTrackCoordinates(
-  geometry: GeoJsonLineString,
-  trackLength: number, // in mm
-  infraPositionOnTrack: number // in mm
+function getPointOnLineStringsCoordinates(
+  pathLineStrings: Feature<LineString>[],
+  trackLength: number,
+  infraPositionOnTrack: number
 ): Position | null {
-  const pathLineString = lineString(geometry.coordinates);
-  const geometryTrackLength = length(pathLineString, { units: 'millimeters' });
-  const infraTrackLength = trackLength;
+  const lengths = pathLineStrings.map((ls) => length(ls, { units: 'millimeters' }));
+  const geometryTrackLength = lengths.reduce((sum, curr) => sum + curr, 0);
 
   // Should only happen when importing an json that has been manually altered
   if (infraPositionOnTrack > trackLength) {
     return null;
   }
+
   // TODO TS2 : when adapting train update check that this computation works properly
-  const geometryDistanceAlongTrack =
-    infraPositionOnTrack * (geometryTrackLength / infraTrackLength);
-  return along(pathLineString, geometryDistanceAlongTrack, { units: 'millimeters' }).geometry
-    .coordinates;
+  const geometryDistanceAlongTrack = infraPositionOnTrack * (geometryTrackLength / trackLength);
+
+  let distanceAlongGeometry = geometryDistanceAlongTrack;
+  for (let i = 0; i < pathLineStrings.length; i++) {
+    if (distanceAlongGeometry <= lengths[i]) {
+      return along(pathLineStrings[i], distanceAlongGeometry, {
+        units: 'millimeters',
+      }).geometry.coordinates;
+    }
+    distanceAlongGeometry -= lengths[i];
+  }
+  return null;
+}
+
+export function getPointOnTracksCoordinates(
+  geometry: GeoJsonMultiLineString,
+  trackLength: number, // in mm
+  infraPositionOnTrack: number // in mm
+): Position | null {
+  return getPointOnLineStringsCoordinates(
+    geometry.coordinates.map((ls) => lineString(ls)),
+    trackLength,
+    infraPositionOnTrack
+  );
+}
+
+export function getPointOnTrackCoordinates(
+  geometry: GeoJsonLineString,
+  trackLength: number, // in mm
+  infraPositionOnTrack: number // in mm
+): Position | null {
+  return getPointOnLineStringsCoordinates(
+    [lineString(geometry.coordinates)],
+    trackLength,
+    infraPositionOnTrack
+  );
 }
 
 export function getBarycenter(coords: Position[]): Position {
