@@ -33,6 +33,10 @@ describe('generateSelectPropsForGrant', () => {
       value: { label: 'authorization.grants.read', value: 'READER' },
       options: [
         { label: 'authorization.grants.none', value: undefined },
+        {
+          label: 'authorization.grants.restricted_read',
+          value: 'RESTRICTED_READER',
+        },
         { label: 'authorization.grants.read', value: 'READER' },
         { label: 'authorization.grants.edit', value: 'WRITER' },
         { label: 'authorization.grants.full', value: 'OWNER' },
