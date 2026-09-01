@@ -57,7 +57,6 @@ select:-moz-focusring {
   position: relative;
 
   .select-improved.active > & {
-    // stylelint-disable selector-max-class
     > .input-group .form-control {
       border-bottom-right-radius: 0;
       border-bottom-left-radius: 0;
@@ -66,11 +65,9 @@ select:-moz-focusring {
     .input-group-last > .btn {
       border-bottom-right-radius: 0;
     }
-    // stylelint-enable selector-max-class
   }
 
   .select-improved-up.active > & {
-    // stylelint-disable selector-max-class
     > .input-group .form-control {
       border-top-left-radius: 0;
       border-top-right-radius: 0;
@@ -82,12 +79,10 @@ select:-moz-focusring {
       border-top-right-radius: 0;
       border-bottom-right-radius: $border-radius;
     }
-    // stylelint-enable selector-max-class
   }
 }
 
 .form-control {
-  // stylelint-disable selector-max-class, no-duplicate-selectors
   .select-control > .input-group & {
     position: relative;
     cursor: pointer;
@@ -105,7 +100,6 @@ select:-moz-focusring {
     border-bottom-color: $select-improved-menu-border-color;
     border-left-color: $select-improved-menu-border-color;
   }
-  // stylelint-enable selector-max-class, no-duplicate-selectors
 }
 
 .select-menu {
@@ -166,7 +160,6 @@ select:-moz-focusring {
     color: theme-color('primary');
   }
 
-  // stylelint-disable selector-no-qualifying-type
   > button,
   > a {
     display: block;
@@ -186,7 +179,6 @@ select:-moz-focusring {
       color: theme-color('primary');
     }
   }
-  // stylelint-enable selector-no-qualifying-type
 }
 
 .select-group {
@@ -249,11 +241,9 @@ select:-moz-focusring {
   border: 0;
 }
 
-/* stylelint-disable selector-no-qualifying-type */
 button.select-group-title {
   cursor: pointer;
 }
-/* stylelint-enable selector-no-qualifying-type */
 
 .select-group-content {
   padding-top: rem(14px);

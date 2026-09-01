@@ -1,7 +1,5 @@
 @use 'sass:map';
 
-// stylelint-disable declaration-no-important
-
 // Gutters
 
 @each $breakpoint in map.keys($grid-breakpoints) {

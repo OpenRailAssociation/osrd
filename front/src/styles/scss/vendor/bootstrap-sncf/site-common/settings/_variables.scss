@@ -8,7 +8,6 @@
 
 // Color system
 
-// stylelint-disable
 $white: #fff !default;
 $gray-100: #f2f2f2 !default;
 $gray-200: #d7d7d7 !default;
@@ -20,9 +19,8 @@ $gray-700: #495057 !default;
 $gray-800: #343a40 !default;
 $gray-900: #212529 !default;
 $black: #000 !default;
-
 $grays: ();
-$grays: map-merge(
+$grays: map.merge(
   (
     '100': $gray-100,
     '200': $gray-200,
@@ -36,7 +34,6 @@ $grays: map-merge(
   ),
   $grays
 );
-
 $oldblue: #0088ce !default;
 $blue: #303383 !default;
 $darkblue: #16183d !default;
@@ -50,9 +47,8 @@ $green: #82be00 !default;
 $teal: #d2e100 !default;
 $cyan: #009aa6 !default;
 $carbon: #333 !default;
-
 $colors: ();
-$colors: map-merge(
+$colors: map.merge(
   (
     'oldblue': $oldblue,
     'blue': $blue,
@@ -73,7 +69,6 @@ $colors: map-merge(
   ),
   $colors
 );
-
 $primary: $blue !default;
 $primary-dark: #202258 !default;
 $secondary: $gray-500 !default;
@@ -83,9 +78,8 @@ $warning: $yellow !default;
 $danger: $red !default;
 $light: $gray-100 !default;
 $dark: $gray-800 !default;
-
 $theme-colors: ();
-$theme-colors: map-merge(
+$theme-colors: map.merge(
   (
     'primary': $primary,
     'primary-dark': $primary-dark,
@@ -100,9 +94,7 @@ $theme-colors: map-merge(
   ),
   $theme-colors
 );
-
 $required-asterix: $danger !default;
-
 $btn-primary-color: $white !default;
 $btn-secondary-color: $white !default;
 $btn-secondary-bg: #333333 !default;
@@ -110,9 +102,8 @@ $btn-white-color: $primary !default;
 $btn-white-hover-color: $primary-dark !default;
 $btn-white-bg: $white !default;
 $btn-white-hover-bg: $white !default;
-
 $btn-colors: ();
-$btn-colors: map-merge(
+$btn-colors: map.merge(
   (
     'primary': (
       $primary,
@@ -167,20 +158,16 @@ $btn-colors: map-merge(
   ),
   $btn-colors
 );
-
 $btn-color-gray: $gray-600 !default;
-
 $btn-disabled-color: $gray-300 !default;
 $btn-disabled-bg: $gray-100 !default;
 $btn-disabled-border-color: $gray-100 !default;
-
 $btn-rounded-white-color: $primary !default;
 $btn-rounded-white-bg: $white !default;
 $btn-rounded-white-hover-color: $white !default;
 $btn-rounded-white-hover-bg: $primary !default;
-
 $btn-rounded-colors: ();
-$btn-rounded-colors: map-merge(
+$btn-rounded-colors: map.merge(
   (
     'primary': (
       $primary,
@@ -250,8 +237,6 @@ $btn-rounded-colors: map-merge(
   $btn-rounded-colors
 );
 
-// stylelint-enable
-
 // Set a specific jump point for requesting color jumps
 $theme-color-interval: 8%;
 
@@ -284,10 +269,9 @@ $enable-deprecation-messages: true !default;
 // variables. Mostly focused on spacing.
 // You can add more entries to the $spacers map, should you need more variation.
 
-// stylelint-disable
 $spacer: 1rem;
 $spacers: ();
-$spacers: map-merge(
+$spacers: map.merge(
   (
     0: 0,
     1: (
@@ -310,7 +294,7 @@ $spacers: map-merge(
 // gutters spacing
 $gutter: 1.25rem; // 20px
 $gutters: ();
-$gutters: map-merge(
+$gutters: map.merge(
   (
     0: 0,
     1: (
@@ -341,7 +325,7 @@ $gutters: map-merge(
 
 // This variable affects the `.h-*` and `.w-*` classes.
 $sizes: ();
-$sizes: map-merge(
+$sizes: map.merge(
   (
     25: 25%,
     50: 50%,
@@ -350,7 +334,6 @@ $sizes: map-merge(
   ),
   $sizes
 );
-// stylelint-enable
 
 // Body
 // Settings for the `<body>` element.
@@ -446,24 +429,21 @@ $embed-responsive-aspect-ratios: list.join(
 // Typography
 // Font, line-height, and color for body text, headings, and more.
 
-// stylelint-disable value-keyword-case
 $font-family-sans-serif:
-  Avenir,
+  'Avenir',
   -apple-system,
-  BlinkMacSystemFont,
+  'BlinkMacSystemFont',
   'Segoe UI',
-  Roboto,
+  'Roboto',
   'Helvetica Neue',
-  Arial,
+  'Arial',
   sans-serif,
   'Apple Color Emoji',
   'Segoe UI Emoji',
   'Segoe UI Symbol';
 $font-family-monospace:
-  SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+  'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'Liberation Mono', 'Courier New', monospace;
 $font-family-base: $font-family-sans-serif;
-// stylelint-enable value-keyword-case
-
 $font-size-base: 1rem; // Assumes the browser default, typically `16px`
 $font-size-lg: ($font-size-base * 1.25);
 $font-size-sm: ($font-size-base * 0.875);
