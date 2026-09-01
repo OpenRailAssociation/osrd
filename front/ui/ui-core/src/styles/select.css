@@ -2,8 +2,8 @@
   border-radius: 4px;
   border: 1px solid rgba(148, 145, 142, 1);
   box-shadow:
-    0px 1px 1px rgba(0, 0, 0, 0.2),
-    0px 2px 4px rgba(0, 0, 0, 0.1);
+    0 1px 1px rgba(0, 0, 0, 0.2),
+    0 2px 4px rgba(0, 0, 0, 0.1);
   height: 40px;
   padding-left: 13px;
   padding-right: 30px;
@@ -40,8 +40,8 @@
   &.read-only {
     border: 1px solid rgba(182, 178, 175, 1);
     box-shadow:
-      0px 0px 0px rgba(0, 0, 0, 0.2),
-      0px 1px 0px rgba(0, 0, 0, 0.1);
+      0 0 0 rgba(0, 0, 0, 0.2),
+      0 1px 0 rgba(0, 0, 0, 0.1);
 
     @apply text-grey-50;
 
@@ -51,8 +51,8 @@
   &:disabled {
     border: 1px solid rgba(211, 209, 207, 1);
     box-shadow:
-      0px 0px 0px rgba(0, 0, 0, 0.2),
-      0px 1px 0px rgba(0, 0, 0, 0.1);
+      0 0 0 rgba(0, 0, 0, 0.2),
+      0 1px 0 rgba(0, 0, 0, 0.1);
 
     @apply text-grey-30;
 

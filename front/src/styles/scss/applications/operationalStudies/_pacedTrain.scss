@@ -132,7 +132,7 @@
   }
 
   .base-info {
-    padding: 3px 0px 3px 4px;
+    padding: 3px 0 3px 4px;
     position: relative;
 
     &:hover:not(.selected) {
@@ -441,7 +441,7 @@
         background-color: var(--ambientB10);
         color: var(--primary60);
         border-radius: 4px;
-        box-shadow: 0px 0px 0px 1.5px rgba(255, 255, 255, 1) inset;
+        box-shadow: 0 0 0 1.5px rgba(255, 255, 255, 1) inset;
 
         &:hover {
           background-color: var(--white100);

@@ -13,7 +13,6 @@ export default {
     'declaration-block-no-redundant-longhand-properties': null,
     'declaration-block-no-shorthand-property-overrides': null,
     'keyframes-name-pattern': null,
-    'length-zero-no-unit': null,
     'media-feature-range-notation': null,
     'no-irregular-whitespace': null,
     'number-max-precision': null,

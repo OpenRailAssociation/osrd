@@ -25,12 +25,12 @@
         line-height: 1.5rem;
         text-align: left;
         vertical-align: top;
-        letter-spacing: 0px;
+        letter-spacing: 0;
         padding: 0.5rem 0.75rem;
         border-radius: 0.25rem;
         box-shadow:
-          0px 0px 0px 0.0625rem rgba(148, 145, 142, 1) inset,
-          0px 0.0625rem 0.1875rem rgba(0, 0, 0, 0.5) inset;
+          0 0 0 0.0625rem rgba(148, 145, 142, 1) inset,
+          0 0.0625rem 0.1875rem rgba(0, 0, 0, 0.5) inset;
 
         @apply bg-black-1 text-black-100;
 
@@ -40,46 +40,46 @@
 
         &:read-only {
           box-shadow:
-            0px 0px 0px 0.0625rem rgba(211, 209, 207, 1) inset,
-            0px 0px 0px 0.1875rem rgba(255, 255, 255, 1) inset;
+            0 0 0 0.0625rem rgba(211, 209, 207, 1) inset,
+            0 0 0 0.1875rem rgba(255, 255, 255, 1) inset;
 
           @apply text-grey-50 bg-black-2;
         }
 
         &:disabled {
-          box-shadow: 0px 0px 0px 0.0625rem rgba(235, 235, 234, 1) inset;
+          box-shadow: 0 0 0 0.0625rem rgba(235, 235, 234, 1) inset;
 
           @apply text-grey-30 bg-black-2;
         }
 
         &.success {
           box-shadow:
-            0px 0px 0px 0.0625rem rgba(11, 114, 60, 1) inset,
-            0px 0px 0px 0.25rem rgba(230, 247, 238, 1) inset;
+            0 0 0 0.0625rem rgba(11, 114, 60, 1) inset,
+            0 0 0 0.25rem rgba(230, 247, 238, 1) inset;
           background-color: rgba(255, 255, 255, 0.5);
         }
 
         &.info {
           border: 0.09375rem solid rgba(112, 193, 229, 1);
           box-shadow:
-            0px 0.0625rem 0.1875rem rgba(0, 0, 0, 0.5) inset,
-            0px 0px 0px 0.0625rem rgba(0, 0, 0, 1) inset;
+            0 0.0625rem 0.1875rem rgba(0, 0, 0, 0.5) inset,
+            0 0 0 0.0625rem rgba(0, 0, 0, 1) inset;
           background-color: rgba(255, 255, 255, 1);
         }
 
         &.warning {
           border: 0.09375rem solid rgba(234, 167, 43, 1);
           box-shadow:
-            0px 0.0625rem 0.1875rem rgba(0, 0, 0, 0.5) inset,
-            0px 0px 0px 0.0625rem rgba(0, 0, 0, 1) inset;
+            0 0.0625rem 0.1875rem rgba(0, 0, 0, 0.5) inset,
+            0 0 0 0.0625rem rgba(0, 0, 0, 1) inset;
           background-color: rgba(255, 255, 255, 1);
         }
 
         &.error {
           border: 0.09375rem solid rgba(255, 104, 104, 1);
           box-shadow:
-            0px 0.0625rem 0.1875rem rgba(0, 0, 0, 0.5) inset,
-            0px 0px 0px 0.0625rem rgba(0, 0, 0, 1) inset;
+            0 0.0625rem 0.1875rem rgba(0, 0, 0, 0.5) inset,
+            0 0 0 0.0625rem rgba(0, 0, 0, 1) inset;
           background-color: rgba(255, 255, 255, 1);
         }
 
