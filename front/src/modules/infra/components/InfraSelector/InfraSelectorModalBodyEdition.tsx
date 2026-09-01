@@ -77,7 +77,7 @@ const InfraSelectorModalBodyEdition = ({
     setFileSelection((prev) => {
       if (prev.file !== file) return prev; // File input could have changed during validation
 
-      if (status === true) {
+      if (!status) {
         setErrorMessage(undefined);
         return { file, validating: false };
       }
