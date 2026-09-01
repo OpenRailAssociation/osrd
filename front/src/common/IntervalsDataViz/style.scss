@@ -24,10 +24,8 @@ $resize-width: 3px;
 }
 
 @mixin unselectable {
-  -moz-user-select: -moz-none;
-  -khtml-user-select: none;
+  /* stylelint-disable-next-line property-no-vendor-prefix */
   -webkit-user-select: none;
-  -ms-user-select: none;
   user-select: none;
 }
 

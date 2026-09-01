@@ -18,7 +18,6 @@ export default {
     'no-irregular-whitespace': null,
     'number-max-precision': null,
     'property-no-deprecated': null,
-    'property-no-vendor-prefix': null,
     'scss/at-extend-no-missing-placeholder': null,
     'scss/at-mixin-argumentless-call-parentheses': null,
     'scss/at-mixin-pattern': null,
@@ -36,6 +35,5 @@ export default {
     'selector-pseudo-element-colon-notation': null,
     'shorthand-property-no-redundant-values': null,
     'value-keyword-case': null,
-    'value-no-vendor-prefix': null,
   },
 };

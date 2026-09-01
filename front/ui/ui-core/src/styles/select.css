@@ -13,8 +13,6 @@
   letter-spacing: 0;
   line-height: 24px;
   width: 100%;
-  -webkit-appearance: none;
-  -moz-appearance: none;
   appearance: none;
   background: inline('../assets/triangle-up-down.svg') no-repeat right 12px center;
 

@@ -181,13 +181,12 @@
 
     &::-webkit-inner-spin-button,
     &::-webkit-outer-spin-button {
-      -webkit-appearance: none;
+      appearance: none;
       margin: 0;
     }
 
     &[type='number'] {
-      appearance: none;
-      -moz-appearance: textfield;
+      appearance: textfield;
     }
   }
 
@@ -247,7 +246,7 @@
       padding: 0.188rem 0.5rem 0.188rem 0.438rem;
       border-radius: 0.188rem;
 
-      /* The small variant overrides padding and loses the with-icons-* padding-right, 
+      /* The small variant overrides padding and loses the with-icons-* padding-right,
       causing text to overlap the clear/chevron buttons*/
       &.with-icons-1 {
         /* one icon (chevron or clear)*/
