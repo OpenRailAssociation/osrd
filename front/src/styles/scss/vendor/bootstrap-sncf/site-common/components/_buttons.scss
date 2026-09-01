@@ -2,9 +2,7 @@
    ========================================================================== */
 // stylelint-disable selector-no-qualifying-type
 
-//
 // Base styles
-//
 
 .btn {
   display: inline-block;
@@ -66,9 +64,7 @@ fieldset:disabled a.btn {
   pointer-events: none;
 }
 
-//
 // Alternate buttons
-//
 
 @each $color, $value in $btn-colors {
   .btn-#{$color} {
@@ -96,9 +92,7 @@ fieldset:disabled a.btn {
   }
 }
 
-//
 // Link buttons
-//
 
 // Make a button look and behave like a link
 .btn-link {
@@ -141,9 +135,7 @@ fieldset:disabled a.btn {
   color: color('white');
 }
 
-//
 // Button sizes
-//
 
 .btn-sm {
   font-weight: $font-weight-medium;
@@ -157,9 +149,7 @@ fieldset:disabled a.btn {
   );
 }
 
-//
 // Block button
-//
 
 .btn-block {
   display: block;
@@ -180,9 +170,7 @@ input[type='button'] {
   }
 }
 
-//
 // Button icon
-//
 
 .btn-only-icon {
   align-items: center;
@@ -215,9 +203,7 @@ input[type='button'] {
   }
 }
 
-//
 // Button navigation
-//
 
 .btn-rounded {
   display: inline-flex;
@@ -274,9 +260,7 @@ input[type='button'] {
   }
 }
 
-//
 // Button option
-//
 
 .btn-options {
   min-width: rem(55px);
@@ -293,9 +277,7 @@ input[type='button'] {
   }
 }
 
-//
 // Button favorite
-//
 
 .btn.btn-favorite {
   color: gray('300');
@@ -306,9 +288,7 @@ input[type='button'] {
   }
 }
 
-//
 // Button alert
-//
 
 .btn-notif {
   position: relative;
@@ -331,9 +311,7 @@ input[type='button'] {
   }
 }
 
-//
 // Button card
-//
 
 .btn-card {
   display: inline-flex;
@@ -363,9 +341,7 @@ input[type='button'] {
   );
 }
 
-//
 // Button color
-//
 
 .btn-color-gray {
   color: $btn-color-gray;
@@ -388,9 +364,7 @@ input[type='button'] {
   }
 }
 
-//
 // Button unstyled
-//
 
 .btn-unstyled {
   font-size: inherit;
