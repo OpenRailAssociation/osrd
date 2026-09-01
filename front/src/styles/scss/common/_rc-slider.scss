@@ -67,8 +67,6 @@ $ease-in-quint: cubic-bezier(0.755, 0.05, 0.855, 0.06);
     background-color: #fff;
     border: solid 2px color.mix(white, $primary-color, 0%);
     border-radius: 50%;
-    cursor: pointer;
-    cursor: -webkit-grab;
     cursor: grab;
     opacity: 0.8;
     touch-action: pan-x;
@@ -100,7 +98,6 @@ $ease-in-quint: cubic-bezier(0.755, 0.05, 0.855, 0.06);
     &:active {
       border-color: color.mix(white, $primary-color, 20%);
       box-shadow: 0 0 5px color.mix(white, $primary-color, 20%);
-      cursor: -webkit-grabbing;
       cursor: grabbing;
     }
   }
