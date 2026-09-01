@@ -211,6 +211,7 @@
     "timetable": {
       "addTrainSchedule": "Ajouter un train unique / une mission",
       "advancedFilterLabel": "Engin moteur",
+      "cancel": "Annuler",
       "choosePath": "Utiliser ce chemin",
       "closeFilter": "Fermer le filtre",
       "copy": "copie",
@@ -263,6 +264,7 @@
       "pacedTrainAdded": "Mission ajoutée",
       "pacedTrainDeleted": "La mission {{name}} a bien été supprimée",
       "punctuality": "Ponctualité",
+      "reset": "Réinitialiser",
       "resetAllExceptions": "Confirmez-vous la réinitialisation des exceptions de cette mission ?",
       "resetExceptions": "Réinitialiser les exceptions",
       "rollingStockFilterPlaceholder": "Famille, détail, série",
