@@ -28,7 +28,6 @@
     }
   }
 
-  /* stylelint-disable declaration-no-important */
   &:disabled {
     ~ .custom-control-label,
     &:indeterminate ~ .custom-control-label,
@@ -53,7 +52,6 @@
 
     cursor: default;
   }
-  /* stylelint-enable declaration-no-important */
 }
 
 /*
@@ -159,7 +157,6 @@
 }
 
 @each $color, $value in ('green': #4cd201, 'yellow': #ffb901, 'gray': #333333, 'pink': #a1006b) {
-  /* stylelint-disable declaration-block-single-line-max-declarations */
   .custom-checkbox.is-#{$color} .custom-control-input {
     &:not(:disabled):checked,
     &:not(:indeterminate):checked {
@@ -202,7 +199,6 @@
       }
     }
   }
-  /* stylelint-enable declaration-block-single-line-max-declarations */
 }
 
 .custom-checkbox-alone {
@@ -281,7 +277,6 @@
     }
   }
 
-  // stylelint-disable selector-no-qualifying-type
   input[disabled] + & {
     cursor: initial;
 
@@ -297,7 +292,6 @@
       background-color: color('white');
     }
   }
-  // stylelint-enable selector-no-qualifying-type
 }
 
 /*
@@ -329,7 +323,6 @@
   cursor: pointer;
   border-radius: $btn-border-radius;
 
-  // stylelint-disable selector-no-qualifying-type
   input[disabled] + & {
     color: gray('300');
     cursor: default;
@@ -340,7 +333,6 @@
     color: gray('500');
     background-color: color('white');
   }
-  // stylelint-enable selector-no-qualifying-type
 }
 
 .options-control-lg {
