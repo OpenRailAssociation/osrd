@@ -26,32 +26,55 @@ import { parseOccupancyZonePathId, type OccupancyZoneReference } from './zones';
 /** Magnetic snap radius (in pixels) used to align a dragged occurrence onto the cadence grid. */
 const SNAP_DISTANCE_PX = 8;
 
+/**
+ * Line(s) a dragged train magnetically snaps onto: the repeating cadence `startTimeMs + k ×
+ * intervalMs`, or the single `startTimeMs` line when `intervalMs` is absent. `originMs` is a
+ * fallback line (the train's own pre-drag time) used only when no cadence line is in range, so an
+ * off-grid occurrence can still land exactly back where it started.
+ */
+type SnapGrid = { startTimeMs: number; intervalMs?: number; originMs?: number };
+
 type DraggingState =
   | {
       draggedTrain: IndividualTrainProjection;
       initialDepartureTime: Date;
       /** Original exceptions captured at drag start — used to compute shifts without accumulation */
       originalPacedExceptions?: SimulatedException[];
-      /** Cadence grid (model start + k × interval) a 'single'-mode occurrence snaps onto. */
-      pacedGrid?: { startTimeMs: number; intervalMs: number };
+      /**
+       * Cadence grid (model start + k × interval) a dragged train snaps onto. Set with
+       * `intervalMs` for a 'single'-mode occurrence (repeating cadence lines), or without it for
+       * the model train (compliant/all modes, or a direct model-curve drag) so the train snaps
+       * back exactly onto its pre-drag position instead of drifting by pixel-rounding jitter.
+       */
+      pacedGrid?: SnapGrid;
     }
   | undefined;
 
 /**
- * Snap a candidate time onto the nearest cadence grid line (`startTimeMs + k × intervalMs`)
- * when it is within `SNAP_DISTANCE_PX` pixels of it. `timeScale` is the chart scale in ms/px,
- * so the snap radius stays constant on screen whatever the zoom. Returns the candidate
- * unchanged when there is no grid or it is too far from a line.
+ * Snap a candidate time onto the nearest grid line (`startTimeMs + k × intervalMs`, or just
+ * `startTimeMs` when `intervalMs` is absent) when it is within `SNAP_DISTANCE_PX` pixels of it.
+ * `timeScale` is the chart scale in ms/px, so the snap radius stays constant on screen whatever
+ * the zoom. Falls back to `grid.originMs` when it is in range and the cadence line is not — the
+ * cadence keeps priority so re-aligning an occurrence that started near a grid line stays easy.
+ * Returns the candidate unchanged when there is no grid or it is too far from every line.
  */
 const snapToCadenceGrid = (
   candidateMs: number,
-  grid: { startTimeMs: number; intervalMs: number } | undefined,
+  grid: SnapGrid | undefined,
   timeScale: number
 ): number => {
-  if (!grid || grid.intervalMs <= 0) return candidateMs;
-  const k = Math.round((candidateMs - grid.startTimeMs) / grid.intervalMs);
-  const gridMs = grid.startTimeMs + k * grid.intervalMs;
-  return Math.abs(candidateMs - gridMs) <= SNAP_DISTANCE_PX * timeScale ? gridMs : candidateMs;
+  if (!grid) return candidateMs;
+  const radiusMs = SNAP_DISTANCE_PX * timeScale;
+  const cadenceMs =
+    grid.intervalMs && grid.intervalMs > 0
+      ? grid.startTimeMs +
+        Math.round((candidateMs - grid.startTimeMs) / grid.intervalMs) * grid.intervalMs
+      : grid.startTimeMs;
+  if (Math.abs(candidateMs - cadenceMs) <= radiusMs) return cadenceMs;
+  if (grid.originMs !== undefined && Math.abs(candidateMs - grid.originMs) <= radiusMs) {
+    return grid.originMs;
+  }
+  return candidateMs;
 };
 
 type ConfigureHandlePanParams = {
@@ -178,7 +201,7 @@ export function configureHandlePan({
       ) {
         let initialDepartureTime = train.departureTime;
         let originalPacedExceptions: SimulatedException[] | undefined;
-        let pacedGrid: { startTimeMs: number; intervalMs: number } | undefined;
+        let pacedGrid: SnapGrid | undefined;
         if (isOccurrenceId(hoveredTrainId)) {
           const editoastId = extractEditoastIdFromTrainScheduleId(
             extractTrainScheduleIdFromOccurrenceId(hoveredTrainId)
@@ -194,15 +217,22 @@ export function configureHandlePan({
             if (panelSelectionMode !== 'compliant') {
               originalPacedExceptions = modelTrain.paced?.exceptions;
             }
-            // 'single' snaps the occurrence onto the model's cadence grid.
+            // 'single' snaps the occurrence onto the model's cadence grid, with its own pre-drag
+            // time as a fallback line: an occurrence that is already an exception sits off the
+            // cadence, and without it a drag back onto its origin would still trigger a PUT.
             if (panelSelectionMode === 'single' && modelTrain.paced) {
               pacedGrid = {
                 startTimeMs: modelTrain.departureTime.getTime(),
                 intervalMs: modelTrain.paced.interval.ms,
+                originMs: initialDepartureTime.getTime(),
               };
             }
           }
         }
+        // Model train (compliant/all modes, or a direct model-curve drag): snap back onto its
+        // own pre-drag departure so a drag ending at +0 lands exactly on it, with no leftover
+        // pixel-rounding diff that would otherwise still trigger a PUT.
+        pacedGrid ??= { startTimeMs: initialDepartureTime.getTime() };
 
         setDraggingState({
           draggedTrain: train,
