@@ -18,7 +18,7 @@ RUN cargo chef prepare --recipe-path recipe.json
 # Cargo chef : build #
 ######################
 FROM chef AS base_builder
-RUN apk add --no-cache build-base openssl openssl-dev openssl-libs-static mold libpq-dev geos-dev zstd-dev
+RUN apk add --no-cache build-base mold libpq-dev geos-dev zstd-dev
 ENV RUSTFLAGS="-C target-feature=-crt-static -C link-arg=-fuse-ld=mold"
 ENV ZSTD_SYS_USE_PKG_CONFIG=1
 
@@ -88,7 +88,7 @@ RUN --mount=type=cache,target=/cargo_editoast/registry \
 # Running env #
 ###############
 FROM alpine:3.24 AS running_env
-RUN apk add --no-cache jemalloc curl ca-certificates geos libpq openssl postgresql16-client
+RUN apk add --no-cache jemalloc curl ca-certificates geos libpq postgresql16-client
 
 COPY --from=run_builder /cargo_editoast/bin/editoast /usr/local/bin/editoast
 COPY --from=run_builder /cargo_editoast/bin/fga_migrations /usr/local/bin/fga_migrations
