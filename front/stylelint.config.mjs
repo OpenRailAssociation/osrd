@@ -15,7 +15,6 @@ export default {
     'keyframes-name-pattern': null,
     'media-feature-range-notation': null,
     'no-irregular-whitespace': null,
-    'number-max-precision': null,
     'property-no-deprecated': null,
     'scss/at-extend-no-missing-placeholder': null,
     'scss/at-mixin-argumentless-call-parentheses': null,

@@ -33,7 +33,7 @@
       left: 0.0625rem;
       bottom: 0.0625rem;
       right: 0.0625rem;
-      border: 0.03125rem #d3d1cf solid;
+      border: 0.5px #d3d1cf solid;
       border-radius: 50%;
     }
   }
@@ -56,7 +56,7 @@
   &:hover {
     &.small {
       .checkmark {
-        outline: solid 0.09375rem #98c0f5;
+        outline: solid 1.5px #98c0f5;
       }
     }
 
@@ -72,7 +72,7 @@
     .checkmark {
       width: 0.875rem;
       height: 0.875rem;
-      outline: solid 0.09375rem #ebebea;
+      outline: solid 1.5px #ebebea;
     }
 
     .label {
@@ -90,7 +90,7 @@
         position: absolute;
         border: none;
         opacity: 1;
-        top: -0.09375rem;
+        top: -1.5px;
         left: 0;
       }
     }
@@ -130,7 +130,7 @@
     background-image: white;
     outline: none;
     cursor: default;
-    border: 0.03125rem #d3d1cf solid;
+    border: 0.5px #d3d1cf solid;
 
     &:after {
       border: none;
@@ -222,7 +222,7 @@
       position: absolute;
       left: -0.5rem;
       top: 1.25rem;
-      border-radius: 0.03125rem;
+      border-radius: 0.5px;
 
       @apply text-info-30;
     }

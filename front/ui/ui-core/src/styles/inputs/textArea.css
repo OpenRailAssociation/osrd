@@ -60,7 +60,7 @@
         }
 
         &.info {
-          border: 0.09375rem solid rgba(112, 193, 229, 1);
+          border: 1.5px solid rgba(112, 193, 229, 1);
           box-shadow:
             0 0.0625rem 0.1875rem rgba(0, 0, 0, 0.5) inset,
             0 0 0 0.0625rem rgba(0, 0, 0, 1) inset;
@@ -68,7 +68,7 @@
         }
 
         &.warning {
-          border: 0.09375rem solid rgba(234, 167, 43, 1);
+          border: 1.5px solid rgba(234, 167, 43, 1);
           box-shadow:
             0 0.0625rem 0.1875rem rgba(0, 0, 0, 0.5) inset,
             0 0 0 0.0625rem rgba(0, 0, 0, 1) inset;
@@ -76,7 +76,7 @@
         }
 
         &.error {
-          border: 0.09375rem solid rgba(255, 104, 104, 1);
+          border: 1.5px solid rgba(255, 104, 104, 1);
           box-shadow:
             0 0.0625rem 0.1875rem rgba(0, 0, 0, 0.5) inset,
             0 0 0 0.0625rem rgba(0, 0, 0, 1) inset;
