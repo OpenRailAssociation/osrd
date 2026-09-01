@@ -699,7 +699,7 @@ fn is_linking_valid(
 }
 
 /// To compute the requirements caused by a linking, we filter the requirements whose end time matches
-/// the simulation's end time, and we create new identic requirements with the source's end time and
+/// the simulation's end time, and we create new identical requirements with the source's end time and
 /// target's start time as the begin time and end time
 fn get_linking_requirements(
     occurrence_trains: &[TrainOccurrence],
@@ -782,20 +782,31 @@ mod tests {
     use crate::fixtures::simple_paced_train_changeset;
     use crate::views::test_app::TestRequestExt as _;
     use crate::views::test_app::test_app;
+    use crate::views::timetable::simulation::Response;
+    use crate::views::timetable::simulation::SimulationResponseSuccess;
 
     use super::*;
     use authz::InfraGrant;
     use authz::RollingStockGrant;
     use common::units;
+    use core_client::pathfinding::PathfindingResultSuccess;
+    use core_client::pathfinding::TrackRange;
+    use core_client::pathfinding::TrainPath;
+    use core_client::simulation::CompleteReportTrain;
+    use core_client::simulation::ElectricalProfiles;
+    use core_client::simulation::ReportTrain;
     use core_client::simulation::RoutingRequirement;
     use core_client::simulation::RoutingZoneRequirement;
     use core_client::simulation::SpacingRequirement;
+    use core_client::simulation::SpeedLimitProperties;
     use models::train_schedule::TrainScheduleChangeset;
     use reqwest::StatusCode;
     use rstest::rstest;
     use schemas::TrainScheduleExceptionChangeGroups;
+    use schemas::infra::Direction;
     use schemas::paced_train::RollingStockChangeGroup;
     use schemas::train_schedule::Comfort;
+    use schemas::train_schedule::ReceptionSignal;
 
     fn spacing(zone: &str, begin_time: u64, end_time: u64) -> SpacingRequirement {
         SpacingRequirement {
@@ -1134,5 +1145,186 @@ mod tests {
             (train_schedule_unauthorized_exception, vec![]),
         ];
         assert_eq!(expected_response, authorized_train_schedules);
+    }
+
+    fn fake_report_train() -> ReportTrain {
+        ReportTrain {
+            positions: vec![0, 1000, 2000],
+            times: vec![0, 2000, 4000],
+            speeds: vec![0.0, 10.0, 0.0],
+            energy_consumption: 100.0,
+            path_item_times: vec![0, 4000],
+        }
+    }
+
+    fn fake_complete_report_train() -> CompleteReportTrain {
+        CompleteReportTrain {
+            report_train: fake_report_train(),
+            signal_critical_positions: vec![],
+            zone_updates: vec![],
+            spacing_requirements: vec![],
+            routing_requirements: vec![],
+        }
+    }
+
+    fn fake_occurrence_simulation_success() -> SimulationResponseSuccess {
+        SimulationResponseSuccess {
+            base: fake_report_train(),
+            provisional: fake_report_train(),
+            final_output: fake_complete_report_train(),
+            mrsp: SpeedLimitProperties {
+                boundaries: vec![],
+                values: vec![],
+            },
+            electrical_profiles: ElectricalProfiles {
+                boundaries: vec![],
+                values: vec![],
+            },
+        }
+    }
+
+    #[rstest]
+    #[case::valid(10000, "track_1", "track_1", 2000, true, 0.0, true)]
+    #[case::invalid_source_arrival_after_target_start(
+        6000, "track_1", "track_1", 2000, true, 0.0, false
+    )]
+    #[case::invalid_unmatched_locations(10000, "track_1", "track_2", 2000, true, 0.0, false)]
+    #[case::invalid_unmatched_endpoints(10000, "track_1", "track_1", 3000, true, 0.0, false)]
+    #[case::invalid_source_final_not_stop(10000, "track_1", "track_1", 2000, false, 0.0, false)]
+    #[case::invalide_target_initial_speed(10000, "track_1", "track_1", 2000, true, 100.0, false)]
+    fn filter_valid_linkings(
+        #[case] target_start_time: i64,
+        #[case] source_track: &str,
+        #[case] target_track: &str,
+        #[case] source_last_stop: u64,
+        #[case] source_arrival_is_stop: bool,
+        #[case] target_initial_speed: f64,
+        #[case] is_valid: bool,
+    ) {
+        let mut source_occurrence = TrainOccurrence {
+            start_time: millisecond::i64::new(5000),
+            ..TrainOccurrence::fake()
+        };
+
+        let source_arrival_schedule_item = source_occurrence
+            .schedule
+            .last_mut()
+            .expect("Schedule cannot be empty");
+        if source_arrival_is_stop {
+            source_arrival_schedule_item.stop_for = Some(Default::default());
+            source_arrival_schedule_item.reception_signal = ReceptionSignal::Stop;
+        } else {
+            source_arrival_schedule_item.stop_for = None;
+            source_arrival_schedule_item.reception_signal = ReceptionSignal::Open;
+        }
+
+        let target_occurrence = TrainOccurrence {
+            start_time: millisecond::i64::new(target_start_time),
+            initial_speed: target_initial_speed,
+            ..TrainOccurrence::fake()
+        };
+
+        let source_simulation = Response::Success(fake_occurrence_simulation_success());
+        let target_simulation = Response::Success(fake_occurrence_simulation_success());
+
+        // Create mock pathfinding results with track section ranges
+        let source_pathfinding = PathfindingResult::Success(PathfindingResultSuccess {
+            path: TrainPath {
+                track_section_ranges: vec![
+                    TrackRange {
+                        track_section: "TA0".into(),
+                        begin: 0,
+                        end: 1000,
+                        direction: Direction::StartToStop,
+                    },
+                    TrackRange {
+                        track_section: source_track.into(),
+                        begin: 0,
+                        end: source_last_stop,
+                        direction: Direction::StartToStop,
+                    },
+                ],
+                ..Default::default()
+            },
+            ..Default::default()
+        });
+
+        let target_pathfinding = PathfindingResult::Success(PathfindingResultSuccess {
+            path: TrainPath {
+                track_section_ranges: vec![
+                    TrackRange {
+                        track_section: target_track.into(),
+                        begin: 200,
+                        end: 2000,
+                        direction: Direction::StopToStart,
+                    },
+                    TrackRange {
+                        track_section: "TA1".into(),
+                        begin: 0,
+                        end: 2000,
+                        direction: Direction::StartToStop,
+                    },
+                ],
+                ..Default::default()
+            },
+            ..Default::default()
+        });
+
+        assert_eq!(
+            is_linking_valid(
+                &[source_occurrence, target_occurrence],
+                &[Arc::new(source_simulation), Arc::new(target_simulation)],
+                &[Arc::new(source_pathfinding), Arc::new(target_pathfinding)],
+                (0, 1)
+            ),
+            is_valid
+        );
+    }
+
+    #[test]
+    fn get_linking_requirements_extends_requirements_to_target_start() {
+        let source_occurrence = TrainOccurrence {
+            start_time: millisecond::i64::new(5000),
+            ..TrainOccurrence::fake()
+        };
+        let target_occurrence = TrainOccurrence {
+            start_time: millisecond::i64::new(10000),
+            ..TrainOccurrence::fake()
+        };
+        let mut simulation = fake_occurrence_simulation_success();
+        simulation.final_output.spacing_requirements = vec![
+            spacing("handoff_zone", 3000, 4000),
+            spacing("ignored_zone", 1000, 2000),
+        ];
+        simulation.final_output.routing_requirements = vec![RoutingRequirement {
+            route: "handoff_route".into(),
+            begin_time: 2500,
+            zones: vec![
+                routing_zone("handoff_zone", 4000),
+                routing_zone("ignored_zone", 2000),
+            ],
+        }];
+
+        let (spacing_requirements, routing_requirements) = get_linking_requirements(
+            &[source_occurrence, target_occurrence],
+            &[
+                Arc::new(Response::Success(simulation)),
+                Arc::new(Response::Success(fake_occurrence_simulation_success())),
+            ],
+            (0, 1),
+        );
+
+        assert_eq!(
+            spacing_requirements,
+            vec![spacing("handoff_zone", 4000, 5000)]
+        );
+        assert_eq!(
+            routing_requirements,
+            vec![RoutingRequirement {
+                route: "handoff_route".into(),
+                begin_time: 4000,
+                zones: vec![routing_zone("handoff_zone", 5000)],
+            }]
+        );
     }
 }
