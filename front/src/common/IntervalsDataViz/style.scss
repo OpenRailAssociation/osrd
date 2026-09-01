@@ -362,7 +362,7 @@ $resize-width: 3px;
               height: 50px;
               text-align: center;
 
-              &:before {
+              &::before {
                 content: '';
                 position: absolute;
                 top: -0.2em;

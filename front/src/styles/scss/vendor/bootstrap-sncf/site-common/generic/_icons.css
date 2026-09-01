@@ -13,7 +13,7 @@ i {
   line-height: 1;
 }
 
-i:before {
+i::before {
   /* stylelint-disable-next-line font-family-no-missing-generic-family-keyword */
   font-family: icons !important;
   font-style: normal;
@@ -21,754 +21,754 @@ i:before {
   vertical-align: top;
 }
 
-.icons-add:before {
+.icons-add::before {
   content: '\f101';
 }
 
-.icons-admin:before {
+.icons-admin::before {
   content: '\f102';
 }
 
-.icons-alert-notification:before {
+.icons-alert-notification::before {
   content: '\f103';
 }
 
-.icons-ambulant-sales:before {
+.icons-ambulant-sales::before {
   content: '\f104';
 }
 
-.icons-arrow-double:before {
+.icons-arrow-double::before {
   content: '\f105';
 }
 
-.icons-arrow-down:before {
+.icons-arrow-down::before {
   content: '\f106';
 }
 
-.icons-arrow-next:before {
+.icons-arrow-next::before {
   content: '\f107';
 }
 
-.icons-arrow-prev:before {
+.icons-arrow-prev::before {
   content: '\f108';
 }
 
-.icons-arrow-real:before {
+.icons-arrow-real::before {
   content: '\f109';
 }
 
-.icons-arrow-up:before {
+.icons-arrow-up::before {
   content: '\f10a';
 }
 
-.icons-arrow:before {
+.icons-arrow::before {
   content: '\f10b';
 }
 
-.icons-booking:before {
+.icons-booking::before {
   content: '\f10c';
 }
 
-.icons-bookmark-off:before {
+.icons-bookmark-off::before {
   content: '\f10d';
 }
 
-.icons-bookmark:before {
+.icons-bookmark::before {
   content: '\f10e';
 }
 
-.icons-bypass:before {
+.icons-bypass::before {
   content: '\f10f';
 }
 
-.icons-calendar-time:before {
+.icons-calendar-time::before {
   content: '\f110';
 }
 
-.icons-calendar:before {
+.icons-calendar::before {
   content: '\f111';
 }
 
-.icons-checked:before {
+.icons-checked::before {
   content: '\f112';
 }
 
-.icons-circle-account-connected:before {
+.icons-circle-account-connected::before {
   content: '\f113';
 }
 
-.icons-circle-arrow:before {
+.icons-circle-arrow::before {
   content: '\f114';
 }
 
-.icons-circle-back-top:before {
+.icons-circle-back-top::before {
   content: '\f115';
 }
 
-.icons-circle-cancelled:before {
+.icons-circle-cancelled::before {
   content: '\f116';
 }
 
-.icons-circle-delay:before {
+.icons-circle-delay::before {
   content: '\f117';
 }
 
-.icons-circle-delete:before {
+.icons-circle-delete::before {
   content: '\f118';
 }
 
-.icons-circle-disruption:before {
+.icons-circle-disruption::before {
   content: '\f119';
 }
 
-.icons-circle-facebook:before {
+.icons-circle-facebook::before {
   content: '\f11a';
 }
 
-.icons-circle-flux-rss:before {
+.icons-circle-flux-rss::before {
   content: '\f11b';
 }
 
-.icons-circle-google-plus:before {
+.icons-circle-google-plus::before {
   content: '\f11c';
 }
 
-.icons-circle-information:before {
+.icons-circle-information::before {
   content: '\f11d';
 }
 
-.icons-circle-instagram:before {
+.icons-circle-instagram::before {
   content: '\f11e';
 }
 
-.icons-circle-linkedin:before {
+.icons-circle-linkedin::before {
   content: '\f11f';
 }
 
-.icons-circle-mail:before {
+.icons-circle-mail::before {
   content: '\f120';
 }
 
-.icons-circle-pinterest:before {
+.icons-circle-pinterest::before {
   content: '\f121';
 }
 
-.icons-circle-print:before {
+.icons-circle-print::before {
   content: '\f122';
 }
 
-.icons-circle-reverse:before {
+.icons-circle-reverse::before {
   content: '\f123';
 }
 
-.icons-circle-tooltip:before {
+.icons-circle-tooltip::before {
   content: '\f124';
 }
 
-.icons-circle-twitter:before {
+.icons-circle-twitter::before {
   content: '\f125';
 }
 
-.icons-circle-works:before {
+.icons-circle-works::before {
   content: '\f126';
 }
 
-.icons-clock:before {
+.icons-clock::before {
   content: '\f127';
 }
 
-.icons-close-circle:before {
+.icons-close-circle::before {
   content: '\f128';
 }
 
-.icons-close:before {
+.icons-close::before {
   content: '\f129';
 }
 
-.icons-disabled-service:before {
+.icons-disabled-service::before {
   content: '\f12a';
 }
 
-.icons-distribution:before {
+.icons-distribution::before {
   content: '\f12b';
 }
 
-.icons-document:before {
+.icons-document::before {
   content: '\f12c';
 }
 
-.icons-document2:before {
+.icons-document2::before {
   content: '\f12d';
 }
 
-.icons-download:before {
+.icons-download::before {
   content: '\f12e';
 }
 
-.icons-eco-consumption:before {
+.icons-eco-consumption::before {
   content: '\f12f';
 }
 
-.icons-external-link:before {
+.icons-external-link::before {
   content: '\f130';
 }
 
-.icons-facebook:before {
+.icons-facebook::before {
   content: '\f131';
 }
 
-.icons-favorite-on:before {
+.icons-favorite-on::before {
   content: '\f132';
 }
 
-.icons-file:before {
+.icons-file::before {
   content: '\f133';
 }
 
-.icons-filters:before {
+.icons-filters::before {
   content: '\f134';
 }
 
-.icons-free-bike:before {
+.icons-free-bike::before {
   content: '\f135';
 }
 
-.icons-instagram:before {
+.icons-instagram::before {
   content: '\f136';
 }
 
-.icons-itinerary-bike:before {
+.icons-itinerary-bike::before {
   content: '\f137';
 }
 
-.icons-itinerary-bullet:before {
+.icons-itinerary-bullet::before {
   content: '\f138';
 }
 
-.icons-itinerary-bus-2:before {
+.icons-itinerary-bus-2::before {
   content: '\f139';
 }
 
-.icons-itinerary-bus:before {
+.icons-itinerary-bus::before {
   content: '\f13a';
 }
 
-.icons-itinerary-car:before {
+.icons-itinerary-car::before {
   content: '\f13b';
 }
 
-.icons-itinerary-line-idf-a:before {
+.icons-itinerary-line-idf-a::before {
   content: '\f13c';
 }
 
-.icons-itinerary-line-idf-b:before {
+.icons-itinerary-line-idf-b::before {
   content: '\f13d';
 }
 
-.icons-itinerary-line-idf-c:before {
+.icons-itinerary-line-idf-c::before {
   content: '\f13e';
 }
 
-.icons-itinerary-line-idf-d:before {
+.icons-itinerary-line-idf-d::before {
   content: '\f13f';
 }
 
-.icons-itinerary-line-idf-e:before {
+.icons-itinerary-line-idf-e::before {
   content: '\f140';
 }
 
-.icons-itinerary-line-idf-h:before {
+.icons-itinerary-line-idf-h::before {
   content: '\f141';
 }
 
-.icons-itinerary-line-idf-j:before {
+.icons-itinerary-line-idf-j::before {
   content: '\f142';
 }
 
-.icons-itinerary-line-idf-k:before {
+.icons-itinerary-line-idf-k::before {
   content: '\f143';
 }
 
-.icons-itinerary-line-idf-l:before {
+.icons-itinerary-line-idf-l::before {
   content: '\f144';
 }
 
-.icons-itinerary-line-idf-n:before {
+.icons-itinerary-line-idf-n::before {
   content: '\f145';
 }
 
-.icons-itinerary-line-idf-p:before {
+.icons-itinerary-line-idf-p::before {
   content: '\f146';
 }
 
-.icons-itinerary-line-idf-r:before {
+.icons-itinerary-line-idf-r::before {
   content: '\f147';
 }
 
-.icons-itinerary-line-idf-u:before {
+.icons-itinerary-line-idf-u::before {
   content: '\f148';
 }
 
-.icons-itinerary-line-metro-1:before {
+.icons-itinerary-line-metro-1::before {
   content: '\f149';
 }
 
-.icons-itinerary-line-metro-10:before {
+.icons-itinerary-line-metro-10::before {
   content: '\f14a';
 }
 
-.icons-itinerary-line-metro-11:before {
+.icons-itinerary-line-metro-11::before {
   content: '\f14b';
 }
 
-.icons-itinerary-line-metro-12:before {
+.icons-itinerary-line-metro-12::before {
   content: '\f14c';
 }
 
-.icons-itinerary-line-metro-13:before {
+.icons-itinerary-line-metro-13::before {
   content: '\f14d';
 }
 
-.icons-itinerary-line-metro-14:before {
+.icons-itinerary-line-metro-14::before {
   content: '\f14e';
 }
 
-.icons-itinerary-line-metro-2:before {
+.icons-itinerary-line-metro-2::before {
   content: '\f14f';
 }
 
-.icons-itinerary-line-metro-3:before {
+.icons-itinerary-line-metro-3::before {
   content: '\f150';
 }
 
-.icons-itinerary-line-metro-3bis:before {
+.icons-itinerary-line-metro-3bis::before {
   content: '\f151';
 }
 
-.icons-itinerary-line-metro-4:before {
+.icons-itinerary-line-metro-4::before {
   content: '\f152';
 }
 
-.icons-itinerary-line-metro-5:before {
+.icons-itinerary-line-metro-5::before {
   content: '\f153';
 }
 
-.icons-itinerary-line-metro-6:before {
+.icons-itinerary-line-metro-6::before {
   content: '\f154';
 }
 
-.icons-itinerary-line-metro-7:before {
+.icons-itinerary-line-metro-7::before {
   content: '\f155';
 }
 
-.icons-itinerary-line-metro-7bis:before {
+.icons-itinerary-line-metro-7bis::before {
   content: '\f156';
 }
 
-.icons-itinerary-line-metro-8:before {
+.icons-itinerary-line-metro-8::before {
   content: '\f157';
 }
 
-.icons-itinerary-line-metro-9:before {
+.icons-itinerary-line-metro-9::before {
   content: '\f158';
 }
 
-.icons-itinerary-line-tram-1:before {
+.icons-itinerary-line-tram-1::before {
   content: '\f159';
 }
 
-.icons-itinerary-line-tram-10:before {
+.icons-itinerary-line-tram-10::before {
   content: '\f15a';
 }
 
-.icons-itinerary-line-tram-11:before {
+.icons-itinerary-line-tram-11::before {
   content: '\f15b';
 }
 
-.icons-itinerary-line-tram-12:before {
+.icons-itinerary-line-tram-12::before {
   content: '\f15c';
 }
 
-.icons-itinerary-line-tram-13:before {
+.icons-itinerary-line-tram-13::before {
   content: '\f15d';
 }
 
-.icons-itinerary-line-tram-2:before {
+.icons-itinerary-line-tram-2::before {
   content: '\f15e';
 }
 
-.icons-itinerary-line-tram-3:before {
+.icons-itinerary-line-tram-3::before {
   content: '\f15f';
 }
 
-.icons-itinerary-line-tram-3a:before {
+.icons-itinerary-line-tram-3a::before {
   content: '\f160';
 }
 
-.icons-itinerary-line-tram-3b:before {
+.icons-itinerary-line-tram-3b::before {
   content: '\f161';
 }
 
-.icons-itinerary-line-tram-3est:before {
+.icons-itinerary-line-tram-3est::before {
   content: '\f162';
 }
 
-.icons-itinerary-line-tram-4:before {
+.icons-itinerary-line-tram-4::before {
   content: '\f163';
 }
 
-.icons-itinerary-line-tram-5:before {
+.icons-itinerary-line-tram-5::before {
   content: '\f164';
 }
 
-.icons-itinerary-line-tram-6:before {
+.icons-itinerary-line-tram-6::before {
   content: '\f165';
 }
 
-.icons-itinerary-line-tram-7:before {
+.icons-itinerary-line-tram-7::before {
   content: '\f166';
 }
 
-.icons-itinerary-line-tram-8:before {
+.icons-itinerary-line-tram-8::before {
   content: '\f167';
 }
 
-.icons-itinerary-line-tram-9:before {
+.icons-itinerary-line-tram-9::before {
   content: '\f168';
 }
 
-.icons-itinerary-metro:before {
+.icons-itinerary-metro::before {
   content: '\f169';
 }
 
-.icons-itinerary-pedestrian:before {
+.icons-itinerary-pedestrian::before {
   content: '\f16a';
 }
 
-.icons-itinerary-rer:before {
+.icons-itinerary-rer::before {
   content: '\f16b';
 }
 
-.icons-itinerary-train-station:before {
+.icons-itinerary-train-station::before {
   content: '\f16c';
 }
 
-.icons-itinerary-train:before {
+.icons-itinerary-train::before {
   content: '\f16d';
 }
 
-.icons-itinerary-tram:before {
+.icons-itinerary-tram::before {
   content: '\f16e';
 }
 
-.icons-itinerary-tramway:before {
+.icons-itinerary-tramway::before {
   content: '\f16f';
 }
 
-.icons-label:before {
+.icons-label::before {
   content: '\f170';
 }
 
-.icons-large-building:before {
+.icons-large-building::before {
   content: '\f171';
 }
 
-.icons-large-clock:before {
+.icons-large-clock::before {
   content: '\f172';
 }
 
-.icons-large-conversation:before {
+.icons-large-conversation::before {
   content: '\f173';
 }
 
-.icons-large-creditcard:before {
+.icons-large-creditcard::before {
   content: '\f174';
 }
 
-.icons-large-france:before {
+.icons-large-france::before {
   content: '\f175';
 }
 
-.icons-large-group:before {
+.icons-large-group::before {
   content: '\f176';
 }
 
-.icons-large-headphones:before {
+.icons-large-headphones::before {
   content: '\f177';
 }
 
-.icons-large-information:before {
+.icons-large-information::before {
   content: '\f178';
 }
 
-.icons-large-itinerary-bike:before {
+.icons-large-itinerary-bike::before {
   content: '\f179';
 }
 
-.icons-large-itinerary-bus-2:before {
+.icons-large-itinerary-bus-2::before {
   content: '\f17a';
 }
 
-.icons-large-itinerary-bus:before {
+.icons-large-itinerary-bus::before {
   content: '\f17b';
 }
 
-.icons-large-itinerary-car:before {
+.icons-large-itinerary-car::before {
   content: '\f17c';
 }
 
-.icons-large-itinerary-metro:before {
+.icons-large-itinerary-metro::before {
   content: '\f17d';
 }
 
-.icons-large-itinerary-pedestrian:before {
+.icons-large-itinerary-pedestrian::before {
   content: '\f17e';
 }
 
-.icons-large-itinerary-rer:before {
+.icons-large-itinerary-rer::before {
   content: '\f17f';
 }
 
-.icons-large-itinerary-train-station:before {
+.icons-large-itinerary-train-station::before {
   content: '\f180';
 }
 
-.icons-large-itinerary-train:before {
+.icons-large-itinerary-train::before {
   content: '\f181';
 }
 
-.icons-large-itinerary-tram:before {
+.icons-large-itinerary-tram::before {
   content: '\f182';
 }
 
-.icons-large-itinerary-tramway:before {
+.icons-large-itinerary-tramway::before {
   content: '\f183';
 }
 
-.icons-large-lightbulb:before {
+.icons-large-lightbulb::before {
   content: '\f184';
 }
 
-.icons-large-luggage:before {
+.icons-large-luggage::before {
   content: '\f185';
 }
 
-.icons-large-mail:before {
+.icons-large-mail::before {
   content: '\f186';
 }
 
-.icons-large-phone:before {
+.icons-large-phone::before {
   content: '\f187';
 }
 
-.icons-large-search-recent:before {
+.icons-large-search-recent::before {
   content: '\f188';
 }
 
-.icons-large-seat:before {
+.icons-large-seat::before {
   content: '\f189';
 }
 
-.icons-large-skateboard:before {
+.icons-large-skateboard::before {
   content: '\f18a';
 }
 
-.icons-large-smartphone:before {
+.icons-large-smartphone::before {
   content: '\f18b';
 }
 
-.icons-large-sncf:before {
+.icons-large-sncf::before {
   content: '\f18c';
 }
 
-.icons-large-stroller:before {
+.icons-large-stroller::before {
   content: '\f18d';
 }
 
-.icons-large-suitcase:before {
+.icons-large-suitcase::before {
   content: '\f18e';
 }
 
-.icons-large-swipecard:before {
+.icons-large-swipecard::before {
   content: '\f18f';
 }
 
-.icons-large-ticket:before {
+.icons-large-ticket::before {
   content: '\f190';
 }
 
-.icons-large-truck:before {
+.icons-large-truck::before {
   content: '\f191';
 }
 
-.icons-large-warning:before {
+.icons-large-warning::before {
   content: '\f192';
 }
 
-.icons-linkedin:before {
+.icons-linkedin::before {
   content: '\f193';
 }
 
-.icons-list:before {
+.icons-list::before {
   content: '\f194';
 }
 
-.icons-localisation-pin:before {
+.icons-localisation-pin::before {
   content: '\f195';
 }
 
-.icons-lounge-car:before {
+.icons-lounge-car::before {
   content: '\f196';
 }
 
-.icons-menu-account:before {
+.icons-menu-account::before {
   content: '\f197';
 }
 
-.icons-menu-burger:before {
+.icons-menu-burger::before {
   content: '\f198';
 }
 
-.icons-menu-searchbar:before {
+.icons-menu-searchbar::before {
   content: '\f199';
 }
 
-.icons-message:before {
+.icons-message::before {
   content: '\f19a';
 }
 
-.icons-mosaic:before {
+.icons-mosaic::before {
   content: '\f19b';
 }
 
-.icons-nursery-service:before {
+.icons-nursery-service::before {
   content: '\f19c';
 }
 
-.icons-options:before {
+.icons-options::before {
   content: '\f19d';
 }
 
-.icons-pause:before {
+.icons-pause::before {
   content: '\f19e';
 }
 
-.icons-pencil:before {
+.icons-pencil::before {
   content: '\f19f';
 }
 
-.icons-play-area:before {
+.icons-play-area::before {
   content: '\f1a0';
 }
 
-.icons-play:before {
+.icons-play::before {
   content: '\f1a1';
 }
 
-.icons-position:before {
+.icons-position::before {
   content: '\f1a2';
 }
 
-.icons-print:before {
+.icons-print::before {
   content: '\f1a3';
 }
 
-.icons-professionnal-area:before {
+.icons-professionnal-area::before {
   content: '\f1a4';
 }
 
-.icons-quiet-area:before {
+.icons-quiet-area::before {
   content: '\f1a5';
 }
 
-.icons-refresh:before {
+.icons-refresh::before {
   content: '\f1a6';
 }
 
-.icons-rent-bike:before {
+.icons-rent-bike::before {
   content: '\f1a7';
 }
 
-.icons-search-recent:before {
+.icons-search-recent::before {
   content: '\f1ac';
 }
 
-.icons-search:before {
+.icons-search::before {
   content: '\f1ad';
 }
 
-.icons-share:before {
+.icons-share::before {
   content: '\f1ae';
 }
 
-.icons-slider-off:before {
+.icons-slider-off::before {
   content: '\f1af';
 }
 
-.icons-slider-on:before {
+.icons-slider-on::before {
   content: '\f1b0';
 }
 
-.icons-sort:before {
+.icons-sort::before {
   content: '\f1b1';
 }
 
-.icons-support:before {
+.icons-support::before {
   content: '\f1b2';
 }
 
-.icons-tag:before {
+.icons-tag::before {
   content: '\f1b3';
 }
 
-.icons-tgv-family:before {
+.icons-tgv-family::before {
   content: '\f1b4';
 }
 
-.icons-toolbar-bold:before {
+.icons-toolbar-bold::before {
   content: '\f1b5';
 }
 
-.icons-toolbar-center:before {
+.icons-toolbar-center::before {
   content: '\f1b6';
 }
 
-.icons-toolbar-italic:before {
+.icons-toolbar-italic::before {
   content: '\f1b7';
 }
 
-.icons-toolbar-left:before {
+.icons-toolbar-left::before {
   content: '\f1b8';
 }
 
-.icons-toolbar-list:before {
+.icons-toolbar-list::before {
   content: '\f1b9';
 }
 
-.icons-toolbar-underline:before {
+.icons-toolbar-underline::before {
   content: '\f1ba';
 }
 
-.icons-twitter:before {
+.icons-twitter::before {
   content: '\f1bb';
 }
 
-.icons-volume-down:before {
+.icons-volume-down::before {
   content: '\f1bc';
 }
 
-.icons-volume-up:before {
+.icons-volume-up::before {
   content: '\f1bd';
 }
 
-.icons-warning:before {
+.icons-warning::before {
   content: '\f1be';
 }
 
-.icons-wifi-area:before {
+.icons-wifi-area::before {
   content: '\f1bf';
 }
 
-.icons-young-service:before {
+.icons-young-service::before {
   content: '\f1c0';
 }

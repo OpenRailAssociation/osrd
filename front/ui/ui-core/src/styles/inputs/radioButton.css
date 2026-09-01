@@ -26,7 +26,7 @@
     );
     outline: solid 0.125rem #d3d1cf;
 
-    &:after {
+    &::after {
       content: '';
       position: absolute;
       top: 0.0625rem;
@@ -86,7 +86,7 @@
     }
 
     input:checked ~ .checkmark {
-      &:after {
+      &::after {
         position: absolute;
         border: none;
         opacity: 1;
@@ -106,7 +106,7 @@
       rgba(121, 118, 113, 1) 100%
     );
 
-    &:after {
+    &::after {
       border: none;
       opacity: 1;
       top: 0;
@@ -132,7 +132,7 @@
     cursor: default;
     border: 0.5px #d3d1cf solid;
 
-    &:after {
+    &::after {
       border: none;
       opacity: 1;
       top: 0;
@@ -165,7 +165,7 @@
     outline: none;
 
     .checkmark {
-      &:after {
+      &::after {
         top: -4px;
         width: 26px;
         height: 26px;
@@ -313,7 +313,7 @@
       outline: none;
       cursor: default;
 
-      &:after {
+      &::after {
         border: none;
         opacity: 1;
         top: 0;

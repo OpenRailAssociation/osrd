@@ -92,7 +92,7 @@
       margin: 0;
       color: var(--grey80);
 
-      li:before {
+      li::before {
         content: '·';
         font-size: 1.875rem;
         vertical-align: middle;

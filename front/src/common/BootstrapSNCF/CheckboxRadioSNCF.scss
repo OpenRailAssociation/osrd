@@ -1,7 +1,7 @@
 .custom-control .custom-control-input:disabled ~ .custom-control-label {
   color: var(--coolgray5) !important;
 
-  &:before {
+  &::before {
     border-color: var(--coolgray3) !important;
   }
 }
