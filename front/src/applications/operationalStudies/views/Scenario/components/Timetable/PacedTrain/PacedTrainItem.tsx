@@ -478,7 +478,10 @@ const PacedTrainItem = ({
             onReset={deleteAllExceptions}
             labels={{
               title: t('timetable.resetExceptions'),
-              texts: [t('timetable.resetAllExceptions')],
+              texts: [
+                t('timetable.resetAllExceptions'),
+                t('timetable.resetExceptionsCount', { count: pacedTrain.paced.exceptions.length }),
+              ],
               submit: t('timetable.reset'),
               cancel: t('timetable.cancel'),
             }}

@@ -262,6 +262,8 @@
       "reset": "Zurücksetzen",
       "resetAllExceptions": "Bestätigen Sie die Zurücksetzung der Ausnahmen dieser Leistung?",
       "resetExceptions": "Ausnahmen zurücksetzen",
+      "resetExceptionsCount_one": "1 Ausnahme wird zurückgesetzt.",
+      "resetExceptionsCount_other": "{{count}} Ausnahmen werden zurückgesetzt.",
       "rollingStockFilterPlaceholder": "Baureihe, Serie, Detail",
       "selectAll": "Alles auswählen",
       "selectOptions": "Auswahloptionen",
