@@ -2,7 +2,7 @@ import { type HTMLProps } from 'react';
 
 import type { PathLevel, SpaceTimeChartTheme } from '../spaceTimeChart';
 import type { DataPoint, Handler, PointToData, DataToPoint } from '../spaceTimeChart/lib/types';
-import type { LAYERS, PICKING_LAYERS } from './consts';
+import type { LAYERS, PICKING, PICKING_LAYERS, RENDERING } from './consts';
 
 export type BaseChartContextType = {
   fingerprint: string;
@@ -20,6 +20,15 @@ export type RGBAColor = [number, number, number, number];
 // CANVAS SPECIFIC TYPES:
 export type PickingLayerType = (typeof PICKING_LAYERS)[number];
 export type LayerType = (typeof LAYERS)[number];
+
+type RenderingKey = `${typeof RENDERING}-${LayerType}`;
+type PickingKey = `${typeof PICKING}-${PickingLayerType}`;
+export type ContextKey = RenderingKey | PickingKey;
+
+export type LayerEntry =
+  | { type: typeof RENDERING; layer: typeof LAYERS[number] }
+  | { type: typeof PICKING; layer: typeof PICKING_LAYERS[number] };
+
 
 export type CurveOutline = {
   /** Offset compared to the curve */
@@ -72,8 +81,8 @@ export type PickingDrawingFunction<T> = (
 
 export type DrawingFunctionHandler<T> = (
   arg:
-    | { type: 'picking'; layer: PickingLayerType; fn: PickingDrawingFunction<T> }
-    | { type: 'rendering'; layer: LayerType; fn: DrawingFunction<T> }
+    | { type: typeof PICKING; layer: PickingLayerType; fn: PickingDrawingFunction<T> }
+    | { type: typeof RENDERING; layer: LayerType; fn: DrawingFunction<T> }
 ) => void;
 
 export type CanvasContextType<T> = {

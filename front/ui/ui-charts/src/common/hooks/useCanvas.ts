@@ -2,10 +2,10 @@ import { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'r
 
 import { isEqual } from 'lodash';
 
-import { PICKING_LAYERS, LAYERS } from '../consts';
+import { PICKING_LAYERS, LAYERS, RENDERING, allLayers } from '../consts';
 import { rgbToHex, colorToIndex } from '../helpers/colors';
 import getPNGBlob from '../helpers/png';
-import { getPickingScalingRatio } from '../helpers/utils';
+import { getPickingScalingRatio, makeContextKey } from '../helpers/utils';
 import type {
   BaseChartContextType,
   CanvasContextType,
@@ -17,6 +17,7 @@ import type {
   PickingLayerType,
   Point,
   PickingElement,
+  ContextKey,
 } from '../types';
 import { useDevicePixelRatio } from './useDevicePixelRatio';
 import { useSize } from './useSize';
@@ -31,8 +32,8 @@ export function useCanvas<T extends BaseChartContextType>(
 ) {
   // Most things are handled through refs here so that we have a very precise control on when to
   // render anything:
-  const canvasesRef = useRef<Record<string, HTMLCanvasElement>>({});
-  const contextsRef = useRef<Record<string, CanvasRenderingContext2D>>({});
+  const canvasesRef = useRef<Partial<Record<ContextKey, HTMLCanvasElement>>>({});
+  const contextsRef = useRef<Partial<Record<ContextKey, CanvasRenderingContext2D>>>({});
   const pickingFunctions = useRef<Record<string, Set<PickingDrawingFunction<T>>>>(
     PICKING_LAYERS.reduce((iter, layer) => ({ ...iter, [layer]: new Set() }), {})
   );
@@ -176,7 +177,7 @@ export function useCanvas<T extends BaseChartContextType>(
       if (set.has(fn)) throw new Error('This picking function has already been registered.');
 
       set.add(fn);
-    } else if (type === 'rendering') {
+    } else if (type === RENDERING) {
       const set = drawingFunctions.current[layer];
       if (set.has(fn)) throw new Error('This drawing function has already been registered.');
 
@@ -224,14 +225,10 @@ export function useCanvas<T extends BaseChartContextType>(
     const canvases = canvasesRef.current;
     const contexts = contextsRef.current;
 
-    // Create missing layers:
-    const allLayers = [
-      ...LAYERS.map((layer) => ({ layer, type: 'rendering' })),
-      ...PICKING_LAYERS.map((layer) => ({ layer, type: 'picking' })),
-    ];
-    allLayers.forEach(({ layer, type }) => {
-      const layerId = `${type}-${layer}`;
+    allLayers.forEach((entry) => {
+      const layerId = makeContextKey(entry);
       if (!canvases[layerId]) {
+        const { layer, type } = entry;
         const canvas = document.createElement('CANVAS') as HTMLCanvasElement;
         const ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
         canvas.classList.add(`layer-${type}-${layer}`);
@@ -263,7 +260,8 @@ export function useCanvas<T extends BaseChartContextType>(
   useEffect(() => {
     const pickingScalingRatio = getPickingScalingRatio();
 
-    for (const id in canvasesRef.current) {
+    for (const entry of allLayers) {
+      const id = makeContextKey(entry);
       const canvas = canvasesRef.current[id];
       const ctx = contextsRef.current[id];
       const isPicking = id.split('-')[0] === 'picking';
@@ -277,7 +275,7 @@ export function useCanvas<T extends BaseChartContextType>(
         canvas.setAttribute('height', Math.max(1, size.height * ratio) + 'px');
         if (isPicking) canvas.style.imageRendering = 'pixelated';
 
-        if (!isPicking) {
+        if (!isPicking && ctx) {
           // Reset the transform to identity, then apply the new scale
           ctx.setTransform(1, 0, 0, 1, 0, 0);
           ctx.scale(devicePixelRatio, devicePixelRatio);

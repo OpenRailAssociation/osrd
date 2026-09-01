@@ -1,5 +1,15 @@
-export const PICKING_LAYERS = ['paths', 'overlay'] as const;
+import { LayerEntry } from "./types";
+
 export const LAYERS = ['background', 'graduations', 'paths', 'overlay', 'captions'] as const;
+export const PICKING_LAYERS = ['paths', 'overlay'] as const;
+
+export const RENDERING = 'rendering';
+export const PICKING = 'picking';
+
+export const allLayers: LayerEntry[] = [
+  ...LAYERS.map((layer) => ({ type: RENDERING, layer }) as const),
+  ...PICKING_LAYERS.map((layer) => ({ type: PICKING, layer }) as const),
+];
 
 // ========== METRIC CONSTANTS ==========
 

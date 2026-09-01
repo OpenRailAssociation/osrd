@@ -1,5 +1,8 @@
 // ============= Canvas ==============
 
+import { PICKING, RENDERING } from "../consts";
+import { ContextKey, LayerEntry } from "../types";
+
 /**
  * This function returns the picking layers scaling ratio. We basically take the min of the screen
  * pixels and the "HTML pixels", and divide it by two.
@@ -18,4 +21,13 @@ export function getPickingScalingRatio(): number {
   // When devicePixelRatio is under or equal to 1 (like when the user zooms out for instance), we
   // downscale based on the actual "screen pixels" (to avoid having a too large scene to fill):
   return pickingDownscalingRatio * dpr;
+}
+
+export const makeContextKey = ({ type, layer }: LayerEntry): ContextKey => {
+  switch (type) {
+    case RENDERING:
+      return `${RENDERING}-${layer}`;
+    case PICKING:
+      return `${PICKING}-${layer}`;
+  }
 }
