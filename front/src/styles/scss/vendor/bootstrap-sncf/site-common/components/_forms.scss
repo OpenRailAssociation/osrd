@@ -95,6 +95,7 @@ input {
 .form-control {
   height: 100%;
   min-height: $input-min-height; // for IE11
+  /* stylelint-disable-next-line number-max-precision */
   padding: 0.65625rem 1.25rem;
   font-weight: $font-weight-medium;
   color: $input-color;
