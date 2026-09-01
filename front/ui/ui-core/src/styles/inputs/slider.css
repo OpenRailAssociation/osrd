@@ -17,7 +17,6 @@
     &::-webkit-slider-runnable-track {
       appearance: none;
       height: 4px;
-      border-radius: 2px;
       box-shadow: 0 0 0 0.5px var(--color-black-25) inset;
       background: linear-gradient(
         to right,
@@ -31,7 +30,6 @@
     &::-moz-range-track {
       appearance: none;
       height: 4px;
-      border-radius: 2px;
       box-shadow: 0 0 0 0.5px var(--color-black-25) inset;
       background: linear-gradient(
         to right,
@@ -76,7 +74,6 @@
         &::-webkit-slider-runnable-track {
           box-sizing: content-box;
           border-radius: 4px;
-          background-color: var(--color-white-75);
           background: linear-gradient(
             to right,
             var(--color-black-25) var(--slider-progress),
