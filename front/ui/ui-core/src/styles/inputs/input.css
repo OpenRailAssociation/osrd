@@ -247,9 +247,9 @@
       border-radius: 0.188rem;
 
       /* The small variant overrides padding and loses the with-icons-* padding-right,
-      causing text to overlap the clear/chevron buttons*/
+      causing text to overlap the clear/chevron buttons */
       &.with-icons-1 {
-        /* one icon (chevron or clear)*/
+        /* one icon (chevron or clear) */
         padding-right: 35px;
       }
 
