@@ -34,7 +34,7 @@
         'a12 a13 a14 a15 . .'
         'a16 a17 a18 a19 . .';
       grid-auto-rows: 32px;
-      grid-gap: 10px;
+      gap: 10px;
     }
 
     .tolerance-grid.minus-tolerance {
