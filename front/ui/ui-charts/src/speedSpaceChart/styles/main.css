@@ -64,6 +64,7 @@
 
 #details-box {
   @apply font-sans;
+
   min-width: 115px;
   background-color: var(--color-black-85);
   border-radius: 8px;
@@ -204,6 +205,7 @@
 
 #tooltip {
   @apply font-sans;
+
   height: 40px;
   width: 246px;
   display: flex;

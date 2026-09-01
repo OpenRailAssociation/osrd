@@ -12,8 +12,6 @@ export default {
     'declaration-block-no-duplicate-properties': null,
     'declaration-block-no-redundant-longhand-properties': null,
     'declaration-block-no-shorthand-property-overrides': null,
-    'font-family-name-quotes': null,
-    'font-family-no-missing-generic-family-keyword': null,
     'keyframes-name-pattern': null,
     'length-zero-no-unit': null,
     'media-feature-range-notation': null,
