@@ -7,7 +7,6 @@ export default {
   // soon enough; we just want to do it progressively so it's reviewable.
   rules: {
     'alpha-value-notation': null,
-    'at-rule-no-vendor-prefix': null,
     'color-function-alias-notation': null,
     'color-function-notation': null,
     'color-hex-length': null,
