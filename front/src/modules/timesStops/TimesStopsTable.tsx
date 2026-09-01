@@ -1,4 +1,4 @@
-import React, { useCallback, Fragment, useMemo, useRef } from 'react';
+import React, { useCallback, Fragment, useMemo, useRef, useState } from 'react';
 
 import { Checkbox } from '@osrd-project/ui-core';
 import { Alert, Moon, TriangleDown } from '@osrd-project/ui-icons';
@@ -8,6 +8,7 @@ import {
   getCoreRowModel,
   useReactTable,
   type CellContext,
+  type HeaderContext,
   type Row,
   type RowData,
 } from '@tanstack/react-table';
@@ -23,12 +24,21 @@ import { useDateTimeLocale } from 'utils/date';
 import { type Duration, type StartTime, subtractStartTime } from 'utils/duration';
 
 import DurationCell, { type DurationCellHandle } from './DurationCell';
+import { getRowsToUpdateFromSimulation } from './helpers/fillTimesFromSimulation';
 import type { PowerRestrictionBlockInfo } from './helpers/powerRestrictionIncompatibility';
 import { onStopSignalToReceptionSignal, truncateStartTimeToDay } from './helpers/utils';
 import MarginCell from './MarginCell';
+import RequestedTimeColumnHeader from './RequestedTimeColumnHeader';
 import StartTimeCell from './StartTimeCell';
 import type { TimeCellHandle } from './TimeCell';
-import type { MarginValue, PropagationMode, StopPropagationMode, TimesStopsRowNew } from './types';
+import type {
+  MarginValue,
+  PropagationMode,
+  RequestedTimeField,
+  StopPropagationMode,
+  TimeFillMode,
+  TimesStopsRowNew,
+} from './types';
 
 declare module '@tanstack/react-table' {
   // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
@@ -63,6 +73,7 @@ declare module '@tanstack/react-table' {
     onReceptionSignalChange: (row: TimesStopsRowNew, signal: ReceptionSignal | undefined) => void;
     onRequestedMarginChange: (row: TimesStopsRowNew, requestedMargin: MarginValue | null) => void;
     onPowerRestrictionChange: (row: TimesStopsRowNew, value: string | null) => void;
+    onApplyTimesFromSimulation: (field: RequestedTimeField, mode: TimeFillMode) => void;
   }
 }
 
@@ -149,6 +160,7 @@ type TimesStopsTableProps = {
   onReceptionSignalChange: (row: TimesStopsRowNew, signal: ReceptionSignal | undefined) => void;
   onRequestedMarginChange: (row: TimesStopsRowNew, value: MarginValue | null) => void;
   onPowerRestrictionChange: (row: TimesStopsRowNew, value: string | null) => void;
+  onApplyTimesFromSimulation: (field: RequestedTimeField, mode: TimeFillMode) => void;
 };
 
 const columnHelper = createColumnHelper<TimesStopsRowNew>();
@@ -184,6 +196,7 @@ const TimesStopsTable = ({
   onReceptionSignalChange,
   onRequestedMarginChange,
   onPowerRestrictionChange,
+  onApplyTimesFromSimulation,
 }: TimesStopsTableProps) => {
   const { t } = useTranslation('translation', { keyPrefix: 'timeStopTable' });
   const dateTimeLocale = useDateTimeLocale();
@@ -193,6 +206,9 @@ const TimesStopsTable = ({
   const cellTabOrderRef = useRef<Map<string, TimeCellTabEntry>>(new Map());
   const startTimeCellType: 'time' | 'duration' =
     scenario.timetable_type === 'CALENDAR' ? 'time' : 'duration';
+
+  const [highlightedRowIds, setHighlightedRowIds] = useState<Set<string>>(new Set());
+  const [mouseOverTimeField, setMouseOverTimeField] = useState<RequestedTimeField>();
 
   const registerTimeCellRef = useCallback(
     (rowIndex: number, columnId: string) => (handle: TabbableCellHandle | null) => {
@@ -534,6 +550,39 @@ const TimesStopsTable = ({
     );
   };
 
+  const onMouseEnterTimeColumnMenu = (
+    allRows: TimesStopsRowNew[],
+    field: RequestedTimeField,
+    mode: TimeFillMode
+  ) => {
+    const rowsToHighlight = getRowsToUpdateFromSimulation(allRows, field, mode);
+
+    setHighlightedRowIds(new Set(rowsToHighlight.map((row) => row.id)));
+    setMouseOverTimeField(field);
+  };
+
+  const returnRequestedTimelHeader = (field: RequestedTimeField) => {
+    const requestedTimeHeader = (info: HeaderContext<TimesStopsRowNew, Date | null>) => {
+      const { allRows } = info.table.options.meta!;
+      return (
+        <RequestedTimeColumnHeader
+          field={field}
+          isSimulationValid={isValid}
+          rows={allRows}
+          onFillEmpty={() => info.table.options.meta!.onApplyTimesFromSimulation(field, 'fill')}
+          onOverwriteAll={() =>
+            info.table.options.meta!.onApplyTimesFromSimulation(field, 'overwrite')
+          }
+          onMouseEnterFillEmpty={() => onMouseEnterTimeColumnMenu(allRows, field, 'fill')}
+          onMouseEnterOverwriteAll={() => onMouseEnterTimeColumnMenu(allRows, field, 'overwrite')}
+          onMouseLeave={() => setHighlightedRowIds(new Set())}
+        />
+      );
+    };
+    requestedTimeHeader.displayName = 'RequestedTimeHeader';
+    return requestedTimeHeader;
+  };
+
   const columns = useMemo(
     () => [
       columnHelper.display({
@@ -569,12 +618,12 @@ const TimesStopsTable = ({
         },
       }),
       columnHelper.accessor('requestedArrival', {
-        header: () => t('arrivalTime'),
+        header: returnRequestedTimelHeader('requestedArrival'),
         cell: returnArrivalTimeCell,
         meta: {
           className: 'col-requested-arrival col-with-clock-time',
           tabbable: true,
-          title: t('arrivalTime'),
+          title: t('requestedArrival'),
         },
       }),
       columnHelper.accessor('computedArrival', {
@@ -595,12 +644,12 @@ const TimesStopsTable = ({
         },
       }),
       columnHelper.accessor('requestedDeparture', {
-        header: () => t('departureTime'),
+        header: returnRequestedTimelHeader('requestedDeparture'),
         cell: returnDepartureTimeCell,
         meta: {
           className: 'col-requested-departure col-with-clock-time',
           tabbable: true,
-          title: t('departureTime'),
+          title: t('requestedDeparture'),
         },
       }),
       columnHelper.accessor('computedDeparture', {
@@ -702,6 +751,7 @@ const TimesStopsTable = ({
       onReceptionSignalChange,
       onRequestedMarginChange,
       onPowerRestrictionChange,
+      onApplyTimesFromSimulation,
     },
   });
 
@@ -833,6 +883,15 @@ const TimesStopsTable = ({
             const dayOffset = effectiveDayOffsets[rowIndex];
             const prevDayOffset = rowIndex > 0 ? effectiveDayOffsets[rowIndex - 1] : 0;
             const hasDayChanged = dayOffset > prevDayOffset;
+            const nextDayOffset =
+              rowIndex < tableRows.length - 1 ? effectiveDayOffsets[rowIndex + 1] : dayOffset;
+            const nextHasDayChanged = nextDayOffset > dayOffset;
+
+            const isCellHighlighted = (idx: number, field: string) =>
+              mouseOverTimeField === field &&
+              idx >= 0 &&
+              idx < tableRows.length &&
+              highlightedRowIds.has(tableRows[idx].original.id);
 
             let dayChangeLabel = null;
             if (hasDayChanged) {
@@ -892,6 +951,18 @@ const TimesStopsTable = ({
                           cell.column.id === 'powerRestriction' &&
                           table.options.meta!.powerRestrictionBlocks.get(row.original.id)
                             ?.hasWarning,
+                        'requested-cell-highlighted-arrival':
+                          cell.column.id === 'requestedArrival' &&
+                          highlightedRowIds.has(row.original.id) &&
+                          mouseOverTimeField === 'requestedArrival',
+                        'requested-cell-highlighted-departure':
+                          cell.column.id === 'requestedDeparture' &&
+                          highlightedRowIds.has(row.original.id) &&
+                          mouseOverTimeField === 'requestedDeparture',
+                        'requested-cell-highlighted--connect-top':
+                          !hasDayChanged && isCellHighlighted(rowIndex - 1, cell.column.id),
+                        'requested-cell-highlighted--connect-bottom':
+                          !nextHasDayChanged && isCellHighlighted(rowIndex + 1, cell.column.id),
                       })}
                       data-testid={cell.column.columnDef.meta?.['data-testid']}
                     >

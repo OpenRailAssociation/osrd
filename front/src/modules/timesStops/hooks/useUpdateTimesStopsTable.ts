@@ -56,6 +56,8 @@ import type {
   MarginValue,
   TimesStopsRowNew,
   UpdateCellStatus,
+  BatchTimesUpdate,
+  RequestedTimeField,
 } from '../types';
 
 const formatRequestedMargin = (requestedMargin: MarginValue | null) => {
@@ -125,7 +127,7 @@ const useUpdateTimesStopsTable = (
    */
   const computeUpdatedPathAndSchedule = useCallback(
     (
-      update: Exclude<CellUpdate, PowerRestrictionUpdate>
+      update: Exclude<CellUpdate, PowerRestrictionUpdate | BatchTimesUpdate>
     ):
       | {
           updatedPath: PathItem[];
@@ -267,6 +269,68 @@ const useUpdateTimesStopsTable = (
     };
   };
 
+  const computeUpdateWithBatch = (update: Exclude<CellUpdate, PowerRestrictionUpdate>) => {
+    if ('rows' in update) {
+      let updatedSchedule = selectedTrain.schedule ?? [];
+      let currentPath = selectedTrain.path;
+
+      const startTime =
+        scenario.timetable_type === 'CALENDAR'
+          ? new Date(selectedTrain.start_time)
+          : new Duration({ milliseconds: selectedTrain.start_time });
+
+      for (const row of update.rows) {
+        const { pathStepId, updatedPath: updatedPathForRow } = upsertPathStep(
+          row,
+          currentPath,
+          allRows
+        );
+        currentPath = updatedPathForRow;
+        const existingItemIndex = updatedSchedule.findIndex((item) => item.at === pathStepId);
+
+        const edit: Exclude<OptimisticEdit, { field: 'powerRestriction' }> =
+          update.field === 'requestedArrival'
+            ? {
+                field: 'requestedArrival',
+                value: row.computedArrival,
+              }
+            : {
+                field: 'requestedDeparture',
+                value: row.computedDeparture,
+              };
+
+        const newState = applyScheduleEdit(
+          { arrival: row.requestedArrival, stop: row.stopDuration },
+          edit
+        );
+
+        const { arrival: newArrival, stop_for: newStopFor } = scheduleStateToApiFields(
+          newState,
+          startTime
+        );
+
+        if (existingItemIndex >= 0) {
+          // Update existing schedule item
+          updatedSchedule = replaceElementAtIndex(updatedSchedule, existingItemIndex, {
+            ...updatedSchedule[existingItemIndex],
+            arrival: newArrival,
+            stop_for: newStopFor,
+          });
+        } else {
+          // Insert new schedule item in path order
+          const newItem: ScheduleItem = { at: pathStepId };
+          if (newArrival !== null) newItem.arrival = newArrival;
+          if (newStopFor !== null) newItem.stop_for = newStopFor;
+          updatedSchedule = insertScheduleItemInOrder(updatedSchedule, newItem, currentPath);
+        }
+      }
+
+      return { updatedPath: currentPath, updatedSchedule, updatedMargins: selectedTrain.margins };
+    } else {
+      return computeUpdatedPathAndSchedule(update);
+    }
+  };
+
   /**
    * Handle update when the selected train is an occurrence of a PacedTrain.
    * Uses exception-specific endpoints instead of updating the full paced train.
@@ -319,7 +383,7 @@ const useUpdateTimesStopsTable = (
           powerRestrictions,
         });
       } else {
-        const result = computeUpdatedPathAndSchedule(update);
+        const result = computeUpdateWithBatch(update);
         if (!result) return 'skipped';
 
         const trainWithUpdatedMargins = {
@@ -384,7 +448,7 @@ const useUpdateTimesStopsTable = (
         });
       }
 
-      const result = computeUpdatedPathAndSchedule(update);
+      const result = computeUpdateWithBatch(update);
       if (!result) return 'skipped';
 
       return persistTrain({
@@ -471,6 +535,11 @@ const useUpdateTimesStopsTable = (
     [updateCell]
   );
 
+  const updateMultipleTimes = useCallback(
+    (rows: TimesStopsRowNew[], field: RequestedTimeField) => updateCell({ rows, field }),
+    [updateCell]
+  );
+
   return {
     updateArrival,
     updateStopDuration,
@@ -478,6 +547,7 @@ const useUpdateTimesStopsTable = (
     updateReceptionSignal,
     updateRequestedMargin,
     updatePowerRestrictions,
+    updateMultipleTimes,
   };
 };
 

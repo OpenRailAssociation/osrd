@@ -163,13 +163,19 @@ export type PowerRestrictionUpdate = {
   value: string | null;
 };
 
+export type BatchTimesUpdate = {
+  rows: TimesStopsRowNew[];
+  field: RequestedTimeField;
+};
+
 export type CellUpdate =
   | ArrivalUpdate
   | StopDurationUpdate
   | DepartureUpdate
   | ReceptionSignalUpdate
   | RequestedMarginUpdate
-  | PowerRestrictionUpdate;
+  | PowerRestrictionUpdate
+  | BatchTimesUpdate;
 
 export type OptimisticEdit =
   | { field: 'requestedArrival'; value: StartTime | null }
@@ -201,3 +207,6 @@ export type MarginsCoreComputed = MarginsCoreBase & {
 };
 
 export type MarginsCore = null | MarginsCoreBase | MarginsCoreComputed;
+
+export type RequestedTimeField = 'requestedArrival' | 'requestedDeparture';
+export type TimeFillMode = 'fill' | 'overwrite';
