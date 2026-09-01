@@ -1,3 +1,5 @@
+@use 'sass:map';
+
 /* lists
    ========================================================================== */
 
@@ -10,7 +12,7 @@
 }
 
 .meta-list-item {
-  @each $breakpoint in map-keys($grid-breakpoints) {
+  @each $breakpoint in map.keys($grid-breakpoints) {
     @include media-breakpoint-only($breakpoint) {
       $infix: breakpoint-infix($breakpoint, $grid-breakpoints);
 
