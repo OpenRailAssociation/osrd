@@ -16,7 +16,6 @@ export default {
     'scss/at-rule-no-unknown': null,
     'scss/dollar-variable-colon-space-after': null,
     'scss/dollar-variable-pattern': null,
-    'scss/no-global-function-names': null,
     'scss/operator-no-newline-after': null,
     'selector-class-pattern': null,
     'shorthand-property-no-redundant-values': null,

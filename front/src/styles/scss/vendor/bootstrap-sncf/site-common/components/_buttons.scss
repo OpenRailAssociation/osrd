@@ -1,3 +1,6 @@
+@use 'sass:list';
+@use 'sass:meta';
+
 /* buttons
    ========================================================================== */
 // stylelint-disable selector-no-qualifying-type
@@ -68,17 +71,17 @@ fieldset:disabled a.btn {
 
 @each $color, $value in $btn-colors {
   .btn-#{$color} {
-    @if type-of($value) == 'list' {
+    @if meta.type-of($value) == 'list' {
       @include button-variant(
-        nth($value, 1),
-        nth($value, 2),
-        nth($value, 3),
-        nth($value, 4),
-        nth($value, 5),
-        nth($value, 6),
-        nth($value, 7),
-        nth($value, 8),
-        nth($value, 9)
+        list.nth($value, 1),
+        list.nth($value, 2),
+        list.nth($value, 3),
+        list.nth($value, 4),
+        list.nth($value, 5),
+        list.nth($value, 6),
+        list.nth($value, 7),
+        list.nth($value, 8),
+        list.nth($value, 9)
       );
     } @else {
       @include button-variant($value, $value);
@@ -244,16 +247,16 @@ input[type='button'] {
 
 @each $color, $value in $btn-rounded-colors {
   .btn-rounded-#{$color} {
-    @if type-of($value) == 'list' {
-      color: nth($value, 3);
-      background-color: nth($value, 1);
+    @if meta.type-of($value) == 'list' {
+      color: list.nth($value, 3);
+      background-color: list.nth($value, 1);
 
       &:not(:disabled, .disabled) {
         &:hover,
         &:focus,
         &:active {
-          color: nth($value, 6);
-          background-color: nth($value, 4);
+          color: list.nth($value, 6);
+          background-color: list.nth($value, 4);
         }
       }
     }

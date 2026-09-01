@@ -1,3 +1,7 @@
+@use 'sass:color';
+@use 'sass:list';
+@use 'sass:map';
+
 // Variables
 // Variables should follow the `$component-state-property-size` formula for
 // consistent naming. Ex: $nav-link-disabled-color and $modal-content-box-shadow-xs.
@@ -434,7 +438,7 @@ $transition-fade: opacity 0.15s linear;
 $transition-collapse: height 0.35s ease;
 $embed-responsive-aspect-ratios: () !default;
 // stylelint-disable-next-line scss/dollar-variable-default
-$embed-responsive-aspect-ratios: join(
+$embed-responsive-aspect-ratios: list.join(
   ((21 9), (16 9), (4 3), (1 1)),
   $embed-responsive-aspect-ratios
 );
@@ -540,7 +544,7 @@ $table-dark-bg: $gray-900 !default;
 $table-dark-accent-bg: rgba($white, 0.05);
 $table-dark-hover-color: $table-dark-color !default;
 $table-dark-hover-bg: rgba($white, 0.075);
-$table-dark-border-color: lighten($gray-900, 7.5%);
+$table-dark-border-color: color.adjust($gray-900, $lightness: 7.5%);
 $table-dark-color: $body-bg;
 $table-striped-order: odd;
 $table-caption-color: $text-muted;
@@ -653,7 +657,7 @@ $input-border-radius: $border-radius;
 $input-border-radius-lg: $border-radius-lg;
 $input-border-radius-sm: $border-radius-sm;
 $input-focus-bg: $gray-100 !default;
-$input-focus-border-color: lighten($component-active-bg, 25%) !default;
+$input-focus-border-color: color.adjust($component-active-bg, $lightness: 25%) !default;
 $input-focus-color: $input-color;
 $input-focus-width: $input-btn-focus-width;
 $input-focus-box-shadow: $input-btn-focus-box-shadow;
@@ -717,7 +721,7 @@ $custom-control-indicator-focus-box-shadow:
   $input-btn-focus-box-shadow;
 $custom-control-indicator-focus-border-color: $input-focus-border-color !default;
 $custom-control-indicator-active-color: $component-active-color;
-$custom-control-indicator-active-bg: lighten($component-active-bg, 35%);
+$custom-control-indicator-active-bg: color.adjust($component-active-bg, $lightness: 35%);
 $custom-control-indicator-active-box-shadow: none;
 $custom-control-indicator-active-border-color: $custom-control-indicator-active-bg !default;
 
@@ -837,7 +841,7 @@ $custom-range-thumb-focus-box-shadow:
   0 0 0 1px $body-bg,
   $input-focus-box-shadow !default;
 $custom-range-thumb-focus-box-shadow-width: $input-focus-width !default; // For focus box shadow issue in IE/Edge
-$custom-range-thumb-active-bg: lighten($component-active-bg, 35%) !default;
+$custom-range-thumb-active-bg: color.adjust($component-active-bg, $lightness: 35%) !default;
 $custom-range-thumb-disabled-bg: $gray-500 !default;
 
 // Advanced search
@@ -887,7 +891,7 @@ $form-feedback-icon-invalid: str-replace(
 ) !default;
 $form-validation-states: () !default;
 // stylelint-disable-next-line scss/dollar-variable-default
-$form-validation-states: map-merge(
+$form-validation-states: map.merge(
   (
     'valid': (
       'color': $form-feedback-valid-color,
@@ -1383,7 +1387,7 @@ $positions: static, relative, absolute, fixed, sticky !default;
 // Printing
 
 $print-page-size: a3;
-$print-body-min-width: map-get($grid-breakpoints, 'lg');
+$print-body-min-width: map.get($grid-breakpoints, 'lg');
 
 // Charts
 $charts-tooltip-bg: $gray-100 !default;

@@ -1,3 +1,5 @@
+@use 'sass:color';
+
 // Button variants
 // Easily pump out default styles, as well as :hover, :focus, :active,
 // and disabled options for all buttons
@@ -6,11 +8,11 @@
   $background,
   $border,
   $color: color-yiq($background),
-  $hover-background: darken($background, 7.5%),
-  $hover-border: darken($border, 10%),
+  $hover-background: color.adjust($background, $lightness: -7.5%),
+  $hover-border: color.adjust($border, $lightness: -10%),
   $hover-color: color-yiq($hover-background),
-  $active-background: darken($background, 10%),
-  $active-border: darken($border, 12.5%),
+  $active-background: color.adjust($background, $lightness: -10%),
+  $active-border: color.adjust($border, $lightness: -12.5%),
   $active-color: color-yiq($active-background)
 ) {
   color: $color;
