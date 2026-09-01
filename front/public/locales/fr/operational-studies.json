@@ -267,6 +267,8 @@
       "reset": "Réinitialiser",
       "resetAllExceptions": "Confirmez-vous la réinitialisation des exceptions de cette mission ?",
       "resetExceptions": "Réinitialiser les exceptions",
+      "resetExceptionsCount_one": "1 exception sera réinitialisée.",
+      "resetExceptionsCount_other": "{{count}} exceptions seront réinitialisées.",
       "rollingStockFilterPlaceholder": "Famille, détail, série",
       "selectAll": "Tout sélectionner",
       "selectOptions": "Options de sélection",
