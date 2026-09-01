@@ -2,7 +2,7 @@ import { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'r
 
 import { isEqual } from 'lodash';
 
-import { PICKING_LAYERS, LAYERS, RENDERING, allLayers } from '../consts';
+import { PICKING_LAYERS, LAYERS, RENDERING, allLayers, PICKING } from '../consts';
 import { rgbToHex, colorToIndex } from '../helpers/colors';
 import getPNGBlob from '../helpers/png';
 import { getPickingScalingRatio, makeContextKey } from '../helpers/utils';
@@ -123,7 +123,7 @@ export function useCanvas<T extends BaseChartContextType>(
     LAYERS.forEach((layer) => {
       if (layers && !layers.has(layer)) return;
 
-      const ctx = contextsRef.current[`rendering-${layer}`];
+      const ctx = contextsRef.current[`${RENDERING}-${layer}`];
       const set = drawingFunctions.current[layer];
 
       if (ctx) {
@@ -175,7 +175,7 @@ export function useCanvas<T extends BaseChartContextType>(
    * This function helpers registering a drawing function on a given layer:
    */
   const register = useCallback<DrawingFunctionHandler<T>>(({ type, layer, fn }) => {
-    if (type === 'picking') {
+    if (type === PICKING) {
       const set = pickingFunctions.current[layer];
       if (set.has(fn)) throw new Error('This picking function has already been registered.');
 
@@ -195,12 +195,12 @@ export function useCanvas<T extends BaseChartContextType>(
    * This function helpers unregistering a drawing function from a given layer:
    */
   const unregister = useCallback<DrawingFunctionHandler<T>>(({ type, layer, fn }) => {
-    if (type === 'picking') {
+    if (type === PICKING) {
       const set = pickingFunctions.current[layer];
       if (!set.has(fn)) throw new Error('This picking function has not been registered.');
 
       set.delete(fn);
-    } else if (type === 'rendering') {
+    } else if (type === RENDERING) {
       const set = drawingFunctions.current[layer];
       if (!set.has(fn)) throw new Error('This drawing function has not been registered.');
 
@@ -215,7 +215,7 @@ export function useCanvas<T extends BaseChartContextType>(
     () =>
       getPNGBlob(
         canvasesRef.current,
-        LAYERS.map((layer) => `rendering-${layer}`),
+        LAYERS.map((layer) => `${RENDERING}-${layer}`),
         chartContextRef.current.theme.background
       ),
     []
@@ -242,7 +242,7 @@ export function useCanvas<T extends BaseChartContextType>(
         contexts[layerId] = ctx;
 
         // Draw layer if functions are already registered:
-        if (type === 'picking') {
+        if (type === PICKING) {
           // (also hide picking layers)
           canvas.style.display = 'none';
         }
@@ -267,7 +267,7 @@ export function useCanvas<T extends BaseChartContextType>(
       const id = makeContextKey(entry);
       const canvas = canvasesRef.current[id];
       const ctx = contextsRef.current[id];
-      const isPicking = id.split('-')[0] === 'picking';
+      const isPicking = id.split('-')[0] === PICKING;
 
       if (canvas) {
         const ratio = isPicking ? pickingScalingRatio : devicePixelRatio;
@@ -296,7 +296,7 @@ export function useCanvas<T extends BaseChartContextType>(
     const pickingScalingRatio = getPickingScalingRatio();
 
     PICKING_LAYERS.some((layer) => {
-      const ctx = contextsRef.current[`picking-${layer}`];
+      const ctx = contextsRef.current[`${PICKING}-${layer}`];
       if (ctx && position) {
         const [r, g, b, a] = ctx.getImageData(
           Math.round(position.x * pickingScalingRatio),
@@ -347,10 +347,10 @@ export function usePicking<T>(
   const { register, unregister } = useContext(contextKey);
 
   useEffect(() => {
-    register({ type: 'picking', layer, fn });
+    register({ type: PICKING, layer, fn });
 
     return () => {
-      unregister({ type: 'picking', layer, fn });
+      unregister({ type: PICKING, layer, fn });
     };
   }, [layer, fn, register, unregister]);
 }
@@ -366,10 +366,10 @@ export function useDraw<T>(
   const { register, unregister } = useContext(contextKey);
 
   useEffect(() => {
-    register({ type: 'rendering', layer, fn });
+    register({ type: RENDERING, layer, fn });
 
     return () => {
-      unregister({ type: 'rendering', layer, fn });
+      unregister({ type: RENDERING, layer, fn });
     };
   }, [layer, fn, register, unregister]);
 }
