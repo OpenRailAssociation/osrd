@@ -7,6 +7,7 @@ import { skipToken } from '@reduxjs/toolkit/query';
 import fileDownload from 'js-file-download';
 import { head, last } from 'lodash';
 import { useTranslation, Trans } from 'react-i18next';
+import { Marker } from 'react-map-gl/maplibre';
 import { useSelector } from 'react-redux';
 
 import type { SimilarTrainWithSecondaryCode, StdcmResultsOutput } from 'applications/stdcm/types';
@@ -104,6 +105,7 @@ const StdcmResults = ({
 
   // The simulation failed: the outputs only hold the explanation of the failure.
   const pathNotFoundOutputs = outputs && !hasSimulationResults ? outputs : undefined;
+  const lastReachedOperationalPoint = pathNotFoundOutputs?.last_reached_operational_point;
 
   const simulationReportSheetNumber = useMemo(
     () => generateCodeNumber(),
@@ -461,7 +463,19 @@ const StdcmResults = ({
                 mapSettings={mapSettings}
                 updateMapSettings={updateMapSettings}
                 updateViewport={updateViewport}
-              />
+              >
+                {lastReachedOperationalPoint && (
+                  <Marker
+                    longitude={lastReachedOperationalPoint.geographic.coordinates[0]}
+                    latitude={lastReachedOperationalPoint.geographic.coordinates[1]}
+                  >
+                    <div
+                      className="last-reached-point-marker"
+                      data-testid="stdcm-map-result-marker-last-reached"
+                    />
+                  </Marker>
+                )}
+              </DefaultBaseMap>
             </div>
           </div>
           {isDebugMode && traceId && (

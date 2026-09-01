@@ -13,6 +13,9 @@ type ItineraryLayerProps = {
 const FEASIBLE_COLOR = 'rgba(210, 225, 0, 0.75)';
 const INFEASIBLE_COLOR = '#eaa72b';
 const STDCM_ASSETS_COLOR = '#3c8aff';
+const STDCM_ASSETS_HALO_COLOR = '#CEF6FF';
+const STDCM_INFEASIBLE_COLOR = 'rgba(255, 0, 183, 1)';
+const STDCM_INFEASIBLE_HALO_COLOR = 'rgba(255, 157, 51, 0.4)';
 
 export default function ItineraryLayer({
   layerOrder,
@@ -28,7 +31,7 @@ export default function ItineraryLayer({
 
   let lineColor = FEASIBLE_COLOR;
   if (!isFeasible) {
-    lineColor = INFEASIBLE_COLOR;
+    lineColor = showStdcmAssets ? STDCM_INFEASIBLE_COLOR : INFEASIBLE_COLOR;
   } else if (showStdcmAssets) {
     lineColor = STDCM_ASSETS_COLOR;
   }
@@ -40,7 +43,7 @@ export default function ItineraryLayer({
           type="line"
           paint={{
             'line-width': 5,
-            'line-color': '#CEF6FF',
+            'line-color': isFeasible ? STDCM_ASSETS_HALO_COLOR : STDCM_INFEASIBLE_HALO_COLOR,
           }}
           layerOrder={layerOrder}
         />
