@@ -8,19 +8,21 @@ edition.workspace = true
 testing = []
 
 [dependencies]
+aws-lc-rs.workspace = true
 derive_more.workspace = true
 diesel.workspace = true
 diesel-async.workspace = true
 diesel_migrations = { version = "2.3.2" }
 futures.workspace = true
 futures-util.workspace = true
-openssl.workspace = true
 opentelemetry-semantic-conventions.workspace = true
 postgis_diesel.workspace = true
-postgres-openssl.workspace = true
+rustls-native-certs.workspace = true
 thiserror.workspace = true
 tokio.workspace = true
 tokio-postgres.workspace = true
+tokio-rustls.workspace = true
 tracing.workspace = true
 url.workspace = true
 uuid.workspace = true
+x509-cert.workspace = true
