@@ -20,7 +20,8 @@ stdext = { workspace = true, optional = true }
 strum.workspace = true
 tempfile.workspace = true
 thiserror.workspace = true
-tokio.workspace = true
+tokio = { workspace = true, features = ["sync"] }
+tokio-util = { version = "0.7" }
 tracing.workspace = true
 tracing-subscriber = { workspace = true, optional = true }
 url.workspace = true

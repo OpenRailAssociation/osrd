@@ -19,18 +19,27 @@ pub use tuples::UntypedTuple;
 pub use tuples::UntypedUserset;
 pub use tuples::UserOrUserset;
 
+use futures::TryStreamExt as _;
+use futures::stream;
 use url::Url;
 
 use std::future::Future;
 use std::future::{self};
-
-use futures::TryStreamExt as _;
-use futures::stream;
+use std::sync::Arc;
 
 use crate::client::api::healthz::Health;
 
 pub const DEFAULT_OPENFGA_MAX_CHECKS_PER_BATCH_CHECK: u32 = 50;
 pub const DEFAULT_OPENFGA_MAX_TUPLES_PER_WRITE: u64 = 100;
+
+/// The maximum number of concurrent requests the client is allowed to send.
+///
+/// This value should be proportional to
+/// [`OPENFGA_DATASTORE_MAX_OPEN_CONNS`](https://openfga.dev/docs/getting-started/setup-openfga/configuration#:~:text=OPENFGA_DATASTORE_MAX_OPEN_CONNS)
+/// which defaults to `30` and consistent with other OpenFGA configuration values impacting latency.
+///
+/// 🫳 🎩: works with a large number of concurrent requests that otherwise fail locally, adjust if necessary.
+const MAX_CONCURRENT_REQUESTS: usize = 50;
 
 #[derive(Debug, Clone)]
 pub struct Client {
@@ -38,6 +47,7 @@ pub struct Client {
     authorization_model_id: Option<String>,
     settings: ConnectionSettings,
     inner: reqwest::Client,
+    semaphore: Arc<tokio::sync::Semaphore>,
 }
 
 #[derive(Debug, Clone)]
@@ -106,6 +116,26 @@ pub enum InitializationError {
 }
 
 impl Client {
+    fn new(settings: ConnectionSettings) -> Self {
+        let semaphore = Arc::new(tokio::sync::Semaphore::new(MAX_CONCURRENT_REQUESTS));
+        Self {
+            store: Store::default(),
+            authorization_model_id: None,
+            settings,
+            inner: reqwest::Client::new(),
+            semaphore,
+        }
+    }
+
+    async fn fetch(&self, request: reqwest::RequestBuilder) -> reqwest::Result<reqwest::Response> {
+        let _permit = self
+            .semaphore
+            .acquire()
+            .await
+            .expect("semaphore should never be closed");
+        request.send().await
+    }
+
     pub async fn is_healthy(&self) -> Result<bool, Error> {
         Ok(matches!(self.get_healthz().await?, Health::Serving))
     }

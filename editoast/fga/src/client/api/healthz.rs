@@ -20,7 +20,7 @@ impl Client {
         }
 
         let url = self.base_url().join("healthz").unwrap();
-        let response = self.inner.get(url).send().await?;
+        let response = self.fetch(self.inner.get(url)).await?;
         let Response { status } = response.json::<Message<_>>().await?.try_success()?;
         Ok(status)
     }

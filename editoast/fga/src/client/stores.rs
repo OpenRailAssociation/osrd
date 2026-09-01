@@ -18,12 +18,7 @@ impl Client {
         store_name: &str,
         settings: ConnectionSettings,
     ) -> Result<Self, InitializationError> {
-        let mut client = Self {
-            store: Store::default(),
-            authorization_model_id: None,
-            settings,
-            inner: reqwest::Client::new(),
-        };
+        let mut client = Self::new(settings);
 
         client.store = client
             .find_store(store_name)
@@ -39,12 +34,7 @@ impl Client {
         store_name: &str,
         settings: ConnectionSettings,
     ) -> Result<Self, InitializationError> {
-        let mut client = Self {
-            store: Store::default(),
-            authorization_model_id: None,
-            settings,
-            inner: reqwest::Client::new(),
-        };
+        let mut client = Self::new(settings);
         if client.settings.reset_store
             && let Some(store) = client.find_store(store_name).await?
         {

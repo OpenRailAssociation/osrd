@@ -99,14 +99,11 @@ impl Client {
             .join(format!("stores/{store_id}/batch-check").as_str())
             .unwrap();
         let response = self
-            .inner
-            .post(url)
-            .json(&Request {
+            .fetch(self.inner.post(url).json(&Request {
                 checks,
                 authorization_model_id,
                 consistency,
-            })
-            .send()
+            }))
             .await?;
 
         #[derive(serde::Deserialize)]
@@ -144,7 +141,7 @@ impl Client {
             .base_url()
             .join(format!("stores/{store_id}/check").as_str())
             .unwrap();
-        let response = self.inner.post(url).json(&request).send().await?;
+        let response = self.fetch(self.inner.post(url).json(&request)).await?;
 
         #[derive(serde::Deserialize)]
         struct Response {
@@ -192,7 +189,7 @@ impl Client {
             .base_url()
             .join(format!("stores/{store_id}/list-objects").as_str())
             .unwrap();
-        let response = self.inner.post(url).json(&request).send().await?;
+        let response = self.fetch(self.inner.post(url).json(&request)).await?;
 
         #[derive(serde::Deserialize)]
         struct Response {
@@ -251,7 +248,7 @@ impl Client {
             .base_url()
             .join(format!("stores/{store_id}/list-users").as_str())
             .unwrap();
-        let response = self.inner.post(url).json(&request).send().await?;
+        let response = self.fetch(self.inner.post(url).json(&request)).await?;
 
         #[derive(serde::Deserialize)]
         struct Response {

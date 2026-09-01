@@ -159,16 +159,13 @@ impl Client {
             .unwrap();
 
         let response = self
-            .inner
-            .post(url)
-            .json(&Request {
+            .fetch(self.inner.post(url).json(&Request {
                 tuple_key,
                 page_size,
                 authorization_model_id,
                 consistency,
                 continuation_token,
-            })
-            .send()
+            }))
             .await?;
         let Response {
             tuples,
@@ -234,16 +231,13 @@ impl Client {
             .join(format!("stores/{store_id}/write").as_str())
             .unwrap();
         let response = self
-            .inner
-            .post(url)
-            .json(&Request {
+            .fetch(self.inner.post(url).json(&Request {
                 writes: Writes { tuple_keys: writes },
                 deletes: Deletes {
                     tuple_keys: deletes,
                 },
                 authorization_model_id,
-            })
-            .send()
+            }))
             .await?;
         if response.status().is_success() {
             Ok(())
