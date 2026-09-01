@@ -69,7 +69,7 @@
           .calendar-month-label {
             font-size: 0.875rem;
             font-weight: 600;
-            font-style: SemiBold;
+            font-style: semibold;
             letter-spacing: 0.25rem;
             text-align: center;
             line-height: 1.25rem;
