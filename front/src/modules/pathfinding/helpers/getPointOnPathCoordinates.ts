@@ -1,8 +1,7 @@
-import along from '@turf/along';
 import type { Position } from 'geojson';
 
-import type { CorePropertyGeometryProjection, GeoJsonLineString } from 'common/api/osrdEditoastApi';
-import { convertGeomTopoTrackOffset } from 'utils/geometry';
+import type { CorePropertyGeometryProjection, GeoJsonMultiLineString } from 'common/api/osrdEditoastApi';
+import { convertGeomTopoTrackOffset, getPointOnTracksCoordinates } from 'utils/geometry';
 
 /**
  * Compute the coordinates of a point on a path from its path offset,
@@ -10,7 +9,7 @@ import { convertGeomTopoTrackOffset } from 'utils/geometry';
  */
 const getPointOnPathCoordinates = (
   positionOnPath: number,
-  geometry: GeoJsonLineString,
+  geometry: GeoJsonMultiLineString,
   geomProjection: CorePropertyGeometryProjection
 ): Position => {
   const geometricOffset = convertGeomTopoTrackOffset(
@@ -19,7 +18,7 @@ const getPointOnPathCoordinates = (
     'topo_to_geom'
   );
 
-  return along(geometry, geometricOffset, { units: 'millimeters' }).geometry.coordinates;
+  return getPointOnTracksCoordinates(geometry, geometricOffset, positionOnPath)!
 };
 
 export default getPointOnPathCoordinates;

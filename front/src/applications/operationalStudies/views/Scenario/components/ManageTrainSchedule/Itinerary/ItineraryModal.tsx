@@ -1107,17 +1107,11 @@ const ItineraryModal = ({
           onOpSelectionConfirm={handleOpSelectionConfirm}
           getStepName={getInputForStep}
         >
-          {pathProperties?.geometry.coordinates.map((coordinates, idx) => (
-            <IncompatibleConstraints
-              key={`itinerary-modal-incompatible-constraints-${idx}`}
-              geometry={{
-                coordinates,
-                type: 'LineString',
-              }}
-              incompatibleConstraints={pathProperties?.incompatibleConstraints}
-              geometryProjection={pathProperties?.geom_projection}
-            />
-          ))}
+          <IncompatibleConstraints
+            geometry={pathProperties?.geometry}
+            geometryProjection={pathProperties?.geom_projection}
+            incompatibleConstraints={pathProperties?.incompatibleConstraints}
+          />
         </ItineraryModalMap>
       </div>
     </dialog>

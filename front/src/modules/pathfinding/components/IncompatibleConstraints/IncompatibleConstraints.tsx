@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState, useCallback } from 'react';
 
 import { Info } from '@osrd-project/ui-icons';
 import bbox from '@turf/bbox';
-import { featureCollection } from '@turf/helpers';
+import { featureCollection, lineString } from '@turf/helpers';
 import lineSliceAlong from '@turf/line-slice-along';
 import type { LineString } from 'geojson';
 import { isArray } from 'lodash';
@@ -11,7 +11,7 @@ import { useMap, type MapLayerMouseEvent } from 'react-map-gl/maplibre';
 
 import type {
   CorePropertyGeometryProjection,
-  GeoJsonLineString,
+  GeoJsonMultiLineString,
   CoreIncompatibleConstraints as IncompatibleConstraintsType,
 } from 'common/api/osrdEditoastApi';
 import Collapsable from 'common/Collapsable';
@@ -30,7 +30,7 @@ import {
 import { getSegmentsConstraints, getSizeOfEnabledFilters } from './utils';
 
 type IncompatibleConstraintsProps = {
-  geometry?: GeoJsonLineString;
+  geometry?: GeoJsonMultiLineString;
   incompatibleConstraints?: IncompatibleConstraintsType;
   geometryProjection?: CorePropertyGeometryProjection;
 };
@@ -138,6 +138,11 @@ const IncompatibleConstraints = ({
     };
   }, [map]);
 
+  const lineStrings = useMemo(
+    () => geometry?.coordinates.map((positions) => lineString(positions)) || [],
+    [geometry]
+  );
+
   // When pathProperties changes
   //  => reset state
   useEffect(() => {
@@ -174,9 +179,13 @@ const IncompatibleConstraints = ({
             end,
             value: 'value' in e ? e.value : undefined,
             bbox: bbox(
-              lineSliceAlong(geometry as LineString, start, end, {
-                units: 'millimeters',
-              })
+              featureCollection(
+                lineStrings.map((ls) =>
+                  lineSliceAlong(ls, start, end, {
+                    units: 'millimeters',
+                  })
+                )
+              )
             ) as [number, number, number, number],
           };
         })
@@ -194,10 +203,10 @@ const IncompatibleConstraints = ({
     [constraints, filtersConstraintState]
   );
 
-  const filteredGeojson = useMemo(() => {
+  const filteredFeatureCollections = useMemo(() => {
     if (!geometry || filteredConstraints.length === 0)
-      return featureCollection<LineString, { ids: string[] }>([]);
-    return getSegmentsConstraints(geometry, filteredConstraints);
+      return [featureCollection<LineString, { ids: string[] }>([])];
+    return lineStrings.map((ls) => getSegmentsConstraints(ls.geometry, filteredConstraints));
   }, [geometry, filteredConstraints]);
 
   if (total === 0) return null;
@@ -225,7 +234,12 @@ const IncompatibleConstraints = ({
                 : t('incompatibleConstraints.title', { total })}
             </h5>
             <Info className="flex-grow-0 mx-2" title={t('incompatibleConstraints.info')} />
-            <IncompatibleConstraintsMapFocus geojson={filteredGeojson} />
+            {filteredFeatureCollections.map((filteredGeojson, idx) => (
+              <IncompatibleConstraintsMapFocus
+                key={`incompatible-constraints-map-focus-${idx}`}
+                geojson={filteredGeojson}
+              />
+            ))}
           </div>
           <IncompatibleConstraintsFilters
             className="d-flex align-self-center"
@@ -246,13 +260,15 @@ const IncompatibleConstraints = ({
           />
         </div>
       </Collapsable>
-      {geometry && (
-        <IncompatibleConstraintsLayer
-          geojson={filteredGeojson}
-          hovered={hoveredConstraint}
-          selected={selectedConstraint}
-        />
-      )}
+      {geometry &&
+        filteredFeatureCollections.map((filteredGeojson, idx) => (
+          <IncompatibleConstraintsLayer
+            key={`incompatible-constraints-layer-${idx}`}
+            geojson={filteredGeojson}
+            hovered={hoveredConstraint}
+            selected={selectedConstraint}
+          />
+        ))}
     </>
   );
 };
