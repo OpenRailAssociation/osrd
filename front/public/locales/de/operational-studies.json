@@ -207,6 +207,7 @@
     "timetable": {
       "addTrainSchedule": "Zug / Leistung hinzufügen",
       "advancedFilterLabel": "Schienenfahrzeug",
+      "cancel": "Abbrechen",
       "choosePath": "Diesen Pfad wählen",
       "closeFilter": "Filter schließen",
       "copy": "Kopieren",
@@ -258,6 +259,7 @@
       "pacedTrainAdded": "Leistung hinzugefügt",
       "pacedTrainDeleted": "Die Leistung {{name}} wurde gelöscht",
       "punctuality": "Pünktlichkeit",
+      "reset": "Zurücksetzen",
       "resetAllExceptions": "Bestätigen Sie die Zurücksetzung der Ausnahmen dieser Leistung?",
       "resetExceptions": "Ausnahmen zurücksetzen",
       "rollingStockFilterPlaceholder": "Baureihe, Serie, Detail",
