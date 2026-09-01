@@ -55,7 +55,7 @@
 
     .stdcm-consist-title::after {
       content: '';
-      background: linear-gradient(270deg, transparent 0px, rgba(235, 235, 234) 40px);
+      background: linear-gradient(270deg, transparent 0, rgba(235, 235, 234) 40px);
       position: absolute;
       left: 100%;
       width: 40px;
@@ -266,7 +266,7 @@
         width: 466px;
         display: flex;
         font-weight: 400;
-        letter-spacing: 0px;
+        letter-spacing: 0;
         text-align: center;
         justify-content: center;
         color: rgb(11, 114, 60);

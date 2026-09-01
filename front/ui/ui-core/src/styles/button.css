@@ -11,10 +11,10 @@
   line-height: 1.313rem;
   border: 0.031rem solid rgba(0, 0, 0, 1);
   box-shadow:
-    0px 0.094rem 0.031rem rgba(201, 252, 255, 0.54) inset,
-    0px -0.094rem 0.063rem rgba(0, 47, 152, 0.83) inset,
-    0px 0.063rem 0.125rem rgba(0, 0, 0, 0.5);
-  text-shadow: 0px 0.063rem 0px rgba(0, 0, 0, 0.36);
+    0 0.094rem 0.031rem rgba(201, 252, 255, 0.54) inset,
+    0 -0.094rem 0.063rem rgba(0, 47, 152, 0.83) inset,
+    0 0.063rem 0.125rem rgba(0, 0, 0, 0.5);
+  text-shadow: 0 0.063rem 0 rgba(0, 0, 0, 0.36);
 
   &:focus {
     outline: 2px solid theme('colors.primary.50');
@@ -60,13 +60,13 @@
     background: linear-gradient(#e2e2de, #d3d1cf);
     border: 0.031rem solid rgba(121, 118, 113, 1);
     box-shadow:
-      0px 0.094rem 0.063rem rgba(255, 255, 255, 0.46) inset,
-      0px -0.094rem 0.063rem rgba(148, 145, 142, 1) inset,
-      0px 0.063rem 0.125rem rgba(0, 0, 0, 0.25);
+      0 0.094rem 0.063rem rgba(255, 255, 255, 0.46) inset,
+      0 -0.094rem 0.063rem rgba(148, 145, 142, 1) inset,
+      0 0.063rem 0.125rem rgba(0, 0, 0, 0.25);
 
     @apply text-grey-70;
 
-    text-shadow: 0px 0.063rem 0px rgba(255, 255, 255, 0.84);
+    text-shadow: 0 0.063rem 0 rgba(255, 255, 255, 0.84);
 
     &:hover:not([disabled]) {
       background: linear-gradient(#f5f5f5, #ebebea);
@@ -80,11 +80,11 @@
   &.cancel {
     border: 0.063rem solid rgba(121, 118, 113, 1);
     box-shadow:
-      0px 0.156rem 0px rgba(255, 255, 255, 1) inset,
-      0px -0.094rem 0.063rem rgba(148, 145, 142, 1) inset;
+      0 0.156rem 0 rgba(255, 255, 255, 1) inset,
+      0 -0.094rem 0.063rem rgba(148, 145, 142, 1) inset;
     background-color: rgba(255, 255, 255, 0.6);
     background: #fff;
-    text-shadow: 0px 0.063rem 0px rgba(255, 255, 255, 0.84);
+    text-shadow: 0 0.063rem 0 rgba(255, 255, 255, 0.84);
 
     @apply text-grey-70;
 
@@ -119,9 +119,9 @@
       border: solid 0.031rem;
       border: 0.031rem solid rgba(114, 168, 247, 1);
       box-shadow:
-        0px 0.094rem 0.063rem rgba(255, 255, 255, 0.46) inset,
-        0px -0.094rem 0.063rem rgba(114, 168, 247, 0.38) inset,
-        0px 0.063rem 0.125rem rgba(0, 0, 0, 0.25);
+        0 0.094rem 0.063rem rgba(255, 255, 255, 0.46) inset,
+        0 -0.094rem 0.063rem rgba(114, 168, 247, 0.38) inset,
+        0 0.063rem 0.125rem rgba(0, 0, 0, 0.25);
     }
 
     &:active:not([disabled]) {
@@ -130,8 +130,8 @@
       background: linear-gradient(#d6e5fb, #c4daf5);
       border: 0.031rem solid rgba(60, 138, 255, 1);
       box-shadow:
-        0px 0.094rem 0.063rem rgba(152, 192, 245, 1) inset,
-        0px 0.063rem 0px rgba(255, 255, 255, 1);
+        0 0.094rem 0.063rem rgba(152, 192, 245, 1) inset,
+        0 0.063rem 0 rgba(255, 255, 255, 1);
     }
   }
 
