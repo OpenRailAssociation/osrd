@@ -1,8 +1,8 @@
 // stylelint-disable declaration-no-important
 
-// Flex variation
-//
-// Custom styles for additional flex alignment options.
+/* Flex variation
+ *
+ * Custom styles for additional flex alignment options. */
 
 @each $breakpoint in map-keys($grid-breakpoints) {
   @include media-breakpoint-up($breakpoint) {

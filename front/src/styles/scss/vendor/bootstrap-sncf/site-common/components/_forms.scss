@@ -15,9 +15,9 @@ input {
   }
 }
 
-//
-// Textual form controls
-//
+/*
+ * Textual form controls
+ */
 
 .form-control-container {
   position: relative;
@@ -111,7 +111,7 @@ input {
   }
 
   .was-validated &:valid,
-  &.is-valid  {
+  &.is-valid {
     ~ .form-control-state::after {
       background-color: theme-color('success');
     }
@@ -224,9 +224,9 @@ textarea.form-control {
   color: theme-color('primary');
 }
 
-//
-// Labels
-//
+/*
+ * Labels
+ */
 
 // For use with horizontal and inline forms, when you need the label (or legend)
 // text to align with the form controls.
@@ -244,9 +244,9 @@ label.required {
   }
 }
 
-//
-// Error message
-//
+/*
+ * Error message
+ */
 
 .form-error {
   padding: rem(26px) rem(30px);
@@ -264,9 +264,9 @@ label.required {
   }
 }
 
-//
-// Input search mastheader
-//
+/*
+ * Input search mastheader
+ */
 
 .mastheader-search input,
 .mastheader-search input:focus {

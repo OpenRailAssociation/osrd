@@ -2,9 +2,9 @@
    ========================================================================== */
 // stylelint-disable selector-no-qualifying-type
 
-//
-// Base styles
-//
+/*
+ * Base styles
+ */
 
 .btn {
   display: inline-block;
@@ -66,9 +66,9 @@ fieldset:disabled a.btn {
   pointer-events: none;
 }
 
-//
-// Alternate buttons
-//
+/*
+ * Alternate buttons
+ */
 
 @each $color, $value in $btn-colors {
   .btn-#{$color} {
@@ -96,9 +96,9 @@ fieldset:disabled a.btn {
   }
 }
 
-//
-// Link buttons
-//
+/*
+ * Link buttons
+ */
 
 // Make a button look and behave like a link
 .btn-link {
@@ -141,9 +141,9 @@ fieldset:disabled a.btn {
   color: color('white');
 }
 
-//
-// Button sizes
-//
+/*
+ * Button sizes
+ */
 
 .btn-sm {
   font-weight: $font-weight-medium;
@@ -157,9 +157,9 @@ fieldset:disabled a.btn {
   );
 }
 
-//
-// Block button
-//
+/*
+ * Block button
+ */
 
 .btn-block {
   display: block;
@@ -180,9 +180,9 @@ input[type='button'] {
   }
 }
 
-//
-// Button icon
-//
+/*
+ * Button icon
+ */
 
 .btn-only-icon {
   align-items: center;
@@ -215,9 +215,9 @@ input[type='button'] {
   }
 }
 
-//
-// Button navigation
-//
+/*
+ * Button navigation
+ */
 
 .btn-rounded {
   display: inline-flex;
@@ -274,9 +274,9 @@ input[type='button'] {
   }
 }
 
-//
-// Button option
-//
+/*
+ * Button option
+ */
 
 .btn-options {
   min-width: rem(55px);
@@ -293,9 +293,9 @@ input[type='button'] {
   }
 }
 
-//
-// Button favorite
-//
+/*
+ * Button favorite
+ */
 
 .btn.btn-favorite {
   color: gray('300');
@@ -306,9 +306,9 @@ input[type='button'] {
   }
 }
 
-//
-// Button alert
-//
+/*
+ * Button alert
+ */
 
 .btn-notif {
   position: relative;
@@ -331,9 +331,9 @@ input[type='button'] {
   }
 }
 
-//
-// Button card
-//
+/*
+ * Button card
+ */
 
 .btn-card {
   display: inline-flex;
@@ -363,9 +363,9 @@ input[type='button'] {
   );
 }
 
-//
-// Button color
-//
+/*
+ * Button color
+ */
 
 .btn-color-gray {
   color: $btn-color-gray;
@@ -388,9 +388,9 @@ input[type='button'] {
   }
 }
 
-//
-// Button unstyled
-//
+/*
+ * Button unstyled
+ */
 
 .btn-unstyled {
   font-size: inherit;

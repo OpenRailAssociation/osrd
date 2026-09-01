@@ -56,7 +56,6 @@ $resize-width: 3px;
       z-index: 2;
       flex-grow: 1;
 
-      //height: calc($dataviz-height + $scaling-height);
       .btn {
         background-color: #fff;
         padding: 0 0.25em !important;
@@ -114,7 +113,6 @@ $resize-width: 3px;
           border-bottom-left-radius: 0;
           border-left-width: 0;
 
-          //&:focus,
           &:hover {
             background-color: #1c1c1c;
             color: #ececec;
@@ -129,7 +127,6 @@ $resize-width: 3px;
           border-bottom-left-radius: 0;
           border-left-width: 0;
 
-          //&:focus,
           &:hover {
             background-color: #1c1c1c;
             color: #ffffff;
