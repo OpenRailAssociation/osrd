@@ -22,6 +22,9 @@ import type {
 import { useDevicePixelRatio } from './useDevicePixelRatio';
 import { useSize } from './useSize';
 
+type PickingFunctionsMap<T> = Record<PickingLayerType, Set<PickingDrawingFunction<T>>>
+type DrawingFunctionsMap<T> = Record<LayerType, Set<DrawingFunction<T>>>
+
 /**
  * This hook handles the internal canvas drawing logic of a chart component.
  */
@@ -34,11 +37,11 @@ export function useCanvas<T extends BaseChartContextType>(
   // render anything:
   const canvasesRef = useRef<Partial<Record<ContextKey, HTMLCanvasElement>>>({});
   const contextsRef = useRef<Partial<Record<ContextKey, CanvasRenderingContext2D>>>({});
-  const pickingFunctions = useRef<Record<string, Set<PickingDrawingFunction<T>>>>(
-    PICKING_LAYERS.reduce((iter, layer) => ({ ...iter, [layer]: new Set() }), {})
+  const pickingFunctions = useRef<PickingFunctionsMap<T>>(
+    PICKING_LAYERS.reduce((iter, layer) => ({ ...iter, [layer]: new Set() }), {} as PickingFunctionsMap<T>)
   );
-  const drawingFunctions = useRef<Record<string, Set<DrawingFunction<T>>>>(
-    LAYERS.reduce((iter, layer) => ({ ...iter, [layer]: new Set() }), {})
+  const drawingFunctions = useRef<DrawingFunctionsMap<T>>(
+    LAYERS.reduce((iter, layer) => ({ ...iter, [layer]: new Set() }), {} as DrawingFunctionsMap<T>)
   );
   const chartContextRef = useRef(chartContext);
   const scheduledRef = useRef<null | { frameId: number }>(null);
