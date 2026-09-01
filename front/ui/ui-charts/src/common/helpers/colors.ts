@@ -24,6 +24,10 @@ export const WHITE_100 = 'rgb(255, 255, 255)';
  * These colors aim at representing the given indices on the picking layer.
  */
 export function indexToColor(index: number): string {
+  if (index > 0xFFFFFF) {
+    throw new Error('Index too large');
+  }
+
   if (INDICES_TO_COLORS[index]) return INDICES_TO_COLORS[index];
 
   const color = `#${index.toString(16).padStart(6, '0')}`.toLowerCase();
