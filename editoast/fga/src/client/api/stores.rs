@@ -34,7 +34,7 @@ impl Client {
             url.query_pairs_mut()
                 .append_pair("page_size", page_size.to_string().as_str());
         }
-        let response = self.inner.get(url).send().await?;
+        let response = self.fetch(self.inner.get(url)).await?;
 
         let Response {
             stores,
@@ -56,7 +56,7 @@ impl Client {
         };
 
         let url = self.base_url().join("stores").unwrap();
-        let response = self.inner.post(url).json(&request).send().await?;
+        let response = self.fetch(self.inner.post(url).json(&request)).await?;
 
         let store = response.json::<Message<_>>().await?.try_success()?;
         Ok(store)
@@ -68,7 +68,7 @@ impl Client {
             .base_url()
             .join(format!("stores/{store_id}").as_str())
             .unwrap();
-        let response = self.inner.delete(url).send().await?;
+        let response = self.fetch(self.inner.delete(url)).await?;
         if response.status().is_success() {
             Ok(())
         } else {
