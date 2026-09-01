@@ -2,7 +2,7 @@ import { useCallback } from 'react';
 
 import { flatten, inRange } from 'lodash';
 
-import { hexToRgb, indexToColor } from '../../common/helpers/colors';
+import { indexToColor } from '../../common/helpers/colors';
 import { useDraw, usePicking } from '../../common/hooks/useCanvas';
 import type {
   CurveStyle,
@@ -635,7 +635,7 @@ export const PathLayer = ({
           point: stcContext.getPoint(path.points[0]),
         };
         const index = registerPickingElement(pickingElement);
-        const pointColor = hexToRgb(indexToColor(index));
+        const pointColor = indexToColor(index);
 
         drawAliasedDisc(
           imageData,
@@ -659,7 +659,7 @@ export const PathLayer = ({
               to: point,
             };
             const index = registerPickingElement(pickingElement);
-            const lineColor = hexToRgb(indexToColor(index));
+            const lineColor = indexToColor(index);
 
             // Skip segments linking two points on the same time value (these are flat steps, and paths shouldn't be
             // actionable on these steps):
@@ -686,7 +686,7 @@ export const PathLayer = ({
           point,
         };
         const index = registerPickingElement(pickingElement);
-        const lineColor = hexToRgb(indexToColor(index));
+        const lineColor = indexToColor(index);
         drawAliasedDisc(
           imageData,
           point,

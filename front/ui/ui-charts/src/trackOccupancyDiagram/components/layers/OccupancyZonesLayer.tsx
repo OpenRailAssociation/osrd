@@ -2,7 +2,7 @@ import { useCallback, useMemo } from 'react';
 
 import { sortBy } from 'lodash';
 
-import { hexToRgb, indexToColor } from '../../../common/helpers/colors';
+import { indexToColor } from '../../../common/helpers/colors';
 import { drawAliasedRect } from '../../../common/helpers/utils';
 import { useDraw, usePicking } from '../../../common/hooks/useCanvas';
 import type {
@@ -216,7 +216,7 @@ const OccupancyZonesLayer = ({
             pathId: instruction.zone.pathId,
           };
           const pickingIndex = registerPickingElement(pickingElement);
-          const color = hexToRgb(indexToColor(pickingIndex));
+          const color = indexToColor(pickingIndex);
 
           drawAliasedRect(
             imageData,

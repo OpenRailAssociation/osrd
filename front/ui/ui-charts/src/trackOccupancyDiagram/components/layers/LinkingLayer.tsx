@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react';
 
-import { hexToRgb, indexToColor } from '../../../common/helpers/colors';
+import { indexToColor } from '../../../common/helpers/colors';
 import { drawAliasedRect } from '../../../common/helpers/utils';
 import { useDraw, usePicking } from '../../../common/hooks/useCanvas';
 import type {
@@ -74,7 +74,7 @@ const LinkingLayer = ({
           linkingId: linking.id,
         };
         const pickingIndex = registerPickingElement(pickingElement);
-        const color = hexToRgb(indexToColor(pickingIndex));
+        const color = indexToColor(pickingIndex);
 
         drawAliasedRect(
           imageData,
