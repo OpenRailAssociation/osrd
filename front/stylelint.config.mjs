@@ -13,7 +13,6 @@ export default {
     'declaration-block-no-shorthand-property-overrides': null,
     'keyframes-name-pattern': null,
     'media-feature-range-notation': null,
-    'property-no-deprecated': null,
     'scss/at-extend-no-missing-placeholder': null,
     'scss/at-mixin-argumentless-call-parentheses': null,
     'scss/at-mixin-pattern': null,
