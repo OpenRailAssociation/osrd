@@ -107,7 +107,8 @@ const TimetableToolbar = ({
     exportTrainSchedules(
       selectedTrainScheduleIds,
       trainSchedules,
-      trainScheduleRoundTripsData?.results
+      trainScheduleRoundTripsData?.results,
+      scenario.timetable_type
     );
   };
 
