@@ -32,8 +32,8 @@
     "watch": "rollup -c -w",
     "test": "vitest run",
     "prepublishOnly": "npm run clean && npm run build",
-    "lint": "oxlint . --max-warnings 0  && oxfmt . --check",
-    "lint:fix": "oxlint . --fix && oxfmt . --write"
+    "lint": "stylelint './src/**/*.css' && oxlint . --max-warnings 0  && oxfmt . --check",
+    "lint:fix": "stylelint './src/**/*.css' --fix && oxlint . --fix && oxfmt . --write"
   },
   "peerDependencies": {
     "react": "^18.0.0 || ^19.1.0"

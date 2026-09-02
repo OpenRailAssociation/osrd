@@ -2,9 +2,11 @@
   .modal-content {
     position: relative;
     overflow-y: auto;
+
     .modal-body {
       max-height: 90vh;
     }
+
     .modal-footer {
       padding-top: 8px;
     }

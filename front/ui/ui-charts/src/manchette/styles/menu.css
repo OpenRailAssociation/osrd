@@ -1,10 +1,11 @@
 .ui-manchette-menu {
   @apply bg-grey-5;
+
   width: 305px;
   border: 0.0625rem solid #b6b2af;
   border-radius: 0.5rem;
   box-shadow:
-    0 0.375rem 1.3125rem -0.3125rem rgba(101, 169, 232, 0.341810533216783),
+    0 0.375rem 1.3125rem -0.3125rem rgba(101, 169, 232, 0.3418),
     0 1rem 1.875rem -0.3125rem rgba(0, 0, 0, 0.2),
     0 0.1875rem 0.3125rem -0.125rem rgba(0, 0, 0, 0.1),
     inset 0 0 0 0.0625rem #ffffff;
@@ -26,6 +27,7 @@
 
     .icon {
       @apply text-primary-40;
+
       padding-inline: 1rem;
     }
   }

@@ -1,7 +1,7 @@
 .paced-train {
   @mixin right-side-status-indicator {
     .warning {
-      &:before {
+      &::before {
         content: '';
         position: absolute;
         top: 24px;
@@ -13,9 +13,10 @@
         background-color: var(--warning30);
       }
     }
+
     .warning-invalid,
     .invalid {
-      &:before {
+      &::before {
         background-color: var(--error60);
       }
     }
@@ -32,6 +33,7 @@
       .action-buttons {
         display: flex !important;
         z-index: 1;
+
         .reset-exceptions {
           transform: rotate(180deg);
         }
@@ -88,7 +90,6 @@
     margin-left: 10.5px;
     font-size: 1rem;
     font-weight: 600;
-    width: calc(100% - 196px);
     height: 42px;
     width: 100%;
     align-items: center;
@@ -109,6 +110,7 @@
       width: 100%;
       height: 100%;
       cursor: pointer;
+
       .train-name {
         overflow: hidden;
         text-overflow: ellipsis;
@@ -129,7 +131,7 @@
   }
 
   .base-info {
-    padding: 3px 0px 3px 4px;
+    padding: 3px 0 3px 4px;
     position: relative;
 
     &:hover:not(.selected) {
@@ -144,7 +146,6 @@
       &.invalid {
         background-image: url('data:image/svg+xml,%3Csvg version="1.1" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"%3E%3Ctitle%3EAssets/TrainList/InvalidTrain%3C/title%3E%3Cg fill-rule="evenodd"%3E%3Crect width="48" height="48" fill="transparent"/%3E%3Cpath d="m48 26v22h-22l22-22zm0-26-48 48v-22l26-26h22z" fill="%23FF6868" opacity=".15"/%3E%3C/g%3E%3C/svg%3E');
         background-repeat: repeat;
-
         box-shadow: inset 0 -1px 0 0 var(--black10);
       }
     }
@@ -167,6 +168,7 @@
   .occurrences {
     width: 100%;
     height: auto;
+
     // need to subtract 2px to fit indicator occurrence
     padding-left: 32px - 2px;
 
@@ -178,6 +180,7 @@
       padding-left: 4px;
       border-top: 1px solid var(--white100);
       border-bottom: 1px solid var(--black10);
+
       &:hover {
         background-color: var(--ambientB15);
 
@@ -215,12 +218,15 @@
       &.selected {
         background-color: var(--selection20);
       }
+
       &.next-after-midnight {
         border-bottom: 1px solid var(--black50);
       }
+
       &:last-child {
         border-bottom: none;
       }
+
       &:first-child {
         border-top: none;
       }
@@ -254,6 +260,7 @@
               position: relative;
               height: 24px;
               color: var(--grey40);
+
               // add 2px to compensate .occurrences
               padding-left: 2px;
 
@@ -299,6 +306,7 @@
                 }
               }
             }
+
             .label {
               margin-inline: 10.5px 8px;
               max-width: 132.5px;
@@ -369,6 +377,7 @@
             &.after-midnight {
               color: var(--info60);
             }
+
             &.not-honored-or-too-fast {
               color: var(--warning60);
             }
@@ -390,12 +399,15 @@
           display: flex;
           align-items: center;
           margin-right: 1px;
+
           .date-display {
             height: 16px;
             line-height: 16px;
+
             &.before-midnight {
               transform: translateY(3px);
             }
+
             &.after-midnight {
               transform: translateY(-3px);
             }
@@ -428,7 +440,7 @@
         background-color: var(--ambientB10);
         color: var(--primary60);
         border-radius: 4px;
-        box-shadow: 0px 0px 0px 1.5px rgba(255, 255, 255, 1) inset;
+        box-shadow: 0 0 0 1.5px rgba(255, 255, 255, 1) inset;
 
         &:hover {
           background-color: var(--white100);

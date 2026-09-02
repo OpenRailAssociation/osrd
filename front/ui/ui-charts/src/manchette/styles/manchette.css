@@ -12,16 +12,16 @@
     border-top: solid 1px;
     border-right: solid 1px;
     border-radius: 0 0 0 10px;
+
     @apply border-black-25;
+
     display: flex;
     height: 40px;
-    width: inherit;
     position: sticky;
     bottom: 0;
     left: 0;
     width: 100%;
     backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
 
     .zoom-buttons {
       display: flex;
@@ -45,6 +45,7 @@
 
       .zoom-reset {
         @apply text-grey-50;
+
         font-weight: 600;
         font-size: 0.875rem;
       }
@@ -59,6 +60,7 @@
 
   .waypoints-list {
     border-bottom-left-radius: 4px;
+
     @apply bg-white-100;
   }
 }
@@ -66,8 +68,8 @@
 .ui-manchette-space-time-chart-wrapper {
   border-radius: 10px;
   box-shadow:
-    0px 4px 9px rgba(0, 0, 0, 0.06),
-    0px 1px 2px rgba(0, 0, 0, 0.19);
+    0 4px 9px rgba(0, 0, 0, 0.06),
+    0 1px 2px rgba(0, 0, 0, 0.19);
   opacity: 1;
   background-color: rgba(255, 255, 255, 1);
   width: 100%;

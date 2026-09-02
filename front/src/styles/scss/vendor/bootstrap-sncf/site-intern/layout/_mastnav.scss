@@ -20,6 +20,7 @@ $mastnav-width-lg: rem(100px);
   text-align: center;
   background-color: transparent;
   border: none;
+
   @include transition($btn-transition);
 }
 

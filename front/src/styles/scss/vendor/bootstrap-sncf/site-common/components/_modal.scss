@@ -8,6 +8,7 @@
 
   .close {
     padding: $modal-header-padding-y $modal-header-padding-x 0 $modal-header-padding-x;
+
     // auto on the left force icon to the right even when there is no .modal-title
     margin: (-$modal-header-padding-y) (-$modal-header-padding-x) 0 auto;
   }
@@ -46,6 +47,7 @@
   > :not(:first-child) {
     margin-left: 0.625rem;
   }
+
   > :not(:last-child) {
     margin-right: 0.625rem;
   }

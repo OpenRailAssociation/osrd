@@ -3,6 +3,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
+
     .rollingstock-info-begin {
       display: flex;
       align-items: center;
@@ -12,6 +13,7 @@
       padding: 4px 8px;
       position: relative;
       min-height: 24px;
+
       .rollingstock-info-series {
         position: relative;
         font-weight: bold;
@@ -19,18 +21,23 @@
         text-overflow: ellipsis;
         white-space: nowrap;
       }
+
       .rollingstock-info-unit {
         position: relative;
+
         &.UM2 {
           color: #6e1e78;
         }
+
         &.UM3 {
           color: #a1006b;
         }
+
         font-weight: bold;
         margin-left: 4px;
         font-size: 0.7rem;
       }
+
       .rollingstock-info-subseries {
         position: relative;
         margin-left: 4px;
@@ -43,13 +50,16 @@
       }
     }
   }
+
   .rollingstock-container-img {
     overflow: hidden;
+
     .rollingstock-img {
       height: 32px;
       white-space: nowrap;
       transform: scale(0.4); // Have to scale whole <img> because electric trains with pantograph have taller pictures
       transform-origin: left;
+
       img {
         display: inline-block;
         position: relative;
@@ -58,6 +68,7 @@
       }
     }
   }
+
   .rollingstock-minicard-end {
     display: flex;
     justify-content: space-between;
@@ -73,6 +84,7 @@
       padding: 0 8px;
       border-radius: 4px;
     }
+
     .comfort-AC,
     .comfort-HEATING {
       display: flex;
@@ -108,10 +120,12 @@
   .rollingstock-search-list {
     overflow: auto;
     flex-grow: 1;
+
     .loader {
       margin-top: 16px;
       transform: none;
     }
+
     .rollingstock-empty {
       display: flex;
       position: relative;
@@ -119,11 +133,13 @@
       flex-direction: column;
       align-items: center;
       width: 100%;
+
       span {
         z-index: 1;
         font-size: 4rem;
         color: #a0a0a0;
       }
+
       img {
         position: absolute;
         width: 112px;

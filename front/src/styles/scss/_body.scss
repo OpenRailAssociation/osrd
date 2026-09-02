@@ -27,6 +27,7 @@ body {
   .actionbar {
     width: 100%;
   }
+
   .mastcontainer {
     padding-left: 0;
   }
@@ -65,6 +66,7 @@ body {
 // Override Bootstrap's default styles
 .mastheader {
   height: 40px !important;
+
   .dropdown-toggle {
     padding-inline: 0;
   }
@@ -139,12 +141,15 @@ body {
   gap: 8px;
   font-size: 1.25rem;
   max-width: 84vw;
+
   a {
     color: var(--coolgray7);
+
     &:hover {
       color: var(--coolgray1);
     }
   }
+
   @media screen and (max-width: 1280px) {
     font-size: 1rem;
   }
@@ -157,6 +162,7 @@ body {
   .btn-fullscreen {
     bottom: 96px;
   }
+
   .btn-resetviewport {
     bottom: 144px;
   }
@@ -170,9 +176,11 @@ body {
     width: 100vw;
     top: 30%;
   }
+
   .sideBar-content {
     max-width: 100vw;
   }
+
   .sideBar-container.fullscreen {
     left: 0 !important;
     top: 30% !important;
@@ -183,6 +191,7 @@ body {
   .sideBar-container {
     margin-top: 144px;
   }
+
   .sideBar-container.fullscreen {
     top: -66.4px;
   }
@@ -200,6 +209,7 @@ body {
     padding-top: 284.8px !important;
     transition-delay: 0.11s;
   }
+
   .creation-sidebar.fullscreen {
     transition-delay: 0.25s;
     top: -68px !important;
@@ -209,6 +219,7 @@ body {
 
 .custom-control {
   padding-left: 26px !important;
+
   .custom-control-label {
     &::before,
     &::after {
@@ -228,12 +239,14 @@ body {
     max-width: calc(100vw - 48px) !important;
   }
 }
+
 @media (min-width: 1024px) {
   .modal-dialog.modal-lg,
   .modal-dialog.modal-xl {
     max-width: 800px !important;
   }
 }
+
 @media (min-width: 1280px) {
   .modal-dialog.modal-xl {
     max-width: 1140px !important;
@@ -245,11 +258,13 @@ body {
   animation-duration: 0.5s;
   animation-direction: alternate;
   animation-iteration-count: infinite;
+
   @keyframes blinking {
     from {
       background-color: var(--orange);
       color: var(--white);
     }
+
     to {
       background-color: var(--white);
       color: var(--orange);
@@ -270,6 +285,7 @@ body {
     'Apple Color Emoji',
     'Segoe UI Emoji',
     'Segoe UI Symbol';
+
   .maplibregl-marker {
     display: flex;
     align-items: center;

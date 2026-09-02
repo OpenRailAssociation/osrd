@@ -1,10 +1,8 @@
 @use 'sass:color';
 @use '../variables';
-
 @use 'sass:map';
 
 $prefixClass: rc-slider;
-
 $disabledColor: #ccc;
 $border-radius-base: 6px;
 $primary-color: map.get(variables.$colors, 'green');
@@ -33,6 +31,7 @@ $ease-in-quint: cubic-bezier(0.755, 0.05, 0.855, 0.06);
   padding: 5px 0;
   border-radius: $border-radius-base;
   touch-action: none;
+
   @include borderBox();
 
   &-rail {
@@ -68,8 +67,6 @@ $ease-in-quint: cubic-bezier(0.755, 0.05, 0.855, 0.06);
     background-color: #fff;
     border: solid 2px color.mix(white, $primary-color, 0%);
     border-radius: 50%;
-    cursor: pointer;
-    cursor: -webkit-grab;
     cursor: grab;
     opacity: 0.8;
     touch-action: pan-x;
@@ -101,7 +98,6 @@ $ease-in-quint: cubic-bezier(0.755, 0.05, 0.855, 0.06);
     &:active {
       border-color: color.mix(white, $primary-color, 20%);
       box-shadow: 0 0 5px color.mix(white, $primary-color, 20%);
-      cursor: -webkit-grabbing;
       cursor: grabbing;
     }
   }
@@ -122,6 +118,7 @@ $ease-in-quint: cubic-bezier(0.755, 0.05, 0.855, 0.06);
     vertical-align: middle;
     cursor: pointer;
     font-weight: 500;
+
     &-active {
       color: map.get(variables.$colors, 'coolgray11');
     }
@@ -144,9 +141,11 @@ $ease-in-quint: cubic-bezier(0.755, 0.05, 0.855, 0.06);
     border: 2px solid #e9e9e9;
     border-radius: 50%;
     cursor: pointer;
+
     &-active {
       border-color: color.mix(white, $primary-color, 0%);
     }
+
     &-reverse {
       margin-right: -4px;
     }
@@ -234,10 +233,12 @@ $ease-in-quint: cubic-bezier(0.755, 0.05, 0.855, 0.06);
   .#{$className}-enter,
   .#{$className}-appear {
     @include motion-common();
+
     animation-play-state: paused;
   }
   .#{$className}-leave {
     @include motion-common();
+
     animation-play-state: paused;
   }
   .#{$className}-enter.#{$className}-enter-active,
@@ -250,6 +251,7 @@ $ease-in-quint: cubic-bezier(0.755, 0.05, 0.855, 0.06);
     animation-play-state: running;
   }
 }
+
 @mixin zoom-motion($className, $keyframeName) {
   @include make-motion($className, $keyframeName);
   .#{$className}-enter,
@@ -261,6 +263,7 @@ $ease-in-quint: cubic-bezier(0.755, 0.05, 0.855, 0.06);
     animation-timing-function: $ease-in-quint;
   }
 }
+
 @include zoom-motion(rc-slider-tooltip-zoom-down, rcSliderTooltipZoomDown);
 
 @keyframes rcSliderTooltipZoomDownIn {
@@ -269,6 +272,7 @@ $ease-in-quint: cubic-bezier(0.755, 0.05, 0.855, 0.06);
     transform-origin: 50% 100%;
     opacity: 0;
   }
+
   100% {
     transform: scale(1, 1);
     transform-origin: 50% 100%;
@@ -280,6 +284,7 @@ $ease-in-quint: cubic-bezier(0.755, 0.05, 0.855, 0.06);
     transform: scale(1, 1);
     transform-origin: 50% 100%;
   }
+
   100% {
     transform: scale(0, 0);
     transform-origin: 50% 100%;

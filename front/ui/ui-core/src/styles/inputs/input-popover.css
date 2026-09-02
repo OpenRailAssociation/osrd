@@ -2,9 +2,9 @@
   background-color: var(--color-white-100);
   border-radius: 0.5rem;
   box-shadow:
-    0px 1px 0px rgba(255, 255, 255, 1) inset,
-    0px 4px 7px -3px rgba(24, 68, 239, 0.19),
-    0px 1px 3px rgba(49, 46, 43, 0.2);
+    0 1px 0 rgba(255, 255, 255, 1) inset,
+    0 4px 7px -3px rgba(24, 68, 239, 0.19),
+    0 1px 3px rgba(49, 46, 43, 0.2);
   position: absolute;
   width: fit-content;
   transform: translateX(-50%);

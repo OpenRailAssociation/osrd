@@ -199,13 +199,13 @@
 
   &__tab-departure {
     color: var(--grey50);
-    font-family: 'IBMPlexSans-Regular', 'IBM Plex Sans', system-ui, sans-serif;
+    font-family: IBMPlexSans-Regular, 'IBM Plex Sans', system-ui, sans-serif;
     font-size: 0.75rem;
     font-weight: 400;
   }
 
   &__tab-title {
-    font-family: 'IBMPlexSans-SemiBold', 'IBM Plex Sans', system-ui, sans-serif;
+    font-family: IBMPlexSans-SemiBold, 'IBM Plex Sans', system-ui, sans-serif;
     font-size: 18px;
     font-weight: 600;
   }
@@ -233,7 +233,7 @@
   &__index {
     flex: 0 0 56px;
     color: var(--info60);
-    font-family: 'IBMPlexSans-Regular', 'IBM Plex Sans', system-ui, sans-serif;
+    font-family: IBMPlexSans-Regular, 'IBM Plex Sans', system-ui, sans-serif;
     font-size: 32px;
     font-weight: 400;
     text-align: center;
@@ -251,12 +251,12 @@
     gap: 6px;
 
     span:last-child {
-      font-family: 'IBMPlexSans-Regular', 'IBM Plex Sans', system-ui, sans-serif;
+      font-family: IBMPlexSans-Regular, 'IBM Plex Sans', system-ui, sans-serif;
       font-size: 16px;
       font-weight: 400;
 
       &.font-weight-bold {
-        font-family: 'IBMPlexSans-SemiBold', 'IBM Plex Sans', system-ui, sans-serif;
+        font-family: IBMPlexSans-SemiBold, 'IBM Plex Sans', system-ui, sans-serif;
         font-weight: 600 !important;
       }
     }
@@ -272,7 +272,7 @@
 
   &__train-name {
     color: var(--grey50);
-    font-family: 'IBMPlexSans-Regular', 'IBM Plex Sans', system-ui, sans-serif;
+    font-family: IBMPlexSans-Regular, 'IBM Plex Sans', system-ui, sans-serif;
     font-size: 18px;
     font-weight: 400;
   }

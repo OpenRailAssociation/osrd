@@ -1,9 +1,9 @@
 .stdcm-card {
   border-radius: 8px;
   box-shadow:
-    0px 1px 0px rgba(255, 255, 255, 1) inset,
-    0px 4px 7px -3px rgba(24, 68, 239, 0.19),
-    0px 1px 3px rgba(49, 46, 43, 0.2);
+    0 1px 0 rgba(255, 255, 255, 1) inset,
+    0 4px 7px -3px rgba(24, 68, 239, 0.19),
+    0 1px 3px rgba(49, 46, 43, 0.2);
   background-color: rgba(255, 255, 255, 1);
   position: relative;
 
@@ -20,7 +20,7 @@
     border-top-color: rgba(255, 255, 255, 1);
     border-left: 12px solid transparent;
     border-right: 12px solid transparent;
-    filter: drop-shadow(0px 2px 1px #d0d7e7);
+    filter: drop-shadow(0 2px 1px #d0d7e7);
   }
 
   &.tip-right::after {
@@ -36,13 +36,13 @@
   }
 
   .stdcm-card__header {
-    border-radius: 8px 8px 0px 0px;
-    box-shadow: 0px 1px 0px rgba(255, 255, 255, 0.75) inset;
+    border-radius: 8px 8px 0 0;
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.75) inset;
     background-color: rgba(235, 235, 234, 1);
     color: rgba(0, 0, 0, 1);
     font-size: 1.125rem;
     font-weight: 600;
-    letter-spacing: 0px;
+    letter-spacing: 0;
     text-align: left;
     line-height: 24px;
     padding: 7px 10px 9px 12px;
@@ -64,6 +64,7 @@
 
     .stdcm-via-icons {
       display: flex;
+
       button {
         font-size: 0.875rem;
         font-weight: 400;
@@ -94,6 +95,7 @@
     .location-line {
       display: flex;
       gap: 16px;
+
       .ci-input {
         width: 312px;
       }
@@ -115,6 +117,7 @@
       .error,
       .info {
         --field-wrapper-padding-bottom: 5px;
+
         .ui-status-message-wrapper-tooltip.tooltip-left {
           left: -4px;
         }
@@ -134,6 +137,7 @@
         .osrd-config-item {
           padding-right: 3px;
         }
+
         .weight {
           width: 119px;
         }

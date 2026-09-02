@@ -1,6 +1,7 @@
 .informations-modal {
   position: relative;
   max-height: 75vh;
+
   &-version {
     font-size: small;
   }
@@ -30,6 +31,7 @@
         .small {
           color: var(--primary);
         }
+
         &:hover {
           h3,
           i,

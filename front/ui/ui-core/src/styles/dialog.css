@@ -104,12 +104,15 @@
   .dialog-content.ambientA {
     background-color: var(--color-ambientA-5);
   }
+
   .dialog-content.ambientB {
     background-color: var(--color-ambientB-5);
   }
+
   .dialog-content.ambientC {
     background-color: var(--color-ambientC-5);
   }
+
   .dialog-content.ambientD {
     background-color: var(--color-ambientD-5);
   }
@@ -119,7 +122,7 @@
   padding: calc(var(--spacing) * 8) 0;
 }
 
-/* For small screen, we remove the min-height constraint*/
+/* For small screen, we remove the min-height constraint */
 @media screen and (max-width: 600px) {
   .ui-dialog-overlay {
     .dialog-content {
