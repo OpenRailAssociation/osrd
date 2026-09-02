@@ -58,6 +58,7 @@ enum EdgeType {
 struct Graph {
     successors: HashMap<Node, Vec<Node>>,
     edges: HashMap<(Node, Node), EdgeType>,
+    length: HashMap<Identifier, f64>,
 }
 
 impl Graph {
@@ -79,6 +80,12 @@ impl Graph {
         detectors: &[Detector],
         buffer_stops: &[BufferStop],
     ) {
+
+        // We store each length in an array in order to use it as an heuristic later
+        for track in track_sections {
+            self.length.insert(track.id.clone(), track.length);
+        }
+
         // We need to split handle separately the signals that are forward
         let detectors_by_track = detectors
             .iter()
@@ -86,32 +93,33 @@ impl Graph {
             .into_group_map();
 
         for (track, detectors) in &detectors_by_track {
+
+            let u = Node::from_track_endpoint(track, Endpoint::Begin);
+            let v = Node::from_track_endpoint(track, Endpoint::End);
+            
             // When going from start to end
             // We only consider the last detector (closest to end) that is on the same track
             // All the other can be considered as block defining
             let detector = detectors
                 .iter()
+                // .filter(|d| (if d dans le sens opposé))
                 .max_by_key(|d| (d.position * 1000.0).round() as u64)
                 .expect("missing detector");
-
-            let u = Node::from_track_endpoint(track, Endpoint::Begin);
             let d = Node::Detector(detector.id.clone());
-            let v = Node::from_track_endpoint(track, Endpoint::End);
-            self.add_directed_edge(u, d.clone(), EdgeType::ToDetector);
-            self.add_directed_edge(d.clone(), v, EdgeType::FromDetector(Direction::StartToStop));
+            self.add_directed_edge(u.clone(), d.clone(), EdgeType::ToDetector);
+            self.add_directed_edge(d.clone(), v.clone(), EdgeType::FromDetector(Direction::StartToStop));
 
-            // When going from end to start,
+            // When going from end to start
             // We only consider the first detector (closest to start) that is on the same track
             // All the other can be considered as block defining
             let detector = detectors
                 .iter()
+                // .filter(|d| (if d dans le bon sens))
                 .min_by_key(|d| (d.position * 1000.0).round() as u64) //Because floats aren’t sortable
-                .expect("missing detector");
-            let u = Node::from_track_endpoint(track, Endpoint::End);
+                .expect("missing detector");    // si pas de détecteur trouvé, on rajoute un edge
             let d = Node::Detector(detector.id.clone());
-            let v = Node::from_track_endpoint(track, Endpoint::Begin);
-            self.add_directed_edge(u, d.clone(), EdgeType::ToDetector);
-            self.add_directed_edge(d.clone(), v, EdgeType::FromDetector(Direction::StopToStart));
+            self.add_directed_edge(v.clone(), d.clone(), EdgeType::ToDetector);
+            self.add_directed_edge(d.clone(), u.clone(), EdgeType::FromDetector(Direction::StopToStart));
         }
 
         for buffer in buffer_stops {
@@ -181,27 +189,72 @@ impl Graph {
 
     /* Part 3: compute the different routes */
 
+    // Returns the length of the track associated to the node
+    fn get_length(&self, n: &Node) -> f64 {
+        match n {
+            Node::TrackEndpoint(track_endpoint) => {
+                match self.length.get(&track_endpoint.track) {
+                    Some(f) => { f.clone() }
+                    _ => { 0.0 }
+                }
+            }
+            _ => { 0.0 }
+        }
+    }
+
     // Computes all the routes from one Node (buffer stop or detector) to all others
     // The routes don’t go beyond a detector or a buffer stop
-    fn one_to_all_routes(&self, start: Node) -> Vec<Route> {
+    fn one_to_all_routes(&self, start: Node, max_distance: Option<f64>) -> Vec<Route> {
+
         let mut result = vec![];
         let mut count = 0;
         let mut parent = HashMap::new();
         let mut stack = Vec::from([&start]);
+        let mut distance = HashMap::new();
+
+        distance.insert(&start, self.get_length(&start).clone());
 
         while let Some(current) = stack.pop() {
             if let Some(successors) = self.successors.get(current) {
                 for succ in successors {
-                    if self.valid_successor(&start, current, succ, &parent) {
-                        parent.insert(succ, current);
-                        match &succ {
-                            // All routes end at a buffer or detector and we build it
-                            Node::BufferStop(_) | Node::Detector(_) => {
-                                result.push(self.build_route(count, succ, &parent));
-                                count += 1;
-                            }
-                            Node::TrackEndpoint(_track_endpoint) => {
-                                stack.push(succ);
+
+                    // Get the distance of the current and next node from start
+                    let current_length = match distance.get(current) {
+                        Some(f) => { *f }
+                        _ => { 0.0 }
+                    };
+                    let new_length = self.get_length(succ);
+
+                    match (current.clone(), succ.clone()) {
+                        (Node::TrackEndpoint(v1), Node::TrackEndpoint(v2)) => {
+                            println!("Going from {} to {}", v1.track, v2.track);
+                        }
+                        _ => {}
+                    }
+
+                    println!("Current length: {}", current_length);
+                    println!("New length to add: {}", new_length);
+                    println!();
+
+                    // Add the successor if valid and close enough to start
+                    if max_distance.is_none() || current_length + new_length < max_distance.expect("") {
+
+                        // Add the successor distance computed from the current distance to the hashmap
+                        distance.insert(succ, current_length.clone() + new_length.clone());
+
+                        // Checks whether the successor is valid and add it to the stack
+                        if self.valid_successor(&start, current, succ, &parent) {
+                            parent.insert(succ, current);
+                            match &succ {
+                                // All routes end at a buffer or detector and we build it
+                                Node::BufferStop(_) | Node::Detector(_) => {
+                                    result.push(self.build_route(count, succ, &parent));
+                                    println!("Found a route of length {}", distance.get(succ).expect(""));
+                                    count += 1;
+                                }
+                                Node::TrackEndpoint(_track_endpoint) => {
+                                    stack.push(succ);
+                                }
                             }
                         }
                     }
@@ -248,11 +301,12 @@ impl Graph {
             && !detector_u_turn
     }
 
-    // Once we found a route, we must build by scanning the predecessors
+    // Once we found a route, we must build by scanning the predecessors and return its length as well
     fn build_route(&self, count: u64, end: &Node, pred: &HashMap<&Node, &Node>) -> Route {
-        let mut switches_directions = HashMap::new();
 
+        let mut switches_directions = HashMap::new();
         let mut last_direction = Direction::StartToStop;
+        
         // We go back from the end all the way to the start
         // We store every switch we encounter on the way
         let mut current = end;
@@ -297,17 +351,18 @@ pub fn routes(
     detectors: &[Detector],
     buffer_stops: &[BufferStop],
     switches: &[Switch],
+    max_distance: Option<f64>,
 ) -> Vec<Route> {
     let mut graph = Graph::default();
     graph.load(track_sections, detectors, buffer_stops, switches);
 
     let from_buffers = buffer_stops
         .iter()
-        .flat_map(|b| graph.one_to_all_routes(Node::BufferStop(b.id.clone())));
+        .flat_map(|b| graph.one_to_all_routes(Node::BufferStop(b.id.clone()), max_distance.clone()));
 
     let from_detectors = detectors
         .iter()
-        .flat_map(|d| graph.one_to_all_routes(Node::Detector(d.id.clone())));
+        .flat_map(|d| graph.one_to_all_routes(Node::Detector(d.id.clone()), max_distance.clone()));
 
     from_buffers.chain(from_detectors).collect()
 }
@@ -414,6 +469,7 @@ mod tests {
             &railjson.detectors,
             &railjson.buffer_stops,
             &railjson.switches,
+            None,
         );
         assert_eq!(4, routes.len());
     }
@@ -431,6 +487,7 @@ mod tests {
             &railjson.detectors,
             &railjson.buffer_stops,
             &railjson.switches,
+            None,
         );
         assert_eq!(6, routes.len());
         let routes_with_switches_count = routes
@@ -438,5 +495,67 @@ mod tests {
             .filter(|r| r.switches_directions.len() == 1)
             .count();
         assert_eq!(4, routes_with_switches_count);
+    }
+
+    #[test]
+    fn max_distance() {
+
+        //                      /---------- 10.0 ---------\
+        //   s ----- 1.0 ----- o ----- 5.0 ----- 3.0 ----- o ----- 1.0 ----- e
+
+        // Identifiers
+        let t1: Identifier = "t1".to_string().into();
+        let t2: Identifier = "t2".to_string().into();
+        let t3: Identifier = "t3".to_string().into();
+        let t4: Identifier = "t4".to_string().into();
+        let t5: Identifier = "t5".to_string().into();
+        let s1: Identifier = "s1".to_string().into();
+        let s2: Identifier = "s2".to_string().into();
+        let p1t: Identifier = "p1t".to_string().into();
+        let p1b: Identifier = "p1b".to_string().into();
+        let p2t: Identifier = "p2t".to_string().into();
+        let p2b: Identifier = "p2b".to_string().into();
+
+        // Lengths
+        let l1 = 1.0;
+        let l2 = 10.0;
+        let l3 = 5.0;
+        let l4 = 3.0;
+        let l5 = 1.0;
+
+        // Nodes
+        let buffer_start = Node::BufferStop("start".into());
+        let buffer_end = Node::BufferStop("end".into());
+        let switch_start = Node::from_track_endpoint(&t1, Endpoint::End);
+        let switch_end = Node::from_track_endpoint(&t5, Endpoint::Begin);
+        let track_start = Node::from_track_endpoint(&t1, Endpoint::Begin);
+        let track_start_top = Node::from_track_endpoint(&t2, Endpoint::Begin);
+        let track_start_bot = Node::from_track_endpoint(&t3, Endpoint::Begin);
+        let track_end_top = Node::from_track_endpoint(&t2, Endpoint::End);
+        let track_end_bot = Node::from_track_endpoint(&t4, Endpoint::End);
+        let track_middle_bot = Node::from_track_endpoint(&t4, Endpoint::Begin);
+        let track_end = Node::from_track_endpoint(&t5, Endpoint::End);
+
+        // Graph construction
+        let mut g = Graph::default();
+        g.add_symmetrical_edge(buffer_start.clone(), track_start.clone(), EdgeType::Buffer(Direction::StartToStop));
+        g.add_symmetrical_edge(buffer_end.clone(), track_end.clone(), EdgeType::Buffer(Direction::StopToStart));
+        g.add_directed_edge(track_start.clone(), switch_start.clone(), EdgeType::Track);
+        g.add_directed_edge(switch_end.clone(), track_end.clone(), EdgeType::Track);
+        g.add_directed_edge(track_start_top.clone(), track_end_top.clone(), EdgeType::Track);
+        g.add_directed_edge(track_start_bot.clone(), track_middle_bot.clone(), EdgeType::Track);
+        g.add_directed_edge(track_middle_bot.clone(), track_end_bot.clone(), EdgeType::Track);
+        g.add_symmetrical_edge(switch_start.clone(), track_start_top.clone(), EdgeType::Switch { id: s1.clone(), port: p1t });
+        g.add_symmetrical_edge(switch_start.clone(), track_start_bot.clone(), EdgeType::Switch { id: s1.clone(), port: p1b });
+        g.add_symmetrical_edge(switch_end.clone(), track_end_top.clone(), EdgeType::Switch { id: s2.clone(), port: p2t });
+        g.add_symmetrical_edge(switch_end.clone(), track_end_bot.clone(), EdgeType::Switch { id: s2.clone(), port: p2b });
+        g.length.insert(t1.clone(), l1);
+        g.length.insert(t2.clone(), l2);
+        g.length.insert(t3.clone(), l3);
+        g.length.insert(t4.clone(), l4);
+        g.length.insert(t5.clone(), l5);
+
+        // Routes
+        let routes = g.one_to_all_routes(buffer_start, None);
     }
 }
