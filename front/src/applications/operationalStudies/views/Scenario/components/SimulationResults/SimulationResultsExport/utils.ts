@@ -7,7 +7,6 @@ import {
   type TrackSection,
   type SimulationResponseSuccess,
 } from 'common/api/osrdEditoastApi';
-import { matchPathStepAndOp } from 'modules/pathfinding/utils';
 import { fastFindFirstGreater, interpolateValue } from 'modules/simulationResult/helpers/utils';
 import type { Train } from 'reducers/osrdconf/types';
 import type { SpeedRanges } from 'reducers/simulationResults/types';
@@ -93,20 +92,7 @@ export const formatOperationalPoints = (
 
     // Get duration
     let stepDuration: Duration | undefined;
-    const correspondingStep = trainSchedule.path.find((step) =>
-      matchPathStepAndOp(step.location, {
-        // opId won't be defined for "trackoffset" ops but matchPathStepAndOp will match them
-        // with their track as their location is of type "track_offset"
-        // TODO: find a better way to handle this
-        opId: op.opId ?? '',
-        uic: op.uic,
-        secondaryCode: op.secondary_code,
-        countryCode: op.country_code,
-        mainCode: op.main_code,
-        track: op.part.track,
-        offsetOnTrack: op.part.position,
-      })
-    );
+    const correspondingStep = trainSchedule.path.find((step) => op.pathItemId === step.id);
     if (correspondingStep) {
       const correspondingSchedule = trainSchedule.schedule?.find(
         (step) => step.at === correspondingStep.id
