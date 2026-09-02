@@ -331,7 +331,7 @@ export const generatePathAndSchedule = (
   baseDate?: Date,
   trainrunDirection: TRAINRUN_DIRECTIONS = TRAINRUN_DIRECTIONS.FORWARD,
   state?: MacroEditorState
-) => {
+): Pick<TrainSchedule, 'start_time' | 'path' | 'schedule'> => {
   let sections = trainrunSections;
   if (trainrunDirection === TRAINRUN_DIRECTIONS.BACKWARD) {
     sections = [...trainrunSections].reverse();
