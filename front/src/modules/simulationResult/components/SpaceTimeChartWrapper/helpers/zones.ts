@@ -2,6 +2,7 @@ import type { OccupancyZone, Track } from '@osrd-project/ui-charts';
 
 import {
   type PacedTrainException,
+  type PathItemRelativeLocation,
   type PostTrainSchedulesTrackOccupancyApiResponse,
 } from 'common/api/osrdEditoastApi';
 import type { TrainId } from 'reducers/osrdconf/types';
@@ -17,6 +18,7 @@ type DrawableOccupancyZone = Omit<OccupancyZone, 'curveStyle'> & {
   dbEndTime: number;
   trainId: TrainId;
   exceptionTypes: CurveStyleExceptionType[];
+  pathItemRelativeLocation: PathItemRelativeLocation;
 };
 
 /** An occupancy zone, carrying the data needed to compute the linkings of its track as well. */
@@ -157,5 +159,6 @@ export function getMovableOccupancyZone(
     dbStartTime: occupationStartTime,
     dbEndTime: occupationEndTime,
     exceptionTypes,
+    pathItemRelativeLocation: occupation.path_item_relative_location,
   };
 }
