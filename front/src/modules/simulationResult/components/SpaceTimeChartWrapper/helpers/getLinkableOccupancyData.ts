@@ -1,15 +1,9 @@
 import { isNil } from 'lodash';
 
-import type {
-  PacedTrainException,
-  PostTrainSchedulesTrackOccupancyApiResponse,
-} from 'common/api/osrdEditoastApi';
+import type { PacedTrainException, PathItemRelativeLocation } from 'common/api/osrdEditoastApi';
 
 import type { TrainSpaceTimeData } from '../../../types';
 import type { LinkableOccupancy } from './computePossibleLinkings';
-
-type PathItemRelativeLocation =
-  PostTrainSchedulesTrackOccupancyApiResponse[number]['trains'][number]['path_item_relative_location'];
 
 /**
  * Extracts from a train occupancy the data needed to compute the linkings of its track.
