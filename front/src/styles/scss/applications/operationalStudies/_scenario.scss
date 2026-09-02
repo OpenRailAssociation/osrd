@@ -222,11 +222,7 @@
     }
   }
 
-  &.modified {
-    z-index: 3;
-  }
-
-  &:hover:not(.modified, .paced-train) {
+  &:hover:not(.paced-train) {
     .train-time {
       color: var(--grey20);
     }

@@ -44,7 +44,6 @@ type UniqueTrainItemProps = {
   isInSelection: boolean;
   train: TrainScheduleWithDetails;
   isSelected: boolean;
-  isModified?: boolean;
   handleSelectTrain: (trainId: number) => void;
   projectionPathIsUsed: boolean;
   selectTrainToEdit: (train: TrainScheduleWithDetails) => void;
@@ -59,7 +58,6 @@ const UniqueTrainItem = ({
   isInSelection,
   train,
   isSelected,
-  isModified,
   handleSelectTrain,
   projectionPathIsUsed,
   selectTrainToEdit,
@@ -175,7 +173,6 @@ const UniqueTrainItem = ({
       data-train-id={train.id}
       className={cx('scenario-timetable-train', {
         selected: isSelected,
-        modified: isModified,
         'in-selection': isInSelection,
         invalid: summary && !summary.isValid,
       })}

@@ -27,19 +27,17 @@
     padding-bottom: 16px;
   }
 
-  &:not(.modified) {
-    .base-info:hover {
-      .action-buttons {
-        display: flex !important;
-        z-index: 1;
-        .reset-exceptions {
-          transform: rotate(180deg);
-        }
+  .base-info:hover {
+    .action-buttons {
+      display: flex !important;
+      z-index: 1;
+      .reset-exceptions {
+        transform: rotate(180deg);
       }
+    }
 
-      .paced-train-right-zone {
-        color: var(--grey20);
-      }
+    .paced-train-right-zone {
+      color: var(--grey20);
     }
   }
 
@@ -60,10 +58,6 @@
         color: var(--warning60);
       }
     }
-  }
-
-  &.modified {
-    z-index: 3;
   }
 
   @mixin projected-item-icon {
